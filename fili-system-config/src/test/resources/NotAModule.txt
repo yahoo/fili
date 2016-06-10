@@ -1,0 +1,2 @@
+# This file is a class path resource that is not a module configuration
+name=NotAModuleNoJar

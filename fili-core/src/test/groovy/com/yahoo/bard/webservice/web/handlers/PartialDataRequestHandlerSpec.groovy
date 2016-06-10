@@ -1,0 +1,157 @@
+// Copyright 2016 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE file distributed with this work for terms.
+package com.yahoo.bard.webservice.web.handlers
+
+import static com.yahoo.bard.webservice.config.BardFeatureFlag.PARTIAL_DATA
+import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys.MISSING_INTERVALS_CONTEXT_KEY
+
+import com.yahoo.bard.webservice.data.PartialDataHandler
+import com.yahoo.bard.webservice.data.metric.mappers.PartialDataResultSetMapper
+import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper
+import com.yahoo.bard.webservice.druid.model.datasource.DataSource
+import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
+import com.yahoo.bard.webservice.table.PhysicalTable
+import com.yahoo.bard.webservice.table.PhysicalTableDictionary
+import com.yahoo.bard.webservice.util.SimplifiedIntervalList
+import com.yahoo.bard.webservice.web.DataApiRequest
+import com.yahoo.bard.webservice.web.responseprocessors.MappingResponseProcessor
+import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor
+
+import org.joda.time.Interval
+
+import spock.lang.Specification
+
+import javax.ws.rs.core.MultivaluedHashMap
+import javax.ws.rs.core.MultivaluedMap
+
+class PartialDataRequestHandlerSpec extends Specification {
+
+    static boolean partialData = PARTIAL_DATA.isOn()
+
+    DataRequestHandler next = Mock(DataRequestHandler)
+    PhysicalTableDictionary physicalTableDictionary = Mock(PhysicalTableDictionary)
+    Set<PhysicalTable> physicalTables = [Mock(PhysicalTable)] as Set
+    PartialDataHandler partialDataHandler = Mock(PartialDataHandler)
+
+    RequestContext rc = Mock(RequestContext)
+    DataApiRequest apiRequest = Mock(DataApiRequest)
+    GroupByQuery groupByQuery = Mock(GroupByQuery)
+    DataSource dataSource = Mock(DataSource)
+    MappingResponseProcessor response = Mock(MappingResponseProcessor)
+
+    PartialDataRequestHandler handler = new PartialDataRequestHandler(
+            next,
+            physicalTableDictionary,
+            partialDataHandler
+    )
+
+    def setup() {
+        groupByQuery.getInnermostQuery() >> groupByQuery
+        groupByQuery.getDataSource() >> dataSource
+        physicalTableDictionary.get(_) >> physicalTables[0]
+        dataSource.getNames() >> ["name"]
+    }
+
+    def cleanup() {
+        PARTIAL_DATA.setOn(partialData)
+    }
+
+    def "Test no change to response or response context with no missing intervals"() {
+        setup:
+        PARTIAL_DATA.setOn(true)
+        boolean success
+        ResponseProcessor capture
+        Set intervals = [] as TreeSet
+
+        when:
+        success = handler.handleRequest(rc, apiRequest, groupByQuery, response)
+
+        then:
+        success
+        1 * partialDataHandler.findMissingRequestTimeGrainIntervals(
+                apiRequest,
+                groupByQuery,
+                physicalTables
+        ) >> intervals
+        0 * response.getResponseContext()
+        0 * response.getMappers()
+        0 * response.getHeaders()
+        1 * next.handleRequest(rc, apiRequest, groupByQuery, response) >> true
+    }
+
+    def "Test changes to response or response context with missing intervals"() {
+        setup:
+        PARTIAL_DATA.setOn(true)
+
+        boolean success
+        Interval i = new Interval(0, 1)
+        SimplifiedIntervalList nonEmptyIntervals = new SimplifiedIntervalList([i])
+
+        Map responseContext = [:]
+        MultivaluedMap responseHeaders = new MultivaluedHashMap<>()
+        ResultSetMapper unusedMapper = Mock(ResultSetMapper)
+        List resultSetMappers = [unusedMapper]
+
+        when:
+        success = handler.handleRequest(rc, apiRequest, groupByQuery, response)
+        PartialDataResultSetMapper mapper = resultSetMappers[0]
+
+        then:
+        success
+        1 * partialDataHandler.findMissingRequestTimeGrainIntervals(
+                apiRequest,
+                groupByQuery,
+                physicalTables
+        ) >> nonEmptyIntervals
+        1 * response.getResponseContext() >> responseContext
+        1 * response.getMappers() >> resultSetMappers
+        1 * next.handleRequest(rc, apiRequest, groupByQuery, response) >> true
+        1 * response.getHeaders() >> responseHeaders
+        mapper instanceof PartialDataResultSetMapper
+        responseContext[MISSING_INTERVALS_CONTEXT_KEY.getName()] == nonEmptyIntervals
+        responseContext.get(PartialDataRequestHandler.PARTIAL_DATA_HEADER)
+    }
+
+    def "Test exception handling a request with non mapping response"() {
+        setup:
+        ResponseProcessor response = Mock(ResponseProcessor)
+        when:
+        handler.handleRequest(rc, apiRequest, groupByQuery, response)
+
+        then:
+        thrown IllegalStateException
+    }
+
+
+    def "Test no mapper is added with config turned off"() {
+        setup:
+        PARTIAL_DATA.setOn(false)
+        boolean success
+        Interval i = new Interval(0, 1)
+        SimplifiedIntervalList nonEmptyIntervals = new SimplifiedIntervalList([i]);
+
+        Map responseContext = [:]
+        MultivaluedMap responseHeaders = new MultivaluedHashMap<>()
+        ResultSetMapper unusedMapper = Mock(ResultSetMapper)
+        List resultSetMappers = [unusedMapper]
+
+        when:
+        success = handler.handleRequest(rc, apiRequest, groupByQuery, response)
+        ResultSetMapper mapper = resultSetMappers[0]
+
+        then:
+        success
+        1 * partialDataHandler.findMissingRequestTimeGrainIntervals(
+                apiRequest,
+                groupByQuery,
+                physicalTables
+        ) >> nonEmptyIntervals
+        1 * response.getResponseContext() >> responseContext
+        1 * next.handleRequest(rc, apiRequest, groupByQuery, response) >> true
+        1 * response.getHeaders() >> responseHeaders
+
+        mapper == unusedMapper
+        responseContext[MISSING_INTERVALS_CONTEXT_KEY.getName()] == nonEmptyIntervals
+        responseContext.get(PartialDataRequestHandler.PARTIAL_DATA_HEADER)
+    }
+}

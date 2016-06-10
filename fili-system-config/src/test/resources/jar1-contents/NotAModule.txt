@@ -1,0 +1,3 @@
+# This file is a class path resource that is not a module configuration
+# This version will appear in the test jar
+name=NotAModuleInJar

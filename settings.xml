@@ -1,0 +1,158 @@
+<settings>
+    <mirrors>
+        <mirror>
+            <id>local glassfish-repo-archive</id>
+            <mirrorOf>glassfish-repo-archive</mirrorOf>
+            <url>http://ymaven.corp.yahoo.com:9999/proximity/repository/public</url>
+        </mirror>
+        <mirror>
+            <id>local glassfish-repo</id>
+            <mirrorOf>glassfish-repository</mirrorOf>
+            <url>http://ymaven.corp.yahoo.com:9999/proximity/repository/public</url>
+        </mirror>
+        <mirror>
+            <id>local m.g.o-public</id>
+            <mirrorOf>m.g.o-public</mirrorOf>
+            <url>http://ymaven.corp.yahoo.com:9999/proximity/repository/public</url>
+        </mirror>
+        <mirror>
+            <id>local central mirror</id>
+            <mirrorOf>central</mirrorOf>
+            <url>http://ymaven.corp.yahoo.com:9999/proximity/repository/public</url>
+        </mirror>
+        <mirror>
+            <id>local codehaus snapshot mirror</id>
+            <mirrorOf>codehaus</mirrorOf>
+            <url>http://ymaven.corp.yahoo.com:9999/proximity/repository/codehaus</url>
+        </mirror>
+        <mirror>
+            <id>local codehaus mirror</id>
+            <mirrorOf>codehaus snapshots</mirrorOf>
+            <url>http://ymaven.corp.yahoo.com:9999/proximity/repository/codehaus.snapshot</url>
+        </mirror>
+        <mirror>
+            <id>local jboss mirror</id>
+            <mirrorOf>jboss</mirrorOf>
+            <url>http://ymaven.corp.yahoo.com:9999/proximity/repository/jboss</url>
+        </mirror>
+        <mirror>
+            <id>local maven2-repository.dev.java.net mirror</id>
+            <mirrorOf>maven2-repository.dev.java.net</mirrorOf>
+            <url>http://ymaven.corp.yahoo.com:9999/proximity/repository/maven2-repository.dev.java.net</url>
+        </mirror>
+        <mirror>
+            <id>local apache.snapshot mirror</id>
+            <mirrorOf>apache.snapshot,apache.snapshots</mirrorOf>
+            <url>http://ymaven.corp.yahoo.com:9999/proximity/repository/apache.snapshot</url>
+        </mirror>
+        <mirror>
+            <id>local maven-repository.dev.java.net mirror</id>
+            <mirrorOf>maven-repository.dev.java.net</mirrorOf>
+            <url>http://ymaven.corp.yahoo.com:9999/proximity/repository/maven-repository.dev.java.net</url>
+        </mirror>
+        <mirror>
+            <id>local maven-repository.dev.java.net mirror</id>
+            <mirrorOf>java.net</mirrorOf>
+            <url>http://ymaven.corp.yahoo.com:9999/proximity/repository/maven-repository.dev.java.net</url>
+        </mirror>
+        <mirror>
+            <id>local no-commons-logging mirror</id>
+            <mirrorOf>no-commons-logging</mirrorOf>
+            <url>http://ymaven.corp.yahoo.com:9999/proximity/repository/no-commons-logging.zapto.org</url>
+        </mirror>
+        <mirror>
+            <id>local abstracthorizon mirror</id>
+            <mirrorOf>abstracthorizon</mirrorOf>
+            <url>http://ymaven.corp.yahoo.com:9999/proximity/repository/repository.abstracthorizon.org</url>
+        </mirror>
+        <mirror>
+            <id>local freehep-maven</id>
+            <mirrorOf>freehep-maven</mirrorOf>
+            <url>http://ymaven.corp.yahoo.com:9999/proximity/repository/freehep</url>
+        </mirror>
+        <mirror>
+            <id>local maven.glassfish.org</id>
+            <mirrorOf>maven.glassfish.org</mirrorOf>
+            <url>http://ymaven.corp.yahoo.com:9999/proximity/repository/maven.glassfish.org</url>
+        </mirror>
+        <mirror>
+            <id>local maven.glassfish.org alternateId</id>
+            <mirrorOf>m.g.o-public</mirrorOf>
+            <url>http://ymaven.corp.yahoo.com:9999/proximity/repository/maven.glassfish.org</url>
+        </mirror>
+        <mirror>
+            <id>local maven.glassfish.org-snapshot</id>
+            <mirrorOf>maven.glassfish.org-snapshot</mirrorOf>
+            <url>http://ymaven.corp.yahoo.com:9999/proximity/repository/maven.glassfish.org-snapshot</url>
+        </mirror>
+        <mirror>
+            <id>local repository.sonatype.org_content_groups_public</id>
+            <mirrorOf>repository.sonatype.org_content_groups_public</mirrorOf>
+            <url>http://ymaven.corp.yahoo.com:9999/proximity/repository/repository.sonatype.org_content_groups_public
+            </url>
+        </mirror>
+        <mirror>
+            <id>local scala-tools.org</id>
+            <mirrorOf>scala-tools.org</mirrorOf>
+            <url>http://ymaven.corp.yahoo.com:9999/proximity/repository/scala-tools.org</url>
+        </mirror>
+        <mirror>
+            <id>local repo.jenkins-ci.org</id>
+            <mirrorOf>repo.jenkins-ci.org</mirrorOf>
+            <url>http://ymaven.corp.yahoo.com:9999/proximity/repository/repo.jenkins-ci.org</url>
+        </mirror>
+        <mirror>
+            <id>local maven.jenkins-ci.org</id>
+            <mirrorOf>maven.jenkins-ci.org</mirrorOf>
+            <url>http://ymaven.corp.yahoo.com:9999/proximity/repository/maven.jenkins-ci.org</url>
+        </mirror>
+        <mirror>
+            <id>local spy</id>
+            <mirrorOf>spy</mirrorOf>
+            <url>http://ymaven.corp.yahoo.com:9999/proximity/repository/spy</url>
+        </mirror>
+    </mirrors>
+    <profiles>
+        <profile>
+            <id>localMirror</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>local-mirror</id>
+                    <name>local mirror of central repo</name>
+                    <layout>default</layout>
+                    <url>file:///home/y/var/maven</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </pluginRepository>
+            </pluginRepositories>
+            <repositories>
+                <repository>
+                    <id>local-mirror</id>
+                    <name>local mirror of central repo</name>
+                    <layout>default</layout>
+                    <url>file:///home/y/var/maven</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </repository>
+                <repository>
+                    <id>central</id>
+                    <url>https://repo1.maven.org/maven2</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                </repository>
+            </repositories>
+        </profile>
+    </profiles>
+</settings>
