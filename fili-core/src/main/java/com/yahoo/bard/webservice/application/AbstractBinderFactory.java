@@ -646,8 +646,8 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      */
     protected final List<FeatureFlag> collectFeatureFlags(List<Class<? extends FeatureFlag>> enumerations) {
         return enumerations.stream()
-                .map(Class::getEnumConstants)
-                .flatMap(Arrays::stream)
+                .map(it -> it.getEnumConstants())
+                .flatMap(it -> Arrays.<FeatureFlag>stream(it))
                 .collect(Collectors.toList());
     }
 
