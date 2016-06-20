@@ -1,0 +1,15 @@
+# Activating travis builds
+---
+  language: java
+  sudo: false
+  jdk:
+    - oraclejdk8
+  cache:
+    directories:
+      - "~/.m2"
+  branches:
+    only:
+      - master
+  # build steps
+  install: true
+  script: mvn clean verify

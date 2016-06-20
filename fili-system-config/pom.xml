@@ -113,7 +113,7 @@
                 <version>1.7</version>
                 <executions>
                     <execution>
-                        <phase>process-test-resources</phase>
+                        <phase>generate-test-resources</phase>
                         <configuration>
                             <tasks>
                                 <exec
