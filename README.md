@@ -1,6 +1,8 @@
 Fili Web Service [![Build Status](http://jenkins.screwdriver.corp.yahoo.com:9999/jenkins/buildStatus/icon?job=14494-digits_hippodrome-trunk-component)](http://jenkins.screwdriver.corp.yahoo.com:9999/jenkins/job/14494-digits_hippodrome-trunk-component/)
 ==================
 
+[![Join the chat at https://gitter.im/yahoo/fili](https://badges.gitter.im/yahoo/fili.svg)](https://gitter.im/yahoo/fili?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Repository for the Fili web service.
 
 ## Monitoring and Operations
