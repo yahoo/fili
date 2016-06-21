@@ -57,8 +57,14 @@ public class LayeredFileSystemConfig implements SystemConfig {
      */
     private final CompositeConfiguration masterConfiguration;
 
+    /**
+     * Runtime properties are higher precedence than any load time system configurations.
+     */
     private final Properties runtimeProperties;
 
+    /**
+     * Config resource loader is used to pull in configuration from class loaders (system or otherwise).
+     */
     private final ConfigResourceLoader loader = new ConfigResourceLoader();
 
     /**
@@ -66,7 +72,7 @@ public class LayeredFileSystemConfig implements SystemConfig {
      * configurations, followed by an optional application configuration, followed by a
      */
     @SuppressWarnings(value = "unchecked")
-    LayeredFileSystemConfig() {
+    public LayeredFileSystemConfig() {
         masterConfiguration = new CompositeConfiguration();
         masterConfiguration.setThrowExceptionOnMissing(true);
         runtimeProperties = new Properties();

@@ -19,7 +19,9 @@ import java.util.Map;
  * A single row of results
  */
 public class Result {
-
+    /**
+     * Stuff
+     */
     private final Map<DimensionColumn, DimensionRow> dimensionRows;
     private final Map<MetricColumn, Object> metricValues;
     private final DateTime timeStamp;

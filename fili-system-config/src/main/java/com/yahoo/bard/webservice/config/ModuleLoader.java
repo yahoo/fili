@@ -94,7 +94,7 @@ public class ModuleLoader {
      *
      * @param name  The name under test.
      *
-     * @throws SystemConfiguration exception when a name fails a validation rule
+     * @throws SystemConfigException exception when a name fails a validation rule
      */
     public static void validateModuleName(String name) throws SystemConfigException {
         char[] nameChars = name.toCharArray();
