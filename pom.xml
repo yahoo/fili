@@ -420,22 +420,6 @@
         </plugins>
     </build>
 
-    <repositories>
-        <!-- Only required if a snapshot version of Spock is used -->
-        <repository>
-            <id>spock-snapshots</id>
-            <url>http://oss.sonatype.org/content/repositories/snapshots/</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <!-- Required to get cglib-nodep from GitHub, since it's not released -->
-        <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
-        </repository>
-    </repositories>
-
     <profiles>
         <profile>
             <id>linux_64bit</id>
