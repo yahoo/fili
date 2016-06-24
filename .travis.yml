@@ -19,16 +19,14 @@
   # build steps
   install: true
   script:
-    - if [ "${TRAVIS_PULL_REQUEST}" = "false" ] ; then
-        git checkout master
-        &&
-        mvn clean package verify
+    - if [ "${TRAVIS_PULL_REQUEST}" = "true" ] ; then
+        mvn clean package verify -DskipTests
         &&
         mkdir failedTests
         &&
         find -name testng-failed.xml -exec cp -vf "{}" failedTests/ \; ;
       fi
-    - if [ ! -f failedTests/testng-failed.xml && test "${TRAVIS_TAG}" != "" ]
+    - if [ ! -f failedTests/testng-failed.xml && test "${TRAVIS_TAG}" != "" ] ; then
         mvn versions:set -DnewVersion=${TRAVIS_TAG}
         && mvn deploy --settings travis/bintray-settings.xml ;
       fi
