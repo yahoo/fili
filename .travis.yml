@@ -15,12 +15,6 @@
   branches:
     only:
       - master
-  install: true
-  script:
-  - mvn clean verify -DskipTests
- branches:
-    only:
-      - master
       - "/^[0-9]+\\.[0-9]+\\.[0-9]+/"
   # build steps
   install: true
