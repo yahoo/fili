@@ -17,7 +17,7 @@
       - master
   install: true
   script:
-  - mvn clean verify --settings travis/bintray-settings.xml
+  - mvn clean verify -DskipTests
  branches:
     only:
       - master
@@ -26,7 +26,9 @@
   install: true
   script: mvn clean package verify # coveralls:report
   after_success:
-    - test "${TRAVIS_PULL_REQUEST}" == ""
+    - test true
+      && echo "test"
+#      && test "${TRAVIS_PULL_REQUEST}" == ""
       && test "${TRAVIS_TAG}" != ""
       && mvn versions:set -DnewVersion=${TRAVIS_TAG}
       && mvn deploy --settings travis/bintray-settings.xml
