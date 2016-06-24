@@ -24,9 +24,22 @@
       - "/^[0-9]+\\.[0-9]+\\.[0-9]+/"
   # build steps
   install: true
-  script: mvn clean package verify # coveralls:report
+  script:
+    - if [ "${TRAVIS_PULL_REQUEST}" = "false" ] ; then
+        git checkout master
+        &&
+        mvn clean package verify
+        &&
+        mkdir failedTests
+        &&
+        find -name testng-failed.xml -exec cp -vf "{}" failedTests/ \; ;
+      fi
+    - if [ ! -f failedTests/testng-failed.xml && test "${TRAVIS_TAG}" != "" ]
+        mvn versions:set -DnewVersion=${TRAVIS_TAG}
+        && mvn deploy --settings travis/bintray-settings.xml ;
+      fi
+
   after_success:
-    - test true && echo "test" && test "${TRAVIS_TAG}" != "" && mvn versions:set -DnewVersion=${TRAVIS_TAG} && mvn deploy --settings travis/bintray-settings.xml
     - echo "Hello World!"
 
 #      && test "${TRAVIS_PULL_REQUEST}" == ""
