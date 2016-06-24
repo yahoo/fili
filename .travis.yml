@@ -27,7 +27,7 @@
   script: mvn clean package verify # coveralls:report
   after_success:
     - test true && echo "test" && test "${TRAVIS_TAG}" != "" && mvn versions:set -DnewVersion=${TRAVIS_TAG} && mvn deploy --settings travis/bintray-settings.xml
-
+    - echo "Hello World!"
 
 #      && test "${TRAVIS_PULL_REQUEST}" == ""
 
