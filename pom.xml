@@ -12,18 +12,7 @@
 
     <name>Fili: Parent Pom</name>
     <description>Fili Parent Project</description>
-    <url>https://git.corp.yahoo.com/pages/Fili/fili-core/</url>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>yahoo-local-snapshot</id>
-            <url>scpexe://artifactory-ssh-proxy.corp.yahoo.com:4443/maven-local-snapshot/</url>
-        </snapshotRepository>
-        <site>
-            <id>gitcorp</id>
-            <url>scm:git:git@git.corp.fili.com:Fili/fili-core.git</url>
-        </site>
-    </distributionManagement>
+    <url>https://github.com/yahoo/fili</url>
 
     <modules>
         <module>fili-system-config</module>
@@ -37,10 +26,44 @@
         <url>http://www.yahoo.com/</url>
     </organization>
 
+    <issueManagement>
+        <system>GitHub Issues</system>
+        <url>https://github.com/yahoo/fili/issues</url>
+    </issueManagement>
+
+    <inceptionYear>2016</inceptionYear>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Yahoo Inc.</name>
+            <url>https://github.com/yahoo</url>
+        </developer>
+    </developers>
+
+    <distributionManagement>
+        <repository>
+            <id>bintray-fili-repo</id>
+            <url>https://api.bintray.com/maven/yahoo/maven/fili;publish=1</url>
+        </repository>
+    </distributionManagement>
+
+    <scm>
+        <developerConnection>scm:git:ssh://git@github.com/yahoo/fili.git</developerConnection>
+        <url>https://github.com/yahoo/fili.git</url>
+        <tag>HEAD</tag>
+    </scm>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>${project.build.sourceEncoding}</project.reporting.outputEncoding>
-
         <version.slf4j>1.7.12</version.slf4j>
         <version.servlet>3.1.0</version.servlet>
         <version.jersey>2.22</version.jersey>
@@ -63,7 +86,6 @@
 
         <min_maven_version>3.0</min_maven_version>
         <!-- TODO: Review these -->
-        <maven.deploy.skip>${env.DO_NOT_PUBLISH}</maven.deploy.skip>
         <enforcer.skip>true</enforcer.skip>
         <checkstyle.skip>false</checkstyle.skip>
         <checkstyle.config.location>checkstyle-style.xml</checkstyle.config.location>
@@ -72,20 +94,20 @@
         <checkstyle.resourceIncludes>**/*.properties*</checkstyle.resourceIncludes>
         <dependency.locations.enabled>false</dependency.locations.enabled>
         <maven-javadoc-plugin-version>2.10.3</maven-javadoc-plugin-version>
-
+        <maven-jar-plugin-version>3.0.2</maven-jar-plugin-version>
+        <maven-compiler-plugin-version>3.3</maven-compiler-plugin-version>
+        <maven-pmd-plugin-version>3.6</maven-pmd-plugin-version>
+        <maven-source-plugin-version>3.0.1</maven-source-plugin-version>
         <maven-surefire-plugin.version>2.17</maven-surefire-plugin.version>
+        <maven-site-plugin-version>3.5</maven-site-plugin-version>
+        <maven-jar-plugin-version>3.0.2</maven-jar-plugin-version>
+        <maven-checkstyle-plugin-version>3.0.1</maven-checkstyle-plugin-version>
+        <maven-project-info-reports-plugin-version>2.9</maven-project-info-reports-plugin-version>
         <maven-surefire-report-plugin.version>${maven-surefire-plugin.version}</maven-surefire-report-plugin.version>
 
         <testngUseDefaultListeners>false</testngUseDefaultListeners>
         <testngReporter>org.testng.reporters.FailedReporter,org.testng.reporters.XMLReporter,org.testng.reporters.JUnitXMLReporter</testngReporter>
     </properties>
-
-    <scm>
-        <connection>scm:git:git@git.corp.yahoo.com:Fili/fili-core.git</connection>
-        <developerConnection>scm:git:git@git.corp.yahoo.com:Fili/fili-core.git</developerConnection>
-        <url>https://git.corp.yahoo.com/Fili/fili-core</url>
-        <tag>HEAD</tag>
-    </scm>
 
     <dependencies>
         <!-- Capture version number -->
@@ -107,6 +129,19 @@
         <finalName>${project.artifactId}-${project.version}</finalName>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>${maven-source-plugin-version}</version>
+                    <executions>
+                        <execution>
+                            <id>attach-sources</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>cobertura-maven-plugin</artifactId>
@@ -167,6 +202,25 @@
                         <topSiteURL>scm:git:git@git.corp.yahoo.com:Fili/fili-core.git</topSiteURL>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <configuration>
+                        <archive>
+                            <!-- Add git sha number (from the buildnumber-maven-plugin)  to the jar manifest files -->
+                            <manifestEntries>
+                                <git-SHA-1>${buildNumber}</git-SHA-1>
+                            </manifestEntries>
+                        </archive>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
@@ -178,6 +232,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin-version}</version>
                 <configuration>
                     <source>${source_jdk_version}</source>
                     <target>${target_jdk_version}</target>
@@ -234,7 +289,6 @@
                     </execution>
                 </executions>
             </plugin>
-
             <!-- Mandatory plugins for using Spock -->
             <plugin>
                 <groupId>org.codehaus.gmaven</groupId>
@@ -299,6 +353,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
+                <version>${maven-site-plugin-version}</version>
                 <executions>
                     <execution>
                         <id>attach-site-descriptor</id>
