@@ -350,6 +350,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin-version}</version>
                 <configuration>
                     <source>${source_jdk_version}</source>
                     <target>${target_jdk_version}</target>
@@ -418,6 +419,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
+                <version>${maven-site-plugin-version}</version>
                 <executions>
                     <execution>
                         <id>attach-site-descriptor</id>
