@@ -1,0 +1,13 @@
+# Don't delete, use for testing!
+bard__sample_default_config = default-config
+
+# Use memory by default in the tests locally
+bard__dimension_backend = memory
+
+bard__druid_cache_enabled = true
+bard__druid_cache_v2_enabled = true
+
+bard__druid_coordinator_metadata_enabled = true
+
+# Default the timeout to 10 minutes, in milliseconds
+bard__druid_request_timeout = 600000

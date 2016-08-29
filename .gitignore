@@ -1,0 +1,40 @@
+# Eclipse project files that we don't want to include
+.project
+.classpath
+.settings
+.checkstyle
+.pydevproject
+
+# IntelliJ IDEA project files that we don't want to include
+.idea/libraries/*.xml
+.idea/workspace.xml
+.idea
+*.iml
+
+# Build artifacts get put in these folder. Never include build artifacts
+target
+out
+
+# Ignore generated jars
+*-system-config-*.jar
+
+# Remnants of conflicts should be ignored as well
+*.orig
+
+# Local config file should be ignored
+userConfig.properties
+
+# Stacktrace dumps should be ignored
+stacktrace.log
+
+# OSX file system info files should be ignored
+*.DS_Store
+
+# Snapshot pom.xml should not go into git
+snapshot-pom.xml
+
+# Clover's local files and also coverage report
+.clover
+report
+/target
+/checkstyle-style-local.xml

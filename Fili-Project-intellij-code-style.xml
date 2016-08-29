@@ -1,0 +1,114 @@
+<code_scheme name="Fili-Project">
+  <option name="GENERATE_FINAL_LOCALS" value="true" />
+  <option name="GENERATE_FINAL_PARAMETERS" value="true" />
+  <option name="USE_EXTERNAL_ANNOTATIONS" value="true" />
+  <option name="CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND" value="999" />
+  <option name="NAMES_COUNT_TO_USE_IMPORT_ON_DEMAND" value="999" />
+  <option name="IMPORT_LAYOUT_TABLE">
+    <value>
+      <emptyLine />
+      <package name="" withSubpackages="true" static="true" />
+      <emptyLine />
+      <package name="com.yahoo" withSubpackages="true" static="false" />
+      <emptyLine />
+      <package name="com" withSubpackages="true" static="false" />
+      <emptyLine />
+      <package name="org" withSubpackages="true" static="false" />
+      <emptyLine />
+      <package name="" withSubpackages="true" static="false" />
+      <emptyLine />
+      <package name="java" withSubpackages="true" static="false" />
+      <emptyLine />
+      <package name="javax" withSubpackages="true" static="false" />
+    </value>
+  </option>
+  <option name="ENABLE_JAVADOC_FORMATTING" value="false" />
+  <option name="JD_ALIGN_PARAM_COMMENTS" value="false" />
+  <option name="JD_ALIGN_EXCEPTION_COMMENTS" value="false" />
+  <option name="JD_ADD_BLANK_AFTER_PARM_COMMENTS" value="true" />
+  <option name="JD_ADD_BLANK_AFTER_RETURN" value="true" />
+  <option name="JD_DO_NOT_WRAP_ONE_LINE_COMMENTS" value="true" />
+  <option name="FORMATTER_TAGS_ENABLED" value="true" />
+  <option name="WRAP_COMMENTS" value="true" />
+  <GroovyCodeStyleSettings>
+    <option name="CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND" value="999" />
+    <option name="NAMES_COUNT_TO_USE_IMPORT_ON_DEMAND" value="999" />
+    <option name="IMPORT_LAYOUT_TABLE">
+      <value>
+        <emptyLine />
+        <package name="" withSubpackages="true" static="true" />
+        <emptyLine />
+        <package name="com.yahoo" withSubpackages="true" static="false" />
+        <emptyLine />
+        <package name="com" withSubpackages="true" static="false" />
+        <emptyLine />
+        <package name="org" withSubpackages="true" static="false" />
+        <emptyLine />
+        <package name="" withSubpackages="true" static="false" />
+        <emptyLine />
+        <package name="java" withSubpackages="true" static="false" />
+        <emptyLine />
+        <package name="javax" withSubpackages="true" static="false" />
+      </value>
+    </option>
+    <option name="IMPORT_ANNOTATION_WRAP" value="5" />
+  </GroovyCodeStyleSettings>
+  <JavaCodeStyleSettings>
+    <option name="ANNOTATION_PARAMETER_WRAP" value="5" />
+  </JavaCodeStyleSettings>
+  <MarkdownNavigatorCodeStyleSettings>
+    <option name="RIGHT_MARGIN" value="72" />
+  </MarkdownNavigatorCodeStyleSettings>
+  <XML>
+    <option name="XML_LEGACY_SETTINGS_IMPORTED" value="true" />
+  </XML>
+  <codeStyleSettings language="Groovy">
+    <option name="KEEP_FIRST_COLUMN_COMMENT" value="false" />
+    <option name="ALIGN_MULTILINE_PARAMETERS" value="false" />
+    <option name="CALL_PARAMETERS_WRAP" value="5" />
+    <option name="CALL_PARAMETERS_LPAREN_ON_NEXT_LINE" value="true" />
+    <option name="CALL_PARAMETERS_RPAREN_ON_NEXT_LINE" value="true" />
+    <option name="METHOD_PARAMETERS_WRAP" value="5" />
+    <option name="METHOD_PARAMETERS_LPAREN_ON_NEXT_LINE" value="true" />
+    <option name="METHOD_PARAMETERS_RPAREN_ON_NEXT_LINE" value="true" />
+    <option name="EXTENDS_KEYWORD_WRAP" value="1" />
+    <option name="THROWS_KEYWORD_WRAP" value="1" />
+    <option name="METHOD_CALL_CHAIN_WRAP" value="5" />
+    <option name="KEEP_SIMPLE_BLOCKS_IN_ONE_LINE" value="true" />
+    <option name="IF_BRACE_FORCE" value="3" />
+    <option name="WHILE_BRACE_FORCE" value="3" />
+    <option name="FOR_BRACE_FORCE" value="3" />
+    <option name="WRAP_LONG_LINES" value="true" />
+    <option name="FIELD_ANNOTATION_WRAP" value="5" />
+    <option name="PARAMETER_ANNOTATION_WRAP" value="5" />
+    <option name="VARIABLE_ANNOTATION_WRAP" value="5" />
+    <option name="ENUM_CONSTANTS_WRAP" value="5" />
+  </codeStyleSettings>
+  <codeStyleSettings language="JAVA">
+    <option name="KEEP_FIRST_COLUMN_COMMENT" value="false" />
+    <option name="ALIGN_MULTILINE_PARAMETERS" value="false" />
+    <option name="SPACE_WITHIN_BRACES" value="true" />
+    <option name="SPACE_BEFORE_ARRAY_INITIALIZER_LBRACE" value="true" />
+    <option name="CALL_PARAMETERS_WRAP" value="5" />
+    <option name="CALL_PARAMETERS_LPAREN_ON_NEXT_LINE" value="true" />
+    <option name="CALL_PARAMETERS_RPAREN_ON_NEXT_LINE" value="true" />
+    <option name="METHOD_PARAMETERS_WRAP" value="5" />
+    <option name="METHOD_PARAMETERS_LPAREN_ON_NEXT_LINE" value="true" />
+    <option name="METHOD_PARAMETERS_RPAREN_ON_NEXT_LINE" value="true" />
+    <option name="EXTENDS_KEYWORD_WRAP" value="1" />
+    <option name="THROWS_KEYWORD_WRAP" value="1" />
+    <option name="METHOD_CALL_CHAIN_WRAP" value="5" />
+    <option name="KEEP_SIMPLE_BLOCKS_IN_ONE_LINE" value="true" />
+    <option name="KEEP_SIMPLE_METHODS_IN_ONE_LINE" value="true" />
+    <option name="KEEP_SIMPLE_CLASSES_IN_ONE_LINE" value="true" />
+    <option name="IF_BRACE_FORCE" value="3" />
+    <option name="DOWHILE_BRACE_FORCE" value="3" />
+    <option name="WHILE_BRACE_FORCE" value="3" />
+    <option name="FOR_BRACE_FORCE" value="3" />
+    <option name="WRAP_LONG_LINES" value="true" />
+    <option name="FIELD_ANNOTATION_WRAP" value="5" />
+    <option name="PARAMETER_ANNOTATION_WRAP" value="5" />
+    <option name="VARIABLE_ANNOTATION_WRAP" value="5" />
+    <option name="ENUM_CONSTANTS_WRAP" value="5" />
+  </codeStyleSettings>
+</code_scheme>
