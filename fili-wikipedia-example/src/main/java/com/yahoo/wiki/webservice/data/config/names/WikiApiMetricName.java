@@ -24,18 +24,19 @@ public enum WikiApiMetricName implements ApiMetricName {
     private final String apiName;
     private final List<TimeGrain> satisfyingGrains;
 
+    /**
+     * Create a Wiki Metric descriptor.
+     */
     WikiApiMetricName() {
         this((String) null, HOUR);
     }
 
-    WikiApiMetricName(String apiName) {
-        this(apiName, HOUR);
-    }
-
-    WikiApiMetricName(TimeGrain... satisfyingGrains) {
-        this((String) null, satisfyingGrains);
-    }
-
+    /**
+     * Create a Wiki Metric descriptor with a fixed set of satisfying grains.
+     *
+     * @param apiName  The api name for the metric.
+     * @param satisfyingGrains  The grains that satisfy this metric.
+     */
     WikiApiMetricName(String apiName, TimeGrain... satisfyingGrains) {
         // to camelCase
         this.apiName = (apiName == null ? EnumUtils.camelCase(this.name()) : apiName);

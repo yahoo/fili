@@ -17,6 +17,9 @@ public enum WikiDruidMetricName implements FieldName {
 
     private final String lowerCaseName;
 
+    /**
+     * Create a physical metric name instance.
+     */
     WikiDruidMetricName() {
         this.lowerCaseName = name().toLowerCase(Locale.ENGLISH);
     }

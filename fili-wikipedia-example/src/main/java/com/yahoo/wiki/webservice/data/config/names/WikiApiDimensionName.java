@@ -5,7 +5,7 @@ package com.yahoo.wiki.webservice.data.config.names;
 import com.yahoo.bard.webservice.util.EnumUtils;
 
 /**
- * Hold all the Wikipedia API dimension names
+ * Hold all the Wikipedia API dimension names.
  */
 public enum WikiApiDimensionName {
     PAGE,
@@ -23,10 +23,18 @@ public enum WikiApiDimensionName {
 
     private final String camelName;
 
+    /**
+     * Constructor.
+     */
     WikiApiDimensionName() {
         this.camelName = EnumUtils.camelCase(name());
     }
 
+    /**
+     * View the dimension name.
+     *
+     * @return The camelCase version of the dimension.
+     */
     public String asName() {
         return camelName;
     }

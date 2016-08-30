@@ -44,12 +44,20 @@ public class WikiTableLoader extends BaseTableLoader {
     private final Map<WikiLogicalTableName, Set<PhysicalTableDefinition>> tableDefinitions =
             new EnumMap<>(WikiLogicalTableName.class);
 
+    /**
+     * Constructor.
+     */
     public WikiTableLoader() {
         WikiDimensions wikiDimensions = new WikiDimensions();
 
         configureSample(wikiDimensions);
     }
 
+    /**
+     * Set up the tables for this table loader.
+     *
+     * @param wikiDimensions  The dimensions to load into test tables.
+     */
     private void configureSample(WikiDimensions wikiDimensions) {
 
         // Dimensions

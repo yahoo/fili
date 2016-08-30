@@ -14,10 +14,18 @@ public enum WikiDruidTableName implements TableName {
 
     private final String lowerCaseName;
 
+    /**
+     * Create a table name instance.
+     */
     WikiDruidTableName() {
         this.lowerCaseName = name().toLowerCase(Locale.ENGLISH);
     }
 
+    /**
+     * View this table name as a string.
+     *
+     * @return The table name as a string
+     */
     public String asName() {
         return lowerCaseName;
     }

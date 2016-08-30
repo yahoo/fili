@@ -58,22 +58,22 @@ public class ApiFilter {
         this.values = Collections.unmodifiableSet(values);
     }
 
-    @SuppressWarnings("checkstyle:JavadocMethod")
+    @SuppressWarnings("checkstyle:javadocmethod")
     public ApiFilter withDimension(@NotNull Dimension dimension) {
         return new ApiFilter(dimension, dimensionField, operation, values);
     }
 
-    @SuppressWarnings("checkstyle:JavadocMethod")
+    @SuppressWarnings("checkstyle:javadocmethod")
     public ApiFilter withDimensionField(@NotNull DimensionField dimensionField) {
         return new ApiFilter(dimension, dimensionField, operation, values);
     }
 
-    @SuppressWarnings("checkstyle:JavadocMethod")
+    @SuppressWarnings("checkstyle:javadocmethod")
     public ApiFilter withOperation(@NotNull FilterOperation operation) {
         return new ApiFilter(dimension, dimensionField, operation, values);
     }
 
-    @SuppressWarnings("checkstyle:JavadocMethod")
+    @SuppressWarnings("checkstyle:javadocmethod")
     public ApiFilter withValues(@NotNull Set<String> values) {
         return new ApiFilter(dimension, dimensionField, operation, values);
     }

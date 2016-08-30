@@ -77,6 +77,12 @@ public class WikiMetricLoader implements MetricLoader {
         addToMetricDictionary(metricDictionary, metrics);
     }
 
+    /**
+     * Create metrics from instance descriptors and store in the metric dictionary.
+     *
+     * @param metricDictionary  The dictionary to store metrics in
+     * @param metrics  The list of metric descriptors
+     */
     private void addToMetricDictionary(MetricDictionary metricDictionary, List<MetricInstance> metrics) {
         metrics.stream().map(MetricInstance::make).forEach(metricDictionary::add);
     }

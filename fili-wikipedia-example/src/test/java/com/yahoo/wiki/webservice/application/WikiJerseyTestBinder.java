@@ -13,14 +13,25 @@ import com.yahoo.wiki.webservice.data.config.table.WikiTableLoader;
 import java.util.LinkedHashSet;
 
 /**
- * TestBinder with Wiki configuration specialization
+ * TestBinder with Wiki configuration specialization.
  */
 public class WikiJerseyTestBinder extends JerseyTestBinder {
 
+    /**
+     * Constructor.
+     *
+     * @param resourceClasses  Resource classes to load into the application.
+     */
     public WikiJerseyTestBinder(java.lang.Class<?>... resourceClasses) {
         this(true, resourceClasses);
     }
 
+    /**
+     * Constructor.
+     *
+     * @param doStart  whether or not to start the application
+     * @param resourceClasses Resource classes to load into the application.
+     */
     public WikiJerseyTestBinder(boolean doStart, java.lang.Class<?>... resourceClasses) {
         super(doStart, resourceClasses);
     }

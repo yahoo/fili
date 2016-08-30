@@ -9,14 +9,23 @@ import com.yahoo.bard.webservice.util.EnumUtils;
  * Hold the list of logical table names.
  */
 public enum WikiLogicalTableName implements TableName {
+
     WIKIPEDIA;
 
     private final String camelName;
 
+    /**
+     * Constructor.
+     */
     WikiLogicalTableName() {
         this.camelName = EnumUtils.camelCase(name());
     }
 
+    /**
+     * This logical table as a String.
+     *
+     * @return  The logical name as a String.
+     */
     public String asName() {
         return camelName;
     }

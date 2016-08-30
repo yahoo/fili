@@ -29,7 +29,6 @@ import com.yahoo.bard.webservice.jobs.JobPayloadBuilder;
 import com.yahoo.bard.webservice.jobs.JobRow;
 import com.yahoo.bard.webservice.jobs.JobRowBuilder;
 import com.yahoo.bard.webservice.jobs.MetadataHttpResponseChannel;
-import com.yahoo.bard.webservice.jobs.PreResponseStore;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
 import com.yahoo.bard.webservice.logging.blocks.DataRequest;
@@ -134,7 +133,8 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
      * @param jobRowBuilder  The JobRows factory
      * @param asynchronousWorkflowsBuilder  The factory for building the asynchronous workflow
      * @param preResponseStoredNotifications  The broadcast channel responsible for notifying other Bard prcesses
-     * that a query has been completed and its results stored in the {@link PreResponseStore}
+     * that a query has been completed and its results stored in the
+     * {@link com.yahoo.bard.webservice.jobs.PreResponseStore}
      */
     @Inject
     public DataServlet(

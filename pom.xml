@@ -341,6 +341,30 @@
         </pluginManagement>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>${maven-checkstyle-plugin-version}</version>
+                <executions>
+                    <execution>
+                        <id>validate</id>
+                        <phase>validate</phase>
+                        <configuration>
+                            <configLocation>${checkstyle.config.location}</configLocation>
+                            <suppressionsLocation>${checkstyle.suppressions.location}</suppressionsLocation>
+                            <suppressionsFileExpression>checkstyle.suppressions.file</suppressionsFileExpression>
+                            <includes>**\/*.java</includes>
+                            <resourceIncludes>**/*.properties,**/*.sample</resourceIncludes>
+                            <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                            <consoleOutput>true</consoleOutput>
+                        </configuration>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>cobertura-maven-plugin</artifactId>
                 <version>2.7</version>

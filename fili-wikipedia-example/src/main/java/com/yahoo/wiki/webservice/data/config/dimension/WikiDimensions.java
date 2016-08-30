@@ -9,8 +9,6 @@ import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
-import com.yahoo.bard.webservice.data.dimension.impl.LuceneSearchProviderManager;
-import com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProviderManager;
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager;
 import com.yahoo.bard.webservice.util.StreamUtils;
 import com.yahoo.bard.webservice.util.Utils;
@@ -25,7 +23,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * Hold all the dimension configurations for the sample Bard instance
+ * Hold all the dimension configurations for the sample Bard instance.
  */
 public class WikiDimensions {
 
@@ -36,6 +34,9 @@ public class WikiDimensions {
     private final Set<DimensionConfig> dimensionConfigs;
     private final LinkedHashMap<String, DimensionConfig> wikiApiDimensionNameToConfig;
 
+    /**
+     * Construct the dimension configurations.
+     */
     public WikiDimensions() {
 
         this.dimensionConfigs = Collections.unmodifiableSet(
@@ -58,7 +59,7 @@ public class WikiDimensions {
     }
 
     /**
-     * Get all dimension configurations
+     * Get all dimension configurations.
      *
      * @return set of dimension configurations
      */
@@ -67,7 +68,7 @@ public class WikiDimensions {
     }
 
     /**
-     * Get dimension configurations provided the dimension api name
+     * Get dimension configurations provided the dimension api name.
      *
      * @param dimensionNames  Names for dimensions by api names
      *
@@ -80,20 +81,26 @@ public class WikiDimensions {
                 .collect(Collectors.toCollection(LinkedHashSet<DimensionConfig>::new));
     }
 
+    /**
+     * Lazily provide a KeyValueStore for this store name.
+     *
+     * @param storeName  the name for the key value store
+     *
+     * @return A KeyValueStore instance
+     */
     private KeyValueStore getDefaultKeyValueStore(WikiApiDimensionName storeName) {
         return MapStoreManager.getInstance(storeName.asName());
     }
 
+    /**
+     * Lazily create a Scanning Search Provider for this provider name.
+     *
+     * @param providerName  The name of the dimension's indexes
+     *
+     * @return  A Scanning Search Provider for the provider name.
+     */
     private SearchProvider getDefaultSearchProvider(WikiApiDimensionName providerName) {
         return ScanSearchProviderManager.getInstance(providerName.asName());
-    }
-
-    private SearchProvider getNoOpSearchProvider(WikiApiDimensionName providerName) {
-        return NoOpSearchProviderManager.getInstance(providerName.asName());
-    }
-
-    private SearchProvider getLuceneSearchProvider(WikiApiDimensionName providerName) {
-        return LuceneSearchProviderManager.getInstance(providerName.asName());
     }
 
     private LinkedHashSet<DimensionField> getDefaultFields() {

@@ -6,7 +6,6 @@ import com.yahoo.bard.webservice.util.Either;
 import com.yahoo.bard.webservice.web.PreResponse;
 
 import rx.Observable;
-import rx.observables.ConnectableObservable;
 
 import java.util.function.Function;
 
@@ -30,7 +29,7 @@ public interface AsynchronousWorkflowsBuilder {
      * WARNING: Some implementations (i.e. {@link DefaultAsynchronousWorkflowsBuilder}) may communicate with external
      * resources, or do other potentially expensive operations. If you wish to guarantee that the asynchronous
      * workflows are executed at most once (as opposed to once per subscription), then make sure to pass in instances of
-     * {@link ConnectableObservable}.
+     * {@link rx.observables.ConnectableObservable}.
      *
      * @param preResponseEmitter  The Observable that will eventually emit the results of the backend query
      * @param payloadEmitter  The Observable that will emit the results of the query if the query is

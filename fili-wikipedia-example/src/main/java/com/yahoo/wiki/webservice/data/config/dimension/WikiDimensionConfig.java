@@ -14,7 +14,7 @@ import java.util.LinkedHashSet;
 import javax.validation.constraints.NotNull;
 
 /**
- * The Wiki configuration source for dimensions
+ * The Wiki configuration source for dimensions.
  */
 public class WikiDimensionConfig implements DimensionConfig {
 
@@ -25,6 +25,15 @@ public class WikiDimensionConfig implements DimensionConfig {
     private final KeyValueStore keyValueStore;
     private final SearchProvider searchProvider;
 
+    /**
+     * Constructor.
+     *
+     * @param apiName  The name of the dimension
+     * @param physicalName  The physical name of the dimension in the fact table
+     * @param keyValueStore  The key value store backing this dimension
+     * @param searchProvider  The indexing provider for this dimension
+     * @param fields  Dimension columns defining this dimension
+     */
     public WikiDimensionConfig(
             @NotNull WikiApiDimensionName apiName,
             @NotNull String physicalName,

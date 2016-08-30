@@ -32,7 +32,7 @@ import java.util.EnumSet;
 import javax.servlet.DispatcherType;
 
 /**
- * Launch Bard in Embedded Jetty
+ * Launch Bard in Embedded Jetty.
  */
 public class WikiMain {
     private static final Logger LOG = LoggerFactory.getLogger(WikiMain.class);
@@ -67,6 +67,12 @@ public class WikiMain {
         }
     }
 
+    /**
+     * Run the Wikipedia application.
+     *
+     * @param args  command line arguments
+     * @throws Exception if the server fails to start or crashes
+     */
     public static void main(String[] args) throws Exception {
         int port = 9998;
 
