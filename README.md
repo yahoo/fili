@@ -1,5 +1,6 @@
-Fili Web Service [![Build Status](http://https://travis-ci.org/yahoo/fili.svg?branch=master)
-==================
+Fili Web Service [![Travis](https://img.shields.io/travis/yahoo/fili.svg?maxAge=2592000?style=plastic)](Travis)  [![Download](https://api.bintray.com/packages/yahoo/maven/fili/images/download.svg) ](https://bintray.com/yahoo/maven/fili/_latestVersion)
+===============================================================================================================
+
 
 Repository for the Fili web service.
 
