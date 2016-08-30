@@ -68,6 +68,17 @@ public class JobsEndpointResources {
         JobRow jobRow2 = new JobRow(DefaultJobField.JOB_TICKET, fieldValueMap2);
         apiJobStore.save(jobRow2);
 
+        Map<JobField, String> fieldValueMap3 = new HashMap<>();
+        fieldValueMap3.put(DefaultJobField.JOB_TICKET, "ticket3p");
+        fieldValueMap3.put(DefaultJobField.DATE_CREATED, "2016-01-01");
+        fieldValueMap3.put(DefaultJobField.DATE_UPDATED, "2016-01-01");
+        fieldValueMap3.put(DefaultJobField.QUERY, "https://localhost:9998/v1/data/QUERY");
+        fieldValueMap3.put(DefaultJobField.STATUS, "success");
+        fieldValueMap3.put(DefaultJobField.USER_ID, "yoyo");
+
+        JobRow jobRow3 = new JobRow(DefaultJobField.JOB_TICKET, fieldValueMap3);
+        apiJobStore.save(jobRow3);
+
         return apiJobStore;
     }
 
@@ -110,6 +121,19 @@ public class JobsEndpointResources {
         errorResponseContext.put("requestedApiDimensionFields", new HashMap<>());
         PreResponse errorPresResponse = new PreResponse(resultSet, errorResponseContext);
         preResponseStore.save("errorPreResponse", errorPresResponse);
+
+        //Pagination test resources
+        Result result1 = new Result(new HashMap<>(), metricValues, DateTime.parse("2016-01-12T00:00:00.000Z"));
+        Result result2 = new Result(new HashMap<>(), metricValues, DateTime.parse("2016-01-13T00:00:00.000Z"));
+        Result result3 = new Result(new HashMap<>(), metricValues, DateTime.parse("2016-01-14T00:00:00.000Z"));
+
+        List<Result> results1 = new ArrayList<>();
+        results1.add(result1);
+        results1.add(result2);
+        results1.add(result3);
+        ResultSet resultSet1 = new ResultSet(results1, schema);
+        PreResponse preResponse1 = new PreResponse(resultSet1, responseContext);
+        preResponseStore.save("ticket3p", preResponse1);
 
         return preResponseStore;
     }

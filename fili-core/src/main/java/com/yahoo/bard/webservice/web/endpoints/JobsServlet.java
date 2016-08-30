@@ -8,17 +8,22 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
-import com.yahoo.bard.webservice.data.HttpResponseChannel;
-import com.yahoo.bard.webservice.data.HttpResponseMaker;
-import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
-import com.yahoo.bard.webservice.async.jobs.stores.ApiJobStore;
+import com.yahoo.bard.webservice.async.ResponseException;
 import com.yahoo.bard.webservice.async.broadcastchannels.BroadcastChannel;
 import com.yahoo.bard.webservice.async.jobs.payloads.JobPayloadBuilder;
+import com.yahoo.bard.webservice.async.jobs.stores.ApiJobStore;
 import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore;
-import com.yahoo.bard.webservice.async.ResponseException;
+import com.yahoo.bard.webservice.data.HttpResponseChannel;
+import com.yahoo.bard.webservice.data.HttpResponseMaker;
+import com.yahoo.bard.webservice.data.Result;
+import com.yahoo.bard.webservice.data.ResultSet;
+import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.JobRequest;
 import com.yahoo.bard.webservice.util.AllPagesPagination;
+import com.yahoo.bard.webservice.util.Pagination;
+import com.yahoo.bard.webservice.util.StreamUtils;
+import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.bard.webservice.web.ApiRequest;
 import com.yahoo.bard.webservice.web.JobNotFoundException;
 import com.yahoo.bard.webservice.web.JobsApiRequest;
@@ -29,11 +34,15 @@ import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.handlers.RequestHandlerUtils;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys;
+import com.yahoo.bard.webservice.web.util.PaginationLink;
+import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,8 +50,12 @@ import rx.Observable;
 import rx.exceptions.Exceptions;
 
 import java.io.IOException;
+import java.net.URI;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 import javax.inject.Inject;
@@ -402,7 +415,12 @@ public class JobsServlet extends EndpointServlet {
     ) {
         HttpResponseMaker httpResponseMaker = new HttpResponseMaker(objectMappers, dimensionDictionary);
 
-        preResponseObservable.flatMap(this::handlePreResponseWithError)
+        preResponseObservable
+                .flatMap(preResponse -> handlePreResponseWithError(
+                        preResponse,
+                        apiRequest.getUriInfo(),
+                        apiRequest.getPaginationParameters()
+                ))
                 .subscribe(
                         new HttpResponseChannel(
                                 asyncResponse,
@@ -418,11 +436,16 @@ public class JobsServlet extends EndpointServlet {
      * return an Observable wrapping the PreResponse as is.
      *
      * @param preResponse  The PreResponse to be inspected
+     * @param uriInfo  uriInfo object to get uriBuilder
+     * @param paginationParameters  user's requested pagination parameters
      *
      * @return An Observable wrapping the PreResponse or an Observable wrapping a ResponseException
-     *
      */
-    protected Observable<PreResponse> handlePreResponseWithError(PreResponse preResponse) {
+    protected Observable<PreResponse> handlePreResponseWithError(
+            PreResponse preResponse,
+            UriInfo uriInfo,
+            Optional<PaginationParameters> paginationParameters
+    ) {
         ResponseContext responseContext = preResponse.getResponseContext();
 
         if (responseContext.containsKey(ResponseContextKeys.STATUS.getName())) {
@@ -434,7 +457,44 @@ public class JobsServlet extends EndpointServlet {
             );
             return Observable.error(responseException);
         }
-        return Observable.just(preResponse);
+
+        return paginationParameters
+                .map(pageParams -> new AllPagesPagination<>(preResponse.getResultSet(), pageParams))
+                .map(page -> new PreResponse(
+                        new ResultSet(page.getPageOfData(), preResponse.getResultSet().getSchema()),
+                        addPaginationInfoToResponseContext(responseContext, uriInfo, page)
+                ))
+                .map(Observable::just)
+                .orElse(Observable.just(preResponse));
+    }
+
+    /**
+     * Add pagination details to ResponseContext.
+     *
+     * @param responseContext  ResponseContext object contains all the meta info of the resultSet
+     * @param uriInfo  uriInfo object to get uriBuilder
+     * @param pages  Paginated resultSet
+     *
+     * @return Updated ResponseContext contains pagination info
+     */
+    protected ResponseContext addPaginationInfoToResponseContext(
+            ResponseContext responseContext,
+            UriInfo uriInfo,
+            Pagination<Result> pages
+    ) {
+        LinkedHashMap<String, URI> bodyLinks = Arrays.stream(PaginationLink.values())
+                .map(link -> new ImmutablePair<>(link.getBodyName(), link.getPage(pages)))
+                .filter(pair -> pair.getRight().isPresent())
+                .map(pair -> Utils.withRight(pair, pair.getRight().getAsInt()))
+                .map(pair -> Utils.withRight(
+                        pair,
+                        uriInfo.getRequestUriBuilder().replaceQueryParam("page", pair.getRight()))
+                )
+                .map(pair -> Utils.withRight(pair, pair.getRight().build()))
+                .collect(StreamUtils.toLinkedMap(Pair::getLeft, Pair::getRight));
+        responseContext.put(ResponseContextKeys.PAGINATION_LINKS_CONTEXT_KEY.getName(), bodyLinks);
+        responseContext.put(ResponseContextKeys.PAGINATION_CONTEXT_KEY.getName(), pages);
+        return responseContext;
     }
 
     /**
@@ -467,7 +527,7 @@ public class JobsServlet extends EndpointServlet {
 
         LOG.error(throwable.getMessage());
         RequestLog.stopTiming(this);
-        //Incase the job cannot be retrieved from the ApiJobStore or if it cannot be mapped to a Job
+        //In case the job cannot be retrieved from the ApiJobStore or if it cannot be mapped to a Job
         return Response.status(INTERNAL_SERVER_ERROR).entity(throwable.getMessage()).build();
     }
 }

@@ -15,6 +15,7 @@ class JobRowFilterSpec extends Specification {
     def "Good ApiJobStore filter query #jobField-#op#values parses correctly"() {
         given:
         String query = "$jobField-$op$values"
+        int a = 0
 
         when:
         JobRowFilter jobRowFilter = new JobRowFilter(query)

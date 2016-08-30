@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -219,5 +221,21 @@ public class Utils {
     @SuppressWarnings("unchecked")
     public static <T extends Comparable> T getMinValue(T one, T two) {
         return one.compareTo(two) < 1 ? one : two;
+    }
+
+    /**
+     * Given an ImmutablePair, and a right value, returns a new ImmutablePair with the same left value,
+     * and the specified right value.
+     *
+     * @param pair  Immutable Pair instance
+     * @param right  The right value, may be null
+     * @param <T>  Left type of the pair
+     * @param <U>  Right type of the pair
+     * @param <V>  The right value to have new Immutable Pair
+     *
+     * @return New instance of Immutable Pair
+     */
+    public static <T, U, V> ImmutablePair<T, V> withRight(ImmutablePair<T, U> pair, V right) {
+        return new ImmutablePair<>(pair.getLeft(), right);
     }
 }
