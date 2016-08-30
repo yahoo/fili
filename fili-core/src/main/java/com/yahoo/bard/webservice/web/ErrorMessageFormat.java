@@ -121,8 +121,6 @@ public enum ErrorMessageFormat implements MessageFormatter {
     UNABLE_TO_SERIALIZE("Unable to serialize the % object"),
     METRIC_VALUE_CLASS_NOT_FOUND("Metric value type class %s is not found"),
 
-    INVALID_YCA_CERTIFICATE("Invalid yca certificate: %s"),
-
     UNAUTHORIZED_WITH_RETRY("Not authorized to access the resource for given id %s. Retrying again %s more times"),
     UNAUTHORIZED("Not authorized to access the resource for given id %s."),
     RESOURCE_NOT_FOUND("Resource for the given id %s does not exist"),
