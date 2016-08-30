@@ -98,7 +98,7 @@ public class DataApiRequest extends ApiRequest {
     private final Granularity granularity;
 
     private final Set<Dimension> dimensions;
-    private final LinkedHashMap<Dimension, Set<DimensionField>> perDimensionFields;
+    private final LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> perDimensionFields;
     private final Set<LogicalMetric> logicalMetrics;
     private final Set<Interval> intervals;
     private final Map<Dimension, Set<ApiFilter>> filters;
@@ -375,7 +375,7 @@ public class DataApiRequest extends ApiRequest {
             LogicalTable table,
             Granularity granularity,
             Set<Dimension> dimensions,
-            LinkedHashMap<Dimension, Set<DimensionField>> perDimensionFields,
+            LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> perDimensionFields,
             Set<LogicalMetric> logicalMetrics,
             Set<Interval> intervals,
             Map<Dimension, Set<ApiFilter>> filters,
@@ -466,7 +466,7 @@ public class DataApiRequest extends ApiRequest {
      * @return Set of dimension objects.
      * @throws BadApiRequestException if an invalid dimension is requested.
      */
-    protected Set<Dimension> generateDimensions(
+    protected LinkedHashSet<Dimension> generateDimensions(
             List<PathSegment> apiDimensions,
             DimensionDictionary dimensionDictionary
     ) throws BadApiRequestException {
@@ -482,7 +482,7 @@ public class DataApiRequest extends ApiRequest {
                 .collect(Collectors.toList());
 
         // set of dimension objects
-        Set<Dimension> generated = new LinkedHashSet<>();
+        LinkedHashSet<Dimension> generated = new LinkedHashSet<>();
         List<String> invalidDimensions = new ArrayList<>();
         for (String dimApiName : dimApiNames) {
             Dimension dimension = dimensionDictionary.findByApiName(dimApiName);
@@ -515,7 +515,7 @@ public class DataApiRequest extends ApiRequest {
      *
      * @return A map of dimension to requested dimension fields
      */
-    protected LinkedHashMap<Dimension, Set<DimensionField>> generateDimensionFields(
+    protected LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> generateDimensionFields(
             @NotNull List<PathSegment> apiDimensionPathSegments,
             @NotNull DimensionDictionary dimensionDictionary
     ) {
@@ -524,7 +524,10 @@ public class DataApiRequest extends ApiRequest {
                 .collect(Collectors.toMap(
                         pathSegment -> dimensionDictionary.findByApiName(pathSegment.getPath()),
                         pathSegment -> bindShowClause(pathSegment, dimensionDictionary),
-                        (Set<DimensionField> e, Set<DimensionField> i) -> { e.addAll(i); return e; },
+                        (LinkedHashSet<DimensionField> e, LinkedHashSet<DimensionField> i) -> {
+                            e.addAll(i);
+                            return e;
+                        },
                         LinkedHashMap::new
                 ));
     }
@@ -539,7 +542,10 @@ public class DataApiRequest extends ApiRequest {
      * @return the set of bound DimensionFields specified in the show clause
      * @throws BadApiRequestException if any of the specified fields are not valid for the dimension
      */
-    private Set<DimensionField> bindShowClause(PathSegment pathSegment, DimensionDictionary dimensionDictionary)
+    private LinkedHashSet<DimensionField> bindShowClause(
+            PathSegment pathSegment,
+            DimensionDictionary dimensionDictionary
+    )
             throws BadApiRequestException {
         Dimension dimension = dimensionDictionary.findByApiName(pathSegment.getPath());
         List<String> showFields = pathSegment.getMatrixParameters().entrySet().stream()
@@ -553,7 +559,7 @@ public class DataApiRequest extends ApiRequest {
             return dimension.getDimensionFields();
         } else if (showFields.size() == 1 && showFields.contains(DimensionFieldSpecifierKeywords.NONE.toString())) {
             // Show no fields
-            return Collections.emptySet();
+            return new LinkedHashSet<>();
         } else if (!showFields.isEmpty()) {
             // Show the requested fields
             return bindDimensionFields(dimension, showFields);
@@ -573,12 +579,12 @@ public class DataApiRequest extends ApiRequest {
      * @return the set of DimensionFields for the names
      * @throws BadApiRequestException if any of the names are not dimension fields on the dimension
      */
-    private Set<DimensionField> bindDimensionFields(Dimension dimension, List<String> showFields)
+    private LinkedHashSet<DimensionField> bindDimensionFields(Dimension dimension, List<String> showFields)
             throws BadApiRequestException {
         Map<String, DimensionField> dimensionNameToFieldMap = dimension.getDimensionFields().stream()
                 .collect(StreamUtils.toLinkedDictionary(DimensionField::getName));
 
-        Set<DimensionField> dimensionFields = new LinkedHashSet<>();
+        LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>();
         Set<String> invalidDimensionFields = new LinkedHashSet<>();
         for (String field : showFields) {
             if (dimensionNameToFieldMap.containsKey(field)) {
@@ -1163,7 +1169,7 @@ public class DataApiRequest extends ApiRequest {
         return new DataApiRequest(format, paginationParameters, uriInfo, builder, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, filters, filter, havings, having, sorts, count, topN, asyncAfter, timeZone, filterBuilder);
     }
 
-    public DataApiRequest withPerDimensionFields(LinkedHashMap<Dimension, Set<DimensionField>> perDimensionFields) {
+    public DataApiRequest withPerDimensionFields(LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> perDimensionFields) {
         return new DataApiRequest(format, paginationParameters, uriInfo, builder, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, filters, filter, havings, having, sorts, count, topN, asyncAfter, timeZone, filterBuilder);
     }
 
@@ -1238,7 +1244,7 @@ public class DataApiRequest extends ApiRequest {
         return this.dimensions;
     }
 
-    public LinkedHashMap<Dimension, Set<DimensionField>> getDimensionFields() {
+    public LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> getDimensionFields() {
         return this.perDimensionFields;
     }
 

@@ -6,11 +6,9 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.LinkedHashSet;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * A container to hold context information associated with a response.
@@ -21,14 +19,14 @@ public class ResponseContext extends LinkedHashMap<String, Serializable> {
      * A Map from Dimension to DimensionFields relevant for a given request. The combination of DimensionApiName and
      * DimensionFieldName helps uniquely identify a DimensionRow
      */
-    private final Map<Dimension, Set<DimensionField>> dimensionToDimensionFieldMap;
+    private final LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> dimensionToDimensionFieldMap;
 
     /**
      * Constructor.
      * Builds with an empty map of dimensions to dimension fields
      */
     public ResponseContext() {
-        dimensionToDimensionFieldMap = new HashMap<>();
+        dimensionToDimensionFieldMap = new LinkedHashMap<>();
     }
 
     /**
@@ -36,11 +34,11 @@ public class ResponseContext extends LinkedHashMap<String, Serializable> {
      *
      * @param dimensionToDimensionFieldMap  A Map from Dimension to DimensionFields relevant for a given request.
      */
-    public ResponseContext(Map<Dimension, Set<DimensionField>> dimensionToDimensionFieldMap) {
+    public ResponseContext(LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> dimensionToDimensionFieldMap) {
         this.dimensionToDimensionFieldMap = dimensionToDimensionFieldMap;
     }
 
-    public Map<Dimension, Set<DimensionField>> getDimensionToDimensionFieldMap() {
+    public LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> getDimensionToDimensionFieldMap() {
         return dimensionToDimensionFieldMap;
     }
 

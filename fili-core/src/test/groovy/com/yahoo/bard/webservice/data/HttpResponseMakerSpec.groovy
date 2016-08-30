@@ -93,8 +93,8 @@ class HttpResponseMakerSpec extends Specification {
                 httpResponseMaker
         )
 
-        responseContext.put(API_METRIC_COLUMN_NAMES.name, metricSet.collect {it.name} as Set)
-        responseContext.put(REQUESTED_API_DIMENSION_FIELDS.name, [dim1: [BardDimensionField.ID] as Set])
+        responseContext.put(API_METRIC_COLUMN_NAMES.name, metricSet.collect {it.name} as LinkedHashSet)
+        responseContext.put(REQUESTED_API_DIMENSION_FIELDS.name, [dim1: [BardDimensionField.ID] as LinkedHashSet])
     }
 
     def "buildResponse correctly builds a Response"() {

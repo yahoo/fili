@@ -57,7 +57,7 @@ public class Response {
 
     private final ResultSet resultSet;
     private final LinkedHashSet<MetricColumn> apiMetricColumns;
-    private final LinkedHashMap<Dimension, Set<DimensionField>> requestedApiDimensionFields;
+    private final LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> requestedApiDimensionFields;
     private final ResponseFormatType responseFormatType;
     private final SimplifiedIntervalList missingIntervals;
     private final SimplifiedIntervalList volatileIntervals;
@@ -81,8 +81,8 @@ public class Response {
      */
     public Response(
             ResultSet resultSet,
-            Set<String> apiMetricColumnNames,
-            LinkedHashMap<Dimension, Set<DimensionField>> requestedApiDimensionFields,
+            LinkedHashSet<String> apiMetricColumnNames,
+            LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> requestedApiDimensionFields,
             ResponseFormatType responseFormatType,
             SimplifiedIntervalList missingIntervals,
             SimplifiedIntervalList volatileIntervals,
@@ -132,7 +132,7 @@ public class Response {
                 resultSet,
                 apiRequest.getLogicalMetrics().stream()
                         .map(LogicalMetric::getName)
-                        .collect(Collectors.toSet()),
+                        .collect(Collectors.toCollection(LinkedHashSet<String>::new)),
                 apiRequest.getDimensionFields(),
                 apiRequest.getFormat(),
                 missingIntervals,
@@ -400,7 +400,7 @@ public class Response {
      *
      * @return the headers as a Stream
      */
-    private Stream<String> generateDimensionColumnHeaders(Map.Entry<Dimension, Set<DimensionField>> entry) {
+    private Stream<String> generateDimensionColumnHeaders(Map.Entry<Dimension, LinkedHashSet<DimensionField>> entry) {
         if (entry.getValue().isEmpty()) {
             return Stream.of(entry.getKey().getApiName());
         } else {

@@ -10,6 +10,7 @@ import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -46,7 +47,7 @@ public class AsyncUtils {
      * @return A PreResponse containing the error information that should be sent to the user
      */
     public static PreResponse buildErrorPreResponse(Throwable throwable) {
-        ResponseContext responseContext = new ResponseContext(Collections.emptyMap());
+        ResponseContext responseContext = new ResponseContext(new LinkedHashMap<>());
         if (throwable instanceof ResponseException) {
             ResponseException responseException = (ResponseException) throwable;
             responseContext.put(ResponseContextKeys.STATUS.getName(), responseException.getStatusCode());

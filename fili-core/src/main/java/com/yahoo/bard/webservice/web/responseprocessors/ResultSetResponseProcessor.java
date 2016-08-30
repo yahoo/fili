@@ -37,10 +37,10 @@ import org.slf4j.LoggerFactory;
 
 import rx.subjects.Subject;
 
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.core.Response.Status;
@@ -97,18 +97,18 @@ public class ResultSetResponseProcessor extends MappingResponseProcessor impleme
             ResultSet resultSet = buildResultSet(json, druidQuery, apiRequest.getTimeZone());
             resultSet = mapResultSet(resultSet);
 
-            HashSet<String> apiMetricColumnNames = apiRequest.getLogicalMetrics().stream()
+            LinkedHashSet<String> apiMetricColumnNames = apiRequest.getLogicalMetrics().stream()
                     .map(LogicalMetric::getName)
-                    .collect(Collectors.toCollection(HashSet::new));
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
 
-            HashMap<String, Set<DimensionField>> requestedApiDimensionFields = apiRequest.getDimensionFields()
+            LinkedHashMap<String, HashSet<DimensionField>> requestedApiDimensionFields = apiRequest.getDimensionFields()
                     .entrySet().stream()
                     .collect(Collectors.toMap(
-                                    e -> e.getKey().getApiName(),
-                                    Map.Entry::getValue,
-                                    (fieldWithSameKey1, fieldWithSameKey2) -> fieldWithSameKey1,
-                                    HashMap::new
-                            ));
+                            e -> e.getKey().getApiName(),
+                            Map.Entry::getValue,
+                            (fieldWithSameKey1, fieldWithSameKey2) -> fieldWithSameKey1,
+                            LinkedHashMap::new
+                    ));
 
             responseContext.put(API_METRIC_COLUMN_NAMES.getName(), apiMetricColumnNames);
             responseContext.put(HEADERS.getName(), headers);

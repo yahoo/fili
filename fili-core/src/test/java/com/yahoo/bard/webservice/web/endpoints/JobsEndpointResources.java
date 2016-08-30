@@ -26,7 +26,8 @@ import org.joda.time.DateTimeZone;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -88,13 +89,13 @@ public class JobsEndpointResources {
         results.add(result);
         ResultSet resultSet = new ResultSet(results, schema);
 
-        HashSet<String> apiMetricColumnNames = new HashSet<>();
+        LinkedHashSet<String> apiMetricColumnNames = new LinkedHashSet<>();
         apiMetricColumnNames.add("pageViews");
 
         ResponseContext responseContext = new ResponseContext();
         responseContext.put("headers", new MultivaluedHashMap<>());
         responseContext.put("apiMetricColumnNames", apiMetricColumnNames);
-        responseContext.put("requestedApiDimensionFields", new HashMap<>());
+        responseContext.put("requestedApiDimensionFields", new LinkedHashMap<>());
 
         PreResponse preResponse = new PreResponse(resultSet, responseContext);
         preResponseStore.save("ticket1", preResponse);

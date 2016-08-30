@@ -25,10 +25,9 @@ import com.yahoo.bard.webservice.web.util.ResponseFormat;
 
 import java.net.URI;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.inject.Singleton;
@@ -122,23 +121,26 @@ public class HttpResponseMaker {
             responseFormatType = ResponseFormatType.JSON;
         }
 
-        HashMap<String, Set<DimensionField>> dimensionToDimensionFieldMap =
-                (HashMap<String, Set<DimensionField>>) responseContext.get(REQUESTED_API_DIMENSION_FIELDS.getName());
+        LinkedHashMap<String, LinkedHashSet<DimensionField>> dimensionToDimensionFieldMap =
+                (LinkedHashMap<String, LinkedHashSet<DimensionField>>) responseContext.get(
+                        REQUESTED_API_DIMENSION_FIELDS.getName());
 
 
-        LinkedHashMap<Dimension, Set<DimensionField>> requestedApiDimensionFields = dimensionToDimensionFieldMap
-                .entrySet()
-                .stream()
-                .collect(Collectors.toMap(
-                        e -> dimensionDictionary.findByApiName(e.getKey()),
-                        Map.Entry::getValue,
-                        (value1, value2) -> value1, // We won't have any collisions, so just take the first value
-                        LinkedHashMap::new
-                ));
+        LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> requestedApiDimensionFields =
+                dimensionToDimensionFieldMap
+                        .entrySet()
+                        .stream()
+                        .collect(Collectors.toMap(
+                                e -> dimensionDictionary.findByApiName(e.getKey()),
+                                Map.Entry::getValue,
+                                (value1, value2) -> value1,
+                                // We won't have any collisions, so just take the first value
+                                LinkedHashMap::new
+                        ));
 
         Response response = new Response(
                 resultSet,
-                (Set<String>) responseContext.get(API_METRIC_COLUMN_NAMES.getName()),
+                (LinkedHashSet<String>) responseContext.get(API_METRIC_COLUMN_NAMES.getName()),
                 requestedApiDimensionFields,
                 responseFormatType,
                 getPartialIntervalsWithDefault(responseContext),
