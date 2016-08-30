@@ -2,11 +2,11 @@
 // Licensed under the terms of the Apache license. Please see LICENSE file distributed with this work for terms.
 package com.yahoo.bard.webservice.web;
 
-import com.yahoo.bard.webservice.jobs.ApiJobStore;
-import com.yahoo.bard.webservice.jobs.BroadcastChannel;
-import com.yahoo.bard.webservice.jobs.JobPayloadBuilder;
-import com.yahoo.bard.webservice.jobs.JobRow;
-import com.yahoo.bard.webservice.jobs.PreResponseStore;
+import com.yahoo.bard.webservice.async.jobs.stores.ApiJobStore;
+import com.yahoo.bard.webservice.async.broadcastchannels.BroadcastChannel;
+import com.yahoo.bard.webservice.async.jobs.payloads.JobPayloadBuilder;
+import com.yahoo.bard.webservice.async.jobs.jobrows.JobRow;
+import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,7 +68,7 @@ public class JobsApiRequest extends ApiRequest {
     }
 
     /**
-     * Return an Observable over the Map representing the job to be returned to the user.
+     * Returns an Observable over the Map representing the job to be returned to the user.
      *
      * @param ticket  The ticket that uniquely identifies the job
      *
@@ -112,9 +112,9 @@ public class JobsApiRequest extends ApiRequest {
     }
 
     /**
-     * Return an Observable containing a stream of job payloads for all the jobs in the ApiJobStore. If, for any JobRow,
-     * the mapping from JobRow to job view fails, an Observable over JobRequestFailedException is returned.
-     * If the ApiJobStore is empty, we return an empty Observable.
+     * Returns an Observable containing a stream of job payloads for all the jobs in the ApiJobStore. If, for any
+     * JobRow, the mapping from JobRow to job view fails, an Observable over JobRequestFailedException is returned. If
+     * the ApiJobStore is empty, we return an empty Observable.
      *
      * @return An Observable containing a stream of Maps representing the job to be returned to the user
      */

@@ -4,14 +4,13 @@ package com.yahoo.bard.webservice.web.endpoints
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
-import com.yahoo.bard.webservice.jobs.ApiJobStore
-import com.yahoo.bard.webservice.jobs.BroadcastChannel
-import com.yahoo.bard.webservice.jobs.HashPreResponseStore
-import com.yahoo.bard.webservice.jobs.JobPayloadBuilder
-import com.yahoo.bard.webservice.jobs.PreResponseStore
-import com.yahoo.bard.webservice.jobs.PreResponseTestingUtils
-import com.yahoo.bard.webservice.jobs.SimpleBroadcastChannel
-import com.yahoo.bard.webservice.web.ApiRequest
+import com.yahoo.bard.webservice.async.jobs.stores.ApiJobStore
+import com.yahoo.bard.webservice.async.broadcastchannels.BroadcastChannel
+import com.yahoo.bard.webservice.async.preresponses.stores.HashPreResponseStore
+import com.yahoo.bard.webservice.async.jobs.payloads.JobPayloadBuilder
+import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore
+import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseTestingUtils
+import com.yahoo.bard.webservice.async.broadcastchannels.SimpleBroadcastChannel
 import com.yahoo.bard.webservice.web.JobsApiRequest
 import com.yahoo.bard.webservice.web.PreResponse
 import com.yahoo.bard.webservice.web.RequestMapper

@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE file distributed with this work for terms.
 package com.yahoo.bard.webservice.util
 
-import com.yahoo.bard.webservice.jobs.JobRow
+import com.yahoo.bard.webservice.async.jobs.jobrows.JobRow
 
 import org.joda.time.DateTimeZone
 

@@ -22,13 +22,13 @@ import com.yahoo.bard.webservice.data.metric.TemplateDruidQueryMerger;
 import com.yahoo.bard.webservice.data.time.GranularityParser;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
-import com.yahoo.bard.webservice.jobs.AsynchronousWorkflowsBuilder;
-import com.yahoo.bard.webservice.jobs.AsynchronousWorkflows;
-import com.yahoo.bard.webservice.jobs.BroadcastChannel;
-import com.yahoo.bard.webservice.jobs.JobPayloadBuilder;
-import com.yahoo.bard.webservice.jobs.JobRow;
-import com.yahoo.bard.webservice.jobs.JobRowBuilder;
-import com.yahoo.bard.webservice.jobs.MetadataHttpResponseChannel;
+import com.yahoo.bard.webservice.async.workflows.AsynchronousWorkflowsBuilder;
+import com.yahoo.bard.webservice.async.workflows.AsynchronousWorkflows;
+import com.yahoo.bard.webservice.async.broadcastchannels.BroadcastChannel;
+import com.yahoo.bard.webservice.async.jobs.payloads.JobPayloadBuilder;
+import com.yahoo.bard.webservice.async.jobs.jobrows.JobRow;
+import com.yahoo.bard.webservice.async.jobs.jobrows.JobRowBuilder;
+import com.yahoo.bard.webservice.async.MetadataHttpResponseChannel;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
 import com.yahoo.bard.webservice.logging.blocks.DataRequest;
@@ -134,7 +134,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
      * @param asynchronousWorkflowsBuilder  The factory for building the asynchronous workflow
      * @param preResponseStoredNotifications  The broadcast channel responsible for notifying other Bard prcesses
      * that a query has been completed and its results stored in the
-     * {@link com.yahoo.bard.webservice.jobs.PreResponseStore}
+     * {@link com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore}
      */
     @Inject
     public DataServlet(

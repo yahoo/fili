@@ -2,19 +2,19 @@
 // Licensed under the terms of the Apache license. Please see LICENSE file distributed with this work for terms.
 package com.yahoo.bard.webservice.web
 
-import com.yahoo.bard.webservice.jobs.ApiJobStore
-import com.yahoo.bard.webservice.jobs.BroadcastChannel
-import com.yahoo.bard.webservice.jobs.DefaultJobField
-import com.yahoo.bard.webservice.jobs.DefaultJobPayloadBuilder
-import com.yahoo.bard.webservice.jobs.HashJobStore
-import com.yahoo.bard.webservice.jobs.HashPreResponseStore
-import com.yahoo.bard.webservice.jobs.JobField
-import com.yahoo.bard.webservice.jobs.JobRow
-import com.yahoo.bard.webservice.jobs.JobPayloadBuilder
-import com.yahoo.bard.webservice.jobs.PreResponseStore
-import com.yahoo.bard.webservice.jobs.PreResponseTestingUtils
-import com.yahoo.bard.webservice.jobs.SimpleBroadcastChannel
 import com.yahoo.bard.webservice.util.ReactiveTestUtils
+import com.yahoo.bard.webservice.async.jobs.stores.ApiJobStore
+import com.yahoo.bard.webservice.async.broadcastchannels.BroadcastChannel
+import com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField
+import com.yahoo.bard.webservice.async.jobs.payloads.DefaultJobPayloadBuilder
+import com.yahoo.bard.webservice.async.jobs.stores.HashJobStore
+import com.yahoo.bard.webservice.async.preresponses.stores.HashPreResponseStore
+import com.yahoo.bard.webservice.async.jobs.jobrows.JobField
+import com.yahoo.bard.webservice.async.jobs.jobrows.JobRow
+import com.yahoo.bard.webservice.async.jobs.payloads.JobPayloadBuilder
+import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore
+import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseTestingUtils
+import com.yahoo.bard.webservice.async.broadcastchannels.SimpleBroadcastChannel
 
 import rx.Observable
 import rx.observers.TestSubscriber

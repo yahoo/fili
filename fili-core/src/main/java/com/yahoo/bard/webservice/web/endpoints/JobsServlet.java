@@ -13,11 +13,11 @@ import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.HttpResponseChannel;
 import com.yahoo.bard.webservice.data.HttpResponseMaker;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
-import com.yahoo.bard.webservice.jobs.ApiJobStore;
-import com.yahoo.bard.webservice.jobs.BroadcastChannel;
-import com.yahoo.bard.webservice.jobs.JobPayloadBuilder;
-import com.yahoo.bard.webservice.jobs.PreResponseStore;
-import com.yahoo.bard.webservice.jobs.ResponseException;
+import com.yahoo.bard.webservice.async.jobs.stores.ApiJobStore;
+import com.yahoo.bard.webservice.async.broadcastchannels.BroadcastChannel;
+import com.yahoo.bard.webservice.async.jobs.payloads.JobPayloadBuilder;
+import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore;
+import com.yahoo.bard.webservice.async.ResponseException;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.JobRequest;
 import com.yahoo.bard.webservice.util.AllPagesPagination;
@@ -238,7 +238,7 @@ public class JobsServlet extends EndpointServlet {
     }
 
     /**
-     * Endpoint to get a particular jobs result.
+     * Endpoint to get a particular job's result.
      *
      * @param ticket  The ticket that can uniquely identify a Job
      * @param format  Requested format of the response

@@ -9,7 +9,7 @@ import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
-import com.yahoo.bard.webservice.jobs.ResponseException;
+import com.yahoo.bard.webservice.async.ResponseException;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 
 import rx.subjects.Subject;

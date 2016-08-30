@@ -4,7 +4,7 @@ package com.yahoo.bard.webservice.data;
 
 import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.RESPONSE_WORKFLOW_TIMER;
 
-import com.yahoo.bard.webservice.jobs.ResponseException;
+import com.yahoo.bard.webservice.async.ResponseException;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.PreResponse;

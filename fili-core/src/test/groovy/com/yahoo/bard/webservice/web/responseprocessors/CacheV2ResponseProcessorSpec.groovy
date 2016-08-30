@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.responseprocessors
 
-import static com.yahoo.bard.webservice.jobs.ResponseContextUtils.createResponseContext
+import static com.yahoo.bard.webservice.async.ResponseContextUtils.createResponseContext
 import static com.yahoo.bard.webservice.util.SimplifiedIntervalList.NO_INTERVALS
 import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys.MISSING_INTERVALS_CONTEXT_KEY
 import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys.VOLATILE_INTERVALS_CONTEXT_KEY
