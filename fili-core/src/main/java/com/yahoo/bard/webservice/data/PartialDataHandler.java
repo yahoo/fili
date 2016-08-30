@@ -67,7 +67,6 @@ public class PartialDataHandler {
 
     /**
      * Find the holes in the passed in intervals at a given granularity.
-     * <p>
      * <pre>
      * Interval with grain         : |--------|--------|--------|--------|--------|--------|--------|--------|
      * Dim1 intervals:               |-------------|            |--------------------------------------------|

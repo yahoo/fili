@@ -8,7 +8,6 @@ import rx.Observable;
 
 /**
  * A bean containing the Observables for each of the message flows needed to support asynchronous processing:
- * <p>
  * <ol>
  * <li> The flow that emits the results to be sent to the user if they are ready within the asynchronous timeout.
  * <li> The flow that emits the metadata payload to be sent to the user if the data response is not ready within the
