@@ -10,13 +10,10 @@ if [[ ${MATCHING_TAG} != "" ]]; then
     echo "Publishing, this is a tag event: ${TRAVIS_TAG}"
 
     echo "Maven versions set : "
-    mvn versions:set -DnewVersion=$(git describe)
+    mvn versions:set -DnewVersion=$(git describe) -DgenerateBackupPoms=false
 
     echo "Deploying: "
     mvn deploy --settings travis/bintray-settings.xml
-
-    echo "Reverting"
-    mvn versions:revert
     exit 0
 fi
 
