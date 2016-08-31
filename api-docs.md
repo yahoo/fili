@@ -27,6 +27,8 @@ Table of Contents
     - [Filtering](#filtering)
     - [Having](#having)
     - [Sorting](#sorting)
+- [Asynchronous Queries](#asynchronous-queries)
+    - [Jobs endpoint](#jobs-endpoint)
 - [Misc](#misc)
     - [Dates and Times](#dates-and-times)
     - [Case Sensitivity](#case-sensitivity)
@@ -561,6 +563,102 @@ There are, however, a few catches to this:
 - Sorting is only applied at the Druid level. Therefore, the results of a sort are not guaranteed to be accurate if Fili 
 performs any post-Druid calculations on one of the metrics that you are sorting on.
 
+Asynchronous Queries
+--------------------
+Fili supports asynchronous data queries. A new parameter `asyncAfter` is added on data queries. The `asyncAfter`
+parameter will control whether a data query should always be synchronous, or transition from synchronous to asynchronous
+ on the fly. If `asyncAfter=never` then Fili will wait indefinitely for the data, and hold the connection with the
+ client open as long as allowed by the network. This will be the default. However, the default behavior of `asyncAfter`
+ may be modified by setting the `default_asyncAfter` configuration parameter. If `asyncAfter=0`, the query is
+ asynchronous immediately.
+
+If it takes less time than the timeout for the data to be sent back, then the results are sent to the client.
+If `asyncAfter=t` for `t` an integer in milliseconds then the query will start synchronously. If the query takes longer
+than `t` milliseconds, then the query becomes asynchronous. If the timeout passes, and the data has not come back, then
+the user receives a `202 Accepted` response and the [job meta-data](#job-meta-data).
+
+### Jobs Endpoint
+The jobs endpoint is the one stop shop for queries about asynchronous jobs. This endpoint is responsible for:
+
+1. Providing a list of [all jobs](#get-ting-summary-of-all-jobs) in the system.
+2. Providing the status of a [particular job](#get-ting-job-status) queried via the `jobs/TICKET` resource.
+3. Providing access to the [results](#get-ting-results) via the `jobs/TICKET/results` resource.
+
+#### GET-ting summary of all jobs
+A user may get the status of all jobs by sending a `GET` to `jobs` endpoint.
+
+```
+https://HOST:PORT/v1/jobs
+```
+If no jobs are available in the system, an empty collection is returned.
+
+The `jobs` endpoint supports filtering on job fields (i.e. `userId`, `status`), using the same syntax as the
+[data endpoint filters](#filtering). For example:
+
+`userId-eq[greg, joan], status-eq[success]`
+
+resolves into the following boolean operation:
+
+`(userId = greg OR userId = joan) AND status = success`
+
+which will return only those Jobs created by `greg` and `joan` that have completed successfully.
+
+#### GET-ting Job Status
+When the user sends a `GET` request to `jobs/TICKET`, Fili will look up the specified ticket and return the job's
+meta-data as follows:
+
+###### Job meta-data
+```json
+{
+    "query": "https://HOST:PORT/v1/data/QUERY",
+    "results": "https://HOST:PORT/v1/jobs/TICKET/results",
+    "syncResults": "https://HOST:PORT/v1/jobs/TICKET/results?asyncAfter=never",
+    "self": "https://HOST:PORT/v1/jobs/TICKET",
+    "status": ONE OF ["pending", "success", "error"],
+    "jobTicket": "TICKET",
+    "dateCreated": "ISO 8601 DATETIME",
+    "dateUpdated": "ISO 8601 DATETIME",
+    "userId": "Foo"
+}
+```
+* `query` is the original query
+* `results` provides a link to the data, whether it is fully synchronous or switches from
+   synchronous to asynchronous after a timeout depends on the default setting of `asyncAfter`.
+* `syncResults` provides a synchronous link to the data (note the `asyncAfter=never` parameter)
+* `self` provides a link that returns the most up-to-date version of this job
+* `status` indicates the status of the results pointed to by this ticket
+    - `pending` - The job is being worked on
+    - `success` - The job has been completed successfully
+    - `error` - The job failed with an error
+    - `canceled` - The job was canceled by the user (coming soon)
+* `jobTicket` is a unique identifier for the job
+* `dateCreated` is the date on which the job was created
+* `dateUpdated` when the job's status was last updated
+* `userId` is an identifier for the user who submitted this job
+
+If the ticket is not available in the system, we get a 404 error with the message `No job found with job ticket TICKET`
+
+#### GET-ting Results
+The user may access the results of a query by sending a `GET` request to `jobs/TICKET/results`. This
+resource takes the following parameters:
+
+ 1. **`format`** - Allows the user to specify a response format, i.e. csv, or JSON. This behaves
+just like the [`format`](#response-format) parameter on queries sent to the `data` endpoint.
+
+2. **`page`, `perPage`** - The [pagination](#pagination--limit) parameters. Their behavior is the same as when sending
+a query to the `data` endpoint, and allow the user to get pages of the results.
+
+3. **`asyncAfter`** - Allows the user to specify how long they are willing to wait for results from the
+result store. Behaves like the [`asyncAfter`](async) parameter on the `data` endpoint.
+
+If the results for the given ticket are ready, we get the results in the format specified. Otherwise, we get the
+[job's metadata](#job-meta-data).
+
+##### Long Polling
+If clients wish to long poll for the results, they may send a `GET` request to
+`https://HOST:PORT/v1/jobs/TICKET/results?asyncAfter=never` (the query linked to under the
+`syncResults` field in the async response). This request will perform like a synchronous query: Fili
+will not send a response until all of the data is ready.
 
 Misc
 ----
