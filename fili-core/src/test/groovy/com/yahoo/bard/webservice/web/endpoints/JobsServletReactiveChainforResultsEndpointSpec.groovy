@@ -162,7 +162,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
 
         and: "We start the async chain"
         mockJobServlet.getPreResponseObservable("ticket4", apiRequest1)
-        Thread.sleep(7)
+        Thread.sleep(1000)
 
         then: "then we go to the PreResponseStore exactly once to get the ticket"
         1 * mockPreResponseStore.get(_) >> Observable.just(Mock(PreResponse))
@@ -178,7 +178,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
         and: "We start the async chain"
         mockJobServlet.getPreResponseObservable("ticket4", apiRequest1)
         //The delay is to ensure that we get the notification after async timeout
-        Thread.sleep(5)
+        Thread.sleep(1000)
 
         and: "We receive the notification after async timeout"
         broadcastChannel.publish("ticket4")
@@ -212,7 +212,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
         mockJobServlet.getPreResponseObservable("ticket4", apiRequest1)
 
         and: "PreResponse then becomes available in the PreResponsestore after some delay"
-        Thread.sleep(100)
+        Thread.sleep(1000)
         mockPreResponseStore.save("ticket4", PreResponseTestingUtils.buildPreResponse("2016-04-24")).subscribe()
 
         and: "We receive the notification before the async timeout"
