@@ -5,6 +5,10 @@ language: java
 jdk:
 - oraclejdk8
 
+branches:
+  except:
+  - master
+
 addons:
   apt:
     packages:
@@ -34,7 +38,7 @@ before_script:
 - echo "PR ${TRAVIS_PULL_REQUEST} and TAG '${TRAVIS_TAG}' Branch ${TRAVIS_BRANCH}"
 
 script:
-- travis/deploy.bash
+- travis/script.bash
 
 after_success:
 - echo "Success."
