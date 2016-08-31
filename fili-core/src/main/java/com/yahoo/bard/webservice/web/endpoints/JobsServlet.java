@@ -8,8 +8,6 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
-import com.yahoo.bard.webservice.config.SystemConfig;
-import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.HttpResponseChannel;
 import com.yahoo.bard.webservice.data.HttpResponseMaker;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
@@ -71,7 +69,6 @@ import javax.ws.rs.core.UriInfo;
 public class JobsServlet extends EndpointServlet {
 
     private static final Logger LOG = LoggerFactory.getLogger(JobsServlet.class);
-    private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     private final ApiJobStore apiJobStore;
     private final RequestMapper requestMapper;
@@ -118,6 +115,9 @@ public class JobsServlet extends EndpointServlet {
      * @param perPage  Requested number of rows of data to be displayed on each page of results
      * @param page  Requested page of results desired
      * @param format  Requested format
+     * @param filters  Filters to be applied on the JobRows. Expects a URL filter query String that may contain multiple
+     * filter strings separated by comma.  The format of a filter String is :
+     * (JobField name)-(operation)[(value or comma separated values)]?
      * @param uriInfo  UriInfo of the request
      * @param containerRequestContext  The context of data provided by the Jersey container for this request
      * @param asyncResponse  An asyncAfter response that we can use to respond asynchronously
@@ -128,6 +128,7 @@ public class JobsServlet extends EndpointServlet {
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @QueryParam("format") String format,
+            @QueryParam("filters") String filters,
             @Context UriInfo uriInfo,
             @Context ContainerRequestContext containerRequestContext,
             @Suspended AsyncResponse asyncResponse
@@ -138,9 +139,10 @@ public class JobsServlet extends EndpointServlet {
 
             JobsApiRequest apiRequest = new JobsApiRequest (
                     format,
-                    null, //asynAfter is null so it behaves like a synchronous request
+                    null, //asyncAfter is null so it behaves like a synchronous request
                     perPage,
                     page,
+                    filters,
                     uriInfo,
                     jobPayloadBuilder,
                     apiJobStore,
@@ -164,8 +166,7 @@ public class JobsServlet extends EndpointServlet {
                                     )
                     );
 
-            apiRequest.getJobViews()
-                    .toList()
+            apiRequest.getJobViews().toList()
                     .map(jobs -> jobsApiRequest.getPage(paginationFactory.apply(jobs)))
                     .map(result -> formatResponse(jobsApiRequest, result, "jobs", null))
                     .defaultIfEmpty(getResponse("{}"))
@@ -213,6 +214,7 @@ public class JobsServlet extends EndpointServlet {
                     null,
                     "",
                     "",
+                    null, //filter string is null
                     uriInfo,
                     jobPayloadBuilder,
                     apiJobStore,
@@ -272,6 +274,7 @@ public class JobsServlet extends EndpointServlet {
                     asyncAfter,
                     perPage,
                     page,
+                    null, // filter string is null
                     uriInfo,
                     jobPayloadBuilder,
                     apiJobStore,

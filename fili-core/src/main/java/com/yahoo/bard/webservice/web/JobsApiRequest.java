@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.async.jobs.stores.ApiJobStore;
 import com.yahoo.bard.webservice.async.broadcastchannels.BroadcastChannel;
 import com.yahoo.bard.webservice.async.jobs.payloads.JobPayloadBuilder;
 import com.yahoo.bard.webservice.async.jobs.jobrows.JobRow;
+import com.yahoo.bard.webservice.async.jobs.stores.JobRowFilter;
 import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore;
 
 import org.slf4j.Logger;
@@ -14,8 +15,11 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 import rx.observables.ConnectableObservable;
 
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.UriInfo;
@@ -32,6 +36,7 @@ public class JobsApiRequest extends ApiRequest {
     private final ApiJobStore apiJobStore;
     private final PreResponseStore preResponseStore;
     private final BroadcastChannel<String> broadcastChannel;
+    private final String filters;
 
     /**
      * Parses the API request URL and generates the Api Request object.
@@ -42,6 +47,10 @@ public class JobsApiRequest extends ApiRequest {
      * must be a positive integer. If not present, must be the empty string.
      * @param page  desired page of results. If present in the original request, must be a positive
      * integer. If not present, must be the empty string.
+     * @param filters  URL filter query String in the format:
+     * <pre>{@code
+     * ((field name and operation):((multiple values bounded by [])or(single value))))(followed by , or end of string)
+     * }</pre>
      * @param uriInfo  The URI of the request object.
      * @param jobPayloadBuilder  The JobRowMapper to be used to map JobRow to the Job returned by the api
      * @param apiJobStore  The ApiJobStore containing Job metadata
@@ -54,6 +63,7 @@ public class JobsApiRequest extends ApiRequest {
             String asyncAfter,
             @NotNull String perPage,
             @NotNull String page,
+            String filters,
             UriInfo uriInfo,
             JobPayloadBuilder jobPayloadBuilder,
             ApiJobStore apiJobStore,
@@ -65,6 +75,7 @@ public class JobsApiRequest extends ApiRequest {
         this.apiJobStore = apiJobStore;
         this.preResponseStore = preResponseStore;
         this.broadcastChannel = broadcastChannel;
+        this.filters = filters;
     }
 
     /**
@@ -112,15 +123,44 @@ public class JobsApiRequest extends ApiRequest {
     }
 
     /**
-     * Returns an Observable containing a stream of job payloads for all the jobs in the ApiJobStore. If, for any
-     * JobRow, the mapping from JobRow to job view fails, an Observable over JobRequestFailedException is returned. If
-     * the ApiJobStore is empty, we return an empty Observable.
+     * Return an Observable containing a stream of job views for jobs in the ApiJobStore. If filter String is non null
+     * and non empty, only return results that satisfy the filter. If filter String is null or empty, return all rows.
+     * If, for any JobRow, the mapping from JobRow to job view fails, an Observable over JobRequestFailedException is
+     * returned. If the ApiJobStore is empty, we return an empty Observable.
      *
      * @return An Observable containing a stream of Maps representing the job to be returned to the user
      */
     public Observable<Map<String, String>> getJobViews() {
-        return apiJobStore.getAllRows()
-                .map(this::mapJobRowsToJobViews);
+        if (filters == null || "".equals(filters)) {
+            return apiJobStore.getAllRows().map(this::mapJobRowsToJobViews);
+        } else {
+            return apiJobStore.getFilteredRows(buildJobStoreFilter(filters)).map(this::mapJobRowsToJobViews);
+        }
+    }
+
+    /**
+     * Given a filter String, generates a Set of ApiJobStoreFilters. This method will throw a BadApiRequestException if
+     * the filter String cannot be parsed into ApiJobStoreFilters successfully.
+     *
+     * @param filterQuery  Expects a URL filterQuery String that may contain multiple filters separated by
+     * comma.  The format of a filter String is :
+     * (JobField name)-(operation)[(value or comma separated values)]?
+     *
+     * @return  A Set of ApiJobStoreFilters
+     */
+    public LinkedHashSet<JobRowFilter> buildJobStoreFilter(@NotNull String filterQuery) {
+        // split on '],' to get list of filters
+        return Arrays.stream(filterQuery.split(COMMA_AFTER_BRACKET_PATTERN))
+                .map(
+                        filter -> {
+                            try {
+                                return new JobRowFilter(filter);
+                            } catch (BadFilterException e) {
+                                throw new BadApiRequestException(e.getMessage(), e);
+                            }
+                        }
+                )
+                .collect(Collectors.toCollection(LinkedHashSet<JobRowFilter>::new));
     }
 
     /**
@@ -134,7 +174,7 @@ public class JobsApiRequest extends ApiRequest {
     private Map<String, String> mapJobRowsToJobViews(JobRow jobRow) {
         try {
             return jobPayloadBuilder.buildPayload(jobRow, uriInfo);
-        } catch (JobRequestFailedException e) {
+        } catch (JobRequestFailedException ignored) {
             String msg = ErrorMessageFormat.JOBS_RETREIVAL_FAILED.format(jobRow.getId());
             LOG.error(msg);
             throw new JobRequestFailedException(msg);

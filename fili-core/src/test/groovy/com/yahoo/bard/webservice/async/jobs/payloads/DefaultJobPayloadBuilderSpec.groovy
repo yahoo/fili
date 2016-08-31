@@ -47,7 +47,8 @@ class DefaultJobPayloadBuilderSpec extends Specification {
                 self: "https://localhost:9998/v1/jobs/ticket1",
                 status: "success",
                 jobTicket: "ticket1",
-                dateCreated: "2016-01-01"
+                dateCreated: "2016-01-01",
+                userId: "momo"
         ]
 
         expect:

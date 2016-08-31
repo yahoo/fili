@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE file distributed with this work for terms.
 package com.yahoo.bard.webservice.web
 
+import com.yahoo.bard.webservice.async.jobs.JobTestUtils
+import com.yahoo.bard.webservice.async.jobs.stores.JobRowFilter
 import com.yahoo.bard.webservice.util.ReactiveTestUtils
 import com.yahoo.bard.webservice.async.jobs.stores.ApiJobStore
 import com.yahoo.bard.webservice.async.broadcastchannels.BroadcastChannel
@@ -34,6 +36,7 @@ class JobsApiRequestSpec extends Specification {
     ApiJobStore apiJobStore
     PreResponseStore preResponseStore
     PreResponse ticket1PreResponse
+    JobsApiRequest defaultJobsApiRequest
 
     def setup() {
         uriInfo = Mock(UriInfo)
@@ -69,35 +72,37 @@ class JobsApiRequestSpec extends Specification {
         ticket1PreResponse = PreResponseTestingUtils.buildPreResponse("2016-04-21")
 
         broadcastChannel = new SimpleBroadcastChannel<>(PublishSubject.create())
-    }
 
-    def "getJobViewObservable returns an Observable wrapping the job to be returned to the user"() {
-        setup:
-        TestSubscriber<Map<String, String>> getSubscriber = new TestSubscriber<>()
-        Map<String, String> job = [
-                query: "https://localhost:9998/v1/data/QUERY",
-                results: "https://localhost:9998/v1/jobs/ticket1/results",
-                syncResults: "https://localhost:9998/v1/jobs/ticket1/results?asyncAfter=never",
-                self: "https://localhost:9998/v1/jobs/ticket1",
-                status: "success",
-                jobTicket: "ticket1",
-                dateCreated: "2016-01-01"
-        ]
-
-        JobsApiRequest apiRequest = new JobsApiRequest(
+        defaultJobsApiRequest = new JobsApiRequest(
                 null,
                 null,
                 "",
                 "",
+                null,
                 uriInfo,
                 jobPayloadBuilder,
                 apiJobStore,
                 preResponseStore,
                 broadcastChannel
         )
+    }
+
+    def "getJobViewObservable returns an Observable wrapping the job to be returned to the user"() {
+        setup:
+        TestSubscriber<Map<String, String>> getSubscriber = new TestSubscriber<>()
+        Map<String, String> job = [
+                query : "https://localhost:9998/v1/data/QUERY",
+                results : "https://localhost:9998/v1/jobs/ticket1/results",
+                syncResults : "https://localhost:9998/v1/jobs/ticket1/results?asyncAfter=never",
+                self : "https://localhost:9998/v1/jobs/ticket1",
+                status : "success",
+                jobTicket : "ticket1",
+                dateCreated : "2016-01-01",
+                userId : "momo"
+        ]
 
         when:
-        apiRequest.getJobViewObservable("ticket1").subscribe(getSubscriber)
+        defaultJobsApiRequest.getJobViewObservable("ticket1").subscribe(getSubscriber)
 
         then:
         getSubscriber.assertReceivedOnNext([job])
@@ -106,20 +111,9 @@ class JobsApiRequestSpec extends Specification {
     def "getJobViewObservable results in onError being called on its observers if the job ticket does not exist in the ApiJobStore"() {
         setup:
         TestSubscriber<Map<String, String>> errorSubscriber = new TestSubscriber<>()
-        JobsApiRequest apiRequest = new JobsApiRequest(
-                null,
-                null,
-                "",
-                "",
-                uriInfo,
-                jobPayloadBuilder,
-                apiJobStore,
-                preResponseStore,
-                broadcastChannel
-        )
 
         when:
-        apiRequest.getJobViewObservable("IDontExist").subscribe(errorSubscriber)
+        defaultJobsApiRequest.getJobViewObservable("IDontExist").subscribe(errorSubscriber)
 
         then:
         errorSubscriber.assertError(JobNotFoundException.class)
@@ -129,20 +123,9 @@ class JobsApiRequestSpec extends Specification {
     def "handleBroadcastChannelNotification returns an Observable that replays notification if it was sent before async timeout"() {
         setup:
         TestSubscriber<PreResponse> testSubscriber = new TestSubscriber<>()
-        JobsApiRequest apiRequest = new JobsApiRequest(
-                null,
-                null,
-                "",
-                "",
-                uriInfo,
-                jobPayloadBuilder,
-                apiJobStore,
-                preResponseStore,
-                broadcastChannel
-        )
 
         when:
-        Observable<PreResponse> preResponseObservable = apiRequest.handleBroadcastChannelNotification("ticket1")
+        Observable<PreResponse> preResponseObservable = defaultJobsApiRequest.handleBroadcastChannelNotification("ticket1")
 
         broadcastChannel.publish("ticket1")
         preResponseObservable.subscribe(testSubscriber)
@@ -154,20 +137,9 @@ class JobsApiRequestSpec extends Specification {
     def "handleBroadcastChannelNotification returns an Observable that filters notifications and only returns a single notification for the given ticket"() {
         setup:
         TestSubscriber<PreResponse> testSubscriber = new TestSubscriber<>()
-        JobsApiRequest apiRequest = new JobsApiRequest(
-                null,
-                null,
-                "",
-                "",
-                uriInfo,
-                jobPayloadBuilder,
-                apiJobStore,
-                preResponseStore,
-                broadcastChannel
-        )
 
         when:
-        Observable<PreResponse> preResponseObservable = apiRequest.handleBroadcastChannelNotification("ticket1")
+        Observable<PreResponse> preResponseObservable = defaultJobsApiRequest.handleBroadcastChannelNotification("ticket1")
         broadcastChannel.publish("ticket_before_connecting_is_dropped")
         broadcastChannel.publish("ticket1")
         broadcastChannel.publish("ticket2")
@@ -186,6 +158,7 @@ class JobsApiRequestSpec extends Specification {
                 "0",
                 "",
                 "",
+                null,
                 uriInfo,
                 jobPayloadBuilder,
                 apiJobStore,
@@ -207,20 +180,9 @@ class JobsApiRequestSpec extends Specification {
     def "getJobViewObservable results in onError being called on it's observers if the JobRow cannot be correctly mapped to a Job payload"() {
         setup:
         TestSubscriber<Map<String, String>> errorSubscriber = new TestSubscriber<>()
-        JobsApiRequest apiRequest = new JobsApiRequest(
-                null,
-                null,
-                "",
-                "",
-                uriInfo,
-                jobPayloadBuilder,
-                apiJobStore,
-                preResponseStore,
-                broadcastChannel
-        )
 
         when:
-        apiRequest.getJobViewObservable("badTicket").subscribe(errorSubscriber)
+        defaultJobsApiRequest.getJobViewObservable("badTicket").subscribe(errorSubscriber)
 
         then:
         errorSubscriber.assertError(JobRequestFailedException.class)
@@ -230,11 +192,83 @@ class JobsApiRequestSpec extends Specification {
     def "getJobViews results in onError being called on it's observers if any of the JobRows in the ApiJobStore cannot be correctly mapped to a Job payload"() {
         setup:
         TestSubscriber<Map<String, String>> errorSubscriber = new TestSubscriber<>()
+
+        when:
+        defaultJobsApiRequest.getJobViews().subscribe(errorSubscriber)
+
+        then:
+        errorSubscriber.assertError(JobRequestFailedException.class)
+        errorSubscriber.getOnErrorEvents().get(0).getMessage() == "Jobs cannot be retrieved successfully due to internal error"
+    }
+
+    def "buildJobStoreFilter correctly parses a single filter query and returns ApiJobStoreFilter"() {
+        setup:
+        String filterQuery = "userId-eq[foo]"
+
+        when:
+        Set<JobRowFilter> filters = defaultJobsApiRequest.buildJobStoreFilter(filterQuery)
+
+        then:
+        filters.size() == 1
+        JobRowFilter filter = filters[0]
+        filter.jobField?.name == "userId"
+        filter.operation == FilterOperation.valueOf("eq")
+        filter.values == ["foo"] as Set
+    }
+
+    def "buildJobStoreFilter correctly parses multiple filter query"() {
+        setup:
+        String filterQuery = "userId-eq[foo],status-eq[success]"
+
+        when:
+        Set<JobRowFilter> filters = defaultJobsApiRequest.buildJobStoreFilter(filterQuery)
+
+        then:
+        filters.size() == 2
+
+        JobRowFilter filter1 = filters[0]
+        filter1.jobField?.name == "userId"
+        filter1.operation == FilterOperation.valueOf("eq")
+        filter1.values == ["foo"] as Set
+
+        JobRowFilter filter2 = filters[1]
+        filter2.jobField?.name == "status"
+        filter2.operation == FilterOperation.valueOf("eq")
+        filter2.values == ["success"] as Set
+    }
+
+    def "buildJobStoreFilter throws BadApiRequestException for bad filter query"() {
+        setup:
+        //Bad filter query without ApiJobStoreFilterOperation
+        String badFilterQuery = "userId[foo]"
+
+        when:
+        defaultJobsApiRequest.buildJobStoreFilter(badFilterQuery)
+
+        then:
+        BadApiRequestException exception = thrown()
+        exception.message == "Filter expression 'userId[foo]' is invalid."
+    }
+
+    def "getFilteredJobViews returns JobRows that satisfy the given filter"() {
+        setup:
+        TestSubscriber<JobRow> testSubscriber = new TestSubscriber<>()
+
+        HashJobStore apiJobStore = new HashJobStore()
+        JobRow userFooJobRow1 = JobTestUtils.buildJobRow(1)
+        JobRow userFooJobRow2 = JobTestUtils.buildJobRow(2)
+        JobRow userFooJobRow3 = JobTestUtils.buildJobRow(3)
+
+        apiJobStore.save(userFooJobRow1)
+        apiJobStore.save(userFooJobRow2)
+        apiJobStore.save(userFooJobRow3)
+
         JobsApiRequest apiRequest = new JobsApiRequest(
                 null,
                 null,
                 "",
                 "",
+                "userId-eq[Number 1,Number 2]",
                 uriInfo,
                 jobPayloadBuilder,
                 apiJobStore,
@@ -242,11 +276,32 @@ class JobsApiRequestSpec extends Specification {
                 broadcastChannel
         )
 
+        Map<String, String> jobPayload1 = [
+                jobTicket : "1",
+                query : "https://host:port/v1/data/table/grain?metrics=1",
+                results : "https://localhost:9998/v1/jobs/1/results",
+                syncResults : "https://localhost:9998/v1/jobs/1/results?asyncAfter=never",
+                self : "https://localhost:9998/v1/jobs/1",
+                status : "pending",
+                dateCreated : "0001-04-29T00:00:00.000Z",
+                userId : "Number 1"
+        ]
+
+        Map<String, String> jobPayload2 = [
+                jobTicket : "2",
+                query : "https://host:port/v1/data/table/grain?metrics=2",
+                results : "https://localhost:9998/v1/jobs/2/results",
+                syncResults : "https://localhost:9998/v1/jobs/2/results?asyncAfter=never",
+                self : "https://localhost:9998/v1/jobs/2",
+                status : "pending",
+                dateCreated : "0002-04-29T00:00:00.000Z",
+                userId : "Number 2"
+        ]
+
         when:
-        apiRequest.getJobViews().subscribe(errorSubscriber)
+        apiRequest.getJobViews().subscribe(testSubscriber)
 
         then:
-        errorSubscriber.assertError(JobRequestFailedException.class)
-        errorSubscriber.getOnErrorEvents().get(0).getMessage() == "Jobs cannot be retrieved successfully due to internal error"
+        testSubscriber.assertReceivedOnNext([jobPayload1, jobPayload2])
     }
 }

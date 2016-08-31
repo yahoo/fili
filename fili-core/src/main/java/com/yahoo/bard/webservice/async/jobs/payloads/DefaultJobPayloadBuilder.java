@@ -40,6 +40,7 @@ public class DefaultJobPayloadBuilder implements JobPayloadBuilder {
         job.put("status", fieldValueMap.get(DefaultJobField.STATUS.getName()));
         job.put("jobTicket", fieldValueMap.get(DefaultJobField.JOB_TICKET.getName()));
         job.put("dateCreated", fieldValueMap.get(DefaultJobField.DATE_CREATED.getName()));
+        job.put("userId", fieldValueMap.get(DefaultJobField.USER_ID.getName()));
 
         //throw exception if any of the JobFields are missing in the map
         if (job.containsValue(null)) {

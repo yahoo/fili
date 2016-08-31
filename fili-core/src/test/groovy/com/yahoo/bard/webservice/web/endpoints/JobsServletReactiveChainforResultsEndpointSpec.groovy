@@ -85,7 +85,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
     def "getPreResponseObservable returns a preResponseObservable if it is available in the PreResponseStore even if the notification for the ticket is missed"() {
         setup:
         TestSubscriber<PreResponse> testSubscriber = new TestSubscriber<>()
-        JobsApiRequest apiRequest = new JobsApiRequest(null, null, "", "", uriInfo, jobPayloadBuilder, apiJobStore, preResponseStore, broadcastChannel)
+        JobsApiRequest apiRequest = new JobsApiRequest(null, null, "", "", null, uriInfo, jobPayloadBuilder, apiJobStore, preResponseStore, broadcastChannel)
 
         when: "PreResponse is stored in the PreResponsestore and then a notification is fired by BroadcastChannel"
         preResponseStore.save("ticket0", PreResponseTestingUtils.buildPreResponse("2016-04-20")).toBlocking().first()
@@ -101,7 +101,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
     def "getPreResponseObservable returns a preResponseObservable if it is available in the PreResponseStore even if the notification for the ticket is not received before the async timeout"() {
         setup:
         TestSubscriber<PreResponse> testSubscriber = new TestSubscriber<>()
-        JobsApiRequest apiRequest = new JobsApiRequest(null, null, "", "", uriInfo, jobPayloadBuilder, apiJobStore, preResponseStore, broadcastChannel)
+        JobsApiRequest apiRequest = new JobsApiRequest(null, null, "", "", null, uriInfo, jobPayloadBuilder, apiJobStore, preResponseStore, broadcastChannel)
 
         when: "PreResponse is stored in the PreResponsestore"
         preResponseStore.save("ticket1", PreResponseTestingUtils.buildPreResponse("2016-04-21")).subscribe()
@@ -116,7 +116,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
     def "getPreResponseObservable returns a PreResponseObservable even if the PreResponse is not available in the PreResponseStore initially but a notification is received from the broadcastChannel before the async timeout"() {
         setup:
         TestSubscriber<PreResponse> testSubscriber = new TestSubscriber<>()
-        JobsApiRequest apiRequest = new JobsApiRequest(null, null, "", "", uriInfo, jobPayloadBuilder, apiJobStore, preResponseStore, broadcastChannel)
+        JobsApiRequest apiRequest = new JobsApiRequest(null, null, "", "", null, uriInfo, jobPayloadBuilder, apiJobStore, preResponseStore, broadcastChannel)
 
         when: "we start the async chain"
         jobsServlet.getPreResponseObservable("ticket2", apiRequest).subscribe(testSubscriber)
@@ -137,7 +137,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
     def "getPreResponseObservable returns an empty observable if the PreResponse is not available in the PreResponseStore before the async timeout"() {
         setup:
         TestSubscriber<PreResponse> testSubscriber = new TestSubscriber<>()
-        JobsApiRequest apiRequest = new JobsApiRequest(null, "5", "", "", uriInfo, jobPayloadBuilder, apiJobStore, preResponseStore, broadcastChannel)
+        JobsApiRequest apiRequest = new JobsApiRequest(null, "5", "", "", null, uriInfo, jobPayloadBuilder, apiJobStore, preResponseStore, broadcastChannel)
 
         when: "we start the async chain"
         jobsServlet.getPreResponseObservable("ticket3", apiRequest).subscribe(testSubscriber)
@@ -152,7 +152,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
 
     def "If the PreResponse is available in the PreResponseStore and we miss the notification from broadcastChannel, we go to the PreResponseStore exactly once"() {
         setup:
-        JobsApiRequest apiRequest1 = new JobsApiRequest(null, "5", "", "", uriInfo, jobPayloadBuilder, apiJobStore, mockPreResponseStore, broadcastChannel)
+        JobsApiRequest apiRequest1 = new JobsApiRequest(null, "5", "", "", null, uriInfo, jobPayloadBuilder, apiJobStore, mockPreResponseStore, broadcastChannel)
 
         when: "PreResponse is available in the PreResponseStore"
         mockPreResponseStore.save("ticket4", PreResponseTestingUtils.buildPreResponse("2016-04-24")).subscribe()
@@ -170,7 +170,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
 
     def "If the PreResponse is available in the PreResponsestore and the notification from broadcastChannel is not received within async timeout, we go to the PreResponseStore exactly once"() {
         setup:
-        JobsApiRequest apiRequest1 = new JobsApiRequest(null, "2", "", "", uriInfo, jobPayloadBuilder, apiJobStore, mockPreResponseStore, broadcastChannel)
+        JobsApiRequest apiRequest1 = new JobsApiRequest(null, "2", "", "", null, uriInfo, jobPayloadBuilder, apiJobStore, mockPreResponseStore, broadcastChannel)
 
         when: "PreResponse is available in the PreResponsestore"
         mockPreResponseStore.save("ticket4", PreResponseTestingUtils.buildPreResponse("2016-04-24")).subscribe()
@@ -189,7 +189,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
 
     def "If the PreResponse is available in the PreResponseStore and the notification from broadcastChannel is received within the async timeout, we go to the PreResponsestore twice"() {
         setup:
-        JobsApiRequest apiRequest1 = new JobsApiRequest(null, null, "", "", uriInfo, jobPayloadBuilder, apiJobStore, mockPreResponseStore, broadcastChannel)
+        JobsApiRequest apiRequest1 = new JobsApiRequest(null, null, "", "", null, uriInfo, jobPayloadBuilder, apiJobStore, mockPreResponseStore, broadcastChannel)
 
         when: "PreResponse is available in the PreResponsestore"
         mockPreResponseStore.save("ticket4", PreResponseTestingUtils.buildPreResponse("2016-04-24")).subscribe()
@@ -206,7 +206,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
 
     def "If the PreResponse is not available in the PreResponseStore initially and the notification from broadcastChannel is received within the async timeout, we go to the PreResponsestore twice"() {
         setup:
-        JobsApiRequest apiRequest1 = new JobsApiRequest(null, null, "", "", uriInfo, jobPayloadBuilder, apiJobStore, mockPreResponseStore, broadcastChannel)
+        JobsApiRequest apiRequest1 = new JobsApiRequest(null, null, "", "", null, uriInfo, jobPayloadBuilder, apiJobStore, mockPreResponseStore, broadcastChannel)
 
         when: "We start the async chain"
         mockJobServlet.getPreResponseObservable("ticket4", apiRequest1)

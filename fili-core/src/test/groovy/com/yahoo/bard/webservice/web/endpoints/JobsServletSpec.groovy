@@ -35,7 +35,8 @@ class JobsServletSpec extends Specification {
                 "self": "http://localhost:9998/jobs/ticket1",
                 "status": "success",
                 "jobTicket": "ticket1",
-                "dateCreated": "2016-01-01"
+                "dateCreated": "2016-01-01",
+                "userId": "momo"
         }"""
 
         when: "We send a request"
@@ -84,7 +85,8 @@ class JobsServletSpec extends Specification {
                 "self": "http://localhost:9998/jobs/ticket2",
                 "status": "pending",
                 "jobTicket": "ticket2",
-                "dateCreated": "2016-01-01"
+                "dateCreated": "2016-01-01",
+                "userId": "dodo"
         }"""
 
         when: "We send a request to the jobs/ticket2/results endpoint"
@@ -134,7 +136,8 @@ class JobsServletSpec extends Specification {
                                             "results":"http://localhost:9998/jobs/ticket1/results",
                                             "self":"http://localhost:9998/jobs/ticket1",
                                             "status":"success",
-                                            "syncResults":"http://localhost:9998/jobs/ticket1/results?asyncAfter=never"
+                                            "syncResults":"http://localhost:9998/jobs/ticket1/results?asyncAfter=never",
+                                            "userId": "momo"
                                         },
                                         {
                                             "dateCreated":"2016-01-01",
@@ -143,7 +146,8 @@ class JobsServletSpec extends Specification {
                                             "results":"http://localhost:9998/jobs/ticket2/results",
                                             "self":"http://localhost:9998/jobs/ticket2",
                                             "status":"pending",
-                                            "syncResults":"http://localhost:9998/jobs/ticket2/results?asyncAfter=never"
+                                            "syncResults":"http://localhost:9998/jobs/ticket2/results?asyncAfter=never",
+                                            "userId": "dodo"
                                         }
                                   ]}"""
 
@@ -153,6 +157,36 @@ class JobsServletSpec extends Specification {
 
         then: "what we expect"
         GroovyTestUtils.compareJson(result, expectedResponse, JsonSortStrategy.SORT_BOTH)
+    }
+
+    def "jobs endpoint returns filtered results when a valid filter is present"() {
+        setup:
+        String expectedResponse = """{"jobs":[
+                                        {
+                                            "dateCreated":"2016-01-01",
+                                            "jobTicket":"ticket1",
+                                            "query":"https://localhost:9998/v1/data/QUERY",
+                                            "results":"http://localhost:9998/jobs/ticket1/results",
+                                            "self":"http://localhost:9998/jobs/ticket1",
+                                            "status":"success",
+                                            "syncResults":"http://localhost:9998/jobs/ticket1/results?asyncAfter=never",
+                                            "userId": "momo"
+                                        }
+                                  ]}"""
+
+        when: "We send a request to the /jobs endpoint with a valid filters parameter"
+        String result = makeRequest("/jobs", [filters : ["userId-eq[momo]"]])
+
+        then: "We only get the job payload that satisfies the filter"
+        GroovyTestUtils.compareJson(result, expectedResponse)
+    }
+
+    def "jobs endpoint returns an empty list when none of the JobRows satisfy the filter"() {
+        when: "We send a request to the /jobs endpoint with a valid filters parameter"
+        String result = makeRequest("/jobs", [filters : ["userId-eq[pikachu]"]])
+
+        then: "We only get the job payload that satisfies the filter"
+        GroovyTestUtils.compareJson(result, '{"jobs":[]}')
     }
 
     String makeRequest(String target) {
