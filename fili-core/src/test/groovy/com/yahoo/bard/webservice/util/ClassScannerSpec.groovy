@@ -3,8 +3,12 @@
 package com.yahoo.bard.webservice.util
 
 import com.yahoo.bard.webservice.async.jobs.jobrows.JobRow
+import com.yahoo.bard.webservice.druid.model.aggregation.LongSumAggregation
 
+import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
+import org.joda.time.Days
+import org.joda.time.Interval
 
 import spock.lang.IgnoreIf
 import spock.lang.Shared
@@ -29,7 +33,15 @@ class ClassScannerSpec extends Specification {
 
     def setupSpec() {
         currentTZ = DateTimeZone.getDefault()
-        DateTimeZone.setDefault(DateTimeZone.UTC);
+        DateTimeZone.setDefault(DateTimeZone.UTC)
+
+        classScanner.putInArgumentValueCache(
+                [new LongSumAggregation("name", "fieldName"),
+                 new DateTime(20000),
+                 new Interval(1, 2),
+                 Days.days(1),
+                 DateTimeZone.UTC
+                ])
     }
 
     def shutdownSpec() {
@@ -96,15 +108,15 @@ class ClassScannerSpec extends Specification {
         expect:
         // Create test object with default values
         Object obj1 = classScanner.constructObject( cls, ClassScanner.Args.VALUES )
-        obj1.equals(obj1) == true
-        obj1.equals(null) == false
-        obj1.equals(new Object()) == false
+        obj1.equals(obj1)
+        ! obj1.equals(null)
+        ! obj1.equals(new Object())
 
         // Create second test object with same values
         Object obj2 = classScanner.constructObject( cls, ClassScanner.Args.VALUES  )
         System.identityHashCode(obj1) != System.identityHashCode(obj2)
-        obj1.equals(obj2) == true
         obj1.hashCode() == obj2.hashCode()
+        obj1 == obj2
 
         // attempt to create third object with nulls and if able, call functions, test for not equals
         Object objNulls

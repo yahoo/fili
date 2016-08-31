@@ -2,16 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE file distributed with this work for terms.
 package com.yahoo.bard.webservice.util;
 
-import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
-import com.yahoo.bard.webservice.data.time.TimeGrain;
-import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
-import com.yahoo.bard.webservice.druid.model.aggregation.LongSumAggregation;
-
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.Days;
-import org.joda.time.Interval;
-import org.joda.time.ReadablePeriod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,10 +13,12 @@ import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 import java.util.TreeSet;
 
@@ -43,8 +35,8 @@ public class ClassScanner {
 
     private final String packageName;
 
-    // mocked objects to use as non-null arguments
-    private List<Class> classesToSkip;
+    // Computed values used to build instances for testing
+    private final Map<Class, Object> argumentValueCache = new HashMap<>();
 
     /**
      * Create a class scanner for provided base package.
@@ -52,25 +44,40 @@ public class ClassScanner {
      * @param packageName  The base package such as "com.yahoo.bard"
      */
     public ClassScanner(String packageName) {
-        this.packageName = packageName;
-        this.classesToSkip = new ArrayList<>();
+        this(packageName, new ArrayList<>());
     }
 
     /**
      * Create a class scanner for provided base package.
      *
      * @param packageName  The base package such as "com.yahoo.bard"
-     * @param classesToSkip  The classes which should not be tested
+     * @param cacheValues  Values to cache for use in object construction
      */
-    public ClassScanner(String packageName, List<Class> classesToSkip) {
+    public ClassScanner(String packageName, Collection<Class> cacheValues) {
         this.packageName = packageName;
-        this.classesToSkip = classesToSkip;
+        putPrimitivesInValueCache();
+        putInArgumentValueCache(cacheValues);
+    }
+
+    /**
+     * Precompute all primitives.
+     */
+    private void putPrimitivesInValueCache() {
+        putInArgumentValueCache(int.class, 1);
+        putInArgumentValueCache(long.class, 1L);
+        putInArgumentValueCache(double.class, 1.0);
+        putInArgumentValueCache(float.class, 1.0);
+        putInArgumentValueCache(char.class, (char) 1);
+        putInArgumentValueCache(byte.class, (byte) 1);
+        putInArgumentValueCache(boolean.class, true);
+        putInArgumentValueCache(Object[].class, new Object[0]);
     }
 
     /**
      * Scans all classes accessible from the context class loader which belong to the given package and subpackages.
      *
-     * @return The classes
+     * @return The classes found under the class loader
+     *
      * @throws IOException if a problem is encountered loading the resources from the package
      * @throws ClassNotFoundException if we're not able to find classes for the package in the directory
      */
@@ -92,7 +99,7 @@ public class ClassScanner {
     }
 
     /**
-     * Recursive method used to find all classes in a given directory and subdirs.
+     * Recursive method used to find all classes in a given directory and subdirectories.
      *
      * @param directory  The base directory
      * @param packageName  The package name for classes found inside the base directory
@@ -107,16 +114,13 @@ public class ClassScanner {
         TreeSet<File> files = new TreeSet<>(Arrays.asList(directory.listFiles()));
 
         for (File file : files) {
+            String name = file.getName();
             if (file.isDirectory()) {
-                assert !file.getName().contains(".");
-                classes.addAll(findClasses(file, packageName + "." + file.getName()));
-            } else if (file.getName().endsWith(".class")) {
-                Class<?> cls;
-                cls = Class.forName(packageName + '.' + file.getName().substring(0, file.getName().length() - 6));
-                // do not return any mocked classes
-                if (!classesToSkip.contains(cls)) {
-                    classes.add(cls);
-                }
+                assert !name.contains(".");
+                classes.addAll(findClasses(file, packageName + "." + name));
+            } else if (name.endsWith(".class")) {
+                name = packageName + '.' + name.substring(0, name.length() - 6);
+                classes.add(Class.forName(name));
             }
         }
         return classes;
@@ -155,8 +159,10 @@ public class ClassScanner {
      * @return  The instantiated class
      * @throws InstantiationException if we have trouble instantiating it
      */
-    private <T> T constructObject(Class<T> newClass, Args mode, Stack<Class> stack) throws InstantiationException {
+    private <T> T constructObject(Class<T> newClass, Args mode, Stack<Class> stack)
+            throws InstantiationException {
 
+        // We cannot instantiate an abstract class
         if (Modifier.isAbstract(newClass.getModifiers())) {
             throw new InstantiationException();
         }
@@ -169,6 +175,7 @@ public class ClassScanner {
         // saves context for the InstantiationException
         IllegalArgumentException cause = null;
 
+        // Try a no arg constructor first
         try {
             return newClass.newInstance();
         } catch (Throwable e) {
@@ -245,50 +252,29 @@ public class ClassScanner {
      * @return constructed object
      * @throws InstantiationException if the class cannot be instantiated
      */
-    @SuppressWarnings({"boxing", "checkstyle:cyclomaticcomplexity"})
+    @SuppressWarnings({"boxing", "checkstyle:cyclomaticcomplexity", "unchecked"})
     private <T> T constructArg(Class<T> cls, Args mode, Stack<Class> stack) throws InstantiationException {
-        Object arg;
+        T arg = null;
+        T cachedValue = getCachedValue(cls);
 
-        if (Enum.class.isAssignableFrom(cls)) {
+        if (cls.isPrimitive()) {
+            arg = cachedValue;
+        }  else if (Enum.class.isAssignableFrom(cls)) {
             // create Enum by choosing first one
             try {
                 Enum<?>[] values = (Enum<?>[]) cls.getMethod("values").invoke(null);
-                arg = values[0];
+                arg = (T) values[0];
             } catch (ReflectiveOperationException | RuntimeException e) {
                 throw (InstantiationException) new InstantiationException().initCause(e);
             }
-
-            // Process primitive types
-        } else if (cls == int.class) {
-            arg = 1;
-        } else if (cls == long.class) {
-            arg = 1L;
-        } else if (cls == double.class) {
-            arg = 1.0;
-        } else if (cls == char.class) {
-            arg = (char) 1;
-        } else if (cls == byte.class) {
-            arg = (byte) 1;
-        } else if (cls == boolean.class) {
-            arg = true;
-
             // if Args should be NULL set to null
         } else if (mode == Args.NULLS) {
             arg = null;
-        } else if (cls.isAssignableFrom(Aggregation.class)) {
-            arg = new LongSumAggregation("name", "fieldName");
+            // Otherwise use precomputed values if available
+        } else if (cachedValue != null) {
+            arg = cachedValue;
         } else if (cls == Object[].class) {
-            arg = new Object[0];
-        } else if (cls.isAssignableFrom(DateTime.class)) {
-            arg = new DateTime(20000);
-        } else if (cls.isAssignableFrom(Interval.class)) {
-            arg = new Interval(1, 2);
-        } else if (cls.isAssignableFrom(ReadablePeriod.class)) {
-            arg = Days.days(1);
-        } else if (cls.isAssignableFrom(TimeGrain.class)) {
-            arg = DefaultTimeGrain.DAY;
-        } else if (cls.isAssignableFrom(DateTimeZone.class)) {
-            arg = DateTimeZone.UTC;
+            arg = (T) new Object[0];
         } else if (Modifier.isAbstract(cls.getModifiers())) {
             arg = constructSubclass(cls, mode, stack);
         } else {
@@ -298,17 +284,16 @@ public class ClassScanner {
                 try {
                     arg = constructObject(cls, mode, stack);
                 } catch (Throwable e2) {
-                    arg = mockedObjectOrNull(cls);
-                    if (arg == null && mode == Args.VALUES) {
+                    if (mode == Args.VALUES) {
                         throw e2;
                     }
                 }
             }
         }
-
-        @SuppressWarnings("unchecked")
-        T targ = (T) arg;
-        return targ;
+        if (arg != null) {
+            putInArgumentValueCache(arg.getClass(), arg);
+        }
+        return (T) arg;
     }
 
     /**
@@ -323,40 +308,40 @@ public class ClassScanner {
      */
     @SuppressWarnings("checkstyle:cyclomaticcomplexity")
     private <T> T constructSubclass(Class<T> cls, Args mode, Stack<Class> stack) {
+        // Find the precomputed value, if any
+        T cachedValue = getCachedValue(cls);
+
         // See if we're too deep in the stack and probably recursing
         if (stack.size() > MAX_STACK_DEPTH) {
-            T obj = mockedObjectOrNull(cls);
 
             LOG.error(
-                "Max stack depth of {} reached when constructing subclass for {}. Returning {}.\n{}",
-                MAX_STACK_DEPTH,
-                cls.getSimpleName(),
-                obj,
-                stack
-                );
-            return obj;
+                    "Max stack depth of {} reached when constructing subclass for {}. Returning {}.\n{}",
+                    MAX_STACK_DEPTH,
+                    cls.getSimpleName(),
+                    cachedValue,
+                    stack
+            );
+            return cachedValue;
         }
 
         if (stack.contains(cls)) {
-            T obj = mockedObjectOrNull(cls);
-
             LOG.error(
-                "Recursive constructors for subclass for {}. Returning {}.\n{}",
-                cls.getSimpleName(),
-                obj,
-                stack
-                );
-            return obj;
+                    "Recursive constructors for subclass for {}. Returning {}.\n{}",
+                    cls.getSimpleName(),
+                    cachedValue,
+                    stack
+            );
+            return cachedValue;
         }
 
         stack.push(cls);
         try {
-            for (Class<?> subcls : getClasses()) {
+            for (Class<?> subclass : getClasses()) {
                 // find a subclass to construct
-                if (cls.isAssignableFrom(subcls) && !Modifier.isAbstract(subcls.getModifiers())) {
+                if (cls.isAssignableFrom(subclass) && !Modifier.isAbstract(subclass.getModifiers())) {
                     try {
                         @SuppressWarnings("unchecked")
-                        T arg = constructObject((Class<T>) subcls, mode, stack);
+                        T arg = constructObject((Class<T>) subclass, mode, stack);
                         if (arg != null) {
                             return arg;
                         }
@@ -371,27 +356,43 @@ public class ClassScanner {
             stack.pop();
         }
 
-        return mockedObjectOrNull(cls);
+        return cachedValue;
     }
 
     /**
-     * Get a mocked object if we can, otherwise return null.
+     * Get a cached value if available.
      *
      * @param cls  Class to search for a mock of
      * @param <T>  Type of class, so that we can return it in a typesafe way
      *
      * @return a mock if we have one, otherise just null
      */
-    private <T> T mockedObjectOrNull(Class<T> cls) {
-        // scan for any matching mocked argument
-        for (Object mockArg : classesToSkip) {
-            if (cls.isInstance(mockArg)) {
-                @SuppressWarnings("unchecked")
-                T arg = (T) mockArg;
-                return arg;
-            }
-        }
+    @SuppressWarnings("unchecked")
+    private <T> T getCachedValue(Class<T> cls) {
+        return (T) argumentValueCache.entrySet().stream()
+                .map(Map.Entry::getKey)
+                .filter(cls::isAssignableFrom)
+                .findFirst()
+                .map(argumentValueCache::get)
+                .orElse(null);
+    }
 
-        return null;
+    /**
+     * Store a value in the argument value cache, keyed by its class.
+     *
+     * @param values  The value being cached
+     */
+    public void putInArgumentValueCache(Collection values) {
+        values.stream().forEach(value -> putInArgumentValueCache(value.getClass(), value));
+    }
+
+    /**
+     * Store a value in the argument value cache, keyed by its class.
+     *
+     * @param cls  The class to associate with the object
+     * @param value  The value being cached
+     */
+    private void putInArgumentValueCache(Class cls, Object value) {
+        argumentValueCache.put(cls, value);
     }
 }

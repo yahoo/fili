@@ -34,6 +34,8 @@ Current
 
 ### Changed:
 
+- [Memoize generated values during recursive class-scan class construction](https://github.com/yahoo/fili/pull/29)
+
 -  [QueryTimeLookup Functionality Testing](https://github.com/yahoo/fili/pull/34)
     * `AbstractBinderFactory` now uses `TypeAwareDimensionLoader` instead of `KeyValueStoreDimensionLoader`
     * Modified some testing resources (PETS table and corresponding dimensions) to allow better testing on `LookupDimension`s
