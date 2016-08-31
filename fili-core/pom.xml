@@ -16,7 +16,7 @@
     <parent>
         <groupId>com.yahoo.fili</groupId>
         <artifactId>fili-parent-pom</artifactId>
-        <version>0.1.3</version>
+        <version>0.1-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -29,7 +29,7 @@
         <dependency>
             <groupId>com.yahoo.fili</groupId>
             <artifactId>fili-system-config</artifactId>
-            <version>${fili.version}</version>
+            <version>0.1-SNAPSHOT</version>
         </dependency>
 
         <dependency>
