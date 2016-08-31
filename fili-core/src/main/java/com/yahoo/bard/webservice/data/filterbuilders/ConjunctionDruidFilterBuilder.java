@@ -10,7 +10,7 @@ import com.yahoo.bard.webservice.druid.model.filter.ExtractionFilter;
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter;
-import com.yahoo.bard.webservice.druid.model.util.Util;
+import com.yahoo.bard.webservice.druid.model.util.ModelUtil;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 
@@ -99,7 +99,7 @@ public abstract class ConjunctionDruidFilterBuilder implements DruidFilterBuilde
      * @return a list of Druid selector filters
      */
     protected List<Filter> buildSelectorFilters(Dimension dimension, Set<DimensionRow> rows) {
-        Optional<ExtractionFunction> extractionFunction = Util.getExtractionFunction(dimension);
+        Optional<ExtractionFunction> extractionFunction = ModelUtil.getExtractionFunction(dimension);
 
         if (extractionFunction.isPresent()) {
             return rows.stream()

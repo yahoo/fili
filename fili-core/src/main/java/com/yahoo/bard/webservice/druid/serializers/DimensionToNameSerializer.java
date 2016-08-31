@@ -23,7 +23,7 @@ public class DimensionToNameSerializer extends JsonSerializer<Dimension> {
     @Override
     public void serialize(Dimension value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeString(
-                Util.findPhysicalName(value, gen).orElseThrow(() -> {
+                SerializerUtil.findPhysicalName(value, gen).orElseThrow(() -> {
                             LOG.error(ErrorMessageFormat.PHYSICAL_NAME_NOT_FOUND.logFormat(value.getApiName()));
                             return new IllegalStateException(ErrorMessageFormat.PHYSICAL_NAME_NOT_FOUND.format());
                         }

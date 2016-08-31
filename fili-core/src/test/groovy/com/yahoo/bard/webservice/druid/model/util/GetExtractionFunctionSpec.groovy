@@ -26,7 +26,7 @@ class GetExtractionFunctionSpec extends Specification {
         def dim = new KeyValueStoreDimension(dimConfig)
 
         expect:
-        !Util.getExtractionFunction(dim).isPresent()
+        !ModelUtil.getExtractionFunction(dim).isPresent()
     }
 
     def "Should return no extraction function for LookupDimension with no namespace"() {
@@ -35,7 +35,7 @@ class GetExtractionFunctionSpec extends Specification {
         def dim = new LookupDimension(dimConfig)
 
         expect:
-        !Util.getExtractionFunction(dim).isPresent()
+        !ModelUtil.getExtractionFunction(dim).isPresent()
     }
 
     def "Should return lookup extraction function for LookupDimension with single namespace"() {
@@ -44,7 +44,7 @@ class GetExtractionFunctionSpec extends Specification {
         def dim = new LookupDimension(dimConfig)
 
         expect:
-        Util.getExtractionFunction(dim).get() instanceof LookupExtractionFunction
+        ModelUtil.getExtractionFunction(dim).get() instanceof LookupExtractionFunction
     }
 
     def "Should return cascade extraction function for LookupDimension with multiple namespaces"() {
@@ -53,6 +53,6 @@ class GetExtractionFunctionSpec extends Specification {
         def dim = new LookupDimension(dimConfig)
 
         expect:
-        Util.getExtractionFunction(dim).get() instanceof CascadeExtractionFunction
+        ModelUtil.getExtractionFunction(dim).get() instanceof CascadeExtractionFunction
     }
 }
