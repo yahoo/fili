@@ -39,6 +39,16 @@ Current
       now verifies that the Observable returned terminates without sending any
       messages.
 
+- [Preserve collection order of dimensions, dimension fields and metrics](https://github.com/yahoo/fili/pull/25)
+    * `DataApiRequest::generateDimensions` now returns a `LinkedHashSet`
+    * `DataApiRequest::generateDimensionFields` now returns a `LinkedHashMap<Dimension, LinkedHashSet<DimensionField>>`
+    * `DataApiRequest::withPerDimensionFields` now takes a `LinkedHashSet` as its second argument.
+    * `DataApiRequest::getDimensionFields` now returns a `LinkedHashMap<Dimension, LinkedHashSet<DimensionField>>>`
+    * `Response::Response` now takes a `LinkedHashSet` and `LinkedHashMap<Dimension, LinkedHashSet<DimensionField>>>` as
+      its second  and third arguments.
+    * `ResponseContext::dimensionToDimensionFieldMap` now takes a `LinkedHashMap<Dimension, LinkedHashSet<DimensionField>>>`
+    * `ResponseContext::getDimensionToDimensionFieldMap` now returns a `LinkedHashMap<Dimension, LinkedHashSet<DimensionField>>>`
+
 -  [Fix Dimension Serialization Problem with Nested Queries](https://github.com/yahoo/fili/pull/15)
     * Modified `DimensionToDefaultDimensionSpec` serializer to serialize dimension to apiName if it is not the inner most query
     * Added helper `hasInnerQuery` to `Util` in serializer package to determine if current query is the inner most query or not
