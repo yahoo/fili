@@ -162,7 +162,10 @@ public enum ErrorMessageFormat implements MessageFormatter {
 
     MISSING_JOB_ID("Bard experienced an internal error. Sorry.", "Missing id for job row %s"),
 
-    INVALID_ASYNC_AFTER( "Invalid 'asyncAfter' parameter: '%s'. 'asyncAfter' must be either 'never' or an integer number of milliseconds.");
+    INVALID_ASYNC_AFTER( "Invalid 'asyncAfter' parameter: '%s'. 'asyncAfter' must be either 'never' or an integer number of milliseconds."),
+
+    FILTER_JOBFIELD_UNDEFINED("Filter field '%s' does not exist. The possible fields to filter on are '%s'"),
+    ;
     // CHECKSTYLE:ON
 
     private final String messageFormat;

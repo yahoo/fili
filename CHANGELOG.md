@@ -10,6 +10,11 @@ Current
 
 ### Added:
 
+- [Enrich the ApiJobStore interface] (https://github.com/yahoo/fili/pull/23)
+    * `ApiJobStore` Interface now supports filtering `JobRows` in the store
+    * Added support for filtering JobRows in `HashJobStore`
+    * Added `JobRowFilter` to hold filter information
+
 -  [Lookup Dimension Serializer]()
     * Created `LookupDimensionToDimensionSpec` serializer for `LookupDimension`
     * Created corresponding tests for `LookupDimensionToDimensionSpec` in `LookupDimensionToDimensionSpecSpec`
