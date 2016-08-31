@@ -32,7 +32,7 @@ import com.yahoo.bard.webservice.data.cache.StubDataCache
 import com.yahoo.bard.webservice.data.cache.TupleDataCache
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig
-import com.yahoo.bard.webservice.data.config.dimension.KeyValueStoreDimensionLoader
+import com.yahoo.bard.webservice.data.config.dimension.TypeAwareDimensionLoader
 import com.yahoo.bard.webservice.data.config.dimension.TestDimensions
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader
 import com.yahoo.bard.webservice.data.config.table.TableLoader
@@ -171,7 +171,7 @@ public class AbstractBinderFactorySpec extends Specification {
         cl.dictionaries != null
         cl.tableLoader != null
         cl.metricLoader != null
-        cl.dimensionLoader instanceof KeyValueStoreDimensionLoader
+        cl.dimensionLoader instanceof TypeAwareDimensionLoader
     }
 
     def "test configure bindings"() {
@@ -436,7 +436,7 @@ public class AbstractBinderFactorySpec extends Specification {
         ConfigurationLoader cl = localBinderFactory.buildConfigurationLoader()
 
         then:
-        cl.dimensionLoader instanceof KeyValueStoreDimensionLoader
+        cl.dimensionLoader instanceof TypeAwareDimensionLoader
         cl.metricLoader == metricLoader
         cl.tableLoader == tableLoader
     }

@@ -12,25 +12,23 @@ import spock.lang.Specification
  */
 class TypeAwareDimensionLoaderSpec extends Specification {
 
-    LinkedHashSet<DimensionConfig> lookupDimensionConfigurations
     LinkedHashSet<DimensionConfig> dimensionConfigurations
     DimensionDictionary dimensionDictionary
 
     def setup() {
-        lookupDimensionConfigurations = new TestLookupDimensions().getAllDimensionConfigurations()
         dimensionConfigurations = new TestDimensions().getAllDimensionConfigurations()
         dimensionDictionary = new DimensionDictionary()
     }
 
     def "Test dimension loader for Lookup dimension"() {
         given: "A Type Aware Dimension Loader with a list of dimension configurations"
-        TypeAwareDimensionLoader typeAwareDimensionLoader = new TypeAwareDimensionLoader(lookupDimensionConfigurations)
+        TypeAwareDimensionLoader typeAwareDimensionLoader = new TypeAwareDimensionLoader(dimensionConfigurations)
 
         when:
         typeAwareDimensionLoader.loadDimensionDictionary(dimensionDictionary)
 
         then:
-        dimensionDictionary.findByApiName("size").getClass() == LookupDimension.class
+        dimensionDictionary.findByApiName("breed").getClass() == LookupDimension.class
     }
 
     def "Test dimension loader for KeyValueStore dimension"() {
@@ -41,7 +39,7 @@ class TypeAwareDimensionLoaderSpec extends Specification {
         typeAwareDimensionLoader.loadDimensionDictionary(dimensionDictionary)
 
         then:
-        dimensionDictionary.findByApiName("breed").getClass() == KeyValueStoreDimension.class
+        dimensionDictionary.findByApiName("color").getClass() == KeyValueStoreDimension.class
     }
 
     def "Test dimension loader for a dimension type that is not defined"() {
@@ -49,8 +47,8 @@ class TypeAwareDimensionLoaderSpec extends Specification {
         DimensionConfig dimensionConfiguration = Mock(DimensionConfig)
         dimensionConfiguration.getApiName() >> "foo"
         dimensionConfiguration.getType() >> String.class
-        lookupDimensionConfigurations.add(dimensionConfiguration)
-        TypeAwareDimensionLoader typeAwareDimensionLoader = new TypeAwareDimensionLoader(lookupDimensionConfigurations)
+        dimensionConfigurations.add(dimensionConfiguration)
+        TypeAwareDimensionLoader typeAwareDimensionLoader = new TypeAwareDimensionLoader(dimensionConfigurations)
 
         when:
         typeAwareDimensionLoader.loadDimensionDictionary(dimensionDictionary)

@@ -10,22 +10,33 @@ Current
 
 ### Added:
 
+-  [QueryTimeLookup Functionality Testing](https://github.com/yahoo/fili/pull/34)
+    * Added two tests `LookupDimensionFilteringDataServeletSpec` and `LookupDimensionGroupingDataServletSpec` to test QTL functionality
+
 - [Enrich the ApiJobStore interface] (https://github.com/yahoo/fili/pull/23)
     * `ApiJobStore` Interface now supports filtering `JobRows` in the store
     * Added support for filtering JobRows in `HashJobStore`
     * Added `JobRowFilter` to hold filter information
 
--  [Lookup Dimension Serializer]()
+-  [Lookup Dimension Serializer](https://github.com/yahoo/fili/pull/31)
     * Created `LookupDimensionToDimensionSpec` serializer for `LookupDimension`
     * Created corresponding tests for `LookupDimensionToDimensionSpec` in `LookupDimensionToDimensionSpecSpec`
 
+
 ### Deprecated:
+
+-  [QueryTimeLookup Functionality Testing](https://github.com/yahoo/fili/pull/34)
+    * Deprecated `KeyValueDimensionLoader`, in favor of `TypeAwareDimensionLoader`
 
 
 ### Removed:
 
 
 ### Changed:
+
+-  [QueryTimeLookup Functionality Testing](https://github.com/yahoo/fili/pull/34)
+    * `AbstractBinderFactory` now uses `TypeAwareDimensionLoader` instead of `KeyValueStoreDimensionLoader`
+    * Modified some testing resources (PETS table and corresponding dimensions) to allow better testing on `LookupDimension`s
 
 - [Reorganizes asynchronous package structure](https://github.com/yahoo/fili/pull/19)
     * The `jobs` package is renamed to `async` and split into the following subpackages:

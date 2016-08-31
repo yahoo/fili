@@ -2,14 +2,13 @@
 // Licensed under the terms of the Apache license. Please see LICENSE file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.endpoints
 
-import static com.yahoo.bard.webservice.util.JsonSortStrategy.SORT_BOTH
-
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.data.time.GranularityParser
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser
 import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService
 import com.yahoo.bard.webservice.table.availability.AvailabilityTestingUtils
 import com.yahoo.bard.webservice.util.GroovyTestUtils
+import com.yahoo.bard.webservice.util.JsonSortStrategy
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
@@ -106,7 +105,7 @@ abstract class BaseDataServletComponentSpec extends Specification {
         }
 
         // Most aspects of a Druid query are order-independent, so normalize both lists and maps.
-        GroovyTestUtils.compareJson(jsonQuery, getExpectedDruidQuery(), SORT_BOTH)
+        compareResult(jsonQuery, getExpectedDruidQuery(), JsonSortStrategy.SORT_BOTH)
     }
 
     @Timeout(10)
@@ -135,8 +134,8 @@ abstract class BaseDataServletComponentSpec extends Specification {
         validateJson(expectedApiResponse)
     }
 
-    boolean compareResult(String result, String expectedResult) {
-        GroovyTestUtils.compareJson(result, expectedResult)
+    boolean compareResult(String result, String expectedResult, JsonSortStrategy sortStrategy = JsonSortStrategy.SORT_MAPS) {
+        GroovyTestUtils.compareJson(result, expectedResult, sortStrategy)
     }
 
     /**

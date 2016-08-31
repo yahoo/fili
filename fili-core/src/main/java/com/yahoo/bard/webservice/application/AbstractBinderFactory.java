@@ -35,7 +35,7 @@ import com.yahoo.bard.webservice.data.config.ConfigurationLoader;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionLoader;
-import com.yahoo.bard.webservice.data.config.dimension.KeyValueStoreDimensionLoader;
+import com.yahoo.bard.webservice.data.config.dimension.TypeAwareDimensionLoader;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
@@ -837,7 +837,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      * @return a Dimension Loader instance
      */
     protected DimensionLoader getDimensionLoader() {
-        return new KeyValueStoreDimensionLoader(getDimensionConfigurations());
+        return new TypeAwareDimensionLoader(getDimensionConfigurations());
     }
 
     /**

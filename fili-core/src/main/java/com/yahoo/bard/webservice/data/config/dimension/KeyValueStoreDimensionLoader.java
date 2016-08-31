@@ -12,7 +12,10 @@ import com.codahale.metrics.health.HealthCheckRegistry;
 
 /**
  * Load the dimensions along with its keyValueStore and searchProvider.
+ *
+ * @deprecated in favor of TypeAwareDimensionLoader which loads corresponding dimension based on config type
  */
+@Deprecated
 public class KeyValueStoreDimensionLoader implements DimensionLoader {
 
     private Iterable<DimensionConfig> configSource;

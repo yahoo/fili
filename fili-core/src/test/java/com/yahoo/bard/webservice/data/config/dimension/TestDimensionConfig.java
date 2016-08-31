@@ -15,7 +15,7 @@ import java.util.LinkedHashSet;
  */
 public class TestDimensionConfig implements DimensionConfig {
     private final TestApiDimensionName apiName;
-    private final String getPhysicalName;
+    private final String physicalName;
     private final String description;
 
     private LinkedHashSet<DimensionField> fields;
@@ -42,12 +42,42 @@ public class TestDimensionConfig implements DimensionConfig {
             LinkedHashSet<DimensionField> defaultFields
     ) {
         this.apiName = apiName;
-        this.getPhysicalName = physicalName;
+        this.physicalName = physicalName;
         this.description = apiName.asName();
         this.keyValueStore = keyValueStore;
         this.searchProvider = searchProvider;
         this.fields = fields;
         this.defaultFields = defaultFields;
+    }
+
+    //CHECKSTYLE:OFF
+    public TestDimensionConfig withApiName(TestApiDimensionName apiName) {
+        return new TestDimensionConfig(apiName, physicalName, keyValueStore, searchProvider, fields, defaultFields);
+    }
+
+    public TestDimensionConfig withPhysicalName(String physicalName) {
+        return new TestDimensionConfig(apiName, physicalName, keyValueStore, searchProvider, fields, defaultFields);
+    }
+
+    public TestDimensionConfig withKeyValueStore(KeyValueStore keyValueStore) {
+        return new TestDimensionConfig(apiName, physicalName, keyValueStore, searchProvider, fields, defaultFields);
+    }
+
+    public TestDimensionConfig withSearchProvider(SearchProvider searchProvider) {
+        return new TestDimensionConfig(apiName, physicalName, keyValueStore, searchProvider, fields, defaultFields);
+    }
+
+    public TestDimensionConfig withFields(LinkedHashSet<DimensionField> fields) {
+        return new TestDimensionConfig(apiName, physicalName, keyValueStore, searchProvider, fields, defaultFields);
+    }
+
+    public TestDimensionConfig withDefaultFields(LinkedHashSet<DimensionField> defaultFields) {
+        return new TestDimensionConfig(apiName, physicalName, keyValueStore, searchProvider, fields, defaultFields);
+    }
+    //CHECKSTYLE:ON
+
+    public TestApiDimensionName getApiNameEnum() {
+        return apiName;
     }
 
     @Override
@@ -67,7 +97,7 @@ public class TestDimensionConfig implements DimensionConfig {
 
     @Override
     public String getPhysicalName() {
-        return getPhysicalName;
+        return physicalName;
     }
 
     @Override
@@ -97,6 +127,6 @@ public class TestDimensionConfig implements DimensionConfig {
 
     @Override
     public String toString() {
-        return "Dimension Config: apiName: " + apiName + " getPhysicalName: " + getPhysicalName + " fields: " + fields;
+        return "Dimension Config: apiName: " + apiName + " physicalName: " + physicalName + " fields: " + fields;
     }
 }

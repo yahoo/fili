@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -73,9 +74,17 @@ public class TestDimensions {
 
         dimensionNameConfigs.put(MODEL, TestDimensions.buildStandardLuceneDimensionConfig(MODEL));
 
-        dimensionNameConfigs.put(BREED, TestDimensions.buildStandardDimensionConfig(BREED));
-        dimensionNameConfigs.put(SPECIES, TestDimensions.buildStandardDimensionConfig(SPECIES));
-        dimensionNameConfigs.put(SEX, TestDimensions.buildStandardDimensionConfig(SEX));
+        dimensionNameConfigs.put(
+                BREED,
+                TestDimensions.buildStandardLookupDimensionConfig(BREED, Arrays.asList("NAMESPACE1", "NAMESPACE2"))
+        );
+        dimensionNameConfigs.put(
+                SPECIES,
+                TestDimensions.buildStandardLookupDimensionConfig(SPECIES, Arrays.asList("NAMESPACE1"))
+                        .withPhysicalName("class")
+        );
+        dimensionNameConfigs.put(SEX,
+                TestDimensions.buildStandardLookupDimensionConfig(SEX, Collections.emptyList()));
 
         tableDimensions = new HashMap<>();
         tableDimensions.put(SHAPES, Utils.asLinkedHashSet(SIZE, SHAPE, COLOR, OTHER));
@@ -116,6 +125,21 @@ public class TestDimensions {
                 getDefaultFields(),
                 getDefaultFields()
         );
+    }
+
+    /**
+     * Builds a lookup dimension config with a namespace.
+     *
+     * @param  dimensionName  Name of the dimension to build.
+     * @param  namespaces  namespaces for lookup.
+     *
+     * @return  the lookup dimension config
+     */
+    public static TestLookupDimensionConfig buildStandardLookupDimensionConfig(
+            TestApiDimensionName dimensionName,
+            List<String> namespaces
+    ) {
+        return new TestLookupDimensionConfig(buildStandardDimensionConfig(dimensionName), namespaces);
     }
 
     /**
