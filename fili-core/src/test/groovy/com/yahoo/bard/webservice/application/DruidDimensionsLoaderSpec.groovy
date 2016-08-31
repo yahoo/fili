@@ -20,6 +20,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.joda.JodaModule
 
+import org.joda.time.DateTime
+
 import spock.lang.Specification
 
 class DruidDimensionsLoaderSpec extends Specification {
@@ -172,5 +174,30 @@ class DruidDimensionsLoaderSpec extends Specification {
 
         then: "The dimension row value was ignored as it was already loaded"
         dimension.findDimensionRowByKeyValue("male")?.getRowMap()["id"] == "male"
+    }
+
+    def "The success callback correctly sets the lastUpdated date on the dimension, even if there is no data"() {
+        given: "A dimension to load"
+        Dimension dimension = new KeyValueStoreDimension(
+                "gender",
+                "gender",
+                [BardDimensionField.ID] as LinkedHashSet,
+                MapStoreManager.getInstance("gender"),
+                NoOpSearchProviderManager.getInstance("gender")
+        )
+        DateTime previousLastUpdated = dimension.lastUpdated
+
+        and: "The callback to test"
+        SuccessCallback callback = loader.buildDruidDimensionsSuccessCallback(dimension)
+
+        and: "The data to load with the callback"
+        String jsonResult = "[]"
+        JsonNode node = MAPPER.readTree(jsonResult)
+
+        when: "We invoke the callback on the data"
+        callback.invoke(node)
+
+        then: "The dimension's lastUpdated date has been updated"
+        dimension.lastUpdated != previousLastUpdated
     }
 }

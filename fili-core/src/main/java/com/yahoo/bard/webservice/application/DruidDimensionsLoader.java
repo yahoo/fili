@@ -169,6 +169,9 @@ public class DruidDimensionsLoader extends Loader<Boolean> {
                         }
                     }
                 }
+
+                // Tell the dimension it's been updated
+                dimension.setLastUpdated(DateTime.now());
             }
         };
     }
