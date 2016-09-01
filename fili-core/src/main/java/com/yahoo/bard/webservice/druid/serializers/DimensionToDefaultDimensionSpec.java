@@ -25,14 +25,14 @@ public class DimensionToDefaultDimensionSpec extends JsonSerializer<Dimension> {
     public void serialize(Dimension value, JsonGenerator gen, SerializerProvider provider) throws IOException {
 
         String apiName = value.getApiName();
-        String physicalName = Util.findPhysicalName(value, gen).orElseThrow(() -> {
+        String physicalName = SerializerUtil.findPhysicalName(value, gen).orElseThrow(() -> {
                     LOG.error(ErrorMessageFormat.PHYSICAL_NAME_NOT_FOUND.logFormat(value.getApiName()));
                     return new IllegalStateException(ErrorMessageFormat.PHYSICAL_NAME_NOT_FOUND.format());
                 }
         );
 
         // serialize to only apiName if api and physical name is same or there are nested queries
-        if (physicalName.equals(apiName) || Util.hasInnerQuery(gen)) {
+        if (physicalName.equals(apiName) || SerializerUtil.hasInnerQuery(gen)) {
             gen.writeString(apiName);
         } else {
             gen.writeObject(new DefaultDimensionSpec(physicalName, apiName));

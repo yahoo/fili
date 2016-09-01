@@ -20,8 +20,8 @@ import java.util.stream.Collectors;
 /**
  * Utility functions related to druid models.
  */
-public class Util {
-    private static final Logger LOG = LoggerFactory.getLogger(Util.class);
+public class ModelUtil {
+    private static final Logger LOG = LoggerFactory.getLogger(ModelUtil.class);
 
     /**
      * Resolves the given Dimension to a corresponding Dimension ExtractionFunction.

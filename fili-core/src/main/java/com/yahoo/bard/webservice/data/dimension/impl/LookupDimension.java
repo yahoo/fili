@@ -3,6 +3,9 @@
 package com.yahoo.bard.webservice.data.dimension.impl;
 
 import com.yahoo.bard.webservice.data.config.dimension.LookupDimensionConfig;
+import com.yahoo.bard.webservice.druid.serializers.LookupDimensionToDimensionSpec;
+
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import java.util.Collections;
 import java.util.List;
@@ -13,6 +16,7 @@ import javax.validation.constraints.NotNull;
 /**
  * LookupDimension creates a Look up dimension based on the namespace chain.
  */
+@JsonSerialize(using = LookupDimensionToDimensionSpec.class)
 public class LookupDimension extends KeyValueStoreDimension {
 
     private final List<String> namespaces;

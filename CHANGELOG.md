@@ -10,6 +10,9 @@ Current
 
 ### Added:
 
+-  [Lookup Dimension Serializer]()
+    * Created `LookupDimensionToDimensionSpec` serializer for `LookupDimension`
+    * Created corresponding tests for `LookupDimensionToDimensionSpec` in `LookupDimensionToDimensionSpecSpec`
 
 ### Deprecated:
 

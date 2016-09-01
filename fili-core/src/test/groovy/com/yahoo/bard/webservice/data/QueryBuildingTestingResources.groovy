@@ -2,12 +2,17 @@
 // Licensed under the terms of the Apache license. Please see LICENSE file distributed with this work for terms.
 package com.yahoo.bard.webservice.data
 
+import static com.yahoo.bard.webservice.data.config.names.TestApiDimensionName.COLOR
+import static com.yahoo.bard.webservice.data.config.names.TestApiDimensionName.SHAPE
+import static com.yahoo.bard.webservice.data.config.names.TestApiDimensionName.SIZE
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MONTH
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.WEEK
 import static org.joda.time.DateTimeZone.UTC
 
+import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig
+import com.yahoo.bard.webservice.data.config.dimension.TestLookupDimensions
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
@@ -16,6 +21,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.DimensionRow
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
+import com.yahoo.bard.webservice.data.dimension.impl.LookupDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricColumn
@@ -41,7 +47,7 @@ public class QueryBuildingTestingResources {
     // Aggregatable dimensions
     public Dimension d1, d2, d3, d4, d5
     // Non-aggregatable dimensions
-    public Dimension d6, d7
+    public Dimension d6, d7, d8, d9, d10
     public LogicalMetric m1, m2, m3, m4, m5, m6
 
     public Interval interval1
@@ -49,7 +55,7 @@ public class QueryBuildingTestingResources {
     public Interval interval3
 
     public PhysicalTable emptyFirst, partialSecond, wholeThird, emptyLast
-    public PhysicalTable t1h, t1d, t1hShort, t2h, t3d, t4h1, t4h2, t4d1, t4d2
+    public PhysicalTable t1h, t1d, t1hShort, t2h, t3d, t4h1, t4h2, t4d1, t4d2, t5h
 
     //Volatility testing
     public PhysicalTable volatileHourTable = new PhysicalTable("hour", HOUR.buildZonedTimeGrain(UTC), [:])
@@ -57,10 +63,10 @@ public class QueryBuildingTestingResources {
 
     public VolatileIntervalsService volatileIntervalsService
 
-    public TableGroup tg1h, tg1d, tg1Short, tg2h, tg3d, tg4h, tg5h, tg1All
-    LogicalTable lt12, lt13, lt1All
+    public TableGroup tg1h, tg1d, tg1Short, tg2h, tg3d, tg4h, tg5h, tg6h, tg1All
+    LogicalTable lt12, lt13, lt14, lt1All
     LogicalTableDictionary logicalDictionary
-    TableIdentifier ti2h, ti2d, ti3d, ti1All
+    TableIdentifier ti2h, ti2d, ti3d, ti4d, ti1All
 
     // Tables with non-aggregatable dimensions
     public PhysicalTable tna1236d, tna1237d, tna167d, tna267d
@@ -93,6 +99,8 @@ public class QueryBuildingTestingResources {
         LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>()
         dimensionFields.add(BardDimensionField.ID)
         dimensionFields.add(BardDimensionField.DESC)
+
+        LinkedHashSet<DimensionConfig> dimConfig = new TestLookupDimensions().getDimensionConfigurationsByApiName(SIZE, SHAPE, COLOR)
 
         d1 = new KeyValueStoreDimension(
                 "dim1",
@@ -154,9 +162,12 @@ public class QueryBuildingTestingResources {
                 ScanSearchProviderManager.getInstance("dim7"),
                 false
         )
+        d8 = new LookupDimension(dimConfig.getAt(0))
+        d9 = new LookupDimension(dimConfig.getAt(1))
+        d10 = new LookupDimension(dimConfig.getAt(2))
 
         dimensionDictionary = new DimensionDictionary()
-        dimensionDictionary.addAll([d1, d2, d3, d4, d5, d6, d7])
+        dimensionDictionary.addAll([d1, d2, d3, d4, d5, d6, d7, d8, d9, d10])
 
         m1 = new LogicalMetric(null, null, "metric1")
         m2 = new LogicalMetric(null, null, "metric2")
@@ -190,10 +201,11 @@ public class QueryBuildingTestingResources {
         t4d1 = new PhysicalTable("table4d1", utcDay, new HashMap<>())
         t4d2 = new PhysicalTable("table4d2", utcDay, new HashMap<>())
 
+        t5h = new PhysicalTable("table5d", utcHour, new HashMap<>())
+
         [d1, d2, d3].each {
             t1h.addColumn(DimensionColumn.addNewDimensionColumn(t1h, it))
             t1d.addColumn(DimensionColumn.addNewDimensionColumn(t1d, it))
-
         }
 
         [d1, d2].each {
@@ -208,7 +220,6 @@ public class QueryBuildingTestingResources {
             t3d.addColumn(DimensionColumn.addNewDimensionColumn(t3d, it))
         }
 
-
         [d1, d2].each {
             t4h1.addColumn(DimensionColumn.addNewDimensionColumn(t4h1, it), [interval1] as Set)
             t4h2.addColumn(DimensionColumn.addNewDimensionColumn(t4h2, it), [interval2] as Set)
@@ -216,10 +227,15 @@ public class QueryBuildingTestingResources {
             t4d2.addColumn(DimensionColumn.addNewDimensionColumn(t4d2, it), [interval2] as Set)
         }
 
+        [d8, d9, d10].each {
+            t5h.addColumn(DimensionColumn.addNewDimensionColumn(t5h, it))
+        }
+
         MetricColumn.addNewMetricColumn(t1h, m1.name)
         MetricColumn.addNewMetricColumn(t1d, m1.name)
         MetricColumn.addNewMetricColumn(t1hShort, m1.name)
         MetricColumn.addNewMetricColumn(t2h, m1.name)
+        MetricColumn.addNewMetricColumn(t5h, m1.name)
 
         [m2, m3].each {
             MetricColumn.addNewMetricColumn(t1h, it.name)
@@ -281,7 +297,7 @@ public class QueryBuildingTestingResources {
             t4d2.addColumn(MetricColumn.addNewMetricColumn(t4d2, it.name), [interval2] as Set)
         }
 
-        [t1h, t1d, t1hShort, t2h, t3d, t4h1, t4h2, t4d1, t4d2, tna1236d, tna1237d, tna167d, tna267d].each {
+        [t1h, t1d, t1hShort, t2h, t5h, t3d, t4h1, t4h2, t4d1, t4d2, tna1236d, tna1237d, tna167d, tna267d].each {
             it.commit()
         }
 
@@ -292,14 +308,17 @@ public class QueryBuildingTestingResources {
         tg3d = new TableGroup([t3d] as LinkedHashSet, [m1, m2, m3] as Set)
         tg4h = new TableGroup([t1h, t2h] as LinkedHashSet, [m1, m2, m3] as Set)
         tg5h = new TableGroup([t2h, t1h] as LinkedHashSet, [m1, m2, m3] as Set)
+        tg6h = new TableGroup([t5h] as LinkedHashSet, [] as Set)
 
         lt12 = new LogicalTable("base12", HOUR, tg1h)
         lt13 = new LogicalTable("base13", DAY, tg1d)
+        lt14 = new LogicalTable("base14", HOUR, tg6h)
         lt1All = new LogicalTable("baseAll", AllGranularity.INSTANCE, tg1All)
 
         ti2h = new TableIdentifier("base12", HOUR)
         ti2d = new TableIdentifier("base12", DAY)
         ti3d = new TableIdentifier("base13", DAY)
+        ti4d = new TableIdentifier("base14", HOUR)
 
         // Tables with non-agg dimensions
         tgna = new TableGroup([tna1236d, tna1237d, tna167d, tna267d] as LinkedHashSet, [m1, m2, m3] as Set)
@@ -310,6 +329,7 @@ public class QueryBuildingTestingResources {
                 (ti2h): lt12,
                 (ti2d): lt12,
                 (ti3d): lt13,
+                (ti4d): lt14,
                 (ti1All): lt1All,
                 (tina): ltna
         ]

@@ -14,7 +14,7 @@ import java.util.function.Function;
 /**
  * Utility functions for druid serializers.
  */
-public class Util {
+public class SerializerUtil {
 
     /**
      * JSON tree walk up to physical table to retrieve physical name for a dimension.
