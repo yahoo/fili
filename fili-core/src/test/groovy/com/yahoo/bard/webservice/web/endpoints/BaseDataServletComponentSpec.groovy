@@ -142,7 +142,6 @@ abstract class BaseDataServletComponentSpec extends Specification {
         GroovyTestUtils.compareJson(result, expectedResult, sortStrategy)
     }
 
-
     /**
      *  Injects the fake Druid response into the Druid backend used by the test harness, if
      *  applicable.

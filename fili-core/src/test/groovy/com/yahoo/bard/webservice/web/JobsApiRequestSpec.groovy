@@ -98,6 +98,7 @@ class JobsApiRequestSpec extends Specification {
                 status : "success",
                 jobTicket : "ticket1",
                 dateCreated : "2016-01-01",
+                dateUpdated: "2016-01-01",
                 userId : "momo"
         ]
 
@@ -284,6 +285,7 @@ class JobsApiRequestSpec extends Specification {
                 self : "https://localhost:9998/v1/jobs/1",
                 status : "pending",
                 dateCreated : "0001-04-29T00:00:00.000Z",
+                dateUpdated : "0001-04-30T00:00:00.000Z",
                 userId : "Number 1"
         ]
 
@@ -295,6 +297,7 @@ class JobsApiRequestSpec extends Specification {
                 self : "https://localhost:9998/v1/jobs/2",
                 status : "pending",
                 dateCreated : "0002-04-29T00:00:00.000Z",
+                dateUpdated : "0002-04-30T00:00:00.000Z",
                 userId : "Number 2"
         ]
 

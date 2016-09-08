@@ -48,6 +48,7 @@ class DefaultJobPayloadBuilderSpec extends Specification {
                 status: "success",
                 jobTicket: "ticket1",
                 dateCreated: "2016-01-01",
+                dateUpdated: "2016-01-01",
                 userId: "momo"
         ]
 

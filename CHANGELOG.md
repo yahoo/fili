@@ -9,6 +9,8 @@ Current
 -------
 
 ### Added:
+-  [Functional tests for Asynchronous queries](https://github.com/yahoo/fili/pull/35)
+
 - [Enrich jobs endpoint with filtering functionality] (https://github.com/yahoo/fili/pull/26)
    * Jobs endpoint now supports filters
 
@@ -35,6 +37,7 @@ Current
 
 
 ### Changed:
+-  [TestDruidWebService::jsonResponse is now a Producer<String>](https://github.com/yahoo/fili/pull/35)
 
 - [ISSUE-17](https://github.com/yahoo/fili/issues/17) [Added pagination parameters to PreResponse] (https://github.com/yahoo/fili/pull/19) 
    * Updated `JobsServlet::handlePreResponseWithError` to update `ResultSet` object with pagination parameters

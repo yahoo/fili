@@ -32,6 +32,7 @@ class JobsServletSpec extends Specification {
                 "status": "success",
                 "jobTicket": "ticket1",
                 "dateCreated": "2016-01-01",
+                "dateUpdated": "2016-01-01",
                 "userId": "momo"
         }"""
 
@@ -49,6 +50,7 @@ class JobsServletSpec extends Specification {
               "jobs": [
                 {
                   "dateCreated": "2016-01-01",
+                  "dateUpdated": "2016-01-01",
                   "jobTicket": "ticket1",
                   "query": "https://localhost:9998/v1/data/QUERY",
                   "results": "http://localhost:9998/jobs/ticket1/results",
@@ -118,6 +120,7 @@ class JobsServletSpec extends Specification {
                 "status": "pending",
                 "jobTicket": "ticket2",
                 "dateCreated": "2016-01-01",
+                "dateUpdated": "2016-01-01",
                 "userId": "dodo"
         }"""
 
@@ -160,11 +163,11 @@ class JobsServletSpec extends Specification {
 
     def "/jobs endpoint returns the payload for all the jobs in the ApiJobStore"() {
         setup:
-
         String expectedResponse = """
                {"jobs":[
                         {
                             "dateCreated":"2016-01-01",
+                            "dateUpdated":"2016-01-01",
                             "jobTicket":"ticket1",
                             "query":"https://localhost:9998/v1/data/QUERY",
                             "results":"http://localhost:9998/jobs/ticket1/results",
@@ -175,6 +178,7 @@ class JobsServletSpec extends Specification {
                         },
                         {
                             "dateCreated":"2016-01-01",
+                            "dateUpdated":"2016-01-01",
                             "jobTicket":"ticket2",
                             "query":"https://localhost:9998/v1/data/QUERY",
                             "results":"http://localhost:9998/jobs/ticket2/results",
@@ -185,6 +189,7 @@ class JobsServletSpec extends Specification {
                         },
                         {
                             "dateCreated": "2016-01-01",
+                            "dateUpdated":"2016-01-01",
                             "jobTicket": "ticket3p",
                             "query": "https://localhost:9998/v1/data/QUERY",
                             "results": "http://localhost:9998/jobs/ticket3p/results",
@@ -209,6 +214,7 @@ class JobsServletSpec extends Specification {
         String expectedResponse = """{"jobs":[
                                         {
                                             "dateCreated":"2016-01-01",
+                                            "dateUpdated":"2016-01-01",
                                             "jobTicket":"ticket1",
                                             "query":"https://localhost:9998/v1/data/QUERY",
                                             "results":"http://localhost:9998/jobs/ticket1/results",
@@ -235,7 +241,6 @@ class JobsServletSpec extends Specification {
     }
 
     def "jobs/ticket3p/results returns the number of results we requested through pagination parameters"() {
-        setup:
         when: "We send a request for the first row from the results"
         String result1 = makeRequest("/jobs/ticket3p/results", [asyncAfter: ["5"], perPage: [1], page: [1]])
 
