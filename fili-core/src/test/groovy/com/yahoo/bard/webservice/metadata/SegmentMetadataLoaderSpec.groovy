@@ -118,7 +118,7 @@ class SegmentMetadataLoaderSpec extends Specification {
                 }
         }
         """
-        druidWS.jsonResponse = json
+        druidWS.jsonResponse = {json}
 
     }
 
@@ -135,7 +135,7 @@ class SegmentMetadataLoaderSpec extends Specification {
     def "Test segment metadata can deserialize JSON correctly"() {
         setup:
         SegmentMetadataLoader loader = new SegmentMetadataLoader(tableDict, dimensionDict, druidWS, MAPPER)
-        druidWS.jsonResponse = gappySegmentMetadataJson
+        druidWS.jsonResponse = {gappySegmentMetadataJson}
         PhysicalTable table = Mock(PhysicalTable)
         SegmentMetadata capture
 

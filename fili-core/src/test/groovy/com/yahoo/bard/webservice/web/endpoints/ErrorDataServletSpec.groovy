@@ -138,7 +138,7 @@ class ErrorDataServletSpec extends Specification {
         setup:
         DruidServiceConfig oldConfig = nonUiTestWebService.serviceConfig
         nonUiTestWebService.serviceConfig = new DruidServiceConfig("Non-Ui Broker", oldConfig.url, 123, oldConfig.priority)
-        nonUiTestWebService.jsonResponse = standardGoodDruidResponse
+        nonUiTestWebService.jsonResponse = {standardGoodDruidResponse}
         String expectedDruidQuery = standardGoodDruidQuery
 
         expect:
@@ -803,7 +803,7 @@ class ErrorDataServletSpec extends Specification {
 
     def "Test empty result returns correct 200 result"() {
         setup:
-        nonUiTestWebService.jsonResponse = "[]"
+        nonUiTestWebService.jsonResponse = {"[]"}
         nonUiTestWebService.weightResponse = "[]"
 
         // create 10 dimensionRows per dimension to get past worst case estimate

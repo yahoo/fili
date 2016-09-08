@@ -139,7 +139,7 @@ class DataSourceMetadataLoaderSpec extends Specification {
         metadataService = jtb.testBinderFactory.getDataSourceMetaDataService()
         dimensionDict = jtb.configurationLoader.getDimensionDictionary()
         tableDict = jtb.configurationLoader.getPhysicalTableDictionary()
-        druidWS.jsonResponse = fullDataSourceMetadataJson
+        druidWS.jsonResponse = {fullDataSourceMetadataJson}
 
         expectedIntervalsMap = [:]
         dimensions123.each {
@@ -182,7 +182,7 @@ class DataSourceMetadataLoaderSpec extends Specification {
                 druidWS,
                 MAPPERS.getMapper()
         )
-        druidWS.jsonResponse = gappyDataSourceMetadataJson
+        druidWS.jsonResponse = {gappyDataSourceMetadataJson}
         PhysicalTable table = Mock(PhysicalTable)
         DataSourceMetadata capture
 

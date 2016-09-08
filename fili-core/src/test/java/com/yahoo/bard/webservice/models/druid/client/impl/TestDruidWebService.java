@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
+import org.glassfish.jersey.internal.util.Producer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +40,7 @@ public class TestDruidWebService implements DruidWebService {
     );
     private static ObjectWriter writer = mapper.writer();
 
-    public String jsonResponse = "[]";
+    public Producer<String> jsonResponse = () -> "[]";
     public String timeBoundaryResponse = "[]";
     public String segmentMetadataResponse = "[]";
     public int statusCode = 200;
@@ -121,10 +122,10 @@ public class TestDruidWebService implements DruidWebService {
                 // default response is groupBy response
                 break;
             case SEGMENT_METADATA:
-                jsonResponse = segmentMetadataResponse;
+                jsonResponse = () -> segmentMetadataResponse;
                 break;
             case TIME_BOUNDARY:
-                jsonResponse = timeBoundaryResponse;
+                jsonResponse = () -> timeBoundaryResponse;
                 break;
             default:
                 throw new IllegalArgumentException("Illegal query type : " + lastQuery.getQueryType());
@@ -134,9 +135,9 @@ public class TestDruidWebService implements DruidWebService {
             if (query instanceof WeightEvaluationQuery) {
                 success.invoke(mapper.readTree(weightResponse));
             } else if (statusCode == 200) {
-                success.invoke(mapper.readTree(jsonResponse));
+                success.invoke(mapper.readTree(jsonResponse.call()));
             } else {
-                error.invoke(statusCode, reasonPhrase, jsonResponse);
+                error.invoke(statusCode, reasonPhrase, jsonResponse.call());
             }
         } catch (IOException e) {
             failure.invoke(e);
@@ -155,7 +156,7 @@ public class TestDruidWebService implements DruidWebService {
         //extract only status code and description from expected response string
         statusCode = (int) failure.get("status");
         reasonPhrase = (String) failure.get("reason");
-        jsonResponse = (String) failure.get("description");
+        jsonResponse = () -> (String) failure.get("description");
     }
 
 
@@ -183,7 +184,7 @@ public class TestDruidWebService implements DruidWebService {
         this.statusCode = statusCode;
         this.statusName = statusName;
         reasonPhrase = reason;
-        jsonResponse = response;
+        jsonResponse = () -> response;
     }
 
     @Override
@@ -221,9 +222,9 @@ public class TestDruidWebService implements DruidWebService {
 
          try {
              if (statusCode == 200) {
-                success.invoke(mapper.readTree(jsonResponse));
+                success.invoke(mapper.readTree(jsonResponse.call()));
             } else {
-                error.invoke(statusCode, reasonPhrase, jsonResponse);
+                error.invoke(statusCode, reasonPhrase, jsonResponse.call());
             }
         } catch (IOException e) {
             failure.invoke(e);

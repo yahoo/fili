@@ -142,7 +142,7 @@ class MemTupleDataCacheSpec extends Specification {
            }"""
 
         when: "initial request"
-        jtb.nonUiDruidWebService.jsonResponse = response
+        jtb.nonUiDruidWebService.jsonResponse = {response}
 
         String result = jtb.getHarness().target("data/shapes/day/color")
             .queryParam("metrics","width")
@@ -153,7 +153,7 @@ class MemTupleDataCacheSpec extends Specification {
         GroovyTestUtils.compareJson(result, expected)
 
         when: "subsequent request"
-        jtb.nonUiDruidWebService.jsonResponse = response
+        jtb.nonUiDruidWebService.jsonResponse = {response}
 
         result = jtb.getHarness().target("data/shapes/day/color")
             .queryParam("metrics","width")
@@ -164,7 +164,7 @@ class MemTupleDataCacheSpec extends Specification {
         GroovyTestUtils.compareJson(result, expected)
 
         when: "druid result changes only value"
-        jtb.nonUiDruidWebService.jsonResponse = "[]"
+        jtb.nonUiDruidWebService.jsonResponse = {"[]"}
 
         result = jtb.getHarness().target("data/shapes/day/color")
             .queryParam("metrics","width")
@@ -176,7 +176,7 @@ class MemTupleDataCacheSpec extends Specification {
 
         when: "druid result changes both value and segment metadata"
         defaultCheckSum = ~expectedCheckSum
-        jtb.nonUiDruidWebService.jsonResponse = "[]"
+        jtb.nonUiDruidWebService.jsonResponse = {"[]"}
         expected = """{ "rows":[] }"""
 
         result = jtb.getHarness().target("data/shapes/day/color")
@@ -190,7 +190,7 @@ class MemTupleDataCacheSpec extends Specification {
         when: "subsequent queries after change and first cache miss"
         expectedCheckSum = ~expectedCheckSum
         defaultCheckSum = expectedCheckSum
-        jtb.nonUiDruidWebService.jsonResponse = "[]"
+        jtb.nonUiDruidWebService.jsonResponse = {"[]"}
         expected = """{ "rows":[] }"""
 
         result = jtb.getHarness().target("data/shapes/day/color")
@@ -202,7 +202,7 @@ class MemTupleDataCacheSpec extends Specification {
         GroovyTestUtils.compareJson(result, expected)
 
         when: "force cache bypass"
-        jtb.nonUiDruidWebService.jsonResponse = "[]"
+        jtb.nonUiDruidWebService.jsonResponse = {"[]"}
 
         result = jtb.getHarness().target("data/shapes/day/color")
             .queryParam("metrics","width")

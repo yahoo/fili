@@ -59,6 +59,10 @@ abstract class BaseDataServletComponentSpec extends Specification {
 
     String getFakeDruidResponse() { "[]" }
 
+    Closure<String> getFakeDruidResponseClosure() {
+        return { getFakeDruidResponse() }
+    }
+
 
     def setup() {
         // Create the test web container to test the resources
@@ -114,7 +118,7 @@ abstract class BaseDataServletComponentSpec extends Specification {
         validateFakeDruidResponse(getFakeDruidResponse())
         validateExpectedApiResponse(getExpectedApiResponse())
 
-        injectDruidResponse(getFakeDruidResponse())
+        injectDruidResponse(getFakeDruidResponseClosure())
 
         when: "We send a request"
         Response response = makeAbstractRequest()
@@ -138,15 +142,28 @@ abstract class BaseDataServletComponentSpec extends Specification {
         GroovyTestUtils.compareJson(result, expectedResult, sortStrategy)
     }
 
+
     /**
-     *  Injects the fake Druid response into the Druid backend used by the test harness, if applicable.
+     *  Injects the fake Druid response into the Druid backend used by the test harness, if
+     *  applicable.
      *
      *  @param  druidResponse The fake response to be injected.
      */
-    def injectDruidResponse(String druidResponse) {
+    void injectDruidResponse(String druidResponse) {
+        injectDruidResponse {druidResponse}
+    }
+
+    /**
+     *  Injects the closure generating the fake Druid response into the Druid backend used by the test harness, if
+     *  applicable.
+     *
+     *  @param  druidResponse The closure generating the fake response to be injected.
+     */
+    void injectDruidResponse(Closure<String> druidResponse) {
         if (jtb.nonUiDruidWebService instanceof TestDruidWebService) {
             jtb.nonUiDruidWebService.jsonResponse = druidResponse
         }
+
     }
 
     /*
