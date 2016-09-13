@@ -54,7 +54,7 @@
         </site>
         <repository>
             <id>bintray-fili-repo</id>
-            <url>https://api.bintray.com/maven/yahoo/maven/fili;publish=1</url>
+            <url>https://api.bintray.com/maven/yahoo/maven/fili/;publish=1</url>
         </repository>
     </distributionManagement>
 
