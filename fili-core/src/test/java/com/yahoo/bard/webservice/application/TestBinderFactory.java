@@ -8,6 +8,7 @@ import static com.yahoo.bard.webservice.data.config.names.TestApiDimensionName.S
 import static com.yahoo.bard.webservice.data.config.names.TestDruidTableName.HOURLY;
 import static com.yahoo.bard.webservice.data.config.names.TestDruidTableName.MONTHLY;
 
+import com.yahoo.bard.webservice.async.workflows.AsynchronousWorkflowsBuilder;
 import com.yahoo.bard.webservice.config.BardFeatureFlag;
 import com.yahoo.bard.webservice.data.cache.DataCache;
 import com.yahoo.bard.webservice.data.cache.HashDataCache;
@@ -42,6 +43,7 @@ import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.web.endpoints.JobsEndpointResources;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.yahoo.bard.webservice.async.workflows.TestAsynchronousWorkflowsBuilder;
 
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.joda.time.DateTime;
@@ -202,6 +204,11 @@ public class TestBinderFactory extends AbstractBinderFactory {
         // Store the config loader so that we can get access to it, and then return it
         this.configurationLoader = super.buildConfigurationLoader(dimensionLoader, metricLoader, tableLoader);
         return configurationLoader;
+    }
+
+    @Override
+    protected Class<? extends AsynchronousWorkflowsBuilder> getAsynchronousProcessBuilder() {
+        return TestAsynchronousWorkflowsBuilder.class;
     }
 
     @Override

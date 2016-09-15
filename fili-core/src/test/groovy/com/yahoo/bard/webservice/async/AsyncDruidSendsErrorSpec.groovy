@@ -3,10 +3,12 @@ package com.yahoo.bard.webservice.async
 import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobStatus.FAILURE
 import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobStatus.PENDING
 
+import com.yahoo.bard.webservice.async.workflows.TestAsynchronousWorkflowsBuilder
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 
-import spock.util.concurrent.AsyncConditions
-import spock.util.concurrent.PollingConditions
+import rx.Observer
+
+import java.util.concurrent.CountDownLatch
 
 /**
  * Verifies that the job status is updated to error, and results links return the error message when Druid experiences
@@ -75,6 +77,20 @@ class AsyncDruidSendsErrorSpec extends AsyncFunctionalSpec {
                         "druidQuery" : null
                     }"""
 
+    final CountDownLatch jobMetadataReady = new CountDownLatch(1)
+
+    def setup() {
+        TestAsynchronousWorkflowsBuilder.addSubscriber(
+                TestAsynchronousWorkflowsBuilder.Workflow.JOB_MARKED_COMPLETE,
+                {jobMetadataReady.countDown()},
+                {throw it}
+        )
+    }
+
+    def cleanup() {
+        TestAsynchronousWorkflowsBuilder.clearSubscribers()
+    }
+
     @Override
     Map<String, Closure<String>> getResultsToTargetFunctions() {
         [
@@ -84,7 +100,10 @@ class AsyncDruidSendsErrorSpec extends AsyncFunctionalSpec {
                 //the query for the job metadata
                 syncResults: { AsyncTestUtils.extractTargetFromField(it.data.readEntity(String), "syncResults") },
                 results: { AsyncTestUtils.extractTargetFromField(it.data.readEntity(String), "results") },
-                jobs: { AsyncTestUtils.buildTicketLookup(it.data.readEntity(String)) }
+                jobs: {
+                    jobMetadataReady.await()
+                    AsyncTestUtils.buildTicketLookup(it.data.readEntity(String))
+                }
         ]
     }
 
@@ -109,14 +128,8 @@ class AsyncDruidSendsErrorSpec extends AsyncFunctionalSpec {
                     assert GroovyTestUtils.compareJson(it.readEntity(String), ERROR_MESSAGE)
                 },
                 jobs: { response ->
-                    // The job metadata is the same as the metadata returned by the data endpoint, except the status is
-                    // failure rather than pending.
-                    //There is a small window between when the results are stored and the job row's status is updated.
-                    PollingConditions pollingConditions = new PollingConditions()
-                    pollingConditions.eventually {
-                        assert response.status == 200
-                        AsyncTestUtils.validateJobPayload(response.readEntity(String), QUERY, FAILURE.name)
-                    }
+                    assert response.status == 200
+                    AsyncTestUtils.validateJobPayload(response.readEntity(String), QUERY, FAILURE.name)
                 }
         ]
     }

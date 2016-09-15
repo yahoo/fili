@@ -9,6 +9,10 @@ Current
 -------
 
 ### Added:
+-  [A test implementation of the `AsynchronousWorkflowsBuilder`, `TestAsynchronousWorkflowsBuilder`](http://github.com/yahoo/fili/pull/39)
+    * Identical to the `DefaultAsynchronousWorkflowsBuilder`, except that it includes hooks to allow outside forces (i.e.
+      Specifications) to add additional subscribers to each workflow.
+
 -  [Functional tests for Asynchronous queries](https://github.com/yahoo/fili/pull/35)
 
 - [Enrich jobs endpoint with filtering functionality] (https://github.com/yahoo/fili/pull/26)
@@ -37,6 +41,10 @@ Current
 
 
 ### Changed:
+-  [The `TestBinderFactory` now uses the `TestAsynchronousWorkflowsBuilder`](http://github.com/yahoo/fili/pull/39)
+    * This allows the asynchronous functional tests to add countdown latches to the workflows where necessary, allowing
+      for thread-safe tests.
+
 -  [TestDruidWebService::jsonResponse is now a Producer<String>](https://github.com/yahoo/fili/pull/35)
 
 - [ISSUE-17](https://github.com/yahoo/fili/issues/17) [Added pagination parameters to PreResponse] (https://github.com/yahoo/fili/pull/19) 

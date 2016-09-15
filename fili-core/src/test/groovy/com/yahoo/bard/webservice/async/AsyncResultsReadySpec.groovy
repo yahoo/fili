@@ -1,9 +1,12 @@
 package com.yahoo.bard.webservice.async
 
 import com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobStatus
+import com.yahoo.bard.webservice.async.workflows.TestAsynchronousWorkflowsBuilder
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 
-import spock.util.concurrent.PollingConditions
+import rx.Observer
+
+import java.util.concurrent.CountDownLatch
 
 /**
  * Verifies that when the results of an asynchronous request are ready, that the job status is updated to "success" and
@@ -65,6 +68,20 @@ class AsyncResultsReadySpec extends AsyncFunctionalSpec {
     static final String QUERY =
             "http://localhost:9998/data/shapes/day?dateTime=2016-08-30%2F2016-08-31&metrics=height&asyncAfter=0"
 
+    final CountDownLatch jobMetadataReady = new CountDownLatch(1)
+
+    def setup() {
+        TestAsynchronousWorkflowsBuilder.addSubscriber(
+                TestAsynchronousWorkflowsBuilder.Workflow.JOB_MARKED_COMPLETE,
+                {jobMetadataReady.countDown()},
+                {throw it}
+        )
+    }
+
+    def cleanup() {
+        TestAsynchronousWorkflowsBuilder.clearSubscribers()
+    }
+
     @Override
     Map<String, Closure<String>> getResultsToTargetFunctions() {
         [
@@ -74,7 +91,12 @@ class AsyncResultsReadySpec extends AsyncFunctionalSpec {
                 //has been updated correctly.
                 syncResults: { AsyncTestUtils.extractTargetFromField(it.data.readEntity(String), "syncResults") },
                 results: { AsyncTestUtils.extractTargetFromField(it.data.readEntity(String), "results") },
-                jobs: { AsyncTestUtils.buildTicketLookup(it.data.readEntity(String)) }
+                jobs: {
+                    // We won't even return the target for the request, until the job metadata has been updated,
+                    // guaranteeing that the result will be marked ready before we make the request.
+                    jobMetadataReady.await()
+                    AsyncTestUtils.buildTicketLookup(it.data.readEntity(String))
+                }
         ]
     }
 
@@ -94,15 +116,12 @@ class AsyncResultsReadySpec extends AsyncFunctionalSpec {
                     assert GroovyTestUtils.compareJson(it.readEntity(String), getExpectedApiResponse())
                 },
                 jobs: { response ->
-                    PollingConditions pollingConditions = new PollingConditions()
-                    pollingConditions.eventually {
                         assert response.status == 200
                         AsyncTestUtils.validateJobPayload(
                                 response.readEntity(String),
                                 QUERY,
                                 DefaultJobStatus.SUCCESS.name
                         )
-                    }
                 }
         ]
     }
