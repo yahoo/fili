@@ -13,7 +13,7 @@
     <parent>
         <groupId>com.yahoo.fili</groupId>
         <artifactId>fili-parent-pom</artifactId>
-        <version>0.1-SNAPSHOT</version>
+        <version>0.6-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -25,7 +25,6 @@
         <dependency>
             <groupId>com.yahoo.fili</groupId>
             <artifactId>fili-core</artifactId>
-            <version>0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>

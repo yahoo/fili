@@ -16,11 +16,10 @@
     <parent>
         <groupId>com.yahoo.fili</groupId>
         <artifactId>fili-parent-pom</artifactId>
-        <version>0.1-SNAPSHOT</version>
+        <version>0.6-SNAPSHOT</version>
     </parent>
 
     <properties>
-        <version.druid.api>0.3.8</version.druid.api>
         <checkstyle.config.location>../checkstyle-style.xml</checkstyle.config.location>
         <checkstyle.suppressions.location>../checkstyle-suppressions.xml</checkstyle.suppressions.location>
     </properties>
@@ -29,196 +28,146 @@
         <dependency>
             <groupId>com.yahoo.fili</groupId>
             <artifactId>fili-system-config</artifactId>
-            <version>0.1-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>io.druid</groupId>
             <artifactId>druid-api</artifactId>
-            <version>${version.druid.api}</version>
         </dependency>
 
         <!-- Metrics -->
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-core</artifactId>
-            <version>${version.metrics}</version>
         </dependency>
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-annotation</artifactId>
-            <version>${version.metrics}</version>
         </dependency>
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-healthchecks</artifactId>
-            <version>${version.metrics}</version>
         </dependency>
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-servlets</artifactId>
-            <version>${version.metrics}</version>
         </dependency>
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-servlet</artifactId>
-            <version>${version.metrics}</version>
         </dependency>
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-jersey2</artifactId>
-            <version>${version.metrics}</version>
         </dependency>
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-logback</artifactId>
-            <version>${version.metrics}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>ch.qos.logback</groupId>
-                    <artifactId>logback-classic</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <!-- Servlet API -->
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-            <version>${version.servlet}</version>
         </dependency>
 
         <!-- Jersey -->
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-common</artifactId>
-            <version>${version.jersey}</version>
         </dependency>
         <dependency> <!-- metrics tries to load jersey-server 2.11 -->
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-server</artifactId>
-            <version>${version.jersey}</version>
         </dependency>
 
         <!-- Injection -->
         <dependency>
             <groupId>javax.annotation</groupId>
             <artifactId>javax.annotation-api</artifactId>
-            <version>1.2</version>
         </dependency>
         <dependency>
             <groupId>javax.inject</groupId>
             <artifactId>javax.inject</artifactId>
-            <version>1</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2-api</artifactId>
-            <version>${version.hk2}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.hk2.external</groupId>
             <artifactId>javax.inject</artifactId>
-            <version>${version.hk2}</version>
         </dependency>
 
         <!-- Json Parsing -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>${version.jackson}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${version.jackson}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>${version.jackson}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jdk8</artifactId>
-            <version>${version.jackson}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-joda</artifactId>
-            <version>${version.jackson}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-csv</artifactId>
-            <version>${version.jackson}</version>
         </dependency>
         <dependency>
             <!--TODO: switch back to jackson parser-->
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20141113</version>
         </dependency>
 
         <!-- Redis -->
         <dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
-            <version>2.7.2</version>
         </dependency>
         <dependency>
             <groupId>org.redisson</groupId>
             <artifactId>redisson</artifactId>
-            <version>2.2.13</version>
         </dependency>
 
         <!-- JodaTime -->
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
-            <version>2.8.2</version>
-        </dependency>
-
-        <!-- Logging -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${version.slf4j}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>${version.logback}</version>
-            <scope>provided</scope>
         </dependency>
 
         <!-- Async HTTP Client -->
         <dependency>
             <groupId>org.asynchttpclient</groupId>
             <artifactId>async-http-client</artifactId>
-            <version>2.0.2</version>
         </dependency>
 
         <!--ReactiveX-->
         <dependency>
             <groupId>io.reactivex</groupId>
             <artifactId>rxjava</artifactId>
-            <version>1.1.5</version>
         </dependency>
 
         <!-- Memcached -->
         <dependency>
             <groupId>net.spy</groupId>
             <artifactId>spymemcached</artifactId>
-            <version>2.12.0</version>
         </dependency>
 
         <!-- Test -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
             <scope>test</scope>
         </dependency>
 
@@ -226,7 +175,6 @@
         <dependency>
             <groupId>org.glassfish.jersey.test-framework.providers</groupId>
             <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
-            <version>${version.jersey}</version>
             <scope>test</scope>
         </dependency>
 
@@ -234,17 +182,14 @@
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
-            <version>${version.lucene}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-analyzers-common</artifactId>
-            <version>${version.lucene}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queries</artifactId>
-            <version>${version.lucene}</version>
         </dependency>
 
         <!-- Guava -->
@@ -252,7 +197,16 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>${version.guava}</version>
+        </dependency>
+
+        <!-- Apache Commons Libraries -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
         </dependency>
     </dependencies>
 

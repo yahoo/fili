@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.yahoo.fili</groupId>
         <artifactId>fili-parent-pom</artifactId>
-        <version>0.1-SNAPSHOT</version>
+        <version>0.6-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -17,6 +17,18 @@
     <description>Fili system config implements the core system configuration classes used for logging, dependency
         management, and configuration
     </description>
+
+    <dependencies>
+        <dependency>
+            <groupId>commons-configuration</groupId>
+            <artifactId>commons-configuration</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>
