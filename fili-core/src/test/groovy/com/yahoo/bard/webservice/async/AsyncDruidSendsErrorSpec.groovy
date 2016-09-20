@@ -67,7 +67,7 @@ class AsyncDruidSendsErrorSpec extends AsyncFunctionalSpec {
     */
 
     static final String QUERY =
-            "http://localhost:9998/data/shapes/day?dateTime=2016-08-30%2F2016-08-31&metrics=height&asyncAfter=0"
+            "http://localhost:9998/data/shapes/day?dateTime=2016-08-30%2F2016-08-31&metrics=height&asyncAfter=always"
 
     static final String ERROR_MESSAGE = """{
                         "status" : 500,
@@ -139,7 +139,7 @@ class AsyncDruidSendsErrorSpec extends AsyncFunctionalSpec {
         [
                 data: {[
                         metrics: ["height"],
-                        asyncAfter: ["0"],
+                        asyncAfter: ["always"],
                         dateTime: ["2016-08-30/2016-08-31"]
                 ]},
                 syncResults: {

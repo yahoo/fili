@@ -4,7 +4,6 @@ package com.yahoo.bard.webservice.web
 
 import com.yahoo.bard.webservice.async.jobs.JobTestUtils
 import com.yahoo.bard.webservice.async.jobs.stores.JobRowFilter
-import com.yahoo.bard.webservice.util.ReactiveTestUtils
 import com.yahoo.bard.webservice.async.jobs.stores.ApiJobStore
 import com.yahoo.bard.webservice.async.broadcastchannels.BroadcastChannel
 import com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField
@@ -18,7 +17,6 @@ import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore
 import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseTestingUtils
 import com.yahoo.bard.webservice.async.broadcastchannels.SimpleBroadcastChannel
 
-import rx.Observable
 import rx.observers.TestSubscriber
 import rx.subjects.PublishSubject;
 import spock.lang.Specification
@@ -81,9 +79,7 @@ class JobsApiRequestSpec extends Specification {
                 null,
                 uriInfo,
                 jobPayloadBuilder,
-                apiJobStore,
-                preResponseStore,
-                broadcastChannel
+                apiJobStore
         )
     }
 
@@ -119,63 +115,6 @@ class JobsApiRequestSpec extends Specification {
         then:
         errorSubscriber.assertError(JobNotFoundException.class)
         errorSubscriber.getOnErrorEvents().get(0).getMessage() == "No job found with job ticket IDontExist"
-    }
-
-    def "handleBroadcastChannelNotification returns an Observable that replays notification if it was sent before async timeout"() {
-        setup:
-        TestSubscriber<PreResponse> testSubscriber = new TestSubscriber<>()
-
-        when:
-        Observable<PreResponse> preResponseObservable = defaultJobsApiRequest.handleBroadcastChannelNotification("ticket1")
-
-        broadcastChannel.publish("ticket1")
-        preResponseObservable.subscribe(testSubscriber)
-
-        then:
-        testSubscriber.assertReceivedOnNext([ticket1PreResponse])
-    }
-
-    def "handleBroadcastChannelNotification returns an Observable that filters notifications and only returns a single notification for the given ticket"() {
-        setup:
-        TestSubscriber<PreResponse> testSubscriber = new TestSubscriber<>()
-
-        when:
-        Observable<PreResponse> preResponseObservable = defaultJobsApiRequest.handleBroadcastChannelNotification("ticket1")
-        broadcastChannel.publish("ticket_before_connecting_is_dropped")
-        broadcastChannel.publish("ticket1")
-        broadcastChannel.publish("ticket2")
-        broadcastChannel.publish("ticket1")
-        preResponseObservable.subscribe(testSubscriber)
-
-        then:
-        testSubscriber.assertReceivedOnNext([ticket1PreResponse])
-    }
-
-    def "handleBroadcastChannelNotification returns an empty Observable if a timeout occurs before the notification is received"() {
-        setup:
-        TestSubscriber<PreResponse> testSubscriber = new TestSubscriber<>()
-        JobsApiRequest apiRequest = new JobsApiRequest(
-                null,
-                "0",
-                "",
-                "",
-                null,
-                uriInfo,
-                jobPayloadBuilder,
-                apiJobStore,
-                preResponseStore,
-                broadcastChannel
-        )
-
-        when: "We start listening to the broadcastChannel and timeout occurs"
-        Observable<PreResponse> preResponseObservable = apiRequest.handleBroadcastChannelNotification("ticket1")
-
-        and: "we subscribe to the preResponseObservable"
-        preResponseObservable.subscribe(testSubscriber)
-
-        then: "preResponseObservable is empty (the chain is complete, and no values were sent)"
-        ReactiveTestUtils.assertCompletedWithoutError(testSubscriber)
-        testSubscriber.assertNoValues()
     }
 
     def "getJobViewObservable results in onError being called on it's observers if the JobRow cannot be correctly mapped to a Job payload"() {
@@ -272,9 +211,7 @@ class JobsApiRequestSpec extends Specification {
                 "userId-eq[Number 1,Number 2]",
                 uriInfo,
                 jobPayloadBuilder,
-                apiJobStore,
-                preResponseStore,
-                broadcastChannel
+                apiJobStore
         )
 
         Map<String, String> jobPayload1 = [

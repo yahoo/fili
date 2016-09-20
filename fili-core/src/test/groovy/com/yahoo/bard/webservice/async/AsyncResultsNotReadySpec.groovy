@@ -19,7 +19,7 @@ class AsyncResultsNotReadySpec extends AsyncFunctionalSpec {
     /*
         This executes the following requests, and expects the following responses. All caps are placeholders.
              Send:
-                 http://localhost:9998/data/shapes/day?dateTime=2016-08-30%2F2016-08-31&metrics=height&asyncAfter=0
+                 http://localhost:9998/data/shapes/day?dateTime=2016-08-30%2F2016-08-31&metrics=height&asyncAfter=always
              Receive:
                  {
                      "self": "http://localhost:9998/jobs/gregUUID",
@@ -32,7 +32,7 @@ class AsyncResultsNotReadySpec extends AsyncFunctionalSpec {
                      "status": "pending"
                  }
             Send:
-                 http://localhost:9998/jobs/gregUUID/results?asyncAfter=0
+                 http://localhost:9998/jobs/gregUUID/results?asyncAfter=always
             Receive:
                 SAME AS ABOVE
             Send:
@@ -44,7 +44,7 @@ class AsyncResultsNotReadySpec extends AsyncFunctionalSpec {
     final CountDownLatch validationFinished = new CountDownLatch(3)
 
     static final String QUERY =
-            "http://localhost:9998/data/shapes/day/color?dateTime=2016-08-30%2F2016-08-31&metrics=height&asyncAfter=0"
+            "http://localhost:9998/data/shapes/day/color?dateTime=2016-08-30%2F2016-08-31&metrics=height&asyncAfter=always"
 
     @Override
     Map<String, Closure<String>> getResultsToTargetFunctions() {
@@ -108,11 +108,11 @@ class AsyncResultsNotReadySpec extends AsyncFunctionalSpec {
         [
                 data: {[
                         metrics: ["height"],
-                        asyncAfter: ["0"],
+                        asyncAfter: ["always"],
                         dateTime: ["2016-08-30/2016-08-31"]
                 ]},
                 jobs: {[:]},
-                results: { [ asyncAfter: ["0"] ] }
+                results: { [ asyncAfter: ["always"] ] }
         ]
     }
 

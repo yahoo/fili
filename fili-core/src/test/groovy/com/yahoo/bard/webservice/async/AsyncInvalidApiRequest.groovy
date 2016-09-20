@@ -10,7 +10,7 @@ class AsyncInvalidApiRequest extends AsyncFunctionalSpec {
     /*
         This executes the following requests, and expects the following responses. All caps are placeholders.
              Send:
-                 http://localhost:9998/data/shapes/day?dateTime=2016-08-30%2F2016-08-31&asyncAfter=0
+                 http://localhost:9998/data/shapes/day?dateTime=2016-08-30%2F2016-08-31&asyncAfter=always
              Receive:
                 {
                     "status": 400,
@@ -44,7 +44,7 @@ class AsyncInvalidApiRequest extends AsyncFunctionalSpec {
     Map<String, Closure<Map<String, List<String>>>> getQueryParameters() {
         [
                 data: { [
-                        asyncAfter: ["0"],
+                        asyncAfter: ["always"],
                         dateTime: ["2016-08-30/2016-08-31"]
                 ] }
         ]

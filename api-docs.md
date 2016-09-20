@@ -569,13 +569,16 @@ Fili supports asynchronous data queries. A new parameter `asyncAfter` is added o
 parameter will control whether a data query should always be synchronous, or transition from synchronous to asynchronous
  on the fly. If `asyncAfter=never` then Fili will wait indefinitely for the data, and hold the connection with the
  client open as long as allowed by the network. This will be the default. However, the default behavior of `asyncAfter`
- may be modified by setting the `default_asyncAfter` configuration parameter. If `asyncAfter=0`, the query is
- asynchronous immediately.
+ may be modified by setting the `default_asyncAfter` configuration parameter. If `asyncAfter=always`, the query is
+ asynchronous immediately. If `asyncAfter=t` for some positive integer `t`, then _at least_ `t` milliseconds will pass
+ before the query becomes asynchronous. Note however that the timing is best effort. The query may take longer than
+ `t` milliseconds and still be synchronous. In other words, `asyncAfter=0` and `asyncAfter=always` do not mean the same
+ thing. It is possible for `asyncAfter=0` to return the query results synchronously (this may happen if the results come
+ back sufficiently fast). It is _impossible_ for the query results to return synchronously if `asyncAfter=always`.
 
-If it takes less time than the timeout for the data to be sent back, then the results are sent to the client.
-If `asyncAfter=t` for `t` an integer in milliseconds then the query will start synchronously. If the query takes longer
-than `t` milliseconds, then the query becomes asynchronous. If the timeout passes, and the data has not come back, then
-the user receives a `202 Accepted` response and the [job meta-data](#job-meta-data).
+If the timeout passes, and the data has not come back, then the user receives a `202 Accepted` response and the
+[job meta-data](#job-meta-data).
+
 
 ### Jobs Endpoint
 The jobs endpoint is the one stop shop for queries about asynchronous jobs. This endpoint is responsible for:

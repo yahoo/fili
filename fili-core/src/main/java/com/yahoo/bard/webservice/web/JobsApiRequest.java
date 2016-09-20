@@ -3,22 +3,18 @@
 package com.yahoo.bard.webservice.web;
 
 import com.yahoo.bard.webservice.async.jobs.stores.ApiJobStore;
-import com.yahoo.bard.webservice.async.broadcastchannels.BroadcastChannel;
 import com.yahoo.bard.webservice.async.jobs.payloads.JobPayloadBuilder;
 import com.yahoo.bard.webservice.async.jobs.jobrows.JobRow;
 import com.yahoo.bard.webservice.async.jobs.stores.JobRowFilter;
-import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import rx.Observable;
-import rx.observables.ConnectableObservable;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
@@ -34,8 +30,6 @@ public class JobsApiRequest extends ApiRequest {
 
     private final JobPayloadBuilder jobPayloadBuilder;
     private final ApiJobStore apiJobStore;
-    private final PreResponseStore preResponseStore;
-    private final BroadcastChannel<String> broadcastChannel;
     private final String filters;
 
     /**
@@ -54,9 +48,6 @@ public class JobsApiRequest extends ApiRequest {
      * @param uriInfo  The URI of the request object.
      * @param jobPayloadBuilder  The JobRowMapper to be used to map JobRow to the Job returned by the api
      * @param apiJobStore  The ApiJobStore containing Job metadata
-     * @param preResponseStore  The data store responsible for storing PreResponses
-     * @param broadcastChannel  Channel to notify other Bard processes (i.e. long pollers)
-     * that a PreResponse is ready for retrieval
      */
     public JobsApiRequest(
             String format,
@@ -66,15 +57,11 @@ public class JobsApiRequest extends ApiRequest {
             String filters,
             UriInfo uriInfo,
             JobPayloadBuilder jobPayloadBuilder,
-            ApiJobStore apiJobStore,
-            PreResponseStore preResponseStore,
-            BroadcastChannel<String> broadcastChannel
+            ApiJobStore apiJobStore
     ) {
         super(format, asyncAfter, perPage, page, uriInfo);
         this.jobPayloadBuilder = jobPayloadBuilder;
         this.apiJobStore = apiJobStore;
-        this.preResponseStore = preResponseStore;
-        this.broadcastChannel = broadcastChannel;
         this.filters = filters;
     }
 
@@ -92,34 +79,6 @@ public class JobsApiRequest extends ApiRequest {
                         Observable.error(new JobNotFoundException(ErrorMessageFormat.JOB_NOT_FOUND.format(ticket)))
                 )
                 .map(jobRow -> jobPayloadBuilder.buildPayload(jobRow, uriInfo));
-    }
-
-    /**
-     * Get a PreResponse associated with a given ticket if a timeout does not occur in 'asyncAfter' milliseconds.
-     * If the notification that a job has been stored in the PreResponseStore is received from the
-     * BroadcastChannel before the timeout, fetch the PreResponse for the specified ticket from the PreResponseStore.
-     * In case of a timeout, return an empty Observable.
-     * <p>
-     * BroadCastChannel is a hot observable i.e. it emits notification irrespective of whether it has any subscribers.
-     * We use the replay operator so that the preResponseObservable upon connection, will begin collecting values.
-     * Once a new observer subscribes to the observable, it will have all the collected values replayed to it.
-     *
-     * @param ticket  The ticket for which the PreResponse needs to be retrieved.
-     *
-     * @return An Observable wrapping a PreResponse or an empty Observable in case a timeout occurs.
-     */
-    public Observable<PreResponse> handleBroadcastChannelNotification(@NotNull String ticket) {
-        ConnectableObservable<PreResponse> broadCastChannelPreResponseObservable = broadcastChannel.getNotifications()
-                .filter(ticket::equals)
-                .timeout(asyncAfter, TimeUnit.MILLISECONDS, Observable.empty())
-                .flatMap(preResponseStore::get)
-                .take(1)
-                .replay(1);
-
-        //connect to the broadCastChannelPreResponseObservable so that it begins collecting values
-        broadCastChannelPreResponseObservable.connect();
-
-        return broadCastChannelPreResponseObservable;
     }
 
     /**

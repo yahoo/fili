@@ -48,6 +48,7 @@ import org.slf4j.LoggerFactory;
 
 import rx.Observable;
 import rx.exceptions.Exceptions;
+import rx.observables.ConnectableObservable;
 
 import java.io.IOException;
 import java.net.URI;
@@ -56,6 +57,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import javax.inject.Inject;
@@ -158,9 +160,7 @@ public class JobsServlet extends EndpointServlet {
                     filters,
                     uriInfo,
                     jobPayloadBuilder,
-                    apiJobStore,
-                    preResponseStore,
-                    broadcastChannel
+                    apiJobStore
             );
 
             if (requestMapper != null) {
@@ -230,9 +230,7 @@ public class JobsServlet extends EndpointServlet {
                     null, //filter string is null
                     uriInfo,
                     jobPayloadBuilder,
-                    apiJobStore,
-                    preResponseStore,
-                    broadcastChannel
+                    apiJobStore
             );
 
             if (requestMapper != null) {
@@ -290,9 +288,7 @@ public class JobsServlet extends EndpointServlet {
                     null, // filter string is null
                     uriInfo,
                     jobPayloadBuilder,
-                    apiJobStore,
-                    preResponseStore,
-                    broadcastChannel
+                    apiJobStore
             );
 
             if (requestMapper != null) {
@@ -303,7 +299,7 @@ public class JobsServlet extends EndpointServlet {
             // jobsApiRequest.
             JobsApiRequest jobsApiRequest = apiRequest;
 
-            Observable<PreResponse> preResponseObservable = getPreResponseObservable(ticket, apiRequest);
+            Observable<PreResponse> preResponseObservable = getResults(ticket, apiRequest.getAsyncAfter());
 
             preResponseObservable.isEmpty().subscribe(
                     isEmptyResult -> handlePreResponse(
@@ -359,20 +355,63 @@ public class JobsServlet extends EndpointServlet {
      * notification before timeout, we retrieve the PreResponse from the PreResponseStore else we return an empty
      * Observable.
      *
-     * @param ticket  The ticket whose associated PreResponse needs to be retrieved.
-     * @param apiRequest  JobsApiRequest object with all the associated info in it
+     * @param ticket  The ticket for which the PreResponse needs to be retrieved.
+     * @param asyncAfter  The minimum duration the request is allowed to last before becoming asynchronous
      *
-     * @return An Observable over PreResponse or an empty Observable
+     * @return An Observable wrapping a PreResponse or an empty Observable in case a timeout occurs.
      */
-    protected Observable<PreResponse> getPreResponseObservable(String ticket, JobsApiRequest apiRequest) {
-        //Subscribe to the BroadcastChannel so we do not miss notifications about the ticket being stored in the
-        //PreResponseStore.
-        Observable<PreResponse> broadCastChannelPreResponseObservable =
-                apiRequest.handleBroadcastChannelNotification(ticket);
+    protected Observable<PreResponse> getResults(@NotNull String ticket, long asyncAfter) {
+        if (asyncAfter == JobsApiRequest.ASYNCHRONOUS_ASYNC_AFTER_VALUE) {
+            // If the user specifies that they always want the asynchronous payload, then we need to force the system
+            // to behave like the results are not ready in the store, and the asynchronous timeout has expired even
+            // if the results are available.
+            return Observable.empty();
+        } else {
+            /*
+             * BroadCastChannel is a hot observable i.e. it emits notification irrespective of whether it has any
+             * subscribers. We use the replay operator so that the preResponseObservable upon connection, will begin
+             * collecting values.
+             * Once a new observer subscribes to the observable, it will have all the collected values replayed to it.
+             */
+            ConnectableObservable<String> broadcastChannelNotifications = broadcastChannel.getNotifications()
+                    .filter(ticket::equals)
+                    .take(1)
+                    .replay(1);
+            broadcastChannelNotifications.connect();
+            /*
+             * In the cases where we may get a synchronous response (asyncAfter is a number, or
+             * ApiRequest.SYNCHRONOUS_ASYNC_AFTER_VALUE ), then we start the timer, and
+             * go to the store and check to see if it has the results. If it doesn't, and 'asyncAfter' is a number
+             * then it starts listening to the broadcast channel, and waiting for the timer to expire.
+             *
+             * What this means is that in the case of `asyncAfter=0`, we have the following semantics:
+             * If the results are already in the response store, then return them to me. Otherwise, very quickly
+             * send back the asynchronous payload.
+             */
+            return preResponseStore.get(ticket).switchIfEmpty(
+                    applyTimeoutIfNeeded(broadcastChannelNotifications, asyncAfter).flatMap(preResponseStore::get)
+            );
+        }
+    }
 
-         //Check the PreResponseStore to see if the PreResponse associated with the given ticket has been stored in
-        //the PreResponseStore. If not, wait for a PreResponse for the amount of time specified in async.
-        return preResponseStore.get(ticket).switchIfEmpty(broadCastChannelPreResponseObservable);
+    /**
+     * Given an observable, returns a new observable with an asyncAfter timeout applied only if {@code asyncAfter} is
+     * not {@code never}.
+     * <p>
+     * If the timeout expires, the current observable is replaced with an empty observable.
+     *
+     * @param primary  The observable that should have a timeout attached to it, if the request's asyncAfter is
+     * a number
+     * @param asyncAfter  The minimum duration the request is allowed to last before becoming asynchronous
+     * @param <T>  The type of the observable's payload
+     *
+     * @return An Observable that may or may not have a timeout attached to it, depending on whether the request is
+     * forced to be synchronous or not
+     */
+    private <T> Observable<T> applyTimeoutIfNeeded(Observable<T> primary, long asyncAfter) {
+        return asyncAfter == JobsApiRequest.SYNCHRONOUS_ASYNC_AFTER_VALUE ?
+                primary :
+                primary.timeout(asyncAfter, TimeUnit.MILLISECONDS, Observable.empty());
     }
 
     /**

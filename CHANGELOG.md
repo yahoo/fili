@@ -9,6 +9,8 @@ Current
 -------
 
 ### Added:
+-  [`always` keyword for the `asyncAfter` parameter now guarantees that a query will be asynchronous](https://github.com/yahoo/fili/pull/39)
+
 -  [A test implementation of the `AsynchronousWorkflowsBuilder`, `TestAsynchronousWorkflowsBuilder`](http://github.com/yahoo/fili/pull/39)
     * Identical to the `DefaultAsynchronousWorkflowsBuilder`, except that it includes hooks to allow outside forces (i.e.
       Specifications) to add additional subscribers to each workflow.
@@ -41,9 +43,16 @@ Current
 
 
 ### Changed:
+-  [HashPreResponseStore moved to `test` root directory.](https://github.com/yahoo/fili/pull/39)
+   * The `HashPreResponseStore` is really intended only for testing, and does not have capabilities (i.e. TTL) that are needed for production.
+
 -  [The `TestBinderFactory` now uses the `TestAsynchronousWorkflowsBuilder`](http://github.com/yahoo/fili/pull/39)
     * This allows the asynchronous functional tests to add countdown latches to the workflows where necessary, allowing
       for thread-safe tests.
+
+- [Removed `JobsApiRequest::handleBroadcastChannelNotification`](https://github.com/yahoo/fili/pull/39)
+   * That logic does not really belong in the `JobsApiRequest` (which is responsible for modeling a response, not processing it), and has
+        been consolidated into the `JobsServlet`.
 
 -  [TestDruidWebService::jsonResponse is now a Producer<String>](https://github.com/yahoo/fili/pull/35)
 

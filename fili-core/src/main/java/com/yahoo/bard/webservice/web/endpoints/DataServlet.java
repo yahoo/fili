@@ -451,16 +451,24 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
         // asynchronous. We handle that via the timeout mechanism: If more than asyncAfter milliseconds pass without
         // the queryResultsEmitter emitting a PreResponse (i.e. the system hasn't finished processing the query), then
         // instead of emitting a PreResponse, we emit a JobRow, which triggers all of the asynchronous processing.
-        ConnectableObservable<Either<PreResponse, JobRow>> payloadEmitter = queryResultsEmitter
-                .map(Either::<PreResponse, JobRow>left)
-                .timeout(
-                        asyncAfter,
-                        TimeUnit.MILLISECONDS,
-                        Observable.fromCallable(() -> Either.right(jobMetadata))
-                )
-                .publish(); // We will be interacting with external resources, and don't want to interact with those
-                            // resources once per subscription. A connectable Observable's chain is only executed once
-                            // regardless of the number of subscriptions.
+        // Also, we will be interacting with external resources, and don't want to interact with those
+        // resources once per subscription. A connectable Observable's chain is only executed once
+        // regardless of the number of subscriptions.
+        ConnectableObservable<Either<PreResponse, JobRow>> payloadEmitter;
+        if (asyncAfter == DataApiRequest.ASYNCHRONOUS_ASYNC_AFTER_VALUE) {
+            payloadEmitter = Observable.just(Either.<PreResponse, JobRow>right(jobMetadata)).publish();
+        } else if (asyncAfter == DataApiRequest.SYNCHRONOUS_ASYNC_AFTER_VALUE) {
+            payloadEmitter = queryResultsEmitter.map(Either::<PreResponse, JobRow>left).publish();
+        } else {
+            payloadEmitter = queryResultsEmitter
+                    .map(Either::<PreResponse, JobRow>left)
+                    .timeout(
+                            asyncAfter,
+                            TimeUnit.MILLISECONDS,
+                            Observable.fromCallable(() -> Either.right(jobMetadata))
+                    )
+                    .publish();
+        }
 
         AsynchronousWorkflows asynchronousWorkflows = asynchronousWorkflowsBuilder.buildAsynchronousWorkflows(
                 queryResultsEmitter,

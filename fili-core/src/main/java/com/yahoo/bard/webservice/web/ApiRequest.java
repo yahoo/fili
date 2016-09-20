@@ -50,7 +50,9 @@ public abstract class ApiRequest {
             DEFAULT_PAGE
     );
     private static final String SYNCHRONOUS_REQUEST_FLAG = "never";
-    protected static final long SYNCHRONOUS_ASYNC_AFTER_VALUE = Long.MAX_VALUE;
+    private static final String ASYNCHRONOUS_REQUEST_FLAG = "always";
+    public static final long SYNCHRONOUS_ASYNC_AFTER_VALUE = Long.MAX_VALUE;
+    public static final long ASYNCHRONOUS_ASYNC_AFTER_VALUE = -1;
 
     public static final String COMMA_AFTER_BRACKET_PATTERN = "(?<=]),";
 
@@ -392,8 +394,10 @@ public abstract class ApiRequest {
     protected long generateAsyncAfter(String asyncAfterString) throws BadApiRequestException {
         try {
             return asyncAfterString.equals(SYNCHRONOUS_REQUEST_FLAG) ?
-                    Long.MAX_VALUE :
-                    Long.parseLong(asyncAfterString);
+                    SYNCHRONOUS_ASYNC_AFTER_VALUE :
+                    asyncAfterString.equals(ASYNCHRONOUS_REQUEST_FLAG) ?
+                            ASYNCHRONOUS_ASYNC_AFTER_VALUE :
+                            Long.parseLong(asyncAfterString);
         }  catch (NumberFormatException e) {
             LOG.debug(INVALID_ASYNC_AFTER.logFormat(asyncAfterString), e);
             throw new BadApiRequestException(INVALID_ASYNC_AFTER.format(asyncAfterString), e);
