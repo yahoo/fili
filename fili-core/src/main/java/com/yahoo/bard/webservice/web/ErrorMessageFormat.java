@@ -74,7 +74,7 @@ public enum ErrorMessageFormat implements MessageFormatter {
 
     INTEGER_INVALID("%s value:'%s' is invalid. Value must be a positive integer."),
 
-    TOP_N_UNSORTED("Sort clause is missing: TopN requires at least one metric column as its sorting criterion"),
+    TOP_N_UNSORTED("TopN requires at least one metric column to sort on, specified using a query parameter of the form 'sort=metricName|dir' where 'dir' is one of 'asc' (ascending) or 'desc' (descending)"),
 
     PAGINATION_PARAMETER_MISSING("Missing parameter '%s.' Both 'perPage' and 'page' are required for pagination."),
     PAGINATION_PARAMETER_INVALID("Parameter '%s' expected a positive integer but received: '%s'"),
