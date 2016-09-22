@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Copyright 2016 Yahoo Inc.
-# Licensed under the terms of the Apache license. Please see LICENSE file distributed with this work for terms.
+# Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 
 # This script turns the properties files that simulate modules into jars that can be loaded by the module loader.
 # It should be run manually after any changes to the jar-* moduleConfig.properties files
