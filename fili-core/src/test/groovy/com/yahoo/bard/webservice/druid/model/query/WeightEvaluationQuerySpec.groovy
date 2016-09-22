@@ -185,6 +185,38 @@ class WeightEvaluationQuerySpec extends Specification {
         WeightEvaluationQuery.getWorstCaseWeightEstimate(groupByQuery) == 2 * 4 * 8 * queryWeightLimit
     }
 
+    def "Weight check query strips sort columns"() {
+        given: "weekly day average in outer query, use inner daily timegrain"
+        final DataApiRequest apiRequest = new DataApiRequest(
+                "shapes",
+                "week",
+                [size, shape, color, other],
+                "users,otherUsers",
+                "2014-09-01/2014-09-29",
+                null, //filters
+                null, //havings
+                "users", //sorts
+                null, //counts
+                null, //topN
+                null, //format
+                null, //timeZoneId
+                null, //asyncAfter
+                "", //perPage
+                "", //page
+                null, //uriInfo
+                dataServlet
+        )
+
+        GroupByQuery groupByQuery = builder.buildQuery(apiRequest, merger.merge(apiRequest))
+
+        expect: "The groupBy query has a sort, as a pre-condition"
+        groupByQuery.limitSpec.columns
+
+        and: "The weight-check query doesn't have a sort at either level"
+        !new WeightEvaluationQuery(groupByQuery, 1).limitSpec.columns
+        !new WeightEvaluationQuery(groupByQuery, 1).innermostQuery.limitSpec.columns
+    }
+
     @Unroll
     def "Worst estimate for big dimensions works if estimate is larger than an int but not a long for #queryType"() {
         given: "A query with one sketch, a small number of time buckets, and dimensions with very large cardinality"
