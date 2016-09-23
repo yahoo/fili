@@ -1,5 +1,5 @@
 // Copyright 2016 Yahoo Inc.
-// Licensed under the terms of the Apache license. Please see LICENSE file distributed with this work for terms.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.responseprocessors
 
 import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.REQUEST_WORKFLOW_TIMER

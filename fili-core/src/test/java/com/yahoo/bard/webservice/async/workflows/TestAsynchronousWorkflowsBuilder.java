@@ -1,5 +1,5 @@
 // Copyright 2016 Yahoo Inc.
-// Licensed under the terms of the Apache license. Please see LICENSE file distributed with this work for terms.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.async.workflows;
 
 import com.yahoo.bard.webservice.async.jobs.jobrows.JobRow;
@@ -7,9 +7,6 @@ import com.yahoo.bard.webservice.async.jobs.stores.ApiJobStore;
 import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore;
 import com.yahoo.bard.webservice.util.Either;
 import com.yahoo.bard.webservice.web.PreResponse;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import rx.Observable;
 import rx.Observer;
@@ -19,6 +16,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * An extension of DefaultAsynchronousWorkflowsBuilder that behaves exactly like the
