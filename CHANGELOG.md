@@ -14,7 +14,11 @@ Current
 
 ### Changed:
 
-
+- Cleaned up dependencies in pom files
+  * Moved version management of dependencies up to the parent Pom's dependency management section
+  * Cleaned up the parent Pom's dependency section to only be those dependencies that truly _every_ sub-project should 
+    depend on.
+  * Cleaned up sub-project Pom dependency sections to handle and better use the dependencies the parent Pom provides 
 
 ### Deprecated:
 
