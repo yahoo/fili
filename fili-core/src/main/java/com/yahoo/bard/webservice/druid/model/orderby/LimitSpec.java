@@ -45,7 +45,7 @@ public class LimitSpec {
      * @return type
      */
     public String getType() {
-        return this.type;
+        return type;
     }
 
     /**
@@ -55,7 +55,7 @@ public class LimitSpec {
      */
     @JsonInclude(JsonInclude.Include.NON_ABSENT)
     public OptionalInt getLimit() {
-        return this.limit;
+        return limit;
     }
 
     /**
@@ -66,6 +66,16 @@ public class LimitSpec {
     public LinkedHashSet<OrderByColumn> getColumns() {
         return this.columns;
     }
+
+    // CHECKSTYLE:OFF
+    public LimitSpec withColumns(LinkedHashSet<OrderByColumn> sortColumns) {
+        return new LimitSpec(sortColumns, limit);
+    }
+
+    public LimitSpec withLimit(OptionalInt limit) {
+        return new LimitSpec(columns, limit);
+    }
+    // CHECKSTYLE:ON
 
     @Override
     public boolean equals(final Object o) {

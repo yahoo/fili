@@ -13,6 +13,7 @@ import com.yahoo.bard.webservice.druid.model.datasource.QueryDataSource;
 import com.yahoo.bard.webservice.druid.model.datasource.UnionDataSource;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.having.Having;
+import com.yahoo.bard.webservice.druid.model.orderby.LimitSpec;
 import com.yahoo.bard.webservice.druid.model.postaggregation.ConstantPostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 import com.yahoo.bard.webservice.util.IntervalUtils;
@@ -22,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 /**
@@ -101,7 +103,7 @@ public class WeightEvaluationQuery extends GroupByQuery {
                 Collections.<Aggregation>singletonList(new LongSumAggregation("count", "count")),
                 Collections.<PostAggregation>emptyList(),
                 query.getIntervals(),
-                query.getQueryType() == QueryType.GROUP_BY ? ((GroupByQuery) query).getLimitSpec() : null
+                query.getQueryType() == QueryType.GROUP_BY ? stripColumnsFromLimitSpec(query) : null
         );
     }
 
@@ -200,7 +202,7 @@ public class WeightEvaluationQuery extends GroupByQuery {
                         aggregations,
                         postAggregations,
                         innerQuery.getIntervals(),
-                        ((GroupByQuery) innerQuery).getLimitSpec()
+                        stripColumnsFromLimitSpec(innerQuery)
                 );
                 return new QueryDataSource(inner);
             case TOP_N:
@@ -220,5 +222,18 @@ public class WeightEvaluationQuery extends GroupByQuery {
             default:
                 return null;
         }
+    }
+
+    /**
+     * Strip the columns from the LimitSpec on the query and return it, if present.
+     *
+     * @param query  Query to strip the columns from within the LimitSpec
+     *
+     * @return the cleaned LimitSpec if there is one
+     */
+    private static LimitSpec stripColumnsFromLimitSpec(DruidFactQuery query) {
+        return ((GroupByQuery) query).getLimitSpec() == null ?
+                null :
+                ((GroupByQuery) query).getLimitSpec().withColumns(new LinkedHashSet<>());
     }
 }

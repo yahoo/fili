@@ -26,6 +26,7 @@ Current
 
 ### Fixed:
 
+- [#45, removing sorting from weight check queries](https://github.com/yahoo/fili/pull/46)
 
 
 ### Known Issues:
