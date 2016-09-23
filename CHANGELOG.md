@@ -26,6 +26,14 @@ Current
 
 ### Fixed:
 
+- [Fixes a bug where job metadata was being stored in the `ApiJobStore` even when the results came back synchronously](https://github.com/yahoo/fili/pull/49)
+  * The workflow that updates the job's metadata with `success` was running even when the query was synchronous. That 
+    update also caused the ticket to be stored in the `ApiJobStore`.
+  * The delay operator didn't stop the "update" workflow from executing because it viewed an `Observable::onCompleted`
+    call as a message for the purpose of the delay. Since the two observables that that the metadata update gated on are
+    empty when the query is synchronous, the "update metadata" workflow was being triggered every time.
+  * The delay operator was replaced by `zipWith` as a gating mechanism.
+    
 - [#45, removing sorting from weight check queries](https://github.com/yahoo/fili/pull/46)
 
 

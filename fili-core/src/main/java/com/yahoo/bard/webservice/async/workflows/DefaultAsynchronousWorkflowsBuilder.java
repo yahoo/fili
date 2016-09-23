@@ -113,12 +113,14 @@ public class DefaultAsynchronousWorkflowsBuilder implements AsynchronousWorkflow
         // JobRow has been stored because otherwise we have a race condition where the version of the JobRow with
         // a success/failure status could be written to the store first, and then immediately overwritten by the
         // original JobRow, leaving the JobRow in a state of "pending" for its lifetime.
-        Observable<JobRow> jobRowUpdatedNotification = buildUpdateRowChain(
+        ConnectableObservable<JobRow> jobRowUpdatedNotification = buildUpdateRowChain(
                 jobRowStoredNotification,
                 preResponseStoredNotification,
                 errorHandlingPreResponseEmitter,
                 jobMetadata
-        );
+        )
+                .replay(1);
+        jobRowUpdatedNotification.connect();
 
         return new AsynchronousWorkflows(
                 synchronousPayload,
@@ -174,7 +176,9 @@ public class DefaultAsynchronousWorkflowsBuilder implements AsynchronousWorkflow
         // We don't want to store the result in the PreResponseStore unless the query is asynchronous. The query is
         // asynchronous iff the asynchronousPayload emits at least one item.
         return preResponseEmitter
-                .delay(ignored -> asynchronousPayload)
+                // Using zip as a gate. We don't let the preResponse from the preResponse emitter continue down the
+                // chain until and unless the asynchronousPayload emits an item.
+                .zipWith(asynchronousPayload, (preResponse, ignored) -> preResponse)
                 .flatMap(preResponse -> preResponseStore.save(jobRow.getId(), preResponse));
     }
 
@@ -204,8 +208,12 @@ public class DefaultAsynchronousWorkflowsBuilder implements AsynchronousWorkflow
         // The job status should not be updated until both the PreResponse has been stored, and the storage of the
         // original Job ticket has been attempted.
         return preResponseEmitter
-                .delay(ignored -> preResponseStoredNotification)
-                .delay(ignored -> jobRowStoredNotification)
+                // Using zip as a gate. We don't let the preResponse from the preResponse emitter continue down the
+                // chain until and unless the jobRowStoredNotification emits an item.
+                .zipWith(jobRowStoredNotification, (preResponse, ignored) -> preResponse)
+                // Using zip as a gate. We don't let the preResponse from the preResponse emitter continue down the
+                // chain until and unless the preResponseStoredNotification emits an item.
+                .zipWith(preResponseStoredNotification, (preResponse, ignored) -> preResponse)
                 .map(PreResponse::getResponseContext)
                 .map(responseContext -> responseContext.containsKey(ResponseContextKeys.ERROR_MESSAGE.getName()))
                 .map(isError -> isError ?
