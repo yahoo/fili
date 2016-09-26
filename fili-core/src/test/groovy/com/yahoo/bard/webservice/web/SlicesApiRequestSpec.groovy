@@ -4,23 +4,30 @@ package com.yahoo.bard.webservice.web
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
+import com.yahoo.bard.webservice.metadata.BaseDataSourceMetadataSpec
+import com.yahoo.bard.webservice.metadata.DataSourceMetadata
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
+import com.yahoo.bard.webservice.metadata.SegmentInfo
 import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
+import com.yahoo.bard.webservice.table.Table
 import com.yahoo.bard.webservice.web.endpoints.SlicesServlet
 
+import org.joda.time.DateTime
+
 import spock.lang.Shared
-import spock.lang.Specification
 import spock.lang.Unroll
 
 import javax.ws.rs.core.UriBuilder
 import javax.ws.rs.core.UriInfo
 
-class SlicesApiRequestSpec extends Specification {
+class SlicesApiRequestSpec extends BaseDataSourceMetadataSpec {
 
     JerseyTestBinder jtb
     UriInfo uriInfo = Mock(UriInfo)
     UriBuilder builder = Mock(UriBuilder)
     String baseUri = "http://localhost:9998/v1/slices/"
+    DataSourceMetadataService dataSourceMetadataService = new DataSourceMetadataService();
 
     @Shared
     PhysicalTableDictionary fullDictionary
@@ -34,6 +41,9 @@ class SlicesApiRequestSpec extends Specification {
         uriInfo.getBaseUriBuilder() >> builder
         builder.path(_) >> builder
         builder.path(_, _) >> builder
+
+        DataSourceMetadata dataSourceMetadata = new DataSourceMetadata("all_pets", [:], segments);
+        dataSourceMetadataService.update(fullDictionary.get("all_pets"), dataSourceMetadata);
     }
 
     def cleanup() {
@@ -61,6 +71,7 @@ class SlicesApiRequestSpec extends Specification {
                 "",
                 "",
                 fullDictionary,
+                dataSourceMetadataService,
                 uriInfo
         )
 
@@ -71,7 +82,7 @@ class SlicesApiRequestSpec extends Specification {
     def "check api request construction for a given table name"() {
         setup:
         String name = "all_pets"
-
+        Table table = fullDictionary.get(name);
         String uri = baseUri.replaceAll("/slices/.*", "") + "/dimensions/"
 
         builder.build(_) >> { List<List<String>> args ->
@@ -81,7 +92,7 @@ class SlicesApiRequestSpec extends Specification {
         Set<Map<String, Object>> dimensionsResult = new LinkedHashSet<>()
         Set<Map<String, Object>> metricsResult = new LinkedHashSet<>()
 
-        fullDictionary.get(name).getAvailableIntervals().each {
+        table.getAvailableIntervals().each {
             Map<String, Object> row = new LinkedHashMap<>()
             row.put("intervals", it.getValue())
 
@@ -96,6 +107,9 @@ class SlicesApiRequestSpec extends Specification {
                 metricsResult.add(row)
             }
         }
+        Set<SortedMap<DateTime, Map<String, SegmentInfo>>> sliceMetadata = dataSourceMetadataService.getTableSegments(
+                Collections.singleton(table)
+        );
 
         Map<String, Object> expected = new LinkedHashMap<>()
         expected.put("name", name);
@@ -103,6 +117,7 @@ class SlicesApiRequestSpec extends Specification {
         expected.put("timeZone", "UTC");
         expected.put("dimensions", dimensionsResult);
         expected.put("metrics", metricsResult);
+        expected.put("segmentInfo", SlicesApiRequest.generateSegmentMetadataView(sliceMetadata))
 
         when:
         SlicesApiRequest apiRequest = new SlicesApiRequest(
@@ -111,6 +126,7 @@ class SlicesApiRequestSpec extends Specification {
                 "",
                 "",
                 fullDictionary,
+                dataSourceMetadataService,
                 uriInfo
         )
 
@@ -132,6 +148,7 @@ class SlicesApiRequestSpec extends Specification {
                 "",
                 "",
                 dictionary,
+                dataSourceMetadataService,
                 uriInfo
         )
 

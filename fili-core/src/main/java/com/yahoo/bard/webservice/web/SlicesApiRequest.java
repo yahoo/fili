@@ -7,21 +7,26 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SLICE_UNDEFINED;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
+import com.yahoo.bard.webservice.metadata.SegmentInfo;
 import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 import com.yahoo.bard.webservice.web.endpoints.DimensionsServlet;
 import com.yahoo.bard.webservice.web.endpoints.SlicesServlet;
 
+import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
@@ -36,6 +41,7 @@ public class SlicesApiRequest extends ApiRequest {
 
     private final Set<Map<String, String>> slices;
     private final Map<String, Object> slice;
+    private final DataSourceMetadataService dataSourceMetadataService;
 
     /**
      * Parses the API request URL and generates the Api Request object.
@@ -50,6 +56,7 @@ public class SlicesApiRequest extends ApiRequest {
      * @param page  desired page of results. If present in the original request, must be a positive
      * integer. If not present, must be the empty string.
      * @param tableDictionary  cache containing all the valid physical table objects.
+     * @param dataSourceMetadataService  a resource holding the available datasource metadata
      * @param uriInfo  The URI of the request object.
      *
      * @throws BadApiRequestException is thrown in the following scenarios:
@@ -64,13 +71,19 @@ public class SlicesApiRequest extends ApiRequest {
             @NotNull String perPage,
             @NotNull String page,
             PhysicalTableDictionary tableDictionary,
+            DataSourceMetadataService dataSourceMetadataService,
             UriInfo uriInfo
     ) throws BadApiRequestException {
         super(format, perPage, page, uriInfo);
-
+        this.dataSourceMetadataService = dataSourceMetadataService;
         this.slices = generateSlices(tableDictionary, uriInfo);
 
-        this.slice = sliceName != null ? generateSlice(sliceName, tableDictionary, uriInfo) : null;
+        this.slice = sliceName != null ? generateSlice(
+                sliceName,
+                tableDictionary,
+                dataSourceMetadataService,
+                uriInfo
+        ) : null;
 
         LOG.debug(
                 "Api request: \nSlices: {},\nFormat: {}\nPagination: {}",
@@ -88,6 +101,7 @@ public class SlicesApiRequest extends ApiRequest {
         super();
         this.slices = null;
         this.slice = null;
+        this.dataSourceMetadataService = null;
     }
 
     /**
@@ -127,6 +141,7 @@ public class SlicesApiRequest extends ApiRequest {
      *
      * @param sliceName  string corresponding to the slice name specified in the URL
      * @param tableDictionary  Physical table dictionary contains the map of valid table names to table objects.
+     * @param dataSourceMetadataService  a resource holding the available datasource metadata
      * @param uriInfo  The URI of the request object.
      *
      * @return Set of logical table objects.
@@ -135,6 +150,7 @@ public class SlicesApiRequest extends ApiRequest {
     protected Map<String, Object> generateSlice(
             String sliceName,
             PhysicalTableDictionary tableDictionary,
+            DataSourceMetadataService dataSourceMetadataService,
             UriInfo uriInfo
     ) throws BadApiRequestException {
         if (tableDictionary.isEmpty()) {
@@ -174,16 +190,45 @@ public class SlicesApiRequest extends ApiRequest {
                         }
                 );
 
+        Set<SortedMap<DateTime, Map<String, SegmentInfo>>> sliceMetadata = dataSourceMetadataService.getTableSegments(
+                Collections.singleton(table)
+        );
+
         Map<String, Object> generated = new LinkedHashMap<>();
         generated.put("name", sliceName);
         generated.put("timeGrain", table.getTimeGrain().getName());
         generated.put("timeZone", table.getTimeGrain().getTimeZoneName());
         generated.put("dimensions", dimensionsResult);
         generated.put("metrics", metricsResult);
+        generated.put("segmentInfo", generateSegmentMetadataView(sliceMetadata));
 
         LOG.trace("Generated slice: {}", generated);
 
         return generated;
+    }
+
+    /**
+     * Create a simplifying view of segment info for a particular slice.
+     *
+     * @param sliceMetadata  The raw set of maps of datetime to maps of segment names to segment details
+     *
+     * @return A simplified Map of dateTime to set of segment identifiers
+     */
+    private static Map<DateTime, Set<String>> generateSegmentMetadataView(
+            Set<SortedMap<DateTime, Map<String, SegmentInfo>>> sliceMetadata
+    ) {
+        Map<DateTime, Set<String>> segmentView;
+        if (!sliceMetadata.isEmpty()) {
+            SortedMap<DateTime, Map<String, SegmentInfo>> segmentInfo = sliceMetadata.iterator().next();
+            segmentView = segmentInfo.entrySet().stream()
+                    .collect(Collectors.toMap(
+                            Map.Entry::getKey,
+                            entry -> entry.getValue().keySet()
+                    ));
+        } else {
+            segmentView = Collections.emptyMap();
+        }
+        return segmentView;
     }
 
     public Set<Map<String, String>> getSlices() {

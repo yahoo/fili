@@ -64,6 +64,7 @@ class SlicesServletSpec extends Specification {
                 {"name":"sex", "uri":"http://localhost:9998/dimensions/sex", "intervals":["$interval"]},
                 {"name":"species", "uri":"http://localhost:9998/dimensions/species", "intervals":["$interval"]}
             ],
+            "segmentInfo": {},
             "metrics":
             [
                 {"name":"limbs", "intervals":["$interval"]}
