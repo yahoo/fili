@@ -101,24 +101,28 @@ public class LuceneSearchProvider implements SearchProvider {
     }
 
     /**
-     * Get the IndexSearcher.
-     *
-     * @return the IndexSearcher
+     * Initializes the `luceneIndexSearcher` if it has not been initialized already.
+     * <p>
+     * Note that the index searcher cannot be built at construction time, because it needs the dimension and
+     * associated key-value store. However, because of a circular dependency between the `SearchProvider` and the
+     * `Dimension` classes, we cannot provide the dimension and key-value store to the search provider at
+     * construction time.
      */
-    private IndexSearcher getIndexSearcher() {
-        // Open the searcher if we don't have one
+    private void initializeIndexSearcher() {
         if (luceneIndexSearcher == null) {
             reopenIndexSearcher(true);
         }
-        return luceneIndexSearcher;
     }
 
     /**
      * Re-open the Index Searcher, opening it for the first time if it's never been opened.
+     * <p>
+     * This method will attempt to acquire and release a write lock.
      *
      * @param firstTimeThrough  If true, will write an empty index and will then re-open the searcher
      */
     private synchronized void reopenIndexSearcher(boolean firstTimeThrough) {
+        lock.writeLock().lock();
         try {
             // Close the current reader if open
             if (luceneIndexSearcher != null) {
@@ -127,12 +131,10 @@ public class LuceneSearchProvider implements SearchProvider {
 
             // Open a new IndexSearcher on a new DirectoryReader
             luceneIndexSearcher = new IndexSearcher(DirectoryReader.open(luceneDirectory));
-
         } catch (IOException reopenException) {
             // If there is no index file, this is expected. On the 1st time through, write an empty index and try again
             if (firstTimeThrough) {
                 IndexWriterConfig indexWriterConfig = new IndexWriterConfig(LUCENE_ANALYZER);
-                lock.writeLock().lock();
                 try (IndexWriter ignored = new IndexWriter(luceneDirectory, indexWriterConfig)) {
                     // Closed automatically by the try-resource block
                 } catch (IOException emptyIndexWriteException) {
@@ -141,10 +143,7 @@ public class LuceneSearchProvider implements SearchProvider {
                     String message = String.format("Unable to write empty index to %s:", luceneIndexPath);
                     LOG.error(message, emptyIndexWriteException);
                     throw new RuntimeException(emptyIndexWriteException);
-                } finally {
-                    lock.writeLock().unlock();
                 }
-
                 reopenIndexSearcher(false);
             } else {
                 // We've been here before, so puke
@@ -153,6 +152,8 @@ public class LuceneSearchProvider implements SearchProvider {
                 LOG.error(message, reopenException);
                 throw new RuntimeException(reopenException);
             }
+        } finally {
+            lock.writeLock().unlock();
         }
     }
 
@@ -235,26 +236,30 @@ public class LuceneSearchProvider implements SearchProvider {
         // Write the rows to the document
         IndexWriterConfig indexWriterConfig = new IndexWriterConfig(LUCENE_ANALYZER).setRAMBufferSizeMB(BUFFER_SIZE);
         lock.writeLock().lock();
-        try (IndexWriter luceneIndexWriter = new IndexWriter(luceneDirectory, indexWriterConfig)) {
-            // Update the document fields for each row and update the document
-            for (String rowId : changedRows.keySet()) {
-                // Get the new row from the pair
-                DimensionRow newDimensionRow = changedRows.get(rowId).getKey();
+        try {
+            try (IndexWriter luceneIndexWriter = new IndexWriter(luceneDirectory, indexWriterConfig)) {
+                // Update the document fields for each row and update the document
+                for (String rowId : changedRows.keySet()) {
+                    // Get the new row from the pair
+                    DimensionRow newDimensionRow = changedRows.get(rowId).getKey();
 
-                // Update the index
-                updateDimensionRow(doc, dimFieldToLuceneField, luceneIndexWriter, newDimensionRow);
+                    // Update the index
+                    updateDimensionRow(doc, dimFieldToLuceneField, luceneIndexWriter, newDimensionRow);
+                }
+
+            } catch (IOException e) {
+                luceneIndexIsHealthy = false;
+                LOG.error("Failed to refresh index for dimension rows", e);
+                throw new RuntimeException(e);
+                // Commit all the changes to the index (on .close, called by try-resources) and refresh the cardinality
             }
-
-            // Commit all the changes to the index (on .close, called by try-resources) and refresh the cardinality
-        } catch (IOException e) {
-            luceneIndexIsHealthy = false;
-            LOG.error("Failed to refresh index for dimension rows", e);
-            throw new RuntimeException(e);
+            //This must be outside the try-resources block because it may _also_ need to open an IndexWriter, and
+            //opening an IndexWriter involves taking a write lock on lucene, of which there can only be one at a time.
+            reopenIndexSearcher(true);
+            refreshCardinality();
         } finally {
             lock.writeLock().unlock();
         }
-        reopenIndexSearcher(true);
-        refreshCardinality();
     }
 
     /**
@@ -289,35 +294,46 @@ public class LuceneSearchProvider implements SearchProvider {
         writer.updateDocument(keyTerm, luceneDimensionRowDoc);
     }
 
+    /**
+     * Clears the dimension cache, and resets the indices, effectively resetting the SearchProvider to a clean state.
+     * <p>
+     * Note that this method attempts to acquire a write lock before clearing the index.
+     */
     @Override
     public void clearDimension() {
         Set<DimensionRow> dimensionRows = findAllDimensionRows();
         IndexWriterConfig indexWriterConfig = new IndexWriterConfig(LUCENE_ANALYZER).setRAMBufferSizeMB(BUFFER_SIZE);
         lock.writeLock().lock();
-        try (IndexWriter writer = new IndexWriter(luceneDirectory, indexWriterConfig)) {
-            //Remove all dimension data from the store.
-            String rowId = dimension.getKey().getName();
-            dimensionRows.stream()
-                    .map(DimensionRow::getRowMap)
-                    .map(map -> map.get(rowId))
-                    .map(id -> DimensionStoreKeyUtils.getRowKey(rowId, id))
-                    .forEach(keyValueStore::remove);
+        try {
+            try (IndexWriter writer = new IndexWriter(luceneDirectory, indexWriterConfig)) {
+                //Remove all dimension data from the store.
+                String rowId = dimension.getKey().getName();
+                dimensionRows.stream()
+                        .map(DimensionRow::getRowMap)
+                        .map(map -> map.get(rowId))
+                        .map(id -> DimensionStoreKeyUtils.getRowKey(rowId, id))
+                        .forEach(keyValueStore::remove);
 
-            //Since Lucene's indices are being dropped, the dimension field stored via the columnKey is becoming stale.
-            keyValueStore.remove(DimensionStoreKeyUtils.getColumnKey(dimension.getKey().getName()));
-            //The allValues key mapping needs to reflect the fact that we are dropping all dimension data.
-            keyValueStore.put(DimensionStoreKeyUtils.getAllValuesKey(), "[]");
-            //We're resetting the keyValueStore, so we don't want any stale last updated date floating around.
-            keyValueStore.remove(DimensionStoreKeyUtils.getLastUpdatedKey());
+                //Since Lucene's indices are being dropped, the dimension field stored via the columnKey is becoming
+                //stale.
+                keyValueStore.remove(DimensionStoreKeyUtils.getColumnKey(dimension.getKey().getName()));
+                //The allValues key mapping needs to reflect the fact that we are dropping all dimension data.
+                keyValueStore.put(DimensionStoreKeyUtils.getAllValuesKey(), "[]");
+                //We're resetting the keyValueStore, so we don't want any stale last updated date floating around.
+                keyValueStore.remove(DimensionStoreKeyUtils.getLastUpdatedKey());
 
-            //In addition to clearing the keyValueStore, we also need to delete all of Lucene's segment files.
-            writer.deleteAll();
-            writer.commit();
+                //In addition to clearing the keyValueStore, we also need to delete all of Lucene's segment files.
+                writer.deleteAll();
+                writer.commit();
+            } catch (IOException e) {
+                LOG.error("Failed to wipe Lucene index at directory: {}", luceneDirectory);
+                throw new RuntimeException(e);
+            }
+
+            //This must be outside the try-resources block because it may _also_ need to open an IndexWriter, and
+            //opening an IndexWriter involves taking a write lock on lucene, of which there can only be one at a time.
             reopenIndexSearcher(true);
             refreshCardinality();
-        } catch (IOException e) {
-            LOG.error("Failed to wipe Lucene index at directory: {}", luceneDirectory);
-            throw new RuntimeException(e);
         } finally {
             lock.writeLock().unlock();
         }
@@ -325,11 +341,21 @@ public class LuceneSearchProvider implements SearchProvider {
 
     /**
      * Update the cardinality count.
+     * <p>
+     * Note that this method acquires a read lock to query the lucene index for the number of documents.
      */
     private void refreshCardinality() {
+        int numDocs;
+        initializeIndexSearcher();
+        lock.readLock().lock();
+        try {
+            numDocs = luceneIndexSearcher.getIndexReader().numDocs();
+        } finally {
+            lock.readLock().unlock();
+        }
         keyValueStore.put(
                 DimensionStoreKeyUtils.getCardinalityKey(),
-                Integer.toString(getIndexSearcher().getIndexReader().numDocs())
+                Integer.toString(numDocs)
         );
     }
 
@@ -503,6 +529,9 @@ public class LuceneSearchProvider implements SearchProvider {
      * @param query  The Lucene query used to locate the desired DimensionRows
      * @param paginationParameters  The parameters defining the pagination (i.e. the number of rows per page, and the
      * desired page)
+     * <p>
+     * Note that this method _may_ need to acquire and release a write lock if the index searcher needs to be
+     * initialized, and it later acquires and released a read lock when querying for dimension data from Lucene.
      *
      * @return The desired page of dimension rows that satisfy the given query
      *
@@ -513,51 +542,57 @@ public class LuceneSearchProvider implements SearchProvider {
         int perPage = paginationParameters.getPerPage();
         int requestedPageNumber = paginationParameters.getPage();
 
-        // get the page we want
-        IndexSearcher indexSearcher = getIndexSearcher();
-        ScoreDoc[] hits = getPageOfData(indexSearcher, null, query, perPage, requestedPageNumber).scoreDocs;
-        if (hits.length == 0) {
-            if (requestedPageNumber == 1) {
-                return new SinglePagePagination<>(Collections.emptyList(), paginationParameters, 0);
-            } else {
-                throw new PageNotFoundException(requestedPageNumber, perPage, 0);
-            }
-        }
-        for (int currentPage = 1; currentPage < requestedPageNumber; currentPage++) {
-            ScoreDoc lastEntry = hits[hits.length - 1];
-            hits = getPageOfData(indexSearcher, lastEntry, query, perPage, requestedPageNumber).scoreDocs;
-            if (hits.length == 0) {
-                throw new PageNotFoundException(requestedPageNumber, perPage, 0);
-            }
-        }
-
-        // convert hits to dimension rows
-        String idKey = DimensionStoreKeyUtils.getColumnKey(dimension.getKey().getName());
-        TreeSet<DimensionRow> filteredDimRows = Arrays.stream(hits)
-                .map(
-                        hit -> {
-                            try {
-                                return indexSearcher.doc(hit.doc);
-                            } catch (IOException e) {
-                                LOG.error("Unable to convert hit " + hit);
-                                throw new RuntimeException(e);
-                            }
-                        }
-                )
-                .map(document -> document.get(idKey))
-                .map(dimension::findDimensionRowByKeyValue)
-                .collect(Collectors.toCollection(TreeSet::new));
+        TreeSet<DimensionRow> filteredDimRows;
+        int documentCount;
+        initializeIndexSearcher();
+        lock.readLock().lock();
         try {
-            return new SinglePagePagination<>(
-                    Collections.unmodifiableList(filteredDimRows.stream().collect(Collectors.toList())),
-                    paginationParameters,
-                    indexSearcher.count(query)
-            );
+            ScoreDoc[] hits = getPageOfData(luceneIndexSearcher, null, query, perPage, requestedPageNumber).scoreDocs;
+            if (hits.length == 0) {
+                if (requestedPageNumber == 1) {
+                    return new SinglePagePagination<>(Collections.emptyList(), paginationParameters, 0);
+                } else {
+                    throw new PageNotFoundException(requestedPageNumber, perPage, 0);
+                }
+            }
+            for (int currentPage = 1; currentPage < requestedPageNumber; currentPage++) {
+                ScoreDoc lastEntry = hits[hits.length - 1];
+                hits = getPageOfData(luceneIndexSearcher, lastEntry, query, perPage, requestedPageNumber).scoreDocs;
+                if (hits.length == 0) {
+                    throw new PageNotFoundException(requestedPageNumber, perPage, 0);
+                }
+            }
+
+            // convert hits to dimension rows
+            String idKey = DimensionStoreKeyUtils.getColumnKey(dimension.getKey().getName());
+            filteredDimRows = Arrays.stream(hits)
+                    .map(
+                            hit -> {
+                                try {
+                                    return luceneIndexSearcher.doc(hit.doc);
+                                } catch (IOException e) {
+                                    LOG.error("Unable to convert hit " + hit);
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                    )
+                    .map(document -> document.get(idKey))
+                    .map(dimension::findDimensionRowByKeyValue)
+                    .collect(Collectors.toCollection(TreeSet::new));
+
+            documentCount = luceneIndexSearcher.count(query); //throws the caught IOException
         } catch (IOException e) {
             LOG.error("Unable to get count of matched rows for the query " + query.toString() +
                     " with " + paginationParameters.toString());
             throw new RuntimeException(e);
+        } finally {
+            lock.readLock().unlock();
         }
+        return new SinglePagePagination<>(
+                Collections.unmodifiableList(filteredDimRows.stream().collect(Collectors.toList())),
+                paginationParameters,
+                documentCount
+        );
     }
 
     /**
@@ -577,6 +612,8 @@ public class LuceneSearchProvider implements SearchProvider {
 
     /**
      * Returns the requested page of dimension metadata from Lucene.
+     * <p>
+     * Note that this method acquires and releases a read lock when querying Lucene for data.
      *
      * @param indexSearcher  The service to find the desired dimension metadata in the Lucene index
      * @param lastEntry  The last entry from the previous page of dimension metadata, the indexSearcher will begin its
@@ -594,6 +631,7 @@ public class LuceneSearchProvider implements SearchProvider {
             int perPage,
             int currentPage
     ) {
+        lock.readLock().lock();
         try {
             return lastEntry == null ?
                     indexSearcher.search(query, perPage) :
@@ -602,6 +640,8 @@ public class LuceneSearchProvider implements SearchProvider {
             String errorMessage = "Unable to find dimension rows for page " + currentPage;
             LOG.error(errorMessage);
             throw new RuntimeException(errorMessage);
+        } finally {
+            lock.readLock().unlock();
         }
     }
 }
