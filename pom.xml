@@ -67,6 +67,9 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>${project.build.sourceEncoding}</project.reporting.outputEncoding>
+
+        <version.fili>0.6-SNAPSHOT</version.fili>
+
         <version.slf4j>1.7.12</version.slf4j>
         <version.servlet>3.1.0</version.servlet>
         <version.jersey>2.22</version.jersey>
@@ -121,22 +124,22 @@
             <dependency>
                 <groupId>com.yahoo.fili</groupId>
                 <artifactId>fili-system-config</artifactId>
-                <version>${project.version}</version>
+                <version>${version.fili}</version>
             </dependency>
             <dependency>
                 <groupId>com.yahoo.fili</groupId>
                 <artifactId>fili-core</artifactId>
-                <version>${project.version}</version>
+                <version>${version.fili}</version>
             </dependency>
             <dependency>
                 <groupId>com.yahoo.fili</groupId>
                 <artifactId>fili</artifactId>
-                <version>${project.version}</version>
+                <version>${version.fili}</version>
             </dependency>
             <dependency>
                 <groupId>com.yahoo.fili</groupId>
                 <artifactId>fili-core</artifactId>
-                <version>${project.version}</version>
+                <version>${version.fili}</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>

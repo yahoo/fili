@@ -14,6 +14,9 @@ Current
 
 ### Changed:
 
+- Corrected bug with Fili sub-module dependency specification
+  * Dependency versions are now set via a fixed property at deploy time, rather than relying on `project.version`
+
 - Cleaned up dependencies in pom files
   * Moved version management of dependencies up to the parent Pom's dependency management section
   * Cleaned up the parent Pom's dependency section to only be those dependencies that truly _every_ sub-project should 

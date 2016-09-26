@@ -15,6 +15,12 @@ if [[ ${MATCHING_TAG} != "" ]]; then
         echo "ERROR Unable to set version via Maven. Aborting publication."
         exit ${MAVEN_RETURN_CODE}
     fi
+    mvn versions:update-property -Dproperty=version.fili -DnewVersion=$(git describe) -DgenerateBackupPoms=false
+    MAVEN_RETURN_CODE=$?
+    if [[ ${MAVEN_RETURN_CODE} -ne 0 ]]; then
+        echo "ERROR Unable to update property via Maven. Aborting publication."
+        exit ${MAVEN_RETURN_CODE}
+    fi
 
     echo "INFO Deploying: "
     mvn deploy --settings travis/bintray-settings.xml
@@ -32,7 +38,7 @@ fi
 mvn verify
 MAVEN_RETURN_CODE=$?
 if [[ ${MAVEN_RETURN_CODE} -ne 0 ]]; then
-    echo "ERROR Maven did not succeed."
+    echo "ERROR Maven verify did not succeed."
     exit ${MAVEN_RETURN_CODE}
 fi
 
