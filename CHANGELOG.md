@@ -14,6 +14,15 @@ Current
 
 ### Changed:
 
+- Clean up build plugins
+  * Move some plugin configs up to `pluginManagement`
+  * Make `fili-core` publish test javadocs
+  * Default source plugin to target `jar-no-fork` instead of `jar`
+  * Default javadoc plugin to target `javadoc-no-fork` as well as `jar`
+  * Move some versions up to `pluginManagement`
+  * Remove overly (and un-usedly) specified options in surfire plugin configs
+  * Make all projects pull in the `source` plugin
+
 - Corrected bug with Fili sub-module dependency specification
   * Dependency versions are now set via a fixed property at deploy time, rather than relying on `project.version`
 
