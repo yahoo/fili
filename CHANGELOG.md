@@ -29,6 +29,12 @@ Current
 
 ### Fixed:
 
+- [Adds read locking to all attempts to read the Lucene index](https://github.com/yahoo/fili/pull/52)
+  * Before, if Fili attempted to read from the Lucene indices (i.e. processing a query with filters)
+    while loading dimension indices, the request would fail and we would get a
+    `LuceneIndexReaderAlreadyClosedException`. Now, the read locks should
+    ensure that the query processing will wait until indexing completes (and vice versa).
+
 - [Fixes a bug where job metadata was being stored in the `ApiJobStore` even when the results came back synchronously](https://github.com/yahoo/fili/pull/49)
   * The workflow that updates the job's metadata with `success` was running even when the query was synchronous. That 
     update also caused the ticket to be stored in the `ApiJobStore`.
