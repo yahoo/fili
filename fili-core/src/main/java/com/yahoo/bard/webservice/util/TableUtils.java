@@ -38,9 +38,7 @@ public class TableUtils {
                 getDimensions(request, query)
                         .map(Dimension::getApiName)
                         .map(table::getPhysicalColumnName),
-                query.getDependentFieldNames()
-                        .stream()
-                        .map(table::getPhysicalColumnName)
+                query.getDependentFieldNames().stream()
         ).flatMap(Function.identity()).collect(Collectors.toSet());
     }
 

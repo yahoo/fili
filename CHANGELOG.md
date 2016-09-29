@@ -140,6 +140,10 @@ Jobs resource. Here are the highlights of what's in this release:
 
 ### Changed:
 
+- Removed `physicalName` lookup for metrics in `TableUtils::getColumnNames` to remove spurious warnings
+     * Metrics are not mapped like dimensions are. Dimensions are aliased per physical table and metrics are aliazed per logical table.
+     * Logical metric is mapped with one or many physical metrics. Same look up logic for dimension and metrics doesn't make sense.
+
 #### Jobs:
 
 - [HashPreResponseStore moved to `test` root directory.](https://github.com/yahoo/fili/pull/39)
