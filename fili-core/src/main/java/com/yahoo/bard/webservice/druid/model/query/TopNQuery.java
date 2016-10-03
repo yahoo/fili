@@ -3,7 +3,7 @@
 package com.yahoo.bard.webservice.druid.model.query;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
-import com.yahoo.bard.webservice.druid.model.QueryType;
+import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
@@ -58,7 +58,7 @@ public class TopNQuery extends AbstractDruidAggregationQuery<TopNQuery> {
             boolean doFork
     ) {
         super(
-                QueryType.TOP_N,
+                DefaultQueryType.TOP_N,
                 dataSource,
                 granularity,
                 Collections.singletonList(dimension),

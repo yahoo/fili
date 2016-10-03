@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.query;
 
-import com.yahoo.bard.webservice.druid.model.QueryType;
+import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource;
 
 /**
@@ -20,7 +20,7 @@ public class TimeBoundaryQuery extends AbstractDruidQuery<TimeBoundaryQuery>
      * context.
      */
     protected TimeBoundaryQuery(DataSource dataSource, QueryContext context, boolean doFork) {
-        super(QueryType.TIME_BOUNDARY, dataSource, context, doFork);
+        super(DefaultQueryType.TIME_BOUNDARY, dataSource, context, doFork);
     }
 
     /**
@@ -29,7 +29,7 @@ public class TimeBoundaryQuery extends AbstractDruidQuery<TimeBoundaryQuery>
      * @param dataSource  The datasource
      */
     public TimeBoundaryQuery(DataSource dataSource) {
-        super(QueryType.TIME_BOUNDARY, dataSource, null, false);
+        super(DefaultQueryType.TIME_BOUNDARY, dataSource, null, false);
     }
 
     @Override

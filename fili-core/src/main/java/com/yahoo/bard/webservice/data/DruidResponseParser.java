@@ -8,6 +8,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.druid.model.QueryType;
+import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.table.ZonedSchema;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -38,7 +39,8 @@ public class DruidResponseParser {
      *
      * @param jsonResult  Druid results in json
      * @param schema  Schema for results
-     * @param queryType  the type of query
+     * @param queryType  the type of query, note that this implementation only supports instances of
+     * {@link DefaultQueryType}
      *
      * @return the set of results
      */
@@ -46,12 +48,18 @@ public class DruidResponseParser {
 
         LOG.trace("Parsing druid query {} by json result: {} using schema: {}", queryType, jsonResult, schema);
 
+        if (!(queryType instanceof DefaultQueryType)) {
+            // Throw an exception for unsupported query types
+            unsupportedQueryType(queryType);
+        }
+        DefaultQueryType defaultQueryType = (DefaultQueryType) queryType;
+
         /* Get dimension and metric columns */
         Set<DimensionColumn> dimensionColumns = schema.getColumns(DimensionColumn.class);
         Set<MetricColumn> metricColumns = schema.getColumns(MetricColumn.class);
 
-        List<Result> results;
-        switch (queryType) {
+        List<Result> results = null;
+        switch (defaultQueryType) {
             case GROUP_BY:
                 results = makeGroupByResults(jsonResult, dimensionColumns, metricColumns, schema.getDateTimeZone());
                 break;
@@ -65,13 +73,23 @@ public class DruidResponseParser {
                 results = makeLookbackResults(jsonResult, dimensionColumns, metricColumns, schema.getDateTimeZone());
                 break;
             default:
-                String msg = RESULT_SET_ERROR.logFormat(queryType);
-                LOG.error(msg);
-                throw new UnsupportedOperationException(msg);
+                // Throw an exception for unsupported query types
+                unsupportedQueryType(queryType);
         }
 
         LOG.trace("Parsed druid query {} results: {}", queryType, results);
         return new ResultSet(results, schema);
+    }
+
+    /**
+     * Log an error message and throw an exception for an unsupported query type.
+     *
+     * @param queryType  The query type that is not supported
+     */
+    private void unsupportedQueryType(QueryType queryType) {
+        String msg = RESULT_SET_ERROR.logFormat(queryType);
+        LOG.error(msg);
+        throw new UnsupportedOperationException(msg);
     }
 
     /**

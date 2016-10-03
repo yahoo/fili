@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.util
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation.DefaultPostAggregationType
 
-import com.yahoo.bard.webservice.druid.model.QueryType
+import com.yahoo.bard.webservice.druid.model.DefaultQueryType
 import com.yahoo.bard.webservice.druid.model.filter.Filter
 
 import spock.lang.Specification
@@ -33,7 +33,7 @@ class EnumUtilsSpec extends Specification {
         where:
         a                                       || b
         DAY                                     || "day"
-        QueryType.GROUP_BY                      || "groupBy"
+        DefaultQueryType.GROUP_BY               || "groupBy"
         Filter.DefaultFilterType.SELECTOR       || "selector"
         DefaultPostAggregationType.FIELD_ACCESS || "fieldAccess"
         TestEnum.THIS_IS_A_TEST                 || "thisIsATest"

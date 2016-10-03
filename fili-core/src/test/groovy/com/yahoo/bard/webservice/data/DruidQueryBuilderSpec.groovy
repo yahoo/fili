@@ -16,7 +16,7 @@ import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
 import com.yahoo.bard.webservice.data.volatility.DefaultingVolatileIntervalsService
-import com.yahoo.bard.webservice.druid.model.QueryType
+import com.yahoo.bard.webservice.druid.model.DefaultQueryType
 import com.yahoo.bard.webservice.druid.model.datasource.DefaultDataSourceType
 import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.model.having.Having
@@ -305,7 +305,7 @@ class DruidQueryBuilderSpec extends Specification {
         def DruidAggregationQuery<?> dq = builder.buildQuery(apiRequest, resources.simpleTemplateQuery)
 
         then:
-        dq?.getQueryType() == QueryType.GROUP_BY
+        dq?.getQueryType() == DefaultQueryType.GROUP_BY
     }
 
     @Unroll
@@ -327,9 +327,9 @@ class DruidQueryBuilderSpec extends Specification {
         dq?.getQueryType() == queryType
 
         where:
-        queryType          | havingMap                         | topNDruid | isIsNot
-        QueryType.TOP_N    | null                              | "topN"    | "is not"
-        QueryType.GROUP_BY | [(resources.m1): [having] as Set] | "groupBy" | "is"
+        queryType                 | havingMap                         | topNDruid | isIsNot
+        DefaultQueryType.TOP_N    | null                              | "topN"    | "is not"
+        DefaultQueryType.GROUP_BY | [(resources.m1): [having] as Set] | "groupBy" | "is"
 
     }
 
@@ -347,7 +347,7 @@ class DruidQueryBuilderSpec extends Specification {
         DruidAggregationQuery<?> dq = builder.buildQuery(apiRequest, resources.simpleTemplateQuery)
 
         then:
-        dq?.getQueryType() == QueryType.GROUP_BY
+        dq?.getQueryType() == DefaultQueryType.GROUP_BY
     }
 
     def "Test top level buildQuery with single dimension/multiple sorts top N query"() {
@@ -366,7 +366,7 @@ class DruidQueryBuilderSpec extends Specification {
         DruidAggregationQuery<?> dq = builder.buildQuery(apiRequest, resources.simpleTemplateQuery)
 
         then:
-        dq?.getQueryType() == QueryType.GROUP_BY
+        dq?.getQueryType() == DefaultQueryType.GROUP_BY
     }
 
     def "Test top level buildQuery with multiple dimension/multiple sorts top N query"() {
@@ -387,7 +387,7 @@ class DruidQueryBuilderSpec extends Specification {
         DruidAggregationQuery<?> dq = builder.buildQuery(apiRequest, resources.simpleTemplateQuery)
 
         then:
-        dq?.getQueryType() == QueryType.GROUP_BY
+        dq?.getQueryType() == DefaultQueryType.GROUP_BY
 
     }
 
@@ -410,9 +410,9 @@ class DruidQueryBuilderSpec extends Specification {
         dq?.getQueryType() == queryType
 
         where:
-        queryType            | havingMap                         | tsDruid      | isIsNot
-        QueryType.TIMESERIES | null                              | "timeSeries" | "is not"
-        QueryType.GROUP_BY   | [(resources.m1): [having] as Set] | "groupBy"    | "is"
+        queryType                   | havingMap                         | tsDruid      | isIsNot
+        DefaultQueryType.TIMESERIES | null                              | "timeSeries" | "is not"
+        DefaultQueryType.GROUP_BY   | [(resources.m1): [having] as Set] | "groupBy"    | "is"
     }
 
     @Unroll
@@ -446,13 +446,13 @@ havingMap:#havingMap"""() {
         dq?.getQueryType() == queryType
 
         where:
-        queryType          | havingMap                         | nDims | nested | nSorts | flag  | query
-        QueryType.TOP_N    | null                              | 1     | false  | 1      | true  | "topN"
-        QueryType.GROUP_BY | [(resources.m1): [having] as Set] | 1     | false  | 1      | true  | "groupBy"
-        QueryType.GROUP_BY | null                              | 2     | false  | 1      | true  | "groupBy"
-        QueryType.GROUP_BY | null                              | 1     | true   | 1      | true  | "groupBy"
-        QueryType.GROUP_BY | null                              | 1     | false  | 2      | true  | "groupBy"
-        QueryType.GROUP_BY | null                              | 1     | false  | 1      | false | "groupBy"
+        queryType                 | havingMap                         | nDims | nested | nSorts | flag  | query
+        DefaultQueryType.TOP_N    | null                              | 1     | false  | 1      | true  | "topN"
+        DefaultQueryType.GROUP_BY | [(resources.m1): [having] as Set] | 1     | false  | 1      | true  | "groupBy"
+        DefaultQueryType.GROUP_BY | null                              | 2     | false  | 1      | true  | "groupBy"
+        DefaultQueryType.GROUP_BY | null                              | 1     | true   | 1      | true  | "groupBy"
+        DefaultQueryType.GROUP_BY | null                              | 1     | false  | 2      | true  | "groupBy"
+        DefaultQueryType.GROUP_BY | null                              | 1     | false  | 1      | false | "groupBy"
     }
 
     @Unroll
@@ -481,11 +481,11 @@ havingMap:#havingMap"""() {
         dq?.getQueryType() == queryType
 
         where:
-        queryType            | havingMap                         | nDims | nested | nSorts | query
-        QueryType.TIMESERIES | null                              | 0     | false  | 0      | "timeSeries"
-        QueryType.GROUP_BY   | [(resources.m1): [having] as Set] | 0     | false  | 0      | "groupBy"
-        QueryType.GROUP_BY   | null                              | 1     | false  | 0      | "groupBy"
-        QueryType.GROUP_BY   | null                              | 0     | true   | 0      | "groupBy"
-        QueryType.GROUP_BY   | null                              | 0     | false  | 1      | "groupBy"
+        queryType                   | havingMap                         | nDims | nested | nSorts | query
+        DefaultQueryType.TIMESERIES | null                              | 0     | false  | 0      | "timeSeries"
+        DefaultQueryType.GROUP_BY   | [(resources.m1): [having] as Set] | 0     | false  | 0      | "groupBy"
+        DefaultQueryType.GROUP_BY   | null                              | 1     | false  | 0      | "groupBy"
+        DefaultQueryType.GROUP_BY   | null                              | 0     | true   | 0      | "groupBy"
+        DefaultQueryType.GROUP_BY   | null                              | 0     | false  | 1      | "groupBy"
     }
 }

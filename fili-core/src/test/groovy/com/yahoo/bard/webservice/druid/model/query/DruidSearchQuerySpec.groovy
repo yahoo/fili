@@ -11,7 +11,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.MapStore
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider
-import com.yahoo.bard.webservice.druid.model.QueryType
+import com.yahoo.bard.webservice.druid.model.DefaultQueryType
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
 import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter
 import com.yahoo.bard.webservice.druid.model.orderby.DefaultSearchSortDirection
@@ -43,7 +43,7 @@ class DruidSearchQuerySpec extends Specification {
     }
 
     DruidSearchQuery defaultQuery(Map vars) {
-        vars.queryType = QueryType.SEARCH
+        vars.queryType = DefaultQueryType.SEARCH
         vars.dataSource = vars.dataSource ?: new TableDataSource(new PhysicalTable("table_name", DAY.buildZonedTimeGrain(DateTimeZone.UTC), [:]))
         vars.granularity = vars.granularity ?: DAY
         vars.filter = vars.filter ?: null
