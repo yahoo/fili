@@ -3,7 +3,7 @@
 package com.yahoo.bard.webservice.druid.model.query;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
-import com.yahoo.bard.webservice.druid.model.QueryType;
+import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.aggregation.CountAggregation;
 import com.yahoo.bard.webservice.druid.model.aggregation.LongSumAggregation;
@@ -103,7 +103,7 @@ public class WeightEvaluationQuery extends GroupByQuery {
                 Collections.<Aggregation>singletonList(new LongSumAggregation("count", "count")),
                 Collections.<PostAggregation>emptyList(),
                 query.getIntervals(),
-                query.getQueryType() == QueryType.GROUP_BY ? stripColumnsFromLimitSpec(query) : null
+                query.getQueryType() == DefaultQueryType.GROUP_BY ? stripColumnsFromLimitSpec(query) : null
         );
     }
 
@@ -150,20 +150,18 @@ public class WeightEvaluationQuery extends GroupByQuery {
         long periods = IntervalUtils.countSlicedIntervals(innerQuery.getIntervals(), innerQuery.getGranularity());
         long cardinalityWeight;
 
-        switch (innerQuery.getQueryType()) {
-            case TOP_N:
-                TopNQuery topNQuery = (TopNQuery) innerQuery;
-                cardinalityWeight = Math.min(
-                        topNQuery.getDimension().getCardinality(),
-                        Math.max(topNQuery.getThreshold(), DEFAULT_DRUID_TOP_N_THRESHOLD)
-                );
-                break;
-            case GROUP_BY:
-            default:
-                cardinalityWeight = innerQuery.getDimensions().stream()
-                        .mapToLong(Dimension::getCardinality)
-                        .map(it -> Math.max(1, it)) // 0-cardinality dimensions should multiply by identity (1)
-                        .reduce(1, Math::multiplyExact);
+
+        if (innerQuery.getQueryType() == DefaultQueryType.TOP_N) {
+            TopNQuery topNQuery = (TopNQuery) innerQuery;
+            cardinalityWeight = Math.min(
+                    topNQuery.getDimension().getCardinality(),
+                    Math.max(topNQuery.getThreshold(), DEFAULT_DRUID_TOP_N_THRESHOLD)
+            );
+        } else {
+            cardinalityWeight = innerQuery.getDimensions().stream()
+                .mapToLong(Dimension::getCardinality)
+                .filter(cardinality -> cardinality > 0)
+                .reduce(1, Math::multiplyExact);
         }
 
         long weight = Math.multiplyExact(cardinalityWeight, Math.multiplyExact(sketchWeight, periods));
@@ -185,13 +183,18 @@ public class WeightEvaluationQuery extends GroupByQuery {
         DruidAggregationQuery<?> innerQuery = query.getInnermostQuery();
 
         List<Aggregation> aggregations;
-        aggregations = Collections.<Aggregation>singletonList(new CountAggregation("ignored"));
+        aggregations = Collections.singletonList(new CountAggregation("ignored"));
 
         // Get the inner post aggregation
         List<PostAggregation> postAggregations;
-        postAggregations = Collections.<PostAggregation>singletonList(new ConstantPostAggregation("count", weight));
+        postAggregations = Collections.singletonList(new ConstantPostAggregation("count", weight));
 
-        switch (innerQuery.getQueryType()) {
+        if (!(innerQuery.getQueryType() instanceof DefaultQueryType)) {
+            return null;
+        }
+
+        DefaultQueryType innerQueryType = (DefaultQueryType) innerQuery.getQueryType();
+        switch (innerQueryType) {
             case GROUP_BY:
                 GroupByQuery inner = new GroupByQuery(
                         innerQuery.getDataSource(),

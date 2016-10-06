@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data
 
+import com.yahoo.bard.webservice.druid.model.QueryType
 import com.yahoo.bard.webservice.table.PhysicalTable
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
@@ -14,7 +15,7 @@ import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.metric.MetricColumn
-import com.yahoo.bard.webservice.druid.model.QueryType
+import com.yahoo.bard.webservice.druid.model.DefaultQueryType
 import com.yahoo.bard.webservice.table.Schema
 import com.yahoo.bard.webservice.table.ZonedSchema
 
@@ -119,7 +120,7 @@ class DruidResponseParserSpec extends Specification {
         JsonNode jsonResult = MAPPER.readTree(parser)
 
         Schema schema = buildSchema(["pageViews", "time_spent"])
-        ResultSet resultSet = new DruidResponseParser().parse(jsonResult, schema, QueryType.GROUP_BY)
+        ResultSet resultSet = new DruidResponseParser().parse(jsonResult, schema, DefaultQueryType.GROUP_BY)
 
         expect:
         resultSet != null
@@ -175,7 +176,7 @@ class DruidResponseParserSpec extends Specification {
         ZonedSchema schema = new ZonedSchema(DAY, DateTimeZone.UTC)
         DimensionColumn.addNewDimensionColumn(schema, dimensionDictionary.findByApiName("ageBracket"), new PhysicalTable("null", DAY.buildZonedTimeGrain(DateTimeZone.UTC), [:]))
         MetricColumn.addNewMetricColumn(schema, "pageViews")
-        ResultSet resultSet = new DruidResponseParser().parse(jsonResult, schema, QueryType.TOP_N)
+        ResultSet resultSet = new DruidResponseParser().parse(jsonResult, schema, DefaultQueryType.TOP_N)
 
         expect:
         resultSet != null
@@ -222,7 +223,7 @@ class DruidResponseParserSpec extends Specification {
         MetricColumn.addNewMetricColumn(schema, "pageViews")
         MetricColumn.addNewMetricColumn(schema, "lookback_pageViews")
         MetricColumn.addNewMetricColumn(schema, "retentionPageViews")
-        ResultSet resultSet = new DruidResponseParser().parse(jsonResult, schema, QueryType.LOOKBACK)
+        ResultSet resultSet = new DruidResponseParser().parse(jsonResult, schema, DefaultQueryType.LOOKBACK)
 
         expect:
         resultSet != null
@@ -268,7 +269,7 @@ class DruidResponseParserSpec extends Specification {
         JsonNode jsonResult = MAPPER.readTree(parser)
 
         Schema schema = buildSchema(["pageViews", "lookback_pageViews", "retentionPageViews"])
-        ResultSet resultSet = new DruidResponseParser().parse(jsonResult, schema, QueryType.GROUP_BY)
+        ResultSet resultSet = new DruidResponseParser().parse(jsonResult, schema, DefaultQueryType.GROUP_BY)
 
         expect:
         resultSet != null
@@ -305,7 +306,7 @@ class DruidResponseParserSpec extends Specification {
         resultSet.get(0).getMetricValueAsString(schema.getColumn("unluckyNumbers") as MetricColumn) == "2"
 
         where:
-        queryType << [QueryType.GROUP_BY, QueryType.TOP_N, QueryType.TIMESERIES]
+        queryType << [DefaultQueryType.GROUP_BY, DefaultQueryType.TOP_N, DefaultQueryType.TIMESERIES]
     }
 
 
@@ -328,7 +329,7 @@ class DruidResponseParserSpec extends Specification {
         !resultSet.get(0).getMetricValueAsBoolean(schema.getColumn("false", MetricColumn.class))
 
         where:
-        queryType << [QueryType.GROUP_BY, QueryType.TOP_N, QueryType.TIMESERIES]
+        queryType << [DefaultQueryType.GROUP_BY, DefaultQueryType.TOP_N, DefaultQueryType.TIMESERIES]
     }
 
     @Unroll
@@ -349,7 +350,7 @@ class DruidResponseParserSpec extends Specification {
         resultSet.get(0).getMetricValue(schema.getColumn("null", MetricColumn.class)) == null
 
         where:
-        queryType << [QueryType.GROUP_BY, QueryType.TOP_N, QueryType.TIMESERIES]
+        queryType << [DefaultQueryType.GROUP_BY, DefaultQueryType.TOP_N, DefaultQueryType.TIMESERIES]
     }
 
     @Unroll
@@ -381,14 +382,26 @@ class DruidResponseParserSpec extends Specification {
                 MAPPER.readTree(unluckyNumberNode)
 
         where:
-        queryType << [QueryType.GROUP_BY, QueryType.TOP_N, QueryType.TIMESERIES]
+        queryType << [DefaultQueryType.GROUP_BY, DefaultQueryType.TOP_N, DefaultQueryType.TIMESERIES]
     }
 
+    def "Attempting to parse an unknown query type throws an UnsupportedOperationException"() {
+        given:
+        DruidResponseParser responseParser = new DruidResponseParser()
+        QueryType mysteryType = Mock(QueryType)
 
-    String buildResponse(QueryType queryType, Map complexMetrics) {
+        when:
+        responseParser.parse(MAPPER.readTree("[]"), Mock(ZonedSchema), mysteryType)
+
+        then:
+        thrown(UnsupportedOperationException)
+
+    }
+
+    String buildResponse(DefaultQueryType queryType, Map complexMetrics) {
         //Strip off the brackets from the String representation of the Map.
         String complexMetricsString = complexMetrics.toString()[1..-2]
-        if (queryType == QueryType.GROUP_BY) {
+        if (queryType == DefaultQueryType.GROUP_BY) {
             return """
                 [ {
                     "version" : "v1",
@@ -400,7 +413,7 @@ class DruidResponseParserSpec extends Specification {
                     }
                 } ]
             """
-        } else if (queryType == QueryType.TOP_N) {
+        } else if (queryType == DefaultQueryType.TOP_N) {
             return """
                 [ {
                     "timestamp" : "2012-01-01T00:00:00.000Z",
@@ -422,7 +435,7 @@ class DruidResponseParserSpec extends Specification {
         }
     }
 
-    ResultSet buildResultSet(String druidResponse, ZonedSchema schema, QueryType queryType) {
+    ResultSet buildResultSet(String druidResponse, ZonedSchema schema, DefaultQueryType queryType) {
         JsonNode jsonResult = MAPPER.readTree(new JsonFactory().createParser(druidResponse))
         return new DruidResponseParser().parse(jsonResult, schema, queryType)
     }

@@ -3,7 +3,7 @@
 package com.yahoo.bard.webservice.druid.model.query;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
-import com.yahoo.bard.webservice.druid.model.QueryType;
+import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource;
 import com.yahoo.bard.webservice.druid.model.datasource.QueryDataSource;
@@ -63,7 +63,7 @@ public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
             boolean doFork
     ) {
         super(
-                QueryType.GROUP_BY,
+                DefaultQueryType.GROUP_BY,
                 dataSource,
                 granularity,
                 dimensions,

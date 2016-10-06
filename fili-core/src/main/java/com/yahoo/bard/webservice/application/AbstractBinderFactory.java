@@ -208,9 +208,9 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 bind(getGranularityParser()).to(GranularityParser.class);
 
                 // Bind the request building action classes for druid
-                bind(DruidQueryBuilder.class).to(DruidQueryBuilder.class);
+                bind(buildDruidQueryBuilder()).to(DruidQueryBuilder.class);
                 bind(TemplateDruidQueryMerger.class).to(TemplateDruidQueryMerger.class);
-                bind(DruidResponseParser.class).to(DruidResponseParser.class);
+                bind(buildDruidResponseParser()).to(DruidResponseParser.class);
                 bind(buildDruidFilterBuilder()).to(DruidFilterBuilder.class);
 
                 //Initialize the field converter
@@ -319,6 +319,24 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 afterBinding(this);
             }
         };
+    }
+
+    /**
+     * Initializes the factory that builds druid queries.
+     *
+     * @return An isntance of the {@link DruidQueryBuilder}
+     */
+    protected Class<DruidQueryBuilder> buildDruidQueryBuilder() {
+        return DruidQueryBuilder.class;
+    }
+
+    /**
+     * Initializes the class that parses responses from Druid.
+     *
+     * @return An instance of the {@link DruidResponseParser}
+     */
+    protected Class<DruidResponseParser> buildDruidResponseParser() {
+        return DruidResponseParser.class;
     }
 
     /**

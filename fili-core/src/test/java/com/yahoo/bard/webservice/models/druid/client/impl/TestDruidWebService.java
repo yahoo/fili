@@ -7,6 +7,7 @@ import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
+import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.druid.model.query.WeightEvaluationQuery;
 import com.yahoo.bard.webservice.util.JsonSlurper;
@@ -114,7 +115,12 @@ public class TestDruidWebService implements DruidWebService {
         }
 
         // Set the response to use based on the type of the query we're processing
-        switch (lastQuery.getQueryType()) {
+        if (!(lastQuery.getQueryType() instanceof DefaultQueryType)) {
+            throw new IllegalArgumentException("Illegal query type : " + lastQuery.getQueryType());
+        }
+
+        DefaultQueryType defaultQueryType = (DefaultQueryType) lastQuery.getQueryType();
+        switch (defaultQueryType) {
             case GROUP_BY:
             case TOP_N:
             case TIMESERIES:

@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.query;
 
-import com.yahoo.bard.webservice.druid.model.QueryType;
+import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -36,7 +36,7 @@ public class SegmentMetadataQuery extends AbstractDruidQuery<SegmentMetadataQuer
             QueryContext context,
             boolean doFork
     ) {
-        super(QueryType.SEGMENT_METADATA, dataSource, context, doFork);
+        super(DefaultQueryType.SEGMENT_METADATA, dataSource, context, doFork);
         this.intervals = Collections.unmodifiableCollection(intervals);
     }
 

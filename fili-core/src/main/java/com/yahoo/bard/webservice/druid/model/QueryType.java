@@ -2,38 +2,18 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model;
 
-import com.yahoo.bard.webservice.util.EnumUtils;
-
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * Druid Queries the application knows about.
+ * Types of queries supported by this application.
  */
-public enum QueryType {
-    GROUP_BY,
-    TOP_N,
-    TIMESERIES,
-    TIME_BOUNDARY,
-    SEGMENT_METADATA,
-    SEARCH,
-    LOOKBACK;
-
-    final String jsonName;
+public interface QueryType {
 
     /**
-     * Constructor.
-     */
-    QueryType() {
-        this.jsonName = EnumUtils.enumJsonName(this);
-    }
-
-    /**
-     * Get the JSON version of this.
+     * Get the JSON serialization of the query type.
      *
-     * @return the json representation of this enum
+     * @return the json representation of this type
      */
     @JsonValue
-    public String toJson() {
-        return jsonName;
-    }
+    String toJson();
 }

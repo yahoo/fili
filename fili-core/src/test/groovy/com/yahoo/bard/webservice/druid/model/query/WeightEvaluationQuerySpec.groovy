@@ -4,9 +4,9 @@ package com.yahoo.bard.webservice.druid.model.query
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.YEAR
-import static com.yahoo.bard.webservice.druid.model.QueryType.GROUP_BY
-import static com.yahoo.bard.webservice.druid.model.QueryType.TIMESERIES
-import static com.yahoo.bard.webservice.druid.model.QueryType.TOP_N
+import static com.yahoo.bard.webservice.druid.model.DefaultQueryType.GROUP_BY
+import static com.yahoo.bard.webservice.druid.model.DefaultQueryType.TIMESERIES
+import static com.yahoo.bard.webservice.druid.model.DefaultQueryType.TOP_N
 import static org.hamcrest.Matchers.both
 import static org.hamcrest.Matchers.greaterThan
 import static org.hamcrest.Matchers.is
@@ -26,7 +26,7 @@ import com.yahoo.bard.webservice.data.filterbuilders.DefaultDruidFilterBuilder
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQueryMerger
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser
 import com.yahoo.bard.webservice.data.volatility.VolatileIntervalsService
-import com.yahoo.bard.webservice.druid.model.QueryType
+import com.yahoo.bard.webservice.druid.model.DefaultQueryType
 import com.yahoo.bard.webservice.druid.model.aggregation.SketchCountAggregation
 import com.yahoo.bard.webservice.table.resolver.DefaultPhysicalTableResolver
 import com.yahoo.bard.webservice.web.DataApiRequest
@@ -249,7 +249,7 @@ class WeightEvaluationQuerySpec extends Specification {
         // TIME_SERIES  | _ // Same for timeseries
     }
 
-    DruidAggregationQuery getLargeDimensionQueryStub(Granularity granularity, QueryType queryType) {
+    DruidAggregationQuery getLargeDimensionQueryStub(Granularity granularity, DefaultQueryType queryType) {
         // Dimension stubs with large cardinalities
         Dimension d1 = Stub(Dimension)
         Dimension d2 = Stub(Dimension)

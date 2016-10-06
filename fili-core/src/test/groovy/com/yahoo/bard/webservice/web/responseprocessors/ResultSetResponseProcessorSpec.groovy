@@ -18,7 +18,7 @@ import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper
 import com.yahoo.bard.webservice.druid.client.FailureCallback
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback
-import com.yahoo.bard.webservice.druid.model.QueryType
+import com.yahoo.bard.webservice.druid.model.DefaultQueryType
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
@@ -106,7 +106,7 @@ class ResultSetResponseProcessorSpec extends Specification {
         postAggs.add(postAgg1)
         postAgg1.getName() >> "postAgg1"
 
-        QueryType queryType = QueryType.GROUP_BY
+        DefaultQueryType queryType = DefaultQueryType.GROUP_BY
         groupByQuery.getQueryType() >> queryType
         groupByQuery.getDimensions() >> dimensions
         groupByQuery.getAggregations() >> aggregations
@@ -162,7 +162,7 @@ class ResultSetResponseProcessorSpec extends Specification {
         ResultSet rs = Mock(ResultSet)
 
         1 * druidResponseParser.parse(_, _, _) >> {
-            JsonNode json, Schema schema, QueryType type -> captureSchema = schema; captureJson = json; rs
+            JsonNode json, Schema schema, DefaultQueryType type -> captureSchema = schema; captureJson = json; rs
         }
         ResultSet actual
 
