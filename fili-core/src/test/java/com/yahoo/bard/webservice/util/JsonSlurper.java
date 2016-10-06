@@ -1,10 +1,25 @@
 // Copyright 2016 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.util;
+
+// Changed HashMap to LinkedHashMap for consistency. Added ability to optionally sort the lists and maps.
 
 /*
- * Changed HashMap to LinkedHashMap for consistency. Added ability to optionally sort the lists and maps.
+ * Copyright 2003-2014 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+package com.yahoo.bard.webservice.util;
+
 import static groovy.json.JsonTokenType.CLOSE_BRACKET;
 import static groovy.json.JsonTokenType.CLOSE_CURLY;
 import static groovy.json.JsonTokenType.COLON;
@@ -30,6 +45,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
+ * This is the original slurper included in case someone relies on its exact behavior.
+ *
  * JSON slurper which parses text or reader content into a data structure of lists and maps.
  * <p>
  * Example usage:
@@ -50,7 +67,7 @@ import java.util.TreeMap;
 @SuppressWarnings({ "rawtypes", "javadoc", "unchecked" })
 public class JsonSlurper {
 
-    private final Comparator<Map> mapComparator;
+    private final Comparator<Object> variableTypedComparator;
 
     private final JsonSortStrategy sortStrategy;
 
@@ -71,17 +88,17 @@ public class JsonSlurper {
      * @param sortStrategy  Strategy to use when sorting the parsed JSON object
      */
     public JsonSlurper(JsonSortStrategy sortStrategy) {
-        this(sortStrategy, new ToStringComparator<Map>());
+        this(sortStrategy, new ToStringComparator<>());
     }
 
     /**
      * Create a new JsonSlurper with the given sort strategy and map comparator.
      *
      * @param sortStrategy  Strategy to use when sorting the parsed JSON object
-     * @param mapComparator  Comparator to use when sorting a list of maps
+     * @param variableTypedComparator  Comparator to use when sorting a list with variable types
      */
-    public JsonSlurper(JsonSortStrategy sortStrategy, Comparator<Map> mapComparator) {
-        this.mapComparator = mapComparator;
+    public JsonSlurper(JsonSortStrategy sortStrategy, Comparator<Object> variableTypedComparator) {
+        this.variableTypedComparator = variableTypedComparator;
         this.sortStrategy = sortStrategy;
         switch (sortStrategy) {
             case SORT_BOTH:
@@ -103,8 +120,8 @@ public class JsonSlurper {
         }
     }
 
-    public Comparator<Map> getMapComparator() {
-        return mapComparator;
+    public Comparator<Object> getVariableTypedComparator() {
+        return variableTypedComparator;
     }
 
     public JsonSortStrategy getSortStrategy() {
@@ -126,11 +143,16 @@ public class JsonSlurper {
      */
     private void sortIfNeeded(List listToSort) {
         if (sortLists) {
-            // Sort by the native compareTo if available, otherwise just sort by hash code to ensure consistent sorting
-            if (listToSort.size() > 0 && listToSort.get(0) instanceof Comparable) {
-                Collections.sort(listToSort);
+            // Sort by the native compareTo, otherwise just sort by the object comparator to ensure consistent sorting
+            if (listToSort.stream().anyMatch(it -> it instanceof Comparable)) {
+                try {
+                    Collections.sort(listToSort);
+                } catch (ClassCastException ignored) {
+                    // Failed to sort a consistently typed list of Comparables. Fall back to the collection comparator
+                    Collections.sort(listToSort, variableTypedComparator);
+                }
             } else {
-                Collections.sort(listToSort, mapComparator);
+                Collections.sort(listToSort, variableTypedComparator);
             }
         }
     }

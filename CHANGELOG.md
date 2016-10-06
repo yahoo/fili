@@ -66,6 +66,8 @@ Current
     
 - [#45, removing sorting from weight check queries](https://github.com/yahoo/fili/pull/46)
 
+- [`JsonSlurper` can now handle sorting lists with mixed-type entries](https://github.com/yahoo/fili/pull/58)
+  * even if the list starts with a string, number, or boolean
 
 ### Known Issues:
 
