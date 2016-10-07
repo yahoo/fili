@@ -13,18 +13,6 @@ There is [a list of Key Performance Indicators (KPIs)](kpis.md) for the web serv
 
 - [Project Site](https://github.com/yahoo/fili)
 
-## How to configure properties locally
-
-Configuration is resolved in the following order
-
-1. Environment variables
-1. Java properties
-1. `userConfig.properties` (By convention this should only be used for a controlling a specific non-standard environment, such as a development box)
-1. `testApplicationConfig.properties` (By convention this should only be used for test runner overrides)
-1. `applicationConfig.properties` (Every application should provide one of these)
-1. Additional `moduleConfig.properties` found on the class path.
-
- The .gitignore file includes a rule to ignore `userConfig.properties` this by default to help prevent checking it in accidentally.
 
 ### How do I enable Redis?
 
