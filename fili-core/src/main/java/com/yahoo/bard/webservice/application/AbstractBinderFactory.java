@@ -109,6 +109,7 @@ import org.slf4j.LoggerFactory;
 import rx.subjects.PublishSubject;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.time.Clock;
 import java.time.ZoneId;
 import java.util.Arrays;
@@ -119,6 +120,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -143,6 +145,8 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     private static final String METER_CACHE_HIT_RATIO = "queries.meter.cache.hit_ratio";
     private static final String METER_SPLITS_TOTAL_RATIO = "queries.meter.split_queries.total_ratio";
     private static final String METER_SPLITS_RATIO = "queries.meter.split_queries.ratio";
+
+    private static final String DRUID_HEADER_SUPPLIER_CLASS = "druid_header_supplier_class";
 
     // Two minutes in milliseconds
     public static final int HC_LAST_RUN_PERIOD_MILLIS_DEFAULT = 120 * 1000;
@@ -937,7 +941,33 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      * @return A DruidWebService
      */
     protected DruidWebService buildDruidWebService(DruidServiceConfig druidServiceConfig, ObjectMapper mapper) {
-        return new AsyncDruidWebServiceImpl(druidServiceConfig, mapper);
+        Supplier<Map<String, String>> supplier = buildDruidWebServiceHeaderSupplier();
+        return new AsyncDruidWebServiceImpl(druidServiceConfig, mapper, supplier);
+    }
+
+    /**
+     * Build the Supplier for Druid data request headers.
+     *
+     * @return The Druid data request header Supplier.
+     */
+    protected Supplier<Map<String, String>> buildDruidWebServiceHeaderSupplier() {
+        Supplier<Map<String, String>> supplier = HashMap::new;
+        String customSupplierClassString = SYSTEM_CONFIG.getStringProperty(DRUID_HEADER_SUPPLIER_CLASS, null);
+        if (customSupplierClassString != null && customSupplierClassString.equals("")) {
+            try {
+                Class<?> c = Class.forName(customSupplierClassString);
+                Constructor<?> constructor = c.getConstructor();
+                supplier = (Supplier<Map<String, String>>) constructor.newInstance();
+            } catch (Exception e) {
+                LOG.error(
+                        "Unable to load the Druid query header supplier, className: {}, exception: {}",
+                        customSupplierClassString,
+                        e
+                );
+                throw new IllegalStateException(e);
+            }
+        }
+        return supplier;
     }
 
     /**
