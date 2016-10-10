@@ -1,5 +1,7 @@
-Fili Web Service [![Travis](https://img.shields.io/travis/yahoo/fili.svg?maxAge=2592000?style=plastic)](Travis)  [![Download](https://api.bintray.com/packages/yahoo/maven/fili/images/download.svg) ](https://bintray.com/yahoo/maven/fili/_latestVersion)
-===============================================================================================================
+Fili 
+====
+
+[![Download](https://api.bintray.com/packages/yahoo/maven/fili/images/download.svg) ](https://bintray.com/yahoo/maven/fili/_latestVersion) [![Gitter](https://img.shields.io/gitter/room/yahoo/fili.svg?maxAge=2592000)](https://gitter.im/yahoo/fili) [![Travis](https://img.shields.io/travis/yahoo/fili/master.svg?maxAge=2592000)](https://travis-ci.org/yahoo/fili/builds/) [![Codacy grade](https://img.shields.io/codacy/grade/91fa6c38f25d4ea0ae3569ee70a33e38.svg?maxAge=2592000)](https://www.codacy.com/app/Fili/fili/dashboard) [![Codacy coverage](https://img.shields.io/codacy/coverage/91fa6c38f25d4ea0ae3569ee70a33e38.svg?label=test coverage&maxAge=2592000)](https://www.codacy.com/app/Fili/fili/dashboard) [![VersionEye](https://img.shields.io/versioneye/d/user/projects/57eb1529bd6fa600512e4af1.svg?maxAge=2592000)](https://www.versioneye.com/user/projects/57eb1529bd6fa600512e4af1)
 
 
 Repository for the Fili web service.
