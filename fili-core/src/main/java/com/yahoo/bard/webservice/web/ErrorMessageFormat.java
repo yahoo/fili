@@ -165,6 +165,11 @@ public enum ErrorMessageFormat implements MessageFormatter {
     INVALID_ASYNC_AFTER( "Invalid 'asyncAfter' parameter: '%s'. 'asyncAfter' must be either 'never' or an integer number of milliseconds."),
 
     FILTER_JOBFIELD_UNDEFINED("Filter field '%s' does not exist. The possible fields to filter on are '%s'"),
+
+    FAILED_TO_SEND_QUERY_TO_DRUID("Failed to retrieve data.", "Failed to send the query %s to Druid."),
+
+    ERROR_FROM_DRUID("Failed to retrieve data.", "Received %s with status code %s for reason %s when sending %s to Druid"),
+
     ;
     // CHECKSTYLE:ON
 

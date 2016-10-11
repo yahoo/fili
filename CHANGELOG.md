@@ -14,6 +14,13 @@ Current
 
 ### Changed:
 
+- [Improves error messages when querying Druid goes wrong](https:://github.com/yahoo/fili/pull/61)
+    - The `ResponseException` now includes a message that prints the `ResponseException`'s internal state 
+        (i.e. the druid query and response code) using the error messages 
+        `ErrorMessageFormat::FAILED_TO_SEND_QUERY_TO_DRUID` and `ErrorMessageFormat::ERROR_FROM_DRUID`
+    - The druid query and status code, reason and response body are now logged at the error level in the 
+      failure and error callbacks in `AsyncDruidWebServiceImpl`  
+          
 - [Fili now supports custom Druid query types](https://github.com/yahoo/fili/pull/57)
     * `QueryType` has been turned into an interface, backed by an enum `DefaultQueryType`.
         - The default implementations of `DruidResponseParser` `DruidQueryBuilder`, `WeightEvaluationQuery` and

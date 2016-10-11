@@ -11,6 +11,10 @@ import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.async.ResponseException;
 import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.ErrorMessageFormat;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import rx.subjects.Subject;
 
@@ -27,6 +31,7 @@ import javax.ws.rs.core.Response.Status;
  * Response Processor which will perform result set mapping.
  */
 public abstract class MappingResponseProcessor implements ResponseProcessor {
+    private static final Logger LOG = LoggerFactory.getLogger(MappingResponseProcessor.class);
 
     protected final DataApiRequest apiRequest;
     protected final ResponseContext responseContext;
@@ -102,6 +107,7 @@ public abstract class MappingResponseProcessor implements ResponseProcessor {
         return new HttpErrorCallback() {
             @Override
             public void invoke(int statusCode, String reason, String responseBody) {
+                LOG.error(ErrorMessageFormat.ERROR_FROM_DRUID.logFormat(responseBody, statusCode, reason, druidQuery));
                 responseEmitter.onError(new ResponseException(statusCode, reason, responseBody, druidQuery));
             }
         };
@@ -122,6 +128,7 @@ public abstract class MappingResponseProcessor implements ResponseProcessor {
         return new FailureCallback() {
             @Override
             public void invoke(Throwable error) {
+                LOG.error(ErrorMessageFormat.FAILED_TO_SEND_QUERY_TO_DRUID.logFormat(druidQuery), error);
                 responseEmitter.onError(new ResponseException(Status.INTERNAL_SERVER_ERROR, druidQuery, error));
             }
         };

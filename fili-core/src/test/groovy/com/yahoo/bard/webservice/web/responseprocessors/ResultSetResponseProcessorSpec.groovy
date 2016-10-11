@@ -241,7 +241,6 @@ class ResultSetResponseProcessorSpec extends Specification {
         entity.contains("message1234")
     }
 
-
     def "Test error callback"() {
         setup:
         def resultSetResponseProcessor = new ResultSetResponseProcessor(

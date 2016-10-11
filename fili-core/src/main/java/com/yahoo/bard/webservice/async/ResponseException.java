@@ -64,11 +64,40 @@ public class ResponseException extends Exception {
             DruidQuery<?> druidQuery,
             Throwable cause
     ) {
+        super(buildMessage(reason, description, statusCode, druidQuery, cause));
         this.statusCode = statusCode;
         this.reason = reason;
         this.description = description;
         this.druidQuery = druidQuery;
         this.cause = cause;
+    }
+
+    /**
+     * Builds a message for this exception that is basically a straightforward serialization of its interesting state.
+     *
+     * @param reason  The reason for the error
+     * @param description  A description of the error
+     * @param statusCode  The status code received from Druid
+     * @param druidQuery  The druid query that triggered the invalid response
+     * @param cause  The cause of this exception, if any
+     *
+     * @return A Stringification of the parameters to serve as this exception's message
+     */
+    private static String buildMessage(
+            String reason,
+            String description,
+            int statusCode,
+            DruidQuery<?> druidQuery,
+            Throwable cause
+    ) {
+        return String.format(
+                "Reason: %s, Description: %s, statusCode: %d, druid query: %s, cause: %s",
+                reason,
+                description,
+                statusCode,
+                druidQuery,
+                cause
+        );
     }
 
     public String getReason() {
