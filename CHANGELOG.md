@@ -10,9 +10,12 @@ Current
 
 ### Added:
 
-- [Support for X-Request-ID](https://github.com/yahoo/fili/pull/68)
-- [Documentation for topN](https://github.com/yahoo/fili/pull/43)
+- [Support for Druid's In Filter](https://github.com/yahoo/fili/pull/64)
+    * The in-filter only works with Druid versions 0.9.0 and up.
 
+- [Support for X-Request-ID](https://github.com/yahoo/fili/pull/68)
+
+- [Documentation for topN](https://github.com/yahoo/fili/pull/43)
 
 ### Changed:
 
