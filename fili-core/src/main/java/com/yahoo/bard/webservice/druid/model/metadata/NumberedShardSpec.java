@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.druid.model.metadata;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.apache.commons.lang3.NotImplementedException;
@@ -18,6 +19,7 @@ import java.util.List;
 /**
  * NumberedShardSpec class. Reflects the current shardspec type that is used in druid datasource metadata endpoints.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class NumberedShardSpec implements ShardSpec {
 
     private final String type;
