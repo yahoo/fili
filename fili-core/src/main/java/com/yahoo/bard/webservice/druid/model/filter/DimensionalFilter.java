@@ -38,11 +38,10 @@ public abstract class DimensionalFilter<T extends DimensionalFilter<? super T>> 
      * Get a new instance of this filter with the given Dimension.
      *
      * @param dimension  Dimension of the new filter
-     * @param <T> Type of the filter
      *
      * @return a new instance of this filter with the given dimension
      */
-    public abstract <T> T withDimension(Dimension dimension);
+    public abstract T withDimension(Dimension dimension);
 
     @Override
     public int hashCode() {
