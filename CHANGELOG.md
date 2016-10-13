@@ -12,6 +12,7 @@ Current
 
 - [Documentation for topN](https://github.com/yahoo/fili/pull/43)
 
+
 ### Changed:
 
 - [Improves error messages when querying Druid goes wrong](https:://github.com/yahoo/fili/pull/61)
@@ -75,6 +76,11 @@ Current
 
 - [`JsonSlurper` can now handle sorting lists with mixed-type entries](https://github.com/yahoo/fili/pull/58)
   * even if the list starts with a string, number, or boolean
+  
+- [Broken segment metadata with Druid v0.9.1](https://github.com/yahoo/fili/issues/63)
+  * Made `NumberedShardSpec` ignore unexpected properties during deserialization
+  * Added tests to `DataSourceMetadataLoaderSpec` to test the v.0.9.1 optional field 'shardSpec.partitionDimensions' on segment info JSON.
+
 
 ### Known Issues:
 

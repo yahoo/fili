@@ -50,6 +50,8 @@ class DataSourceMetadataLoaderSpec extends Specification {
     List<String> dimensions123 = [dim1, dim2, dim3]*.asName()
     List<String> dimensions13 = [dim1, dim3]*.asName()
 
+    List<String> quotedDimensions = dimensions13.collect() { '"' + it + '"'}
+
     TestApiMetricName met1 = TestApiMetricName.A_ROW_NUM
     TestApiMetricName met2 = TestApiMetricName.A_LIMBS
     TestApiMetricName met3 = TestApiMetricName.A_DAY_AVG_LIMBS
@@ -80,6 +82,26 @@ class DataSourceMetadataLoaderSpec extends Specification {
         }"""
     }
 
+    def generateSegment_9_1(tableName, interval, version, dimensions, metrics, partitionNum, partitions, List partitionDimensions, binVersion, size) {
+        return """{
+                        "dataSource": "$tableName",
+                        "interval": "$interval",
+                        "version": "$version",
+                        "loadSpec": { },
+                        "dimensions": "$dimensions",
+                        "metrics": "$metrics",
+                        "shardSpec": {
+                            "type": "hashed",
+                            "partitionNum": $partitionNum,
+                            "partitions": $partitions,
+                            "partitionDimensions" : $partitionDimensions
+                        },
+                        "binaryVersion": $binVersion,
+                        "size": $size,
+                        "identifier": ""
+        }"""
+    }
+
     String fullDataSourceMetadataJson =
            """{
             "name": "$tableName",
@@ -91,7 +113,9 @@ class DataSourceMetadataLoaderSpec extends Specification {
                             generateSegment(tableName, interval2, version1, dimensions123.join(','), metrics123.join(','), 0, 2, binversion1, size1),
                             generateSegment(tableName, interval2, version2, dimensions123.join(','), metrics123.join(','), 1, 2, binversion1, size2),
                             generateSegment(tableName, interval3, version1, dimensions123.join(','), metrics123.join(','), 0, 2, binversion1, size1),
-                            generateSegment(tableName, interval3, version2, dimensions123.join(','), metrics123.join(','), 1, 2, binversion1, size2)
+                            generateSegment(tableName, interval3, version2, dimensions123.join(','), metrics123.join(','), 1, 2, binversion1, size2),
+                            generateSegment_9_1(tableName, interval3, version2, dimensions123.join(','), metrics123.join(','), 0, 2, [], binversion1, size2),
+                            generateSegment_9_1(tableName, interval3, version2, dimensions123.join(','), metrics123.join(','), 1, 2, quotedDimensions, binversion1, size2)
                     ].join(',')}
                 ]
             }"""
@@ -107,7 +131,9 @@ class DataSourceMetadataLoaderSpec extends Specification {
                             generateSegment(tableName, interval2, version1, dimensions13.join(','), metrics13.join(','), 0, 2, binversion1, size1),
                             generateSegment(tableName, interval2, version2, dimensions13.join(','), metrics13.join(','), 1, 2, binversion1, size2),
                             generateSegment(tableName, interval3, version1, dimensions123.join(','), metrics123.join(','), 0, 2, binversion1, size1),
-                            generateSegment(tableName, interval3, version2, dimensions123.join(','), metrics123.join(','), 1, 2, binversion1, size2)
+                            generateSegment(tableName, interval3, version2, dimensions123.join(','), metrics123.join(','), 1, 2, binversion1, size2),
+                            generateSegment_9_1(tableName, interval3, version1, dimensions123.join(','), metrics123.join(','), 0, 2, [], binversion1, size1),
+                            generateSegment_9_1(tableName, interval3, version2, dimensions123.join(','), metrics123.join(','), 1, 2, quotedDimensions, binversion1, size2)
                    ].join(',')}
                 ]
             }"""
