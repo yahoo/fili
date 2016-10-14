@@ -54,7 +54,11 @@ public class DefaultJobRowBuilder implements JobRowBuilder {
     public DefaultJobRowBuilder(Function<Map<JobField, String>, String> idGenerator) {
         this(
                 idGenerator,
-                securityContext -> securityContext.getUserPrincipal().getName(),
+                securityContext ->
+                        securityContext != null &&
+                                securityContext.getUserPrincipal() != null &&
+                                securityContext.getUserPrincipal().getName() != null ?
+                                securityContext.getUserPrincipal().getName() : "UNKNOWN",
                 Clock.systemDefaultZone()
         );
     }
