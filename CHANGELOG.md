@@ -205,5 +205,8 @@ Jobs resource. Here are the highlights of what's in this release:
 
 ### Fixed:
 
+- [Fixing the case when the security context is not complete](https://github.com/yahoo/fili/pull/67)
+  * Check for nulls in the `DefaultJobRowBuilder.userIdExtractor` function.
+
 - [`DruidDimensionsLoader` doesn't set the dimension's lastUpdated date](https://github.com/yahoo/fili/pull/24)
   * `DruidDimensionsLoader` now properly sets the `lastUpdated` field after it finished processing the Druid response
