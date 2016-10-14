@@ -401,6 +401,19 @@ public class RequestLog {
     }
 
     /**
+     * Prepend an id prefix to generated druid query id.
+     *
+     * @param idPrefix  Prefix for queryId sent to druid
+     */
+    public static void addIdPrefix(String idPrefix) {
+        RequestLog current = RLOG.get();
+        String newId = idPrefix + getId();
+        current.info = current.info.withUuid(newId);
+        current.logId = newId;
+        MDC.put(ID_KEY, newId);
+    }
+
+    /**
      * Overwrite current thread's request log context.
      * It first clears the request log of the current thread and then fills it with the contents found in ctx
      *

@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory
 import spock.lang.Specification
 import spock.lang.Timeout
 
+import javax.ws.rs.core.MultivaluedHashMap
 import javax.ws.rs.core.MultivaluedMap
 import javax.ws.rs.core.Response
 
@@ -69,6 +70,13 @@ abstract class BaseDataServletComponentSpec extends Specification {
         jtb = buildTestBinder()
 
         populatePhysicalTableAvailability()
+    }
+
+    /**
+     * Used to append headers to API request made by this spec.
+     */
+    MultivaluedHashMap<String, String> getAdditionalApiRequestHeaders() {
+        return [:]
     }
 
     /**
@@ -206,7 +214,7 @@ abstract class BaseDataServletComponentSpec extends Specification {
         }
 
         // Make the call
-        Response response = httpCall.request().get()
+        Response response = httpCall.request().headers(getAdditionalApiRequestHeaders()).get()
         if (response.status != 200) {
             LOG.error( "***  *** Response status: ${response.status}: ${response.readEntity(String)}")
         }

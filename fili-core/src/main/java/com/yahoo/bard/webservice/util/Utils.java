@@ -196,16 +196,16 @@ public class Utils {
      * This method is recursive.
      *
      * @param node The root of the tree of json nodes.
-     * @param fieldName The name of the node to be emitted.
+     * @param fieldName The name of the node to be omitted.
      * @param mapper  The object mapper that creates and empty node.
      */
-    public static void emitField(JsonNode node, String fieldName, ObjectMapper mapper) {
+    public static void omitField(JsonNode node, String fieldName, ObjectMapper mapper) {
         if (node.has("context")) {
             ((ObjectNode) node).replace(fieldName, mapper.createObjectNode());
         }
 
         for (JsonNode child : node) {
-            emitField(child, fieldName, mapper);
+            omitField(child, fieldName, mapper);
         }
     }
 

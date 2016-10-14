@@ -10,6 +10,7 @@ Current
 
 ### Added:
 
+- [Support for X-Request-ID](https://github.com/yahoo/fili/pull/68)
 - [Documentation for topN](https://github.com/yahoo/fili/pull/43)
 
 
@@ -57,6 +58,8 @@ Current
 
 
 ### Fixed:
+
+- [Fixed typo emit -> omit in Utils.java omitField()](https://github.com/yahoo/fili/pull/68)
 
 - [Adds read locking to all attempts to read the Lucene index](https://github.com/yahoo/fili/pull/52)
   * Before, if Fili attempted to read from the Lucene indices (i.e. processing a query with filters)

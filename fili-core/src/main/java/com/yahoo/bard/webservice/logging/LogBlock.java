@@ -37,6 +37,18 @@ public class LogBlock {
     }
 
     /**
+     * Create a new LogBlock with the same body but updated uuid.
+     *
+     * @param uuid  New uuid.
+     * @return New LogBlock with updated uuid.
+     */
+    public LogBlock withUuid(String uuid) {
+        LogBlock newLogBlock = new LogBlock(uuid);
+        body.entrySet().forEach(entry -> newLogBlock.body.put(entry.getKey(), entry.getValue()));
+        return newLogBlock;
+    }
+
+    /**
      * Add an entry of given class in this LogBlock that holds no information.
      * It is meant to be used only to define the order of {@link LogInfo} parts inside a LogBlock.
      *
