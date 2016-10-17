@@ -133,7 +133,7 @@ public class CacheRequestHandler extends BaseDataRequestHandler {
      */
     protected String getKey(DruidAggregationQuery<?> druidQuery) throws JsonProcessingException {
         JsonNode root = mapper.valueToTree(druidQuery);
-        Utils.emitField(root, "context", mapper);
+        Utils.omitField(root, "context", mapper);
         return writer.writeValueAsString(root);
     }
 }

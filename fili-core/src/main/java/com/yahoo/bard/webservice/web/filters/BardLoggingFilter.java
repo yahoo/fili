@@ -26,6 +26,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.annotation.Priority;
 import javax.inject.Singleton;
@@ -68,10 +69,12 @@ public class BardLoggingFilter implements ContainerRequestFilter, ContainerRespo
     private static final String PROPERTY_NANOS = LoggingFilter.class.getName() + ".nanos";
     private static final String PROPERTY_REQ_LEN = LoggingFilter.class.getName() + ".reqlen";
     private static final String PROPERTY_OUTPUT_STREAM = LoggingFilter.class.getName() + ".ostream";
+    private static final Pattern VALID_REQUEST_ID = Pattern.compile("[a-zA-Z0-9+/=-]+");
 
     public static final double MILLISECONDS_PER_NANOSECOND = 1000000.0;
     public static final String TOTAL_TIMER = "TotalTime";
     public static final String CLIENT_TOTAL_TIMER = "ClientRequestTotalTime";
+    public static final String X_REQUEST_ID_HEADER = "x-request-id";
 
     /**
      * Intercept the Container request to add length of request and a start timestamp.
@@ -83,6 +86,7 @@ public class BardLoggingFilter implements ContainerRequestFilter, ContainerRespo
     @Override
     public void filter(ContainerRequestContext request) throws IOException {
 
+        appendRequestId(request.getHeaders().getFirst(X_REQUEST_ID_HEADER));
         RequestLog.startTiming(TOTAL_TIMER);
         RequestLog.startTiming(this);
         RequestLog.record(new Preface(request));
@@ -108,6 +112,7 @@ public class BardLoggingFilter implements ContainerRequestFilter, ContainerRespo
     @Override
     public void filter(ContainerRequestContext request, ContainerResponseContext response)
         throws IOException {
+        appendRequestId(request.getHeaders().getFirst(X_REQUEST_ID_HEADER));
         RequestLog.startTiming(this);
         StringBuilder debugMsgBuilder = new StringBuilder();
 
@@ -168,6 +173,7 @@ public class BardLoggingFilter implements ContainerRequestFilter, ContainerRespo
      */
     @Override
     public void filter(ClientRequestContext request) throws IOException {
+        appendRequestId(request.getStringHeaders().getFirst(X_REQUEST_ID_HEADER));
         RequestLog.startTiming(CLIENT_TOTAL_TIMER);
         request.setProperty(PROPERTY_NANOS, System.nanoTime());
     }
@@ -196,6 +202,30 @@ public class BardLoggingFilter implements ContainerRequestFilter, ContainerRespo
 
         LOG.debug(debugMsgBuilder.toString());
         RequestLog.stopTiming(CLIENT_TOTAL_TIMER);
+    }
+
+    /**
+     * Add a request id to pass to druid. Only added if x-request-id follows the format specified at:
+     * https://devcenter.heroku.com/articles/http-request-id
+     *
+     * @param requestId  Request id to add as queryId prefix to druid
+     */
+    private void appendRequestId(String requestId) {
+        if (isValidRequestId(requestId)) {
+            return; // Ignore according to https://devcenter.heroku.com/articles/http-request-id
+        }
+        RequestLog.addIdPrefix(requestId);
+    }
+
+    /**
+     * Validate whether or not a string is acceptable as an x-request-id header argument.
+     *
+     * @param requestId  Request id to validate
+     * @return True if valid, false otherwise
+     */
+    private boolean isValidRequestId(String requestId) {
+        return requestId == null || requestId.isEmpty() || requestId.length() > 200
+               || !VALID_REQUEST_ID.matcher(requestId).matches();
     }
 
     /**
