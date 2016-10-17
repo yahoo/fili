@@ -211,7 +211,7 @@ public class BardLoggingFilter implements ContainerRequestFilter, ContainerRespo
      * @param requestId  Request id to add as queryId prefix to druid
      */
     private void appendRequestId(String requestId) {
-        if (isValidRequestId(requestId)) {
+        if (isNotValidRequestId(requestId)) {
             return; // Ignore according to https://devcenter.heroku.com/articles/http-request-id
         }
         RequestLog.addIdPrefix(requestId);
@@ -221,9 +221,9 @@ public class BardLoggingFilter implements ContainerRequestFilter, ContainerRespo
      * Validate whether or not a string is acceptable as an x-request-id header argument.
      *
      * @param requestId  Request id to validate
-     * @return True if valid, false otherwise
+     * @return True if the request id is not valid, false otherwise
      */
-    private boolean isValidRequestId(String requestId) {
+    private boolean isNotValidRequestId(String requestId) {
         return requestId == null || requestId.isEmpty() || requestId.length() > 200
                || !VALID_REQUEST_ID.matcher(requestId).matches();
     }
