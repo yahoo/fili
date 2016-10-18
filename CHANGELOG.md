@@ -19,6 +19,11 @@ Current
 
 ### Changed:
 
+- [Allow configurable headers for Druid data requests](https:://github.com/yahoo/fili/pull/62)
+    - The `AsyncDruidWebServiceImpl` now accepts a `Supplier<Map<String, String>>` argument which specifies
+        the headers to add to the Druid data requests. This feature is made configurable through `SystemConfig` in
+        the `AbstractBinderFactory`
+
 - [Improves error messages when querying Druid goes wrong](https:://github.com/yahoo/fili/pull/61)
     - The `ResponseException` now includes a message that prints the `ResponseException`'s internal state 
         (i.e. the druid query and response code) using the error messages 
@@ -137,6 +142,11 @@ Jobs resource. Here are the highlights of what's in this release:
   * Created corresponding tests for `LookupDimensionToDimensionSpec` in `LookupDimensionToDimensionSpecSpec`
 
 ### Deprecated:
+
+- [Allow configurable headers for Druid data requests](https:://github.com/yahoo/fili/pull/62)
+  * Deprecated `AsyncDruidWebServiceImpl(DruidServiceConfig, ObjectMapper)` and
+    `AsyncDruidWebServiceImpl(DruidServiceConfig, AsyncHttpClient, ObjectMapper)` because we added new construstructors
+    that take a `Supplier` argument for Druid data request headers.
 
 - [QueryTimeLookup Functionality Testing](https://github.com/yahoo/fili/pull/34)
   * Deprecated `KeyValueDimensionLoader`, in favor of `TypeAwareDimensionLoader`
