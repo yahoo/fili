@@ -492,7 +492,9 @@ public class JobsServlet extends EndpointServlet {
                     (Integer) responseContext.get(ResponseContextKeys.STATUS.getName()),
                     (String) responseContext.get(ResponseContextKeys.ERROR_MESSAGE.getName()),
                     (String) responseContext.get(ResponseContextKeys.ERROR_MESSAGE.getName()),
-                    null
+                    null, // Druid query
+                    null, // cause
+                    writer
             );
             return Observable.error(responseException);
         }

@@ -7,9 +7,9 @@ import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField.JOB_T
 import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField.STATUS
 
 import com.yahoo.bard.webservice.async.ResponseException
-import com.yahoo.bard.webservice.async.jobs.stores.ApiJobStore
 import com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobStatus
 import com.yahoo.bard.webservice.async.jobs.jobrows.JobRow
+import com.yahoo.bard.webservice.async.jobs.stores.ApiJobStore
 import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore
 import com.yahoo.bard.webservice.data.ResultSet
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity
@@ -19,6 +19,8 @@ import com.yahoo.bard.webservice.util.Either
 import com.yahoo.bard.webservice.web.PreResponse
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys
+
+import com.fasterxml.jackson.databind.ObjectWriter
 
 import org.joda.time.DateTime
 
@@ -30,6 +32,7 @@ import spock.lang.Specification
 import spock.lang.Subject
 import spock.lang.Timeout
 import spock.lang.Unroll
+
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneId
@@ -61,7 +64,9 @@ class DefaultAsynchronousWorkflowsBuilderSpec extends Specification {
             404,
             "not found",
             "not found",
-            Mock(DruidAggregationQuery)
+            Mock(DruidAggregationQuery),
+            null, // cause
+            Stub(ObjectWriter) { writeValueAsString(_) >> "" }  //Not serializing the exception
     )
 
     @Subject DefaultAsynchronousWorkflowsBuilder asynchronousProcessBuilder = new DefaultAsynchronousWorkflowsBuilder(
