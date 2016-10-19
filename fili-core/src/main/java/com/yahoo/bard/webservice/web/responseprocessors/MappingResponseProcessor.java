@@ -108,7 +108,14 @@ public abstract class MappingResponseProcessor implements ResponseProcessor {
             @Override
             public void invoke(int statusCode, String reason, String responseBody) {
                 LOG.error(ErrorMessageFormat.ERROR_FROM_DRUID.logFormat(responseBody, statusCode, reason, druidQuery));
-                responseEmitter.onError(new ResponseException(statusCode, reason, responseBody, druidQuery));
+                responseEmitter.onError(new ResponseException(
+                        statusCode,
+                        reason,
+                        responseBody,
+                        druidQuery,
+                        null,
+                        getObjectMappers().getMapper().writer()
+                ));
             }
         };
     }
@@ -129,7 +136,12 @@ public abstract class MappingResponseProcessor implements ResponseProcessor {
             @Override
             public void invoke(Throwable error) {
                 LOG.error(ErrorMessageFormat.FAILED_TO_SEND_QUERY_TO_DRUID.logFormat(druidQuery), error);
-                responseEmitter.onError(new ResponseException(Status.INTERNAL_SERVER_ERROR, druidQuery, error));
+                responseEmitter.onError(new ResponseException(
+                        Status.INTERNAL_SERVER_ERROR,
+                        druidQuery,
+                        error,
+                        objectMappers.getMapper().writer()
+                ));
             }
         };
     }
@@ -149,5 +161,9 @@ public abstract class MappingResponseProcessor implements ResponseProcessor {
 
     public DataApiRequest getDataApiRequest() {
         return apiRequest;
+    }
+
+    protected ObjectMappersSuite getObjectMappers() {
+        return objectMappers;
     }
 }

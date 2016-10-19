@@ -118,10 +118,20 @@ public class ResultSetResponseProcessor extends MappingResponseProcessor impleme
             responseEmitter.onCompleted();
         } catch (PageNotFoundException invalidPage) {
             LOG.debug(invalidPage.getLogMessage());
-            responseEmitter.onError(new ResponseException(invalidPage.getErrorStatus(), druidQuery, invalidPage));
+            responseEmitter.onError(new ResponseException(
+                    invalidPage.getErrorStatus(),
+                    druidQuery,
+                    invalidPage,
+                    getObjectMappers().getMapper().writer()
+            ));
         } catch (Exception exception) {
             LOG.error("Exception processing druid call in success", exception);
-            responseEmitter.onError(new ResponseException(Status.INTERNAL_SERVER_ERROR, druidQuery, exception));
+            responseEmitter.onError(new ResponseException(
+                    Status.INTERNAL_SERVER_ERROR,
+                    druidQuery,
+                    exception,
+                    getObjectMappers().getMapper().writer()
+            ));
         }
     }
 
