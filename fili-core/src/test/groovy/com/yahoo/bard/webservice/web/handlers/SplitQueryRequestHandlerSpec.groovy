@@ -4,9 +4,12 @@ package com.yahoo.bard.webservice.web.handlers
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MONTH
+import static com.yahoo.bard.webservice.druid.model.query.AllGranularity.INSTANCE
 
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
+import com.yahoo.bard.webservice.druid.model.query.Granularity
+import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 import com.yahoo.bard.webservice.web.DataApiRequest
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor
 import com.yahoo.bard.webservice.web.responseprocessors.SplitQueryResponseProcessor
@@ -38,8 +41,8 @@ class SplitQueryRequestHandlerSpec extends Specification {
     static Interval month = new Interval(startInstant, Duration.standardDays(31))
     static Interval year = new Interval(startInstant, new DateTime(2016, 1, 1, 0, 0))
 
-
     GroupByQuery query
+    static Granularity all = INSTANCE
 
     def setup() {
         groupByQuery.getInnermostQuery() >> groupByQuery
@@ -67,6 +70,28 @@ class SplitQueryRequestHandlerSpec extends Specification {
         1         | MONTH     | month
         12        | MONTH     | year
     }
+  
+    @Unroll 
+    def "Handler skips splitting for all time grain when the interval is #interval"() {
+        groupByQuery.granularity >> timeGrain
+        groupByQuery.intervals >> interval
+        rc.numberOfIncoming >> new AtomicLong(1)
+        rc.numberOfOutgoing >> new AtomicLong(1)
+        
+        when:
+        handler.handleRequest(rc, apiRequest, groupByQuery, response)
+
+        then:
+        (0) * groupByQuery.withAllIntervals(_) >> groupByQuerySplit
+        (1) * next.handleRequest(rc, apiRequest, groupByQuery, response)
+        
+        where:
+        timeGrain | interval
+        all       | buildIntervals(["2015-01-01/2015-01-10"])
+        all       | buildIntervals(["2015-01-01/2015-01-10","2015-01-11/2015-01-20"])
+        all       | buildIntervals(["2015-01-01/2015-01-10","2015-01-21/2015-01-29"])
+
+    }
 
     def "Handler sends error on no duration request"() {
         setup:
@@ -83,5 +108,9 @@ class SplitQueryRequestHandlerSpec extends Specification {
         apiRequest.getIntervals() >> [none]
         1 * hec.dispatch(400, _ as String, _ as String)
         0 * _._
+    }
+    
+    SimplifiedIntervalList buildIntervals(List<String> intervals) {
+        intervals.collect({ new Interval(it) }) as SimplifiedIntervalList
     }
 }
