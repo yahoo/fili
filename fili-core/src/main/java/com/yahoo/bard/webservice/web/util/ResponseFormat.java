@@ -34,7 +34,8 @@ public class ResponseFormat {
         if (interval == null) {
             interval = "";
         } else {
-            interval = "_" + interval.replace("/", "_");
+            // Chrome treats ',' as duplicate header so replace it with '__' to make chrome happy.
+            interval = "_" + interval.replace("/", "_").replace(",", "__");
         }
 
         return "attachment; filename=" + uriPath + interval + ".csv";
