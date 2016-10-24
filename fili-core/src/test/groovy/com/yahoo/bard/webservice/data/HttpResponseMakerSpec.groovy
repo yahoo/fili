@@ -62,7 +62,7 @@ class HttpResponseMakerSpec extends Specification {
 
         responseContext = new ResponseContext(apiRequest.dimensionFields)
 
-        paramMap.getFirst("dateTime") >> "a/b"
+        paramMap.getFirst("dateTime") >> "a/b,c/d"
         pathSegment.getPath() >> "theMockPath"
         uriInfo.getPathSegments() >>[pathSegment]
         uriInfo.getQueryParameters() >> paramMap
@@ -127,7 +127,7 @@ class HttpResponseMakerSpec extends Specification {
 
         then: "The header is set correctly"
         actual.getHeaderString(HttpHeaders.CONTENT_TYPE) == "text/csv; charset=utf-8"
-        actual.getHeaderString(HttpHeaders.CONTENT_DISPOSITION) == "attachment; filename=theMockPath_a_b.csv"
+        actual.getHeaderString(HttpHeaders.CONTENT_DISPOSITION) == "attachment; filename=theMockPath_a_b__c_d.csv"
 
         and: "Mock override: A CSV-formatted request"
         apiRequest.getFormat() >> ResponseFormatType.CSV

@@ -19,6 +19,9 @@ Current
 
 ### Changed:
 
+- [CSV attachment name for multi-interval request now contain '__' instead of ','](https://github.com/yahoo/fili/pull/76)
+    - This change is made to allow running multi-api request with csv format using chrome browser.
+
 - [Allow configurable headers for Druid data requests](https:://github.com/yahoo/fili/pull/62)
     - The `AsyncDruidWebServiceImpl` now accepts a `Supplier<Map<String, String>>` argument which specifies
         the headers to add to the Druid data requests. This feature is made configurable through `SystemConfig` in
