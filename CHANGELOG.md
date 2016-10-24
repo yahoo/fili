@@ -67,6 +67,11 @@ Current
 
 ### Fixed:
 
+- [Disable Query split for "all" grain ](https:://github.com/yahoo/fili/pull/75)
+    - Before, if we requested "all" grain with multiple intervals, the `SplitQueryRequestHandler` would incorrectly split the query 
+      and we would get multiple buckets in the output. Now, the query split is disabled for "all" grain and we correctly
+      get only one bucket in the response.
+
 - [Fixed typo emit -> omit in Utils.java omitField()](https://github.com/yahoo/fili/pull/68)
 
 - [Adds read locking to all attempts to read the Lucene index](https://github.com/yahoo/fili/pull/52)
