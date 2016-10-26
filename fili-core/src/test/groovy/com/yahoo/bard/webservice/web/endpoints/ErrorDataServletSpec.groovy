@@ -159,12 +159,14 @@ class ErrorDataServletSpec extends Specification {
         String message = UNKNOWN_GRANULARITY.format(badTimeGrain)
 
         String jsonFailure =
-                """{"status":400,
-    "statusName": "Bad Request",
-    "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
-    "description":"${message}",
-    "druidQuery":null}
-"""
+            """{
+                    "status":400,
+                    "statusName": "Bad Request",
+                    "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
+                    "description":"${message}",
+                    "druidQuery":null,
+                    "requestId": "SOME UUID"
+            }"""
 
         when:
         Response r = jtb.getHarness().target("data/shapes/${badTimeGrain}/color")
@@ -174,17 +176,19 @@ class ErrorDataServletSpec extends Specification {
 
         then:
         r.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()
-        GroovyTestUtils.compareJson(r.readEntity(String.class), jsonFailure)
+        GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), jsonFailure)
     }
 
     def "Missing metrics fails"() {
         String jsonFailure =
-                """{"status":400,
-    "statusName": "Bad Request",
-    "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
-    "description":"${METRICS_MISSING.format()}",
-    "druidQuery":null}
-"""
+            """{
+                    "status":400,
+                    "statusName": "Bad Request",
+                    "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
+                    "description":"${METRICS_MISSING.format()}",
+                    "druidQuery":null,
+                    "requestId": "SOME UUID"
+            }"""
 
         when:
         Response r = jtb.getHarness().target("data/shapes/day/color")
@@ -193,17 +197,19 @@ class ErrorDataServletSpec extends Specification {
 
         then:
         r.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()
-        GroovyTestUtils.compareJson(r.readEntity(String.class), jsonFailure)
+        GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), jsonFailure)
     }
 
     def "Empty metrics fails"() {
         String jsonFailure =
-                """{"status":400,
-    "statusName": "Bad Request",
-    "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
-    "description":"${METRICS_MISSING.format()}",
-    "druidQuery":null}
-"""
+            """{
+                    "status":400,
+                    "statusName": "Bad Request",
+                    "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
+                    "description":"${METRICS_MISSING.format()}",
+                    "druidQuery":null,
+                    "requestId": "SOME UUID"
+            }"""
 
         when:
         Response r = jtb.getHarness().target("data/shapes/day/color")
@@ -213,19 +219,21 @@ class ErrorDataServletSpec extends Specification {
 
         then:
         r.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()
-        GroovyTestUtils.compareJson(r.readEntity(String.class), jsonFailure)
+        GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), jsonFailure)
     }
 
     def "Metric not in logical table fails"() {
         String message = METRICS_NOT_IN_TABLE.format("[limbs]", "shapes")
 
         String jsonFailure =
-                """{"status":400,
-    "statusName": "Bad Request",
-    "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
-    "description":"${message}",
-    "druidQuery":null}
-"""
+            """{
+                    "status":400,
+                    "statusName": "Bad Request",
+                    "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
+                    "description":"${message}",
+                    "druidQuery":null,
+                    "requestId": "SOME UUID"
+            }"""
 
         when:
         Response r = jtb.getHarness().target("data/shapes/day/color")
@@ -235,7 +243,7 @@ class ErrorDataServletSpec extends Specification {
 
         then:
         r.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()
-        GroovyTestUtils.compareJson(r.readEntity(String.class), jsonFailure)
+        GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), jsonFailure)
     }
 
     def "Dimension not in logical table fails"() {
@@ -246,7 +254,9 @@ class ErrorDataServletSpec extends Specification {
     "statusName": "Bad Request",
     "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
     "description":"${message}",
-    "druidQuery":null}
+    "druidQuery":null,
+    "requestId": "SOME UUID"
+    }
 """
 
         when:
@@ -257,7 +267,7 @@ class ErrorDataServletSpec extends Specification {
 
         then:
         r.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()
-        GroovyTestUtils.compareJson(r.readEntity(String.class), jsonFailure)
+        GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), jsonFailure)
     }
 
     def "Bad table name fails"() {
@@ -268,7 +278,9 @@ class ErrorDataServletSpec extends Specification {
     "statusName": "Bad Request",
     "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
     "description":"${message}",
-    "druidQuery":null}
+    "druidQuery":null,
+    "requestId": "SOME UUID"
+    }
 """
 
         when:
@@ -279,7 +291,7 @@ class ErrorDataServletSpec extends Specification {
 
         then:
         r.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()
-        GroovyTestUtils.compareJson(r.readEntity(String.class), jsonFailure)
+        GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), jsonFailure)
     }
 
     def "Bad dimension fails"() {
@@ -290,7 +302,9 @@ class ErrorDataServletSpec extends Specification {
     "statusName": "Bad Request",
     "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
     "description":"${message}",
-    "druidQuery":null}
+    "druidQuery":null,
+    "requestId": "SOME UUID"
+    }
 """
 
         when:
@@ -301,7 +315,7 @@ class ErrorDataServletSpec extends Specification {
 
         then:
         r.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()
-        GroovyTestUtils.compareJson(r.readEntity(String.class), jsonFailure)
+        GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), jsonFailure)
     }
 
     def "Bad metric fails"() {
@@ -312,7 +326,9 @@ class ErrorDataServletSpec extends Specification {
     "statusName": "Bad Request",
     "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
     "description":"${message}",
-    "druidQuery":null}
+    "druidQuery":null,
+    "requestId": "SOME UUID"
+    }
 """
 
         when:
@@ -323,7 +339,7 @@ class ErrorDataServletSpec extends Specification {
 
         then:
         r.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()
-        GroovyTestUtils.compareJson(r.readEntity(String.class), jsonFailure)
+        GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), jsonFailure)
     }
 
     def "Bad accept format fails"() {
@@ -334,7 +350,9 @@ class ErrorDataServletSpec extends Specification {
     "statusName": "Bad Request",
     "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
     "description":"${message}",
-    "druidQuery":null}
+    "druidQuery":null,
+    "requestId": "SOME UUID"
+    }
 """
 
         when:
@@ -346,7 +364,7 @@ class ErrorDataServletSpec extends Specification {
 
         then:
         r.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()
-        GroovyTestUtils.compareJson(r.readEntity(String.class), jsonFailure)
+        GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), jsonFailure)
     }
 
     def "Bad filter fails"() {
@@ -358,7 +376,9 @@ class ErrorDataServletSpec extends Specification {
     "statusName": "Bad Request",
     "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
     "description":"${message}",
-    "druidQuery":null}
+    "druidQuery":null,
+    "requestId": "SOME UUID"
+    }
 """
 
         when:
@@ -370,7 +390,7 @@ class ErrorDataServletSpec extends Specification {
 
         then:
         r.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()
-        GroovyTestUtils.compareJson(r.readEntity(String.class), jsonFailure)
+        GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), jsonFailure)
 
     }
 
@@ -382,7 +402,9 @@ class ErrorDataServletSpec extends Specification {
     "statusName": "Bad Request",
     "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
     "description":"${message}",
-    "druidQuery":null}
+    "druidQuery":null,
+    "requestId": "SOME UUID"
+    }
 """
 
         when:
@@ -394,7 +416,7 @@ class ErrorDataServletSpec extends Specification {
 
         then:
         r.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()
-        GroovyTestUtils.compareJson(r.readEntity(String.class), jsonFailure)
+        GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), jsonFailure)
     }
 
     def "Bad sort metric fails"() {
@@ -405,7 +427,9 @@ class ErrorDataServletSpec extends Specification {
     "statusName": "Bad Request",
     "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
     "description":"${message}",
-    "druidQuery":null}
+    "druidQuery":null,
+    "requestId": "SOME UUID"
+    }
 """
 
         when:
@@ -417,7 +441,7 @@ class ErrorDataServletSpec extends Specification {
 
         then:
         r.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()
-        GroovyTestUtils.compareJson(r.readEntity(String.class), jsonFailure)
+        GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), jsonFailure)
     }
 
     def "Sort metric not in query fails"() {
@@ -428,7 +452,9 @@ class ErrorDataServletSpec extends Specification {
     "statusName": "Bad Request",
     "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
     "description":"${message}",
-    "druidQuery":null}
+    "druidQuery":null,
+    "requestId": "SOME UUID"
+    }
 """
 
         when:
@@ -440,7 +466,7 @@ class ErrorDataServletSpec extends Specification {
 
         then:
         r.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()
-        GroovyTestUtils.compareJson(r.readEntity(String.class), jsonFailure)
+        GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), jsonFailure)
     }
 
     def "Sort metric not sortable fails"() {
@@ -451,7 +477,9 @@ class ErrorDataServletSpec extends Specification {
     "statusName": "Bad Request",
     "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
     "description":"${message}",
-    "druidQuery":null}
+    "druidQuery":null,
+    "requestId": "SOME UUID"
+    }
 """
 
         when:
@@ -463,7 +491,7 @@ class ErrorDataServletSpec extends Specification {
 
         then:
         r.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()
-        GroovyTestUtils.compareJson(r.readEntity(String.class), jsonFailure)
+        GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), jsonFailure)
     }
 
     def "Bad count fails"() {
@@ -474,7 +502,9 @@ class ErrorDataServletSpec extends Specification {
     "statusName": "Bad Request",
     "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
     "description":"${message}",
-    "druidQuery":null}
+    "druidQuery":null,
+    "requestId": "SOME UUID"
+    }
 """
 
         when:
@@ -486,7 +516,7 @@ class ErrorDataServletSpec extends Specification {
 
         then:
         r.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()
-        GroovyTestUtils.compareJson(r.readEntity(String.class), jsonFailure)
+        GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), jsonFailure)
 
         where:
         count << [
@@ -507,7 +537,9 @@ class ErrorDataServletSpec extends Specification {
     "statusName": "Bad Request",
     "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
     "description":"${message}",
-    "druidQuery":null}
+    "druidQuery":null,
+    "requestId": "SOME UUID"
+    }
 """
 
         when:
@@ -519,7 +551,7 @@ class ErrorDataServletSpec extends Specification {
 
         then:
         r.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()
-        GroovyTestUtils.compareJson(r.readEntity(String.class), jsonFailure)
+        GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), jsonFailure)
 
         where:
         topN << [
@@ -538,7 +570,9 @@ class ErrorDataServletSpec extends Specification {
     "statusName": "Bad Request",
     "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
     "description":"${INTERVAL_MISSING.format()}",
-    "druidQuery":null}
+    "druidQuery":null,
+    "requestId": "SOME UUID"
+    }
 """
 
         when:
@@ -548,7 +582,7 @@ class ErrorDataServletSpec extends Specification {
 
         then:
         r.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()
-        GroovyTestUtils.compareJson(r.readEntity(String.class), jsonFailure)
+        GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), jsonFailure)
     }
 
     def "Empty intervals fails"() {
@@ -557,7 +591,9 @@ class ErrorDataServletSpec extends Specification {
     "statusName": "Bad Request",
     "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
     "description":"${INTERVAL_MISSING.format()}",
-    "druidQuery":null}
+    "druidQuery":null,
+    "requestId": "SOME UUID"
+    }
 """
 
         when:
@@ -568,7 +604,7 @@ class ErrorDataServletSpec extends Specification {
 
         then:
         r.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()
-        GroovyTestUtils.compareJson(r.readEntity(String.class), jsonFailure)
+        GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), jsonFailure)
     }
 
     def "Negative duration interval fails"() {
@@ -582,7 +618,9 @@ class ErrorDataServletSpec extends Specification {
     "statusName": "Bad Request",
     "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
     "description":"${message}",
-    "druidQuery":null}
+    "druidQuery":null,
+    "requestId": "SOME UUID"
+    }
 """
 
         when:
@@ -593,7 +631,7 @@ class ErrorDataServletSpec extends Specification {
 
         then:
         r.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()
-        GroovyTestUtils.compareJson(r.readEntity(String.class), jsonFailure)
+        GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), jsonFailure)
     }
 
     def "Zero length interval fails"() {
@@ -605,7 +643,9 @@ class ErrorDataServletSpec extends Specification {
     "statusName": "Bad Request",
     "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
     "description":"${message}",
-    "druidQuery":null}
+    "druidQuery":null,
+    "requestId": "SOME UUID"
+    }
 """
         when:
         Response r = jtb.getHarness().target("data/shapes/day/color")
@@ -615,7 +655,7 @@ class ErrorDataServletSpec extends Specification {
 
         then:
         r.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()
-        GroovyTestUtils.compareJson(r.readEntity(String.class), jsonFailure)
+        GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), jsonFailure)
     }
 
     def "No matching physical table due to misconfiguration fails"() {
@@ -636,7 +676,9 @@ class ErrorDataServletSpec extends Specification {
             {"description":"${message}",
             "druidQuery":null,
             "reason":"com.yahoo.bard.webservice.table.resolver.NoMatchFoundException",
-            "status":400,"statusName":"Bad Request"}
+            "status":400,"statusName":"Bad Request",
+            "requestId": "SOME UUID"
+            }
         """
         /*
                 """{"status":400, "statusName": "Bad Request","reason":"java.lang.IllegalStateException", "description":"${message}",
@@ -651,14 +693,14 @@ class ErrorDataServletSpec extends Specification {
 
         then:
         r.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()
-        GroovyTestUtils.compareJson(r.readEntity(String.class), jsonFailure)
+        GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), jsonFailure)
     }
-
 
     def "Test forced BAD_REQUEST produces correct failure"() {
         setup:
         String jsonFailure =
-                """{ "status": 400, "statusName":"Bad Request", "reason" : "Bad Request", "description" : "description" }"""
+                """{ "status": 400, "statusName":"Bad Request", "reason" : "Bad Request", "description" : "description"}"""
+
         jtb.nonUiDruidWebService.setFailure(jsonFailure)
 
         expect:
@@ -673,13 +715,14 @@ class ErrorDataServletSpec extends Specification {
         Map map = jsonSlurper.parseText(r.readEntity(String.class))
         // do not check apiRequest property
         map.remove("druidQuery")
+        map.remove("requestId")
         GroovyTestUtils.compareObjects(map, jsonSlurper.parseText(jsonFailure))
     }
 
     def "Test forced NOT_ACCEPTABLE produces correct error"() {
         setup:
         String jsonFailure =
-                """{ "status": 406, "statusName": "Not Acceptable", "reason" : "Not Acceptable", "description" : "" }"""
+                """{ "status": 406, "statusName": "Not Acceptable", "reason" : "Not Acceptable", "description" : ""}"""
         nonUiTestWebService.setFailure(jsonFailure)
 
         expect:
@@ -694,6 +737,7 @@ class ErrorDataServletSpec extends Specification {
         Map map = jsonSlurper.parseText(r.readEntity(String.class))
         // do not check druidQuery property
         map.remove("druidQuery")
+        map.remove("requestId")
         GroovyTestUtils.compareObjects(map, jsonSlurper.parseText(jsonFailure))
     }
 
@@ -701,7 +745,7 @@ class ErrorDataServletSpec extends Specification {
         setup:
         // this special test causes uncaught exception in test servlet
         String jsonFailure =
-                """{ "status": 500, "statusName": "Internal Server Error", "reason" : "Internal Server Error", "description" : "" }"""
+                """{ "status": 500, "statusName": "Internal Server Error", "reason" : "Internal Server Error", "description" : ""}"""
         nonUiTestWebService.setFailure(jsonFailure)
 
         // pageViews will respond with error
@@ -714,6 +758,7 @@ class ErrorDataServletSpec extends Specification {
 
         // do not check druidQuery or description
         map.remove("druidQuery")
+        map.remove("requestId")
         map.put("description","")
 
         expect:
@@ -758,6 +803,7 @@ class ErrorDataServletSpec extends Specification {
         Map map = jsonSlurper.parseText(r.readEntity(String.class))
         // do not check druidQuery or description
         map.remove("druidQuery")
+        map.remove("requestId")
         GroovyTestUtils.compareObjects(map, jsonSlurper.parseText(expectedJson))
     }
 
@@ -798,6 +844,7 @@ class ErrorDataServletSpec extends Specification {
         Map map = jsonSlurper.parseText(r.readEntity(String.class))
         // do not check druidQuery or description
         map.remove("druidQuery")
+        map.remove("requestId")
         GroovyTestUtils.compareObjects(map, jsonSlurper.parseText(expectedJson))
     }
 

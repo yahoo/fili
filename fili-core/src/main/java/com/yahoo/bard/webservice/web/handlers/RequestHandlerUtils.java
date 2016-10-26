@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.web.handlers;
 
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
+import com.yahoo.bard.webservice.logging.RequestLog;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -129,6 +130,7 @@ public class RequestHandlerUtils {
         responseMap.put("reason", reason);
         responseMap.put("description", description);
         responseMap.put("druidQuery", druidQuery);
+        responseMap.put("requestId", RequestLog.getId());
 
         String json;
         try {

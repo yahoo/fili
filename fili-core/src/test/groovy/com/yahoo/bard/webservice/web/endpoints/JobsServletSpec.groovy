@@ -150,7 +150,8 @@ class JobsServletSpec extends Specification {
           "statusName" : "Internal Server Error",
           "reason" : "Error",
           "description" : "Error",
-          "druidQuery" : null
+          "druidQuery" : null,
+          "requestId": "SOME UUID"
         }"""
 
         when: "We send a request to the jobs/errorPreResponse/results endpoint"
@@ -158,7 +159,7 @@ class JobsServletSpec extends Specification {
 
         then:
         r.getStatus() == 500
-        GroovyTestUtils.compareJson(r.readEntity(String.class), expectedResponse, JsonSortStrategy.SORT_BOTH)
+        GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), expectedResponse)
     }
 
     def "/jobs endpoint returns the payload for all the jobs in the ApiJobStore"() {

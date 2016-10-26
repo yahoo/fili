@@ -38,7 +38,7 @@ class DebugDataServletSpec extends Specification {
         String result = makeAbstractRequest()
 
         then: "The response rows are what we expect"
-        GroovyTestUtils.compareJson(result, getExpectedApiResponse())
+        GroovyTestUtils.compareErrorPayload(result, getExpectedApiResponse())
     }
 
     String makeAbstractRequest() {

@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.web.handlers
 
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.util.GroovyTestUtils
+import com.yahoo.bard.webservice.util.JsonSlurper
 import com.yahoo.bard.webservice.web.RequestUtils
 
 import com.fasterxml.jackson.core.JsonProcessingException
@@ -20,6 +21,7 @@ import javax.ws.rs.core.Response
 class RequestHandlerUtilsSpec extends Specification {
     private static final ObjectMapper MAPPER = new ObjectMapper()
             .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
+
     ObjectWriter writer = MAPPER.writer()
 
     GroupByQuery groupByQuery = RequestUtils.buildGroupByQuery()
@@ -38,7 +40,8 @@ class RequestHandlerUtilsSpec extends Specification {
                 "statusName": "$statusName",
                 "reason": "$reason",
                 "description": "$description",
-                "druidQuery" : $groupByQueryJson
+                "druidQuery" : $groupByQueryJson,
+                "requestId": "SOME UUID"
         }
         """
     }
@@ -55,7 +58,7 @@ class RequestHandlerUtilsSpec extends Specification {
 
         then:
         response.status == status
-        GroovyTestUtils.compareJson(response.entity, expectedDocument)
+        GroovyTestUtils.compareErrorPayload(response.entity, expectedDocument)
     }
 
     def "Test error response status error"() {
@@ -67,10 +70,10 @@ class RequestHandlerUtilsSpec extends Specification {
             "statusName": "${expectedStatusName}",
             "reason": "java.lang.Throwable",
             "description": "$description",
-            "druidQuery" : null
+            "druidQuery" : null,
+            "requestId": "SOME UUID"
         }
         """
-
         when:
         javax.ws.rs.core.Response response = RequestHandlerUtils.makeErrorResponse(
                 st,
@@ -80,7 +83,7 @@ class RequestHandlerUtilsSpec extends Specification {
 
         then:
         response.status == st.getStatusCode()
-        GroovyTestUtils.compareJson(response.entity, expectedDocument)
+        GroovyTestUtils.compareErrorPayload(response.entity, expectedDocument)
     }
 
     @Unroll
@@ -92,7 +95,8 @@ class RequestHandlerUtilsSpec extends Specification {
             "statusName": "${expectedStatusName}",
             "reason": "$reason",
             "description": "$description",
-            "druidQuery" : $groupByQueryJson
+            "druidQuery" : $groupByQueryJson,
+            "requestId": "SOME UUID"
         }
         """
         Response response = RequestHandlerUtils.makeErrorResponse(
@@ -105,7 +109,7 @@ class RequestHandlerUtilsSpec extends Specification {
 
         then:
         response.status == expectedStatus
-        GroovyTestUtils.compareJson(response.entity, expectedDocument)
+        GroovyTestUtils.compareErrorPayload(response.entity, expectedDocument)
 
         where:
         status | expectedStatus | expectedStatusName
@@ -160,7 +164,8 @@ class RequestHandlerUtilsSpec extends Specification {
             "statusName": "$statusName",
             "reason": $reason,
             "description": $description,
-            "druidQuery" : $groupByQueryJson
+            "druidQuery" : $groupByQueryJson,
+            "requestId": "SOME UUID"
         }
         """
 
@@ -174,7 +179,7 @@ class RequestHandlerUtilsSpec extends Specification {
 
         then:
         response.status == status
-        GroovyTestUtils.compareJson(response.entity, expectedDocument)
+        GroovyTestUtils.compareErrorPayload(response.entity, expectedDocument)
 
         //@formatter:off
         where:
@@ -208,7 +213,8 @@ class RequestHandlerUtilsSpec extends Specification {
             "statusName": "$statusName",
             "reason": $reason,
             "description": $description,
-            "druidQuery" : $groupByQueryJson
+            "druidQuery" : $groupByQueryJson,
+            "requestId": "SOME UUID"
         }
         """
 
@@ -222,7 +228,7 @@ class RequestHandlerUtilsSpec extends Specification {
 
         then:
         response.status == status
-        GroovyTestUtils.compareJson(response.entity, expectedDocument)
+        GroovyTestUtils.compareErrorPayload(response.entity, expectedDocument)
 
         //@formatter:off
         where:
