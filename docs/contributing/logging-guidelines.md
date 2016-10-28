@@ -6,6 +6,19 @@ otherwise normal conditions. Because logs are so useful, it's tempting to always
 processing logs is much more work than it would seem and writing too many logs has a significant negative impact on
 performance.
 
+Summary
+-------
+
+Details and examples are below, but here's a summary of the log levels and their meanings.
+
+| Level | Meaning                                                                                                      |
+| ----- | ------------------------------------------------------------------------------------------------------------ |
+| Error | System-caused problem preventing correct results for requests. Major, "wake up a human" events.              |
+| Warn  | Something's wrong, like no caching, but can still correctly respond to requests. A human should investigate. |
+| Info  | Working as expected. Information needed for monitoring. Answers "Are things healthy."                        |
+| Debug | High-level data flow and errors. Rich insight, but not overwhelming. Per-request errors, but not happy-path. |
+| Trace | Most verbose. Full data flow. Not intended to be used in production, or very rarely.                         |
+
 Log Levels
 ----------
 

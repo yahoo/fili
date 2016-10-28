@@ -6,9 +6,7 @@ Fili
 
 Repository for the Fili web service.
 
-## Monitoring and Operations
 
-There is [a list of Key Performance Indicators (KPIs)](kpis.md) for the web service. It doesn't go into detail about what each of the KPIs mean, but it gives a rough overview of why they matter.  
 
 
 ## Useful Links
