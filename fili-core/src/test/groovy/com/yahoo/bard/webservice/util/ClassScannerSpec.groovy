@@ -19,7 +19,7 @@ import spock.lang.Unroll
 import java.lang.reflect.Modifier
 import java.util.regex.Pattern
 
-@Timeout(5)
+@Timeout(15)
 class ClassScannerSpec extends Specification {
 
     static ClassScanner classScanner = new ClassScanner("com.yahoo.bard")
