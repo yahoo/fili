@@ -107,7 +107,7 @@ public class LayeredFileSystemConfig implements SystemConfig {
             // Use PropertiesConfiguration to hold environment variables to ensure same behavior as properties files
             PropertiesConfiguration environmentConfiguration = new PropertiesConfiguration();
 
-            for (Map.Entry entry  : System.getenv().entrySet()) {
+            for (Map.Entry entry : System.getenv().entrySet()) {
                 // addProperty will parse string as list with delimiter set
                 environmentConfiguration.addProperty(entry.getKey().toString(), entry.getValue());
             }
