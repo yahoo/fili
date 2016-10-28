@@ -9,6 +9,7 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.SliceRequest;
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.RequestValidationException;
@@ -48,6 +49,7 @@ import javax.ws.rs.core.UriInfo;
 public class SlicesServlet extends EndpointServlet {
     private static final Logger LOG = LoggerFactory.getLogger(SlicesServlet.class);
 
+    private final DataSourceMetadataService dataSourceMetadataService;
     private final PhysicalTableDictionary physicalTableDictionary;
     private final RequestMapper requestMapper;
 
@@ -56,17 +58,20 @@ public class SlicesServlet extends EndpointServlet {
      *
      * @param physicalTableDictionary  Physical Tables that this endpoint is reporting on
      * @param requestMapper  Mapper for changing the API request
+     * @param dataSourceMetadataService  The data source metadata provider
      * @param objectMappers  JSON tools
      */
     @Inject
     public SlicesServlet(
             PhysicalTableDictionary physicalTableDictionary,
             @Named(SlicesApiRequest.REQUEST_MAPPER_NAMESPACE) RequestMapper requestMapper,
+            DataSourceMetadataService dataSourceMetadataService,
             ObjectMappersSuite objectMappers
     ) {
         super(objectMappers);
         this.physicalTableDictionary = physicalTableDictionary;
         this.requestMapper = requestMapper;
+        this.dataSourceMetadataService = dataSourceMetadataService;
     }
 
     /**
@@ -109,6 +114,7 @@ public class SlicesServlet extends EndpointServlet {
                     perPage,
                     page,
                     physicalTableDictionary,
+                    dataSourceMetadataService,
                     uriInfo
             );
 
@@ -189,6 +195,7 @@ public class SlicesServlet extends EndpointServlet {
                     "",
                     "",
                     physicalTableDictionary,
+                    dataSourceMetadataService,
                     uriInfo
             );
 

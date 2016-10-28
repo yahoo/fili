@@ -17,6 +17,9 @@ Current
 
 - [Documentation for topN](https://github.com/yahoo/fili/pull/43)
 
+- [Adding slice availability to slices endpoint] (https://github.com/yahoo/fili/pull/51)
+    * Slice availability can be used to debug availability issues on Physical tables
+
 ### Changed:
 
 - [`PhysicalTable` now uses `getAvailableIntervals` internally rather than directly referencing its intervals](https://github.com/yahoo/fili/pull/79)
