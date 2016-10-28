@@ -71,6 +71,10 @@ Current
 
 ### Fixed:
 
+- [Environment comma separated list variables are now correctly pulled in as a list](https://github.com/yahoo/fili/pull/82)
+  * Before it was pulled in as a single sting containing commas, now environment variables are pulled in the same way as the properties files
+  * Added test to test comma separated list environment variables when `FILI_TEST_LIST` environment variable exists
+
 - [Druid queries are now serialized correctly when logging `ResponseExceptions`](https://github.com/yahoo/fili/pull/70)
 
 - [Disable Query split for "all" grain ](https:://github.com/yahoo/fili/pull/75)
