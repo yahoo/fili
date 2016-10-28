@@ -7,8 +7,8 @@ import static com.yahoo.bard.webservice.config.ConfigMessageFormat.TOO_MANY_USER
 
 import org.apache.commons.configuration.CompositeConfiguration;
 import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.EnvironmentConfiguration;
 import org.apache.commons.configuration.MapConfiguration;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.configuration.SystemConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +17,7 @@ import org.springframework.core.io.Resource;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.function.Function;
@@ -103,6 +104,14 @@ public class LayeredFileSystemConfig implements SystemConfig {
                 throw new SystemConfigException(TOO_MANY_APPLICATION_CONFIGS.format(resources.size()));
             }
 
+            // Use PropertiesConfiguration to hold environment variables to ensure same behavior as properties files
+            PropertiesConfiguration environmentConfiguration = new PropertiesConfiguration();
+
+            for (Map.Entry entry  : System.getenv().entrySet()) {
+                // addProperty will parse string as list with delimiter set
+                environmentConfiguration.addProperty(entry.getKey().toString(), entry.getValue());
+            }
+
             // Environment config has higher priority than java system properties
             // Java system properties have higher priority than file based configuration
             // Also, a runtime map is maintained to support on-the-fly configuration changes
@@ -110,7 +119,7 @@ public class LayeredFileSystemConfig implements SystemConfig {
             // Load the rest of the config "top down" through the layers, in highest to lowest precedence
             Stream.of(
                     Stream.of(new MapConfiguration(runtimeProperties)),
-                    Stream.of(new EnvironmentConfiguration()),
+                    Stream.of(environmentConfiguration),
                     Stream.of(new SystemConfiguration()),
                     userConfig.stream(),
                     testApplicationConfig.stream(),
@@ -119,7 +128,6 @@ public class LayeredFileSystemConfig implements SystemConfig {
                     .flatMap(Function.identity())
                     .filter(Objects::nonNull)
                     .forEachOrdered(masterConfiguration::addConfiguration);
-
 
             // Use the config which has been loaded to identify module dependencies
             List<String> dependentModules = (List<String>) masterConfiguration.getList(

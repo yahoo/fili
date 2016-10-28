@@ -22,11 +22,14 @@ class LayeredFileSystemConfigSpec extends SystemConfigSpec {
 
     private static final String ENVIRONMENT_PROPERTY_KEY = "JAVA_HOME"
 
+    // This environment is set in build container for testing purposes only
+    private static final String ENVIRONMENT_LIST_PROPERTY_KEY = "FILI_TEST_LIST"
+
     private SystemConfig systemConfig = new LayeredFileSystemConfig()
 
     @Override
     SystemConfig getTestSystemConfig() {
-        new LayeredFileSystemConfig();
+        new LayeredFileSystemConfig()
     }
 
     @Requires({System.getenv(ENVIRONMENT_PROPERTY_KEY) != null})
@@ -39,6 +42,15 @@ class LayeredFileSystemConfigSpec extends SystemConfigSpec {
         expect:
         systemConfig.getStringProperty(MODULE_1_PREFIX + TEST_PROPERTY) == "test1"
         systemConfig.getStringProperty(MODULE_2_PREFIX + TEST_PROPERTY) == "test2"
+    }
+
+    @Requires({System.getenv(ENVIRONMENT_LIST_PROPERTY_KEY) != null})
+    def "A comma separated list environment variable gets parsed correctly as a list"() {
+        setup:
+        List<String> expectedList = System.getenv(ENVIRONMENT_LIST_PROPERTY_KEY).split(",").toList()
+
+        expect:
+        systemConfig.getListProperty(ENVIRONMENT_LIST_PROPERTY_KEY) == expectedList
     }
 
     @Requires({System.getenv(ENVIRONMENT_PROPERTY_KEY) != null})

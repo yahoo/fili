@@ -34,6 +34,9 @@ if [[ ${MATCHING_TAG} != "" ]]; then
     exit 0
 fi
 
+# Set environment variable for testing purposes
+export FILI_TEST_LIST=a,2,bc,234
+
 # We're not on a release tag, so build and test the code
 mvn verify
 MAVEN_RETURN_CODE=$?
