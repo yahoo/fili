@@ -41,7 +41,6 @@ public class SlicesApiRequest extends ApiRequest {
 
     private final Set<Map<String, String>> slices;
     private final Map<String, Object> slice;
-    private final DataSourceMetadataService dataSourceMetadataService;
 
     /**
      * Parses the API request URL and generates the Api Request object.
@@ -75,7 +74,6 @@ public class SlicesApiRequest extends ApiRequest {
             UriInfo uriInfo
     ) throws BadApiRequestException {
         super(format, perPage, page, uriInfo);
-        this.dataSourceMetadataService = dataSourceMetadataService;
         this.slices = generateSlices(tableDictionary, uriInfo);
 
         this.slice = sliceName != null ? generateSlice(
@@ -101,7 +99,6 @@ public class SlicesApiRequest extends ApiRequest {
         super();
         this.slices = null;
         this.slice = null;
-        this.dataSourceMetadataService = null;
     }
 
     /**
@@ -217,18 +214,10 @@ public class SlicesApiRequest extends ApiRequest {
     private static Map<DateTime, Set<String>> generateSegmentMetadataView(
             Set<SortedMap<DateTime, Map<String, SegmentInfo>>> sliceMetadata
     ) {
-        Map<DateTime, Set<String>> segmentView;
-        if (!sliceMetadata.isEmpty()) {
-            SortedMap<DateTime, Map<String, SegmentInfo>> segmentInfo = sliceMetadata.iterator().next();
-            segmentView = segmentInfo.entrySet().stream()
-                    .collect(Collectors.toMap(
-                            Map.Entry::getKey,
-                            entry -> entry.getValue().keySet()
-                    ));
-        } else {
-            segmentView = Collections.emptyMap();
-        }
-        return segmentView;
+        return sliceMetadata.stream().flatMap(it -> it.entrySet().stream()).collect(Collectors.toMap(
+                Map.Entry::getKey,
+                entry -> entry.getValue().keySet()
+        ));
     }
 
     public Set<Map<String, String>> getSlices() {

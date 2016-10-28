@@ -117,6 +117,8 @@ class SlicesApiRequestSpec extends BaseDataSourceMetadataSpec {
         expected.put("timeZone", "UTC");
         expected.put("dimensions", dimensionsResult);
         expected.put("metrics", metricsResult);
+        // This test compares generated metadata against itself, meaning that the contents of this generation are not
+        // under test.
         expected.put("segmentInfo", SlicesApiRequest.generateSegmentMetadataView(sliceMetadata))
 
         when:
