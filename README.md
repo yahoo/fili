@@ -14,33 +14,13 @@ Repository for the Fili web service.
 - [Project Site](https://github.com/yahoo/fili)
 
 
-### How do I enable Redis?
 
-To enable Redis on local machines:
-
-- set the `test__dimension_backend` property to `redis`
-- set the `test__key_value_store_tests` property to `redis`
-
-in `src/test/resources/userConfig.properties` or in an environment variable.
-
-## Miscellaneous Information
-
-### Maven doesn't run on my Mac. Help!
-
-Maven picks up the wrong version of Java. If you run `mvn --version` you'll see that it probably says that the Java version isn't 1.8 but is 1.7, or some even earlier version.
-
-To remedy this, you need to make sure you have the `JAVA_HOME` environment variable exported. To export this variable, put the following line in your `~/.bash_profile` file:
  
-```bash
-export JAVA_HOME=`/usr/libexec/java_home -v 1.8`
 ```
 
-Additionally, to work with yahoo.bintray.com/maven, you need to copy the [settings.xml](settings.xml) file into `~/.m2/
 
-The easiest way to run tests on a Mac is to use in memory dimension backend and key value store: 
 
 ```bash
-mvn -Dtest__dimension_backend=memory -Dtest__key_value_store_tests=memory clean test
 ```
 
 ### I want to contribute to Fili. Are there any code style guidelines I should follow?
