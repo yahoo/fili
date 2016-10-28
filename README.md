@@ -25,13 +25,9 @@ Repository for the Fili web service.
 
 ### I want to contribute to Fili. Are there any code style guidelines I should follow?
 
-For the moment, we have distilled the most important code style conventions with respect to Fili's code as IntelliJ settings.
 
-If you are using IntelliJ, you may import these code style settings by importing: [Fili-Project.xml](Fili-Project.xml)
 
-They will appear as a new Scheme named *Bard-Project* under your Editor &rarr; Code Style section.
 
-Alternatively, you might check the xml file that is included in the jar and map its settings to your development environment.
 
 We have also included a large amount of checkstyle rules, that should catch 98% of the code style guidelines. The 
 [Google Java style guide](https://google.github.io/styleguide/javaguide.html) is very close to our style.
