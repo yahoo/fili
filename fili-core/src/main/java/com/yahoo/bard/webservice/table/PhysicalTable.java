@@ -67,7 +67,7 @@ public class PhysicalTable extends Table {
 
     @Override
     public Set<Column> getColumns() {
-        return availableIntervalsRef.get().keySet();
+        return getAvailableIntervals().keySet();
     }
 
     @Override
@@ -174,7 +174,7 @@ public class PhysicalTable extends Table {
      * @return Set of intervals associated with a column, empty if column is missing
      */
     public Set<Interval> getIntervalsByColumnName(String columnName) {
-        Set<Interval> result = availableIntervalsRef.get().get(new Column(columnName));
+        Set<Interval> result = getAvailableIntervals().get(new Column(columnName));
         if (result != null) {
             return result;
         }
@@ -189,7 +189,7 @@ public class PhysicalTable extends Table {
      */
     public DateTime getTableAlignment() {
         return getTimeGrain().roundFloor(
-                IntervalUtils.firstMoment(availableIntervalsRef.get().values()).orElse(new DateTime())
+                IntervalUtils.firstMoment(getAvailableIntervals().values()).orElse(new DateTime())
         );
     }
 

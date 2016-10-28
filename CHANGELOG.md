@@ -19,6 +19,8 @@ Current
 
 ### Changed:
 
+- [`PhysicalTable` now uses `getAvailableIntervals` internally rather than directly referencing its intervals](https://github.com/yahoo/fili/pull/79)
+
 - [CSV attachment name for multi-interval request now contain '__' instead of ','](https://github.com/yahoo/fili/pull/76)
     - This change is made to allow running multi-api request with csv format using chrome browser.
 
