@@ -1,0 +1,18 @@
+{  
+    "type" : "record",
+    "name" : "TUPLE_0",
+    "fields" : [  
+        {  
+            "name" : "FOO_ID",
+            "type" : [ "null","int" ]
+        },
+        {  
+            "name" : "FOO_DESC",
+            "type" : [ "null", "string" ]
+        },
+        {  
+            "name" : "MISCELLANEOUS",
+            "type" : [ "null", "string" ]
+        }
+    ]
+}

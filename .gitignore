@@ -38,3 +38,6 @@ snapshot-pom.xml
 report
 /target
 /checkstyle-style-local.xml
+
+# Binary avro files should be ignored
+*.avro

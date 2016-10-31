@@ -10,7 +10,12 @@ Current
 
 ### Added:
 
+
 - [Customize Logging Format in RequestLog](https://github.com/yahoo/fili/pull/81)
+
+- [Populate Dimension Rows from an AVRO file](https://github.com/yahoo/fili/pull/86)
+    * Added `AvroDimensionRowParser` class that parses an AVRO data file (.avro) after validating the AVRO schema (.avsc).
+    * Added a functional Interface `DimensionFieldMapper` that maps field name based on the user implementation.
 
 - [Support for Druid's In Filter](https://github.com/yahoo/fili/pull/64)
     * The in-filter only works with Druid versions 0.9.0 and up.
