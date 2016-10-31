@@ -34,14 +34,12 @@ public class LogFormatterProvider {
      */
     public static LogFormatter getInstance() {
         if (LOG_FORMATTER == null) {
-            String logFormatterImplementation = System.getenv(LOG_FORMATTER_IMPLEMENTATION_KEY);
             try {
-                if (logFormatterImplementation == null) {
-                    logFormatterImplementation = SystemConfigProvider.getInstance().getStringProperty(
-                            SYSTEM_CONFIG.getPackageVariableName(LOG_FORMATTER_IMPLEMENTATION_KEY),
-                            DEFAULT_LOG_FORMATTER_IMPL
-                    );
-                }
+                String logFormatterImplementation = SystemConfigProvider.getInstance().getStringProperty(
+                        SYSTEM_CONFIG.getPackageVariableName(LOG_FORMATTER_IMPLEMENTATION_KEY),
+                        DEFAULT_LOG_FORMATTER_IMPL
+                );
+
                 return (LogFormatter) Class.forName(logFormatterImplementation).newInstance();
             } catch (Exception exception) {
                 LOG.error("Exception while loading Log formatter: {}", exception);
