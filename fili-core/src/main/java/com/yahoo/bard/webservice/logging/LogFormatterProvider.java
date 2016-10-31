@@ -45,7 +45,7 @@ public class LogFormatterProvider {
                 return (LogFormatter) Class.forName(logFormatterImplementation).newInstance();
             } catch (Exception exception) {
                 LOG.error("Exception while loading Log formatter: {}", exception);
-                throw new IllegalStateException(exception.getMessage());
+                throw new IllegalStateException(exception);
             }
         }
 
