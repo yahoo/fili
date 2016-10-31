@@ -18,13 +18,7 @@ import com.yahoo.bard.webservice.logging.blocks.Threads;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 
 import com.codahale.metrics.MetricRegistry;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.joda.JodaModule;
 
-import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -64,7 +58,6 @@ public class RequestLog {
     private TimedPhase mostRecentTimer;
     private final Map<String, TimedPhase> times;
     private final Set<String> threadIds;
-    private final ObjectMapper mapper = new ObjectMapper();
 
     /**
      * This class has only static methods and is not supposed to be directly instantiated.
@@ -75,8 +68,6 @@ public class RequestLog {
         mostRecentTimer = null;
         times = new LinkedHashMap<>();
         threadIds = new LinkedHashSet<>();
-        mapper.registerModule((new JodaModule()).addSerializer(Interval.class, new ToStringSerializer()));
-        mapper.registerModule(new Jdk8Module().configureAbsentsAsNulls(false));
         MDC.remove(ID_KEY);
     }
 
@@ -464,21 +455,15 @@ public class RequestLog {
     }
 
     /**
-     * Exports current thread's request log object as a JSON string without resetting it.
+     * Exports current thread's request log object as a formatted string without resetting it.
      *
-     * @return log object as a JSON formatted string
+     * @return log object as a formatted string
      */
     public static String export() {
         RequestLog current = RLOG.get();
         record(new Durations(current.aggregateDurations()));
         record(new Threads(current.threadIds));
-        try {
-            return current.mapper.writeValueAsString(current.info);
-        } catch (JsonProcessingException jpe) {
-            String msg = String.format("Exporting mega log line with id: '%s' to JSON failed.", current.logId);
-            LOG.warn(msg, jpe);
-            return msg;
-        }
+        return LogFormatterProvider.getInstance().format(current.info);
     }
 
     private List<String> getLoginfoOrder() {

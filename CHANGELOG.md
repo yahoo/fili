@@ -10,6 +10,8 @@ Current
 
 ### Added:
 
+- [Customize Logging Format in RequestLog](https://github.com/yahoo/fili/pull/81)
+
 - [Support for Druid's In Filter](https://github.com/yahoo/fili/pull/64)
     * The in-filter only works with Druid versions 0.9.0 and up.
 
