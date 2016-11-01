@@ -90,6 +90,8 @@ Current
 
 ### Fixed:
 
+- [LogFormatterProvider incorrectly built the key for obtaining the custom LogFormatter implementation.](https://github.com/yahoo/fili/pull/87)
+
 - [Environment comma separated list variables are now correctly pulled in as a list](https://github.com/yahoo/fili/pull/82)
   * Before it was pulled in as a single sting containing commas, now environment variables are pulled in the same way as the properties files
   * Added test to test comma separated list environment variables when `FILI_TEST_LIST` environment variable exists

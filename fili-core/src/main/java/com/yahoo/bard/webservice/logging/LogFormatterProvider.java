@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.logging;
 
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,17 +16,14 @@ public class LogFormatterProvider {
     private static final Logger LOG = LoggerFactory.getLogger(LogFormatterProvider.class);
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
-    private static final String DEFAULT_LOG_FORMATTER_IMPL = JsonLogFormatter.class.getCanonicalName();
+    public static final String LOG_FORMATTER_IMPLEMENTATION_SETTING_NAME = "log_formatter_implementation";
 
-    private static final String LOG_FORMATTER_IMPLEMENTATION_KEY = SystemConfigProvider.getInstance().getStringProperty(
-            SYSTEM_CONFIG.getPackageVariableName("log_formatter_implementation"),
-            DEFAULT_LOG_FORMATTER_IMPL
-    );
+    private static final String DEFAULT_LOG_FORMATTER_IMPL = JsonLogFormatter.class.getCanonicalName();
 
     /**
      * The instance of the Log Formatter.
      */
-    private static final LogFormatter LOG_FORMATTER = getInstance();
+    private static LogFormatter logFormatter;
 
     /**
      *  Get an instance of LogFormatter.
@@ -33,20 +31,18 @@ public class LogFormatterProvider {
      *  @return an instance of LogFormatter
      */
     public static LogFormatter getInstance() {
-        if (LOG_FORMATTER == null) {
+        if (logFormatter == null) {
+            String logFormatterImplementation = SystemConfigProvider.getInstance().getStringProperty(
+                    SYSTEM_CONFIG.getPackageVariableName(LOG_FORMATTER_IMPLEMENTATION_SETTING_NAME),
+                    DEFAULT_LOG_FORMATTER_IMPL
+            );
             try {
-                String logFormatterImplementation = SystemConfigProvider.getInstance().getStringProperty(
-                        SYSTEM_CONFIG.getPackageVariableName(LOG_FORMATTER_IMPLEMENTATION_KEY),
-                        DEFAULT_LOG_FORMATTER_IMPL
-                );
-
-                return (LogFormatter) Class.forName(logFormatterImplementation).newInstance();
+                logFormatter = (LogFormatter) Class.forName(logFormatterImplementation).newInstance();
             } catch (Exception exception) {
                 LOG.error("Exception while loading Log formatter: {}", exception);
                 throw new IllegalStateException(exception);
             }
         }
-
-        return LOG_FORMATTER;
+        return logFormatter;
     }
 }
