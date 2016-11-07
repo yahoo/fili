@@ -24,6 +24,10 @@ Current
 
 ### Changed:
 
+- [`DimensionStoreKeyUtils` now supports case sensitive row and column keys](https://github.com/yahoo/fili/pull/90)
+    - Wrapped this config in a feature flag `case_sensitive_keys_enabled` which is set to `false` by default for backwards compatibility. 
+        This flag will be set to `true` in future versions.
+
 - [The `getGrainMap` method in `StandardGranularityParser` class is renamed to `getDefaultGrainMap` and is made public static.](https://github.com/yahoo/fili/pull/88)
     - Created new class `GranularityDictionary` and bind getGranularityDictionary to it
 
