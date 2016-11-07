@@ -5,15 +5,15 @@ package com.yahoo.bard.webservice.data.time;
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.util.GranularityParseException;
+import com.yahoo.bard.webservice.util.StreamUtils;
 
 import org.joda.time.DateTimeZone;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Locale;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.inject.Inject;
 
 /**
  * StandardGranularityParser implements a time grain dictionary, as well as factory methods to dynamically build zoned
@@ -21,25 +21,42 @@ import java.util.stream.Collectors;
  */
 public class StandardGranularityParser implements GranularityParser {
 
-    private final Map<String, Granularity> namedGrains;
+    private final GranularityDictionary namedGranularities;
 
     /**
      * Constructor.
+     * <p>
+     * @param dictionary  a dictionary containing names mapped to granularities
+     */
+    @Inject
+    public StandardGranularityParser(GranularityDictionary dictionary) {
+        namedGranularities = dictionary;
+    }
+
+    /**
+     * Constructor.
+     * <p>
+     * Use a default grain map with the enum name()s and the all granularity.
      */
     public StandardGranularityParser() {
-        namedGrains = Collections.unmodifiableMap(getGrainMap());
+        this(getDefaultGrainMap());
     }
 
     /**
      * This method loads default grains and can be extended to add customer grain extensions.
-     *
+     * <p>
      * @return A map of time grain api name to time grain instances.
      */
-    protected Map<String, Granularity> getGrainMap() {
-        Map<String, Granularity> result = Arrays.stream(DefaultTimeGrain.values())
-                .collect(Collectors.toMap(DefaultTimeGrain::name, Function.identity()));
-        result.put(AllGranularity.ALL_NAME.toUpperCase(Locale.ENGLISH), AllGranularity.INSTANCE);
-        return result;
+    public static GranularityDictionary getDefaultGrainMap() {
+        return Stream.concat(
+               Stream.of(AllGranularity.INSTANCE),
+               Arrays.stream(DefaultTimeGrain.values())
+        ).collect(
+               StreamUtils.toDictionary(
+                       Granularity::getName,
+                       GranularityDictionary::new
+               )
+        );
     }
 
     @Override
@@ -53,9 +70,9 @@ public class StandardGranularityParser implements GranularityParser {
 
     @Override
     public Granularity parseGranularity(String granularityName) throws GranularityParseException {
-        String key = granularityName.toUpperCase(Locale.ENGLISH);
-        if (namedGrains.containsKey(key)) {
-            return namedGrains.get(key);
+        String key = granularityName.toLowerCase(Locale.ENGLISH);
+        if (namedGranularities.containsKey(key)) {
+            return namedGranularities.get(key);
         }
         throw new GranularityParseException(granularityName);
     }

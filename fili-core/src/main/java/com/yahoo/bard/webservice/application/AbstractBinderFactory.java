@@ -15,6 +15,17 @@ import com.yahoo.bard.webservice.application.healthchecks.DataSourceMetadataLoad
 import com.yahoo.bard.webservice.application.healthchecks.DruidDimensionsLoaderHealthCheck;
 import com.yahoo.bard.webservice.application.healthchecks.SegmentMetadataLoaderHealthCheck;
 import com.yahoo.bard.webservice.application.healthchecks.VersionHealthCheck;
+import com.yahoo.bard.webservice.async.broadcastchannels.BroadcastChannel;
+import com.yahoo.bard.webservice.async.broadcastchannels.SimpleBroadcastChannel;
+import com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField;
+import com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobRowBuilder;
+import com.yahoo.bard.webservice.async.jobs.jobrows.JobRowBuilder;
+import com.yahoo.bard.webservice.async.jobs.payloads.DefaultJobPayloadBuilder;
+import com.yahoo.bard.webservice.async.jobs.payloads.JobPayloadBuilder;
+import com.yahoo.bard.webservice.async.jobs.stores.ApiJobStore;
+import com.yahoo.bard.webservice.async.jobs.stores.NoOpApiJobStore;
+import com.yahoo.bard.webservice.async.preresponses.stores.NoOpPreResponseStore;
+import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore;
 import com.yahoo.bard.webservice.async.workflows.AsynchronousWorkflowsBuilder;
 import com.yahoo.bard.webservice.async.workflows.DefaultAsynchronousWorkflowsBuilder;
 import com.yahoo.bard.webservice.config.BardFeatureFlag;
@@ -43,6 +54,7 @@ import com.yahoo.bard.webservice.data.filterbuilders.DefaultDruidFilterBuilder;
 import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQueryMerger;
+import com.yahoo.bard.webservice.data.time.GranularityDictionary;
 import com.yahoo.bard.webservice.data.time.GranularityParser;
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser;
 import com.yahoo.bard.webservice.data.volatility.DefaultingVolatileIntervalsService;
@@ -55,17 +67,6 @@ import com.yahoo.bard.webservice.druid.model.query.LookbackQuery;
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier;
 import com.yahoo.bard.webservice.druid.util.FieldConverters;
 import com.yahoo.bard.webservice.druid.util.SketchFieldConverter;
-import com.yahoo.bard.webservice.async.jobs.stores.ApiJobStore;
-import com.yahoo.bard.webservice.async.broadcastchannels.BroadcastChannel;
-import com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField;
-import com.yahoo.bard.webservice.async.jobs.payloads.DefaultJobPayloadBuilder;
-import com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobRowBuilder;
-import com.yahoo.bard.webservice.async.jobs.payloads.JobPayloadBuilder;
-import com.yahoo.bard.webservice.async.jobs.jobrows.JobRowBuilder;
-import com.yahoo.bard.webservice.async.jobs.stores.NoOpApiJobStore;
-import com.yahoo.bard.webservice.async.preresponses.stores.NoOpPreResponseStore;
-import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore;
-import com.yahoo.bard.webservice.async.broadcastchannels.SimpleBroadcastChannel;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataLoader;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
@@ -209,6 +210,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 }
 
                 // Bind the timeGrain provider
+                bind(getGranularityDictionary()).to(GranularityDictionary.class);
                 bind(getGranularityParser()).to(GranularityParser.class);
 
                 // Bind the request building action classes for druid
@@ -891,6 +893,15 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      */
     protected abstract Set<DimensionConfig> getDimensionConfigurations();
 
+
+    /**
+     * Extension point for building a dictionary of base granularities for use in the system.
+     *
+     * @return A map of time grain api name (forced to lowercase) to time grain instances.
+     */
+    protected GranularityDictionary getGranularityDictionary() {
+        return StandardGranularityParser.getDefaultGrainMap();
+    }
 
     /**
      * Extension point for selecting GranularityParser implementations.
