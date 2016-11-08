@@ -124,6 +124,8 @@ Current
 
 ### Removed:
 
+- [Remove unused Servlet Stub Test Class](https://github.com/yahoo/fili/issues/91)
+    * `TestDruidServlet` removed because it doesn't appear to be used anywhere and was creating confusion. 
 
 
 
