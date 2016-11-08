@@ -17,13 +17,13 @@ Fili exposes the same core concepts that all time series reporting and analytics
 - [Tables](docs/end-user-api.md#tables)
 - Time ([Reporting Time Grain](docs/end-user-api.md#time-grain) and [Interval](docs/end-user-api.md#interval))
 
-The biggest difference between Fili and those other systems, however, is that Fili _only_ exposes these concepts. With
-just these core concepts, end-users can ask a huge range of questions, extracting business value by focusing on finding 
-answers to the _what_ and _why_. Other reporting systems expose end-users to other concepts like Views, Partitions,
-and metric formulas, forcing users to worry too much about _how_ to answer their questions, but not Fili. 
+Other systems expose additional concepts like Views, Partitions, and metric formulas, but Fili chooses not to expose
+end-users to those low-level concerns. By limiting the mental model of Fili's API to just these core domain concepts, 
+Fili's API allows end-users to better extract business value by focusing on finding answers to the _what_ and _why_ 
+questions from their data, rather than on _how_ to ask their question. 
 
-Fili's simplicity and clarity lets users focus on their business-driven questions, and takes care of figuring out how to
-best answer the question for them. 
+Fili's [simple and clear API](docs/end-user-api.md) lets users focus on their business-driven questions, and the Fili
+library takes care of figuring out how to best answer the question for them. 
 
 This simplicity also allows for a huge amount of flexibility around where data is stored and how it's queried and 
 retrieved from back-end systems. Having such flexibility allows those maintaining a web service built with Fili to move
