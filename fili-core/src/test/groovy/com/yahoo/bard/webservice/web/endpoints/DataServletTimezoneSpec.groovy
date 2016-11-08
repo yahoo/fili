@@ -85,7 +85,7 @@ class DataServletTimezoneSpec extends Specification {
     }
 
     def startJerseyTestBinder() {
-        ArrayList<Class<?>> resources = [DataServlet.class, TestDruidServlet.class]
+        ArrayList<Class<?>> resources = [DataServlet.class]
         testWebService = new TestDruidWebService("default web service")
         testMetadataWebService = new TestDruidWebService("default metadata web service")
         jtb = new TestWebserviceJerseyTestBinder((Class<?>[]) resources.toArray())

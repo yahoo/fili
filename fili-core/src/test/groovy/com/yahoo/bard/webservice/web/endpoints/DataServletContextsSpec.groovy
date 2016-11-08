@@ -80,14 +80,10 @@ class DataServletContextsSpec extends Specification {
     def setup() {
         // Create the test web container to test the resources
         ArrayList<Class>  resources = [DataServlet.class]
-        if (saveDruidURL == null) {
-            resources.add(TestDruidServlet.class)
-        }
         testWebService = new TestDruidWebService("default web service");
         testMetadataWebService = new TestDruidWebService("default metadata web service");
         jtb = new TestWebserviceJerseyTestBinder((Class[]) resources)
         assert jtb.nonUiDruidWebService instanceof DruidWebService
-        TestDruidServlet.setResponse(defaultResponse)
     }
 
     def cleanup() {
@@ -108,8 +104,6 @@ class DataServletContextsSpec extends Specification {
     def "Request with values"() {
         when:
         testWebService.serviceConfig = new DruidServiceConfig("Ui/Non-Ui Broker", null, timeout, priority);
-
-        TestDruidServlet.setResponse(defaultResponse)
 
         String expectedDruidQuery = String.format(expectedDruidQueryFormat, text)
 
