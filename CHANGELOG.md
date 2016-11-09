@@ -80,6 +80,9 @@ Current
 
 ### Deprecated:
 
+- [`DimensionStoreKeyUtils` now supports case sensitive row and column keys](https://github.com/yahoo/fili/pull/90)
+    - Case insensitive row and column keys will be deprecated going forward.
+
 - [All constructors of `ResponseException` that do not take an `ObjectWriter`](https://github.com/yahoo/fili/pull/70)
     * An `ObjectWriter` is required in order to ensure that the exception correctly serializes its associated Druid query
 

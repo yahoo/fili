@@ -3,39 +3,62 @@
 package com.yahoo.bard.webservice.util
 
 import com.yahoo.bard.webservice.config.BardFeatureFlag
+import spock.lang.Shared
 import spock.lang.Specification
+import spock.lang.Unroll
 
 class DimensionStoreKeyUtilsSpec extends Specification {
 
-    def "Test getRowKey() with CASE_SENSITIVE_KEYS_ENABLED off"() {
-        expect:
-        DimensionStoreKeyUtils.getRowKey("FOO","1") == "foo_1_row_key"
+    @Shared boolean originalCaseSensitiveKeysEnabled
+
+    def setupSpec() {
+        originalCaseSensitiveKeysEnabled = BardFeatureFlag.CASE_SENSITIVE_KEYS.isOn()
     }
 
-    def "Test getColumnKey() with CASE_SENSITIVE_KEYS_ENABLED off"() {
-        expect:
-        DimensionStoreKeyUtils.getColumnKey("FOO") == "foo_column_key"
+    def cleanupSpec() {
+        BardFeatureFlag.CASE_SENSITIVE_KEYS.setOn(originalCaseSensitiveKeysEnabled)
     }
 
-    def "Test getRowKey() with CASE_SENSITIVE_KEYS_ENABLED on"() {
+    @Unroll
+    def "getRowKey #preserves case for #param when CASE_SENSITIVE_KEYS_ENABLED is #flagState"() {
+        boolean originalFlagState
+
         setup:
-        BardFeatureFlag.CASE_SENSITIVE_KEYS.setOn(true)
+        originalFlagState = BardFeatureFlag.CASE_SENSITIVE_KEYS.isOn()
+        BardFeatureFlag.CASE_SENSITIVE_KEYS.setOn(flagState)
 
         expect:
-        DimensionStoreKeyUtils.getRowKey("FOO","1") == "FOO_1_row_key"
+        DimensionStoreKeyUtils.getRowKey(rowName, rowValue) == expectedValue
 
         cleanup:
-        BardFeatureFlag.CASE_SENSITIVE_KEYS.setOn(false)
+        BardFeatureFlag.CASE_SENSITIVE_KEYS.setOn(originalFlagState)
+
+        where:
+        preserves           | flagState | param      | rowName | rowValue | expectedValue
+        "does not preserve" | false     | "rowValue" | "foo"   | "FOO"    | "foo_foo_row_key"
+        "does not preserve" | false     | "rowValue" | "foo"   | "1"      | "foo_1_row_key"
+        "preserve"          | true      | "rowValue" | "foo"   | "FOO"    | "foo_FOO_row_key"
+        "does not preserve" | false     | "rowName"  | "FOO"   | "foo"    | "foo_foo_row_key"
+        "preserve"          | true      | "rowName"  | "FOO"   | "foo"    | "FOO_foo_row_key"
     }
 
-    def "Test getColumnKey() with CASE_SENSITIVE_KEYS_ENABLED on"() {
+    @Unroll
+    def "getColumnKey #respects case for columnName when CASE_SENSITIVE_KEYS_ENABLED is #flagState"() {
+        boolean originalFlagState
+
         setup:
-        BardFeatureFlag.CASE_SENSITIVE_KEYS.setOn(true)
+        originalFlagState = BardFeatureFlag.CASE_SENSITIVE_KEYS.isOn()
+        BardFeatureFlag.CASE_SENSITIVE_KEYS.setOn(flagState)
 
         expect:
-        DimensionStoreKeyUtils.getColumnKey("FOO") == "FOO_column_key"
+        DimensionStoreKeyUtils.getColumnKey(columnName) == expectedValue
 
         cleanup:
-        BardFeatureFlag.CASE_SENSITIVE_KEYS.setOn(false)
+        BardFeatureFlag.CASE_SENSITIVE_KEYS.setOn(originalFlagState)
+
+        where:
+        preserves           | flagState | columnName | expectedValue
+        "does not preserve" | false     | "FOO"      | "foo_column_key"
+        "preserve"          | true      | "FOO"      | "FOO_column_key"
     }
 }
