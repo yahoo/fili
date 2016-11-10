@@ -24,6 +24,10 @@ Current
 
 ### Changed:
 
+- [`DimensionStoreKeyUtils` now supports case sensitive row and column keys](https://github.com/yahoo/fili/pull/90)
+    - Wrapped this config in a feature flag `case_sensitive_keys_enabled` which is set to `false` by default for backwards compatibility. 
+        This flag will be set to `true` in future versions.
+
 - [The `getGrainMap` method in `StandardGranularityParser` class is renamed to `getDefaultGrainMap` and is made public static.](https://github.com/yahoo/fili/pull/88)
     - Created new class `GranularityDictionary` and bind getGranularityDictionary to it
 
@@ -75,6 +79,9 @@ Current
   * Cleaned up sub-project Pom dependency sections to handle and better use the dependencies the parent Pom provides 
 
 ### Deprecated:
+
+- [`DimensionStoreKeyUtils` now supports case sensitive row and column keys](https://github.com/yahoo/fili/pull/90)
+    - Case insensitive row and column keys will be deprecated going forward.
 
 - [All constructors of `ResponseException` that do not take an `ObjectWriter`](https://github.com/yahoo/fili/pull/70)
     * An `ObjectWriter` is required in order to ensure that the exception correctly serializes its associated Druid query

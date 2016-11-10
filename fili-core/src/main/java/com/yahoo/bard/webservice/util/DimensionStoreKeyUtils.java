@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.util;
 
+import com.yahoo.bard.webservice.config.BardFeatureFlag;
+
 import java.util.Locale;
 
 /**
@@ -43,10 +45,12 @@ public class DimensionStoreKeyUtils {
     public static String getRowKey(String rowName, String rowValue) {
         String key = "";
         if (rowName != null) {
-            key = rowName.toLowerCase(Locale.ENGLISH);
+            key = BardFeatureFlag.CASE_SENSITIVE_KEYS.isOn() ? rowName : rowName.toLowerCase(Locale.ENGLISH);
         }
         if (rowValue != null) {
-            key += "_" + rowValue.toLowerCase(Locale.ENGLISH);
+            key += "_" + (
+                    BardFeatureFlag.CASE_SENSITIVE_KEYS.isOn() ? rowValue : rowValue.toLowerCase(Locale.ENGLISH)
+            );
         }
         return key + "_row_key";
     }
@@ -62,7 +66,8 @@ public class DimensionStoreKeyUtils {
     public static String getColumnKey(String columnName) {
         String key = "";
         if (columnName != null) {
-            key = columnName.toLowerCase(Locale.ENGLISH);
+            key = BardFeatureFlag.CASE_SENSITIVE_KEYS.isOn()
+                    ? columnName : columnName.toLowerCase(Locale.ENGLISH);
         }
         return key + "_column_key";
     }

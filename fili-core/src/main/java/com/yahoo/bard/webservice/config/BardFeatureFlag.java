@@ -16,7 +16,8 @@ public enum BardFeatureFlag implements FeatureFlag {
     PERMISSIVE_COLUMN_AVAILABILITY("permissive_column_availability_enabled"),
     UPDATED_METADATA_COLLECTION_NAMES("updated_metadata_collection_names_enabled"),
     DRUID_COORDINATOR_METADATA("druid_coordinator_metadata_enabled"),
-    DRUID_DIMENSIONS_LOADER("druid_dimensions_loader_enabled");
+    DRUID_DIMENSIONS_LOADER("druid_dimensions_loader_enabled"),
+    CASE_SENSITIVE_KEYS("case_sensitive_keys_enabled");
 
     private final String propertyName;
     private Boolean on;
