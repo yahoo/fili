@@ -74,7 +74,8 @@ class AsyncDruidSendsErrorSpec extends AsyncFunctionalSpec {
                         "statusName" : "Internal Server Error",
                         "reason" : "All the things have broken.",
                         "description" : "All the things have broken.",
-                        "druidQuery" : null
+                        "druidQuery" : null,
+                        "requestId": "SOME UUID"
                     }"""
 
     final CountDownLatch jobMetadataReady = new CountDownLatch(1)
@@ -119,13 +120,13 @@ class AsyncDruidSendsErrorSpec extends AsyncFunctionalSpec {
                     // results, we instead get the error status (500) of the error, along with an error message
                     // describing the problem.
                     assert it.status == 500
-                    assert GroovyTestUtils.compareJson(it.readEntity(String), ERROR_MESSAGE)
+                    assert GroovyTestUtils.compareErrorPayload(it.readEntity(String), ERROR_MESSAGE)
                 },
                 results: {
                     // This returns the same results as syncResults, since the two only differ in how long they
                     // wait for a response.
                     assert it.status == 500
-                    assert GroovyTestUtils.compareJson(it.readEntity(String), ERROR_MESSAGE)
+                    assert GroovyTestUtils.compareErrorPayload(it.readEntity(String), ERROR_MESSAGE)
                 },
                 jobs: { response ->
                     assert response.status == 200
