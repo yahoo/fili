@@ -11,11 +11,58 @@ Current
 ### Added:
 
 
+
+### Changed:
+
+
+
+### Deprecated:
+
+
+
+### Fixed:
+
+
+
+### Known Issues:
+
+
+
+### Removed:
+
+
+
+v0.6.29 - 2016/11/16
+--------------------
+
+This release is focused on general stability, with a number of bugs fixed, and also adds a few small new capabilities
+and enhancements. Here are some of the highlights, but take a look in the lower sections for more details.
+
+Fixes:
+- Dimension keys are now properly case-sensitive (
+  - ***Because this is a breaking change, the fix has been wrapped in a feature flag. For now, this defaults to the
+    existing broken behavior, but this will change in a future version, and eventually the fix will be permanent.***
+- `all`-grain queries are no longer split
+- Closed a race condition in the `LuceneSearchProvider` where readers would get an error if an update was in progress
+- Correctly interpreting List-type configs from the Environment tier as a true `List`
+- Stopped recording synchronous requests in the `ApiJobStore`, which is only intended to hold async requests
+
+New Capabilities & Enhancements:
+- Customizable logging format
+- X-Request-Id header support, letting clients set a request ID that will be included in the Druid query
+- Support for Druid's `In` filter
+- Native support for building `DimensionRow`s from AVRO files
+- Ability to set headers on Druid requests, letting Fili talk to a secure Druid
+- Better error messaging when things go wrong
+- Better ability to use custom Druid query types
+
+### Added:
+
 - [Customize Logging Format in RequestLog](https://github.com/yahoo/fili/pull/81)
 
-- [Populate Dimension Rows from an AVRO file](https://github.com/yahoo/fili/pull/86)
-    * Added `AvroDimensionRowParser` class that parses an AVRO data file (.avro) after validating the AVRO schema (.avsc).
-    * Added a functional Interface `DimensionFieldMapper` that maps field name based on the user implementation.
+- [Can Populate Dimension Rows from an AVRO file](https://github.com/yahoo/fili/pull/86)
+    * Added `AvroDimensionRowParser` that parses an AVRO data file into `DimensionRow`s after validating the AVRO schema.
+    * Added a functional Interface `DimensionFieldMapper` that maps field name.
 
 - [Support for Druid's In Filter](https://github.com/yahoo/fili/pull/64)
     * The in-filter only works with Druid versions 0.9.0 and up.
@@ -24,35 +71,35 @@ Current
 
 - [Documentation for topN](https://github.com/yahoo/fili/pull/43)
 
-- [Adding slice availability to slices endpoint] (https://github.com/yahoo/fili/pull/51)
+- [Adding slice availability to slices endpoint](https://github.com/yahoo/fili/pull/51)
     * Slice availability can be used to debug availability issues on Physical tables
+
+- [Ability to set headers for requests to Druid](https://github.com/yahoo/fili/pull/62)
+      * The `AsyncDruidWebServiceImpl` now accepts a `Supplier<Map<String, String>>` argument which specifies the headers 
+        to add to the Druid data requests. This feature is made configurable through `SystemConfig` in the 
+        `AbstractBinderFactory`.
 
 ### Changed:
 
 - [Error messages generated during response processing include the request id.](https://github.com/yahoo/fili/pull/78)
 
 - [`DimensionStoreKeyUtils` now supports case sensitive row and column keys](https://github.com/yahoo/fili/pull/90)
-    - Wrapped this config in a feature flag `case_sensitive_keys_enabled` which is set to `false` by default for backwards compatibility. 
-        This flag will be set to `true` in future versions.
+    * Wrapped this config in a feature flag `case_sensitive_keys_enabled` which is set to `false` by default for
+      backwards compatibility. This flag will be set to `true` in future versions.
 
 - [The `getGrainMap` method in `StandardGranularityParser` class is renamed to `getDefaultGrainMap` and is made public static.](https://github.com/yahoo/fili/pull/88)
-    - Created new class `GranularityDictionary` and bind getGranularityDictionary to it
+    * Created new class `GranularityDictionary` and bind getGranularityDictionary to it
 
 - [`PhysicalTable` now uses `getAvailableIntervals` internally rather than directly referencing its intervals](https://github.com/yahoo/fili/pull/79)
 
 - [CSV attachment name for multi-interval request now contain '__' instead of ','](https://github.com/yahoo/fili/pull/76)
-    - This change is made to allow running multi-api request with csv format using chrome browser.
+    * This change is made to allow running multi-api request with csv format using chrome browser.
 
-- [Allow configurable headers for Druid data requests](https:://github.com/yahoo/fili/pull/62)
-    - The `AsyncDruidWebServiceImpl` now accepts a `Supplier<Map<String, String>>` argument which specifies
-        the headers to add to the Druid data requests. This feature is made configurable through `SystemConfig` in
-        the `AbstractBinderFactory`
-
-- [Improves error messages when querying Druid goes wrong](https:://github.com/yahoo/fili/pull/61)
-    - The `ResponseException` now includes a message that prints the `ResponseException`'s internal state 
+- [Improves error messages when querying Druid goes wrong](https://github.com/yahoo/fili/pull/61)
+    * The `ResponseException` now includes a message that prints the `ResponseException`'s internal state 
         (i.e. the druid query and response code) using the error messages 
         `ErrorMessageFormat::FAILED_TO_SEND_QUERY_TO_DRUID` and `ErrorMessageFormat::ERROR_FROM_DRUID`
-    - The druid query and status code, reason and response body are now logged at the error level in the 
+    * The druid query and status code, reason and response body are now logged at the error level in the 
       failure and error callbacks in `AsyncDruidWebServiceImpl`  
           
 - [Fili now supports custom Druid query types](https://github.com/yahoo/fili/pull/57)
@@ -63,84 +110,77 @@ Current
     * `DruidQueryBuilder` is now injectable by overriding `AbstractBinderFactory::buildDruidQueryBuilder` method.
 
 - [Updated commons-collections4 dependency from 4.0 to 4.1 to address a security vulnerability in the library.](https://github.com/yahoo/fili/pull/52)
-  * For details see: https://commons.apache.org/proper/commons-collections/security-reports.html#Apache_Commons_Collections_Security_Vulnerabilities
-  * It should be noted that Fili does not make use of any the serialization/deserialization capabilities of any classes
-    in the functor package, so the security vulnerability does not affect Fili.
+    * For details see: https://commons.apache.org/proper/commons-collections/security-reports.html#Apache_Commons_Collections_Security_Vulnerabilities
+    * It should be noted that Fili does not make use of any the serialization/deserialization capabilities of any classes
+      in the functor package, so the security vulnerability does not affect Fili.
 
 - Clean up build plugins
-  * Move some plugin configs up to `pluginManagement`
-  * Make `fili-core` publish test javadocs
-  * Default source plugin to target `jar-no-fork` instead of `jar`
-  * Default javadoc plugin to target `javadoc-no-fork` as well as `jar`
-  * Move some versions up to `pluginManagement`
-  * Remove overly (and un-usedly) specified options in surfire plugin configs
-  * Make all projects pull in the `source` plugin
+    * Move some plugin configs up to `pluginManagement`
+    * Make `fili-core` publish test javadocs
+    * Default source plugin to target `jar-no-fork` instead of `jar`
+    * Default javadoc plugin to target `javadoc-no-fork` as well as `jar`
+    * Move some versions up to `pluginManagement`
+    * Remove overly (and un-usedly) specified options in surfire plugin configs
+    * Make all projects pull in the `source` plugin
 
 - Corrected bug with Fili sub-module dependency specification
-  * Dependency versions are now set via a fixed property at deploy time, rather than relying on `project.version`
+    * Dependency versions are now set via a fixed property at deploy time, rather than relying on `project.version`
 
 - Cleaned up dependencies in pom files
-  * Moved version management of dependencies up to the parent Pom's dependency management section
-  * Cleaned up the parent Pom's dependency section to only be those dependencies that truly _every_ sub-project should 
-    depend on.
-  * Cleaned up sub-project Pom dependency sections to handle and better use the dependencies the parent Pom provides 
+    * Moved version management of dependencies up to the parent Pom's dependency management section
+    * Cleaned up the parent Pom's dependency section to only be those dependencies that truly _every_ sub-project should 
+      depend on.
+    * Cleaned up sub-project Pom dependency sections to handle and better use the dependencies the parent Pom provides 
 
 ### Deprecated:
 
 - [`DimensionStoreKeyUtils` now supports case sensitive row and column keys](https://github.com/yahoo/fili/pull/90)
     - Case insensitive row and column keys will be deprecated going forward.
+    - ***Because this is a breaking change, the fix has been wrapped in a feature flag. For now, this defaults to the
+        existing broken behavior, but this will change in a future version, and eventually the fix will be permanent.***
+        - The feature flag for this is `bard__case_sensitive_keys_enabled`
 
 - [All constructors of `ResponseException` that do not take an `ObjectWriter`](https://github.com/yahoo/fili/pull/70)
     * An `ObjectWriter` is required in order to ensure that the exception correctly serializes its associated Druid query
 
 ### Fixed:
 
-- [LogFormatterProvider incorrectly built the key for obtaining the custom LogFormatter implementation.](https://github.com/yahoo/fili/pull/87)
-
 - [Environment comma separated list variables are now correctly pulled in as a list](https://github.com/yahoo/fili/pull/82)
-  * Before it was pulled in as a single sting containing commas, now environment variables are pulled in the same way as the properties files
-  * Added test to test comma separated list environment variables when `FILI_TEST_LIST` environment variable exists
+    * Before it was pulled in as a single sting containing commas, now environment variables are pulled in the same way
+      as the properties files
+    * Added test to test comma separated list environment variables when `FILI_TEST_LIST` environment variable exists
 
 - [Druid queries are now serialized correctly when logging `ResponseExceptions`](https://github.com/yahoo/fili/pull/70)
 
 - [Disable Query split for "all" grain ](https:://github.com/yahoo/fili/pull/75)
-    - Before, if we requested "all" grain with multiple intervals, the `SplitQueryRequestHandler` would incorrectly split the query 
-      and we would get multiple buckets in the output. Now, the query split is disabled for "all" grain and we correctly
-      get only one bucket in the response.
+    * Before, if we requested "all" grain with multiple intervals, the `SplitQueryRequestHandler` would incorrectly
+      split the query and we would get multiple buckets in the output. Now, the query split is disabled for "all" grain
+      and we correctly get only one bucket in the response.
 
 - [Fixed typo emit -> omit in Utils.java omitField()](https://github.com/yahoo/fili/pull/68)
 
 - [Adds read locking to all attempts to read the Lucene index](https://github.com/yahoo/fili/pull/52)
-  * Before, if Fili attempted to read from the Lucene indices (i.e. processing a query with filters)
-    while loading dimension indices, the request would fail and we would get a
-    `LuceneIndexReaderAlreadyClosedException`. Now, the read locks should
-    ensure that the query processing will wait until indexing completes (and vice versa).
+    * Before, if Fili attempted to read from the Lucene indices (i.e. processing a query with filters) while loading
+      dimension indices, the request would fail and we would get a `LuceneIndexReaderAlreadyClosedException`. Now, the 
+      read locks should ensure that the query processing will wait until indexing completes (and vice versa).
 
 - [Fixes a bug where job metadata was being stored in the `ApiJobStore` even when the results came back synchronously](https://github.com/yahoo/fili/pull/49)
-  * The workflow that updates the job's metadata with `success` was running even when the query was synchronous. That 
-    update also caused the ticket to be stored in the `ApiJobStore`.
-  * The delay operator didn't stop the "update" workflow from executing because it viewed an `Observable::onCompleted`
-    call as a message for the purpose of the delay. Since the two observables that that the metadata update gated on are
-    empty when the query is synchronous, the "update metadata" workflow was being triggered every time.
-  * The delay operator was replaced by `zipWith` as a gating mechanism.
+    * The workflow that updates the job's metadata with `success` was running even when the query was synchronous. That 
+      update also caused the ticket to be stored in the `ApiJobStore`.
+    * The delay operator didn't stop the "update" workflow from executing because it viewed an `Observable::onCompleted`
+      call as a message for the purpose of the delay. Since the two observables that that the metadata update gated on 
+      are empty when the query is synchronous, the "update metadata" workflow was being triggered every time.
+    * The delay operator was replaced by `zipWith` as a gating mechanism.
     
 - [#45, removing sorting from weight check queries](https://github.com/yahoo/fili/pull/46)
 
 - [`JsonSlurper` can now handle sorting lists with mixed-type entries](https://github.com/yahoo/fili/pull/58)
-  * even if the list starts with a string, number, or boolean
+    * even if the list starts with a string, number, or boolean
   
 - [Broken segment metadata with Druid v0.9.1](https://github.com/yahoo/fili/issues/63)
-  * Made `NumberedShardSpec` ignore unexpected properties during deserialization
-  * Added tests to `DataSourceMetadataLoaderSpec` to test the v.0.9.1 optional field 'shardSpec.partitionDimensions' on segment info JSON.
-
-
-### Known Issues:
-
-
-
-### Removed:
-
-
+    * Made `NumberedShardSpec` ignore unexpected properties during deserialization
+    * Added tests to `DataSourceMetadataLoaderSpec` to test the v.0.9.1 optional field `shardSpec.partitionDimensions`
+      on segment info JSON.
 
 
 v0.1.x - 2016/09/23
@@ -212,7 +252,7 @@ Jobs resource. Here are the highlights of what's in this release:
   * That logic does not really belong in the `JobsApiRequest` (which is responsible for modeling a response, not 
     processing it), and has been consolidated into the `JobsServlet`.
 
-- [ISSUE-17](https://github.com/yahoo/fili/issues/17) [Added pagination parameters to `PreResponse`](https://github.com/yahoo/fili/pull/19) 
+- [ISSUE-17](https://github.com/yahoo/fili/issues/17) [Added pagination parameters to `PreResponse`](https://github.com/yahoo/fili/pull/19)
   * Updated `JobsServlet::handlePreResponseWithError` to update `ResultSet` object with pagination parameters
 
 - [Enrich jobs endpoint with filtering functionality](https://github.com/yahoo/fili/pull/26)

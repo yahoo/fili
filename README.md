@@ -1,7 +1,7 @@
 Fili 
 ====
 
-[![Download](https://api.bintray.com/packages/yahoo/maven/fili/images/download.svg) ](https://bintray.com/yahoo/maven/fili/_latestVersion) [![Gitter](https://img.shields.io/gitter/room/yahoo/fili.svg?maxAge=2592000)](https://gitter.im/yahoo/fili) [![Travis](https://img.shields.io/travis/yahoo/fili/master.svg?maxAge=2592000)](https://travis-ci.org/yahoo/fili/builds/) [![Codacy grade](https://img.shields.io/codacy/grade/91fa6c38f25d4ea0ae3569ee70a33e38.svg?maxAge=2592000)](https://www.codacy.com/app/Fili/fili/dashboard) [![Codacy coverage](https://img.shields.io/codacy/coverage/91fa6c38f25d4ea0ae3569ee70a33e38.svg?label=test coverage&maxAge=2592000)](https://www.codacy.com/app/Fili/fili/dashboard) [![VersionEye](https://img.shields.io/versioneye/d/user/projects/57eb1529bd6fa600512e4af1.svg?maxAge=2592000)](https://www.versioneye.com/user/projects/57eb1529bd6fa600512e4af1)
+[![Download](https://api.bintray.com/packages/yahoo/maven/fili/images/download.svg)](https://bintray.com/yahoo/maven/fili/_latestVersion) [![Gitter](https://img.shields.io/gitter/room/yahoo/fili.svg?maxAge=2592000)](https://gitter.im/yahoo/fili) [![Travis](https://img.shields.io/travis/yahoo/fili/master.svg?maxAge=2592000)](https://travis-ci.org/yahoo/fili/builds/) [![Codacy grade](https://img.shields.io/codacy/grade/91fa6c38f25d4ea0ae3569ee70a33e38.svg?maxAge=2592000)](https://www.codacy.com/app/Fili/fili/dashboard) [![Codacy coverage](https://img.shields.io/codacy/coverage/91fa6c38f25d4ea0ae3569ee70a33e38.svg?label=test coverage&maxAge=2592000)](https://www.codacy.com/app/Fili/fili/dashboard) [![VersionEye](https://img.shields.io/versioneye/d/user/projects/57eb1529bd6fa600512e4af1.svg?maxAge=2592000)](https://www.versioneye.com/user/projects/57eb1529bd6fa600512e4af1)
 
 Fili is a Java-based framework that makes it easy to build and maintain RESTful web services for time series reporting 
 and analytics. Fili's HTTP GET-based [reporting API](docs/end-user-api.md) is clean and user-friendly, hiding the 
@@ -114,9 +114,9 @@ dependencies {
 }
 ```
 
-The most bleeding-edge version is: [![Bleeding-edge](https://api.bintray.com/packages/yahoo/maven/fili/images/download.svg) ](https://bintray.com/yahoo/maven/fili/_latestVersion)
+The most bleeding-edge version is: [![Bleeding-edge](https://api.bintray.com/packages/yahoo/maven/fili/images/download.svg)](https://bintray.com/yahoo/maven/fili/_latestVersion)
 
-The most recent stable version is: [![Stable](https://img.shields.io/badge/Stable-0.1.17-blue.svg) ](https://bintray.com/yahoo/maven/fili/0.1.17)
+The most recent stable version is: [![Stable](https://img.shields.io/badge/Stable-0.6.29-blue.svg)](https://bintray.com/yahoo/maven/fili/0.6.29)
 
 
 Extending
