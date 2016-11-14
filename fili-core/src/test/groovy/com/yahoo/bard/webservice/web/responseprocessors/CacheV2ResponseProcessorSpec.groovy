@@ -126,7 +126,7 @@ class CacheV2ResponseProcessorSpec extends Specification {
         then:
         2 * next.getResponseContext() >> responseContext
         1 * next.processResponse(json, groupByQuery, null)
-        0 * dataCache.set(_, _)
+        0 * dataCache.set(*_)
     }
 
     def "Partial data doesn't cache and then continues"() {
@@ -139,7 +139,7 @@ class CacheV2ResponseProcessorSpec extends Specification {
         then:
         2 * next.getResponseContext() >> responseContext
         1 * next.processResponse(json, groupByQuery, null)
-        0 * dataCache.set(cacheKey, _)
+        0 * dataCache.set(*_)
     }
 
     def "Volatile data doesn't cache and then continues"() {
@@ -152,7 +152,7 @@ class CacheV2ResponseProcessorSpec extends Specification {
         then:
         2 * next.getResponseContext() >> responseContext
         1 * next.processResponse(json, groupByQuery, null)
-        0 * dataCache.set(cacheKey, '[]')
+        0 * dataCache.set(*_)
     }
 
     def "Test proxy calls"() {
