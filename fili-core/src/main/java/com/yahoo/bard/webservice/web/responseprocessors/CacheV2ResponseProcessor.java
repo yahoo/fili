@@ -5,6 +5,8 @@ package com.yahoo.bard.webservice.web.responseprocessors;
 import static com.yahoo.bard.webservice.web.handlers.PartialDataRequestHandler.getPartialIntervalsWithDefault;
 import static com.yahoo.bard.webservice.web.handlers.VolatileDataRequestHandler.getVolatileIntervalsWithDefault;
 
+import com.yahoo.bard.webservice.config.SystemConfig;
+import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.cache.TupleDataCache;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
@@ -27,6 +29,14 @@ import javax.validation.constraints.NotNull;
 public class CacheV2ResponseProcessor implements ResponseProcessor {
 
     private static final Logger LOG = LoggerFactory.getLogger(CacheV2ResponseProcessor.class);
+    private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+
+    private final long maxDruidResponseLengthToCache = SYSTEM_CONFIG.getLongProperty(
+            SYSTEM_CONFIG.getPackageVariableName(
+                    "druid_max_response_length_to_cache"
+            ),
+            Long.MAX_VALUE
+    );
 
     private final ResponseProcessor next;
     private final String cacheKey;
@@ -79,11 +89,20 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
             String valueString = null;
             try {
                 valueString = writer.writeValueAsString(json);
-                dataCache.set(
-                        cacheKey,
-                        querySigningService.getSegmentSetId(druidQuery).orElse(null),
-                        valueString
-                );
+                int valueLength = valueString.length();
+                if (valueLength <= maxDruidResponseLengthToCache) {
+                    dataCache.set(
+                            cacheKey,
+                            querySigningService.getSegmentSetId(druidQuery).orElse(null),
+                            valueString
+                    );
+                } else {
+                    LOG.debug(
+                            "Response not cached. Length of {} exceeds max value length of {}",
+                            valueLength,
+                            maxDruidResponseLengthToCache
+                    );
+                }
             } catch (Exception e) {
                 LOG.warn(
                         "Unable to cache {}value of size: {}",

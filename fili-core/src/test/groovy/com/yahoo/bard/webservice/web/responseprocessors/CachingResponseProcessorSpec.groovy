@@ -7,6 +7,8 @@ import static com.yahoo.bard.webservice.util.SimplifiedIntervalList.NO_INTERVALS
 import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys.MISSING_INTERVALS_CONTEXT_KEY
 import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys.VOLATILE_INTERVALS_CONTEXT_KEY
 
+import com.yahoo.bard.webservice.config.SystemConfig
+import com.yahoo.bard.webservice.config.SystemConfigProvider
 import com.yahoo.bard.webservice.data.cache.DataCache
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper
 import com.yahoo.bard.webservice.druid.client.FailureCallback
@@ -30,6 +32,8 @@ import spock.lang.Unroll
 class CachingResponseProcessorSpec extends Specification {
     private static final ObjectMapper MAPPER = new ObjectMapper()
             .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
+
+    private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.instance
 
     ResponseProcessor next = Mock(ResponseProcessor)
     String cacheKey = "SampleKey"
@@ -143,6 +147,37 @@ class CachingResponseProcessorSpec extends Specification {
         2 * next.getResponseContext() >> responseContext
         1 * next.processResponse(json, groupByQuery, null)
         0 * dataCache.set(*_)
+    }
+
+    def "Overly long data doesn't cache and then continues"() {
+        setup: "Save the old max-length-to-cache so we can restore it later"
+        String max_druid_response_length_to_cache_key = SYSTEM_CONFIG.getPackageVariableName(
+                "druid_max_response_length_to_cache"
+        )
+        long oldMaxLength = SYSTEM_CONFIG.getLongProperty(max_druid_response_length_to_cache_key)
+
+        and: "A very small max-length-to-cache"
+        long smallMaxLength = 1L
+        SYSTEM_CONFIG.resetProperty(max_druid_response_length_to_cache_key, smallMaxLength.toString())
+
+        and: "A workable response context"
+        next.getResponseContext() >> responseContext
+
+        and: "A caching response processor to test"
+        crp = new CachingResponseProcessor(next, cacheKey, dataCache, MAPPER)
+
+        expect: "The JSON representation is longer than the small max length"
+        MAPPER.writer().writeValueAsString(json).length() > smallMaxLength
+
+        when: "We try to cache a value longer than the small max length"
+        crp.processResponse(json, groupByQuery, null)
+
+        then: "Set is never called on the cache and the next handler is called"
+        1 * next.processResponse(json, groupByQuery, null)
+        0 * dataCache.set(*_)
+
+        cleanup: "Restore the original setting for max-length-to-cache"
+        SYSTEM_CONFIG.resetProperty(max_druid_response_length_to_cache_key, oldMaxLength.toString())
     }
 
     def "Test proxy calls"() {
