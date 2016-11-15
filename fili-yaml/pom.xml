@@ -1,0 +1,84 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <prerequisites>
+        <maven>3.0</maven>
+    </prerequisites>
+
+    <artifactId>fili-yaml</artifactId>
+    <packaging>war</packaging>
+    <name>Fili: YAML config</name>
+    <description>Ready-to-deploy YAML config
+    </description>
+
+    <parent>
+        <groupId>com.yahoo.fili</groupId>
+        <artifactId>fili-parent-pom</artifactId>
+        <version>0.7-SNAPSHOT</version>
+    </parent>
+
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.yahoo.fili</groupId>
+            <artifactId>fili</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.yahoo.fili</groupId>
+            <artifactId>fili-core</artifactId>
+        </dependency>
+
+        <!-- Servlet API -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+        </dependency>
+
+        <!-- Jersey -->
+        <dependency>
+            <groupId>org.glassfish.jersey.containers</groupId>
+            <artifactId>jersey-container-servlet</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-server</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>${project.artifactId}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>1</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <exec executable="/bin/sh">
+                                    <env key="BUILD_NUMBER" value="${project.build}" />
+                                    <arg value="-c" />
+                                    <arg
+                                        value="echo ${project.version}.${BUILD_NUMBER:=0} | sed -e s/-SNAPSHOT//g &gt; target/buildVersion" />
+                                </exec>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+    </plugins>
+    </build>
+</project>

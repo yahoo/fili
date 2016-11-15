@@ -18,6 +18,7 @@
         <module>fili-core</module>
         <module>fili</module>
         <module>fili-wikipedia-example</module>
+        <module>fili-yaml</module>
     </modules>
 
     <organization>
@@ -366,6 +367,11 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.dataformat</groupId>
                 <artifactId>jackson-dataformat-csv</artifactId>
+                <version>${version.jackson}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-yaml</artifactId>
                 <version>${version.jackson}</version>
             </dependency>
             <dependency>

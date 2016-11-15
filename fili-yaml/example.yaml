@@ -1,0 +1,55 @@
+physical_tables:
+  table1:
+    dimensions: [ page_tld, gender ]
+    metrics: [ impressions ]
+    granularity: minute
+
+  table2:
+    granularity: day
+    dimensions: [ page_tld ]
+    metrics: [ impressions ]
+
+logical_tables:
+  example_logical_table:
+    physical_tables: [  table1, table2 ]
+    metrics: [ impressions, male_impressions ]
+    granularities: [ minute, hour, day ]
+
+dimensions:
+  page_tld:
+    physical_name: page_tld
+    long_name: Page TLD
+    description: the page top level domain
+    category: default
+    aggregatable: true
+
+  gender:
+    physical_name: gender
+    long_name: Gender
+    description: the user gender
+    category: default
+    fields: [id]
+    default_fields: [id]
+    aggregatable: true
+
+dimension_fields:
+  id:
+    description: Dimension ID
+    default_include: true
+
+  description:
+    description: Dimension Description
+    default_include: false
+
+base_metrics:
+  impressions:
+    def: longSum(impressions)
+    description: the total impressions
+
+
+derived_metrics:
+  male_impressions:
+    def: impressions | gender == 1
+    description: the number of impressions seen by males
+
+makers: {}

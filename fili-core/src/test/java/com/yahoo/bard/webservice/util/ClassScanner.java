@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.net.URL;
@@ -214,6 +215,7 @@ public class ClassScanner {
                     if (annotation.annotationType().isAssignableFrom(NotNull.class)) {
                         argMode = Args.VALUES;
                         notnull = true;
+                        break;
                     }
                 }
 
@@ -275,6 +277,11 @@ public class ClassScanner {
             arg = cachedValue;
         } else if (cls == Object[].class) {
             arg = (T) new Object[0];
+
+        } else if (cls.isArray()) {
+            Object arrayElement = constructArg(cls.getComponentType(), mode, stack);
+            arg = (T) Array.newInstance(cls.getComponentType(), 1);
+            Array.set(arg, 0, arrayElement);
         } else if (Modifier.isAbstract(cls.getModifiers())) {
             arg = constructSubclass(cls, mode, stack);
         } else {
