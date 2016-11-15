@@ -14,6 +14,9 @@ Current
 
 ### Changed:
 
+- [Include physical table name in warning log message for logicalToPhysical mapping](https://github.com/yahoo/fili/pull/94)
+    * Without this name, it's hard to know what table seems to be misconfigured.
+
 - [`ResponseValidationException` uses `Response.StatusType` rather than `Response.Status`](https://github.com/yahoo/fili/pull/96)
     * `Response.StatusType` is the interface that `Response.Status` implements.
     * This will have no impact on current code in Fili that uses `ResponseValidationException`, and it allows customers to inject http

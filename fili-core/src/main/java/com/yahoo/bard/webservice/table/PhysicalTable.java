@@ -220,9 +220,11 @@ public class PhysicalTable extends Table {
     public String getPhysicalColumnName(String logicalName) {
         if (!logicalToPhysicalColumnNames.containsKey(logicalName)) {
             LOG.warn(
-                    "No mapping found for logical name: '{}' to physical name (will use logical name as physical " +
-                            "name). This is unexpected and should not happen for properly configured dimensions.",
-                    logicalName
+                    "No mapping found for logical name '{}' to physical name on table '{}'. Will use logical name as " +
+                            "physical name. This is unexpected and should not happen for properly configured " +
+                            "dimensions.",
+                    logicalName,
+                    getName()
             );
         }
         return logicalToPhysicalColumnNames.getOrDefault(logicalName, logicalName);
