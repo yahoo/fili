@@ -10,7 +10,7 @@ import javax.ws.rs.core.Response;
  * ApiRequest Validation Failed.
  */
 public class RequestValidationException extends IOException {
-    private final Response.Status status;
+    private final Response.StatusType status;
     private final String errorHttpMsg;
 
     /**
@@ -20,7 +20,7 @@ public class RequestValidationException extends IOException {
      * @param errorHttpMsg the error HTTP message to throw back to user
      * @param msg the error message
      */
-    public RequestValidationException(Response.Status status, String errorHttpMsg, String msg) {
+    public RequestValidationException(Response.StatusType status, String errorHttpMsg, String msg) {
         super(msg);
         this.status = status;
         this.errorHttpMsg = errorHttpMsg;
@@ -33,13 +33,13 @@ public class RequestValidationException extends IOException {
      * @param errorHttpMsg the error HTTP message to throw back to user
      * @param throwable the throwable
      */
-    public RequestValidationException(Response.Status status, String errorHttpMsg, Throwable throwable) {
+    public RequestValidationException(Response.StatusType status, String errorHttpMsg, Throwable throwable) {
         super(throwable);
         this.status = status;
         this.errorHttpMsg = errorHttpMsg;
     }
 
-    public Response.Status getStatus() {
+    public Response.StatusType getStatus() {
         return status;
     }
 
