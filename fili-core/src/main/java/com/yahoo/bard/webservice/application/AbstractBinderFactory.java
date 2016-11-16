@@ -334,7 +334,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      *
      * @return An isntance of the {@link DruidQueryBuilder}
      */
-    protected Class<DruidQueryBuilder> buildDruidQueryBuilder() {
+    protected Class<? extends DruidQueryBuilder> buildDruidQueryBuilder() {
         return DruidQueryBuilder.class;
     }
 
@@ -343,7 +343,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      *
      * @return An instance of the {@link DruidResponseParser}
      */
-    protected Class<DruidResponseParser> buildDruidResponseParser() {
+    protected Class<? extends DruidResponseParser> buildDruidResponseParser() {
         return DruidResponseParser.class;
     }
 

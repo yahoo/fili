@@ -25,6 +25,10 @@ Current
 
 ### Fixed:
 
+- [Made a few injection points not useless](https://github.com/yahoo/fili/pull/98)
+    * Template types don't get the same subclass goodness that method invocation and
+        dependencies get, so this method did not allow returning a subclass of
+       `DruidQueryBuilder` or of `DruidResponseParser`.
 
 
 ### Known Issues:
