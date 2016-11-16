@@ -21,6 +21,7 @@ import java.util.Map;
 import javax.annotation.Priority;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Response;
@@ -50,14 +51,50 @@ public class RoleBasedAuthFilter implements ContainerRequestFilter {
     @Override
     @SuppressWarnings("checkstyle:cyclomaticcomplexity")
     public void filter(ContainerRequestContext containerRequestContext) throws IOException {
-        List<String> allowedUserRoles = getAllowedUserRoles();
-        if (!allowedUserRoles.isEmpty() && !isUserInRole(allowedUserRoles, containerRequestContext)) {
-                abortRequest(
-                        containerRequestContext,
-                        Response.Status.FORBIDDEN,
-                        BouncerAuthorizationStatus.ACCESS_DENIED
-                );
+
+        if (!isAuthorized(containerRequestContext)) {
+            abortRequest(
+                    containerRequestContext,
+                    Response.Status.FORBIDDEN,
+                    BouncerAuthorizationStatus.ACCESS_DENIED
+            );
         }
+    }
+
+    /**
+     * Request authorization logic, bypassing OPTIONS request and authorize if user is in authorized role or
+     * authorized role is not specified.
+     *
+     * @param containerRequestContext containing the request context information
+     *
+     * @return true if request is authorized, false otherwise
+     */
+    private boolean isAuthorized(ContainerRequestContext containerRequestContext) {
+        return isBypassMethod(containerRequestContext) || isUserInRole(getAllowedUserRoles(), containerRequestContext);
+    }
+
+    /**
+     * Returns true to bypass the filter if the request is a Http OPTIONS method to allow CORS by default.
+     *
+     * @param containerRequestContext Request context containing request method information
+     *
+     * @return true to bypass the filter, and false otherwise
+     */
+    protected boolean isBypassMethod(ContainerRequestContext containerRequestContext) {
+        return containerRequestContext.getMethod().equals(HttpMethod.OPTIONS);
+    }
+
+    /**
+     * Checks if an user role belongs to the list of allowed roles.
+     *
+     * @param allowedUserRoles List of allowed roles
+     * @param containerRequestContext Request context contains the user role information
+     *
+     * @return boolean based on the user role
+     */
+    protected boolean isUserInRole (List<String> allowedUserRoles, ContainerRequestContext containerRequestContext) {
+        SecurityContext securityContext = containerRequestContext.getSecurityContext();
+        return allowedUserRoles.isEmpty() || allowedUserRoles.stream().anyMatch(securityContext::isUserInRole);
     }
 
     /**
@@ -73,7 +110,6 @@ public class RoleBasedAuthFilter implements ContainerRequestFilter {
             BouncerAuthorizationStatus reason
     ) {
         LOG.debug("The user is not authorized in an authorized role ", status);
-
         Map<String, Object> responseMap = new LinkedHashMap<>();
         responseMap.put("status", status);
         responseMap.put("reason", reason.getName());
@@ -101,18 +137,5 @@ public class RoleBasedAuthFilter implements ContainerRequestFilter {
         } catch (SystemConfigException ignored) {
             return Collections.emptyList();
         }
-    }
-
-    /**
-     * Checks if an user role belongs to the list of allowed roles.
-     *
-     * @param allowedUserRoles List of allowed roles
-     * @param containerRequestContext Request context contains the user role information
-     *
-     * @return boolean based on the user role
-     */
-    public boolean isUserInRole (List<String> allowedUserRoles, ContainerRequestContext containerRequestContext) {
-        SecurityContext securityContext = containerRequestContext.getSecurityContext();
-        return allowedUserRoles.stream().anyMatch(securityContext::isUserInRole);
     }
 }
