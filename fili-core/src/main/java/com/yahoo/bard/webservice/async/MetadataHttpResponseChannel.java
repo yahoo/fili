@@ -4,7 +4,7 @@ package com.yahoo.bard.webservice.async;
 
 import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.RESPONSE_WORKFLOW_TIMER;
 
-import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.RequestLogUtils;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.handlers.RequestHandlerUtils;
 
@@ -66,8 +66,8 @@ public class MetadataHttpResponseChannel implements Observer<String> {
      * @param asyncResponse  The channel over which to send the response
      */
     private void send(Response response, AsyncResponse asyncResponse) {
-        if (RequestLog.isStarted(RESPONSE_WORKFLOW_TIMER)) {
-            RequestLog.stopTiming(RESPONSE_WORKFLOW_TIMER);
+        if (RequestLogUtils.isStarted(RESPONSE_WORKFLOW_TIMER)) {
+            RequestLogUtils.stopTiming(RESPONSE_WORKFLOW_TIMER);
         }
         asyncResponse.resume(response);
     }

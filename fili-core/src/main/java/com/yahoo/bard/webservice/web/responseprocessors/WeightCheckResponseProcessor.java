@@ -7,7 +7,7 @@ import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.REQU
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
-import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.RequestLogUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -38,8 +38,8 @@ public class WeightCheckResponseProcessor implements ResponseProcessor {
         return new FailureCallback() {
             @Override
             public void invoke(Throwable error) {
-                if (RequestLog.isStarted(REQUEST_WORKFLOW_TIMER)) {
-                    RequestLog.stopTiming(REQUEST_WORKFLOW_TIMER);
+                if (RequestLogUtils.isStarted(REQUEST_WORKFLOW_TIMER)) {
+                    RequestLogUtils.stopTiming(REQUEST_WORKFLOW_TIMER);
                 }
                 next.getFailureCallback(druidQuery).invoke(error);
             }
@@ -51,8 +51,8 @@ public class WeightCheckResponseProcessor implements ResponseProcessor {
     return new HttpErrorCallback() {
             @Override
             public void invoke(int statusCode, String reason, String responseBody) {
-                if (RequestLog.isStarted(REQUEST_WORKFLOW_TIMER)) {
-                    RequestLog.stopTiming(REQUEST_WORKFLOW_TIMER);
+                if (RequestLogUtils.isStarted(REQUEST_WORKFLOW_TIMER)) {
+                    RequestLogUtils.stopTiming(REQUEST_WORKFLOW_TIMER);
                 }
                 next.getErrorCallback(druidQuery).invoke(statusCode, reason, responseBody);
             }

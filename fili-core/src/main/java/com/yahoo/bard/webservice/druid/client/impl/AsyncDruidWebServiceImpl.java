@@ -2,10 +2,14 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.client.impl;
 
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DRUID_URL_INVALID;
-import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.REQUEST_WORKFLOW_TIMER;
-import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.RESPONSE_WORKFLOW_TIMER;
-
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.MappingJsonFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.yahoo.bard.webservice.application.MetricRegistryFactory;
 import com.yahoo.bard.webservice.druid.client.DruidServiceConfig;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
@@ -15,18 +19,9 @@ import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.druid.model.query.WeightEvaluationQuery;
 import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.RequestLogUtils;
 import com.yahoo.bard.webservice.logging.blocks.DruidResponse;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
-
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.MappingJsonFactory;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-
 import org.asynchttpclient.AsyncCompletionHandler;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.AsyncHttpClientConfig;
@@ -37,6 +32,7 @@ import org.asynchttpclient.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.core.Response.Status;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -44,7 +40,9 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
-import javax.ws.rs.core.Response.Status;
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DRUID_URL_INVALID;
+import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.REQUEST_WORKFLOW_TIMER;
+import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.RESPONSE_WORKFLOW_TIMER;
 
 /**
  * Represents the druid web service endpoint.
@@ -185,21 +183,21 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
             final String timerName,
             final AtomicLong outstanding
     ) {
-        RequestLog.startTiming(timerName);
-        final RequestLog logCtx = RequestLog.dump();
+        RequestLogUtils.startTiming(timerName);
+        final RequestLog logCtx = RequestLogUtils.dump();
 
         try {
             requestBuilder.execute(
                 new AsyncCompletionHandler<Response>() {
                     @Override
                     public Response onCompleted(Response response) {
-                        RequestLog.restore(logCtx);
-                        RequestLog.stopTiming(timerName);
+                        RequestLogUtils.restore(logCtx);
+                        RequestLogUtils.stopTiming(timerName);
                         if (outstanding.decrementAndGet() == 0) {
-                            RequestLog.startTiming(RESPONSE_WORKFLOW_TIMER);
+                            RequestLogUtils.startTiming(RESPONSE_WORKFLOW_TIMER);
                         }
                         String druidQueryId = response.getHeader("X-Druid-Query-Id");
-                        RequestLog.record(new DruidResponse(druidQueryId));
+                        RequestLogUtils.record(new DruidResponse(druidQueryId));
                         Status status = Status.fromStatusCode(response.getStatusCode());
                         LOG.debug(
                                 "druid {} response code: {} {} and druid query id: {}",
@@ -245,10 +243,10 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
 
                     @Override
                     public void onThrowable(Throwable t) {
-                        RequestLog.restore(logCtx);
-                        RequestLog.stopTiming(timerName);
+                        RequestLogUtils.restore(logCtx);
+                        RequestLogUtils.stopTiming(timerName);
                         if (outstanding.decrementAndGet() == 0) {
-                            RequestLog.startTiming(RESPONSE_WORKFLOW_TIMER);
+                            RequestLogUtils.startTiming(RESPONSE_WORKFLOW_TIMER);
                         }
                         exceptionMeter.mark();
                         LOG.error("druid {} request failed:", serviceConfig.getNameAndUrl(), t);
@@ -256,10 +254,10 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
                     }
                 });
         } catch (RuntimeException t) {
-            RequestLog.restore(logCtx);
-            RequestLog.stopTiming(timerName);
+            RequestLogUtils.restore(logCtx);
+            RequestLogUtils.stopTiming(timerName);
             if (outstanding.decrementAndGet() == 0) {
-                RequestLog.startTiming(RESPONSE_WORKFLOW_TIMER);
+                RequestLogUtils.startTiming(RESPONSE_WORKFLOW_TIMER);
             }
             LOG.error("druid {} http request failed: ", serviceConfig.getNameAndUrl(), t);
             failure.invoke(t);

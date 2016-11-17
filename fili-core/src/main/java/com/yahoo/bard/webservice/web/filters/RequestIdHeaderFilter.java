@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.filters;
 
-import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.RequestLogUtils;
 
 import java.io.IOException;
 
@@ -18,6 +18,6 @@ public class RequestIdHeaderFilter implements ContainerResponseFilter {
 
     @Override
     public void filter(ContainerRequestContext request, ContainerResponseContext response) throws IOException {
-        response.getHeaders().putSingle(X_REQUEST_ID, RequestLog.getId());
+        response.getHeaders().putSingle(X_REQUEST_ID, RequestLogUtils.getId());
     }
 }

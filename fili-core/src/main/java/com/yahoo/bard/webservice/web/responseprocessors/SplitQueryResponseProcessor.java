@@ -2,17 +2,16 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.responseprocessors;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.yahoo.bard.webservice.data.cache.HashDataCache.Pair;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.RequestLogUtils;
 import com.yahoo.bard.webservice.web.DataApiRequest;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-
 import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,7 +123,7 @@ public class SplitQueryResponseProcessor implements ResponseProcessor {
 
         if (completed.decrementAndGet() == 0) {
             Pair<JsonNode, LoggingContext> mergedResponse = mergeResponses(completedIntervals);
-            RequestLog.restore(mergedResponse.getValue().getRequestLog());
+            RequestLogUtils.restore(mergedResponse.getValue().getRequestLog());
             next.processResponse(mergedResponse.getKey(), queryBeforeSplit, mergedResponse.getValue());
         }
     }
@@ -153,14 +152,14 @@ public class SplitQueryResponseProcessor implements ResponseProcessor {
     private Pair<JsonNode, LoggingContext> mergeResponses(List<Pair<JsonNode, LoggingContext>> responses) {
         JsonNodeFactory factory = new JsonNodeFactory(true);
         ArrayNode result = factory.arrayNode();
-        RequestLog.restore(logCtx);
+        RequestLogUtils.restore(logCtx);
         for (Pair<JsonNode, LoggingContext> entry : responses) {
             for (JsonNode jsonNode : entry.getKey()) {
                 result.add(jsonNode);
             }
-            RequestLog.accumulate(entry.getValue().getRequestLog());
+            RequestLogUtils.accumulate(entry.getValue().getRequestLog());
         }
-        RequestLog updatedCtx = RequestLog.dump();
+        RequestLog updatedCtx = RequestLogUtils.dump();
         return new Pair<>(result, new LoggingContext(updatedCtx));
     }
 }

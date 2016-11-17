@@ -24,7 +24,7 @@ import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
-import com.yahoo.bard.webservice.logging.RequestLog
+import com.yahoo.bard.webservice.logging.RequestLogUtils
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.Schema
 import com.yahoo.bard.webservice.web.DataApiRequest
@@ -211,7 +211,7 @@ class ResultSetResponseProcessorSpec extends Specification {
         resultSetResponseProcessor.processResponse(
                 jsonMock,
                 groupByQuery,
-                new LoggingContext(RequestLog.dump())
+                new LoggingContext(RequestLogUtils.dump())
         )
 
         then:

@@ -2,33 +2,31 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.handlers;
 
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.EMPTY_INTERVAL_FORMAT;
-
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
 import com.yahoo.bard.webservice.application.MetricRegistryFactory;
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.RequestLogUtils;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 import com.yahoo.bard.webservice.web.responseprocessors.SplitQueryResponseProcessor;
-
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
-
 import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.core.Response;
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.EMPTY_INTERVAL_FORMAT;
 
 /**
  * Request handler breaks a query up into smaller time grain queries for parallel processing.
@@ -105,7 +103,7 @@ public class SplitQueryRequestHandler implements DataRequestHandler {
                 );
 
         // Save RequestLog up to here
-        final RequestLog logCtx = RequestLog.dump();
+        final RequestLog logCtx = RequestLogUtils.dump();
 
         final SplitQueryResponseProcessor mergingResponse =
                 new SplitQueryResponseProcessor(response, request, druidQuery, expectedIntervals, logCtx);
@@ -117,7 +115,7 @@ public class SplitQueryRequestHandler implements DataRequestHandler {
 
         queries.stream().forEach(
                 q -> {
-                    RequestLog.restore(logCtx);
+                    RequestLogUtils.restore(logCtx);
                     next.handleRequest(context, request, q, mergingResponse);
                 }
         );

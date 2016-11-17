@@ -7,7 +7,7 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
-import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.RequestLogUtils;
 import com.yahoo.bard.webservice.logging.blocks.SliceRequest;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
@@ -105,8 +105,8 @@ public class SlicesServlet extends EndpointServlet {
             @Context final ContainerRequestContext containerRequestContext
     ) {
         try {
-            RequestLog.startTiming(this);
-            RequestLog.record(new SliceRequest("all"));
+            RequestLogUtils.startTiming(this);
+            RequestLogUtils.record(new SliceRequest("all"));
 
             SlicesApiRequest apiRequest = new SlicesApiRequest(
                     null,
@@ -132,21 +132,21 @@ public class SlicesServlet extends EndpointServlet {
             );
 
             LOG.debug("Slice Endpoint Response: {}", response.getEntity());
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             return response;
         } catch (RequestValidationException e) {
             LOG.debug(e.getMessage(), e);
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             return Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
         } catch (IOException e) {
             String msg = String.format("Internal server error. IOException : %s", e.getMessage());
             LOG.error(msg, e);
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             return Response.status(INTERNAL_SERVER_ERROR).entity(msg).build();
         } catch (Error | Exception e) {
             String msg = String.format("Exception processing request: %s", e.getMessage());
             LOG.info(msg, e);
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             return Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
         }
     }
@@ -186,8 +186,8 @@ public class SlicesServlet extends EndpointServlet {
             @Context final ContainerRequestContext containerRequestContext
     ) {
         try {
-            RequestLog.startTiming(this);
-            RequestLog.record(new SliceRequest(sliceName));
+            RequestLogUtils.startTiming(this);
+            RequestLogUtils.record(new SliceRequest(sliceName));
 
             SlicesApiRequest apiRequest = new SlicesApiRequest(
                     sliceName,
@@ -205,15 +205,15 @@ public class SlicesServlet extends EndpointServlet {
 
             String output = objectMappers.getMapper().writeValueAsString(apiRequest.getSlice());
             LOG.debug("Slice Endpoint Response: {}", output);
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             return Response.status(Response.Status.OK).entity(output).build();
         } catch (RequestValidationException e) {
             LOG.debug(e.getMessage(), e);
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             return Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
         } catch (IOException | IllegalStateException e) {
             LOG.debug("Bad request exception : {}", e);
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             return Response.status(BAD_REQUEST).entity("Exception: " + e.getMessage()).build();
         }
     }

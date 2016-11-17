@@ -7,7 +7,7 @@ import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.REQU
 import com.yahoo.bard.webservice.druid.client.FailureCallback
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
-import com.yahoo.bard.webservice.logging.RequestLog
+import com.yahoo.bard.webservice.logging.RequestLogUtils
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
@@ -28,8 +28,8 @@ class WeightCheckResponseProcessorSpec extends Specification{
 
     def setup() {
         // Artificial starting of the request workflow timer before each test
-        RequestLog.dump()
-        RequestLog.startTiming(REQUEST_WORKFLOW_TIMER)
+        RequestLogUtils.dump()
+        RequestLogUtils.startTiming(REQUEST_WORKFLOW_TIMER)
     }
 
     def "Test Constructor"() {
@@ -44,7 +44,7 @@ class WeightCheckResponseProcessorSpec extends Specification{
         then: "no timer is stopped and proccessing continues to the next processor"
         // This check is artifial. Is meant to check that there is no call to stopTiming() for this timer in the
         // regular execution path of the WeightCheckResponseProcessor
-        RequestLog.isStarted(REQUEST_WORKFLOW_TIMER) == true
+        RequestLogUtils.isStarted(REQUEST_WORKFLOW_TIMER) == true
         1 * next.processResponse(json, groupByQuery, null)
 
     }
@@ -57,7 +57,7 @@ class WeightCheckResponseProcessorSpec extends Specification{
         wcrp.getFailureCallback(groupByQuery).invoke(t)
 
         then: "The REQUEST_WORKFLOW_TIMER is stopped"
-        RequestLog.isStarted(REQUEST_WORKFLOW_TIMER) == false
+        RequestLogUtils.isStarted(REQUEST_WORKFLOW_TIMER) == false
 
         then: "and the failure callback of the next processor is called"
         1 * next.getFailureCallback(groupByQuery) >> nextFail
@@ -71,13 +71,13 @@ class WeightCheckResponseProcessorSpec extends Specification{
         String body = "body"
         FailureCallback fc = Mock(FailureCallback)
         HttpErrorCallback ec
-        RequestLog.startTiming(REQUEST_WORKFLOW_TIMER)
+        RequestLogUtils.startTiming(REQUEST_WORKFLOW_TIMER)
 
         when: "Http error occurs"
         wcrp.getErrorCallback(groupByQuery).invoke(statusCode, reason, body)
 
         then: "The REQUEST_WORKFLOW_TIMER is stopped"
-        RequestLog.isStarted(REQUEST_WORKFLOW_TIMER) == false
+        RequestLogUtils.isStarted(REQUEST_WORKFLOW_TIMER) == false
 
         then: "and the http error callback of the next processor is called"
         1 * next.getErrorCallback(groupByQuery) >> nextError
