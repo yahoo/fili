@@ -4,7 +4,7 @@ package com.yahoo.bard.webservice.druid.model.query;
 
 import com.yahoo.bard.webservice.druid.model.QueryType;
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource;
-import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.RequestLogUtils;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -43,7 +43,7 @@ public abstract class AbstractDruidQuery<Q extends AbstractDruidQuery<? super Q>
         this.dataSource = dataSource;
         this.context = context == null ?
                 new QueryContext(Collections.<QueryContext.Param, Object>emptyMap(), null)
-                        .withQueryId(RequestLog.getId()) :
+                        .withQueryId(RequestLogUtils.getId()) :
                 doFork ? context.fork() : context;
     }
 

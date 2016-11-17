@@ -18,7 +18,7 @@ import com.yahoo.bard.webservice.data.HttpResponseMaker;
 import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.ResultSet;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
-import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.RequestLogUtils;
 import com.yahoo.bard.webservice.logging.blocks.JobRequest;
 import com.yahoo.bard.webservice.util.AllPagesPagination;
 import com.yahoo.bard.webservice.util.Pagination;
@@ -149,8 +149,8 @@ public class JobsServlet extends EndpointServlet {
             @Suspended AsyncResponse asyncResponse
     ) {
         try {
-            RequestLog.startTiming(this);
-            RequestLog.record(new JobRequest("all"));
+            RequestLogUtils.startTiming(this);
+            RequestLogUtils.record(new JobRequest("all"));
 
             JobsApiRequest apiRequest = new JobsApiRequest (
                     format,
@@ -186,18 +186,18 @@ public class JobsServlet extends EndpointServlet {
                     .onErrorReturn(this::getErrorResponse)
                     .subscribe(
                             response -> {
-                                RequestLog.stopTiming(this);
+                                RequestLogUtils.stopTiming(this);
                                 asyncResponse.resume(response);
                             }
                     );
         } catch (RequestValidationException e) {
             LOG.debug(e.getMessage(), e);
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             asyncResponse.resume(RequestHandlerUtils.makeErrorResponse(e.getStatus(), e, writer));
         } catch (Error | Exception e) {
             String msg = String.format("Exception processing request: %s", e.getMessage());
             LOG.info(msg, e);
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             asyncResponse.resume(Response.status(INTERNAL_SERVER_ERROR).entity(e.getMessage()).build());
         }
     }
@@ -220,8 +220,8 @@ public class JobsServlet extends EndpointServlet {
             @Suspended AsyncResponse asyncResponse
     ) {
         try {
-            RequestLog.startTiming(this);
-            RequestLog.record(new JobRequest(ticket));
+            RequestLogUtils.startTiming(this);
+            RequestLogUtils.record(new JobRequest(ticket));
             JobsApiRequest apiRequest = new JobsApiRequest (
                     ResponseFormatType.JSON.toString(),
                     null,
@@ -241,11 +241,11 @@ public class JobsServlet extends EndpointServlet {
 
         } catch (RequestValidationException e) {
             LOG.debug(e.getMessage(), e);
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             asyncResponse.resume(RequestHandlerUtils.makeErrorResponse(e.getStatus(), e, writer));
         } catch (IOException | IllegalStateException e) {
             LOG.debug("Bad request exception : {}", e);
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             asyncResponse.resume(RequestHandlerUtils.makeErrorResponse(BAD_REQUEST, e, writer));
         }
     }
@@ -277,8 +277,8 @@ public class JobsServlet extends EndpointServlet {
             @Suspended AsyncResponse asyncResponse
     ) {
         try {
-            RequestLog.startTiming(this);
-            RequestLog.record(new JobRequest(ticket));
+            RequestLogUtils.startTiming(this);
+            RequestLogUtils.record(new JobRequest(ticket));
 
             JobsApiRequest apiRequest = new JobsApiRequest (
                     format,
@@ -313,11 +313,11 @@ public class JobsServlet extends EndpointServlet {
 
         } catch (RequestValidationException e) {
             LOG.debug(e.getMessage(), e);
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             asyncResponse.resume(RequestHandlerUtils.makeErrorResponse(e.getStatus(), e, writer));
         } catch (Error | Exception e) {
             LOG.debug("Exception processing request", e);
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             asyncResponse.resume(Response.status(INTERNAL_SERVER_ERROR).entity(e.getMessage()).build());
         }
     }
@@ -547,7 +547,7 @@ public class JobsServlet extends EndpointServlet {
      */
     protected Response getResponse(String jsonResponse) {
         LOG.trace("Jobs endpoint Response: {}", jsonResponse);
-        RequestLog.stopTiming(this);
+        RequestLogUtils.stopTiming(this);
         return Response.status(OK).entity(jsonResponse).build();
     }
 
@@ -562,12 +562,12 @@ public class JobsServlet extends EndpointServlet {
         //In case the given ticket does not exist in the ApiJobStore
         if (throwable instanceof JobNotFoundException) {
             LOG.debug(throwable.getMessage());
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             return Response.status(NOT_FOUND).entity(throwable.getMessage()).build();
         }
 
         LOG.error(throwable.getMessage());
-        RequestLog.stopTiming(this);
+        RequestLogUtils.stopTiming(this);
         //In case the job cannot be retrieved from the ApiJobStore or if it cannot be mapped to a Job
         return Response.status(INTERNAL_SERVER_ERROR).entity(throwable.getMessage()).build();
     }

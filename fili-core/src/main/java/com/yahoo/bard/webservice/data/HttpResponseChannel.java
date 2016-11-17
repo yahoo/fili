@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.data;
 import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.RESPONSE_WORKFLOW_TIMER;
 
 import com.yahoo.bard.webservice.async.ResponseException;
-import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.RequestLogUtils;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.PreResponse;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
@@ -113,8 +113,8 @@ public class HttpResponseChannel implements Observer<PreResponse> {
      * @param response  The Response to send back to the user
      */
     private void publishResponse(Response response) {
-        if (RequestLog.isStarted(RESPONSE_WORKFLOW_TIMER)) {
-            RequestLog.stopTiming(RESPONSE_WORKFLOW_TIMER);
+        if (RequestLogUtils.isStarted(RESPONSE_WORKFLOW_TIMER)) {
+            RequestLogUtils.stopTiming(RESPONSE_WORKFLOW_TIMER);
         }
         asyncResponse.resume(response);
     }

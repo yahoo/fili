@@ -4,12 +4,11 @@ package com.yahoo.bard.webservice.web.filters;
 
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 
-import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.RequestLogUtils;
 import com.yahoo.bard.webservice.logging.blocks.Epilogue;
 import com.yahoo.bard.webservice.logging.blocks.Preface;
 import com.yahoo.bard.webservice.util.CacheLastObserver;
 
-import org.glassfish.jersey.filter.LoggingFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,13 +65,13 @@ public class BardLoggingFilter implements ContainerRequestFilter, ContainerRespo
     ClientResponseFilter, WriterInterceptor {
 
     private static final Logger LOG = LoggerFactory.getLogger(BardLoggingFilter.class);
-    private static final String PROPERTY_NANOS = LoggingFilter.class.getName() + ".nanos";
-    private static final String PROPERTY_REQ_LEN = LoggingFilter.class.getName() + ".reqlen";
-    private static final String PROPERTY_OUTPUT_STREAM = LoggingFilter.class.getName() + ".ostream";
+    private static final String PROP_PREFIX = BardLoggingFilter.class.getName();
+    private static final String PROPERTY_NANOS = PROP_PREFIX + ".nanos";
+    private static final String PROPERTY_REQ_LEN = PROP_PREFIX + ".reqlen";
+    private static final String PROPERTY_OUTPUT_STREAM = PROP_PREFIX + ".ostream";
     private static final Pattern VALID_REQUEST_ID = Pattern.compile("[a-zA-Z0-9+/=-]+");
 
     public static final double MILLISECONDS_PER_NANOSECOND = 1000000.0;
-    public static final String TOTAL_TIMER = "TotalTime";
     public static final String CLIENT_TOTAL_TIMER = "ClientRequestTotalTime";
     public static final String X_REQUEST_ID_HEADER = "x-request-id";
 
@@ -85,18 +84,16 @@ public class BardLoggingFilter implements ContainerRequestFilter, ContainerRespo
      */
     @Override
     public void filter(ContainerRequestContext request) throws IOException {
-
-        appendRequestId(request.getHeaders().getFirst(X_REQUEST_ID_HEADER));
-        RequestLog.startTiming(TOTAL_TIMER);
-        RequestLog.startTiming(this);
-        RequestLog.record(new Preface(request));
+        FiliTimingFilter.appendRequestId(request.getHeaders());
+        RequestLogUtils.startTiming(this);
+        RequestLogUtils.record(new Preface(request));
 
         // sets PROPERTY_REQ_LEN if content-length not defined
         lengthOfRequestEntity(request);
 
         // store start time to later calculate elapsed time
         request.setProperty(PROPERTY_NANOS, System.nanoTime());
-        RequestLog.stopTiming(this);
+        RequestLogUtils.stopTiming(this);
     }
 
     /**
@@ -112,8 +109,8 @@ public class BardLoggingFilter implements ContainerRequestFilter, ContainerRespo
     @Override
     public void filter(ContainerRequestContext request, ContainerResponseContext response)
         throws IOException {
-        appendRequestId(request.getHeaders().getFirst(X_REQUEST_ID_HEADER));
-        RequestLog.startTiming(this);
+        FiliTimingFilter.appendRequestId(request.getHeaders());
+        RequestLogUtils.startTiming(this);
         StringBuilder debugMsgBuilder = new StringBuilder();
 
         debugMsgBuilder.append("\tRequest: ").append(request.getMethod());
@@ -143,7 +140,7 @@ public class BardLoggingFilter implements ContainerRequestFilter, ContainerRespo
             msg = response.hasEntity() ? response.getEntity().toString() : "Request without entity failed";
         }
         CacheLastObserver<Long> responseLengthObserver = new CacheLastObserver<>();
-        RequestLog.record(new Epilogue(msg, status, responseLengthObserver));
+        RequestLogUtils.record(new Epilogue(msg, status, responseLengthObserver));
 
         // if response is not yet finalized, we must intercept the output stream
         if (response.getLength() == -1 && response.hasEntity()) {
@@ -158,9 +155,9 @@ public class BardLoggingFilter implements ContainerRequestFilter, ContainerRespo
             debugMsgBuilder.append("length=").append(response.getLength()).append("\t");
             Observable.just((long) response.getLength()).subscribe(responseLengthObserver);
             LOG.debug(debugMsgBuilder.toString());
-            RequestLog.stopTiming(this);
-            RequestLog.stopTiming(TOTAL_TIMER);
-            RequestLog.log();
+            RequestLogUtils.stopTiming(this);
+            RequestLogUtils.stopTimingRequest();
+            RequestLogUtils.log();
         }
     }
 
@@ -173,8 +170,8 @@ public class BardLoggingFilter implements ContainerRequestFilter, ContainerRespo
      */
     @Override
     public void filter(ClientRequestContext request) throws IOException {
-        appendRequestId(request.getStringHeaders().getFirst(X_REQUEST_ID_HEADER));
-        RequestLog.startTiming(CLIENT_TOTAL_TIMER);
+        FiliTimingFilter.appendRequestId(request.getStringHeaders());
+        RequestLogUtils.startTiming(CLIENT_TOTAL_TIMER);
         request.setProperty(PROPERTY_NANOS, System.nanoTime());
     }
 
@@ -201,31 +198,7 @@ public class BardLoggingFilter implements ContainerRequestFilter, ContainerRespo
         }
 
         LOG.debug(debugMsgBuilder.toString());
-        RequestLog.stopTiming(CLIENT_TOTAL_TIMER);
-    }
-
-    /**
-     * Add a request id to pass to druid. Only added if x-request-id follows the format specified at:
-     * https://devcenter.heroku.com/articles/http-request-id
-     *
-     * @param requestId  Request id to add as queryId prefix to druid
-     */
-    private void appendRequestId(String requestId) {
-        if (isNotValidRequestId(requestId)) {
-            return; // Ignore according to https://devcenter.heroku.com/articles/http-request-id
-        }
-        RequestLog.addIdPrefix(requestId);
-    }
-
-    /**
-     * Validate whether or not a string is acceptable as an x-request-id header argument.
-     *
-     * @param requestId  Request id to validate
-     * @return True if the request id is not valid, false otherwise
-     */
-    private boolean isNotValidRequestId(String requestId) {
-        return requestId == null || requestId.isEmpty() || requestId.length() > 200
-               || !VALID_REQUEST_ID.matcher(requestId).matches();
+        RequestLogUtils.stopTiming(CLIENT_TOTAL_TIMER);
     }
 
     /**
@@ -309,9 +282,9 @@ public class BardLoggingFilter implements ContainerRequestFilter, ContainerRespo
             throw e;
         } finally {
             try {
-                RequestLog.stopTiming(this);
-                RequestLog.stopTiming(TOTAL_TIMER);
-                RequestLog.log();
+                RequestLogUtils.stopTiming(this);
+                RequestLogUtils.stopTimingRequest();
+                RequestLogUtils.log();
             } catch (Exception e) {
                 LOG.error("Error finalizing the BardLoggingFilter output stream wrapper.", e);
             }

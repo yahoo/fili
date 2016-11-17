@@ -3,14 +3,17 @@
 package com.yahoo.bard.webservice.web.handlers;
 
 
-import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.REQUEST_WORKFLOW_TIMER;
-import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.RESPONSE_WORKFLOW_TIMER;
-
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yahoo.bard.webservice.application.MetricRegistryFactory;
 import com.yahoo.bard.webservice.data.cache.DataCache;
 import com.yahoo.bard.webservice.data.cache.TupleDataCache;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.RequestLogUtils;
 import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
 import com.yahoo.bard.webservice.util.Utils;
@@ -18,20 +21,15 @@ import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.responseprocessors.CacheV2ResponseProcessor;
 import com.yahoo.bard.webservice.web.responseprocessors.LoggingContext;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
-
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.Objects;
 
-import javax.validation.constraints.NotNull;
+import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.REQUEST_WORKFLOW_TIMER;
+import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.RESPONSE_WORKFLOW_TIMER;
 
 /**
  * Request handler to check the cache for a matching request and either return the cached result or send the next
@@ -99,16 +97,16 @@ public class CacheV2RequestHandler extends BaseDataRequestHandler {
                     )) {
                         try {
                             if (context.getNumberOfOutgoing().decrementAndGet() == 0) {
-                                RequestLog.record(new BardQueryInfo(druidQuery.getQueryType().toJson(), true));
-                                RequestLog.stopTiming(REQUEST_WORKFLOW_TIMER);
+                                RequestLogUtils.record(new BardQueryInfo(druidQuery.getQueryType().toJson(), true));
+                                RequestLogUtils.stopTiming(REQUEST_WORKFLOW_TIMER);
                             }
 
                             if (context.getNumberOfIncoming().decrementAndGet() == 0) {
-                                RequestLog.startTiming(RESPONSE_WORKFLOW_TIMER);
+                                RequestLogUtils.startTiming(RESPONSE_WORKFLOW_TIMER);
                             }
 
                             CACHE_HITS.mark(1);
-                            RequestLog logCtx = RequestLog.dump();
+                            RequestLog logCtx = RequestLogUtils.dump();
                             nextResponse.processResponse(
                                     mapper.readTree(cacheEntry.getValue()),
                                     druidQuery,
@@ -121,7 +119,7 @@ public class CacheV2RequestHandler extends BaseDataRequestHandler {
                             LOG.warn("Error processing cached value: ", e);
                         }
                     } else {
-                        LOG.debug("Cache entry present but invalid for query with id: {}", RequestLog.getId());
+                        LOG.debug("Cache entry present but invalid for query with id: {}", RequestLogUtils.getId());
                         CACHE_POTENTIAL_HITS.mark(1);
                         CACHE_MISSES.mark(1);
                     }

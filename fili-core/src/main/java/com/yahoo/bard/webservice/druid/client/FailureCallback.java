@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.druid.client;
 import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.REQUEST_WORKFLOW_TIMER;
 import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.RESPONSE_WORKFLOW_TIMER;
 
-import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.RequestLogUtils;
 
 /**
  * Callback from the async HTTP client on error.
@@ -24,8 +24,8 @@ public interface FailureCallback {
      * @param error  The error that caused the failure
      */
     default void dispatch(Throwable error) {
-        RequestLog.stopTiming(REQUEST_WORKFLOW_TIMER);
-        RequestLog.startTiming(RESPONSE_WORKFLOW_TIMER);
+        RequestLogUtils.stopTiming(REQUEST_WORKFLOW_TIMER);
+        RequestLogUtils.startTiming(RESPONSE_WORKFLOW_TIMER);
         invoke(error);
     }
 }

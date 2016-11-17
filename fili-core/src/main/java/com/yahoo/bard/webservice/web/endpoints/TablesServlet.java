@@ -9,7 +9,7 @@ import com.yahoo.bard.webservice.application.ObjectMappersSuite;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.data.time.GranularityParser;
-import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.RequestLogUtils;
 import com.yahoo.bard.webservice.logging.blocks.TableRequest;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
@@ -151,8 +151,8 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             @Context final ContainerRequestContext containerRequestContext
     ) {
         try {
-            RequestLog.startTiming(this);
-            RequestLog.record(new TableRequest(tableName != null ? tableName : "all", "all"));
+            RequestLogUtils.startTiming(this);
+            RequestLogUtils.record(new TableRequest(tableName != null ? tableName : "all", "all"));
 
             TablesApiRequest apiRequest = new TablesApiRequest(
                     tableName,
@@ -179,16 +179,16 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                     null
             );
             LOG.debug("Tables Endpoint Response: {}", response.getEntity());
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             return response;
         } catch (RequestValidationException e) {
             LOG.debug(e.getMessage(), e);
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             return Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
         } catch (Error | Exception e) {
             String msg = String.format("Exception processing request: %s", e.getMessage());
             LOG.info(msg, e);
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             return Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
         }
     }
@@ -215,8 +215,8 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             @Context final ContainerRequestContext containerRequestContext
     ) {
         try {
-            RequestLog.startTiming(this);
-            RequestLog.record(new TableRequest(tableName, grain));
+            RequestLogUtils.startTiming(this);
+            RequestLogUtils.record(new TableRequest(tableName, grain));
 
             TablesApiRequest apiRequest = new TablesApiRequest(
                     tableName,
@@ -235,21 +235,21 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             Map<String, Object> result = getLogicalTableFullView(apiRequest.getTable(), uriInfo);
             String output = objectMappers.getMapper().writeValueAsString(result);
             LOG.debug("Tables Endpoint Response: {}", output);
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             return Response.status(Response.Status.OK).entity(output).build();
         } catch (RequestValidationException e) {
             LOG.debug(e.getMessage(), e);
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             return Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
         } catch (JsonProcessingException e) {
             String msg = String.format("Internal server error. JsonProcessingException : %s", e.getMessage());
             LOG.error(msg, e);
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             return Response.status(INTERNAL_SERVER_ERROR).entity(msg).build();
         } catch (Error | Exception e) {
             String msg = String.format("Exception processing request: %s", e.getMessage());
             LOG.info(msg, e);
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             return Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
         }
     }
@@ -272,8 +272,8 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             @Context final ContainerRequestContext containerRequestContext
     ) {
         try {
-            RequestLog.startTiming(this);
-            RequestLog.record(new TableRequest("all", "all"));
+            RequestLogUtils.startTiming(this);
+            RequestLogUtils.record(new TableRequest("all", "all"));
 
             TablesApiRequest tablesApiRequest = new TablesApiRequest(
                     null,
@@ -297,12 +297,12 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             Response response = formatResponse(tablesApiRequest, paginatedResult, "tables", null);
 
             LOG.debug("Tables Endpoint Response: {}", response.getEntity());
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             return response;
         } catch (Error | Exception e) {
             String msg = String.format("Exception processing request: %s", e.getMessage());
             LOG.info(msg, e);
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             return Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
         }
     }

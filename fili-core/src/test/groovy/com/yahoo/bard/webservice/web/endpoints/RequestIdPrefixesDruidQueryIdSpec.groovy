@@ -7,6 +7,8 @@ import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.util.JsonSlurper
 import com.yahoo.bard.webservice.util.JsonSortStrategy
 import com.yahoo.bard.webservice.web.filters.BardLoggingFilter
+import com.yahoo.bard.webservice.web.filters.FiliTimingFilter
+
 import org.apache.commons.lang.StringUtils
 
 import javax.ws.rs.core.MultivaluedHashMap
@@ -27,7 +29,7 @@ class RequestIdPrefixesDruidQueryIdSpec extends BaseDataServletComponentSpec {
 
     @Override
     Class<?>[] getResourceClasses() {
-        [ DataServlet.class, BardLoggingFilter.class ]
+        [DataServlet.class, BardLoggingFilter.class ]
     }
 
     @Override
@@ -78,10 +80,9 @@ class RequestIdPrefixesDruidQueryIdSpec extends BaseDataServletComponentSpec {
     }
 
     def "verify invalid x-request-id values"() {
-        BardLoggingFilter filter = new BardLoggingFilter()
-        assert !filter.isValidRequestId('abcd$') // Invalid char
-        assert !filter.isValidRequestId(StringUtils.leftPad('a', 200, 'a')) // Too long
-        assert !filter.isValidRequestId('') // empty string
-        assert !filter.isValidRequestId(null) // null
+        assert !FiliTimingFilter.isInvalidRequestId('abcd$') // Invalid char
+        assert !FiliTimingFilter.isInvalidRequestId(StringUtils.leftPad('a', 200, 'a')) // Too long
+        assert !FiliTimingFilter.isInvalidRequestId('') // empty string
+        assert !FiliTimingFilter.isInvalidRequestId(null) // null
     }
 }

@@ -2,16 +2,11 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.endpoints;
 
-import com.yahoo.bard.webservice.logging.RequestLog;
-
 import com.codahale.metrics.annotation.ExceptionMetered;
 import com.codahale.metrics.annotation.Metered;
 import com.codahale.metrics.annotation.Timed;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
+import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.RequestLogUtils;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -26,6 +21,10 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Stub Servlet for testing servlet filters in isolation.
@@ -64,7 +63,7 @@ public class TestFilterServlet implements Runnable {
                 new Thread(this).start();
             }
 
-            responses.add(new Pair<>(asyncResponse, RequestLog.dump()));
+            responses.add(new Pair<>(asyncResponse, RequestLogUtils.dump()));
         }
     }
 
@@ -95,7 +94,7 @@ public class TestFilterServlet implements Runnable {
             // release waiting requests
             synchronized (responses) {
                 for (Pair<AsyncResponse, RequestLog> response : responses) {
-                    RequestLog.restore(response.second);
+                    RequestLogUtils.restore(response.second);
                     response.first.resume("OK");
                 }
 
