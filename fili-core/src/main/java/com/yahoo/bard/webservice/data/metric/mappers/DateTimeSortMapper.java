@@ -6,7 +6,7 @@ import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.ResultSet;
 import com.yahoo.bard.webservice.data.ResultSetSchema;
 import com.yahoo.bard.webservice.druid.model.orderby.SortDirection;
-import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.TimedPhase;
 
 import org.joda.time.DateTime;
 
@@ -46,8 +46,7 @@ public class DateTimeSortMapper extends ResultSetMapper {
 
         Map<DateTime, List<Result>> bucketizedResultsMap = new LinkedHashMap<>();
 
-        RequestLog.startTiming("sortResultSet");
-        try {
+        try (TimedPhase timer = new TimedPhase("sortResultSet")) {
             for (Result result : resultSet) {
                 bucketizedResultsMap.computeIfAbsent(result.getTimeStamp(), ignored -> new ArrayList<>()).add(result);
             }
@@ -65,8 +64,6 @@ public class DateTimeSortMapper extends ResultSetMapper {
                             .flatMap(List::stream)
                             .collect(Collectors.toList())
             );
-        } finally {
-            RequestLog.stopTiming("sortResultSet");
         }
     }
 

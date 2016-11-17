@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.web.filters
 
 import com.yahoo.bard.webservice.logging.RequestLog
+import com.yahoo.bard.webservice.logging.RequestLogUtils
 
 import spock.lang.Specification
 import org.slf4j.MDC
@@ -29,7 +30,7 @@ class BardLoggingFilterSpec extends Specification {
     }
 
     def cleanup() {
-        MDC.remove(RequestLog.ID_KEY)
+        RequestLogUtils.dump()
         fakeHeaders.clear()
     }
 
@@ -42,7 +43,7 @@ class BardLoggingFilterSpec extends Specification {
         filter.filter(requestContext)
 
         then:
-        MDC.get(RequestLog.ID_KEY).startsWith(requestId)
+        MDC.get(RequestLog.LOG_ID_KEY).startsWith(requestId)
 
         where:
         requestId << [
@@ -78,11 +79,10 @@ class BardLoggingFilterSpec extends Specification {
         filter.filter(requestContext)
 
         then:
-        !MDC.get(RequestLog.ID_KEY)?.startsWith(requestId)
+        !MDC.get(RequestLog.LOG_ID_KEY)?.startsWith(requestId)
 
         where:
         requestId << [
-                "",
                 "##",
                 "arequest#",
                 "5rreques!id",

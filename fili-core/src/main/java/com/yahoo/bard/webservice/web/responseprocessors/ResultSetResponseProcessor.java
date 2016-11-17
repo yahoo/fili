@@ -23,7 +23,7 @@ import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
-import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.RequestLogUtils;
 import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.PageNotFoundException;
@@ -95,7 +95,7 @@ public class ResultSetResponseProcessor extends MappingResponseProcessor impleme
     @Override
     public void processResponse(JsonNode json, DruidAggregationQuery<?> druidQuery, LoggingContext metadata) {
         try {
-            RequestLog.restore(metadata.getRequestLog());
+            RequestLogUtils.restore(metadata.getRequestLog());
             ResultSet resultSet = buildResultSet(json, druidQuery, apiRequest.getTimeZone());
             resultSet = mapResultSet(resultSet);
 

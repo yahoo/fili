@@ -3,7 +3,7 @@
 package com.yahoo.bard.webservice.web.filters;
 
 import com.yahoo.bard.webservice.application.HealthCheckRegistryFactory;
-import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.RequestLogUtils;
 
 import com.codahale.metrics.health.HealthCheck.Result;
 
@@ -32,8 +32,7 @@ public class HealthCheckFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
-
-        RequestLog.startTiming(this);
+        RequestLogUtils.startTiming(this);
         String path = requestContext.getUriInfo().getAbsolutePath().getPath();
 
         if (path.startsWith("/v1/data") || path.startsWith("/data")) {
@@ -42,7 +41,7 @@ public class HealthCheckFilter implements ContainerRequestFilter {
             if (!unhealthyChecks.keySet().isEmpty()) {
                 unhealthyChecks.entrySet()
                         .forEach(entry -> LOG.error("Healthcheck '{}' failed: {}", entry.getKey(), entry.getValue()));
-                RequestLog.stopTiming(this);
+                RequestLogUtils.stopTiming(this);
                 requestContext.abortWith(
                         Response.status(Status.SERVICE_UNAVAILABLE)
                                 .entity("Service is unhealthy. At least 1 healthcheck is failing")
@@ -51,7 +50,7 @@ public class HealthCheckFilter implements ContainerRequestFilter {
                 return;
             }
         }
-        RequestLog.stopTiming(this);
+        RequestLogUtils.stopTiming(this);
     }
 
     /**

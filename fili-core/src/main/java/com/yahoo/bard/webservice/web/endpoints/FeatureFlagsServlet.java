@@ -8,7 +8,7 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
 import com.yahoo.bard.webservice.config.FeatureFlag;
 import com.yahoo.bard.webservice.config.FeatureFlagRegistry;
-import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.RequestLogUtils;
 import com.yahoo.bard.webservice.logging.blocks.FeatureFlagRequest;
 import com.yahoo.bard.webservice.web.ApiRequest;
 
@@ -124,8 +124,8 @@ public class FeatureFlagsServlet extends EndpointServlet {
             @Context UriInfo uriInfo
     ) {
         try {
-            RequestLog.startTiming(this);
-            RequestLog.record(new FeatureFlagRequest("all"));
+            RequestLogUtils.startTiming(this);
+            RequestLogUtils.record(new FeatureFlagRequest("all"));
 
             FeatureFlagApiRequest apiRequest = new FeatureFlagApiRequest(format, perPage, page, uriInfo);
 
@@ -142,12 +142,12 @@ public class FeatureFlagsServlet extends EndpointServlet {
                     Arrays.asList("name", "value")
             );
             LOG.debug("Feature Flags Endpoint Response: {}", response.getEntity());
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             return response;
         } catch (Error | Exception e) {
             String msg = String.format("Exception processing request: %s", e.getMessage());
             LOG.info(msg, e);
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             return Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
         }
     }
@@ -179,8 +179,8 @@ public class FeatureFlagsServlet extends EndpointServlet {
             @Context UriInfo uriInfo
     ) {
         try {
-            RequestLog.startTiming(this);
-            RequestLog.record(new FeatureFlagRequest(flagName));
+            RequestLogUtils.startTiming(this);
+            RequestLogUtils.record(new FeatureFlagRequest(flagName));
 
             FeatureFlagApiRequest apiRequest = new FeatureFlagApiRequest(format, "", "", uriInfo);
 
@@ -190,17 +190,17 @@ public class FeatureFlagsServlet extends EndpointServlet {
             String output = objectMappers.getMapper().writeValueAsString(status);
 
             LOG.debug("Feature Flags Endpoint Response: {}", output);
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             return Response.status(Response.Status.OK).entity(output).build();
         } catch (JsonProcessingException e) {
             String msg = String.format("Internal server error. JsonProcessingException : %s", e.getMessage());
             LOG.error(msg, e);
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             return Response.status(INTERNAL_SERVER_ERROR).entity(msg).build();
         } catch (Error | Exception e) {
             String msg = String.format("Exception processing request: %s", e.getMessage());
             LOG.info(msg, e);
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             return Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
         }
     }

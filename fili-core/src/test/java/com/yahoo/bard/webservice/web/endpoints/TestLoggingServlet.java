@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.endpoints;
 
-import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.RequestLogUtils;
 
 import com.codahale.metrics.annotation.ExceptionMetered;
 import com.codahale.metrics.annotation.Metered;
@@ -48,13 +48,13 @@ public class TestLoggingServlet {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/log")
     public void getSucceed(@Context UriInfo uriInfo, @Suspended AsyncResponse asyncResponse) {
-        RequestLog.startTiming(this);
+        RequestLogUtils.startTiming(this);
         try {
             Thread.sleep(200);
         } catch (InterruptedException ignore) {
             // Do nothing
         }
-        RequestLog.stopTiming(this);
+        RequestLogUtils.stopTiming(this);
 
         Response response = Response.status(Response.Status.OK).build();
         asyncResponse.resume(response);
@@ -72,7 +72,7 @@ public class TestLoggingServlet {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/webbug")
     public void getFailWithWebAppException(@Context UriInfo uriInfo) {
-        RequestLog.startTiming(this);
+        RequestLogUtils.startTiming(this);
         try {
             Thread.sleep(200);
             throw new WebApplicationException(
@@ -95,7 +95,7 @@ public class TestLoggingServlet {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/genericbug")
     public void getFailWithRuntimeException(@Context UriInfo uriInfo) {
-        RequestLog.startTiming(this);
+        RequestLogUtils.startTiming(this);
         try {
             Thread.sleep(200);
             throw new RuntimeException("Oops! Generic Exception");

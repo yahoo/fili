@@ -9,6 +9,7 @@ import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.RequestLogUtils;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
@@ -105,7 +106,7 @@ public class SplitQueryRequestHandler implements DataRequestHandler {
                 );
 
         // Save RequestLog up to here
-        final RequestLog logCtx = RequestLog.dump();
+        final RequestLog logCtx = RequestLogUtils.dump();
 
         final SplitQueryResponseProcessor mergingResponse =
                 new SplitQueryResponseProcessor(response, request, druidQuery, expectedIntervals, logCtx);
@@ -117,7 +118,7 @@ public class SplitQueryRequestHandler implements DataRequestHandler {
 
         queries.stream().forEach(
                 q -> {
-                    RequestLog.restore(logCtx);
+                    RequestLogUtils.restore(logCtx);
                     next.handleRequest(context, request, q, mergingResponse);
                 }
         );

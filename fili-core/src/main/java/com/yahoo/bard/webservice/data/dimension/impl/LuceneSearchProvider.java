@@ -11,8 +11,8 @@ import com.yahoo.bard.webservice.data.dimension.DimensionRow;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 import com.yahoo.bard.webservice.data.dimension.TimeoutException;
-import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.TimedPhase;
+import com.yahoo.bard.webservice.logging.RequestLogUtils;
 import com.yahoo.bard.webservice.util.DimensionStoreKeyUtils;
 import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.util.SinglePagePagination;
@@ -573,7 +573,7 @@ public class LuceneSearchProvider implements SearchProvider {
         lock.readLock().lock();
         try {
             ScoreDoc[] hits;
-            try (TimedPhase timer = RequestLog.startTiming("QueryingLucene")) {
+            try (TimedPhase timer = RequestLogUtils.startTiming("QueryingLucene")) {
                 hits = getPageOfData(
                         luceneIndexSearcher,
                         null,
@@ -598,7 +598,7 @@ public class LuceneSearchProvider implements SearchProvider {
             }
 
             // convert hits to dimension rows
-            try (TimedPhase timer = RequestLog.startTiming("LuceneHydratingDimensionRows")) {
+            try (TimedPhase timer = RequestLogUtils.startTiming("LuceneHydratingDimensionRows")) {
                 String idKey = DimensionStoreKeyUtils.getColumnKey(dimension.getKey().getName());
                 filteredDimRows = Arrays.stream(hits)
                         .map(
@@ -615,7 +615,6 @@ public class LuceneSearchProvider implements SearchProvider {
                         .map(dimension::findDimensionRowByKeyValue)
                         .collect(Collectors.toCollection(TreeSet::new));
             }
-
             documentCount = luceneIndexSearcher.count(query); //throws the caught IOException
         } catch (IOException e) {
             LOG.error("Unable to get count of matched rows for the query " + query.toString() +
