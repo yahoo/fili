@@ -2,8 +2,11 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.filters;
 
-import com.yahoo.bard.webservice.application.JerseyTestBinder
-import com.yahoo.bard.webservice.web.endpoints.DataServlet
+import com.yahoo.bard.webservice.config.SystemConfig
+import com.yahoo.bard.webservice.config.SystemConfigException
+import com.yahoo.bard.webservice.config.SystemConfigProvider
+
+import com.fasterxml.jackson.databind.ObjectMapper
 
 import spock.lang.Specification
 import spock.lang.Timeout
@@ -15,49 +18,71 @@ import javax.ws.rs.core.SecurityContext
 @Timeout(30)
 class RoleBasedAuthFilterSpec extends Specification {
 
-    JerseyTestBinder jtb
+    private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance()
+    private static final String USER_ROLES = SYSTEM_CONFIG.getPackageVariableName("user_roles")
 
-    Class<?>[] getResourceClasses() {
-        [RoleBasedAuthFilterSpec.class, DataServlet.class]
-    }
+    // Memorize pre-test setting value
+    String oldUserRoles
+
+    ObjectMapper objectMapper
+    ContainerRequestContext containerRequestContext
+    SecurityContext securityContext
+    RoleBasedAuthFilter roleBasedAuthFilter
 
     def setup() {
-        // Create the test web container to test the resources
-        jtb = new JerseyTestBinder(getResourceClasses())
+        objectMapper = Mock(ObjectMapper)
+        containerRequestContext = Mock(ContainerRequestContext)
+        securityContext = Mock(SecurityContext)
+        containerRequestContext.getSecurityContext() >> securityContext
+        roleBasedAuthFilter = new RoleBasedAuthFilter(objectMapper)
+
+        try {
+            oldUserRoles = SYSTEM_CONFIG.getStringProperty(USER_ROLES)
+        } catch(SystemConfigException ignored) {
+            oldUserRoles = null
+        }
+        SYSTEM_CONFIG.setProperty(USER_ROLES, "foo,bar");
     }
 
     def cleanup() {
-        // Release the test web container
-        jtb.tearDown()
+        // Restore pre-test setting value if exists, clear otherwise
+        SYSTEM_CONFIG.resetProperty(USER_ROLES, oldUserRoles)
     }
 
-    def "GET requests return false if the user is not in an allowed role"() {
-        given: "A request that does not have the security context of an user in role"
-        ContainerRequestContext context = Mock(ContainerRequestContext)
-        SecurityContext securityContext = Mock(SecurityContext)
-        securityContext.isUserInRole("foo") >> true
-        context.getSecurityContext() >> securityContext
-        List<String> allowedUserRoles = ["baz"]
+    def "GET request is not authorized if the user is not in an allowed role"() {
+        given: "received a request and that the user is not in the authorized roles"
+        containerRequestContext.getMethod() >> "GET"
+        securityContext.isUserInRole(_) >> false
 
-        and: "A role based auth filter"
-        RoleBasedAuthFilter roleBasedAuthFilter = new RoleBasedAuthFilter()
-
-        expect: "The boolean stating the user is not in role"
-        roleBasedAuthFilter.isUserInRole(allowedUserRoles, context) == false
+        expect: "the request is not authorized"
+        !roleBasedAuthFilter.isAuthorized(containerRequestContext)
     }
 
-    def "GET requests return true if the user is in an allowed role"() {
-        given: "A request that has the security context of an user in role "
-        ContainerRequestContext context = Mock(ContainerRequestContext)
-        SecurityContext securityContext = Mock(SecurityContext)
-        securityContext.isUserInRole("foo") >> true
-        context.getSecurityContext() >> securityContext
-        List<String> allowedUserRoles = ["foo","bar"]
+    def "GET request is authorized if the user is in an allowed role"() {
+        given: "received a request and that the user is in the authorized roles"
+        containerRequestContext.getMethod() >> "GET"
+        securityContext.isUserInRole("bar") >> true
 
-        and: "A role based auth filter"
-        RoleBasedAuthFilter roleBasedAuthFilter = new RoleBasedAuthFilter()
+        expect: "the request is authorized"
+        roleBasedAuthFilter.isAuthorized(containerRequestContext)
+    }
 
-        expect: "The boolean stating the user is in role"
-        roleBasedAuthFilter.isUserInRole(allowedUserRoles, context) == true
+    def "GET request is authorized if the `user_roles` setting is not set"() {
+        given: "received a request and that the user is not in the authorized roles"
+        containerRequestContext.getMethod() >> "GET"
+        SYSTEM_CONFIG.clearProperty(USER_ROLES)
+        securityContext.isUserInRole(_) >> false
+
+        expect: "the request is authorized"
+        roleBasedAuthFilter.isAuthorized(containerRequestContext)
+    }
+
+    def "OPTIONS request is authorized which bypasses the filter"() {
+        given: "received an OPTIONS request and that the user is in the authorized roles"
+        securityContext.isUserInRole(_) >> false
+        containerRequestContext.getMethod() >> "OPTIONS"
+
+        expect: "the request is authorized"
+        roleBasedAuthFilter.isAuthorized(containerRequestContext)
     }
 }

@@ -28,11 +28,15 @@ Current
 
 ### Fixed:
 
+- [Fix and refactor role based filter to allow CORS](https://github.com/yahoo/fili/pull/99)
+    * Fix `RoleBasedAuthFilter` to bypass `OPTIONS` request for CORS
+    * Discovered a bug where `user_roles` is declared but unset still reads as a list with empty string (included a temporary fix by commenting the variable declaration)
+    * Refactored `RoleBasedAuthFilter` and `RoleBasedAuthFilterSpec` for better testing
+
 - [Made a few injection points not useless](https://github.com/yahoo/fili/pull/98)
     * Template types don't get the same subclass goodness that method invocation and
         dependencies get, so this method did not allow returning a subclass of
        `DruidQueryBuilder` or of `DruidResponseParser`.
-
 
 ### Known Issues:
 
