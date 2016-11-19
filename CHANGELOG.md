@@ -30,7 +30,9 @@ Current
 - [`ResponseValidationException` uses `Response.StatusType` rather than `Response.Status`](https://github.com/yahoo/fili/pull/96)
     * `Response.StatusType` is the interface that `Response.Status` implements.
     * This will have no impact on current code in Fili that uses `ResponseValidationException`, and it allows customers to inject http
-        codes not included in `Response.Status`. 
+        codes not included in `Response.Status`.
+         
+- [Removed "provided" modifier for SLF4J and Logback dependencies in the Wikipedia example](https://github.com/yahoo/fili/pull/102)
 
 ### Deprecated:
 
