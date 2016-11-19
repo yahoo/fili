@@ -39,8 +39,9 @@ public class MetricParser {
     private final MetricDictionary dict;
     private final MetricDictionary tempDict;
 
-    static int TEMP_IDENTIFIER = 0;
-    static String TEMP_BASE = "__temp_metric_";
+    // Yes, this will eventually roll over. No, this is certainly not the right way to do this.
+    private static long TEMP_IDENTIFIER = 0;
+    private static String TEMP_BASE = "__temp_metric_";
 
     private final Deque<Operator> operatorStack = new ArrayDeque<>();
     private final Deque<Operand> operandStack = new ArrayDeque<>();
@@ -221,7 +222,7 @@ public class MetricParser {
      */
     private Lexeme expect(LexemeType type) throws ParsingException {
         Lexeme current = items.remove();
-        if (!(current.getType() == type)) {
+        if (current.getType() != type) {
             throw new ParsingException("Unexpected token type: found " + current.getType() + " but expected " + type);
         }
         return current;
