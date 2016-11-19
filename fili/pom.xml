@@ -17,6 +17,14 @@
     <name>Fili: Packaging Module</name>
     <description>Module to package the Fili application platform via its key modules</description>
 
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
     <properties>
         <checkstyle.config.location>../checkstyle-style.xml</checkstyle.config.location>
         <checkstyle.suppressions.location>../checkstyle-suppressions.xml</checkstyle.suppressions.location>
