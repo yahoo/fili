@@ -18,7 +18,7 @@ public abstract class FilterNode implements Operand {
      * Build a Bard filter object.
      * @return the filter
      */
-    abstract Filter buildFilter();
+    public abstract Filter buildFilter();
 
     /**
      * Create a new FilterNode.
