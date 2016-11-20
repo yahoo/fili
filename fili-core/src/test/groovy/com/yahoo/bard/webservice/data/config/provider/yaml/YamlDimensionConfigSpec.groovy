@@ -3,6 +3,8 @@
 
 package com.yahoo.bard.webservice.data.config.provider.yaml
 
+import com.yahoo.bard.webservice.data.config.provider.ConfigurationError
+
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import spock.lang.Specification
@@ -36,7 +38,7 @@ public class YamlDimensionConfigSpec extends Specification {
 
     def "Setting the API name should set missing fields"() {
         setup:
-        def dim =  new YamlDimensionConfig(null, null, null, null, null, null, null, null, true)
+        def dim =  new YamlDimensionConfig(null, null, null, null, null, null, true)
         dim.setApiName("the_api_name")
 
         expect:
@@ -48,26 +50,26 @@ public class YamlDimensionConfigSpec extends Specification {
 
     def "Duplicate fields should throw an error"() {
         when:
-        new YamlDimensionConfig(null, null, null, null, ["f1", "f2", "f2"] as String[], null, null, null, true)
+        new YamlDimensionConfig(null, null, null, null, ["f1", "f2", "f2"] as String[], null, true)
 
         then:
-        RuntimeException ex = thrown()
+        ConfigurationError ex = thrown()
         ex.message ==~ /.*unique list of dimension fields.*/
     }
 
     def "Duplicate default fields should throw an error"() {
         when:
-        new YamlDimensionConfig(null, null, null, null, null, ["f1", "f2", "f2"] as String[], null, null, true)
+        new YamlDimensionConfig(null, null, null, null, null, ["f1", "f2", "f2"] as String[], true)
 
         then:
-        RuntimeException ex = thrown()
+        ConfigurationError ex = thrown()
         ex.message ==~ /.*unique list of default dimension fields.*/
     }
 
     def "Dimension fields works correctly"() {
         setup:
 
-        def dim =  new YamlDimensionConfig(null, null, null, null, ["f1", "f2"] as String[], ["f1"] as String[], null, null, true)
+        def dim =  new YamlDimensionConfig(null, null, null, null, ["f1", "f2"] as String[], ["f1"] as String[], true)
 
         // Normally called by deserializer
         def availableFields = ["f1": Mock(YamlDimensionFieldConfig), "f2": Mock(YamlDimensionFieldConfig)]
@@ -82,7 +84,7 @@ public class YamlDimensionConfigSpec extends Specification {
 
     def "Dimension fields works correctly to set defaults"() {
         setup:
-        def dim =  new YamlDimensionConfig(null, null, null, null, null, null, null, null, true)
+        def dim =  new YamlDimensionConfig(null, null, null, null, null, null, true)
 
         // Normally called by deserializer
         def availableFields = ["f1": Mock(YamlDimensionFieldConfig), "f2": Mock(YamlDimensionFieldConfig), "f3": Mock(YamlDimensionFieldConfig)]

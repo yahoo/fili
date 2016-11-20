@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.provider.ConfigProvider;
 import com.yahoo.bard.webservice.data.config.provider.ConfigurationDictionary;
+import com.yahoo.bard.webservice.data.config.provider.ConfigurationError;
 import com.yahoo.bard.webservice.data.config.provider.LogicalTableConfiguration;
 import com.yahoo.bard.webservice.data.config.provider.MakerConfiguration;
 import com.yahoo.bard.webservice.data.config.provider.MetricConfiguration;
@@ -25,6 +26,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * YAML-based configuration.
@@ -54,23 +57,28 @@ public class YamlConfigProvider implements ConfigProvider {
      */
     @JsonCreator
     public YamlConfigProvider(
+            @NotNull
             @JsonProperty("physical_tables")
             @JsonDeserialize(using = YamlPhysicalTableConfigDeserializer.class)
                     ConfigurationDictionary<PhysicalTableConfiguration> physicalTables,
 
+            @NotNull
             @JsonProperty("logical_tables")
             @JsonDeserialize(contentAs = YamlLogicalTableConfig.class)
                     ConfigurationDictionary<LogicalTableConfiguration> logicalTables,
 
+            @NotNull
             @JsonProperty("dimensions")
             @JsonDeserialize(using = YamlDimensionConfigDeserializer.class, contentAs = YamlDimensionConfig.class)
                     ConfigurationDictionary<DimensionConfig> dimensions,
 
             // Don't need a 'nice' type here, since not exposed
+            @NotNull
             @JsonProperty("dimension_fields")
             @JsonDeserialize(using = YamlDimensionFieldConfigDeserializer.class)
                     ConfigurationDictionary<YamlDimensionFieldConfig> dimensionFields,
 
+            @NotNull
             @JsonProperty("base_metrics")
             @JsonDeserialize(contentAs = YamlMetricConfiguration.class)
                     ConfigurationDictionary<MetricConfiguration> baseMetrics,
@@ -92,31 +100,6 @@ public class YamlConfigProvider implements ConfigProvider {
         this.derivedMetrics = derivedMetrics;
         this.makers = makers;
 
-        // Physical tables are required
-        if (physicalTables == null) {
-            throw new RuntimeException("Error: No physical tables configured.");
-        }
-
-        // Logical tables are required
-        if (logicalTables == null) {
-            throw new RuntimeException("Error: No logical tables configured.");
-        }
-
-        // Dimensions are required
-        if (dimensions == null) {
-            throw new RuntimeException("Error: No dimensions configured.");
-        }
-
-        // Dimension fields are required
-        if (dimensionFields == null) {
-            throw new RuntimeException("Error: No dimension fields configured.");
-        }
-
-        // Base metrics are required
-        if (baseMetrics == null) {
-            throw new RuntimeException("Error: No base metrics configured.");
-        }
-
         // Derived metrics are not required
         if (derivedMetrics == null) {
             LOG.info("No derived metrics found.");
@@ -129,10 +112,8 @@ public class YamlConfigProvider implements ConfigProvider {
             this.makers = new ConfigurationDictionary<>();
         }
 
-        // Dimensions must know their fields.
-        dimensions.values().forEach(
-                v -> ((YamlDimensionConfig) v).setAvailableDimensionFields(dimensionFields)
-        );
+        // Dimensions must know their fields
+        dimensions.values().forEach(v -> ((YamlDimensionConfig) v).setAvailableDimensionFields(dimensionFields));
     }
 
     @Override
@@ -179,19 +160,19 @@ public class YamlConfigProvider implements ConfigProvider {
         );
 
         if (path == null) {
-            throw new RuntimeException("Could not read path variable: " + CONF_YAML_PATH);
+            throw new ConfigurationError("Could not read path variable: " + CONF_YAML_PATH);
         }
 
         File f = new File(path);
         if (!f.exists() || !f.canRead()) {
-            throw new RuntimeException("Could not read path: " + path + ". Please ensure it exists and is readable.");
+            throw new ConfigurationError("Could not read path: " + path + ". Please ensure it exists and is readable.");
         }
 
         try {
             LOG.info("Loading YAML configuration from path: {}", path);
             return build(f);
         } catch (Exception e) {
-            throw new RuntimeException("Could not parse path: " + path, e);
+            throw new ConfigurationError("Could not parse path: " + path, e);
         }
     }
 

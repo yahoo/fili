@@ -7,11 +7,12 @@ import com.yahoo.bard.webservice.config.SystemConfig
 import com.yahoo.bard.webservice.config.SystemConfigException
 import com.yahoo.bard.webservice.config.SystemConfigProvider
 import com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchSetOperationMaker
+import com.yahoo.bard.webservice.data.config.provider.ConfigurationError
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationPostAggFunction
 import spock.lang.Specification
 
-public class YamlConfigSpec extends Specification {
+public class YamlConfigProviderSpec extends Specification {
     static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance()
 
 
@@ -30,13 +31,13 @@ public class YamlConfigSpec extends Specification {
         when:
         YamlConfigProvider.build(SYSTEM_CONFIG)
         then:
-        RuntimeException ex = thrown()
+        ConfigurationError ex = thrown()
         ex.message =~ /Could not read path.*/
     }
 
     def "Test loading of config file"() {
         setup:
-        String path = YamlConfigSpec.class.getResource("/yaml/exampleConfiguration.yaml").getPath()
+        String path = YamlConfigProviderSpec.class.getResource("/yaml/exampleConfiguration.yaml").getPath()
         SYSTEM_CONFIG.setProperty(SYSTEM_CONFIG.getPackageVariableName(YamlConfigProvider.CONF_YAML_PATH), path)
 
         when:

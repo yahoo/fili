@@ -6,8 +6,6 @@ import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 
-import java.io.IOException;
-
 /**
  * A metric with a definition, description, and flag to exclude from external API
  *
@@ -47,7 +45,6 @@ public interface MetricConfiguration {
      * @param makerDict the metric maker dictionary
      * @param dimensionDictionary the dimension dictionary
      * @return a logical metric
-     * @throws IOException if the metric could not be built
      */
     LogicalMetric build(
             String metricName,
@@ -55,5 +52,5 @@ public interface MetricConfiguration {
             MetricDictionary tempDict,
             MakerDictionary makerDict,
             DimensionDictionary dimensionDictionary
-    ) throws IOException;
+    );
 }

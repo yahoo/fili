@@ -43,7 +43,7 @@ public class FilteredAggMetricNode implements MetricNode {
         if (aggregations != null && aggregations.size() >= 1) {
             aggregation = aggregations.iterator().next(); // Java, why is there no "Give me some element from this set"?
         } else {
-            throw new RuntimeException("Could not find an aggregation");
+            throw new ParsingException("Filtered aggregation requires aggregation but could not find one");
         }
         FilteredAggregationMaker
                 filteredAggregationMaker = new FilteredAggregationMaker(dictionary, aggregation, right.buildFilter());

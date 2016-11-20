@@ -45,7 +45,7 @@ public enum ArithmeticOperator implements Operator {
     }
 
     @Override
-    public MetricNode build(List<Operand> operands) {
+    public MetricNode build(List<Operand> operands) throws ParsingException {
         return new ArithmeticMetricNode(func, operands.get(0).getMetricNode(), operands.get(1).getMetricNode());
     }
 

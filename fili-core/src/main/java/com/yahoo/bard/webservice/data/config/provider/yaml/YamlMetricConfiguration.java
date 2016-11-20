@@ -3,6 +3,8 @@
 package com.yahoo.bard.webservice.data.config.provider.yaml;
 
 import com.yahoo.bard.webservice.data.config.metric.parser.MetricParser;
+import com.yahoo.bard.webservice.data.config.metric.parser.ParsingException;
+import com.yahoo.bard.webservice.data.config.provider.ConfigurationError;
 import com.yahoo.bard.webservice.data.config.provider.MakerDictionary;
 import com.yahoo.bard.webservice.data.config.provider.MetricConfiguration;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
@@ -12,7 +14,6 @@ import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.io.IOException;
 import java.util.Objects;
 
 /**
@@ -68,9 +69,13 @@ public class YamlMetricConfiguration implements MetricConfiguration {
             MetricDictionary tempDict,
             MakerDictionary makerDict,
             DimensionDictionary dimensionDictionary
-    ) throws IOException {
+    ) {
         MetricParser p = new MetricParser(metricName, definition, dict, tempDict, makerDict, dimensionDictionary);
-        return p.parse();
+        try {
+            return p.parse();
+        } catch (ParsingException e) {
+            throw new ConfigurationError("Could not parse metric", e);
+        }
     }
 
     @Override

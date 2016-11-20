@@ -43,7 +43,7 @@ public enum BinaryFilterOperator implements Operator {
     }
 
     @Override
-    public Operand build(List<Operand> operands) {
+    public Operand build(List<Operand> operands) throws ParsingException {
         return FilterNode.create(this.filterType, operands.get(0), operands.get(1));
     }
 

@@ -3,6 +3,7 @@
 
 package com.yahoo.bard.webservice.data.config.metric.parser.operator;
 
+import com.yahoo.bard.webservice.data.config.metric.parser.ParsingException;
 import com.yahoo.bard.webservice.data.config.metric.parser.operand.Operand;
 
 import java.util.List;
@@ -17,8 +18,9 @@ public interface Operator {
      *
      * @param operands Operator arguments
      * @return A MetricNode containing the expression
+     * @throws ParsingException when the operand cannot be built
      */
-    default Operand build(List<Operand> operands) {
+    default Operand build(List<Operand> operands) throws ParsingException {
         throw new UnsupportedOperationException("Operation not yet implemented.");
     }
 

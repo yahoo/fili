@@ -26,16 +26,13 @@ public interface MakerConfiguration {
     /**
      * The class of the metric maker.
      *
-     * FIXME: Clean up exception type
-     *
      * @return the metric maker class
      */
     default Class<? extends MetricMaker> getMakerClass() {
         try {
-            // Unchecked cast
             return (Class<? extends MetricMaker>) Class.forName(getClassName());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
+            throw new ConfigurationError("Unable to instantiate class " + getClassName(), e);
         }
     }
 }

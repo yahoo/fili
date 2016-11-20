@@ -22,7 +22,6 @@ import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 
-import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.LinkedList;
@@ -82,9 +81,9 @@ public class MetricParser {
      * Parses the metric def and returns a LogicalMetric; caller should add to dictionary.
      *
      * @return a logical metric
-     * @throws IOException when a lexing or parsing error occurs
+     * @throws ParsingException when a lexing or parsing error occurs
      */
-    public LogicalMetric parse() throws IOException {
+    public LogicalMetric parse() throws ParsingException {
 
         try {
             items = Lexeme.lex(metricDefinition);
@@ -255,8 +254,10 @@ public class MetricParser {
 
     /**
      * Operator stack pop.
+     *
+     * @throws ParsingException when an error occurs building
      */
-    private void popOperator() {
+    private void popOperator() throws ParsingException {
         if (operatorStack.peek().getPrecedence().greaterThan(Precedence.SENTINEL)) {
             Operator operator = operatorStack.pop();
             LinkedList<Operand> operands = new LinkedList<>();
@@ -273,8 +274,10 @@ public class MetricParser {
      * Operator stack push.
      *
      * @param op the operator to add to the stack
+     *
+     * @throws ParsingException when an error occurs building
      */
-    private void pushOperator(Operator op) {
+    private void pushOperator(Operator op) throws ParsingException {
         while (true) {
             if (operatorStack.peek().greaterThan(op)) {
                 popOperator();

@@ -3,6 +3,7 @@
 
 package com.yahoo.bard.webservice.data.config.metric.parser.operand
 
+import com.yahoo.bard.webservice.data.config.metric.parser.ParsingException
 import com.yahoo.bard.webservice.druid.model.filter.Filter
 
 import spock.lang.Specification
@@ -62,7 +63,7 @@ public class FilterNodeSpec extends Specification {
         FilterNode.create(Filter.DefaultFilterType.NOT, left, right)
 
         then:
-        RuntimeException ex = thrown()
-        ex.message =~ /Could not handle filter type .*/
+        ParsingException ex = thrown()
+        ex.message =~ /Could not handle filter type:.*/
     }
 }

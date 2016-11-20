@@ -80,7 +80,7 @@ public class ConfigBinderFactorySpec extends Specification {
         new ConfigBinderFactory()
 
         then:
-        RuntimeException ex = thrown()
+        ConfigurationError ex = thrown()
         ex.message =~ /.*Unable to construct config provider.*/
         ex.cause instanceof ClassNotFoundException
     }

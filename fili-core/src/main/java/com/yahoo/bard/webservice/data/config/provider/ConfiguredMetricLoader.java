@@ -6,7 +6,6 @@ import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 
-import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -49,25 +48,21 @@ public class ConfiguredMetricLoader implements MetricLoader {
     public void loadMetricDictionary(MetricDictionary metricDictionary) {
         localDictionary.clearLocal();
 
-        try {
-            for (Map.Entry<String, MetricConfiguration> entry : baseMetrics.entrySet()) {
-                String name = entry.getKey();
-                MetricConfiguration metric = entry.getValue();
-                localDictionary
-                        .add(metric.build(name, localDictionary, tempDictionary, makerDictionary, dimensionDictionary));
-                tempDictionary.clearLocal();
-            }
+        // Note: will throw ConfigurationError if metric cannot be parsed
+        for (Map.Entry<String, MetricConfiguration> entry : baseMetrics.entrySet()) {
+            String name = entry.getKey();
+            MetricConfiguration metric = entry.getValue();
+            localDictionary
+                    .add(metric.build(name, localDictionary, tempDictionary, makerDictionary, dimensionDictionary));
+            tempDictionary.clearLocal();
+        }
 
-            for (Map.Entry<String, MetricConfiguration> entry : derivedMetrics.entrySet()) {
-                String name = entry.getKey();
-                MetricConfiguration metric = entry.getValue();
-                localDictionary
-                        .add(metric.build(name, localDictionary, tempDictionary, makerDictionary, dimensionDictionary));
-                tempDictionary.clearLocal();
-            }
-        } catch (IOException ex) {
-            // this needs to be cleaned up
-            throw new RuntimeException(ex);
+        for (Map.Entry<String, MetricConfiguration> entry : derivedMetrics.entrySet()) {
+            String name = entry.getKey();
+            MetricConfiguration metric = entry.getValue();
+            localDictionary
+                    .add(metric.build(name, localDictionary, tempDictionary, makerDictionary, dimensionDictionary));
+            tempDictionary.clearLocal();
         }
 
         localDictionary.forEach((k, v) -> metricDictionary.add(v));

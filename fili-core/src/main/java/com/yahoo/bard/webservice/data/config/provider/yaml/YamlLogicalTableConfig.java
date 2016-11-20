@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.provider.yaml;
 
+import com.yahoo.bard.webservice.data.config.provider.ConfigurationError;
 import com.yahoo.bard.webservice.data.config.provider.LogicalTableConfiguration;
 import com.yahoo.bard.webservice.data.config.provider.yaml.serde.GranularityDeserializer;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
@@ -22,7 +23,6 @@ import javax.validation.constraints.NotNull;
  * YAML configuration for a single LogicalTable.
  *
  * FIXME: Handle non-default time grains; should maybe be Set of Granularity instead?
- *
  */
 public class YamlLogicalTableConfig implements LogicalTableConfiguration {
 
@@ -47,7 +47,8 @@ public class YamlLogicalTableConfig implements LogicalTableConfiguration {
         this.timeGrains = new HashSet<>();
         for (Granularity granularity : timeGrains) {
             if (!(granularity instanceof TimeGrain)) {
-                throw new RuntimeException("Must construct logical table with only TimeGrains; found: " + granularity);
+                throw new ConfigurationError("Must construct logical table with only TimeGrains; found: " +
+                        granularity);
             }
             this.timeGrains.add((TimeGrain) granularity);
         }

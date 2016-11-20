@@ -46,7 +46,7 @@ public class ConfigBinderFactory extends AbstractBinderFactory {
         String className = SYSTEM_CONFIG.getStringProperty(CONF_TYPE);
 
         if (className == null) {
-            throw new RuntimeException("Unable to read class name property from config: " + CONF_TYPE);
+            throw new ConfigurationError("Unable to read class name property from config: " + CONF_TYPE);
         }
 
         try {
@@ -56,7 +56,7 @@ public class ConfigBinderFactory extends AbstractBinderFactory {
             Method build = providerClass.getDeclaredMethod("build", SystemConfig.class);
             provider = (ConfigProvider) build.invoke(null, SYSTEM_CONFIG);
         } catch (Exception e) {
-            throw new RuntimeException("Unable to construct config provider", e);
+            throw new ConfigurationError("Unable to construct config provider", e);
         }
 
         // Store the metric makers; should only be instantiated once.
@@ -64,7 +64,7 @@ public class ConfigBinderFactory extends AbstractBinderFactory {
         // can't really remember why...
         MakerDictionary.loadMetricMakers(tempDictionary, makerDictionary, provider.getCustomMakerConfig());
 
-        // FIXME: This doesn't seem like the right way to do this
+        // This is annoying
         provider.getDimensionConfig().values().forEach(
                 v -> dimensionDictionary.add(new KeyValueStoreDimension(v))
         );

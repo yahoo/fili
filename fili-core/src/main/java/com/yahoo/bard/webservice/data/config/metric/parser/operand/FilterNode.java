@@ -3,6 +3,7 @@
 
 package com.yahoo.bard.webservice.data.config.metric.parser.operand;
 
+import com.yahoo.bard.webservice.data.config.metric.parser.ParsingException;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
 
 /**
@@ -28,8 +29,10 @@ public abstract class FilterNode implements Operand {
      * @param left the left filter operand
      * @param right the right filter operand
      * @return a filter node
+     * @throws ParsingException if an unsupported filter type is given
      */
-    public static FilterNode create(Filter.DefaultFilterType filterType, Operand left, Operand right) {
+    public static FilterNode create(Filter.DefaultFilterType filterType, Operand left, Operand right)
+            throws ParsingException {
         switch (filterType) {
             case OR:
                 return new OrFilterNode(left.getFilterNode(), right.getFilterNode());
@@ -38,7 +41,7 @@ public abstract class FilterNode implements Operand {
             case SELECTOR:
                 return new SelectorFilterNode(left.getDimensionNode(), right.getConstantNode());
             default:
-                throw new RuntimeException("Could not handle filter type " + filterType);
+                throw new ParsingException("Could not handle filter type: " + filterType);
         }
     }
 }

@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.names.FieldName;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.config.provider.ConfigurationDictionary;
+import com.yahoo.bard.webservice.data.config.provider.ConfigurationError;
 import com.yahoo.bard.webservice.data.config.provider.PhysicalTableConfiguration;
 import com.yahoo.bard.webservice.data.config.provider.yaml.serde.GranularityDeserializer;
 import com.yahoo.bard.webservice.data.config.table.PhysicalTableDefinition;
@@ -51,14 +52,14 @@ public class YamlPhysicalTableConfig implements PhysicalTableConfiguration {
     ) {
 
         if (!(grain instanceof ZonelessTimeGrain)) {
-            throw new RuntimeException("ZonelessTimeGrain required; found " + grain);
+            throw new ConfigurationError("ZonelessTimeGrain required; found " + grain);
         }
         if (dimensions == null || dimensions.length == 0) {
-            throw new RuntimeException("Physical table must be configured with dimensions; found null.");
+            throw new ConfigurationError("Physical table must be configured with dimensions; found null.");
         }
 
         if (metrics == null || metrics.length == 0) {
-            throw new RuntimeException("Physical table must be configured with metrics; found null.");
+            throw new ConfigurationError("Physical table must be configured with metrics; found null.");
         }
 
         this.grain = new ZonedTimeGrain((ZonelessTimeGrain) grain, DateTimeZone.UTC);

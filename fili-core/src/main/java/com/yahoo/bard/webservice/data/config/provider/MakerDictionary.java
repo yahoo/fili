@@ -85,7 +85,7 @@ public class MakerDictionary extends LinkedHashMap<String, MetricMaker> {
                 if (actualMaker != null) {
                     defaultMakers.put(makerName, actualMaker);
                 } else {
-                    throw new RuntimeException("Unable to instantiate built-in metric maker " + cls);
+                    throw new ConfigurationError("Unable to instantiate built-in metric maker " + cls);
                 }
             }
         }
@@ -134,7 +134,8 @@ public class MakerDictionary extends LinkedHashMap<String, MetricMaker> {
                     .stream()
                     .collect(Collectors.toMap(
                             Map.Entry::getKey,
-                            v -> buildCustomMaker(v.getKey(),
+                            v -> buildCustomMaker(
+                                    v.getKey(),
                                     v.getValue().getClassName(),
                                     v.getValue().getArguments(),
                                     dict
@@ -184,12 +185,13 @@ public class MakerDictionary extends LinkedHashMap<String, MetricMaker> {
         try {
             cls = Class.forName(getClassName(name, className));
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Error loading metric maker `" + name + "`: Could not find `" + className + "`" +
+            throw new ConfigurationError("Error loading metric maker `" + name + "`: Could not find `" + className +
+                    "`" +
                     " in classpath");
         }
 
         if (!MetricMaker.class.isAssignableFrom(cls)) {
-            throw new RuntimeException("Error loading metric maker `" + name + "`: Could not instantiate " +
+            throw new ConfigurationError("Error loading metric maker `" + name + "`: Could not instantiate " +
                     className + "; seems to not inherit from MetricMaker");
         } else {
 
@@ -200,7 +202,7 @@ public class MakerDictionary extends LinkedHashMap<String, MetricMaker> {
             MetricMaker m = (MetricMaker) instantiateObjectFromArgs(cls, instArgs);
 
             if (m == null) {
-                throw new RuntimeException("Could not instantiate " + className + "; no suitable constructor found");
+                throw new ConfigurationError("Could not instantiate " + className + "; no suitable constructor found");
             }
 
             return m;
@@ -232,17 +234,9 @@ public class MakerDictionary extends LinkedHashMap<String, MetricMaker> {
                 for (Class<?> pType : ctor.getParameterTypes()) {
                     Object arg = args[argc];
 
-                    // Ugh. This is not an exhaustive list;
-                    // the problem is that int.class is not isAssignableFrom Integer.class.
-                    if ((pType == int.class && arg.getClass() == Integer.class) || (pType == Integer.class && arg
-                            .getClass() == int.class)) {
-                        // OK...
-                    } else if ((pType == long.class && arg.getClass() == Long.class) || (pType == Long.class && arg
-                            .getClass() == long.class)) {
-                        // OK...
-
-                        // Note that this allows null arguments; that may not be what we want.
-                    } else if (arg != null && !pType.isAssignableFrom(arg.getClass())) {
+                    // This allows null arguments; that may not be what we want, but OK for now
+                    if (arg != null && !isUnboxingCase(pType, arg.getClass()) &&
+                            !pType.isAssignableFrom(arg.getClass())) {
                         success = false;
                         break;
                     }
@@ -253,13 +247,36 @@ public class MakerDictionary extends LinkedHashMap<String, MetricMaker> {
                     try {
                         return (T) ctor.newInstance(args);
                     } catch (Exception e) {
-                        throw new RuntimeException("Could not construct metricMaker " + type, e);
+                        throw new ConfigurationError("Could not construct metricMaker " + type, e);
                     }
                 }
             }
         }
 
         return null;
+    }
+
+    /**
+     * Return true if the two classes are boxed/unboxed versions of each other.
+     *
+     * @param pClass parameter class
+     * @param argClass argument class
+     * @return true if they match, false otherwise
+     */
+    private static boolean isUnboxingCase(Class<?> pClass, Class<?> argClass) {
+        // This is not an exhaustive list; the problem is that int.class is not isAssignableFrom Integer.class
+        // same is true for all primitive types
+        if (pClass == int.class && argClass == Integer.class) {
+            return true;
+        } else if (pClass == Integer.class && argClass == int.class) {
+            return true;
+        } else if (pClass == long.class && argClass == Long.class) {
+            return true;
+        } else if (pClass == Long.class && argClass == long.class) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.data.config.provider.yaml;
 
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
+import com.yahoo.bard.webservice.data.config.provider.ConfigurationError;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager;
@@ -48,8 +49,6 @@ public class YamlDimensionConfig implements DimensionConfig {
     protected List<String> defaultDimensionFieldNames = null;
     protected LinkedHashSet<DimensionField> allDimensionFields = null;
     protected LinkedHashSet<DimensionField> defaultDimensionFields = null;
-    protected KeyValueStore keyValueStore;
-    protected SearchProvider searchProvider;
     protected Boolean aggregatable = true;
 
     /**
@@ -61,8 +60,6 @@ public class YamlDimensionConfig implements DimensionConfig {
      * @param description the description
      * @param dimensionFields the dimension fields
      * @param defaultDimensionFields the default dimension fields
-     * @param keyValueStore the keyvalue store
-     * @param searchProvider the search provider
      * @param aggregatable true if the dimension is aggregatable
      */
     @JsonCreator
@@ -73,8 +70,8 @@ public class YamlDimensionConfig implements DimensionConfig {
             @JsonProperty("description") String description,
             @JsonProperty("fields") String[] dimensionFields,
             @JsonProperty("default_fields") String[] defaultDimensionFields,
-            @JsonProperty("key_value_store") String keyValueStore,
-            @JsonProperty("search_provider") String searchProvider,
+            // @JsonProperty("key_value_store") String keyValueStore,
+            // @JsonProperty("search_provider") String searchProvider,
             @JsonProperty("aggregatable") Boolean aggregatable
     ) {
         this.physicalName = physicalName;
@@ -86,7 +83,7 @@ public class YamlDimensionConfig implements DimensionConfig {
         if (dimensionFields != null && dimensionFields.length > 0) {
             dimensionFieldNames = Arrays.asList(dimensionFields);
             if (!isUniqueList(dimensionFieldNames)) {
-                throw new RuntimeException("Error: must provide unique list of dimension fields. Found: " + Arrays
+                throw new ConfigurationError("Error: must provide unique list of dimension fields. Found: " + Arrays
                         .toString(
                         dimensionFields));
             }
@@ -98,7 +95,7 @@ public class YamlDimensionConfig implements DimensionConfig {
         if (defaultDimensionFields != null && defaultDimensionFields.length > 0) {
             defaultDimensionFieldNames = Arrays.asList(defaultDimensionFields);
             if (!isUniqueList(defaultDimensionFieldNames)) {
-                throw new RuntimeException("Error: must provide unique list of default dimension fields. Found: " +
+                throw new ConfigurationError("Error: must provide unique list of default dimension fields. Found: " +
                         Arrays
                         .toString(defaultDimensionFields));
             }
@@ -152,7 +149,7 @@ public class YamlDimensionConfig implements DimensionConfig {
 
             // You can't ask for a dimension field that doesn't exist in the global config
             if (!dimensionFieldNames.stream().allMatch(availableFields::containsKey)) {
-                throw new RuntimeException("Asked for unconfigured dimension field; requested fields: " +
+                throw new ConfigurationError("Asked for unconfigured dimension field; requested fields: " +
                         Arrays.toString(dimensionFieldNames.toArray()) +
                         "; available fields: " +
                         Arrays.toString(availableFields.keySet().toArray()));
@@ -177,7 +174,7 @@ public class YamlDimensionConfig implements DimensionConfig {
 
             // You can't ask for a default dimension field that isn't available, either
             if (!defaultDimensionFieldNames.stream().allMatch(allDimensionFieldNames::contains)) {
-                throw new RuntimeException("Asked for unconfigured default dimension field; requested fields: " +
+                throw new ConfigurationError("Asked for unconfigured default dimension field; requested fields: " +
                         Arrays.toString(dimensionFieldNames.toArray()) +
                         "; available fields: " +
                         Arrays.toString(allDimensionFieldNames.toArray()));
@@ -220,7 +217,7 @@ public class YamlDimensionConfig implements DimensionConfig {
     public LinkedHashSet<DimensionField> getFields() {
 
         if (allDimensionFields == null) {
-            throw new RuntimeException("Dimension fields not available from configuration.");
+            throw new ConfigurationError("Dimension fields not available from configuration.");
         }
 
         return allDimensionFields;
@@ -234,7 +231,7 @@ public class YamlDimensionConfig implements DimensionConfig {
     @Override
     public LinkedHashSet<DimensionField> getDefaultDimensionFields() {
         if (defaultDimensionFields == null) {
-            throw new RuntimeException("Dimension fields not available from configuration.");
+            throw new ConfigurationError("Dimension fields not available from configuration.");
         }
 
         return defaultDimensionFields;
@@ -294,8 +291,6 @@ public class YamlDimensionConfig implements DimensionConfig {
                 Objects.equals(defaultDimensionFieldNames, conf.defaultDimensionFieldNames) &&
                 Objects.equals(allDimensionFields, conf.allDimensionFields) &&
                 Objects.equals(defaultDimensionFields, conf.defaultDimensionFields) &&
-                Objects.equals(keyValueStore, conf.keyValueStore) &&
-                Objects.equals(searchProvider, conf.searchProvider) &&
                 Objects.equals(aggregatable, conf.aggregatable);
     }
 
@@ -312,8 +307,6 @@ public class YamlDimensionConfig implements DimensionConfig {
                 defaultDimensionFieldNames,
                 allDimensionFields,
                 defaultDimensionFields,
-                keyValueStore,
-                searchProvider,
                 aggregatable
         );
     }

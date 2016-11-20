@@ -3,6 +3,7 @@
 
 package com.yahoo.bard.webservice.data.config.metric.parser.operator;
 
+import com.yahoo.bard.webservice.data.config.metric.parser.ParsingException;
 import com.yahoo.bard.webservice.data.config.metric.parser.operand.FilterNode;
 import com.yahoo.bard.webservice.data.config.metric.parser.operand.FilteredAggMetricNode;
 import com.yahoo.bard.webservice.data.config.metric.parser.operand.MetricNode;
@@ -26,7 +27,7 @@ public class FilterOperator implements Operator {
     }
 
     @Override
-    public Operand build(List<Operand> operands) {
+    public Operand build(List<Operand> operands) throws ParsingException {
         MetricNode left = operands.get(0).getMetricNode();
         FilterNode right = operands.get(1).getFilterNode();
 

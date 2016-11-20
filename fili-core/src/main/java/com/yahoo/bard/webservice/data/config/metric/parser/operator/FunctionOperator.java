@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.data.config.metric.parser.operator;
 
 
 import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker;
+import com.yahoo.bard.webservice.data.config.metric.parser.ParsingException;
 import com.yahoo.bard.webservice.data.config.metric.parser.operand.FunctionMetricNode;
 import com.yahoo.bard.webservice.data.config.metric.parser.operand.Operand;
 
@@ -43,7 +44,7 @@ public class FunctionOperator implements Operator {
     }
 
     @Override
-    public Operand build(List<Operand> operands) {
+    public Operand build(List<Operand> operands) throws ParsingException {
         return new FunctionMetricNode(maker, operands);
     }
 }
