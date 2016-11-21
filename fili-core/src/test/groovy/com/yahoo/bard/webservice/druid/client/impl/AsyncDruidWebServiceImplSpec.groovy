@@ -21,9 +21,10 @@ class AsyncDruidWebServiceImplSpec extends Specification {
         weightEvaluationQuery.getContext() >> queryContext
 
         and:
-        Map<String, String> expectedHeaders = new HashMap<>()
-        expectedHeaders.put("k1", "v1")
-        expectedHeaders.put("k2", "v2")
+        Map<String, String> expectedHeaders = [
+                k1: "v1",
+                k2: "v2"
+        ]
         Supplier<Map<String, String>> supplier = Mock()
         supplier.get() >> expectedHeaders
 
@@ -45,10 +46,10 @@ class AsyncDruidWebServiceImplSpec extends Specification {
 
     def "Ensure that headersToAppend are added to request when calling getJsonObject"() {
         setup:
-        Map<String, String> expectedHeaders = new HashMap<>()
-        expectedHeaders.put("k1", "v1")
-        expectedHeaders.put("k2", "v2")
-
+        Map<String, String> expectedHeaders = [
+                k1: "v1",
+                k2: "v2"
+        ]
         Supplier<Map<String, String>> supplier = Mock()
         supplier.get() >> expectedHeaders
 
