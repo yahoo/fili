@@ -42,8 +42,16 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     public static final String DATASOURCE_METADATA_QUERY_FORMAT = "/datasources/%s?full";
+
+     /**
+     * Parameter specifying the period of the segment metadata loader, in milliseconds.
+     */
     public static final String DRUID_SEG_LOADER_TIMER_DURATION_KEY =
             SYSTEM_CONFIG.getPackageVariableName("druid_seg_loader_timer_duration");
+
+    /**
+     * Parameter specifying the delay before the first run of the segment metadata loader, in milliseconds.
+     */
     public static final String DRUID_SEG_LOADER_TIMER_DELAY_KEY =
             SYSTEM_CONFIG.getPackageVariableName("druid_seg_loader_timer_delay");
 
