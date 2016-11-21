@@ -34,6 +34,87 @@ Current
          
 - [Removed "provided" modifier for SLF4J and Logback dependencies in the Wikipedia example](https://github.com/yahoo/fili/pull/102)
 
+- [Updated dependencies](https://github.com/yahoo/fili/pull/103)
+
+    Unless otherwise noted, all dependency upgrades are for general stability and performance improvement. The called-
+    out changes are only those that are likely of interest to Fili. Any dependency upgrade for which a changelog could
+    not be found has not been linked to one, otherwise all other upgrades include a link to the relevant changelog.
+
+    * [Gmaven plugin 1.4 -> 1.5](https://github.com/groovy/gmaven/compare/gmaven-1.4...gmaven-1.5)
+    * [Guava 16.0.1 -> 20.0](https://github.com/google/guava/wiki/ReleaseHistory)
+    * [Jedis 2.7.2 -> 2.9.0](https://github.com/xetorthio/jedis/releases):
+        - Geo command support and binary mode support
+        - ZADD support
+        - Ipv6 and SSL support
+        - Other assorted feature and Redis support upgrades
+    * [Redisson 2.2.13 -> 3.1.0](https://github.com/redisson/redisson/blob/master/CHANGELOG.md):
+        - Support for binary stream in and out of Reddison
+        - Lots of features for distributed data structure capabilities
+        - Can make fire-and-forget style calls in ack-response-only modes
+        - Many fixes and improvements for PubSub features
+        - Support for command timeouts
+        - Fixed bug where connections did not always close when RedisClient shut down
+        - Breaking API changes:
+            - Moved config classes to own package
+            - Moved core classes to api package
+            - Moved to Redisson's RFuture instead of netty's Future
+    * [JodaTime 2.8.2 -> 2.9.6](http://www.joda.org/joda-time/installation.html):
+        - Faster TZ parsing
+        - Added `Interval.parseWithOffset`
+        - GMT fix for JDK 8u60
+        - Fixed Interval overflow bug
+        - TZ data update from 2015g to 2016i
+    * [AsyncHttpClient 2.0.2 -> 2.0.24](https://github.com/AsyncHttpClient/async-http-client/milestones?state=closed):
+        - Custom header separator fix
+        - No longer double-wrapping CompletableFuture exceptions
+    * [Apache HttpClient 4.5 -> 4.5.2](https://archive.apache.org/dist/httpcomponents/httpclient/RELEASE_NOTES-4.5.x.txt):
+        - Supports handling a redirect response to a POST request
+        - Fixed deflate zlib header issue
+    * [RxJava 1.1.5 -> 1.2.2](https://github.com/ReactiveX/RxJava/releases):
+        - Deprecate TestObserver in favor of TestSubscriber
+    * Spymemcached 2.12.0 -> 2.12.1
+    * [org.json 20141113 -> 20160810](https://github.com/stleary/JSON-java)
+    * [Maven release plugin 2.5 -> 2.5.3](https://issues.apache.org/jira/browse/MRELEASE/?selectedTab=com.atlassian.jira.jira-projects-plugin:changelog-panel):
+        - Fixes `release:prepare` not committing pom.xml if not in the git root
+        - Fixes version update not updating inter-module dependencies
+        - Fixes version update failing when project is not a SNAPSHOT
+    * [Maven antrun plugin 1.7 -> 1.8](https://issues.apache.org/jira/secure/ReleaseNote.jspa?projectId=12317121&version=12330276)
+    * [Maven compiler plugin 3.3 -> 3.6.0](https://issues.apache.org/jira/browse/MCOMPILER/?selectedTab=com.atlassian.jira.jira-projects-plugin:changelog-panel):
+        - Fix for compiler fail in Eclipse
+    * [Maven surefire plugin 2.17 -> 2.19.1](https://issues.apache.org/jira/browse/SUREFIRE/?selectedTab=com.atlassian.jira.jira-projects-plugin:changelog-panel):
+        - Correct indentation for Groovy's power asserts
+    * [Maven javadoc plugin 2.10.3 -> 2.10.4](https://issues.apache.org/jira/secure/ReleaseNote.jspa?projectId=12317529&version=12331967)
+    * [Maven site plugin 3.5 -> 3.6](https://issues.apache.org/jira/browse/MSite/?selectedTab=com.atlassian.jira.jira-projects-plugin:changelog-panel)
+    * [SLF4J 1.7.12 -> 1.7.21](http://www.slf4j.org/news.html):
+        - Fixed to MDC adapter, leaking information to non-child threads
+        - Better handling of ill-formatted strings
+        - Cleaned up multi-thread consistency for LoggerFactory-based logger initializations
+        - Closed a multi-threaded gap where early logs may be lost if they happened while SLF4J was initializing in a multi-threaded application
+    * [Logback 1.1.3 -> ](http://logback.qos.ch/news.html):
+        - Child threads no longer inherit MDC values
+        - AsyncAppender can be configured to never block
+        - Fixed issue with variable substitution when the value ends in a colon
+    * [Apache Commons Lang 3.4 -> 3.5](https://commons.apache.org/proper/commons-lang/release-notes/RELEASE-NOTES-3.5.txt)
+    * [Apache Commons Configuration 1.6 -> 1.10](https://commons.apache.org/proper/commons-configuration/changes-report.html#a1.7):
+        - Tightened getList's behavior if the list values are non-strings
+        - MapConfiguration can be set to not trim values by default
+        - CompositeConfiguration can now handle non-BaseConfiguration core configurations
+        - `addConfiguration()` overload added to allow correcting inconsistent configuration compositing
+    * [Apache Avro 1.8.0 -> 1.8.1](https://issues.apache.org/jira/secure/ReleaseNote.jspa?projectId=12310911&version=12333322)
+    * [Spring Core 4.0.5 -> 4.3.4](https://docs.spring.io/spring/docs/4.3.x/spring-framework-reference/html/)
+    * [CGLib 3.2.0 -> 3.2.4](https://github.com/cglib/cglib/releases):
+        - Optimizations and regression fixes
+    * [Objenesis 2.2 -> 2.4](http://objenesis.org/notes.html)
+    * Jersey 2.22 -> 2.24:
+        - https://jersey.java.net/release-notes/2.24.html
+        - https://jersey.java.net/release-notes/2.23.html
+        - `@BeanParam` linking support fix
+        - Declarative linking with Maps fixed
+        - Async write ordering deadlock fix
+    * HK2 2.4.0-b31 -> 2.5.0-b05:
+        - Necessitated by Jersey upgrade
+    * [JavaX Annotation API 1.2 -> 1.3](https://jcp.org/en/jsr/detail?id=250)
+
 ### Deprecated:
 
 
