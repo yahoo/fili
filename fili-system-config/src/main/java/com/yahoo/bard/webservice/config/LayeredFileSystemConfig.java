@@ -64,11 +64,6 @@ public class LayeredFileSystemConfig implements SystemConfig {
     private final Properties runtimeProperties;
 
     /**
-     * Loader pulls resources in from class path locations.
-     */
-    private final ConfigResourceLoader loader = new ConfigResourceLoader();
-
-    /**
      * Build a Layered File System Configuration, using first the environment and an application configuration source,
      * then drill down into available modules and load each of them in package dependency order.
      */
@@ -79,9 +74,9 @@ public class LayeredFileSystemConfig implements SystemConfig {
         runtimeProperties = new Properties();
 
         try {
-
+            // Loader pulls resources in from class path locations.
+            ConfigResourceLoader loader = new ConfigResourceLoader();
             List<Configuration> userConfig = loader.loadConfigurations(USER_CONFIG_FILE_NAME);
-
 
             // User configuration provides overrides for configuration on a specific environment or specialized role
             if (userConfig.size() > 1) {
