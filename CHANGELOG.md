@@ -28,6 +28,10 @@ Current
 
 ### Fixed:
 
+- [SegmentMetadataLoader include provided request headers](https://github.com/yahoo/fili/pull/106)
+    * `SegmentMetadataLoader` sends requests with the provided request headers in `AsyncDruidWebservice` now
+    * Refactored `AsyncDruidWebserviceSpec` test and added test for checking `getJsonData` includes request headers as well
+
 - [Fix and refactor role based filter to allow CORS](https://github.com/yahoo/fili/pull/99)
     * Fix `RoleBasedAuthFilter` to bypass `OPTIONS` request for CORS
     * Discovered a bug where `user_roles` is declared but unset still reads as a list with empty string (included a temporary fix by commenting the variable declaration)
