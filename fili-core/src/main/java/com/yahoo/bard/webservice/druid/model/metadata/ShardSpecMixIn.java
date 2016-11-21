@@ -13,6 +13,7 @@ import io.druid.timeline.partition.NoneShardSpec;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = NumberedShardSpec.class, name = "hashed"),
+        @JsonSubTypes.Type(value = NumberedShardSpec.class, name = "linear"),
         @JsonSubTypes.Type(value = NoneShardSpec.class, name = "none")
 })
 public abstract class ShardSpecMixIn { }
