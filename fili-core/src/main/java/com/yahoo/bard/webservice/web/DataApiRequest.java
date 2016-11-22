@@ -887,8 +887,8 @@ public class DataApiRequest extends ApiRequest {
             try {
                 String start = split[0].toUpperCase(Locale.ENGLISH);
                 String end = split[1].toUpperCase(Locale.ENGLISH);
-                //If start & end intervals are period then marking as invalid interval.
-                //Becacuse either one should be macro or actual date to generate an interval
+                // If start & end intervals are period then marking as invalid interval.
+                // Because either one should be macro or actual date to generate an interval
                 if (start.startsWith("P") && end.startsWith("P")) {
                     LOG.debug(INTERVAL_INVALID.logFormat(start));
                     throw new BadApiRequestException(INTERVAL_INVALID.format(apiInterval));
@@ -925,8 +925,12 @@ public class DataApiRequest extends ApiRequest {
                 }
                 generated.add(interval);
             } catch (IllegalArgumentException iae) {
-                LOG.debug(INTERVAL_INVALID.logFormat(apiIntervalQuery, iae.getMessage()), iae);
-                throw new BadApiRequestException(INTERVAL_INVALID.format(apiIntervalQuery, iae.getMessage()), iae);
+                // Handle poor JodaTime message (special case)
+                String internalMessage = iae.getMessage().equals("The end instant must be greater the start") ?
+                        "The end instant must be greater than the start instant" :
+                        iae.getMessage();
+                LOG.debug(INTERVAL_INVALID.logFormat(apiIntervalQuery, internalMessage), iae);
+                throw new BadApiRequestException(INTERVAL_INVALID.format(apiIntervalQuery, internalMessage), iae);
             }
         }
         return generated;

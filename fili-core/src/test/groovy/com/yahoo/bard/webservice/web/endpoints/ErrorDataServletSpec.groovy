@@ -611,8 +611,8 @@ class ErrorDataServletSpec extends Specification {
         String badInterval = "2014-09-30/2014-09-01"
         String message = INTERVAL_INVALID.format(
                 badInterval,
-                "The end instant must be greater or equal to the start"
-                )
+                "The end instant must be greater than the start instant"
+        )
         String jsonFailure =
                 """{"status":400,
     "statusName": "Bad Request",
