@@ -386,7 +386,7 @@
             <dependency>
                 <groupId>org.redisson</groupId>
                 <artifactId>redisson</artifactId>
-                <version>2.2.13</version>
+                <version>3.1.0</version>
             </dependency>
 
             <!-- JodaTime -->

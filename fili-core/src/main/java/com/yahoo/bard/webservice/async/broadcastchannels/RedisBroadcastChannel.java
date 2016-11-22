@@ -5,8 +5,8 @@ package com.yahoo.bard.webservice.async.broadcastchannels;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 
-import org.redisson.RedissonClient;
-import org.redisson.core.RTopic;
+import org.redisson.api.RTopic;
+import org.redisson.api.RedissonClient;
 
 import rx.Observable;
 import rx.subjects.PublishSubject;

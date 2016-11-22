@@ -5,11 +5,11 @@ package com.yahoo.bard.webservice.async.broadcastchannels
 import com.yahoo.bard.webservice.config.SystemConfig
 import com.yahoo.bard.webservice.config.SystemConfigProvider
 
-import org.redisson.Config;
 import org.redisson.Redisson
-import org.redisson.RedissonClient
-import org.redisson.core.MessageListener
-import org.redisson.core.RTopic
+import org.redisson.api.RTopic
+import org.redisson.api.RedissonClient
+import org.redisson.api.listener.MessageListener
+import org.redisson.config.Config
 
 class RedisBroadcastChannelSpec extends BroadcastChannelSpec {
 
