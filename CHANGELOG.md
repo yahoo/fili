@@ -14,6 +14,10 @@ Current
 
 ### Changed:
 
+- [SegmentMetadataLoader include provided request headers](https://github.com/yahoo/fili/pull/106)
+    * `SegmentMetadataLoader` sends requests with the provided request headers in `AsyncDruidWebservice` now
+    * Refactored `AsyncDruidWebserviceSpec` test and added test for checking `getJsonData` includes request headers as well
+
 - [Include physical table name in warning log message for logicalToPhysical mapping](https://github.com/yahoo/fili/pull/94)
     * Without this name, it's hard to know what table seems to be misconfigured.
 

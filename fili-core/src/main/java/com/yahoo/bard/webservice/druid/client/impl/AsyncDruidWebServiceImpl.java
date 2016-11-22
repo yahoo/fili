@@ -274,11 +274,15 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
             String resourcePath
     ) {
         String url = String.format("%s%s", serviceConfig.getUrl(), resourcePath);
+
+        BoundRequestBuilder requestBuilder = webClient.prepareGet(url);
+        headersToAppend.get().forEach(requestBuilder::addHeader);
+
         sendRequest(
                 success,
                 error,
                 failure,
-                webClient.prepareGet(url),
+                requestBuilder,
                 DRUID_SEGMENT_METADATA_TIMER,
                 new AtomicLong(1)
         );

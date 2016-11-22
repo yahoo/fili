@@ -14,24 +14,20 @@ import spock.lang.Specification
 import java.util.function.Supplier
 
 class AsyncDruidWebServiceImplSpec extends Specification {
-    def "Ensure that headersToAppend are added"() {
+    def "Ensure that headersToAppend are added to request when calling postDruidQuery"() {
         setup:
         WeightEvaluationQuery weightEvaluationQuery = Mock(WeightEvaluationQuery)
         QueryContext queryContext = Mock(QueryContext)
-        weightEvaluationQuery.getContext() >> { queryContext }
-        queryContext.numberOfQueries() >> { 1 }
-        queryContext.getSequenceNumber() >> { 1 }
+        weightEvaluationQuery.getContext() >> queryContext
 
         and:
-        Map<String, String> expectedHeaders = new HashMap<>()
-        expectedHeaders.put("k1", "v1")
-        expectedHeaders.put("k2", "v2")
-        Supplier<Map<String, String>> supplier = new Supplier<Map<String, String>>() {
-            @Override
-            Map<String, String> get() {
-                return expectedHeaders
-            }
-        }
+        Map<String, String> expectedHeaders = [
+                k1: "v1",
+                k2: "v2"
+        ]
+        Supplier<Map<String, String>> supplier = Mock()
+        supplier.get() >> expectedHeaders
+
         AsyncDruidWebServiceImplWrapper webServiceImplWrapper = new AsyncDruidWebServiceImplWrapper(
                 DruidClientConfigHelper.getNonUiServiceConfig(),
                 new ObjectMapper(),
@@ -39,13 +35,32 @@ class AsyncDruidWebServiceImplSpec extends Specification {
         )
 
         when:
-        webServiceImplWrapper.postDruidQuery(
-                null,
-                null,
-                null,
-                null,
-                weightEvaluationQuery
-        );
+        webServiceImplWrapper.postDruidQuery(null, null, null, null, weightEvaluationQuery);
+
+        then:
+        HttpHeaders actualHeaders = webServiceImplWrapper.getHeaders()
+        for (Map.Entry<String, String> header : expectedHeaders) {
+            assert actualHeaders.get(header.getKey()) == header.getValue()
+        }
+    }
+
+    def "Ensure that headersToAppend are added to request when calling getJsonObject"() {
+        setup:
+        Map<String, String> expectedHeaders = [
+                k1: "v1",
+                k2: "v2"
+        ]
+        Supplier<Map<String, String>> supplier = Mock()
+        supplier.get() >> expectedHeaders
+
+        AsyncDruidWebServiceImplWrapper webServiceImplWrapper = new AsyncDruidWebServiceImplWrapper(
+                DruidClientConfigHelper.getNonUiServiceConfig(),
+                new ObjectMapper(),
+                supplier
+        )
+
+        when:
+        webServiceImplWrapper.getJsonObject(null, null, null, null);
 
         then:
         HttpHeaders actualHeaders = webServiceImplWrapper.getHeaders()
