@@ -141,8 +141,7 @@ public class PhysicalTable extends Table {
             for (Map.Entry<String, Set<Interval>> nameIntervals : dimensionIntervals.entrySet()) {
                 String physicalName = nameIntervals.getKey();
 
-                getLogicalColumnName(physicalName).stream()
-                        .sequential()
+                getLogicalColumnNames(physicalName).stream()
                         .map(dimensionDictionary::findByApiName)
                         .filter(dimension -> dimension != null)
                         .forEach(
@@ -246,7 +245,7 @@ public class PhysicalTable extends Table {
      * @param physicalName  Physical name to lookup in physical table
      * @return Translated physicalName if applicable
      */
-    private Set<String> getLogicalColumnName(String physicalName) {
+    private Set<String> getLogicalColumnNames(String physicalName) {
         return physicalToLogicalColumnNames.getOrDefault(physicalName, new HashSet<>(Arrays.asList(physicalName)));
     }
 
