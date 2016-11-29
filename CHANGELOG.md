@@ -14,6 +14,9 @@ Current
 
 ### Changed:
 
+- [Remove restriction for single physical dimension to multiple lookup dimensions](https://github.com/yahoo/fili/pull/112)
+    * Modified physical dimension name to logical dimension name mapping into a `Map<String, List<String>>` instead of `Map<String, String>` in `PhysicalTable.java`
+
 - [SegmentMetadataLoader include provided request headers](https://github.com/yahoo/fili/pull/106)
     * `SegmentMetadataLoader` sends requests with the provided request headers in `AsyncDruidWebservice` now
     * Refactored `AsyncDruidWebserviceSpec` test and added test for checking `getJsonData` includes request headers as well
