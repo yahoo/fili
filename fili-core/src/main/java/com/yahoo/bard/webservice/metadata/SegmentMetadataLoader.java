@@ -80,7 +80,7 @@ public class SegmentMetadataLoader extends Loader<Boolean> {
                 SYSTEM_CONFIG.getLongProperty(DRUID_SEG_LOADER_TIMER_DELAY_KEY, 0),
                 SYSTEM_CONFIG.getLongProperty(
                         DRUID_SEG_LOADER_TIMER_DURATION_KEY,
-                        TimeUnit.MILLISECONDS.toMillis(60000)
+                        TimeUnit.MINUTES.toMillis(1)
                 )
         );
 
@@ -107,7 +107,7 @@ public class SegmentMetadataLoader extends Loader<Boolean> {
      *
      * @param table  The physical table to be updated.
      */
-    protected void querySegmentMetadata(final PhysicalTable table) {
+    protected void querySegmentMetadata(PhysicalTable table) {
         String resourcePath = String.format(SEGMENT_METADATA_QUERY_FORMAT, table.getName());
 
         // Success callback will update segment metadata on success
@@ -143,7 +143,7 @@ public class SegmentMetadataLoader extends Loader<Boolean> {
      *
      * @return The callback itself.
      */
-    protected final SuccessCallback buildSegmentMetadataSuccessCallback(final PhysicalTable table) {
+    protected final SuccessCallback buildSegmentMetadataSuccessCallback(PhysicalTable table) {
         return new SuccessCallback() {
             @Override
             public void invoke(JsonNode rootNode) {

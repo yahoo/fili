@@ -14,7 +14,6 @@ class SegmentMetadataSpec extends Specification {
     String intervalString23 = "2013-12-27T00:00:00.000Z/2015-03-17T00:00:00.000Z"
 
     Interval interval1 = Interval.parse(intervalString1)
-    Interval interval2 = Interval.parse(intervalString2)
     Interval interval3 = Interval.parse(intervalString3)
     Interval interval13 = Interval.parse(intervalString13)
     Interval interval23 = Interval.parse(intervalString23)
@@ -48,8 +47,8 @@ class SegmentMetadataSpec extends Specification {
         SegmentMetadata metadata = new SegmentMetadata(inputData1)
 
         expect:
-        metadata.getDimensionIntervals() == expectedDimensions1
-        metadata.getMetricIntervals() == expectedMetrics
+        metadata.dimensionIntervals == expectedDimensions1
+        metadata.metricIntervals == expectedMetrics
     }
 
     def "Test equality"() {

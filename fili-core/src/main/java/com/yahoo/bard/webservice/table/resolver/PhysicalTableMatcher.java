@@ -41,7 +41,7 @@ public interface PhysicalTableMatcher extends Predicate<PhysicalTable> {
      */
     default Set<PhysicalTable> matchNotEmpty(Stream<PhysicalTable> tables) throws NoMatchFoundException {
         Set<PhysicalTable> result = tables
-                .filter(this::test)
+                .filter(this)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         if (result.isEmpty()) {
             throw noneFoundException();
