@@ -19,6 +19,7 @@ import java.util.Set;
  */
 public class SegmentMetadata {
 
+    private final boolean isEmpty;
     private final Map<String, Set<Interval>> dimensionIntervals;
     private final Map<String, Set<Interval>> metricIntervals;
 
@@ -55,6 +56,7 @@ public class SegmentMetadata {
 
         dimensionIntervals = Utils.makeImmutable(tempDimensionIntervals);
         metricIntervals = Utils.makeImmutable(tempMetricIntervals);
+        isEmpty = dimensionIntervals.isEmpty() && metricIntervals.isEmpty();
     }
 
     /**
@@ -67,6 +69,7 @@ public class SegmentMetadata {
     private SegmentMetadata(Map<String, Set<Interval>> dimensionIntervals, Map<String, Set<Interval>> metricIntervals) {
         this.dimensionIntervals = Utils.makeImmutable(dimensionIntervals);
         this.metricIntervals = Utils.makeImmutable(metricIntervals);
+        isEmpty = dimensionIntervals.isEmpty() && metricIntervals.isEmpty();
     }
 
     public Map<String, Set<Interval>> getDimensionIntervals() {
@@ -75,6 +78,10 @@ public class SegmentMetadata {
 
     public Map<String, Set<Interval>> getMetricIntervals() {
         return metricIntervals;
+    }
+
+    public boolean isEmpty() {
+        return isEmpty;
     }
 
     @Override

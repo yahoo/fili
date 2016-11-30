@@ -10,6 +10,9 @@ Current
 
 ### Added:
 
+- [Log a warning if `SegmentMetadataLoader` tries to load empty segment metadata](https://github.com/yahoo/fili/pull/113)
+    * While not an error condition (eg. configuration migration), it's unusual, and likely shouldn't stay this way long
+
 - [More descriptive log message when no physical table found due to schema mismatch](https://github.com/yahoo/fili/pull/113)
     * Previous log message was the user-facing one, and not as helpful as it could have been
 

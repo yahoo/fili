@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.metadata
 import org.joda.time.Interval
 
 import spock.lang.Specification
+import spock.lang.Unroll
 
 class SegmentMetadataSpec extends Specification {
     String intervalString1 = "2012-01-01T00:00:00.000Z/2013-12-27T00:00:00.000Z"
@@ -49,6 +50,7 @@ class SegmentMetadataSpec extends Specification {
         expect:
         metadata.dimensionIntervals == expectedDimensions1
         metadata.metricIntervals == expectedMetrics
+        !metadata.empty
     }
 
     def "Test equality"() {
@@ -58,5 +60,32 @@ class SegmentMetadataSpec extends Specification {
 
         expect:
         metadata1 == expected
+    }
+
+    @Unroll
+    def "#emptyDims dimensions, #emptyTime time, and #emptyMetrics metrics means the SegmentMetadata is #isEmpty"() {
+        given: "An input object with assorted emptiness aspects"
+        def input = intervals.collectEntries {
+            [(it): ["dimensions": dimensions, "metrics": metrics]]
+        }
+
+        and: "A SegmentMetadata object constructed from it"
+        SegmentMetadata metadata = new SegmentMetadata(input)
+
+        expect: "The emptiness is correctly detected"
+        metadata.empty == emptyState
+
+        where:
+        emptyState | dimensions | metrics    | intervals
+        false      | ["dim"]    | ["metric"] | ["2012-01-01T00:00:00.000Z/2013-12-27T00:00:00.000Z"]
+        false      | []         | ["metric"] | ["2012-01-01T00:00:00.000Z/2013-12-27T00:00:00.000Z"]
+        false      | ["dim"]    | []         | ["2012-01-01T00:00:00.000Z/2013-12-27T00:00:00.000Z"]
+        true       | []         | []         | ["2012-01-01T00:00:00.000Z/2013-12-27T00:00:00.000Z"]
+        true       | ["dim"]    | ["metric"] | []
+
+        emptyDims = dimensions ? "Full" : "Empty"
+        emptyMetrics = metrics ? "full" : "empty"
+        emptyTime = intervals ? "full" : "empty"
+        isEmpty = emptyState ? "empty" : "not empty"
     }
 }

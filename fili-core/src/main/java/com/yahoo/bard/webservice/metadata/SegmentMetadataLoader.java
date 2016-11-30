@@ -151,6 +151,9 @@ public class SegmentMetadataLoader extends Loader<Boolean> {
                 SegmentMetadata segmentMetadata = new SegmentMetadata(
                         mapper.<RawSegmentMetadataConcrete>convertValue(rootNode, typeReference)
                 );
+                if (segmentMetadata.isEmpty()) {
+                    LOG.warn("Empty segment metadata detected when loading table '{}'", table.getName());
+                }
                 table.resetColumns(segmentMetadata, dimensionDictionary);
             }
         };
