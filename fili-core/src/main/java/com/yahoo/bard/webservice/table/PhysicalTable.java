@@ -2,14 +2,12 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table;
 
-import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.metadata.SegmentMetadata;
 import com.yahoo.bard.webservice.util.IntervalUtils;
-import com.yahoo.bard.webservice.util.StreamUtils;
 import com.yahoo.bard.webservice.util.Utils;
 
 import org.joda.time.DateTime;
@@ -23,8 +21,10 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
@@ -38,7 +38,7 @@ public class PhysicalTable extends Table {
     private Map<Column, Set<Interval>> workingIntervals;
     private final Object mutex = new Object();
     private final Map<String, String> logicalToPhysicalColumnNames;
-    private final Map<String, String> physicalToLogicalColumnNames;
+    private final Map<String, Set<String>> physicalToLogicalColumnNames;
 
     /**
      * Create a physical table.
@@ -58,10 +58,12 @@ public class PhysicalTable extends Table {
         this.workingIntervals = Collections.synchronizedMap(new HashMap<>());
         this.logicalToPhysicalColumnNames = Collections.unmodifiableMap(logicalToPhysicalColumnNames);
         this.physicalToLogicalColumnNames = Collections.unmodifiableMap(
-                this.logicalToPhysicalColumnNames
-                        .entrySet()
-                        .stream()
-                        .collect(StreamUtils.toLinkedMap(Map.Entry::getValue, Map.Entry::getKey))
+                this.logicalToPhysicalColumnNames.entrySet().stream().collect(
+                        Collectors.groupingBy(
+                                Map.Entry::getValue,
+                                Collectors.mapping(Map.Entry::getKey, Collectors.toSet())
+                        )
+                )
         );
     }
 
@@ -137,14 +139,19 @@ public class PhysicalTable extends Table {
             workingIntervals.clear();
             for (Map.Entry<String, Set<Interval>> nameIntervals : dimensionIntervals.entrySet()) {
                 String physicalName = nameIntervals.getKey();
-                String apiName = getLogicalColumnName(physicalName);
-                Dimension dimension = dimensionDictionary.findByApiName(apiName);
-                // Schema evolution may lead to unknown dimensions, skip these
-                if (dimension == null) {
-                    continue;
-                }
-                DimensionColumn dimensionColumn = DimensionColumn.addNewDimensionColumn(this, dimension);
-                workingIntervals.put(dimensionColumn, nameIntervals.getValue());
+
+                getLogicalColumnNames(physicalName).stream()
+                        .map(dimensionDictionary::findByApiName)
+                        .filter(Objects::nonNull)
+                        .forEach(
+                                dimension -> {
+                                    DimensionColumn dimensionColumn = DimensionColumn.addNewDimensionColumn(
+                                            this,
+                                            dimension
+                                    );
+                                    workingIntervals.put(dimensionColumn, nameIntervals.getValue());
+                                }
+                        );
             }
             for (Map.Entry<String, Set<Interval>> nameIntervals : metricIntervals.entrySet()) {
                 MetricColumn metricColumn = MetricColumn.addNewMetricColumn(this, nameIntervals.getKey());
@@ -237,8 +244,8 @@ public class PhysicalTable extends Table {
      * @param physicalName  Physical name to lookup in physical table
      * @return Translated physicalName if applicable
      */
-    private String getLogicalColumnName(String physicalName) {
-        return physicalToLogicalColumnNames.getOrDefault(physicalName, physicalName);
+    private Set<String> getLogicalColumnNames(String physicalName) {
+        return physicalToLogicalColumnNames.getOrDefault(physicalName, Collections.singleton(physicalName));
     }
 
     /**

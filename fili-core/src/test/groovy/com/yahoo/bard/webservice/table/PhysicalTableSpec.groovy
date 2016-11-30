@@ -150,4 +150,14 @@ class PhysicalTableSpec extends Specification {
         expect:
         physicalTable.getDimensions() == [dimension] as Set
     }
+
+    def "test physical to logical mapping is constructed correctly"() {
+        setup:
+        PhysicalTable oneDimPhysicalTable = new PhysicalTable("test table", DAY.buildZonedTimeGrain(UTC), ['dimension':'druidDim'])
+        PhysicalTable twoDimPhysicalTable = new PhysicalTable("test table", DAY.buildZonedTimeGrain(UTC), ['dimension1':'druidDim', 'dimension2':'druidDim'])
+
+        expect:
+        oneDimPhysicalTable.getLogicalColumnNames('druidDim') == ['dimension'] as Set
+        twoDimPhysicalTable.getLogicalColumnNames('druidDim') == ['dimension1', 'dimension2'] as Set
+    }
 }
