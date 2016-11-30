@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -143,16 +144,16 @@ public class PhysicalTable extends Table {
 
                 getLogicalColumnNames(physicalName).stream()
                         .map(dimensionDictionary::findByApiName)
-                        .filter(dimension -> dimension != null)
+                        .filter(Objects::nonNull)
                         .forEach(
-                                dimension -> {
-                                    DimensionColumn dimensionColumn = DimensionColumn.addNewDimensionColumn(
-                                            this,
-                                            dimension
-                                    );
-                                    workingIntervals.put(dimensionColumn, nameIntervals.getValue());
-                                }
-                        );
+                        dimension -> {
+                            DimensionColumn dimensionColumn = DimensionColumn.addNewDimensionColumn(
+                                    this,
+                                    dimension
+                            );
+                            workingIntervals.put(dimensionColumn, nameIntervals.getValue());
+                        }
+                );
             }
             for (Map.Entry<String, Set<Interval>> nameIntervals : metricIntervals.entrySet()) {
                 MetricColumn metricColumn = MetricColumn.addNewMetricColumn(this, nameIntervals.getKey());
