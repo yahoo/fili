@@ -10,6 +10,8 @@ Current
 
 ### Added:
 
+- [Stream utils for dealing with `Map`s](https://github.com/yahoo/fili/pull/114)
+
 - [Added MetricField accessor to the interface of LogicalMetric](https://github.com/yahoo/fili/pull/124)
     * Previously accessing the metric field involved using three method calls
 

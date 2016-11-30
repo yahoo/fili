@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.util;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.BinaryOperator;
@@ -144,5 +145,138 @@ public class StreamUtils {
                 R castedOperand = (R) operand;
                 return castedOperand;
         };
+    }
+
+    /**
+     * Build a function that can map a Map from one map to another.
+     *
+     * @param keyMapper  Function to map from the input Map's Entries to the result Map's keys
+     * @param valueMapper  Function to map from the input Map's Entries to the result Map's values
+     * @param resultSupplier  Supplier of the result map instance
+     * @param <A>  Type of the input Map's keys
+     * @param <B>  Type of the input Map's values
+     * @param <K>  Type of the result Map's keys
+     * @param <V>  Type of the result Map's values
+     * @param <R>  Type of the input Map
+     * @param <T>  Type of the result map
+     *
+     * @return a function that can map a Map from one map to another.
+     */
+    public static <A, B, K, V, R extends Map<A, B>, T extends Map<K, V>> Function<R, T> mapMap(
+            Function<? super Map.Entry<A, B>, ? extends K> keyMapper,
+            Function<? super Map.Entry<A, B>, ? extends V> valueMapper,
+            Supplier<T> resultSupplier
+    ) {
+        return (R input) -> input.entrySet().stream()
+                .collect(
+                        resultSupplier,
+                        (result, entry) -> result.put(keyMapper.apply(entry), valueMapper.apply(entry)),
+                        Map::putAll
+                );
+    }
+
+    /**
+     * Build a function that can map a Map from one map to another.
+     *
+     * @param keyMapper  Function to map from the input Map's keys to the result Map's keys
+     * @param resultSupplier  Supplier of the result map instance
+     * @param <A>  Type of the input Map's keys
+     * @param <B>  Type of the input Map's values
+     * @param <K>  Type of the result Map's keys
+     * @param <R>  Type of the input Map
+     * @param <T>  Type of the result map
+     *
+     * @return a function that can map a Map from one map to another.
+     */
+    public static <A, B, K, R extends Map<A, B>, T extends Map<K, B>> Function<R, T> mapMapKey(
+            Function<? super A, ? extends K> keyMapper,
+            Supplier<T> resultSupplier
+    ) {
+        return mapMap(entry -> keyMapper.apply(entry.getKey()), Map.Entry::getValue, resultSupplier);
+    }
+
+    /**
+     * Build a function that can map a Map from one map to another.
+     *
+     * @param valueMapper  Function to map from the input Map's values to the result Map's values
+     * @param resultSupplier  Supplier of the result map instance
+     * @param <A>  Type of the input Map's keys
+     * @param <B>  Type of the input Map's values
+     * @param <V>  Type of the result Map's values
+     * @param <R>  Type of the input Map
+     * @param <T>  Type of the result map
+     *
+     * @return a function that can map a Map from one map to another.
+     */
+    public static <A, B, V, R extends Map<A, B>, T extends Map<A, V>> Function<R, T> mapMapValue(
+            Function<? super B, ? extends V> valueMapper,
+            Supplier<T> resultSupplier
+    ) {
+        return mapMap(Map.Entry::getKey, entry -> valueMapper.apply(entry.getValue()), resultSupplier);
+    }
+
+    /**
+     * Build a function that can map a Map from one map to another.
+     * <p>
+     * Makes no guarantees on the type of Map produced.
+     *
+     * @param keyMapper  Function to map from the input Map's Entries to the result Map's keys
+     * @param valueMapper  Function to map from the input Map's Entries to the result Map's values
+     * @param <A>  Type of the input Map's keys
+     * @param <B>  Type of the input Map's values
+     * @param <K>  Type of the result Map's keys
+     * @param <V>  Type of the result Map's values
+     * @param <R>  Type of the input Map
+     *
+     * @return a function that can map a Map from one map to another.
+     */
+    public static <A, B, K, V, R extends Map<A, B>> Function<R, Map<K, V>> mapMap(
+            Function<? super Map.Entry<A, B>, ? extends K> keyMapper,
+            Function<? super Map.Entry<A, B>, ? extends V> valueMapper
+    ) {
+        return (R input) -> input.entrySet().stream()
+                .collect(
+                        HashMap::new,
+                        (result, entry) -> result.put(keyMapper.apply(entry), valueMapper.apply(entry)),
+                        Map::putAll
+                );
+    }
+
+    /**
+     * Build a function that can map a Map from one map to another.
+     * <p>
+     * Makes no guarantees on the type of Map produced.
+     *
+     * @param keyMapper  Function to map from the input Map's keys to the result Map's keys
+     * @param <A>  Type of the input Map's keys
+     * @param <B>  Type of the input Map's values
+     * @param <K>  Type of the result Map's keys
+     * @param <R>  Type of the input Map
+     *
+     * @return a function that can map a Map from one map to another.
+     */
+    public static <A, B, K, R extends Map<A, B>> Function<R, Map<K, B>> mapMapKey(
+            Function<? super A, ? extends K> keyMapper
+    ) {
+        return mapMap(entry -> keyMapper.apply(entry.getKey()), Map.Entry::getValue, HashMap::new);
+    }
+
+    /**
+     * Build a function that can map a Map from one map to another.
+     * <p>
+     * Makes no guarantees on the type of Map produced.
+     *
+     * @param valueMapper  Function to map from the input Map's values to the result Map's values
+     * @param <A>  Type of the input Map's keys
+     * @param <B>  Type of the input Map's values
+     * @param <V>  Type of the result Map's values
+     * @param <R>  Type of the input Map
+     *
+     * @return a function that can map a Map from one map to another.
+     */
+    public static <A, B, V, R extends Map<A, B>> Function<R, Map<A, V>> mapMapValue(
+            Function<? super B, ? extends V> valueMapper
+    ) {
+        return mapMap(Map.Entry::getKey, entry -> valueMapper.apply(entry.getValue()), HashMap::new);
     }
 }
