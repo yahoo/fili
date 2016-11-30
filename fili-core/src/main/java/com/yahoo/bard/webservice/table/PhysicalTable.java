@@ -16,10 +16,8 @@ import org.joda.time.ReadablePeriod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -146,14 +144,14 @@ public class PhysicalTable extends Table {
                         .map(dimensionDictionary::findByApiName)
                         .filter(Objects::nonNull)
                         .forEach(
-                        dimension -> {
-                            DimensionColumn dimensionColumn = DimensionColumn.addNewDimensionColumn(
-                                    this,
-                                    dimension
-                            );
-                            workingIntervals.put(dimensionColumn, nameIntervals.getValue());
-                        }
-                );
+                                dimension -> {
+                                    DimensionColumn dimensionColumn = DimensionColumn.addNewDimensionColumn(
+                                            this,
+                                            dimension
+                                    );
+                                    workingIntervals.put(dimensionColumn, nameIntervals.getValue());
+                                }
+                        );
             }
             for (Map.Entry<String, Set<Interval>> nameIntervals : metricIntervals.entrySet()) {
                 MetricColumn metricColumn = MetricColumn.addNewMetricColumn(this, nameIntervals.getKey());
@@ -247,7 +245,7 @@ public class PhysicalTable extends Table {
      * @return Translated physicalName if applicable
      */
     private Set<String> getLogicalColumnNames(String physicalName) {
-        return physicalToLogicalColumnNames.getOrDefault(physicalName, new HashSet<>(Arrays.asList(physicalName)));
+        return physicalToLogicalColumnNames.getOrDefault(physicalName, Collections.singleton(physicalName));
     }
 
     /**
