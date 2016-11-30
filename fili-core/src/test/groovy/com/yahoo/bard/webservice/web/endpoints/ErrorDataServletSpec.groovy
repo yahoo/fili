@@ -676,15 +676,11 @@ class ErrorDataServletSpec extends Specification {
             {"description":"${message}",
             "druidQuery":null,
             "reason":"com.yahoo.bard.webservice.table.resolver.NoMatchFoundException",
-            "status":400,"statusName":"Bad Request",
+            "status":500,"statusName":"Internal Server Error",
             "requestId": "SOME UUID"
             }
         """
-        /*
-                """{"status":400, "statusName": "Bad Request","reason":"java.lang.IllegalStateException", "description":"${message}",
-            "druidQuery":null}
-        """
-        */
+
         when:
         Response r = jtb.getHarness().target("data/monthly/month/")
                 .queryParam("metrics","dayAvgLimbs")
@@ -692,7 +688,7 @@ class ErrorDataServletSpec extends Specification {
                 .request().get()
 
         then:
-        r.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()
+        r.getStatus() == Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()
         GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), jsonFailure)
     }
 

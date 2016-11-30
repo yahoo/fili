@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.web.endpoints;
 
 import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.REQUEST_WORKFLOW_TIMER;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
 import com.yahoo.bard.webservice.application.MetricRegistryFactory;
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
@@ -33,6 +34,7 @@ import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
 import com.yahoo.bard.webservice.logging.blocks.DataRequest;
 import com.yahoo.bard.webservice.table.Table;
+import com.yahoo.bard.webservice.table.resolver.NoMatchFoundException;
 import com.yahoo.bard.webservice.util.Either;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.PreResponse;
@@ -418,6 +420,10 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             LOG.debug(e.getMessage(), e);
             RequestLog.stopMostRecentTimer();
             asyncResponse.resume(RequestHandlerUtils.makeErrorResponse(e.getStatus(), e, writer));
+        } catch (NoMatchFoundException e) {
+            LOG.info("Exception processing request", e);
+            RequestLog.stopMostRecentTimer();
+            asyncResponse.resume(RequestHandlerUtils.makeErrorResponse(INTERNAL_SERVER_ERROR, e, writer));
         } catch (Error | Exception e) {
             LOG.info("Exception processing request", e);
             RequestLog.stopMostRecentTimer();
