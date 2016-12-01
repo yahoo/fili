@@ -68,7 +68,7 @@ class TableFullViewProcessorSpec extends Specification {
     def "Check table meta data info at grain level"() {
 
         setup:
-        String expectedResponse = "[description:The pets all grain, dimensions:[[category:General, name:sex, longName:sex, uri:http://localhost:9998/v1/sex, cardinality:0], [category:General, name:species, longName:species, uri:http://localhost:9998/v1/species, cardinality:0], [category:General, name:breed, longName:breed, uri:http://localhost:9998/v1/breed, cardinality:0]], longName:All, metrics:[[category:General, name:rowNum, longName:rowNum, uri:http://localhost:9998/v1/rowNum], [category:General, name:limbs, longName:limbs, uri:http://localhost:9998/v1/limbs], [category:General, name:dayAvgLimbs, longName:dayAvgLimbs, uri:http://localhost:9998/v1/dayAvgLimbs]], name:all, retention:P1Y]"
+        String expectedResponse = "[description:The pets all grain, dimensions:[[category:General, name:species, longName:species, uri:http://localhost:9998/v1/species, cardinality:0], [category:General, name:sex, longName:sex, uri:http://localhost:9998/v1/sex, cardinality:0], [category:General, name:breed, longName:breed, uri:http://localhost:9998/v1/breed, cardinality:0]], longName:All, metrics:[[category:General, name:rowNum, longName:rowNum, uri:http://localhost:9998/v1/rowNum], [category:General, name:limbs, longName:limbs, uri:http://localhost:9998/v1/limbs], [category:General, name:dayAvgLimbs, longName:dayAvgLimbs, uri:http://localhost:9998/v1/dayAvgLimbs]], name:all, retention:P1Y]"
         LogicalTable petsTable = petsShapesTables.find {it.getName() == "pets"}
 
         when:

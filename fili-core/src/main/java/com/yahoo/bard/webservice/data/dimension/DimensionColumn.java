@@ -53,7 +53,7 @@ public class DimensionColumn extends Column {
      * @return The dimension column created
      */
     public static DimensionColumn addNewDimensionColumn(Schema schema, Dimension d, PhysicalTable physicalTable) {
-        DimensionColumn col = new DimensionColumn(d, physicalTable.getPhysicalColumnName(d.getApiName()));
+        DimensionColumn col = new DimensionColumn(d, d.getApiName());
         schema.addColumn(col);
         return col;
     }
