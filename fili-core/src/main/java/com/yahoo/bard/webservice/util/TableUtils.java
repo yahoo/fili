@@ -28,11 +28,34 @@ public class TableUtils {
      * @param table  Physical table used in resolving dimension names
      *
      * @return a set of strings representing fact store column names
+     *
+     * @deprecated in favor of getColumnNames(DataApiRequest, DruidAggregationQuery) returning dimension api name
      */
+    @Deprecated
     public static Set<String> getColumnNames(
             DataApiRequest request,
             DruidAggregationQuery<?> query,
             PhysicalTable table
+    ) {
+        return Stream.<Stream<String>>of(
+                getDimensions(request, query)
+                        .map(Dimension::getApiName)
+                        .map(table::getPhysicalColumnName),
+                query.getDependentFieldNames().stream()
+        ).flatMap(Function.identity()).collect(Collectors.toSet());
+    }
+
+    /**
+     * Get the table column names from the dimensions and metrics.
+     *
+     * @param request  A request which supplies grouping dimensions and filtering dimensions
+     * @param query  A query model which has metric column and possibly dimension column names
+     *
+     * @return a set of strings representing table column names
+     */
+    public static Set<String> getColumnNames(
+            DataApiRequest request,
+            DruidAggregationQuery<?> query
     ) {
         return Stream.<Stream<String>>of(
                 getDimensions(request, query)

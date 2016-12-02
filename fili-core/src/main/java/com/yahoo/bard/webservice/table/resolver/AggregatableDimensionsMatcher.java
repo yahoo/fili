@@ -43,7 +43,7 @@ public class AggregatableDimensionsMatcher implements PhysicalTableMatcher {
 
     @Override
     public boolean test(PhysicalTable table) {
-        Set<String> columnNames = TableUtils.getColumnNames(request, query.getInnermostQuery(), table);
+        Set<String> columnNames = TableUtils.getColumnNames(request, query.getInnermostQuery());
 
         return table.getDimensions().stream()
                 .filter(StreamUtils.not(Dimension::isAggregatable))

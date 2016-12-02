@@ -137,7 +137,9 @@ Current
 
 ### Deprecated:
 
-
+- [Default DimensionColumn name to use apiName instead of physicalName](https://github.com/yahoo/fili/pull/115)
+    * Deprecated `TableUtils::getColumnNames(DataApiRequest, DruidAggregationQuery, PhysicalTable)` returning dimension physical name,
+     in favor of `TableUtils::getColumnNames(DataApiRequest, DruidAggregationQuery)` returning dimension api name
 
 ### Fixed:
 
