@@ -20,7 +20,6 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
-import com.yahoo.bard.webservice.data.dimension.LogicalDimensionColumn;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.data.metric.MetricColumnWithValueType;
 import com.yahoo.bard.webservice.data.time.GranularityParser;
@@ -238,7 +237,7 @@ public class PreResponseDeserializer {
         StreamSupport.stream(schemaNode.get(SCHEMA_DIM_COLUMNS).spliterator(), false)
                 .map(JsonNode::asText)
                 .map(this::resolveDimensionName)
-                .map(LogicalDimensionColumn::new)
+                .map(DimensionColumn::new)
                 .forEach(zonedSchema::addColumn);
 
         schemaNode.get(SCHEMA_METRIC_COLUMNS_TYPE).fields().forEachRemaining(

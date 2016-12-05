@@ -30,7 +30,7 @@ class NoOpResultSetMapperSpec extends Specification {
         dimensionFields.add(BardDimensionField.DESC)
 
         Map<DimensionColumn, DimensionRow> dimensionRows1 = ["dimName1", "dimName2"].collectEntries {
-            DimensionColumn dc = new DimensionColumn(new KeyValueStoreDimension(it, it, dimensionFields, MapStoreManager.getInstance(it), ScanSearchProviderManager.getInstance(it)), it)
+            DimensionColumn dc = new DimensionColumn(new KeyValueStoreDimension(it, it, dimensionFields, MapStoreManager.getInstance(it), ScanSearchProviderManager.getInstance(it)))
             DimensionRow dr = BardDimensionField.makeDimensionRow(dc.dimension, ""+it+"-id", ""+it+"-desc")
             [(dc) : dr]
         }
@@ -43,7 +43,7 @@ class NoOpResultSetMapperSpec extends Specification {
         Result rs1 = new Result(dimensionRows1, metricValues1, DateTime.now())
 
         Map<DimensionColumn, DimensionRow> dimensionRows2 = ["dimName3", "dimName4"].collectEntries {
-            DimensionColumn dc = new DimensionColumn(new KeyValueStoreDimension(it, it, dimensionFields, MapStoreManager.getInstance(it), ScanSearchProviderManager.getInstance(it)), it)
+            DimensionColumn dc = new DimensionColumn(new KeyValueStoreDimension(it, it, dimensionFields, MapStoreManager.getInstance(it), ScanSearchProviderManager.getInstance(it)))
             DimensionRow dr = BardDimensionField.makeDimensionRow(dc.dimension, ""+it+"-id", ""+it+"-desc")
             [(dc) : dr]
         }

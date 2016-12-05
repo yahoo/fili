@@ -174,7 +174,7 @@ class DruidResponseParserSpec extends Specification {
 
         /* build Schema */
         ZonedSchema schema = new ZonedSchema(DAY, DateTimeZone.UTC)
-        DimensionColumn.addNewDimensionColumn(schema, dimensionDictionary.findByApiName("ageBracket"), new PhysicalTable("null", DAY.buildZonedTimeGrain(DateTimeZone.UTC), [:]))
+        DimensionColumn.addNewDimensionColumn(schema, dimensionDictionary.findByApiName("ageBracket"))
         MetricColumn.addNewMetricColumn(schema, "pageViews")
         ResultSet resultSet = new DruidResponseParser().parse(jsonResult, schema, DefaultQueryType.TOP_N)
 
@@ -442,9 +442,9 @@ class DruidResponseParserSpec extends Specification {
 
     ZonedSchema buildSchema(List<String> metricNames) {
         Schema schema = new ZonedSchema(DAY, DateTimeZone.UTC)
-        DimensionColumn.addNewDimensionColumn(schema, dimensionDictionary.findByApiName("ageBracket"), new PhysicalTable("null", DAY.buildZonedTimeGrain(DateTimeZone.UTC), [:]))
-        DimensionColumn.addNewDimensionColumn(schema, dimensionDictionary.findByApiName("gender"), new PhysicalTable("null", DAY.buildZonedTimeGrain(DateTimeZone.UTC), [:]))
-        DimensionColumn.addNewDimensionColumn(schema, dimensionDictionary.findByApiName("unknown"), new PhysicalTable("null", DAY.buildZonedTimeGrain(DateTimeZone.UTC), [:]))
+        DimensionColumn.addNewDimensionColumn(schema, dimensionDictionary.findByApiName("ageBracket"))
+        DimensionColumn.addNewDimensionColumn(schema, dimensionDictionary.findByApiName("gender"))
+        DimensionColumn.addNewDimensionColumn(schema, dimensionDictionary.findByApiName("unknown"))
         metricNames.each {
             MetricColumn.addNewMetricColumn(schema, it)
         }

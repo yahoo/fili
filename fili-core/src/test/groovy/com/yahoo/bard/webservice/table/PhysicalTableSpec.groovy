@@ -44,7 +44,7 @@ class PhysicalTableSpec extends Specification {
         dimension = new KeyValueStoreDimension("dimension", null, [BardDimensionField.ID] as LinkedHashSet, MapStoreManager.getInstance("dimension"), ScanSearchProviderManager.getInstance("apiProduct"))
         dimensionDictionary = new DimensionDictionary([dimension] as Set)
 
-        dimensionColumn = new DimensionColumn(dimension, dimension.getApiName())
+        dimensionColumn = new DimensionColumn(dimension)
 
         metricColumn1 = new MetricColumn("metric1")
         metricColumn2 = new MetricColumn("metric2")

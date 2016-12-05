@@ -37,7 +37,7 @@ public class TableUtils {
             DruidAggregationQuery<?> query,
             PhysicalTable table
     ) {
-        return Stream.<Stream<String>>of(
+        return Stream.of(
                 getDimensions(request, query)
                         .map(Dimension::getApiName)
                         .map(table::getPhysicalColumnName),
@@ -53,13 +53,9 @@ public class TableUtils {
      *
      * @return a set of strings representing table column names
      */
-    public static Set<String> getColumnNames(
-            DataApiRequest request,
-            DruidAggregationQuery<?> query
-    ) {
-        return Stream.<Stream<String>>of(
-                getDimensions(request, query)
-                        .map(Dimension::getApiName),
+    public static Set<String> getColumnNames(DataApiRequest request, DruidAggregationQuery<?> query) {
+        return Stream.of(
+                getDimensions(request, query).map(Dimension::getApiName),
                 query.getDependentFieldNames().stream()
         ).flatMap(Function.identity()).collect(Collectors.toSet());
     }
@@ -73,7 +69,7 @@ public class TableUtils {
      * @return a set of strings representing fact store column names
      */
     public static Stream<Dimension> getDimensions(DataApiRequest request, DruidAggregationQuery<?> query) {
-        return Stream.<Stream<Dimension>>of(
+        return Stream.of(
                 request.getDimensions().stream(),
                 request.getFilterDimensions().stream(),
                 query.getMetricDimensions().stream()

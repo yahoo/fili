@@ -4,7 +4,10 @@ package com.yahoo.bard.webservice.data.dimension;
 
 /**
  * A LogicalDimensionColumn defines a dimension column that is not tied to any particular physical table.
+ *
+ * @deprecated in favor of DimensionColumn which stores name as api name now
  */
+@Deprecated
 public class LogicalDimensionColumn extends DimensionColumn {
     /**
      * Constructor.

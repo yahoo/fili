@@ -45,10 +45,10 @@ public class AggregatableDimensionsMatcher implements PhysicalTableMatcher {
     public boolean test(PhysicalTable table) {
         Set<String> columnNames = TableUtils.getColumnNames(request, query.getInnermostQuery());
 
+        // If table contains non-agg dimensions, query must contain all these non-agg dimensions to use this table.
         return table.getDimensions().stream()
                 .filter(StreamUtils.not(Dimension::isAggregatable))
                 .map(Dimension::getApiName)
-                .map(table::getPhysicalColumnName)
                 .allMatch(columnNames::contains);
     }
 

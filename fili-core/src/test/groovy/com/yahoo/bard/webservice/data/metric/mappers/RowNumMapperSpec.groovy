@@ -53,8 +53,8 @@ class RowNumMapperSpec extends Specification {
         Dimension d2 = new KeyValueStoreDimension("d2", "d2-desc", dimensionFields, MapStoreManager.getInstance("d2"), ScanSearchProviderManager.getInstance("d2"))
 
         // Add dimension columns to the dummy schema created earlier
-        DimensionColumn dc1 = DimensionColumn.addNewDimensionColumn(schema, d1, new PhysicalTable("abc", DAY.buildZonedTimeGrain(DateTimeZone.UTC), [:]))
-        DimensionColumn dc2 = DimensionColumn.addNewDimensionColumn(schema, d2, new PhysicalTable("abc", DAY.buildZonedTimeGrain(DateTimeZone.UTC), [:]))
+        DimensionColumn dc1 = DimensionColumn.addNewDimensionColumn(schema, d1)
+        DimensionColumn dc2 = DimensionColumn.addNewDimensionColumn(schema, d2)
 
         // Create dummy DimensionRow's
         DimensionRow dr1 = BardDimensionField.makeDimensionRow(d1, "id1", "desc1")

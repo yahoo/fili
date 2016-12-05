@@ -224,7 +224,7 @@ public abstract class BaseTableLoader implements TableLoader {
                     .filter(table -> table.hasLogicalMapping(dim.getApiName()))
                     .findFirst()
                     .orElse(firstPhysicalTable);
-            DimensionColumn.addNewDimensionColumn(logicalTable, dim, physicalTable);
+            DimensionColumn.addNewDimensionColumn(logicalTable, dim);
         }
 
         // All metrics that are available for a particular logical table grain are added
@@ -293,7 +293,7 @@ public abstract class BaseTableLoader implements TableLoader {
         for (DimensionConfig dimensionConfig : definition.getDimensions()) {
             String apiName = dimensionConfig.getApiName();
             Dimension dimension = dimensionDictionary.findByApiName(apiName);
-            DimensionColumn.addNewDimensionColumn(physicalTable, dimension, physicalTable);
+            DimensionColumn.addNewDimensionColumn(physicalTable, dimension);
         }
 
         // Load the metric columns

@@ -66,7 +66,7 @@ class UIJsonResponseSpec extends Specification {
                 [] as Set
         )
         newDimension.setLastUpdated(timeStamp)
-        DimensionColumn dimensionColumn = DimensionColumn.addNewDimensionColumn(newSchema, newDimension, new PhysicalTable("abc", DAY.buildZonedTimeGrain(DateTimeZone.UTC), [:]))
+        DimensionColumn dimensionColumn = DimensionColumn.addNewDimensionColumn(newSchema, newDimension)
         MetricColumn metricColumn1 = MetricColumn.addNewMetricColumn(newSchema, "metricColumn1Name")
         MetricColumn metricColumn2 = MetricColumn.addNewMetricColumn(newSchema, "metricColumn2Name")
 

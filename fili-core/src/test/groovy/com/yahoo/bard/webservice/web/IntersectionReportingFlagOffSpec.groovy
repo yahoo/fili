@@ -51,7 +51,7 @@ class IntersectionReportingFlagOffSpec extends Specification {
         tg.getDimensions() >> dimensionDict.apiNameToDimension.values()
         table = new LogicalTable("name", DAY, tg)
         dimensionDict.apiNameToDimension.values().each {
-            DimensionColumn.addNewDimensionColumn(table, it, new PhysicalTable("abc", DAY.buildZonedTimeGrain(DateTimeZone.UTC), [:]))
+            DimensionColumn.addNewDimensionColumn(table, it)
         }
 
     }

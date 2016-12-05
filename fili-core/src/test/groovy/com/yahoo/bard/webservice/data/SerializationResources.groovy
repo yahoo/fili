@@ -3,10 +3,10 @@
 package com.yahoo.bard.webservice.data
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
+import com.yahoo.bard.webservice.data.dimension.DimensionColumn
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.DimensionRow
-import com.yahoo.bard.webservice.data.dimension.LogicalDimensionColumn
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
@@ -70,11 +70,11 @@ class SerializationResources extends Specification {
         Dimension ageBracketDim =  dimensionDictionary.findByApiName("ageBracket")
 
         DimensionRow ageBracketRow1 = BardDimensionField.makeDimensionRow(ageBracketDim, "1", "1")
-        dimensionRows1.put(new LogicalDimensionColumn(ageBracketDim), ageBracketRow1)
+        dimensionRows1.put(new DimensionColumn(ageBracketDim), ageBracketRow1)
         ageBracketDim.addDimensionRow(ageBracketRow1)
 
         DimensionRow ageBracketRow2 = BardDimensionField.makeDimensionRow(ageBracketDim, "4", "4")
-        dimensionRows2.put(new LogicalDimensionColumn(ageBracketDim), ageBracketRow2)
+        dimensionRows2.put(new DimensionColumn(ageBracketDim), ageBracketRow2)
         ageBracketDim.addDimensionRow(ageBracketRow2)
 
 
@@ -82,11 +82,11 @@ class SerializationResources extends Specification {
         Dimension genderDim = dimensionDictionary.findByApiName("gender")
 
         DimensionRow gendeRow1 = BardDimensionField.makeDimensionRow(genderDim, "m", "m")
-        dimensionRows1.put(new LogicalDimensionColumn(genderDim), gendeRow1)
+        dimensionRows1.put(new DimensionColumn(genderDim), gendeRow1)
         genderDim.addDimensionRow(gendeRow1)
 
         DimensionRow gendeRow2 = BardDimensionField.makeDimensionRow(genderDim, "f", "f")
-        dimensionRows2.put(new LogicalDimensionColumn(genderDim), gendeRow2)
+        dimensionRows2.put(new DimensionColumn(genderDim), gendeRow2)
         genderDim.addDimensionRow(gendeRow2)
 
 
@@ -94,11 +94,11 @@ class SerializationResources extends Specification {
         Dimension countryDim = dimensionDictionary.findByApiName("country")
 
         DimensionRow countyRow1 = BardDimensionField.makeDimensionRow(countryDim, "US", "US")
-        dimensionRows1.put(new LogicalDimensionColumn(countryDim), countyRow1)
+        dimensionRows1.put(new DimensionColumn(countryDim), countyRow1)
         countryDim.addDimensionRow(countyRow1)
 
         DimensionRow countyRow2 = BardDimensionField.makeDimensionRow(countryDim, "IN", "IN")
-        dimensionRows2.put(new LogicalDimensionColumn(countryDim), countyRow2)
+        dimensionRows2.put(new DimensionColumn(countryDim), countyRow2)
         countryDim.addDimensionRow(countyRow2)
 
         metricValues1 = new HashMap()
@@ -167,9 +167,9 @@ class SerializationResources extends Specification {
 
     ZonedSchema buildSchema(Map<String, String> metricNameClassNames) {
         Schema schema = new ZonedSchema(granularity, DateTimeZone.UTC)
-        schema.addColumn(new LogicalDimensionColumn(dimensionDictionary.findByApiName("ageBracket")))
-        schema.addColumn(new LogicalDimensionColumn(dimensionDictionary.findByApiName("gender")))
-        schema.addColumn(new LogicalDimensionColumn(dimensionDictionary.findByApiName("country")))
+        schema.addColumn(new DimensionColumn(dimensionDictionary.findByApiName("ageBracket")))
+        schema.addColumn(new DimensionColumn(dimensionDictionary.findByApiName("gender")))
+        schema.addColumn(new DimensionColumn(dimensionDictionary.findByApiName("country")))
         metricNameClassNames.each {
              schema.addColumn(new MetricColumnWithValueType(it.key, it.value))
         }

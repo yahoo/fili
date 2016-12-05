@@ -17,13 +17,23 @@ public class DimensionColumn extends Column {
 
     /**
      * Constructor.
-     * Uses dimension DruidName for column name.
+     * Uses dimension api name for column name.
      *
-     * @param dimension  The column name
-     * @param physicalName  Physical column name backing dimension
+     * @param dimension  The column's corresponding dimension
      */
-    protected DimensionColumn(@NotNull Dimension dimension, @NotNull String physicalName) {
-        super(physicalName);
+    public DimensionColumn(@NotNull Dimension dimension) {
+        this(dimension, dimension.getApiName());
+    }
+
+    /**
+     * Constructor.
+     * Uses the given name as  for column name.
+     *
+     * @param dimension  The column's corresponding dimension
+     * @param columnName  Physical column name backing dimension
+     */
+    protected DimensionColumn(@NotNull Dimension dimension, @NotNull String columnName) {
+        super(columnName);
         this.dimension = dimension;
     }
 
@@ -32,15 +42,17 @@ public class DimensionColumn extends Column {
     }
 
     /**
-     * Method to create a DimensionColumn tied to a PhysicalTable.
+     * Method to create a DimensionColumn tied to a schema.
      *
-     * @param physicalTable  Physical table associated with dimension column
+     * @param schema  The schema to which the column needs to be added
      * @param d  The dimension the column encapsulates
      *
      * @return The dimension column created
      */
-    public static DimensionColumn addNewDimensionColumn(PhysicalTable physicalTable, Dimension d) {
-        return addNewDimensionColumn(physicalTable, d, physicalTable);
+    public static DimensionColumn addNewDimensionColumn(Schema schema, Dimension d) {
+        DimensionColumn col = new DimensionColumn(d);
+        schema.addColumn(col);
+        return col;
     }
 
     /**
@@ -51,9 +63,12 @@ public class DimensionColumn extends Column {
      * @param physicalTable  Physical table associated with dimension column
      *
      * @return The dimension column created
+     *
+     * @deprecated in favor of addNewDimensionColumn(Schema, Dimension) which stores api name instead of physical name
      */
+    @Deprecated
     public static DimensionColumn addNewDimensionColumn(Schema schema, Dimension d, PhysicalTable physicalTable) {
-        DimensionColumn col = new DimensionColumn(d, d.getApiName());
+        DimensionColumn col = new DimensionColumn(d, physicalTable.getPhysicalColumnName(d.getApiName()));
         schema.addColumn(col);
         return col;
     }

@@ -11,8 +11,8 @@ import com.yahoo.bard.webservice.data.DruidResponseParser;
 import com.yahoo.bard.webservice.data.HttpResponseMaker;
 import com.yahoo.bard.webservice.data.ResultSet;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
-import com.yahoo.bard.webservice.data.dimension.LogicalDimensionColumn;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
@@ -159,7 +159,7 @@ public class ResultSetResponseProcessor extends MappingResponseProcessor impleme
         }
 
         for (Dimension dimension : druidQuery.getDimensions()) {
-            resultSetSchema.addColumn(new LogicalDimensionColumn(dimension));
+            resultSetSchema.addColumn(new DimensionColumn(dimension));
         }
 
         return druidResponseParser.parse(json, resultSetSchema, druidQuery.getQueryType());

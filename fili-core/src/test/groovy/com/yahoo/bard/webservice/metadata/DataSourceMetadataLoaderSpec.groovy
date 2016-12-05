@@ -169,7 +169,7 @@ class DataSourceMetadataLoaderSpec extends Specification {
 
         expectedIntervalsMap = [:]
         dimensions123.each {
-            expectedIntervalsMap.put(new DimensionColumn(dimensionDict.findByApiName(it), it), [interval123] as Set)
+            expectedIntervalsMap.put(new DimensionColumn(dimensionDict.findByApiName(it)), [interval123] as Set)
         }
         metrics123.each { expectedIntervalsMap.put(new MetricColumn(it), [interval123] as Set) }
     }
