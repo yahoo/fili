@@ -1,0 +1,60 @@
+physical_tables:
+  physical_table_1:
+    dimensions: [ tld, platform ]
+    metrics: [ impressions ]
+    granularity: minute
+
+  physical_table_2:
+    granularity: hour
+    dimensions: [ tld ]
+    metrics: [ impressions ]
+
+logical_tables:
+  logical_table_1:
+    physical_tables: [ physical_table_1, physical_table_2 ]
+    metrics: [ impressions, incremented_impressions ]
+    granularities: [ minute, hour, day ]  # FIXME: inconsistent
+
+dimensions:
+  tld:
+    physical_name: top_level_domain
+    long_name: Top Level Domain
+    description: the top level domain
+    category: default
+    aggregatable: true
+
+  platform:
+    physical_name: user_platform
+    long_name: User Platform
+    description: the user's platform
+    category: default
+    fields: [id]
+    default_fields: [id]
+    aggregatable: true
+
+dimension_fields:
+  id:
+    description: Dimension ID
+    default_include: true
+
+  description:
+    description: Dimension Description
+    default_include: false
+
+base_metrics:
+  impressions:
+    def: longSum(impressions)
+    description: the total impressions
+
+
+derived_metrics:
+  incremented_impressions:
+    def: impressions + 1
+    description: the *real* number of impressions!
+
+makers:
+  sketch:
+    class: com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchSetOperationMaker
+    args:
+      - >
+        !!com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationPostAggFunction 'NOT'
