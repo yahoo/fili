@@ -121,7 +121,7 @@ public class LuceneSearchProvider implements SearchProvider {
      *
      * @param firstTimeThrough  If true, will write an empty index and will then re-open the searcher
      */
-    private synchronized void reopenIndexSearcher(boolean firstTimeThrough) {
+    private void reopenIndexSearcher(boolean firstTimeThrough) {
         lock.writeLock().lock();
         try {
             // Close the current reader if open
