@@ -131,6 +131,23 @@ Current
         dependencies get, so this method did not allow returning a subclass of
        `DruidQueryBuilder` or of `DruidResponseParser`.
 
+- [Fixes a potential deadlock](https://github.com/yahoo/fili/pull/116)
+    * There is a chance the `LuceneSearchProvider` will deadlock if one thread
+    is attempting to read a dimension for the first time while another is 
+    attempting to load it:
+        - Thread A is pushing in new dimension data. It invokes `refreshIndex`,
+        and acquires the write lock. 
+        - Thread B is reading dimension data. It invokes `getResultsPage`, and
+        then `initializeIndexSearcher`, then `reopenIndexSearcher`. It hits
+        the write lock (acquired by Thread A) and blocks.
+        - At the end of its computation of `refreshIndex`, Thread A attempts
+        to invoke `reopenIndexSearcher`. However, `reopenIndexSearcher` is
+        `synchronized`, and Thread B is already invoking it.
+        - To fix the resulting deadlock, `reopenIndexSearcher` is no longer
+        synchronized. Since threads need to acquire a write lock before
+        doing anything else anyway, the method is still effectively 
+        synchronized.
+        
 ### Known Issues:
 
 
