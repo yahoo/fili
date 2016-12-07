@@ -40,6 +40,11 @@ Current
     out changes are only those that are likely of interest to Fili. Any dependency upgrade for which a changelog could
     not be found has not been linked to one, otherwise all other upgrades include a link to the relevant changelog.
 
+    WARNING: There is a known dependency conflict between apache commons configuration 1.6 and 1.10. If after upgrading
+    to the latest Fili, your tests begin to fail with `NoClassDefFoundExceptions`, it is likely that you are explicitly
+    depending on the apache commons configuration 1.6. Removing that dependency or upgrading it to 1.10 should fix the
+    issue.
+
     * [Gmaven plugin 1.4 -> 1.5](https://github.com/groovy/gmaven/compare/gmaven-1.4...gmaven-1.5)
     * [Guava 16.0.1 -> 20.0](https://github.com/google/guava/wiki/ReleaseHistory)
     * [Jedis 2.7.2 -> 2.9.0](https://github.com/xetorthio/jedis/releases):
