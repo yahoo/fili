@@ -12,7 +12,7 @@ import com.yahoo.bard.webservice.table.Schema;
 public class NoOpResultSetMapper extends ResultSetMapper implements ColumnMapper {
     @Override
     public ResultSet map(ResultSet resultSet) {
-        return super.map(resultSet);
+        return resultSet;
     }
 
     @Override
