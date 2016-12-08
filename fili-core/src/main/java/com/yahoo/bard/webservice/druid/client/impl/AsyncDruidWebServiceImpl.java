@@ -296,45 +296,53 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
             FailureCallback failure,
             DruidQuery<?> druidQuery
     ) {
-        String entityBody;
-        try {
-            entityBody = writer.writeValueAsString(druidQuery);
-        } catch (JsonProcessingException e) {
-            throw new IllegalStateException(e);
-        }
-
         long seqNum = druidQuery.getContext().getSequenceNumber();
-        long totalQueries = druidQuery.getContext().getNumberOfQueries();
-        String format = String.format("%%0%dd", String.valueOf(totalQueries).length());
-        String timerName;
-        AtomicLong outstanding;
-
-        if (!(druidQuery instanceof WeightEvaluationQuery)) {
-            if (context.getNumberOfOutgoing().decrementAndGet() == 0) {
-                RequestLog.stopTiming(REQUEST_WORKFLOW_TIMER);
+        RequestLog.startTiming("PostingDruidQuery" + seqNum);
+        try {
+            String entityBody;
+            RequestLog.startTiming("DruidQuerySerializationSeq" + seqNum);
+            try {
+                entityBody = writer.writeValueAsString(druidQuery);
+            } catch (JsonProcessingException e) {
+                throw new IllegalStateException(e);
+            } finally {
+                RequestLog.stopTiming("DruidQuerySerializationSeq" + seqNum);
             }
-            outstanding = context.getNumberOfIncoming();
-            timerName = DRUID_QUERY_TIMER + String.format(format, seqNum);
-        } else {
-            outstanding = new AtomicLong(0);
-            timerName = DRUID_WEIGHTED_QUERY_TIMER + String.format(format, seqNum);
+
+            long totalQueries = druidQuery.getContext().getNumberOfQueries();
+            String format = String.format("%%0%dd", String.valueOf(totalQueries).length());
+            String timerName;
+            AtomicLong outstanding;
+
+            if (!(druidQuery instanceof WeightEvaluationQuery)) {
+                if (context.getNumberOfOutgoing().decrementAndGet() == 0) {
+                    RequestLog.stopTiming(REQUEST_WORKFLOW_TIMER);
+                }
+                outstanding = context.getNumberOfIncoming();
+                timerName = DRUID_QUERY_TIMER + String.format(format, seqNum);
+            } else {
+                outstanding = new AtomicLong(0);
+                timerName = DRUID_WEIGHTED_QUERY_TIMER + String.format(format, seqNum);
+            }
+
+            BoundRequestBuilder requestBuilder = webClient.preparePost(serviceConfig.getUrl())
+                    .setBody(entityBody)
+                    .addHeader("Content-Type", "application/json");
+
+            headersToAppend.get().forEach(requestBuilder::addHeader);
+
+            LOG.debug("druid json request: {}", entityBody);
+            sendRequest(
+                    success,
+                    error,
+                    failure,
+                    requestBuilder,
+                    timerName,
+                    outstanding
+            );
+        } finally {
+            RequestLog.stopTiming("PostingDruidQuery" + seqNum);
         }
-
-        BoundRequestBuilder requestBuilder = webClient.preparePost(serviceConfig.getUrl())
-                .setBody(entityBody)
-                .addHeader("Content-Type", "application/json");
-
-        headersToAppend.get().forEach(requestBuilder::addHeader);
-
-        LOG.debug("druid json request: {}", entityBody);
-        sendRequest(
-                success,
-                error,
-                failure,
-                requestBuilder,
-                timerName,
-                outstanding
-        );
     }
 
     @Override

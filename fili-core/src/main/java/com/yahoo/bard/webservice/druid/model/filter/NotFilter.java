@@ -2,12 +2,14 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.filter;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
  * Filter for logical NOT applied to filter expression.
  */
-public class NotFilter extends Filter {
+public class NotFilter extends Filter implements ComplexFilter {
 
     private final Filter field;
 
@@ -48,5 +50,10 @@ public class NotFilter extends Filter {
         NotFilter other = (NotFilter) obj;
         return super.equals(obj) &&
                 Objects.equals(field, other.field);
+    }
+
+    @Override
+    public List<Filter> getFields() {
+        return Collections.singletonList(getField());
     }
 }
