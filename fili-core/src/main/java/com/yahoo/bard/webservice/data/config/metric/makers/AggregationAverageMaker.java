@@ -30,7 +30,7 @@ import javax.validation.constraints.NotNull;
 
 /**
  * Makes a LogicalMetric that wraps existing metrics and average them across a coarser time grain.
- *
+ * <p>
  * The constructed metric
  * takes aggregated data from a finer time grain (i.e. DefaultTimeGrain.DAY) and computes an average across a coarser
  * time grain (i.e. DefaultTimeGrain.WEEK). For example, given the total number of visitors to www.example.com for each

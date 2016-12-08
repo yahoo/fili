@@ -10,7 +10,7 @@ import java.util.Set;
 
 /**
  * This marker interface combines Aggregations and PostAggregations so that they can be collectively referenced.
- *
+ * <p>
  * This may become a sub interface of a TBD Column interface to flag all dimensions and metrics.
  */
 public interface MetricField {

@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 /**
  * NoSearchProvider class
- *
+ * <p>
  * This class is for supporting search dimensions which don't have any defined set of dimension rows
  * The find* method's on this class would not throw an exception if the filterValue is not found, instead
  * it would just return a new dimension row matching the filter.
@@ -55,12 +55,12 @@ public class NoOpSearchProvider implements SearchProvider {
 
     /**
      * Get cardinality for the dimension
-     *
+     * <p>
      * For dimensions with NoOpSearchProvider,
      * cardinality is unknown because it doesn't have defined set of dimension rows.
      * For such dimensions we should always calculate the query weight and if query weight is larger than what is
      * configured as package_name__query_weight_limit, the query weight is computed always otherwise it is skipped.
-     *
+     * <p>
      * Hence, returning the cardinality value as package_name__query_weight_limit
      *
      * @return The dimension cardinality

@@ -33,7 +33,7 @@ import javax.inject.Singleton;
  * Segment Metadata Loader sends requests to the Druid segment metadata endpoint ('datasources') and returns interval
  * maps to column availability. It then builds Segment Metadata objects which pivot this data into columns of intervals
  * and then updates the Physical Table instances in the physical table dictionary.
- *
+ * <p>
  * Note that this uses the old dataSources endpoint that queries the Broker.
  *
  * @deprecated The http endpoints in Druid that this loader relies on have been deprecated

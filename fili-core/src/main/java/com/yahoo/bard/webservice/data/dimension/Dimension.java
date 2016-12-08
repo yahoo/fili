@@ -14,9 +14,9 @@ import java.util.Set;
 
 /**
  * Dimension interface.
- *
+ * <p>
  * ApiName must be unique to corresponding domain.
- *
+ * <p>
  * NOTE: To override the default serialization, use the @JsonSerialize on the implementing class.
  *       Using @JsonSerialize with no parameters will provide default Jackson behavior (so things such
  *       as @JsonValue will work properly) or else you can provide your own custom serializers using the

@@ -47,7 +47,7 @@ public class ConfigResourceLoader {
     /**
      * Use a string path to load configurations matching a resource name from the class path which are not from
      * jars into Configuration objects.
-     *
+     * <p>
      * This differentiation generally provides for only the local src directories to supply the resource instances,
      * preventing injection of unwanted resources from class path entries.
      *

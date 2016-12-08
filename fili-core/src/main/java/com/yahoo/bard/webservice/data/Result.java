@@ -44,7 +44,7 @@ public class Result {
 
     /**
      * Copy the result, adding or replacing the value of a metric
-     *
+     * <p>
      * Don't add a without column method because removing columns is far less safe.
      *
      * @param metricColumn  The metric column

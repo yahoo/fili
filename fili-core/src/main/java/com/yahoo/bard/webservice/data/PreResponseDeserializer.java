@@ -55,7 +55,7 @@ import java.util.stream.StreamSupport;
  * a. We can reconstruct the dimension rows for each result with the help of dimension dictionary.
  * b. Schema object de-serialization is more efficient then the default one.
  * c. Provides the flexibility of optimizing serialization
- *
+ * <p>
  * Sample serialized PreResponse string
  * <pre>
  * <code>

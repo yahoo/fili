@@ -66,7 +66,7 @@ public class QueryParameterNormalizationFilter implements ApplicationEventListen
 
     /**
      * Build a normalized URI containing all LOWERCASE parameter keys.
-     *
+     * <p>
      * NOTE: Value casing is unaffected.
      *
      * @param uriInfo Uri info object from container request context
@@ -87,7 +87,7 @@ public class QueryParameterNormalizationFilter implements ApplicationEventListen
 
     /**
      * Extract a list of parameters and normalize all keys to be lowercase.
-     *
+     * <p>
      * NOTE: To preserve existing functionality, I won't change the value of any endpoint parameter name
      *       (i.e. the endpoint can remain case sensitive in absence of this filter). As a result, we have
      *       a naive solution here that applies a one-to-one mapping for changing the casing appropriately.
@@ -109,7 +109,7 @@ public class QueryParameterNormalizationFilter implements ApplicationEventListen
      * Build a parameter map that searches for @QueryParam annotations on the jersey endpoints
      * and extract their names.
      * This map enables us to perform case insensitive translations.
-     *
+     * <p>
      * Detail:
      *   This method extracts all classes contained within the packages specified as "jersey provider packages."
      *   It then conditions these methods by enumerating all methods and keeping only those that are annotated
@@ -117,7 +117,7 @@ public class QueryParameterNormalizationFilter implements ApplicationEventListen
      *   all of the parameters for each method and keeps a list of the @QueryParam values. It then extracts the values
      *   from these @QueryParam annotations to retain its codified casing while also constructing a map of lowercase'd
      *   values to map in a case insensitive way.
-     *
+     * <p>
      * NOTE: The ClassLoader provided with the ResourceConfig is used to find classes.
      *
      * @param providers Set of provider classes to seek for @QueryParam

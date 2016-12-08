@@ -8,7 +8,7 @@ import java.util.Map;
 
 /**
  * A Scope represents a tree of delegating maps.
- *
+ * <p>
  * A Scope may have child scopes which it encloses. It may have a parent scope which encloses it. Values defined in
  * a parent scope will be available via (@link Map#get(K k)} on itself, unless the scope itself defines (and therefore
  * overshadows) that entry.
