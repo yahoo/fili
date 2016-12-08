@@ -19,7 +19,7 @@ public class TableUtils {
 
     /**
      * Get the fact store column names from the dimensions and metrics.
-     *
+     * <p>
      * NOTE: This method exists since TemplateDruidQuery's don't have a valid DataSource from which we can
      *       retrieve a valid PhysicalTable. Consequently, at time of resolution, the table should be passed in.
      *

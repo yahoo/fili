@@ -33,7 +33,7 @@ import javax.inject.Singleton;
  * Datasource metadata loader sends requests to the druid datasource metadata endpoint ('datasources') and returns the
  * lists of available data segments for each datasource. It then builds Datasource Metadata objects which pivot this
  * data into columns of intervals and then updates the Physical Table instances in the physical table dictionary.
- *
+ * <p>
  * Note that this uses the segmentMetadata query that touches the coordinator.
  */
 @Singleton

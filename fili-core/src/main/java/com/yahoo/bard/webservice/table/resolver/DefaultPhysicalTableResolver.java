@@ -21,7 +21,7 @@ import javax.inject.Singleton;
 
 /**
  * A physical table resolver which implements core bard filters and comparator functions
- *
+ * <p>
  * {@link com.yahoo.bard.webservice.table.PhysicalTable}) based on the optimum (lowest query cost) table, considering
  * completeness of data, granularity, time alignment, aggregatability constraints and cardinality for a particular
  * query.

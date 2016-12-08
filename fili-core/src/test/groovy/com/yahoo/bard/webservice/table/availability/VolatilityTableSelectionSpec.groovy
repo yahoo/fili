@@ -15,10 +15,10 @@ import org.joda.time.Interval
  * This tests verifies that when we have two tables with an equal amount of availability (both are missing the leading
  * time bucket), then table selection favors the table with more volatile data available (in the case of this
  * test, the hourly table).
- *
+ * <p>
  * To perform this test, a query is performed against the monthly_hourly logical table, which is backed by both
  * a monthly and an hourly table (where the hourly table has more volatile data available).
- *
+ * <p>
  * To see what date ranges are volatile for the hourly and monthly physical tables, see the implementation of
  * {@link com.yahoo.bard.webservice.application.TestBinderFactory#getVolatileIntervalsService}.
  */

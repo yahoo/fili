@@ -18,7 +18,7 @@ import java.util.Set;
 
 /**
  * Creates a Druid cardinality aggregation.
- *
+ * <p>
  * Cardinality aggregators target dimension columns and not metric columns in their underlying data source, counting
  * either dimension cardinality sums, or sums of dimension tuples
  * <p>

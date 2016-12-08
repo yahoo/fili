@@ -175,7 +175,7 @@ abstract class SystemConfigSpec extends Specification {
 
     /**
      *  Get the data to use in where blocks as a list of lists.
-     *
+     * <p>
      *  The skip parameter allows to skip sets of properties
      *
      * @param skips  Map of type of skips. Set a type to true to skip that data

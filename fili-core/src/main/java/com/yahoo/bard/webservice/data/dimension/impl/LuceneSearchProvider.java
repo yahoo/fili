@@ -194,12 +194,12 @@ public class LuceneSearchProvider implements SearchProvider {
 
     /**
      * Refresh lucene index
-     *
+     * <p>
      * Query the lucene indexes on key column to see if there are any existing indexes.
-     *
+     * <p>
      * If yes, then we need to update the indexes.
      * Update is done by first deleting the existing documents and then adding new ones.
-     *
+     * <p>
      * If not, then just add the documents to indexes.
      *
      *

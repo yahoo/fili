@@ -20,7 +20,7 @@ import javax.ws.rs.core.Response
 
 /**
  * Serves as a base class for testing asynchronous processes.
- *
+ * <p>
  * This test allows us to execute a series of queries one after the other, and use the results of previous queries to
  * build subsequent queries.
  * <p>

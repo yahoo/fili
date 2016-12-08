@@ -15,7 +15,7 @@ class LoggingTestUtils {
     /**
      * Given a TestLogAppender, finds the line containing the {@code uuid}, and returns the values of the
      * {@code method}, {@code status}, {@code code}, and {@code logMessage} fields.
-     *
+     * <p>
      * We assume that the line containing the "uuid" field is well-formed JSON. If there is no log line that contains
      * the "uuid", then we return an empty Map.
      *
