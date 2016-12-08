@@ -32,6 +32,7 @@ import com.yahoo.bard.webservice.async.MetadataHttpResponseChannel;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
 import com.yahoo.bard.webservice.logging.blocks.DataRequest;
+import com.yahoo.bard.webservice.logging.blocks.DruidFilterInfo;
 import com.yahoo.bard.webservice.table.Table;
 import com.yahoo.bard.webservice.util.Either;
 import com.yahoo.bard.webservice.web.DataApiRequest;
@@ -407,6 +408,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
 
             RequestLog.switchTiming("logRequestMetrics");
             logRequestMetrics(apiRequest, readCache, druidQuery);
+            RequestLog.record(new DruidFilterInfo(apiRequest.getFilter()));
             RequestLog.switchTiming(REQUEST_WORKFLOW_TIMER);
 
             // Process the request
