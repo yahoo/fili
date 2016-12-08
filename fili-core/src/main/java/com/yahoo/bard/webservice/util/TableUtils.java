@@ -46,12 +46,12 @@ public class TableUtils {
     }
 
     /**
-     * Get the table column names from the dimensions and metrics.
+     * Get the schema column names from the dimensions and metrics.
      *
      * @param request  A request which supplies grouping dimensions and filtering dimensions
      * @param query  A query model which has metric column and possibly dimension column names
      *
-     * @return a set of strings representing table column names
+     * @return a set of strings representing schema column names
      */
     public static Set<String> getColumnNames(DataApiRequest request, DruidAggregationQuery<?> query) {
         return Stream.of(
