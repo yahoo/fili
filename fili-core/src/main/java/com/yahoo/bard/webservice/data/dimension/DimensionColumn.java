@@ -17,7 +17,7 @@ public class DimensionColumn extends Column {
 
     /**
      * Constructor.
-     * Uses dimension api name for column name.
+     * Uses the given dimension's api name for column name.
      *
      * @param dimension  The column's corresponding dimension
      */
@@ -27,10 +27,10 @@ public class DimensionColumn extends Column {
 
     /**
      * Constructor.
-     * Uses the given name as  for column name.
+     * Uses the given columnName for column name.
      *
      * @param dimension  The column's corresponding dimension
-     * @param columnName  Physical column name backing dimension
+     * @param columnName  Column name backing dimension
      */
     protected DimensionColumn(@NotNull Dimension dimension, @NotNull String columnName) {
         super(columnName);

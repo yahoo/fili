@@ -28,7 +28,7 @@ Current
 
 - [Default DimensionColumn name to use apiName instead of physicalName](https://github.com/yahoo/fili/pull/115)
     * Change `DimensionColumn.java` to use dimension api name instead of physical name as its name
-    * Modified tests according to the above change
+    * Modified files dependent on `DimensionColumn.java` and corresponding tests according to the above change
 
 - [`NoOpResultSetMapper` now runs in constant time and space.](https://github.com/yahoo/fili/pull/119)
 
