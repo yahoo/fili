@@ -14,6 +14,7 @@ Current
     * Supported for both Cache v1 and V2
     * Controlled with `bard__druid_max_response_length_to_cache` setting
     * Default value is `MAX_LONG`, so no cache prevention will happen by default
+- [Logs more finegrained timings of the request processing workflow](https://github.com/yahoo/fili/pull/110)
 
 - [Add `FilteredAggregationMaker`](https://github.com/yahoo/fili/pull/107)
     * This version is rudimentary. See [issue 120](https://github.com/yahoo/fili/issue/120) for plans on updating this

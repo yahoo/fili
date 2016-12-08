@@ -47,6 +47,7 @@ import com.yahoo.bard.webservice.druid.model.orderby.SortDirection;
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier;
+import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.TableIdentifier;
 import com.yahoo.bard.webservice.util.StreamUtils;
@@ -182,7 +183,6 @@ public class DataApiRequest extends ApiRequest {
 
         GranularityParser granularityParser = bardConfigResources.getGranularityParser();
         DimensionDictionary dimensionDictionary = bardConfigResources.getDimensionDictionary();
-        MetricDictionary metricDictionary = bardConfigResources.getMetricDictionary();
 
         timeZone = generateTimeZone(timeZoneId, bardConfigResources.getSystemTimeZone());
 
@@ -202,9 +202,11 @@ public class DataApiRequest extends ApiRequest {
 
         this.intervals = generateIntervals(intervals, this.granularity, dateTimeFormatter);
 
-        metricDictionary = metricDictionary.getScope(Collections.singletonList(tableName));
-
         this.filterBuilder = bardConfigResources.getFilterBuilder();
+
+        MetricDictionary metricDictionary = bardConfigResources
+                .getMetricDictionary()
+                .getScope(Collections.singletonList(tableName));
 
         // At least one logical metric is required
         this.logicalMetrics = generateLogicalMetrics(logicalMetrics, metricDictionary, dimensionDictionary, table);
@@ -221,15 +223,19 @@ public class DataApiRequest extends ApiRequest {
         this.filters = generateFilters(filters, table, dimensionDictionary);
         validateRequestDimensions(this.filters.keySet(), this.table);
 
+        RequestLog.startTiming("BuildingDruidFilter");
         try {
             this.filter = filterBuilder.buildFilters(this.filters);
         } catch (DimensionRowNotFoundException e) {
             LOG.debug(e.getMessage());
             throw new BadApiRequestException(e);
+        } finally {
+            RequestLog.stopTiming("BuildingDruidFilter");
         }
 
         // Zero or more having queries may be referenced
         this.havings = generateHavings(havings, this.logicalMetrics,  metricDictionary);
+
         this.having = DruidHavingBuilder.buildHavings(this.havings);
 
         // Requested sort on metrics - optional, can be empty Set
@@ -298,14 +304,19 @@ public class DataApiRequest extends ApiRequest {
      * @return the request's TimeZone
      */
     private DateTimeZone generateTimeZone(String timeZoneId, DateTimeZone systemTimeZone) {
-        if (timeZoneId == null) {
-            return systemTimeZone;
-        }
+        RequestLog.startTiming("generatingTimeZone");
         try {
-            return DateTimeZone.forID(timeZoneId);
-        } catch (IllegalArgumentException ignored) {
-            LOG.debug(INVALID_TIME_ZONE.logFormat(timeZoneId));
-            throw new BadApiRequestException(INVALID_TIME_ZONE.format(timeZoneId));
+            if (timeZoneId == null) {
+                return systemTimeZone;
+            }
+            try {
+                return DateTimeZone.forID(timeZoneId);
+            } catch (IllegalArgumentException ignored) {
+                LOG.debug(INVALID_TIME_ZONE.logFormat(timeZoneId));
+                throw new BadApiRequestException(INVALID_TIME_ZONE.format(timeZoneId));
+            }
+        } finally {
+            RequestLog.stopTiming("generatingTimeZone");
         }
     }
 
@@ -470,38 +481,43 @@ public class DataApiRequest extends ApiRequest {
             List<PathSegment> apiDimensions,
             DimensionDictionary dimensionDictionary
     ) throws BadApiRequestException {
-        // Dimensions are optional hence check if dimensions are requested.
-        if (apiDimensions == null || apiDimensions.isEmpty()) {
-            return new LinkedHashSet<>();
-        }
-
-        // set of dimension names (strings)
-        List<String> dimApiNames = apiDimensions.stream()
-                .map(PathSegment::getPath)
-                .filter(s -> !s.isEmpty())
-                .collect(Collectors.toList());
-
-        // set of dimension objects
-        LinkedHashSet<Dimension> generated = new LinkedHashSet<>();
-        List<String> invalidDimensions = new ArrayList<>();
-        for (String dimApiName : dimApiNames) {
-            Dimension dimension = dimensionDictionary.findByApiName(dimApiName);
-
-            // If dimension dictionary returns a null, it means the requested dimension is not found.
-            if (dimension == null) {
-                invalidDimensions.add(dimApiName);
-            } else {
-                generated.add(dimension);
+        RequestLog.startTiming("GeneratingDimensions");
+        try {
+            // Dimensions are optional hence check if dimensions are requested.
+            if (apiDimensions == null || apiDimensions.isEmpty()) {
+                return new LinkedHashSet<>();
             }
-        }
 
-        if (!invalidDimensions.isEmpty()) {
-            LOG.debug(DIMENSIONS_UNDEFINED.logFormat(invalidDimensions.toString()));
-            throw new BadApiRequestException(DIMENSIONS_UNDEFINED.format(invalidDimensions.toString()));
-        }
+            // set of dimension names (strings)
+            List<String> dimApiNames = apiDimensions.stream()
+                    .map(PathSegment::getPath)
+                    .filter(s -> !s.isEmpty())
+                    .collect(Collectors.toList());
 
-        LOG.trace("Generated set of dimension: {}", generated);
-        return generated;
+            // set of dimension objects
+            LinkedHashSet<Dimension> generated = new LinkedHashSet<>();
+            List<String> invalidDimensions = new ArrayList<>();
+            for (String dimApiName : dimApiNames) {
+                Dimension dimension = dimensionDictionary.findByApiName(dimApiName);
+
+                // If dimension dictionary returns a null, it means the requested dimension is not found.
+                if (dimension == null) {
+                    invalidDimensions.add(dimApiName);
+                } else {
+                    generated.add(dimension);
+                }
+            }
+
+            if (!invalidDimensions.isEmpty()) {
+                LOG.debug(DIMENSIONS_UNDEFINED.logFormat(invalidDimensions.toString()));
+                throw new BadApiRequestException(DIMENSIONS_UNDEFINED.format(invalidDimensions.toString()));
+            }
+
+            LOG.trace("Generated set of dimension: {}", generated);
+            return generated;
+        } finally {
+            RequestLog.stopTiming("GeneratingDimensions");
+        }
     }
 
     /**
@@ -519,17 +535,22 @@ public class DataApiRequest extends ApiRequest {
             @NotNull List<PathSegment> apiDimensionPathSegments,
             @NotNull DimensionDictionary dimensionDictionary
     ) {
-        return apiDimensionPathSegments.stream()
-                .filter(pathSegment -> !pathSegment.getPath().isEmpty())
-                .collect(Collectors.toMap(
-                        pathSegment -> dimensionDictionary.findByApiName(pathSegment.getPath()),
-                        pathSegment -> bindShowClause(pathSegment, dimensionDictionary),
-                        (LinkedHashSet<DimensionField> e, LinkedHashSet<DimensionField> i) -> {
-                            e.addAll(i);
-                            return e;
-                        },
-                        LinkedHashMap::new
-                ));
+        RequestLog.startTiming("GeneratingDimensionFields");
+        try {
+            return apiDimensionPathSegments.stream()
+                    .filter(pathSegment -> !pathSegment.getPath().isEmpty())
+                    .collect(Collectors.toMap(
+                            pathSegment -> dimensionDictionary.findByApiName(pathSegment.getPath()),
+                            pathSegment -> bindShowClause(pathSegment, dimensionDictionary),
+                            (LinkedHashSet<DimensionField> e, LinkedHashSet<DimensionField> i) -> {
+                                e.addAll(i);
+                                return e;
+                            },
+                            LinkedHashMap::new
+                    ));
+        } finally {
+            RequestLog.stopTiming("GeneratingDimensionFields");
+        }
     }
 
     /**
@@ -700,114 +721,121 @@ public class DataApiRequest extends ApiRequest {
             DimensionDictionary dimensionDictionary,
             LogicalTable table
     ) throws BadApiRequestException {
-        LOG.trace("Metric dictionary: {}", metricDictionary);
+        RequestLog.startTiming("GeneratingLogicalMetrics");
+        try {
+            LOG.trace("Metric dictionary: {}", metricDictionary);
 
-        if (apiMetricQuery == null || "".equals(apiMetricQuery)) {
-            LOG.debug(METRICS_MISSING.logFormat());
-            throw new BadApiRequestException(METRICS_MISSING.format());
-        }
-        // set of logical metric objects
-        LinkedHashSet<LogicalMetric> generated = new LinkedHashSet<>();
-        List<String> invalidMetricNames = new ArrayList<>();
-
-        //If  INTERSECTION_REPORTING_ENABLED flag is true, convert the aggregators into FilteredAggregators and
-        //replace old PostAggs with  new postAggs in order to generate a new Filtered Logical Metric
-        if (BardFeatureFlag.INTERSECTION_REPORTING.isOn()) {
-            JSONArray metricsJsonArray;
-            try {
-                //For a given metricString, returns an array of json objects contains metric name and associated filters
-                metricsJsonArray = MetricParser.generateMetricFilterJsonArray(apiMetricQuery);
-            } catch (IllegalArgumentException e) {
-                LOG.debug(INCORRECT_METRIC_FILTER_FORMAT.logFormat(e.getMessage()));
-                throw new BadApiRequestException(INCORRECT_METRIC_FILTER_FORMAT.format(apiMetricQuery));
-            } catch (JSONException e) {
-                // This needs to stay here due to a bytecode issue where Java 8 flags JSONException as invalid
-                LOG.debug(INCORRECT_METRIC_FILTER_FORMAT.logFormat(e.getMessage()));
-                throw new BadApiRequestException(INCORRECT_METRIC_FILTER_FORMAT.format(apiMetricQuery));
+            if (apiMetricQuery == null || "".equals(apiMetricQuery)) {
+                LOG.debug(METRICS_MISSING.logFormat());
+                throw new BadApiRequestException(METRICS_MISSING.format());
             }
-            //check for the duplicate occurrence of metrics in an API
-            FieldConverterSupplier.metricsFilterSetBuilder.validateDuplicateMetrics(metricsJsonArray);
-            for (int i = 0; i < metricsJsonArray.length(); i++) {
-                JSONObject jsonObject;
+            // set of logical metric objects
+            LinkedHashSet<LogicalMetric> generated = new LinkedHashSet<>();
+            List<String> invalidMetricNames = new ArrayList<>();
+
+            //If INTERSECTION_REPORTING_ENABLED flag is true, convert the aggregators into FilteredAggregators and
+            //replace old PostAggs with  new postAggs in order to generate a new Filtered Logical Metric
+            if (BardFeatureFlag.INTERSECTION_REPORTING.isOn()) {
+                JSONArray metricsJsonArray;
                 try {
-                     jsonObject = metricsJsonArray.getJSONObject(i);
+                    //For a given metricString, returns an array of json objects contains metric name and associated
+                    // filters
+
+                    metricsJsonArray = MetricParser.generateMetricFilterJsonArray(apiMetricQuery);
+                } catch (IllegalArgumentException e) {
+                    LOG.debug(INCORRECT_METRIC_FILTER_FORMAT.logFormat(e.getMessage()));
+                    throw new BadApiRequestException(INCORRECT_METRIC_FILTER_FORMAT.format(apiMetricQuery));
                 } catch (JSONException e) {
+                    // This needs to stay here due to a bytecode issue where Java 8 flags JSONException as invalid
                     LOG.debug(INCORRECT_METRIC_FILTER_FORMAT.logFormat(e.getMessage()));
                     throw new BadApiRequestException(INCORRECT_METRIC_FILTER_FORMAT.format(apiMetricQuery));
                 }
-                String metricName = jsonObject.getString("name");
-                LogicalMetric logicalMetric = metricDictionary.get(metricName);
-
-                // If metric dictionary returns a null, it means the requested metric is not found.
-                if (logicalMetric == null) {
-                    invalidMetricNames.add(metricName);
-                } else {
-                    //metricFilterObject contains all the filters for a given metric
-                    JSONObject metricFilterObject = jsonObject.getJSONObject("filter");
-
-                    //Currently supporting AND operation for metric filters.
-                    if (!metricFilterObject.isNull("AND")) {
-
-                        //We currently do not support ratio metrics
-                        if (logicalMetric.getCategory().equals(RATIO_METRIC_CATEGORY)) {
-                            LOG.debug(
-                                    UNSUPPORTED_FILTERED_METRIC_CATEGORY.logFormat(
-                                        logicalMetric.getName(),
-                                        logicalMetric.getCategory()
-                                    )
-                            );
-                            throw new BadApiRequestException(
-                                    UNSUPPORTED_FILTERED_METRIC_CATEGORY.format(
-                                            logicalMetric.getName(),
-                                            logicalMetric.getCategory()
-                                    )
-                            );
-                        }
-                        try {
-                            logicalMetric = FieldConverterSupplier.metricsFilterSetBuilder.getFilteredLogicalMetric(
-                                    logicalMetric,
-                                    metricFilterObject,
-                                    dimensionDictionary,
-                                    table,
-                                    this
-                            );
-                        } catch (DimensionRowNotFoundException dimRowException) {
-                            LOG.debug(dimRowException.getMessage());
-                            throw new BadApiRequestException(dimRowException.getMessage(), dimRowException);
-                        }
-
-                    //If metric filter isn't empty or it has anything other then 'AND' then throw an exception
-                    } else if (!(metricFilterObject.toString().equals("{}"))) {
-                        LOG.debug(INVALID_METRIC_FILTER_CONDITION.logFormat(metricFilterObject.keySet()));
-                        throw new BadApiRequestException(
-                                INVALID_METRIC_FILTER_CONDITION.format(metricFilterObject.keySet())
-                        );
+                //check for the duplicate occurrence of metrics in an API
+                FieldConverterSupplier.metricsFilterSetBuilder.validateDuplicateMetrics(metricsJsonArray);
+                for (int i = 0; i < metricsJsonArray.length(); i++) {
+                    JSONObject jsonObject;
+                    try {
+                        jsonObject = metricsJsonArray.getJSONObject(i);
+                    } catch (JSONException e) {
+                        LOG.debug(INCORRECT_METRIC_FILTER_FORMAT.logFormat(e.getMessage()));
+                        throw new BadApiRequestException(INCORRECT_METRIC_FILTER_FORMAT.format(apiMetricQuery));
                     }
-                    generated.add(logicalMetric);
+                    String metricName = jsonObject.getString("name");
+                    LogicalMetric logicalMetric = metricDictionary.get(metricName);
+
+                    // If metric dictionary returns a null, it means the requested metric is not found.
+                    if (logicalMetric == null) {
+                        invalidMetricNames.add(metricName);
+                    } else {
+                        //metricFilterObject contains all the filters for a given metric
+                        JSONObject metricFilterObject = jsonObject.getJSONObject("filter");
+
+                        //Currently supporting AND operation for metric filters.
+                        if (!metricFilterObject.isNull("AND")) {
+
+                            //We currently do not support ratio metrics
+                            if (logicalMetric.getCategory().equals(RATIO_METRIC_CATEGORY)) {
+                                LOG.debug(
+                                        UNSUPPORTED_FILTERED_METRIC_CATEGORY.logFormat(
+                                                logicalMetric.getName(),
+                                                logicalMetric.getCategory()
+                                        )
+                                );
+                                throw new BadApiRequestException(
+                                        UNSUPPORTED_FILTERED_METRIC_CATEGORY.format(
+                                                logicalMetric.getName(),
+                                                logicalMetric.getCategory()
+                                        )
+                                );
+                            }
+                            try {
+                                logicalMetric = FieldConverterSupplier.metricsFilterSetBuilder.getFilteredLogicalMetric(
+                                        logicalMetric,
+                                        metricFilterObject,
+                                        dimensionDictionary,
+                                        table,
+                                        this
+                                );
+                            } catch (DimensionRowNotFoundException dimRowException) {
+                                LOG.debug(dimRowException.getMessage());
+                                throw new BadApiRequestException(dimRowException.getMessage(), dimRowException);
+                            }
+
+                            //If metric filter isn't empty or it has anything other then 'AND' then throw an exception
+                        } else if (!(metricFilterObject.toString().equals("{}"))) {
+                            LOG.debug(INVALID_METRIC_FILTER_CONDITION.logFormat(metricFilterObject.keySet()));
+                            throw new BadApiRequestException(
+                                    INVALID_METRIC_FILTER_CONDITION.format(metricFilterObject.keySet())
+                            );
+                        }
+                        generated.add(logicalMetric);
+                    }
+                }
+            } else {
+                //Feature flag for intersection reporting is disabled
+                // list of metrics extracted from the query string
+                List<String> metricApiQuery = Arrays.asList(apiMetricQuery.split(","));
+                for (String metricName : metricApiQuery) {
+                    LogicalMetric logicalMetric = metricDictionary.get(metricName);
+
+                    // If metric dictionary returns a null, it means the requested metric is not found.
+                    if (logicalMetric == null) {
+                        invalidMetricNames.add(metricName);
+                    } else {
+                        generated.add(logicalMetric);
+                    }
                 }
             }
-        } else {
-            //Feature flag for intersection reporting is disabled
-            // list of metrics extracted from the query string
-            List<String> metricApiQuery = Arrays.asList(apiMetricQuery.split(","));
-            for (String metricName : metricApiQuery) {
-                LogicalMetric logicalMetric = metricDictionary.get(metricName);
 
-                // If metric dictionary returns a null, it means the requested metric is not found.
-                if (logicalMetric == null) {
-                    invalidMetricNames.add(metricName);
-                } else {
-                    generated.add(logicalMetric);
-                }
+            if (!invalidMetricNames.isEmpty()) {
+                LOG.debug(METRICS_UNDEFINED.logFormat(invalidMetricNames.toString()));
+                throw new BadApiRequestException(METRICS_UNDEFINED.format(invalidMetricNames.toString()));
             }
+            LOG.trace("Generated set of logical metric: {}", generated);
+            return generated;
+        } finally {
+            RequestLog.stopTiming("GeneratingLogicalMetrics");
         }
-
-        if (!invalidMetricNames.isEmpty()) {
-            LOG.debug(METRICS_UNDEFINED.logFormat(invalidMetricNames.toString()));
-            throw new BadApiRequestException(METRICS_UNDEFINED.format(invalidMetricNames.toString()));
-        }
-        LOG.trace("Generated set of logical metric: {}", generated);
-        return generated;
     }
 
     /**
@@ -867,73 +895,80 @@ public class DataApiRequest extends ApiRequest {
             Granularity granularity,
             DateTimeFormatter dateTimeFormatter
     ) throws BadApiRequestException {
-        Set<Interval> generated = new LinkedHashSet<>();
-        if (apiIntervalQuery == null || apiIntervalQuery.equals("")) {
-            LOG.debug(INTERVAL_MISSING.logFormat());
-            throw new BadApiRequestException(INTERVAL_MISSING.format());
-        }
-        List<String> apiIntervals = Arrays.asList(apiIntervalQuery.split(","));
-        // Split each interval string into the start and stop instances, parse them, and add the interval to the list
-        for (String apiInterval : apiIntervals) {
-            String[] split = apiInterval.split("/");
-
-            // Check for both a start and a stop
-            if (split.length != 2) {
-                String message = "Start and End dates are required.";
-                LOG.debug(INTERVAL_INVALID.logFormat(apiIntervalQuery, message));
-                throw new BadApiRequestException(INTERVAL_INVALID.format(apiIntervalQuery, message));
+        RequestLog.startTiming("GeneratingIntervals");
+        try {
+            Set<Interval> generated = new LinkedHashSet<>();
+            if (apiIntervalQuery == null || apiIntervalQuery.equals("")) {
+                LOG.debug(INTERVAL_MISSING.logFormat());
+                throw new BadApiRequestException(INTERVAL_MISSING.format());
             }
+            List<String> apiIntervals = Arrays.asList(apiIntervalQuery.split(","));
+            // Split each interval string into the start and stop instances, parse them, and add the interval to the
+            // list
 
-            try {
-                String start = split[0].toUpperCase(Locale.ENGLISH);
-                String end = split[1].toUpperCase(Locale.ENGLISH);
-                // If start & end intervals are period then marking as invalid interval.
-                // Because either one should be macro or actual date to generate an interval
-                if (start.startsWith("P") && end.startsWith("P")) {
-                    LOG.debug(INTERVAL_INVALID.logFormat(start));
-                    throw new BadApiRequestException(INTERVAL_INVALID.format(apiInterval));
+            for (String apiInterval : apiIntervals) {
+                String[] split = apiInterval.split("/");
+
+                // Check for both a start and a stop
+                if (split.length != 2) {
+                    String message = "Start and End dates are required.";
+                    LOG.debug(INTERVAL_INVALID.logFormat(apiIntervalQuery, message));
+                    throw new BadApiRequestException(INTERVAL_INVALID.format(apiIntervalQuery, message));
                 }
 
-                Interval interval;
-                DateTime now = new DateTime();
-                //If start interval is period, then create new interval with computed end date
-                //possible end interval could be next,current, date
-                if (start.startsWith("P")) {
-                    interval = new Interval(
-                            Period.parse(start),
-                            getAsDateTime(now, granularity, split[1], dateTimeFormatter)
-                    );
-                //If end string is period, then create an interval with the computed start date
-                //Possible start & end string could be a macro or an ISO 8601 DateTime
-                } else if (end.startsWith("P")) {
-                    interval = new Interval(
-                            getAsDateTime(now, granularity, split[0], dateTimeFormatter),
-                            Period.parse(end)
-                    );
-                } else {
-                    //start and end interval could be either macros or actual datetime
-                    interval = new Interval(
-                            getAsDateTime(now, granularity, split[0], dateTimeFormatter),
-                            getAsDateTime(now, granularity, split[1], dateTimeFormatter)
-                    );
-                }
+                try {
+                    String start = split[0].toUpperCase(Locale.ENGLISH);
+                    String end = split[1].toUpperCase(Locale.ENGLISH);
+                    //If start & end intervals are period then marking as invalid interval.
+                    //Becacuse either one should be macro or actual date to generate an interval
+                    if (start.startsWith("P") && end.startsWith("P")) {
+                        LOG.debug(INTERVAL_INVALID.logFormat(start));
+                        throw new BadApiRequestException(INTERVAL_INVALID.format(apiInterval));
+                    }
 
-                // Zero length intervals are invalid
-                if (interval.toDuration().equals(Duration.ZERO)) {
-                    LOG.debug(INTERVAL_ZERO_LENGTH.logFormat(apiInterval));
-                    throw new BadApiRequestException(INTERVAL_ZERO_LENGTH.format(apiInterval));
+                    Interval interval;
+                    DateTime now = new DateTime();
+                    //If start interval is period, then create new interval with computed end date
+                    //possible end interval could be next,current, date
+                    if (start.startsWith("P")) {
+                        interval = new Interval(
+                                Period.parse(start),
+                                getAsDateTime(now, granularity, split[1], dateTimeFormatter)
+                        );
+                        //If end string is period, then create an interval with the computed start date
+                        //Possible start & end string could be a macro or an ISO 8601 DateTime
+                    } else if (end.startsWith("P")) {
+                        interval = new Interval(
+                                getAsDateTime(now, granularity, split[0], dateTimeFormatter),
+                                Period.parse(end)
+                        );
+                    } else {
+                        //start and end interval could be either macros or actual datetime
+                        interval = new Interval(
+                                getAsDateTime(now, granularity, split[0], dateTimeFormatter),
+                                getAsDateTime(now, granularity, split[1], dateTimeFormatter)
+                        );
+                    }
+
+                    // Zero length intervals are invalid
+                    if (interval.toDuration().equals(Duration.ZERO)) {
+                        LOG.debug(INTERVAL_ZERO_LENGTH.logFormat(apiInterval));
+                        throw new BadApiRequestException(INTERVAL_ZERO_LENGTH.format(apiInterval));
+                    }
+                    generated.add(interval);
+                } catch (IllegalArgumentException iae) {
+                    // Handle poor JodaTime message (special case)
+                    String internalMessage = iae.getMessage().equals("The end instant must be greater the start") ?
+                            "The end instant must be greater than the start instant" :
+                            iae.getMessage();
+                    LOG.debug(INTERVAL_INVALID.logFormat(apiIntervalQuery, internalMessage), iae);
+                    throw new BadApiRequestException(INTERVAL_INVALID.format(apiIntervalQuery, internalMessage), iae);
                 }
-                generated.add(interval);
-            } catch (IllegalArgumentException iae) {
-                // Handle poor JodaTime message (special case)
-                String internalMessage = iae.getMessage().equals("The end instant must be greater the start") ?
-                        "The end instant must be greater than the start instant" :
-                        iae.getMessage();
-                LOG.debug(INTERVAL_INVALID.logFormat(apiIntervalQuery, internalMessage), iae);
-                throw new BadApiRequestException(INTERVAL_INVALID.format(apiIntervalQuery, internalMessage), iae);
             }
+            return generated;
+        } finally {
+            RequestLog.stopTiming("GeneratingIntervals");
         }
-        return generated;
     }
 
     /**
@@ -954,43 +989,51 @@ public class DataApiRequest extends ApiRequest {
             LogicalTable table,
             DimensionDictionary dimensionDictionary
     ) throws BadApiRequestException {
-        LOG.trace("Dimension Dictionary: {}", dimensionDictionary);
-        // Set of filter objects
-        Map<Dimension, Set<ApiFilter>> generated = new LinkedHashMap<>();
+        RequestLog.startTiming("GeneratingFilters");
+        try {
+            LOG.trace("Dimension Dictionary: {}", dimensionDictionary);
+            // Set of filter objects
+            Map<Dimension, Set<ApiFilter>> generated = new LinkedHashMap<>();
 
-        // Filters are optional hence check if filters are requested.
-        if (filterQuery == null || "".equals(filterQuery)) {
-            return generated;
-        }
-
-        // split on '],' to get list of filters
-        List<String> apiFilters = Arrays.asList(filterQuery.split(COMMA_AFTER_BRACKET_PATTERN));
-        for (String apiFilter : apiFilters) {
-            ApiFilter newFilter;
-            try {
-                newFilter = new ApiFilter(apiFilter, table, dimensionDictionary);
-            } catch (BadFilterException filterException) {
-                throw new BadApiRequestException(filterException.getMessage(), filterException);
+            // Filters are optional hence check if filters are requested.
+            if (filterQuery == null || "".equals(filterQuery)) {
+                return generated;
             }
 
-            if (!BardFeatureFlag.DATA_FILTER_SUBSTRING_OPERATIONS.isOn()) {
-                FilterOperation filterOperation = newFilter.getOperation();
-                if (filterOperation.equals(FilterOperation.startswith)
-                    || filterOperation.equals(FilterOperation.contains)
-                ) {
-                    throw new BadApiRequestException(ErrorMessageFormat.FILTER_SUBSTRING_OPERATIONS_DISABLED.format());
+            // split on '],' to get list of filters
+            List<String> apiFilters = Arrays.asList(filterQuery.split(COMMA_AFTER_BRACKET_PATTERN));
+            for (String apiFilter : apiFilters) {
+                ApiFilter newFilter;
+                try {
+                    newFilter = new ApiFilter(apiFilter, table, dimensionDictionary);
+                } catch (BadFilterException filterException) {
+                    throw new BadApiRequestException(filterException.getMessage(), filterException);
                 }
-            }
-            Dimension dim = newFilter.getDimension();
-            if (!generated.containsKey(dim)) {
-                generated.put(dim, new LinkedHashSet<>());
-            }
-            Set<ApiFilter> filterSet = generated.get(dim);
-            filterSet.add(newFilter);
-        }
-        LOG.trace("Generated map of filters: {}", generated);
 
-        return generated;
+                if (!BardFeatureFlag.DATA_FILTER_SUBSTRING_OPERATIONS.isOn()) {
+                    FilterOperation filterOperation = newFilter.getOperation();
+                    if (filterOperation.equals(FilterOperation.startswith)
+                            || filterOperation.equals(FilterOperation.contains)
+                            ) {
+                        throw new BadApiRequestException(
+                                ErrorMessageFormat.FILTER_SUBSTRING_OPERATIONS_DISABLED.format()
+                        );
+
+                    }
+                }
+                Dimension dim = newFilter.getDimension();
+                if (!generated.containsKey(dim)) {
+                    generated.put(dim, new LinkedHashSet<>());
+                }
+                Set<ApiFilter> filterSet = generated.get(dim);
+                filterSet.add(newFilter);
+            }
+            LOG.trace("Generated map of filters: {}", generated);
+
+            return generated;
+        } finally {
+            RequestLog.stopTiming("GeneratingFilters");
+        }
     }
 
     /**
@@ -1010,41 +1053,48 @@ public class DataApiRequest extends ApiRequest {
             Set<LogicalMetric> logicalMetrics,
             MetricDictionary metricDictionary
     ) throws BadApiRequestException {
-        LOG.trace("Metric Dictionary: {}", metricDictionary);
-
-        // Havings are optional hence check if havings are requested.
-        if (havingQuery == null || "".equals(havingQuery)) {
-            return Collections.emptyMap();
-        }
-
-        List<String> unmatchedMetrics = new ArrayList<>();
-
-        // split on '],' to get list of havings
-        List<String> apiHavings = Arrays.asList(havingQuery.split(COMMA_AFTER_BRACKET_PATTERN));
-        Map<LogicalMetric, Set<ApiHaving>> generated = new LinkedHashMap<>();
-        for (String apiHaving : apiHavings) {
-            try {
-                ApiHaving newHaving = new ApiHaving(apiHaving, metricDictionary);
-                LogicalMetric metric = newHaving.getMetric();
-                if (!logicalMetrics.contains(metric)) {
-                    unmatchedMetrics.add(metric.getName());
-                } else {
-                    generated.putIfAbsent(metric, new LinkedHashSet<>());
-                    generated.get(metric).add(newHaving);
-                }
-            } catch (BadHavingException havingException) {
-                throw new BadApiRequestException(havingException.getMessage(), havingException);
+        RequestLog.startTiming("GeneratingHavings");
+        try {
+            LOG.trace("Metric Dictionary: {}", metricDictionary);
+            // Havings are optional hence check if havings are requested.
+            if (havingQuery == null || "".equals(havingQuery)) {
+                return Collections.emptyMap();
             }
+
+            List<String> unmatchedMetrics = new ArrayList<>();
+
+            // split on '],' to get list of havings
+            List<String> apiHavings = Arrays.asList(havingQuery.split(COMMA_AFTER_BRACKET_PATTERN));
+            Map<LogicalMetric, Set<ApiHaving>> generated = new LinkedHashMap<>();
+            for (String apiHaving : apiHavings) {
+                try {
+                    ApiHaving newHaving = new ApiHaving(apiHaving, metricDictionary);
+                    LogicalMetric metric = newHaving.getMetric();
+                    if (!logicalMetrics.contains(metric)) {
+                        unmatchedMetrics.add(metric.getName());
+                    } else {
+                        generated.putIfAbsent(metric, new LinkedHashSet<>());
+                        generated.get(metric).add(newHaving);
+                    }
+                } catch (BadHavingException havingException) {
+                    throw new BadApiRequestException(havingException.getMessage(), havingException);
+                }
+            }
+
+            if (!unmatchedMetrics.isEmpty()) {
+                LOG.debug(HAVING_METRICS_NOT_IN_QUERY_FORMAT.logFormat(unmatchedMetrics.toString()));
+                throw new BadApiRequestException(
+                        HAVING_METRICS_NOT_IN_QUERY_FORMAT.format(unmatchedMetrics.toString())
+                );
+
+            }
+
+            LOG.trace("Generated map of havings: {}", generated);
+
+            return generated;
+        } finally {
+            RequestLog.stopTiming("GeneratingHavings");
         }
-
-        if (!unmatchedMetrics.isEmpty()) {
-            LOG.debug(HAVING_METRICS_NOT_IN_QUERY_FORMAT.logFormat(unmatchedMetrics.toString()));
-            throw new BadApiRequestException(HAVING_METRICS_NOT_IN_QUERY_FORMAT.format(unmatchedMetrics.toString()));
-        }
-
-        LOG.trace("Generated map of havings: {}", generated);
-
-        return generated;
     }
 
     /**
@@ -1063,67 +1113,72 @@ public class DataApiRequest extends ApiRequest {
             Set<LogicalMetric> logicalMetrics,
             MetricDictionary metricDictionary
     ) throws BadApiRequestException {
-        String sortMetricName;
-        List<String> metricWithDirection;
-        LinkedHashSet<OrderByColumn> metricSortColumns = new LinkedHashSet<>();
+        RequestLog.startTiming("GeneratingSortColumns");
+        try {
+            String sortMetricName;
+            List<String> metricWithDirection;
+            LinkedHashSet<OrderByColumn> metricSortColumns = new LinkedHashSet<>();
 
-        if ("".equals(apiSortQuery) || apiSortQuery == null) {
+            if ("".equals(apiSortQuery) || apiSortQuery == null) {
+                return metricSortColumns;
+            }
+
+            // Split on "," to get multiple sorts (if any)
+            List<String> requestedSorts = Arrays.asList(apiSortQuery.split(","));
+
+            List<String> unknownMetrics = new ArrayList<>();
+            List<String> unmatchedMetrics = new ArrayList<>();
+            List<String> unsortableMetrics = new ArrayList<>();
+
+            for (String sort : requestedSorts) {
+                metricWithDirection = Arrays.asList(sort.split("\\|"));
+                sortMetricName = metricWithDirection.get(0);
+
+                SortDirection sortDirection;
+                try {
+                    sortDirection = metricWithDirection.size() == 2 ?
+                            SortDirection.valueOf(metricWithDirection.get(1).toUpperCase(Locale.ENGLISH)) :
+                            SortDirection.DESC;
+                } catch (IllegalArgumentException ignored) {
+                    String sortDirectionName = metricWithDirection.get(1);
+                    LOG.debug(SORT_DIRECTION_INVALID.logFormat(sortDirectionName));
+                    throw new BadApiRequestException(SORT_DIRECTION_INVALID.format(sortDirectionName));
+                }
+
+                LogicalMetric logicalMetric = metricDictionary.get(sortMetricName);
+
+                // If metric dictionary returns a null, it means the requested sort metric is not found.
+                if (logicalMetric == null) {
+                    unknownMetrics.add(sortMetricName);
+                    continue;
+                }
+                if (!logicalMetrics.contains(logicalMetric)) {
+                    unmatchedMetrics.add(sortMetricName);
+                    continue;
+                }
+                if (logicalMetric.getTemplateDruidQuery() == null) {
+                    unsortableMetrics.add(sortMetricName);
+                    continue;
+                }
+                metricSortColumns.add(new OrderByColumn(logicalMetric, sortDirection));
+            }
+            if (!unknownMetrics.isEmpty()) {
+                LOG.debug(SORT_METRICS_UNDEFINED.logFormat(unknownMetrics.toString()));
+                throw new BadApiRequestException(SORT_METRICS_UNDEFINED.format(unknownMetrics.toString()));
+            }
+            if (!unmatchedMetrics.isEmpty()) {
+                LOG.debug(SORT_METRICS_NOT_IN_QUERY_FORMAT.logFormat(unmatchedMetrics.toString()));
+                throw new BadApiRequestException(SORT_METRICS_NOT_IN_QUERY_FORMAT.format(unmatchedMetrics.toString()));
+            }
+            if (!unsortableMetrics.isEmpty()) {
+                LOG.debug(SORT_METRICS_NOT_SORTABLE_FORMAT.logFormat(unsortableMetrics.toString()));
+                throw new BadApiRequestException(SORT_METRICS_NOT_SORTABLE_FORMAT.format(unsortableMetrics.toString()));
+            }
+
             return metricSortColumns;
+        } finally {
+            RequestLog.stopTiming("GeneratingSortColumns");
         }
-
-        // Split on "," to get multiple sorts (if any)
-        List<String> requestedSorts = Arrays.asList(apiSortQuery.split(","));
-
-        List<String> unknownMetrics = new ArrayList<>();
-        List<String> unmatchedMetrics = new ArrayList<>();
-        List<String> unsortableMetrics = new ArrayList<>();
-
-        for (String sort : requestedSorts) {
-            metricWithDirection = Arrays.asList(sort.split("\\|"));
-            sortMetricName = metricWithDirection.get(0);
-
-            SortDirection sortDirection;
-            try {
-                sortDirection = metricWithDirection.size() == 2 ?
-                        SortDirection.valueOf(metricWithDirection.get(1).toUpperCase(Locale.ENGLISH)) :
-                        SortDirection.DESC;
-            } catch (IllegalArgumentException ignored) {
-                String sortDirectionName = metricWithDirection.get(1);
-                LOG.debug(SORT_DIRECTION_INVALID.logFormat(sortDirectionName));
-                throw new BadApiRequestException(SORT_DIRECTION_INVALID.format(sortDirectionName));
-            }
-
-            LogicalMetric logicalMetric = metricDictionary.get(sortMetricName);
-
-            // If metric dictionary returns a null, it means the requested sort metric is not found.
-            if (logicalMetric == null) {
-                unknownMetrics.add(sortMetricName);
-                continue;
-            }
-            if (!logicalMetrics.contains(logicalMetric)) {
-                unmatchedMetrics.add(sortMetricName);
-                continue;
-            }
-            if (logicalMetric.getTemplateDruidQuery() == null) {
-                unsortableMetrics.add(sortMetricName);
-                continue;
-            }
-            metricSortColumns.add(new OrderByColumn(logicalMetric, sortDirection));
-        }
-        if (!unknownMetrics.isEmpty()) {
-            LOG.debug(SORT_METRICS_UNDEFINED.logFormat(unknownMetrics.toString()));
-            throw new BadApiRequestException(SORT_METRICS_UNDEFINED.format(unknownMetrics.toString()));
-        }
-        if (!unmatchedMetrics.isEmpty()) {
-            LOG.debug(SORT_METRICS_NOT_IN_QUERY_FORMAT.logFormat(unmatchedMetrics.toString()));
-            throw new BadApiRequestException(SORT_METRICS_NOT_IN_QUERY_FORMAT.format(unmatchedMetrics.toString()));
-        }
-        if (!unsortableMetrics.isEmpty()) {
-            LOG.debug(SORT_METRICS_NOT_SORTABLE_FORMAT.logFormat(unsortableMetrics.toString()));
-            throw new BadApiRequestException(SORT_METRICS_NOT_SORTABLE_FORMAT.format(unsortableMetrics.toString()));
-        }
-
-        return metricSortColumns;
     }
 
     /**

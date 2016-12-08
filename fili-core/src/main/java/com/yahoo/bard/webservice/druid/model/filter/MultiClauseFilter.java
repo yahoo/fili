@@ -9,7 +9,7 @@ import java.util.Objects;
 /**
  * Filter parent class for filters which take a list of child filters.
  */
-public abstract class MultiClauseFilter extends Filter {
+public abstract class MultiClauseFilter extends Filter implements ComplexFilter {
 
     private final List<Filter> fields;
 
@@ -24,6 +24,7 @@ public abstract class MultiClauseFilter extends Filter {
         this.fields =  Collections.unmodifiableList(fields);
     }
 
+    @Override
     public List<Filter> getFields() {
         return fields;
     }
