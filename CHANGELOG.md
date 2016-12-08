@@ -26,6 +26,8 @@ Current
 
 ### Changed:
 
+- [`NoOpResultSetMapper` now runs in constant time and space.](https://github.com/yahoo/fili/pull/119)
+
 - [Remove restriction for single physical dimension to multiple lookup dimensions](https://github.com/yahoo/fili/pull/112)
     * Modified physical dimension name to logical dimension name mapping into a `Map<String, Set<String>>` instead of `Map<String, String>` in `PhysicalTable.java`
 
