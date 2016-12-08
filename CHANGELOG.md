@@ -15,6 +15,15 @@ Current
     * Controlled with `bard__druid_max_response_length_to_cache` setting
     * Default value is `MAX_LONG`, so no cache prevention will happen by default
 
+- [Add `FilteredAggregationMaker`](https://github.com/yahoo/fili/pull/107)
+    * This version is rudimentary. See [issue 120](https://github.com/yahoo/fili/issue/120) for plans on updating this
+      maker.
+
+- [Add support for Druid's `LinearShardSpec` metadata type](https://github.com/yahoo/fili/pull/107)
+
+- [Add ability for `ClassScanner` to instantiate arrays](https://github.com/yahoo/fili/pull/107)
+    * This allows for more robust testing of classes that make use of arrays in their constructor parameters
+
 ### Changed:
 
 - [Remove restriction for single physical dimension to multiple lookup dimensions](https://github.com/yahoo/fili/pull/112)
