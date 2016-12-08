@@ -156,7 +156,7 @@ public class QueryBuildingTestingResources {
         )
         d7 = new KeyValueStoreDimension(
                 "dim7",
-                "dim7",
+                "dim_7",
                 dimensionFields,
                 MapStoreManager.getInstance("dim7"),
                 ScanSearchProviderManager.getInstance("dim7"),
@@ -193,8 +193,8 @@ public class QueryBuildingTestingResources {
 
         tna1236d = new PhysicalTable("tableNA1236", utcDay, ["ageBracket":"age_bracket"])
         tna1237d = new PhysicalTable("tableNA1237", utcDay, ["ageBracket":"age_bracket"])
-        tna167d = new PhysicalTable("tableNA167", utcDay, ["ageBracket":"age_bracket"])
-        tna267d = new PhysicalTable("tableNA267", utcDay, new HashMap<>())
+        tna167d = new PhysicalTable("tableNA167", utcDay, ["ageBracket":"age_bracket", "dim7":"dim_7"])
+        tna267d = new PhysicalTable("tableNA267", utcDay, ["dim7":"dim_7"])
 
         t4h1 = new PhysicalTable("table4h1", utcHour, new HashMap<>())
         t4h2 = new PhysicalTable("table4h2", utcHour, new HashMap<>())

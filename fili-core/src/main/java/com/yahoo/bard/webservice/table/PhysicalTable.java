@@ -17,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -54,8 +53,8 @@ public class PhysicalTable extends Table {
     ) {
         super(name, timeGrain);
         this.availableIntervalsRef = new AtomicReference<>();
-        availableIntervalsRef.set(new HashMap<>());
-        this.workingIntervals = Collections.synchronizedMap(new HashMap<>());
+        availableIntervalsRef.set(new LinkedHashMap<>());
+        this.workingIntervals = Collections.synchronizedMap(new LinkedHashMap<>());
         this.logicalToPhysicalColumnNames = Collections.unmodifiableMap(logicalToPhysicalColumnNames);
         this.physicalToLogicalColumnNames = Collections.unmodifiableMap(
                 this.logicalToPhysicalColumnNames.entrySet().stream().collect(

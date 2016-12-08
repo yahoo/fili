@@ -48,7 +48,7 @@ class PartialDataHandlerSpec extends Specification {
     }
 
     def setup() {
-        columnNames = ["user_device_type", "property", "os",  "page_views"] as Set
+        columnNames = ["userDeviceType", "property", "os",  "page_views"] as Set
 
         // Setup mock dimensions
         dim1 = Mock(KeyValueStoreDimension.class)

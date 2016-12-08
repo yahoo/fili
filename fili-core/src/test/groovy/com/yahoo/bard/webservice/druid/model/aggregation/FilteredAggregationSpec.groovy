@@ -73,15 +73,15 @@ class FilteredAggregationSpec extends Specification{
 
         PhysicalTable physicalTable = new PhysicalTable("NETWORK", DAY.buildZonedTimeGrain(UTC), [:])
 
-        physicalTable.addColumn(new DimensionColumn(ageDimension, physicalTable.getPhysicalColumnName(ageDimension.getApiName())))
-        physicalTable.addColumn(new DimensionColumn(ageDimension, physicalTable.getPhysicalColumnName(ageDimension.getApiName())))
+        physicalTable.addColumn(new DimensionColumn(ageDimension))
+        physicalTable.addColumn(new DimensionColumn(ageDimension))
         metricNames.each {physicalTable.addColumn(new MetricColumn(it))}
         physicalTable.commit()
 
         TableGroup tableGroup = new TableGroup([physicalTable] as LinkedHashSet, metricNames)
         LogicalTable table = new LogicalTable("NETWORK_DAY", DAY, tableGroup)
         tableGroup.dimensions.each {
-            DimensionColumn.addNewDimensionColumn(table, it, physicalTable)
+            DimensionColumn.addNewDimensionColumn(table, it)
         }
 
         SketchCountMaker sketchCountMaker = new SketchCountMaker(new MetricDictionary(), 16384)

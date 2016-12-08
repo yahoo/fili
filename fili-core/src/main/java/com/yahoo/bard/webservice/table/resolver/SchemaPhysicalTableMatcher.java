@@ -57,7 +57,7 @@ public class SchemaPhysicalTableMatcher implements PhysicalTableMatcher {
                 .map(Column::getName)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
-        Set<String> columnNames = TableUtils.getColumnNames(request, query.getInnermostQuery(), table);
+        Set<String> columnNames = TableUtils.getColumnNames(request, query.getInnermostQuery());
 
         return supplyNames.containsAll(columnNames);
     }

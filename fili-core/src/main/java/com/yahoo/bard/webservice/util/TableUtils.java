@@ -28,18 +28,36 @@ public class TableUtils {
      * @param table  Physical table used in resolving dimension names
      *
      * @return a set of strings representing fact store column names
+     *
+     * @deprecated in favor of getColumnNames(DataApiRequest, DruidAggregationQuery) returning dimension api name
      */
+    @Deprecated
     public static Set<String> getColumnNames(
             DataApiRequest request,
             DruidAggregationQuery<?> query,
             PhysicalTable table
     ) {
-        return Stream.<Stream<String>>of(
+        return Stream.of(
                 getDimensions(request, query)
                         .map(Dimension::getApiName)
                         .map(table::getPhysicalColumnName),
                 query.getDependentFieldNames().stream()
         ).flatMap(Function.identity()).collect(Collectors.toSet());
+    }
+
+    /**
+     * Get the schema column names from the dimensions and metrics.
+     *
+     * @param request  A request which supplies grouping dimensions and filtering dimensions
+     * @param query  A query model which has metric column and possibly dimension column names
+     *
+     * @return a set of strings representing schema column names
+     */
+    public static Set<String> getColumnNames(DataApiRequest request, DruidAggregationQuery<?> query) {
+        return Stream.concat(
+                getDimensions(request, query).map(Dimension::getApiName),
+                query.getDependentFieldNames().stream()
+        ).collect(Collectors.toSet());
     }
 
     /**
@@ -51,7 +69,7 @@ public class TableUtils {
      * @return a set of strings representing fact store column names
      */
     public static Stream<Dimension> getDimensions(DataApiRequest request, DruidAggregationQuery<?> query) {
-        return Stream.<Stream<Dimension>>of(
+        return Stream.of(
                 request.getDimensions().stream(),
                 request.getFilterDimensions().stream(),
                 query.getMetricDimensions().stream()

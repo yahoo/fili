@@ -26,6 +26,10 @@ Current
 
 ### Changed:
 
+- [Default DimensionColumn name to use apiName instead of physicalName](https://github.com/yahoo/fili/pull/115)
+    * Change `DimensionColumn.java` to use dimension api name instead of physical name as its name
+    * Modified files dependent on `DimensionColumn.java` and corresponding tests according to the above change
+
 - [`NoOpResultSetMapper` now runs in constant time and space.](https://github.com/yahoo/fili/pull/119)
 
 - [Remove restriction for single physical dimension to multiple lookup dimensions](https://github.com/yahoo/fili/pull/112)
@@ -133,7 +137,13 @@ Current
 
 ### Deprecated:
 
-
+- [Default DimensionColumn name to use apiName instead of physicalName](https://github.com/yahoo/fili/pull/115)
+    * Deprecated `TableUtils::getColumnNames(DataApiRequest, DruidAggregationQuery, PhysicalTable)` returning dimension physical name,
+     in favor of `TableUtils::getColumnNames(DataApiRequest, DruidAggregationQuery)` returning dimension api name
+    * Deprecated `DimensionColumn::DimensionColumn addNewDimensionColumn(Schema, Dimension, PhysicalTable)` in favor of
+     `DimensionColumn::DimensionColumn addNewDimensionColumn(Schema, Dimension)` which uses api name instead of physical name as column identifier for columns
+    * Deprecated `LogicalDimensionColumn` in favor of `DimensionColumn` since `DimensionColumn` stores api name instead of physical name now,
+     so `LogicalDimensionColumn` is no longer needed
 
 ### Fixed:
 

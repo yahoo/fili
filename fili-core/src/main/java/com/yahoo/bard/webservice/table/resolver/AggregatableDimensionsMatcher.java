@@ -19,7 +19,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- *  Use the granularity and columns of a query to determine whether or not tables can satisfy this query.
+ * Use the granularity and columns of a query to determine whether or not tables can satisfy this query.
+ * <p>
+ * If a given table contains non-agg dimensions, query must contain all these non-agg dimensions to use this table.
  */
 public class AggregatableDimensionsMatcher implements PhysicalTableMatcher {
 
@@ -43,12 +45,12 @@ public class AggregatableDimensionsMatcher implements PhysicalTableMatcher {
 
     @Override
     public boolean test(PhysicalTable table) {
-        Set<String> columnNames = TableUtils.getColumnNames(request, query.getInnermostQuery(), table);
+        Set<String> columnNames = TableUtils.getColumnNames(request, query.getInnermostQuery());
 
+        // If table contains non-agg dimensions, query must contain all these non-agg dimensions to use this table.
         return table.getDimensions().stream()
                 .filter(StreamUtils.not(Dimension::isAggregatable))
                 .map(Dimension::getApiName)
-                .map(table::getPhysicalColumnName)
                 .allMatch(columnNames::contains);
     }
 

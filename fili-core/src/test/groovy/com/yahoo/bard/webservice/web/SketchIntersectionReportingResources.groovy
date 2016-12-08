@@ -122,7 +122,7 @@ class SketchIntersectionReportingResources extends Specification {
         table = new LogicalTable("NETWORK", DAY, tableGroup)
 
         for (Dimension dim : tableGroup.getDimensions()) {
-            DimensionColumn.addNewDimensionColumn(table, dim, physicalTable)
+            DimensionColumn.addNewDimensionColumn(table, dim)
         }
 
         metricDict = new MetricDictionary()

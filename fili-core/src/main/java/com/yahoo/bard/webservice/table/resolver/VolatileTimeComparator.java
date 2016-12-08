@@ -100,7 +100,7 @@ public class VolatileTimeComparator implements Comparator<PhysicalTable> {
         //Next find the intervals on the physical table that are available.
         SimplifiedIntervalList tableAvailability = partialDataHandler.getAvailability(
                 table,
-                TableUtils.getColumnNames(apiRequest, query, table)
+                TableUtils.getColumnNames(apiRequest, query)
         );
         //Take the duration of their intersection.
         return IntervalUtils.getTotalDuration(tableAvailability.intersect(volatilePartialRequestIntervals));

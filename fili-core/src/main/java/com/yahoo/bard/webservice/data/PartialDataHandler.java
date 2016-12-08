@@ -3,7 +3,6 @@
 package com.yahoo.bard.webservice.data;
 
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.PERMISSIVE_COLUMN_AVAILABILITY;
-import static com.yahoo.bard.webservice.util.TableUtils.getColumnNames;
 
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
@@ -11,6 +10,7 @@ import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
+import com.yahoo.bard.webservice.util.TableUtils;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 
 import org.slf4j.Logger;
@@ -95,7 +95,7 @@ public class PartialDataHandler {
             Granularity granularity
     ) {
         SimplifiedIntervalList availableIntervals = physicalTables.stream()
-                .map(table -> getAvailability(table, getColumnNames(apiRequest, query, table)))
+                .map(table -> getAvailability(table, TableUtils.getColumnNames(apiRequest, query)))
                 .flatMap(SimplifiedIntervalList::stream)
                 .collect(SimplifiedIntervalList.getCollector());
 

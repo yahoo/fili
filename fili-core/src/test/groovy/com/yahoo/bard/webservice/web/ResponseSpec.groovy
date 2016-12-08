@@ -221,7 +221,7 @@ class ResponseSpec extends Specification {
                 ScanSearchProviderManager.getInstance("product")
         )
         dim1.setLastUpdated(null)
-        dimensionColumns << new DimensionColumn(dim1, dim1.getApiName())
+        dimensionColumns << new DimensionColumn(dim1)
 
         Dimension dim2 = new KeyValueStoreDimension(
                 "platform",
@@ -231,7 +231,7 @@ class ResponseSpec extends Specification {
                 ScanSearchProviderManager.getInstance("platform")
         )
         dim2.setLastUpdated(null)
-        dimensionColumns << new DimensionColumn(dim2, dim2.getApiName())
+        dimensionColumns << new DimensionColumn(dim2)
 
         Dimension dim3 = new KeyValueStoreDimension(
                 "property",
@@ -241,7 +241,7 @@ class ResponseSpec extends Specification {
                 ScanSearchProviderManager.getInstance("property")
         )
         dim3.setLastUpdated(null)
-        dimensionColumns << new DimensionColumn(dim3, dim3.getApiName())
+        dimensionColumns << new DimensionColumn(dim3)
 
         def schema = Mock(Schema)
         schema.getColumns(_) >> { Class cls ->
