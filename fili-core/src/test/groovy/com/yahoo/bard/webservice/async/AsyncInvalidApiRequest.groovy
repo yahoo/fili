@@ -37,7 +37,8 @@ class AsyncInvalidApiRequest extends AsyncFunctionalSpec {
 
     @Override
     Map<String, Closure<Void>> getResultAssertions() {
-        [ data: { assert GroovyTestUtils.compareJson(it.readEntity(String), EXPECTED_ERROR_MESSAGE) } ]
+        [ data: { assert GroovyTestUtils.compareErrorPayload(it.readEntity(String), EXPECTED_ERROR_MESSAGE) } ]
+
     }
 
     @Override
