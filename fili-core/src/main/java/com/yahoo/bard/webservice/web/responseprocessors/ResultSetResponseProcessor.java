@@ -159,7 +159,7 @@ public class ResultSetResponseProcessor extends MappingResponseProcessor impleme
         }
 
         for (Dimension dimension : druidQuery.getDimensions()) {
-            resultSetSchema.addColumn(new DimensionColumn(dimension));
+            DimensionColumn.addNewDimensionColumn(resultSetSchema, dimension);
         }
 
         return druidResponseParser.parse(json, resultSetSchema, druidQuery.getQueryType());

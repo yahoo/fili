@@ -84,4 +84,15 @@ class TableUtilsSpec extends  Specification {
         expect:
         TableUtils.getColumnNames(request, query) == [d1Name, metric1, metric2, metric3] as Set
     }
+
+    def "metric name correctly is correctly represented as logicalName" () {
+        setup:
+        request.dimensions >> []
+        request.filterDimensions >> []
+        query.metricDimensions >> []
+        query.dependentFieldNames >> ([metric1] as Set)
+
+        expect:
+        TableUtils.getColumnNames(request, query) == [metric1] as Set
+    }
 }

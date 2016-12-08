@@ -19,7 +19,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- *  Use the granularity and columns of a query to determine whether or not tables can satisfy this query.
+ * Use the granularity and columns of a query to determine whether or not tables can satisfy this query.
+ * <p>
+ * If a given table contains non-agg dimensions, query must contain all these non-agg dimensions to use this table.
  */
 public class AggregatableDimensionsMatcher implements PhysicalTableMatcher {
 

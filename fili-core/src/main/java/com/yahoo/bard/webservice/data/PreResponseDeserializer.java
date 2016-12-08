@@ -237,8 +237,7 @@ public class PreResponseDeserializer {
         StreamSupport.stream(schemaNode.get(SCHEMA_DIM_COLUMNS).spliterator(), false)
                 .map(JsonNode::asText)
                 .map(this::resolveDimensionName)
-                .map(DimensionColumn::new)
-                .forEach(zonedSchema::addColumn);
+                .forEach(dimension -> DimensionColumn.addNewDimensionColumn(zonedSchema, dimension));
 
         schemaNode.get(SCHEMA_METRIC_COLUMNS_TYPE).fields().forEachRemaining(
                 field -> zonedSchema.addColumn(new MetricColumnWithValueType(field.getKey(), field.getValue().asText()))
