@@ -33,6 +33,7 @@ import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
 import com.yahoo.bard.webservice.logging.blocks.DataRequest;
+import com.yahoo.bard.webservice.logging.blocks.DruidFilterInfo;
 import com.yahoo.bard.webservice.table.Table;
 import com.yahoo.bard.webservice.table.resolver.NoMatchFoundException;
 import com.yahoo.bard.webservice.util.Either;
@@ -409,6 +410,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
 
             RequestLog.switchTiming("logRequestMetrics");
             logRequestMetrics(apiRequest, readCache, druidQuery);
+            RequestLog.record(new DruidFilterInfo(apiRequest.getFilter()));
             RequestLog.switchTiming(REQUEST_WORKFLOW_TIMER);
 
             // Process the request
