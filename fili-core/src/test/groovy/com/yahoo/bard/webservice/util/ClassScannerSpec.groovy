@@ -50,7 +50,7 @@ class ClassScannerSpec extends Specification {
 
     /**
      * Load all available classes under com.yahoo.bard.* that declare given method
-     *
+     * <p>
      * @param method declared method to find
      * @param parameterTypes parameter types for declared method
      * @return classes that match to be tested
@@ -99,11 +99,11 @@ class ClassScannerSpec extends Specification {
 
     /**
      * This tests the 'equals' method across all methods that have implemented it (see getClassesDeclaring).
-     *
+     * <p>
      * If this test fails for you you may need to update ClassScanner to handle your special argument types,
      * add values to the class scanner value cache above, or add your class to the ignored list in
      * getClassesDeclaring.
-     *
+     * <p>
      * This method is ignored if no declaring classes will trigger the where block.
      * This is an issue because downstream developers may want to defensively deploy subclasses of this class to
      * ensure that any legitimate class scanner targets are picked up when discovered and appropriate.

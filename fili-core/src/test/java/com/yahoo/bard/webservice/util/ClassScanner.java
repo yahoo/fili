@@ -41,7 +41,7 @@ public class ClassScanner {
 
     /**
      * Create a class scanner for provided base package.
-     *
+     * <p>
      * @param packageName  The base package such as "com.yahoo.bard"
      */
     public ClassScanner(String packageName) {
@@ -50,7 +50,7 @@ public class ClassScanner {
 
     /**
      * Create a class scanner for provided base package.
-     *
+     * <p>
      * @param packageName  The base package such as "com.yahoo.bard"
      * @param cacheValues  Values to cache for use in object construction
      */
@@ -76,9 +76,9 @@ public class ClassScanner {
 
     /**
      * Scans all classes accessible from the context class loader which belong to the given package and subpackages.
-     *
+     * <p>
      * @return The classes found under the class loader
-     *
+     * <p>
      * @throws IOException if a problem is encountered loading the resources from the package
      * @throws ClassNotFoundException if we're not able to find classes for the package in the directory
      */
@@ -101,7 +101,7 @@ public class ClassScanner {
 
     /**
      * Recursive method used to find all classes in a given directory and subdirectories.
-     *
+     * <p>
      * @param directory  The base directory
      * @param packageName  The package name for classes found inside the base directory
      * @return The classes
@@ -137,11 +137,11 @@ public class ClassScanner {
 
     /**
      * Builds an object for provided class.
-     *
+     * <p>
      * @param newClass  class to construct
      * @param mode  argument type
      * @param <T>  The type of the class we're trying to build, so that we can return it typesafely
-     *
+     * <p>
      * @return constructed object
      * @throws InstantiationException if the class cannot be instantiated
      */
@@ -151,12 +151,12 @@ public class ClassScanner {
 
     /**
      * Construct the given object.
-     *
+     * <p>
      * @param newClass  Class to try to instantiate
      * @param mode  The way we want to try to construct the object (the args to use)
      * @param stack  The classes we've been trying to build up the reference chain
      * @param <T>  The type of the class we're trying to build, so that we can return it typesafely
-     *
+     * <p>
      * @return  The instantiated class
      * @throws InstantiationException if we have trouble instantiating it
      */
@@ -245,12 +245,12 @@ public class ClassScanner {
 
     /**
      * Create default value for provided type.
-     *
+     * <p>
      * @param cls  class to construct
      * @param mode  argument type
      * @param stack  Stack of objects we've been trying to build values for
      * @param <T>  Type of class we're creating a default value for
-     *
+     * <p>
      * @return constructed object
      * @throws InstantiationException if the class cannot be instantiated
      */
@@ -305,12 +305,12 @@ public class ClassScanner {
 
     /**
      * Find a subclass to construct for abstract class.
-     *
+     * <p>
      * @param cls  abstract superclass
      * @param mode  argument type
      * @param stack  Stack of classes we've constructed with so far
      * @param <T>  Type of class to construct
-     *
+     * <p>
      * @return subclass instance or null if none available
      */
     @SuppressWarnings("checkstyle:cyclomaticcomplexity")
@@ -368,10 +368,10 @@ public class ClassScanner {
 
     /**
      * Get a cached value if available.
-     *
+     * <p>
      * @param cls  Class to search for a mock of
      * @param <T>  Type of class, so that we can return it in a typesafe way
-     *
+     * <p>
      * @return a mock if we have one, otherise just null
      */
     @SuppressWarnings("unchecked")
@@ -386,7 +386,7 @@ public class ClassScanner {
 
     /**
      * Store a value in the argument value cache, keyed by its class.
-     *
+     * <p>
      * @param values  The value being cached
      */
     public void putInArgumentValueCache(Collection values) {
@@ -395,7 +395,7 @@ public class ClassScanner {
 
     /**
      * Store a value in the argument value cache, keyed by its class.
-     *
+     * <p>
      * @param cls  The class to associate with the object
      * @param value  The value being cached
      */

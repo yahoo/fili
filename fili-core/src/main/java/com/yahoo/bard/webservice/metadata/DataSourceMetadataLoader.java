@@ -33,7 +33,7 @@ import javax.inject.Singleton;
  * Datasource metadata loader sends requests to the druid datasource metadata endpoint ('datasources') and returns the
  * lists of available data segments for each datasource. It then builds Datasource Metadata objects which pivot this
  * data into columns of intervals and then updates the Physical Table instances in the physical table dictionary.
- *
+ * <p>
  * Note that this uses the segmentMetadata query that touches the coordinator.
  */
 @Singleton
@@ -66,7 +66,7 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
 
     /**
      * Datasource metadata loader fetches data from the druid endpoint and updates the dimensions on that table.
-     *
+     * <p>
      * @param physicalTableDictionary  The physical tables to update
      * @param metadataService  The service that will store the metadata loaded by this loader
      * @param druidWebService  The druid webservice to query
@@ -106,7 +106,7 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
 
     /**
      * Queries the data mart for updated datasource metadata and then updates the physical table.
-     *
+     * <p>
      * @param table  The physical table to be updated.
      */
     protected void queryDataSourceMetadata(PhysicalTable table) {
@@ -169,9 +169,9 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
      *      ]
      *   }"""
      * </pre>
-     *
+     * <p>
      * @param table  The table to inject into this callback.
-     *
+     * <p>
      * @return The callback itself.
      */
     protected final SuccessCallback buildDataSourceMetadataSuccessCallback(PhysicalTable table) {
@@ -190,7 +190,7 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
 
     /**
      * Return when this loader ran most recently.
-     *
+     * <p>
      * @return The date and time of the most recent execution of this loader.
      */
     public DateTime getLastRunTimestamp() {
@@ -199,9 +199,9 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
 
     /**
      * Get a default callback for an http error.
-     *
+     * <p>
      * @param table  The PhysicalTable that the error callback will relate to.
-     *
+     * <p>
      * @return A newly created http error callback object.
      */
     protected HttpErrorCallback getErrorCallback(PhysicalTable table) {
@@ -216,7 +216,7 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
 
         /**
          * Constructor.
-         *
+         * <p>
          * @param table  PhysicalTable that this error callback is tied to
          */
         TaskHttpErrorCallback(PhysicalTable table) {

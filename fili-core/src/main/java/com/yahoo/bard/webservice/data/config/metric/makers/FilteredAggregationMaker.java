@@ -25,7 +25,7 @@ public class FilteredAggregationMaker extends MetricMaker {
 
     /**
      * Construct a metric maker for Filtered Aggregations.
-     *
+     * <p>
      * @param metricDictionary the metric dictionary
      * @param aggregation the underlying aggregation
      * @param filter the filter to filter the aggregation by
