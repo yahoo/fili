@@ -54,10 +54,10 @@ public class TableUtils {
      * @return a set of strings representing schema column names
      */
     public static Set<String> getColumnNames(DataApiRequest request, DruidAggregationQuery<?> query) {
-        return Stream.of(
+        return Stream.concat(
                 getDimensions(request, query).map(Dimension::getApiName),
                 query.getDependentFieldNames().stream()
-        ).flatMap(Function.identity()).collect(Collectors.toSet());
+        ).collect(Collectors.toSet());
     }
 
     /**
