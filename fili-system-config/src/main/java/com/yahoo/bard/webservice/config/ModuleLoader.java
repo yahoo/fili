@@ -30,7 +30,7 @@ public class ModuleLoader {
     /**
      * The file name pattern describing module configuration files.
      */
-    private static final String MODULE_CONFIG_FILE_NAME = "/moduleConfig.properties";
+    public static final String MODULE_CONFIG_FILE_NAME = "/moduleConfig.properties";
 
     private static final String MODULE_NAME_IS_TOO_SHORT = "Module name is too short.";
 
