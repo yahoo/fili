@@ -110,7 +110,7 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
      * @param table  The physical table to be updated.
      */
     protected void queryDataSourceMetadata(PhysicalTable table) {
-        String resourcePath = String.format(DATASOURCE_METADATA_QUERY_FORMAT, table.getName());
+        String resourcePath = String.format(DATASOURCE_METADATA_QUERY_FORMAT, table.getDruidName());
 
         // Success callback will update datasource metadata on success
         SuccessCallback success = buildDataSourceMetadataSuccessCallback(table);
@@ -182,7 +182,7 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
                     DataSourceMetadata dataSourceMetadata = mapper.treeToValue(rootNode, DataSourceMetadata.class);
                     metadataService.update(table, dataSourceMetadata);
                 } catch (IOException e) {
-                    throw new UnsupportedOperationException(DRUID_METADATA_READ_ERROR.format(table.getName()), e);
+                    throw new UnsupportedOperationException(DRUID_METADATA_READ_ERROR.format(table.getDruidName()), e);
                 }
             }
         };
@@ -229,7 +229,7 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
             String msg = String.format(
                     "%s: HTTP error while trying to load metadata for table: %s - Status: %d, Cause: %s, Response body: %s",
                     getName(),
-                    table.getName(),
+                    table.getDruidName(),
                     statusCode,
                     reason,
                     responseBody
@@ -239,7 +239,7 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
                 LOG.warn(msg);
                 metadataService.update(
                         table,
-                        new DataSourceMetadata(table.getName(), Collections.emptyMap(), Collections.emptyList())
+                        new DataSourceMetadata(table.getDruidName(), Collections.emptyMap(), Collections.emptyList())
                 );
             } else {
                 LOG.error(msg);

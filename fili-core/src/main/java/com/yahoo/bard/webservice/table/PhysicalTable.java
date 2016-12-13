@@ -38,20 +38,24 @@ public class PhysicalTable extends Table {
     private final Object mutex = new Object();
     private final Map<String, String> logicalToPhysicalColumnNames;
     private final Map<String, Set<String>> physicalToLogicalColumnNames;
+    private final String druidName;
 
     /**
      * Create a physical table.
      *
-     * @param name  name of the physical table
+     * @param name  Fili name of the physical table
+     * @param druidName  Name of the associated table in Druid
      * @param timeGrain  time grain of the table
      * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
      */
     public PhysicalTable(
             @NotNull String name,
+            @NotNull String druidName,
             @NotNull ZonedTimeGrain timeGrain,
             @NotNull Map<String, String> logicalToPhysicalColumnNames
     ) {
         super(name, timeGrain);
+        this.druidName = druidName;
         this.availableIntervalsRef = new AtomicReference<>();
         availableIntervalsRef.set(new LinkedHashMap<>());
         this.workingIntervals = Collections.synchronizedMap(new LinkedHashMap<>());
@@ -64,6 +68,21 @@ public class PhysicalTable extends Table {
                         )
                 )
         );
+    }
+
+    /**
+     * Creates a physical table whose Fili and Druid names are the same.
+     *
+     * @param name  Fili name of the physical table
+     * @param timeGrain  time grain of the table
+     * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
+     */
+    public PhysicalTable(
+            @NotNull String name,
+            @NotNull ZonedTimeGrain timeGrain,
+            @NotNull Map<String, String> logicalToPhysicalColumnNames
+    ) {
+        this(name, name, timeGrain, logicalToPhysicalColumnNames);
     }
 
     @Override
@@ -256,8 +275,12 @@ public class PhysicalTable extends Table {
         return getTimeGrain().getPeriod();
     }
 
+    public String getDruidName() {
+        return druidName;
+    }
+
     @Override
     public String toString() {
-        return super.toString() + " alignment: " + getTableAlignment();
+        return super.toString() + "druidName: " + druidName + " alignment: " + getTableAlignment();
     }
 }

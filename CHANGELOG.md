@@ -33,6 +33,8 @@ Current
 
 ### Changed:
 
+- [Fili's name for a PhysicalTable is decoupled from the name of the associated table in Druid](https://github.com/yahoo/fili/pull/123)
+
 - [No match found due to schema mismatch now a `500 Internal Server Error` response instead of a `400 Bad Request` response](https://github.com/yahoo/fili/pull/113)
     * This should never be a user fault, since that check is much earlier
 
