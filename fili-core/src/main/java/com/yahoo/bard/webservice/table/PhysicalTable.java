@@ -281,6 +281,6 @@ public class PhysicalTable extends Table {
 
     @Override
     public String toString() {
-        return super.toString() + "druidName: " + druidName + " alignment: " + getTableAlignment();
+        return super.toString() + " druidName: " + druidName + " alignment: " + getTableAlignment();
     }
 }
