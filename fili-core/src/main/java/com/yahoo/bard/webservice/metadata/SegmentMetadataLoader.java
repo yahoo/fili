@@ -108,7 +108,7 @@ public class SegmentMetadataLoader extends Loader<Boolean> {
      * @param table  The physical table to be updated.
      */
     protected void querySegmentMetadata(PhysicalTable table) {
-        String resourcePath = String.format(SEGMENT_METADATA_QUERY_FORMAT, table.getName());
+        String resourcePath = String.format(SEGMENT_METADATA_QUERY_FORMAT, table.getFactTableName());
 
         // Success callback will update segment metadata on success
         SuccessCallback success = buildSegmentMetadataSuccessCallback(table);
@@ -152,7 +152,7 @@ public class SegmentMetadataLoader extends Loader<Boolean> {
                         mapper.<RawSegmentMetadataConcrete>convertValue(rootNode, typeReference)
                 );
                 if (segmentMetadata.isEmpty()) {
-                    LOG.warn("Empty segment metadata detected when loading table '{}'", table.getName());
+                    LOG.warn("Empty segment metadata detected when loading table '{}'", table.getFactTableName());
                 }
                 table.resetColumns(segmentMetadata, dimensionDictionary);
             }

@@ -49,7 +49,7 @@ public abstract class DataSource {
         return Collections.unmodifiableSet(
                 getPhysicalTables()
                         .stream()
-                        .map(PhysicalTable::getName)
+                        .map(PhysicalTable::getFactTableName)
                         .collect(Collectors.toSet())
         );
     }

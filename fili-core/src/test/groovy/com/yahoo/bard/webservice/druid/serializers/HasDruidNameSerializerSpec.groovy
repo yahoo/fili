@@ -57,7 +57,7 @@ class HasDruidNameSerializerSpec extends Specification {
         def provider = Mock(SerializerProvider)
         def typeSer = Mock(TypeSerializer)
 
-        and: "value.getDruidName returns a known string"
+        and: "value.getFactTableName returns a known string"
         def knownString = "A Sample String"
         value.getDruidName() >> knownString
 
@@ -67,7 +67,7 @@ class HasDruidNameSerializerSpec extends Specification {
         then: "We've written the type prefix"
         1 * typeSer.writeTypePrefixForScalar(value, jgen)
 
-        and: "We've called regular serialization, writing value.getDruidName()"
+        and: "We've called regular serialization, writing value.getFactTableName()"
         1 * jgen.writeString(knownString)
 
         and: "We've written the type suffix"
@@ -80,14 +80,14 @@ class HasDruidNameSerializerSpec extends Specification {
         def jgen = Mock(JsonGenerator)
         def provider = Mock(SerializerProvider)
 
-        and: "value.getDruidName returns a known string"
+        and: "value.getFactTableName returns a known string"
         def knownString = "A Sample String"
         value.getDruidName() >> knownString
 
         when: "We call serialize"
         HasDruidNameSerializer.INSTANCE.serialize(value, jgen, provider)
 
-        then: "We've written value.getDruidName()"
+        then: "We've written value.getFactTableName()"
         1 * jgen.writeString(knownString)
     }
 
