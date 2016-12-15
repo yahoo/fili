@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.data.metric;
 
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper;
+import com.yahoo.bard.webservice.druid.model.MetricField;
 
 import java.util.Objects;
 
@@ -93,6 +94,10 @@ public class LogicalMetric {
 
     public TemplateDruidQuery getTemplateDruidQuery() {
         return query;
+    }
+
+    public MetricField getMetricField() {
+        return getTemplateDruidQuery().getMetricField(getName());
     }
 
     @Override
