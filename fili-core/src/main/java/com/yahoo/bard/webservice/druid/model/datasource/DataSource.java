@@ -44,12 +44,17 @@ public abstract class DataSource {
         return physicalTables;
     }
 
+    /**
+     * Returns a set of identifiers used by Fili to identify this data source's physical tables.
+     *
+     * @return The set of names used by Fili to identify this data source's physical tables
+     */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Set<String> getNames() {
         return Collections.unmodifiableSet(
                 getPhysicalTables()
                         .stream()
-                        .map(PhysicalTable::getFactTableName)
+                        .map(PhysicalTable::getName)
                         .collect(Collectors.toSet())
         );
     }
