@@ -162,6 +162,8 @@ Current
 
 ### Fixed:
 
+- [`DataSource::getNames` now returns Fili identifiers, not fact store identifiers](https://github.com/yahoo/fili/pull/125/files)
+
 - [Fix and refactor role based filter to allow CORS](https://github.com/yahoo/fili/pull/99)
     * Fix `RoleBasedAuthFilter` to bypass `OPTIONS` request for CORS
     * Discovered a bug where `user_roles` is declared but unset still reads as a list with empty string (included a temporary fix by commenting the variable declaration)
