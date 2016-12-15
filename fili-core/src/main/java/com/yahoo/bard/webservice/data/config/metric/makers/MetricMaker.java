@@ -131,17 +131,6 @@ public abstract class MetricMaker {
     protected abstract int getDependentMetricsRequired();
 
     /**
-     * Fetch the TemplateDruidQuery of the dependent metric from the Metric Dictionary.
-     *
-     * @param name  Name of the metric to fetch the template druid query from
-     * @return The template druid query of the metric
-     */
-    protected TemplateDruidQuery getDependentQuery(String name) {
-        LogicalMetric dependentMetric = metrics.get(name);
-        return dependentMetric.getTemplateDruidQuery();
-    }
-
-    /**
      * A helper function returning the resulting aggregation set from merging one or more template druid queries.
      *
      * @param names  Names of the metrics to fetch and merge the aggregation clauses from
@@ -149,23 +138,17 @@ public abstract class MetricMaker {
      * @return The merged query
      */
     protected TemplateDruidQuery getMergedQuery(List<String> names) {
-        if (names.size() <= 0) {
-            String message = "At least 1 name is needed to merge aggregations";
-            LOG.error(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        // Get the initial query
-        TemplateDruidQuery query = getDependentQuery(names.get(0));
-
         // Merge in any additional queries
-        for (int i = 1; i < names.size(); i++) {
-            TemplateDruidQuery additionalQuery = getDependentQuery(names.get(i));
-            query = query.merge(additionalQuery);
-        }
-
-        // Return the merged query
-        return query;
+        return names.stream()
+                .map(metrics::get)
+                .map(LogicalMetric::getTemplateDruidQuery)
+                .reduce(TemplateDruidQuery::merge)
+                .orElseGet(() -> {
+                            String message = "At least 1 name is needed to merge aggregations";
+                            LOG.error(message);
+                            throw new IllegalArgumentException(message);
+                        }
+                );
     }
 
     /**
@@ -187,7 +170,7 @@ public abstract class MetricMaker {
      */
     protected PostAggregation getNumericField(String fieldName) {
         // Get the field
-        MetricField field = getDependentQuery(fieldName).getMetricField(fieldName);
+        MetricField field = metrics.get(fieldName).getMetricField();
 
         // Check for sketches, since we can't handle them in here
         if (field.isSketch()) {
@@ -212,7 +195,7 @@ public abstract class MetricMaker {
      */
     protected PostAggregation getSketchField(String fieldName) {
         // Get the field
-        MetricField field = getDependentQuery(fieldName).getMetricField(fieldName);
+        MetricField field = metrics.get(fieldName).getMetricField();
 
         // SketchEstimatePostAggregations are just wrappers for the actual PostAggregation we want to return
         if (field instanceof SketchEstimatePostAggregation) {

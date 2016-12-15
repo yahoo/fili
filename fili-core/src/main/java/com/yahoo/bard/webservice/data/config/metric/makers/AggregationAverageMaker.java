@@ -61,15 +61,13 @@ public class AggregationAverageMaker extends MetricMaker {
     @Override
     protected LogicalMetric makeInner(String metricName, List<String> dependentMetrics) {
         // Get the Metric that is being averaged over
-        String dependantMetricName = dependentMetrics.get(0);
-        TemplateDruidQuery innerDependentQuery = getDependentQuery(dependantMetricName);
-        MetricField sourceMetric = innerDependentQuery.getMetricField(dependantMetricName);
+        LogicalMetric dependentMetric = metrics.get(dependentMetrics.get(0));
 
-        // Convert if needed
-        sourceMetric = convertToSketchEstimateIfNeeded(sourceMetric);
+        // Get the field being subtotalled in the inner query
+        MetricField sourceMetric = convertToSketchEstimateIfNeeded(dependentMetric.getMetricField());
 
         // Build the TemplateDruidQuery for the metric
-        TemplateDruidQuery innerQuery = buildInnerQuery(sourceMetric, innerDependentQuery);
+        TemplateDruidQuery innerQuery = buildInnerQuery(sourceMetric, dependentMetric.getTemplateDruidQuery());
         TemplateDruidQuery outerQuery = buildOuterQuery(metricName, sourceMetric, innerQuery);
 
         return new LogicalMetric(outerQuery, new NoOpResultSetMapper(), metricName);

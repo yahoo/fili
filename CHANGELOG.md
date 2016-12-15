@@ -10,6 +10,9 @@ Current
 
 ### Added:
 
+- [Added MetricField accessor to the interface of LogicalMetric](https://github.com/yahoo/fili/pull/124)
+    * Previously accessing the metric field involved using three method calls
+
 - [Log a warning if `SegmentMetadataLoader` tries to load empty segment metadata](https://github.com/yahoo/fili/pull/113)
     * While not an error condition (eg. configuration migration), it's unusual, and likely shouldn't stay this way long
 
@@ -32,6 +35,9 @@ Current
     * This allows for more robust testing of classes that make use of arrays in their constructor parameters
 
 ### Changed:
+
+- [Used Metric Field accessor to simplify maker code](https://github.com/yahoo/fili/pull/124)
+    * Using metric field accessor simplifies and enables streaminess in maker code
 
 - [Fili's name for a PhysicalTable is decoupled from the name of the associated table in Druid](https://github.com/yahoo/fili/pull/123)
 
