@@ -32,6 +32,9 @@ Table of Contents
     - [Jobs endpoint](#jobs-endpoint)
 - [Misc](#misc)
     - [Dates and Times](#dates-and-times)
+      - [Date Periods](#date-periods)
+      - [Date Macros](#date-macros)
+      - [Time Zone](#time-zone)
     - [Case Sensitivity](#case-sensitivity)
     - [Rate Limiting](#rate-limiting)
     - [Errors](#errors)
@@ -724,6 +727,22 @@ This period can take the place of either the start or end date in the query.
 We have created a macro named `current`, which will always be translated to the beginning of the current time grain period.  For example, if your time grain is `day`, then `current` will resolve to today’s date.  If your query time grain is `month`, then `current` will resolve to the first of the current month.
 
 There is also a similar macro named `next` which resolves to the beginning of the next interval. For example, if your time grain is `day`, then, `next` will resolve to tomorrow's date.
+
+#### Time Zone
+
+Currently, time zone cannot be specified for the start or stop instants of an interval. Instead, the time zone of a query can be changed via the `timeZone` query parameter. This changes the time zone in which the intervals specified in the `dateTime` are interpreted. By default, the query will use the default time zone of the API, but any [time zone identifier](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List) can be specified to override that. For example, specifying query parameters
+
+    dateTime=2016-09-16/2016-09-17&timeZone=America/Los_Angeles
+    vs
+    dateTime=2016-09-16/2016-09-17&timeZone=America/Chicago
+
+will result in the intervals resolving to
+
+    2016-09-16 00:00:00-07:00/2016-09-17 00:00:00-07:00
+    and
+    2016-09-16 00:00:00-05:00/2016-09-17 00:00:00-05:00
+
+<sub>Note the hour offsets on the interval instants.</sub>
 
 ### Case Sensitivity ###
 
