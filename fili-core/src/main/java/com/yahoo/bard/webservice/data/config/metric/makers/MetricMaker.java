@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.data.config.metric.makers;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
+import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper;
 import com.yahoo.bard.webservice.druid.model.MetricField;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation;
@@ -23,8 +24,9 @@ import java.util.List;
  */
 public abstract class MetricMaker {
 
-    private static final Logger LOG = LoggerFactory.getLogger(MetricMaker.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(MetricMaker.class);
 
+    public static final NoOpResultSetMapper NO_OP_MAPPER = new NoOpResultSetMapper();
     /**
      * The metric dictionary from which dependent metrics will be resolved.
      */
