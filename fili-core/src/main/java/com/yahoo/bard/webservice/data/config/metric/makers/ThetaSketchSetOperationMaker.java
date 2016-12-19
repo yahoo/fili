@@ -11,10 +11,9 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationP
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchEstimatePostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchSetOperationPostAggregation;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Metric maker to support sketch set post aggregations.
@@ -43,22 +42,22 @@ public class ThetaSketchSetOperationMaker extends MetricMaker {
         TemplateDruidQuery mergedQuery = getMergedQuery(dependentMetrics);
 
         // Get the ThetaSketchSetOperationPostAggregation operands from the dependent metrics
-        PostAggregation operandOne = getSketchField(dependentMetrics.get(0));
-        PostAggregation operandTwo = getSketchField(dependentMetrics.get(1));
+        List<PostAggregation> sketchPostAggregations = dependentMetrics.stream()
+                .map(this::getSketchField)
+                .collect(Collectors.toList());
 
         // Create the ThetaSketchSetOperationPostAggregation
         ThetaSketchSetOperationPostAggregation setPostAggregation = new ThetaSketchSetOperationPostAggregation(
                 metricName,
                 function,
-                Arrays.asList(operandOne, operandTwo)
+                sketchPostAggregations
         );
 
         PostAggregation estimate = new ThetaSketchEstimatePostAggregation(metricName, setPostAggregation);
-        Set<PostAggregation> postAggs = Collections.singleton(estimate);
 
         TemplateDruidQuery query = new TemplateDruidQuery(
                 mergedQuery.getAggregations(),
-                postAggs,
+                Collections.singleton(estimate),
                 mergedQuery.getInnerQuery(),
                 mergedQuery.getTimeGrain()
         );

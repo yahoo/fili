@@ -7,10 +7,8 @@ import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
-import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.aggregation.CardinalityAggregation;
-import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,14 +70,10 @@ public class CardinalityMaker extends MetricMaker {
         Set<Dimension> dimensions = dependentDimensions.stream()
                 .map(dimensionDictionary::findByApiName)
                 .collect(Collectors.toSet());
-        CardinalityAggregation agg = new CardinalityAggregation(metricName, dimensions, byRow);
 
-        Set<Aggregation> aggs = Collections.singleton(agg);
-        Set<PostAggregation> postAggs = Collections.emptySet();
+        Set<Aggregation> aggs = Collections.singleton(new CardinalityAggregation(metricName, dimensions, byRow));
 
-        TemplateDruidQuery query = new TemplateDruidQuery(aggs, postAggs);
-
-        return new LogicalMetric(query, new NoOpResultSetMapper(), metricName);
+        return new LogicalMetric(new TemplateDruidQuery(aggs, Collections.emptySet()), NO_OP_MAPPER, metricName);
     }
 
     @Override

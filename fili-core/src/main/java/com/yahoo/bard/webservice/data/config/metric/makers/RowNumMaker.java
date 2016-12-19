@@ -13,6 +13,7 @@ import java.util.List;
  */
 public class RowNumMaker extends MetricMaker {
 
+    private static final RowNumMapper ROW_NUM_MAPPER = new RowNumMapper();
     private static final int DEPENDENT_METRICS_REQUIRED = 0;
 
     /**
@@ -29,7 +30,7 @@ public class RowNumMaker extends MetricMaker {
     protected LogicalMetric makeInner(String metricName, List<String> dependentMetrics) {
         return new LogicalMetric(
                 null,
-                new RowNumMapper(),
+                ROW_NUM_MAPPER,
                 metricName,
                 "Generator for Row Numbers"
         );
