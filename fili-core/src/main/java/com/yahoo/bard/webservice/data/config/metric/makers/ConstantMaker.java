@@ -5,8 +5,6 @@ package com.yahoo.bard.webservice.data.config.metric.makers;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
-import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper;
-import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.ConstantPostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 
@@ -41,17 +39,25 @@ public class ConstantMaker extends MetricMaker {
 
     @Override
     protected LogicalMetric makeInner(String metricName, List<String> dependentMetrics) {
+        try {
+            Set<PostAggregation> postAggregations = Collections.singleton(new ConstantPostAggregation(
+                    metricName,
+                    new Double(dependentMetrics.get(0))
+            ));
 
-        Double number = new Double(dependentMetrics.get(0));
-
-        ConstantPostAggregation postAgg = new ConstantPostAggregation(metricName, number);
-
-        Set<Aggregation> aggs = Collections.emptySet();
-        Set<PostAggregation> postAggs = Collections.singleton(postAgg);
-
-        TemplateDruidQuery query = new TemplateDruidQuery(aggs, postAggs);
-
-        return new LogicalMetric(query, new NoOpResultSetMapper(), metricName);
+            return new LogicalMetric(
+                    new TemplateDruidQuery(Collections.emptySet(), postAggregations),
+                    NO_OP_MAPPER,
+                    metricName
+            );
+        } catch (NumberFormatException nfe) {
+            String message = String.format(
+                    "%s value '%s' does not parse to a number",
+                    metricName,
+                    dependentMetrics.get(0));
+            LOG.error(message);
+            throw new IllegalArgumentException(message, nfe);
+        }
     }
 
     @Override
