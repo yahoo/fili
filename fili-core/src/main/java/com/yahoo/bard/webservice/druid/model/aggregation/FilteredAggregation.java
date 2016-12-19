@@ -21,8 +21,6 @@ import javax.validation.constraints.NotNull;
 
 /**
  * FilteredAggregation wraps aggregation with the associated filter.
- * All aggregation names should be unique in the final druid query. Hence all the wrapped aggregations should have new
- * name which is its original name appended with its filter
  */
 public class FilteredAggregation extends Aggregation {
     private final Filter filter;
@@ -32,14 +30,13 @@ public class FilteredAggregation extends Aggregation {
      * Constructor.
      *
      * @param name  Name of the filtered aggregator
-     * @param fieldName  Field name to be considered to apply the metric filter
-     * @param aggregation  Existing aggregator for the logical metric
-     * @param filter  Filter to be applied on aggregator
+     * @param aggregation  Existing aggregator being filtered
+     * @param filter  filter to apply to that aggregator
      */
-    public FilteredAggregation(@NotNull String name, String fieldName, Aggregation aggregation, Filter filter) {
-        super(name, fieldName);
+    public FilteredAggregation(@NotNull String name, Aggregation aggregation, Filter filter) {
+        super(name, aggregation.getFieldName());
         this.filter = filter;
-        this.aggregation = aggregation.withName(name).withFieldName(fieldName);
+        this.aggregation = aggregation.withName(name);
     }
 
     /**
@@ -95,12 +92,12 @@ public class FilteredAggregation extends Aggregation {
 
     @Override
     public Aggregation withFieldName(String fieldName) {
-        return new FilteredAggregation(getName(), fieldName, getAggregation(), getFilter());
+        return new FilteredAggregation(getName(), getAggregation().withFieldName(fieldName), getFilter());
     }
 
     @Override
     public Aggregation withName(String name) {
-        return new FilteredAggregation(name, getFieldName(), getAggregation(), getFilter());
+        return new FilteredAggregation(name, getAggregation(), getFilter());
     }
 
     /**
@@ -111,7 +108,7 @@ public class FilteredAggregation extends Aggregation {
      * @return new FilteredAggregation instance with the provided filter
      */
     public Aggregation withFilter(Filter filter) {
-        return new FilteredAggregation(getName(), getFieldName(), getAggregation(), filter);
+        return new FilteredAggregation(getName(), getAggregation(), filter);
     }
 
     /**
@@ -122,7 +119,7 @@ public class FilteredAggregation extends Aggregation {
      * @return new FilteredAggregation instance with the provided aggregation
      */
     public Aggregation withAggregation(Aggregation aggregation) {
-        return new FilteredAggregation(aggregation.getName(), aggregation.getFieldName(), aggregation, getFilter());
+        return new FilteredAggregation(aggregation.getName(), aggregation, getFilter());
     }
 
     @JsonIgnore

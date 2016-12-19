@@ -404,10 +404,9 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
         }
 
         for (Map.Entry<String, Filter> entry: filterHashMap.entrySet()) {
-            String newAggName = aggregation.getName().concat("-").concat(entry.getKey().toString());
+            String newAggName = aggregation.getName().concat("-").concat(entry.getKey());
             FilteredAggregation filteredAggregation = new FilteredAggregation(
                     newAggName,
-                    aggregation.getFieldName(),
                     aggregation,
                     filterHashMap.get(entry.getKey())
             );

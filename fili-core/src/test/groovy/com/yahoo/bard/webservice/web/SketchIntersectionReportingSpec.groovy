@@ -148,7 +148,6 @@ class SketchIntersectionReportingSpec extends Specification {
         expect:
         resources.fooNoBarFilteredAggregationSet.first() == new FilteredAggregation(
                 "fooNoBar-country_id_in_US_IN",
-                "fooNoBar",
                 resources.fooNoBarAggregation,
                 resources.filter
         )

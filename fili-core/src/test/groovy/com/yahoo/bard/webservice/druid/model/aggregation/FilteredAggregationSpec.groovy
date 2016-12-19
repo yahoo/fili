@@ -103,8 +103,8 @@ class FilteredAggregationSpec extends Specification{
                 [(ageDimension): [new ApiFilter("age|id-in[114]", table, dimensionDictionary)] as Set]
         )
 
-        filteredAgg = new FilteredAggregation("FOO_NO_BAR-114_127", metricAgg.getFieldName(), metricAgg, filter1)
-        filteredAgg2 = new FilteredAggregation("FOO_NO_BAR-114_127", genderDependentMetricAgg.getFieldName(), genderDependentMetricAgg, filter1)
+        filteredAgg = new FilteredAggregation("FOO_NO_BAR-114_127", metricAgg, filter1)
+        filteredAgg2 = new FilteredAggregation("FOO_NO_BAR-114_127", genderDependentMetricAgg, filter1)
     }
 
     def cleanupSpec() {

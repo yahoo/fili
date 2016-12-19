@@ -6,54 +6,90 @@ package com.yahoo.bard.webservice.data.config.metric.makers;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
-import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper;
+import com.yahoo.bard.webservice.druid.model.MetricField;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.aggregation.FilteredAggregation;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
+
+import com.google.common.collect.ImmutableSet;
 
 import java.util.Collections;
 import java.util.List;
 
 /**
  * Build a Filtered Aggregation logical metric.
+ * This metric maker takes a metric whose field is an aggregator and builds a metric with the same dependencies except
+ * without the aggregation and with a filtered aggregation instead using a filter fixed at construction.
  */
 public class FilteredAggregationMaker extends MetricMaker {
 
+    /**
+     * The filter being applied to the metrics created.
+     */
     protected final Filter filter;
+
+    /**
+     * The metric dictionary used to resolve dependent metrics.
+     */
     protected final MetricDictionary metricDictionary;
-    protected final Aggregation aggregation;
 
     /**
      * Construct a metric maker for Filtered Aggregations.
      *
      * @param metricDictionary the metric dictionary
-     * @param aggregation the underlying aggregation
      * @param filter the filter to filter the aggregation by
      */
-    public FilteredAggregationMaker(MetricDictionary metricDictionary, Aggregation aggregation, Filter filter) {
+    public FilteredAggregationMaker(MetricDictionary metricDictionary, Filter filter) {
         super(metricDictionary);
-        this.aggregation = aggregation;
         this.filter = filter;
         this.metricDictionary = metricDictionary;
     }
 
     @Override
     protected LogicalMetric makeInner(String metricName, List<String> dependentMetrics) {
+        LogicalMetric sourceMetric = metricDictionary.get(dependentMetrics.get(0));
+
+        Aggregation sourceAggregation = assertDependentIsAggregationMetric(sourceMetric);
+
         FilteredAggregation filteredAggregation = new FilteredAggregation(
                 metricName,
-                aggregation.getFieldName(),
-                aggregation,
+                sourceAggregation,
                 filter
         );
+
         return new LogicalMetric(
-                new TemplateDruidQuery(Collections.singleton(filteredAggregation), Collections.emptySet()),
-                new NoOpResultSetMapper(),
+                new TemplateDruidQuery(
+                        ImmutableSet.of(filteredAggregation),
+                        Collections.emptySet(),
+                        sourceMetric.getTemplateDruidQuery().getInnerQuery()
+                ),
+                sourceMetric.getCalculation(),
                 metricName
         );
     }
 
+    /**
+     * Test that the metric is associated with an Aggregation Metric and return that Aggregation.
+     *
+     * @param sourceMetric  The source metric
+     *
+     * @return The aggregation used by this metric
+     */
+    private Aggregation assertDependentIsAggregationMetric(final LogicalMetric sourceMetric) {
+        MetricField metricField = sourceMetric.getMetricField();
+        if (!(metricField instanceof Aggregation)) {
+            String message = String.format(
+                    "FilteredAggregationMaker requires an aggregation metric, but found: %s.",
+                    sourceMetric.getName()
+            );
+            LOG.error(message);
+            throw new IllegalArgumentException(message);
+        }
+        return (Aggregation) metricField;
+    }
+
     @Override
     protected int getDependentMetricsRequired() {
-        return 0;
+        return 1;
     }
 }

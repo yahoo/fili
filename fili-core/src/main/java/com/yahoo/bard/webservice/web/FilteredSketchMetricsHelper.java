@@ -439,7 +439,6 @@ public class FilteredSketchMetricsHelper implements MetricsFilterSetBuilder {
             String newAggName = aggregation.getName().concat("-").concat(entry.getKey().toString());
             FilteredAggregation filteredAggregation = new FilteredAggregation(
                     newAggName,
-                    aggregation.getFieldName(),
                     aggregation,
                     filterHashMap.get(entry.getKey())
             );
