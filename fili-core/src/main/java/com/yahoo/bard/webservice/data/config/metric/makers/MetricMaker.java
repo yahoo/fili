@@ -158,12 +158,11 @@ public abstract class MetricMaker {
                 .map(metrics::get)
                 .map(LogicalMetric::getTemplateDruidQuery)
                 .reduce(TemplateDruidQuery::merge)
-                .orElseGet(() -> {
-                            String message = "At least 1 name is needed to merge aggregations";
-                            LOG.error(message);
-                            throw new IllegalArgumentException(message);
-                        }
-                );
+                .orElseThrow(() -> {
+                    String message = "At least 1 name is needed to merge aggregations";
+                    LOG.error(message);
+                    return new IllegalArgumentException(message);
+                });
     }
 
     /**

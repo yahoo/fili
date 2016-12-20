@@ -157,6 +157,7 @@ Current
     * [JavaX Annotation API 1.2 -> 1.3](https://jcp.org/en/jsr/detail?id=250)
 
 ### Deprecated:
+- [Deprecated MetricMaker utility method in favor of using new field accesor on Metric](https://github.com/yahoo/fili/pull/124)
 
 - [Deprecated MetricMaker.getDependentQuery lookup method in favor of simpler direct access](https://github.com/yahoo/fili/pull/124)
 
