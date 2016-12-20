@@ -2,23 +2,30 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.metric.makers
 
+import static com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker.INCORRECT_NUMBER_OF_DEPS_FORMAT
+import static com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation.ArithmeticPostAggregationFunction.MULTIPLY
+import static com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationPostAggFunction.UNION
+
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
+import com.yahoo.bard.webservice.data.metric.mappers.SketchRoundUpMapper
+import com.yahoo.bard.webservice.druid.model.MetricField
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.LongSumAggregation
-import com.yahoo.bard.webservice.druid.model.aggregation.SketchMergeAggregation
+import com.yahoo.bard.webservice.druid.model.aggregation.ThetaSketchAggregation
+import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.ConstantPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
+import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchSetOperationPostAggregation
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
 import com.yahoo.bard.webservice.druid.util.FieldConverters
-import com.yahoo.bard.webservice.druid.util.SketchFieldConverter
+import com.yahoo.bard.webservice.druid.util.ThetaSketchFieldConverter
 
-import spock.lang.Shared
 import spock.lang.Specification
-
+import spock.lang.Unroll
 /**
  * Tests the code implemented by MetricMaker, using a stub for code that is meant to be implemented by the children.
  * Primarily tests the sad paths. The specifications of the children of MetricMaker test the various happy paths.
@@ -26,12 +33,83 @@ import spock.lang.Specification
 class MetricMakerSpec extends Specification {
 
     static final String METRIC_NAME = "metric name"
+    static final int DEPENDENT_METRICS = 3
 
-    MetricMaker maker
-    @Shared
-    FieldConverters converter = FieldConverterSupplier.sketchConverter
+    static final FieldConverters originalConverter = FieldConverterSupplier.sketchConverter
+    static final FieldConverters CONVERTER = new ThetaSketchFieldConverter()
 
-    private final LogicalMetric METRIC = new LogicalMetric(
+    MetricDictionary dictionary = new MetricDictionary()
+
+    static LogicalMetric longSumMetric
+    static PostAggregation longSumFieldAccessor
+    static LogicalMetric squareMetric
+    static PostAggregation number
+
+    static LogicalMetric sketchAggregationMetric
+    static PostAggregation sketchFieldAccessor
+    static LogicalMetric sketchEstimateMetric
+    static LogicalMetric sketchUnionMetric
+    static LogicalMetric sketchUnionEstimateMetric
+
+    static LogicalMetric constantMetric
+
+    MetricMaker maker = getMakerInstance()
+
+    def setupSpec() {
+
+        String sketchName = "all_users"
+        String sketchUnionName = "union_users"
+        String constantName = "constant1"
+        String sumName = "longSum"
+        String squareName = "square"
+
+        number = new ConstantPostAggregation(constantName, 1.0)
+        FieldConverterSupplier.sketchConverter = CONVERTER
+
+        TemplateDruidQuery queryTemplate
+        queryTemplate = new TemplateDruidQuery([] as Set, [number] as Set)
+        constantMetric = new LogicalMetric(queryTemplate, new NoOpResultSetMapper(), constantName)
+
+        Aggregation longSum = new LongSumAggregation(sumName, "columnName")
+        queryTemplate = new TemplateDruidQuery([longSum] as Set, [] as Set)
+        longSumMetric = new LogicalMetric(queryTemplate, new NoOpResultSetMapper(), longSum.name)
+
+        longSumFieldAccessor = new FieldAccessorPostAggregation(longSum)
+        PostAggregation square = new ArithmeticPostAggregation(squareName, MULTIPLY, [longSumFieldAccessor, longSumFieldAccessor])
+
+        queryTemplate = new TemplateDruidQuery([longSum] as Set, [square] as Set)
+        squareMetric = new LogicalMetric(queryTemplate, new NoOpResultSetMapper(), square.name)
+
+        // Theta Sketches
+        Aggregation sketchAggregation = new ThetaSketchAggregation(sketchName, "columnName", 16000)
+        queryTemplate = new TemplateDruidQuery([sketchAggregation] as Set, [] as Set)
+        sketchAggregationMetric = new LogicalMetric(queryTemplate, new SketchRoundUpMapper(), sketchAggregation.name)
+
+        PostAggregation sketchEstimateAggregation = CONVERTER.asSketchEstimate(sketchAggregation)
+
+        sketchFieldAccessor = sketchEstimateAggregation.getField()
+
+        queryTemplate = new TemplateDruidQuery([sketchAggregation] as Set, [sketchEstimateAggregation] as Set)
+        sketchEstimateMetric = new LogicalMetric(queryTemplate, new SketchRoundUpMapper(), sketchEstimateAggregation.name)
+
+        PostAggregation sketchSetAggregation = new ThetaSketchSetOperationPostAggregation(
+                sketchUnionName,
+                UNION,
+                [sketchFieldAccessor, sketchFieldAccessor]
+        )
+        queryTemplate = new TemplateDruidQuery([sketchAggregation] as Set, [sketchSetAggregation] as Set)
+        sketchUnionMetric = new LogicalMetric(queryTemplate, new SketchRoundUpMapper(), sketchSetAggregation.name)
+
+        PostAggregation sketchSetEstimate = CONVERTER.asSketchEstimate(sketchSetAggregation)
+        queryTemplate = new TemplateDruidQuery([sketchAggregation] as Set, [sketchSetEstimate] as Set)
+        sketchUnionEstimateMetric = new LogicalMetric(queryTemplate, new SketchRoundUpMapper(), sketchSetEstimate.name)
+    }
+
+    def cleanupSpec() {
+        FieldConverterSupplier.sketchConverter = originalConverter
+    }
+
+    private static final LogicalMetric DEFAULT_METRIC = new LogicalMetric(
             new TemplateDruidQuery([] as Set, [] as Set),
             new NoOpResultSetMapper(),
             "no name",
@@ -44,16 +122,16 @@ class MetricMakerSpec extends Specification {
      * and returned every time this method is invoked.
      * @return A new instance of the MetricMaker under test.
      */
-    MetricMaker getInstance(){
-        new MetricMaker(new MetricDictionary()) {
+    MetricMaker getMakerInstance(){
+        new MetricMaker(dictionary) {
             @Override
             protected LogicalMetric makeInner(String metricName, List<String> dependentMetrics) {
-                METRIC
+                DEFAULT_METRIC
             }
 
             @Override
             protected int getDependentMetricsRequired() {
-                1
+                DEPENDENT_METRICS
             }
         }
     }
@@ -81,98 +159,80 @@ class MetricMakerSpec extends Specification {
         }
     }
 
-    def setup(){
-        maker = getInstance()
-        //Initializing the Sketch field converter
-        FieldConverterSupplier.sketchConverter = new SketchFieldConverter();
+    def "When a claimed dependent metric does not exist in the maker's dictionary, an exception is thrown"(){
+        given: "A list of dependent metrics, one of which doesn't exist"
+        List<String> dependentMetricNames = buildDependentMetricNames(DEPENDENT_METRICS)
+        dictionary.putAll(makeEmptyMetrics(dependentMetricNames))
+        String badName = "I don't exist!"
+        dependentMetricNames.add(badName)
+
+        when:
+        maker.make(METRIC_NAME, dependentMetricNames)
+
+        then:
+        Exception exception = thrown(IllegalArgumentException)
+        exception.message == String.format(MetricMaker.MISSING_DEP_FORMAT, badName)
     }
 
-    def cleanupSpec() {
-        FieldConverterSupplier.sketchConverter = converter
-    }
-
-    def "When a metric has too few dependent metrics, an exception is thrown."(){
+    @Unroll
+    def "When a metric has too #adjective dependent metrics, an exception is thrown."(){
         given: "One fewer dependent metrics than this metric depends on"
-        List<String> dependentMetricNames = buildDependentMetricNames(maker.getDependentMetricsRequired()-1)
-        maker.metrics.putAll(makeEmptyMetrics(dependentMetricNames))
+        List<String> dependentMetricNames = buildDependentMetricNames(DEPENDENT_METRICS+2)
+        dictionary.putAll(makeEmptyMetrics(dependentMetricNames))
 
         when:
-        maker.make(METRIC_NAME, dependentMetricNames)
+        getMakerInstance().make(METRIC_NAME, dependentMetricNames.subList(0, DEPENDENT_METRICS + adjustment))
 
         then:
-        thrown(IllegalArgumentException)
+        Exception exception = thrown(IllegalArgumentException)
+        exception.getMessage() == String.format(INCORRECT_NUMBER_OF_DEPS_FORMAT, METRIC_NAME, DEPENDENT_METRICS+adjustment, DEPENDENT_METRICS)
+
+        where:
+        adjective | adjustment
+        "many"    | 1
+        "few"     | -1
     }
 
-   def "When a claimed dependent metric does not exist in the maker's dictionary, an exception is thrown"(){
-       given: "A list of dependent metrics, one of which doesn't exist"
-       List<String> dependentMetricNames = buildDependentMetricNames(maker.getDependentMetricsRequired()-1)
-       maker.metrics.putAll(makeEmptyMetrics(dependentMetricNames))
-       dependentMetricNames.add("I don't exist!")
-
-       when:
-       maker.make(METRIC_NAME, dependentMetricNames)
-
-       then:
-       thrown(IllegalArgumentException)
-   }
-
-    def "getNumericField returns a numeric post aggregation unchanged."(){
-        given: "A logical metric containing a constant post aggregation"
-        PostAggregation number = new ConstantPostAggregation("constant1", 1.0)
-        TemplateDruidQuery queryTemplate = new TemplateDruidQuery([] as Set, [number] as Set)
-        LogicalMetric constantMetric = new LogicalMetric(queryTemplate, new NoOpResultSetMapper(), "constant1")
-
-        and: "The maker, with populated metric dictionary"
-        maker.metrics.add(constantMetric)
-
+    @Unroll
+    def "getNumericField returns a numeric metric #expected.type for metric named: #fromMetric.name "() {
         expect:
-        maker.getNumericField("constant1") == number
+        MetricMaker.getNumericField(fromMetric.metricField) == expected
+
+        where:
+        fromMetric                | expected
+        constantMetric            | constantMetric.metricField
+        squareMetric              | squareMetric.metricField
+        longSumMetric             | longSumFieldAccessor
+        sketchEstimateMetric      | sketchEstimateMetric.metricField
+        sketchAggregationMetric   | sketchEstimateMetric.metricField
+        sketchUnionMetric         | sketchUnionEstimateMetric.metricField
+        sketchUnionEstimateMetric | sketchUnionEstimateMetric.metricField
     }
 
-    def """Given the metric name of an aggregation metric field, getNumericField wraps the
-        aggregation in a field accessor and returns the new PostAggregation."""(){
-        given: "A logical metric containing a metric aggregation"
-        Aggregation longSumAggregation = new LongSumAggregation("num_users_sum", "num_users")
-        TemplateDruidQuery queryTemplate = new TemplateDruidQuery([longSumAggregation] as Set, [] as Set)
-        LogicalMetric longSumMetric = new LogicalMetric(queryTemplate, new NoOpResultSetMapper(), "num_users_sum")
-
-        and: "The maker, with populated metric dictionary"
-        maker.metrics.add(longSumMetric)
-
-        and: "The expected post aggregation: a field access wrapping the long sum aggregation"
-        PostAggregation longSumFieldAccess = new FieldAccessorPostAggregation(longSumAggregation)
-
+    @Unroll
+    def "getSketchField returns a sketch aggregation of type #expected.type for metric named: #fromMetric.name "() {
         expect:
-        maker.getNumericField("num_users_sum") == longSumFieldAccess
+        MetricMaker.getSketchField(fromMetric.metricField) == expected
+
+        where:
+        fromMetric                | expected
+        sketchEstimateMetric      | sketchFieldAccessor
+        sketchAggregationMetric   | sketchFieldAccessor
+        sketchUnionMetric         | sketchUnionMetric.metricField
+        sketchUnionEstimateMetric | sketchUnionMetric.metricField
     }
 
-    def "Given a sketch aggregation, getNumericField wraps the sketch in a sketch estimate."(){
-        given: "A sketch aggregation"
-        Aggregation sketchMerge = new SketchMergeAggregation("all_users", "users", 16000)
-        TemplateDruidQuery queryTemplate = new TemplateDruidQuery([sketchMerge] as Set, [] as Set)
-        LogicalMetric metric = new LogicalMetric(queryTemplate, new NoOpResultSetMapper(), "all_users", "metric")
-
-        and: "The maker, with populated metric dictionary"
-        MetricMaker maker = getInstance()
-        maker.metrics.add(metric)
-
-        and: "The expected post aggregation: A sketch estimate wrapping the sketch aggregation."
-        PostAggregation sketchEstimate = FieldConverterSupplier.sketchConverter.asSketchEstimate(sketchMerge)
-
-        expect:
-        maker.getNumericField("all_users") == sketchEstimate
-
-    }
-
-    def "When a metric has too many dependent metrics, an exception is thrown"(){
-        given: "One more than the number of dependent metrics this maker depends on."
-        List<String> dependentMetricNames = buildDependentMetricNames(maker.getDependentMetricsRequired()+1)
-        maker.metrics.putAll(makeEmptyMetrics(dependentMetricNames))
-
+    @Unroll
+    def "getSketchField throws error when given a non sketch based field #fromMetric.name "() {
         when:
-        maker.make(METRIC_NAME, dependentMetricNames)
+        MetricField field = fromMetric.metricField
+        MetricMaker.getSketchField(field)
 
         then:
-        thrown(IllegalArgumentException)
+        Exception exception = thrown(IllegalArgumentException)
+        exception.getMessage() == String.format(MetricMaker.SKETCH_REQUIRED_FORMAT, field.name, field)
+
+        where:
+        fromMetric  << [constantMetric, squareMetric, longSumMetric]
     }
 }

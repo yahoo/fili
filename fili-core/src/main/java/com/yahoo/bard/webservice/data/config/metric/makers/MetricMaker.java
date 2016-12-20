@@ -11,6 +11,7 @@ import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.SketchEstimatePostAggregation;
+import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchEstimatePostAggregation;
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier;
 
 import org.slf4j.Logger;
@@ -27,6 +28,9 @@ public abstract class MetricMaker {
     private static final Logger LOG = LoggerFactory.getLogger(MetricMaker.class);
 
     public static final NoOpResultSetMapper NO_OP_MAPPER = new NoOpResultSetMapper();
+    private static final String SKETCH_REQUIRED_FORMAT = "Field must be a sketch: %s but is: %s";
+    private static final String INCORRECT_NUMBER_OF_DEPS_FORMAT = "%s got %d of %d expected metrics";
+    private static final String MISSING_DEP_FORMAT = "Dependent metric %s is not in the metric dictionary";
 
     /**
      * The metric dictionary from which dependent metrics will be resolved.
@@ -78,10 +82,11 @@ public abstract class MetricMaker {
         int actualCount = dependentMetrics.size();
         if (actualCount != requiredCount) {
             String message = String.format(
-                    "%s got %d of %d dependent metrics",
+                    INCORRECT_NUMBER_OF_DEPS_FORMAT,
                     dictionaryName,
                     actualCount,
-                    requiredCount);
+                    requiredCount
+            );
             LOG.error(message);
             throw new IllegalArgumentException(message);
         }
@@ -96,8 +101,9 @@ public abstract class MetricMaker {
         for (String dependentMetric : dependentMetrics) {
             if (!metrics.containsKey(dependentMetric)) {
                 String message = String.format(
-                        "Dependent metric %s is not in the metric dictionary",
-                        dependentMetric);
+                        MISSING_DEP_FORMAT,
+                        dependentMetric
+                );
                 LOG.error(message);
                 throw new IllegalArgumentException(message);
             }
@@ -184,56 +190,108 @@ public abstract class MetricMaker {
      * @param fieldName  The name for the aggregation or post aggregation column being gotten
      *
      * @return A post aggregator representing a number field value
+     *
+     * @deprecated use the static version {@link #getNumericField(MetricField)} by preference
      */
+    @Deprecated
     protected PostAggregation getNumericField(String fieldName) {
-        // Get the field
-        MetricField field = metrics.get(fieldName).getMetricField();
-
-        // Check for sketches, since we can't handle them in here
-        if (field.isSketch()) {
-            return FieldConverterSupplier.sketchConverter.asSketchEstimate(field);
-        }
-
-        // Handle it if it's an Aggregation (ie. wrap it in a fieldAccessorPostAggregation)
-        if (field instanceof Aggregation) {
-            field = new FieldAccessorPostAggregation((Aggregation) field);
-        }
-
-        // If it's already a post-agg, we're good, and if it was an agg, we've already wrapped it
-        return (PostAggregation) field;
+        return getNumericField(metrics.get(fieldName).getMetricField());
     }
 
     /**
-     * Get the sketch post aggregation for a sketch field.
+     * Prepare a post aggregation for a field expecting a numeric value.
+     * <p>
+     * The post-agg is created per the following heuristics:
+     * <dl>
+     *     <dt>If it's an aggregator
+     *     <dd>wrap it in a field accessor
+     *     <dt>If it's a sketch
+     *     <dd>wrap it in a sketch estimate
+     *     <dt>If it's already a numeric post aggregator
+     *     <dd>simply return it
+     * </dl>
      *
-     * @param fieldName  The name of an aggregation or post aggregation
+     * @param field  The field being coerced
      *
-     * @return A post aggregation referencing a sketch value
+     * @return A post aggregator representing a number field value
      */
+    protected static PostAggregation getNumericField(MetricField field) {
+        // If the field is a sketch, wrap it in a sketch estimate, if it's an aggregation, create a post aggregation
+        // Otherwise it is a number post aggregation already
+        return field.isSketch() ?
+                FieldConverterSupplier.sketchConverter.asSketchEstimate(field) :
+                field instanceof Aggregation ?
+                        new FieldAccessorPostAggregation((Aggregation) field) :
+                        (PostAggregation) field;
+    }
+
+    /**
+     * Prepare a post aggregation for a field expecting a sketch value.
+     * <p>
+     * The post-agg is created per the following heuristics:
+     * <dl>
+     *     <dt>If it's an aggregator
+     *     <dd>wrap it in a field accessor
+     *     <dt>If it's a sketch estimate
+     *     <dd>unwrap the sketch estimate
+     *     <dt>If it's already a sketch post aggregator
+     *     <dd>simply return it
+     *     <dt>Otherwise</dt>
+     *     <dd>This is an illegal field</dd>
+     * </dl>
+     *
+     * @param fieldName  The name for the aggregation or post aggregation column being gotten
+     *
+     * @return A post aggregator representing a number field value
+     *
+     * @deprecated use the static version {@link #getSketchField(MetricField)} by preference
+     */
+    @Deprecated
     protected PostAggregation getSketchField(String fieldName) {
         // Get the field
-        MetricField field = metrics.get(fieldName).getMetricField();
+        return getSketchField(metrics.get(fieldName).getMetricField());
+    }
 
+    /**
+     * Prepare a post aggregation for a field expecting a sketch value.
+     * <p>
+     * The post-agg is created per the following heuristics:
+     * <dl>
+     *     <dt>If it's an aggregator
+     *     <dd>wrap it in a field accessor
+     *     <dt>If it's a sketch estimate
+     *     <dd>unwrap the sketch estimate
+     *     <dt>If it's already a sketch post aggregator
+     *     <dd>simply return it
+     *     <dt>Otherwise</dt>
+     *     <dd>This is an illegal field</dd>
+     * </dl>
+     *
+     * @param field  The field being coerced
+     *
+     * @return A post aggregator representing a number field value
+     */
+    protected static PostAggregation getSketchField(MetricField field) {
         // SketchEstimatePostAggregations are just wrappers for the actual PostAggregation we want to return
         if (field instanceof SketchEstimatePostAggregation) {
-            SketchEstimatePostAggregation estimate = (SketchEstimatePostAggregation) field;
-            field = estimate.getField();
-            return (PostAggregation) field;
+            return ((SketchEstimatePostAggregation) field).getField();
+        }
+
+        if (field instanceof ThetaSketchEstimatePostAggregation) {
+            return ((ThetaSketchEstimatePostAggregation) field).getField();
         }
 
         // Check for sketches, since we require them after this point
         if (!field.isSketch()) {
-            String message = String.format("Field must be a sketch: %s but is: %s", fieldName, field);
+            String message = String.format(SKETCH_REQUIRED_FORMAT, field.getName(), field);
             LOG.error(message);
             throw new IllegalArgumentException(message);
         }
 
         // Handle it if it's an Aggregation (ie. wrap it in a fieldAccessorPostAggregation)
-        if (field instanceof Aggregation) {
-            return new FieldAccessorPostAggregation((Aggregation) field);
-        }
-
         // If it's already a post-agg, we're good, and if it was an agg, we've already wrapped it
-        return (PostAggregation) field;
+        return field instanceof Aggregation ?
+                new FieldAccessorPostAggregation((Aggregation) field) :
+                (PostAggregation) field;
     }
 }

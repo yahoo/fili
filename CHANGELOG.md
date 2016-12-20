@@ -13,6 +13,8 @@ Current
     * Added support for druid's RegisteredLookup by adding `RegisteredLookupDimension` and `RegisteredLookupExtractionFunction`
     * Added test for `RegisteredLookupDimension` serialization in `RegisteredLookupDimensionToDimensionSpecSpec`
 
+- [Added comprehensive tests for `MetricMaker` field coercion methods](https://github.com/yahoo/fili/pull/128) 
+
 - [Added MetricField accessor to the interface of LogicalMetric](https://github.com/yahoo/fili/pull/124)
     * Previously accessing the metric field involved using three method calls
 
@@ -169,6 +171,10 @@ Current
 
 ### Deprecated:
 
+- [Moved to static implementations for numeric and sketch coercion helper methods](https://github.com/yahoo/fili/pull/128) 
+    * `MetricMaker.getSketchField(String fieldName)` rather use `MetricMaker.getSketchField(MetricField field)`
+    * `MetricMaker.getNumericField(String fieldName)` rather use `MetricMaker.getNumericField(MetricField field)`
+
 - [MetricMaker cleanup and simplification](https://github.com/yahoo/fili/pull/127)
     * `AggregationAverageMaker` deprecated conversion method required by deprecated sketch library
 
@@ -187,6 +193,8 @@ Current
      so `LogicalDimensionColumn` is no longer needed
 
 ### Fixed:
+
+- [Added missing coverage for `ThetaSketchEstimate` unwrapping in `MetricMaker.getSketchField`](https://github.com/yahoo/fili/pull/128) 
 
 - [`DataSource::getNames` now returns Fili identifiers, not fact store identifiers](https://github.com/yahoo/fili/pull/125/files)
 
