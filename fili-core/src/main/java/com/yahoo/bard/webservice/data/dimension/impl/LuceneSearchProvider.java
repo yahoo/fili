@@ -521,8 +521,9 @@ public class LuceneSearchProvider implements SearchProvider {
             filterQueryBuilder.add(new BooleanClause(new MatchAllDocsQuery(), BooleanClause.Occur.MUST));
         }
 
-        LOG.debug("Filter Query: {}", filterQueryBuilder.build().toString());
-        return filterQueryBuilder.build();
+        BooleanQuery booleanQuery = filterQueryBuilder.build();
+        LOG.debug("Filter Query: {}", booleanQuery);
+        return booleanQuery;
     }
 
     /**
