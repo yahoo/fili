@@ -522,7 +522,7 @@ public class LuceneSearchProvider implements SearchProvider {
         }
 
         BooleanQuery booleanQuery = filterQueryBuilder.build();
-        LOG.debug("Filter Query: {}", booleanQuery);
+        LOG.trace("Translated ApiFilters {} into Lucene Query: {}", filters, booleanQuery);
         return booleanQuery;
     }
 
