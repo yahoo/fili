@@ -540,6 +540,7 @@ public class LuceneSearchProvider implements SearchProvider {
     private Pagination<DimensionRow> getResultsPage(Query query, PaginationParameters paginationParameters)
             throws PageNotFoundException {
         int perPage = paginationParameters.getPerPage();
+        validatePerPage(perPage);
         int requestedPageNumber = paginationParameters.getPage();
 
         TreeSet<DimensionRow> filteredDimRows;
