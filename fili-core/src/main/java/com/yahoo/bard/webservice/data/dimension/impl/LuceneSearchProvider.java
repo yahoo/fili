@@ -365,9 +365,7 @@ public class LuceneSearchProvider implements SearchProvider {
             Set<ApiFilter> filters,
             PaginationParameters paginationParameters
     ) {
-        int perPage = paginationParameters.getPerPage();
-        validatePerPage(perPage);
-        return getResultsPage(getFilterQuery(filters, perPage), paginationParameters);
+        return getResultsPage(getFilterQuery(filters), paginationParameters);
     }
 
     /**
@@ -453,11 +451,10 @@ public class LuceneSearchProvider implements SearchProvider {
      * Get query with filter parameters.
      *
      * @param filters  The set of filters
-     * @param perPage  The number of results per page
      *
      * @return A query to find all the dimension rows that satisfy the given filter
      */
-    private Query getFilterQuery(Set<ApiFilter> filters, int perPage) {
+    private Query getFilterQuery(Set<ApiFilter> filters) {
         /*
         Intuitively, Lucene performs searching for each BooleanQuery as follows:
         1. Start with an empty set of results.
