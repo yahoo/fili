@@ -179,7 +179,6 @@ public class LuceneSearchProvider implements SearchProvider {
 
     @Override
     public Pagination<DimensionRow> findAllDimensionRowsPaged(PaginationParameters paginationParameters) {
-        validatePerPage(paginationParameters.getPerPage());
         return getResultsPage(new MatchAllDocsQuery(), paginationParameters);
     }
 
