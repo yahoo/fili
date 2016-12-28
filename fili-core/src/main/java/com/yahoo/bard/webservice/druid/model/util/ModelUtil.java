@@ -5,10 +5,12 @@ package com.yahoo.bard.webservice.druid.model.util;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension;
 import com.yahoo.bard.webservice.data.dimension.impl.LookupDimension;
+import com.yahoo.bard.webservice.data.dimension.impl.RegisteredLookupDimension;
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.CascadeExtractionFunction;
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction;
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.LookupExtractionFunction;
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.NamespaceLookup;
+import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.RegisteredLookupExtractionFunction;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +46,25 @@ public class ModelUtil {
                                     new NamespaceLookup(namespace),
                                     false,
                                     "Unknown " + namespace,
+                                    false,
+                                    true
+                            )
+                    ).collect(Collectors.toList());
+
+            return Optional.ofNullable(
+                    extractionFunctions.size() > 1 ?
+                            new CascadeExtractionFunction(extractionFunctions) :
+                            extractionFunctions.size() == 1 ? extractionFunctions.get(0) : null
+            );
+        } else if (sourceClass.equals(RegisteredLookupDimension.class)) {
+            RegisteredLookupDimension registeredLookupDimension = (RegisteredLookupDimension) dimension;
+
+            List<ExtractionFunction> extractionFunctions = registeredLookupDimension.getLookups().stream()
+                    .map(
+                            lookup -> new RegisteredLookupExtractionFunction(
+                                    lookup,
+                                    false,
+                                    "Unknown " + lookup,
                                     false,
                                     true
                             )

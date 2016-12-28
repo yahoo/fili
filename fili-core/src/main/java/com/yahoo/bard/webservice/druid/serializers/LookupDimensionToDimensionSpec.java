@@ -3,7 +3,9 @@
 package com.yahoo.bard.webservice.druid.serializers;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension;
 import com.yahoo.bard.webservice.data.dimension.impl.LookupDimension;
+import com.yahoo.bard.webservice.data.dimension.impl.RegisteredLookupDimension;
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction;
 import com.yahoo.bard.webservice.druid.model.dimension.ExtractionDimensionSpec;
 import com.yahoo.bard.webservice.druid.model.util.ModelUtil;
@@ -12,6 +14,7 @@ import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.sun.corba.se.impl.io.TypeMismatchException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,15 +25,20 @@ import java.util.Optional;
 /**
  * Serializer to map LookupDimension to either DimensionSpec base on namespaces.
  */
-public class LookupDimensionToDimensionSpec  extends JsonSerializer<LookupDimension> {
+public class LookupDimensionToDimensionSpec  extends JsonSerializer<KeyValueStoreDimension> {
     private static final Logger LOG = LoggerFactory.getLogger(LookupDimensionToDimensionSpec.class);
 
     @Override
-    public void serialize(LookupDimension value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+    public void serialize(KeyValueStoreDimension value, JsonGenerator gen, SerializerProvider provider)
+            throws IOException {
+
+        if (!LookupDimension.class.isInstance(value) && !RegisteredLookupDimension.class.isInstance(value)) {
+            throw new TypeMismatchException("Lookup dimension serializer was given a non-lookup dimension.");
+        }
 
         Optional<ExtractionFunction> extractionFunction = ModelUtil.getExtractionFunction(value);
 
-        // Use DimensionToDefaultDimensionSpec serializer if LookupDimension does not contain any namespace
+        // Use DimensionToDefaultDimensionSpec serializer if LookupDimension does not contain any namespace or lookups
         if (!extractionFunction.isPresent()) {
             JsonSerializer<Object> dimensionSerializer = provider.findValueSerializer(Dimension.class);
             dimensionSerializer.serialize(value, gen, provider);

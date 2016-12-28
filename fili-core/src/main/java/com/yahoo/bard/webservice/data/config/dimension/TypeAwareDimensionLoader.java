@@ -8,6 +8,7 @@ import com.yahoo.bard.webservice.application.healthchecks.SearchProviderHealthCh
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension;
 import com.yahoo.bard.webservice.data.dimension.impl.LookupDimension;
+import com.yahoo.bard.webservice.data.dimension.impl.RegisteredLookupDimension;
 
 import com.codahale.metrics.health.HealthCheckRegistry;
 
@@ -35,20 +36,21 @@ public class TypeAwareDimensionLoader implements DimensionLoader {
 
     @Override
     public void loadDimensionDictionary(DimensionDictionary dimensions) {
-        for (DimensionConfig dimension : configSource) {
-            if (dimension.getType() == KeyValueStoreDimension.class) {
-                dimensions.add(new KeyValueStoreDimension(dimension));
-                registerHealthChecks(dimension);
-            } else if (dimension.getType() == LookupDimension.class) {
-                dimensions.add(new LookupDimension((LookupDimensionConfig) dimension));
-                registerHealthChecks(dimension);
+        for (DimensionConfig dimensionConfig : configSource) {
+            if (dimensionConfig.getType().equals(KeyValueStoreDimension.class)) {
+                dimensions.add(new KeyValueStoreDimension(dimensionConfig));
+            } else if (dimensionConfig.getType().equals(LookupDimension.class)) {
+                dimensions.add(new LookupDimension((LookupDimensionConfig) dimensionConfig));
+            } else if (dimensionConfig.getType().equals(RegisteredLookupDimension.class)) {
+                dimensions.add(new RegisteredLookupDimension((RegisteredLookupDimensionConfig) dimensionConfig));
             } else {
                 LOG.warn(
                     String.format(
                         "The dimension type for the dimension %s is not defined",
-                        dimension.getApiName())
+                        dimensionConfig.getApiName())
                 );
             }
+            registerHealthChecks(dimensionConfig);
         }
     }
 
