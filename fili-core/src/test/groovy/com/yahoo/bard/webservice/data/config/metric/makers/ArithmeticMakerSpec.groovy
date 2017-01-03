@@ -23,9 +23,16 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
+import java.util.function.Function
+
 class ArithmeticMakerSpec extends Specification {
-    LogicalMetric dayAvgPageViewsPerTotalPageViews
-    LogicalMetric dayAvgPageViewsPerTotalPageViewsRoundedUp
+    public static final String AGG_AVERAGE_NAME = "aggregationMetric"
+    public static final String METRIC_FIELD_NAME = "aggregationField"
+    public static final String AVERAGE_PER_OTHER_METRIC_NAME = "averagePerOtherMetric"
+    public static
+    final String AVERAGE_PER_OTHER_METRIC_ROUNDED_METRIC_NAME = "averagePerOtherMetricRounded"
+    LogicalMetric unRoundedMetric
+    LogicalMetric roundedUpMetric
 
     private static final int SKETCH_SIZE = 16000
     //Neither of these relies on a metric dictionary.
@@ -42,41 +49,43 @@ class ArithmeticMakerSpec extends Specification {
 
         ArithmeticMaker divisionMaker = new ArithmeticMaker(
                 metricDictionary,
-                ArithmeticPostAggregation.ArithmeticPostAggregationFunction.DIVIDE,
-                new NoOpResultSetMapper()
+                ArithmeticPostAggregation.ArithmeticPostAggregationFunction.DIVIDE
         )
         ArithmeticMaker roundUpDivisionMaker = new ArithmeticMaker(
                 metricDictionary,
                 ArithmeticPostAggregation.ArithmeticPostAggregationFunction.DIVIDE,
+                (Function) { String it -> return new SketchRoundUpMapper() }
         )
 
-        MetricInstance pageViews = new MetricInstance("PAGE_VIEWS", new LongSumMaker(metricDictionary), "PAGE_VIEWS")
+        MetricInstance pageViews = new MetricInstance(METRIC_FIELD_NAME, new LongSumMaker(metricDictionary),
+                METRIC_FIELD_NAME
+        )
         metricDictionary.add(pageViews.make())
 
-        MetricInstance dayAvgPageViews = new MetricInstance(
-                "DAY_AVG_PAGE_VIEWS",
+        MetricInstance aggregationAverageMetric = new MetricInstance(
+                AGG_AVERAGE_NAME,
                 new AggregationAverageMaker(metricDictionary, DAY),
-                "PAGE_VIEWS"
+                METRIC_FIELD_NAME
         )
-        metricDictionary.add(dayAvgPageViews.make())
+        metricDictionary.add(aggregationAverageMetric.make())
 
-        MetricInstance dayAvgPageViewsPerTotalPageViewsPM = new MetricInstance(
-                "DAY_AVG_PAGE_VIEWS_PER_TOTAL_PAGE_VIEWS",
+        MetricInstance averagePerOtherMetricMetric = new MetricInstance(
+                AVERAGE_PER_OTHER_METRIC_NAME,
                 divisionMaker,
-                "DAY_AVG_PAGE_VIEWS",
-                "PAGE_VIEWS"
+                AGG_AVERAGE_NAME,
+                METRIC_FIELD_NAME
         )
-        dayAvgPageViewsPerTotalPageViews = dayAvgPageViewsPerTotalPageViewsPM.make()
-        metricDictionary.add(dayAvgPageViewsPerTotalPageViews)
+        unRoundedMetric = averagePerOtherMetricMetric.make()
+        metricDictionary.add(unRoundedMetric)
 
         MetricInstance dayAvgPageViewsPerTotalPageViewsRoundedUpPM = new MetricInstance(
-                "DAY_AVG_PAGE_VIEWS_PER_TOTAL_PAGE_VIEWS_ROUNDED_UP",
+                AVERAGE_PER_OTHER_METRIC_ROUNDED_METRIC_NAME,
                 roundUpDivisionMaker,
-                "DAY_AVG_PAGE_VIEWS",
-                "PAGE_VIEWS"
+                AGG_AVERAGE_NAME,
+                METRIC_FIELD_NAME
         )
-        dayAvgPageViewsPerTotalPageViewsRoundedUp = dayAvgPageViewsPerTotalPageViewsRoundedUpPM.make()
-        metricDictionary.add(dayAvgPageViewsPerTotalPageViewsRoundedUp)
+        roundedUpMetric = dayAvgPageViewsPerTotalPageViewsRoundedUpPM.make()
+        metricDictionary.add(roundedUpMetric)
     }
 
     def cleanupSpec() {
@@ -123,7 +132,7 @@ class ArithmeticMakerSpec extends Specification {
         )
         LogicalMetric expectedMetric = new LogicalMetric(
             expectedQuery,
-            new SketchRoundUpMapper(metricName),
+            MetricMaker.NO_OP_MAPPER,
             metricName
         )
 
@@ -141,16 +150,17 @@ class ArithmeticMakerSpec extends Specification {
 
     def "ArithmeticMaker supports dependent metrics with nested query"() {
         expect:
-        dayAvgPageViewsPerTotalPageViews.getTemplateDruidQuery().nested
+        unRoundedMetric.getTemplateDruidQuery().nested
     }
 
     def "When a ResultMapper is explicitly passed, it creates the LogicalMetric using the correct mapper"() {
         expect:
-        dayAvgPageViewsPerTotalPageViews.calculation.class == NoOpResultSetMapper
+
+        unRoundedMetric.calculation.class == NoOpResultSetMapper
     }
 
     def "When a ResultMapper is not passed, it creates the LogicalMetric using the default SketchSetOperationMaker"() {
         expect:
-        dayAvgPageViewsPerTotalPageViewsRoundedUp.calculation.class == SketchRoundUpMapper
+        roundedUpMetric.calculation.class == SketchRoundUpMapper
     }
 }

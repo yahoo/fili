@@ -28,9 +28,10 @@ class RawAggregationMetricMakerImplsSpec extends Specification {
     public static String FIELD_NAME = "BAR"
 
     @Unroll
-    def "Expected numeric aggregation is produced for #makerClass.getSimpleName()"() {
+    def "Expected numeric aggregation is produced for #makerClass.simpleName"() {
         setup:
         RawAggregationMetricMaker maker = makerClass.newInstance()
+
         expect:
         maker.make(NAME, FIELD_NAME) == makeNumericMetric(aggregation)
 
@@ -45,9 +46,10 @@ class RawAggregationMetricMakerImplsSpec extends Specification {
     }
 
     @Unroll
-    def "Expected sketch aggregation is produced for #makerClass.getSimpleName()"() {
+    def "Expected sketch aggregation is produced for #makerClass.simpleName"() {
         setup:
         RawAggregationMetricMaker maker = makerClass.newInstance((MetricDictionary) null, 5)
+
         expect:
         maker.make(NAME, FIELD_NAME) == makeSketchMetric(aggregation)
 

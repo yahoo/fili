@@ -4,7 +4,6 @@
 package com.yahoo.bard.webservice.data.config.metric.makers
 
 import com.yahoo.bard.webservice.data.dimension.Dimension
-import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore
 import com.yahoo.bard.webservice.data.dimension.SearchProvider
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
@@ -31,11 +30,11 @@ public class FilteredAggregationMakerSpec extends Specification{
     def "A filtered aggregation logical metric is made correctly"(){
         given: "The name of the metric the maker depends on, and the maker itself"
 
-        LogicalMetric metric = longSumMaker.make("longSum", DEPENDENT_METRIC_NAME)
-        Dimension dim = new KeyValueStoreDimension("d", "des", new LinkedHashSet<DimensionField>(), Mock(KeyValueStore), Mock(SearchProvider))
+        Dimension dim = new KeyValueStoreDimension("d", "des", [] as LinkedHashSet, Mock(KeyValueStore), Mock(SearchProvider))
         Filter filter = new SelectorFilter(dim, "1")
 
         MetricMaker maker = new FilteredAggregationMaker(metricDictionary, filter)
+        LogicalMetric metric = longSumMaker.make("longSum", DEPENDENT_METRIC_NAME)
         metricDictionary.put("longSum", metric);
 
         and: "The expected metric"

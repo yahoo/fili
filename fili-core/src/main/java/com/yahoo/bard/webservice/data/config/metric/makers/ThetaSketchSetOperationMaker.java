@@ -54,14 +54,7 @@ public class ThetaSketchSetOperationMaker extends MetricMaker {
         );
 
         PostAggregation estimate = new ThetaSketchEstimatePostAggregation(metricName, setPostAggregation);
-
-        TemplateDruidQuery query = new TemplateDruidQuery(
-                mergedQuery.getAggregations(),
-                Collections.singleton(estimate),
-                mergedQuery.getInnerQuery(),
-                mergedQuery.getTimeGrain()
-        );
-
+        TemplateDruidQuery query = mergedQuery.withPostAggregations(Collections.singleton(estimate));
         return new LogicalMetric(query, new SketchRoundUpMapper(metricName), metricName);
     }
 
