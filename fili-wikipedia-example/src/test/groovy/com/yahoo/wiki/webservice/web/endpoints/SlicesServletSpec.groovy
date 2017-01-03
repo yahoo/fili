@@ -2,13 +2,14 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.web.endpoints
 
+import static com.yahoo.wiki.webservice.data.config.names.WikiDruidTableName.WIKITICKER
+
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.table.availability.AvailabilityTestingUtils
 import com.yahoo.bard.webservice.util.JsonSlurper
 import com.yahoo.bard.webservice.util.JsonSortStrategy
 import com.yahoo.bard.webservice.web.endpoints.SlicesServlet
 import com.yahoo.wiki.webservice.application.WikiJerseyTestBinder
-import com.yahoo.wiki.webservice.data.config.names.WikiDruidTableName
 
 import org.joda.time.Interval
 
@@ -36,7 +37,7 @@ class SlicesServletSpec extends Specification {
 
     def "The slices are correctly configured, and the slices endpoint returns the appropriate metadata"() {
         setup:
-        String sliceNameHour = WikiDruidTableName.WIKIPEDIA.asName()
+        String sliceNameHour = WIKITICKER.asName()
         String expectedResponse = """{
             "rows":
             [
@@ -108,7 +109,7 @@ class SlicesServletSpec extends Specification {
         metrics == expectedMetrics
 
         where:
-        sliceName = "wikipedia"
+        sliceName = WIKITICKER.asName().toLowerCase()
         granularity = "hour"
         dimensionNames = ("page, language, user, unpatrolled, newPage, robot, anonymous, namespace, continent, " +
                                   "country, region, city").split(',').collect { it.trim()}

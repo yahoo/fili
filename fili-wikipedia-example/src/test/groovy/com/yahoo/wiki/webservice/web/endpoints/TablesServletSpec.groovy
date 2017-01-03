@@ -2,12 +2,13 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.web.endpoints
 
+import static com.yahoo.wiki.webservice.data.config.names.WikiLogicalTableName.WIKIPEDIA
+
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.util.JsonSortStrategy
 import com.yahoo.bard.webservice.web.endpoints.TablesServlet
 import com.yahoo.wiki.webservice.application.WikiJerseyTestBinder
-import com.yahoo.wiki.webservice.data.config.names.WikiLogicalTableName
 
 import spock.lang.Specification
 import spock.lang.Timeout
@@ -29,7 +30,7 @@ class TablesServletSpec extends Specification {
 
     def "print the details of all the tables in the Druid instance"() {
         setup:
-        String tableName = WikiLogicalTableName.WIKIPEDIA.asName()
+        String tableName = WIKIPEDIA.asName()
         String expectedResponse = """{
                                         "rows": [
                                             {
@@ -93,7 +94,7 @@ class TablesServletSpec extends Specification {
         GroovyTestUtils.compareJson(makeRequest("/tables/$tableName"), expectedResponse, JsonSortStrategy.SORT_BOTH)
 
         where:
-        tableName = WikiLogicalTableName.WIKIPEDIA.asName()
+        tableName = WIKIPEDIA.asName()
     }
 
     //This test is a sample of how we test various table endpoints at differing granularities
@@ -147,7 +148,7 @@ class TablesServletSpec extends Specification {
         GroovyTestUtils.compareJson(result, expectedResponse, JsonSortStrategy.SORT_BOTH)
 
         where:
-        tableName = "wikipedia"
+        tableName = WIKIPEDIA.asName().toLowerCase()
         granularity = "hour"
     }
 

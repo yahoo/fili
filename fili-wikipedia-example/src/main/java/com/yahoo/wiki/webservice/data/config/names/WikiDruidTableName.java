@@ -10,7 +10,7 @@ import java.util.Locale;
  * Hold the list of raw Druid table names.
  */
 public enum WikiDruidTableName implements TableName {
-    WIKIPEDIA;
+    WIKITICKER;
 
     private final String lowerCaseName;
 

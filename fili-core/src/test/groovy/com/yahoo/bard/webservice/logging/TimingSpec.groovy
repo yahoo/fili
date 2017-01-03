@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 
 import ch.qos.logback.classic.spi.ILoggingEvent
+import spock.lang.Ignore
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Timeout
@@ -154,6 +155,7 @@ class TimingSpec extends Specification {
         warningLine == "Tried to start timer that is already running: " + timerName
     }
 
+    @Ignore("Test is flaky in slower environments")
     def "Check timer with thread switching "() {
         given: "A duration to wait between starting and stopping the timer"
         int expectedDuration = 500
