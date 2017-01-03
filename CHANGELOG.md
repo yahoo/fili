@@ -36,6 +36,14 @@ Current
 
 ### Changed:
 
+- [MetricMaker cleanup and simplification](https://github.com/yahoo/fili/pull/127)
+    * Simplified raw aggregation makers
+    * `ConstantMaker` now throws an `IllegalArgumentException` wrapping the raw NumberFormatException on a bad argument
+    * `FilteredAggregation` no longer requires a metric name to be passed in. (Aggregation field name is used)
+    * `FilteredAggregationMaker` now accepts a metric to the 'make' method instead of binding at construction time.
+    * `ArithmeticAggregationMaker` default now uses `NoOpResultSetMapper` instead of rounding mapper. (potentially breaking change)
+    * `FilteredAggregationMaker`, `SketchSetOperationMaker` members are now private
+
 - [Used Metric Field accessor to simplify maker code](https://github.com/yahoo/fili/pull/124)
     * Using metric field accessor simplifies and enables streaminess in maker code
 
@@ -157,7 +165,13 @@ Current
     * [JavaX Annotation API 1.2 -> 1.3](https://jcp.org/en/jsr/detail?id=250)
 
 ### Deprecated:
-- [Deprecated MetricMaker utility method in favor of using new field accesor on Metric](https://github.com/yahoo/fili/pull/124)
+
+- [MetricMaker cleanup and simplification](https://github.com/yahoo/fili/pull/127)
+    * `AggregationAverageMaker` deprecated conversion method required by deprecated sketch library
+
+- [Metric configuration deprecations](https://github.com/yahoo/fili/pull/124)
+    * Deprecated superfluous constructor of `FilteredAggregator` with superfluous argument 
+    * Deprecated MetricMaker utility method in favor of using new field accessor on Metric
 
 - [Deprecated MetricMaker.getDependentQuery lookup method in favor of simpler direct access](https://github.com/yahoo/fili/pull/124)
 
