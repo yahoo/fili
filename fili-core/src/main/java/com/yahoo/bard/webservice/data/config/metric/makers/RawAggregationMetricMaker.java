@@ -69,7 +69,7 @@ public abstract class RawAggregationMetricMaker extends MetricMaker {
      *
      * @return The result set mapper bound to a metric being produced by this maker.
      */
-    public ResultSetMapper getResultSetMapper(String metricName) {
+    protected ResultSetMapper getResultSetMapper(String metricName) {
         return NO_OP_MAPPER;
     }
 }

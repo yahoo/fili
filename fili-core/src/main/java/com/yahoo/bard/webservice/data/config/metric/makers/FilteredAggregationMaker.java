@@ -31,12 +31,12 @@ public class FilteredAggregationMaker extends MetricMaker {
     /**
      * The filter being applied to the metrics created.
      */
-    protected final Filter filter;
+    private final Filter filter;
 
     /**
      * The metric dictionary used to resolve dependent metrics.
      */
-    protected final MetricDictionary metricDictionary;
+    private final MetricDictionary metricDictionary;
 
     /**
      * Construct a metric maker for Filtered Aggregations.
@@ -80,7 +80,7 @@ public class FilteredAggregationMaker extends MetricMaker {
      *
      * @return The aggregation used by this metric
      */
-    private Aggregation assertDependentIsAggregationMetric(final LogicalMetric sourceMetric) {
+    private Aggregation assertDependentIsAggregationMetric(LogicalMetric sourceMetric) {
         MetricField metricField = sourceMetric.getMetricField();
         if (!(metricField instanceof Aggregation)) {
             String message = String.format(

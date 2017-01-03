@@ -4,7 +4,10 @@ package com.yahoo.bard.webservice.data.metric.mappers;
 
 /**
  * A ColumnMapper is a ResultSetMapper that operates on a single column.
+ *
+ * @deprecated with-like functionality no longer needed because delayed construction is being used instead
  */
+@Deprecated
 public interface ColumnMapper {
 
     /**

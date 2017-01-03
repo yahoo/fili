@@ -26,6 +26,7 @@ public class NoOpResultSetMapper extends ResultSetMapper implements ColumnMapper
     }
 
     @Override
+    @Deprecated
     public ResultSetMapper withColumnName(String newColumnName) {
         return this;
     }

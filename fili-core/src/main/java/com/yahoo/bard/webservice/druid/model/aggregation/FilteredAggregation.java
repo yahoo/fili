@@ -40,6 +40,23 @@ public class FilteredAggregation extends Aggregation {
     }
 
     /**
+     * Constructor.
+     *
+     * @param name  Name of the filtered aggregator
+     * @param fieldName  Field name to be considered to apply the metric filter
+     * @param aggregation  Existing aggregator being filtered
+     * @param filter  filter to apply to that aggregator
+     *
+     * @deprecated Filtered Aggregations do not have their own field name, they use the one from their aggregator
+     */
+    @Deprecated
+    public FilteredAggregation(@NotNull String name, String fieldName, Aggregation aggregation, Filter filter) {
+        super(name, fieldName);
+        this.filter = filter;
+        this.aggregation = aggregation.withName(name).withFieldName(fieldName);
+    }
+
+    /**
      * Splits an Aggregation for 2-pass aggregation into an inner filtered aggregation &amp; outer aggregation. The
      * outer aggregation is obtained by unwrapping the inner filtered aggregation and getting just the aggregation.
      * The outer aggregation fieldName will reference the inner aggregation name. The inner aggregation is unmodified.

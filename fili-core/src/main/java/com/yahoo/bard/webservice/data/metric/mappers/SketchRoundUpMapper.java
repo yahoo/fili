@@ -69,6 +69,7 @@ public class SketchRoundUpMapper extends ResultSetMapper implements ColumnMapper
     }
 
     @Override
+    @Deprecated
     public ResultSetMapper withColumnName(String newColumnName) {
         return new SketchRoundUpMapper(newColumnName);
     }

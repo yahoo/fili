@@ -159,7 +159,10 @@ public class AggregationAverageMaker extends MetricMaker {
      * @param originalAggregations  The read-only original aggregations
      *
      * @return The new aggregation set
+     *
+     * @deprecated This will become unnecessary when the old sketch library is removed
      */
+    @Deprecated
     private Set<Aggregation> convertSketchesToSketchMerges(Set<Aggregation> originalAggregations) {
         return originalAggregations.stream()
                 .map(agg -> agg.isSketch() ? sketchConverter.asInnerSketch((SketchAggregation) agg) : agg)

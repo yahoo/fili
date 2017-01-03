@@ -27,7 +27,7 @@ public class SketchSetOperationMaker extends MetricMaker {
 
     private static final int DEPENDENT_METRICS_REQUIRED = 2;
 
-    final SketchSetOperationPostAggFunction function;
+    private final SketchSetOperationPostAggFunction function;
 
     /**
      * Constructor.
