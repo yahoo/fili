@@ -39,7 +39,7 @@ public class StreamUtils {
      * @param <S>  Type of the objects being collected
      * @param <K>  Type of the keys
      * @param <V>  Type of the values
-     * @param keyMapper  Mapping function for the key
+     * @param keyMapper  Mapping function for the key.  It must be injective or an exception may be thrown.
      * @param valueMapper  Mapping function for the value
      *
      * @return a collector that creates a LinkedHashMap using the given key and value functions.
