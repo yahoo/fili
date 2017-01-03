@@ -13,6 +13,9 @@ import com.yahoo.bard.webservice.druid.model.filter.Filter;
 
 import com.google.common.collect.ImmutableSet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -22,6 +25,8 @@ import java.util.List;
  * without the aggregation and with a filtered aggregation instead using a filter fixed at construction.
  */
 public class FilteredAggregationMaker extends MetricMaker {
+
+    protected static final Logger LOG = LoggerFactory.getLogger(FilteredAggregationMaker.class);
 
     /**
      * The filter being applied to the metrics created.

@@ -39,9 +39,14 @@ import javax.validation.constraints.NotNull;
  * time grain (i.e. DefaultTimeGrain.WEEK). For example, given the total number of visitors to www.example.com for each
  * day of the week, we can compute the average number of daily visitors to example.com for the entire week.
  * <p>
- * A nested average requires the following columns, an inner query constant, and outer query sum of that constant,
- * an inner query aggregation or post aggregation field to sum, and outer query sum of the inner field, and
- * finally a post aggregation in the outer query taking the division of the sum and the constant sum.
+ * A nested average requires the following columns:
+ * <ul>
+ *    <li>an inner query constant one</li>
+ *    <li>an inner query numeric aggregation or post aggregation field to sum</li>
+ *    <li>and outer query sum of the constant which provide a row count</li>
+ *    <li>an outer query sum of the inner numeric summand</li>
+ *    <li>finally, a post aggregation in the outer query dividing the sum by the count</li>
+ * </ul>
  */
 public class AggregationAverageMaker extends MetricMaker {
 
@@ -122,8 +127,9 @@ public class AggregationAverageMaker extends MetricMaker {
     private TemplateDruidQuery buildInnerQuery(MetricField sourceMetric, TemplateDruidQuery innerDependentQuery) {
         Set<Aggregation> newInnerAggregations = convertSketchesToSketchMerges(innerDependentQuery.getAggregations());
 
-        Set<PostAggregation> newInnerPostAggregations = !(sourceMetric instanceof PostAggregation) ?
-                Collections.emptySet() : ImmutableSet.of((PostAggregation) sourceMetric);
+        Set<PostAggregation> newInnerPostAggregations = (sourceMetric instanceof PostAggregation) ?
+                ImmutableSet.of((PostAggregation) sourceMetric) :
+                Collections.emptySet();
 
         // Build the inner query with the new aggregations and with the count
         return innerDependentQuery.withAggregations(newInnerAggregations)
@@ -140,9 +146,9 @@ public class AggregationAverageMaker extends MetricMaker {
      * @return Either the original MetricField, or a new SketchEstimate post aggregation
      */
     private MetricField convertToSketchEstimateIfNeeded(MetricField originalSourceMetric) {
-        return !(originalSourceMetric instanceof SketchAggregation) ?
-                originalSourceMetric :
-                sketchConverter.asSketchEstimate((SketchAggregation) originalSourceMetric);
+        return originalSourceMetric instanceof SketchAggregation ?
+                sketchConverter.asSketchEstimate((SketchAggregation) originalSourceMetric) :
+                originalSourceMetric;
     }
 
     /**
@@ -156,17 +162,19 @@ public class AggregationAverageMaker extends MetricMaker {
      */
     private Set<Aggregation> convertSketchesToSketchMerges(Set<Aggregation> originalAggregations) {
         return originalAggregations.stream()
-                .map(agg -> ! agg.isSketch() ? agg : sketchConverter.asInnerSketch((SketchAggregation) agg))
+                .map(agg -> agg.isSketch() ? sketchConverter.asInnerSketch((SketchAggregation) agg) : agg)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     /**
      * Create an Aggregation for summing on a metric from an inner query.
-     * The base metric for this maker has a name in the request schema.  Daily average aggregates over the summand it
-     * creates in the inner query, which is based on the original metric name.  If the original metric field is also a
-     * sum, the outer aggregation of that metric and the outer aggregation of the daily average do not need to be
-     * distinguished.  However if the original metric field was aggregating on a non numeric type, the daily average
-     * will appeaed '_sum' to the original name for it's outer sum.
+     * <p>
+     * If the original metric that is being averaged is used together in a query with the averaging metric, then both
+     * the original aggregator name and the summing aggregator used by the average metric may appear together in the
+     * outer query. If they share the same name but different definitions, there would be a conflict.  This can arise
+     * if the original metric used a post aggregation or if it contained a non numeric (e.g. sketch) aggregation.
+     * <p>
+     * We use the convention of changing the name for the average summing aggregation by adding the suffix '_sum'.
      *
      * @param innerMetric  The metric on the inner query being summed
      *

@@ -7,7 +7,6 @@ import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.metric.mappers.ColumnMapper;
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper;
-import com.yahoo.bard.webservice.data.metric.mappers.SketchRoundUpMapper;
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation.ArithmeticPostAggregationFunction;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
@@ -32,24 +31,24 @@ public class ArithmeticMaker extends MetricMaker {
 
     private final ArithmeticPostAggregationFunction function;
 
-    private final Function<String, ResultSetMapper> resultSetMapperBuilder;
+    private final Function<String, ResultSetMapper> resultSetMapperSupplier;
 
     /**
      * Constructor.
      *
      * @param metricDictionary  The dictionary used to resolve dependent metrics when building the LogicalMetric
      * @param function  The arithmetic operation performed by the LogicalMetrics constructed by this maker
-     * @param resultSetMapperBuilder  A builder for a function to be applied to the result that is returned by the query
-    that is built from the LogicalMetric which is built by this maker.
+     * @param resultSetMapperSupplier  A function that takes a metric column name and produces at build time, a result
+     * set mapper.
      */
     protected ArithmeticMaker(
             MetricDictionary metricDictionary,
             ArithmeticPostAggregationFunction function,
-            Function<String, ResultSetMapper> resultSetMapperBuilder
+            Function<String, ResultSetMapper> resultSetMapperSupplier
     ) {
         super(metricDictionary);
         this.function = function;
-        this.resultSetMapperBuilder = resultSetMapperBuilder;
+        this.resultSetMapperSupplier = resultSetMapperSupplier;
     }
 
     /**
@@ -82,11 +81,10 @@ public class ArithmeticMaker extends MetricMaker {
      * @param function  The arithmetic operation performed by the LogicalMetrics constructed by this maker
      */
     public ArithmeticMaker(MetricDictionary metricDictionary, ArithmeticPostAggregationFunction function) {
-        // TODO: Deprecate me, mappers should always be specified at creation time, not implicitly
         this(
                 metricDictionary,
                 function,
-                (Function<String, ResultSetMapper>) (String name) -> new SketchRoundUpMapper(name)
+                (Function<String, ResultSetMapper>) ignore -> NO_OP_MAPPER
         );
     }
 
@@ -105,10 +103,7 @@ public class ArithmeticMaker extends MetricMaker {
         ));
 
         TemplateDruidQuery query = getMergedQuery(dependentMetrics).withPostAggregations(postAggregations);
-
-        // Note: We need to pass everything through ColumnMapper
-        // We need to refactor this to be a list.
-        return new LogicalMetric(query, resultSetMapperBuilder.apply(metricName), metricName);
+        return new LogicalMetric(query, resultSetMapperSupplier.apply(metricName), metricName);
     }
 
     @Override

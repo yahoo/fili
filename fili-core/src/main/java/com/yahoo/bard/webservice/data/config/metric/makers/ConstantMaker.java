@@ -8,6 +8,9 @@ import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.druid.model.postaggregation.ConstantPostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -18,6 +21,7 @@ import java.util.Set;
 public class ConstantMaker extends MetricMaker {
 
     private static final int DEPENDENT_METRICS_REQUIRED = 1;
+    protected static final Logger LOG = LoggerFactory.getLogger(ConstantMaker.class);
 
     /**
      * Constructor.
@@ -54,7 +58,8 @@ public class ConstantMaker extends MetricMaker {
             String message = String.format(
                     "%s value '%s' does not parse to a number",
                     metricName,
-                    dependentMetrics.get(0));
+                    dependentMetrics.get(0)
+            );
             LOG.error(message);
             throw new IllegalArgumentException(message, nfe);
         }

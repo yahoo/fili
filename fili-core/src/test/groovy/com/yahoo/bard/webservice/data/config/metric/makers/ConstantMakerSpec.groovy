@@ -36,7 +36,7 @@ class ConstantMakerSpec extends Specification {
         maker.make(AGGREGATION_NAME, Double.toString(CONSTANT_VALUE)) == expectedMetric
     }
 
-    def """A NumberFormatException is thrown if the dependent metric passed to ConstantMaker is not a number."""(){
+    def "A NumberFormatException is thrown if the dependent metric passed to ConstantMaker is not a number."(){
         given:
         String invalidValue = "I'm not a number."
 

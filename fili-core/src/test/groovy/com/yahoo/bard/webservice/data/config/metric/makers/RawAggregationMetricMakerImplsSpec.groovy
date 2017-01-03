@@ -1,3 +1,5 @@
+// Copyright 2016 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.metric.makers
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
@@ -18,8 +20,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 /**
- *
- * Created by mclawhor on 12/19/16.
+ * Tests for raw aggregation makers.
  */
 class RawAggregationMetricMakerImplsSpec extends Specification {
 
@@ -56,7 +57,6 @@ class RawAggregationMetricMakerImplsSpec extends Specification {
         ThetaSketchMaker | new ThetaSketchAggregation(NAME, FIELD_NAME, 5)
 
     }
-
 
     /*
        It feels like cheating to duplicate so much of the makeInner from the class under test, but Mocking a logical

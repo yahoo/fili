@@ -38,7 +38,6 @@ public class SketchSetOperationHelper {
             String name,
             List<FilteredAggregation> filteredAggregationList
     ) {
-        //iterate filteredAggregationMap
         List<PostAggregation> operands = filteredAggregationList.stream()
                 .map(FieldAccessorPostAggregation::new)
                 .collect(Collectors.toList());

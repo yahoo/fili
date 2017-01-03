@@ -24,9 +24,10 @@ import java.util.List;
  */
 public abstract class MetricMaker {
 
-    protected static final Logger LOG = LoggerFactory.getLogger(MetricMaker.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MetricMaker.class);
 
     public static final NoOpResultSetMapper NO_OP_MAPPER = new NoOpResultSetMapper();
+
     /**
      * The metric dictionary from which dependent metrics will be resolved.
      */
