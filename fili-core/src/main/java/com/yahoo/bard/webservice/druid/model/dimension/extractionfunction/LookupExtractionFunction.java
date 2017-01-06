@@ -17,9 +17,9 @@ public class LookupExtractionFunction extends ExtractionFunction {
     /**
      * Constructor.
      *
-     * @param lookup  lookup property specified by the user.
+     * @param lookup  lookup property specified by the user
      * @param retainMissingValue  when true, returns original dimension value if mapping is not found and
-     * replaceMissingValueWith must be null or empty string, when false, missing values are treated as missing.
+     * replaceMissingValueWith must be null or empty string, when false, missing values are treated as missing
      * @param replaceMissingValueWith  replaces dimension values not found in mapping with this value and
      * retainMissingValue must be false if this value is not null or is not empty string
      * @param injective  set to true to apply some optimization given that mapping is one-to-one,
@@ -43,9 +43,10 @@ public class LookupExtractionFunction extends ExtractionFunction {
 
     /**
      * Convenience Constructor,
+     * <p>
      * defaults: retainMissingValue=false, replaceMissingValueWith=null, injective=false, optimize=true.
      *
-     * @param lookup  lookup property specified by the user.
+     * @param lookup  lookup property specified by the user
      */
     public LookupExtractionFunction(Lookup lookup) {
         this(lookup, false, null, false, true);
@@ -76,26 +77,10 @@ public class LookupExtractionFunction extends ExtractionFunction {
         return new LookupExtractionFunction(lookup, retainMissingValue, replaceMissingValueWith, injective, optimize);
     }
 
-    /**
-     * Builds a new LookupExtractionFunction with the given retainMissingValue property, preserves other properties.
-     *
-     * @param retainMissingValue  when true, returns original dimension value if mapping is not found and
-     * replaceMissingValueWith must be null or empty string, when false, missing values are treated as missing.
-     *
-     * @return a new instance of LookupExtractionFunction with the given retainMissingValue
-     */
     public LookupExtractionFunction withRetainMissingValue(Boolean retainMissingValue) {
         return new LookupExtractionFunction(lookup, retainMissingValue, replaceMissingValueWith, injective, optimize);
     }
 
-    /**
-     * Builds a new LookupExtractionFunction with the given replaceMissingValueWith property,preserves other properties.
-     *
-     * @param replaceMissingValueWith  replaces dimension values not found in mapping with this value and
-     * retainMissingValue must be false if this value is not null or is not empty string.
-     *
-     * @return a new instance of LookupExtractionFunction with the given replaceMissingValueWith
-     */
     public LookupExtractionFunction withReplaceMissingValueWith(String replaceMissingValueWith) {
         return new LookupExtractionFunction(lookup, retainMissingValue, replaceMissingValueWith, injective, optimize);
     }
