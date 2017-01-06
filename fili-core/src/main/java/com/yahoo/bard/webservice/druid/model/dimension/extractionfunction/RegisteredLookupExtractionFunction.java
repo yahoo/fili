@@ -5,10 +5,10 @@ package com.yahoo.bard.webservice.druid.model.dimension.extractionfunction;
 import java.util.Objects;
 
 /**
- * Lookup ExtractionFunction that maps dimension values to some corresponding pre-defined values.
+ * RegisteredLookup ExtractionFunction that maps dimension values to some corresponding pre-defined values in druid.
  */
-public class LookupExtractionFunction extends ExtractionFunction {
-    private final Lookup lookup;
+public class RegisteredLookupExtractionFunction extends ExtractionFunction {
+    private final String lookup;
     private final Boolean retainMissingValue;
     private final String replaceMissingValueWith;
     private final Boolean injective;
@@ -17,7 +17,7 @@ public class LookupExtractionFunction extends ExtractionFunction {
     /**
      * Constructor.
      *
-     * @param lookup  lookup property specified by the user
+     * @param lookup  lookup's name specified by the user
      * @param retainMissingValue  when true: returns original dimension value if mapping is not found, also note that
      * replaceMissingValueWith must be null or empty string, when false: missing values are treated as missing
      * @param replaceMissingValueWith  replaces dimension values not found in mapping with this value and
@@ -26,14 +26,14 @@ public class LookupExtractionFunction extends ExtractionFunction {
      * may cause undefined behavior if retainMissingValue is false and injective is true
      * @param optimize  set to false to turn off rewriting extraction filter as selector filters
      */
-    public LookupExtractionFunction(
-            Lookup lookup,
+    public RegisteredLookupExtractionFunction(
+            String lookup,
             Boolean retainMissingValue,
             String replaceMissingValueWith,
             Boolean injective,
             Boolean optimize
     ) {
-        super(DefaultExtractionFunctionType.LOOKUP);
+        super(DefaultExtractionFunctionType.REGISTERED_LOOKUP);
         this.lookup = lookup;
         this.retainMissingValue = retainMissingValue;
         this.replaceMissingValueWith = replaceMissingValueWith;
@@ -43,16 +43,15 @@ public class LookupExtractionFunction extends ExtractionFunction {
 
     /**
      * Convenience Constructor,
-     * <p>
      * defaults: retainMissingValue=false, replaceMissingValueWith=null, injective=false, optimize=true.
      *
      * @param lookup  lookup property specified by the user
      */
-    public LookupExtractionFunction(Lookup lookup) {
+    public RegisteredLookupExtractionFunction(String lookup) {
         this(lookup, false, null, false, true);
     }
 
-    public Lookup getLookup() {
+    public String getLookup() {
         return lookup;
     }
 
@@ -73,24 +72,24 @@ public class LookupExtractionFunction extends ExtractionFunction {
     }
 
     // CHECKSTYLE:OFF
-    public LookupExtractionFunction withLookup(Lookup lookup) {
-        return new LookupExtractionFunction(lookup, retainMissingValue, replaceMissingValueWith, injective, optimize);
+    public RegisteredLookupExtractionFunction withLookup(String lookup) {
+        return new RegisteredLookupExtractionFunction(lookup, retainMissingValue, replaceMissingValueWith, injective, optimize);
     }
 
-    public LookupExtractionFunction withRetainMissingValue(Boolean retainMissingValue) {
-        return new LookupExtractionFunction(lookup, retainMissingValue, replaceMissingValueWith, injective, optimize);
+    public RegisteredLookupExtractionFunction withRetainMissingValue(Boolean retainMissingValue) {
+        return new RegisteredLookupExtractionFunction(lookup, retainMissingValue, replaceMissingValueWith, injective, optimize);
     }
 
-    public LookupExtractionFunction withReplaceMissingValueWith(String replaceMissingValueWith) {
-        return new LookupExtractionFunction(lookup, retainMissingValue, replaceMissingValueWith, injective, optimize);
+    public RegisteredLookupExtractionFunction withReplaceMissingValueWith(String replaceMissingValueWith) {
+        return new RegisteredLookupExtractionFunction(lookup, retainMissingValue, replaceMissingValueWith, injective, optimize);
     }
 
-    public LookupExtractionFunction withInjective(Boolean injective) {
-        return new LookupExtractionFunction(lookup, retainMissingValue, replaceMissingValueWith, injective, optimize);
+    public RegisteredLookupExtractionFunction withInjective(Boolean injective) {
+        return new RegisteredLookupExtractionFunction(lookup, retainMissingValue, replaceMissingValueWith, injective, optimize);
     }
 
-    public LookupExtractionFunction withOptimize(Boolean optimize) {
-        return new LookupExtractionFunction(lookup, retainMissingValue, replaceMissingValueWith, injective, optimize);
+    public RegisteredLookupExtractionFunction withOptimize(Boolean optimize) {
+        return new RegisteredLookupExtractionFunction(lookup, retainMissingValue, replaceMissingValueWith, injective, optimize);
     }
     // CHECKSTYLE:ON
 
@@ -110,7 +109,7 @@ public class LookupExtractionFunction extends ExtractionFunction {
     public boolean equals(Object obj) {
         if (this == obj) { return true; }
         if (obj == null || getClass() != obj.getClass()) { return false; }
-        LookupExtractionFunction other = (LookupExtractionFunction) obj;
+        RegisteredLookupExtractionFunction other = (RegisteredLookupExtractionFunction) obj;
 
         return super.equals(obj) &&
                 Objects.equals(lookup, other.lookup) &&

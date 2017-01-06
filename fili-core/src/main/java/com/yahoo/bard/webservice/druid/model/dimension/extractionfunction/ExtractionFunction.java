@@ -38,7 +38,9 @@ public abstract class ExtractionFunction {
         TIME,
         JAVASCRIPT,
         CASCADE,
-        LOOKUP;
+        LOOKUP,
+        REGISTERED_LOOKUP
+        ;
 
         final String jsonName;
 

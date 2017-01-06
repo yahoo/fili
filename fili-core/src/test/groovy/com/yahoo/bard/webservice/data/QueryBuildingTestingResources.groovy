@@ -2,9 +2,12 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data
 
+import static com.yahoo.bard.webservice.data.config.names.TestApiDimensionName.BREED
 import static com.yahoo.bard.webservice.data.config.names.TestApiDimensionName.COLOR
+import static com.yahoo.bard.webservice.data.config.names.TestApiDimensionName.OTHER
 import static com.yahoo.bard.webservice.data.config.names.TestApiDimensionName.SHAPE
 import static com.yahoo.bard.webservice.data.config.names.TestApiDimensionName.SIZE
+import static com.yahoo.bard.webservice.data.config.names.TestApiDimensionName.SPECIES
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MONTH
@@ -13,6 +16,7 @@ import static org.joda.time.DateTimeZone.UTC
 
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig
 import com.yahoo.bard.webservice.data.config.dimension.TestLookupDimensions
+import com.yahoo.bard.webservice.data.config.dimension.TestRegisteredLookupDimensions
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
@@ -22,6 +26,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionRow
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.LookupDimension
+import com.yahoo.bard.webservice.data.dimension.impl.RegisteredLookupDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricColumn
@@ -47,7 +52,7 @@ public class QueryBuildingTestingResources {
     // Aggregatable dimensions
     public Dimension d1, d2, d3, d4, d5
     // Non-aggregatable dimensions
-    public Dimension d6, d7, d8, d9, d10
+    public Dimension d6, d7, d8, d9, d10, d11, d12, d13
     public LogicalMetric m1, m2, m3, m4, m5, m6
 
     public Interval interval1
@@ -100,7 +105,8 @@ public class QueryBuildingTestingResources {
         dimensionFields.add(BardDimensionField.ID)
         dimensionFields.add(BardDimensionField.DESC)
 
-        LinkedHashSet<DimensionConfig> dimConfig = new TestLookupDimensions().getDimensionConfigurationsByApiName(SIZE, SHAPE, COLOR)
+        LinkedHashSet<DimensionConfig> lookupDimConfig = new TestLookupDimensions().getDimensionConfigurationsByApiName(SIZE, SHAPE, COLOR)
+        LinkedHashSet<DimensionConfig> registeredLookupDimConfig = new TestRegisteredLookupDimensions().getDimensionConfigurationsByApiName(BREED, SPECIES, OTHER);
 
         d1 = new KeyValueStoreDimension(
                 "dim1",
@@ -162,9 +168,15 @@ public class QueryBuildingTestingResources {
                 ScanSearchProviderManager.getInstance("dim7"),
                 false
         )
-        d8 = new LookupDimension(dimConfig.getAt(0))
-        d9 = new LookupDimension(dimConfig.getAt(1))
-        d10 = new LookupDimension(dimConfig.getAt(2))
+        // lookup dimensions with multiple, one, and none lookups
+        d8 = new LookupDimension(lookupDimConfig.getAt(0))
+        d9 = new LookupDimension(lookupDimConfig.getAt(1))
+        d10 = new LookupDimension(lookupDimConfig.getAt(2))
+
+        // registered dimensions with multiple, one, and none lookups
+        d11 = new RegisteredLookupDimension(registeredLookupDimConfig.getAt(0))
+        d12 = new RegisteredLookupDimension(registeredLookupDimConfig.getAt(1))
+        d13 = new RegisteredLookupDimension(registeredLookupDimConfig.getAt(2))
 
         dimensionDictionary = new DimensionDictionary()
         dimensionDictionary.addAll([d1, d2, d3, d4, d5, d6, d7, d8, d9, d10])
@@ -201,7 +213,7 @@ public class QueryBuildingTestingResources {
         t4d1 = new PhysicalTable("table4d1", utcDay, new HashMap<>())
         t4d2 = new PhysicalTable("table4d2", utcDay, new HashMap<>())
 
-        t5h = new PhysicalTable("table5d", utcHour, new HashMap<>())
+        t5h = new PhysicalTable("table5h", utcHour, new HashMap<>())
 
         [d1, d2, d3].each {
             t1h.addColumn(DimensionColumn.addNewDimensionColumn(t1h, it))
@@ -227,7 +239,7 @@ public class QueryBuildingTestingResources {
             t4d2.addColumn(DimensionColumn.addNewDimensionColumn(t4d2, it), [interval2] as Set)
         }
 
-        [d8, d9, d10].each {
+        [d8, d9, d10, d11, d12, d13].each {
             t5h.addColumn(DimensionColumn.addNewDimensionColumn(t5h, it))
         }
 

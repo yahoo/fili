@@ -2,12 +2,15 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.dimension;
 
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSION_TYPE_INVALID;
+
 import com.yahoo.bard.webservice.application.HealthCheckRegistryFactory;
 import com.yahoo.bard.webservice.application.healthchecks.KeyValueStoreHealthCheck;
 import com.yahoo.bard.webservice.application.healthchecks.SearchProviderHealthCheck;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension;
 import com.yahoo.bard.webservice.data.dimension.impl.LookupDimension;
+import com.yahoo.bard.webservice.data.dimension.impl.RegisteredLookupDimension;
 
 import com.codahale.metrics.health.HealthCheckRegistry;
 
@@ -35,20 +38,22 @@ public class TypeAwareDimensionLoader implements DimensionLoader {
 
     @Override
     public void loadDimensionDictionary(DimensionDictionary dimensions) {
-        for (DimensionConfig dimension : configSource) {
-            if (dimension.getType() == KeyValueStoreDimension.class) {
-                dimensions.add(new KeyValueStoreDimension(dimension));
-                registerHealthChecks(dimension);
-            } else if (dimension.getType() == LookupDimension.class) {
-                dimensions.add(new LookupDimension((LookupDimensionConfig) dimension));
-                registerHealthChecks(dimension);
+        for (DimensionConfig dimensionConfig : configSource) {
+            if (dimensionConfig.getType().equals(KeyValueStoreDimension.class)) {
+                dimensions.add(new KeyValueStoreDimension(dimensionConfig));
+            } else if (dimensionConfig.getType().equals(LookupDimension.class)) {
+                dimensions.add(new LookupDimension((LookupDimensionConfig) dimensionConfig));
+            } else if (dimensionConfig.getType().equals(RegisteredLookupDimension.class)) {
+                dimensions.add(new RegisteredLookupDimension((RegisteredLookupDimensionConfig) dimensionConfig));
             } else {
-                LOG.warn(
-                    String.format(
-                        "The dimension type for the dimension %s is not defined",
-                        dimension.getApiName())
+                throw new RuntimeException(
+                        DIMENSION_TYPE_INVALID.format(
+                                dimensionConfig.getType(),
+                                dimensionConfig.getApiName()
+                        )
                 );
             }
+            registerHealthChecks(dimensionConfig);
         }
     }
 

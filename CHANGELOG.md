@@ -9,6 +9,9 @@ Current
 -------
 
 ### Added:
+- [Added RegisteredLookupDimension and RegisteredLookupExtractionFunction](https://github.com/yahoo/fili/pull/132)
+    * Added support for druid's RegisteredLookup by adding `RegisteredLookupDimension` and `RegisteredLookupExtractionFunction`
+    * Added test for `RegisteredLookupDimension` serialization in `RegisteredLookupDimensionToDimensionSpecSpec`
 
 - [Added MetricField accessor to the interface of LogicalMetric](https://github.com/yahoo/fili/pull/124)
     * Previously accessing the metric field involved using three method calls

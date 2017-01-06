@@ -54,6 +54,7 @@ class TypeAwareDimensionLoaderSpec extends Specification {
         typeAwareDimensionLoader.loadDimensionDictionary(dimensionDictionary)
 
         then:
-        dimensionDictionary.findByApiName("foo") == null
+        RuntimeException runtimeException = thrown(RuntimeException)
+        runtimeException.message == "The dimension type 'class java.lang.String' for dimension 'foo' is invalid"
     }
 }

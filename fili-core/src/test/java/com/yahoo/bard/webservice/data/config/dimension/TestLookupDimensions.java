@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Bard test dimension configuration.
+ * Bard test lookup dimension configuration.
  */
 public class TestLookupDimensions extends TestDimensions {
 
