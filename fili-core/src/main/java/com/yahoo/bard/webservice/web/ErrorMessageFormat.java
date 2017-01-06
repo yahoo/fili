@@ -22,7 +22,7 @@ public enum ErrorMessageFormat implements MessageFormatter {
     DIMENSIONS_UNDEFINED("Dimension(s) '%s' do not exist."),
     DIMENSIONS_NOT_IN_TABLE("Requested dimension(s) '%s' are not supported by the table '%s'."),
     DIMENSION_FIELDS_UNDEFINED("Dimension field(s) '%s' do not exist for dimension '%s'"),
-    DIMENSION_TYPE_INVALID("The dimension type %s for dimension %s is not invalid"),
+    DIMENSION_TYPE_INVALID("The dimension type '%s' for dimension '%s' is invalid"),
 
     SLICE_UNDEFINED("Slice name '%s' does not exist."),
 

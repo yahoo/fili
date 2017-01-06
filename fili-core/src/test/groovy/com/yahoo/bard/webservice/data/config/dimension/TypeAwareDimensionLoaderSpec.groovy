@@ -55,6 +55,6 @@ class TypeAwareDimensionLoaderSpec extends Specification {
 
         then:
         RuntimeException runtimeException = thrown(RuntimeException)
-        runtimeException.message == 'The dimension type class java.lang.String for dimension foo is not invalid'
+        runtimeException.message == "The dimension type 'class java.lang.String' for dimension 'foo' is invalid"
     }
 }
