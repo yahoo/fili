@@ -17,7 +17,7 @@ public class RegisteredLookupExtractionFunction extends ExtractionFunction {
     /**
      * Constructor.
      *
-     * @param lookup  lookup property specified by the user
+     * @param lookup  lookup's name specified by the user
      * @param retainMissingValue  when true: returns original dimension value if mapping is not found, also note that
      * replaceMissingValueWith must be null or empty string, when false: missing values are treated as missing
      * @param replaceMissingValueWith  replaces dimension values not found in mapping with this value and
