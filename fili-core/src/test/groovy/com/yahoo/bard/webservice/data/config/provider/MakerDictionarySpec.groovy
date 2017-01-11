@@ -22,6 +22,7 @@ public class MakerDictionarySpec extends Specification {
 
         expect:
         maker instanceof ThetaSketchMaker
+        maker.sketchSize == 1
     }
 
     def "Should construct configured makers correctly and include defaults"(){
