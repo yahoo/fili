@@ -1,6 +1,6 @@
 // Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.rfc.table;
+package com.yahoo.bard.rfc.table;
 
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.table.Column;
@@ -65,14 +65,6 @@ public class PhysicalTableSchema extends LinkedHashSet<Column> implements Schema
      * @return Translated logicalName if applicable
      */
     public String getPhysicalColumnName(String logicalName) {
-        if (!logicalToPhysicalColumnNames.containsKey(logicalName)) {
-            LOG.warn(
-                    "No mapping found for logical name '{}'. Will use logical name as " +
-                            "physical name. This is unexpected and should not happen for properly configured " +
-                            "dimensions.",
-                    logicalName
-            );
-        }
         return logicalToPhysicalColumnNames.getOrDefault(logicalName, logicalName);
     }
 

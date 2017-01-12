@@ -1,6 +1,6 @@
 // Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.rfc.table;
+package com.yahoo.bard.rfc.table;
 
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
@@ -57,7 +57,8 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
         return factTableName;
     }
 
-    public boolean addColumn(Column columnToAdd) {
+    @Override
+    public Boolean addColumn(Column columnToAdd) {
         return schema.add(columnToAdd);
     }
 
@@ -68,13 +69,16 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
      * @param intervals  The interval set to add
      *
      * @return True if the workingIntervals had this column already
+     *
+     * @deprecated manipulate schema before building table
      */
+    @Deprecated
     private Boolean addColumn(Column columnToAdd, List<Interval> intervals) {
         return getWorkingAvailability().put(columnToAdd, intervals) == null;
     }
 
 
-    public boolean removeColumn(Column columnToRemove) {
+    public Boolean removeColumn(Column columnToRemove) {
         return schema.remove(columnToRemove);
     }
 
@@ -99,8 +103,7 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
     public synchronized void commit() {
         synchronized (mutex) {
             Availability availability = getWorkingAvailability();
-            // workingAvailability = new MutableAvailability
-            // availability = new ImmutableAvailability(availability)
+            availabilityRef.set(availability);
         }
     }
 
