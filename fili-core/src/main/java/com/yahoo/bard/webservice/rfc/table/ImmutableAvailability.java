@@ -4,7 +4,7 @@ package com.yahoo.bard.webservice.rfc.table;
 
 import com.yahoo.bard.webservice.table.Column;
 
-import sun.jvm.hotspot.utilities.Interval;
+import org.joda.time.Interval;
 
 import java.util.List;
 import java.util.Map;

@@ -2,28 +2,18 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.rfc.table;
 
-import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
-import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
-import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
-import com.yahoo.bard.webservice.metadata.SegmentMetadata;
 import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.util.IntervalUtils;
-import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import org.joda.time.DateTime;
-import org.joda.time.Interval;
 import org.joda.time.ReadablePeriod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
@@ -34,165 +24,31 @@ public abstract class BasePhysicalTable implements Table {
     private static final Logger LOG = LoggerFactory.getLogger(PhysicalTable.class);
 
     String name;
-    Schema schema;
+    PhysicalTableSchema schema;
 
     abstract Availability getAvailability();
     abstract Availability getWorkingAvailability();
-
-
-    //AtomicReference<Availability> availabilityRef;
-    //MutableAvailability workingAvailability;
-
-    private final Object mutex = new Object();
-
-    private final Map<String, String> logicalToPhysicalColumnNames;
-    private final Map<String, Set<String>> physicalToLogicalColumnNames;
-    private final String factTableName;
 
     /**
      * Create a physical table.
      *
      * @param name  Fili name of the physical table
-     * @param factTableName  Name of the associated table in Druid
      * @param timeGrain  time grain of the table
+     * @param columns The columns for this physical table
      * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
      */
     public BasePhysicalTable(
             @NotNull String name,
-            @NotNull String factTableName,
             @NotNull ZonedTimeGrain timeGrain,
+            @NotNull Set<Column> columns,
             @NotNull Map<String, String> logicalToPhysicalColumnNames
     ) {
         this.name = name;
-        this.schema = new ConcreteSchema(timeGrain, Collections.emptySet());
-        this.factTableName = factTableName;
-        this.logicalToPhysicalColumnNames = Collections.unmodifiableMap(logicalToPhysicalColumnNames);
-        this.physicalToLogicalColumnNames = Collections.unmodifiableMap(
-                this.logicalToPhysicalColumnNames.entrySet().stream().collect(
-                        Collectors.groupingBy(
-                                Map.Entry::getValue,
-                                Collectors.mapping(Map.Entry::getKey, Collectors.toSet())
-                        )
-                )
-        );
-    }
-
-    /**
-     * Creates a physical table whose Fili and Druid names are the same.
-     *
-     * @param name  Fili name of the physical table
-     * @param timeGrain  time grain of the table
-     * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
-     */
-    public BasePhysicalTable(
-            @NotNull String name,
-            @NotNull ZonedTimeGrain timeGrain,
-            @NotNull Map<String, String> logicalToPhysicalColumnNames
-    ) {
-        this(name, name, timeGrain, logicalToPhysicalColumnNames);
+        this.schema = new PhysicalTableSchema(columns, timeGrain, logicalToPhysicalColumnNames);
     }
 
     public Set<Column> getColumns() {
         return getAvailability().keySet();
-    }
-
-    /**
-     * Get the time grain from granularity.
-     *
-     * @return The time grain of this physical table
-     */
-    public ZonedTimeGrain getTimeGrain() {
-        return (ZonedTimeGrain) schema.getGranularity();
-    }
-
-    // TODO move to concreteTableOnly
-    public boolean addColumn(Column columnToAdd) {
-        return schema.add(columnToAdd);
-    }
-
-    // TODO move to concreteTableOnly
-    /**
-     * Add a column to the working intervals.
-     *
-     * @param columnToAdd  The column instance to add
-     * @param intervals  The interval set to add
-     *
-     * @return True if the workingIntervals had this column already
-     */
-    private Boolean addColumn(Column columnToAdd, List<Interval> intervals) {
-        return getWorkingAvailability().put(columnToAdd, intervals) == null;
-    }
-
-
-    // TODO move to concreteTableOnly
-    public boolean removeColumn(Column columnToRemove) {
-        return schema.remove(columnToRemove);
-    }
-
-    // TODO move to concreteTableOnly
-    /**
-     * Update the working intervals with values from a map.
-     *
-     * @param segmentMetadata  A map of names of metrics and sets of intervals over which they are valid
-     * @param dimensionDictionary  The dimension dictionary from which to look up dimensions by name
-     */
-    public synchronized void resetColumns(SegmentMetadata segmentMetadata, DimensionDictionary dimensionDictionary) {
-        synchronized (mutex) {
-            Map<String, Set<Interval>> dimensionIntervals = segmentMetadata.getDimensionIntervals();
-            Map<String, Set<Interval>> metricIntervals = segmentMetadata.getMetricIntervals();
-
-            getWorkingAvailability().clear();
-            for (Map.Entry<String, Set<Interval>> nameIntervals : dimensionIntervals.entrySet()) {
-                String physicalName = nameIntervals.getKey();
-
-                getLogicalColumnNames(physicalName).stream()
-                        .map(dimensionDictionary::findByApiName)
-                        .filter(Objects::nonNull)
-                        .forEach(
-                                dimension -> {
-                                    DimensionColumn dimensionColumn = DimensionColumn.addNewDimensionColumn(
-                                            (com.yahoo.bard.webservice.table.Schema) schema,
-                                            dimension
-                                    );
-                                    getWorkingAvailability().put(dimensionColumn, new SimplifiedIntervalList(nameIntervals.getValue()));
-                                }
-                        );
-            }
-            for (Map.Entry<String, Set<Interval>> nameIntervals : metricIntervals.entrySet()) {
-                MetricColumn metricColumn = MetricColumn.addNewMetricColumn(
-                        (com.yahoo.bard.webservice.table.Schema) schema,
-                        nameIntervals.getKey()
-                );
-                getWorkingAvailability().put(metricColumn, new SimplifiedIntervalList(nameIntervals.getValue()));
-            }
-            commit();
-        }
-    }
-
-    /**
-     * Swaps the actual cache with the built-up temporary cache and creates a fresh, empty temporary cache.
-     */
-    public synchronized void commit() {
-        synchronized (mutex) {
-            Availability availability = getWorkingAvailability();
-            // workingAvailability = new MutableAvailability
-            // availability = new ImmutableAvailability(availability)
-        }
-    }
-
-    /**
-     * Fetch a set of intervals given a column name.
-     *
-     * @param columnName  Name of the column
-     *
-     * @return Set of intervals associated with a column, empty if column is missing
-     */
-    public List<Interval> getIntervalsByColumnName(String columnName) {
-        List<Interval> result = getAvailability().get(new Column(columnName));
-        if (result != null) {
-            return result;
-        }
-        return Collections.emptyList();
     }
 
     /**
@@ -202,7 +58,7 @@ public abstract class BasePhysicalTable implements Table {
      * table's time grain.
      */
     public DateTime getTableAlignment() {
-        return getTimeGrain().roundFloor(
+        return schema.getGranularity().roundFloor(
                 IntervalUtils.firstMoment(getAvailability().values()).orElse(new DateTime())
         );
     }
@@ -214,45 +70,7 @@ public abstract class BasePhysicalTable implements Table {
      * @return True if contains a non-default mapping for the logical name, false otherwise
      */
     public boolean hasLogicalMapping(String logicalName) {
-        return logicalToPhysicalColumnNames.containsKey(logicalName);
-    }
-
-    /**
-     * Translate a logical name into a physical column name. If no translation exists (i.e. they are the same),
-     * then the logical name is returned.
-     * <p>
-     * NOTE: This defaulting behavior <em>WILL BE REMOVED</em> in future releases.
-     * <p>
-     * The defaulting behavior shouldn't be hit for Dimensions that are serialized via the default serializer and are
-     * not properly configured with a logical-to-physical name mapping. Dimensions that are not "normal" dimensions,
-     * such as dimensions used for DimensionSpecs in queries to do mapping from fact-level dimensions to something else,
-     * should likely use their own serialization strategy so as to not hit this defaulting behavior.
-     *
-     * @param logicalName  Logical name to lookup in physical table
-     * @return Translated logicalName if applicable
-     */
-    public String getPhysicalColumnName(String logicalName) {
-        if (!logicalToPhysicalColumnNames.containsKey(logicalName)) {
-            LOG.warn(
-                    "No mapping found for logical name '{}' to physical name on table '{}'. Will use logical name as " +
-                            "physical name. This is unexpected and should not happen for properly configured " +
-                            "dimensions.",
-                    logicalName,
-                    getName()
-            );
-        }
-        return logicalToPhysicalColumnNames.getOrDefault(logicalName, logicalName);
-    }
-
-    /**
-     * Translate a physical name into a logical column name. If no translation exists (i.e. they are the same),
-     * then the physical name is returned.
-     *
-     * @param physicalName  Physical name to lookup in physical table
-     * @return Translated physicalName if applicable
-     */
-    private Set<String> getLogicalColumnNames(String physicalName) {
-        return physicalToLogicalColumnNames.getOrDefault(physicalName, Collections.singleton(physicalName));
+        return schema.containsLogicalName(logicalName);
     }
 
     /**
@@ -261,16 +79,7 @@ public abstract class BasePhysicalTable implements Table {
      * @return The table bucketing as a period
      */
     public ReadablePeriod getTablePeriod() {
-        return getTimeGrain().getPeriod();
-    }
-
-    public String getFactTableName() {
-        return factTableName;
-    }
-
-    @Override
-    public String toString() {
-        return super.toString() + " factTableName: " + factTableName + " alignment: " + getTableAlignment();
+        return schema.getGranularity().getPeriod();
     }
 
     @Override
@@ -279,7 +88,7 @@ public abstract class BasePhysicalTable implements Table {
     }
 
     @Override
-    public Schema getSchema() {
+    public PhysicalTableSchema getSchema() {
         return null;
     }
 }
