@@ -4,6 +4,8 @@ package com.yahoo.bard.webservice.data;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TOP_N_UNSORTED;
 
+import com.yahoo.bard.rfc.table.ConcretePhysicalTable;
+import com.yahoo.bard.rfc.table.PhysicalTable;
 import com.yahoo.bard.webservice.config.BardFeatureFlag;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionRowNotFoundException;
@@ -23,7 +25,6 @@ import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery;
 import com.yahoo.bard.webservice.druid.model.query.TopNQuery;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
-import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.bard.webservice.table.TableIdentifier;
 import com.yahoo.bard.webservice.table.resolver.NoMatchFoundException;
@@ -202,8 +203,9 @@ public class DruidQueryBuilder {
         if (!template.isNested()) {
             LOG.trace("Building a single pass druid groupBy query");
 
+            // TODO FIXME hardcoding to concrete for now
             // The data source is the table directly, since there is no nested query below us
-            DataSource dataSource = new TableDataSource(table);
+            DataSource dataSource = new TableDataSource((ConcretePhysicalTable) table);
 
             // Filters must be applied at the lowest level as they exclude data from aggregates
             return new GroupByQuery(
@@ -307,8 +309,9 @@ public class DruidQueryBuilder {
 
         LOG.trace("Building a single pass druid topN query");
 
+        // TODO FIXME hardcoding to concrete for now
         // The data source is the table directly, since there is no nested query below us
-        DataSource dataSource = new TableDataSource(table);
+        DataSource dataSource = new TableDataSource((ConcretePhysicalTable) table);
 
         return new TopNQuery(
                 dataSource,
@@ -367,8 +370,9 @@ public class DruidQueryBuilder {
 
         LOG.trace("Building a single pass druid timeseries query");
 
+        // TODO FIXME hardcoding to concrete for now
         // The data source is the table directly, since there is no nested query below us
-        DataSource dataSource = new TableDataSource(table);
+        DataSource dataSource = new TableDataSource((ConcretePhysicalTable) table);
 
         return new TimeSeriesQuery(
                 dataSource,

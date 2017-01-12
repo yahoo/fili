@@ -44,12 +44,12 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
     }
 
     @Override
-    Availability getAvailability() {
+    public Availability getAvailability() {
         return availabilityRef.get();
     }
 
     @Override
-    Availability getWorkingAvailability() {
+    public Availability getWorkingAvailability() {
         return workingAvailability;
     }
 

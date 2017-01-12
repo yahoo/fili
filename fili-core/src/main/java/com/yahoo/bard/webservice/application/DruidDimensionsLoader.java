@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.application;
 
+import com.yahoo.bard.rfc.table.ConcretePhysicalTable;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
@@ -110,6 +111,8 @@ public class DruidDimensionsLoader extends Loader<Boolean> {
                 .collect(Collectors.toList());
 
         dataSources = physicalTableDictionary.values().stream()
+                .filter(physicalTable -> physicalTable instanceof ConcretePhysicalTable)
+                .map(physicalTable -> (ConcretePhysicalTable) physicalTable)
                 .map(TableDataSource::new)
                 .collect(Collectors.toList());
     }

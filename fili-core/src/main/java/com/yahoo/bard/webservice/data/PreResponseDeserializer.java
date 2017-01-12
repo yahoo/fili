@@ -14,10 +14,10 @@ import static com.yahoo.bard.webservice.data.ResultSetSerializationProxy.SCHEMA_
 import static com.yahoo.bard.webservice.data.ResultSetSerializationProxy.SCHEMA_METRIC_COLUMNS_TYPE;
 import static com.yahoo.bard.webservice.data.ResultSetSerializationProxy.SCHEMA_TIMEZONE;
 
+import com.yahoo.bard.rfc.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
-import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
@@ -237,7 +237,7 @@ public class PreResponseDeserializer {
         StreamSupport.stream(schemaNode.get(SCHEMA_DIM_COLUMNS).spliterator(), false)
                 .map(JsonNode::asText)
                 .map(this::resolveDimensionName)
-                .forEach(dimension -> DimensionColumn.addNewDimensionColumn(zonedSchema, dimension));
+                .forEach(dimension -> zonedSchema.addColumn(new DimensionColumn(dimension)));
 
         schemaNode.get(SCHEMA_METRIC_COLUMNS_TYPE).fields().forEachRemaining(
                 field -> zonedSchema.addColumn(new MetricColumnWithValueType(field.getKey(), field.getValue().asText()))

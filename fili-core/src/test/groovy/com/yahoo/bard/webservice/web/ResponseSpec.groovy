@@ -3,7 +3,6 @@
 package com.yahoo.bard.webservice.web
 
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
-import com.yahoo.bard.webservice.table.PhysicalTable
 
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.PARTIAL_DATA
 import static com.yahoo.bard.webservice.util.SimplifiedIntervalList.NO_INTERVALS
@@ -15,7 +14,7 @@ import com.yahoo.bard.webservice.data.Result
 import com.yahoo.bard.webservice.data.ResultSet
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
-import com.yahoo.bard.webservice.data.dimension.DimensionColumn
+
 import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.DimensionRow
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager

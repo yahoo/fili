@@ -3,7 +3,7 @@
 package com.yahoo.bard.webservice.web
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
-import com.yahoo.bard.webservice.data.dimension.DimensionColumn
+
 import com.yahoo.bard.webservice.metadata.BaseDataSourceMetadataSpec
 import com.yahoo.bard.webservice.metadata.DataSourceMetadata
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService

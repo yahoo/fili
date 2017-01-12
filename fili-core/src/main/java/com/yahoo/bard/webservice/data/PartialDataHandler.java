@@ -4,10 +4,10 @@ package com.yahoo.bard.webservice.data;
 
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.PERMISSIVE_COLUMN_AVAILABILITY;
 
+import com.yahoo.bard.rfc.table.PhysicalTable;
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
-import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.util.TableUtils;

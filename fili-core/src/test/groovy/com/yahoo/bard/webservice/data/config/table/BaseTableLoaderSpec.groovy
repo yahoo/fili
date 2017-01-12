@@ -12,7 +12,7 @@ import com.yahoo.bard.webservice.data.config.names.TestDruidMetricName
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.table.TableGroup
-import com.yahoo.bard.webservice.table.PhysicalTable
+
 import spock.lang.Specification
 
 import static com.yahoo.bard.webservice.data.config.names.TestLogicalTableName.SHAPES;

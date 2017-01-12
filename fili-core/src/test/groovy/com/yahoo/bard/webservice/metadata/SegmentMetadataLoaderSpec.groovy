@@ -10,7 +10,7 @@ import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.druid.client.DruidWebService
 import com.yahoo.bard.webservice.druid.client.SuccessCallback
 import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService
-import com.yahoo.bard.webservice.table.PhysicalTable
+
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 
 import com.fasterxml.jackson.databind.ObjectMapper

@@ -13,6 +13,11 @@ import java.util.Map;
 import java.util.Set;
 
 public interface PhysicalTable extends Table {
+
+
+    Availability getAvailability();
+    Availability getWorkingAvailability();
+
     /**
      * Get a date time that the table will align to based on grain and available intervals.
      *

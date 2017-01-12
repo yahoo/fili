@@ -20,7 +20,7 @@ public class DimensionColumn extends Column {
      *
      * @param dimension  The column's corresponding dimension
      */
-    protected DimensionColumn(@NotNull Dimension dimension) {
+    public DimensionColumn(@NotNull Dimension dimension) {
         this(dimension, dimension.getApiName());
     }
 

@@ -4,7 +4,6 @@ package com.yahoo.bard.rfc.table;
 
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.table.Column;
-import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 
 import org.joda.time.DateTime;
@@ -28,8 +27,8 @@ public abstract class BasePhysicalTable implements com.yahoo.bard.rfc.table.Phys
     String name;
     PhysicalTableSchema schema;
 
-    abstract Availability getAvailability();
-    abstract Availability getWorkingAvailability();
+    public abstract Availability getAvailability();
+    public abstract Availability getWorkingAvailability();
 
     /**
      * Create a physical table.
