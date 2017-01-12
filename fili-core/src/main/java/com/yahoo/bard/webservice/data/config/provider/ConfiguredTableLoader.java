@@ -12,7 +12,9 @@ import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.table.TableGroup;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -22,9 +24,9 @@ import java.util.stream.Collectors;
  */
 public class ConfiguredTableLoader extends BaseTableLoader {
 
-    protected final ConfigurationDictionary<LogicalTableConfiguration> logicalTables;
-    protected final ConfigurationDictionary<PhysicalTableConfiguration> physicalTables;
-    protected final ConfigurationDictionary<DimensionConfig> dimensions;
+    protected final List<LogicalTableConfiguration> logicalTables;
+    protected final List<DimensionConfig> dimensions;
+    protected final Map<String, PhysicalTableConfiguration> physicalTableDict = new HashMap<>();
 
     /**
      * Construct a table loader from configuration.
@@ -34,27 +36,26 @@ public class ConfiguredTableLoader extends BaseTableLoader {
      * @param dimensions the dimensions
      */
     public ConfiguredTableLoader(
-            ConfigurationDictionary<LogicalTableConfiguration> logicalTables,
-            ConfigurationDictionary<PhysicalTableConfiguration> physicalTables,
-            ConfigurationDictionary<DimensionConfig> dimensions
+            List<LogicalTableConfiguration> logicalTables,
+            List<PhysicalTableConfiguration> physicalTables,
+            List<DimensionConfig> dimensions
     ) {
         this.logicalTables = logicalTables;
-        this.physicalTables = physicalTables;
+        for (PhysicalTableConfiguration conf : physicalTables) {
+            physicalTableDict.put(conf.getName(), conf);
+        }
         this.dimensions = dimensions;
     }
 
     @Override
     public void loadTableDictionary(ResourceDictionaries dictionaries) {
-
-        for (Map.Entry<String, LogicalTableConfiguration> entry : logicalTables.entrySet()) {
-            LogicalTableConfiguration logicalTable = entry.getValue();
-            String tableName = entry.getKey();
+        for (LogicalTableConfiguration logicalTable : logicalTables) {
 
             // Compute the set of all physical fields on this logical table's physical tables
             Set<FieldName> physicalFields = logicalTable
                     .getPhysicalTables()
                     .stream()
-                    .map(physicalTable -> physicalTables.get(physicalTable).getMetrics())
+                    .map(physicalTable -> physicalTableDict.get(physicalTable).getMetrics())
                     .flatMap(Collection::stream)
                     .collect(Collectors.toSet());
 
@@ -62,7 +63,7 @@ public class ConfiguredTableLoader extends BaseTableLoader {
             Set<PhysicalTableDefinition> physicalTableDefs = logicalTable
                     .getPhysicalTables()
                     .stream()
-                    .map(physicalTable -> physicalTables.get(physicalTable).buildPhysicalTable(dimensions))
+                    .map(physicalTable -> physicalTableDict.get(physicalTable).buildPhysicalTable(dimensions))
                     .collect(Collectors.toSet());
 
             // Get the smallest granularity for this table
@@ -93,7 +94,7 @@ public class ConfiguredTableLoader extends BaseTableLoader {
             }
 
             TableGroup tableGroup = buildTableGroup(
-                    tableName,
+                    logicalTable.getName(),
                     apiMetricNames,
                     physicalFields,
                     physicalTableDefs,
@@ -101,9 +102,9 @@ public class ConfiguredTableLoader extends BaseTableLoader {
             );
 
             loadLogicalTableWithGranularities(
-                    entry.getKey(),
+                    logicalTable.getName(),
                     tableGroup,
-                    new HashSet<>(entry.getValue().getTimeGrains()),
+                    new HashSet<>(logicalTable.getTimeGrains()),
                     dictionaries
             );
         }

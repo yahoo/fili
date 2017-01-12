@@ -4,6 +4,8 @@ package com.yahoo.bard.webservice.data.config.provider;
 
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 
+import java.util.List;
+
 /**
  * A ConfigProvider defines a programmatic source for configuring Fili.
  *
@@ -11,7 +13,7 @@ import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
  *  - Physical tables
  *  - Logical tables
  *  - Dimensions
- *  - Metrics, both base and derived
+ *  - Metrics
  *  - Custom metric makers
  */
 public interface ConfigProvider {
@@ -19,42 +21,35 @@ public interface ConfigProvider {
     /**
      * Return the actual physical tables in Druid.
      *
-     * @return a mapping of physical table names to their configurations
+     * @return a list of physical table configurations
      */
-    ConfigurationDictionary<PhysicalTableConfiguration> getPhysicalTableConfig();
+    List<PhysicalTableConfiguration> getPhysicalTableConfig();
 
     /**
      * Return the logical tables you'd like to expose.
      *
-     * @return a mapping of logical table names to their configurations
+     * @return a list of logical table configurations
      */
-    ConfigurationDictionary<LogicalTableConfiguration> getLogicalTableConfig();
+    List<LogicalTableConfiguration> getLogicalTableConfig();
 
     /**
      * Return any custom metric makers used in metrics.
      *
-     * @return a mapping of custom metric maker names to their definitions
+     * @return a list of metric maker configurations
      */
-    ConfigurationDictionary<MakerConfiguration> getCustomMakerConfig();
+    List<MakerConfiguration> getCustomMakerConfig();
 
     /**
      * Return the dimension config.
      *
-     * @return a mapping of dimension names to their definition
+     * @return a list of dimension configurations
      */
-    ConfigurationDictionary<DimensionConfig> getDimensionConfig();
+    List<DimensionConfig> getDimensionConfig();
 
     /**
      * Get the base metrics.
      *
-     * @return a mapping of base metric names to their definitions
+     * @return a list of metric configurations
      */
-    ConfigurationDictionary<MetricConfiguration> getBaseMetrics();
-
-    /**
-     * Get the derived / computed metrics.
-     *
-     * @return a mapping of derived metric names to their definitions
-     */
-    ConfigurationDictionary<MetricConfiguration> getDerivedMetrics();
+    List<MetricConfiguration> getMetricConfig();
 }

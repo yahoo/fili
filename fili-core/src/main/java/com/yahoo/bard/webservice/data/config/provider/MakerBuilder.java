@@ -21,10 +21,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * Build MetricMakers on-the-fly.
@@ -35,6 +39,8 @@ public class MakerBuilder {
 
     // The package name
     private static final String MAKER_PACKAGE_NAME = MetricMaker.class.getPackage().getName();
+
+    private static final Logger LOG = LoggerFactory.getLogger(MakerBuilder.class);
 
     private Map<String, MakerConstructor> availableMakerConstructors = new HashMap<>();
 
@@ -135,7 +141,7 @@ public class MakerBuilder {
      *
      * @param configuredMakers Metric maker configuration
      */
-    public MakerBuilder(ConfigurationDictionary<MakerConfiguration> configuredMakers) {
+    public MakerBuilder(List<MakerConfiguration> configuredMakers) {
 
         // Add any default/builtin metric makers
         for (Class<? extends MetricMaker> cls : BUILTIN_METRIC_MAKERS) {
@@ -145,11 +151,13 @@ public class MakerBuilder {
 
         // Add any custom metric makers
         if (configuredMakers != null) {
-            for (Map.Entry<String, MakerConfiguration> entry : configuredMakers.entrySet()) {
-                String name = entry.getKey();
-                MakerConfiguration conf = entry.getValue();
-                Class<? extends MetricMaker> makerCls = buildMakerClass(name, conf.getClassName());
-                availableMakerConstructors.put(name, new MakerConstructor(makerCls, conf.getArguments()));
+            for (MakerConfiguration makerConfig: configuredMakers) {
+                String name = makerConfig.getName();
+                if (availableMakerConstructors.containsKey(name)) {
+                    LOG.warn("Overriding previously-defined maker: {}", name);
+                }
+                Class<? extends MetricMaker> makerCls = buildMakerClass(name, makerConfig.getClassName());
+                availableMakerConstructors.put(name, new MakerConstructor(makerCls, makerConfig.getArguments()));
             }
         }
     }

@@ -10,6 +10,13 @@ import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker;
 public interface MakerConfiguration {
 
     /**
+     * Get the the pretty name for the metric maker, e.g. longSum
+     *
+     * @return the name
+     */
+    String getName();
+
+    /**
      * The class name of the metric maker.
      *
      * @return the class name

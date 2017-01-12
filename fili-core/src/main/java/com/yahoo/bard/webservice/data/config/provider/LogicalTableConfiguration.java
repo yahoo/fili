@@ -14,6 +14,13 @@ import java.util.Set;
 public interface LogicalTableConfiguration {
 
     /**
+     * Get the logical table name.
+     *
+     * @return the table name
+     */
+    String getName();
+
+    /**
      * Get the time grains for this logical table.
      *
      * @return set of time grains

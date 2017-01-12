@@ -18,9 +18,14 @@ public class MakerConfigurationSpec extends Specification {
         Object[] getArguments() {
             return new Object[0]
         }
+
+        @Override
+        String getName() {
+            return "constantMaker"
+        }
     }
 
-    def "MakerConfiguration can construct a new class"() {
+    def "MakerConfiguration can construct class object from name"() {
         setup:
         def conf = new MakerConfigurationImpl()
 

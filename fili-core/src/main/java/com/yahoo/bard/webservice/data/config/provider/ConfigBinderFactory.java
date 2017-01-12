@@ -31,7 +31,6 @@ public class ConfigBinderFactory extends AbstractBinderFactory {
 
     private final ConfigProvider provider;
 
-    // FIXME: Can't remember why I did this this way. Probably needs to be cleaned up.
     protected final MetricDictionary localDictionary = new MetricDictionary();
 
     protected final MakerBuilder makerBuilder;
@@ -60,8 +59,8 @@ public class ConfigBinderFactory extends AbstractBinderFactory {
 
         makerBuilder = new MakerBuilder(provider.getCustomMakerConfig());
 
-        // This is annoying
-        provider.getDimensionConfig().values().forEach(
+        // This is annoying: we need to maintain our own dimension dictionary
+        provider.getDimensionConfig().forEach(
                 v -> dimensionDictionary.add(new KeyValueStoreDimension(v))
         );
     }
@@ -70,8 +69,7 @@ public class ConfigBinderFactory extends AbstractBinderFactory {
     protected MetricLoader getMetricLoader() {
         return new ConfiguredMetricLoader(
                 localDictionary,
-                provider.getBaseMetrics(),
-                provider.getDerivedMetrics(),
+                provider.getMetricConfig(),
                 makerBuilder,
                 dimensionDictionary
         );
@@ -80,7 +78,7 @@ public class ConfigBinderFactory extends AbstractBinderFactory {
     @Override
     protected Set<DimensionConfig> getDimensionConfigurations() {
         return new LinkedHashSet<>(
-                provider.getDimensionConfig().values()
+                provider.getDimensionConfig()
         );
     }
 

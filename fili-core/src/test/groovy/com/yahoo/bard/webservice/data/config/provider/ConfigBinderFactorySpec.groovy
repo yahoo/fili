@@ -14,33 +14,28 @@ public class ConfigBinderFactorySpec extends Specification {
 
     public static class StubProvider implements ConfigProvider {
         @Override
-        ConfigurationDictionary<PhysicalTableConfiguration> getPhysicalTableConfig() {
-            return new ConfigurationDictionary<PhysicalTableConfiguration>()
+        List<PhysicalTableConfiguration> getPhysicalTableConfig() {
+            return new LinkedList<PhysicalTableConfiguration>()
         }
 
         @Override
-        ConfigurationDictionary<LogicalTableConfiguration> getLogicalTableConfig() {
-            return new ConfigurationDictionary<LogicalTableConfiguration>()
+        List<LogicalTableConfiguration> getLogicalTableConfig() {
+            return new LinkedList<LogicalTableConfiguration>()
         }
 
         @Override
-        ConfigurationDictionary<MakerConfiguration> getCustomMakerConfig() {
-            return new ConfigurationDictionary<MakerConfiguration>()
+        List<MakerConfiguration> getCustomMakerConfig() {
+            return new LinkedList<MakerConfiguration>()
         }
 
         @Override
-        ConfigurationDictionary<DimensionConfig> getDimensionConfig() {
-            return new ConfigurationDictionary<DimensionConfig>()
+        List<DimensionConfig> getDimensionConfig() {
+            return new LinkedList<DimensionConfig>()
         }
 
         @Override
-        ConfigurationDictionary<MetricConfiguration> getBaseMetrics() {
-            return new ConfigurationDictionary<MetricConfiguration>()
-        }
-
-        @Override
-        ConfigurationDictionary<MetricConfiguration> getDerivedMetrics() {
-            return new ConfigurationDictionary<MetricConfiguration>()
+        List<MetricConfiguration> getMetricConfig() {
+            return new LinkedList<MetricConfiguration>()
         }
 
         /**

@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.names.FieldName;
 import com.yahoo.bard.webservice.data.config.table.PhysicalTableDefinition;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -14,12 +15,19 @@ import java.util.Set;
 public interface PhysicalTableConfiguration {
 
     /**
+     * Get the physical table name.
+     *
+     * @return the name
+     */
+    String getName();
+
+    /**
      * Build a physical table, given dimensions.
      *
-     * @param dimensionMap the dimension configuration
+     * @param dimensionConfig the dimension configuration
      * @return a PhysicalTableDefinition
      */
-    PhysicalTableDefinition buildPhysicalTable(ConfigurationDictionary<DimensionConfig> dimensionMap);
+    PhysicalTableDefinition buildPhysicalTable(List<DimensionConfig> dimensionConfig);
 
     /**
      * Return the metrics of the physical table.

@@ -14,6 +14,13 @@ import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 public interface MetricConfiguration {
 
     /**
+     * Get the metric's name.
+     *
+     * @return the name
+     */
+    String getName();
+
+    /**
      * Get the metric's definition.
      *
      * @return the definition
@@ -39,14 +46,12 @@ public interface MetricConfiguration {
      *
      * Yes, the signature is a little nasty and some of these things should be changed around a bit.
      *
-     * @param metricName the name of the metric to build
      * @param dict the local metric dictionary
      * @param makerBuilder the metric maker builder
      * @param dimensionDictionary the dimension dictionary
      * @return a logical metric
      */
     LogicalMetric build(
-            String metricName,
             MetricDictionary dict,
             MakerBuilder makerBuilder,
             DimensionDictionary dimensionDictionary
