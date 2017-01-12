@@ -8,7 +8,6 @@ import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.config.names.FieldName;
 import com.yahoo.bard.webservice.data.config.table.BaseTableLoader;
 import com.yahoo.bard.webservice.data.config.table.PhysicalTableDefinition;
-import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.table.TableGroup;
 
 import java.util.Collection;
@@ -66,32 +65,11 @@ public class ConfiguredTableLoader extends BaseTableLoader {
                     .map(physicalTable -> physicalTableDict.get(physicalTable).buildPhysicalTable(dimensions))
                     .collect(Collectors.toSet());
 
-            // Get the smallest granularity for this table
-            // TimeGrain smallestGrain = Collections.min(entry.getValue().timeGrains);
-
-            // Fixme: We should use 'apiName' vs 'asName' as intended
-            // FIXME: should be possible to override grains valid for?
-            Set<ApiMetricName> apiMetricNames = new HashSet<>();
-            for (String metric : logicalTable.getMetrics()) {
-                apiMetricNames.add(new ApiMetricName() {
-                    @Override
-                    public boolean isValidFor(TimeGrain grain) {
-                        return logicalTable.getTimeGrains()
-                                .stream()
-                                .anyMatch(grain::satisfiedBy);
-                    }
-
-                    @Override
-                    public String getApiName() {
-                        return metric;
-                    }
-
-                    @Override
-                    public String asName() {
-                        return metric;
-                    }
-                });
-            }
+            // Build the set of api metric names
+            Set<ApiMetricName> apiMetricNames = logicalTable.getMetrics()
+                    .stream()
+                    .map(metricName -> new ConfiguredApiMetricName(metricName, logicalTable))
+                    .collect(Collectors.toSet());
 
             TableGroup tableGroup = buildTableGroup(
                     logicalTable.getName(),
