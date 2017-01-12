@@ -41,16 +41,14 @@ public interface MetricConfiguration {
      *
      * @param metricName the name of the metric to build
      * @param dict the local metric dictionary
-     * @param tempDict the temporary metric dictionary
-     * @param makerDict the metric maker dictionary
+     * @param makerBuilder the metric maker builder
      * @param dimensionDictionary the dimension dictionary
      * @return a logical metric
      */
     LogicalMetric build(
             String metricName,
             MetricDictionary dict,
-            MetricDictionary tempDict,
-            MakerDictionary makerDict,
+            MakerBuilder makerBuilder,
             DimensionDictionary dimensionDictionary
     );
 }

@@ -14,8 +14,7 @@ import java.util.Map;
 public class ConfiguredMetricLoader implements MetricLoader {
 
     private final MetricDictionary localDictionary;
-    private final MetricDictionary tempDictionary;
-    private final MakerDictionary makerDictionary;
+    private final MakerBuilder makerBuilder;
     private final DimensionDictionary dimensionDictionary;
     private final ConfigurationDictionary<MetricConfiguration> baseMetrics;
     private final ConfigurationDictionary<MetricConfiguration> derivedMetrics;
@@ -24,22 +23,20 @@ public class ConfiguredMetricLoader implements MetricLoader {
      * Construct a new MetricLoader with the given configuration.
      *
      * @param localDictionary the local metric dictionary
-     * @param tempDictionary the temporary metric dictionary
      * @param baseMetrics the configured base metrics
      * @param derivedMetrics the configured derived metrics
-     * @param makerDictionary the metric maker dictionary
+     * @param makerBuilder the metric maker builder
      * @param dimensionDictionary the dimension dictionary
      */
     public ConfiguredMetricLoader(
-            MetricDictionary localDictionary, MetricDictionary tempDictionary,
+            MetricDictionary localDictionary,
             ConfigurationDictionary<MetricConfiguration> baseMetrics,
             ConfigurationDictionary<MetricConfiguration> derivedMetrics,
-            MakerDictionary makerDictionary, DimensionDictionary dimensionDictionary
+            MakerBuilder makerBuilder, DimensionDictionary dimensionDictionary
     ) {
         this.localDictionary = localDictionary;
-        this.tempDictionary = tempDictionary;
         this.dimensionDictionary = dimensionDictionary;
-        this.makerDictionary = makerDictionary;
+        this.makerBuilder = makerBuilder;
         this.baseMetrics = baseMetrics;
         this.derivedMetrics = derivedMetrics;
     }
@@ -53,16 +50,14 @@ public class ConfiguredMetricLoader implements MetricLoader {
             String name = entry.getKey();
             MetricConfiguration metric = entry.getValue();
             localDictionary
-                    .add(metric.build(name, localDictionary, tempDictionary, makerDictionary, dimensionDictionary));
-            tempDictionary.clearLocal();
+                    .add(metric.build(name, localDictionary, makerBuilder, dimensionDictionary));
         }
 
         for (Map.Entry<String, MetricConfiguration> entry : derivedMetrics.entrySet()) {
             String name = entry.getKey();
             MetricConfiguration metric = entry.getValue();
             localDictionary
-                    .add(metric.build(name, localDictionary, tempDictionary, makerDictionary, dimensionDictionary));
-            tempDictionary.clearLocal();
+                    .add(metric.build(name, localDictionary, makerBuilder, dimensionDictionary));
         }
 
         localDictionary.forEach((k, v) -> metricDictionary.add(v));

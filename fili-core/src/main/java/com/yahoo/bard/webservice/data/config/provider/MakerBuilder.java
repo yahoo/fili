@@ -1,5 +1,6 @@
 // Copyright 2016 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
+
 package com.yahoo.bard.webservice.data.config.provider;
 
 import com.yahoo.bard.webservice.data.config.metric.makers.ConstantMaker;
@@ -18,25 +19,24 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
- * Dictionary of MetricMakers
+ * Build MetricMakers on-the-fly.
  *
- * In The Future, this could be an interface that can easily be changed
- *
- * For now, a bunch of yucky reflection code lives in here.
+ * Used so that the MetricDictionary can be supplied at metric build time and not before.
  */
-public class MakerDictionary extends LinkedHashMap<String, MetricMaker> {
-    private static final long serialVersionUID = 4296501494537995054L;
+public class MakerBuilder {
 
     // The package name
     private static final String MAKER_PACKAGE_NAME = MetricMaker.class.getPackage().getName();
+
+    private Map<String, MakerConstructor> availableMakerConstructors = new HashMap<>();
 
     // List of 'built-in' metric makers
     // This used to use Reflections, but that seems like overkill
@@ -54,96 +54,121 @@ public class MakerDictionary extends LinkedHashMap<String, MetricMaker> {
                             RowNumMaker.class
 
                             // These (and a few others) are built in but require some arguments
-                            // So, you'll have to list them as custom makers with their parameters
+                            // So, you'll have to list them as custom makers with their parameters.
                             // AggregationAverageMaker.class,
                             // CardinalityMaker.class,
                     )
             )
     );
 
-    // Cache of default metric makers
-    private static MakerDictionary defaultMakers;
+    /**
+     * Small utility class for constructing a single MetricMaker.
+     */
+    public static class MakerConstructor {
+        private final Class<? extends MetricMaker> cls;
+        private final Object[] args;
+
+        /**
+         * Constructor for MakerConstructor.
+         *
+         * @param cls specific class of MetricMaker to construct
+         * @param args arguments to the MetricMaker's constructor
+         */
+        public MakerConstructor(Class<? extends MetricMaker> cls, Object[] args) {
+            this.cls = cls;
+            this.args = args;
+        }
+
+        /**
+         * Construct a new MetricMaker.
+         *
+         * Uses reflection to construct an object out of `cls` and `args`,
+         * but always inserts `dictionary` as the first parameter.
+         *
+         * @param dictionary metric dictionary
+         *
+         * @return a MetricMaker
+         */
+        public MetricMaker construct(MetricDictionary dictionary) {
+            Object[] instArgs;
+            if (args == null) {
+                instArgs = new Object[]{dictionary};
+            } else {
+                instArgs = new Object[args.length + 1];
+                instArgs[0] = dictionary;
+                System.arraycopy(args, 0, instArgs, 1, args.length);
+            }
+
+            MetricMaker maker = instantiateObjectFromArgs(cls, instArgs);
+
+            if (maker == null) {
+                throw new ConfigurationError("Could not instantiate " + cls + "; no suitable constructor found");
+            }
+
+            return maker;
+        }
+
+        @Override
+        public int hashCode() {
+            // Sufficient for our use case to just use 'cls'
+            return Objects.hashCode(this.cls);
+        }
+
+
+        @Override
+        public boolean equals(Object other) {
+            if (other == null || !(other instanceof MakerConstructor)) {
+                return false;
+            }
+
+            MakerConstructor obj = (MakerConstructor) other;
+
+            return Objects.equals(this.cls, obj.cls) &&
+                    Arrays.equals(this.args, obj.args);
+        }
+    }
 
     /**
-     * Get a map of name -&gt; makers for the default (built-in) MetricMakers.
+     * Construct a new MakerBuilder.
      *
-     * Makers included by default:
+     * This class builds a new MetricMaker on-the-fly when you ask for it (nicely) by name.
      *
-     * 1. Are in the same package as MetricMaker
-     * 2. Have a constructor that takes a single MetricDictionary
-     *
-     * @param dict metric dictionary to use for built-in makers
-     * @return the dictionary of MetricMakers
+     * @param configuredMakers Metric maker configuration
      */
-    public static MakerDictionary getDefaultMakers(MetricDictionary dict) {
-        if (defaultMakers == null) {
-            defaultMakers = new MakerDictionary();
-            for (Class<? extends MetricMaker> cls : BUILTIN_METRIC_MAKERS) {
-                // LongSumMaker => longSum
-                String makerName = lowerFirst(cls.getSimpleName()).replaceFirst("Maker", "");
-                MetricMaker actualMaker = instantiateObjectFromArgs(cls, dict);
-                if (actualMaker != null) {
-                    defaultMakers.put(makerName, actualMaker);
-                } else {
-                    throw new ConfigurationError("Unable to instantiate built-in metric maker " + cls);
-                }
+    public MakerBuilder(ConfigurationDictionary<MakerConfiguration> configuredMakers) {
+
+        // Add any default/builtin metric makers
+        for (Class<? extends MetricMaker> cls : BUILTIN_METRIC_MAKERS) {
+            String makerName = lowerFirst(cls.getSimpleName()).replaceFirst("Maker", "");
+            availableMakerConstructors.put(makerName, new MakerConstructor(cls, null));
+        }
+
+        // Add any custom metric makers
+        if (configuredMakers != null) {
+            for (Map.Entry<String, MakerConfiguration> entry : configuredMakers.entrySet()) {
+                String name = entry.getKey();
+                MakerConfiguration conf = entry.getValue();
+                Class<? extends MetricMaker> makerCls = buildMakerClass(name, conf.getClassName());
+                availableMakerConstructors.put(name, new MakerConstructor(makerCls, conf.getArguments()));
             }
         }
-
-        return defaultMakers;
     }
 
     /**
-     * Initialize the metric makers, custom and built-in.
+     * Build the metric maker for the given name and with the given metric dictionary.
      *
-     * @param dict MetricDictionary to use for every maker
-     * @param mDict Dictionary of function name to MetricMaker
-     * @param makers user-defined config listing custom MetricMakers
+     * @param name pretty maker name, e.g. longSum
+     * @param dictionary metric dictionary
+     *
+     * @return the metric maker
      */
-    public static void loadMetricMakers(
-            MetricDictionary dict,
-            MakerDictionary mDict,
-            Map<String, MakerConfiguration> makers
-    ) {
-        loadMetricMakers(dict, mDict, makers, false);
-    }
-
-    /**
-     * Initialize the metric makers, custom and optionally built-in.
-     *
-     * Eventually, 'skipDefault' will be an option in the YAML config.
-     *
-     * @param dict MetricDictionary to use for every maker
-     * @param mDict Dictionary of function name to MetricMaker
-     * @param makers user-defined config listing custom MetricMakers
-     * @param skipDefault true to skip loading built-in metrics
-     */
-    public static void loadMetricMakers(
-            MetricDictionary dict,
-            MakerDictionary mDict,
-            Map<String, MakerConfiguration> makers,
-            boolean skipDefault
-    ) {
-
-        if (!skipDefault) {
-            mDict.putAll(getDefaultMakers(dict));
+    public MetricMaker build(String name, MetricDictionary dictionary) {
+        if (!availableMakerConstructors.containsKey(name)) {
+            throw new ConfigurationError("Asked for maker " + name + " but do not know how to construct it.");
         }
+        MakerConstructor reflector = availableMakerConstructors.get(name);
 
-        if (makers != null) {
-            Map<String, MetricMaker> customMakers = makers.entrySet()
-                    .stream()
-                    .collect(Collectors.toMap(
-                            Map.Entry::getKey,
-                            v -> buildCustomMaker(
-                                    v.getKey(),
-                                    v.getValue().getClassName(),
-                                    v.getValue().getArguments(),
-                                    dict
-                            )
-                    ));
-
-            mDict.putAll(customMakers);
-        }
+        return reflector.construct(dictionary);
     }
 
     /**
@@ -172,15 +197,15 @@ public class MakerDictionary extends LinkedHashMap<String, MetricMaker> {
     }
 
     /**
-     * Construct a custom MetricMaker given its class name and arguments.
+     * Attempt to find the Class corresponding to the given name or class name.
      *
-     * @param name The pretty name ("longSum")
-     * @param className The class name for the maker
-     * @param args Arguments to the maker constructor
-     * @param dict Metric dictionary
-     * @return A metric maker
+     * @param name the pretty maker name, e.g. longSum
+     * @param className the class name; optional if built-in
+     *
+     * @return the class corresponding to the given name or class name
      */
-    protected static MetricMaker buildCustomMaker(String name, String className, Object[] args, MetricDictionary dict) {
+    protected static Class<? extends MetricMaker> buildMakerClass(String name, String className) {
+
         Class cls;
         try {
             cls = Class.forName(getClassName(name, className));
@@ -190,22 +215,12 @@ public class MakerDictionary extends LinkedHashMap<String, MetricMaker> {
                     " in classpath");
         }
 
+        // I don't think you can do this without an unchecked cast.
         if (!MetricMaker.class.isAssignableFrom(cls)) {
             throw new ConfigurationError("Error loading metric maker `" + name + "`: Could not instantiate " +
                     className + "; seems to not inherit from MetricMaker");
         } else {
-
-            Object[] instArgs = new Object[args.length + 1];
-            instArgs[0] = dict;
-            System.arraycopy(args, 0, instArgs, 1, args.length);
-
-            MetricMaker m = (MetricMaker) instantiateObjectFromArgs(cls, instArgs);
-
-            if (m == null) {
-                throw new ConfigurationError("Could not instantiate " + className + "; no suitable constructor found");
-            }
-
-            return m;
+            return (Class<? extends MetricMaker>) cls;
         }
     }
 

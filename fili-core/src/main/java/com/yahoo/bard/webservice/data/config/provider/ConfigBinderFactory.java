@@ -33,9 +33,8 @@ public class ConfigBinderFactory extends AbstractBinderFactory {
 
     // FIXME: Can't remember why I did this this way. Probably needs to be cleaned up.
     protected final MetricDictionary localDictionary = new MetricDictionary();
-    protected final MetricDictionary tempDictionary = localDictionary.getScope("tmp");
 
-    protected final MakerDictionary makerDictionary = new MakerDictionary();
+    protected final MakerBuilder makerBuilder;
 
     protected final DimensionDictionary dimensionDictionary = new DimensionDictionary();
 
@@ -59,10 +58,7 @@ public class ConfigBinderFactory extends AbstractBinderFactory {
             throw new ConfigurationError("Unable to construct config provider", e);
         }
 
-        // Store the metric makers; should only be instantiated once.
-        // The makers all use 'tempDictionary' under the hood, which seems important but I
-        // can't really remember why...
-        MakerDictionary.loadMetricMakers(tempDictionary, makerDictionary, provider.getCustomMakerConfig());
+        makerBuilder = new MakerBuilder(provider.getCustomMakerConfig());
 
         // This is annoying
         provider.getDimensionConfig().values().forEach(
@@ -74,10 +70,9 @@ public class ConfigBinderFactory extends AbstractBinderFactory {
     protected MetricLoader getMetricLoader() {
         return new ConfiguredMetricLoader(
                 localDictionary,
-                tempDictionary,
                 provider.getBaseMetrics(),
                 provider.getDerivedMetrics(),
-                makerDictionary,
+                makerBuilder,
                 dimensionDictionary
         );
     }

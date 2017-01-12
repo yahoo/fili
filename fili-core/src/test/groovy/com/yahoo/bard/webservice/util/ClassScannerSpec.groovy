@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.util
 
 import com.yahoo.bard.webservice.async.jobs.jobrows.JobRow
+import com.yahoo.bard.webservice.data.config.provider.MakerBuilder
 import com.yahoo.bard.webservice.druid.model.aggregation.LongSumAggregation
 
 import org.joda.time.DateTime
@@ -40,7 +41,8 @@ class ClassScannerSpec extends Specification {
                  new DateTime(20000),
                  new Interval(1, 2),
                  Days.days(1),
-                 DateTimeZone.UTC
+                 DateTimeZone.UTC,
+                 Long.class // for class-type arguments
                 ])
     }
 
