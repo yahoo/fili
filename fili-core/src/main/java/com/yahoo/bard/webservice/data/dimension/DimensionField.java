@@ -2,9 +2,12 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.dimension;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 /**
  * Dimension field.
  */
+@JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public interface DimensionField {
 
     /**
