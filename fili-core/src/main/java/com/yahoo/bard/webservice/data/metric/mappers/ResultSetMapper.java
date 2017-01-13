@@ -2,7 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric.mappers;
 
-import com.yahoo.bard.rfc.table.GranularSchema;
 import com.yahoo.bard.rfc.table.ResultSetSchema;
 import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.ResultSet;
@@ -39,7 +38,7 @@ abstract public class ResultSetMapper {
             }
         }
 
-        GranularSchema newSchema = map(resultSet.getSchema());
+        ResultSetSchema newSchema = map(resultSet.getSchema());
         ResultSet newResultSet = new ResultSet(newResults, newSchema);
         LOG.trace("Mapped resultSet: {} to new resultSet {}", resultSet, newResultSet);
 

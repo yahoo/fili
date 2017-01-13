@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric.mappers;
 
-import com.yahoo.bard.rfc.table.GranularSchema;
+import com.yahoo.bard.rfc.table.ResultSetSchema;
 import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.ResultSet;
 import com.yahoo.bard.webservice.util.AllPagesPagination;
@@ -58,14 +58,14 @@ public class PaginationMapper extends ResultSetMapper {
     }
 
     @Override
-    protected Result map(Result result, GranularSchema schema) {
+    protected Result map(Result result, ResultSetSchema schema) {
         //Not needed, because this mapper overrides map(ResultSet). So it is just a no-op.
         return result;
     }
 
 
     @Override
-    protected GranularSchema map(GranularSchema schema) {
+    protected ResultSetSchema map(ResultSetSchema schema) {
         //Because this method is not necessary, it just returns the schema unchanged.
         return schema;
     }

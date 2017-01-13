@@ -14,7 +14,10 @@ import javax.validation.constraints.NotNull;
 
 /**
  * A schema anchored to a particular time zone.
+ *
+ * @deprecated This class is no longer used to support ResultSet schemas
  */
+@Deprecated
 public class ZonedSchema extends LinkedHashSet<Column> implements GranularSchema {
 
     private final DateTimeZone dateTimeZone;

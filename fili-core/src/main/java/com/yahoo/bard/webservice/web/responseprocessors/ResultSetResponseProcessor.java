@@ -24,7 +24,6 @@ import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.table.Column;
-import com.yahoo.bard.webservice.table.ZonedSchema;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.PageNotFoundException;
 import com.yahoo.bard.webservice.web.PreResponse;
@@ -147,7 +146,6 @@ public class ResultSetResponseProcessor extends MappingResponseProcessor impleme
      */
     public ResultSet buildResultSet(JsonNode json, DruidAggregationQuery<?> druidQuery, DateTimeZone dateTimeZone) {
 
-
         Set<Column> columns = druidQuery.getAggregations().stream()
                 .map(Aggregation::getName)
                 .map(MetricColumn::new)
@@ -167,8 +165,8 @@ public class ResultSetResponseProcessor extends MappingResponseProcessor impleme
         );
 
 
-        ZonedSchema resultSetSchema = new ResultSetSchema(columns, granularity, dateTimeZone);
+        ResultSetSchema resultSetSchema = new ResultSetSchema(columns, granularity);
 
-        return druidResponseParser.parse(json, resultSetSchema, druidQuery.getQueryType());
+        return druidResponseParser.parse(json, resultSetSchema, druidQuery.getQueryType(), dateTimeZone);
     }
 }

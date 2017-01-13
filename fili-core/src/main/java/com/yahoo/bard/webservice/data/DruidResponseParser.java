@@ -6,10 +6,10 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.RESULT_SET_ERROR;
 
 import com.yahoo.bard.rfc.data.dimension.DimensionColumn;
 import com.yahoo.bard.rfc.table.MetricColumn;
+import com.yahoo.bard.rfc.table.ResultSetSchema;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.QueryType;
-import com.yahoo.bard.webservice.table.ZonedSchema;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -44,7 +44,7 @@ public class DruidResponseParser {
      *
      * @return the set of results
      */
-    public ResultSet parse(JsonNode jsonResult, ZonedSchema schema, QueryType queryType) {
+    public ResultSet parse(JsonNode jsonResult, ResultSetSchema schema, QueryType queryType, DateTimeZone dateTimeZone) {
 
         LOG.trace("Parsing druid query {} by json result: {} using schema: {}", queryType, jsonResult, schema);
 
@@ -61,16 +61,16 @@ public class DruidResponseParser {
         List<Result> results = null;
         switch (defaultQueryType) {
             case GROUP_BY:
-                results = makeGroupByResults(jsonResult, dimensionColumns, metricColumns, schema.getDateTimeZone());
+                results = makeGroupByResults(jsonResult, dimensionColumns, metricColumns, dateTimeZone);
                 break;
             case TOP_N:
-                results = makeTopNResults(jsonResult, dimensionColumns, metricColumns, schema.getDateTimeZone());
+                results = makeTopNResults(jsonResult, dimensionColumns, metricColumns, dateTimeZone);
                 break;
             case TIMESERIES:
-                results = makeTimeSeriesResults(jsonResult, metricColumns, schema.getDateTimeZone());
+                results = makeTimeSeriesResults(jsonResult, metricColumns, dateTimeZone);
                 break;
             case LOOKBACK:
-                results = makeLookbackResults(jsonResult, dimensionColumns, metricColumns, schema.getDateTimeZone());
+                results = makeLookbackResults(jsonResult, dimensionColumns, metricColumns, dateTimeZone);
                 break;
             default:
                 // Throw an exception for unsupported query types

@@ -26,7 +26,6 @@ import com.yahoo.bard.webservice.data.metric.MetricColumnWithValueType;
 import com.yahoo.bard.webservice.data.time.GranularityParser;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.table.Column;
-import com.yahoo.bard.webservice.table.ZonedSchema;
 import com.yahoo.bard.webservice.util.GranularityParseException;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.PreResponse;
@@ -205,13 +204,13 @@ public class PreResponseDeserializer {
      * @return ResultSet object generated from JsonNode
      */
     private ResultSet getResultSet(JsonNode serializedResultSet) {
-        ResultSetSchema zonedSchema = getZonedSchema(serializedResultSet.get(SCHEMA_KEY));
+        ResultSetSchema resultSetSchema = getResultSetSchema(serializedResultSet.get(SCHEMA_KEY));
         List<Result> results = StreamSupport
                 .stream(serializedResultSet.get(RESULTS_KEY).spliterator(), false)
-                .map(serializedResult -> getResult(serializedResult, zonedSchema))
+                .map(serializedResult -> getResult(serializedResult, resultSetSchema))
                 .collect(Collectors.toList());
 
-        return new ResultSet(results, zonedSchema);
+        return new ResultSet(results, resultSetSchema);
     }
 
     /**
@@ -221,7 +220,8 @@ public class PreResponseDeserializer {
      *
      * @return ZonedSchema object generated from the JsonNode
      */
-    private ResultSetSchema getZonedSchema(JsonNode schemaNode) {
+    private ResultSetSchema getResultSetSchema(JsonNode schemaNode) {
+
 
         DateTimeZone timezone = generateTimezone(
                 schemaNode.get(SCHEMA_TIMEZONE).asText(),
@@ -249,8 +249,7 @@ public class PreResponseDeserializer {
 
         return new ResultSetSchema(
                 columns,
-                generateGranularity(schemaNode.get(SCHEMA_GRANULARITY).asText(), timezone),
-                timezone
+                generateGranularity(schemaNode.get(SCHEMA_GRANULARITY).asText(), timezone)
         );
     }
 
@@ -276,19 +275,19 @@ public class PreResponseDeserializer {
      * Creates new Result object from JsonNode.
      *
      * @param serializedResult  JsonNode which contains all the serialized details to generate Result object
-     * @param zonedSchema  Schema of the result to generate the Result object
+     * @param resultSetSchema  Schema of the result to generate the Result object
      *
      * @return Result object generated from given JsonNode
      */
-    private Result getResult(JsonNode serializedResult, ZonedSchema zonedSchema) {
+    private Result getResult(JsonNode serializedResult, ResultSetSchema resultSetSchema) {
         return new Result(
                 extractDimensionValues(
                         serializedResult.get(DIMENSION_VALUES_KEY),
-                        zonedSchema.getColumns(DimensionColumn.class)
+                        resultSetSchema.getColumns(DimensionColumn.class)
                 ),
                 extractMetricValues(
                         serializedResult.get(METRIC_VALUES_KEY),
-                        zonedSchema.getColumns(MetricColumnWithValueType.class)
+                        resultSetSchema.getColumns(MetricColumnWithValueType.class)
                 ),
                 DateTime.parse(serializedResult.get(TIMESTAMP_KEY).asText())
         );

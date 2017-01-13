@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric.mappers;
 
-import com.yahoo.bard.rfc.table.GranularSchema;
+import com.yahoo.bard.rfc.table.ResultSetSchema;
 import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
@@ -49,7 +49,7 @@ public class PartialDataResultSetMapper extends ResultSetMapper {
      * @return Null if the bucket this result falls in is missing but not volatile
      */
     @Override
-    public Result map(Result result, GranularSchema schema) {
+    public Result map(Result result, ResultSetSchema schema) {
         Granularity grain = schema.getGranularity();
 
         if (grain.equals(AllGranularity.INSTANCE)) {
@@ -67,7 +67,7 @@ public class PartialDataResultSetMapper extends ResultSetMapper {
     }
 
     @Override
-    protected GranularSchema map(GranularSchema schema) {
+    protected ResultSetSchema map(ResultSetSchema schema) {
         return schema;
     }
 

@@ -4,31 +4,40 @@ package com.yahoo.bard.rfc.table;
 
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.table.Column;
-import com.yahoo.bard.webservice.table.ZonedSchema;
-
-import org.joda.time.DateTimeZone;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
-public class ResultSetSchema extends ZonedSchema {
+public class ResultSetSchema extends LinkedHashSet<Column> implements GranularSchema {
 
+    private Granularity granularity;
+
+    /**
+     *
+     * @param columns The columns in this schema
+     * @param granularity The bucketing time grain for this schema
+     */
     public ResultSetSchema(
             Set<Column> columns,
-            @NotNull Granularity granularity,
-            DateTimeZone timeZone
+            @NotNull Granularity granularity
     ) {
-        super(columns, granularity, timeZone);
+        addAll(columns);
+        this.granularity = granularity;
     }
 
-    public ResultSetSchema(ZonedSchema zonedSchema) {
-        super(zonedSchema);
+    public ResultSetSchema(ResultSetSchema resultSetSchema) {
+        this(resultSetSchema, resultSetSchema.getGranularity());
     }
 
     public ResultSetSchema withAddColumn(Column c) {
         Set<Column> columns = new LinkedHashSet<>(this);
-        return new ResultSetSchema(columns, this.getGranularity(), this.getDateTimeZone());
+        return new ResultSetSchema(columns, this.getGranularity());
+    }
+
+    @Override
+    public Granularity getGranularity() {
+        return granularity;
     }
 }

@@ -2,8 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table;
 
+import com.yahoo.bard.rfc.table.GranularTable;
 import com.yahoo.bard.rfc.table.LogicalTableSchema;
-import com.yahoo.bard.rfc.table.Table;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricColumn;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
@@ -21,13 +21,14 @@ import javax.validation.constraints.NotNull;
 /**
  * A LogicalTable has a grain and a tablegroup of physical tables that satisfy the logical table.
  */
-public class LogicalTable implements Table, Comparable<LogicalTable> {
+public class LogicalTable implements GranularTable, Comparable<LogicalTable> {
 
     public static final String DEFAULT_CATEGORY = "General";
     public static final ReadablePeriod DEFAULT_RETENTION = Years.ONE;
 
     private TableGroup tableGroup;
     private LogicalTableSchema schema;
+    private Granularity granularity;
     // parameter used by the compare to method
     private String name;
     private String comparableParam;
@@ -83,6 +84,7 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
         this.longName = longName;
         this.retention = retention;
         this.description = description;
+        this.granularity = granularity;
         this.comparableParam = name + granularity.toString();
 
         schema = new LogicalTableSchema(tableGroup, metricDictionary);
@@ -128,6 +130,10 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
 
     public String getDescription() {
         return description;
+    }
+
+    public Granularity getGranularity() {
+        return granularity;
     }
 
     @Override

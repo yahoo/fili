@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.web;
 
 import com.yahoo.bard.rfc.data.dimension.DimensionColumn;
+import com.yahoo.bard.rfc.table.MetricColumn;
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
 import com.yahoo.bard.webservice.config.BardFeatureFlag;
 import com.yahoo.bard.webservice.data.Result;
