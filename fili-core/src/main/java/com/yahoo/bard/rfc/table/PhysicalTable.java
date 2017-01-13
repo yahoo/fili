@@ -12,7 +12,7 @@ import org.joda.time.ReadablePeriod;
 import java.util.Map;
 import java.util.Set;
 
-public interface PhysicalTable extends Table {
+public interface PhysicalTable extends GranularTable {
 
 
     Availability getAvailability();

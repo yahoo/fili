@@ -3,9 +3,8 @@
 package com.yahoo.bard.webservice.data.metric.mappers
 
 import com.yahoo.bard.webservice.data.Result
-import com.yahoo.bard.webservice.data.metric.MetricColumn
+
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
-import com.yahoo.bard.webservice.table.Schema
 
 import org.joda.time.DateTime
 

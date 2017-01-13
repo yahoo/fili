@@ -11,11 +11,9 @@ import static com.yahoo.bard.webservice.data.config.names.TestApiMetricName.A_ST
 
 import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
-import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper;
 import com.yahoo.bard.webservice.druid.model.aggregation.MinAggregation;
-import com.yahoo.bard.webservice.table.Schema;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 

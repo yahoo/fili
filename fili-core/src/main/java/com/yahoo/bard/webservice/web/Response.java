@@ -11,7 +11,6 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
-import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.util.DateTimeFormatterFactory;
 import com.yahoo.bard.webservice.util.DateTimeUtils;
 import com.yahoo.bard.webservice.util.Pagination;

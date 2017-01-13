@@ -2,9 +2,10 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric.mappers;
 
+import com.yahoo.bard.rfc.table.GranularSchema;
+import com.yahoo.bard.rfc.table.ResultSetSchema;
 import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.ResultSet;
-import com.yahoo.bard.webservice.table.Schema;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +39,7 @@ abstract public class ResultSetMapper {
             }
         }
 
-        Schema newSchema = map(resultSet.getSchema());
+        GranularSchema newSchema = map(resultSet.getSchema());
         ResultSet newResultSet = new ResultSet(newResults, newSchema);
         LOG.trace("Mapped resultSet: {} to new resultSet {}", resultSet, newResultSet);
 
@@ -53,7 +54,7 @@ abstract public class ResultSetMapper {
      *
      * @return The result row, a modified copy, or null (if row is eliminated)
      */
-    abstract protected Result map(Result result, Schema schema);
+    abstract protected Result map(Result result, ResultSetSchema schema);
 
     /**
      * Returns a transformed schema.
@@ -62,7 +63,7 @@ abstract public class ResultSetMapper {
      *
      * @return The same schema or a new (altered) one
      */
-    abstract protected Schema map(Schema schema);
+    abstract protected ResultSetSchema map(ResultSetSchema schema);
 
     /**
      * Since a ResultSetMapper has no state associated with it, we consider two ResultSetMappers to be the same iff

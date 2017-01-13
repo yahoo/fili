@@ -16,7 +16,7 @@ public class MetricColumn extends Column {
      *
      * @param name  The column name
      */
-    protected MetricColumn(String name) {
+    public MetricColumn(String name) {
         super(name);
     }
 

@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric;
 
+import com.yahoo.bard.rfc.table.MetricColumn;
 import com.yahoo.bard.webservice.data.DeserializationException;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 

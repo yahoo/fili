@@ -5,8 +5,8 @@ package com.yahoo.bard.webservice.data;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.RESULT_SET_ERROR;
 
 import com.yahoo.bard.rfc.data.dimension.DimensionColumn;
+import com.yahoo.bard.rfc.table.MetricColumn;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
-import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.QueryType;
 import com.yahoo.bard.webservice.table.ZonedSchema;

@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data;
 
-import com.yahoo.bard.webservice.table.Schema;
+import com.yahoo.bard.rfc.table.ResultSetSchema;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class ResultSet extends ArrayList<Result> {
 
-    private final Schema schema;
+    private final ResultSetSchema schema;
 
     /**
      * Constructor.
@@ -20,9 +20,9 @@ public class ResultSet extends ArrayList<Result> {
      * @param results  The list of results
      * @param schema  The associated schema
      */
-    public ResultSet(List<Result> results, Schema schema) {
+    public ResultSet(List<Result> results, ResultSetSchema schema) {
         super(results);
-        this.schema = schema;
+        this.schema = new ResultSetSchema(schema);
     }
 
     /**
@@ -30,7 +30,7 @@ public class ResultSet extends ArrayList<Result> {
      *
      * @return The schema associated with this result set
      */
-    public Schema getSchema() {
+    public ResultSetSchema getSchema() {
         return this.schema;
     }
 

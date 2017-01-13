@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table;
 
-import com.yahoo.bard.rfc.table.Table;
+import com.yahoo.bard.rfc.table.GranularTable;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.web.DataApiRequest;
@@ -42,8 +42,9 @@ public class TableIdentifier extends AbstractMap.SimpleImmutableEntry<String, Op
      *
      * @param table  Logical table for the table identifier
      */
-    public TableIdentifier(Table table) {
-        this(table.getName(), table.getSchema().getGranularity());
+    public TableIdentifier(GranularTable table) {
+        // TODO big problem here to fix
+        this(table.getName(), table.getGranularity());
     }
 
     /**

@@ -13,9 +13,9 @@ import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
-import com.yahoo.bard.webservice.data.metric.MetricColumn
+
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType
-import com.yahoo.bard.webservice.table.Schema
+
 import com.yahoo.bard.webservice.table.ZonedSchema
 
 import com.fasterxml.jackson.core.JsonFactory

@@ -33,11 +33,11 @@ public class TableGroup {
     public TableGroup(
             LinkedHashSet<PhysicalTable> tables,
             Set<ApiMetricName> apiMetricNames,
-            LinkedHashSet<Dimension> dimensions
+            Set<Dimension> dimensions
     ) {
         this.tables = tables;
         this.apiMetricNames = apiMetricNames;
-        this.dimensions = dimensions;
+        this.dimensions = new LinkedHashSet<>(dimensions);
     }
 
     /**

@@ -15,15 +15,17 @@ import static com.yahoo.bard.webservice.data.ResultSetSerializationProxy.SCHEMA_
 import static com.yahoo.bard.webservice.data.ResultSetSerializationProxy.SCHEMA_TIMEZONE;
 
 import com.yahoo.bard.rfc.data.dimension.DimensionColumn;
+import com.yahoo.bard.rfc.table.MetricColumn;
+import com.yahoo.bard.rfc.table.ResultSetSchema;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
-import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.data.metric.MetricColumnWithValueType;
 import com.yahoo.bard.webservice.data.time.GranularityParser;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
+import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.table.ZonedSchema;
 import com.yahoo.bard.webservice.util.GranularityParseException;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
@@ -203,7 +205,7 @@ public class PreResponseDeserializer {
      * @return ResultSet object generated from JsonNode
      */
     private ResultSet getResultSet(JsonNode serializedResultSet) {
-        ZonedSchema zonedSchema = getZonedSchema(serializedResultSet.get(SCHEMA_KEY));
+        ResultSetSchema zonedSchema = getZonedSchema(serializedResultSet.get(SCHEMA_KEY));
         List<Result> results = StreamSupport
                 .stream(serializedResultSet.get(RESULTS_KEY).spliterator(), false)
                 .map(serializedResult -> getResult(serializedResult, zonedSchema))
@@ -219,7 +221,7 @@ public class PreResponseDeserializer {
      *
      * @return ZonedSchema object generated from the JsonNode
      */
-    private ZonedSchema getZonedSchema(JsonNode schemaNode) {
+    private ResultSetSchema getZonedSchema(JsonNode schemaNode) {
 
         DateTimeZone timezone = generateTimezone(
                 schemaNode.get(SCHEMA_TIMEZONE).asText(),
@@ -229,21 +231,27 @@ public class PreResponseDeserializer {
         );
 
         //Recreate ZonedSchema from granularity and timezone values
-        ZonedSchema zonedSchema = new ZonedSchema(
+        Granularity granularity = generateGranularity(schemaNode.get(SCHEMA_GRANULARITY).asText(), timezone);
+
+        Set<Column> columns = StreamSupport.stream(schemaNode.get(SCHEMA_DIM_COLUMNS).spliterator(), false)
+                .map(JsonNode::asText)
+                .map(this::resolveDimensionName)
+                .map(DimensionColumn::new)
+                .collect(Collectors.toSet());
+
+        Iterable<Map.Entry<String, JsonNode>> metricEntries = () -> schemaNode.get(SCHEMA_METRIC_COLUMNS_TYPE).fields();
+
+        columns.addAll(
+                StreamSupport.stream(metricEntries.spliterator(), false)
+                        .map(entry-> new MetricColumnWithValueType(entry.getKey(), entry.getValue().asText()))
+                        .collect(Collectors.toSet())
+        );
+
+        return new ResultSetSchema(
+                columns,
                 generateGranularity(schemaNode.get(SCHEMA_GRANULARITY).asText(), timezone),
                 timezone
         );
-
-        StreamSupport.stream(schemaNode.get(SCHEMA_DIM_COLUMNS).spliterator(), false)
-                .map(JsonNode::asText)
-                .map(this::resolveDimensionName)
-                .forEach(dimension -> zonedSchema.addColumn(new DimensionColumn(dimension)));
-
-        schemaNode.get(SCHEMA_METRIC_COLUMNS_TYPE).fields().forEachRemaining(
-                field -> zonedSchema.addColumn(new MetricColumnWithValueType(field.getKey(), field.getValue().asText()))
-        );
-
-        return zonedSchema;
     }
 
     /**

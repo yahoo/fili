@@ -3,6 +3,7 @@
 package com.yahoo.bard.rfc.table;
 
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
+import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 
@@ -21,7 +22,7 @@ import javax.validation.constraints.NotNull;
 /**
  * Physical Table represents a druid table.
  */
-public abstract class BasePhysicalTable implements com.yahoo.bard.rfc.table.PhysicalTable {
+public abstract class BasePhysicalTable implements PhysicalTable {
     private static final Logger LOG = LoggerFactory.getLogger(PhysicalTable.class);
 
     String name;
@@ -236,5 +237,10 @@ public abstract class BasePhysicalTable implements com.yahoo.bard.rfc.table.Phys
     @Deprecated
     public ZonedTimeGrain getTimeGrain() {
         return schema.getGranularity();
+    }
+
+    @Override
+    public Granularity getGranularity() {
+        return null;
     }
 }

@@ -8,6 +8,7 @@ import java.util.Objects;
  * Column.
  */
 public class Column {
+
     private final String name;
 
     /**
@@ -17,15 +18,6 @@ public class Column {
      */
     public Column(String name) {
         this.name = name;
-    }
-
-    /**
-     * Getter for column name.
-     *
-     * @return name
-     */
-    public String getName() {
-        return this.name;
     }
 
     /**
@@ -44,6 +36,15 @@ public class Column {
         Column column = (Column) o;
 
         return Objects.equals(name, column.name);
+    }
+
+    /**
+     * Getter for column name.
+     *
+     * @return name
+     */
+    public String getName() {
+        return this.name;
     }
 
     @Override

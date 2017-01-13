@@ -4,7 +4,7 @@ package com.yahoo.bard.webservice.table.availability
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 
-import com.yahoo.bard.webservice.data.metric.MetricColumn
+
 import com.yahoo.bard.webservice.metadata.SegmentMetadata
 
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary

@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
-public class PhysicalTableSchema extends LinkedHashSet<Column> implements Schema, HasGranularity {
+public class PhysicalTableSchema extends LinkedHashSet<Column> implements GranularSchema {
 
     private static final Logger LOG = LoggerFactory.getLogger(PhysicalTableSchema.class);
 

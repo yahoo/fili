@@ -4,7 +4,7 @@ package com.yahoo.bard.webservice.data
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
 
 import com.yahoo.bard.webservice.data.dimension.DimensionRow
-import com.yahoo.bard.webservice.data.metric.MetricColumn
+
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser
 import com.yahoo.bard.webservice.table.ZonedSchema
 import com.yahoo.bard.webservice.util.GroovyTestUtils

@@ -4,7 +4,6 @@ package com.yahoo.bard.webservice.web.endpoints;
 
 import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.ResultSet;
-import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.async.jobs.stores.ApiJobStore;
@@ -14,7 +13,6 @@ import com.yahoo.bard.webservice.async.preresponses.stores.HashPreResponseStore;
 import com.yahoo.bard.webservice.async.jobs.jobrows.JobField;
 import com.yahoo.bard.webservice.async.jobs.jobrows.JobRow;
 import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore;
-import com.yahoo.bard.webservice.table.Schema;
 import com.yahoo.bard.webservice.table.ZonedSchema;
 import com.yahoo.bard.webservice.web.PreResponse;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext;

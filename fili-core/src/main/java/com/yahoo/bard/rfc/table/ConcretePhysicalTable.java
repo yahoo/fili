@@ -43,6 +43,22 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
         this.factTableName = factTableName;
     }
 
+    /**
+     * Create a physical table.
+     *
+     * @param name  Fili name of the physical table
+     * @param timeGrain  time grain of the table
+     * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
+     */
+    public ConcretePhysicalTable(
+            @NotNull String name,
+            @NotNull Set<Column> columns,
+            @NotNull ZonedTimeGrain timeGrain,
+            @NotNull Map<String, String> logicalToPhysicalColumnNames
+    ) {
+        this(name, name, columns, timeGrain, logicalToPhysicalColumnNames);
+    }
+
     @Override
     public Availability getAvailability() {
         return availabilityRef.get();

@@ -3,8 +3,8 @@
 package com.yahoo.bard.webservice.data;
 
 import com.yahoo.bard.rfc.data.dimension.DimensionColumn;
+import com.yahoo.bard.rfc.table.MetricColumn;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
-import com.yahoo.bard.webservice.data.metric.MetricColumn;
 
 import com.fasterxml.jackson.databind.JsonNode;
 

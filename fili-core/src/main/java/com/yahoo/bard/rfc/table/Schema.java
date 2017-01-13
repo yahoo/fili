@@ -8,9 +8,10 @@ package com.yahoo.bard.rfc.table;
 import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.util.Utils;
 
+import java.util.Optional;
 import java.util.Set;
 
-public interface Schema extends Set<Column>, HasGranularity {
+public interface Schema extends Set<Column> {
 
     /**
      * Getter for set of columns by sub-type.
@@ -22,5 +23,11 @@ public interface Schema extends Set<Column>, HasGranularity {
      */
     default <T extends Column> Set<T> getColumns(Class<T> columnClass) {
         return Utils.getSubsetByType(this, columnClass);
+    }
+
+    default <T extends Column> Optional<T> getColumn(String name, Class<T> columnClass) {
+        return getColumns(columnClass).stream()
+                .filter(column -> column.getName().equals(name))
+                .findFirst();
     }
 }
