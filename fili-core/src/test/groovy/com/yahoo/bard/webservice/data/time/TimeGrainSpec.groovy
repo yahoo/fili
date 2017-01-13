@@ -78,6 +78,11 @@ class TimeGrainSpec extends Specification {
         boolean aligns(final DateTime dateTime) {
             return false
         }
+        
+        @Override
+        String toString () {
+            return period.toString();
+        }
     }
 
     @Unroll

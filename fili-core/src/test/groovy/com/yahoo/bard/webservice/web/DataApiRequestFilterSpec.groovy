@@ -95,6 +95,7 @@ class DataApiRequestFilterSpec extends Specification {
         2          | 3           | 6                | "locale|desc-notin[US,India],locale|id-eq[5,8],one|id-in[US,India]"
         2          | 3           | 6                | "locale|desc-contains[US,India],locale|id-eq[5,8],one|id-in[US,India]"
         2          | 3           | 6                | "locale|desc-startswith[US,India],locale|id-eq[5,8],one|id-in[US,India]"
+        2          | 3           | 7                | "locale|desc-startswith[US,India],locale|id-eq[5,8],one|id-in[US,India,\"a ],b\"]"
     }
 
     def "Error thrown when startswith and contains feature flag is off, but filter has #startsWithContains" () {
@@ -121,7 +122,7 @@ class DataApiRequestFilterSpec extends Specification {
         setup:
         String expectedMessage = ErrorMessageFormat.FILTER_FIELD_NOT_IN_DIMENSIONS.format('unknown', 'locale')
         when:
-        new DataApiRequest().generateFilters("locale|unknown-in:[US,India],locale.id-eq:[5]", table, dimensionDict)
+        new DataApiRequest().generateFilters("locale|unknown-in[US,India],locale|id-eq[5]", table, dimensionDict)
 
         then:
         Exception e = thrown(BadApiRequestException)
@@ -136,7 +137,7 @@ class DataApiRequestFilterSpec extends Specification {
 
         String expectedMessage = ErrorMessageFormat.FILTER_DIMENSION_NOT_IN_TABLE.format('locale', 'name')
         when:
-        new DataApiRequest().generateFilters("locale|id-in:[US,India],locale.id-eq:[5]", table, dimensionDict)
+        new DataApiRequest().generateFilters("locale|id-in[US,India],locale|id-eq[5]", table, dimensionDict)
 
         then:
         Exception e = thrown(BadApiRequestException)
@@ -147,7 +148,7 @@ class DataApiRequestFilterSpec extends Specification {
         setup:
         String expectedMessage = ErrorMessageFormat.FILTER_DIMENSION_UNDEFINED.format('undefined')
         when:
-        new DataApiRequest().generateFilters("undefined|id-in:[US,India],locale.id-eq:[5]", table, dimensionDict)
+        new DataApiRequest().generateFilters("undefined|id-in[US,India],locale|id-eq[5]", table, dimensionDict)
 
         then:
         Exception e = thrown(BadApiRequestException)
@@ -157,7 +158,9 @@ class DataApiRequestFilterSpec extends Specification {
     def "check invalid syntax creates error"() {
         setup:
         // Split for filter splits to ],.  Everything before this is included in bad error.
-        String expectedMessage = ErrorMessageFormat.FILTER_INVALID.format('locale.id-in[US,India]')
+        String expectedMessage = ErrorMessageFormat.FILTER_INVALID_WITH_DETAIL.format(
+            'locale.id-in[US,India],locale.id-eq[5]',
+            "line 1:6 token recognition error at: '.'")
         when:
         new DataApiRequest().generateFilters("locale.id-in[US,India],locale.id-eq[5]", table, dimensionDict)
 
@@ -169,10 +172,10 @@ class DataApiRequestFilterSpec extends Specification {
     def "check invalid field value creates error"() {
         setup:
         String filter = "locale|id-in[,India]"
-        // Split for filter splits to ],.  Everything before this is included in bad error.
-        String error = String.format(FilterTokenizer.PARSING_FAILURE_UNQOUTED_VALUES_FORMAT, ',India')
 
-        String expectedMessage = ErrorMessageFormat.FILTER_ERROR.format(filter, error)
+        String expectedMessage = ErrorMessageFormat.FILTER_INVALID_WITH_DETAIL.format(
+            'locale|id-in[,India]',
+            "line 1:13 extraneous input ',' expecting VALUE")
         when:
         new DataApiRequest().generateFilters(filter, table, dimensionDict)
 
@@ -184,7 +187,9 @@ class DataApiRequestFilterSpec extends Specification {
     def "check invalid operator creates error"() {
         setup:
         // Split for filter splits to ],.  Everything before this is included in bad error.
-        String expectedMessage = ErrorMessageFormat.FILTER_OPERATOR_INVALID.format('in:')
+        String expectedMessage = ErrorMessageFormat.FILTER_INVALID_WITH_DETAIL.format(
+            'locale|id-in:[US,India],locale.id-eq[5]',
+            "line 1:12 token recognition error at: ':'")
         when:
         new DataApiRequest().generateFilters("locale|id-in:[US,India],locale.id-eq[5]", table, dimensionDict)
 

@@ -38,7 +38,7 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
 
         then:
         Exception e = thrown(BadApiRequestException)
-        e.message == "Filter expression 'country|id-in[US,IN]property|id-in[14,125]' is invalid."
+        e.message == "Filter expression 'country|id-in[US,IN]property|id-in[14,125]' is invalid. (line 1:20 mismatched input 'property' expecting {<EOF>, COMMA})"
 
     }
 

@@ -2,28 +2,28 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web;
 
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_DIMENSION_NOT_IN_TABLE;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_DIMENSION_UNDEFINED;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_ERROR;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_FIELD_NOT_IN_DIMENSIONS;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_INVALID;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_OPERATOR_INVALID;
+import com.yahoo.bard.webservice.web.filterparser.ApiFilterListener;
+import com.yahoo.bard.webservice.web.filterparser.FiltersLex;
+import com.yahoo.bard.webservice.web.filterparser.FiltersParser;
+
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_INVALID_WITH_DETAIL;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.table.LogicalTable;
-import com.yahoo.bard.webservice.util.FilterTokenizer;
+import com.yahoo.bard.webservice.util.ExceptionErrorListener;
 
+import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.validation.constraints.NotNull;
 
@@ -113,74 +113,31 @@ public class ApiFilter {
     ) throws BadFilterException {
         LOG.trace("Filter query: {}\n\n DimensionDictionary: {}", filterQuery, dimensionDictionary);
 
-        /*  url filter query pattern:  (dimension name)|(field name)-(operation)[?(value or comma separated values)]?
-         *
-         *  e.g.    locale|name-in[US,India]
-         *          locale|id-eq[5]
-         *
-         *          dimension name: locale      locale
-         *          field name:     name        id
-         *          operation:      in          eq
-         *          values:         US,India    5
-         */
-        Pattern pattern = Pattern.compile("([^\\|]+)\\|([^-]+)-([^\\[]+)\\[([^\\]]+)\\]?");
-        Matcher matcher = pattern.matcher(filterQuery);
+        ApiFilterListener apiFilterExtractor = new ApiFilterListener(table, dimensionDictionary);
 
-        // if pattern match found, extract values else throw exception
-        if (!matcher.matches()) {
-            LOG.debug(FILTER_INVALID.logFormat(filterQuery));
-            throw new BadFilterException(FILTER_INVALID.format(filterQuery));
-        }
+        ANTLRInputStream input = new ANTLRInputStream(filterQuery);
+        FiltersLex lexer = new FiltersLex(input);
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(ExceptionErrorListener.INSTANCE);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        FiltersParser parser = new FiltersParser(tokens);
+        parser.removeErrorListeners();
+        parser.addErrorListener(ExceptionErrorListener.INSTANCE);
 
         try {
-            // Extract filter dimension form the filter query.
-            String filterDimensionName = matcher.group(1);
-            this.dimension = dimensionDictionary.findByApiName(filterDimensionName);
-
-            // If no filter dimension is found in dimension dictionary throw exception.
-            if (dimension == null) {
-                LOG.debug(FILTER_DIMENSION_UNDEFINED.logFormat(filterDimensionName));
-                throw new BadFilterException(FILTER_DIMENSION_UNDEFINED.format(filterDimensionName));
-            }
-
-            // If there is a logical table and the filter is not part of it, throw exception.
-            if (table != null && !table.getDimensions().contains(dimension)) {
-                LOG.debug(FILTER_DIMENSION_NOT_IN_TABLE.logFormat(filterDimensionName, table));
-                throw new BadFilterException(
-                        FILTER_DIMENSION_NOT_IN_TABLE.format(filterDimensionName, table.getName())
-                );
-            }
-
-            String dimensionFieldName = matcher.group(2);
-            try {
-                this.dimensionField = this.dimension.getFieldByName(dimensionFieldName);
-            } catch (IllegalArgumentException ignored) {
-                LOG.debug(FILTER_FIELD_NOT_IN_DIMENSIONS.logFormat(dimensionFieldName, filterDimensionName));
-                throw new BadFilterException(
-                        FILTER_FIELD_NOT_IN_DIMENSIONS.format(dimensionFieldName, filterDimensionName)
-                );
-            }
-            String operationName = matcher.group(3);
-            try {
-                this.operation = FilterOperation.valueOf(operationName);
-            } catch (IllegalArgumentException ignored) {
-                LOG.debug(FILTER_OPERATOR_INVALID.logFormat(operationName));
-                throw new BadFilterException(FILTER_OPERATOR_INVALID.format(operationName));
-            }
-
-            // replaceAll takes care of any leading ['s or trailing ]'s which might mess up this.values
-            this.values = new LinkedHashSet<>(
-                    FilterTokenizer.split(
-                            matcher.group(4)
-                                    .replaceAll("\\[", "")
-                                    .replaceAll("\\]", "")
-                                    .trim()
-                    )
-            );
-        } catch (IllegalArgumentException e) {
-            LOG.debug(FILTER_ERROR.logFormat(filterQuery, e.getMessage()), e);
-            throw new BadFilterException(FILTER_ERROR.format(filterQuery, e.getMessage()), e);
+            FiltersParser.FilterContext tree = parser.filter();
+            ParseTreeWalker.DEFAULT.walk(apiFilterExtractor, tree);
+        } catch (ParseCancellationException ex) {
+            LOG.debug(FILTER_INVALID_WITH_DETAIL.logFormat(filterQuery, ex.getMessage()));
+            throw new BadFilterException(
+                            FILTER_INVALID_WITH_DETAIL.format(filterQuery, ex.getMessage()),
+                            ex.getCause());
         }
+
+        this.dimension = apiFilterExtractor.getDimension();
+        this.dimensionField = apiFilterExtractor.getDimensionField();
+        this.operation = apiFilterExtractor.getOperation();
+        this.values = apiFilterExtractor.getValues();
     }
 
     public Dimension getDimension() {

@@ -48,11 +48,17 @@
                         <phase>generate-test-resources</phase>
                         <configuration>
                             <tasks>
-                                <exec
-                                    dir="${project.basedir}/src/test/scripts"
-                                    executable="./prepjars.bash"
-                                    failonerror="true">
-                                </exec>
+                                <delete 
+                                    quiet="true"
+                                    file="${project.build.directory}/moduleJars"/>
+                                <mkdir 
+                                    dir="${project.build.directory}/moduleJars/jars"/>
+                                <jar
+                                    destfile="${project.build.directory}/moduleJars/jars/fili-system-config-test1.jar"
+                                    basedir="${project.basedir}/src/test/resources/jar1-contents"/>
+                                <jar
+                                    destfile="${project.build.directory}/moduleJars/jars/fili-system-config-test2.jar"
+                                    basedir="${project.basedir}/src/test/resources/jar2-contents"/>
                             </tasks>
                         </configuration>
                         <goals>
@@ -62,15 +68,35 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.12</version>
+                <executions>
+                    <execution>
+                        <id>moduleJars</id>
+                        <goals>
+                            <goal>add-test-resource</goal>
+                        </goals>
+                        <configuration> 
+                            <resources>
+                                <resource>
+                                    <directory>target/moduleJars</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <additionalClasspathElements>
                         <!-- One set of paths makes maven happy, the other set makes the IDE happy -->
-                        <additionalClasspathElement>${basedir}/src/test/resources/jars/fili-system-config-test1.jar</additionalClasspathElement>
-                        <additionalClasspathElement>${basedir}/src/test/resources/jars/fili-system-config-test2.jar</additionalClasspathElement>
-                        <additionalClasspathElement>src/test/resources/jars/fili-system-config-test1.jar</additionalClasspathElement>
-                        <additionalClasspathElement>src/test/resources/jars/fili-system-config-test2.jar</additionalClasspathElement>
+                        <additionalClasspathElement>${basedir}/target/moduleJars/jars/fili-system-config-test1.jar</additionalClasspathElement>
+                        <additionalClasspathElement>${basedir}/target/moduleJars/jars/fili-system-config-test2.jar</additionalClasspathElement>
+                        <additionalClasspathElement>target/moduleJars/jars/fili-system-config-test1.jar</additionalClasspathElement>
+                        <additionalClasspathElement>target/moduleJars/jars/fili-system-config-test2.jar</additionalClasspathElement>
                     </additionalClasspathElements>
                 </configuration>
             </plugin>

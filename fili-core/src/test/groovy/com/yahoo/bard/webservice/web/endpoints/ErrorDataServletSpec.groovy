@@ -7,7 +7,7 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.ACCEPT_FORMAT_INVALID
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSIONS_NOT_IN_TABLE
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSIONS_UNDEFINED
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_INVALID
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_INVALID_WITH_DETAIL
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTEGER_INVALID
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTERVAL_INVALID
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTERVAL_MISSING
@@ -369,7 +369,7 @@ class ErrorDataServletSpec extends Specification {
 
     def "Bad filter fails"() {
 
-        String message = FILTER_INVALID.format("bad")
+        String message = FILTER_INVALID_WITH_DETAIL.format("bad","line 1:3 mismatched input '<EOF>' expecting '|'")
 
         String jsonFailure =
                 """{"status":400,

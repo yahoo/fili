@@ -76,6 +76,7 @@ public enum ErrorMessageFormat implements MessageFormatter {
     ACCEPT_FORMAT_INVALID("Format '%s' is unknown. Choose from 'csv', 'json'."),
 
     FILTER_INVALID("Filter expression '%s' is invalid."),
+    FILTER_INVALID_WITH_DETAIL("Filter expression '%s' is invalid. (%s)"),
     FILTER_ERROR("Filter expression '%s' resulted in the following error: %s."),
     FILTER_DIMENSION_UNDEFINED("Filter dimension '%s' does not exist."),
     FILTER_DIMENSION_NOT_IN_TABLE("Filter dimension '%s' is not supported by the table '%s'."),

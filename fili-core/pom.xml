@@ -223,6 +223,13 @@
             <groupId>org.apache.avro</groupId>
             <artifactId>avro</artifactId>
         </dependency>
+        
+        <!-- ANTLR Runtime -->
+        <dependency>
+             <groupId>org.antlr</groupId>
+             <artifactId>antlr4-runtime</artifactId>
+             <version>4.6</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -351,6 +358,19 @@
                     <execution>
                         <goals>
                             <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4-maven-plugin</artifactId>
+                <version>4.6</version>
+                <executions>
+                    <execution>
+                        <id>antlr</id>
+                        <goals>
+                            <goal>antlr4</goal>
                         </goals>
                     </execution>
                 </executions>

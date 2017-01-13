@@ -6,6 +6,7 @@ import static com.yahoo.bard.webservice.util.DateTimeFormatterFactory.FULLY_OPTI
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSIONS_NOT_IN_TABLE;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSIONS_UNDEFINED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSION_FIELDS_UNDEFINED;
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_INVALID_WITH_DETAIL;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.HAVING_METRICS_NOT_IN_QUERY_FORMAT;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INCORRECT_METRIC_FILTER_FORMAT;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTEGER_INVALID;
@@ -50,10 +51,18 @@ import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.TableIdentifier;
+import com.yahoo.bard.webservice.util.ExceptionErrorListener;
 import com.yahoo.bard.webservice.util.StreamUtils;
+import com.yahoo.bard.webservice.web.filterparser.ApiFiltersListListener;
+import com.yahoo.bard.webservice.web.filterparser.FiltersLex;
+import com.yahoo.bard.webservice.web.filterparser.FiltersParser;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
+import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
@@ -992,45 +1001,39 @@ public class DataApiRequest extends ApiRequest {
         RequestLog.startTiming("GeneratingFilters");
         try {
             LOG.trace("Dimension Dictionary: {}", dimensionDictionary);
-            // Set of filter objects
-            Map<Dimension, Set<ApiFilter>> generated = new LinkedHashMap<>();
 
-            // Filters are optional hence check if filters are requested.
-            if (filterQuery == null || "".equals(filterQuery)) {
-                return generated;
+            if (filterQuery == null) {
+                return Collections.emptyMap();
             }
 
-            // split on '],' to get list of filters
-            List<String> apiFilters = Arrays.asList(filterQuery.split(COMMA_AFTER_BRACKET_PATTERN));
-            for (String apiFilter : apiFilters) {
-                ApiFilter newFilter;
+            ApiFiltersListListener apiFiltersExtractor = new ApiFiltersListListener(table, dimensionDictionary);
+
+            ANTLRInputStream input = new ANTLRInputStream(filterQuery);
+            FiltersLex lexer = new FiltersLex(input);
+            lexer.removeErrorListeners();
+            lexer.addErrorListener(ExceptionErrorListener.INSTANCE);
+            CommonTokenStream tokens = new CommonTokenStream(lexer);
+            FiltersParser parser = new FiltersParser(tokens);
+            parser.removeErrorListeners();
+            parser.addErrorListener(ExceptionErrorListener.INSTANCE);
+
+            try {
                 try {
-                    newFilter = new ApiFilter(apiFilter, table, dimensionDictionary);
-                } catch (BadFilterException filterException) {
-                    throw new BadApiRequestException(filterException.getMessage(), filterException);
+                    FiltersParser.FiltersContext tree = parser.filters();
+                    ParseTreeWalker.DEFAULT.walk(apiFiltersExtractor, tree);
+                } catch (ParseCancellationException ex) {
+                    LOG.debug(FILTER_INVALID_WITH_DETAIL.logFormat(filterQuery, ex.getMessage()));
+                    throw new BadFilterException(
+                                    FILTER_INVALID_WITH_DETAIL.format(filterQuery, ex.getMessage()),
+                                    ex.getCause());
                 }
 
-                if (!BardFeatureFlag.DATA_FILTER_SUBSTRING_OPERATIONS.isOn()) {
-                    FilterOperation filterOperation = newFilter.getOperation();
-                    if (filterOperation.equals(FilterOperation.startswith)
-                            || filterOperation.equals(FilterOperation.contains)
-                            ) {
-                        throw new BadApiRequestException(
-                                ErrorMessageFormat.FILTER_SUBSTRING_OPERATIONS_DISABLED.format()
-                        );
-
-                    }
-                }
-                Dimension dim = newFilter.getDimension();
-                if (!generated.containsKey(dim)) {
-                    generated.put(dim, new LinkedHashSet<>());
-                }
-                Set<ApiFilter> filterSet = generated.get(dim);
-                filterSet.add(newFilter);
+                Map<Dimension, Set<ApiFilter>> results = apiFiltersExtractor.getDimensionFiltersMap();
+                LOG.trace("Generated map of filters: {}", results);
+                return results;
+            } catch (BadFilterException filterException) {
+                throw new BadApiRequestException(filterException.getMessage(), filterException);
             }
-            LOG.trace("Generated map of filters: {}", generated);
-
-            return generated;
         } finally {
             RequestLog.stopTiming("GeneratingFilters");
         }
