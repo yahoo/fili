@@ -385,7 +385,7 @@ public class DimensionsServlet extends EndpointServlet {
         resultRow.put("name", dimension.getApiName());
         resultRow.put("longName", dimension.getLongName());
         resultRow.put("description", dimension.getDescription());
-        resultRow.put("fields", getDimensionFieldListSummaryView(dimension.getDimensionFields()));
+        resultRow.put("fields", dimension.getDimensionFields());
         resultRow.put("values", getDimensionValuesUrl(dimension, uriInfo));
         resultRow.put("cardinality", dimension.getCardinality());
         resultRow.put(
@@ -404,7 +404,10 @@ public class DimensionsServlet extends EndpointServlet {
      * @param dimensionFields  Collection of dimension fields to get the summary view for
      *
      * @return Summary list view of the dimension fields
+     *
+     * @deprecated should be private, now the internal usage need is gone, will deprecate in case someone is using it
      */
+    @Deprecated
     public static Set<Map<String, String>> getDimensionFieldListSummaryView(
             Collection<DimensionField> dimensionFields
     ) {
@@ -419,7 +422,10 @@ public class DimensionsServlet extends EndpointServlet {
      * @param dimensionField  Dimension Field to get the view of
      *
      * @return Summary view of the dimension field
+     *
+     * @deprecated should be private, now the internal usage need is gone, will deprecate in case someone is using it
      */
+    @Deprecated
     public static Map<String, String> getDimensionFieldSummaryView(DimensionField dimensionField) {
         Map<String, String> resultRow = new LinkedHashMap<>();
         resultRow.put("name", dimensionField.getName());

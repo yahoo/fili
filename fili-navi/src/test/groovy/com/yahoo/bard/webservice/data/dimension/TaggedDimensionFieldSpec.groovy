@@ -31,7 +31,6 @@ class TaggedDimensionFieldSpec extends Specification {
         dimensionField1.getDescription() == "testPrimaryKey description"
         dimensionField1.getTags() == [PRIMARY_KEY]
         dimensionField2.getTags() == []
-
     }
 
     def "Tagged dimension fields serialize as expected"() {

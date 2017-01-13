@@ -9,6 +9,11 @@ Current
 -------
 
 ### Added:
+
+- [Dimension Field Tagging and Dynamic Dimension Field Serilization](https://github.com/yahoo/fili/pull/137)
+    * Added a new module `fili-navi` for components added to support for Navi
+    * Added `TaggedDimensionField` and related components in `fili-navi`
+
 - [Added RegisteredLookupDimension and RegisteredLookupExtractionFunction](https://github.com/yahoo/fili/pull/132)
     * Added support for druid's RegisteredLookup by adding `RegisteredLookupDimension` and `RegisteredLookupExtractionFunction`
     * Added test for `RegisteredLookupDimension` serialization in `RegisteredLookupDimensionToDimensionSpecSpec`
@@ -43,6 +48,9 @@ Current
     * Code to automatically test module is correctly configured.
 
 ### Changed:
+
+- [Dimension Field Tagging and Dynamic Dimension Field Serilization](https://github.com/yahoo/fili/pull/137)
+    * Changed `fili-core` dimension endpoint `DimensionField` serialization strategy from hard coded static attributes to dynamic serialization based on `jackson` serializer
 
 - [MetricMaker cleanup and simplification](https://github.com/yahoo/fili/pull/127)
     * Simplified raw aggregation makers
@@ -174,7 +182,11 @@ Current
 
 ### Deprecated:
 
-- [Moved to static implementations for numeric and sketch coercion helper methods](https://github.com/yahoo/fili/pull/128) 
+- [Dimension Field Tagging and Dynamic Dimension Field Serilization](https://github.com/yahoo/fili/pull/137)
+    * Deprecated `DimensionsServlet::getDimensionFieldListSummaryView` and `DimensionsServlet::getDimensionFieldSummaryView`
+    since there is no need for it anymore due to the change in serialization of `DimensionField`
+
+- [Moved to static implementations for numeric and sketch coercion helper methods](https://github.com/yahoo/fili/pull/128)
     * `MetricMaker.getSketchField(String fieldName)` rather use `MetricMaker.getSketchField(MetricField field)`
     * `MetricMaker.getNumericField(String fieldName)` rather use `MetricMaker.getNumericField(MetricField field)`
 
