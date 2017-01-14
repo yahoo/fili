@@ -6,14 +6,14 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.YEAR
 import static org.joda.time.DateTimeZone.UTC
 
+import com.yahoo.bard.webservice.data.dimension.DimensionColumn
+import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
-
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
-
 import com.yahoo.bard.webservice.metadata.SegmentMetadata
 
 import org.joda.time.Interval
@@ -40,7 +40,7 @@ class PhysicalTableSpec extends Specification {
     @Shared Dimension dimension
 
     def setupSpec() {
-        physicalTable = new PhysicalTable("test table", DAY.buildZonedTimeGrain(UTC), ['dimension':'druidDim'])
+        physicalTable = new ConcretePhysicalTable("test table", [] as Set, DAY.buildZonedTimeGrain(UTC), ['dimension':'druidDim'])
         dimension = new KeyValueStoreDimension("dimension", null, [BardDimensionField.ID] as LinkedHashSet, MapStoreManager.getInstance("dimension"), ScanSearchProviderManager.getInstance("apiProduct"))
         dimensionDictionary = new DimensionDictionary([dimension] as Set)
 
@@ -98,7 +98,7 @@ class PhysicalTableSpec extends Specification {
             [:]
             )
         when:
-        table = new PhysicalTable(name, YEAR.buildZonedTimeGrain(UTC), ["dimension":"druidDim"])
+        table = new ConcretePhysicalTable(name, [] as Set, YEAR.buildZonedTimeGrain(UTC), ["dimension":"druidDim"])
 
         then:
         table.availableIntervalsRef.get() != null
@@ -153,8 +153,18 @@ class PhysicalTableSpec extends Specification {
 
     def "test physical to logical mapping is constructed correctly"() {
         setup:
-        PhysicalTable oneDimPhysicalTable = new PhysicalTable("test table", DAY.buildZonedTimeGrain(UTC), ['dimension':'druidDim'])
-        PhysicalTable twoDimPhysicalTable = new PhysicalTable("test table", DAY.buildZonedTimeGrain(UTC), ['dimension1':'druidDim', 'dimension2':'druidDim'])
+        PhysicalTable oneDimPhysicalTable = new ConcretePhysicalTable(
+                "test table",
+                [] as Set,
+                DAY.buildZonedTimeGrain(UTC),
+                ['dimension': 'druidDim']
+        )
+        PhysicalTable twoDimPhysicalTable = new ConcretePhysicalTable(
+                "test table",
+                [] as Set,
+                DAY.buildZonedTimeGrain(UTC),
+                ['dimension1': 'druidDim', 'dimension2': 'druidDim']
+        )
 
         expect:
         oneDimPhysicalTable.getLogicalColumnNames('druidDim') == ['dimension'] as Set

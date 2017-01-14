@@ -1,30 +1,29 @@
 // Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.rfc.table;
+package com.yahoo.bard.webservice.table;
 
-import com.yahoo.bard.rfc.data.dimension.DimensionColumn;
+import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricColumn;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
-import com.yahoo.bard.webservice.table.Column;
-import com.yahoo.bard.webservice.table.TableGroup;
 
-import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public class LogicalTableSchema extends LinkedHashSet<Column> implements Schema  {
+public class LogicalTableSchema extends BaseSchema  {
 
     public LogicalTableSchema(TableGroup tableGroup, MetricDictionary metricDictionary) {
-        addAll(
+        super(toColumns(tableGroup, metricDictionary));
+    }
+
+    private static Set<Column> toColumns(TableGroup tableGroup, MetricDictionary metricDictionary) {
+        return Stream.concat(
                 tableGroup.getDimensions().stream()
-                        .map(DimensionColumn::new)
-                        .collect(Collectors.toSet())
-        );
-        addAll(
+                .map(DimensionColumn::new),
                 tableGroup.getApiMetricNames().stream()
                         .map(ApiMetricName::getApiName)
-                        .map(name -> new LogicalMetricColumn(name, metricDictionary.get(name)))
-                        .collect(Collectors.toSet())
-        );
+                .map(name -> new LogicalMetricColumn(name, metricDictionary.get(name)))
+        ).collect(Collectors.toSet());
     }
 }

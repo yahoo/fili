@@ -6,15 +6,17 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
 import com.yahoo.bard.webservice.data.Result
 import com.yahoo.bard.webservice.data.ResultSet
+import com.yahoo.bard.webservice.data.ResultSetSchema
 import com.yahoo.bard.webservice.data.config.names.TestApiMetricName
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
-
+import com.yahoo.bard.webservice.data.dimension.DimensionColumn
 import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.DimensionRow
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
+import com.yahoo.bard.webservice.data.metric.MetricColumn
 
 import org.joda.time.DateTime
 
@@ -29,9 +31,8 @@ class RowNumMapperSpec extends Specification {
         /**
          * Create a dummy schema and add dummy metric columns to it
          */
-        Schema schema = new Schema(DAY)
-        MetricColumn mc1 = MetricColumn.addNewMetricColumn(schema, "m1")
-        MetricColumn mc2 = MetricColumn.addNewMetricColumn(schema, "m2")
+        MetricColumn mc1 = new MetricColumn("m1")
+        MetricColumn mc2 = new MetricColumn("m2")
 
         // Initialize dummy metric values as a map of metric column and its value
         LinkedHashMap<MetricColumn, BigDecimal> mv1 = new LinkedHashMap<>()
@@ -48,8 +49,11 @@ class RowNumMapperSpec extends Specification {
         Dimension d2 = new KeyValueStoreDimension("d2", "d2-desc", dimensionFields, MapStoreManager.getInstance("d2"), ScanSearchProviderManager.getInstance("d2"))
 
         // Add dimension columns to the dummy schema created earlier
-        DimensionColumn dc1 = DimensionColumn.addNewDimensionColumn(schema, d1)
-        DimensionColumn dc2 = DimensionColumn.addNewDimensionColumn(schema, d2)
+        DimensionColumn dc1 = new DimensionColumn(d1)
+        DimensionColumn dc2 = new DimensionColumn(d2)
+
+        ResultSetSchema schema = new ResultSetSchema([mc1, mc2, dc1, dc2] as Set, DAY)
+
 
         // Create dummy DimensionRow's
         DimensionRow dr1 = BardDimensionField.makeDimensionRow(d1, "id1", "desc1")

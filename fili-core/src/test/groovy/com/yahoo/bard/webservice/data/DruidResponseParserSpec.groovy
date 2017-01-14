@@ -4,9 +4,9 @@ package com.yahoo.bard.webservice.data
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
-import com.yahoo.bard.rfc.data.dimension.DimensionColumn
-import com.yahoo.bard.rfc.table.MetricColumn
-import com.yahoo.bard.rfc.table.Schema
+import com.yahoo.bard.webservice.data.dimension.DimensionColumn
+import com.yahoo.bard.webservice.data.metric.MetricColumn
+import com.yahoo.bard.webservice.table.Schema
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.dimension.DimensionField

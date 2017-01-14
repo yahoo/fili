@@ -5,8 +5,7 @@ package com.yahoo.bard.webservice.metadata;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DRUID_METADATA_READ_ERROR;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 
-import com.yahoo.bard.rfc.table.ConcretePhysicalTable;
-import com.yahoo.bard.rfc.table.PhysicalTable;
+import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.application.Loader;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;

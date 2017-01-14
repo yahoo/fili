@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.druid.model.query
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
+import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionField
@@ -43,7 +44,7 @@ class TopNQuerySpec extends Specification {
 
     TopNQuery defaultQuery(Map vars) {
 
-        vars.dataSource = vars.dataSource ?: new TableDataSource<TopNQuery>(new PhysicalTable("table_name", DAY.buildZonedTimeGrain(DateTimeZone.UTC), ["apiLocale": "locale"]))
+        vars.dataSource = vars.dataSource ?: new TableDataSource<TopNQuery>(new ConcretePhysicalTable("table_name", [] as Set, DAY.buildZonedTimeGrain(DateTimeZone.UTC), ["apiLocale": "locale"]))
         vars.dimension = vars.dimension ?: ""
         vars.threshold = vars.threshold ?: 5
         vars.granularity = vars.granularity ?: DAY

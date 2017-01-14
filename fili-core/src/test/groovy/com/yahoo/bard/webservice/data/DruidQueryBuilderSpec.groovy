@@ -28,7 +28,8 @@ import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery
 import com.yahoo.bard.webservice.druid.model.query.TopNQuery
-
+import com.yahoo.bard.webservice.table.ConcretePhysicalTable
+import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.resolver.DefaultPhysicalTableResolver
 import com.yahoo.bard.webservice.web.ApiFilter
 import com.yahoo.bard.webservice.web.ApiHaving
@@ -129,7 +130,7 @@ class DruidQueryBuilderSpec extends Specification {
     def "Test recursive buildQueryMethods"() {
         setup:
         Set apiSet = (["abie1234", "abde1129"].collect() { apiFilters.get(it) }) as Set
-        PhysicalTable tab = new PhysicalTable("tab1", DAY.buildZonedTimeGrain(UTC), [:])
+        PhysicalTable tab = new ConcretePhysicalTable("tab1", [] as Set, DAY.buildZonedTimeGrain(UTC), [:])
         Filter filter = FILTER_BUILDER.buildFilters([(resources.d3): apiSet])
         ZonedTimeGrain granularity = WEEK.buildZonedTimeGrain(UTC)
         Set dimension = [resources.d1] as Set
@@ -224,7 +225,7 @@ class DruidQueryBuilderSpec extends Specification {
 
         when:
         Set apiSet = (["abie1234", "abde1129"].collect() { apiFilters.get(it) }) as Set
-        PhysicalTable tab = new PhysicalTable("tab1", DAY.buildZonedTimeGrain(UTC), [:])
+        PhysicalTable tab = new ConcretePhysicalTable("tab1", [] as Set, DAY.buildZonedTimeGrain(UTC), [:])
         Filter filter = FILTER_BUILDER.buildFilters([(resources.d3): apiSet])
         ZonedTimeGrain granularity = YEAR.buildZonedTimeGrain(UTC)
         TemplateDruidQuery simpleQuery = resources.simpleTemplateWithGrainQuery

@@ -4,8 +4,8 @@ package com.yahoo.bard.webservice.data;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TOP_N_UNSORTED;
 
-import com.yahoo.bard.rfc.table.ConcretePhysicalTable;
-import com.yahoo.bard.rfc.table.PhysicalTable;
+import com.yahoo.bard.webservice.table.ConcretePhysicalTable;
+import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.config.BardFeatureFlag;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionRowNotFoundException;

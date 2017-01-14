@@ -2,11 +2,11 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.table;
 
-import com.yahoo.bard.rfc.data.dimension.DimensionColumn;
-import com.yahoo.bard.rfc.table.ConcretePhysicalTable;
-import com.yahoo.bard.rfc.table.MetricColumn;
-import com.yahoo.bard.rfc.table.PhysicalTable;
-import com.yahoo.bard.rfc.table.PhysicalTableSchema;
+import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
+import com.yahoo.bard.webservice.table.ConcretePhysicalTable;
+import com.yahoo.bard.webservice.data.metric.MetricColumn;
+import com.yahoo.bard.webservice.table.PhysicalTable;
+import com.yahoo.bard.webservice.table.Schema;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
@@ -113,7 +113,8 @@ public abstract class BaseTableLoader implements TableLoader {
         //Derive the logical dimensions by taking the union of all the physical dimensions
         Set<Dimension> dimensions = physicalTables.stream()
                 .map(PhysicalTable::getSchema)
-                .flatMap(PhysicalTableSchema::stream)
+                .map(Schema::getColumns)
+                .flatMap(Set::stream)
                 .filter(column -> column instanceof DimensionColumn)
                 .map(column -> (DimensionColumn) column)
                 .map(DimensionColumn::getDimension)

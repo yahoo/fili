@@ -15,7 +15,7 @@ import com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchSetOperati
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
-
+import com.yahoo.bard.webservice.data.dimension.DimensionColumn
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
@@ -23,7 +23,7 @@ import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.LogicalMetricColumn
-
+import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
@@ -35,8 +35,9 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationP
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchSetOperationPostAggregation
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
 import com.yahoo.bard.webservice.druid.util.ThetaSketchFieldConverter
+import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.table.LogicalTable
-
+import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.TableGroup
 
 import org.json.JSONArray
@@ -99,7 +100,7 @@ class ThetaSketchIntersectionReportingResources extends Specification {
         dimensionDict = new DimensionDictionary()
         dimensionDict.addAll([propertyDim, countryDim])
 
-        PhysicalTable physicalTable = new PhysicalTable("NETWORK", DAY.buildZonedTimeGrain(UTC), ["property":"property", "country":"country"])
+        PhysicalTable physicalTable = new ConcretePhysicalTable("NETWORK", [] as Set, DAY.buildZonedTimeGrain(UTC), ["property":"property", "country":"country"])
 
         //added dimensions to the physical table
         [propertyDim, countryDim].each {

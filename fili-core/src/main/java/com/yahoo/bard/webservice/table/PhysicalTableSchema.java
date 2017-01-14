@@ -1,22 +1,20 @@
 // Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.rfc.table;
+package com.yahoo.bard.webservice.table;
 
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
-import com.yahoo.bard.webservice.table.Column;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
-public class PhysicalTableSchema extends LinkedHashSet<Column> implements GranularSchema {
+public class PhysicalTableSchema extends BaseSchema implements GranularSchema {
 
     private static final Logger LOG = LoggerFactory.getLogger(PhysicalTableSchema.class);
 
@@ -36,6 +34,7 @@ public class PhysicalTableSchema extends LinkedHashSet<Column> implements Granul
             @NotNull ZonedTimeGrain timeGrain,
             @NotNull Map<String, String> logicalToPhysicalColumnNames
     ) {
+        super(columns);
         this.granularity = timeGrain;
 
         this.logicalToPhysicalColumnNames = Collections.unmodifiableMap(logicalToPhysicalColumnNames);
@@ -47,7 +46,6 @@ public class PhysicalTableSchema extends LinkedHashSet<Column> implements Granul
                         )
                 )
         );
-        addAll(columns);
     }
 
     /**

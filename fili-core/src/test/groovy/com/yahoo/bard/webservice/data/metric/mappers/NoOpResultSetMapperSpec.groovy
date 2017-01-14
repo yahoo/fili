@@ -4,10 +4,12 @@ package com.yahoo.bard.webservice.data.metric.mappers
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
+import com.yahoo.bard.webservice.data.dimension.DimensionColumn
+import com.yahoo.bard.webservice.data.metric.MetricColumn
+import com.yahoo.bard.webservice.data.ResultSetSchema
 import com.yahoo.bard.webservice.data.Result
 import com.yahoo.bard.webservice.data.ResultSet
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
-
 import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.DimensionRow
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
@@ -52,7 +54,7 @@ class NoOpResultSetMapperSpec extends Specification {
 
         Result rs2 = new Result(dimensionRows2, metricValues2, DateTime.now())
 
-        Schema schema = new Schema(DAY)
+        ResultSetSchema schema = new ResultSetSchema(Collections.emptySet(), DAY)
 
         ResultSet resultSet = new ResultSet([rs1, rs2], schema)
 

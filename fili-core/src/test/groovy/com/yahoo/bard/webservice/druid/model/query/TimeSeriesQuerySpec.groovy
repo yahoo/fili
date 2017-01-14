@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.druid.model.query
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
+import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
@@ -37,7 +38,7 @@ class TimeSeriesQuerySpec extends Specification {
 
     TimeSeriesQuery defaultQuery(Map vars) {
 
-        vars.dataSource = vars.dataSource ?: new TableDataSource(new PhysicalTable("table_name", DAY.buildZonedTimeGrain(DateTimeZone.UTC), [:]))
+        vars.dataSource = vars.dataSource ?: new TableDataSource(new ConcretePhysicalTable("table_name", [] as Set, DAY.buildZonedTimeGrain(DateTimeZone.UTC), [:]))
         vars.granularity = vars.granularity ?: DAY
         vars.filter = vars.filter ?: null
         vars.having = vars.having ?: null

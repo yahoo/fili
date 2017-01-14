@@ -8,7 +8,7 @@ import static com.yahoo.bard.webservice.data.config.names.TestApiDimensionName.S
 import static com.yahoo.bard.webservice.data.config.names.TestDruidTableName.HOURLY;
 import static com.yahoo.bard.webservice.data.config.names.TestDruidTableName.MONTHLY;
 
-import com.yahoo.bard.rfc.table.PhysicalTable;
+import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField;
 import com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobRowBuilder;
 import com.yahoo.bard.webservice.async.jobs.jobrows.JobRowBuilder;

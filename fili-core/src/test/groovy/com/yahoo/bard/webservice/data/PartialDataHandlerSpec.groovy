@@ -16,7 +16,8 @@ import com.yahoo.bard.webservice.druid.model.query.AllGranularity
 import com.yahoo.bard.webservice.druid.model.query.Granularity
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.metadata.SegmentMetadata
-
+import com.yahoo.bard.webservice.table.ConcretePhysicalTable
+import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 import com.yahoo.bard.webservice.web.DataApiRequest
 
@@ -34,7 +35,7 @@ class PartialDataHandlerSpec extends Specification {
     static boolean originalConfig = PERMISSIVE_COLUMN_AVAILABILITY.isOn()
 
     Dimension dim1, dim2, dim3
-    Set<PhysicalTable> tables = [new PhysicalTable("basefact_network", DAY.buildZonedTimeGrain(UTC), ["userDeviceType" : "user_device_type"])] as Set
+    Set<PhysicalTable> tables = [new ConcretePhysicalTable("basefact_network", [] as Set, DAY.buildZonedTimeGrain(UTC), ["userDeviceType": "user_device_type"])] as Set
     Set<String> columnNames
 
     GroupByQuery groupByQuery = Mock(GroupByQuery.class)
@@ -68,7 +69,16 @@ class PartialDataHandlerSpec extends Specification {
 
         // setup mock inner query
         GroupByQuery innerQuery = Mock(GroupByQuery.class)
-        innerQuery.getDataSource() >> { new TableDataSource(new PhysicalTable("basefact_network", DAY.buildZonedTimeGrain(UTC), ["userDeviceType":"user_device_type"])) }
+        innerQuery.getDataSource() >> {
+            new TableDataSource(
+                    new ConcretePhysicalTable(
+                            "basefact_network",
+                            [] as Set,
+                            DAY.buildZonedTimeGrain(UTC),
+                            ["userDeviceType": "user_device_type"]
+                    )
+            )
+        }
         innerQuery.getDependentFieldNames() >> { ["page_views"] as Set }
 
         groupByQuery.getGranularity() >> WEEK

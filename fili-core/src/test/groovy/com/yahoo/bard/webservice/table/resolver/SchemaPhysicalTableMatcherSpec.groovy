@@ -5,20 +5,19 @@ package com.yahoo.bard.webservice.table.resolver
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static org.joda.time.DateTimeZone.UTC
 
-import com.yahoo.bard.webservice.data.dimension.DimensionField
-import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
-import com.yahoo.bard.webservice.data.dimension.Dimension
-
+import com.yahoo.bard.webservice.table.ConcretePhysicalTable
+import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
+import com.yahoo.bard.webservice.data.dimension.Dimension
+import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
+import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
-
 import com.yahoo.bard.webservice.web.DataApiRequest
 
 import spock.lang.Specification
-
 /**
  *  Tests for methods in SchemaPhysicalTableMatcherSpec
  */
@@ -34,12 +33,6 @@ class SchemaPhysicalTableMatcherSpec extends Specification {
 
     def setup() {
         // table containing a logical name for a dimension same as physical name for other dimension
-        physicalTable = new PhysicalTable(
-                "test table",
-                DAY.buildZonedTimeGrain(UTC),
-                ['dimA':'druidDimA', 'dimCommon': 'druidDimC', 'dimB': 'dimCommon']
-        )
-
         dimensionFields = [BardDimensionField.ID, BardDimensionField.DESC] as LinkedHashSet
         dimSet = [
 
@@ -69,11 +62,14 @@ class SchemaPhysicalTableMatcherSpec extends Specification {
                 ),
         ] as Set
 
-        dimSet.each {
-            physicalTable.addColumn(DimensionColumn.addNewDimensionColumn(physicalTable, it))
-        }
+        physicalTable = new ConcretePhysicalTable(
+                "test table",
+                dimSet,
+                DAY.buildZonedTimeGrain(UTC),
+                ['dimA':'druidDimA', 'dimCommon': 'druidDimC', 'dimB': 'dimCommon']
+        )
 
-        physicalTable.commit()
+
         dimensionDictionary = new DimensionDictionary(dimSet)
         schemaPhysicalTableMatcher = new SchemaPhysicalTableMatcher(
                 request,

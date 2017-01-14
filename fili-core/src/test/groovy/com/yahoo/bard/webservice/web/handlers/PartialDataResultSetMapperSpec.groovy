@@ -5,12 +5,14 @@ package com.yahoo.bard.webservice.web.handlers
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.YEAR
 
+import com.yahoo.bard.webservice.table.GranularSchema
+import com.yahoo.bard.webservice.data.ResultSetSchema
+import com.yahoo.bard.webservice.table.Schema
 import com.yahoo.bard.webservice.data.PartialDataHandler
 import com.yahoo.bard.webservice.data.Result
 import com.yahoo.bard.webservice.data.metric.mappers.PartialDataResultSetMapper
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
-
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 
 import org.joda.time.DateTime
@@ -26,7 +28,7 @@ public class PartialDataResultSetMapperSpec extends Specification {
 
     PhysicalTableDictionary physicalTableDictionary = Mock(PhysicalTableDictionary)
     SimplifiedIntervalList intervals = SimplifiedIntervalList.NO_INTERVALS
-    Schema schema = Mock(Schema)
+    ResultSetSchema schema = Mock(ResultSetSchema)
     Result result = Mock(Result)
     PartialDataHandler handler = new PartialDataHandler()
 
@@ -65,7 +67,7 @@ public class PartialDataResultSetMapperSpec extends Specification {
     @Unroll
     def "If #gapIntervals gap overlaps a fixed request, data is filtered: #filtered"() {
         setup: "Given a request for a fixed duration and a year"
-        Schema schema = Mock(Schema)
+        GranularSchema schema = Mock(GranularSchema)
         schema.getGranularity() >> YEAR
         DateTime start = new DateTime("2014-01-01")
 
@@ -130,7 +132,7 @@ public class PartialDataResultSetMapperSpec extends Specification {
     @Unroll
     def "Under all time grain, missing data #missingIntervals and volatileData #missingIntervals is filtered: #filtered"() {
         setup: "Given an all time grain request"
-        Schema schema1 = Mock(Schema)
+        ResultSetSchema schema1 = ResultSetSchema(Schema)
         schema1.getGranularity() >> AllGranularity.INSTANCE
 
         and: "some possibly missing or volatile intervals"

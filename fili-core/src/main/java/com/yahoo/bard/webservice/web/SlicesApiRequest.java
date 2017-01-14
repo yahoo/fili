@@ -5,8 +5,8 @@ package com.yahoo.bard.webservice.web;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.EMPTY_DICTIONARY;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SLICE_UNDEFINED;
 
-import com.yahoo.bard.rfc.data.dimension.DimensionColumn;
-import com.yahoo.bard.rfc.table.PhysicalTable;
+import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
+import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.metadata.SegmentInfo;

@@ -14,9 +14,8 @@ import static com.yahoo.bard.webservice.data.ResultSetSerializationProxy.SCHEMA_
 import static com.yahoo.bard.webservice.data.ResultSetSerializationProxy.SCHEMA_METRIC_COLUMNS_TYPE;
 import static com.yahoo.bard.webservice.data.ResultSetSerializationProxy.SCHEMA_TIMEZONE;
 
-import com.yahoo.bard.rfc.data.dimension.DimensionColumn;
-import com.yahoo.bard.rfc.table.MetricColumn;
-import com.yahoo.bard.rfc.table.ResultSetSchema;
+import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
+import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
@@ -221,8 +220,6 @@ public class PreResponseDeserializer {
      * @return ZonedSchema object generated from the JsonNode
      */
     private ResultSetSchema getResultSetSchema(JsonNode schemaNode) {
-
-
         DateTimeZone timezone = generateTimezone(
                 schemaNode.get(SCHEMA_TIMEZONE).asText(),
                 DateTimeZone.forID(

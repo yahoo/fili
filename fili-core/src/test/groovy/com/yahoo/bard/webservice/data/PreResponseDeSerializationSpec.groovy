@@ -1,12 +1,12 @@
 // Copyright 2016 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data
+
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
-
+import com.yahoo.bard.webservice.data.dimension.DimensionColumn
 import com.yahoo.bard.webservice.data.dimension.DimensionRow
-
+import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser
-import com.yahoo.bard.webservice.table.ZonedSchema
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.web.PreResponse
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext
@@ -77,7 +77,7 @@ class PreResponseDeSerializationSpec extends Specification {
 
     def "ZonedSchema de-Serialization from serialized ZonedSchema object validation"() {
         setup:
-        ZonedSchema zonedSchema = preResponseDeSerializer.getZonedSchema(
+        ResultSetSchema zonedSchema = preResponseDeSerializer.getResultSetSchema(
                 objectMappers.getMapper().readTree(getSerializedZonedSchema())
         )
 

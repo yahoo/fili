@@ -1,11 +1,12 @@
 // Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.rfc.table;
+package com.yahoo.bard.webservice.table;
 
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.metadata.SegmentMetadata;
-import com.yahoo.bard.webservice.table.Column;
+import com.yahoo.bard.webservice.table.availability.Availability;
+import com.yahoo.bard.webservice.table.availability.MutableAvailability;
 
 import org.joda.time.Interval;
 
@@ -73,11 +74,6 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
         return factTableName;
     }
 
-    @Override
-    public Boolean addColumn(Column columnToAdd) {
-        return schema.add(columnToAdd);
-    }
-
     /**
      * Add a column to the working intervals.
      *
@@ -93,11 +89,6 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
         return getWorkingAvailability().put(columnToAdd, intervals) == null;
     }
 
-
-    public Boolean removeColumn(Column columnToRemove) {
-        return schema.remove(columnToRemove);
-    }
-
     /**
      * Update the working intervals with values from a map.
      *
@@ -109,17 +100,7 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
             Map<String, Set<Interval>> dimensionIntervals = segmentMetadata.getDimensionIntervals();
             Map<String, Set<Interval>> metricIntervals = segmentMetadata.getMetricIntervals();
             workingAvailability = new MutableAvailability(schema, dimensionIntervals, metricIntervals, dimensionDictionary);
-            commit();
-        }
-    }
-
-    /**
-     * Swaps the actual cache with the built-up temporary cache and creates a fresh, empty temporary cache.
-     */
-    public synchronized void commit() {
-        synchronized (mutex) {
-            Availability availability = getWorkingAvailability();
-            availabilityRef.set(availability);
+            availabilityRef.set(workingAvailability);
         }
     }
 

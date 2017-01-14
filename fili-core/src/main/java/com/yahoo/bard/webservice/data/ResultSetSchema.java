@@ -1,7 +1,9 @@
 // Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.rfc.table;
+package com.yahoo.bard.webservice.data;
 
+import com.yahoo.bard.webservice.table.BaseSchema;
+import com.yahoo.bard.webservice.table.GranularSchema;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.table.Column;
 
@@ -10,7 +12,7 @@ import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
-public class ResultSetSchema extends LinkedHashSet<Column> implements GranularSchema {
+public class ResultSetSchema extends BaseSchema implements GranularSchema {
 
     private Granularity granularity;
 
@@ -23,16 +25,17 @@ public class ResultSetSchema extends LinkedHashSet<Column> implements GranularSc
             Set<Column> columns,
             @NotNull Granularity granularity
     ) {
-        addAll(columns);
+        super(columns);
         this.granularity = granularity;
     }
 
     public ResultSetSchema(ResultSetSchema resultSetSchema) {
-        this(resultSetSchema, resultSetSchema.getGranularity());
+        this(resultSetSchema.getColumns(), resultSetSchema.getGranularity());
     }
 
     public ResultSetSchema withAddColumn(Column c) {
-        Set<Column> columns = new LinkedHashSet<>(this);
+        Set<Column> columns = new LinkedHashSet<>(this.getColumns());
+        columns.add(c);
         return new ResultSetSchema(columns, this.getGranularity());
     }
 

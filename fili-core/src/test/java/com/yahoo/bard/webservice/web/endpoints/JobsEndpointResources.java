@@ -2,24 +2,26 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.endpoints;
 
+import com.yahoo.bard.webservice.data.metric.MetricColumn;
+import com.yahoo.bard.webservice.data.ResultSetSchema;
+import com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField;
+import com.yahoo.bard.webservice.async.jobs.jobrows.JobField;
+import com.yahoo.bard.webservice.async.jobs.jobrows.JobRow;
+import com.yahoo.bard.webservice.async.jobs.stores.ApiJobStore;
+import com.yahoo.bard.webservice.async.jobs.stores.HashJobStore;
+import com.yahoo.bard.webservice.async.preresponses.stores.HashPreResponseStore;
+import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore;
 import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.ResultSet;
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
-import com.yahoo.bard.webservice.async.jobs.stores.ApiJobStore;
-import com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField;
-import com.yahoo.bard.webservice.async.jobs.stores.HashJobStore;
-import com.yahoo.bard.webservice.async.preresponses.stores.HashPreResponseStore;
-import com.yahoo.bard.webservice.async.jobs.jobrows.JobField;
-import com.yahoo.bard.webservice.async.jobs.jobrows.JobRow;
-import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore;
-import com.yahoo.bard.webservice.table.ZonedSchema;
 import com.yahoo.bard.webservice.web.PreResponse;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys;
 
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
+
+import avro.shaded.com.google.common.collect.Sets;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -88,10 +90,12 @@ public class JobsEndpointResources {
     public static PreResponseStore getPreResponseStore() {
         PreResponseStore preResponseStore = new HashPreResponseStore();
         Granularity granularity = AllGranularity.INSTANCE;
-        Schema schema = new ZonedSchema(granularity, DateTimeZone.UTC);
 
         Map<MetricColumn, Object> metricValues = new HashMap<>();
-        metricValues.put(MetricColumn.addNewMetricColumn(schema, "pageViews"), new BigDecimal(111));
+        MetricColumn pageViewColumn = new MetricColumn("pageViews");
+        metricValues.put(pageViewColumn, new BigDecimal(111));
+
+        ResultSetSchema schema = new ResultSetSchema(Sets.newHashSet(pageViewColumn), granularity);
 
         Result result = new Result(new HashMap<>(), metricValues, DateTime.parse("2016-01-12T00:00:00.000Z"));
         List<Result> results = new ArrayList<>();

@@ -2,9 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web
 
-import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
-
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.PARTIAL_DATA
+import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.util.SimplifiedIntervalList.NO_INTERVALS
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
@@ -14,14 +13,17 @@ import com.yahoo.bard.webservice.data.Result
 import com.yahoo.bard.webservice.data.ResultSet
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
-
+import com.yahoo.bard.webservice.data.dimension.DimensionColumn
 import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.DimensionRow
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
-
+import com.yahoo.bard.webservice.data.metric.MetricColumn
+import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
+import com.yahoo.bard.webservice.table.ConcretePhysicalTable
+import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.util.DateTimeFormatterFactory
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.util.JsonSlurper
@@ -444,7 +446,13 @@ class ResponseSpec extends Specification {
             }
 
             dimension.setLastUpdated(null)
-            dimensionColumns << DimensionColumn.addNewDimensionColumn(new PhysicalTable("", DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC), [(dimension.getApiName()): dimension.getApiName()]), dimension)
+            PhysicalTable table = new ConcretePhysicalTable(
+                    "",
+                    [new DimensionColumn(dimension)],
+                    DAY.buildZonedTimeGrain(DateTimeZone.UTC),
+                    [(dimension.getApiName()): dimension.getApiName()]
+            )
+            dimensionColumns << DimensionColumn.addNewDimensionColumn(new PhysicalTable("", DAY.buildZonedTimeGrain(DateTimeZone.UTC), [(dimension.getApiName()): dimension.getApiName()]), dimension)
         }
 
         apiRequest1.getDimensionFields() >> defaultDimensionFieldsToShow

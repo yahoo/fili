@@ -1,10 +1,10 @@
 // Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.rfc.table;
+package com.yahoo.bard.webservice.table;
 
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
-import com.yahoo.bard.webservice.table.Column;
+import com.yahoo.bard.webservice.table.availability.Availability;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 
 import org.joda.time.DateTime;
@@ -145,50 +145,7 @@ public abstract class BasePhysicalTable implements PhysicalTable {
     @Override
     @Deprecated
     public Set<Column> getColumns() {
-        return getSchema();
-    }
-
-    /**
-     * @param columnToAdd
-     *
-     * @return true if the column added did not previously exist
-     *
-     * @deprecated Columns should be created through PhysicalTableSchema, not Physical table
-     */
-    @Override
-    @Deprecated
-    public Boolean addColumn(Column columnToAdd) {
-        throw new UnsupportedOperationException("Deprecated with a vengence");
-    }
-
-    /**
-     * Add a column to the working intervals.
-     *
-     * @param columnToAdd  The column instance to add
-     * @param intervals  The interval set to add
-     *
-     * @return True if the workingIntervals had this column already
-     *
-     * @deprecated Columns should be created through PhysicalTableSchema, not Physical table
-     */
-    @Deprecated
-    private Boolean addColumn(Column columnToAdd, Set<Interval> intervals) {
-        throw new UnsupportedOperationException("Deprecated with a vengence");
-    }
-
-    /**
-     * Remove a column from the table schema
-     *
-     * @param columnToRemove
-     *
-     * @return true if a column was successfully removed
-     *
-     * @deprecated Columns should be created through PhysicalTableSchema, not Physical table
-     */
-    @Override
-    @Deprecated
-    public Boolean removeColumn(Column columnToRemove) {
-        throw new UnsupportedOperationException("Deprecated with a vengence");
+        return getSchema().getColumns();
     }
 
     /**

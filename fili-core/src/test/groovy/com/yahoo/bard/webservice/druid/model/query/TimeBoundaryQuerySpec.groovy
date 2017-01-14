@@ -2,9 +2,9 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.query
 
+import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
-
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -21,7 +21,7 @@ class TimeBoundaryQuerySpec extends Specification {
     def "TimeBoundaryQuery serializes to JSON correctly"() {
         given: "A Table data source"
         String tableName = "basefact_network"
-        TableDataSource dataSource = new TableDataSource(new PhysicalTable(tableName, DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC), [:]))
+        TableDataSource dataSource = new TableDataSource(new ConcretePhysicalTable(tableName, DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC), [:]))
 
         when: "We create and serialize a TimeBoundaryQuery"
         String timeBoundaryQueryStr = MAPPER.writeValueAsString(new TimeBoundaryQuery(dataSource))

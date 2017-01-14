@@ -2,6 +2,9 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.table
 
+import static com.yahoo.bard.webservice.data.config.names.TestLogicalTableName.SHAPES
+
+import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries
 import com.yahoo.bard.webservice.data.config.dimension.TestDimensions
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName
@@ -9,13 +12,11 @@ import com.yahoo.bard.webservice.data.config.names.FieldName
 import com.yahoo.bard.webservice.data.config.names.TestApiDimensionName
 import com.yahoo.bard.webservice.data.config.names.TestApiMetricName
 import com.yahoo.bard.webservice.data.config.names.TestDruidMetricName
-import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.table.TableGroup
 
 import spock.lang.Specification
-
-import static com.yahoo.bard.webservice.data.config.names.TestLogicalTableName.SHAPES;
 
 /**
  * Testing basic table loader functionality

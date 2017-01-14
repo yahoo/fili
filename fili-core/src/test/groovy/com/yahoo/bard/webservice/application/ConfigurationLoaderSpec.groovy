@@ -7,6 +7,7 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MONTH
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.WEEK
 
+import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig
 import com.yahoo.bard.webservice.data.config.dimension.KeyValueStoreDimensionLoader
@@ -32,7 +33,6 @@ import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
 import com.yahoo.bard.webservice.druid.util.FieldConverters
 import com.yahoo.bard.webservice.druid.util.SketchFieldConverter
 import com.yahoo.bard.webservice.table.LogicalTableDictionary
-
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 import com.yahoo.bard.webservice.table.TableIdentifier
 

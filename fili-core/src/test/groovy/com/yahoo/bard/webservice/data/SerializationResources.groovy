@@ -1,20 +1,20 @@
 // Copyright 2016 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data
+
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
-
+import com.yahoo.bard.webservice.data.dimension.DimensionColumn
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.DimensionRow
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
-
+import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.data.metric.MetricColumnWithValueType
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser
 import com.yahoo.bard.webservice.druid.model.query.Granularity
-
 import com.yahoo.bard.webservice.table.ZonedSchema
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 import com.yahoo.bard.webservice.web.PreResponse
@@ -25,6 +25,7 @@ import org.joda.time.DateTimeZone
 import org.joda.time.Interval
 
 import spock.lang.Specification
+
 /**
  * PreResponse object serialization and de-serialization tests resource
  */
@@ -33,11 +34,11 @@ class SerializationResources extends Specification {
     DimensionDictionary dimensionDictionary
     PreResponse preResponse
     ResultSet resultSet
-    Result result1, result2, result3, result4, result5
+    Result result1, result2, result3, result4
     ResponseContext responseContext, responseContext1
-    Schema schema, schema2, schema3
+    ResultSetSchema schema, schema3
     HashMap dimensionRows1
-    Map<MetricColumn, Object>  metricValues1, metricValues2, metricValues3, metricValues4, metricValues5
+    Map<MetricColumn, Object> metricValues1, metricValues2, metricValues3, metricValues4, metricValues5
     Granularity granularity
     Interval interval
     BigDecimal bigDecimal

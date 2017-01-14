@@ -1,9 +1,9 @@
 // Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.rfc.table;
+package com.yahoo.bard.webservice.table;
 
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
-import com.yahoo.bard.webservice.table.Column;
+import com.yahoo.bard.webservice.table.availability.Availability;
 
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Set;
 
 public interface PhysicalTable extends GranularTable {
-
 
     Availability getAvailability();
     Availability getWorkingAvailability();
@@ -72,28 +71,6 @@ public interface PhysicalTable extends GranularTable {
      */
     @Deprecated
     Set<Column> getColumns();
-
-    /**
-     * @param columnToAdd
-     *
-     * @return true if the column added did not previously exist
-     *
-     * @deprecated Columns should be created through PhysicalTableSchema, not Physical table
-     */
-    @Deprecated
-    Boolean addColumn(Column columnToAdd);
-
-    /**
-     * Remove a column from the table schema
-     *
-     * @param columnToRemove
-     *
-     * @return true if a column was successfully removed
-     *
-     * @deprecated Columns should be created through PhysicalTableSchema, not Physical table
-     */
-    @Deprecated
-    Boolean removeColumn(Column columnToRemove);
 
     /**
      * Get the table bucketing as a period.

@@ -9,8 +9,8 @@ import static com.yahoo.bard.webservice.data.config.names.TestApiMetricName.A_JS
 import static com.yahoo.bard.webservice.data.config.names.TestApiMetricName.A_NULL_METRIC;
 import static com.yahoo.bard.webservice.data.config.names.TestApiMetricName.A_STRING_METRIC;
 
-import com.yahoo.bard.rfc.table.MetricColumn;
-import com.yahoo.bard.rfc.table.ResultSetSchema;
+import com.yahoo.bard.webservice.data.metric.MetricColumn;
+import com.yahoo.bard.webservice.data.ResultSetSchema;
 import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;

@@ -6,9 +6,9 @@ import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKe
 import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys.HEADERS;
 import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys.REQUESTED_API_DIMENSION_FIELDS;
 
-import com.yahoo.bard.rfc.data.dimension.DimensionColumn;
-import com.yahoo.bard.rfc.table.MetricColumn;
-import com.yahoo.bard.rfc.table.ResultSetSchema;
+import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
+import com.yahoo.bard.webservice.data.metric.MetricColumn;
+import com.yahoo.bard.webservice.data.ResultSetSchema;
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
 import com.yahoo.bard.webservice.async.ResponseException;
 import com.yahoo.bard.webservice.data.DruidResponseParser;

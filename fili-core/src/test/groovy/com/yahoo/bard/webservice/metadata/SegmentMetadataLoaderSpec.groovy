@@ -5,12 +5,13 @@ package com.yahoo.bard.webservice.metadata
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.WEEK
 import static org.joda.time.DateTimeZone.UTC
 
+import com.yahoo.bard.webservice.table.ConcretePhysicalTable
+import com.yahoo.bard.webservice.data.metric.MetricColumn
+import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
-
 import com.yahoo.bard.webservice.druid.client.DruidWebService
 import com.yahoo.bard.webservice.druid.client.SuccessCallback
 import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService
-
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -35,8 +36,6 @@ class SegmentMetadataLoaderSpec extends Specification {
     TestDruidWebService druidWS = new TestDruidWebService()
     def metric1 = new MetricColumn("abe")
     def metric2 = new MetricColumn("lincoln")
-
-    def segmentMetaDataintervals
 
     def intervalString = "2014-09-04T00:00:00.000Z/2014-09-06T00:00:00.000Z"
     def intervalSet = [new Interval(intervalString)] as Set
@@ -101,10 +100,13 @@ class SegmentMetadataLoaderSpec extends Specification {
         ]
 
         ["tablename"].each {
-            PhysicalTable table = new PhysicalTable(it, WEEK.buildZonedTimeGrain(UTC), [:])
-            table.addColumn(metric1)
-            table.addColumn(metric2)
-            table.commit()
+
+            PhysicalTable table = new ConcretePhysicalTable(
+                    it,
+                    [metric1, metric2] as Set,
+                    WEEK.buildZonedTimeGrain(UTC),
+                    [:]
+            )
             tableDict.put(it, table)
         }
         String json = """
@@ -128,7 +130,7 @@ class SegmentMetadataLoaderSpec extends Specification {
         loader.run()
 
         expect: "cache gets loaded as expected"
-        tableDict.get("tablename").getAvailableIntervals() == expectedColumnCache
+        tableDict.get("tablename").getAvailability() == expectedColumnCache
     }
 
 

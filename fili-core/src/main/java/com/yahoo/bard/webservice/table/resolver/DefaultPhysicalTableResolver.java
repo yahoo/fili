@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.resolver;
 
-import com.yahoo.bard.rfc.table.PhysicalTable;
+import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.config.BardFeatureFlag;
 import com.yahoo.bard.webservice.data.PartialDataHandler;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
@@ -22,7 +22,7 @@ import javax.inject.Singleton;
 /**
  * A physical table resolver which implements core bard filters and comparator functions
  * <p>
- * {@link com.yahoo.bard.rfc.table.PhysicalTable}) based on the optimum (lowest query cost) table, considering
+ * {@link PhysicalTable}) based on the optimum (lowest query cost) table, considering
  * completeness of data, granularity, time alignment, aggregatability constraints and cardinality for a particular
  * query.
  */
