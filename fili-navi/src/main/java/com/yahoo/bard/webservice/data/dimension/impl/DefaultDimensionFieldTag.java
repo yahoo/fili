@@ -3,7 +3,8 @@
 package com.yahoo.bard.webservice.data.dimension.impl;
 
 import com.yahoo.bard.webservice.data.dimension.Tag;
-import com.yahoo.bard.webservice.util.EnumUtils;
+
+import java.util.Locale;
 
 /**
  * Default dimension field tag provided in fili-navi to match fili-core concept "key" field.
@@ -18,7 +19,7 @@ public enum DefaultDimensionFieldTag implements Tag {
      * Constructor, build name using camel cased enum name.
      */
     DefaultDimensionFieldTag() {
-        this.tagName = EnumUtils.camelCase(name());
+        this.tagName = name().toLowerCase(Locale.ENGLISH);
     }
 
     @Override

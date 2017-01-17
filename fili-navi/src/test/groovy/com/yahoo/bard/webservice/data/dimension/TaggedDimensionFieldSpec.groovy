@@ -1,8 +1,8 @@
 package com.yahoo.bard.webservice.data.dimension
 
-import static com.yahoo.bard.webservice.data.dimension.TestTaggedDimensionField.TEST_DISPLAY_NAME
-import static com.yahoo.bard.webservice.data.dimension.TestTaggedDimensionField.TEST_PRIMARY_KEY
-import static com.yahoo.bard.webservice.data.dimension.TestTaggedDimensionField.TEST_DESCRIPTION
+import static com.yahoo.bard.webservice.data.dimension.TestTaggedDimensionField.TEST_TWO_TAG
+import static com.yahoo.bard.webservice.data.dimension.TestTaggedDimensionField.TEST_ONE_TAG
+import static com.yahoo.bard.webservice.data.dimension.TestTaggedDimensionField.TEST_NO_TAG
 import static com.yahoo.bard.webservice.data.dimension.impl.DefaultDimensionFieldTag.PRIMARY_KEY
 
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -15,35 +15,38 @@ import spock.lang.Specification
 class TaggedDimensionFieldSpec extends Specification {
 
     ObjectMapper objectMapper
-    TaggedDimensionField dimensionField1
-    TaggedDimensionField dimensionField2
-    DimensionField dimensionField3
+    Tag mockTag
+    DimensionField noTagField
+    TaggedDimensionField oneTagField
+    TaggedDimensionField twoTagField
 
     def setup() {
         objectMapper = new ObjectMapper()
 
-        // Containing a single tag [primaryKey]
-        dimensionField1 = TEST_PRIMARY_KEY
+        mockTag = Mock(Tag)
+        mockTag.getName() >> "mock_tag"
 
-        // Containing two tags [primaryKey,primaryKey]
-        dimensionField2 = TEST_DISPLAY_NAME
+        noTagField = TEST_NO_TAG
+        oneTagField = TEST_ONE_TAG
+        twoTagField = TEST_TWO_TAG
 
-        // Containing no tags []
-        dimensionField3 = TEST_DESCRIPTION
+        noTagField.setTags([] as Set<Tag>)
+        oneTagField.setTags([PRIMARY_KEY] as Set<Tag>)
+        twoTagField.setTags([PRIMARY_KEY, mockTag] as Set<Tag>)
     }
 
     def "Dimension field interface should behave correctly"() {
         expect:
-        dimensionField1.getName() == "testPrimaryKey"
-        dimensionField1.getDescription() == "testPrimaryKey description"
-        dimensionField1.getTags() == [PRIMARY_KEY]
-        dimensionField2.getTags() == [PRIMARY_KEY,PRIMARY_KEY]
+        oneTagField.getName() == "testOneTag"
+        oneTagField.getDescription() == "testOneTag description"
+        oneTagField.getTags() == [PRIMARY_KEY] as Set
+        twoTagField.getTags() == [PRIMARY_KEY, mockTag] as Set
     }
 
     def "Tagged dimension fields serialize as expected"() {
         expect:
-        objectMapper.writeValueAsString(dimensionField1) == '{"name":"testPrimaryKey","tags":["primaryKey"],"description":"testPrimaryKey description"}'
-        objectMapper.writeValueAsString(dimensionField2) == '{"name":"testDisplayName","tags":["primaryKey","primaryKey"],"description":"testDisplayName description"}'
-        objectMapper.writeValueAsString(dimensionField3) == '{"name":"testDescription","tags":[],"description":"testDescription description"}'
+        objectMapper.writeValueAsString(noTagField) == '{"name":"testNoTag","tags":[],"description":"testNoTag description"}'
+        objectMapper.writeValueAsString(oneTagField) == '{"name":"testOneTag","tags":["primary_key"],"description":"testOneTag description"}'
+        objectMapper.writeValueAsString(twoTagField) == '{"name":"testTwoTag","tags":["primary_key","mock_tag"],"description":"testTwoTag description"}'
     }
 }
