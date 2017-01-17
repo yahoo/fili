@@ -19,6 +19,7 @@
         <module>fili-core</module>
         <module>fili</module>
         <module>fili-wikipedia-example</module>
+        <module>fili-metric-parser</module>
     </modules>
 
     <organization>
