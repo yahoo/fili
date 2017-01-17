@@ -78,7 +78,7 @@ class HttpResponseMakerSpec extends Specification {
         apiRequest.getFormat() >> ResponseFormatType.JSON
         apiRequest.getUriInfo() >> uriInfo
 
-        ResultSetSchema schema = new ResultSetSchema([new MetricColumn("lm1")] as Set, DAY)
+        ResultSetSchema schema = new ResultSetSchema(DAY, [new MetricColumn("lm1")] as Set)
         resultSet = Mock(ResultSet)
         resultSet.getSchema() >> schema
 

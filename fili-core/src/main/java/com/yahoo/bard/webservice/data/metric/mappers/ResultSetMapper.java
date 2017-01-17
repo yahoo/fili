@@ -39,7 +39,7 @@ abstract public class ResultSetMapper {
         }
 
         ResultSetSchema newSchema = map(resultSet.getSchema());
-        ResultSet newResultSet = new ResultSet(newResults, newSchema);
+        ResultSet newResultSet = new ResultSet(newSchema, newResults);
         LOG.trace("Mapped resultSet: {} to new resultSet {}", resultSet, newResultSet);
 
         return newResultSet;

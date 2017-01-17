@@ -103,9 +103,9 @@ class SegmentIntervalsHashIdGeneratorSpec extends BaseDataSourceMetadataSpec {
                 intervals: [interval2],
                 dataSource: new TableDataSource(
                         new ConcretePhysicalTable(
-                                tableName,
-                                [] as Set,
-                                DefaultTimeGrain.DAY.buildZonedTimeGrain(UTC),
+                                tableName, DefaultTimeGrain.DAY.buildZonedTimeGrain(UTC),
+                                [] as Set
+                                ,
                                 [:]
                         )
                 )

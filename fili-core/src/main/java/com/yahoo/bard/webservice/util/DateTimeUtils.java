@@ -230,9 +230,16 @@ public class DateTimeUtils {
         return property.addToCopy(-1 * ((property.get() - 1) % 3)).monthOfYear().roundFloorCopy();
     }
 
+    /**
+     * Given a granularity, produce a time zone.
+     *
+     * @param granularity  The granularity's time zone, or if there isn't one, the default time zone
+     *
+     * @return A time zone
+     */
     public static DateTimeZone getTimeZone(Granularity granularity) {
         return (granularity instanceof ZonedTimeGrain) ?
-                ((ZonedTimeGrain) granularity).getTimeZone():
+                ((ZonedTimeGrain) granularity).getTimeZone() :
                 DateTimeZone.getDefault();
     }
 }

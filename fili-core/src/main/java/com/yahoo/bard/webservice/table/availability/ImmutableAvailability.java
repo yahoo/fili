@@ -10,7 +10,16 @@ import org.joda.time.Interval;
 import java.util.List;
 import java.util.Map;
 
-public class ImmutableAvailability extends ImmutableWrapperMap<Column, List<Interval>> {
+/**
+ * An availability which guarantees immutability on its contents.
+ */
+public class ImmutableAvailability extends ImmutableWrapperMap<Column, List<Interval>> implements Availability {
+
+    /**
+     * Constructor.
+     *
+     * @param map A map of columns to lists of available intervals
+     */
     public ImmutableAvailability(Map<Column, List<Interval>> map) {
         super(map);
     }

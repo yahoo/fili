@@ -45,7 +45,13 @@ class DruidSearchQuerySpec extends Specification {
     DruidSearchQuery defaultQuery(Map vars) {
         vars.queryType = DefaultQueryType.SEARCH
         vars.dataSource = vars.dataSource ?: new TableDataSource(
-                new ConcretePhysicalTable("table_name", [] as Set, DAY.buildZonedTimeGrain(DateTimeZone.UTC), [:])
+                new ConcretePhysicalTable(
+                        "table_name",
+                        DAY.buildZonedTimeGrain(DateTimeZone.UTC),
+                        [] as Set
+                        ,
+                        [:]
+                )
         )
         vars.granularity = vars.granularity ?: DAY
         vars.filter = vars.filter ?: null

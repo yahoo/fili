@@ -37,7 +37,7 @@ public class RowNumMapper extends ResultSetMapper {
             newResults.set(i, rowNumMap(resultSet.get(i), column, i));
         }
 
-        ResultSet newResultSet = new ResultSet(newResults, schema);
+        ResultSet newResultSet = new ResultSet(schema, newResults);
         LOG.trace("Mapped resultSet: {} to new resultSet {}", resultSet, newResultSet);
         return newResultSet;
     }

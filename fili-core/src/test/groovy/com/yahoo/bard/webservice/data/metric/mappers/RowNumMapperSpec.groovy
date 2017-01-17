@@ -52,7 +52,7 @@ class RowNumMapperSpec extends Specification {
         DimensionColumn dc1 = new DimensionColumn(d1)
         DimensionColumn dc2 = new DimensionColumn(d2)
 
-        ResultSetSchema schema = new ResultSetSchema([mc1, mc2, dc1, dc2] as Set, DAY)
+        ResultSetSchema schema = new ResultSetSchema(DAY, [mc1, mc2, dc1, dc2] as Set)
 
 
         // Create dummy DimensionRow's
@@ -75,7 +75,7 @@ class RowNumMapperSpec extends Specification {
 
         // From the dummy result's  created above, create a ResultSet
         // This is the resultSet which we pass to the mapper
-        ResultSet resultSet = new ResultSet(Arrays.asList(r1, r2), schema)
+        ResultSet resultSet = new ResultSet(schema, Arrays.asList(r1, r2))
 
         // Create a dummy column with name rowNum
         MetricColumn rowNum = MetricColumn.addNewMetricColumn(schema, TestApiMetricName.A_ROW_NUM.getApiName())
@@ -97,7 +97,7 @@ class RowNumMapperSpec extends Specification {
         ResultSetMapper rowNumMapper = new RowNumMapper()
 
         // Create an expected mapped ResultSet to be compared with
-        ResultSet mappedResultSet = new ResultSet(Arrays.asList(mappedR1, mappedR2), schema)
+        ResultSet mappedResultSet = new ResultSet(schema, Arrays.asList(mappedR1, mappedR2))
 
         expect:
         mappedResultSet == rowNumMapper.map(resultSet)

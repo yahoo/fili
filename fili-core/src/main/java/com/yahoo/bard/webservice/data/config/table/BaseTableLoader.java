@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 public abstract class BaseTableLoader implements TableLoader {
 
     private static final Logger LOG = LoggerFactory.getLogger(BaseTableLoader.class);
+
     protected final DateTimeZone defaultTimeZone;
 
     /**
@@ -322,8 +323,7 @@ public abstract class BaseTableLoader implements TableLoader {
 
         return new ConcretePhysicalTable(
                 definition.getName().asName(),
-                columns,
-                definition.getGrain(),
+                definition.getGrain(), columns,
                 definition.getLogicalToPhysicalNames()
         );
     }

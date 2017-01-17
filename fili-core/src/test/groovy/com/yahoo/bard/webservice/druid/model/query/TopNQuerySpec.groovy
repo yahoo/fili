@@ -44,7 +44,13 @@ class TopNQuerySpec extends Specification {
 
     TopNQuery defaultQuery(Map vars) {
 
-        vars.dataSource = vars.dataSource ?: new TableDataSource<TopNQuery>(new ConcretePhysicalTable("table_name", [] as Set, DAY.buildZonedTimeGrain(DateTimeZone.UTC), ["apiLocale": "locale"]))
+        vars.dataSource = vars.dataSource ?: new TableDataSource<TopNQuery>(new ConcretePhysicalTable(
+                "table_name",
+                DAY.buildZonedTimeGrain(DateTimeZone.UTC),
+                [] as Set
+                ,
+                ["apiLocale": "locale"]
+        ))
         vars.dimension = vars.dimension ?: ""
         vars.threshold = vars.threshold ?: 5
         vars.granularity = vars.granularity ?: DAY

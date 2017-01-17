@@ -14,6 +14,9 @@ import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
+/**
+ * The schema for a physical table.
+ */
 public class PhysicalTableSchema extends BaseSchema implements GranularSchema {
 
     private static final Logger LOG = LoggerFactory.getLogger(PhysicalTableSchema.class);
@@ -22,16 +25,29 @@ public class PhysicalTableSchema extends BaseSchema implements GranularSchema {
     private final Map<String, String> logicalToPhysicalColumnNames;
     private final Map<String, Set<String>> physicalToLogicalColumnNames;
 
+    /**
+     * Constructor.
+     *
+     * @param timeGrain  The time grain of this physical table
+     * @param columns The columns for this table
+     */
     public PhysicalTableSchema(
-            Set<Column> columns,
-            @NotNull ZonedTimeGrain timeGrain
+            @NotNull ZonedTimeGrain timeGrain,
+            Set<Column> columns
     ) {
-        this(columns, timeGrain, Collections.emptyMap());
+        this(timeGrain, columns, Collections.emptyMap());
     }
 
+    /**
+     * Constructor.
+     *
+     * @param timeGrain The time grain for this table
+     * @param columns The columns for this table
+     * @param logicalToPhysicalColumnNames The mapping of logical column names to physical names
+     */
     public PhysicalTableSchema(
-            Set<Column> columns,
             @NotNull ZonedTimeGrain timeGrain,
+            Set<Column> columns,
             @NotNull Map<String, String> logicalToPhysicalColumnNames
     ) {
         super(columns);
@@ -60,6 +76,7 @@ public class PhysicalTableSchema extends BaseSchema implements GranularSchema {
      * should likely use their own serialization strategy so as to not hit this defaulting behavior.
      *
      * @param logicalName  Logical name to lookup in physical table
+     *
      * @return Translated logicalName if applicable
      */
     public String getPhysicalColumnName(String logicalName) {
@@ -71,13 +88,22 @@ public class PhysicalTableSchema extends BaseSchema implements GranularSchema {
      * then the physical name is returned.
      *
      * @param physicalName  Physical name to lookup in physical table
+     *
      * @return Translated physicalName if applicable
      */
     public Set<String> getLogicalColumnNames(String physicalName) {
         return physicalToLogicalColumnNames.getOrDefault(physicalName, Collections.singleton(physicalName));
     }
 
-    public boolean containsLogicalName(String logicalName) {
+    /**
+     * Returns true if the mapping of names is populated for this logical name.
+     *
+     * @param logicalName the name of a metric or dimension column
+     *
+     * @return true if this table supports this column explicitly
+     */
+    public boolean containsLogicalName(String
+            logicalName) {
         return logicalToPhysicalColumnNames.containsKey(logicalName);
     }
 

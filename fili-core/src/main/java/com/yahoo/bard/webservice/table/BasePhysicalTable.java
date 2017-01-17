@@ -21,6 +21,7 @@ import javax.validation.constraints.NotNull;
 
 /**
  * Physical Table represents a druid table.
+ * Working availabilities a transactional sensibility to changing availabilities.
  */
 public abstract class BasePhysicalTable implements PhysicalTable {
     private static final Logger LOG = LoggerFactory.getLogger(PhysicalTable.class);
@@ -28,7 +29,10 @@ public abstract class BasePhysicalTable implements PhysicalTable {
     String name;
     PhysicalTableSchema schema;
 
+    @Override
     public abstract Availability getAvailability();
+
+    @Override
     public abstract Availability getWorkingAvailability();
 
     /**
@@ -46,7 +50,7 @@ public abstract class BasePhysicalTable implements PhysicalTable {
             @NotNull Map<String, String> logicalToPhysicalColumnNames
     ) {
         this.name = name;
-        this.schema = new PhysicalTableSchema(columns, timeGrain, logicalToPhysicalColumnNames);
+        this.schema = new PhysicalTableSchema(timeGrain, columns, logicalToPhysicalColumnNames);
     }
 
     /**
@@ -62,7 +66,7 @@ public abstract class BasePhysicalTable implements PhysicalTable {
         );
     }
 
-    // TODO check if needed
+    // TODO check if REALLY needed
     /**
      * Determine whether or not this PhysicalTable has a mapping for a specific logical name.
      *
@@ -137,11 +141,6 @@ public abstract class BasePhysicalTable implements PhysicalTable {
     }
 
 
-    /**
-     * @return The columns of this physical table
-     *
-     * @deprecated
-     */
     @Override
     @Deprecated
     public Set<Column> getColumns() {

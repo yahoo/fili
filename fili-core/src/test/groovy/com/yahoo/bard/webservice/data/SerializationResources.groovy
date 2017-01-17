@@ -15,7 +15,6 @@ import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.data.metric.MetricColumnWithValueType
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser
 import com.yahoo.bard.webservice.druid.model.query.Granularity
-import com.yahoo.bard.webservice.table.ZonedSchema
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 import com.yahoo.bard.webservice.web.PreResponse
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext
@@ -25,7 +24,6 @@ import org.joda.time.DateTimeZone
 import org.joda.time.Interval
 
 import spock.lang.Specification
-
 /**
  * PreResponse object serialization and de-serialization tests resource
  */
@@ -38,7 +36,7 @@ class SerializationResources extends Specification {
     ResponseContext responseContext, responseContext1
     ResultSetSchema schema, schema3
     HashMap dimensionRows1
-    Map<MetricColumn, Object> metricValues1, metricValues2, metricValues3, metricValues4, metricValues5
+    Map<MetricColumn, Object> metricValues1, metricValues2, metricValues3, metricValues4
     Granularity granularity
     Interval interval
     BigDecimal bigDecimal
@@ -132,7 +130,7 @@ class SerializationResources extends Specification {
         result4 = new Result(dimensionRows2, metricValues4, DateTime.parse(("2016-01-12T00:00:00.000Z")))
 
         StandardGranularityParser granularityParser = new StandardGranularityParser()
-        granularity = granularityParser.parseGranularity("day", DateTimeZone.UTC);
+        granularity = granularityParser.parseGranularity("day", DateTimeZone.UTC)
 
         Map<String, String> baseSchemaTypeMap = [
                 "simplePageViews": "java.math.BigDecimal",
@@ -145,20 +143,20 @@ class SerializationResources extends Specification {
         schema3 = buildSchema(baseSchemaTypeMap)
 
         List<Result> results = new ArrayList<>([result1, result2])
-        resultSet = new ResultSet(results, schema)
+        resultSet = new ResultSet(schema, results)
 
-        DateTime ny = new DateTime(2011, 2, 2, 7, 0, 0, 0, DateTimeZone.forID("UTC"));
-        DateTime la = new DateTime(2011, 2, 3, 10, 15, 0, 0, DateTimeZone.forID("UTC"));
+        DateTime ny = new DateTime(2011, 2, 2, 7, 0, 0, 0, DateTimeZone.forID("UTC"))
+        DateTime la = new DateTime(2011, 2, 3, 10, 15, 0, 0, DateTimeZone.forID("UTC"))
         interval = new Interval(ny, la)
         bigDecimal = new BigDecimal("100")
 
         responseContext = new ResponseContext([:])
         responseContext.put("randomHeader", "someHeader")
-        responseContext.put("missingIntervals", ["a","b","c", new SimplifiedIntervalList([interval]), bigDecimal])
+        responseContext.put("missingIntervals", ["a","b","c", new SimplifiedIntervalList([interval]), bigDecimal] as ArrayList)
 
         responseContext1 = new ResponseContext([:])
         responseContext1.put("randomHeader", "someHeader")
-        responseContext1.put("apiMetricColumnNames", ["metric1, metric2"] as Set)
+        responseContext1.put("apiMetricColumnNames", ["metric1, metric2"] as LinkedHashSet)
         responseContext1.put("requestedApiDimensionFields", [(ageBracketDim.getApiName()) : [BardDimensionField.ID] as Set])
 
         preResponse = new PreResponse(resultSet, responseContext)
@@ -166,14 +164,15 @@ class SerializationResources extends Specification {
         return this
     }
 
-    ZonedSchema buildSchema(Map<String, String> metricNameClassNames) {
-        Schema schema = new ZonedSchema(granularity, DateTimeZone.UTC)
-        schema.addColumn(new DimensionColumn(dimensionDictionary.findByApiName("ageBracket")))
-        schema.addColumn(new DimensionColumn(dimensionDictionary.findByApiName("gender")))
-        schema.addColumn(new DimensionColumn(dimensionDictionary.findByApiName("country")))
+    ResultSetSchema buildSchema(Map<String, String> metricNameClassNames) {
+        LinkedHashSet columns = []
+        columns << new DimensionColumn(dimensionDictionary.findByApiName("ageBracket"))
+        columns << new DimensionColumn(dimensionDictionary.findByApiName("gender"))
+        columns << new DimensionColumn(dimensionDictionary.findByApiName("country"))
         metricNameClassNames.each {
-             schema.addColumn(new MetricColumnWithValueType(it.key, it.value))
+             columns << new MetricColumnWithValueType(it.key, it.value)
         }
+        ResultSetSchema schema = new ResultSetSchema(granularity, columns)
         return schema
     }
 

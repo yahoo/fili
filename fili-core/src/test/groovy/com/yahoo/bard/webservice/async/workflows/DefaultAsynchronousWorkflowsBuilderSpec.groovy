@@ -177,7 +177,12 @@ class DefaultAsynchronousWorkflowsBuilderSpec extends Specification {
         1 * preResponseStore.save(
                 "greg0",
                 new PreResponse(
-                        new ResultSet([], new ResultSetSchema([] as Set, AllGranularity.INSTANCE)),
+                        new ResultSet(
+                                new ResultSetSchema(
+                                        AllGranularity.INSTANCE,
+                                        [] as Set
+                                ), []
+                        ),
                         expectedResponseContext
                 )
         ) >> Observable.just("greg0")

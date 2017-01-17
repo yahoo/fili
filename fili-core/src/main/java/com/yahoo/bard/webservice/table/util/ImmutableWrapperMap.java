@@ -8,10 +8,21 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * A map wrapping implementation to support fully immutable availabilities.
+ *
+ * @param <K> The map key type
+ * @param <V> The map value type
+ */
 public class ImmutableWrapperMap<K, V> implements Map<K, V> {
 
     Map<K, V> map;
 
+    /**
+     * Constructor.
+     *
+     * @param map The map being copied.
+     */
     public ImmutableWrapperMap(Map<K, V> map) {
         this.map = Collections.unmodifiableMap(new LinkedHashMap<K, V>(map));
     }

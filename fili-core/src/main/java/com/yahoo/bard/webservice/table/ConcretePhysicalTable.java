@@ -17,27 +17,31 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import javax.validation.constraints.NotNull;
 
+/**
+ * An instance of Physical table that is backed by a real remote fact table.
+ */
 public class ConcretePhysicalTable extends BasePhysicalTable {
 
     private final Object mutex = new Object();
 
-    AtomicReference<Availability> availabilityRef;
-    MutableAvailability workingAvailability;
+    private AtomicReference<Availability> availabilityRef = new AtomicReference<>();
+    private MutableAvailability workingAvailability;
     private final String factTableName;
 
     /**
-     * Create a physical table.
+     * Create a concrete physical table.
      *
      * @param name  Fili name of the physical table
      * @param factTableName  Name of the associated table in Druid
      * @param timeGrain  time grain of the table
+     * @param columns  The columns for this table
      * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
      */
     public ConcretePhysicalTable(
             @NotNull String name,
             @NotNull String factTableName,
-            @NotNull Set<Column> columns,
             @NotNull ZonedTimeGrain timeGrain,
+            @NotNull Set<Column> columns,
             @NotNull Map<String, String> logicalToPhysicalColumnNames
     ) {
         super(name, timeGrain, columns, logicalToPhysicalColumnNames);
@@ -45,19 +49,20 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
     }
 
     /**
-     * Create a physical table.
+     * Create a concrete physical table.
      *
      * @param name  Fili name of the physical table
      * @param timeGrain  time grain of the table
+     * @param columns The columns for this table
      * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
      */
     public ConcretePhysicalTable(
             @NotNull String name,
-            @NotNull Set<Column> columns,
             @NotNull ZonedTimeGrain timeGrain,
+            @NotNull Set<Column> columns,
             @NotNull Map<String, String> logicalToPhysicalColumnNames
     ) {
-        this(name, name, columns, timeGrain, logicalToPhysicalColumnNames);
+        this(name, name, timeGrain, columns, logicalToPhysicalColumnNames);
     }
 
     @Override
@@ -99,7 +104,12 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
         synchronized (mutex) {
             Map<String, Set<Interval>> dimensionIntervals = segmentMetadata.getDimensionIntervals();
             Map<String, Set<Interval>> metricIntervals = segmentMetadata.getMetricIntervals();
-            workingAvailability = new MutableAvailability(schema, dimensionIntervals, metricIntervals, dimensionDictionary);
+            workingAvailability = new MutableAvailability(
+                    schema,
+                    dimensionIntervals,
+                    metricIntervals,
+                    dimensionDictionary
+            );
             availabilityRef.set(workingAvailability);
         }
     }

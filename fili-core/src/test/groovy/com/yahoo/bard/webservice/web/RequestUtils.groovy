@@ -27,7 +27,13 @@ class RequestUtils {
             List aggregations = [],
             List postAggregations = []
     ) {
-        DataSource dataSource = new TableDataSource(new ConcretePhysicalTable(dataSourceName, [] as Set, DAY.buildZonedTimeGrain(DateTimeZone.UTC), [:]))
+        DataSource dataSource = new TableDataSource(new ConcretePhysicalTable(
+                dataSourceName,
+                DAY.buildZonedTimeGrain(DateTimeZone.UTC),
+                [] as Set
+                ,
+                [:]
+        ))
         List dimensions = []
         List intervals = []
         new GroupByQuery(
@@ -50,7 +56,13 @@ class RequestUtils {
             List aggregations = [],
             List postAggregations = []
     ) {
-        DataSource dataSource = new TableDataSource(new ConcretePhysicalTable(dataSourceName, [] as Set, DAY.buildZonedTimeGrain(DateTimeZone.UTC), [:]))
+        DataSource dataSource = new TableDataSource(new ConcretePhysicalTable(
+                dataSourceName,
+                DAY.buildZonedTimeGrain(DateTimeZone.UTC),
+                [] as Set
+                ,
+                [:]
+        ))
         List intervals = []
         new TopNQuery(
                 dataSource,
@@ -71,7 +83,13 @@ class RequestUtils {
             List aggregations = [],
             List postAggregations = []
     ) {
-        DataSource dataSource = new TableDataSource(new ConcretePhysicalTable(dataSourceName, [] as Set, DAY.buildZonedTimeGrain(DateTimeZone.UTC), [:]))
+        DataSource dataSource = new TableDataSource(new ConcretePhysicalTable(
+                dataSourceName,
+                DAY.buildZonedTimeGrain(DateTimeZone.UTC),
+                [] as Set
+                ,
+                [:]
+        ))
         List intervals = []
         new TimeSeriesQuery(
                 dataSource,

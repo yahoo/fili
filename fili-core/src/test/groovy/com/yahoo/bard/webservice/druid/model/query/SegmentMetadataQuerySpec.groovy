@@ -33,7 +33,13 @@ class SegmentMetadataQuerySpec extends Specification {
     def "SegmentMetadataQuery serializes to JSON correctly with one interval"() {
         given: "A Table data source and interval"
         String tableName = "basefact_network"
-        DataSource dataSource = new TableDataSource(new ConcretePhysicalTable(tableName, [] as Set, DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC), [:]))
+        DataSource dataSource = new TableDataSource(new ConcretePhysicalTable(
+                tableName,
+                DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC),
+                [] as Set
+                ,
+                [:]
+        ))
         Collection<Interval> intervals = [new Interval("2014-07-01/2014-07-15")]
 
         when: "We create and serialize a SegmentMetadataQuery"
@@ -56,7 +62,13 @@ class SegmentMetadataQuerySpec extends Specification {
     def "SegmentMetadataQuery serializes to JSON correctly with multiple intervals"() {
         given: "A Table data source and interval"
         String tableName = "basefact_network"
-        DataSource dataSource = new TableDataSource(new ConcretePhysicalTable(tableName, [] as Set, DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC), [:]))
+        DataSource dataSource = new TableDataSource(new ConcretePhysicalTable(
+                tableName,
+                DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC),
+                [] as Set
+                ,
+                [:]
+        ))
         Collection<Interval> intervals = [new Interval("2014-07-01/2014-07-15"), new Interval("2014-08-01/2014-08-15")]
 
         when: "We create and serialize a SegmentMetadataQuery"

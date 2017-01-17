@@ -26,8 +26,11 @@ public class ZonedSchema extends BaseSchema implements GranularSchema {
      *
      * @param granularity  Granularity of the schema
      * @param dateTimeZone  TimeZone of the schema
+     * @param columns The columns for this schema
      */
-    public ZonedSchema(@NotNull Set<Column> columns, @NotNull Granularity granularity, @NotNull DateTimeZone dateTimeZone) {
+    public ZonedSchema(
+            @NotNull Granularity granularity, @NotNull DateTimeZone dateTimeZone, @NotNull Set<Column> columns
+    ) {
         super(columns);
         this.granularity = granularity;
         this.dateTimeZone = dateTimeZone;
@@ -39,7 +42,7 @@ public class ZonedSchema extends BaseSchema implements GranularSchema {
      * @param schema schema to copy construct
      */
     public ZonedSchema(ZonedSchema schema) {
-        this(schema.getColumns(), schema.getGranularity(), schema.getDateTimeZone());
+        this(schema.getGranularity(), schema.getDateTimeZone(), schema.getColumns());
     }
     public DateTimeZone getDateTimeZone() {
         return dateTimeZone;

@@ -95,12 +95,12 @@ public class JobsEndpointResources {
         MetricColumn pageViewColumn = new MetricColumn("pageViews");
         metricValues.put(pageViewColumn, new BigDecimal(111));
 
-        ResultSetSchema schema = new ResultSetSchema(Sets.newHashSet(pageViewColumn), granularity);
+        ResultSetSchema schema = new ResultSetSchema(granularity, Sets.newHashSet(pageViewColumn));
 
         Result result = new Result(new HashMap<>(), metricValues, DateTime.parse("2016-01-12T00:00:00.000Z"));
         List<Result> results = new ArrayList<>();
         results.add(result);
-        ResultSet resultSet = new ResultSet(results, schema);
+        ResultSet resultSet = new ResultSet(schema, results);
 
         LinkedHashSet<String> apiMetricColumnNames = new LinkedHashSet<>();
         apiMetricColumnNames.add("pageViews");
@@ -133,7 +133,7 @@ public class JobsEndpointResources {
         results1.add(result1);
         results1.add(result2);
         results1.add(result3);
-        ResultSet resultSet1 = new ResultSet(results1, schema);
+        ResultSet resultSet1 = new ResultSet(schema, results1);
         PreResponse preResponse1 = new PreResponse(resultSet1, responseContext);
         preResponseStore.save("ticket3p", preResponse1);
 

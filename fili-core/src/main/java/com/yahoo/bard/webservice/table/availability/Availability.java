@@ -10,6 +10,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Availability describes the intervals available by column for a table.
+ */
 public interface Availability extends Map<Column, List<Interval>> {
 
     /**
@@ -26,5 +29,4 @@ public interface Availability extends Map<Column, List<Interval>> {
         }
         return Collections.emptyList();
     }
-
 }

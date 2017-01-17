@@ -100,7 +100,13 @@ class ThetaSketchIntersectionReportingResources extends Specification {
         dimensionDict = new DimensionDictionary()
         dimensionDict.addAll([propertyDim, countryDim])
 
-        PhysicalTable physicalTable = new ConcretePhysicalTable("NETWORK", [] as Set, DAY.buildZonedTimeGrain(UTC), ["property":"property", "country":"country"])
+        PhysicalTable physicalTable = new ConcretePhysicalTable(
+                "NETWORK",
+                DAY.buildZonedTimeGrain(UTC),
+                [] as Set
+                ,
+                ["property": "property", "country": "country"]
+        )
 
         //added dimensions to the physical table
         [propertyDim, countryDim].each {

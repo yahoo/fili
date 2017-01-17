@@ -11,6 +11,7 @@ import com.yahoo.bard.webservice.config.SystemConfig
 import com.yahoo.bard.webservice.config.SystemConfigProvider
 import com.yahoo.bard.webservice.data.Result
 import com.yahoo.bard.webservice.data.ResultSet
+import com.yahoo.bard.webservice.data.ResultSetSchema
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
@@ -21,9 +22,9 @@ import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricColumn
-import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTable
+import com.yahoo.bard.webservice.table.Schema
 import com.yahoo.bard.webservice.util.DateTimeFormatterFactory
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.util.JsonSlurper
@@ -452,7 +453,7 @@ class ResponseSpec extends Specification {
                     DAY.buildZonedTimeGrain(DateTimeZone.UTC),
                     [(dimension.getApiName()): dimension.getApiName()]
             )
-            dimensionColumns << DimensionColumn.addNewDimensionColumn(new PhysicalTable("", DAY.buildZonedTimeGrain(DateTimeZone.UTC), [(dimension.getApiName()): dimension.getApiName()]), dimension)
+            dimensionColumns << [dimension]
         }
 
         apiRequest1.getDimensionFields() >> defaultDimensionFieldsToShow
@@ -476,7 +477,7 @@ class ResponseSpec extends Specification {
         Map<MetricColumn, BigDecimal> metricValues = metricColumns.collectEntries {
             [(it): 10]
         }
-        def schema = Mock(Schema)
+        ResultSetSchema schema = Mock(ResultSetSchema)
         schema.getColumns(_) >> { Class cls ->
             if (cls == MetricColumn.class) {
                 return metricColumns
@@ -497,7 +498,7 @@ class ResponseSpec extends Specification {
 
 
         Result result = new Result(dimensionRows, metricValues, dateTime)
-        ResultSet resultSet = new ResultSet([result, result], schema)
+        ResultSet resultSet = new ResultSet(schema, [result, result])
 
         Response response = new Response(
                 resultSet,
@@ -695,7 +696,7 @@ class ResponseSpec extends Specification {
      */
     String withMetaObject(GString jsonString, GString metaBlock) {
         JsonSlurper jsonSlurper = new JsonSlurper(JsonSortStrategy.SORT_NONE)
-        Map baseJson = jsonSlurper.parseText(jsonString)
+        Map baseJson = (Map) jsonSlurper.parseText(jsonString)
         def metaJson = jsonSlurper.parseText(metaBlock)
         baseJson.put("meta", metaJson)
         MAPPERS.getMapper().writeValueAsString(baseJson)

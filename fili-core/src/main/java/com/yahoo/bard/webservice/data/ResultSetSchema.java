@@ -12,31 +12,49 @@ import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
+/**
+ * The schema for a result set.
+ */
 public class ResultSetSchema extends BaseSchema implements GranularSchema {
 
+    /**
+     * The granularity of the ResultSet.
+     */
     private Granularity granularity;
 
     /**
+     * Constructor.
      *
-     * @param columns The columns in this schema
      * @param granularity The bucketing time grain for this schema
+     * @param columns The columns in this schema
      */
     public ResultSetSchema(
-            Set<Column> columns,
-            @NotNull Granularity granularity
+            @NotNull Granularity granularity, Set<Column> columns
     ) {
         super(columns);
         this.granularity = granularity;
     }
 
+    /**
+     * Copy constructor.
+     *
+     * @param resultSetSchema the result set schema being copied
+     */
     public ResultSetSchema(ResultSetSchema resultSetSchema) {
-        this(resultSetSchema.getColumns(), resultSetSchema.getGranularity());
+        this(resultSetSchema.getGranularity(), new LinkedHashSet<>(resultSetSchema.getColumns()));
     }
 
+    /**
+     * Create a new result set with an additional final column.
+     *
+     * @param c the column being added
+     *
+     * @return the result set being constructed
+     */
     public ResultSetSchema withAddColumn(Column c) {
         Set<Column> columns = new LinkedHashSet<>(this.getColumns());
         columns.add(c);
-        return new ResultSetSchema(columns, this.getGranularity());
+        return new ResultSetSchema(this.getGranularity(), getColumns());
     }
 
     @Override

@@ -111,7 +111,13 @@ class SketchIntersectionReportingResources extends Specification {
         //added metrics to the physical table
         columns.addAll( metrics.collect() { new MetricColumn(it.apiName)})
 
-        PhysicalTable physicalTable = new ConcretePhysicalTable("NETWORK", columns, DAY.buildZonedTimeGrain(UTC), [:])
+        PhysicalTable physicalTable = new ConcretePhysicalTable(
+                "NETWORK",
+                DAY.buildZonedTimeGrain(UTC),
+                columns
+                ,
+                [:]
+        )
 
         TableGroup tableGroup = new TableGroup([physicalTable] as LinkedHashSet, metrics)
         table = new LogicalTable("NETWORK", DAY, tableGroup)

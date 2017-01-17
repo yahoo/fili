@@ -11,12 +11,29 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * The schema for a logical table.
+ */
 public class LogicalTableSchema extends BaseSchema  {
 
+    /**
+     * Constructor.
+     *
+     * @param tableGroup  The table group used to initial this logical table
+     * @param metricDictionary  The dictionary to resolve metric names from the table group against
+     */
     public LogicalTableSchema(TableGroup tableGroup, MetricDictionary metricDictionary) {
         super(toColumns(tableGroup, metricDictionary));
     }
 
+    /**
+     * Convert the tables in the table group to a set of dimension and metric columns.
+     *
+     * @param tableGroup  The collection of table group physical tables.
+     * @param metricDictionary  The dictionary to build logical metrics from names.
+     *
+     * @return  The union of all columns from the table group
+     */
     private static Set<Column> toColumns(TableGroup tableGroup, MetricDictionary metricDictionary) {
         return Stream.concat(
                 tableGroup.getDimensions().stream()

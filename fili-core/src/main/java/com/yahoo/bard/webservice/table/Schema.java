@@ -2,16 +2,20 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table;
 
-import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.util.Utils;
 
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * An interface describing a table or table-like entity composed of sets of columns.
+ */
 public interface Schema {
 
     /**
-     * Get all the columns underlying this Schema
+     * Get all the columns underlying this Schema.
+     *
+     * @return The columns of this schema
      */
     Set<Column> getColumns();
 
@@ -27,6 +31,15 @@ public interface Schema {
         return Utils.getSubsetByType(getColumns(), columnClass);
     }
 
+    /**
+     * Given a column type and name, return the column of the expected type.
+     *
+     * @param name  The name on the column
+     * @param columnClass The class of the column being retrieved
+     * @param <T> The type of the subclass of the column being retrieved
+     *
+     * @return  The an optional containing the column of the name and type specified, if any
+     */
     default <T extends Column> Optional<T> getColumn(String name, Class<T> columnClass) {
         return getColumns(columnClass).stream()
                 .filter(column -> column.getName().equals(name))

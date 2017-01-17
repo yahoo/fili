@@ -39,11 +39,17 @@ public class DruidResponseParser {
      * @param jsonResult  Druid results in json
      * @param schema  Schema for results
      * @param queryType  the type of query, note that this implementation only supports instances of
+     * @param dateTimeZone the time zone used for format the results
      * {@link DefaultQueryType}
      *
      * @return the set of results
      */
-    public ResultSet parse(JsonNode jsonResult, ResultSetSchema schema, QueryType queryType, DateTimeZone dateTimeZone) {
+    public ResultSet parse(
+            JsonNode jsonResult,
+            ResultSetSchema schema,
+            QueryType queryType,
+            DateTimeZone dateTimeZone
+    ) {
 
         LOG.trace("Parsing druid query {} by json result: {} using schema: {}", queryType, jsonResult, schema);
 
@@ -77,7 +83,7 @@ public class DruidResponseParser {
         }
 
         LOG.trace("Parsed druid query {} results: {}", queryType, results);
-        return new ResultSet(results, schema);
+        return new ResultSet(schema, results);
     }
 
     /**

@@ -15,10 +15,10 @@ public class ResultSet extends ArrayList<Result> {
     /**
      * Constructor.
      *
-     * @param results  The list of results
      * @param schema  The associated schema
+     * @param results  The list of results
      */
-    public ResultSet(List<Result> results, ResultSetSchema schema) {
+    public ResultSet(ResultSetSchema schema, List<Result> results) {
         super(results);
         this.schema = new ResultSetSchema(schema);
     }

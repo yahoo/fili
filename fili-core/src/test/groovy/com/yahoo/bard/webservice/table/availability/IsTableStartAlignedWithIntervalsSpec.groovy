@@ -7,6 +7,7 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.WEEK
 
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
+import com.yahoo.bard.webservice.table.PhysicalTable
 
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone

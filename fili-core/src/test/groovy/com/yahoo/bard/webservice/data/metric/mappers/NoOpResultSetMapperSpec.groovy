@@ -54,9 +54,9 @@ class NoOpResultSetMapperSpec extends Specification {
 
         Result rs2 = new Result(dimensionRows2, metricValues2, DateTime.now())
 
-        ResultSetSchema schema = new ResultSetSchema(Collections.emptySet(), DAY)
+        ResultSetSchema schema = new ResultSetSchema(DAY, Collections.emptySet())
 
-        ResultSet resultSet = new ResultSet([rs1, rs2], schema)
+        ResultSet resultSet = new ResultSet(schema, [rs1, rs2])
 
         ResultSetMapper resultSetMapper = new NoOpResultSetMapper()
 

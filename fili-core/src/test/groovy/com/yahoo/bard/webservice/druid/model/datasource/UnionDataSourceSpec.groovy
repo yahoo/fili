@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.druid.model.datasource
 
 import com.yahoo.bard.webservice.data.dimension.Dimension
+import com.yahoo.bard.webservice.table.PhysicalTable
 
 import spock.lang.Specification
 

@@ -38,8 +38,8 @@ class PreResponseTestingUtils {
         Map<Dimension, Set<DimensionField>> dimensionToDimensionFieldMap = new HashMap<>()
         ResponseContext responseContext = new ResponseContext(dimensionToDimensionFieldMap)
 
-        ResultSetSchema schema = new ResultSetSchema(Collections.emptySet(), DAY)
+        ResultSetSchema schema = new ResultSetSchema(DAY, Collections.emptySet())
 
-        return new PreResponse(new ResultSet([rs], schema), responseContext)
+        return new PreResponse(new ResultSet(schema, [rs]), responseContext)
     }
 }

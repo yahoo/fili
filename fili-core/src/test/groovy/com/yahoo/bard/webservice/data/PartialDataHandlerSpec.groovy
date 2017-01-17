@@ -35,7 +35,13 @@ class PartialDataHandlerSpec extends Specification {
     static boolean originalConfig = PERMISSIVE_COLUMN_AVAILABILITY.isOn()
 
     Dimension dim1, dim2, dim3
-    Set<PhysicalTable> tables = [new ConcretePhysicalTable("basefact_network", [] as Set, DAY.buildZonedTimeGrain(UTC), ["userDeviceType": "user_device_type"])] as Set
+    Set<PhysicalTable> tables = [new ConcretePhysicalTable(
+            "basefact_network",
+            DAY.buildZonedTimeGrain(UTC),
+            [] as Set
+            ,
+            ["userDeviceType": "user_device_type"]
+    )] as Set
     Set<String> columnNames
 
     GroupByQuery groupByQuery = Mock(GroupByQuery.class)
@@ -72,9 +78,9 @@ class PartialDataHandlerSpec extends Specification {
         innerQuery.getDataSource() >> {
             new TableDataSource(
                     new ConcretePhysicalTable(
-                            "basefact_network",
-                            [] as Set,
-                            DAY.buildZonedTimeGrain(UTC),
+                            "basefact_network", DAY.buildZonedTimeGrain(UTC),
+                            [] as Set
+                            ,
                             ["userDeviceType": "user_device_type"]
                     )
             )

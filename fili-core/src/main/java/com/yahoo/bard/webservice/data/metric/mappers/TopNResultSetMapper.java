@@ -32,7 +32,7 @@ public class TopNResultSetMapper extends ResultSetMapper {
         // TODO: Use only native stream operations in RxJava: GroupByTime -> Sort -> Take N -> Concat streams by time
         TopNAccumulator acc = new TopNAccumulator();
         resultSet.stream().forEachOrdered(acc);
-        return new ResultSet(acc.data, resultSet.getSchema());
+        return new ResultSet(resultSet.getSchema(), acc.data);
     }
 
     @Override

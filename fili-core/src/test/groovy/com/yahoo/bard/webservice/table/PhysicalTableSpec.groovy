@@ -40,7 +40,13 @@ class PhysicalTableSpec extends Specification {
     @Shared Dimension dimension
 
     def setupSpec() {
-        physicalTable = new ConcretePhysicalTable("test table", [] as Set, DAY.buildZonedTimeGrain(UTC), ['dimension':'druidDim'])
+        physicalTable = new ConcretePhysicalTable(
+                "test table",
+                DAY.buildZonedTimeGrain(UTC),
+                [] as Set
+                ,
+                ['dimension': 'druidDim']
+        )
         dimension = new KeyValueStoreDimension("dimension", null, [BardDimensionField.ID] as LinkedHashSet, MapStoreManager.getInstance("dimension"), ScanSearchProviderManager.getInstance("apiProduct"))
         dimensionDictionary = new DimensionDictionary([dimension] as Set)
 
@@ -98,7 +104,13 @@ class PhysicalTableSpec extends Specification {
             [:]
             )
         when:
-        table = new ConcretePhysicalTable(name, [] as Set, YEAR.buildZonedTimeGrain(UTC), ["dimension":"druidDim"])
+        table = new ConcretePhysicalTable(
+                name,
+                YEAR.buildZonedTimeGrain(UTC),
+                [] as Set
+                ,
+                ["dimension": "druidDim"]
+        )
 
         then:
         table.availableIntervalsRef.get() != null
@@ -154,15 +166,15 @@ class PhysicalTableSpec extends Specification {
     def "test physical to logical mapping is constructed correctly"() {
         setup:
         PhysicalTable oneDimPhysicalTable = new ConcretePhysicalTable(
-                "test table",
-                [] as Set,
-                DAY.buildZonedTimeGrain(UTC),
+                "test table", DAY.buildZonedTimeGrain(UTC),
+                [] as Set
+                ,
                 ['dimension': 'druidDim']
         )
         PhysicalTable twoDimPhysicalTable = new ConcretePhysicalTable(
-                "test table",
-                [] as Set,
-                DAY.buildZonedTimeGrain(UTC),
+                "test table", DAY.buildZonedTimeGrain(UTC),
+                [] as Set
+                ,
                 ['dimension1': 'druidDim', 'dimension2': 'druidDim']
         )
 

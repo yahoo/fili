@@ -73,7 +73,13 @@ class FilteredAggregationSpec extends Specification{
         ageDimension.addDimensionRow(BardDimensionField.makeDimensionRow(ageDimension, "125"))
 
         Set<Column> columns = [new DimensionColumn(ageDimension)] as Set
-        PhysicalTable physicalTable = new ConcretePhysicalTable("NETWORK", columns,  DAY.buildZonedTimeGrain(UTC), [:])
+        PhysicalTable physicalTable = new ConcretePhysicalTable(
+                "NETWORK",
+                DAY.buildZonedTimeGrain(UTC),
+                columns
+                ,
+                [:]
+        )
 
 
         TableGroup tableGroup = new TableGroup([physicalTable] as LinkedHashSet, metricNames)

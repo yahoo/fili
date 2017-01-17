@@ -15,7 +15,7 @@ import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig
 import com.yahoo.bard.webservice.data.config.dimension.TestLookupDimensions
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
-
+import com.yahoo.bard.webservice.data.dimension.DimensionColumn
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.DimensionRow
@@ -24,7 +24,6 @@ import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.LookupDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
-
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.time.TimeGrain
@@ -32,9 +31,10 @@ import com.yahoo.bard.webservice.data.volatility.DefaultingVolatileIntervalsServ
 import com.yahoo.bard.webservice.data.volatility.VolatileIntervalsFunction
 import com.yahoo.bard.webservice.data.volatility.VolatileIntervalsService
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity
+import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.LogicalTableDictionary
-
+import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.TableGroup
 import com.yahoo.bard.webservice.table.TableIdentifier
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
@@ -58,8 +58,8 @@ public class QueryBuildingTestingResources {
     public PhysicalTable t1h, t1d, t1hShort, t2h, t3d, t4h1, t4h2, t4d1, t4d2, t5h
 
     //Volatility testing
-    public PhysicalTable volatileHourTable = new PhysicalTable("hour", HOUR.buildZonedTimeGrain(UTC), [:])
-    public PhysicalTable volatileDayTable = new PhysicalTable("day", DAY.buildZonedTimeGrain(UTC), [:])
+    public PhysicalTable volatileHourTable = new ConcretePhysicalTable("hour", HOUR.buildZonedTimeGrain(UTC), [:])
+    public PhysicalTable volatileDayTable = new ConcretePhysicalTable("day", DAY.buildZonedTimeGrain(UTC), [:])
 
     public VolatileIntervalsService volatileIntervalsService
 

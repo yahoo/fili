@@ -123,7 +123,7 @@ class ResultSetResponseProcessorSpec extends Specification {
         postAggs.add(postAgg)
 
 
-        ResultSetSchema schema = new ResultSetSchema(Sets.newHashSet(new MetricColumn("lm1")), DAY)
+        ResultSetSchema schema = new ResultSetSchema(DAY, Sets.newHashSet(new MetricColumn("lm1")))
 
         rs1 = Mock(ResultSet)
         rs1.getSchema() >> schema

@@ -17,12 +17,19 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * An availability which accepts updates to it's columns and their intervals.
+ */
 public class MutableAvailability extends HashMap<Column, List<Interval>> implements Availability {
 
-    public MutableAvailability() {
-        super();
-    }
-
+    /**
+     * Constructor.
+     *
+     * @param schema  The schema for the availabilities
+     * @param dimensionIntervals  The dimension availability map by dimension name
+     * @param metricIntervals  The metric availability map
+     * @param dimensionDictionary  The dictionary to resolve dimension names against
+     */
     public MutableAvailability(
             PhysicalTableSchema schema,
             Map<String, Set<Interval>> dimensionIntervals,
@@ -47,7 +54,11 @@ public class MutableAvailability extends HashMap<Column, List<Interval>> impleme
         }
     }
 
-
+    /**
+     * Make an immutable copy of this availability.
+     *
+     * @return An immutable copy
+     */
     ImmutableAvailability immutableAvailability() {
         return new ImmutableAvailability(this);
     }

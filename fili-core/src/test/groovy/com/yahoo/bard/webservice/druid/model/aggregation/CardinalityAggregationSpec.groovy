@@ -69,7 +69,13 @@ class CardinalityAggregationSpec extends Specification {
         //       Consequently, query's also need this to be serialized.
         DruidAggregationQuery query = Mock(DruidAggregationQuery)
         DataSource ds = Mock(DataSource)
-        ds.getPhysicalTables() >> [new ConcretePhysicalTable("table", [] as Set, DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC), ["d1ApiName":"d1DruidName", "d2ApiName":"d2DruidName"])]
+        ds.getPhysicalTables() >> [new ConcretePhysicalTable(
+                "table",
+                DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC),
+                [] as Set
+                ,
+                ["d1ApiName": "d1DruidName", "d2ApiName": "d2DruidName"]
+        )]
         query.dataSource >> ds
         query.aggregations >> [a1]
 

@@ -12,9 +12,24 @@ import org.joda.time.ReadablePeriod;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * An interface describing a config level physical table.
+ * It may be backed by a single concrete data source or not.
+ */
 public interface PhysicalTable extends GranularTable {
 
+    /**
+     * Get the value of the actual availability for this physical table.
+     *
+     * @return The current actual physical availability or a runtime exception if there isn't one yet.
+     */
     Availability getAvailability();
+
+    /**
+     * Get the value of the availability currently being updated for this physical table.
+     *
+     * @return The partially defined in progress availability.
+     */
     Availability getWorkingAvailability();
 
     /**
@@ -65,9 +80,11 @@ public interface PhysicalTable extends GranularTable {
     String getPhysicalColumnName(String logicalName);
 
     /**
+     * Get the columns from the schema for this physical table.
+     *
      * @return The columns of this physical table
      *
-     * @deprecated
+     * @deprecated In favor of getting the columns directly from the schema
      */
     @Deprecated
     Set<Column> getColumns();

@@ -38,7 +38,13 @@ class TimeSeriesQuerySpec extends Specification {
 
     TimeSeriesQuery defaultQuery(Map vars) {
 
-        vars.dataSource = vars.dataSource ?: new TableDataSource(new ConcretePhysicalTable("table_name", [] as Set, DAY.buildZonedTimeGrain(DateTimeZone.UTC), [:]))
+        vars.dataSource = vars.dataSource ?: new TableDataSource(new ConcretePhysicalTable(
+                "table_name",
+                DAY.buildZonedTimeGrain(DateTimeZone.UTC),
+                [] as Set
+                ,
+                [:]
+        ))
         vars.granularity = vars.granularity ?: DAY
         vars.filter = vars.filter ?: null
         vars.having = vars.having ?: null

@@ -6,11 +6,19 @@ import com.google.common.collect.ImmutableSet;
 
 import java.util.Set;
 
+/**
+ * A parent class for most schema implementations.
+ */
 public class BaseSchema implements Schema {
 
-    ImmutableSet<Column> columns;
+    private final ImmutableSet<Column> columns;
 
-    public BaseSchema(Set<Column> columns) {
+    /**
+     * Constructor.
+     *
+     * @param columns  The columns for this schema.
+     */
+    protected BaseSchema(Set<Column> columns) {
         this.columns = ImmutableSet.copyOf(columns);
     }
 

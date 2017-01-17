@@ -165,7 +165,7 @@ public class ResultSetResponseProcessor extends MappingResponseProcessor impleme
         );
 
 
-        ResultSetSchema resultSetSchema = new ResultSetSchema(columns, granularity);
+        ResultSetSchema resultSetSchema = new ResultSetSchema(granularity, columns);
 
         return druidResponseParser.parse(json, resultSetSchema, druidQuery.getQueryType(), dateTimeZone);
     }

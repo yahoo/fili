@@ -5,8 +5,14 @@ package com.yahoo.bard.webservice.table;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 
 /**
- * Interface to support objects which have granularities
+ * Interface to support objects which have granularities.
  */
 public interface HasGranularity {
-    public Granularity getGranularity();
+
+    /**
+     * Getter.
+     *
+     * @return The granularity
+     */
+    Granularity getGranularity();
 }

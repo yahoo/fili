@@ -10,10 +10,15 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Table is a schema with dimension columns.
+ * Table has a schema and a name.
  */
 public interface Table extends HasName {
 
+    /**
+     * The schema for this table.
+     *
+     * @return a schema
+     */
     Schema getSchema();
 
     /**

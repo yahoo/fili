@@ -2,22 +2,22 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web
 
-
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.util.SimplifiedIntervalList.NO_INTERVALS
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.data.Result
 import com.yahoo.bard.webservice.data.ResultSet
+import com.yahoo.bard.webservice.data.ResultSetSchema
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
-
+import com.yahoo.bard.webservice.data.dimension.DimensionColumn
 import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.DimensionRow
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
-
+import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.util.Pagination
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
@@ -30,11 +30,11 @@ import spock.lang.Specification
 class UIJsonResponseSpec extends Specification {
     private static final ObjectMappersSuite MAPPERS = new ObjectMappersSuite()
 
-    Schema newSchema
+    ResultSetSchema newSchema
     Map<DimensionColumn, DimensionRow> dimensionRows
     Map<MetricColumn, BigDecimal> metricValues
     DateTime timeStamp
-    Map<Dimension, Set<DimensionField>> defaultDimensionFieldsToShow
+    LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> defaultDimensionFieldsToShow
     SimplifiedIntervalList volatileIntervals = []
 
 
@@ -45,8 +45,6 @@ class UIJsonResponseSpec extends Specification {
         // Build a default timestamp
         timeStamp = new DateTime(10000)
 
-        // Build a default schema
-        newSchema = new Schema(DAY)
 
         LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>()
         dimensionFields.add(BardDimensionField.ID)
@@ -62,9 +60,9 @@ class UIJsonResponseSpec extends Specification {
                 [] as Set
         )
         newDimension.setLastUpdated(timeStamp)
-        DimensionColumn dimensionColumn = DimensionColumn.addNewDimensionColumn(newSchema, newDimension)
-        MetricColumn metricColumn1 = MetricColumn.addNewMetricColumn(newSchema, "metricColumn1Name")
-        MetricColumn metricColumn2 = MetricColumn.addNewMetricColumn(newSchema, "metricColumn2Name")
+        DimensionColumn dimensionColumn = new DimensionColumn(newDimension)
+        MetricColumn metricColumn1 = new MetricColumn("metricColumn1Name")
+        MetricColumn metricColumn2 = new MetricColumn("metricColumn2Name")
 
         // Build a default dimension row
         DimensionRow dimensionRow = BardDimensionField.makeDimensionRow(
@@ -83,16 +81,20 @@ class UIJsonResponseSpec extends Specification {
         defaultDimensionFieldsToShow = [
                 (newDimension): dimensionFields
         ]
+
+        // Build a default schema
+        newSchema = new ResultSetSchema(DAY, [dimensionColumn, metricColumn1, metricColumn2] as Set)
+
     }
 
     def "Get single row response"() {
 
         given: "A Result Set with one row"
         Result r1 = new Result(dimensionRows, metricValues, timeStamp)
-        ResultSet resultSet = new ResultSet([r1], newSchema)
+        ResultSet resultSet = new ResultSet(newSchema, [r1])
 
         and: "An API Request"
-        Set<String> apiMetricColumnNames = getApiMetricColumnNames()
+        LinkedHashSet<String> apiMetricColumnNames = getApiMetricColumnNames()
 
 
         and: "An expected json serialization"
@@ -132,11 +134,11 @@ class UIJsonResponseSpec extends Specification {
 
         given: "A Result Set with multiple rows"
         Result r1 = new Result(dimensionRows, metricValues, timeStamp)
-        ResultSet resultSet = new ResultSet([r1, r1, r1], newSchema)
+        ResultSet resultSet = new ResultSet(newSchema, [r1, r1, r1])
 
         and: "An API Request"
         DataApiRequest apiRequest = Mock(DataApiRequest)
-        Set<String> apiMetricColumnNames = getApiMetricColumnNames()
+        LinkedHashSet<String> apiMetricColumnNames = getApiMetricColumnNames()
 
         apiRequest.getDimensionFields() >> defaultDimensionFieldsToShow
 
