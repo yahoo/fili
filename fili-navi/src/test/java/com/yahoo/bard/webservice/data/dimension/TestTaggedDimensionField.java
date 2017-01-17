@@ -6,6 +6,7 @@ import static com.yahoo.bard.webservice.data.dimension.impl.DefaultDimensionFiel
 
 import com.yahoo.bard.webservice.util.EnumUtils;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -14,6 +15,7 @@ import java.util.List;
  */
 public enum TestTaggedDimensionField implements TaggedDimensionField {
     TEST_PRIMARY_KEY(Collections.singletonList(PRIMARY_KEY)),
+    TEST_DISPLAY_NAME(Arrays.asList(PRIMARY_KEY, PRIMARY_KEY)),
     TEST_DESCRIPTION(Collections.<Tag>emptyList())
     ;
 
