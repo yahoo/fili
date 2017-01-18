@@ -29,8 +29,7 @@ public class ConfiguredApiMetricName implements ApiMetricName {
 
     @Override
     public boolean isValidFor(final TimeGrain grain) {
-        return logicalTable.getTimeGrains()
-                .stream()
+        return logicalTable.getTimeGrains().stream()
                 .anyMatch(grain::satisfiedBy);
     }
 

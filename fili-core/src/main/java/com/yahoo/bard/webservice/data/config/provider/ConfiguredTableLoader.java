@@ -25,7 +25,7 @@ public class ConfiguredTableLoader extends BaseTableLoader {
 
     protected final List<LogicalTableConfiguration> logicalTables;
     protected final List<DimensionConfig> dimensions;
-    protected final Map<String, PhysicalTableConfiguration> physicalTableDict = new HashMap<>();
+    protected final Map<String, PhysicalTableConfiguration> physicalTableConfig = new HashMap<>();
 
     /**
      * Construct a table loader from configuration.
@@ -41,7 +41,7 @@ public class ConfiguredTableLoader extends BaseTableLoader {
     ) {
         this.logicalTables = logicalTables;
         for (PhysicalTableConfiguration conf : physicalTables) {
-            physicalTableDict.put(conf.getName(), conf);
+            physicalTableConfig.put(conf.getName(), conf);
         }
         this.dimensions = dimensions;
     }
@@ -51,23 +51,18 @@ public class ConfiguredTableLoader extends BaseTableLoader {
         for (LogicalTableConfiguration logicalTable : logicalTables) {
 
             // Compute the set of all physical fields on this logical table's physical tables
-            Set<FieldName> physicalFields = logicalTable
-                    .getPhysicalTables()
-                    .stream()
-                    .map(physicalTable -> physicalTableDict.get(physicalTable).getMetrics())
+            Set<FieldName> physicalFields = logicalTable.getPhysicalTables().stream()
+                    .map(physicalTable -> physicalTableConfig.get(physicalTable).getMetrics())
                     .flatMap(Collection::stream)
                     .collect(Collectors.toSet());
 
             // Build the actual physical tables for this logical table
-            Set<PhysicalTableDefinition> physicalTableDefs = logicalTable
-                    .getPhysicalTables()
-                    .stream()
-                    .map(physicalTable -> physicalTableDict.get(physicalTable).buildPhysicalTable(dimensions))
+            Set<PhysicalTableDefinition> physicalTableDefs = logicalTable.getPhysicalTables().stream()
+                    .map(physicalTable -> physicalTableConfig.get(physicalTable).buildPhysicalTable(dimensions))
                     .collect(Collectors.toSet());
 
             // Build the set of api metric names
-            Set<ApiMetricName> apiMetricNames = logicalTable.getMetrics()
-                    .stream()
+            Set<ApiMetricName> apiMetricNames = logicalTable.getMetrics().stream()
                     .map(metricName -> new ConfiguredApiMetricName(metricName, logicalTable))
                     .collect(Collectors.toSet());
 
