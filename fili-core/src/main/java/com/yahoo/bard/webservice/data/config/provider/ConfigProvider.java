@@ -19,35 +19,35 @@ import java.util.List;
 public interface ConfigProvider {
 
     /**
-     * Return the actual physical tables in Druid.
+     * Return the configurations describing physical tables in Druid.
      *
      * @return a list of physical table configurations
      */
     List<PhysicalTableConfiguration> getPhysicalTableConfig();
 
     /**
-     * Return the logical tables you'd like to expose.
+     * Return the configurations describing logical tables.
      *
      * @return a list of logical table configurations
      */
     List<LogicalTableConfiguration> getLogicalTableConfig();
 
     /**
-     * Return any custom metric makers used in metrics.
+     * Return the configurations describing custom-registered metric makers.
      *
      * @return a list of metric maker configurations
      */
     List<MakerConfiguration> getCustomMakerConfig();
 
     /**
-     * Return the dimension config.
+     * Return the dimension configurations.
      *
      * @return a list of dimension configurations
      */
     List<DimensionConfig> getDimensionConfig();
 
     /**
-     * Get the base metrics.
+     * Return the metric configurations.
      *
      * @return a list of metric configurations
      */
