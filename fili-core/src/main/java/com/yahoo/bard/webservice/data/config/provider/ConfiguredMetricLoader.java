@@ -42,16 +42,9 @@ public class ConfiguredMetricLoader implements MetricLoader {
     public void loadMetricDictionary(MetricDictionary metricDictionary) {
         this.localMetricDictionary.clearLocal();
 
-        for (MetricConfiguration metric : metrics) {
-            this.localMetricDictionary.add(
-                    metric.build(
-                            localMetricDictionary,
-                            makerBuilder,
-                            dimensionDictionary
-                    )
-            );
-
-        }
+        metrics.stream()
+                .map(metric -> metric.build(localMetricDictionary, makerBuilder, dimensionDictionary))
+                .forEach(localMetricDictionary::add);
 
         this.localMetricDictionary.forEach((k, v) -> metricDictionary.add(v));
     }
