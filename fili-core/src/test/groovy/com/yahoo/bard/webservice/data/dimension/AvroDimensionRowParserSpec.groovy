@@ -16,7 +16,7 @@ class AvroDimensionRowParserSpec extends Specification {
     def setup() {
         dimensionFields = [BardDimensionField.ID, BardDimensionField.DESC]
         dimension = new KeyValueStoreDimension("foo", "desc-foo", dimensionFields, MapStoreManager.getInstance("foo"), ScanSearchProviderManager.getInstance("foo"))
-        avroDimensionRowParser = new AvroDimensionRowParser(DimensionFieldNameMapper.underscoreSeparatedConverter(), new ObjectMapper())
+        avroDimensionRowParser = new AvroDimensionRowParser(DimensionFieldNameMapper.underscoreSeparatedConverter())
     }
 
     def "Schema file containing all the dimension fields and data parses to expected rows"() {
@@ -26,16 +26,7 @@ class AvroDimensionRowParserSpec extends Specification {
         Set<DimensionRow> dimSet = [dimensionRow1, dimensionRow2] as Set
 
         expect:
-        avroDimensionRowParser.parseAvroFileDimensionRows(dimension, "src/test/resources/avroFilesTesting/sampleData.avro", "src/test/resources/avroFilesTesting/sampleData.avsc") == dimSet
-    }
-
-    def "Invalid schema - Schema file does not exist throws an IllegalArgumentException"() {
-        when:
-        avroDimensionRowParser.parseAvroFileDimensionRows(dimension, "src/test/resources/avroFilesTesting/sampleData.avro", "src/test/resources/avroFilesTesting/foo.avsc")
-
-        then:
-        IllegalArgumentException exception = thrown(IllegalArgumentException)
-        exception.message == "Unable to process the file, at the location src/test/resources/avroFilesTesting/foo.avsc"
+        avroDimensionRowParser.parseAvroFileDimensionRows(dimension, "target/avro/avroFilesTesting/sampleData.avro") == dimSet
     }
 
     def "Schema file does not contain all the dimension fields throws an IllegalArgumentException"() {
@@ -43,19 +34,10 @@ class AvroDimensionRowParserSpec extends Specification {
         dimensionFields.add(BardDimensionField.FIELD1)
 
         when:
-        avroDimensionRowParser.parseAvroFileDimensionRows(dimension, "src/test/resources/avroFilesTesting/sampleData.avro", "src/test/resources/avroFilesTesting/sampleData.avsc")
+        avroDimensionRowParser.parseAvroFileDimensionRows(dimension, "target/avro/avroFilesTesting/sampleData.avro")
 
         then:
         IllegalArgumentException exception = thrown(IllegalArgumentException)
         exception.message == "The AVRO schema file does not contain all the configured dimension fields"
-    }
-
-    def "Schema file does not contain the required `fields` section in its JSON throws an IllegalArgumentException" () {
-        when:
-        avroDimensionRowParser.parseAvroFileDimensionRows(dimension, "src/test/resources/avroFilesTesting/sampleData.avro", "src/test/resources/avroFilesTesting/invalidSchema.avsc")
-
-        then:
-        IllegalArgumentException exception = thrown(IllegalArgumentException)
-        exception.message == "`fields` is a required JSON field in the avro schema"
     }
 }
