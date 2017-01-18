@@ -9,11 +9,11 @@ import com.yahoo.bard.webservice.util.IntervalUtils;
 
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
-import org.joda.time.ReadablePeriod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -31,9 +31,6 @@ public abstract class BasePhysicalTable implements PhysicalTable {
 
     @Override
     public abstract Availability getAvailability();
-
-    @Override
-    public abstract Availability getWorkingAvailability();
 
     /**
      * Create a physical table.
@@ -129,18 +126,6 @@ public abstract class BasePhysicalTable implements PhysicalTable {
         return schema.getPhysicalColumnName(logicalName);
     }
 
-    /**
-     * Translate a physical name into a logical column name. If no translation exists (i.e. they are the same),
-     * then the physical name is returned.
-     *
-     * @param physicalName  Physical name to lookup in physical table
-     * @return Translated physicalName if applicable
-     */
-    private Set<String> getLogicalColumnNames(String physicalName) {
-        return getSchema().getLogicalColumnNames(physicalName);
-    }
-
-
     @Override
     @Deprecated
     public Set<Column> getColumns() {
@@ -148,39 +133,14 @@ public abstract class BasePhysicalTable implements PhysicalTable {
     }
 
     /**
-     * Get the table bucketing as a period.
-     *
-     * @return The table bucketing as a period
-     */
-    @Override
-    public ReadablePeriod getTablePeriod() {
-        return schema.getGranularity().getPeriod();
-    }
-
-    /**
      * Getter for active column intervals.
      *
      * @return tableEntries map of column to set of available intervals
      *
-     * @deprecated Availability contract doesn't match this signature anymore
      */
     @Override
-    @Deprecated
-    public Map<Column, Set<Interval>> getAvailableIntervals() {
-        throw new UnsupportedOperationException("Contract changed, used getAvailability()");
-    }
-
-    /**
-     * Getter for working copy of the column intervals.
-     *
-     * @return tableEntries map of column to set of available intervals
-     *
-     * @deprecated Availability contract doesn't match this signature anymore
-     */
-    @Override
-    @Deprecated
-    public Map<Column, Set<Interval>> getWorkingIntervals() {
-        throw new UnsupportedOperationException("Contract changed, used getWorkingAvailability()");
+    public Map<Column, List<Interval>> getAvailableIntervals() {
+        return getAvailability();
     }
     /**
      * Get the time grain from granularity.

@@ -6,14 +6,13 @@ import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.metadata.SegmentMetadata;
 import com.yahoo.bard.webservice.table.availability.Availability;
-import com.yahoo.bard.webservice.table.availability.MutableAvailability;
+import com.yahoo.bard.webservice.table.availability.ImmutableAvailability;
 
 import org.joda.time.Interval;
 
-import java.util.List;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.validation.constraints.NotNull;
 
@@ -22,10 +21,7 @@ import javax.validation.constraints.NotNull;
  */
 public class ConcretePhysicalTable extends BasePhysicalTable {
 
-    private final Object mutex = new Object();
-
-    private AtomicReference<Availability> availabilityRef = new AtomicReference<>();
-    private MutableAvailability workingAvailability;
+    private volatile Availability availability = new ImmutableAvailability(Collections.emptyMap());
     private final String factTableName;
 
     /**
@@ -67,31 +63,11 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
 
     @Override
     public Availability getAvailability() {
-        return availabilityRef.get();
-    }
-
-    @Override
-    public Availability getWorkingAvailability() {
-        return workingAvailability;
+        return availability;
     }
 
     public String getFactTableName() {
         return factTableName;
-    }
-
-    /**
-     * Add a column to the working intervals.
-     *
-     * @param columnToAdd  The column instance to add
-     * @param intervals  The interval set to add
-     *
-     * @return True if the workingIntervals had this column already
-     *
-     * @deprecated manipulate schema before building table
-     */
-    @Deprecated
-    private Boolean addColumn(Column columnToAdd, List<Interval> intervals) {
-        return getWorkingAvailability().put(columnToAdd, intervals) == null;
     }
 
     /**
@@ -100,18 +76,14 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
      * @param segmentMetadata  A map of names of metrics and sets of intervals over which they are valid
      * @param dimensionDictionary  The dimension dictionary from which to look up dimensions by name
      */
-    public synchronized void resetColumns(SegmentMetadata segmentMetadata, DimensionDictionary dimensionDictionary) {
-        synchronized (mutex) {
-            Map<String, Set<Interval>> dimensionIntervals = segmentMetadata.getDimensionIntervals();
-            Map<String, Set<Interval>> metricIntervals = segmentMetadata.getMetricIntervals();
-            workingAvailability = new MutableAvailability(
-                    schema,
-                    dimensionIntervals,
-                    metricIntervals,
-                    dimensionDictionary
-            );
-            availabilityRef.set(workingAvailability);
-        }
+    public void resetColumns(SegmentMetadata segmentMetadata, DimensionDictionary dimensionDictionary) {
+        Map<String, Set<Interval>> dimensionIntervals = segmentMetadata.getDimensionIntervals();
+        Map<String, Set<Interval>> metricIntervals = segmentMetadata.getMetricIntervals();
+        setAvailability(new ImmutableAvailability(schema, dimensionIntervals, metricIntervals, dimensionDictionary));
+    }
+
+    public void setAvailability(Availability availability) {
+        this.availability = new ImmutableAvailability(availability);
     }
 
     @Override

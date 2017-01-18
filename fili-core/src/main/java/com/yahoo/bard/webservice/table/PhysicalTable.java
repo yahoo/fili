@@ -7,8 +7,8 @@ import com.yahoo.bard.webservice.table.availability.Availability;
 
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
-import org.joda.time.ReadablePeriod;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -24,13 +24,6 @@ public interface PhysicalTable extends GranularTable {
      * @return The current actual physical availability or a runtime exception if there isn't one yet.
      */
     Availability getAvailability();
-
-    /**
-     * Get the value of the availability currently being updated for this physical table.
-     *
-     * @return The partially defined in progress availability.
-     */
-    Availability getWorkingAvailability();
 
     /**
      * Get a date time that the table will align to based on grain and available intervals.
@@ -90,31 +83,12 @@ public interface PhysicalTable extends GranularTable {
     Set<Column> getColumns();
 
     /**
-     * Get the table bucketing as a period.
-     *
-     * @return The table bucketing as a period
-     */
-    ReadablePeriod getTablePeriod();
-
-    /**
      * Getter for active column intervals.
      *
      * @return tableEntries map of column to set of available intervals
      *
-     * @deprecated Availability contract doesn't match this signature anymore
      */
-    @Deprecated
-    Map<Column, Set<Interval>> getAvailableIntervals();
-
-    /**
-     * Getter for working copy of the column intervals.
-     *
-     * @return tableEntries map of column to set of available intervals
-     *
-     * @deprecated Availability contract doesn't match this signature anymore
-     */
-    @Deprecated
-    Map<Column, Set<Interval>> getWorkingIntervals();
+    Map<Column, List<Interval>> getAvailableIntervals();
 
     /**
      * Get the time grain from granularity.

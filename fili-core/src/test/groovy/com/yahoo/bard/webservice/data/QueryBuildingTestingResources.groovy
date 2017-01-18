@@ -24,6 +24,7 @@ import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.LookupDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.time.TimeGrain
@@ -359,6 +360,13 @@ public class QueryBuildingTestingResources {
                 simpleTemplateWithGrainQuery,
                 WEEK
         )
+        /* Example:
+        List<Column> columns = []
+        ConcretePhysicalTable table1 = ConcretePhysicalTable("name", DAY, columns, [:] )
+
+        Map<Column, List<Interval>> availableMap = columns.collectEntries { [(it): [interval2] ]}
+        table1.setAvailability(new ImmutableAvailability(availableMap))
+         */
         setupPartialData()
     }
 
