@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.data.dimension;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * An interface for tag.
+ * Interface for tags used for tagging dimension fields to add additional properties implicitly specified by its name.
  */
 public interface Tag {
 

@@ -24,7 +24,7 @@ class TaggedDimensionFieldSpec extends Specification {
         objectMapper = new ObjectMapper()
 
         mockTag = Mock(Tag)
-        mockTag.getName() >> "mock_tag"
+        mockTag.getName() >> "mockTag"
 
         noTagField = TEST_NO_TAG
         oneTagField = TEST_ONE_TAG
@@ -46,7 +46,7 @@ class TaggedDimensionFieldSpec extends Specification {
     def "Tagged dimension fields serialize as expected"() {
         expect:
         objectMapper.writeValueAsString(noTagField) == '{"name":"testNoTag","tags":[],"description":"testNoTag description"}'
-        objectMapper.writeValueAsString(oneTagField) == '{"name":"testOneTag","tags":["primary_key"],"description":"testOneTag description"}'
-        objectMapper.writeValueAsString(twoTagField) == '{"name":"testTwoTag","tags":["primary_key","mock_tag"],"description":"testTwoTag description"}'
+        objectMapper.writeValueAsString(oneTagField) == '{"name":"testOneTag","tags":["primaryKey"],"description":"testOneTag description"}'
+        objectMapper.writeValueAsString(twoTagField) == '{"name":"testTwoTag","tags":["primaryKey","mockTag"],"description":"testTwoTag description"}'
     }
 }

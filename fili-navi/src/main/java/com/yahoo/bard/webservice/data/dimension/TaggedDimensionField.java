@@ -5,12 +5,12 @@ package com.yahoo.bard.webservice.data.dimension;
 import java.util.Set;
 
 /**
- * Dimension field with tags.
+ * Interface for Dimension fields that expects unique tags to be attached to it to add expressiveness.
  */
 public interface TaggedDimensionField extends DimensionField {
 
     /**
-     * Get a list of tags associated to the current field.
+     * Get a set of tags associated to the current field.
      *
      * @return a list of tags
      */
