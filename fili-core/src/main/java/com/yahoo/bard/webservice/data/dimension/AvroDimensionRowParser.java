@@ -4,10 +4,6 @@ package com.yahoo.bard.webservice.data.dimension;
 
 import com.yahoo.bard.webservice.data.cache.HashDataCache.Pair;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 import org.apache.avro.Schema;
 import org.apache.avro.file.DataFileReader;
 import org.apache.avro.generic.GenericDatumReader;
@@ -19,8 +15,8 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -31,7 +27,6 @@ import java.util.stream.StreamSupport;
 public class AvroDimensionRowParser {
 
     private static final Logger LOG = LoggerFactory.getLogger(AvroDimensionRowParser.class);
-    private final ObjectMapper objectMapper;
 
     private final DimensionFieldNameMapper dimensionFieldNameMapper;
 
@@ -39,11 +34,9 @@ public class AvroDimensionRowParser {
      * Constructs an AvroDimensionRowParser object based on the DimensionFieldNameMapper object.
      *
      * @param dimensionFieldNameMapper Object that defines the dimension field name transformations
-     * @param objectMapper Object that is used to construct mapper objects
      */
-    public AvroDimensionRowParser(DimensionFieldNameMapper dimensionFieldNameMapper, ObjectMapper objectMapper) {
+    public AvroDimensionRowParser(DimensionFieldNameMapper dimensionFieldNameMapper) {
         this.dimensionFieldNameMapper = memoize(dimensionFieldNameMapper);
-        this.objectMapper = objectMapper;
     }
 
     /**
@@ -69,29 +62,22 @@ public class AvroDimensionRowParser {
      * </code></pre>
      *
      * @param dimension The dimension object used to configure the dimension
-     * @param avroSchemaPath The path of the AVRO schema file (.avsc)
+     * @param avroSchema The path of the AVRO schema file (.avsc)
      *
      * @return true if the schema is valid, false otherwise
      *
      * @throws IllegalArgumentException thrown if JSON object `fields` is not present
      */
-    private boolean doesSchemaContainAllDimensionFields(Dimension dimension, String avroSchemaPath)
+    private boolean doesSchemaContainAllDimensionFields(Dimension dimension, Schema avroSchema)
         throws IllegalArgumentException {
 
-        // Convert the AVRO schema file into JsonNode Object
-        JsonNode jsonAvroSchema = convertFileToJsonNode(avroSchemaPath);
+        // Get main record from schema
+        List<Schema.Field> fields = avroSchema.getFields();
 
-        jsonAvroSchema = Optional.ofNullable(jsonAvroSchema.get("fields")).orElseThrow(() -> {
-                String msg = "`fields` is a required JSON field in the avro schema";
-                LOG.error(msg);
-                return new IllegalArgumentException(msg);
-        });
-
-        // Populating the set of avro field names
-        Set<String> avroFields = StreamSupport.stream(jsonAvroSchema.spliterator(), false)
-                .map(jsonNode -> jsonNode.get("name"))
-                .map(JsonNode::asText)
-                .collect(Collectors.toSet());
+        // Extract field names
+        Set<String> avroFields = StreamSupport.stream(fields.spliterator(), false)
+                        .map(field -> field.name())
+                        .collect(Collectors.toSet());
 
         // True only if all of the mapped dimension fields are present in the Avro schema
         return dimension.getDimensionFields().stream()
@@ -104,34 +90,24 @@ public class AvroDimensionRowParser {
      *
      * @param dimension The dimension object used to configure the dimension
      * @param avroFilePath The path of the AVRO data file (.avro)
-     * @param avroSchemaPath The path of the AVRO schema file (.avsc)
      *
      * @return A set of dimension rows
      *
      * @throws IllegalArgumentException thrown if JSON object `fields` is not present
      */
-    public Set<DimensionRow> parseAvroFileDimensionRows(Dimension dimension, String avroFilePath, String avroSchemaPath)
+    public Set<DimensionRow> parseAvroFileDimensionRows(Dimension dimension, String avroFilePath)
         throws IllegalArgumentException {
 
-        if (doesSchemaContainAllDimensionFields(dimension, avroSchemaPath)) {
+        // Creates an AVRO DatumReader object based on the AVRO schema object
+        DatumReader<GenericRecord> datumReader = new GenericDatumReader<>();
 
-            DataFileReader<GenericRecord> dataFileReader;
-            String filePath = avroSchemaPath;
-            try {
-                // Creates an AVRO schema object based on the parsed AVRO schema file (.avsc)
-                Schema schema = new Schema.Parser().parse(new File(filePath));
-
-                // Creates an AVRO DatumReader object based on the AVRO schema object
-                DatumReader<GenericRecord> datumReader = new GenericDatumReader<>(schema);
-
-                filePath = avroFilePath;
-                // Creates an AVRO DataFileReader object that reads the AVRO data file one record at a time
-                dataFileReader = new DataFileReader<>(new File(avroFilePath), datumReader);
-
-            } catch (IOException e) {
-                String msg = String.format("Unable to process the file, at the location %s", filePath);
-                LOG.error(msg, e);
-                throw new IllegalArgumentException(msg, e);
+        // Creates an AVRO DataFileReader object that reads the AVRO data file one record at a time
+        try (DataFileReader<GenericRecord> dataFileReader = new DataFileReader<>(new File(avroFilePath), datumReader)) {
+            // Validate Schema
+            if (!doesSchemaContainAllDimensionFields(dimension, dataFileReader.getSchema())) {
+                String msg = "The AVRO schema file does not contain all the configured dimension fields";
+                LOG.error(msg);
+                throw new IllegalArgumentException(msg);
             }
 
             // Generates a set of dimension Rows after retrieving the appropriate fields
@@ -147,32 +123,9 @@ public class AvroDimensionRowParser {
                     )
                     .map(dimension::parseDimensionRow)
                     .collect(Collectors.toSet());
-        } else {
-            String msg = "The AVRO schema file does not contain all the configured dimension fields";
-            LOG.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-    }
 
-    /**
-     * Constructs a JSON Node object from the avro schema file.
-     *
-     * @param avroSchemaPath The path of the AVRO schema file (.avsc)
-     *
-     * @return JsonNode object
-     *
-     * @throws IllegalArgumentException thrown if there is an error parsing the avro files
-     */
-    private JsonNode convertFileToJsonNode(String avroSchemaPath) throws IllegalArgumentException {
-
-        try {
-            return objectMapper.readTree(new File(avroSchemaPath));
-        } catch (JsonProcessingException e) {
-            String msg = "Unable to process the Json";
-            LOG.error(msg, e);
-            throw new IllegalArgumentException(msg, e);
         } catch (IOException e) {
-            String msg = String.format("Unable to process the file, at the location %s", avroSchemaPath);
+            String msg = String.format("Unable to process the file, at the location %s", avroFilePath);
             LOG.error(msg, e);
             throw new IllegalArgumentException(msg, e);
         }
