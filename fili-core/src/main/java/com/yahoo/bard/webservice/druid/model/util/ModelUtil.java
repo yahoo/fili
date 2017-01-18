@@ -77,7 +77,7 @@ public class ModelUtil {
             );
         }
 
-        LOG.warn("Could not resolve ExtractionFunction from the provided Dimension: {}", sourceClass.toString());
+        LOG.debug("Could not resolve ExtractionFunction from the provided Dimension: {}", sourceClass.toString());
         return Optional.empty();
     }
 }
