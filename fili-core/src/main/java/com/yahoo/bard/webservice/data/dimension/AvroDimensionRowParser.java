@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.data.dimension;
 import com.yahoo.bard.webservice.data.cache.HashDataCache.Pair;
 
 import org.apache.avro.Schema;
+import org.apache.avro.Schema.Field;
 import org.apache.avro.file.DataFileReader;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
@@ -15,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -62,7 +62,7 @@ public class AvroDimensionRowParser {
      * </code></pre>
      *
      * @param dimension The dimension object used to configure the dimension
-     * @param avroSchema The path of the AVRO schema file (.avsc)
+     * @param avroSchema The AVRO Schema
      *
      * @return true if the schema is valid, false otherwise
      *
@@ -71,12 +71,9 @@ public class AvroDimensionRowParser {
     private boolean doesSchemaContainAllDimensionFields(Dimension dimension, Schema avroSchema)
         throws IllegalArgumentException {
 
-        // Get main record from schema
-        List<Schema.Field> fields = avroSchema.getFields();
-
         // Extract field names
-        Set<String> avroFields = StreamSupport.stream(fields.spliterator(), false)
-                        .map(field -> field.name())
+        Set<String> avroFields = avroSchema.getFields().stream()
+                        .map(Field::name)
                         .collect(Collectors.toSet());
 
         // True only if all of the mapped dimension fields are present in the Avro schema
@@ -98,7 +95,7 @@ public class AvroDimensionRowParser {
     public Set<DimensionRow> parseAvroFileDimensionRows(Dimension dimension, String avroFilePath)
         throws IllegalArgumentException {
 
-        // Creates an AVRO DatumReader object based on the AVRO schema object
+        // Creates an AVRO DatumReader object
         DatumReader<GenericRecord> datumReader = new GenericDatumReader<>();
 
         // Creates an AVRO DataFileReader object that reads the AVRO data file one record at a time
