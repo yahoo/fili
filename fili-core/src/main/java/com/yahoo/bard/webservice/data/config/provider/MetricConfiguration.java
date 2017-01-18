@@ -46,9 +46,9 @@ public interface MetricConfiguration {
      *
      * Yes, the signature is a little nasty and some of these things should be changed around a bit.
      *
-     * @param dict the local metric dictionary
-     * @param makerBuilder the metric maker builder
-     * @param dimensionDictionary the dimension dictionary
+     * @param dict  the local metric dictionary
+     * @param makerBuilder  the metric maker builder
+     * @param dimensionDictionary  the dimension dictionary
      * @return a logical metric
      */
     LogicalMetric build(

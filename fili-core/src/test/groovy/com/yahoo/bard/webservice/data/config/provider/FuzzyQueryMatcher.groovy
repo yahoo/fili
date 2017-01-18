@@ -20,8 +20,8 @@ public class FuzzyQueryMatcher {
     /**
      * Throws a hopefully-helpful exception if the two queries do not look alike.
      *
-     * @param actual the actual output
-     * @param fuzzy the expected query
+     * @param actual  the actual output
+     * @param fuzzy  the expected query
      */
     public static void matches(TemplateDruidQuery actual, TemplateDruidQuery expected) {
         Map<String, Aggregation> expectedAggs = expected.aggregations.collectEntries { [(it.getName()): it] }

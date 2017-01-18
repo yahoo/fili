@@ -21,10 +21,10 @@ public class ConfiguredMetricLoader implements MetricLoader {
     /**
      * Construct a new MetricLoader with the given configuration.
      *
-     * @param localMetricDictionary the localMetricDictionary metric dictionary
-     * @param metrics the configured base metrics
-     * @param makerBuilder the metric maker builder
-     * @param dimensionDictionary the dimension dictionary
+     * @param localMetricDictionary  the localMetricDictionary metric dictionary
+     * @param metrics  the configured base metrics
+     * @param makerBuilder  the metric maker builder
+     * @param dimensionDictionary  the dimension dictionary
      */
     public ConfiguredMetricLoader(
             MetricDictionary localMetricDictionary,

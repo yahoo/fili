@@ -11,7 +11,7 @@ public class ConfigurationError extends Error {
     /**
      * Construct a new configuration exception with the given message.
      *
-     * @param message exception message
+     * @param message  exception message
      */
     public ConfigurationError(String message) {
         super(message);
@@ -20,8 +20,8 @@ public class ConfigurationError extends Error {
     /**
      * Construct a new configuration exception with the given message and cause.
      *
-     * @param message exception message
-     * @param cause exception cause
+     * @param message  exception message
+     * @param cause  exception cause
      */
     public ConfigurationError(String message, Throwable cause) {
         super(message, cause);

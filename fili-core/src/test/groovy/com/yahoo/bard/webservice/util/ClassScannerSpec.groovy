@@ -53,8 +53,8 @@ class ClassScannerSpec extends Specification {
     /**
      * Load all available classes under com.yahoo.bard.* that declare given method
      *
-     * @param method declared method to find
-     * @param parameterTypes parameter types for declared method
+     * @param method  declared method to find
+     * @param parameterTypes  parameter types for declared method
      * @return classes that match to be tested
      */
     static List<Class> getClassesDeclaring(String method, Class<?>... parameterTypes) {

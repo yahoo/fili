@@ -24,7 +24,7 @@ public interface PhysicalTableConfiguration {
     /**
      * Build a physical table, given dimensions.
      *
-     * @param dimensionConfig the dimension configuration
+     * @param dimensionConfig  the dimension configuration
      * @return a PhysicalTableDefinition
      */
     PhysicalTableDefinition buildPhysicalTable(List<DimensionConfig> dimensionConfig);

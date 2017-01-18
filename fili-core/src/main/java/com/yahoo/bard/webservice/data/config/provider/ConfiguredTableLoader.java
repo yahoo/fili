@@ -30,9 +30,9 @@ public class ConfiguredTableLoader extends BaseTableLoader {
     /**
      * Construct a table loader from configuration.
      *
-     * @param logicalTables the logical tables
-     * @param physicalTables the physical tables
-     * @param dimensions the dimensions
+     * @param logicalTables  the logical tables
+     * @param physicalTables  the physical tables
+     * @param dimensions  the dimensions
      */
     public ConfiguredTableLoader(
             List<LogicalTableConfiguration> logicalTables,

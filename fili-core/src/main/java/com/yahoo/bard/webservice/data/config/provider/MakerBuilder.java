@@ -77,8 +77,8 @@ public class MakerBuilder {
         /**
          * Constructor for MakerConstructor.
          *
-         * @param cls specific class of MetricMaker to construct
-         * @param args arguments to the MetricMaker's constructor
+         * @param cls  specific class of MetricMaker to construct
+         * @param args  arguments to the MetricMaker's constructor
          */
         public MakerConstructor(Class<? extends MetricMaker> cls, Object[] args) {
             this.cls = cls;
@@ -91,7 +91,7 @@ public class MakerBuilder {
          * Uses reflection to construct an object out of `cls` and `args`,
          * but always inserts `dictionary` as the first parameter.
          *
-         * @param dictionary metric dictionary
+         * @param dictionary  metric dictionary
          *
          * @return a MetricMaker
          */
@@ -139,7 +139,7 @@ public class MakerBuilder {
      *
      * This class builds a new MetricMaker on-the-fly when you ask for it (nicely) by name.
      *
-     * @param configuredMakers Metric maker configuration
+     * @param configuredMakers  Metric maker configuration
      */
     public MakerBuilder(List<MakerConfiguration> configuredMakers) {
 
@@ -165,8 +165,8 @@ public class MakerBuilder {
     /**
      * Build the metric maker for the given name and with the given metric dictionary.
      *
-     * @param name pretty maker name, e.g. longSum
-     * @param dictionary metric dictionary
+     * @param name  pretty maker name, e.g. longSum
+     * @param dictionary  metric dictionary
      *
      * @return the metric maker
      */
@@ -189,8 +189,8 @@ public class MakerBuilder {
      * 3. If no className given, the Maker name specified (longSum), turned into a Maker class name
      *    (LongSumMaker), inside the MetricMaker package
      *
-     * @param suppliedMakerName The maker name the user specified
-     * @param suppliedClassName The class name the user provided
+     * @param suppliedMakerName  The maker name the user specified
+     * @param suppliedClassName  The class name the user provided
      * @return The resolved class name
      */
     protected static String getClassName(String suppliedMakerName, String suppliedClassName) {
@@ -207,8 +207,8 @@ public class MakerBuilder {
     /**
      * Attempt to find the Class corresponding to the given name or class name.
      *
-     * @param name the pretty maker name, e.g. longSum
-     * @param className the class name; optional if built-in
+     * @param name  the pretty maker name, e.g. longSum
+     * @param className  the class name; optional if built-in
      *
      * @return the class corresponding to the given name or class name
      */
@@ -235,8 +235,8 @@ public class MakerBuilder {
     /**
      * Instantiate an object from a class name and parameters.
      *
-     * @param type the class to instantiate
-     * @param args the constructor arguments
+     * @param type  the class to instantiate
+     * @param args  the constructor arguments
      * @param <T> the type of object to return
      * @return an instantiated object, or null
      */
@@ -282,8 +282,8 @@ public class MakerBuilder {
     /**
      * Return true if the two classes are boxed/unboxed versions of each other.
      *
-     * @param pClass parameter class
-     * @param argClass argument class
+     * @param pClass  parameter class
+     * @param argClass  argument class
      * @return true if they match, false otherwise
      */
     private static boolean isUnboxingCase(Class<?> pClass, Class<?> argClass) {
@@ -305,7 +305,7 @@ public class MakerBuilder {
     /**
      * Make the first letter of the input string lowercase.
      *
-     * @param input any string
+     * @param input  any string
      * @return a new copy of the input string with the first letter lower-cased
      */
     protected static String lowerFirst(String input) {

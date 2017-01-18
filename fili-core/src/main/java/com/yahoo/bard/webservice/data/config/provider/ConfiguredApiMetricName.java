@@ -19,8 +19,8 @@ public class ConfiguredApiMetricName implements ApiMetricName {
     /**
      * Construct a new configured API metric name.
      *
-     * @param name the name
-     * @param logicalTable the logical table the metric belongs to
+     * @param name  the name
+     * @param logicalTable  the logical table the metric belongs to
      */
     public ConfiguredApiMetricName(String name, LogicalTableConfiguration logicalTable) {
         this.name = name;
