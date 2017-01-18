@@ -266,12 +266,14 @@
                                 <mkdir dir="${project.build.directory}/avro/avroFilesTesting"/>
                                 <java 
                                     jar="${project.build.directory}/avro-dependencies/jar/avro-tools.jar"
-                                    fork="true"
-                                    output="${project.build.directory}/avro/avroFilesTesting/sampleData.avro">
+                                    fork="true">
                                     <arg value="fromjson"/>
                                     <arg value="--schema-file"/>
                                     <arg value="${project.basedir}/src/test/resources/avroFilesTesting/sampleData.avsc"/>
                                     <arg value="${project.basedir}/src/test/resources/avroFilesTesting/sampleData.json"/>
+                                    <redirector 
+                                        output="${project.build.directory}/avro/avroFilesTesting/sampleData.avro"
+                                        binaryOutput="true"/>
                                 </java>
                             </target>
                         </configuration>
