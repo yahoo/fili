@@ -99,7 +99,7 @@ class PartialDataHandlerSpec extends Specification {
          * starts inside the dim1 hole and goes to the end of the period.
          */
         SegmentMetadata segments = new SegmentMetadata(
-                [("user_device_type"): buildIntervals(["2014-07-01/2014-07-09","2014-07-11/2014-07-29"]) as LinkedHashSet,
+                [("userDeviceType"): buildIntervals(["2014-07-01/2014-07-09","2014-07-11/2014-07-29"]) as LinkedHashSet,
                  ("property"): buildIntervals(["2014-07-01/2014-07-29"]) as LinkedHashSet,
                  ("os"): buildIntervals(["2014-07-01/2014-07-29"]) as LinkedHashSet],
                 [("page_views"): buildIntervals(["2014-07-04/2014-07-29"]) as Set]

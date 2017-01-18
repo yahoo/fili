@@ -23,7 +23,7 @@ import spock.lang.Unroll
 class RequestQueryGranularityResolverSpec extends Specification {
 
     Set metricNamesSet
-    QueryBuildingTestingResources resources = new QueryBuildingTestingResources()
+    QueryBuildingTestingResources resources = new QueryBuildingTestingResources().init()
     List<Interval> intervalList = [resources.interval1]
 
     Map apiRequestPrototype;

@@ -50,7 +50,14 @@ public class ImmutableAvailability extends ImmutableWrapperMap<Column, List<Inte
     }
 
     /**
-     * Build an availability map from unbound dimension and metric name maps and dimension dictionaries
+     * Build an availability map from unbound dimension and metric name maps and dimension dictionaries.
+     *
+     * @param schema blah blah blah
+     * @param dimensionIntervals blah blah blah
+     * @param metricIntervals blah blah blah
+     * @param dimensionDictionary blah blah blah
+     *
+     * @return blah blah blah
      */
     private static Map buildAvailabilityMap(
         PhysicalTableSchema schema,

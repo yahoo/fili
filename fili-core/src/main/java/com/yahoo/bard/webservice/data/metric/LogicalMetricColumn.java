@@ -21,6 +21,16 @@ public class LogicalMetricColumn extends MetricColumn {
     }
 
     /**
+     * Constructor.
+     *
+     * @param metric  The logical metric
+     */
+    public LogicalMetricColumn(LogicalMetric metric) {
+        super(metric.getName());
+        this.metric = metric;
+    }
+
+    /**
      * Getter for a logical metric.
      *
      * @return logical metric

@@ -72,7 +72,7 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
         }
         isInitialized = true
 
-        resources = new QueryBuildingTestingResources()
+        resources = new QueryBuildingTestingResources().init()
         resolver = new DefaultPhysicalTableResolver(new PartialDataHandler(), new DefaultingVolatileIntervalsService())
         dimSet1 = [resources.d1] as Set
         dimSet3 = [resources.d3] as Set

@@ -24,7 +24,7 @@ public class DruidHavingBuilderSpec extends Specification {
             .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
 
     def setupSpec() {
-        resources = new QueryBuildingTestingResources()
+        resources = new QueryBuildingTestingResources().init()
     }
 
     def "No havings returns null"() {

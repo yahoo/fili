@@ -30,7 +30,7 @@ public class DefaultDruidFilterBuilderSpec extends Specification {
     DruidFilterBuilder filterBuilder
 
     def setupSpec() {
-        resources = new QueryBuildingTestingResources()
+        resources = new QueryBuildingTestingResources().init()
     }
 
     def setup() {

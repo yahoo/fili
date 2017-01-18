@@ -4,8 +4,6 @@ package com.yahoo.bard.webservice.data.dimension;
 
 import com.yahoo.bard.webservice.table.Column;
 
-import java.util.Objects;
-
 import javax.validation.constraints.NotNull;
 
 /**
@@ -17,7 +15,7 @@ public class DimensionColumn extends Column {
 
     /**
      * Constructor.
-     * Uses the given dimension's api name for column name.
+     * Uses the given dimension's name for column name.
      *
      * @param dimension  The column's corresponding dimension
      */
@@ -39,16 +37,6 @@ public class DimensionColumn extends Column {
 
     public Dimension getDimension() {
         return this.dimension;
-    }
-
-    @Override
-    public int hashCode() {
-        return dimension.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        return (o instanceof DimensionColumn  && Objects.equals(((DimensionColumn) o).getDimension(), dimension));
     }
 
     @Override

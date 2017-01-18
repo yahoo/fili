@@ -35,6 +35,7 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationP
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchSetOperationPostAggregation
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
 import com.yahoo.bard.webservice.druid.util.ThetaSketchFieldConverter
+import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.PhysicalTable
@@ -100,33 +101,17 @@ class ThetaSketchIntersectionReportingResources extends Specification {
         dimensionDict = new DimensionDictionary()
         dimensionDict.addAll([propertyDim, countryDim])
 
-        PhysicalTable physicalTable = new ConcretePhysicalTable(
-                "NETWORK",
-                DAY.buildZonedTimeGrain(UTC),
-                [] as Set
-                ,
-                ["property": "property", "country": "country"]
-        )
 
-        //added dimensions to the physical table
-        [propertyDim, countryDim].each {
-            physicalTable.addColumn(DimensionColumn.addNewDimensionColumn(physicalTable, it))
-        }
 
         Set<ApiMetricName> metrics = [buildMockName("foos"), buildMockName("fooNoBar"), buildMockName("regFoos"), buildMockName("pageViews"), buildMockName("foo"), buildMockName("wiz"), buildMockName("waz"), buildMockName("viz"), buildMockName("unregFoos"), buildMockName("ratioMetric")]
-        //added metrics to the physical table
-        metrics.each {
-            physicalTable.addColumn(MetricColumn.addNewMetricColumn(physicalTable, it.apiName))
-        }
 
-        physicalTable.commit()
+        Set<Column> columns = (Set<? extends Column>) (metrics.collect {
+            new MetricColumn(it.apiName)
+        }.toSet())
 
-        TableGroup tableGroup = new TableGroup([physicalTable] as LinkedHashSet, metrics)
-        table = new LogicalTable("NETWORK", DAY, tableGroup)
+        columns.add(new DimensionColumn(propertyDim))
+        columns.add(new DimensionColumn(countryDim))
 
-        for (Dimension dim : tableGroup.getDimensions()) {
-            DimensionColumn.addNewDimensionColumn(table, dim)
-        }
 
         metricDict = new MetricDictionary()
 
@@ -167,7 +152,19 @@ class ThetaSketchIntersectionReportingResources extends Specification {
         metricDict.add(ratioMetric)
 
         LogicalMetricColumn lmc = new LogicalMetricColumn("foos", foos.make());
-        table.addColumn(lmc)
+
+        columns.add(lmc)
+
+        PhysicalTable physicalTable = new ConcretePhysicalTable(
+                "NETWORK",
+                DAY.buildZonedTimeGrain(UTC),
+                columns,
+                ["property": "property", "country": "country"]
+        )
+
+        TableGroup tableGroup = new TableGroup([physicalTable] as LinkedHashSet, metrics)
+
+        table = new LogicalTable("NETWORK", DAY, tableGroup, metricDict)
 
         JSONArray metricJsonObjArray = new JSONArray("[{\"filter\":{\"AND\":\"country|id-in[US,IN],property|id-in[114,125]\"},\"name\":\"foo\"},{\"filter\":{},\"name\":\"pageviews\"}]")
         JSONObject jsonobject = metricJsonObjArray.getJSONObject(0)
