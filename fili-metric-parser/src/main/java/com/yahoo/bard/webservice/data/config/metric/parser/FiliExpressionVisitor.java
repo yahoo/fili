@@ -56,7 +56,7 @@ public class FiliExpressionVisitor extends FiliMetricBaseVisitor<LogicalMetric> 
                     .getAggregations()
                     .stream()
                     .findFirst()
-                    .orElseThrow(() -> new RuntimeException(
+                    .orElseThrow(() -> new MetricParseException(
                             "Filtered aggregation requires aggregation but could not find one"));
 
             FilteredAggregationMaker maker = new FilteredAggregationMaker(context.scopedDict, aggregation, filter);
@@ -104,7 +104,7 @@ public class FiliExpressionVisitor extends FiliMetricBaseVisitor<LogicalMetric> 
                 function = ArithmeticPostAggregation.ArithmeticPostAggregationFunction.DIVIDE;
                 break;
             default:
-                throw new RuntimeException("Unknown type: " + type);
+                throw new MetricParseException("Unknown type: " + type);
         }
 
         MetricMaker maker = new ArithmeticMaker(ctx.scopedDict, function, new NoOpResultSetMapper());
@@ -126,7 +126,7 @@ public class FiliExpressionVisitor extends FiliMetricBaseVisitor<LogicalMetric> 
             lhs = visitPlusMinusArg(ctx.plusMinusArg(0));
             rhs = visitPlusMinusArg(ctx.plusMinusArg(1));
         } else {
-            throw new RuntimeException("error: could not parse");
+            throw new MetricParseException("error: could not parse");
         }
 
         // This returns a logical metric that has been added to the
@@ -160,7 +160,7 @@ public class FiliExpressionVisitor extends FiliMetricBaseVisitor<LogicalMetric> 
         } else if (ctx.INTEGER() != null) {
             value = ctx.INTEGER().getText();
         } else {
-            throw new RuntimeException("Error");
+            throw new MetricParseException("Error: could not parse number");
         }
 
         ConstantMaker maker = new ConstantMaker(context.scopedDict);
@@ -218,7 +218,7 @@ public class FiliExpressionVisitor extends FiliMetricBaseVisitor<LogicalMetric> 
                 return new LogicalMetric(null, null, name);
             }
         } else {
-            throw new RuntimeException("Unknown atom");
+            throw new MetricParseException("Unknown atom");
         }
     }
 

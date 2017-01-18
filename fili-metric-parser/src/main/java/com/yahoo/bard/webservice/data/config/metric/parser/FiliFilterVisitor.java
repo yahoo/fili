@@ -26,7 +26,8 @@ public class FiliFilterVisitor extends FiliMetricBaseVisitor<Filter> {
 
     @Override
     public Filter visitAndOrExp(final FiliMetricParser.AndOrExpContext ctx) {
-        Filter lhs, rhs;
+        Filter lhs;
+        Filter rhs;
         if (ctx.andOrExp() != null) {
             lhs = visitAndOrExp(ctx.andOrExp());
             rhs = visitAndOrArg(ctx.andOrArg(0));
@@ -41,20 +42,21 @@ public class FiliFilterVisitor extends FiliMetricBaseVisitor<Filter> {
         } else if (ctx.operator.getType() == FiliMetricParser.OR) {
             return new OrFilter(Arrays.asList(lhs, rhs));
         } else {
-            throw new RuntimeException("Could not parse filter");
+            throw new MetricParseException("Could not parse filter");
         }
     }
 
     @Override
     public Filter visitEqualExp(final FiliMetricParser.EqualExpContext ctx) {
-        String lhs, rhs;
+        String lhs;
+        String rhs;
         lhs = ctx.IDENTIFIER(0).getText();
         if (ctx.anynum() != null) {
             rhs = ctx.anynum().getText();
         } else if(ctx.IDENTIFIER(1) != null) {
             rhs = ctx.IDENTIFIER(1).getText();
         } else {
-            throw new RuntimeException("Unknown parameter");
+            throw new MetricParseException("Unknown parameter to expression");
         }
 
         return new SelectorFilter(context.dimensionDictionary.findByApiName(lhs), rhs);
