@@ -49,9 +49,13 @@ Current
 
 ### Changed:
 
+- [The druid query posting timer has been removed](https://github.com/yahoo/fili/pull/141)
+    * There wasn't really a good way of stopping timing only the posting itself. Since the timer is 
+       probably not that useful, it has been removed. 
+
 - [Dimension Field Tagging and Dynamic Dimension Field Serilization](https://github.com/yahoo/fili/pull/137)
     * Changed `fili-core` dimension endpoint `DimensionField` serialization strategy from hard coded static attributes to dynamic serialization based on `jackson` serializer
-
+        
 - [MetricMaker cleanup and simplification](https://github.com/yahoo/fili/pull/127)
     * Simplified raw aggregation makers
     * `ConstantMaker` now throws an `IllegalArgumentException` wrapping the raw NumberFormatException on a bad argument
@@ -208,6 +212,9 @@ Current
      so `LogicalDimensionColumn` is no longer needed
 
 ### Fixed:
+
+- [Stopped `DataApiRequest` timer](https://github.com/yahoo/fili/pull/141):
+    * Stopping the `DataApiRequest` timer that we forgot to stop
 
 - [Added missing coverage for `ThetaSketchEstimate` unwrapping in `MetricMaker.getSketchField`](https://github.com/yahoo/fili/pull/128) 
 

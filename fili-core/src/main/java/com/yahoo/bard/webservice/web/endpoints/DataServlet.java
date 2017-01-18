@@ -365,6 +365,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
                     uriInfo,
                     this
             );
+            RequestLog.stopTiming("DataApiRequest");
 
             if (requestMapper != null) {
                 apiRequest = (DataApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
