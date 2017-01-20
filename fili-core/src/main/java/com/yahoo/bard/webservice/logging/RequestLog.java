@@ -278,17 +278,6 @@ public class RequestLog {
     }
 
     /**
-     * Stop the most recent stopwatch and start this one.
-     * Time is accumulated if the stopwatch is already registered.
-     *
-     * @param nextPhase  the name of the stopwatch to be started
-     */
-    public static void switchTiming(String nextPhase) {
-        stopMostRecentTimer();
-        startTiming(nextPhase);
-    }
-
-    /**
      * Pause a stopwatch.
      *
      * @param caller  the caller to name this stopwatch with its class's simple name

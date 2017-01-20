@@ -2,7 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.endpoints;
 
-import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.REQUEST_WORKFLOW_TIMER;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
@@ -346,42 +345,60 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
     ) {
         try {
             RequestLog.startTiming("DataApiRequest");
-            DataApiRequest apiRequest = new DataApiRequest(
-                    tableName,
-                    timeGrain,
-                    dimensions,
-                    metrics,
-                    intervals,
-                    filters,
-                    havings,
-                    sorts,
-                    count,
-                    topN,
-                    format,
-                    timeZone,
-                    asyncAfter,
-                    perPage,
-                    page,
-                    uriInfo,
-                    this
-            );
-            RequestLog.stopTiming("DataApiRequest");
+            DataApiRequest apiRequest;
+            try {
+                apiRequest = new DataApiRequest(
+                        tableName,
+                        timeGrain,
+                        dimensions,
+                        metrics,
+                        intervals,
+                        filters,
+                        havings,
+                        sorts,
+                        count,
+                        topN,
+                        format,
+                        timeZone,
+                        asyncAfter,
+                        perPage,
+                        page,
+                        uriInfo,
+                        this
+                );
+            } finally {
+                RequestLog.stopTiming("DataApiRequest");
+            }
 
             if (requestMapper != null) {
                 apiRequest = (DataApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
-            RequestLog.switchTiming("DruidQueryMerge");
+            RequestLog.startTiming("DruidQueryMerge");
+            TemplateDruidQuery templateQuery;
             // Build the query template
-            TemplateDruidQuery templateQuery = templateDruidQueryMerger.merge(apiRequest);
+            try {
+                templateQuery = templateDruidQueryMerger.merge(apiRequest);
+            } finally {
+                RequestLog.stopTiming("DruidQueryMerge");
+            }
 
-            RequestLog.switchTiming("DruidQueryBuilder");
+            DruidAggregationQuery<?> druidQuery;
             // Select the performance slice and build the final query
-            DruidAggregationQuery<?> druidQuery = druidQueryBuilder.buildQuery(apiRequest, templateQuery);
+            try {
+                druidQuery = druidQueryBuilder.buildQuery(apiRequest, templateQuery);
+            } finally {
+                RequestLog.stopTiming("DruidQueryBuilder");
+            }
 
-            RequestLog.switchTiming("BuildRequestContext");
+            RequestLog.startTiming("BuildRequestContext");
+            RequestContext context;
             // Accumulate data needed for request processing workflow
-            RequestContext context = new RequestContext(containerRequestContext, readCache);
+            try {
+                context = new RequestContext(containerRequestContext, readCache);
+            } finally {
+                RequestLog.stopTiming("BuildRequestContext");
+            }
 
             //An instance to prepare the Response with different set of arguments
             HttpResponseMaker httpResponseMaker = new HttpResponseMaker(
@@ -409,10 +426,13 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
                     httpResponseMaker
             );
 
-            RequestLog.switchTiming("logRequestMetrics");
-            logRequestMetrics(apiRequest, readCache, druidQuery);
-            RequestLog.record(new DruidFilterInfo(apiRequest.getFilter()));
-            RequestLog.switchTiming(REQUEST_WORKFLOW_TIMER);
+            RequestLog.startTiming("logRequestMetrics");
+            try {
+                logRequestMetrics(apiRequest, readCache, druidQuery);
+                RequestLog.record(new DruidFilterInfo(apiRequest.getFilter()));
+            } finally {
+                RequestLog.stopTiming("logRequestMetrics");
+            }
 
             // Process the request
             boolean complete = dataRequestHandler.handleRequest(context, apiRequest, druidQuery, response);
@@ -421,15 +441,12 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             }
         } catch (RequestValidationException e) {
             LOG.debug(e.getMessage(), e);
-            RequestLog.stopMostRecentTimer();
             asyncResponse.resume(RequestHandlerUtils.makeErrorResponse(e.getStatus(), e, writer));
         } catch (NoMatchFoundException e) {
             LOG.info("Exception processing request", e);
-            RequestLog.stopMostRecentTimer();
             asyncResponse.resume(RequestHandlerUtils.makeErrorResponse(INTERNAL_SERVER_ERROR, e, writer));
         } catch (Error | Exception e) {
             LOG.info("Exception processing request", e);
-            RequestLog.stopMostRecentTimer();
             asyncResponse.resume(RequestHandlerUtils.makeErrorResponse(BAD_REQUEST, e, writer));
         }
     }
