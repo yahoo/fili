@@ -334,6 +334,6 @@ class SerializationResources extends Specification {
     }
 
     String getSerializedReponseContext1() {
-        """["com.yahoo.bard.webservice.web.responseprocessors.ResponseContext",{"randomHeader":"someHeader","apiMetricColumnNames":["java.util.LinkedHashSet",["metric1, metric2"]],"requestedApiDimensionFields":["java.util.LinkedHashMap",{"ageBracket":["java.util.LinkedHashSet",[["com.yahoo.bard.webservice.data.dimension.BardDimensionField","ID"]]]}]}]"""
+        """["com.yahoo.bard.webservice.web.responseprocessors.ResponseContext",{"randomHeader":"someHeader","apiMetricColumnNames":["java.util.LinkedHashSet",["metric1, metric2"]],"requestedApiDimensionFields":["java.util.LinkedHashMap",{"ageBracket":["java.util.LinkedHashSet",[["com.yahoo.bard.webservice.data.dimension.BardDimensionField",{"name":"id","description":"Dimension ID"}]]]}]}]"""
     }
 }
