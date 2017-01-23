@@ -49,6 +49,10 @@ Current
 
 ### Changed:
 
+- [The druid query posting timer has been removed](https://github.com/yahoo/fili/pull/141)
+    * There wasn't really a good way of stopping timing only the posting itself. Since the timer is 
+       probably not that useful, it has been removed. 
+
 - [Dimension Field Tagging and Dynamic Dimension Field Serilization](https://github.com/yahoo/fili/pull/137)
     * Changed `fili-core` dimension endpoint `DimensionField` serialization strategy from hard coded static attributes to dynamic serialization based on `jackson` serializer
 
@@ -181,6 +185,12 @@ Current
     * [JavaX Annotation API 1.2 -> 1.3](https://jcp.org/en/jsr/detail?id=250)
 
 ### Deprecated:
+
+- [`RequestLog::switchTiming` has been deprecated]((https://github.com/yahoo/fili/pull/141)
+    - `RequestLog::switchTiming` is very context-dependent, and therefore brittle. In particular, adding any
+        additional timers inside code called by a timed block may result in the original timer not stopping
+        properly. All usages of `switchTiming` should be replaced with explicit calls to `RequestLog::startTiming`
+        and `RequestLog::stopTiming`.
 
 - [Dimension Field Tagging and Dynamic Dimension Field Serilization](https://github.com/yahoo/fili/pull/137)
     * Deprecated `DimensionsServlet::getDimensionFieldListSummaryView` and `DimensionsServlet::getDimensionFieldSummaryView`
