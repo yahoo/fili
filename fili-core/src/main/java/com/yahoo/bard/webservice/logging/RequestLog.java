@@ -278,6 +278,22 @@ public class RequestLog {
     }
 
     /**
+     * Stop the most recent stopwatch and start this one.
+     * Time is accumulated if the stopwatch is already registered.
+     *
+     * @param nextPhase  the name of the stopwatch to be started
+     *
+     * @deprecated This method is too dependent on context that can be too easily changed by internal method calls.
+     * Each timer should be explicitly started by {@link RequestLog#startTiming(String)} and stopped by
+     * {@link RequestLog#stopTiming(String)} instead
+     */
+    @Deprecated
+    public static void switchTiming(String nextPhase) {
+        stopMostRecentTimer();
+        startTiming(nextPhase);
+    }
+
+    /**
      * Pause a stopwatch.
      *
      * @param caller  the caller to name this stopwatch with its class's simple name

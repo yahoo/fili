@@ -49,10 +49,11 @@ Current
 
 ### Changed:
 
-- [`RequestLog::switchTiming` has been removed]((https://github.com/yahoo/fili/pull/141)
+- [`RequestLog::switchTiming` has been deprecated]((https://github.com/yahoo/fili/pull/141)
     - `RequestLog::switchTiming` is very context-dependent, and therefore brittle. In particular, adding any
         additional timers inside code called by a timed block may result in the original timer not stopping
-        properly. All usages of `switchTiming` have been replaced with explicit starts and stops.
+        properly. All usages of `switchTiming` should be replaced with explicit calls to `RequestLog::startTiming`
+        and `RequestLog::stopTiming`.
 
 - [The druid query posting timer has been removed](https://github.com/yahoo/fili/pull/141)
     * There wasn't really a good way of stopping timing only the posting itself. Since the timer is 
