@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.endpoints;
 
+import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.REQUEST_WORKFLOW_TIMER;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
@@ -374,26 +375,27 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
                 apiRequest = (DataApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
+            // Build the query template
             RequestLog.startTiming("DruidQueryMerge");
             TemplateDruidQuery templateQuery;
-            // Build the query template
             try {
                 templateQuery = templateDruidQueryMerger.merge(apiRequest);
             } finally {
                 RequestLog.stopTiming("DruidQueryMerge");
             }
 
-            DruidAggregationQuery<?> druidQuery;
             // Select the performance slice and build the final query
+            DruidAggregationQuery<?> druidQuery;
+            RequestLog.startTiming("DruidQueryBuilder");
             try {
                 druidQuery = druidQueryBuilder.buildQuery(apiRequest, templateQuery);
             } finally {
                 RequestLog.stopTiming("DruidQueryBuilder");
             }
 
+            // Accumulate data needed for request processing workflow
             RequestLog.startTiming("BuildRequestContext");
             RequestContext context;
-            // Accumulate data needed for request processing workflow
             try {
                 context = new RequestContext(containerRequestContext, readCache);
             } finally {
@@ -435,6 +437,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             }
 
             // Process the request
+            RequestLog.startTiming(REQUEST_WORKFLOW_TIMER);
             boolean complete = dataRequestHandler.handleRequest(context, apiRequest, druidQuery, response);
             if (! complete) {
                 throw new IllegalStateException("No request handler accepted request.");
