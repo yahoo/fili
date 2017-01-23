@@ -66,7 +66,7 @@ public class MetadataHttpResponseChannel implements Observer<String> {
      * @param asyncResponse  The channel over which to send the response
      */
     private void send(Response response, AsyncResponse asyncResponse) {
-        if (RequestLog.isStarted(RESPONSE_WORKFLOW_TIMER)) {
+        if (RequestLog.isRunning(RESPONSE_WORKFLOW_TIMER)) {
             RequestLog.stopTiming(RESPONSE_WORKFLOW_TIMER);
         }
         asyncResponse.resume(response);

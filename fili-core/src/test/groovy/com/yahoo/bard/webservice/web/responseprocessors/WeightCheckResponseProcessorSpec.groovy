@@ -44,7 +44,7 @@ class WeightCheckResponseProcessorSpec extends Specification{
         then: "no timer is stopped and proccessing continues to the next processor"
         // This check is artifial. Is meant to check that there is no call to stopTiming() for this timer in the
         // regular execution path of the WeightCheckResponseProcessor
-        RequestLog.isStarted(REQUEST_WORKFLOW_TIMER) == true
+        RequestLog.isRunning(REQUEST_WORKFLOW_TIMER) == true
         1 * next.processResponse(json, groupByQuery, null)
 
     }
@@ -57,7 +57,7 @@ class WeightCheckResponseProcessorSpec extends Specification{
         wcrp.getFailureCallback(groupByQuery).invoke(t)
 
         then: "The REQUEST_WORKFLOW_TIMER is stopped"
-        RequestLog.isStarted(REQUEST_WORKFLOW_TIMER) == false
+        RequestLog.isRunning(REQUEST_WORKFLOW_TIMER) == false
 
         then: "and the failure callback of the next processor is called"
         1 * next.getFailureCallback(groupByQuery) >> nextFail
@@ -77,7 +77,7 @@ class WeightCheckResponseProcessorSpec extends Specification{
         wcrp.getErrorCallback(groupByQuery).invoke(statusCode, reason, body)
 
         then: "The REQUEST_WORKFLOW_TIMER is stopped"
-        RequestLog.isStarted(REQUEST_WORKFLOW_TIMER) == false
+        RequestLog.isRunning(REQUEST_WORKFLOW_TIMER) == false
 
         then: "and the http error callback of the next processor is called"
         1 * next.getErrorCallback(groupByQuery) >> nextError

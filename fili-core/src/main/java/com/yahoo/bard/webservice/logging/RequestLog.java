@@ -86,54 +86,6 @@ public class RequestLog {
     }
 
     /**
-     * Represents a phase that is timed.
-     * TimedPhase is used to associate a Timer located in the registry with the exact duration of such a phase for a
-     * specific request.
-     */
-    private static class TimedPhase {
-        private final String name;
-        private long start;
-        private long duration;
-
-        /**
-         * Constructor.
-         *
-         * @param name  Name of the phase
-         */
-        private TimedPhase(String name) {
-            this.name = name;
-        }
-
-        /**
-         * Start the phase.
-         */
-        private void start() {
-            if (start != 0) {
-                LOG.warn("Tried to start timer that is already running: {}", name);
-                return;
-            }
-            start = System.nanoTime();
-        }
-
-        /**
-         * Stop the phase.
-         */
-        private void stop() {
-            if (start == 0) {
-                LOG.warn("Tried to stop timer that has not been started: {}", name);
-                return;
-            }
-            duration += System.nanoTime() - start;
-            REGISTRY.timer(name).update(duration, TimeUnit.NANOSECONDS);
-            start = 0;
-        }
-
-        private boolean isStarted() {
-            return start != 0;
-        }
-    }
-
-    /**
      * Resets the contents of a request log at the calling thread.
      */
     private void clear() {
@@ -180,19 +132,7 @@ public class RequestLog {
      * @return the map containing all the recorded times per phase in milliseconds
      */
     private Map<String, Long> getDurations() {
-        return times.values()
-                .stream()
-                .peek(
-                        phase -> {
-                            if (phase.start != 0) {
-                                LOG.warn(
-                                        "Exporting duration while timer is running. Measurement might be wrong: {}",
-                                        phase.name
-                                );
-                            }
-                        }
-                )
-                .collect(Collectors.toMap(phase -> phase.name, phase -> phase.duration));
+        return times.values().stream().collect(Collectors.toMap(TimedPhase::getName, TimedPhase::getDuration));
     }
 
     /**
@@ -221,15 +161,15 @@ public class RequestLog {
     }
 
     /**
-     * Check if a stopwatch is started.
+     * Check if a stopwatch is currently running.
      *
      * @param caller  the caller to name this stopwatch with its class's simple name
      *
      * @return whether this stopwatch is started
      */
 
-    public static boolean isStarted(Object caller) {
-        return isStarted(caller.getClass().getSimpleName());
+    public static boolean isRunning(Object caller) {
+        return isRunning(caller.getClass().getSimpleName());
     }
 
     /**
@@ -239,10 +179,10 @@ public class RequestLog {
      *
      * @return whether this stopwatch is started
      */
-    public static boolean isStarted(String timePhaseName) {
+    public static boolean isRunning(String timePhaseName) {
         RequestLog current = RLOG.get();
         TimedPhase timePhase = current.times.get(timePhaseName);
-        return timePhase != null && timePhase.isStarted();
+        return timePhase != null && timePhase.isRunning();
     }
 
     /**
@@ -250,9 +190,11 @@ public class RequestLog {
      * Time is accumulated if the stopwatch is already registered
      *
      * @param caller  the caller to name this stopwatch with its class's simple name
+     *
+     * @return The stopwatch
      */
-    public static void startTiming(Object caller) {
-        startTiming(caller.getClass().getSimpleName());
+    public static TimedPhase startTiming(Object caller) {
+        return startTiming(caller.getClass().getSimpleName());
     }
 
     /**
@@ -260,8 +202,10 @@ public class RequestLog {
      * Time is accumulated if the stopwatch is already registered
      *
      * @param timePhaseName  the name of this stopwatch
+     *
+     * @return The stopwatch
      */
-    public static void startTiming(String timePhaseName) {
+    public static TimedPhase startTiming(String timePhaseName) {
         RequestLog current = RLOG.get();
         TimedPhase timePhase = current.times.get(timePhaseName);
         if (timePhase == null) {
@@ -274,7 +218,7 @@ public class RequestLog {
             current.times.put(timePhaseName, timePhase);
         }
         current.mostRecentTimer = timePhase;
-        timePhase.start();
+        return timePhase.start();
     }
 
     /**
@@ -303,6 +247,15 @@ public class RequestLog {
     }
 
     /**
+     * Registers the final duration of a stopped timer with the RequestLog.
+     *
+     * @param stoppedPhase  The phase that has been stopped, and whose duration needs to be stored
+     */
+    public static void registerTime(TimedPhase stoppedPhase) {
+        RequestLog.REGISTRY.timer(stoppedPhase.getName()).update(stoppedPhase.getDuration(), stoppedPhase.getUnit());
+    }
+
+    /**
      * Pause a stopwatch.
      *
      * @param timePhaseName  the name of this stopwatch
@@ -313,7 +266,7 @@ public class RequestLog {
             LOG.warn("Tried to stop non-existent phase: {}", timePhaseName);
             return;
         }
-        timePhase.stop();
+        timePhase.close();
     }
 
     /**
@@ -321,7 +274,7 @@ public class RequestLog {
      */
     public static void stopMostRecentTimer() {
         try {
-            stopTiming(RLOG.get().mostRecentTimer.name);
+            stopTiming(RLOG.get().mostRecentTimer.getName());
         } catch (NullPointerException ignored) {
             LOG.warn("Stopping timing failed because mostRecentTimer wasn't registered.");
         }
@@ -450,8 +403,8 @@ public class RequestLog {
                         .stream()
                         .filter(
                                 e -> e.getKey().contains(DRUID_QUERY_TIMER) ||
-                                        (e.getKey().equals(REQUEST_WORKFLOW_TIMER) && !e.getValue().isStarted()) ||
-                                        (e.getKey().equals(RESPONSE_WORKFLOW_TIMER) && e.getValue().isStarted())
+                                        (e.getKey().equals(REQUEST_WORKFLOW_TIMER) && !e.getValue().isRunning()) ||
+                                        (e.getKey().equals(RESPONSE_WORKFLOW_TIMER) && e.getValue().isRunning())
                         )
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
         );

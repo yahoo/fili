@@ -38,7 +38,7 @@ public class WeightCheckResponseProcessor implements ResponseProcessor {
         return new FailureCallback() {
             @Override
             public void invoke(Throwable error) {
-                if (RequestLog.isStarted(REQUEST_WORKFLOW_TIMER)) {
+                if (RequestLog.isRunning(REQUEST_WORKFLOW_TIMER)) {
                     RequestLog.stopTiming(REQUEST_WORKFLOW_TIMER);
                 }
                 next.getFailureCallback(druidQuery).invoke(error);
@@ -51,7 +51,7 @@ public class WeightCheckResponseProcessor implements ResponseProcessor {
     return new HttpErrorCallback() {
             @Override
             public void invoke(int statusCode, String reason, String responseBody) {
-                if (RequestLog.isStarted(REQUEST_WORKFLOW_TIMER)) {
+                if (RequestLog.isRunning(REQUEST_WORKFLOW_TIMER)) {
                     RequestLog.stopTiming(REQUEST_WORKFLOW_TIMER);
                 }
                 next.getErrorCallback(druidQuery).invoke(statusCode, reason, responseBody);
