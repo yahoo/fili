@@ -40,6 +40,16 @@ Current
 
 ### Deprecated:
 
+- [`RequestLog::stopMostRecentTimer` has been deprecated](https://github.com/yahoo/fili/pull/143)
+    - This method is a part of the infrastructure to support the recently
+    deprecated `RequestLog::switchTiming`.
+
+- [`RequestLog::switchTiming` has been deprecated](https://github.com/yahoo/fili/pull/141)
+    - `RequestLog::switchTiming` is very context-dependent, and therefore brittle. In particular, adding any
+        additional timers inside code called by a timed block may result in the original timer not stopping
+        properly. All usages of `switchTiming` should be replaced with explicit calls to `RequestLog::startTiming`
+        and `RequestLog::stopTiming`.
+
 
 
 ### Fixed:
@@ -258,11 +268,6 @@ Changes:
     * [JavaX Annotation API 1.2 -> 1.3](https://jcp.org/en/jsr/detail?id=250)
 
 ### Deprecated:
-
-- [`RequestLog::switchTiming` has been deprecated](https://github.com/yahoo/fili/pull/141)
-    - `RequestLog::switchTiming` is very context-dependent, and therefore brittle. In particular, adding any additional
-      timers inside code called by a timed block may result in the original timer not stopping properly. All usages of
-      `switchTiming` should be replaced with explicit calls to `RequestLog::startTiming` and `RequestLog::stopTiming`.
 
 - [Dimension Field Tagging and Dynamic Dimension Field Serilization](https://github.com/yahoo/fili/pull/137)
     * Deprecated `DimensionsServlet::getDimensionFieldListSummaryView` and `DimensionsServlet::getDimensionFieldSummaryView`

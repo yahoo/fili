@@ -55,6 +55,7 @@ public class RequestLog {
 
     private String logId;
     private LogBlock info;
+    @Deprecated
     private TimedPhase mostRecentTimer;
     private final Map<String, TimedPhase> times;
     private final Set<String> threadIds;
@@ -271,7 +272,11 @@ public class RequestLog {
 
     /**
      * Stop the most recent stopwatch.
+     *
+     * @deprecated  Stopping a timer based on context is brittle, and prone to unexpected changes. Timers should be
+     * stopped explicitly, or started in a try-with-resources block
      */
+    @Deprecated
     public static void stopMostRecentTimer() {
         try {
             stopTiming(RLOG.get().mostRecentTimer.getName());
