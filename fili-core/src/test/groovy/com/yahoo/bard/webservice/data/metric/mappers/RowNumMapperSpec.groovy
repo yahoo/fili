@@ -52,9 +52,6 @@ class RowNumMapperSpec extends Specification {
         DimensionColumn dc1 = new DimensionColumn(d1)
         DimensionColumn dc2 = new DimensionColumn(d2)
 
-        ResultSetSchema schema = new ResultSetSchema(DAY, [mc1, mc2, dc1, dc2] as Set)
-
-
         // Create dummy DimensionRow's
         DimensionRow dr1 = BardDimensionField.makeDimensionRow(d1, "id1", "desc1")
         DimensionRow dr2 = BardDimensionField.makeDimensionRow(d2, "id2", "desc2")
@@ -73,12 +70,15 @@ class RowNumMapperSpec extends Specification {
 
         Result r2 = new Result(drow, mv2, dateTime)
 
+        // Create a dummy column with name rowNum
+        MetricColumn rowNum = new MetricColumn(TestApiMetricName.A_ROW_NUM.getApiName())
+
+        ResultSetSchema schema = new ResultSetSchema(DAY, [mc1, mc2, dc1, dc2, rowNum] as Set)
+
         // From the dummy result's  created above, create a ResultSet
         // This is the resultSet which we pass to the mapper
         ResultSet resultSet = new ResultSet(schema, Arrays.asList(r1, r2))
 
-        // Create a dummy column with name rowNum
-        MetricColumn rowNum = MetricColumn.addNewMetricColumn(schema, TestApiMetricName.A_ROW_NUM.getApiName())
 
         // Add the new column with respective values, which we expect the rowNumMapper would do
         LinkedHashMap<MetricColumn, BigDecimal> mappedMv1 = new LinkedHashMap<>()

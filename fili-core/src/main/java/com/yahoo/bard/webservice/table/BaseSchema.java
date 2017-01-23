@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.table;
 
 import com.google.common.collect.ImmutableSet;
 
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -20,6 +21,24 @@ public class BaseSchema implements Schema {
      */
     protected BaseSchema(Set<Column> columns) {
         this.columns = ImmutableSet.copyOf(columns);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof BaseSchema)) {
+            return false;
+        }
+
+        BaseSchema that = (BaseSchema) o;
+        return Objects.equals(columns, that.columns);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), columns);
     }
 
     @Override

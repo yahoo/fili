@@ -176,7 +176,7 @@ public class QueryBuildingTestingResources extends Specification {
         volatileDayTable = new ConcretePhysicalTable("day", DAY.buildZonedTimeGrain(UTC), [d1, m1].collect{toColumn(it)}.toSet(), [:])
 
         t1h = new ConcretePhysicalTable("table1h", utcHour, [d1, d2, d3, m1, m2, m3].collect{toColumn(it)}.toSet(), ["ageBracket":"age_bracket"])
-        t1d = new ConcretePhysicalTable("table1d", utcDay, [d1, d2, d3, m2, m3].collect{toColumn(it)}.toSet(), ["ageBracket":"age_bracket"])
+        t1d = new ConcretePhysicalTable("table1d", utcDay, [d1, d2, d3, m1, m2, m3].collect{toColumn(it)}.toSet(), ["ageBracket":"age_bracket"])
         t1hShort = new ConcretePhysicalTable("table1Short", utcHour, [d1, d2, m1, m2, m3].collect{toColumn(it)}.toSet(), [:])
 
         t2h = new ConcretePhysicalTable("table2", utcHour, [d1, d2, d4, m1, m4, m5].collect{toColumn(it)}.toSet(), [:])
@@ -210,8 +210,8 @@ public class QueryBuildingTestingResources extends Specification {
 
         setupPartialData()
 
-        tg1h = new TableGroup([t1h, t1d, t1hShort] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())}.toSet(), [].toSet())
-        tg1d = new TableGroup([t1d] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())}.toSet(), [].toSet())
+        tg1h = new TableGroup([t1h, t1d, t1hShort] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())}.toSet(), [d1].toSet())
+        tg1d = new TableGroup([t1d] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())}.toSet(), [d1].toSet())
         tg1Short = new TableGroup([t1hShort] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())}.toSet(), [].toSet())
         tg2h = new TableGroup([t2h] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())}.toSet(), [].toSet())
         tg3d = new TableGroup([t3d] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())}.toSet(), [].toSet())

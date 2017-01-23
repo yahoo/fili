@@ -53,7 +53,7 @@ public class SchemaPhysicalTableMatcher implements PhysicalTableMatcher {
             return false;
         }
 
-        Set<String> supplyNames = table.getColumns().stream()
+        Set<String> supplyNames = table.getSchema().getColumns().stream()
                 .map(Column::getName)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
