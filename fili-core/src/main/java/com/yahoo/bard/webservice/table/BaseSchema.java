@@ -38,7 +38,7 @@ public class BaseSchema implements Schema {
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), columns);
+        return Objects.hash(columns);
     }
 
     @Override

@@ -59,7 +59,7 @@ class DataApiRequestFilterSpec extends Specification {
         }
         TableGroup tg = Mock(TableGroup)
         tg.getDimensions() >> dimensionDict.apiNameToDimension.values()
-        table = new LogicalTable("name", DAY, tg)
+        table = new LogicalTable("name", DAY, tg, metricDict)
         dimensionDict.apiNameToDimension.values().each {
             DimensionColumn.addNewDimensionColumn(table, it)
         }

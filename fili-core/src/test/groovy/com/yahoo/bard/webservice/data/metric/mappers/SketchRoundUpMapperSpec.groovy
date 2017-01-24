@@ -16,7 +16,7 @@ class SketchRoundUpMapperSpec extends Specification {
 
     MetricColumn column = new MetricColumn("Row row row your boat")
 
-    ResultSetSchema schema = new ResultSetSchema([column], DefaultTimeGrain.DAY)
+    ResultSetSchema schema = new ResultSetSchema(DefaultTimeGrain.DAY, [column].toSet())
     SketchRoundUpMapper mapper = new SketchRoundUpMapper(column.name)
 
     @Unroll

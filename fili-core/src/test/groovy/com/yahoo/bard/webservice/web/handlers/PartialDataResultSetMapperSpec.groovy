@@ -7,7 +7,6 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.YEAR
 
 import com.yahoo.bard.webservice.table.GranularSchema
 import com.yahoo.bard.webservice.data.ResultSetSchema
-import com.yahoo.bard.webservice.table.Schema
 import com.yahoo.bard.webservice.data.PartialDataHandler
 import com.yahoo.bard.webservice.data.Result
 import com.yahoo.bard.webservice.data.metric.mappers.PartialDataResultSetMapper
@@ -132,7 +131,7 @@ public class PartialDataResultSetMapperSpec extends Specification {
     @Unroll
     def "Under all time grain, missing data #missingIntervals and volatileData #missingIntervals is filtered: #filtered"() {
         setup: "Given an all time grain request"
-        ResultSetSchema schema1 = ResultSetSchema(Schema)
+        ResultSetSchema schema1 = new ResultSetSchema(schema)
         schema1.getGranularity() >> AllGranularity.INSTANCE
 
         and: "some possibly missing or volatile intervals"
@@ -142,7 +141,7 @@ public class PartialDataResultSetMapperSpec extends Specification {
         Result result = new Result([:], [:], new DateTime("2014"))
 
         expect:
-        mapper.map(result, schema1) ==  filtered ? null : result
+        mapper.map(result, schema1) ==  (filtered ? null : result)
 
         where:
         missingIntervals        | volatileIntervals     | filtered
