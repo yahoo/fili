@@ -5,37 +5,60 @@ package com.yahoo.bard.webservice.data.config.provider;
 import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker;
 
 /**
- * A MakerConfiguration provides a means to register custom MetricMakers.
+ * Everything you need to know to build a custom MetricMaker.
  */
-public interface MakerConfiguration {
+public class MakerConfiguration {
+
+    protected final String name;
+    protected final String className;
+    protected final Object[] arguments;
+
+    /**
+     * The configuration for a metric maker.
+     *
+     * @param name  The maker name to regiser
+     * @param className  The class name
+     * @param arguments  The maker constructor arguments
+     */
+    public MakerConfiguration(String name, String className, Object[] arguments) {
+        this.name = name;
+        this.className = className;
+        this.arguments = arguments;
+    }
 
     /**
      * Get the the pretty name for the metric maker, e.g. longSum
      *
      * @return the name
      */
-    String getName();
+    public String getName() {
+        return name;
+    }
 
     /**
      * The class name of the metric maker.
      *
      * @return the class name
      */
-    String getClassName();
+    public String getClassName() {
+        return className;
+    }
 
     /**
      * The arguments to construct the custom metric maker.
      *
      * @return the constructor arguments
      */
-    Object[] getArguments();
+    public Object[] getArguments() {
+        return arguments;
+    }
 
     /**
      * The class of the metric maker.
      *
      * @return the metric maker class
      */
-    default Class<? extends MetricMaker> getMakerClass() {
+    public Class<? extends MetricMaker> getMakerClass() {
         try {
             return (Class<? extends MetricMaker>) Class.forName(getClassName());
         } catch (ClassNotFoundException e) {

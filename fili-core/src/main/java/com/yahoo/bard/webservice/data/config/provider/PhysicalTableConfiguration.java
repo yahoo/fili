@@ -2,38 +2,67 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.provider;
 
-import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
-import com.yahoo.bard.webservice.data.config.names.FieldName;
-import com.yahoo.bard.webservice.data.config.table.PhysicalTableDefinition;
+import com.yahoo.bard.webservice.druid.model.query.Granularity;
 
-import java.util.List;
 import java.util.Set;
 
 /**
- * A PhysicalTableConfiguration can create its PhysicalTableDefinition, given a dimension configuration.
+ * Everything you need to know about a physical table.
  */
-public interface PhysicalTableConfiguration {
+public class PhysicalTableConfiguration {
+    protected final String name;
+    protected final Granularity granularity;
+    protected final Set<String> dimensions;
+    protected final Set<String> metrics;
+
+    /**
+     * Construct a new PhysicalTableConfiguration object.
+     *
+     * @param name the table name
+     * @param granularity the table grain
+     * @param dimensions the table dimensions
+     * @param metrics the table metrics
+     */
+    public PhysicalTableConfiguration(String name, Granularity granularity, Set<String> dimensions, Set<String> metrics) {
+        this.name = name;
+        this.granularity = granularity;
+        this.dimensions = dimensions;
+        this.metrics = metrics;
+    }
 
     /**
      * Get the physical table name.
      *
      * @return the name
      */
-    String getName();
+    public String getName() {
+        return name;
+    }
 
     /**
-     * Build a physical table, given dimensions.
+     * Get the physical table granularity.
      *
-     * @param dimensionConfig  the dimension configuration
-     * @return a PhysicalTableDefinition
+     * @return the granularity
      */
-    PhysicalTableDefinition buildPhysicalTable(List<DimensionConfig> dimensionConfig);
+    public Granularity getGranularity() {
+        return granularity;
+    }
 
     /**
-     * Return the metrics of the physical table.
+     * Get the dimensions of the physical table.
      *
-     * @return the set of FieldNames
+     * @return the dimensions
      */
-    Set<FieldName> getMetrics();
+    public Set<String> getDimensions() {
+        return dimensions;
+    }
 
+    /**
+     * Get the metrics of the physical table.
+     *
+     * @return the metrics
+     */
+    public Set<String> getMetrics() {
+        return metrics;
+    }
 }

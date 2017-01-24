@@ -44,7 +44,14 @@ public interface ConfigProvider {
      *
      * @return a list of dimension configurations
      */
-    List<DimensionConfig> getDimensionConfig();
+    List<DimensionConfiguration> getDimensionConfig();
+
+    /**
+     * Return the dimension field configurations.
+     *
+     * @return a list of dimension field configurations
+     */
+    List<DimensionFieldConfiguration> getDimensionFieldConfig();
 
     /**
      * Return the metric configurations.
@@ -52,4 +59,11 @@ public interface ConfigProvider {
      * @return a list of metric configurations
      */
     List<MetricConfiguration> getMetricConfig();
+
+    /**
+     * Return an object that can turn metric configurations into actual metrics.
+     *
+     * @return The metric builder
+     */
+    LogicalMetricBuilder getLogicalMetricBuilder();
 }

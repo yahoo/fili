@@ -8,7 +8,13 @@ import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.config.names.FieldName;
 import com.yahoo.bard.webservice.data.config.table.BaseTableLoader;
 import com.yahoo.bard.webservice.data.config.table.PhysicalTableDefinition;
+import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
+import com.yahoo.bard.webservice.data.time.ZonelessTimeGrain;
 import com.yahoo.bard.webservice.table.TableGroup;
+
+import org.joda.time.DateTimeZone;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -23,8 +29,10 @@ import java.util.stream.Collectors;
  */
 public class ConfiguredTableLoader extends BaseTableLoader {
 
+    private static final Logger LOG = LoggerFactory.getLogger(ConfiguredTableLoader.class);
+
     protected final List<LogicalTableConfiguration> logicalTables;
-    protected final List<DimensionConfig> dimensions;
+    protected final Set<DimensionConfig> dimensions;
     protected final Map<String, PhysicalTableConfiguration> physicalTableConfig = new HashMap<>();
 
     /**
@@ -37,7 +45,7 @@ public class ConfiguredTableLoader extends BaseTableLoader {
     public ConfiguredTableLoader(
             List<LogicalTableConfiguration> logicalTables,
             List<PhysicalTableConfiguration> physicalTables,
-            List<DimensionConfig> dimensions
+            Set<DimensionConfig> dimensions
     ) {
         this.logicalTables = logicalTables;
         for (PhysicalTableConfiguration conf : physicalTables) {
@@ -54,11 +62,12 @@ public class ConfiguredTableLoader extends BaseTableLoader {
             Set<FieldName> physicalFields = logicalTable.getPhysicalTables().stream()
                     .map(physicalTable -> physicalTableConfig.get(physicalTable).getMetrics())
                     .flatMap(Collection::stream)
+                    .map(FieldNameImpl::new)
                     .collect(Collectors.toSet());
 
             // Build the actual physical tables for this logical table
             Set<PhysicalTableDefinition> physicalTableDefs = logicalTable.getPhysicalTables().stream()
-                    .map(physicalTable -> physicalTableConfig.get(physicalTable).buildPhysicalTable(dimensions))
+                    .map(tableName -> buildPhysicalTable(physicalTableConfig.get(tableName)))
                     .collect(Collectors.toSet());
 
             // Build the set of api metric names
@@ -81,5 +90,48 @@ public class ConfiguredTableLoader extends BaseTableLoader {
                     dictionaries
             );
         }
+    }
+
+    /**
+     * Build a physical table from its configuration.
+     *
+     * @param physicalTableConfiguration  The physical table configuration
+     *
+     * @return a PhysicalTableDefinition
+     */
+    public PhysicalTableDefinition buildPhysicalTable(PhysicalTableConfiguration physicalTableConfiguration) {
+
+        Set<DimensionConfig> dimSet = dimensions.stream()
+                .filter(dim -> physicalTableConfiguration.getDimensions().contains(dim.getApiName()))
+                .collect(Collectors.toSet());
+
+        // Warn if we didn't find a DimensionConfig for any dimensions configured in physical table def'n
+        if (dimSet.size() < physicalTableConfiguration.getDimensions().size()) {
+            StringBuilder builder = new StringBuilder();
+            builder.append("Unable to build physical table [");
+            builder.append(physicalTableConfiguration.getName());
+            builder.append("]. Dimensions missing from dimension configuration: (");
+
+            Set<String> missingDimensions = new HashSet<>(physicalTableConfiguration.getDimensions());
+            missingDimensions.removeAll(
+                    dimensions.stream()
+                            .map(DimensionConfig::getApiName)
+                            .collect(Collectors.toSet())
+            );
+
+            for (String dimName : missingDimensions) {
+                builder.append(dimName);
+                builder.append(",");
+            }
+
+            // delete extra comma
+            builder.deleteCharAt(builder.length() - 1);
+            builder.append(").");
+            LOG.warn(builder.toString());
+        }
+
+        // FIXME: Needs proper configuration.
+        ZonedTimeGrain grain = new ZonedTimeGrain((ZonelessTimeGrain) physicalTableConfiguration.getGranularity(), DateTimeZone.UTC);
+        return new PhysicalTableDefinition(new TableNameImpl(physicalTableConfiguration.getName()), grain, dimSet);
     }
 }
