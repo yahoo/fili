@@ -9,6 +9,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionRow;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.TimedPhase;
 import com.yahoo.bard.webservice.util.DimensionStoreKeyUtils;
 import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.util.SinglePagePagination;
@@ -547,9 +548,8 @@ public class LuceneSearchProvider implements SearchProvider {
         initializeIndexSearcher();
         lock.readLock().lock();
         try {
-            RequestLog.startTiming("QueryingLucene");
             ScoreDoc[] hits;
-            try {
+            try (TimedPhase timer = RequestLog.startTiming("QueryingLucene")) {
                 hits = getPageOfData(
                         luceneIndexSearcher,
                         null,
@@ -571,13 +571,10 @@ public class LuceneSearchProvider implements SearchProvider {
                         throw new PageNotFoundException(requestedPageNumber, perPage, 0);
                     }
                 }
-            } finally {
-                RequestLog.stopTiming("QueryingLucene");
             }
 
             // convert hits to dimension rows
-            RequestLog.startTiming("LuceneHydratingDimensionRows");
-            try {
+            try (TimedPhase timer = RequestLog.startTiming("LuceneHydratingDimensionRows")) {
                 String idKey = DimensionStoreKeyUtils.getColumnKey(dimension.getKey().getName());
                 filteredDimRows = Arrays.stream(hits)
                         .map(
@@ -593,8 +590,6 @@ public class LuceneSearchProvider implements SearchProvider {
                         .map(document -> document.get(idKey))
                         .map(dimension::findDimensionRowByKeyValue)
                         .collect(Collectors.toCollection(TreeSet::new));
-            } finally {
-                RequestLog.stopTiming("LuceneHydratingDimensionRows");
             }
 
             documentCount = luceneIndexSearcher.count(query); //throws the caught IOException

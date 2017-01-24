@@ -378,6 +378,11 @@ New Capabilities & Enhancements:
 
 ### Changed:
 
+- [`RequestLog` timings support the try-with-resources block](https://github.com/yahoo/fili/pull/143)
+    * A block of code can now be timed by wrapping the timed block in a try-with-resources block that 
+        starts the timer. Note: This won't work when performing timings across threads, or across
+        contexts. Those need to be started and stopped manually.
+
 - [Error messages generated during response processing include the request id.](https://github.com/yahoo/fili/pull/78)
 
 - [`DimensionStoreKeyUtils` now supports case sensitive row and column keys](https://github.com/yahoo/fili/pull/90)
