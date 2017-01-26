@@ -84,7 +84,8 @@ public class BardLoggingFilter implements ContainerRequestFilter, ContainerRespo
      */
     @Override
     public void filter(ContainerRequestContext request) throws IOException {
-        FiliTimingFilter.appendRequestId(request.getHeaders());
+        FiliInitializationFilter.appendRequestId(request.getHeaders());
+        RequestLogUtils.startTimingRequest();
         RequestLogUtils.startTiming(this);
         RequestLogUtils.record(new Preface(request));
 
@@ -109,7 +110,7 @@ public class BardLoggingFilter implements ContainerRequestFilter, ContainerRespo
     @Override
     public void filter(ContainerRequestContext request, ContainerResponseContext response)
         throws IOException {
-        FiliTimingFilter.appendRequestId(request.getHeaders());
+        FiliInitializationFilter.appendRequestId(request.getHeaders());
         RequestLogUtils.startTiming(this);
         StringBuilder debugMsgBuilder = new StringBuilder();
 
@@ -170,7 +171,7 @@ public class BardLoggingFilter implements ContainerRequestFilter, ContainerRespo
      */
     @Override
     public void filter(ClientRequestContext request) throws IOException {
-        FiliTimingFilter.appendRequestId(request.getStringHeaders());
+        FiliInitializationFilter.appendRequestId(request.getStringHeaders());
         RequestLogUtils.startTiming(CLIENT_TOTAL_TIMER);
         request.setProperty(PROPERTY_NANOS, System.nanoTime());
     }

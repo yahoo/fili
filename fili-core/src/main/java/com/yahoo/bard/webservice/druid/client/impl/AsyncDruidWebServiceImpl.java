@@ -2,14 +2,10 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.client.impl;
 
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.MappingJsonFactory;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DRUID_URL_INVALID;
+import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.REQUEST_WORKFLOW_TIMER;
+import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.RESPONSE_WORKFLOW_TIMER;
+
 import com.yahoo.bard.webservice.application.MetricRegistryFactory;
 import com.yahoo.bard.webservice.druid.client.DruidServiceConfig;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
@@ -22,6 +18,16 @@ import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.RequestLogUtils;
 import com.yahoo.bard.webservice.logging.blocks.DruidResponse;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
+
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.MappingJsonFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+
 import org.asynchttpclient.AsyncCompletionHandler;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.AsyncHttpClientConfig;
@@ -32,7 +38,6 @@ import org.asynchttpclient.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.Response.Status;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -40,9 +45,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DRUID_URL_INVALID;
-import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.REQUEST_WORKFLOW_TIMER;
-import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.RESPONSE_WORKFLOW_TIMER;
+import javax.ws.rs.core.Response.Status;
 
 /**
  * Represents the druid web service endpoint.
@@ -296,13 +299,13 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
     ) {
         long seqNum = druidQuery.getContext().getSequenceNumber();
         String entityBody;
-        RequestLog.startTiming("DruidQuerySerializationSeq" + seqNum);
+        RequestLogUtils.startTiming("DruidQuerySerializationSeq" + seqNum);
         try {
             entityBody = writer.writeValueAsString(druidQuery);
         } catch (JsonProcessingException e) {
             throw new IllegalStateException(e);
         } finally {
-            RequestLog.stopTiming("DruidQuerySerializationSeq" + seqNum);
+            RequestLogUtils.stopTiming("DruidQuerySerializationSeq" + seqNum);
         }
 
         long totalQueries = druidQuery.getContext().getNumberOfQueries();
@@ -312,7 +315,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
 
         if (!(druidQuery instanceof WeightEvaluationQuery)) {
             if (context.getNumberOfOutgoing().decrementAndGet() == 0) {
-                RequestLog.stopTiming(REQUEST_WORKFLOW_TIMER);
+                RequestLogUtils.stopTiming(REQUEST_WORKFLOW_TIMER);
             }
             outstanding = context.getNumberOfIncoming();
             timerName = DRUID_QUERY_TIMER + String.format(format, seqNum);

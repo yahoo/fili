@@ -7,7 +7,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.util.JsonSlurper
 import com.yahoo.bard.webservice.util.JsonSortStrategy
 import com.yahoo.bard.webservice.web.filters.BardLoggingFilter
-import com.yahoo.bard.webservice.web.filters.FiliTimingFilter
+import com.yahoo.bard.webservice.web.filters.FiliInitializationFilter
 
 import org.apache.commons.lang.StringUtils
 
@@ -80,9 +80,9 @@ class RequestIdPrefixesDruidQueryIdSpec extends BaseDataServletComponentSpec {
     }
 
     def "verify invalid x-request-id values"() {
-        assert !FiliTimingFilter.isInvalidRequestId('abcd$') // Invalid char
-        assert !FiliTimingFilter.isInvalidRequestId(StringUtils.leftPad('a', 200, 'a')) // Too long
-        assert !FiliTimingFilter.isInvalidRequestId('') // empty string
-        assert !FiliTimingFilter.isInvalidRequestId(null) // null
+        assert !FiliInitializationFilter.isInvalidRequestId('abcd$') // Invalid char
+        assert !FiliInitializationFilter.isInvalidRequestId(StringUtils.leftPad('a', 200, 'a')) // Too long
+        assert !FiliInitializationFilter.isInvalidRequestId('') // empty string
+        assert !FiliInitializationFilter.isInvalidRequestId(null) // null
     }
 }
