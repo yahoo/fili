@@ -6,6 +6,10 @@ import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.config.names.FieldName;
+import com.yahoo.bard.webservice.data.config.provider.descriptor.LogicalTableDescriptor;
+import com.yahoo.bard.webservice.data.config.provider.descriptor.PhysicalTableDescriptor;
+import com.yahoo.bard.webservice.data.config.provider.impl.FieldNameImpl;
+import com.yahoo.bard.webservice.data.config.provider.impl.TableNameImpl;
 import com.yahoo.bard.webservice.data.config.table.BaseTableLoader;
 import com.yahoo.bard.webservice.data.config.table.PhysicalTableDefinition;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
@@ -31,9 +35,10 @@ public class ConfiguredTableLoader extends BaseTableLoader {
 
     private static final Logger LOG = LoggerFactory.getLogger(ConfiguredTableLoader.class);
 
-    protected final List<LogicalTableConfiguration> logicalTables;
+    protected final List<LogicalTableDescriptor> logicalTables;
     protected final Set<DimensionConfig> dimensions;
-    protected final Map<String, PhysicalTableConfiguration> physicalTableConfig = new HashMap<>();
+    protected final Map<String, PhysicalTableDescriptor> physicalTableConfig = new HashMap<>();
+    protected final Map<String, ApiMetricName> metricNames;
 
     /**
      * Construct a table loader from configuration.
@@ -41,22 +46,25 @@ public class ConfiguredTableLoader extends BaseTableLoader {
      * @param logicalTables  the logical tables
      * @param physicalTables  the physical tables
      * @param dimensions  the dimensions
+     * @param metricNames  dictionary of API metric names
      */
     public ConfiguredTableLoader(
-            List<LogicalTableConfiguration> logicalTables,
-            List<PhysicalTableConfiguration> physicalTables,
-            Set<DimensionConfig> dimensions
+            List<LogicalTableDescriptor> logicalTables,
+            List<PhysicalTableDescriptor> physicalTables,
+            Set<DimensionConfig> dimensions,
+            Map<String, ApiMetricName> metricNames
     ) {
         this.logicalTables = logicalTables;
-        for (PhysicalTableConfiguration conf : physicalTables) {
+        for (PhysicalTableDescriptor conf : physicalTables) {
             physicalTableConfig.put(conf.getName(), conf);
         }
         this.dimensions = dimensions;
+        this.metricNames = metricNames;
     }
 
     @Override
     public void loadTableDictionary(ResourceDictionaries dictionaries) {
-        for (LogicalTableConfiguration logicalTable : logicalTables) {
+        for (LogicalTableDescriptor logicalTable : logicalTables) {
 
             // Compute the set of all physical fields on this logical table's physical tables
             Set<FieldName> physicalFields = logicalTable.getPhysicalTables().stream()
@@ -72,8 +80,16 @@ public class ConfiguredTableLoader extends BaseTableLoader {
 
             // Build the set of api metric names
             Set<ApiMetricName> apiMetricNames = logicalTable.getMetrics().stream()
-                    .map(metricName -> new ConfiguredApiMetricName(metricName, logicalTable))
+                    .map(metricNames::get)
                     .collect(Collectors.toSet());
+
+            if (apiMetricNames.size() < logicalTable.getMetrics().size()) {
+                LOG.warn(
+                        "Logical table missing metrics! requested metrics: {}; defined metrics {}",
+                        logicalTable.getMetrics(),
+                        apiMetricNames
+                );
+            }
 
             TableGroup tableGroup = buildTableGroup(
                     logicalTable.getName(),
@@ -95,24 +111,24 @@ public class ConfiguredTableLoader extends BaseTableLoader {
     /**
      * Build a physical table from its configuration.
      *
-     * @param physicalTableConfiguration  The physical table configuration
+     * @param physicalTableDescriptor  The physical table configuration
      *
      * @return a PhysicalTableDefinition
      */
-    public PhysicalTableDefinition buildPhysicalTable(PhysicalTableConfiguration physicalTableConfiguration) {
+    public PhysicalTableDefinition buildPhysicalTable(PhysicalTableDescriptor physicalTableDescriptor) {
 
         Set<DimensionConfig> dimSet = dimensions.stream()
-                .filter(dim -> physicalTableConfiguration.getDimensions().contains(dim.getApiName()))
+                .filter(dim -> physicalTableDescriptor.getDimensions().contains(dim.getApiName()))
                 .collect(Collectors.toSet());
 
-        // Warn if we didn't find a DimensionConfig for any dimensions configured in physical table def'n
-        if (dimSet.size() < physicalTableConfiguration.getDimensions().size()) {
+        // Warn if we didn't find a DimensionConfig for any dimensions configured in physical table defn
+        if (dimSet.size() < physicalTableDescriptor.getDimensions().size()) {
             StringBuilder builder = new StringBuilder();
             builder.append("Unable to build physical table [");
-            builder.append(physicalTableConfiguration.getName());
+            builder.append(physicalTableDescriptor.getName());
             builder.append("]. Dimensions missing from dimension configuration: (");
 
-            Set<String> missingDimensions = new HashSet<>(physicalTableConfiguration.getDimensions());
+            Set<String> missingDimensions = new HashSet<>(physicalTableDescriptor.getDimensions());
             missingDimensions.removeAll(
                     dimensions.stream()
                             .map(DimensionConfig::getApiName)
@@ -131,7 +147,10 @@ public class ConfiguredTableLoader extends BaseTableLoader {
         }
 
         // FIXME: Needs proper configuration.
-        ZonedTimeGrain grain = new ZonedTimeGrain((ZonelessTimeGrain) physicalTableConfiguration.getGranularity(), DateTimeZone.UTC);
-        return new PhysicalTableDefinition(new TableNameImpl(physicalTableConfiguration.getName()), grain, dimSet);
+        ZonedTimeGrain grain = new ZonedTimeGrain(
+                (ZonelessTimeGrain) physicalTableDescriptor.getGranularity(),
+                DateTimeZone.UTC
+        );
+        return new PhysicalTableDefinition(new TableNameImpl(physicalTableDescriptor.getName()), grain, dimSet);
     }
 }

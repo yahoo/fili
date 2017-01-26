@@ -1,6 +1,7 @@
 // Copyright 2016 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.data.config.provider;
+
+package com.yahoo.bard.webservice.data.config.provider.impl;
 
 import com.yahoo.bard.webservice.data.config.names.TableName;
 
@@ -28,17 +29,15 @@ public class TableNameImpl implements TableName {
     }
 
     @Override
-    public boolean equals(Object object) {
-        if (object == null || !(object instanceof TableNameImpl)) {
-            return false;
-        }
-
-        TableNameImpl other = (TableNameImpl) object;
-        return Objects.equals(name, other.name);
+    public boolean equals(final Object o) {
+        if (this == o) { return true; }
+        if (o == null || getClass() != o.getClass()) { return false; }
+        final TableNameImpl tableName = (TableNameImpl) o;
+        return Objects.equals(name, tableName.name);
     }
 
     @Override
     public int hashCode() {
-        return 1 + Objects.hash(name);
+        return Objects.hash(name);
     }
 }

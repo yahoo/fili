@@ -1,5 +1,9 @@
+// Copyright 2017 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
+
 package com.yahoo.bard.webservice.data.config.provider;
 
+import com.yahoo.bard.webservice.data.config.provider.descriptor.MetricDescriptor;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
@@ -23,7 +27,10 @@ public abstract class LogicalMetricBuilder {
      * @param builder The Metric Maker builder
      * @param localDictionary The metric dictionary
      */
-    public LogicalMetricBuilder(DimensionDictionary dimensionDictionary, MakerBuilder builder, MetricDictionary localDictionary) {
+    public LogicalMetricBuilder(
+            DimensionDictionary dimensionDictionary,
+            MakerBuilder builder,
+            MetricDictionary localDictionary) {
         this.dimensionDictionary = dimensionDictionary;
         this.makerBuilder = builder;
         this.localDictionary = localDictionary;
@@ -36,5 +43,5 @@ public abstract class LogicalMetricBuilder {
      *
      * @return A logical metric
      */
-    public abstract LogicalMetric buildMetric(MetricConfiguration metric);
+    public abstract LogicalMetric buildMetric(MetricDescriptor metric);
 }

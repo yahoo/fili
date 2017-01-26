@@ -13,6 +13,7 @@ import com.yahoo.bard.webservice.data.config.metric.makers.LongMinMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.LongSumMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.RowNumMaker;
+import com.yahoo.bard.webservice.data.config.provider.descriptor.MakerDescriptor;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 
 import java.lang.reflect.Constructor;
@@ -141,7 +142,7 @@ public class MakerBuilder {
      *
      * @param configuredMakers  Metric maker configuration
      */
-    public MakerBuilder(List<MakerConfiguration> configuredMakers) {
+    public MakerBuilder(List<MakerDescriptor> configuredMakers) {
 
         // Add any default/builtin metric makers
         for (Class<? extends MetricMaker> cls : BUILTIN_METRIC_MAKERS) {
@@ -151,7 +152,7 @@ public class MakerBuilder {
 
         // Add any custom metric makers
         if (configuredMakers != null) {
-            for (MakerConfiguration makerConfig: configuredMakers) {
+            for (MakerDescriptor makerConfig: configuredMakers) {
                 String name = makerConfig.getName();
                 if (availableMakerConstructors.containsKey(name)) {
                     LOG.warn("Overriding previously-defined maker: {}", name);

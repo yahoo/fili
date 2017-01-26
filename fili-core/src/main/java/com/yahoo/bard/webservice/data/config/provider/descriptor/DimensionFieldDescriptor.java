@@ -1,4 +1,7 @@
-package com.yahoo.bard.webservice.data.config.provider;
+// Copyright 2017 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
+
+package com.yahoo.bard.webservice.data.config.provider.descriptor;
 
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 
@@ -7,15 +10,15 @@ import java.util.Objects;
 /**
  * Everything you need to know about a Dimension Field.
  *
- * Combined with DimensionConfiguration, can be used to construct an actual
+ * Combined with DimensionDescriptor, can be used to construct an actual
  * DimensionConfig object.
  *
  * Happens to implement DimensionField for convenience.
  */
-public class DimensionFieldConfiguration implements DimensionField {
+public class DimensionFieldDescriptor implements DimensionField {
+
     protected final String name;
     protected final String description;
-
 
     // Include by default in query results (overrideable in dimension)
     protected final boolean queryIncludedByDefault;
@@ -31,7 +34,11 @@ public class DimensionFieldConfiguration implements DimensionField {
      * @param queryIncludedByDefault  Whether this field is included by default in query results
      * @param dimensionIncludedByDefault  Whether this field is included by default on all dimensions
      */
-    public DimensionFieldConfiguration(String name, String description, boolean queryIncludedByDefault, boolean dimensionIncludedByDefault) {
+    public DimensionFieldDescriptor(
+            String name,
+            String description,
+            boolean queryIncludedByDefault,
+            boolean dimensionIncludedByDefault) {
         this.name = name;
         this.description = description;
         this.queryIncludedByDefault = queryIncludedByDefault;
@@ -75,16 +82,14 @@ public class DimensionFieldConfiguration implements DimensionField {
     }
 
     @Override
-    public boolean equals(Object other) {
-        if (other == null || !(other instanceof DimensionFieldConfiguration)) {
-            return false;
-        }
-
-        DimensionFieldConfiguration conf = (DimensionFieldConfiguration) other;
-        return Objects.equals(name, conf.name) &&
-                Objects.equals(description, conf.description) &&
-                Objects.equals(queryIncludedByDefault, conf.queryIncludedByDefault) &&
-                Objects.equals(dimensionIncludedByDefault, conf.dimensionIncludedByDefault);
+    public boolean equals(final Object o) {
+        if (this == o) { return true; }
+        if (o == null || getClass() != o.getClass()) { return false; }
+        final DimensionFieldDescriptor that = (DimensionFieldDescriptor) o;
+        return queryIncludedByDefault == that.queryIncludedByDefault &&
+                dimensionIncludedByDefault == that.dimensionIncludedByDefault &&
+                Objects.equals(name, that.name) &&
+                Objects.equals(description, that.description);
     }
 
     @Override

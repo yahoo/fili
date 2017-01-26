@@ -1,13 +1,18 @@
 // Copyright 2016 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.data.config.provider;
+
+package com.yahoo.bard.webservice.data.config.provider.descriptor;
 
 import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker;
+import com.yahoo.bard.webservice.data.config.provider.ConfigurationError;
+
+import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Everything you need to know to build a custom MetricMaker.
  */
-public class MakerConfiguration {
+public class MakerDescriptor {
 
     protected final String name;
     protected final String className;
@@ -20,7 +25,7 @@ public class MakerConfiguration {
      * @param className  The class name
      * @param arguments  The maker constructor arguments
      */
-    public MakerConfiguration(String name, String className, Object[] arguments) {
+    public MakerDescriptor(String name, String className, Object[] arguments) {
         this.name = name;
         this.className = className;
         this.arguments = arguments;
@@ -64,5 +69,20 @@ public class MakerConfiguration {
         } catch (ClassNotFoundException e) {
             throw new ConfigurationError("Unable to instantiate class " + getClassName(), e);
         }
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) { return true; }
+        if (o == null || getClass() != o.getClass()) { return false; }
+        final MakerDescriptor that = (MakerDescriptor) o;
+        return Objects.equals(name, that.name) &&
+                Objects.equals(className, that.className) &&
+                Arrays.equals(arguments, that.arguments);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, className, arguments);
     }
 }

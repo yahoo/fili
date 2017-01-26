@@ -6,6 +6,15 @@ package com.yahoo.bard.webservice.data.config.provider
 import com.yahoo.bard.webservice.config.SystemConfig
 import com.yahoo.bard.webservice.config.SystemConfigProvider
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig
+import com.yahoo.bard.webservice.data.config.provider.descriptor.DimensionFieldDescriptor
+import com.yahoo.bard.webservice.data.config.provider.descriptor.LogicalTableDescriptor
+import com.yahoo.bard.webservice.data.config.provider.descriptor.MakerDescriptor
+import com.yahoo.bard.webservice.data.config.provider.descriptor.MetricDescriptor
+import com.yahoo.bard.webservice.data.config.provider.descriptor.PhysicalTableDescriptor
+import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
+import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.MetricDictionary
+
 import spock.lang.Specification
 
 public class ConfigBinderFactorySpec extends Specification {
@@ -14,28 +23,47 @@ public class ConfigBinderFactorySpec extends Specification {
 
     public static class StubProvider implements ConfigProvider {
         @Override
-        List<PhysicalTableConfiguration> getPhysicalTableConfig() {
-            return new LinkedList<PhysicalTableConfiguration>()
+        List<PhysicalTableDescriptor> getPhysicalTableConfig() {
+            return new LinkedList<>()
         }
 
         @Override
-        List<LogicalTableConfiguration> getLogicalTableConfig() {
-            return new LinkedList<LogicalTableConfiguration>()
+        List<LogicalTableDescriptor> getLogicalTableConfig() {
+            return new LinkedList<>()
         }
 
         @Override
-        List<MakerConfiguration> getCustomMakerConfig() {
-            return new LinkedList<MakerConfiguration>()
+        List<MakerDescriptor> getCustomMakerConfig() {
+            return new LinkedList<>()
         }
 
         @Override
         List<DimensionConfig> getDimensionConfig() {
-            return new LinkedList<DimensionConfig>()
+            return new LinkedList<>()
         }
 
         @Override
-        List<MetricConfiguration> getMetricConfig() {
-            return new LinkedList<MetricConfiguration>()
+        List<DimensionFieldDescriptor> getDimensionFieldConfig() {
+            return new LinkedList<>()
+        }
+
+        @Override
+        List<MetricDescriptor> getMetricConfig() {
+            return new LinkedList<>()
+        }
+
+        @Override
+        LogicalMetricBuilder getLogicalMetricBuilder(
+                final MetricDictionary metricDictionary,
+                final MakerBuilder makerBuilder,
+                final DimensionDictionary dimensionDictionary
+        ) {
+            return new LogicalMetricBuilder(dimensionDictionary, makerBuilder, metricDictionary) {
+                @Override
+                LogicalMetric buildMetric(final MetricDescriptor metric) {
+                    return new LogicalMetric(null,  null, "example metric")
+                }
+            }
         }
 
         /**

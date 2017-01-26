@@ -1,14 +1,18 @@
-package com.yahoo.bard.webservice.data.config.provider;
+// Copyright 2017 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
+
+package com.yahoo.bard.webservice.data.config.provider.descriptor;
 
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 
+import java.util.Objects;
 import java.util.Set;
 
 /**
- * Everything (...almost) you need to know about a dimension.
+ * Configuration object for dimensions.
  */
-public class DimensionConfiguration {
+public class DimensionDescriptor {
 
     protected final String apiName;
     protected final String longName;
@@ -35,7 +39,7 @@ public class DimensionConfiguration {
      * @param keyValueStore  The key value store
      * @param searchProvider  The search provider
      */
-    public DimensionConfiguration(String apiName, String longName, String category, String physicalName,
+    public DimensionDescriptor(String apiName, String longName, String category, String physicalName,
             String description, Set<String> fields, Set<String> defaultFields, boolean aggregatable,
             KeyValueStore keyValueStore, SearchProvider searchProvider
             ) {
@@ -107,7 +111,7 @@ public class DimensionConfiguration {
     }
 
     /**
-     * Get the default dimension fields
+     * Get the default dimension fields.
      *
      * @return The default dimension fields
      */
@@ -140,5 +144,38 @@ public class DimensionConfiguration {
      */
     public boolean isAggregatable() {
         return aggregatable;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) { return true; }
+        if (o == null || getClass() != o.getClass()) { return false; }
+        final DimensionDescriptor that = (DimensionDescriptor) o;
+        return aggregatable == that.aggregatable &&
+                Objects.equals(apiName, that.apiName) &&
+                Objects.equals(longName, that.longName) &&
+                Objects.equals(category, that.category) &&
+                Objects.equals(physicalName, that.physicalName) &&
+                Objects.equals(description, that.description) &&
+                Objects.equals(fields, that.fields) &&
+                Objects.equals(defaultFields, that.defaultFields) &&
+                Objects.equals(keyValueStore, that.keyValueStore) &&
+                Objects.equals(searchProvider, that.searchProvider);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+                apiName,
+                longName,
+                category,
+                physicalName,
+                description,
+                fields,
+                defaultFields,
+                aggregatable,
+                keyValueStore,
+                searchProvider
+        );
     }
 }

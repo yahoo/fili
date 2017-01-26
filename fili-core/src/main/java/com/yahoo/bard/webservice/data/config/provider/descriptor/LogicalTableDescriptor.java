@@ -1,15 +1,17 @@
 // Copyright 2016 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.data.config.provider;
+
+package com.yahoo.bard.webservice.data.config.provider.descriptor;
 
 import com.yahoo.bard.webservice.data.time.TimeGrain;
 
+import java.util.Objects;
 import java.util.Set;
 
 /**
  * Everything you need to know to create a logical table.
  */
-public class LogicalTableConfiguration {
+public class LogicalTableDescriptor {
 
     protected final String name;
     protected final Set<TimeGrain> timeGrains;
@@ -24,7 +26,11 @@ public class LogicalTableConfiguration {
      * @param physicalTables Physical tables backing this logical table
      * @param metrics Metrics included on this logical table
      */
-    public LogicalTableConfiguration(String name, Set<TimeGrain> timeGrains, Set<String> physicalTables, Set<String> metrics) {
+    public LogicalTableDescriptor(
+            String name,
+            Set<TimeGrain> timeGrains,
+            Set<String> physicalTables,
+            Set<String> metrics) {
         this.name = name;
         this.timeGrains = timeGrains;
         this.physicalTables = physicalTables;
@@ -67,5 +73,21 @@ public class LogicalTableConfiguration {
      */
     public Set<String> getMetrics() {
         return metrics;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) { return true; }
+        if (o == null || getClass() != o.getClass()) { return false; }
+        final LogicalTableDescriptor that = (LogicalTableDescriptor) o;
+        return Objects.equals(name, that.name) &&
+                Objects.equals(timeGrains, that.timeGrains) &&
+                Objects.equals(physicalTables, that.physicalTables) &&
+                Objects.equals(metrics, that.metrics);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, timeGrains, physicalTables, metrics);
     }
 }

@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.data.config.provider;
 
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
+import com.yahoo.bard.webservice.data.config.provider.descriptor.MetricDescriptor;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 
 import java.util.List;
@@ -12,7 +13,7 @@ import java.util.List;
  */
 public class ConfiguredMetricLoader implements MetricLoader {
 
-    private final List<MetricConfiguration> metrics;
+    private final List<MetricDescriptor> metrics;
     private final LogicalMetricBuilder builder;
 
     /**
@@ -22,7 +23,7 @@ public class ConfiguredMetricLoader implements MetricLoader {
      * @param metricBuilder  The metric builder
      */
     public ConfiguredMetricLoader(
-            List<MetricConfiguration> metrics,
+            List<MetricDescriptor> metrics,
             LogicalMetricBuilder metricBuilder
     ) {
         this.metrics = metrics;

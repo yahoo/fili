@@ -1,4 +1,7 @@
-package com.yahoo.bard.webservice.data.config.provider;
+// Copyright 2017 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
+
+package com.yahoo.bard.webservice.data.config.provider.impl;
 
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
@@ -122,33 +125,30 @@ public class DimensionConfigImpl implements DimensionConfig {
     }
 
     @Override
-    public boolean equals(Object other) {
-        if (other == null || !(other instanceof DimensionConfigImpl)) {
-            return false;
-        }
-
-        DimensionConfigImpl conf = (DimensionConfigImpl) other;
-
-        return Objects.equals(apiName, conf.apiName) &&
-                Objects.equals(physicalName, conf.physicalName) &&
-                Objects.equals(longName, conf.longName) &&
-                Objects.equals(category, conf.category) &&
-                Objects.equals(description, conf.description) &&
-                Objects.equals(fields, conf.fields) &&
-                Objects.equals(defaultDimensionFields, conf.defaultDimensionFields) &&
-                Objects.equals(keyValueStore, conf.keyValueStore) &&
-                Objects.equals(searchProvider, conf.searchProvider) &&
-                Objects.equals(aggregatable, conf.aggregatable) &&
-                Objects.equals(type, conf.type);
+    public boolean equals(final Object o) {
+        if (this == o) { return true; }
+        if (o == null || getClass() != o.getClass()) { return false; }
+        final DimensionConfigImpl that = (DimensionConfigImpl) o;
+        return aggregatable == that.aggregatable &&
+                Objects.equals(apiName, that.apiName) &&
+                Objects.equals(longName, that.longName) &&
+                Objects.equals(category, that.category) &&
+                Objects.equals(physicalName, that.physicalName) &&
+                Objects.equals(description, that.description) &&
+                Objects.equals(fields, that.fields) &&
+                Objects.equals(defaultDimensionFields, that.defaultDimensionFields) &&
+                Objects.equals(keyValueStore, that.keyValueStore) &&
+                Objects.equals(searchProvider, that.searchProvider) &&
+                Objects.equals(type, that.type);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(
                 apiName,
-                physicalName,
                 longName,
                 category,
+                physicalName,
                 description,
                 fields,
                 defaultDimensionFields,

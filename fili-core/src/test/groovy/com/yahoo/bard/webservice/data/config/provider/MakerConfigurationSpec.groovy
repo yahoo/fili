@@ -4,30 +4,15 @@
 package com.yahoo.bard.webservice.data.config.provider
 
 import com.yahoo.bard.webservice.data.config.metric.makers.ConstantMaker
+import com.yahoo.bard.webservice.data.config.provider.descriptor.MakerDescriptor
+
 import spock.lang.Specification
 
-public class MakerConfigurationSpec extends Specification {
-
-    static class MakerConfigurationImpl implements MakerConfiguration {
-        @Override
-        String getClassName() {
-            return ConstantMaker.class.name
-        }
-
-        @Override
-        Object[] getArguments() {
-            return new Object[0]
-        }
-
-        @Override
-        String getName() {
-            return "constantMaker"
-        }
-    }
+class MakerConfigurationSpec extends Specification {
 
     def "MakerConfiguration can construct class object from name"() {
         setup:
-        def conf = new MakerConfigurationImpl()
+        def conf = new MakerDescriptor("constantMaker", ConstantMaker.class.name, null)
 
         expect:
         conf.getMakerClass() == ConstantMaker.class

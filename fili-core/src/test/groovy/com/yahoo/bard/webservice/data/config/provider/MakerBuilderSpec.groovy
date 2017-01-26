@@ -4,10 +4,11 @@
 package com.yahoo.bard.webservice.data.config.provider
 
 import com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker
+import com.yahoo.bard.webservice.data.config.provider.descriptor.MakerDescriptor
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import spock.lang.Specification
 
-public class MakerBuilderSpec extends Specification {
+class MakerBuilderSpec extends Specification {
     def "should construct default makers without error"(){
         setup:
         MakerBuilder builder = new MakerBuilder(null)
@@ -16,28 +17,10 @@ public class MakerBuilderSpec extends Specification {
         builder.availableMakerConstructors.containsKey("longSum")
     }
 
-    static class TestMakerConfiguration implements MakerConfiguration {
-
-        @Override
-        String getName() {
-            return "thetaMaker"
-        }
-
-        @Override
-        String getClassName() {
-            return ThetaSketchMaker.getName()
-        }
-
-        @Override
-        Object[] getArguments() {
-            return [1]
-        }
-    }
-
     def "Should construct configured makers correctly"(){
         setup:
-        MakerConfiguration conf = new TestMakerConfiguration()
-        MakerBuilder builder = new MakerBuilder([conf]);
+        MakerDescriptor conf = new MakerDescriptor("thetaMaker", ThetaSketchMaker.class.name, [1] as Object[])
+        MakerBuilder builder = new MakerBuilder([conf])
 
         def maker = builder.build("thetaMaker", new MetricDictionary())
 
