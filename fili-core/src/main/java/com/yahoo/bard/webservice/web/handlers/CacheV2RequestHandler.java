@@ -2,12 +2,9 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.handlers;
 
+import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.REQUEST_WORKFLOW_TIMER;
+import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.RESPONSE_WORKFLOW_TIMER;
 
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yahoo.bard.webservice.application.MetricRegistryFactory;
 import com.yahoo.bard.webservice.data.cache.DataCache;
 import com.yahoo.bard.webservice.data.cache.TupleDataCache;
@@ -21,15 +18,20 @@ import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.responseprocessors.CacheV2ResponseProcessor;
 import com.yahoo.bard.webservice.web.responseprocessors.LoggingContext;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
+
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.Objects;
 
-import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.REQUEST_WORKFLOW_TIMER;
-import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.RESPONSE_WORKFLOW_TIMER;
+import javax.validation.constraints.NotNull;
 
 /**
  * Request handler to check the cache for a matching request and either return the cached result or send the next

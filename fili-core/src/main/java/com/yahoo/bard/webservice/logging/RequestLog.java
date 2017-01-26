@@ -2,12 +2,18 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.logging;
 
-import com.codahale.metrics.MetricRegistry;
+import static com.yahoo.bard.webservice.druid.client.impl.AsyncDruidWebServiceImpl.DRUID_QUERY_ALL_TIMER;
+import static com.yahoo.bard.webservice.druid.client.impl.AsyncDruidWebServiceImpl.DRUID_QUERY_MAX_TIMER;
+import static com.yahoo.bard.webservice.druid.client.impl.AsyncDruidWebServiceImpl.DRUID_QUERY_TIMER;
+
 import com.yahoo.bard.webservice.application.MetricRegistryFactory;
 import com.yahoo.bard.webservice.logging.blocks.Durations;
 import com.yahoo.bard.webservice.logging.blocks.Preface;
 import com.yahoo.bard.webservice.logging.blocks.Threads;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
+
+import com.codahale.metrics.MetricRegistry;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -22,9 +28,6 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.yahoo.bard.webservice.druid.client.impl.AsyncDruidWebServiceImpl.DRUID_QUERY_ALL_TIMER;
-import static com.yahoo.bard.webservice.druid.client.impl.AsyncDruidWebServiceImpl.DRUID_QUERY_MAX_TIMER;
-import static com.yahoo.bard.webservice.druid.client.impl.AsyncDruidWebServiceImpl.DRUID_QUERY_TIMER;
 
 /**
  * The RequestLog holds data that we would like to log about the request. In particular, various timings are
@@ -70,54 +73,6 @@ public class RequestLog {
     }
 
     /**
-     * Represents a phase that is timed.
-     * TimedPhase is used to associate a Timer located in the registry with the exact duration of such a phase for a
-     * specific request.
-     */
-    protected static class TimedPhase {
-        protected final String name;
-        protected long start;
-        protected long duration;
-
-        /**
-         * Constructor.
-         *
-         * @param name  Name of the phase
-         */
-        protected TimedPhase(String name) {
-            this.name = name;
-        }
-
-        /**
-         * Start the phase.
-         */
-        protected void start() {
-            if (start != 0) {
-                LOG.warn("Tried to start timer that is already running: {}", name);
-                return;
-            }
-            start = System.nanoTime();
-        }
-
-        /**
-         * Stop the phase.
-         */
-        protected void stop() {
-            if (start == 0) {
-                LOG.warn("Tried to stop timer that has not been started: {}", name);
-                return;
-            }
-            duration += System.nanoTime() - start;
-            REGISTRY.timer(name).update(duration, TimeUnit.NANOSECONDS);
-            start = 0;
-        }
-
-        protected boolean isStarted() {
-            return start != 0;
-        }
-    }
-
-    /**
      * Resets the contents of a request log at the calling thread.
      */
     protected void clear() {
@@ -127,6 +82,21 @@ public class RequestLog {
         times.clear();
         threadIds.clear();
         MDC.remove(LOG_ID_KEY);
+    }
+
+    /**
+     * Copys the data from source into the current request log
+     * @param source the request log to copy from
+     */
+    protected void restoreFrom(RequestLog source) {
+        clear();
+        logId = source.logId;
+        info = source.info;
+        mostRecentTimer = source.mostRecentTimer;
+        times.putAll(source.times);
+        threadIds.addAll(source.threadIds);
+        threadIds.add(Thread.currentThread().getName());
+
     }
 
     /**
@@ -159,6 +129,25 @@ public class RequestLog {
     }
 
     /**
+     * Retrieve a {@link TimedPhase} if it exists
+     *
+     * @param phaseName the name of the timed phase
+     * @return the phase
+     */
+    protected TimedPhase getPhase(String phaseName) {
+        return times.get(phaseName);
+    }
+
+    /**
+     * Add a timed phase to the request log
+     *
+     * @param phase the phase to be timed
+     */
+    protected void putPhase(TimedPhase phase) {
+        times.put(phase.name, phase);
+    }
+
+    /**
      * Adds the durations in milliseconds of all the recorded timed phases to a map.
      *
      * @return the map containing all the recorded times per phase in nanoseconds
@@ -167,11 +156,10 @@ public class RequestLog {
         return times.values()
                 .stream()
                 .peek(phase -> {
-                    if (phase.start != 0) {
-                        LOG.warn(
-                                "Exporting duration while timer is running. Measurement might be wrong: {}", phase.name
-                        );
+                    if (!phase.isRunning()) {
+                        return;
                     }
+                    LOG.warn("Exporting duration while timer is running. Measurement might be wrong: {}", phase.name);
                 })
                 .collect(Collectors.toMap(phase -> phase.name, phase -> phase.duration));
     }

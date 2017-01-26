@@ -3,7 +3,11 @@
 package com.yahoo.bard.webservice.web.filters;
 
 import com.yahoo.bard.webservice.logging.RequestLogUtils;
+
 import org.apache.commons.lang3.StringUtils;
+
+import java.io.IOException;
+import java.util.regex.Pattern;
 
 import javax.annotation.Priority;
 import javax.inject.Singleton;
@@ -13,8 +17,6 @@ import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.MultivaluedMap;
-import java.io.IOException;
-import java.util.regex.Pattern;
 
 /**
  * Starts/stops the timing for a request as well as stashing the request-id header in the RequestLog. This filter
@@ -23,7 +25,7 @@ import java.util.regex.Pattern;
 @PreMatching
 @Singleton
 @Priority(1)
-public class FiliTimingFilter implements ContainerResponseFilter, ContainerRequestFilter {
+public class FiliInitializationFilter implements ContainerResponseFilter, ContainerRequestFilter {
     public static final String X_REQUEST_ID_HEADER = "x-request-id";
     private static final Pattern VALID_REQUEST_ID = Pattern.compile("[a-zA-Z0-9+/=-]+");
 

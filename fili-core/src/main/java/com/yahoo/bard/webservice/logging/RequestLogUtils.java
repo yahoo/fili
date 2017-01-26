@@ -4,7 +4,6 @@ package com.yahoo.bard.webservice.logging;
 
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
-import com.yahoo.bard.webservice.logging.RequestLog.TimedPhase;
 import com.yahoo.bard.webservice.logging.blocks.Durations;
 import com.yahoo.bard.webservice.logging.blocks.Threads;
 import org.slf4j.Logger;
@@ -61,8 +60,8 @@ public class RequestLogUtils {
      */
     public static boolean isStarted(String timePhaseName) {
         RequestLog current = RLOG.get();
-        TimedPhase timePhase = current.times.get(timePhaseName);
-        return timePhase != null && timePhase.isStarted();
+        TimedPhase timePhase = current.getPhase(timePhaseName);
+        return timePhase != null && timePhase.isRunning();
     }
 
     /**
@@ -91,7 +90,7 @@ public class RequestLogUtils {
      */
     public static void startTiming(String timePhaseName) {
         RequestLog current = RLOG.get();
-        TimedPhase timePhase = current.times.get(timePhaseName);
+        TimedPhase timePhase = current.getPhase(timePhaseName);
         if (timePhase == null) {
             // If it was the first phase in general, create logging context as well
             if (current.info == null) {
@@ -99,7 +98,7 @@ public class RequestLogUtils {
             }
 
             timePhase = new TimedPhase(timePhaseName);
-            current.times.put(timePhaseName, timePhase);
+            current.putPhase(timePhase);
         }
         current.mostRecentTimer = timePhase;
         timePhase.start();
@@ -139,7 +138,7 @@ public class RequestLogUtils {
      * @param timePhaseName  the name of this stopwatch
      */
     public static void stopTiming(String timePhaseName) {
-        TimedPhase timePhase = RLOG.get().times.get(timePhaseName);
+        TimedPhase timePhase = RLOG.get().getPhase(timePhaseName);
         if (timePhase == null) {
             LOG.warn("Tried to stop non-existent phase: {}", timePhaseName);
             return;
@@ -267,13 +266,7 @@ public class RequestLogUtils {
      */
     public static void restore(RequestLog ctx) {
         RequestLog current = RLOG.get();
-        current.clear();
-        current.logId = ctx.logId;
-        current.info = ctx.info;
-        current.mostRecentTimer = ctx.mostRecentTimer;
-        current.times.putAll(ctx.times);
-        current.threadIds.addAll(ctx.threadIds);
-        current.threadIds.add(Thread.currentThread().getName());
+        current.restoreFrom(ctx);
         MDC.put(LOG_ID_KEY, current.logId);
     }
 
@@ -300,8 +293,8 @@ public class RequestLogUtils {
                         .stream()
                         .filter(
                                 e -> e.getKey().contains(DRUID_QUERY_TIMER) ||
-                                        (e.getKey().equals(REQUEST_WORKFLOW_TIMER) && !e.getValue().isStarted()) ||
-                                        (e.getKey().equals(RESPONSE_WORKFLOW_TIMER) && e.getValue().isStarted())
+                                        (e.getKey().equals(REQUEST_WORKFLOW_TIMER) && !e.getValue().isRunning()) ||
+                                        (e.getKey().equals(RESPONSE_WORKFLOW_TIMER) && e.getValue().isRunning())
                         )
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
         );
