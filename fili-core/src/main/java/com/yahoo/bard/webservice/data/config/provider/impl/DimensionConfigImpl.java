@@ -31,17 +31,17 @@ public class DimensionConfigImpl implements DimensionConfig {
     /**
      * Dimension configuration.
      *
-     * @param apiName the api name
-     * @param longName the long name
-     * @param category the category
-     * @param physicalName the physical name
-     * @param description the description
-     * @param fields the dimension fields
-     * @param defaultDimensionFields the default dimension fields
-     * @param keyValueStore the key value store
-     * @param searchProvider the search provider
-     * @param aggregatable true if aggregatable
-     * @param type the class
+     * @param apiName  the api name
+     * @param longName  the long name
+     * @param category  the category
+     * @param physicalName  the physical name
+     * @param description  the description
+     * @param fields  the dimension fields
+     * @param defaultDimensionFields  the default dimension fields
+     * @param keyValueStore  the key value store
+     * @param searchProvider  the search provider
+     * @param aggregatable  true if aggregatable
+     * @param type  the class
      */
     public DimensionConfigImpl(
             final String apiName,

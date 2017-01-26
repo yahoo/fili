@@ -23,9 +23,9 @@ public abstract class LogicalMetricBuilder {
     /**
      * Construct a new logical metric builder.
      *
-     * @param dimensionDictionary The dimension dictionary
-     * @param builder The Metric Maker builder
-     * @param localDictionary The metric dictionary
+     * @param dimensionDictionary  The dimension dictionary
+     * @param builder  The Metric Maker builder
+     * @param localDictionary  The metric dictionary
      */
     public LogicalMetricBuilder(
             DimensionDictionary dimensionDictionary,

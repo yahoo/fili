@@ -17,7 +17,7 @@ public class TableNameImpl implements TableName {
     /**
      * Construct a new table name.
      *
-     * @param name the table name
+     * @param name  the table name
      */
     public TableNameImpl(String name) {
         this.name = name;

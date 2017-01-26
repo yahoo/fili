@@ -21,10 +21,10 @@ public class PhysicalTableDescriptor {
     /**
      * Construct a new PhysicalTableDescriptor object.
      *
-     * @param name the table name
-     * @param granularity the table grain
-     * @param dimensions the table dimensions
-     * @param metrics the table metrics
+     * @param name  the table name
+     * @param granularity  the table grain
+     * @param dimensions  the table dimensions
+     * @param metrics  the table metrics
      */
     public PhysicalTableDescriptor(String name, Granularity granularity, Set<String> dimensions, Set<String> metrics) {
         this.name = name;

@@ -21,10 +21,10 @@ public class LogicalTableDescriptor {
     /**
      * Construct a new logical table configuration object.
      *
-     * @param name Logical table name
-     * @param timeGrains Logical table time grains
-     * @param physicalTables Physical tables backing this logical table
-     * @param metrics Metrics included on this logical table
+     * @param name  Logical table name
+     * @param timeGrains  Logical table time grains
+     * @param physicalTables  Physical tables backing this logical table
+     * @param metrics  Metrics included on this logical table
      */
     public LogicalTableDescriptor(
             String name,
