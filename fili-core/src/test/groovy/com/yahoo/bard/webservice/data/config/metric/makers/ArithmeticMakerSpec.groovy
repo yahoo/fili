@@ -9,6 +9,7 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
+import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper
 import com.yahoo.bard.webservice.data.metric.mappers.SketchRoundUpMapper
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation
@@ -54,7 +55,7 @@ class ArithmeticMakerSpec extends Specification {
         ArithmeticMaker roundUpDivisionMaker = new ArithmeticMaker(
                 metricDictionary,
                 ArithmeticPostAggregation.ArithmeticPostAggregationFunction.DIVIDE,
-                (Function) { String it -> return new SketchRoundUpMapper() }
+                (Function<String, ResultSetMapper>) {String it-> new SketchRoundUpMapper(it)}
         )
 
         MetricInstance pageViews = new MetricInstance(METRIC_FIELD_NAME, new LongSumMaker(metricDictionary),
