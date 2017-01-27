@@ -38,7 +38,7 @@ public class TimedPhase {
      * Start the phase.
      */
     protected void start() {
-        if (start != 0) {
+        if (isRunning()) {
             LOG.warn("Tried to start timer that is already running: {}", name);
             return;
         }
@@ -49,7 +49,7 @@ public class TimedPhase {
      * Stop the phase.
      */
     protected void stop() {
-        if (start == 0) {
+        if (!isRunning()) {
             LOG.warn("Tried to stop timer that has not been started: {}", name);
             return;
         }
@@ -58,7 +58,28 @@ public class TimedPhase {
         start = 0;
     }
 
+    /**
+     * Determines if the timer is running.
+     *
+     * @return true or false
+     */
     protected boolean isRunning() {
         return start != 0;
+    }
+
+    /**
+     * Returns the timer's name.
+     * @return the name of the timer
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Returns the duration of the timer in nanoseconds.
+     * @return the amount of time the timer was running
+     */
+    public long getDuration() {
+        return duration;
     }
 }

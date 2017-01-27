@@ -144,7 +144,7 @@ public class RequestLog {
      * @param phase the phase to be timed
      */
     protected void putPhase(TimedPhase phase) {
-        times.put(phase.name, phase);
+        times.put(phase.getName(), phase);
     }
 
     /**
@@ -156,12 +156,11 @@ public class RequestLog {
         return times.values()
                 .stream()
                 .peek(phase -> {
-                    if (!phase.isRunning()) {
-                        return;
+                    if (phase.isRunning()) {
+                        LOG.warn("Timer running during export. Measurement might be wrong: {}", phase.getName());
                     }
-                    LOG.warn("Exporting duration while timer is running. Measurement might be wrong: {}", phase.name);
                 })
-                .collect(Collectors.toMap(phase -> phase.name, phase -> phase.duration));
+                .collect(Collectors.toMap(TimedPhase::getName, TimedPhase::getDuration));
     }
 
     /**
