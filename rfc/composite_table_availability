@@ -1,0 +1,28 @@
+Bard MultiDatasource Tables feature
+===================================
+
+Changes to implement Partitioned tables and Metric Union tables
+
+Change overview:
+1. `SegmentMetadata` and `PhysicalTable`'s availability map coalesce into a single `DataSource` associated with a 
+        single physical fact store.
+  * `Datasource` supports partial data annotations, query planning, and cache segment key expiration.
+  * `Datasources` will be held in some kind of dictionary or service which the `DataSourceMetadataLoader` will 
+        load into.
+
+2. `PhysicalTable` availability evolves into a `DataSourceAvailabilityResolver`.
+  * DSAR provides dataSource names and intervals based on a `DataSourceConstraints` parameter object.
+  * `DataSourceConstraints` can be built from an `ApiRequest` or a set of `ApiFilter` and the fields from a query.
+  * Existing availability capabilities are supported by `ConcreteAvailabilityResolver` with a fixed single `DataSource` 
+  which provides it's name and intervals based on filtering columns.
+
+3. `MetricUnionAvailabilityResolver` provides for tables which split metrics across multiple fact stores.
+  * MUAR contains a map of dependent resolvers to metric schemas (metrics must appear in exactly one value of the map).
+  * Only dependents that intersect the metric schema of the `DataSourceConstraints` are considered for availability.
+  * Each dependent `DataSourceAvailabilityResolver` is checked for the sub-schema on the total request that it requires.
+
+4. `PartitionAvailabilityResolver` provides for tables which partition their rows across multiple fact stores.
+  * PAR uses a partition function from `DataSourceConstraints` into a set of dependent 
+  resolvers.  The union of these resolvers provides the data sources and the intersect provides availability.
+  * The initial implementation will use a Map from partition keys to partitions and a Function which uses a dimension 
+   to resolve dimension rows and selects partition keys based on dimension rows.

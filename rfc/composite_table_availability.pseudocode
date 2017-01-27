@@ -1,0 +1,123 @@
+
+PhysicalTableSchema:
+	getFieldName(Column c)
+
+DataSource:
+	String getName()
+	Map<FieldName, Set<Segment>> raw segment data
+	Map<FieldName, List<Interval>> squashedFromSegments  // optional optimization
+
+	Set<FieldName> getFields() //union of all keys
+	List<Interval> getIntervals(FieldName fieldName)
+	Map<FieldName,List<Interval>> getIntervals(Set<FieldName>) // map slice from squashedMap
+	Set<SegmentId> getSegments(List<Interval>)  // Filter all segments by overlap on time
+
+DataSourceConstraints // Simple bean parameter object
+
+	getGrain
+	Set<FieldName> getMetrics
+	Set<Dimension> getDimensions
+	getApiFilters
+
+	DataSourceConstraints(ApiRequest)
+	DataSourceConstraints (DruidQuery, ApiFilter apifilters)
+
+	withMetrics(Set<FieldName> metrics) // Copy constructor
+
+
+DataSourceAvailabilityResolver:
+	List<String> getDataSourceNames(DataSourceConstraints)
+	List<Interval> getAvailability(DataSourceConstraints)
+
+ConcreteAvailabilityResolver:
+	DataSource dataSource
+    Map<LogicalFieldName, PhysicalFieldName> fieldMap // may just be string/string
+    joiner = IntersectJoiner
+
+	ConcreteAvailability(DataSource, fieldMap)
+
+    getDataSourceNames
+        return dataSource.getName
+
+    getAvailability(dsConstraints):
+        fieldNames = Union(dsConstraints.metrics, dsConstraints.dimensions.map(fieldMap.get(it.name))
+        return dataSource.getIntervals(fieldNames).reduce(joiner)
+
+    Description:
+        For a single datasource -> select intervals by requested field names -> join intervals
+
+PermissiveAvailability: extends ConcreteAvailabilityResolver
+    joiner = UnionJoiner  // Hippodrome uses this logic
+
+
+MetricUnionAvailabilityResolver
+	Map<ConcreteAvailabilityResolver, Set<Metric>> availabilityMetrics
+	Set<Metric> metrics // optional optimization
+
+	MetricUnionAvailabilityResolver(Map<ConcreteAvailability, Set<Metric> availMetrics)
+		// Validate total schema
+		metrics = availMetrics.values.reduce(Union)
+		metrics.allMatch(
+			availabilityMetrics.entries.filter(entry.value.contains(it)).count() == 1
+		)
+
+    private Stream<Map.Entry<CAR, Set<Metric>>>> ConcreteAvailabilityResolver getDependentAvails(dsConstraints):
+        validate(metrics.containsAll(dsConstraints.metrics))
+        availabilityMetrics.entries
+                .filter(entry.value intersect aReq.metrics not empty)
+                .flatmap(entry.key.getDataSources().stream())
+
+    getDataSourceNames(dsConstraints):
+        getDependentAvails(dsConstraints)
+                .map(it.getName())
+                .collect(Collections.toSet)
+
+    getAvailability(dsConstraints):
+        getDependentAvails(dsConstraints)
+            .map(dep-> dep.getAvailability(dsConstraints.withMetrics(entry.value intersect dsConstraints.metrics))
+            .reduce(Intersect)
+
+	Description:
+		validate all metrics are in the schema
+		filter dependent availability resolvers to ones which contains requested metric columns.  Ask each about the
+		  column availability for their subset of the metrics.  Join the intervals across the dependants.
+
+PartitionAvailabilityResolver:
+	Function<DataSourceConstraints, Set<AvailabilityResolver>> partitionFunction
+
+	PartitionAvailability(PartitionResolverFunction)
+
+	getAvailability(aReq):
+		return partitionFunction.apply(aReq)
+			.map(it.getAvailability(aReq))
+			.reduce(joiner)
+
+	filter dependents using partition function -> collect availability -> join by intersect segment predicate
+
+MapPartitionResolver extends Function<DataSourceConstraints, Set<AvailabilityResolver>>
+	Map<PartitionKey, AvailabilityResolver> partitionsMap
+	Function<ApiFilter, Set<PartitionKey>> partitionKeyResolver
+
+	apply(DataSourceConstraints dsc):
+	    Set<PartitionKey> keys =  partitionKeyResolver.apply(dsc.getApiFilters)
+	    keys.stream.map(partitionsMap.get(it)).collect(Collectors.toSet())
+
+DimensionRowMapPartitionKeyResolver extends Function<ApiFilter, Set<PartitionKey>>
+    Dimension
+    Map<DimensionRow, PartitionKey>
+
+    SingleDimensionValueMap(Dimension, Map<DimensionRow, PartitionKey>)
+
+    apply():
+        dimension.getSearchProvider(ApiFilters)
+            .findFilteredDimensionRowsPaged(
+                    apiFilters,
+                    PaginationParameters.EVERYTHING_IN_ONE_PAGE
+            ).stream
+                .map(map::get)  // This will fail in potentially bad ways  if the key isn't mapped
+                .collect(Collectors.toSet());
+
+
+
+
+
