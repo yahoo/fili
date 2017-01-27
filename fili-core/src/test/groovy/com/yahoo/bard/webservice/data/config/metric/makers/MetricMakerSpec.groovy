@@ -83,14 +83,14 @@ class MetricMakerSpec extends Specification {
         // Theta Sketches
         Aggregation sketchAggregation = new ThetaSketchAggregation(sketchName, "columnName", 16000)
         queryTemplate = new TemplateDruidQuery([sketchAggregation] as Set, [] as Set)
-        sketchAggregationMetric = new LogicalMetric(queryTemplate, new SketchRoundUpMapper(), sketchAggregation.name)
+        sketchAggregationMetric = new LogicalMetric(queryTemplate, new SketchRoundUpMapper(sketchAggregation.name), sketchAggregation.name)
 
         PostAggregation sketchEstimateAggregation = CONVERTER.asSketchEstimate(sketchAggregation)
 
         sketchFieldAccessor = sketchEstimateAggregation.getField()
 
         queryTemplate = new TemplateDruidQuery([sketchAggregation] as Set, [sketchEstimateAggregation] as Set)
-        sketchEstimateMetric = new LogicalMetric(queryTemplate, new SketchRoundUpMapper(), sketchEstimateAggregation.name)
+        sketchEstimateMetric = new LogicalMetric(queryTemplate, new SketchRoundUpMapper(sketchEstimateAggregation.name), sketchEstimateAggregation.name)
 
         PostAggregation sketchSetAggregation = new ThetaSketchSetOperationPostAggregation(
                 sketchUnionName,
@@ -98,11 +98,11 @@ class MetricMakerSpec extends Specification {
                 [sketchFieldAccessor, sketchFieldAccessor]
         )
         queryTemplate = new TemplateDruidQuery([sketchAggregation] as Set, [sketchSetAggregation] as Set)
-        sketchUnionMetric = new LogicalMetric(queryTemplate, new SketchRoundUpMapper(), sketchSetAggregation.name)
+        sketchUnionMetric = new LogicalMetric(queryTemplate, new SketchRoundUpMapper(sketchSetAggregation.name), sketchSetAggregation.name)
 
         PostAggregation sketchSetEstimate = CONVERTER.asSketchEstimate(sketchSetAggregation)
         queryTemplate = new TemplateDruidQuery([sketchAggregation] as Set, [sketchSetEstimate] as Set)
-        sketchUnionEstimateMetric = new LogicalMetric(queryTemplate, new SketchRoundUpMapper(), sketchSetEstimate.name)
+        sketchUnionEstimateMetric = new LogicalMetric(queryTemplate, new SketchRoundUpMapper(sketchSetEstimate.name), sketchSetEstimate.name)
     }
 
     def cleanupSpec() {

@@ -30,8 +30,7 @@ class ArithmeticMakerSpec extends Specification {
     public static final String AGG_AVERAGE_NAME = "aggregationMetric"
     public static final String METRIC_FIELD_NAME = "aggregationField"
     public static final String AVERAGE_PER_OTHER_METRIC_NAME = "averagePerOtherMetric"
-    public static
-    final String AVERAGE_PER_OTHER_METRIC_ROUNDED_METRIC_NAME = "averagePerOtherMetricRounded"
+    public static final String AVERAGE_PER_OTHER_METRIC_ROUNDED_METRIC_NAME = "averagePerOtherMetricRounded"
     LogicalMetric unRoundedMetric
     LogicalMetric roundedUpMetric
 

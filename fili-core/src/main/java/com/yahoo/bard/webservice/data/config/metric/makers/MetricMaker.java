@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper;
+import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper;
 import com.yahoo.bard.webservice.druid.model.MetricField;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation;
@@ -19,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * Metric maker produces new metrics from existing metrics or raw configuration.
@@ -28,6 +30,8 @@ public abstract class MetricMaker {
     private static final Logger LOG = LoggerFactory.getLogger(MetricMaker.class);
 
     public static final NoOpResultSetMapper NO_OP_MAPPER = new NoOpResultSetMapper();
+    public static final Function<String, ResultSetMapper> NO_OP_MAP_PROVIDER = (ignore) -> NO_OP_MAPPER;
+
     private static final String SKETCH_REQUIRED_FORMAT = "Field must be a sketch: %s but is: %s";
     private static final String INCORRECT_NUMBER_OF_DEPS_FORMAT = "%s got %d of %d expected metrics";
     private static final String MISSING_DEP_FORMAT = "Dependent metric %s is not in the metric dictionary";

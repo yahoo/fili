@@ -20,17 +20,6 @@ public class SketchRoundUpMapper extends ResultSetMapper implements ColumnMapper
     String columnName;
 
     /**
-     * Constructor.
-     * <p>
-     * A SketchRoundUpMapper requires a columnName in order to work, and this constructor defaults the column name to
-     * null, meaning that this constructor actually builds an invalid instance that can serve as a template for other
-     * instances via withColumnName to set the column name.
-     */
-    public SketchRoundUpMapper() {
-        this.columnName = null;
-    }
-
-    /**
      * The column name to round.
      *
      * @param columnName  The column name

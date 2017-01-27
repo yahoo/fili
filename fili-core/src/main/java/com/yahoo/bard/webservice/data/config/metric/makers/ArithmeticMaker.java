@@ -41,7 +41,7 @@ public class ArithmeticMaker extends MetricMaker {
      * @param resultSetMapperSupplier  A function that takes a metric column name and produces at build time, a result
      * set mapper.
      */
-    protected ArithmeticMaker(
+    public ArithmeticMaker(
             MetricDictionary metricDictionary,
             ArithmeticPostAggregationFunction function,
             Function<String, ResultSetMapper> resultSetMapperSupplier
@@ -84,7 +84,7 @@ public class ArithmeticMaker extends MetricMaker {
         this(
                 metricDictionary,
                 function,
-                (Function<String, ResultSetMapper>) ignore -> NO_OP_MAPPER
+                NO_OP_MAP_PROVIDER
         );
     }
 

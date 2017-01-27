@@ -249,12 +249,13 @@ Current
         synchronized. Since threads need to acquire a write lock before
         doing anything else anyway, the method is still effectively 
         synchronized.
-        
+- [Made now required constructor for ArithmeticMaker with rounding public](https://github.com/yahoo/fili/pull/148)
+
 ### Known Issues:
 
 
-
 ### Removed:
+- [Removed invalid constructor from SketchRoundUpMappepr](https://github.com/yahoo/fili/pull/148) 
 
 
 
