@@ -9,7 +9,7 @@
     <parent>
         <groupId>com.yahoo.fili</groupId>
         <artifactId>fili-parent-pom</artifactId>
-        <version>0.7-SNAPSHOT</version>
+        <version>0.8-SNAPSHOT</version>
     </parent>
 
     <artifactId>fili-core</artifactId>
