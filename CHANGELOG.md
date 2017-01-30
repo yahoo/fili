@@ -8,11 +8,15 @@ pull request if there was one.
 Current
 -------
 
-### Changed:
+### Added:
 
 - [Detect unset userPrincipal in Preface log block](https://github.com/yahoo/fili/pull/154)
     * Logs a warning if no userPrincipal is set on the request (ie. we don't know who the user is), and sets the
       `user` field in the `Preface` log block to `NO_USER_PRINCIPAL`.
+
+### Changed:
+
+- [Add dimension fields to fullView table format](https://github.com/yahoo/fili/pull/155)
 
 ### Deprecated:
 
