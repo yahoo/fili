@@ -6,15 +6,13 @@ import com.yahoo.bard.webservice.application.HealthCheckRegistryFactory;
 import com.yahoo.bard.webservice.logging.RequestLog;
 
 import com.codahale.metrics.health.HealthCheck.Result;
-import com.codahale.metrics.health.HealthCheckRegistry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.Map;
-import java.util.SortedMap;
+import java.util.Optional;
 
 import javax.annotation.Priority;
 import javax.inject.Singleton;
@@ -36,15 +34,25 @@ public class HealthCheckFilter implements ContainerRequestFilter {
     public void filter(ContainerRequestContext requestContext) throws IOException {
 
         RequestLog.startTiming(this);
-        URI uri = requestContext.getUriInfo().getAbsolutePath();
-        String path = uri.getPath();
+        String path = requestContext.getUriInfo().getAbsolutePath().getPath();
 
         if (path.startsWith("/v1/data") || path.startsWith("/data")) {
-            if (!isHealthy()) {
-                String msg = String.format("reject %s", uri.toString());
-                LOG.error(msg);
+            // See if we have any unhealthy checks
+            Optional<Map.Entry<String, Result>> firstUnhealthy = getFirstUnhealthy();
+
+            // If we do, stop the request
+            firstUnhealthy.ifPresent(entry -> {
                 RequestLog.stopTiming(this);
-                requestContext.abortWith(Response.status(Status.SERVICE_UNAVAILABLE).entity(msg).build());
+                LOG.error("Healthcheck '{}' failed: {}", entry.getKey(), entry.getValue());
+                requestContext.abortWith(
+                        Response.status(Status.SERVICE_UNAVAILABLE)
+                                .entity("Service is unhealthy. At least 1 healthcheck is failing")
+                                .build()
+                );
+            });
+
+            // If we did, return since we already stopped the timer
+            if (firstUnhealthy.isPresent()) {
                 return;
             }
         }
@@ -52,29 +60,13 @@ public class HealthCheckFilter implements ContainerRequestFilter {
     }
 
     /**
-     * Run through all registered health checks to make sure all are healthy.
+     * Get the first healthcheck that is unhealthy.
      *
-     * @return true only if all health checks pass
+     * @return the first healthcheck that is found to be unhealthy, if any.
      */
-    public boolean isHealthy() {
-        HealthCheckRegistry registry = HealthCheckRegistryFactory.getRegistry();
-
-        SortedMap<String, Result> checks = registry.runHealthChecks();
-
-        if (checks.size() == 0) {
-            LOG.error("No healthchecks registered.");
-            return false;
-        }
-
-        // Loop over all registered health checks for any not healthy
-        for (Map.Entry<String, Result> checkEntry : checks.entrySet()) {
-            LOG.trace(String.format("Checking %s...", checkEntry.getKey()));
-            if (!checkEntry.getValue().isHealthy()) {
-                LOG.error(String.format("%s check failed: %s", checkEntry.getKey(), checkEntry.getValue().toString()));
-                return false;
-            }
-        }
-
-        return true;
+    public Optional<Map.Entry<String, Result>> getFirstUnhealthy() {
+        return HealthCheckRegistryFactory.getRegistry().runHealthChecks().entrySet().stream()
+                .filter(entry -> entry.getValue().isHealthy())
+                .findFirst();
     }
 }

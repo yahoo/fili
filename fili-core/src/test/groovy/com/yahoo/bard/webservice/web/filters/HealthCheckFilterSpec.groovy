@@ -166,7 +166,7 @@ class HealthCheckFilterSpec extends Specification {
     def "Healthy /data check passes"() {
         setup:
         HealthCheckFilter filter = Spy(HealthCheckFilter)
-        filter.isHealthy() >> { true }
+        filter.getFirstUnhealthy() >> { true }
 
         ContainerRequestContext requestContext = Mock(ContainerRequestContext)
         UriInfo uriInfo = Mock(UriInfo)
@@ -184,7 +184,7 @@ class HealthCheckFilterSpec extends Specification {
     def "Unhealthy /data check fails"() {
         setup:
         HealthCheckFilter filter = Spy(HealthCheckFilter)
-        filter.isHealthy() >> { false }
+        filter.getFirstUnhealthy() >> { false }
 
         ContainerRequestContext requestContext = Mock(ContainerRequestContext)
         UriInfo uriInfo = Mock(UriInfo)
@@ -202,7 +202,7 @@ class HealthCheckFilterSpec extends Specification {
     def "No filter for /cache"() {
         setup:
         HealthCheckFilter filter = Spy(HealthCheckFilter)
-        filter.isHealthy() >> { false }
+        filter.getFirstUnhealthy() >> { false }
 
         ContainerRequestContext requestContext = Mock(ContainerRequestContext)
         UriInfo uriInfo = Mock(UriInfo)

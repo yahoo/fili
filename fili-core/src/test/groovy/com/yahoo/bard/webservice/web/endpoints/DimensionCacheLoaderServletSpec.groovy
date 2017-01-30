@@ -27,7 +27,7 @@ import javax.ws.rs.core.Response.Status
 class DimensionCacheLoaderServletSpec extends Specification {
     private static final ObjectMappersSuite MAPPERS = new ObjectMappersSuite()
 
-    static final DateTimeZone ORIGINAL_TIME_ZONE = DateTimeZone.getDefault();
+    static final DateTimeZone ORIGINAL_TIME_ZONE = DateTimeZone.getDefault()
 
     DimensionCacheLoaderServlet dimensionCacheLoaderServlet
 

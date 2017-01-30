@@ -31,6 +31,11 @@ Current
       allowing subclasses to override and extend the schema behavior
 - [Add dimension fields to fullView table format](https://github.com/yahoo/fili/pull/155)
 
+- [Make healthcheck filter reject message nicer](https://github.com/yahoo/fili/pull/153)
+    * The previous message of `reject <url>` wasn't helpful, useful, nor very nice to users, and the message logged was
+      not very useful either. The message has been made nicer (`Service is unhealthy. At least 1 healthcheck is
+      failing`), and the log has been made better as well.
+
 ### Deprecated:
 
 
