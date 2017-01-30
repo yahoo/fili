@@ -6,6 +6,9 @@ import com.yahoo.bard.webservice.logging.LogInfo;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.security.Principal;
 import java.util.Collections;
 
@@ -17,6 +20,11 @@ import javax.ws.rs.core.MultivaluedMap;
  */
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class Preface implements LogInfo {
+
+    private static final Logger LOG = LoggerFactory.getLogger(Preface.class);
+
+    public static final String NO_USER_PRINCIPAL_USER_NAME = "NO_USER_PRINCIPAL";
+
     protected final String uri;
     protected final String method;
     protected final String user;
@@ -35,7 +43,8 @@ public class Preface implements LogInfo {
             user = principal.getName();
         } else {
             // No principal found
-            user = "";
+            LOG.warn("No user principal detected when building the Preface. This shouldn't happen!");
+            user = NO_USER_PRINCIPAL_USER_NAME;
         }
 
         headers = request.getHeaders();
