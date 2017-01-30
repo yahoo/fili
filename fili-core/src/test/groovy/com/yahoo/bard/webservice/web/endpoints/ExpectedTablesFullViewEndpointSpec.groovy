@@ -76,6 +76,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/other"
                     }
                   ],
@@ -99,6 +108,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/other"
                     }
                   ],
@@ -122,6 +140,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/other"
                     }
                   ],
@@ -145,6 +172,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/other"
                     }
                   ],
@@ -168,6 +204,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/other"
                     }
                   ],
@@ -199,6 +244,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/other"
                     }
                   ],
@@ -228,6 +282,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/other"
                     }
                   ],
@@ -257,6 +320,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/other"
                     }
                   ],
@@ -280,6 +352,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/other"
                     }
                   ],
@@ -309,6 +390,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/other"
                     }
                   ],
@@ -346,6 +436,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/other"
                     }
                   ],
@@ -375,6 +474,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/other"
                     }
                   ],
@@ -404,6 +512,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/other"
                     }
                   ],
@@ -433,6 +550,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/other"
                     }
                   ],
@@ -470,6 +596,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "breed",
                       "name": "breed",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/breed"
                     },
                     {
@@ -477,6 +612,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "sex",
                       "name": "sex",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/sex"
                     },
                     {
@@ -484,6 +628,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "species",
                       "name": "species",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/species"
                     }
                   ],
@@ -519,6 +672,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "breed",
                       "name": "breed",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/breed"
                     },
                     {
@@ -526,6 +688,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "sex",
                       "name": "sex",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/sex"
                     },
                     {
@@ -533,6 +704,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "species",
                       "name": "species",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/species"
                     }
                   ],
@@ -568,6 +748,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "breed",
                       "name": "breed",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/breed"
                     },
                     {
@@ -575,6 +764,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "sex",
                       "name": "sex",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/sex"
                     },
                     {
@@ -582,6 +780,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "species",
                       "name": "species",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/species"
                     }
                   ],
@@ -617,6 +824,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "breed",
                       "name": "breed",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/breed"
                     },
                     {
@@ -624,6 +840,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "sex",
                       "name": "sex",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/sex"
                     },
                     {
@@ -631,6 +856,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "species",
                       "name": "species",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/species"
                     }
                   ],
@@ -674,6 +908,24 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "color",
                       "name": "color",
+                      "fields": [
+                        {
+                          "description":"Blue pigment",
+                          "name":"bluePigment"
+                        }, {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }, {
+                          "description":"Green pigment",
+                          "name":"greenPigment"
+                        }, {
+                          "description":"Red pigment",
+                          "name":"redPigment"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/color"
                     },
                     {
@@ -681,6 +933,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "model",
                       "name": "model",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/model"
                     },
                     {
@@ -688,6 +949,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "shape",
                       "name": "shape",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/shape"
                     },
                     {
@@ -695,6 +965,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "size",
                       "name": "size",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/size"
                     },
                     {
@@ -702,6 +981,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/other"
                     }
                   ],
@@ -803,6 +1091,24 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "color",
                       "name": "color",
+                      "fields": [
+                        {
+                          "description":"Blue pigment",
+                          "name":"bluePigment"
+                        }, {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }, {
+                          "description":"Green pigment",
+                          "name":"greenPigment"
+                        }, {
+                          "description":"Red pigment",
+                          "name":"redPigment"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/color"
                     },
                     {
@@ -810,6 +1116,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "model",
                       "name": "model",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/model"
                     },
                     {
@@ -817,6 +1132,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "shape",
                       "name": "shape",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/shape"
                     },
                     {
@@ -824,6 +1148,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "size",
                       "name": "size",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/size"
                     },
                     {
@@ -831,6 +1164,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/other"
                     }
                   ],
@@ -920,6 +1262,24 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "color",
                       "name": "color",
+                      "fields": [
+                        {
+                          "description":"Blue pigment",
+                          "name":"bluePigment"
+                        }, {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }, {
+                          "description":"Green pigment",
+                          "name":"greenPigment"
+                        }, {
+                          "description":"Red pigment",
+                          "name":"redPigment"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/color"
                     },
                     {
@@ -927,6 +1287,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "model",
                       "name": "model",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/model"
                     },
                     {
@@ -934,6 +1303,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "shape",
                       "name": "shape",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/shape"
                     },
                     {
@@ -941,6 +1319,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "size",
                       "name": "size",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/size"
                     },
                     {
@@ -948,6 +1335,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/other"
                     }
                   ],
@@ -1049,6 +1445,24 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "color",
                       "name": "color",
+                      "fields": [
+                        {
+                          "description":"Blue pigment",
+                          "name":"bluePigment"
+                        }, {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }, {
+                          "description":"Green pigment",
+                          "name":"greenPigment"
+                        }, {
+                          "description":"Red pigment",
+                          "name":"redPigment"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/color"
                     },
                     {
@@ -1056,6 +1470,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "model",
                       "name": "model",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/model"
                     },
                     {
@@ -1063,6 +1486,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "shape",
                       "name": "shape",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/shape"
                     },
                     {
@@ -1070,6 +1502,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "size",
                       "name": "size",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/size"
                     },
                     {
@@ -1077,6 +1518,15 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "fields": [
+                        {
+                          "description":"Dimension Description",
+                          "name":"desc"
+                        }, {
+                          "description":"Dimension ID",
+                          "name":"id"
+                        }
+                      ],
                       "uri": "http://localhost:9998/dimensions/other"
                     }
                   ],

@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web;
 
+import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.web.endpoints.DimensionsServlet;
 import com.yahoo.bard.webservice.web.endpoints.MetricsServlet;
@@ -9,10 +10,14 @@ import com.yahoo.bard.webservice.web.endpoints.MetricsServlet;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.core.UriInfo;
 
@@ -45,9 +50,7 @@ public class TableFullViewProcessor implements TableMetadataFormatter {
 
             grains.add(formatTableGrain(logicalTable, logicalTable.getGranularity().getName(), uriInfo));
 
-            if (tablesMeta.get(logicalTable.getName()) == null) {
-                tablesMeta.put(logicalTable.getName(), formatTable(logicalTable, uriInfo));
-            }
+            tablesMeta.computeIfAbsent(logicalTable.getName(), k -> formatTable(logicalTable, uriInfo));
         }
 
         List<TableView> tableViewList = new ArrayList<>();
@@ -95,14 +98,44 @@ public class TableFullViewProcessor implements TableMetadataFormatter {
         resultRow.put("longName", StringUtils.capitalize(grain));
         resultRow.put("description", "The " + logicalTable.getName() + " " + grain + " grain");
         resultRow.put("retention", logicalTable.getRetention().toString());
-        resultRow.put(
-                "dimensions",
-                DimensionsServlet.getDimensionListSummaryView(logicalTable.getDimensions(), uriInfo)
-        );
+        resultRow.put("dimensions", getDimensionListFullView(logicalTable.getDimensions(), uriInfo));
         resultRow.put(
                 "metrics",
                 MetricsServlet.getLogicalMetricListSummaryView(logicalTable.getLogicalMetrics(), uriInfo)
         );
+        return resultRow;
+    }
+
+    /**
+     * Get the summary list view of the dimensions.
+     *
+     * @param dimensions  Collection of dimensions to get the summary view for
+     * @param uriInfo  UriInfo of the request
+     *
+     * @return Summary list view of the dimensions
+     */
+    private Set<Map<String, Object>> getDimensionListFullView(Collection<Dimension> dimensions, UriInfo uriInfo) {
+        return dimensions.stream()
+                .map(dimension -> getDimensionSummaryViewWithFields(dimension, uriInfo))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    /**
+     * Get the summary view of the dimension.
+     *
+     * @param dimension  Dimension to get the view of
+     * @param uriInfo  UriInfo of the request
+     *
+     * @return Summary view of the dimension
+     */
+    private static Map<String, Object> getDimensionSummaryViewWithFields(Dimension dimension, UriInfo uriInfo) {
+        Map<String, Object> resultRow = new LinkedHashMap<>();
+        resultRow.put("category", dimension.getCategory());
+        resultRow.put("name", dimension.getApiName());
+        resultRow.put("longName", dimension.getLongName());
+        resultRow.put("uri", DimensionsServlet.getDimensionUrl(dimension, uriInfo));
+        resultRow.put("cardinality", dimension.getCardinality());
+        resultRow.put("fields", dimension.getDimensionFields());
         return resultRow;
     }
 }
