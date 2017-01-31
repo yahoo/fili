@@ -36,3 +36,17 @@ that.
    snapshot
 
    <sub>Note: There's probably a "maven-y" way to do this, but search-replace has generally done well for me.</sub>
+
+### Post-Build
+
+The CI/CD scripts we use to auto-release changes on the development line are aggressive, and will release the "start
+next development line" changes on the old version line. Instead, what we'd like to have happen is to have the "start
+next development line" changes to be released as the vX.Y.0 version for that new line. Here are the steps involved in
+making that happen:
+
+1. Add proper version tag to the commit that starts the next line
+
+   For example, the proper tag will be `v0.8.0` if we're releasing the `v0.7.x` line as stable and starting development
+   on the `v0.8.0` line). This wil cause the same artifact to be built and released under the proper version number.
+2. Delete the "too high" version that got released from Bintray
+3. Remove the "too high" tag from the repo
