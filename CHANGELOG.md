@@ -8,44 +8,87 @@ pull request if there was one.
 Current
 -------
 
+### Changed:
+
+
+
+### Deprecated:
+
+
+
+### Fixed:
+
+
+
+### Known Issues:
+
+
+
+### Removed:
+
+
+
+v0.7.36 - 2017/01/30
+--------------------
+
+This release is a mix of fixes, upgrades, and interface clean-up. The general themes for the changes are around metric
+configuration, logging and timing, and adding support for tagging dimension fields. Here are some of the highlights, but
+take a look in the lower sections for more details.
+
+Fixes:
+- Deadlock in `LuceneSearchProvider`
+- CORS support when using the `RoleBasedAuthFilter`
+
+New Capabilities & Enhancements:
+- Dimension field tagging
+- Controls around max size of Druid response to cache
+- Logging and timing enhancements
+
+Deprecations / Removals:
+- `RequestLog::switchTiming` is deprecated due to it's difficulty to use correctly
+- Metric configuration has a number of deprecations as part of the effort to make configuration easier and less complex
+
+Changes:
+- There was a major overhaul of Fili's dependencies to upgrade their versions
+
+
 ### Added:
 
 - [Dimension Field Tagging and Dynamic Dimension Field Serilization](https://github.com/yahoo/fili/pull/137)
     * Added a new module `fili-navi` for components added to support for Navi
     * Added `TaggedDimensionField` and related components in `fili-navi`
 
-- [Added RegisteredLookupDimension and RegisteredLookupExtractionFunction](https://github.com/yahoo/fili/pull/132)
-    * Added support for druid's RegisteredLookup by adding `RegisteredLookupDimension` and `RegisteredLookupExtractionFunction`
-    * Added test for `RegisteredLookupDimension` serialization in `RegisteredLookupDimensionToDimensionSpecSpec`
-
-- [Added comprehensive tests for `MetricMaker` field coercion methods](https://github.com/yahoo/fili/pull/128) 
-
-- [Added MetricField accessor to the interface of LogicalMetric](https://github.com/yahoo/fili/pull/124)
-    * Previously accessing the metric field involved using three method calls
+- [Ability to prevent caching of Druid responses larger than the maximum size supported by the cache](https://github.com/yahoo/fili/pull/93)
+    * Supported for both Cache v1 and V2
+    * Controlled with `bard__druid_max_response_length_to_cache` setting
+    * Default value is `MAX_LONG`, so no cache prevention will happen by default
 
 - [Log a warning if `SegmentMetadataLoader` tries to load empty segment metadata](https://github.com/yahoo/fili/pull/113)
     * While not an error condition (eg. configuration migration), it's unusual, and likely shouldn't stay this way long
 
 - [More descriptive log message when no physical table found due to schema mismatch](https://github.com/yahoo/fili/pull/113)
-    * Previous log message was the user-facing one, and not as helpful as it could have been
+    * Previous log message was user-facing only, and not as helpful as it could have been
 
-- [Ability to not try to cache Druid responses that are larger than the maximum size supported by the cache implementation](https://github.com/yahoo/fili/pull/93)
-    * Supported for both Cache v1 and V2
-    * Controlled with `bard__druid_max_response_length_to_cache` setting
-    * Default value is `MAX_LONG`, so no cache prevention will happen by default
 - [Logs more finegrained timings of the request processing workflow](https://github.com/yahoo/fili/pull/110)
 
-- [Add `FilteredAggregationMaker`](https://github.com/yahoo/fili/pull/107)
-    * This version is rudimentary. See [issue 120](https://github.com/yahoo/fili/issue/120) for plans on updating this
-      maker.
+- [Added RegisteredLookupDimension and RegisteredLookupExtractionFunction](https://github.com/yahoo/fili/pull/132)
+    * This enables supporting Druid's most recent evolution of the Query Time Lookup feature
 
-- [Add support for Druid's `LinearShardSpec` metadata type](https://github.com/yahoo/fili/pull/107)
+- [`FilteredAggregationMaker`](https://github.com/yahoo/fili/pull/107)
+    * This version is rudimentary. See [issue 120](https://github.com/yahoo/fili/issue/120) for future plans.
 
-- [Add ability for `ClassScanner` to instantiate arrays](https://github.com/yahoo/fili/pull/107)
+- [Support for Druid's `LinearShardSpec` metadata type](https://github.com/yahoo/fili/pull/107)
+
+- [Added MetricField accessor to the interface of LogicalMetric](https://github.com/yahoo/fili/pull/124)
+    * Previously accessing the metric field involved using three method calls
+
+- [Ability for `ClassScanner` to instantiate arrays](https://github.com/yahoo/fili/pull/107)
     * This allows for more robust testing of classes that make use of arrays in their constructor parameters
 
-- [Add module load test code](https://github.com/yahoo/fili/pull/122)
+- [Module load test code](https://github.com/yahoo/fili/pull/122)
     * Code to automatically test module is correctly configured.
+
+- [Comprehensive tests for `MetricMaker` field coercion methods](https://github.com/yahoo/fili/pull/128)
 
 ### Changed:
 
@@ -54,14 +97,15 @@ Current
        probably not that useful, it has been removed. 
 
 - [Dimension Field Tagging and Dynamic Dimension Field Serilization](https://github.com/yahoo/fili/pull/137)
-    * Changed `fili-core` dimension endpoint `DimensionField` serialization strategy from hard coded static attributes to dynamic serialization based on `jackson` serializer
+    * Changed `fili-core` dimension endpoint `DimensionField` serialization strategy from hard coded static attributes
+      to dynamic serialization based on `jackson` serializer
 
 - [MetricMaker cleanup and simplification](https://github.com/yahoo/fili/pull/127)
     * Simplified raw aggregation makers
     * `ConstantMaker` now throws an `IllegalArgumentException` wrapping the raw NumberFormatException on a bad argument
     * `FilteredAggregation` no longer requires a metric name to be passed in. (Aggregation field name is used)
     * `FilteredAggregationMaker` now accepts a metric to the 'make' method instead of binding at construction time.
-    * `ArithmeticAggregationMaker` default now uses `NoOpResultSetMapper` instead of rounding mapper. (potentially breaking change)
+    * `ArithmeticAggregationMaker` default now uses `NoOpResultSetMapper` instead of rounding mapper. (breaking change)
     * `FilteredAggregationMaker`, `SketchSetOperationMaker` members are now private
 
 - [Used Metric Field accessor to simplify maker code](https://github.com/yahoo/fili/pull/124)
@@ -82,19 +126,20 @@ Current
 - [`NoOpResultSetMapper` now runs in constant time and space.](https://github.com/yahoo/fili/pull/119)
 
 - [Remove restriction for single physical dimension to multiple lookup dimensions](https://github.com/yahoo/fili/pull/112)
-    * Modified physical dimension name to logical dimension name mapping into a `Map<String, Set<String>>` instead of `Map<String, String>` in `PhysicalTable.java`
+    * Change physical dimension name to logical dimension name mapping into `Map<String, Set<String>>` instead of
+      `Map<String, String>` in `PhysicalTable.java`
 
 - [SegmentMetadataLoader include provided request headers](https://github.com/yahoo/fili/pull/106)
     * `SegmentMetadataLoader` sends requests with the provided request headers in `AsyncDruidWebservice` now
-    * Refactored `AsyncDruidWebserviceSpec` test and added test for checking `getJsonData` includes request headers as well
+    * Refactored `AsyncDruidWebserviceSpec` test and added test for checking `getJsonData` includes request headers too
 
 - [Include physical table name in warning log message for logicalToPhysical mapping](https://github.com/yahoo/fili/pull/94)
     * Without this name, it's hard to know what table seems to be misconfigured.
 
 - [`ResponseValidationException` uses `Response.StatusType` rather than `Response.Status`](https://github.com/yahoo/fili/pull/96)
     * `Response.StatusType` is the interface that `Response.Status` implements.
-    * This will have no impact on current code in Fili that uses `ResponseValidationException`, and it allows customers to inject http
-        codes not included in `Response.Status`.
+    * This will have no impact on current code in Fili that uses `ResponseValidationException`, and it allows customers
+      to inject http codes not included in `Response.Status`.
          
 - [Removed "provided" modifier for SLF4J and Logback dependencies in the Wikipedia example](https://github.com/yahoo/fili/pull/102)
 
@@ -158,7 +203,8 @@ Current
         - Fixed to MDC adapter, leaking information to non-child threads
         - Better handling of ill-formatted strings
         - Cleaned up multi-thread consistency for LoggerFactory-based logger initializations
-        - Closed a multi-threaded gap where early logs may be lost if they happened while SLF4J was initializing in a multi-threaded application
+        - Closed a multi-threaded gap where early logs may be lost if they happened while SLF4J was initializing in a
+          multi-threaded application
     * [Logback 1.1.3 -> ](http://logback.qos.ch/news.html):
         - Child threads no longer inherit MDC values
         - AsyncAppender can be configured to never block
@@ -186,15 +232,24 @@ Current
 
 ### Deprecated:
 
-- [`RequestLog::switchTiming` has been deprecated]((https://github.com/yahoo/fili/pull/141)
-    - `RequestLog::switchTiming` is very context-dependent, and therefore brittle. In particular, adding any
-        additional timers inside code called by a timed block may result in the original timer not stopping
-        properly. All usages of `switchTiming` should be replaced with explicit calls to `RequestLog::startTiming`
-        and `RequestLog::stopTiming`.
+- [`RequestLog::switchTiming` has been deprecated](https://github.com/yahoo/fili/pull/141)
+    - `RequestLog::switchTiming` is very context-dependent, and therefore brittle. In particular, adding any additional
+      timers inside code called by a timed block may result in the original timer not stopping properly. All usages of
+      `switchTiming` should be replaced with explicit calls to `RequestLog::startTiming` and `RequestLog::stopTiming`.
 
 - [Dimension Field Tagging and Dynamic Dimension Field Serilization](https://github.com/yahoo/fili/pull/137)
     * Deprecated `DimensionsServlet::getDimensionFieldListSummaryView` and `DimensionsServlet::getDimensionFieldSummaryView`
-    since there is no need for it anymore due to the change in serialization of `DimensionField`
+      since there is no need for it anymore due to the change in serialization of `DimensionField`
+
+- [Default DimensionColumn name to use apiName instead of physicalName](https://github.com/yahoo/fili/pull/115)
+    * Deprecated `TableUtils::getColumnNames(DataApiRequest, DruidAggregationQuery, PhysicalTable)` returning dimension
+      physical name, in favor of `TableUtils::getColumnNames(DataApiRequest, DruidAggregationQuery)` returning dimension
+      api name
+    * Deprecated `DimensionColumn::DimensionColumn addNewDimensionColumn(Schema, Dimension, PhysicalTable)` in favor of
+      `DimensionColumn::DimensionColumn addNewDimensionColumn(Schema, Dimension)` which uses api name instead of
+      physical name as column identifier for columns
+    * Deprecated `LogicalDimensionColumn` in favor of `DimensionColumn` since `DimensionColumn` stores api name instead
+      of physical name now, so `LogicalDimensionColumn` is no longer needed
 
 - [Moved to static implementations for numeric and sketch coercion helper methods](https://github.com/yahoo/fili/pull/128)
     * `MetricMaker.getSketchField(String fieldName)` rather use `MetricMaker.getSketchField(MetricField field)`
@@ -209,54 +264,37 @@ Current
 
 - [Deprecated MetricMaker.getDependentQuery lookup method in favor of simpler direct access](https://github.com/yahoo/fili/pull/124)
 
-- [Default DimensionColumn name to use apiName instead of physicalName](https://github.com/yahoo/fili/pull/115)
-    * Deprecated `TableUtils::getColumnNames(DataApiRequest, DruidAggregationQuery, PhysicalTable)` returning dimension physical name,
-     in favor of `TableUtils::getColumnNames(DataApiRequest, DruidAggregationQuery)` returning dimension api name
-    * Deprecated `DimensionColumn::DimensionColumn addNewDimensionColumn(Schema, Dimension, PhysicalTable)` in favor of
-     `DimensionColumn::DimensionColumn addNewDimensionColumn(Schema, Dimension)` which uses api name instead of physical name as column identifier for columns
-    * Deprecated `LogicalDimensionColumn` in favor of `DimensionColumn` since `DimensionColumn` stores api name instead of physical name now,
-     so `LogicalDimensionColumn` is no longer needed
-
 ### Fixed:
 
-- [Added missing coverage for `ThetaSketchEstimate` unwrapping in `MetricMaker.getSketchField`](https://github.com/yahoo/fili/pull/128) 
-
-- [`DataSource::getNames` now returns Fili identifiers, not fact store identifiers](https://github.com/yahoo/fili/pull/125/files)
+- [Fixes a potential deadlock](https://github.com/yahoo/fili/pull/116)
+    * There is a chance the `LuceneSearchProvider` will deadlock if one thread is attempting to read a dimension for the
+      first time while another is  attempting to load it:
+        - Thread A is pushing in new dimension data. It invokes `refreshIndex`, and acquires the write lock.
+        - Thread B is reading dimension data. It invokes `getResultsPage`, and then `initializeIndexSearcher`, then
+          `reopenIndexSearcher`. It hits the write lock (acquired by Thread A) and blocks.
+        - At the end of its computation of `refreshIndex`, Thread A attempts to invoke `reopenIndexSearcher`. However,
+          `reopenIndexSearcher` is `synchronized`, and Thread B is already invoking it.
+        - To fix the resulting deadlock, `reopenIndexSearcher` is no longer synchronized. Since threads need to acquire
+          a write lock before doing anything else anyway, the method is still effectively  synchronized.
 
 - [Fix and refactor role based filter to allow CORS](https://github.com/yahoo/fili/pull/99)
     * Fix `RoleBasedAuthFilter` to bypass `OPTIONS` request for CORS
     * Discovered a bug where `user_roles` is declared but unset still reads as a list with empty string (included a temporary fix by commenting the variable declaration)
     * Refactored `RoleBasedAuthFilter` and `RoleBasedAuthFilterSpec` for better testing
 
-- [Made a few injection points not useless](https://github.com/yahoo/fili/pull/98)
-    * Template types don't get the same subclass goodness that method invocation and
-        dependencies get, so this method did not allow returning a subclass of
-       `DruidQueryBuilder` or of `DruidResponseParser`.
+- [Added missing coverage for `ThetaSketchEstimate` unwrapping in `MetricMaker.getSketchField`](https://github.com/yahoo/fili/pull/128) 
 
-- [Fixes a potential deadlock](https://github.com/yahoo/fili/pull/116)
-    * There is a chance the `LuceneSearchProvider` will deadlock if one thread
-    is attempting to read a dimension for the first time while another is 
-    attempting to load it:
-        - Thread A is pushing in new dimension data. It invokes `refreshIndex`,
-        and acquires the write lock. 
-        - Thread B is reading dimension data. It invokes `getResultsPage`, and
-        then `initializeIndexSearcher`, then `reopenIndexSearcher`. It hits
-        the write lock (acquired by Thread A) and blocks.
-        - At the end of its computation of `refreshIndex`, Thread A attempts
-        to invoke `reopenIndexSearcher`. However, `reopenIndexSearcher` is
-        `synchronized`, and Thread B is already invoking it.
-        - To fix the resulting deadlock, `reopenIndexSearcher` is no longer
-        synchronized. Since threads need to acquire a write lock before
-        doing anything else anyway, the method is still effectively 
-        synchronized.
+- [`DataSource::getNames` now returns Fili identifiers, not fact store identifiers](https://github.com/yahoo/fili/pull/125/files)
+
+- [Made a few injection points not useless](https://github.com/yahoo/fili/pull/98)
+    * Template types don't get the same subclass goodness that method invocation and dependencies get, so this method
+      did not allow returning a subclass of `DruidQueryBuilder` or of `DruidResponseParser`.
+
 - [Made now required constructor for ArithmeticMaker with rounding public](https://github.com/yahoo/fili/pull/148)
 
-### Known Issues:
-
-
 ### Removed:
-- [Removed invalid constructor from SketchRoundUpMappepr](https://github.com/yahoo/fili/pull/148) 
 
+- [Removed invalid constructor from SketchRoundUpMappepr](https://github.com/yahoo/fili/pull/148) 
 
 
 v0.6.29 - 2016/11/16
