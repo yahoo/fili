@@ -8,9 +8,16 @@ pull request if there was one.
 Current
 -------
 
+### Added:
+- [Expose the request phase durations stored by RequestLog](https://github.com/yahoo/fili/pull/100)
+    * Add FiliTimingFilter to allow applications to use custom logging filters while retaining the non-logging related 
+    behaviors of the BardLoggingFilter
+
 ### Changed:
 
-
+- [Expose the request phase durations stored by RequestLog](https://github.com/yahoo/fili/pull/100)
+    * Refactored the RequestLog by spinning the model out into a seperate class and marking the existing class as a 
+    utility
 
 ### Deprecated:
 
