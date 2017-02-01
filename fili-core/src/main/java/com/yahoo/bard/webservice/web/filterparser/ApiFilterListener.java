@@ -59,7 +59,9 @@ public class ApiFilterListener extends ApiFiltersListListener {
 
     /**
      * Simple getter for the Dimension that also checks for any pending errors and throws exceptions for them.
+     *
      * @return the Dimension
+     *
      * @throws BadFilterException invalid filter expression
      * @throws BadApiRequestException filter expression that doesn't match the current table or dimensions
      */

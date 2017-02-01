@@ -2,10 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web;
 
-import com.yahoo.bard.webservice.web.filterparser.ApiFilterListener;
-import com.yahoo.bard.webservice.web.filterparser.FiltersLex;
-import com.yahoo.bard.webservice.web.filterparser.FiltersParser;
-
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_INVALID_WITH_DETAIL;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
@@ -13,6 +9,9 @@ import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.util.ExceptionErrorListener;
+import com.yahoo.bard.webservice.web.filterparser.ApiFilterListener;
+import com.yahoo.bard.webservice.web.filterparser.FiltersLex;
+import com.yahoo.bard.webservice.web.filterparser.FiltersParser;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -116,10 +115,12 @@ public class ApiFilter {
         ApiFilterListener apiFilterExtractor = new ApiFilterListener(table, dimensionDictionary);
 
         ANTLRInputStream input = new ANTLRInputStream(filterQuery);
+
         FiltersLex lexer = new FiltersLex(input);
         lexer.removeErrorListeners();
         lexer.addErrorListener(ExceptionErrorListener.INSTANCE);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
+
         FiltersParser parser = new FiltersParser(tokens);
         parser.removeErrorListeners();
         parser.addErrorListener(ExceptionErrorListener.INSTANCE);

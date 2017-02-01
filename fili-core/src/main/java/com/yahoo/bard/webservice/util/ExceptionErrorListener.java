@@ -15,12 +15,14 @@ public class ExceptionErrorListener extends BaseErrorListener {
     public static final ExceptionErrorListener INSTANCE = new ExceptionErrorListener();
 
     @Override
-    public void syntaxError(Recognizer<?, ?> recognizer,
-                    Object offendingSymbol,
-                    int line,
-                    int charPos,
-                    String msg,
-                    RecognitionException e) throws ParseCancellationException {
+    public void syntaxError(
+            Recognizer<?, ?> recognizer,
+            Object offendingSymbol,
+            int line,
+            int charPos,
+            String msg,
+            RecognitionException e
+    ) throws ParseCancellationException {
         throw new ParseCancellationException("line " + line + ":" + charPos + " " + msg, e);
     }
 }

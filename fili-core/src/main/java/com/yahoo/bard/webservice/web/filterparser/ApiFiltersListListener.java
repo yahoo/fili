@@ -37,7 +37,7 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_OPERATOR_I
 public class ApiFiltersListListener extends FiltersBaseListener {
     private static final Logger LOG = LoggerFactory.getLogger(ApiFiltersListListener.class);
 
-    private final Map<FiltersParser.FilterComponentContext, ApiFilter> filters = new HashMap<> ();
+    private final Map<FiltersParser.FilterComponentContext, ApiFilter> filters = new HashMap<>();
     private final Map<Dimension, Set<ApiFilter>> dimensionFiltersMap = new LinkedHashMap<>();
     private final List<Exception> errors = new LinkedList<>();
     private final LogicalTable table;
@@ -55,6 +55,7 @@ public class ApiFiltersListListener extends FiltersBaseListener {
     }
 
     @Override
+
     public void exitFilters(@NotNull FiltersParser.FiltersContext ctx) {
         for (FiltersParser.FilterComponentContext f : ctx.filterComponent()) {
             ApiFilter filter = filters.get(f);
@@ -98,6 +99,7 @@ public class ApiFiltersListListener extends FiltersBaseListener {
 
     /**
      * Extract values from the filter.
+     *
      * @param f The filter context
      * @return the list of values
      */
@@ -112,6 +114,7 @@ public class ApiFiltersListListener extends FiltersBaseListener {
 
     /**
      * Extract the operation from the filter.
+     *
      * @param f THe filter context
      * @return the operation
      */
@@ -201,7 +204,7 @@ public class ApiFiltersListListener extends FiltersBaseListener {
      * Throw any pending exceptions.
      *
      * @throws BadFilterException Thrown when the filter is invalid
-     * @throws BadApiRequestException Thrown for valid filtes that are invalid for the current table or dimensions
+     * @throws BadApiRequestException Thrown for valid filters that are invalid for the current table or dimensions
      */
     protected void processErrors() throws BadFilterException, BadApiRequestException {
         for (Exception ex : errors) {
