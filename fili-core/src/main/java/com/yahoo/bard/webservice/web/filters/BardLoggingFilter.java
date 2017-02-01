@@ -25,7 +25,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import javax.annotation.Priority;
 import javax.inject.Singleton;
@@ -69,11 +68,9 @@ public class BardLoggingFilter implements ContainerRequestFilter, ContainerRespo
     private static final String PROPERTY_NANOS = PROP_PREFIX + ".nanos";
     private static final String PROPERTY_REQ_LEN = PROP_PREFIX + ".reqlen";
     private static final String PROPERTY_OUTPUT_STREAM = PROP_PREFIX + ".ostream";
-    private static final Pattern VALID_REQUEST_ID = Pattern.compile("[a-zA-Z0-9+/=-]+");
 
     public static final double MILLISECONDS_PER_NANOSECOND = 1000000.0;
     public static final String CLIENT_TOTAL_TIMER = "ClientRequestTotalTime";
-    public static final String X_REQUEST_ID_HEADER = "x-request-id";
 
     /**
      * Intercept the Container request to add length of request and a start timestamp.
