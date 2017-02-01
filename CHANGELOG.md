@@ -37,19 +37,16 @@ Current
     * The previous message of `reject <url>` wasn't helpful, useful, nor very nice to users, and the message logged was
       not very useful either. The message has been made nicer (`Service is unhealthy. At least 1 healthcheck is
       failing`), and the log has been made better as well.
+- [`RequestLog` timings support the try-with-resources block](https://github.com/yahoo/fili/pull/143)
+    * A block of code can now be timed by wrapping the timed block in a try-with-resources block that 
+        starts the timer. Note: This won't work when performing timings across threads, or across
+        contexts. Those need to be started and stopped manually.
 
 ### Deprecated:
 
 - [`RequestLog::stopMostRecentTimer` has been deprecated](https://github.com/yahoo/fili/pull/143)
     - This method is a part of the infrastructure to support the recently
     deprecated `RequestLog::switchTiming`.
-
-- [`RequestLog::switchTiming` has been deprecated](https://github.com/yahoo/fili/pull/141)
-    - `RequestLog::switchTiming` is very context-dependent, and therefore brittle. In particular, adding any
-        additional timers inside code called by a timed block may result in the original timer not stopping
-        properly. All usages of `switchTiming` should be replaced with explicit calls to `RequestLog::startTiming`
-        and `RequestLog::stopTiming`.
-
 
 
 ### Fixed:
@@ -269,6 +266,11 @@ Changes:
 
 ### Deprecated:
 
+- [`RequestLog::switchTiming` has been deprecated](https://github.com/yahoo/fili/pull/141)
+    - `RequestLog::switchTiming` is very context-dependent, and therefore brittle. In particular, adding any additional
+      timers inside code called by a timed block may result in the original timer not stopping properly. All usages of
+      `switchTiming` should be replaced with explicit calls to `RequestLog::startTiming` and `RequestLog::stopTiming`.
+
 - [Dimension Field Tagging and Dynamic Dimension Field Serilization](https://github.com/yahoo/fili/pull/137)
     * Deprecated `DimensionsServlet::getDimensionFieldListSummaryView` and `DimensionsServlet::getDimensionFieldSummaryView`
       since there is no need for it anymore due to the change in serialization of `DimensionField`
@@ -377,11 +379,6 @@ New Capabilities & Enhancements:
         `AbstractBinderFactory`.
 
 ### Changed:
-
-- [`RequestLog` timings support the try-with-resources block](https://github.com/yahoo/fili/pull/143)
-    * A block of code can now be timed by wrapping the timed block in a try-with-resources block that 
-        starts the timer. Note: This won't work when performing timings across threads, or across
-        contexts. Those need to be started and stopped manually.
 
 - [Error messages generated during response processing include the request id.](https://github.com/yahoo/fili/pull/78)
 
