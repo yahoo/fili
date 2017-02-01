@@ -17,7 +17,7 @@ Current
 
 
 ### Fixed:
-
+- Setting readTimeout on DefaultAsyncHttpClientConfig when building AsyncDruidWebServiceImpl
 
 
 ### Known Issues:
