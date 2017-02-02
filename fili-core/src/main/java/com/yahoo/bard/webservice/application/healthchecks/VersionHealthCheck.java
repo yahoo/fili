@@ -22,8 +22,8 @@ public class VersionHealthCheck extends HealthCheck {
     public static final String VERSION_KEY = SYSTEM_CONFIG.getPackageVariableName("version");
     public static final String GIT_SHA_KEY = SYSTEM_CONFIG.getPackageVariableName("git_sha");
 
-    private String version;
-    private String gitSha;
+    private final String version;
+    private final String gitSha;
 
     /**
      * Constructor using the default version key property name.
@@ -39,19 +39,23 @@ public class VersionHealthCheck extends HealthCheck {
      * @param gitShaKey  The property name from which to get the git sha from the SystemConfig
      */
     public VersionHealthCheck(String versionKey, String gitShaKey) {
+        String tempVersion;
         try {
-            version = SYSTEM_CONFIG.getStringProperty(versionKey);
+            tempVersion = SYSTEM_CONFIG.getStringProperty(versionKey);
         } catch (SystemConfigException ignored) {
             LOG.error("{} not found in configuration", versionKey);
-            version = null;
+            tempVersion = null;
         }
+        version = tempVersion;
 
+        String tempGitSha;
         try {
-            gitSha = SYSTEM_CONFIG.getStringProperty(gitShaKey);
+            tempGitSha = SYSTEM_CONFIG.getStringProperty(gitShaKey);
         } catch (SystemConfigException ignored) {
             LOG.warn("{} not found in configuration", gitShaKey);
-            gitSha = null;
+            tempGitSha = null;
         }
+        gitSha = tempGitSha;
     }
 
     @Override
