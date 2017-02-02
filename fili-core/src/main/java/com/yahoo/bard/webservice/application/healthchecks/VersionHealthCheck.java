@@ -22,6 +22,7 @@ public class VersionHealthCheck extends HealthCheck {
     public static final String VERSION_KEY = SYSTEM_CONFIG.getPackageVariableName("version");
     public static final String GIT_SHA_KEY = SYSTEM_CONFIG.getPackageVariableName("git_sha");
 
+    private final String usedVersionKey;
     private final String version;
     private final String gitSha;
 
@@ -39,6 +40,7 @@ public class VersionHealthCheck extends HealthCheck {
      * @param gitShaKey  The property name from which to get the git sha from the SystemConfig
      */
     public VersionHealthCheck(String versionKey, String gitShaKey) {
+        usedVersionKey = versionKey;
         String tempVersion;
         try {
             tempVersion = SYSTEM_CONFIG.getStringProperty(versionKey);
@@ -60,6 +62,6 @@ public class VersionHealthCheck extends HealthCheck {
 
     @Override
     protected Result check() throws Exception {
-        return version == null ? Result.unhealthy(VERSION_KEY + " not set") : Result.healthy(version + ":" + gitSha);
+        return version == null ? Result.unhealthy(usedVersionKey + " not set") : Result.healthy(version + ":" + gitSha);
     }
 }
