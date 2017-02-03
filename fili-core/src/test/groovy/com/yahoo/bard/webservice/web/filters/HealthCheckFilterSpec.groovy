@@ -73,31 +73,28 @@ class HealthCheckFilterSpec extends Specification {
     }
 
     def "Unhealthy get throws ServiceUnavailableException"() {
-        setup:
-        // add unhealthy health check
+        given: "An unhealthy health-check is registered"
         HealthCheck mockUnhealthyCheck = Mock(HealthCheck)
-        mockUnhealthyCheck.execute() >> { HealthCheck.Result.unhealthy(new Throwable()) }
-        assert mockUnhealthyCheck.execute()?.isHealthy() == false
+        mockUnhealthyCheck.execute() >> HealthCheck.Result.unhealthy(new Throwable())
+        registry.register("mockUnhealthyCheck", mockUnhealthyCheck)
 
-        registry.register("mockUnhealthyCheck", mockUnhealthyCheck )
-
-        when: "get fails with unhealthy check"
+        when: "Normal request fails with unhealthy check"
         jtb.getHarness().target("data/shapes/day/color")
-            .queryParam("metrics","width")
-            .queryParam("dateTime","2014-06-11%2F2014-06-12")
-            .request().get(String.class)
+                .queryParam("metrics","width")
+                .queryParam("dateTime","2014-06-11%2F2014-06-12")
+                .request()
+                .get(String.class)
 
         then:
         thrown ServiceUnavailableException
 
-        when: "preflightResponse fails with unhealthy check"
-        Response r = jtb.getHarness().target("data/shapes/day/color")
-            .queryParam("metrics","width")
-            .queryParam("dateTime","2014-06-11%2F2014-06-12")
-            .request().options()
-
-        then:
-        r.getStatus() == Response.Status.SERVICE_UNAVAILABLE.getStatusCode()
+        expect: "Preflight request fails with unhealthy check"
+        jtb.getHarness().target("data/shapes/day/color")
+                .queryParam("metrics","width")
+                .queryParam("dateTime","2014-06-11%2F2014-06-12")
+                .request()
+                .options()
+                .getStatus() == Status.SERVICE_UNAVAILABLE.getStatusCode()
     }
 
     def "Filter is not applied to /cache"() {
