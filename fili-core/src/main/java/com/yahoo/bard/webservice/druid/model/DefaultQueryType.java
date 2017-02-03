@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.druid.model;
 import com.yahoo.bard.webservice.util.EnumUtils;
 
 /**
- * Druid queries that Fili supports out o the box.
+ * Druid queries that Fili supports out of the box.
  */
 public enum DefaultQueryType implements QueryType {
     GROUP_BY,
