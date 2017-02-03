@@ -21,7 +21,14 @@ class TimeBoundaryQuerySpec extends Specification {
     def "TimeBoundaryQuery serializes to JSON correctly"() {
         given: "A Table data source"
         String tableName = "basefact_network"
-        TableDataSource dataSource = new TableDataSource(new ConcretePhysicalTable(tableName, DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC), [:]))
+        TableDataSource dataSource = new TableDataSource(
+                new ConcretePhysicalTable(
+                        tableName,
+                        DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC),
+                        [] as Set,
+                        [:]
+                )
+        )
 
         when: "We create and serialize a TimeBoundaryQuery"
         String timeBoundaryQueryStr = MAPPER.writeValueAsString(new TimeBoundaryQuery(dataSource))

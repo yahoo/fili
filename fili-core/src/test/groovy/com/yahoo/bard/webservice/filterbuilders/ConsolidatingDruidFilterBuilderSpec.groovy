@@ -30,6 +30,7 @@ class ConsolidatingDruidFilterBuilderSpec extends Specification {
 
     def setupSpec() {
         resources = new QueryBuildingTestingResources()
+        resources.init()
     }
 
     def setup() {

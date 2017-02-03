@@ -17,6 +17,7 @@ import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.filterbuilders.DefaultDruidFilterBuilder
 import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder
+import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
@@ -70,8 +71,8 @@ class FilteredAggregationSpec extends Specification{
 
         ThetaSketchMaker sketchCountMaker = new ThetaSketchMaker(new MetricDictionary(), 16384)
         MetricInstance fooNoBarSketchPm = new MetricInstance(filtered_metric_name,sketchCountMaker,"FOO_NO_BAR_SKETCH")
-
-        metricDictionary.put(filtered_metric_name, fooNoBarSketchPm.make())
+        LogicalMetric fooNoBarSketch = fooNoBarSketchPm.make()
+        metricDictionary.put(filtered_metric_name, fooNoBarSketch)
 
         metricAgg = fooNoBarSketch.getTemplateDruidQuery().getAggregations().first()
         genderDependentMetricAgg = Mock(Aggregation)
@@ -79,6 +80,7 @@ class FilteredAggregationSpec extends Specification{
         genderDependentMetricAgg.withName(_) >> genderDependentMetricAgg
         genderDependentMetricAgg.withFieldName(_) >> genderDependentMetricAgg
 
+        LogicalMetric logicalMetric = new LogicalMetric(null, null, filtered_metric_name)
 
         Set<ApiFilter> filterSet = [new ApiFilter("age|id-in[114,125]", dimensionDictionary)] as Set
 

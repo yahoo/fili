@@ -50,6 +50,13 @@ public interface ApiMetricName extends FieldName {
      */
     String getApiName();
 
+    /**
+     * Wrap a string in an anonymous instance of ApiMetricName.
+     *
+     * @param name the name being wrapped
+     *
+     * @return an anonymous subclass instance of ApiMetricName
+     */
     static ApiMetricName of(String name) {
         return new ApiMetricName() {
             @Override
