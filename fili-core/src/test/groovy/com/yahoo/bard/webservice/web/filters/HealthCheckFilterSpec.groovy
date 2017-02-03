@@ -39,52 +39,52 @@ class HealthCheckFilterSpec extends Specification {
     HealthCheckRegistry registry = HealthCheckRegistryFactory.getRegistry()
 
     def setup() {
-        def names = registry.getNames()
-        names.each() {
-            registry.unregister(it)
-        }
+        cleanHealthCheckRegistry(registry)
     }
 
     def cleanup() {
-        registry.unregister("VersionHealthCheck")
         systemConfig.resetProperty(VersionHealthCheck.VERSION_KEY, originalVersionKey)
+        cleanHealthCheckRegistry(registry)
+
         // Release the test web container
         jtb.tearDown()
     }
 
-    def "Healthy get passes"() {
-        setup:
-        // add healthy health check
-        HealthCheckRegistry registry = HealthCheckRegistryFactory.getRegistry()
-        HealthCheck mockHealthyCheck = Mock(HealthCheck)
-        mockHealthyCheck.execute() >> { HealthCheck.Result.HEALTHY }
-        assert mockHealthyCheck.execute()?.isHealthy() == true
+    def "ResourceConfig registers HealthCheckFilter"() {
+        expect: "The HealthCheckFilter is registered"
+        new ResourceConfig().registeredClasses.contains(HealthCheckFilter)
+    }
 
-        registry.register("mockHealthyCheck", mockHealthyCheck )
-
+    def "HealthCheckServletContextListener surfaces the global registry the rest of the system uses"() {
         expect:
+        new HealthCheckServletContextListener().healthCheckRegistry == HealthCheckRegistryFactory.registry
+    }
+
+    def "Healthy get passes"() {
+        given: "A healthy health-check is registered"
+        HealthCheck mockHealthyCheck = Mock(HealthCheck)
+        mockHealthyCheck.execute() >> HealthCheck.Result.healthy()
+        registry.register("mockHealthyCheck", mockHealthyCheck)
+
+        expect: "Normal request comes back fine"
         jtb.getHarness().target("data/shapes/day/color")
-            .queryParam("metrics","width")
-            .queryParam("dateTime","2014-06-11%2F2014-06-12")
-            .request().get(String.class)
+                .queryParam("metrics","width")
+                .queryParam("dateTime","2014-06-11%2F2014-06-12")
+                .request()
+                .get(String.class)
 
-        and: "preflightResponse passes"
-        Response r = jtb.getHarness().target("data/shapes/week/color")
-            .queryParam("metrics","width")
-            .queryParam("dateTime","2014-06-01%2F2014-06-01")
-            .request().options()
-        r.getStatus() == Response.Status.OK.getStatusCode()
-
-        cleanup:
-        if (registry != null ) {
-            registry.unregister("mockHealthyCheck")
-        }
+        and: "Preflight request comes back fine"
+        jtb.getHarness().target("data/shapes/week/color")
+                .queryParam("metrics","width")
+                .queryParam("dateTime","2014-06-01%2F2014-06-01")
+                .request()
+                .options()
+                .getStatus()  == Status.OK.getStatusCode()
     }
 
     def "Unhealthy get throws ServiceUnavailableException"() {
         setup:
         // add unhealthy health check
-        HealthCheckRegistry registry = HealthCheckRegistryFactory.getRegistry()
         HealthCheck mockUnhealthyCheck = Mock(HealthCheck)
         mockUnhealthyCheck.execute() >> { HealthCheck.Result.unhealthy(new Throwable()) }
         assert mockUnhealthyCheck.execute()?.isHealthy() == false
@@ -108,81 +108,6 @@ class HealthCheckFilterSpec extends Specification {
 
         then:
         r.getStatus() == Response.Status.SERVICE_UNAVAILABLE.getStatusCode()
-
-        cleanup:
-        registry.unregister("mockUnhealthyCheck")
-    }
-
-    /**
-     * Provides validation and coverage of ResourceConfig
-     */
-    def "Check ResourceConfig registers HealthCheckFilter"() {
-        setup:
-        ResourceConfig resourceConfig = new ResourceConfig()
-
-        // add healthy health check
-        HealthCheckRegistry registry = HealthCheckRegistryFactory.getRegistry()
-        HealthCheck mockHealthyCheck = Mock(HealthCheck)
-        mockHealthyCheck.execute() >> { HealthCheck.Result.HEALTHY }
-        assert mockHealthyCheck.execute()?.isHealthy() == true
-
-        registry.register("mockHealthyCheck", mockHealthyCheck )
-
-        when:
-        Set<Class> classes = resourceConfig.getRegisteredClasses()
-
-        then: "HealthCheck filter is registered"
-        classes.contains( HealthCheckFilter.class )
-        classes.contains( ResponseCorsFilter.class )
-
-        when: "HealthCheck still passes"
-        Response r = jtb.getHarness().target("data/shapes/day/color")
-            .queryParam("metrics","width")
-            .queryParam("dateTime","2014-06-11%2F2014-06-12")
-            .request().get()
-
-        then:
-        r.getStatus() == Response.Status.OK.getStatusCode()
-        r.getHeaderString("Access-Control-Allow-Credentials") == "true"
-
-        cleanup:
-        registry?.unregister("mockHealthyCheck")
-    }
-
-    def "Healthy /data check passes"() {
-        setup:
-        HealthCheckFilter filter = Spy(HealthCheckFilter)
-        filter.getFirstUnhealthy() >> { true }
-
-        ContainerRequestContext requestContext = Mock(ContainerRequestContext)
-        UriInfo uriInfo = Mock(UriInfo)
-        uriInfo.getAbsolutePath() >> { new URI("http://localhost:9998/v1/data/shapes/day/color?metrics=width") }
-        requestContext.getUriInfo() >> { uriInfo }
-
-        Response theResponse
-        requestContext.abortWith(_) >> { Response response -> theResponse = response }
-
-        expect:
-        filter.filter(requestContext)
-        theResponse == null
-    }
-
-    def "Unhealthy /data check fails"() {
-        setup:
-        HealthCheckFilter filter = Spy(HealthCheckFilter)
-        filter.getFirstUnhealthy() >> { false }
-
-        ContainerRequestContext requestContext = Mock(ContainerRequestContext)
-        UriInfo uriInfo = Mock(UriInfo)
-        uriInfo.getAbsolutePath() >> { new URI("http://localhost:9998/v1/data/shapes/day/color?metrics=width") }
-        requestContext.getUriInfo() >> { uriInfo }
-
-        Response theResponse
-        requestContext.abortWith(_) >> { Response response -> theResponse = response }
-
-        expect:
-        filter.filter(requestContext)
-        theResponse.statusInfo == Status.SERVICE_UNAVAILABLE
     }
 
     def "No filter for /cache"() {
@@ -272,15 +197,12 @@ class HealthCheckFilterSpec extends Specification {
         r.getStatus() == Status.SERVICE_UNAVAILABLE.getStatusCode()
 
         cleanup: "Remove version health check and replace old property value"
-        registry.unregister("VersionHealthCheck")
         systemConfig.resetProperty(propertyName, oldProperty)
     }
 
-    def "Check HealthCheckServletContextListener"() {
-        when:
-        HealthCheckServletContextListener cl = new HealthCheckServletContextListener()
-
-        then:
-        cl.getHealthCheckRegistry() == HealthCheckRegistryFactory.getRegistry()
+    private static void cleanHealthCheckRegistry(HealthCheckRegistry registry) {
+        registry.names.each {
+            registry.unregister(it)
+        }
     }
 }
