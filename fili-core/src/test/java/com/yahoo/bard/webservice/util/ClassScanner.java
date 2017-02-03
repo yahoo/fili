@@ -92,7 +92,8 @@ public class ClassScanner {
             URL resource = resources.nextElement();
             dirs.add(new File(resource.getFile()));
         }
-        ArrayList<Class<?>> classes = new ArrayList<>();
+
+        List<Class<?>> classes = new ArrayList<>();
         for (File directory : dirs) {
             classes.addAll(findClasses(directory, packageName));
         }
@@ -112,14 +113,16 @@ public class ClassScanner {
         if (!directory.exists()) {
             return classes;
         }
-        TreeSet<File> files = new TreeSet<>(Arrays.asList(directory.listFiles()));
 
+        Iterable<File> files = new TreeSet<>(Arrays.asList(directory.listFiles()));
         for (File file : files) {
             String name = file.getName();
             if (file.isDirectory()) {
                 assert !name.contains(".");
+                // Extend the package and recurse
                 classes.addAll(findClasses(file, packageName + "." + name));
             } else if (name.endsWith(".class")) {
+                // Grab just the class name, stripping the .class extension
                 name = packageName + '.' + name.substring(0, name.length() - 6);
                 classes.add(Class.forName(name));
             }
@@ -174,7 +177,7 @@ public class ClassScanner {
         }
 
         // saves context for the InstantiationException
-        IllegalArgumentException cause = null;
+        IllegalArgumentException cause;
 
         // Try a no arg constructor first
         try {
@@ -277,7 +280,6 @@ public class ClassScanner {
             arg = cachedValue;
         } else if (cls == Object[].class) {
             arg = (T) new Object[0];
-
         } else if (cls.isArray()) {
             Object arrayElement = constructArg(cls.getComponentType(), mode, stack);
             arg = (T) Array.newInstance(cls.getComponentType(), 1);
@@ -287,7 +289,7 @@ public class ClassScanner {
         } else {
             try {
                 arg = cls.newInstance();
-            } catch (Throwable e) {
+            } catch (Throwable ignored) {
                 try {
                     arg = constructObject(cls, mode, stack);
                 } catch (Throwable e2) {
@@ -389,8 +391,8 @@ public class ClassScanner {
      *
      * @param values  The value being cached
      */
-    public void putInArgumentValueCache(Collection values) {
-        values.stream().forEach(value -> putInArgumentValueCache(value.getClass(), value));
+    public void putInArgumentValueCache(Collection<?> values) {
+        values.forEach(value -> putInArgumentValueCache(value.getClass(), value));
     }
 
     /**

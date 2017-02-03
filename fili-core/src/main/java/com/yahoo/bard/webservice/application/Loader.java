@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.concurrent.ScheduledFuture;
 
 /**
- * Defines a task that loads data from Druid and is scheduled to run at a given time, potentially periodically.
+ * Defines a task that is scheduled to run at a given time, potentially periodically.
  *
  * @param <V>  The type of the result returned by the task associated with this loader.
  */

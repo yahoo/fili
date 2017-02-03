@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.web.endpoints;
 
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
 import com.yahoo.bard.webservice.data.cache.DataCache;
@@ -18,6 +19,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,8 +53,7 @@ public class DimensionCacheLoaderServlet {
 
     private final DimensionDictionary dimensionDictionary;
     private final ObjectMapper mapper;
-    @SuppressWarnings("rawtypes")
-    private final DataCache dataCache;
+    private final DataCache<?> dataCache;
 
     /**
      * Constructor.
@@ -61,11 +62,10 @@ public class DimensionCacheLoaderServlet {
      * @param dataCache  A cache that we can clear if told to
      * @param objectMappers  Shares mappers for dealing with JSON
      */
-    @SuppressWarnings("rawtypes") // This issue is enforced by binder limitations for matching DataCaches
     @Inject
     public DimensionCacheLoaderServlet(
             DimensionDictionary dimensionDictionary,
-            @NotNull DataCache dataCache,
+            @NotNull DataCache<?> dataCache,
             ObjectMappersSuite objectMappers
     ) {
         this.mapper = objectMappers.getMapper();
@@ -92,45 +92,39 @@ public class DimensionCacheLoaderServlet {
     @Path("/dimensions/{dimensionName}")
     @Consumes("application/json")
     public Response updateDimensionLastUpdated(@PathParam("dimensionName") String dimensionName, String json) {
-
         LOG.debug("Updating lastUpdated for dimension:{} using json: {}", dimensionName, json);
-        DimensionUpdateDate dimensionUpdateDate;
         try {
-            Dimension dimension = dimensionDictionary.findByApiName(dimensionName);
             // if dimension is not located return bad request response
+            Dimension dimension = dimensionDictionary.findByApiName(dimensionName);
             if (dimension == null) {
-                LOG.error("Dimension {} cannot be found", dimensionName);
                 String message = String.format("Dimension %s cannot be found.", dimensionName);
+                LOG.debug(message);
                 return Response.status(BAD_REQUEST).entity(message).build();
             }
 
             // Extract LastUpdated as string from the post data
-            dimensionUpdateDate = mapper.readValue(
-                    json, new TypeReference<DimensionUpdateDate>() {
-                        // No-op
-                    }
+            DimensionUpdateDate dimensionUpdateDate = mapper.readValue(
+                    json,
+                    new TypeReference<DimensionUpdateDate>() { /* Empty class */ }
             );
 
-            if (dimensionUpdateDate.getLastUpdated() == null) {
-                LOG.error("lastUpdated value not in json");
-                return Response.status(BAD_REQUEST).entity("Last updated value not in json.").build();
+            DateTime lastUpdated = dimensionUpdateDate.getLastUpdated();
+            if (lastUpdated == null) {
+                String message = "lastUpdated value not in json";
+                LOG.error(message);
+                return Response.status(BAD_REQUEST).entity(message).build();
+            } else {
+                dimension.setLastUpdated(lastUpdated);
             }
 
-            // update last updated
-            dimension.setLastUpdated(dimensionUpdateDate.getLastUpdated());
-
+            LOG.debug("Successfully updated lastUpdated {} for dimension: {}", lastUpdated, dimensionName);
+            return Response.status(Status.OK).build();
         } catch (IOException e) {
-            LOG.error("Failed to process lastUpdated date: {}", e);
-            return Response.status(BAD_REQUEST).entity("Failed to process lastUpdated date: " + e).build();
+            String message = "Failed to process lastUpdated date";
+            LOG.error(message, e);
+            return Response.status(INTERNAL_SERVER_ERROR).entity(message).build();
         }
-        LOG.info(
-                "Successfully updated lastUpdated {} for dimension: {}",
-                dimensionUpdateDate.getLastUpdated(),
-                dimensionName
-        );
-        return Response.status(Status.OK).build();
     }
-
 
     /**
      * Get the lastUpdated date for a particular dimension.
@@ -150,23 +144,24 @@ public class DimensionCacheLoaderServlet {
     @Path("/dimensions/{dimensionName}")
     @Consumes("application/json")
     public Response getDimensionLastUpdated(@PathParam("dimensionName") String dimensionName) {
+        // if dimension is not located return bad request response
+        Dimension dimension = dimensionDictionary.findByApiName(dimensionName);
+        if (dimension == null) {
+            String message = String.format("Dimension %s cannot be found.", dimensionName);
+            LOG.debug(message);
+            return Response.status(BAD_REQUEST).entity(message).build();
+        }
+
+        Map<String, String> result = new LinkedHashMap<>();
+        result.put("name", dimensionName);
+        result.put("lastUpdated", dimension.getLastUpdated() == null ? null : dimension.getLastUpdated().toString());
 
         try {
-            Dimension dimension = dimensionDictionary.findByApiName(dimensionName);
-            // if dimension is not located return bad request response
-            if (dimension == null) {
-                String message = String.format("Dimension %s cannot be found.", dimensionName);
-                return Response.status(BAD_REQUEST).entity(message).build();
-            }
-            Map<String, String> result = new LinkedHashMap<>();
-            String lastUpdated = (dimension.getLastUpdated() == null ? null : dimension.getLastUpdated().toString());
-            result.put("name", dimensionName);
-            result.put("lastUpdated", lastUpdated);
-            // Extract LastUpdated as string from the post data
-            String output = mapper.writeValueAsString(result);
-            return Response.status(Status.OK).entity(output).build();
+            return Response.status(Status.OK).entity(mapper.writeValueAsString(result)).build();
         } catch (IOException e) {
-            return Response.status(BAD_REQUEST).entity("Exception: " + e.getMessage()).build();
+            String message = String.format("Error retrieving lastUpdated for %s", dimensionName);
+            LOG.error(message, e);
+            return Response.status(INTERNAL_SERVER_ERROR).entity(message).build();
         }
     }
 
@@ -194,36 +189,34 @@ public class DimensionCacheLoaderServlet {
     @Consumes("application/json; charset=utf-8")
     public Response addReplaceDimensionRows(@PathParam("dimensionName") String dimensionName, String json) {
         LOG.debug("Replacing {} dimension rows with a json payload {} characters long", dimensionName, json.length());
-        Map<String, LinkedHashSet<LinkedHashMap<String, String>>> dimensionRows;
         try {
-            Dimension dimension = dimensionDictionary.findByApiName(dimensionName);
             // if dimension is not located return bad request response
+            Dimension dimension = dimensionDictionary.findByApiName(dimensionName);
             if (dimension == null) {
-                LOG.error("Missing dimensionRows for dimension: {}", dimensionName);
-                return Response.status(BAD_REQUEST).build();
+                String message = String.format("Dimension %s cannot be found.", dimensionName);
+                LOG.debug(message);
+                return Response.status(BAD_REQUEST).entity(message).build();
             }
 
             // extract dimension rows form the post data
-            dimensionRows = mapper.readValue(
-                    json, new TypeReference<Map<String, LinkedHashSet<LinkedHashMap<String, String>>>>() {
-                        // Empty class
-                    }
+            Map<String, LinkedHashSet<LinkedHashMap<String, String>>> rawDimensionRows = mapper.readValue(
+                    json,
+                    new TypeReference<Map<String, LinkedHashSet<LinkedHashMap<String, String>>>>() { /* Empty class */ }
             );
 
-            Set<DimensionRow> drs = dimensionRows.get("dimensionRows").stream()
+            Set<DimensionRow> dimensionRows = rawDimensionRows.get("dimensionRows").stream()
                     .map(dimension::parseDimensionRow)
                     .collect(Collectors.toCollection(LinkedHashSet::new));
 
-            dimension.addAllDimensionRows(drs);
+            dimension.addAllDimensionRows(dimensionRows);
 
+            LOG.debug("Successfully added/replaced {} row(s) for dimension: {}", dimensionRows.size(), dimensionName);
+            return Response.status(Status.OK).build();
         } catch (IOException e) {
-            LOG.error("Failed to add/replace dimension rows: {}", e);
-            return Response.status(BAD_REQUEST).build();
+            String message = "Failed to add/replace dimension rows";
+            LOG.error(message, e);
+            return Response.status(INTERNAL_SERVER_ERROR).entity(message).build();
         }
-
-        int dimensionRowsSize = dimensionRows.get("dimensionRows").size();
-        LOG.info("Successfully added/replaced {} row(s) for dimension: {}", dimensionRowsSize, dimensionName);
-        return Response.status(Status.OK).build();
     }
 
     /**
@@ -282,49 +275,49 @@ public class DimensionCacheLoaderServlet {
     @Consumes("application/json")
     public Response addUpdateDimensionRows(@PathParam("dimensionName") String dimensionName, String json) {
         LOG.debug("Updating {} dimension rows with a json payload {} characters long", dimensionName, json.length());
-        Map<String, LinkedHashSet<LinkedHashMap<String, String>>> dimensionRows;
         try {
-            Dimension dimension = dimensionDictionary.findByApiName(dimensionName);
             // if dimension is not located return bad request response
+            Dimension dimension = dimensionDictionary.findByApiName(dimensionName);
             if (dimension == null) {
-                LOG.error("Missing dimensionRows for dimension: {}", dimensionName);
-                return Response.status(BAD_REQUEST).build();
+                String message = String.format("Dimension %s cannot be found.", dimensionName);
+                LOG.debug(message);
+                return Response.status(BAD_REQUEST).entity(message).build();
             }
 
             // extract dimension rows form the post data
-            dimensionRows = mapper.readValue(
-                    json, new TypeReference<Map<String, LinkedHashSet<LinkedHashMap<String, String>>>>() {
-                        // Empty class
-                    }
+            Map<String, LinkedHashSet<LinkedHashMap<String, String>>> rawDimensionRows = mapper.readValue(
+                    json,
+                    new TypeReference<Map<String, LinkedHashSet<LinkedHashMap<String, String>>>>() { /* Empty class */ }
             );
-            Set<DimensionRow> drs = new LinkedHashSet<>();
+
             DimensionField key = dimension.getKey();
-            for (LinkedHashMap<String, String> fieldnameValueMap: dimensionRows.get("dimensionRows")) {
+            Set<DimensionRow> dimensionRows = new LinkedHashSet<>();
+            for (Map<String, String> fieldnameValueMap: rawDimensionRows.get("dimensionRows")) {
                 DimensionRow newRow = dimension.parseDimensionRow(fieldnameValueMap);
                 DimensionRow oldRow = dimension.findDimensionRowByKeyValue(newRow.get(key));
                 if (oldRow == null) {
-                    drs.add(newRow);
+                    // It didn't exist before, so add it directly
+                    dimensionRows.add(newRow);
                 } else {
+                    // The row existed before, so do an update on the existing row's data
                     for (DimensionField field : dimension.getDimensionFields()) {
-                        String fieldName = field.getName();
                         // only overwrite if the field was in the original JSON
-                        if (fieldnameValueMap.containsKey(fieldName)) {
+                        if (fieldnameValueMap.containsKey(field.getName())) {
                             oldRow.put(field, newRow.get(field));
                         }
-                        drs.add(oldRow);
+                        dimensionRows.add(oldRow);
                     }
                 }
             }
-            dimension.addAllDimensionRows(drs);
+            dimension.addAllDimensionRows(dimensionRows);
 
+            LOG.debug("Successfully added/updated {} row(s) for dimension: {}", dimensionRows.size(), dimensionName);
+            return Response.status(Status.OK).build();
         } catch (IOException e) {
-            LOG.error("Failed to add/update dimension rows: {}", e);
-            return Response.status(BAD_REQUEST).build();
+            String message = "Failed to add/update dimension rows";
+            LOG.error(message, e);
+            return Response.status(INTERNAL_SERVER_ERROR).entity(message).build();
         }
-
-        int dimensionRowsSize = dimensionRows.get("dimensionRows").size();
-        LOG.info("Successfully added/updated {} row(s) for dimension: {}", dimensionRowsSize, dimensionName);
-        return Response.status(Status.OK).build();
     }
 
     /**
@@ -350,25 +343,22 @@ public class DimensionCacheLoaderServlet {
         Map<String, String> postDataMap;
         try {
             // Extract LastUpdated as string from the post data
-            postDataMap = mapper.readValue(
-                    json, new TypeReference<Map<String, String>>() {
-                        // Empty class
-                    }
-            );
+            postDataMap = mapper.readValue(json, new TypeReference<Map<String, String>>() { /* Empty class */ });
 
             if (!postDataMap.containsKey("cacheStatus")) {
-                LOG.error("Missing cacheStatus in json: {}", json);
-                return Response.status(BAD_REQUEST).entity("Missing cacheStatus in json: " + json).build();
+                String message = String.format("Missing cacheStatus in json: %s", json);
+                LOG.error(message);
+                return Response.status(BAD_REQUEST).entity(message).build();
             }
-
             // TODO tie this to cache status management when implemented
-        } catch (IOException e) {
-            LOG.error("Failed to update lastUpdated: {}", e);
-            return Response.status(BAD_REQUEST).entity("Exception: " + e).build();
-        }
 
-        LOG.info("Successfully updated cacheStatus to: {}", postDataMap.get("cacheStatus"));
-        return Response.status(Status.OK).build();
+            LOG.debug("Successfully updated cacheStatus to: {}", postDataMap.get("cacheStatus"));
+            return Response.status(Status.OK).build();
+        } catch (IOException e) {
+            String message = "Failed to update lastUpdated. Unable to process payload";
+            LOG.error(message, e);
+            return Response.status(BAD_REQUEST).entity(message).build();
+        }
     }
 
     /**
@@ -384,10 +374,11 @@ public class DimensionCacheLoaderServlet {
         // TODO tie this cache status when implemented
         cacheStatus.put("cacheStatus", "Active");
         try {
-            String output = mapper.writeValueAsString(cacheStatus);
-            return Response.status(Status.OK).entity(output).build();
+            return Response.status(Status.OK).entity(mapper.writeValueAsString(cacheStatus)).build();
         } catch (JsonProcessingException e) {
-            return Response.status(Status.INTERNAL_SERVER_ERROR).build();
+            String message = "Unable to serialize cache status";
+            LOG.error(message, e);
+            return Response.status(INTERNAL_SERVER_ERROR).entity(message).build();
         }
     }
 
