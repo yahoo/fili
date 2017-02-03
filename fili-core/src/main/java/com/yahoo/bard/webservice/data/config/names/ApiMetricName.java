@@ -49,4 +49,23 @@ public interface ApiMetricName extends FieldName {
      * @return User facing name for this metric
      */
     String getApiName();
+
+    static ApiMetricName of(String name) {
+        return new ApiMetricName() {
+            @Override
+            public boolean isValidFor(final TimeGrain grain) {
+                return true;
+            }
+
+            @Override
+            public String getApiName() {
+                return name;
+            }
+
+            @Override
+            public String asName() {
+                return name;
+            }
+        };
+    }
 }
