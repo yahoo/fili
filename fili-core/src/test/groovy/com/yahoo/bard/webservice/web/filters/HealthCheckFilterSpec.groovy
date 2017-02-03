@@ -81,17 +81,6 @@ class HealthCheckFilterSpec extends Specification {
         }
     }
 
-    def "No defined HealthChecks fails"() {
-        when:
-        jtb.getHarness().target("data/shapes/day/color")
-            .queryParam("metrics","width")
-            .queryParam("dateTime","2014-06-11%2F2014-06-12")
-            .request().get(String.class)
-
-        then:
-        thrown ServiceUnavailableException
-    }
-
     def "Unhealthy get throws ServiceUnavailableException"() {
         setup:
         // add unhealthy health check
