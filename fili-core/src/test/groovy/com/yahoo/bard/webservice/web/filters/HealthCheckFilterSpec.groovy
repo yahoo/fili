@@ -28,18 +28,17 @@ class HealthCheckFilterSpec extends Specification {
 
     private static SystemConfig systemConfig = SystemConfigProvider.getInstance()
 
-    static JerseyTestBinder jtb
-    HealthCheckRegistry registry
-
     String originalVersionKey = systemConfig.getStringProperty(VersionHealthCheck.VERSION_KEY)
 
-    def setupSpec() {
-        // Create the test web container to test the resources
-        jtb = new JerseyTestBinder(HealthCheckFilter.class, ResponseCorsFilter.class, DataServlet.class)
-    }
+    JerseyTestBinder jtb = new JerseyTestBinder(
+            HealthCheckFilter,
+            ResponseCorsFilter,
+            DataServlet,
+            DimensionCacheLoaderServlet
+    )
+    HealthCheckRegistry registry = HealthCheckRegistryFactory.getRegistry()
 
     def setup() {
-        registry = HealthCheckRegistryFactory.getRegistry()
         def names = registry.getNames()
         names.each() {
             registry.unregister(it)
@@ -49,8 +48,6 @@ class HealthCheckFilterSpec extends Specification {
     def cleanup() {
         registry.unregister("VersionHealthCheck")
         systemConfig.resetProperty(VersionHealthCheck.VERSION_KEY, originalVersionKey)
-    }
-    def cleanupSpec() {
         // Release the test web container
         jtb.tearDown()
     }
