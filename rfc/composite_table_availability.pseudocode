@@ -10,10 +10,10 @@ DataSource:
 	Set<FieldName> getFields() //union of all keys
 	List<Interval> getIntervals(FieldName fieldName)
 	Map<FieldName,List<Interval>> getIntervals(Set<FieldName>) // map slice from squashedMap
+	List<Interval> getAllIntervals()
 	Set<SegmentId> getSegments(List<Interval>)  // Filter all segments by overlap on time
 
 DataSourceConstraints // Simple bean parameter object
-
 	getGrain
 	Set<FieldName> getMetrics
 	Set<Dimension> getDimensions
@@ -22,8 +22,7 @@ DataSourceConstraints // Simple bean parameter object
 	DataSourceConstraints(ApiRequest)
 	DataSourceConstraints (DruidQuery, ApiFilter apifilters)
 
-	withMetrics(Set<FieldName> metrics) // Copy constructor
-
+	withMetrics(Set<FieldName> metrics) // Copy builder
 
 DataSourceAvailabilityResolver:
 	List<String> getDataSourceNames(DataSourceConstraints)
@@ -32,7 +31,6 @@ DataSourceAvailabilityResolver:
 ConcreteAvailabilityResolver:
 	DataSource dataSource
     Map<LogicalFieldName, PhysicalFieldName> fieldMap // may just be string/string
-    joiner = IntersectJoiner
 
 	ConcreteAvailability(DataSource, fieldMap)
 
@@ -41,27 +39,27 @@ ConcreteAvailabilityResolver:
 
     getAvailability(dsConstraints):
         fieldNames = Union(dsConstraints.metrics, dsConstraints.dimensions.map(fieldMap.get(it.name))
-        return dataSource.getIntervals(fieldNames).reduce(joiner)
+        return dataSource.getIntervals(fieldNames).reduce(intersectJoin)
 
     Description:
         For a single datasource -> select intervals by requested field names -> join intervals
 
-PermissiveAvailability: extends ConcreteAvailabilityResolver
-    joiner = UnionJoiner  // Hippodrome uses this logic
-
+PermissiveAvailabilityResolver: extends ConcreteAvailabilityResolver
+    getAvailability(dsConstraints):
+        return dataSource.getAllIntervals()
 
 MetricUnionAvailabilityResolver
-	Map<ConcreteAvailabilityResolver, Set<Metric>> availabilityMetrics
+	Map<AvailabilityResolver, Set<Metric>> availabilityMetrics
 	Set<Metric> metrics // optional optimization
 
-	MetricUnionAvailabilityResolver(Map<ConcreteAvailability, Set<Metric> availMetrics)
+	MetricUnionAvailabilityResolver(Map<Availability, Set<Metric> availMetrics)
 		// Validate total schema
 		metrics = availMetrics.values.reduce(Union)
 		metrics.allMatch(
 			availabilityMetrics.entries.filter(entry.value.contains(it)).count() == 1
 		)
 
-    private Stream<Map.Entry<CAR, Set<Metric>>>> ConcreteAvailabilityResolver getDependentAvails(dsConstraints):
+    private Stream<Map.Entry<AvailabilityResolver, Set<Metric>>>> getDependentAvailabilities(dsConstraints):
         validate(metrics.containsAll(dsConstraints.metrics))
         availabilityMetrics.entries
                 .filter(entry.value intersect aReq.metrics not empty)
@@ -116,8 +114,3 @@ DimensionRowMapPartitionKeyResolver extends Function<ApiFilter, Set<PartitionKey
             ).stream
                 .map(map::get)  // This will fail in potentially bad ways  if the key isn't mapped
                 .collect(Collectors.toSet());
-
-
-
-
-
