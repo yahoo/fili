@@ -66,7 +66,7 @@ public class HealthCheckFilter implements ContainerRequestFilter {
      */
     public Optional<Map.Entry<String, Result>> getFirstUnhealthy() {
         return HealthCheckRegistryFactory.getRegistry().runHealthChecks().entrySet().stream()
-                .filter(entry -> entry.getValue().isHealthy())
+                .filter(entry -> !entry.getValue().isHealthy())
                 .findFirst();
     }
 }
