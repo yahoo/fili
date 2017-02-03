@@ -7,6 +7,7 @@ import com.yahoo.bard.webservice.application.HealthCheckServletContextListener
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.application.ResourceConfig
 import com.yahoo.bard.webservice.web.endpoints.DataServlet
+import com.yahoo.bard.webservice.web.endpoints.DimensionCacheLoaderServlet
 
 import com.codahale.metrics.health.HealthCheck
 import com.codahale.metrics.health.HealthCheckRegistry
@@ -99,22 +100,16 @@ class HealthCheckFilterSpec extends Specification {
         r.getStatus() == Response.Status.SERVICE_UNAVAILABLE.getStatusCode()
     }
 
-    def "No filter for /cache"() {
-        setup:
-        HealthCheckFilter filter = Spy(HealthCheckFilter)
-        filter.getFirstUnhealthy() >> { false }
+    def "Filter is not applied to /cache"() {
+        given: "An unhealthy health-check is registered"
+        HealthCheck mockUnhealthyCheck = Mock(HealthCheck)
+        mockUnhealthyCheck.execute() >> HealthCheck.Result.unhealthy(new Throwable())
+        registry.register("mockUnhealthyCheck", mockUnhealthyCheck)
 
-        ContainerRequestContext requestContext = Mock(ContainerRequestContext)
-        UriInfo uriInfo = Mock(UriInfo)
-        uriInfo.getAbsolutePath() >> { new URI("http://localhost:9998/v1/cache/") }
-        requestContext.getUriInfo() >> { uriInfo }
-
-        Response theResponse
-        requestContext.abortWith(_) >> { Response response -> theResponse = response }
-
-        expect:
-        filter.filter(requestContext)
-        theResponse == null
+        expect: "Normal request comes back fine"
+        jtb.getHarness().target("cache/cacheStatus")
+                .request()
+                .get(String.class)
     }
 
     private static void cleanHealthCheckRegistry(HealthCheckRegistry registry) {
