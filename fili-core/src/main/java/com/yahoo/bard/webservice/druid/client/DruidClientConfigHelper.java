@@ -9,6 +9,8 @@ import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Helper to fetch druid url and timeout settings.
  */
@@ -62,7 +64,7 @@ public class DruidClientConfigHelper {
     /**
      * The default timeout for queries.
      */
-    private static final int DRUID_REQUEST_TIMEOUT_DEFAULT = 10 * 60 * 1000; // 10 Minutes, in milliseconds
+    private static final int DRUID_REQUEST_TIMEOUT_DEFAULT = Math.toIntExact(TimeUnit.MINUTES.toMillis(10));
 
     /**
      * Fetches the druid UI request Priority.
