@@ -5,10 +5,9 @@ package com.yahoo.bard.webservice.web.handlers
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.YEAR
 
-import com.yahoo.bard.webservice.table.GranularSchema
-import com.yahoo.bard.webservice.data.ResultSetSchema
 import com.yahoo.bard.webservice.data.PartialDataHandler
 import com.yahoo.bard.webservice.data.Result
+import com.yahoo.bard.webservice.data.ResultSetSchema
 import com.yahoo.bard.webservice.data.metric.mappers.PartialDataResultSetMapper
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
@@ -66,7 +65,7 @@ public class PartialDataResultSetMapperSpec extends Specification {
     @Unroll
     def "If #gapIntervals gap overlaps a fixed request, data is filtered: #filtered"() {
         setup: "Given a request for a fixed duration and a year"
-        GranularSchema schema = Mock(GranularSchema)
+        ResultSetSchema schema = Mock(ResultSetSchema)
         schema.getGranularity() >> YEAR
         DateTime start = new DateTime("2014-01-01")
 
@@ -131,8 +130,8 @@ public class PartialDataResultSetMapperSpec extends Specification {
     @Unroll
     def "Under all time grain, missing data #missingIntervals and volatileData #missingIntervals is filtered: #filtered"() {
         setup: "Given an all time grain request"
-        ResultSetSchema schema1 = new ResultSetSchema(schema)
-        schema1.getGranularity() >> AllGranularity.INSTANCE
+        ResultSetSchema schema = Mock(ResultSetSchema)
+        schema.getGranularity() >> AllGranularity.INSTANCE
 
         and: "some possibly missing or volatile intervals"
         SimplifiedIntervalList missingData = buildIntervalList(missingIntervals)
@@ -141,7 +140,7 @@ public class PartialDataResultSetMapperSpec extends Specification {
         Result result = new Result([:], [:], new DateTime("2014"))
 
         expect:
-        mapper.map(result, schema1) ==  (filtered ? null : result)
+        mapper.map(result, schema) ==  (filtered ? null : result)
 
         where:
         missingIntervals        | volatileIntervals     | filtered
