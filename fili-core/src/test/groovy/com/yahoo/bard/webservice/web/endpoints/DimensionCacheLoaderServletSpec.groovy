@@ -1,6 +1,7 @@
 // Copyright 2016 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.endpoints
+
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.data.cache.DataCache
@@ -27,7 +28,7 @@ import javax.ws.rs.core.Response.Status
 class DimensionCacheLoaderServletSpec extends Specification {
     private static final ObjectMappersSuite MAPPERS = new ObjectMappersSuite()
 
-    static final DateTimeZone ORIGINAL_TIME_ZONE = DateTimeZone.getDefault()
+    DateTimeZone originalTimeZone
 
     DimensionCacheLoaderServlet dimensionCacheLoaderServlet
 
@@ -47,17 +48,16 @@ class DimensionCacheLoaderServletSpec extends Specification {
     DateTime lastUpdated = new DateTime(50000)
 
     def setup() {
+        originalTimeZone = DateTimeZone.getDefault()
         DateTimeZone.setDefault(DateTimeZone.forTimeZone(TimeZone.getTimeZone("America/Chicago")))
 
-        dimensionGenderFields = new LinkedHashSet<>()
-        dimensionGenderFields.add(BardDimensionField.ID)
-        dimensionGenderFields.add(BardDimensionField.DESC)
-
-        dimensionUserCountryFields = new LinkedHashSet<>()
-        dimensionUserCountryFields.add(BardDimensionField.ID)
-        dimensionUserCountryFields.add(BardDimensionField.DESC)
-        dimensionUserCountryFields.add(BardDimensionField.FIELD1)
-        dimensionUserCountryFields.add(BardDimensionField.FIELD2)
+        dimensionGenderFields = [BardDimensionField.ID, BardDimensionField.DESC] as LinkedHashSet<DimensionField>
+        dimensionUserCountryFields = [
+                BardDimensionField.ID,
+                BardDimensionField.DESC,
+                BardDimensionField.FIELD1,
+                BardDimensionField.FIELD2
+        ] as LinkedHashSet<DimensionField>
 
         Set dimensions = [] as Set
 
@@ -101,47 +101,38 @@ class DimensionCacheLoaderServletSpec extends Specification {
     }
 
     def cleanup() {
-        DateTimeZone.setDefault(ORIGINAL_TIME_ZONE)
+        DateTimeZone.setDefault(originalTimeZone)
         dimensionGender.searchProvider.clearDimension()
         dimensionUserCountry.searchProvider.clearDimension()
     }
 
-    def "Check updateDimensionLastUpdated for dimension cache loader endpoint"() {
-
+    def "UpdateDimensionLastUpdated works as expected"() {
         setup:
         DateTime newLastUpdated = new DateTime(10000)
-
         String post = """{"name": "gender","lastUpdated":"$newLastUpdated"}"""
 
-        def dims = dimensionCacheLoaderServlet.dimensionDictionary.findAll()
+        Set<Dimension> dims = dimensionCacheLoaderServlet.dimensionDictionary.findAll()
 
         when:
         Response r = dimensionCacheLoaderServlet.updateDimensionLastUpdated("gender", post)
 
-        then: "The dimension row we updated has changed but the others have not"
-        dims.find { it.apiName == "user_country" }.lastUpdated == lastUpdated
+        then: "The dimension row we updated has changed"
         dims.find { it.apiName == "gender" }.lastUpdated == newLastUpdated
         r.getStatusInfo() == Status.OK
+        
+        and: "Others have not"
+        dims.find { it.apiName == "user_country" }.lastUpdated == lastUpdated
     }
 
-    def "Check updateDimensionLastUpdated for missing dimension fails"() {
-
+    def "UpdateDimensionLastUpdated with unknown dimension gives a NOT FOUND response"() {
         setup:
-        DateTime newLastUpdated = new DateTime(10000)
+        String post = """{"name": "unknown","lastUpdated":"${new DateTime(10000)}"}"""
 
-        String post = """{"name": "unknown","lastUpdated":"$newLastUpdated"}"""
-
-        def dims = dimensionCacheLoaderServlet.dimensionDictionary.findAll()
-
-        when:
-        Response r = dimensionCacheLoaderServlet.updateDimensionLastUpdated("unknown", post)
-
-        then: "Bad Request"
-        r.getStatusInfo() == Status.BAD_REQUEST
+        expect:
+        dimensionCacheLoaderServlet.updateDimensionLastUpdated("unknown", post).getStatusInfo() == Status.NOT_FOUND
     }
 
     def "Check addReplaceDimensionRows for dimension cache loader endpoint"() {
-
         setup:
         String post = """{
                            "dimensionRows": [
@@ -192,8 +183,8 @@ class DimensionCacheLoaderServletSpec extends Specification {
 
         then:
         r.getStatusInfo() == Status.OK
-        expectedDimensionUserCountry.searchProvider.findAllDimensionRows().
-                containsAll(dimensionUserCountry.searchProvider.findAllDimensionRows())
+        expectedDimensionUserCountry.searchProvider.findAllDimensionRows()
+                .containsAll(dimensionUserCountry.searchProvider.findAllDimensionRows())
     }
 
     def "Check addUpdateDimensionRows for dimension cache loader endpoint"() {
@@ -251,16 +242,18 @@ class DimensionCacheLoaderServletSpec extends Specification {
 
         then:
         r.getStatusInfo() == Status.OK
-        expectedDimensionUserCountry.searchProvider.findAllDimensionRows().
-                containsAll(dimensionUserCountry.searchProvider.findAllDimensionRows())
+        expectedDimensionUserCountry.searchProvider.findAllDimensionRows()
+                .containsAll(dimensionUserCountry.searchProvider.findAllDimensionRows())
     }
 
-    def "Check servet getDimensionLastUpdated"() {
+    def "Check servlet getDimensionLastUpdated"() {
         setup:
         String expected = """{"name":"gender","lastUpdated":"$lastUpdated"}"""
 
-        expect:
+        when:
         Response r = dimensionCacheLoaderServlet.getDimensionLastUpdated("gender")
+
+        then:
         r.getStatusInfo() == Status.OK
         GroovyTestUtils.compareJson(expected, r.getEntity())
     }
@@ -269,14 +262,16 @@ class DimensionCacheLoaderServletSpec extends Specification {
         setup:
         String expected = """{"cacheStatus":"Active"}"""
 
-        expect:
+        when:
         Response r = dimensionCacheLoaderServlet.getMsg()
+
+        then:
         r.getStatusInfo() == Status.OK
         GroovyTestUtils.compareJson(expected, r.getEntity())
     }
 
     def "Delete data cache"() {
-        // mock new servlet that enforces one call to dataCache clear
+        // mock new servlet that validates one call to dataCache clear
         DataCache dataCache2 = Mock(DataCache)
         1 * dataCache2.clear()
         def dimensionCacheLoaderServlet2 = new DimensionCacheLoaderServlet(
@@ -285,28 +280,19 @@ class DimensionCacheLoaderServletSpec extends Specification {
                 MAPPERS
         )
 
-        when:
-        Response r = dimensionCacheLoaderServlet2.deleteDataCache()
-
-        then:
-        r.getStatusInfo() == Status.OK
+        expect:
+        dimensionCacheLoaderServlet2.deleteDataCache().getStatusInfo() == Status.OK
     }
 
     def "Delete data cache endpoint"() {
         setup:
         JerseyTestBinder jtb = new JerseyTestBinder(DimensionCacheLoaderServlet.class)
 
-        when: "DELETE"
-        Response r = jtb.getHarness().target("cache/data").request().delete()
+        expect: "DELETE is allowed"
+        jtb.getHarness().target("cache/data").request().delete().getStatusInfo() == Status.OK
 
-        then: "OK"
-        Status.OK.getStatusCode() == r.getStatus()
-
-        when: "GET"
-        r = jtb.getHarness().target("cache/data").request().get()
-
-        then: "method not allowed"
-        Status.METHOD_NOT_ALLOWED.getStatusCode() == r.getStatus()
+        and: "GET is not"
+        jtb.getHarness().target("cache/data").request().get().getStatusInfo() == Status.METHOD_NOT_ALLOWED
 
         cleanup:
         jtb.tearDown()
@@ -315,13 +301,7 @@ class DimensionCacheLoaderServletSpec extends Specification {
     def "POST to addReplaceDimensionRows accepts different charsets for application/json"() {
         setup:
         JerseyTestBinder jtb = new JerseyTestBinder(DimensionCacheLoaderServlet.class)
-        Response r;
-
-        when: "POST color dimension rows with Content-Type: application/json"
-        r = jtb.getHarness().target("cache/dimensions/color/dimensionRows")
-                .request()
-                .header("Content-Type", "application/json")
-                .post(Entity.json("""
+        def postBody = Entity.json("""
                     {
                       "dimensionRows": [
                         {
@@ -329,44 +309,25 @@ class DimensionCacheLoaderServletSpec extends Specification {
                           "description": "red"
                         }
                       ]
-                    }"""))
+                    }""")
 
-        then: "OK"
-        Status.OK.getStatusCode() == r.getStatus()
+        expect: "can POST with Content-Type: application/json"
+        jtb.getHarness().target("cache/dimensions/color/dimensionRows")
+                .request()
+                .header("Content-Type", "application/json")
+                .post(postBody).getStatusInfo() == Status.OK
 
-        when: "POST color dimension rows with Content-Type: application/json; charset=utf-8"
-        r = jtb.getHarness().target("cache/dimensions/color/dimensionRows")
+        and: "can POST with Content-Type: application/json; charset=utf-8"
+        jtb.getHarness().target("cache/dimensions/color/dimensionRows")
                 .request()
                 .header("Content-Type", "application/json; charset=utf-8")
-                .post(Entity.json("""
-                    {
-                      "dimensionRows": [
-                        {
-                          "id": "2",
-                          "description": "blue"
-                        }
-                      ]
-                    }"""))
+                .post(postBody).getStatusInfo() == Status.OK
 
-        then: "OK"
-        Status.OK.getStatusCode() == r.getStatus()
-
-        when: "POST color dimension rows with Content-Type: application/json; charset=utf-16"
-        r = jtb.getHarness().target("cache/dimensions/color/dimensionRows")
+        and: "can POST with Content-Type: application/json; charset=utf-16"
+        jtb.getHarness().target("cache/dimensions/color/dimensionRows")
                 .request()
                 .header("Content-Type", "application/json; charset=utf-16")
-                .post(Entity.json("""
-                    {
-                      "dimensionRows": [
-                        {
-                          "id": "3",
-                          "description": "green"
-                        }
-                      ]
-                    }"""))
-
-        then: "OK"
-        Status.OK.getStatusCode() == r.getStatus()
+                .post(postBody).getStatusInfo() == Status.OK
 
         cleanup:
         jtb.tearDown()
