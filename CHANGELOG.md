@@ -109,6 +109,12 @@ Current
         starts the timer. Note: This won't work when performing timings across threads, or across
         contexts. Those need to be started and stopped manually.
 
+- [Clean up logging and responses in `DimensionCacheLoaderServlet`](https://github.com/yahoo/fili/pull/163)
+    * Switched a number of `error`-level logs to `debug` level to line up with logging guidance when request failures
+      were result of client error
+    * Reduced some `info`-level logs down to `debug`
+    * Converted to 404 when error was cause by not finding a path element
+
 ### Deprecated:
 
 - [CompositePhsyicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)

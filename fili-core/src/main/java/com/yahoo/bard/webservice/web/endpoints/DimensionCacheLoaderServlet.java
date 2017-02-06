@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.web.endpoints;
 
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
 import com.yahoo.bard.webservice.data.cache.DataCache;
@@ -99,7 +100,7 @@ public class DimensionCacheLoaderServlet {
             if (dimension == null) {
                 String message = String.format("Dimension %s cannot be found.", dimensionName);
                 LOG.debug(message);
-                return Response.status(BAD_REQUEST).entity(message).build();
+                return Response.status(NOT_FOUND).entity(message).build();
             }
 
             // Extract LastUpdated as string from the post data
@@ -149,7 +150,7 @@ public class DimensionCacheLoaderServlet {
         if (dimension == null) {
             String message = String.format("Dimension %s cannot be found.", dimensionName);
             LOG.debug(message);
-            return Response.status(BAD_REQUEST).entity(message).build();
+            return Response.status(NOT_FOUND).entity(message).build();
         }
 
         Map<String, String> result = new LinkedHashMap<>();
@@ -195,7 +196,7 @@ public class DimensionCacheLoaderServlet {
             if (dimension == null) {
                 String message = String.format("Dimension %s cannot be found.", dimensionName);
                 LOG.debug(message);
-                return Response.status(BAD_REQUEST).entity(message).build();
+                return Response.status(NOT_FOUND).entity(message).build();
             }
 
             // extract dimension rows form the post data
@@ -281,7 +282,7 @@ public class DimensionCacheLoaderServlet {
             if (dimension == null) {
                 String message = String.format("Dimension %s cannot be found.", dimensionName);
                 LOG.debug(message);
-                return Response.status(BAD_REQUEST).entity(message).build();
+                return Response.status(NOT_FOUND).entity(message).build();
             }
 
             // extract dimension rows form the post data
