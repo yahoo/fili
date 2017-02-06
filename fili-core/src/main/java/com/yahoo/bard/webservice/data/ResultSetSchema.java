@@ -54,7 +54,7 @@ public class ResultSetSchema extends BaseSchema implements GranularSchema {
     public ResultSetSchema withAddColumn(Column c) {
         Set<Column> columns = new LinkedHashSet<>(this.getColumns());
         columns.add(c);
-        return new ResultSetSchema(this.getGranularity(), getColumns());
+        return new ResultSetSchema(this.getGranularity(), columns);
     }
 
     @Override
