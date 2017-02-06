@@ -1009,7 +1009,7 @@ public class DataApiRequest extends ApiRequest {
                     newFilter = new ApiFilter(apiFilter, dimensionDictionary);
 
                     // If there is a logical table and the filter is not part of it, throw exception.
-                    if (table.getDimensions().contains(newFilter.getDimension())) {
+                    if (! table.getDimensions().contains(newFilter.getDimension())) {
                         String filterDimensionName = newFilter.getDimension().getApiName();
                         LOG.debug(FILTER_DIMENSION_NOT_IN_TABLE.logFormat(filterDimensionName, table));
                         throw new BadFilterException(
