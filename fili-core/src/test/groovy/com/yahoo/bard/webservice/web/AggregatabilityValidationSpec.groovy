@@ -12,6 +12,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
+import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.TableGroup
 
@@ -67,11 +68,9 @@ class AggregatabilityValidationSpec extends Specification {
             dimensionDict.add(keyValueStoreDimension)
         }
         TableGroup tg = Mock(TableGroup)
+        tg.getApiMetricNames() >> ([] as Set)
         tg.getDimensions() >> dimensionDict.apiNameToDimension.values()
-        table = new LogicalTable("name", DAY, tg)
-        dimensionDict.apiNameToDimension.values().each {
-            DimensionColumn.addNewDimensionColumn(table, it)
-        }
+        table = new LogicalTable("name", DAY, tg, new MetricDictionary())
     }
 
     @Unroll
