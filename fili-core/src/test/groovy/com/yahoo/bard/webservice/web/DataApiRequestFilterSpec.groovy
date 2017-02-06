@@ -2,13 +2,11 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web
 
-
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.DATA_FILTER_SUBSTRING_OPERATIONS
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
-
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
@@ -58,11 +56,9 @@ class DataApiRequestFilterSpec extends Specification {
             metricDict.put(name, new LogicalMetric(null, null, name))
         }
         TableGroup tg = Mock(TableGroup)
+        tg.getApiMetricNames() >> ([] as Set)
         tg.getDimensions() >> dimensionDict.apiNameToDimension.values()
         table = new LogicalTable("name", DAY, tg, metricDict)
-        dimensionDict.apiNameToDimension.values().each {
-            DimensionColumn.addNewDimensionColumn(table, it)
-        }
     }
 
     def cleanupSpec() {
@@ -120,7 +116,7 @@ class DataApiRequestFilterSpec extends Specification {
         setup:
         String expectedMessage = ErrorMessageFormat.FILTER_FIELD_NOT_IN_DIMENSIONS.format('unknown', 'locale')
         when:
-        new DataApiRequest().generateFilters("locale|unknown-in:[US,India],locale.id-eq:[5]", table, dimensionDict)
+        new DataApiRequest().generateFilters("locale|unknown-in[US,India],locale.id-eq[5]", table, dimensionDict)
 
         then:
         Exception e = thrown(BadApiRequestException)
@@ -131,11 +127,12 @@ class DataApiRequestFilterSpec extends Specification {
         setup:
         TableGroup tg = Mock(TableGroup)
         tg.getDimensions() >> ([] as Set)
-        table = new LogicalTable("name", DAY, tg)
+        tg.getApiMetricNames() >> ([] as Set)
+        table = new LogicalTable("name", DAY, tg, metricDict)
 
         String expectedMessage = ErrorMessageFormat.FILTER_DIMENSION_NOT_IN_TABLE.format('locale', 'name')
         when:
-        new DataApiRequest().generateFilters("locale|id-in:[US,India],locale.id-eq:[5]", table, dimensionDict)
+        new DataApiRequest().generateFilters("locale|id-in[US,India],locale.id-eq[5]", table, dimensionDict)
 
         then:
         Exception e = thrown(BadApiRequestException)
@@ -146,7 +143,7 @@ class DataApiRequestFilterSpec extends Specification {
         setup:
         String expectedMessage = ErrorMessageFormat.FILTER_DIMENSION_UNDEFINED.format('undefined')
         when:
-        new DataApiRequest().generateFilters("undefined|id-in:[US,India],locale.id-eq:[5]", table, dimensionDict)
+        new DataApiRequest().generateFilters("undefined|id-in[US,India],locale.id-eq[5]", table, dimensionDict)
 
         then:
         Exception e = thrown(BadApiRequestException)
