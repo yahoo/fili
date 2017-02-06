@@ -6,7 +6,6 @@ import static com.yahoo.bard.webservice.config.BardFeatureFlag.INTERSECTION_REPO
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
-
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
@@ -45,12 +44,9 @@ class IntersectionReportingFlagOffSpec extends Specification {
             metricDict.put(name, new LogicalMetric(null, null, name))
         }
         TableGroup tg = Mock(TableGroup)
+        tg.getApiMetricNames() >> ([] as Set)
         tg.getDimensions() >> dimensionDict.apiNameToDimension.values()
-        table = new LogicalTable("name", DAY, tg)
-        dimensionDict.apiNameToDimension.values().each {
-            DimensionColumn.addNewDimensionColumn(table, it)
-        }
-
+        table = new LogicalTable("name", DAY, tg, metricDict)
     }
 
     def cleanup() {
