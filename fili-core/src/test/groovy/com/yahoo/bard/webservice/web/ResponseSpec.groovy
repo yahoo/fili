@@ -22,9 +22,7 @@ import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricColumn
-import com.yahoo.bard.webservice.table.ConcretePhysicalTable
-import com.yahoo.bard.webservice.table.PhysicalTable
-import com.yahoo.bard.webservice.table.Schema
+import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.util.DateTimeFormatterFactory
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.util.JsonSlurper
@@ -108,6 +106,7 @@ class ResponseSpec extends Specification {
             "last": "$LAST_PAGE"/
     ]
 
+    Set<Column> columns
     Set<LogicalMetric> testLogicalMetrics
     Response response
     DateTime dateTime = new DateTime(1000L * 60 * 60 * 24 * 365 * 45)
@@ -244,13 +243,19 @@ class ResponseSpec extends Specification {
         dim3.setLastUpdated(null)
         dimensionColumns << new DimensionColumn(dim3)
 
-        def schema = Mock(Schema)
+        ResultSetSchema schema = Mock(ResultSetSchema)
+        columns = [] as Set
+        columns.addAll(metricColumnsMap.keySet())
+        columns.addAll(dimensionColumns)
+
+        schema.getColumns() >> columns
         schema.getColumns(_) >> { Class cls ->
             if (cls == MetricColumn.class) {
                 return metricColumnsMap.keySet() as LinkedHashSet
             }
             return dimensionColumns as LinkedHashSet
         }
+        schema.getGranularity() >> DAY
 
         // Map same dimensionColumns as different DimensionRows
 
@@ -277,7 +282,7 @@ class ResponseSpec extends Specification {
         Result result1 = new Result(dimensionRows1, metricValues, dateTime)
         Result result2 = new Result(dimensionRows2, metricValues, dateTime)
 
-        resultSet = new ResultSet([result1, result2], schema)
+        resultSet = new ResultSet(schema, [result1, result2])
 
         //response without pagination
         response = new Response(resultSet, apiRequest, NO_INTERVALS, volatileIntervals,  [:], (Pagination) null, MAPPERS)
@@ -447,13 +452,7 @@ class ResponseSpec extends Specification {
             }
 
             dimension.setLastUpdated(null)
-            PhysicalTable table = new ConcretePhysicalTable(
-                    "",
-                    [new DimensionColumn(dimension)],
-                    DAY.buildZonedTimeGrain(DateTimeZone.UTC),
-                    [(dimension.getApiName()): dimension.getApiName()]
-            )
-            dimensionColumns << [dimension]
+            dimensionColumns << new DimensionColumn(dimension)
         }
 
         apiRequest1.getDimensionFields() >> defaultDimensionFieldsToShow
@@ -478,6 +477,8 @@ class ResponseSpec extends Specification {
             [(it): 10]
         }
         ResultSetSchema schema = Mock(ResultSetSchema)
+        schema.getColumns() >> columns
+
         schema.getColumns(_) >> { Class cls ->
             if (cls == MetricColumn.class) {
                 return metricColumns
