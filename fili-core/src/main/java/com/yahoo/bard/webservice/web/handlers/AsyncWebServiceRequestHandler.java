@@ -7,7 +7,7 @@ import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
-import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.RequestLogUtils;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.responseprocessors.LoggingContext;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
@@ -45,7 +45,7 @@ public class AsyncWebServiceRequestHandler extends BaseDataRequestHandler {
         SuccessCallback success = new SuccessCallback() {
             @Override
             public void invoke(JsonNode rootNode) {
-                response.processResponse(rootNode, druidQuery, new LoggingContext(RequestLog.copy()));
+                response.processResponse(rootNode, druidQuery, new LoggingContext(RequestLogUtils.copy()));
             }
         };
         HttpErrorCallback error = response.getErrorCallback(druidQuery);

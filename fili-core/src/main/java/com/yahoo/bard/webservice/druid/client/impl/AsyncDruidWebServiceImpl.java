@@ -15,6 +15,7 @@ import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.druid.model.query.WeightEvaluationQuery;
 import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.RequestLogUtils;
 import com.yahoo.bard.webservice.logging.blocks.DruidResponse;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
 
@@ -186,21 +187,21 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
             final String timerName,
             final AtomicLong outstanding
     ) {
-        RequestLog.startTiming(timerName);
-        final RequestLog logCtx = RequestLog.dump();
+        RequestLogUtils.startTiming(timerName);
+        final RequestLog logCtx = RequestLogUtils.dump();
 
         try {
             requestBuilder.execute(
                 new AsyncCompletionHandler<Response>() {
                     @Override
                     public Response onCompleted(Response response) {
-                        RequestLog.restore(logCtx);
-                        RequestLog.stopTiming(timerName);
+                        RequestLogUtils.restore(logCtx);
+                        RequestLogUtils.stopTiming(timerName);
                         if (outstanding.decrementAndGet() == 0) {
-                            RequestLog.startTiming(RESPONSE_WORKFLOW_TIMER);
+                            RequestLogUtils.startTiming(RESPONSE_WORKFLOW_TIMER);
                         }
                         String druidQueryId = response.getHeader("X-Druid-Query-Id");
-                        RequestLog.record(new DruidResponse(druidQueryId));
+                        RequestLogUtils.record(new DruidResponse(druidQueryId));
                         Status status = Status.fromStatusCode(response.getStatusCode());
                         LOG.debug(
                                 "druid {} response code: {} {} and druid query id: {}",
@@ -246,10 +247,10 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
 
                     @Override
                     public void onThrowable(Throwable t) {
-                        RequestLog.restore(logCtx);
-                        RequestLog.stopTiming(timerName);
+                        RequestLogUtils.restore(logCtx);
+                        RequestLogUtils.stopTiming(timerName);
                         if (outstanding.decrementAndGet() == 0) {
-                            RequestLog.startTiming(RESPONSE_WORKFLOW_TIMER);
+                            RequestLogUtils.startTiming(RESPONSE_WORKFLOW_TIMER);
                         }
                         exceptionMeter.mark();
                         LOG.error("druid {} request failed:", serviceConfig.getNameAndUrl(), t);
@@ -257,10 +258,10 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
                     }
                 });
         } catch (RuntimeException t) {
-            RequestLog.restore(logCtx);
-            RequestLog.stopTiming(timerName);
+            RequestLogUtils.restore(logCtx);
+            RequestLogUtils.stopTiming(timerName);
             if (outstanding.decrementAndGet() == 0) {
-                RequestLog.startTiming(RESPONSE_WORKFLOW_TIMER);
+                RequestLogUtils.startTiming(RESPONSE_WORKFLOW_TIMER);
             }
             LOG.error("druid {} http request failed: ", serviceConfig.getNameAndUrl(), t);
             failure.invoke(t);
@@ -299,13 +300,13 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
     ) {
         long seqNum = druidQuery.getContext().getSequenceNumber();
         String entityBody;
-        RequestLog.startTiming("DruidQuerySerializationSeq" + seqNum);
+        RequestLogUtils.startTiming("DruidQuerySerializationSeq" + seqNum);
         try {
             entityBody = writer.writeValueAsString(druidQuery);
         } catch (JsonProcessingException e) {
             throw new IllegalStateException(e);
         } finally {
-            RequestLog.stopTiming("DruidQuerySerializationSeq" + seqNum);
+            RequestLogUtils.stopTiming("DruidQuerySerializationSeq" + seqNum);
         }
 
         long totalQueries = druidQuery.getContext().getNumberOfQueries();
@@ -315,7 +316,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
 
         if (!(druidQuery instanceof WeightEvaluationQuery)) {
             if (context.getNumberOfOutgoing().decrementAndGet() == 0) {
-                RequestLog.stopTiming(REQUEST_WORKFLOW_TIMER);
+                RequestLogUtils.stopTiming(REQUEST_WORKFLOW_TIMER);
             }
             outstanding = context.getNumberOfIncoming();
             timerName = DRUID_QUERY_TIMER + String.format(format, seqNum);

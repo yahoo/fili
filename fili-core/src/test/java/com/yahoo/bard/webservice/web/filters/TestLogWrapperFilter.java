@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.filters;
 
-import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.RequestLogUtils;
 
 import javax.inject.Singleton;
 import javax.ws.rs.client.ClientRequestContext;
@@ -25,23 +25,23 @@ public class TestLogWrapperFilter implements ContainerRequestFilter, ContainerRe
 
     @Override
     public void filter(final ContainerRequestContext request) {
-        RequestLog.startTiming("TestLogWrapper");
+        RequestLogUtils.startTiming("TestLogWrapper");
     }
 
     @Override
     public void filter(ContainerRequestContext request, ContainerResponseContext response) {
-        RequestLog.stopTiming("TestLogWrapper");
-        RequestLog.log();
+        RequestLogUtils.stopTiming("TestLogWrapper");
+        RequestLogUtils.log();
     }
 
     @Override
     public void filter(final ClientRequestContext request) {
-        RequestLog.startTiming("TestLogWrapper");
+        RequestLogUtils.startTiming("TestLogWrapper");
     }
 
     @Override
     public void filter(ClientRequestContext request, ClientResponseContext response) {
-        RequestLog.stopTiming("TestLogWrapper");
-        RequestLog.log();
+        RequestLogUtils.stopTiming("TestLogWrapper");
+        RequestLogUtils.log();
     }
 }

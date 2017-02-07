@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.web.filters;
 import static com.yahoo.bard.webservice.web.ResponseCode.RATE_LIMIT;
 
 import com.yahoo.bard.webservice.config.SystemConfigException;
-import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.RequestLogUtils;
 import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.bard.webservice.web.DataApiRequestTypeIdentifier;
 import com.yahoo.bard.webservice.web.RateLimiter;
@@ -56,7 +56,7 @@ public class RateLimitFilter implements ContainerRequestFilter, ContainerRespons
     @SuppressWarnings("checkstyle:cyclomaticcomplexity")
     public void filter(ContainerRequestContext request) throws IOException {
 
-        RequestLog.startTiming(this);
+        RequestLogUtils.startTiming(this);
         URI uri = request.getUriInfo().getAbsolutePath();
         String path = uri.getPath();
 
@@ -94,13 +94,13 @@ public class RateLimitFilter implements ContainerRequestFilter, ContainerRespons
             } else {
                 String msg = String.format("Rate limit reached. Reject %s", uri.toString());
                 LOG.debug(msg);
-                RequestLog.stopTiming(this);
+                RequestLogUtils.stopTiming(this);
                 request.abortWith(Response.status(RATE_LIMIT).entity(msg).build());
                 return;
             }
         }
 
-        RequestLog.stopTiming(this);
+        RequestLogUtils.stopTiming(this);
     }
 
     @Override

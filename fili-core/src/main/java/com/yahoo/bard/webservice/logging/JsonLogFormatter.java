@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
  * A log formatter that prints log in JSON format.
  */
 public class JsonLogFormatter implements LogFormatter {
-    private static final Logger LOG = LoggerFactory.getLogger(RequestLog.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RequestLogUtils.class);
     private final ObjectMapper objectMapper;
 
     /**

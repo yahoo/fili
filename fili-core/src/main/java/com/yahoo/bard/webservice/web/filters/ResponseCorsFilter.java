@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.filters;
 
-import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.RequestLogUtils;
 
 import java.io.IOException;
 
@@ -23,7 +23,7 @@ public class ResponseCorsFilter implements ContainerResponseFilter {
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext)
             throws IOException {
-        RequestLog.startTiming(this);
+        RequestLogUtils.startTiming(this);
         MultivaluedMap<String, Object> headers = responseContext.getHeaders();
 
         String origin = requestContext.getHeaderString("origin");
@@ -39,6 +39,6 @@ public class ResponseCorsFilter implements ContainerResponseFilter {
 
         headers.add("Access-Control-Allow-Methods", "*");
         headers.add("Access-Control-Allow-Credentials", "true");
-        RequestLog.stopTiming(this);
+        RequestLogUtils.stopTiming(this);
     }
 }
