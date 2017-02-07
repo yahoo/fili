@@ -100,10 +100,8 @@ class ThetaSketchIntersectionReportingResources extends Specification {
 
         dimensionDict = new DimensionDictionary()
         dimensionDict.addAll([propertyDim, countryDim])
-
-
-
-        Set<ApiMetricName> metrics = [buildMockName("foos"), buildMockName("fooNoBar"), buildMockName("regFoos"), buildMockName("pageViews"), buildMockName("foo"), buildMockName("wiz"), buildMockName("waz"), buildMockName("viz"), buildMockName("unregFoos"), buildMockName("ratioMetric")]
+        //Reg foos omitted to make invalid on table
+        Set<ApiMetricName> metrics = [buildMockName("foos"), buildMockName("fooNoBar"), buildMockName("pageViews"), buildMockName("foo"), buildMockName("wiz"), buildMockName("waz"), buildMockName("viz"), buildMockName("unregFoos"), buildMockName("ratioMetric")]
 
         Set<Column> columns = (Set<? extends Column>) (metrics.collect {
             new MetricColumn(it.apiName)
