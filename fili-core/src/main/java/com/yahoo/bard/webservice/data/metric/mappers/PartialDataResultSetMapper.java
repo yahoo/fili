@@ -2,11 +2,11 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric.mappers;
 
+import com.yahoo.bard.webservice.data.ResultSetSchema;
 import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
-import com.yahoo.bard.webservice.table.Schema;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import org.joda.time.Interval;
@@ -49,7 +49,7 @@ public class PartialDataResultSetMapper extends ResultSetMapper {
      * @return Null if the bucket this result falls in is missing but not volatile
      */
     @Override
-    public Result map(Result result, Schema schema) {
+    public Result map(Result result, ResultSetSchema schema) {
         Granularity grain = schema.getGranularity();
 
         if (grain.equals(AllGranularity.INSTANCE)) {
@@ -67,7 +67,7 @@ public class PartialDataResultSetMapper extends ResultSetMapper {
     }
 
     @Override
-    protected Schema map(Schema schema) {
+    protected ResultSetSchema map(ResultSetSchema schema) {
         return schema;
     }
 

@@ -41,7 +41,8 @@ public class TableIdentifier extends AbstractMap.SimpleImmutableEntry<String, Op
      *
      * @param table  Logical table for the table identifier
      */
-    public TableIdentifier(Table table) {
+    public TableIdentifier(GranularTable table) {
+        // TODO big problem here to fix
         this(table.getName(), table.getGranularity());
     }
 

@@ -2,21 +2,19 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data
 
-import com.yahoo.bard.webservice.druid.model.QueryType
-import com.yahoo.bard.webservice.table.PhysicalTable
-
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
-import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
+import com.yahoo.bard.webservice.data.metric.MetricColumn
+import com.yahoo.bard.webservice.table.Schema
+import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
-import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType
-import com.yahoo.bard.webservice.table.Schema
+import com.yahoo.bard.webservice.druid.model.QueryType
 import com.yahoo.bard.webservice.table.ZonedSchema
 
 import com.fasterxml.jackson.core.JsonFactory

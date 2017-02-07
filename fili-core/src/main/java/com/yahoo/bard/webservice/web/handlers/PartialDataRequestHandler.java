@@ -4,11 +4,11 @@ package com.yahoo.bard.webservice.web.handlers;
 
 import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys.MISSING_INTERVALS_CONTEXT_KEY;
 
+import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.config.BardFeatureFlag;
 import com.yahoo.bard.webservice.data.PartialDataHandler;
 import com.yahoo.bard.webservice.data.metric.mappers.PartialDataResultSetMapper;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
-import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.web.DataApiRequest;

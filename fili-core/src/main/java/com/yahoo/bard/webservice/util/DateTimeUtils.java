@@ -3,8 +3,11 @@
 package com.yahoo.bard.webservice.util;
 
 import com.yahoo.bard.webservice.data.time.TimeGrain;
+import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
+import com.yahoo.bard.webservice.druid.model.query.Granularity;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
 import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
@@ -225,5 +228,18 @@ public class DateTimeUtils {
         // Shift the month from a one to a zero basis (Jan == 0), then adjust backwards to one of the months that are
         // an integer multiple of three months from the start of the year, then round to the start of that month.
         return property.addToCopy(-1 * ((property.get() - 1) % 3)).monthOfYear().roundFloorCopy();
+    }
+
+    /**
+     * Given a granularity, produce a time zone.
+     *
+     * @param granularity  The granularity's time zone, or if there isn't one, the default time zone
+     *
+     * @return A time zone
+     */
+    public static DateTimeZone getTimeZone(Granularity granularity) {
+        return (granularity instanceof ZonedTimeGrain) ?
+                ((ZonedTimeGrain) granularity).getTimeZone() :
+                DateTimeZone.getDefault();
     }
 }

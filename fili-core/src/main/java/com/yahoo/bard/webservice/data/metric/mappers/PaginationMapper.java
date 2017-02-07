@@ -2,9 +2,9 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric.mappers;
 
+import com.yahoo.bard.webservice.data.ResultSetSchema;
 import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.ResultSet;
-import com.yahoo.bard.webservice.table.Schema;
 import com.yahoo.bard.webservice.util.AllPagesPagination;
 import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.web.AbstractResponse;
@@ -54,18 +54,18 @@ public class PaginationMapper extends ResultSetMapper {
         Pagination<Result> pages = new AllPagesPagination<>(resultSet, paginationParameters);
         AbstractResponse.addLinks(pages, uriBuilder, responseProcessor);
         //uses map for additional flexibility and robustness, even though it is currently a no-op.
-        return new ResultSet(pages.getPageOfData(), map(resultSet.getSchema()));
+        return new ResultSet(map(resultSet.getSchema()), pages.getPageOfData());
     }
 
     @Override
-    protected Result map(Result result, Schema schema) {
+    protected Result map(Result result, ResultSetSchema schema) {
         //Not needed, because this mapper overrides map(ResultSet). So it is just a no-op.
         return result;
     }
 
 
     @Override
-    protected Schema map(Schema schema) {
+    protected ResultSetSchema map(ResultSetSchema schema) {
         //Because this method is not necessary, it just returns the schema unchanged.
         return schema;
     }

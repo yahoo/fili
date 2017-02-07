@@ -5,12 +5,12 @@ package com.yahoo.bard.webservice.web;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.EMPTY_DICTIONARY;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SLICE_UNDEFINED;
 
-import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
+import com.yahoo.bard.webservice.table.PhysicalTable;
+import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.metadata.SegmentInfo;
 import com.yahoo.bard.webservice.table.Column;
-import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 import com.yahoo.bard.webservice.web.endpoints.DimensionsServlet;
 import com.yahoo.bard.webservice.web.endpoints.SlicesServlet;

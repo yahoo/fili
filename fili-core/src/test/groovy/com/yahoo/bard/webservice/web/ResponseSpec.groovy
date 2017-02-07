@@ -2,10 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web
 
-import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
-import com.yahoo.bard.webservice.table.PhysicalTable
-
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.PARTIAL_DATA
+import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.util.SimplifiedIntervalList.NO_INTERVALS
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
@@ -13,6 +11,7 @@ import com.yahoo.bard.webservice.config.SystemConfig
 import com.yahoo.bard.webservice.config.SystemConfigProvider
 import com.yahoo.bard.webservice.data.Result
 import com.yahoo.bard.webservice.data.ResultSet
+import com.yahoo.bard.webservice.data.ResultSetSchema
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
@@ -23,6 +22,8 @@ import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricColumn
+import com.yahoo.bard.webservice.table.ConcretePhysicalTable
+import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.Schema
 import com.yahoo.bard.webservice.util.DateTimeFormatterFactory
 import com.yahoo.bard.webservice.util.GroovyTestUtils
@@ -446,7 +447,13 @@ class ResponseSpec extends Specification {
             }
 
             dimension.setLastUpdated(null)
-            dimensionColumns << DimensionColumn.addNewDimensionColumn(new PhysicalTable("", DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC), [(dimension.getApiName()): dimension.getApiName()]), dimension)
+            PhysicalTable table = new ConcretePhysicalTable(
+                    "",
+                    [new DimensionColumn(dimension)],
+                    DAY.buildZonedTimeGrain(DateTimeZone.UTC),
+                    [(dimension.getApiName()): dimension.getApiName()]
+            )
+            dimensionColumns << [dimension]
         }
 
         apiRequest1.getDimensionFields() >> defaultDimensionFieldsToShow
@@ -470,7 +477,7 @@ class ResponseSpec extends Specification {
         Map<MetricColumn, BigDecimal> metricValues = metricColumns.collectEntries {
             [(it): 10]
         }
-        def schema = Mock(Schema)
+        ResultSetSchema schema = Mock(ResultSetSchema)
         schema.getColumns(_) >> { Class cls ->
             if (cls == MetricColumn.class) {
                 return metricColumns
@@ -491,7 +498,7 @@ class ResponseSpec extends Specification {
 
 
         Result result = new Result(dimensionRows, metricValues, dateTime)
-        ResultSet resultSet = new ResultSet([result, result], schema)
+        ResultSet resultSet = new ResultSet(schema, [result, result])
 
         Response response = new Response(
                 resultSet,
@@ -689,7 +696,7 @@ class ResponseSpec extends Specification {
      */
     String withMetaObject(GString jsonString, GString metaBlock) {
         JsonSlurper jsonSlurper = new JsonSlurper(JsonSortStrategy.SORT_NONE)
-        Map baseJson = jsonSlurper.parseText(jsonString)
+        Map baseJson = (Map) jsonSlurper.parseText(jsonString)
         def metaJson = jsonSlurper.parseText(metaBlock)
         baseJson.put("meta", metaJson)
         MAPPERS.getMapper().writeValueAsString(baseJson)

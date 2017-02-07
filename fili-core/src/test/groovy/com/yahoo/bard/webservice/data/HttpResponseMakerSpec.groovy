@@ -14,7 +14,6 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
-import com.yahoo.bard.webservice.table.Schema
 import com.yahoo.bard.webservice.web.DataApiRequest
 import com.yahoo.bard.webservice.web.PreResponse
 import com.yahoo.bard.webservice.web.ResponseFormatType
@@ -79,8 +78,7 @@ class HttpResponseMakerSpec extends Specification {
         apiRequest.getFormat() >> ResponseFormatType.JSON
         apiRequest.getUriInfo() >> uriInfo
 
-        Schema schema = new Schema(DAY)
-        MetricColumn.addNewMetricColumn(schema, "lm1")
+        ResultSetSchema schema = new ResultSetSchema(DAY, [new MetricColumn("lm1")] as Set)
         resultSet = Mock(ResultSet)
         resultSet.getSchema() >> schema
 

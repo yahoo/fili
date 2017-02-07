@@ -2,9 +2,9 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric.mappers;
 
+import com.yahoo.bard.webservice.data.ResultSetSchema;
 import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.ResultSet;
-import com.yahoo.bard.webservice.table.Schema;
 
 import org.joda.time.DateTime;
 
@@ -32,16 +32,16 @@ public class TopNResultSetMapper extends ResultSetMapper {
         // TODO: Use only native stream operations in RxJava: GroupByTime -> Sort -> Take N -> Concat streams by time
         TopNAccumulator acc = new TopNAccumulator();
         resultSet.stream().forEachOrdered(acc);
-        return new ResultSet(acc.data, resultSet.getSchema());
+        return new ResultSet(resultSet.getSchema(), acc.data);
     }
 
     @Override
-    protected Result map(Result result, Schema schema) {
+    protected Result map(Result result, ResultSetSchema schema) {
         return result;
     }
 
     @Override
-    protected Schema map(Schema schema) {
+    protected ResultSetSchema map(ResultSetSchema schema) {
         return schema;
     }
 

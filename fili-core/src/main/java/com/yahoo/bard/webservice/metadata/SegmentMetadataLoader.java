@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.metadata;
 
+import com.yahoo.bard.webservice.table.ConcretePhysicalTable;
 import com.yahoo.bard.webservice.application.Loader;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
@@ -10,7 +11,6 @@ import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
-import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -98,6 +98,8 @@ public class SegmentMetadataLoader extends Loader<Boolean> {
     public void run() {
         physicalTableDictionary.values().stream()
                 .peek(table -> LOG.trace("Querying segment metadata for table: {}", table))
+                .filter(table -> table instanceof ConcretePhysicalTable)
+                .map(table -> (ConcretePhysicalTable) table)
                 .forEach(this::querySegmentMetadata);
         lastRunTimestamp.set(DateTime.now());
     }
@@ -107,8 +109,8 @@ public class SegmentMetadataLoader extends Loader<Boolean> {
      *
      * @param table  The physical table to be updated.
      */
-    protected void querySegmentMetadata(PhysicalTable table) {
-        String resourcePath = String.format(SEGMENT_METADATA_QUERY_FORMAT, table.getFactTableName());
+    protected void querySegmentMetadata(ConcretePhysicalTable table) {
+        String resourcePath = String.format(SEGMENT_METADATA_QUERY_FORMAT, table.getName());
 
         // Success callback will update segment metadata on success
         SuccessCallback success = buildSegmentMetadataSuccessCallback(table);
@@ -143,7 +145,7 @@ public class SegmentMetadataLoader extends Loader<Boolean> {
      *
      * @return The callback itself.
      */
-    protected final SuccessCallback buildSegmentMetadataSuccessCallback(PhysicalTable table) {
+    protected final SuccessCallback buildSegmentMetadataSuccessCallback(ConcretePhysicalTable table) {
         return new SuccessCallback() {
             @Override
             public void invoke(JsonNode rootNode) {
@@ -152,7 +154,7 @@ public class SegmentMetadataLoader extends Loader<Boolean> {
                         mapper.<RawSegmentMetadataConcrete>convertValue(rootNode, typeReference)
                 );
                 if (segmentMetadata.isEmpty()) {
-                    LOG.warn("Empty segment metadata detected when loading table '{}'", table.getFactTableName());
+                    LOG.warn("Empty segment metadata detected when loading table '{}'", table.getName());
                 }
                 table.resetColumns(segmentMetadata, dimensionDictionary);
             }

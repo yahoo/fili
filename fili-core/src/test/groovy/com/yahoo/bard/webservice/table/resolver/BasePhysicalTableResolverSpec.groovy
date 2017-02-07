@@ -2,16 +2,19 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.resolver
 
-import com.google.common.collect.Sets
+import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
+import static org.joda.time.DateTimeZone.UTC
+
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
-import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity
+import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.TableGroup
 import com.yahoo.bard.webservice.web.DataApiRequest
 
-import org.joda.time.DateTimeZone
+import com.google.common.collect.Sets
+
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -62,8 +65,8 @@ class BasePhysicalTableResolverSpec extends Specification {
         three.getName() >> "three"
         three.toString() >> "three"
 
-        pickFirst = { PhysicalTable table1, PhysicalTable table2 -> table1 }
-        pickLast  = { PhysicalTable table1, PhysicalTable table2 -> table2 }
+        pickFirst = { PhysicalTable table1, PhysicalTable table2 -> table1 } as BinaryOperator<PhysicalTable>
+        pickLast  = { PhysicalTable table1, PhysicalTable table2 -> table2 } as BinaryOperator<PhysicalTable>
         matchAll = new PhysicalTableMatcher() {
             @Override
             boolean test(PhysicalTable table) {
@@ -128,7 +131,8 @@ class BasePhysicalTableResolverSpec extends Specification {
         LogicalTable logical = Mock(LogicalTable.class)
         TableGroup group = Mock(TableGroup.class)
         logical.getTableGroup() >> group
-        group.getPhysicalTables() >> Sets.newHashSet(new PhysicalTable("table_name", DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC), [:]))
+        PhysicalTable table = new ConcretePhysicalTable("table_name", DAY.buildZonedTimeGrain(UTC), [], [:])
+        group.getPhysicalTables() >> Sets.newHashSet(table)
         request.getTable() >> logical
     }
     @Unroll

@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.metadata;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DRUID_METADATA_READ_ERROR;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 
+import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.application.Loader;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
@@ -12,7 +13,6 @@ import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
-import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -110,7 +110,7 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
      * @param table  The physical table to be updated.
      */
     protected void queryDataSourceMetadata(PhysicalTable table) {
-        String resourcePath = String.format(DATASOURCE_METADATA_QUERY_FORMAT, table.getFactTableName());
+        String resourcePath = String.format(DATASOURCE_METADATA_QUERY_FORMAT, table.getName());
 
         // Success callback will update datasource metadata on success
         SuccessCallback success = buildDataSourceMetadataSuccessCallback(table);
@@ -183,7 +183,7 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
                     metadataService.update(table, dataSourceMetadata);
                 } catch (IOException e) {
                     throw new UnsupportedOperationException(
-                            DRUID_METADATA_READ_ERROR.format(table.getFactTableName()),
+                            DRUID_METADATA_READ_ERROR.format(table.getName()),
                             e
                     );
                 }
@@ -232,7 +232,7 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
             String msg = String.format(
                     "%s: HTTP error while trying to load metadata for table: %s - Status: %d, Cause: %s, Response body: %s",
                     getName(),
-                    table.getFactTableName(),
+                    table.getName(),
                     statusCode,
                     reason,
                     responseBody
@@ -242,7 +242,7 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
                 LOG.warn(msg);
                 metadataService.update(
                         table,
-                        new DataSourceMetadata(table.getFactTableName(), Collections.emptyMap(), Collections.emptyList())
+                        new DataSourceMetadata(table.getName(), Collections.emptyMap(), Collections.emptyList())
                 );
             } else {
                 LOG.error(msg);

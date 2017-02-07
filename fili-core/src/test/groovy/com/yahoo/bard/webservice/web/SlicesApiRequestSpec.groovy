@@ -2,15 +2,15 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web
 
-import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
+import com.yahoo.bard.webservice.table.Table
+import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.metadata.BaseDataSourceMetadataSpec
 import com.yahoo.bard.webservice.metadata.DataSourceMetadata
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.metadata.SegmentInfo
 import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
-import com.yahoo.bard.webservice.table.Table
 import com.yahoo.bard.webservice.web.endpoints.SlicesServlet
 
 import org.joda.time.DateTime

@@ -4,6 +4,11 @@ package com.yahoo.bard.webservice.web.responseprocessors
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
+import com.yahoo.bard.webservice.data.dimension.DimensionColumn
+import com.yahoo.bard.webservice.table.ConcretePhysicalTable
+import com.yahoo.bard.webservice.data.metric.MetricColumn
+import com.yahoo.bard.webservice.data.ResultSetSchema
+import com.yahoo.bard.webservice.table.Schema
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.data.DruidResponseParser
 import com.yahoo.bard.webservice.data.HttpResponseChannel
@@ -11,10 +16,8 @@ import com.yahoo.bard.webservice.data.HttpResponseMaker
 import com.yahoo.bard.webservice.data.ResultSet
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
-import com.yahoo.bard.webservice.data.dimension.DimensionColumn
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
-import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper
 import com.yahoo.bard.webservice.druid.client.FailureCallback
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback
@@ -25,8 +28,6 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.logging.RequestLog
-import com.yahoo.bard.webservice.table.PhysicalTable
-import com.yahoo.bard.webservice.table.Schema
 import com.yahoo.bard.webservice.web.DataApiRequest
 import com.yahoo.bard.webservice.web.ResponseFormatType
 
@@ -34,6 +35,7 @@ import com.fasterxml.jackson.databind.JsonNode
 
 import org.joda.time.DateTimeZone
 
+import avro.shaded.com.google.common.collect.Sets
 import rx.subjects.PublishSubject
 import rx.subjects.Subject
 import spock.lang.Specification
@@ -111,7 +113,7 @@ class ResultSetResponseProcessorSpec extends Specification {
         groupByQuery.getDimensions() >> dimensions
         groupByQuery.getAggregations() >> aggregations
         groupByQuery.getPostAggregations() >> postAggs
-        groupByQuery.getDataSource() >> new TableDataSource(new PhysicalTable("table_name", DAY.buildZonedTimeGrain(DateTimeZone.UTC), ["dimension1":"dimension1"]))
+        groupByQuery.getDataSource() >> new TableDataSource(new ConcretePhysicalTable("table_name", DAY.buildZonedTimeGrain(DateTimeZone.UTC), ["dimension1":"dimension1"]))
 
         Dimension d = Mock(Dimension)
         dimensions.add(d)
@@ -120,8 +122,9 @@ class ResultSetResponseProcessorSpec extends Specification {
         PostAggregation postAgg = Mock(PostAggregation)
         postAggs.add(postAgg)
 
-        Schema schema = new Schema(DAY)
-        MetricColumn.addNewMetricColumn(schema, "lm1")
+
+        ResultSetSchema schema = new ResultSetSchema(DAY, Sets.newHashSet(new MetricColumn("lm1")))
+
         rs1 = Mock(ResultSet)
         rs1.getSchema() >> schema
 

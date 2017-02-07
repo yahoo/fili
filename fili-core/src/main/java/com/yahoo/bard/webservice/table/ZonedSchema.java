@@ -6,27 +6,50 @@ import com.yahoo.bard.webservice.druid.model.query.Granularity;
 
 import org.joda.time.DateTimeZone;
 
+import java.util.Set;
+
 import javax.validation.constraints.NotNull;
 
 /**
  * A schema anchored to a particular time zone.
+ *
+ * @deprecated This class is no longer used to support ResultSet schemas
  */
-public class ZonedSchema extends Schema {
+@Deprecated
+public class ZonedSchema extends BaseSchema implements GranularSchema {
 
     private final DateTimeZone dateTimeZone;
+    private final Granularity granularity;
 
     /**
      * Constructor.
      *
      * @param granularity  Granularity of the schema
      * @param dateTimeZone  TimeZone of the schema
+     * @param columns The columns for this schema
      */
-    public ZonedSchema(@NotNull Granularity granularity, @NotNull DateTimeZone dateTimeZone) {
-        super(granularity);
+    public ZonedSchema(
+            @NotNull Granularity granularity, @NotNull DateTimeZone dateTimeZone, @NotNull Set<Column> columns
+    ) {
+        super(columns);
+        this.granularity = granularity;
         this.dateTimeZone = dateTimeZone;
     }
 
+    /**
+     * Constructor.
+     *
+     * @param schema schema to copy construct
+     */
+    public ZonedSchema(ZonedSchema schema) {
+        this(schema.getGranularity(), schema.getDateTimeZone(), schema.getColumns());
+    }
     public DateTimeZone getDateTimeZone() {
         return dateTimeZone;
+    }
+
+    @Override
+    public Granularity getGranularity() {
+        return granularity;
     }
 }

@@ -9,13 +9,13 @@ import static com.yahoo.bard.webservice.data.config.names.TestApiMetricName.A_JS
 import static com.yahoo.bard.webservice.data.config.names.TestApiMetricName.A_NULL_METRIC;
 import static com.yahoo.bard.webservice.data.config.names.TestApiMetricName.A_STRING_METRIC;
 
+import com.yahoo.bard.webservice.data.metric.MetricColumn;
+import com.yahoo.bard.webservice.data.ResultSetSchema;
 import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
-import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper;
 import com.yahoo.bard.webservice.druid.model.aggregation.MinAggregation;
-import com.yahoo.bard.webservice.table.Schema;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -95,14 +95,17 @@ public class NonNumericMetrics {
         }
 
         @Override
-        protected Result map(Result result, Schema schema) {
-            MetricColumn stringColumn = schema.getColumn(A_STRING_METRIC.asName(), MetricColumn.class);
+        protected Result map(Result result, ResultSetSchema schema) {
+            MetricColumn stringColumn = schema.getColumn(A_STRING_METRIC.asName(), MetricColumn.class)
+                    .orElseThrow(
+                            () -> new IllegalStateException("Unexpected missing column " + A_STRING_METRIC.asName())
+            );
             String stringValue = result.getMetricValueAsString(stringColumn);
             return result.withMetricValue(stringColumn, stringValue + stringValue);
         }
 
         @Override
-        protected Schema map(Schema schema) {
+        protected ResultSetSchema map(ResultSetSchema schema) {
             return schema;
         }
     }
@@ -120,14 +123,15 @@ public class NonNumericMetrics {
         }
 
         @Override
-        protected Result map(Result result, Schema schema) {
-            return result.getMetricValueAsBoolean(schema.getColumn(A_BOOLEAN_METRIC.asName(), MetricColumn.class)) ?
-                    result :
-                    null;
+        protected Result map(Result result, ResultSetSchema schema) {
+            MetricColumn column = schema.getColumn(A_BOOLEAN_METRIC.asName(), MetricColumn.class).orElseThrow(
+                    () -> new IllegalStateException("Unexpected missing column " + A_BOOLEAN_METRIC.asName())
+            );
+            return result.getMetricValueAsBoolean(column) ? result : null;
         }
 
         @Override
-        protected Schema map(Schema schema) {
+        protected ResultSetSchema map(ResultSetSchema schema) {
             return schema;
         }
     }
@@ -146,15 +150,17 @@ public class NonNumericMetrics {
         }
 
         @Override
-        protected Result map(Result result, Schema schema) {
-            MetricColumn column = schema.getColumn(A_JSON_NODE_METRIC.asName(), MetricColumn.class);
+        protected Result map(Result result, ResultSetSchema schema) {
+            MetricColumn column = schema.getColumn(A_JSON_NODE_METRIC.asName(), MetricColumn.class).orElseThrow(
+                    () -> new IllegalStateException("Unexpected missing column " + A_JSON_NODE_METRIC.asName())
+            );
             ObjectNode node = (ObjectNode) result.getMetricValueAsJsonNode(column);
             node.put("length", node.get("clarification").textValue().length());
             return result;
         }
 
         @Override
-        protected Schema map(Schema schema) {
+        protected ResultSetSchema map(ResultSetSchema schema) {
             return schema;
         }
     }
@@ -172,8 +178,12 @@ public class NonNumericMetrics {
         }
 
         @Override
-        protected Result map(Result result, Schema schema) {
-            Object nullMetric = result.getMetricValue(schema.getColumn(A_NULL_METRIC.asName(), MetricColumn.class));
+        protected Result map(Result result, ResultSetSchema schema) {
+            MetricColumn column = schema.getColumn(A_NULL_METRIC.asName(), MetricColumn.class).orElseThrow(
+                    () -> new IllegalStateException("Unexpected missing column " + A_NULL_METRIC.asName())
+            );
+
+            Object nullMetric = result.getMetricValue(column);
             if (nullMetric != null) {
                 throw new IllegalStateException(
                         String.format("Metric 'nullMetric' should be null but is: %s", nullMetric)
@@ -183,7 +193,7 @@ public class NonNumericMetrics {
         }
 
         @Override
-        protected Schema map(Schema schema) {
+        protected ResultSetSchema map(ResultSetSchema schema) {
             return schema;
         }
     }

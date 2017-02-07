@@ -2,8 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric;
 
-import com.yahoo.bard.webservice.table.Schema;
-
 /**
  * LogicalMetricColumn.
  */
@@ -29,21 +27,6 @@ public class LogicalMetricColumn extends MetricColumn {
      */
     public LogicalMetric getLogicalMetric() {
         return this.metric;
-    }
-
-    /**
-     * Method to create a LogicalMetricColumn tied to a schema.
-     *
-     * @param schema  The associated schema
-     * @param name  The metric name
-     * @param metric  The logical metric
-     *
-     * @return DimensionColumn created
-     */
-    public static LogicalMetricColumn addNewLogicalMetricColumn(Schema schema, String name, LogicalMetric metric) {
-        LogicalMetricColumn col = new LogicalMetricColumn(name, metric);
-        schema.addColumn(col);
-        return col;
     }
 
     @Override

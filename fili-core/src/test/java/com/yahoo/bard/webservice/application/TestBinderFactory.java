@@ -8,7 +8,14 @@ import static com.yahoo.bard.webservice.data.config.names.TestApiDimensionName.S
 import static com.yahoo.bard.webservice.data.config.names.TestDruidTableName.HOURLY;
 import static com.yahoo.bard.webservice.data.config.names.TestDruidTableName.MONTHLY;
 
+import com.yahoo.bard.webservice.table.PhysicalTable;
+import com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField;
+import com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobRowBuilder;
+import com.yahoo.bard.webservice.async.jobs.jobrows.JobRowBuilder;
+import com.yahoo.bard.webservice.async.jobs.stores.ApiJobStore;
+import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore;
 import com.yahoo.bard.webservice.async.workflows.AsynchronousWorkflowsBuilder;
+import com.yahoo.bard.webservice.async.workflows.TestAsynchronousWorkflowsBuilder;
 import com.yahoo.bard.webservice.config.BardFeatureFlag;
 import com.yahoo.bard.webservice.data.cache.DataCache;
 import com.yahoo.bard.webservice.data.cache.HashDataCache;
@@ -28,22 +35,15 @@ import com.yahoo.bard.webservice.data.volatility.NoVolatileIntervalsFunction;
 import com.yahoo.bard.webservice.data.volatility.VolatileIntervalsFunction;
 import com.yahoo.bard.webservice.data.volatility.VolatileIntervalsService;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
-import com.yahoo.bard.webservice.async.jobs.stores.ApiJobStore;
-import com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField;
-import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore;
-import com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobRowBuilder;
-import com.yahoo.bard.webservice.async.jobs.jobrows.JobRowBuilder;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
 import com.yahoo.bard.webservice.metadata.SegmentIntervalsHashIdGenerator;
 import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService;
-import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.web.endpoints.JobsEndpointResources;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.yahoo.bard.webservice.async.workflows.TestAsynchronousWorkflowsBuilder;
 
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.joda.time.DateTime;
@@ -51,7 +51,6 @@ import org.joda.time.Interval;
 
 import java.time.Clock;
 import java.util.Collections;
-
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;

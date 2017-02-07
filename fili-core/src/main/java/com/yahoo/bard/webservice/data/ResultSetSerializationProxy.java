@@ -2,13 +2,13 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data;
 
-import com.yahoo.bard.webservice.config.SystemConfig;
-import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
-import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.table.Schema;
-import com.yahoo.bard.webservice.table.ZonedSchema;
+import com.yahoo.bard.webservice.config.SystemConfig;
+import com.yahoo.bard.webservice.config.SystemConfigProvider;
+import com.yahoo.bard.webservice.table.Column;
+import com.yahoo.bard.webservice.util.DateTimeUtils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -96,14 +96,12 @@ public class ResultSetSerializationProxy {
      *
      * @return Schema components.
      */
-    private Map<String, Object> getSchemaComponents(Schema schema) {
+    private Map<String, Object> getSchemaComponents(ResultSetSchema schema) {
         Map<String, Object> schemaComponents = new HashMap<>();
 
-        String timeId = (schema instanceof ZonedSchema) ?
-                ((ZonedSchema) schema).getDateTimeZone().getID() :
-                SYSTEM_CONFIG.getStringProperty(SYSTEM_CONFIG.getPackageVariableName("timezone"), "UTC");
+        DateTimeUtils.getTimeZone(schema.getGranularity());
+        schemaComponents.put(SCHEMA_TIMEZONE, DateTimeUtils.getTimeZone(schema.getGranularity()).getID());
 
-        schemaComponents.put(SCHEMA_TIMEZONE, timeId);
         schemaComponents.put(SCHEMA_GRANULARITY, schema.getGranularity().getName());
 
         schemaComponents.put(

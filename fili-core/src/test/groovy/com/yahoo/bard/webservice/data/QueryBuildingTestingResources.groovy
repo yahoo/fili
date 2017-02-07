@@ -37,6 +37,7 @@ import com.yahoo.bard.webservice.data.volatility.DefaultingVolatileIntervalsServ
 import com.yahoo.bard.webservice.data.volatility.VolatileIntervalsFunction
 import com.yahoo.bard.webservice.data.volatility.VolatileIntervalsService
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity
+import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.LogicalTableDictionary
 import com.yahoo.bard.webservice.table.PhysicalTable
@@ -63,8 +64,8 @@ public class QueryBuildingTestingResources {
     public PhysicalTable t1h, t1d, t1hShort, t2h, t3d, t4h1, t4h2, t4d1, t4d2, t5h
 
     //Volatility testing
-    public PhysicalTable volatileHourTable = new PhysicalTable("hour", HOUR.buildZonedTimeGrain(UTC), [:])
-    public PhysicalTable volatileDayTable = new PhysicalTable("day", DAY.buildZonedTimeGrain(UTC), [:])
+    public PhysicalTable volatileHourTable = new ConcretePhysicalTable("hour", HOUR.buildZonedTimeGrain(UTC), [:])
+    public PhysicalTable volatileDayTable = new ConcretePhysicalTable("day", DAY.buildZonedTimeGrain(UTC), [:])
 
     public VolatileIntervalsService volatileIntervalsService
 
@@ -371,6 +372,13 @@ public class QueryBuildingTestingResources {
                 simpleTemplateWithGrainQuery,
                 WEEK
         )
+        /* Example:
+        List<Column> columns = []
+        ConcretePhysicalTable table1 = ConcretePhysicalTable("name", DAY, columns, [:] )
+
+        Map<Column, List<Interval>> availableMap = columns.collectEntries { [(it): [interval2] ]}
+        table1.setAvailability(new ImmutableAvailability(availableMap))
+         */
         setupPartialData()
     }
 

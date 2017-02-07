@@ -2,9 +2,9 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table;
 
+import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
-import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 
 import java.util.LinkedHashSet;
 import java.util.Objects;
@@ -32,11 +32,11 @@ public class TableGroup {
     public TableGroup(
             LinkedHashSet<PhysicalTable> tables,
             Set<ApiMetricName> apiMetricNames,
-            LinkedHashSet<Dimension> dimensions
+            Set<Dimension> dimensions
     ) {
         this.tables = tables;
         this.apiMetricNames = apiMetricNames;
-        this.dimensions = dimensions;
+        this.dimensions = new LinkedHashSet<>(dimensions);
     }
 
     /**
@@ -59,7 +59,7 @@ public class TableGroup {
                 tables,
                 apiMetricNames,
                 tables.stream()
-                        .flatMap(table -> table.getColumns(DimensionColumn.class).stream())
+                        .flatMap(table -> table.getSchema().getColumns(DimensionColumn.class).stream())
                         .map(DimensionColumn::getDimension)
                         .collect(Collectors.toCollection(LinkedHashSet::new))
         );

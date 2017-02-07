@@ -40,11 +40,11 @@ class AvailabilityTestingUtils extends Specification {
         physicalTableDictionary
                 .findAll { tableName, _ -> tableName in tableNames}
                 .each { _, PhysicalTable table ->
-                    Map<String, Set<Interval>> metricIntervals = table.getColumns(MetricColumn.class)
+                    Map<String, Set<Interval>> metricIntervals = table.getSchema().getColumns(MetricColumn.class)
                             .collectEntries {
                                     [(it.name): intervalSet]
                             }
-                    Map<String, Set<Interval>> dimensionIntervals = table.getColumns(DimensionColumn.class)
+                    Map<String, Set<Interval>> dimensionIntervals = table.getSchema().getColumns(DimensionColumn.class)
                             .collectEntries {
                                     [(table.getPhysicalColumnName(it.getDimension().getApiName())): intervalSet]
                             }
