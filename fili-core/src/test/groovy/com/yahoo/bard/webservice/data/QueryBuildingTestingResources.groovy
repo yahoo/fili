@@ -25,6 +25,7 @@ import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.LookupDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricColumn
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
@@ -198,8 +199,8 @@ public class QueryBuildingTestingResources extends Specification {
         Map<Column, List<Interval>> availabilityMap2 = [:]
 
         [d1, d2, m1, m2, m3].each {
-            availabilityMap1.put(it, [interval1])
-            availabilityMap2.put(it, [interval2])
+            availabilityMap1.put(toColumn(it), [interval1])
+            availabilityMap2.put(toColumn(it), [interval2])
         }
 
         t4h1.setAvailability(availabilityMap1)
@@ -314,8 +315,8 @@ public class QueryBuildingTestingResources extends Specification {
      */
     def setupVolatileTables(Collection<Collection> physicalTableAvailabilityVolatilityTriples) {
         physicalTableAvailabilityVolatilityTriples.each { ConcretePhysicalTable table, Interval availability, _ ->
-            table.setAvailability([d1, m1].collectEntries() {
-                [it: [availability]]
+            table.setAvailability([new DimensionColumn(d1), new LogicalMetricColumn(m1)].collectEntries() {
+                [(it): [availability]]
             })
         }
 
