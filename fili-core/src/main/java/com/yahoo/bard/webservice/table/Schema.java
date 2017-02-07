@@ -6,7 +6,6 @@ import com.yahoo.bard.webservice.util.Utils;
 
 import java.util.LinkedHashSet;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * An interface describing a table or table-like entity composed of sets of columns.
@@ -18,7 +17,7 @@ public interface Schema {
      *
      * @return The columns of this schema
      */
-    Set<Column> getColumns();
+    LinkedHashSet<Column> getColumns();
 
     /**
      * Getter for set of columns by sub-type.
