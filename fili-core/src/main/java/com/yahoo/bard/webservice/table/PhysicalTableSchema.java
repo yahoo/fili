@@ -33,7 +33,7 @@ public class PhysicalTableSchema extends BaseSchema implements GranularSchema {
      */
     public PhysicalTableSchema(
             @NotNull ZonedTimeGrain timeGrain,
-            Set<Column> columns
+            Iterable<Column> columns
     ) {
         this(timeGrain, columns, Collections.emptyMap());
     }
@@ -47,7 +47,7 @@ public class PhysicalTableSchema extends BaseSchema implements GranularSchema {
      */
     public PhysicalTableSchema(
             @NotNull ZonedTimeGrain timeGrain,
-            Set<Column> columns,
+            Iterable<Column> columns,
             @NotNull Map<String, String> logicalToPhysicalColumnNames
     ) {
         super(columns);
@@ -84,8 +84,8 @@ public class PhysicalTableSchema extends BaseSchema implements GranularSchema {
     }
 
     /**
-     * Translate a physical name into a logical column name. If no translation exists (i.e. they are the same),
-     * then the physical name is returned.
+     * Look up all the logical column names corresponding to a physical name.
+     * If no translation exists (i.e. they are the same), then the physical name is returned.
      *
      * @param physicalName  Physical name to lookup in physical table
      *

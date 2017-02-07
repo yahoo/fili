@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.table;
 
 import com.yahoo.bard.webservice.util.Utils;
 
+import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -27,7 +28,7 @@ public interface Schema {
      *
      * @return Set of Columns
      */
-    default <T extends Column> Set<T> getColumns(Class<T> columnClass) {
+    default <T extends Column> LinkedHashSet<T> getColumns(Class<T> columnClass) {
         return Utils.getSubsetByType(getColumns(), columnClass);
     }
 

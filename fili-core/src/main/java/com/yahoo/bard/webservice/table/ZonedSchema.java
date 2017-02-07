@@ -6,8 +6,6 @@ import com.yahoo.bard.webservice.druid.model.query.Granularity;
 
 import org.joda.time.DateTimeZone;
 
-import java.util.Set;
-
 import javax.validation.constraints.NotNull;
 
 /**
@@ -29,7 +27,9 @@ public class ZonedSchema extends BaseSchema implements GranularSchema {
      * @param columns The columns for this schema
      */
     public ZonedSchema(
-            @NotNull Granularity granularity, @NotNull DateTimeZone dateTimeZone, @NotNull Set<Column> columns
+            @NotNull Granularity granularity,
+            @NotNull DateTimeZone dateTimeZone,
+            @NotNull Iterable<Column> columns
     ) {
         super(columns);
         this.granularity = granularity;

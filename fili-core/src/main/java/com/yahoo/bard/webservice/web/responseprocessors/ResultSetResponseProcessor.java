@@ -6,16 +6,16 @@ import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKe
 import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys.HEADERS;
 import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys.REQUESTED_API_DIMENSION_FIELDS;
 
-import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
-import com.yahoo.bard.webservice.data.metric.MetricColumn;
-import com.yahoo.bard.webservice.data.ResultSetSchema;
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
 import com.yahoo.bard.webservice.async.ResponseException;
 import com.yahoo.bard.webservice.data.DruidResponseParser;
 import com.yahoo.bard.webservice.data.HttpResponseMaker;
 import com.yahoo.bard.webservice.data.ResultSet;
+import com.yahoo.bard.webservice.data.ResultSetSchema;
+import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
@@ -40,7 +40,6 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.core.Response.Status;
@@ -146,22 +145,22 @@ public class ResultSetResponseProcessor extends MappingResponseProcessor impleme
      */
     public ResultSet buildResultSet(JsonNode json, DruidAggregationQuery<?> druidQuery, DateTimeZone dateTimeZone) {
 
-        Set<Column> columns = druidQuery.getAggregations().stream()
+        LinkedHashSet<Column> columns = druidQuery.getAggregations().stream()
                 .map(Aggregation::getName)
                 .map(MetricColumn::new)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toCollection(LinkedHashSet::new));
 
         columns.addAll(
                 druidQuery.getPostAggregations().stream()
                         .map(PostAggregation::getName)
                         .map(MetricColumn::new)
-                        .collect(Collectors.toSet())
+                        .collect(Collectors.toList())
         );
 
         columns.addAll(
                 druidQuery.getDimensions().stream()
                 .map(DimensionColumn::new)
-                .collect(Collectors.toSet())
+                .collect(Collectors.toList())
         );
 
 

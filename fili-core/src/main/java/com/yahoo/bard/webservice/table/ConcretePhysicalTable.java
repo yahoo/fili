@@ -38,7 +38,7 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
             @NotNull String name,
             @NotNull String factTableName,
             @NotNull ZonedTimeGrain timeGrain,
-            @NotNull Set<Column> columns,
+            @NotNull Iterable<Column> columns,
             @NotNull Map<String, String> logicalToPhysicalColumnNames
     ) {
         super(name, timeGrain, columns, logicalToPhysicalColumnNames);
@@ -56,7 +56,7 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
     public ConcretePhysicalTable(
             @NotNull String name,
             @NotNull ZonedTimeGrain timeGrain,
-            @NotNull Set<Column> columns,
+            @NotNull Iterable<Column> columns,
             @NotNull Map<String, String> logicalToPhysicalColumnNames
     ) {
         this(name, name, timeGrain, columns, logicalToPhysicalColumnNames);

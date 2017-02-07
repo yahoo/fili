@@ -9,6 +9,8 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
+import com.google.common.collect.Sets;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,8 +33,8 @@ public class DimensionsApiRequest extends ApiRequest {
     private static final Logger LOG = LoggerFactory.getLogger(DimensionsApiRequest.class);
     public static final String REQUEST_MAPPER_NAMESPACE = "dimensionApiRequestMapper";
 
-    private final Set<Dimension> dimensions;
-    private final Set<ApiFilter> filters;
+    private final LinkedHashSet<Dimension> dimensions;
+    private final LinkedHashSet<ApiFilter> filters;
 
     /**
      * Parses the API request URL and generates the Api Request object.
@@ -109,12 +111,12 @@ public class DimensionsApiRequest extends ApiRequest {
             Optional<PaginationParameters> paginationParameters,
             UriInfo uriInfo,
             Response.ResponseBuilder builder,
-            Set<Dimension> dimensions,
-            Set<ApiFilter> filters
+            Iterable<Dimension> dimensions,
+            Iterable<ApiFilter> filters
     ) {
         super(format, SYNCHRONOUS_ASYNC_AFTER_VALUE, paginationParameters, uriInfo, builder);
-        this.dimensions = dimensions;
-        this.filters = filters;
+        this.dimensions = Sets.newLinkedHashSet(dimensions);
+        this.filters = Sets.newLinkedHashSet(filters);
     }
 
     /**
@@ -126,12 +128,12 @@ public class DimensionsApiRequest extends ApiRequest {
      * @return Set of dimension objects.
      * @throws BadApiRequestException if an invalid dimension is requested or the dimension dictionary is empty.
      */
-    protected Set<Dimension> generateDimensions(
+    protected LinkedHashSet<Dimension> generateDimensions(
             String apiDimension,
             DimensionDictionary dimensionDictionary
     ) throws BadApiRequestException {
         // Dimension is optional hence check if dimension is requested.
-        Set<Dimension> generated = dimensionDictionary.findAll().stream()
+        LinkedHashSet<Dimension> generated = dimensionDictionary.findAll().stream()
                 .filter(dimension -> apiDimension == null || apiDimension.equals(dimension.getApiName()))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
@@ -160,13 +162,13 @@ public class DimensionsApiRequest extends ApiRequest {
      * @return Set of filter objects.
      * @throws BadApiRequestException if the filter query string does not match required syntax.
      */
-    protected Set<ApiFilter> generateFilters(
+    protected LinkedHashSet<ApiFilter> generateFilters(
             String filterQuery,
             DimensionDictionary dimensionDictionary
     ) throws BadApiRequestException {
         LOG.trace("Dimension Dictionary: {}", dimensionDictionary);
         // Set of filter objects
-        Set<ApiFilter> generated = new LinkedHashSet<>();
+        LinkedHashSet<ApiFilter> generated = new LinkedHashSet<>();
 
         // Filters are optional hence check if filters are requested.
         if (filterQuery == null || "".equals(filterQuery)) {
@@ -209,7 +211,7 @@ public class DimensionsApiRequest extends ApiRequest {
         return new DimensionsApiRequest(format, paginationParameters, uriInfo, builder, dimensions, filters);
     }
 
-    public DimensionsApiRequest withDimensions(Set<Dimension> dimensions) {
+    public DimensionsApiRequest withDimensions(LinkedHashSet<Dimension> dimensions) {
         return new DimensionsApiRequest(format, paginationParameters, uriInfo, builder, dimensions, filters);
     }
 
@@ -218,7 +220,7 @@ public class DimensionsApiRequest extends ApiRequest {
     }
     // CHECKSTYLE:ON
 
-    public Set<Dimension> getDimensions() {
+    public LinkedHashSet<Dimension> getDimensions() {
         return this.dimensions;
     }
 

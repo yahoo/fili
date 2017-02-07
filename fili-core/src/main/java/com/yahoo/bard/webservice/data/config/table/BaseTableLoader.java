@@ -2,22 +2,22 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.table;
 
-import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
-import com.yahoo.bard.webservice.table.ConcretePhysicalTable;
-import com.yahoo.bard.webservice.data.metric.MetricColumn;
-import com.yahoo.bard.webservice.table.PhysicalTable;
-import com.yahoo.bard.webservice.table.Schema;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.config.names.FieldName;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
+import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.table.Column;
+import com.yahoo.bard.webservice.table.ConcretePhysicalTable;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
+import com.yahoo.bard.webservice.table.PhysicalTable;
+import com.yahoo.bard.webservice.table.Schema;
 import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.bard.webservice.table.TableIdentifier;
 
@@ -119,8 +119,7 @@ public abstract class BaseTableLoader implements TableLoader {
                 .filter(column -> column instanceof DimensionColumn)
                 .map(column -> (DimensionColumn) column)
                 .map(DimensionColumn::getDimension)
-                .collect(Collectors.toSet());
-
+                .collect(Collectors.toCollection(LinkedHashSet::new));
         return new TableGroup(physicalTables, apiMetrics, dimensions);
     }
 
@@ -307,23 +306,24 @@ public abstract class BaseTableLoader implements TableLoader {
          new LinkedHashSet<>();
 
         // Load the dimension columns
-        Set<Column> columns = definition.getDimensions().stream()
+        LinkedHashSet<Column> columns = definition.getDimensions().stream()
                 .map(DimensionConfig::getApiName)
                 .map(dimensionDictionary::findByApiName)
                 .map(DimensionColumn::new)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toCollection(LinkedHashSet::new));
 
         // And the metric columns
         columns.addAll(
                 metricNames.stream()
                     .map(FieldName::asName)
                     .map(MetricColumn::new)
-                    .collect(Collectors.toSet())
+                    .collect(Collectors.toList())
         );
 
         return new ConcretePhysicalTable(
                 definition.getName().asName(),
-                definition.getGrain(), columns,
+                definition.getGrain(),
+                columns,
                 definition.getLogicalToPhysicalNames()
         );
     }

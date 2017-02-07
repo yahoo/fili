@@ -2,25 +2,25 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table;
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 
+import java.util.LinkedHashSet;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * A parent class for most schema implementations.
  */
 public class BaseSchema implements Schema {
 
-    private final ImmutableSet<Column> columns;
+    private final LinkedHashSet<Column> columns;
 
     /**
      * Constructor.
      *
      * @param columns  The columns for this schema.
      */
-    protected BaseSchema(Set<Column> columns) {
-        this.columns = ImmutableSet.copyOf(columns);
+    protected BaseSchema(Iterable<Column> columns) {
+        this.columns = Sets.newLinkedHashSet(columns);
     }
 
     @Override
@@ -42,7 +42,7 @@ public class BaseSchema implements Schema {
     }
 
     @Override
-    public Set<Column> getColumns() {
+    public LinkedHashSet<Column> getColumns() {
         return columns;
     }
 }

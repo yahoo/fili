@@ -107,7 +107,8 @@ class SketchIntersectionReportingResources extends Specification {
         //added dimensions to the physical table
         Set columns = [propertyDim, countryDim].collect() { new DimensionColumn(it)}
 
-        Set<ApiMetricName> metrics = [buildMockName("foos"), buildMockName("fooNoBar"), buildMockName("regFoos"), buildMockName("pageViews"), buildMockName("bar"), buildMockName("wiz"), buildMockName("waz"), buildMockName("viz"), buildMockName("unregFoos"), buildMockName("ratioMetric")]
+        // regFoos deliberately omitted
+        Set<ApiMetricName> metrics = [buildMockName("foos"), buildMockName("fooNoBar"), buildMockName("pageViews"), buildMockName("bar"), buildMockName("wiz"), buildMockName("waz"), buildMockName("viz"), buildMockName("unregFoos"), buildMockName("ratioMetric")]
         //added metrics to the physical table
         columns.addAll( metrics.collect() { new MetricColumn(it.apiName)})
 
