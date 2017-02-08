@@ -85,7 +85,7 @@ public class LogicalTable implements GranularTable, Comparable<LogicalTable> {
         this.granularity = granularity;
         this.comparableParam = name + granularity.toString();
 
-        schema = new LogicalTableSchema(tableGroup, metricDictionary);
+        schema = new LogicalTableSchema(tableGroup, granularity, metricDictionary);
 
     }
 
