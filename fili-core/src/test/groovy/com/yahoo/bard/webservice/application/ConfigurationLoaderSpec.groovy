@@ -7,6 +7,7 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MONTH
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.WEEK
 
+import com.yahoo.bard.webservice.data.config.dimension.TypeAwareDimensionLoader
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig
@@ -54,7 +55,7 @@ class ConfigurationLoaderSpec extends Specification {
         FieldConverterSupplier.sketchConverter = new SketchFieldConverter()
         LinkedHashSet<DimensionConfig> dimensions = new TestDimensions().getAllDimensionConfigurations()
         loader = new ConfigurationLoader(
-                new KeyValueStoreDimensionLoader(dimensions),
+                new TypeAwareDimensionLoader(dimensions),
                 new TestMetricLoader(),
                 new TestTableLoader()
         )

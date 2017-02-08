@@ -8,7 +8,6 @@ import static org.joda.time.DateTimeZone.UTC
 import com.yahoo.bard.webservice.data.DruidQueryBuilder
 import com.yahoo.bard.webservice.data.PartialDataHandler
 import com.yahoo.bard.webservice.data.QueryBuildingTestingResources
-import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
 import com.yahoo.bard.webservice.data.volatility.DefaultingVolatileIntervalsService
@@ -38,7 +37,7 @@ class LookupDimensionToDimensionSpecSpec extends Specification{
 
     def setup() {
         objectMapper = new ObjectMapper()
-        resources = new QueryBuildingTestingResources()
+        resources = new QueryBuildingTestingResources().init()
         resolver = new DefaultPhysicalTableResolver(new PartialDataHandler(), new DefaultingVolatileIntervalsService())
         builder = new DruidQueryBuilder(resources.logicalDictionary, resolver)
         apiRequest = Mock(DataApiRequest)

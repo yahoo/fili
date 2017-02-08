@@ -78,8 +78,8 @@ public class VolatileTimeComparator implements Comparator<PhysicalTable> {
      * [12-2015/01-2016], while t2 is missing the bucket[12-31-2015/01-01-2016]. Suppose we make a request for
      * [01-2015/01-2016] at the monthly grain. Both tables have equal volatility and partiality at the request grain,
      * and t2 has more data available in the partial-but-volatile range. However, a comparator that looked just at
-     * volatility would favor t1, because it has 11 months of volatile-but-complete data, while t2 only has 30 days of
-     * volatile-but-complete data, even though t2 actually has more complete data.
+     * volatility would favor t1, because it has 11 months of volatile-but-present data, while t2 only has 30 days of
+     * volatile-but-present data, even though t2 actually has more present data.
      *
      * @param table  The table of interest
      *

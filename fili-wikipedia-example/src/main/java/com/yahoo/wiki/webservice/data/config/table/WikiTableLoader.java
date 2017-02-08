@@ -22,6 +22,8 @@ import com.yahoo.wiki.webservice.data.config.names.WikiDruidMetricName;
 import com.yahoo.wiki.webservice.data.config.names.WikiDruidTableName;
 import com.yahoo.wiki.webservice.data.config.names.WikiLogicalTableName;
 
+import org.joda.time.DateTimeZone;
+
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Set;
@@ -69,7 +71,7 @@ public class WikiTableLoader extends BaseTableLoader {
         Set<PhysicalTableDefinition> samplePhysicalTableDefinition = Utils.asLinkedHashSet(
                 new PhysicalTableDefinition(
                         WikiDruidTableName.WIKIPEDIA,
-                        HOUR,
+                        HOUR.buildZonedTimeGrain(DateTimeZone.UTC),
                         dimsBasefactDruidTableName
                 )
         );

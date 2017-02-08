@@ -11,6 +11,7 @@ import com.yahoo.bard.webservice.table.availability.ImmutableAvailability;
 import org.joda.time.Interval;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -37,7 +38,7 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
             @NotNull String name,
             @NotNull String factTableName,
             @NotNull ZonedTimeGrain timeGrain,
-            @NotNull Set<Column> columns,
+            @NotNull Iterable<Column> columns,
             @NotNull Map<String, String> logicalToPhysicalColumnNames
     ) {
         super(name, timeGrain, columns, logicalToPhysicalColumnNames);
@@ -55,7 +56,7 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
     public ConcretePhysicalTable(
             @NotNull String name,
             @NotNull ZonedTimeGrain timeGrain,
-            @NotNull Set<Column> columns,
+            @NotNull Iterable<Column> columns,
             @NotNull Map<String, String> logicalToPhysicalColumnNames
     ) {
         this(name, name, timeGrain, columns, logicalToPhysicalColumnNames);
@@ -82,7 +83,7 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
         setAvailability(new ImmutableAvailability(schema, dimensionIntervals, metricIntervals, dimensionDictionary));
     }
 
-    public void setAvailability(Availability availability) {
+    public void setAvailability(Map<Column, List<Interval>> availability) {
         this.availability = new ImmutableAvailability(availability);
     }
 

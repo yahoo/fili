@@ -210,7 +210,7 @@ abstract class BaseDataServletComponentSpec extends Specification {
 
         // Add query params to call
         queryParams().each { String key, List<String> values ->
-            httpCall = httpCall.queryParam(key, values.join(","))D
+            httpCall = httpCall.queryParam(key, values.join(","))
         }
 
         // Make the call

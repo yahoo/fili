@@ -14,13 +14,13 @@ import static com.yahoo.bard.webservice.data.ResultSetSerializationProxy.SCHEMA_
 import static com.yahoo.bard.webservice.data.ResultSetSerializationProxy.SCHEMA_METRIC_COLUMNS_TYPE;
 import static com.yahoo.bard.webservice.data.ResultSetSerializationProxy.SCHEMA_TIMEZONE;
 
-import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
-import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
+import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.data.metric.MetricColumnWithValueType;
 import com.yahoo.bard.webservice.data.time.GranularityParser;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
@@ -35,6 +35,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Streams;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -43,12 +44,12 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 /**
  * Class to de-serialize and prepare the PreResponse object from JSON. The advantages of custom deserialization are:
@@ -204,8 +205,7 @@ public class PreResponseDeserializer {
      */
     private ResultSet getResultSet(JsonNode serializedResultSet) {
         ResultSetSchema resultSetSchema = getResultSetSchema(serializedResultSet.get(SCHEMA_KEY));
-        List<Result> results = StreamSupport
-                .stream(serializedResultSet.get(RESULTS_KEY).spliterator(), false)
+        List<Result> results = Streams.stream(serializedResultSet.get(RESULTS_KEY))
                 .map(serializedResult -> getResult(serializedResult, resultSetSchema))
                 .collect(Collectors.toList());
 
@@ -230,16 +230,16 @@ public class PreResponseDeserializer {
         //Recreate ZonedSchema from granularity and timezone values
         Granularity granularity = generateGranularity(schemaNode.get(SCHEMA_GRANULARITY).asText(), timezone);
 
-        Set<Column> columns = StreamSupport.stream(schemaNode.get(SCHEMA_DIM_COLUMNS).spliterator(), false)
+        LinkedHashSet<Column> columns = Streams.stream(schemaNode.get(SCHEMA_DIM_COLUMNS))
                 .map(JsonNode::asText)
                 .map(this::resolveDimensionName)
                 .map(DimensionColumn::new)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toCollection(LinkedHashSet::new));
 
         Iterable<Map.Entry<String, JsonNode>> metricEntries = () -> schemaNode.get(SCHEMA_METRIC_COLUMNS_TYPE).fields();
 
         columns.addAll(
-                StreamSupport.stream(metricEntries.spliterator(), false)
+                Streams.stream(metricEntries)
                         .map(entry-> new MetricColumnWithValueType(entry.getKey(), entry.getValue().asText()))
                         .collect(Collectors.toSet())
         );

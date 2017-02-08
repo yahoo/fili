@@ -131,7 +131,7 @@ class BasePhysicalTableResolverSpec extends Specification {
         LogicalTable logical = Mock(LogicalTable.class)
         TableGroup group = Mock(TableGroup.class)
         logical.getTableGroup() >> group
-        PhysicalTable table = new ConcretePhysicalTable("table_name", DAY.buildZonedTimeGrain(UTC), [], [:])
+        PhysicalTable table = new ConcretePhysicalTable("table_name", DAY.buildZonedTimeGrain(UTC), [] as Set, [:])
         group.getPhysicalTables() >> Sets.newHashSet(table)
         request.getTable() >> logical
     }

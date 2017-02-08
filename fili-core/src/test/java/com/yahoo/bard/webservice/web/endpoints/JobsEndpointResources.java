@@ -2,8 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.endpoints;
 
-import com.yahoo.bard.webservice.data.metric.MetricColumn;
-import com.yahoo.bard.webservice.data.ResultSetSchema;
 import com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField;
 import com.yahoo.bard.webservice.async.jobs.jobrows.JobField;
 import com.yahoo.bard.webservice.async.jobs.jobrows.JobRow;
@@ -13,6 +11,8 @@ import com.yahoo.bard.webservice.async.preresponses.stores.HashPreResponseStore;
 import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore;
 import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.ResultSet;
+import com.yahoo.bard.webservice.data.ResultSetSchema;
+import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.web.PreResponse;
@@ -21,10 +21,9 @@ import com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys;
 
 import org.joda.time.DateTime;
 
-import avro.shaded.com.google.common.collect.Sets;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -95,8 +94,7 @@ public class JobsEndpointResources {
         MetricColumn pageViewColumn = new MetricColumn("pageViews");
         metricValues.put(pageViewColumn, new BigDecimal(111));
 
-        ResultSetSchema schema = new ResultSetSchema(granularity, Sets.newHashSet(pageViewColumn));
-
+        ResultSetSchema schema = new ResultSetSchema(granularity, Collections.singleton(pageViewColumn));
         Result result = new Result(new HashMap<>(), metricValues, DateTime.parse("2016-01-12T00:00:00.000Z"));
         List<Result> results = new ArrayList<>();
         results.add(result);

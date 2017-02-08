@@ -26,7 +26,7 @@ class ConjunctionDruidFilterBuilderSpec extends Specification {
     Map<String, ApiFilter> apiFilters
 
     def setupSpec() {
-        resources = new QueryBuildingTestingResources()
+        resources = new QueryBuildingTestingResources().init()
     }
 
     def setup() {

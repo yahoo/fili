@@ -24,7 +24,7 @@ class VolatileTimeComparatorSpec extends Specification {
     //5.184 x 10^8
     static final long SIX_DAYS_IN_MILLISECONDS = 518400000L
 
-    QueryBuildingTestingResources resources = new QueryBuildingTestingResources()
+    QueryBuildingTestingResources resources = new QueryBuildingTestingResources().init()
 
     @Unroll
     def "#hourAvailable and #hourVolatile is #betterworse than #dayAvailable and #dayVolatile"() {

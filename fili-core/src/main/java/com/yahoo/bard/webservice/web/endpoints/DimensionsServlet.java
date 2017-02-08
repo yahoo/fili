@@ -25,6 +25,7 @@ import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.Streams;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,7 +103,7 @@ public class DimensionsServlet extends EndpointServlet {
      *     "dimensions": {@literal <List of Dimension Summaries>}
      * }
      * </code></pre>
-     * @see DimensionsServlet#getDimensionListSummaryView(Collection, UriInfo)
+     * @see DimensionsServlet#getDimensionListSummaryView(Iterable, UriInfo)
      */
     @GET
     @Timed
@@ -339,11 +340,11 @@ public class DimensionsServlet extends EndpointServlet {
      *
      * @return Summary list view of the dimensions
      */
-    public static Set<Map<String, Object>> getDimensionListSummaryView(
-            Collection<Dimension> dimensions,
+    public static LinkedHashSet<Map<String, Object>> getDimensionListSummaryView(
+            Iterable<Dimension> dimensions,
             final UriInfo uriInfo
     ) {
-        return dimensions.stream()
+        return Streams.stream(dimensions)
                 .map(dimension -> getDimensionSummaryView(dimension, uriInfo))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }

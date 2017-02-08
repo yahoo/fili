@@ -1,4 +1,4 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table
 
@@ -15,6 +15,7 @@ import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.metadata.SegmentMetadata
+import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 
 import org.joda.time.Interval
 
@@ -24,7 +25,7 @@ import spock.lang.Unroll
 
 class PhysicalTableSpec extends Specification {
 
-    @Shared PhysicalTable physicalTable
+    @Shared ConcretePhysicalTable physicalTable
     @Shared DimensionDictionary dimensionDictionary
 
     @Shared DimensionColumn dimensionColumn
@@ -40,15 +41,15 @@ class PhysicalTableSpec extends Specification {
     @Shared Dimension dimension
 
     def setupSpec() {
+        dimension = new KeyValueStoreDimension("dimension", null, [BardDimensionField.ID] as LinkedHashSet, MapStoreManager.getInstance("dimension"), ScanSearchProviderManager.getInstance("apiProduct"))
+
         physicalTable = new ConcretePhysicalTable(
                 "test table",
                 DAY.buildZonedTimeGrain(UTC),
-                [] as Set
-                ,
+                [new DimensionColumn(dimension)] as Set,
                 ['dimension': 'druidDim']
         )
-        dimension = new KeyValueStoreDimension("dimension", null, [BardDimensionField.ID] as LinkedHashSet, MapStoreManager.getInstance("dimension"), ScanSearchProviderManager.getInstance("apiProduct"))
-        dimensionDictionary = new DimensionDictionary([dimension] as Set)
+        dimensionDictionary = new DimensionDictionary([dimension].toSet())
 
         dimensionColumn = new DimensionColumn(dimension)
 
@@ -85,7 +86,7 @@ class PhysicalTableSpec extends Specification {
     @Unroll
     def "Physical table getColumnAvailability returns #expected for column #column"() {
         expect:
-        physicalTable.getIntervalsByColumnName(column) == expected
+        physicalTable.getIntervalsByColumnName(column).toList() == new SimplifiedIntervalList(expected) as List
 
         where:
         column               | expected
@@ -107,55 +108,52 @@ class PhysicalTableSpec extends Specification {
         table = new ConcretePhysicalTable(
                 name,
                 YEAR.buildZonedTimeGrain(UTC),
-                [] as Set
-                ,
+                [new DimensionColumn(dimension)] as Set,
                 ["dimension": "druidDim"]
         )
 
         then:
-        table.availableIntervalsRef.get() != null
-        table.availableIntervals.isEmpty()
-        table.workingIntervals.isEmpty()
+        table.getAvailability() != null
+        table.getAvailability().isEmpty()
 
         when:
         table.resetColumns(noMetricMetadata, dimensionDictionary)
 
         then:
         table.availableIntervals.containsKey(dimensionColumn)
-        table.availableIntervals.get(dimensionColumn) == intervalSet3
+        table.availableIntervals.get(dimensionColumn).toList() == new SimplifiedIntervalList(intervalSet3) as List
         table.getDimensions() == [dimension] as Set
-        table.getColumns(MetricColumn.class) == [] as Set
-        table.workingIntervals.isEmpty()
+        table.getSchema().getColumns(MetricColumn.class) == [] as Set
 
         when:
         table.resetColumns(segmentMetadata, dimensionDictionary)
 
         then:
         table.getDimensions() == [dimension] as Set
-        table.getIntervalsByColumnName(metricColumn1.name) == intervalSet2
+        table.getIntervalsByColumnName(metricColumn1.name).toList() == new SimplifiedIntervalList(intervalSet2) as List
     }
 
-    def "test the addition of columns to the table cache"() {
-        setup:
-        physicalTable.addColumn(dimensionColumn)
-        physicalTable.addColumn(metricColumn1)
-        physicalTable.addColumn(metricColumn2)
-        physicalTable.commit()
-
-        def expectedCache = [(dimensionColumn): [] as Set, (metricColumn1): [] as Set, (metricColumn2) :[] as Set]
-
-        expect:
-        physicalTable.getAvailableIntervals() == expectedCache
-    }
+//    def "test the addition of columns to the table cache"() {
+//        setup:
+//        physicalTable.addColumn(dimensionColumn)
+//        physicalTable.addColumn(metricColumn1)
+//        physicalTable.addColumn(metricColumn2)
+//        physicalTable.commit()
+//
+//        def expectedCache = [(dimensionColumn): [] as Set, (metricColumn1): [] as Set, (metricColumn2) :[] as Set]
+//
+//        expect:
+//        physicalTable.getAvailableIntervals() == expectedCache
+//    }
 
     def "test the setColumnCache() method"() {
         expect:
-        physicalTable.getAvailableIntervals() == cache
+        physicalTable.getAvailableIntervals() == cache.collectEntries {[(it.key) : (new SimplifiedIntervalList(it.value).toList())]}
     }
 
     def "test the getIntervalsByColumnName() method"() {
         expect:
-        physicalTable.getIntervalsByColumnName("metric2") == intervalSet3
+        physicalTable.getIntervalsByColumnName("metric2").toList() == new SimplifiedIntervalList(intervalSet3).toList()
     }
 
     def "test the fetching of all dimensions from the table"() {
@@ -167,19 +165,17 @@ class PhysicalTableSpec extends Specification {
         setup:
         PhysicalTable oneDimPhysicalTable = new ConcretePhysicalTable(
                 "test table", DAY.buildZonedTimeGrain(UTC),
-                [] as Set
-                ,
+                [new DimensionColumn(dimension)] as Set,
                 ['dimension': 'druidDim']
         )
         PhysicalTable twoDimPhysicalTable = new ConcretePhysicalTable(
                 "test table", DAY.buildZonedTimeGrain(UTC),
-                [] as Set
-                ,
+                [new DimensionColumn(dimension)] as Set,
                 ['dimension1': 'druidDim', 'dimension2': 'druidDim']
         )
 
         expect:
-        oneDimPhysicalTable.getLogicalColumnNames('druidDim') == ['dimension'] as Set
-        twoDimPhysicalTable.getLogicalColumnNames('druidDim') == ['dimension1', 'dimension2'] as Set
+        oneDimPhysicalTable.getSchema().getLogicalColumnNames('druidDim') == ['dimension'] as Set
+        twoDimPhysicalTable.getSchema().getLogicalColumnNames('druidDim') == ['dimension1', 'dimension2'] as Set
     }
 }

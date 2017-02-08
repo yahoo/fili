@@ -6,7 +6,7 @@ import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.metadata.SegmentMetadata
-import com.yahoo.bard.webservice.table.PhysicalTable
+import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 
 import org.joda.time.Interval
@@ -39,14 +39,14 @@ class AvailabilityTestingUtils extends Specification {
 
         physicalTableDictionary
                 .findAll { tableName, _ -> tableName in tableNames}
-                .each { _, PhysicalTable table ->
+                .each { _, ConcretePhysicalTable table ->
                     Map<String, Set<Interval>> metricIntervals = table.getSchema().getColumns(MetricColumn.class)
                             .collectEntries {
                                     [(it.name): intervalSet]
                             }
                     Map<String, Set<Interval>> dimensionIntervals = table.getSchema().getColumns(DimensionColumn.class)
                             .collectEntries {
-                                    [(table.getPhysicalColumnName(it.getDimension().getApiName())): intervalSet]
+                                    [(it.getDimension().getApiName()): intervalSet]
                             }
                     // set new cache
                     table.resetColumns(

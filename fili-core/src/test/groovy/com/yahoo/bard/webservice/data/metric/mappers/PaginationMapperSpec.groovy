@@ -248,7 +248,7 @@ class PaginationMapperSpec extends Specification {
 
             new Result(dimensionData, metricValues, new DateTime())
         }
-        new ResultSet(new ResultSetSchema(DAY, []), resultList)
+        new ResultSet(new ResultSetSchema(DAY, [].toSet()), resultList)
 
     }
 
@@ -288,7 +288,6 @@ class PaginationMapperSpec extends Specification {
                     (descField): "dimension$it" as String
             ]
             [(column): new DimensionRow(idField, fieldValueMap)]
-            new ConcretePhysicalTable("tableName", DAY.buildZonedTimeGrain(DateTimeZone.UTC), [column] as Set, [(dimension.getApiName()): dimension.getApiName()]);
         }
     }
 }

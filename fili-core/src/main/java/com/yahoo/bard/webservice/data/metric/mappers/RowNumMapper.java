@@ -34,7 +34,7 @@ public class RowNumMapper extends ResultSetMapper {
         int resultSetSize = resultSet.size();
         ArrayList<Result> newResults = new ArrayList<>(resultSetSize);
         for (int i = 0; i < resultSetSize; i++) {
-            newResults.set(i, rowNumMap(resultSet.get(i), column, i));
+            newResults.add(rowNumMap(resultSet.get(i), column, i));
         }
 
         ResultSet newResultSet = new ResultSet(schema, newResults);

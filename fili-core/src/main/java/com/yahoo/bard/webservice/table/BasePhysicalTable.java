@@ -43,7 +43,7 @@ public abstract class BasePhysicalTable implements PhysicalTable {
     public BasePhysicalTable(
             @NotNull String name,
             @NotNull ZonedTimeGrain timeGrain,
-            @NotNull Set<Column> columns,
+            @NotNull Iterable<Column> columns,
             @NotNull Map<String, String> logicalToPhysicalColumnNames
     ) {
         this.name = name;

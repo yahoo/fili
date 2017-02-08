@@ -65,7 +65,7 @@ class DruidQueryBuilderSpec extends Specification {
     Set<Interval> intervals
 
     def staticInitialize() {
-        resources = new QueryBuildingTestingResources()
+        resources = new QueryBuildingTestingResources().init()
         resolver = new DefaultPhysicalTableResolver(new PartialDataHandler(), new DefaultingVolatileIntervalsService())
 
         builder = new DruidQueryBuilder(

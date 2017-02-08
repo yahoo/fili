@@ -75,10 +75,8 @@ class DataApiRequestIntervalsSpec extends Specification {
         }
         TableGroup tg = Mock(TableGroup)
         tg.getDimensions() >> dimensionDict.apiNameToDimension.values()
-        table = new LogicalTable("name", DAY, tg)
-        dimensionDict.apiNameToDimension.values().each {
-            DimensionColumn.addNewDimensionColumn(table, it)
-        }
+        tg.getApiMetricNames() >> ([] as Set)
+        table = new LogicalTable("name", DAY, tg, metricDict)
     }
 
     def cleanupSpec() {

@@ -17,6 +17,7 @@ import com.yahoo.bard.webservice.data.time.ZonelessTimeGrain
 import com.yahoo.bard.webservice.data.volatility.DefaultingVolatileIntervalsService
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity
 import com.yahoo.bard.webservice.druid.model.query.Granularity
+import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.web.DataApiRequest
 
 import org.joda.time.Interval
@@ -72,7 +73,7 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
         }
         isInitialized = true
 
-        resources = new QueryBuildingTestingResources()
+        resources = new QueryBuildingTestingResources().init()
         resolver = new DefaultPhysicalTableResolver(new PartialDataHandler(), new DefaultingVolatileIntervalsService())
         dimSet1 = [resources.d1] as Set
         dimSet3 = [resources.d3] as Set
@@ -429,8 +430,8 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
         BinaryOperator betterTable = resolver.getBetterTableOperator(apiRequest, query)
 
         expect:
-        [table1, table2].stream().reduce(betterTable).get() == [table1, table1, table2].get(which)
-        [table2, table1].stream().reduce(betterTable).get() == [table2, table1, table2].get(which)
+        [(PhysicalTable) table1, (PhysicalTable) table2].stream().reduce(betterTable).get() == [table1, table1, table2].get(which)
+        [(PhysicalTable) table2, (PhysicalTable) table1].stream().reduce(betterTable).get() == [table2, table1, table2].get(which)
 
         where:
         interval                | table1         | table2         | which | grain

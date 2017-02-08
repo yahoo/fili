@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.web
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
+import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.LogicalTableDictionary
@@ -81,7 +82,9 @@ class TablesApiRequestSpec extends Specification {
     def "check api request construction for a given table name and a given granularity"() {
         setup:
         TableGroup tg = Mock(TableGroup)
-        LogicalTable table = new LogicalTable("pets", DAY, tg)
+        tg.getApiMetricNames() >> ([] as Set)
+        tg.getDimensions() >> ([] as Set)
+        LogicalTable table = new LogicalTable("pets", DAY, tg, new MetricDictionary())
         String name = "pets"
         tablesServlet.getLogicalTableDictionary() >> fullDictionary
 
