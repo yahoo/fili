@@ -42,7 +42,7 @@ public class PartialTimeComparator implements Comparator<PhysicalTable> {
         // choose table with most data available for given columns
         long missingDurationLeft = IntervalUtils.getTotalDuration(
                 partialDataHandler.findMissingTimeGrainIntervals(
-                        requestConstraints.getAllColumnNames(),
+                        requestConstraints,
                         Collections.singleton(left),
                         new SimplifiedIntervalList(requestConstraints.getIntervals()),
                         requestConstraints.getRequestGranularity()
@@ -50,7 +50,7 @@ public class PartialTimeComparator implements Comparator<PhysicalTable> {
         );
         long missingDurationRight = IntervalUtils.getTotalDuration(
                 partialDataHandler.findMissingTimeGrainIntervals(
-                        requestConstraints.getAllColumnNames(),
+                        requestConstraints,
                         Collections.singleton(right),
                         new SimplifiedIntervalList(requestConstraints.getIntervals()),
                         requestConstraints.getRequestGranularity()

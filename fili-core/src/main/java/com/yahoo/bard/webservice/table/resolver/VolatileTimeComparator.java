@@ -84,16 +84,14 @@ public class VolatileTimeComparator implements Comparator<PhysicalTable> {
         Granularity apiRequestGranularity = requestConstraints.getRequestGranularity();
         // First, find the volatile intervals that are also partial at the request grain.
         SimplifiedIntervalList volatilePartialRequestIntervals = partialDataHandler.findMissingTimeGrainIntervals(
-                requestConstraints.getAllColumnNames(),
+                requestConstraints,
                 Collections.singleton(table),
                 volatileIntervalsService.getVolatileIntervals(apiRequestGranularity, requestIntervals, table),
                 apiRequestGranularity
         );
         //Next find the intervals on the physical table that are available.
-        SimplifiedIntervalList tableAvailability = partialDataHandler.getAvailability(
-                table,
-                requestConstraints.getAllColumnNames()
-        );
+        SimplifiedIntervalList tableAvailability = table.getAvailableIntervals(requestConstraints);
+
         //Take the duration of their intersection.
         return IntervalUtils.getTotalDuration(tableAvailability.intersect(volatilePartialRequestIntervals));
     }

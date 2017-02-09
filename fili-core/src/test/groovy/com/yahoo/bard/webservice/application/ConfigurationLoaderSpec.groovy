@@ -31,6 +31,7 @@ import com.yahoo.bard.webservice.druid.model.query.Granularity
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
 import com.yahoo.bard.webservice.druid.util.FieldConverters
 import com.yahoo.bard.webservice.druid.util.SketchFieldConverter
+import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService
 import com.yahoo.bard.webservice.table.LogicalTableDictionary
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
@@ -53,10 +54,12 @@ class ConfigurationLoaderSpec extends Specification {
     def setupSpec() {
         FieldConverterSupplier.sketchConverter = new SketchFieldConverter()
         LinkedHashSet<DimensionConfig> dimensions = new TestDimensions().getAllDimensionConfigurations()
+
         loader = new ConfigurationLoader(
                 new TypeAwareDimensionLoader(dimensions),
                 new TestMetricLoader(),
-                new TestTableLoader()
+                new TestTableLoader(),
+                new TestDataSourceMetadataService()
         )
         loader.load()
 

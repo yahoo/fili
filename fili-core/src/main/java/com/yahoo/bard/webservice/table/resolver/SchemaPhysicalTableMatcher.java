@@ -37,7 +37,7 @@ public class SchemaPhysicalTableMatcher implements PhysicalTableMatcher {
 
     @Override
     public boolean test(PhysicalTable table) {
-        if (!requestConstraints.getMinimumGranularity().satisfiedBy(table.getSchema().getTimeGrain())) {
+        if (!requestConstraints.getMinimumGranularity().satisfiedBy(table.getSchema().getGranularity())) {
             return false;
         }
 
@@ -55,12 +55,22 @@ public class SchemaPhysicalTableMatcher implements PhysicalTableMatcher {
         String logicalTableName = requestConstraints.getLogicalTable().getName();
         Set<String> logicalMetrics = requestConstraints.getLogicalMetricNames();
         Set<String> dimensions = requestConstraints.getAllDimensionNames();
-        String grainName = requestConstraints.getMinimumGranularity().getName();
+
         LOG.error(
-                MESSAGE_FORMAT.logFormat(logicalTableName, dimensions, logicalMetrics, grainName)
+                MESSAGE_FORMAT.logFormat(
+                        logicalTableName,
+                        dimensions,
+                        logicalMetrics,
+                        requestConstraints.getMinimumGranularity().getName()
+                )
         );
         return new NoMatchFoundException(
-                MESSAGE_FORMAT.format(logicalTableName, dimensions, logicalMetrics, grainName)
+                MESSAGE_FORMAT.format(
+                        logicalTableName,
+                        dimensions,
+                        logicalMetrics,
+                        requestConstraints.getMinimumGranularity().getName()
+                )
         );
     }
 }

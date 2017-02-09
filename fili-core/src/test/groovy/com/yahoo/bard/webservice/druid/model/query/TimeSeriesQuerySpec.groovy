@@ -7,6 +7,7 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 
@@ -40,8 +41,10 @@ class TimeSeriesQuerySpec extends Specification {
         vars.dataSource = vars.dataSource ?: new TableDataSource(new ConcretePhysicalTable(
                 "table_name",
                 DAY.buildZonedTimeGrain(DateTimeZone.UTC),
-                [] as Set,
-                [:]
+                [] as Set
+                ,
+                [:],
+                Mock(DataSourceMetadataService)
         ))
         vars.granularity = vars.granularity ?: DAY
         vars.filter = vars.filter ?: null

@@ -13,6 +13,7 @@ import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 
@@ -47,7 +48,8 @@ class TopNQuerySpec extends Specification {
                 "table_name",
                 DAY.buildZonedTimeGrain(DateTimeZone.UTC),
                 [] as Set,
-                ["apiLocale": "locale"]
+                ["apiLocale": "locale"],
+                Mock(DataSourceMetadataService)
         ))
         vars.dimension = vars.dimension ?: ""
         vars.threshold = vars.threshold ?: 5

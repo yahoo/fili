@@ -37,6 +37,7 @@ import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
 import com.yahoo.bard.webservice.metadata.SegmentIntervalsHashIdGenerator;
+import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService;
 import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
@@ -70,6 +71,7 @@ public class TestBinderFactory extends AbstractBinderFactory {
     public boolean afterRegistrationHookWasCalled = false;
 
     public ConfigurationLoader configurationLoader;
+    public DataSourceMetadataService dataSourceMetadataService;
 
     /**
      * Constructor.
@@ -84,7 +86,10 @@ public class TestBinderFactory extends AbstractBinderFactory {
         };
         tableLoader = new TableLoader() {
             @Override
-            public void loadTableDictionary(ResourceDictionaries dictionaries) {
+            public void loadTableDictionary(
+                    ResourceDictionaries dictionaries,
+                    DataSourceMetadataService metadataService
+            ) {
                 // Empty
             }
         };
@@ -172,7 +177,13 @@ public class TestBinderFactory extends AbstractBinderFactory {
      * @return the datasource metadata service
      */
     public DataSourceMetadataService getDataSourceMetaDataService() {
-        return buildDataSourceMetadataService();
+        return new TestDataSourceMetadataService();
+    }
+
+    @Override
+    protected DataSourceMetadataService buildDataSourceMetadataService() {
+        this.dataSourceMetadataService = new TestDataSourceMetadataService();
+        return dataSourceMetadataService;
     }
 
     @Override
@@ -198,10 +209,16 @@ public class TestBinderFactory extends AbstractBinderFactory {
     protected ConfigurationLoader buildConfigurationLoader(
             DimensionLoader dimensionLoader,
             MetricLoader metricLoader,
-            TableLoader tableLoader
+            TableLoader tableLoader,
+            DataSourceMetadataService metadataService
     ) {
         // Store the config loader so that we can get access to it, and then return it
-        this.configurationLoader = super.buildConfigurationLoader(dimensionLoader, metricLoader, tableLoader);
+        this.configurationLoader = super.buildConfigurationLoader(
+                dimensionLoader,
+                metricLoader,
+                tableLoader,
+                metadataService
+        );
         return configurationLoader;
     }
 

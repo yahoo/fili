@@ -3,26 +3,29 @@
 package com.yahoo.bard.webservice.table;
 
 import com.yahoo.bard.webservice.data.config.names.TableName;
-import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
-import com.yahoo.bard.webservice.metadata.SegmentMetadata;
+import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.table.availability.Availability;
-import com.yahoo.bard.webservice.table.availability.ImmutableAvailability;
+import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.util.IntervalUtils;
+import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import org.joda.time.DateTime;
+import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
 /**
- * Base Physical Table implements common PhysicalTable capabilities.
+ * Physical Table represents a druid table.
+ * Working availabilities a transactional sensibility to changing availabilities.
  */
 public abstract class BasePhysicalTable implements PhysicalTable {
-    private static final Logger LOG = LoggerFactory.getLogger(BasePhysicalTable.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PhysicalTable.class);
 
     private final TableName name;
     private final PhysicalTableSchema schema;
@@ -49,20 +52,6 @@ public abstract class BasePhysicalTable implements PhysicalTable {
         this.schema = new PhysicalTableSchema(timeGrain, columns, logicalToPhysicalColumnNames);
     }
 
-
-    @Override
-    public Availability getAvailability() {
-        return availability;
-    }
-
-
-    @Override
-    public DateTime getTableAlignment() {
-        return schema.getTimeGrain().roundFloor(
-                IntervalUtils.firstMoment(getAvailability().getAvailableIntervals().values()).orElse(new DateTime())
-        );
-    }
-
     @Override
     public TableName getTableName() {
         return name;
@@ -76,6 +65,33 @@ public abstract class BasePhysicalTable implements PhysicalTable {
     @Override
     public PhysicalTableSchema getSchema() {
         return schema;
+    }
+
+    @Override
+    public Granularity getGranularity() {
+        return getSchema().getGranularity();
+    }
+
+    @Override
+    public DateTime getTableAlignment() {
+        return schema.getGranularity().roundFloor(
+                IntervalUtils.firstMoment(getAvailability().getAllAvailableIntervals().values()).orElse(new DateTime())
+        );
+    }
+
+    @Override
+    public Availability getAvailability() {
+        return availability;
+    }
+
+    @Override
+    public Map<Column, Set<Interval>> getAllAvailableIntervals() {
+        return getAvailability().getAllAvailableIntervals();
+    }
+
+    @Override
+    public SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraints) {
+        return getAvailability().getAvailableIntervals(constraints);
     }
 
     @Override
@@ -93,21 +109,23 @@ public abstract class BasePhysicalTable implements PhysicalTable {
     }
 
     /**
-     * Update the working intervals with values from a map.
+     * Used only for testing to inject test availability data into table.
      *
-     * @param segmentMetadata  A map of names of metrics and sets of intervals over which they are valid
-     * @param dimensionDictionary  The dimension dictionary from which to look up dimensions by name
+     * @param availability the test availability for this table
      */
-    public void resetColumns(SegmentMetadata segmentMetadata, DimensionDictionary dimensionDictionary) {
-        setAvailability(new ImmutableAvailability(
-                name.asName(),
-                segmentMetadata.getDimensionIntervals(),
-                segmentMetadata.getMetricIntervals(),
-                dimensionDictionary
-        ));
-    }
-
     protected void setAvailability(Availability availability) {
         this.availability = availability;
+    }
+
+    @Override
+    @Deprecated
+    public Set<Column> getColumns() {
+        return getSchema().getColumns();
+    }
+
+    @Override
+    @Deprecated
+    public ZonedTimeGrain getTimeGrain() {
+        return schema.getGranularity();
     }
 }

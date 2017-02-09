@@ -11,6 +11,7 @@ import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.time.TimeGrain
+import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.LongSumAggregation
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource
@@ -24,6 +25,7 @@ import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 
@@ -42,7 +44,7 @@ class GroupByQuerySpec extends Specification {
 
     @Shared
     DateTimeZone currentTZ
-    TimeGrain day = DAY.buildZonedTimeGrain(DateTimeZone.UTC)
+    ZonedTimeGrain day = DAY.buildZonedTimeGrain(DateTimeZone.UTC)
 
     def setupSpec() {
         currentTZ = DateTimeZone.getDefault()
@@ -60,7 +62,8 @@ class GroupByQuerySpec extends Specification {
                         "table_name",
                         day,
                         [] as Set,
-                        ["apiLocale": "locale", "apiPlatform": "platform", "apiProduct": "product"]
+                        ["apiLocale": "locale", "apiPlatform": "platform", "apiProduct": "product"],
+                        Mock(DataSourceMetadataService)
                 )
         )
         vars.granularity = vars.granularity ?: DAY
@@ -168,7 +171,7 @@ class GroupByQuerySpec extends Specification {
 
     def "check dataSource serialization"() {
         //non nested query
-        DataSource ds1 = new TableDataSource(new ConcretePhysicalTable("table_name", day, [] as Set, [:]))
+        DataSource ds1 = new TableDataSource(new ConcretePhysicalTable("table_name", day, [] as Set, [:], Mock(DataSourceMetadataService)))
         GroupByQuery dq1 = defaultQuery(dataSource: ds1)
 
         //nested query
@@ -465,8 +468,8 @@ class GroupByQuerySpec extends Specification {
 
     def "Check innermost query injection"() {
         setup:
-        TableDataSource inner1 = new TableDataSource(new ConcretePhysicalTable("inner1", day, [] as Set, [:]))
-        TableDataSource inner2 = new TableDataSource(new ConcretePhysicalTable("inner2", day, [] as Set, [:]))
+        TableDataSource inner1 = new TableDataSource(new ConcretePhysicalTable("inner1", day, [] as Set, [:], Mock(DataSourceMetadataService)))
+        TableDataSource inner2 = new TableDataSource(new ConcretePhysicalTable("inner2", day, [] as Set, [:], Mock(DataSourceMetadataService)))
         GroupByQuery dq1 = defaultQuery(dataSource: inner1)
         DataSource outer1 = new QueryDataSource(dq1)
         GroupByQuery dq2 = defaultQuery(dataSource: outer1)
@@ -487,7 +490,7 @@ class GroupByQuerySpec extends Specification {
         List<Interval> endingIntervals = [Interval.parse("2016/2017")]
 
         and: "A nested query"
-        TableDataSource table = new TableDataSource(new ConcretePhysicalTable("inner1", day, [] as Set, [:]))
+        TableDataSource table = new TableDataSource(new ConcretePhysicalTable("inner1", day, [] as Set, [:], Mock(DataSourceMetadataService)))
         GroupByQuery inner = defaultQuery(dataSource: table, intervals: startingIntervals)
         GroupByQuery middle = defaultQuery(dataSource: new QueryDataSource<>(inner), intervals: startingIntervals)
         GroupByQuery outer = defaultQuery(dataSource: new QueryDataSource<>(middle), intervals: startingIntervals)

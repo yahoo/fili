@@ -4,13 +4,13 @@ package com.yahoo.bard.webservice.table.availability;
 
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.table.Column;
+import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
+import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import org.joda.time.Interval;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
+import java.util.Set;
 
 /**
  * Availability describes the intervals available by column for a table.
@@ -22,33 +22,21 @@ public interface Availability {
      *
      * @return A set of names for datasources backing this table
      */
-    SortedSet<TableName> getDataSourceNames();
-
-    /**
-     * The availability for a given column.
-     *
-     * @param c  A column
-     *
-     * @return The list of intervals that column is available for.
-     */
-    List<Interval> get(Column c);
+    Set<TableName> getDataSourceNames();
 
     /**
      * The availability of all columns.
      *
      * @return The intervals, by column, available.
      */
-    Map<Column, List<Interval>> getAvailableIntervals();
+    Map<Column, Set<Interval>> getAllAvailableIntervals();
 
     /**
-     * Fetch a set of intervals given a column name.
+     * Fetch a set of intervals given a set of column name in DataSourceConstraint.
      *
-     * @param columnName  Name of the column
+     * @param constraints data constraint containing columns and api filters
      *
-     * @return Set of intervals associated with a column, empty if column is missing
+     * @return Set of intervals associated with each corresponding column in a map, empty if column is missing
      */
-    default List<Interval> getIntervalsByColumnName(String columnName) {
-        List<Interval> result = get(new Column(columnName));
-        return result == null ? Collections.emptyList() : result;
-    }
+    SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraints);
 }

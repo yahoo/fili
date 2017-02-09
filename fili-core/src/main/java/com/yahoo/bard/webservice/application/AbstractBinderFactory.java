@@ -226,8 +226,12 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 //Initialize the metrics filter helper
                 FieldConverterSupplier.metricsFilterSetBuilder =  initializeMetricsFilterSetBuilder();
 
+                // Build the datasource metadata service containing the data segments
+                DataSourceMetadataService dataSourceMetadataService = buildDataSourceMetadataService();
+                bind(dataSourceMetadataService).to(DataSourceMetadataService.class);
+
                 // Build the configuration loader and load configuration
-                ConfigurationLoader loader = buildConfigurationLoader();
+                ConfigurationLoader loader = buildConfigurationLoader(dataSourceMetadataService);
                 loader.load();
 
                 // Bind the configuration dictionaries
@@ -272,10 +276,6 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 bind(getPhysicalTableResolver()).to(PhysicalTableResolver.class);
                 bind(PartialDataHandler.class).to(PartialDataHandler.class);
                 bind(getVolatileIntervalsService()).to(VolatileIntervalsService.class);
-
-                DataSourceMetadataService dataSourceMetadataService = buildDataSourceMetadataService();
-
-                bind(dataSourceMetadataService).to(DataSourceMetadataService.class);
 
                 QuerySigningService<?> querySigningService = buildQuerySigningService(
                         loader.getPhysicalTableDictionary(),
@@ -833,13 +833,15 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     /**
      * Build an application specific configuration loader initialized with pluggable loaders.
      *
+     * @param metadataService datasource metadata service containing data segments for tables
+     *
      * @return A configuration loader instance
      */
-    protected final ConfigurationLoader buildConfigurationLoader() {
+    protected final ConfigurationLoader buildConfigurationLoader(DataSourceMetadataService metadataService) {
         DimensionLoader dimensionLoader = getDimensionLoader();
         TableLoader tableLoader = getTableLoader();
         MetricLoader metricLoader = getMetricLoader();
-        return buildConfigurationLoader(dimensionLoader, metricLoader, tableLoader);
+        return buildConfigurationLoader(dimensionLoader, metricLoader, tableLoader, metadataService);
     }
 
     /**
@@ -848,15 +850,17 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      * @param dimensionLoader  A dimension loader
      * @param metricLoader  A metric loader
      * @param tableLoader  A table loader
+     * @param metadataService datasource metadata service containing data segments for tables
      *
      * @return A configurationLoader instance
      */
     protected ConfigurationLoader buildConfigurationLoader(
             DimensionLoader dimensionLoader,
             MetricLoader metricLoader,
-            TableLoader tableLoader
+            TableLoader tableLoader,
+            DataSourceMetadataService metadataService
     ) {
-        return new ConfigurationLoader(dimensionLoader, metricLoader, tableLoader);
+        return new ConfigurationLoader(dimensionLoader, metricLoader, tableLoader, metadataService);
     }
 
     /**

@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.data.config.table;
 
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 
 /**
  * Defines the core interactions to load logical tables, physical tables, and table groups into the resource
@@ -14,7 +15,8 @@ public interface TableLoader {
      * Load all of the logical tables, their table groups, and the physical tables for those groups.
      *
      * @param dictionaries  The resource dictionaries that will be loaded with table configuration
+     * @param metadataService datasource metadata service containing segments for building table
      */
-    void loadTableDictionary(ResourceDictionaries dictionaries);
+    void loadTableDictionary(ResourceDictionaries dictionaries, DataSourceMetadataService metadataService);
 
 }

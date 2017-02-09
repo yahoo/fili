@@ -9,6 +9,7 @@ import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 
@@ -33,6 +34,8 @@ public class ConfigurationLoader {
     protected final TableLoader tableLoader;
     protected final MetricLoader metricLoader;
 
+    protected final DataSourceMetadataService metadataService;
+
     // Default JodaTime zone to UTC
     public static final String TIMEZONE = SYSTEM_CONFIG.getStringProperty(
             SYSTEM_CONFIG.getPackageVariableName("timezone"),
@@ -45,9 +48,15 @@ public class ConfigurationLoader {
      * @param dimensionLoader  DimensionLoader to load dimensions from
      * @param metricLoader  MetricLoader to load metrics from
      * @param tableLoader  TableLoader to load tables from
+     * @param metadataService datasource metadata service containing segments for building table
      */
     @Inject
-    public ConfigurationLoader(DimensionLoader dimensionLoader, MetricLoader metricLoader, TableLoader tableLoader) {
+    public ConfigurationLoader(
+            DimensionLoader dimensionLoader,
+            MetricLoader metricLoader,
+            TableLoader tableLoader,
+            DataSourceMetadataService metadataService
+    ) {
         DateTimeZone.setDefault(DateTimeZone.forID(TIMEZONE));
 
         // Set the max lucene query clauses as high as it can go
@@ -56,6 +65,7 @@ public class ConfigurationLoader {
         this.dimensionLoader = dimensionLoader;
         this.metricLoader = metricLoader;
         this.tableLoader = tableLoader;
+        this.metadataService = metadataService;
     }
 
     /**
@@ -64,7 +74,7 @@ public class ConfigurationLoader {
     public void load() {
         dimensionLoader.loadDimensionDictionary(dictionaries.getDimensionDictionary());
         metricLoader.loadMetricDictionary(dictionaries.getMetricDictionary());
-        tableLoader.loadTableDictionary(dictionaries);
+        tableLoader.loadTableDictionary(dictionaries, metadataService);
 
         LOG.info("Initialized ConfigurationLoader");
         LOG.info(dictionaries.toString());

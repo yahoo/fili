@@ -8,13 +8,16 @@ pull request if there was one.
 Current
 -------
 ### Added:
-- [Refactor DatasourceMetadataService to fit composite table needs](https://github.com/yahoo/fili/pull/173)
+- [CompositePhsyicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
+    * Added `ConcretePhysicalTable` and `ConcreteAvailability` to model table in druid datasource and its availabillity in the new table availability structure
+    * Added method `containsColumn` to `Schema`
+
+- [Refactor DatasourceMetaDataService to fit composite table needs](https://github.com/yahoo/fili/pull/173)
     * `DataSourceMetadataService` also stores interval data from segment data as intervals by column name map and provides method `getAvailableIntervalsByTable` to retrieve it
 
 - [QueryPlanningConstraint and DataSourceConstraint](https://github.com/yahoo/fili/pull/169)
     * Added `QueryPlanningConstraint` to replace current interface of Matchers and Resolvers arguments during query planning
     * Added `DataSourceConstraint` to allow implementation of `PartitionedFactTable`'s availability in the near future
-
 
 - [Major refactor for availability and schemas and tables](https://github.com/yahoo/fili/pull/165)
     * `ImmutableAvailability` - provides immutable, typed replacement for maps of column availabilities
@@ -29,11 +32,10 @@ Current
     * `ApiName`, `TableName`: Added static factory from String to Name
     * `ErrorMessageFormat` for errors during `ResultSetMapper` cycle
 
-
 - [Added default base class for all dimension types](https://github.com/yahoo/fili/pull/177)
    * Added base classes `DefaultKeyValueStoreDimensionConfig`, `DefaultLookupDimensionConfig` and `DefaultRegisteredLookupDimensionConfig` 
      to create default dimensions. 
-       
+
 - [dateTime based sort feature for the final ResultSet added](https://github.com/yahoo/fili/pull/178)
    * Now we support dateTime column based sort in ASC or DESC order.
    * Added `DateTimeSortMapper` to sort the time buckets and `DateTimeSortRequestHandler` to inject to the workflow
@@ -48,14 +50,17 @@ Current
 - [Support timeouts for lucene search provider](https://github.com/yahoo/fili/pull/183)
 
 ### Changed:
-- [Refactor DatasourceMetadataService to fit composite table needs](https://github.com/yahoo/fili/pull/173)
+- [CompositePhsyicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
+    * `ConfigurationLoader` now takes an additional constructor argument `DataSourceMetadataService` for creating tables
+    * `findMissingRequestTimeGrainIntervals` method in `PartialDataHandler` now takes `DataSourceConstraint`
+
+- [Refactor DatasourceMetaDataService to fit composite table needs](https://github.com/yahoo/fili/pull/173)
     * `BasePhysicalTable` now stores table name as the `TableName` instead of `String`
     * `SegmentInfo` now stores dimension and metrics from segment data for constructing column to available interval map
 
 - [QueryPlanningConstraint and DataSourceConstraint](https://github.com/yahoo/fili/pull/169)
     * `QueryPlanningConstraint` replaces current interface of Matchers and Resolvers `DataApiRequest` and `TemplateDruidQuery` arguments during query planning
     * Modified `findMissingTimeGrainIntervals` method in `PartialDataHandler` to take a set of columns instead of `DataApiRequest` and `DruidAggregationQuery`
-
 
 - [Major refactor for availability and schemas and tables](https://github.com/yahoo/fili/pull/165)
     * `Schema` and `Table` became interfaces
@@ -101,6 +106,10 @@ Current
 
 ### Deprecated:
 
+- [CompositePhsyicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
+    * `getAvailability` method on `PartialDataHandler` is now deprecated since the logic is pushed into `Availability`
+    * `loadTableDictionary` method only taking one `ResourceDictionaries` argument, should use the one taking an additional `DataSourceMetadataService` instead
+
 - [`RequestLog::stopMostRecentTimer` has been deprecated](https://github.com/yahoo/fili/pull/143)
     - This method is a part of the infrastructure to support the recently
     deprecated `RequestLog::switchTiming`.
@@ -125,6 +134,12 @@ Current
 
 
 ### Removed:
+- [CompositePhsyicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
+    * Removed deprecated method `findMissingRequestTimeGrainIntervals` from `PartialDataHandler`
+    * Removed `permissive_column_availability_enabled` feature flag support and corresponding functionality in `PartialDataHandler`, permissive availability will be a table configuration
+    * Removed `getIntersectSubintervalsForColumns` and `getUnionSubintervalsForColumns` from `PartialDataHandler` since the logic is pushed into `Availability` now
+    * Removed `getIntervalsByColumnName`, `resetColumns` and `hasLogicalMapping` methods in `PhysicalTable` since no longer needed with the availability structure
+    * Removed deprecated `buildTableGroup` method in `BaseTableLoader`
 
 - [Major refactor for availability and schemas and tables](https://github.com/yahoo/fili/pull/165)
     *  Removed `ZonedSchema` (all methods moved to child class ResultSetSchema)

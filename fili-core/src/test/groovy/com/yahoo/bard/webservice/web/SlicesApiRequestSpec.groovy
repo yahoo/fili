@@ -11,6 +11,7 @@ import com.yahoo.bard.webservice.metadata.SegmentInfo
 import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 import com.yahoo.bard.webservice.table.Table
+import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
 import com.yahoo.bard.webservice.web.endpoints.SlicesServlet
 
 import org.joda.time.DateTime
@@ -92,7 +93,7 @@ class SlicesApiRequestSpec extends BaseDataSourceMetadataSpec {
         Set<Map<String, Object>> dimensionsResult = new LinkedHashSet<>()
         Set<Map<String, Object>> metricsResult = new LinkedHashSet<>()
 
-        table.getAvailability().getAvailableIntervals().each {
+        table.getAvailability().getAllAvailableIntervals().each {
             Map<String, Object> row = new LinkedHashMap<>()
             row.put("intervals", it.getValue())
 

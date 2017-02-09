@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.druid.model.query
 
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 
@@ -26,7 +27,8 @@ class TimeBoundaryQuerySpec extends Specification {
                         tableName,
                         DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC),
                         [] as Set,
-                        [:]
+                        [:],
+                        Mock(DataSourceMetadataService)
                 )
         )
 

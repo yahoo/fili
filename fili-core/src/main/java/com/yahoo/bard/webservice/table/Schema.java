@@ -2,7 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table;
 
-import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.util.Utils;
 
 import java.util.LinkedHashSet;
@@ -22,11 +21,15 @@ public interface Schema {
     Set<Column> getColumns();
 
     /**
-     * Get the time granularity for this Schema.
+     * Check if schema contains a column.
      *
-     * @return The columns of this schema
+     * @param name the column name to check if present
+     *
+     * @return true if column name is present in this schema or false otherwise
      */
-    Granularity getGranularity();
+    default boolean containsColumn(String name) {
+        return getColumns().stream().map(Column::getName).anyMatch(name::equals);
+    }
 
     /**
      * Getter for set of columns by sub-type.
@@ -38,6 +41,19 @@ public interface Schema {
      */
     default <T extends Column> LinkedHashSet<T> getColumns(Class<T> columnClass) {
         return Utils.getSubsetByType(getColumns(), columnClass);
+    }
+
+    /**
+     * Given a column type and name, return the column of the expected type.
+     *
+     * @param name the name on the column
+     *
+     * @return the an optional containing the column of the name and type specified, if any
+     */
+    default Optional<Column> getColumn(String name) {
+        return getColumns().stream()
+                .filter(column -> column.getName().equals(name))
+                .findFirst();
     }
 
     /**
