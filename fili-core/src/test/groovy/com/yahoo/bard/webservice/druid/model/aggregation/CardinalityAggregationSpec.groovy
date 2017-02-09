@@ -6,13 +6,14 @@ import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
-import com.yahoo.bard.webservice.table.PhysicalTable
+import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 
 import org.joda.time.DateTimeZone
+
 import spock.lang.Specification
 
 class CardinalityAggregationSpec extends Specification {
@@ -68,7 +69,13 @@ class CardinalityAggregationSpec extends Specification {
         //       Consequently, query's also need this to be serialized.
         DruidAggregationQuery query = Mock(DruidAggregationQuery)
         DataSource ds = Mock(DataSource)
-        ds.getPhysicalTables() >> [new PhysicalTable("table", DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC), ["d1ApiName":"d1DruidName","d2ApiName":"d2DruidName"])]
+        ds.getPhysicalTables() >> [new ConcretePhysicalTable(
+                "table",
+                DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC),
+                [] as Set
+                ,
+                ["d1ApiName": "d1DruidName", "d2ApiName": "d2DruidName"]
+        )]
         query.dataSource >> ds
         query.aggregations >> [a1]
 

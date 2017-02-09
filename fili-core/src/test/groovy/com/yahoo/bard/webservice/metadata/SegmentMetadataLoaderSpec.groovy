@@ -10,8 +10,10 @@ import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.druid.client.DruidWebService
 import com.yahoo.bard.webservice.druid.client.SuccessCallback
 import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService
+import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
+import com.yahoo.bard.webservice.table.availability.ImmutableAvailability
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
@@ -33,18 +35,13 @@ class SegmentMetadataLoaderSpec extends Specification {
         DateTimeZone.setDefault(UTC)
     }
     TestDruidWebService druidWS = new TestDruidWebService()
-    def metric1 = new MetricColumn("abe")
-    def metric2 = new MetricColumn("lincoln")
+    MetricColumn metric1 = new MetricColumn("abe")
+    MetricColumn metric2 = new MetricColumn("lincoln")
 
-    def segmentMetaDataintervals
+    String intervalString
+    List<Interval> intervalList
 
-    def intervalString = "2014-09-04T00:00:00.000Z/2014-09-06T00:00:00.000Z"
-    def intervalSet = [new Interval(intervalString)] as Set
-
-    def expectedColumnCache = [
-            (metric1): intervalSet,
-            (metric2): intervalSet
-    ]
+    Map<MetricColumn, List<Interval>> expectedColumnCache
 
     String gappySegmentMetadataJson = """
 {
@@ -93,18 +90,20 @@ class SegmentMetadataLoaderSpec extends Specification {
         DateTimeZone.setDefault(UTC)
 
         intervalString = "2014-09-04T00:00:00.000Z/2014-09-06T00:00:00.000Z"
-        intervalSet = [new Interval(intervalString)] as Set
-
+        intervalList = [new Interval(intervalString)]
         expectedColumnCache = [
-                (metric1): intervalSet,
-                (metric2): intervalSet
+                (metric1): intervalList,
+                (metric2): intervalList
         ]
 
         ["tablename"].each {
-            PhysicalTable table = new PhysicalTable(it, WEEK.buildZonedTimeGrain(UTC), [:])
-            table.addColumn(metric1)
-            table.addColumn(metric2)
-            table.commit()
+
+            PhysicalTable table = new ConcretePhysicalTable(
+                    it, WEEK.buildZonedTimeGrain(UTC),
+                    [metric1, metric2] as Set
+                    ,
+                    [:]
+            )
             tableDict.put(it, table)
         }
         String json = """
@@ -128,7 +127,7 @@ class SegmentMetadataLoaderSpec extends Specification {
         loader.run()
 
         expect: "cache gets loaded as expected"
-        tableDict.get("tablename").getAvailableIntervals() == expectedColumnCache
+        tableDict.get("tablename").getAvailability() == new ImmutableAvailability("tablename", expectedColumnCache)
     }
 
 
@@ -136,7 +135,7 @@ class SegmentMetadataLoaderSpec extends Specification {
         setup:
         SegmentMetadataLoader loader = new SegmentMetadataLoader(tableDict, dimensionDict, druidWS, MAPPER)
         druidWS.jsonResponse = {gappySegmentMetadataJson}
-        PhysicalTable table = Mock(PhysicalTable)
+        ConcretePhysicalTable table = Mock(ConcretePhysicalTable)
         SegmentMetadata capture
 
         when:
@@ -157,7 +156,7 @@ class SegmentMetadataLoaderSpec extends Specification {
         setup:
         DruidWebService testWs = Mock(DruidWebService)
         SegmentMetadataLoader loader = new SegmentMetadataLoader(tableDict, dimensionDict, testWs, MAPPER)
-        PhysicalTable table = Mock(PhysicalTable)
+        ConcretePhysicalTable table = Mock(ConcretePhysicalTable)
 
         when:
         loader.querySegmentMetadata(table)

@@ -14,4 +14,32 @@ public interface TableName {
      */
     String asName();
 
+    /**
+     * Wrap a string in an anonymous instance of TableName.
+     *
+     * @param name the name being wrapped
+     *
+     * @return an anonymous subclass instance of ApiMetricName
+     */
+    static TableName of(String name) {
+        return new TableName() {
+            @Override
+            public String asName() {
+                return name;
+            }
+
+            @Override
+            public int hashCode() {
+                return name.hashCode();
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                if (o != null && o instanceof TableName) {
+                    return asName().equals(((TableName) o).asName());
+                }
+                return false;
+            }
+        };
+    }
 }

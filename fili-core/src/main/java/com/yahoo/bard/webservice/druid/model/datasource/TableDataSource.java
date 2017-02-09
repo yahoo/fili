@@ -3,7 +3,7 @@
 package com.yahoo.bard.webservice.druid.model.datasource;
 
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
-import com.yahoo.bard.webservice.table.PhysicalTable;
+import com.yahoo.bard.webservice.table.ConcretePhysicalTable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -22,10 +22,10 @@ public class TableDataSource extends DataSource {
      *
      * @param physicalTable  The physical table of the data source
      */
-    public TableDataSource(PhysicalTable physicalTable) {
+    public TableDataSource(ConcretePhysicalTable physicalTable) {
         super(DefaultDataSourceType.TABLE, Collections.singleton(physicalTable));
 
-        this.name = physicalTable.getFactTableName();
+        this.name = physicalTable.getAvailability().getDataSourceNames().stream().findFirst().get().asName();
     }
 
     public String getName() {
