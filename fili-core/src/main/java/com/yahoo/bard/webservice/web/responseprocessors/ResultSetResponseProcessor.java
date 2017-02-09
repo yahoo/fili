@@ -7,10 +7,11 @@ import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKe
 import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys.REQUESTED_API_DIMENSION_FIELDS;
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
+import com.yahoo.bard.webservice.async.ResponseException;
 import com.yahoo.bard.webservice.data.DruidResponseParser;
 import com.yahoo.bard.webservice.data.HttpResponseMaker;
 import com.yahoo.bard.webservice.data.ResultSet;
-import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.data.ResultSetSchema;
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
@@ -21,10 +22,8 @@ import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
-import com.yahoo.bard.webservice.async.ResponseException;
 import com.yahoo.bard.webservice.logging.RequestLog;
-import com.yahoo.bard.webservice.table.PhysicalTable;
-import com.yahoo.bard.webservice.table.ZonedSchema;
+import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.PageNotFoundException;
 import com.yahoo.bard.webservice.web.PreResponse;
@@ -145,23 +144,28 @@ public class ResultSetResponseProcessor extends MappingResponseProcessor impleme
      * @return The initial result set from the json node.
      */
     public ResultSet buildResultSet(JsonNode json, DruidAggregationQuery<?> druidQuery, DateTimeZone dateTimeZone) {
-        ZonedSchema resultSetSchema = new ZonedSchema(granularity, dateTimeZone);
 
-        // TODO: There are plans to clean this up rather than using iterator().next()
-        PhysicalTable physicalTable = druidQuery.getDataSource().getPhysicalTables().iterator().next();
+        LinkedHashSet<Column> columns = druidQuery.getAggregations().stream()
+                .map(Aggregation::getName)
+                .map(MetricColumn::new)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
 
-        for (Aggregation aggregation : druidQuery.getAggregations()) {
-            MetricColumn.addNewMetricColumn(resultSetSchema, aggregation.getName());
-        }
+        columns.addAll(
+                druidQuery.getPostAggregations().stream()
+                        .map(PostAggregation::getName)
+                        .map(MetricColumn::new)
+                        .collect(Collectors.toList())
+        );
 
-        for (PostAggregation postAggregation : druidQuery.getPostAggregations()) {
-            MetricColumn.addNewMetricColumn(resultSetSchema, postAggregation.getName());
-        }
+        columns.addAll(
+                druidQuery.getDimensions().stream()
+                .map(DimensionColumn::new)
+                .collect(Collectors.toList())
+        );
 
-        for (Dimension dimension : druidQuery.getDimensions()) {
-            DimensionColumn.addNewDimensionColumn(resultSetSchema, dimension);
-        }
 
-        return druidResponseParser.parse(json, resultSetSchema, druidQuery.getQueryType());
+        ResultSetSchema resultSetSchema = new ResultSetSchema(granularity, columns);
+
+        return druidResponseParser.parse(json, resultSetSchema, druidQuery.getQueryType(), dateTimeZone);
     }
 }

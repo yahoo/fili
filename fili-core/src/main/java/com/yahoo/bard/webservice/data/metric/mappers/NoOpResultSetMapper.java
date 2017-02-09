@@ -4,7 +4,7 @@ package com.yahoo.bard.webservice.data.metric.mappers;
 
 import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.ResultSet;
-import com.yahoo.bard.webservice.table.Schema;
+import com.yahoo.bard.webservice.data.ResultSetSchema;
 
 /**
  * NoOp Result set mapper.
@@ -16,12 +16,12 @@ public class NoOpResultSetMapper extends ResultSetMapper implements ColumnMapper
     }
 
     @Override
-    protected Result map(Result result, Schema schema) {
+    protected Result map(Result result, ResultSetSchema schema) {
         return result;
     }
 
     @Override
-    protected Schema map(Schema schema) {
+    protected ResultSetSchema map(ResultSetSchema schema) {
         return schema;
     }
 

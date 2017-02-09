@@ -2,9 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data
 
-import com.yahoo.bard.webservice.druid.model.QueryType
-import com.yahoo.bard.webservice.table.PhysicalTable
-
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
@@ -16,8 +13,9 @@ import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType
+import com.yahoo.bard.webservice.druid.model.QueryType
+import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.Schema
-import com.yahoo.bard.webservice.table.ZonedSchema
 
 import com.fasterxml.jackson.core.JsonFactory
 import com.fasterxml.jackson.core.JsonParser
@@ -120,7 +118,7 @@ class DruidResponseParserSpec extends Specification {
         JsonNode jsonResult = MAPPER.readTree(parser)
 
         Schema schema = buildSchema(["pageViews", "time_spent"])
-        ResultSet resultSet = new DruidResponseParser().parse(jsonResult, schema, DefaultQueryType.GROUP_BY)
+        ResultSet resultSet = new DruidResponseParser().parse(jsonResult, schema, DefaultQueryType.GROUP_BY, DateTimeZone.UTC)
 
         expect:
         resultSet != null
@@ -129,17 +127,17 @@ class DruidResponseParserSpec extends Specification {
 
         and:
         Result result = resultSet.get(0)
-        result.getDimensionRow(schema.columns.toArray()[0])?.get(BardDimensionField.DESC) == "4"
-        result.getDimensionRow(schema.columns.toArray()[1])?.get(BardDimensionField.DESC) == "u"
-        result.getDimensionRow(schema.columns.toArray()[2])?.get(BardDimensionField.DESC) == ""
-        result.getDimensionRow(schema.columns.toArray()[2])?.get(BardDimensionField.ID) == "foo"
-        resultSet[0].getMetricValueAsNumber(schema.getColumn("pageViews")) == 1 as BigDecimal
-        resultSet[0].getMetricValueAsNumber(schema.getColumn("time_spent")) == 2 as BigDecimal
+        result.getDimensionRow((DimensionColumn) schema.columns.toArray()[0])?.get(BardDimensionField.DESC) == "u"
+        result.getDimensionRow((DimensionColumn) schema.columns.toArray()[2])?.get(BardDimensionField.DESC) == "4"
+        result.getDimensionRow((DimensionColumn) schema.columns.toArray()[3])?.get(BardDimensionField.DESC) == ""
+        result.getDimensionRow((DimensionColumn) schema.columns.toArray()[3])?.get(BardDimensionField.ID) == "foo"
+        resultSet[0].getMetricValueAsNumber(schema.getColumn("pageViews", MetricColumn.class).get()) == 1 as BigDecimal
+        resultSet[0].getMetricValueAsNumber(schema.getColumn("time_spent", MetricColumn.class).get()) == 2 as BigDecimal
 
         and:
         Result resultWithNullDimensionKey = resultSet.get(2)
-        resultWithNullDimensionKey.getDimensionRow(schema.columns.toArray()[0])?.get(BardDimensionField.ID) == ""
-        resultWithNullDimensionKey.getDimensionRow(schema.columns.toArray()[0])?.get(BardDimensionField.DESC) ==
+        resultWithNullDimensionKey.getDimensionRow((DimensionColumn) schema.columns.toArray()[2])?.get(BardDimensionField.ID) == ""
+        resultWithNullDimensionKey.getDimensionRow((DimensionColumn) schema.columns.toArray()[2])?.get(BardDimensionField.DESC) ==
                 "unknown"
     }
 
@@ -173,10 +171,8 @@ class DruidResponseParserSpec extends Specification {
         JsonNode jsonResult = MAPPER.readTree(parser)
 
         /* build Schema */
-        ZonedSchema schema = new ZonedSchema(DAY, DateTimeZone.UTC)
-        DimensionColumn.addNewDimensionColumn(schema, dimensionDictionary.findByApiName("ageBracket"))
-        MetricColumn.addNewMetricColumn(schema, "pageViews")
-        ResultSet resultSet = new DruidResponseParser().parse(jsonResult, schema, DefaultQueryType.TOP_N)
+        ResultSetSchema schema = new ResultSetSchema(DAY, [new DimensionColumn(dimensionDictionary.findByApiName("ageBracket")), new MetricColumn("pageViews")].toSet())
+        ResultSet resultSet = new DruidResponseParser().parse(jsonResult, schema, DefaultQueryType.TOP_N, DateTimeZone.UTC)
 
         expect:
         resultSet != null
@@ -185,12 +181,12 @@ class DruidResponseParserSpec extends Specification {
 
         and:
         Result result = resultSet.get(0)
-        result.getDimensionRow(schema.columns.toArray()[0])?.get(BardDimensionField.DESC) == "4"
+        result.getDimensionRow((DimensionColumn) schema.columns.toArray()[1])?.get(BardDimensionField.DESC) == "4"
 
         and:
         Result resultWithNullDimensionKey = resultSet.get(2)
-        resultWithNullDimensionKey.getDimensionRow(schema.columns.toArray()[0])?.get(BardDimensionField.ID) == ""
-        resultWithNullDimensionKey.getDimensionRow(schema.columns.toArray()[0])?.get(BardDimensionField.DESC) ==
+        resultWithNullDimensionKey.getDimensionRow((DimensionColumn) schema.columns.toArray()[1])?.get(BardDimensionField.ID) == ""
+        resultWithNullDimensionKey.getDimensionRow((DimensionColumn) schema.columns.toArray()[1])?.get(BardDimensionField.DESC) ==
                 "unknown"
     }
 
@@ -219,11 +215,8 @@ class DruidResponseParserSpec extends Specification {
         JsonNode jsonResult = MAPPER.readTree(parser)
 
         /* build Schema */
-        ZonedSchema schema = new ZonedSchema(DAY, DateTimeZone.UTC)
-        MetricColumn.addNewMetricColumn(schema, "pageViews")
-        MetricColumn.addNewMetricColumn(schema, "lookback_pageViews")
-        MetricColumn.addNewMetricColumn(schema, "retentionPageViews")
-        ResultSet resultSet = new DruidResponseParser().parse(jsonResult, schema, DefaultQueryType.LOOKBACK)
+        ResultSetSchema schema = new ResultSetSchema(DAY, [new MetricColumn("pageViews"), new MetricColumn("lookback_pageViews"), new MetricColumn("retentionPageViews")].toSet())
+        ResultSet resultSet = new DruidResponseParser().parse(jsonResult, schema, DefaultQueryType.LOOKBACK, DateTimeZone.UTC)
 
         expect:
         resultSet != null
@@ -231,9 +224,9 @@ class DruidResponseParserSpec extends Specification {
         resultSet.getSchema() == schema
 
         and:
-        resultSet[0].getMetricValueAsNumber(schema.getColumn("retentionPageViews")) == 1 as BigDecimal
-        resultSet[0].getMetricValueAsNumber(schema.getColumn("lookback_pageViews")) == 2 as BigDecimal
-        resultSet[0].getMetricValueAsNumber(schema.getColumn("pageViews")) == 1 as BigDecimal
+        resultSet[0].getMetricValueAsNumber(schema.getColumn("retentionPageViews", MetricColumn.class).get()) == 1 as BigDecimal
+        resultSet[0].getMetricValueAsNumber(schema.getColumn("lookback_pageViews", MetricColumn.class).get()) == 2 as BigDecimal
+        resultSet[0].getMetricValueAsNumber(schema.getColumn("pageViews", MetricColumn.class).get()) == 1 as BigDecimal
     }
 
     def "parse lookback with groupBy datasource into a Resultset"() {
@@ -269,7 +262,7 @@ class DruidResponseParserSpec extends Specification {
         JsonNode jsonResult = MAPPER.readTree(parser)
 
         Schema schema = buildSchema(["pageViews", "lookback_pageViews", "retentionPageViews"])
-        ResultSet resultSet = new DruidResponseParser().parse(jsonResult, schema, DefaultQueryType.GROUP_BY)
+        ResultSet resultSet = new DruidResponseParser().parse(jsonResult, schema, DefaultQueryType.GROUP_BY, DateTimeZone.UTC)
 
         expect:
         resultSet != null
@@ -278,13 +271,13 @@ class DruidResponseParserSpec extends Specification {
 
         and:
         Result result = resultSet.get(0)
-        result.getDimensionRow(schema.columns.toArray()[0])?.get(BardDimensionField.DESC) == "4"
-        result.getDimensionRow(schema.columns.toArray()[1])?.get(BardDimensionField.DESC) == "u"
-        result.getDimensionRow(schema.columns.toArray()[2])?.get(BardDimensionField.DESC) == ""
-        result.getDimensionRow(schema.columns.toArray()[2])?.get(BardDimensionField.ID) == "foo"
-        resultSet[0].getMetricValueAsNumber(schema.getColumn("pageViews")) == 1 as BigDecimal
-        resultSet[0].getMetricValueAsNumber(schema.getColumn("lookback_pageViews")) == 2 as BigDecimal
-        resultSet[0].getMetricValueAsNumber(schema.getColumn("retentionPageViews")) == 1 as BigDecimal
+        result.getDimensionRow((DimensionColumn) schema.columns.toArray()[1])?.get(BardDimensionField.DESC) == "u"
+        result.getDimensionRow((DimensionColumn) schema.columns.toArray()[3])?.get(BardDimensionField.DESC) == "4"
+        result.getDimensionRow((DimensionColumn) schema.columns.toArray()[4])?.get(BardDimensionField.DESC) == ""
+        result.getDimensionRow((DimensionColumn) schema.columns.toArray()[4])?.get(BardDimensionField.ID) == "foo"
+        resultSet[0].getMetricValueAsNumber(schema.getColumn("pageViews", MetricColumn.class).get()) == 1 as BigDecimal
+        resultSet[0].getMetricValueAsNumber(schema.getColumn("lookback_pageViews", MetricColumn.class).get()) == 2 as BigDecimal
+        resultSet[0].getMetricValueAsNumber(schema.getColumn("retentionPageViews", MetricColumn.class).get()) == 1 as BigDecimal
     }
 
     @Unroll
@@ -293,7 +286,7 @@ class DruidResponseParserSpec extends Specification {
         String druidResponse = buildResponse(queryType, ['"luckyNumbers"':'"1, 3, 7"', '"unluckyNumbers"': '"2"'])
 
         when: "We build a result set from the Druid response"
-        ZonedSchema schema = buildSchema(["luckyNumbers", "unluckyNumbers"])
+        ResultSetSchema schema = buildSchema(["luckyNumbers", "unluckyNumbers"])
         ResultSet resultSet = buildResultSet(druidResponse, schema, queryType)
 
         then: "The result set was built correctly"
@@ -302,8 +295,8 @@ class DruidResponseParserSpec extends Specification {
         resultSet.getSchema() == schema
 
         and: "The metrics were parsed correctly from the Druid response"
-        resultSet.get(0).getMetricValueAsString(schema.getColumn("luckyNumbers") as MetricColumn) == "1, 3, 7"
-        resultSet.get(0).getMetricValueAsString(schema.getColumn("unluckyNumbers") as MetricColumn) == "2"
+        resultSet.get(0).getMetricValueAsString(schema.getColumn("luckyNumbers", MetricColumn.class).get() as MetricColumn) == "1, 3, 7"
+        resultSet.get(0).getMetricValueAsString(schema.getColumn("unluckyNumbers", MetricColumn.class).get() as MetricColumn) == "2"
 
         where:
         queryType << [DefaultQueryType.GROUP_BY, DefaultQueryType.TOP_N, DefaultQueryType.TIMESERIES]
@@ -316,7 +309,7 @@ class DruidResponseParserSpec extends Specification {
         String druidResponse = buildResponse(queryType, ['"true"': true, '"false"': false])
 
         when: "We build a result set from the Druid response"
-        ZonedSchema schema = buildSchema(["true", "false"])
+        ResultSetSchema schema = buildSchema(["true", "false"])
         ResultSet resultSet = buildResultSet(druidResponse, schema, queryType)
 
         then: "The result set was built correctly"
@@ -325,8 +318,8 @@ class DruidResponseParserSpec extends Specification {
         resultSet.getSchema() == schema
 
         and: "The metrics were parsed correctly from the Druid response"
-        resultSet.get(0).getMetricValueAsBoolean(schema.getColumn("true", MetricColumn.class))
-        !resultSet.get(0).getMetricValueAsBoolean(schema.getColumn("false", MetricColumn.class))
+        resultSet.get(0).getMetricValueAsBoolean(schema.getColumn("true", MetricColumn.class).get())
+        !resultSet.get(0).getMetricValueAsBoolean(schema.getColumn("false", MetricColumn.class).get())
 
         where:
         queryType << [DefaultQueryType.GROUP_BY, DefaultQueryType.TOP_N, DefaultQueryType.TIMESERIES]
@@ -338,7 +331,7 @@ class DruidResponseParserSpec extends Specification {
         String druidResponse = buildResponse(queryType, ['"null"': null])
 
         when: "We try to build a result set from the Druid response"
-        ZonedSchema schema = buildSchema(["null"])
+        ResultSetSchema schema = buildSchema(["null"])
         ResultSet resultSet = buildResultSet(druidResponse, schema, queryType)
 
         then: "The result set was built correctly"
@@ -347,7 +340,7 @@ class DruidResponseParserSpec extends Specification {
         resultSet.getSchema() == schema
 
         and: "The metrics were parsed correctly from the Druid response"
-        resultSet.get(0).getMetricValue(schema.getColumn("null", MetricColumn.class)) == null
+        resultSet.get(0).getMetricValue(schema.getColumn("null", MetricColumn.class).get()) == null
 
         where:
         queryType << [DefaultQueryType.GROUP_BY, DefaultQueryType.TOP_N, DefaultQueryType.TIMESERIES]
@@ -367,7 +360,7 @@ class DruidResponseParserSpec extends Specification {
         )
 
         when: "We try to build a result set from the Druid response"
-        ZonedSchema schema = buildSchema(["luckyNumbers", "unluckyNumbers"])
+        ResultSetSchema schema = buildSchema(["luckyNumbers", "unluckyNumbers"])
         ResultSet resultSet = buildResultSet(druidResponse, schema, queryType)
 
         then: "The result set was built correctly"
@@ -376,9 +369,9 @@ class DruidResponseParserSpec extends Specification {
         resultSet.getSchema() == schema
 
         and: "The metrics were parsed correctly from the Druid response"
-        resultSet.get(0).getMetricValueAsJsonNode(schema.getColumn("luckyNumbers", MetricColumn.class)) ==
+        resultSet.get(0).getMetricValueAsJsonNode(schema.getColumn("luckyNumbers", MetricColumn.class).get()) ==
                 MAPPER.readTree(luckyNumberNode)
-        resultSet.get(0).getMetricValueAsJsonNode(schema.getColumn("unluckyNumbers", MetricColumn.class)) ==
+        resultSet.get(0).getMetricValueAsJsonNode(schema.getColumn("unluckyNumbers", MetricColumn.class).get()) ==
                 MAPPER.readTree(unluckyNumberNode)
 
         where:
@@ -391,7 +384,7 @@ class DruidResponseParserSpec extends Specification {
         QueryType mysteryType = Mock(QueryType)
 
         when:
-        responseParser.parse(MAPPER.readTree("[]"), Mock(ZonedSchema), mysteryType)
+        responseParser.parse(MAPPER.readTree("[]"), Mock(ResultSetSchema), mysteryType, DateTimeZone.UTC)
 
         then:
         thrown(UnsupportedOperationException)
@@ -435,19 +428,20 @@ class DruidResponseParserSpec extends Specification {
         }
     }
 
-    ResultSet buildResultSet(String druidResponse, ZonedSchema schema, DefaultQueryType queryType) {
+    ResultSet buildResultSet(String druidResponse, ResultSetSchema schema, DefaultQueryType queryType) {
         JsonNode jsonResult = MAPPER.readTree(new JsonFactory().createParser(druidResponse))
-        return new DruidResponseParser().parse(jsonResult, schema, queryType)
+        return new DruidResponseParser().parse(jsonResult, schema, queryType, DateTimeZone.UTC)
     }
 
-    ZonedSchema buildSchema(List<String> metricNames) {
-        Schema schema = new ZonedSchema(DAY, DateTimeZone.UTC)
-        DimensionColumn.addNewDimensionColumn(schema, dimensionDictionary.findByApiName("ageBracket"))
-        DimensionColumn.addNewDimensionColumn(schema, dimensionDictionary.findByApiName("gender"))
-        DimensionColumn.addNewDimensionColumn(schema, dimensionDictionary.findByApiName("unknown"))
+    ResultSetSchema buildSchema(List<String> metricNames) {
+
+        Set<Column> columns = [new DimensionColumn(dimensionDictionary.findByApiName("ageBracket")), new DimensionColumn(dimensionDictionary.findByApiName("gender")), new DimensionColumn(dimensionDictionary.findByApiName("unknown"))].toSet()
         metricNames.each {
-            MetricColumn.addNewMetricColumn(schema, it)
+            columns.add(new MetricColumn(it))
         }
+
+        Schema schema = new ResultSetSchema(DAY, columns)
+
         return schema
     }
 }

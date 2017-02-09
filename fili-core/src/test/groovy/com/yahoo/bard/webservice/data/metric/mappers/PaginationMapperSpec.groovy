@@ -2,14 +2,12 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric.mappers
 
-import com.yahoo.bard.webservice.table.PhysicalTable
-import org.joda.time.DateTimeZone
-
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.data.Result
 import com.yahoo.bard.webservice.data.ResultSet
+import com.yahoo.bard.webservice.data.ResultSetSchema
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
@@ -24,12 +22,11 @@ import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.druid.client.FailureCallback
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
-import com.yahoo.bard.webservice.table.Schema
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.web.DataApiRequest
 import com.yahoo.bard.webservice.web.PageNotFoundException
-import com.yahoo.bard.webservice.web.responseprocessors.MappingResponseProcessor
 import com.yahoo.bard.webservice.web.responseprocessors.LoggingContext
+import com.yahoo.bard.webservice.web.responseprocessors.MappingResponseProcessor
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys
 import com.yahoo.bard.webservice.web.util.PaginationLink
 import com.yahoo.bard.webservice.web.util.PaginationParameters
@@ -182,7 +179,10 @@ class PaginationMapperSpec extends Specification {
                 uriBuilder
         )
         and: "The expected data"
-        ResultSet expectedPage = new ResultSet(testResults[-numLastRows..-1], testResults.getSchema())
+        ResultSet expectedPage = new ResultSet(
+                testResults.getSchema(),
+                testResults[-numLastRows..-1]
+        )
 
         expect: "The computed subset of results is as expected"
         mapper.map(testResults) == expectedPage
@@ -246,7 +246,7 @@ class PaginationMapperSpec extends Specification {
 
             new Result(dimensionData, metricValues, new DateTime())
         }
-        new ResultSet(resultList, new Schema(DAY))
+        new ResultSet(new ResultSetSchema(DAY, [].toSet()), resultList)
 
     }
 
@@ -258,7 +258,10 @@ class PaginationMapperSpec extends Specification {
      * @return The desired page of results
      */
     ResultSet buildExpectedPage(ResultSet results, int page, int perPage) {
-        return new ResultSet(results.subList((page - 1) * perPage, page * perPage), results.getSchema())
+        return new ResultSet(
+                results.getSchema(),
+                results.subList((page - 1) * perPage, page * perPage)
+        )
     }
 
     /**
@@ -275,7 +278,7 @@ class PaginationMapperSpec extends Specification {
                     store,
                     searchProvider
             )
-            DimensionColumn column = DimensionColumn.addNewDimensionColumn(new PhysicalTable("", DAY.buildZonedTimeGrain(DateTimeZone.UTC), [(dimension.getApiName()): dimension.getApiName()]), dimension)
+            DimensionColumn column = new DimensionColumn(dimension)
             DimensionField idField = BardDimensionField.ID
             DimensionField descField = BardDimensionField.DESC
             Map<DimensionField, String> fieldValueMap = [

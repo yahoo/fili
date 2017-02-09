@@ -19,7 +19,7 @@ import com.yahoo.bard.webservice.druid.model.datasource.DataSource
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
 import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService
 import com.yahoo.bard.webservice.table.Column
-import com.yahoo.bard.webservice.table.PhysicalTable
+import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 
 import org.joda.time.DateTime
@@ -209,7 +209,8 @@ class DataSourceMetadataLoaderSpec extends Specification {
                 MAPPERS.getMapper()
         )
         druidWS.jsonResponse = {gappyDataSourceMetadataJson}
-        PhysicalTable table = Mock(PhysicalTable)
+        ConcretePhysicalTable table = Mock(ConcretePhysicalTable)
+        table.getFactTableName() >> "test"
         DataSourceMetadata capture
 
         when: "JSON metadata return successfully"
@@ -240,7 +241,8 @@ class DataSourceMetadataLoaderSpec extends Specification {
                 testWs,
                 MAPPERS.getMapper()
         )
-        PhysicalTable table = Mock(PhysicalTable)
+        ConcretePhysicalTable table = Mock(ConcretePhysicalTable)
+        table.getFactTableName() >> "test"
 
         when: "loader issues a metadata query"
         loader.queryDataSourceMetadata(table)
