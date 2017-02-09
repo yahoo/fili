@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -165,7 +164,7 @@ public class SlicesApiRequest extends ApiRequest {
             throw new BadApiRequestException(msg);
         }
 
-        Map<Column, List<Interval>> columnCache = table.getAvailability().getAvailableIntervals();
+        Map<Column, Set<Interval>> columnCache = table.getAllAvailableIntervals();
         Set<Map<String, Object>> dimensionsResult = new LinkedHashSet<>();
         Set<Map<String, Object>> metricsResult = new LinkedHashSet<>();
 

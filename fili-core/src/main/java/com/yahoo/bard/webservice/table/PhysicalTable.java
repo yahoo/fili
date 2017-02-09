@@ -4,17 +4,28 @@ package com.yahoo.bard.webservice.table;
 
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
+import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.table.availability.Availability;
+import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
+import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import org.joda.time.DateTime;
+import org.joda.time.Interval;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
- * An interface describing the Fili model for a fact data source (e.g. a table of dimensions and metrics).
- * It may be backed by a single concrete fact data source or by more than one with underlying joins.
+ * An interface describing a config level physical table.
+ * It may be backed by a single concrete data source or not.
  */
 public interface PhysicalTable extends Table {
+
+    @Override
+    String getName();
+
+    @Override
+    PhysicalTableSchema getSchema();
 
     /**
      * Get the name of the current table.
@@ -31,6 +42,13 @@ public interface PhysicalTable extends Table {
     Availability getAvailability();
 
     /**
+     * Get the granularity for the table.
+     *
+     * @return the granularity of this table
+     */
+    Granularity getGranularity();
+
+    /**
      * Get a date time that the table will align to based on grain and available intervals.
      *
      * @return The time of either the first available interval of any columns in this table or now, floored to the
@@ -39,12 +57,11 @@ public interface PhysicalTable extends Table {
     DateTime getTableAlignment();
 
     /**
-     * Get the schema for this physical table.
-     * Schemas contain granularity and column definitions.
+     * Getter for all possible column available intervals.
      *
-     * @return A physical table schema.
+     * @return tableEntries map of column to set of available intervals
      */
-    PhysicalTableSchema getSchema();
+    Map<Column, Set<Interval>> getAllAvailableIntervals();
 
     /**
      * Translate a logical name into a physical column name. If no translation exists (i.e. they are the same),
@@ -58,23 +75,19 @@ public interface PhysicalTable extends Table {
      * should likely use their own serialization strategy so as to not hit this defaulting behavior.
      *
      * @param logicalName  Logical name to lookup in physical table
+     *
      * @return Translated logicalName if applicable
      */
     String getPhysicalColumnName(String logicalName);
 
     /**
-     * Determine whether or not this PhysicalTable has a mapping for a specific logical name.
+     * Getter for active column intervals.
      *
-     * @param logicalName  Logical name to check
+     * @param constraints data constraint containing columns and api filters
      *
-     * @return True if contains a non-default mapping for the logical name, false otherwise
-     *
-     * @deprecated This may no longer be needed
+     * @return tableEntries map of column to set of available intervals
      */
-    @Deprecated
-    default boolean hasLogicalMapping(String logicalName) {
-        return getSchema().containsLogicalName(logicalName);
-    }
+    SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraints);
 
     /**
      * Get the columns from the schema for this physical table.
@@ -84,20 +97,15 @@ public interface PhysicalTable extends Table {
      * @deprecated In favor of getting the columns directly from the schema
      */
     @Deprecated
-    default Set<Column> getColumns() {
-        return getSchema().getColumns();
-    }
+    Set<Column> getColumns();
 
     /**
      * Get the time grain from granularity.
-     * Physical tables must have time zone associated time grains.
      *
      * @return The time grain of this physical table
      *
-     * @deprecated use getSchema().getTimeGrain()
+     * @deprecated use getSchema().getGranularity()
      */
     @Deprecated
-    default ZonedTimeGrain getTimeGrain() {
-        return getSchema().getTimeGrain();
-    }
+    ZonedTimeGrain getTimeGrain();
 }

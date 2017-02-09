@@ -18,6 +18,7 @@ import javax.validation.constraints.NotNull;
 public class ZonedSchema extends BaseSchema implements Schema {
 
     private final DateTimeZone dateTimeZone;
+    private final Granularity granularity;
 
     /**
      * Constructor.
@@ -31,7 +32,8 @@ public class ZonedSchema extends BaseSchema implements Schema {
             @NotNull DateTimeZone dateTimeZone,
             @NotNull Iterable<Column> columns
     ) {
-        super(granularity, columns);
+        super(columns);
+        this.granularity = granularity;
         this.dateTimeZone = dateTimeZone;
     }
 
@@ -45,5 +47,14 @@ public class ZonedSchema extends BaseSchema implements Schema {
     }
     public DateTimeZone getDateTimeZone() {
         return dateTimeZone;
+    }
+
+    /**
+     * Granularity.
+     *
+     * @return the granularity for this schema
+     */
+    public Granularity getGranularity() {
+        return granularity;
     }
 }

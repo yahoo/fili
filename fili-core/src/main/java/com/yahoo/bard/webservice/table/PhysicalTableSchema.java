@@ -14,11 +14,24 @@ import javax.validation.constraints.NotNull;
 /**
  * The schema for a physical table.
  */
-public class PhysicalTableSchema extends BaseSchema implements Schema {
+public class PhysicalTableSchema extends BaseSchema {
 
     private final ZonedTimeGrain timeGrain;
     private final Map<String, String> logicalToPhysicalColumnNames;
     private final Map<String, Set<String>> physicalToLogicalColumnNames;
+
+    /**
+     * Constructor.
+     *
+     * @param timeGrain  The time grain of this physical table
+     * @param columns The columns for this table
+     */
+    public PhysicalTableSchema(
+            @NotNull ZonedTimeGrain timeGrain,
+            Iterable<Column> columns
+    ) {
+        this(timeGrain, columns, Collections.emptyMap());
+    }
 
     /**
      * Constructor.
@@ -32,7 +45,7 @@ public class PhysicalTableSchema extends BaseSchema implements Schema {
             Iterable<Column> columns,
             @NotNull Map<String, String> logicalToPhysicalColumnNames
     ) {
-        super(timeGrain, columns);
+        super(columns);
         this.timeGrain = timeGrain;
 
         this.logicalToPhysicalColumnNames = Collections.unmodifiableMap(logicalToPhysicalColumnNames);
@@ -80,7 +93,7 @@ public class PhysicalTableSchema extends BaseSchema implements Schema {
     /**
      * Returns true if the mapping of names is populated for this logical name.
      *
-     * @param logicalName the name of a metric or dimension column
+     * @param logicalName the logical name of a metric or dimension column
      *
      * @return true if this table supports this column explicitly
      */
@@ -93,7 +106,7 @@ public class PhysicalTableSchema extends BaseSchema implements Schema {
      *
      * @return the granularity for this schema
      */
-    public ZonedTimeGrain getTimeGrain() {
+    public ZonedTimeGrain getGranularity() {
         return timeGrain;
     }
 }

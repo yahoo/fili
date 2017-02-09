@@ -156,7 +156,6 @@ public class SegmentMetadataLoader extends Loader<Boolean> {
                 if (segmentMetadata.isEmpty()) {
                     LOG.warn("Empty segment metadata detected when loading table '{}'", table.getFactTableName());
                 }
-                table.resetColumns(segmentMetadata, dimensionDictionary);
             }
         };
     }

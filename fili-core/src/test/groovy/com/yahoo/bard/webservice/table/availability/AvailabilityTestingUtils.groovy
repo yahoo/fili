@@ -5,13 +5,17 @@ package com.yahoo.bard.webservice.table.availability
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
 import com.yahoo.bard.webservice.data.metric.MetricColumn
-import com.yahoo.bard.webservice.metadata.SegmentMetadata
+import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService
+import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 
 import org.joda.time.Interval
 
 import spock.lang.Specification
+
+import java.util.stream.Collectors
+import java.util.stream.Stream
 
 /**
  * Contains a collection of utility methods to aid in testing functionality that relies on table availability, like
@@ -48,11 +52,14 @@ class AvailabilityTestingUtils extends Specification {
                             .collectEntries {
                                     [(it.getDimension().getApiName()): intervalSet]
                             }
+
+                    Map<Column, Set<Interval>> allIntervals = Stream.concat(
+                            dimensionIntervals.entrySet().stream(),
+                            metricIntervals.entrySet().stream()
+                    ).collect(Collectors.toMap({table.getSchema().getColumn(it.key).get()}, {it.value}));
+
                     // set new cache
-                    table.resetColumns(
-                            new SegmentMetadata(dimensionIntervals, metricIntervals),
-                            jtb.configurationLoader.dimensionDictionary
-                    )
+                    table.setAvailability(new ConcreteAvailability(table.getTableName(), table.getSchema().getColumns(), new TestDataSourceMetadataService(allIntervals)));
                 }
     }
 }

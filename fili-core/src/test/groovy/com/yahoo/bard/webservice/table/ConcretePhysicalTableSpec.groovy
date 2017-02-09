@@ -14,8 +14,10 @@ import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.metric.MetricColumn
-import com.yahoo.bard.webservice.metadata.SegmentMetadata
-import com.yahoo.bard.webservice.table.availability.Availability
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
+import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService
+import com.yahoo.bard.webservice.table.availability.ConcreteAvailability
+import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 
 import org.joda.time.Interval
@@ -24,38 +26,27 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class PhysicalTableSpec extends Specification {
+class ConcretePhysicalTableSpec extends Specification {
 
     @Shared ConcretePhysicalTable physicalTable
     @Shared DimensionDictionary dimensionDictionary
 
-    @Shared DimensionColumn dimensionColumn
-    @Shared MetricColumn metricColumn1
-    @Shared MetricColumn metricColumn2
-
-    @Shared Set<Interval> intervalSet1
-    @Shared Set<Interval> intervalSet2
-    @Shared Set<Interval> intervalSet3
-
-    @Shared Map cache
-    @Shared SegmentMetadata segmentMetadata
     @Shared Dimension dimension
+    @Shared DimensionColumn dimensionColumn
+    @Shared MetricColumn metricColumn1, metricColumn2
+
+    @Shared Set<Interval> intervalSet1, intervalSet2, intervalSet3
+
+    @Shared Map<Column, Set<Interval>> segmentMetadata
 
     def setupSpec() {
         dimension = new KeyValueStoreDimension("dimension", null, [BardDimensionField.ID] as LinkedHashSet, MapStoreManager.getInstance("dimension"), ScanSearchProviderManager.getInstance("apiProduct"))
 
-        physicalTable = new ConcretePhysicalTable(
-                "test table",
-                DAY.buildZonedTimeGrain(UTC),
-                [new DimensionColumn(dimension)] as Set,
-                ['dimension': 'druidDim']
-        )
-        dimensionDictionary = new DimensionDictionary([dimension].toSet())
-
         dimensionColumn = new DimensionColumn(dimension)
-
         metricColumn1 = new MetricColumn("metric1")
         metricColumn2 = new MetricColumn("metric2")
+
+        dimensionDictionary = new DimensionDictionary([dimension].toSet())
 
         Interval interval1 = new Interval("2014-07-01/2014-07-03")
         Interval interval2 = new Interval("2014-07-03/2014-07-05")
@@ -65,86 +56,74 @@ class PhysicalTableSpec extends Specification {
         intervalSet2 = [interval1, interval2] as Set
         intervalSet3 = [interval1, interval2, interval3] as Set
 
-        segmentMetadata = new SegmentMetadata(
-            [(dimensionColumn.name): (intervalSet1)],
-            [
-                (metricColumn1.name): (intervalSet2),
-                (metricColumn2.name): (intervalSet3)
-            ]
-            )
-
-        cache =[
+        segmentMetadata = [
                 (dimensionColumn): (intervalSet1),
                 (metricColumn1): (intervalSet2),
                 (metricColumn2): (intervalSet3)
         ]
-    }
 
-    def setup() {
-        physicalTable.resetColumns(segmentMetadata, dimensionDictionary)
+        physicalTable = new ConcretePhysicalTable(
+                "test table",
+                DAY.buildZonedTimeGrain(UTC),
+                [dimensionColumn, metricColumn1, metricColumn2] as Set,
+                ['dimension': 'druidDim'],
+                new TestDataSourceMetadataService(segmentMetadata)
+        )
     }
 
     @Unroll
-    def "Physical table getColumnAvailability returns #expected for column #column"() {
+    def "Physical table getAvailableIntervals returns #expected for column #column"() {
+        setup:
+        DataSourceConstraint constraints = Mock(DataSourceConstraint)
+        constraints.getAllColumnNames() >> [column.name]
+
         expect:
-        physicalTable.availability.getIntervalsByColumnName(column).toList() == new SimplifiedIntervalList(expected) as List
+        physicalTable.getAvailableIntervals(constraints).asList() == new SimplifiedIntervalList(expected).asList()
 
         where:
-        column               | expected
-        dimensionColumn.name | intervalSet1
-        metricColumn1.name   | intervalSet2
-        metricColumn2.name   | intervalSet3
-        "MissingName"        | [] as Set
+        column                      | expected
+        dimensionColumn             | intervalSet1
+        metricColumn1               | intervalSet2
+        metricColumn2               | intervalSet3
     }
 
-    def "test reset columns correctly initializes"() {
+    def "test datasource metadata service correctly initializes"() {
         setup:
         String name = "test a"
         PhysicalTable table
-        SegmentMetadata noMetricMetadata = new SegmentMetadata(
-            [(dimensionColumn.name): (intervalSet3)],
-            [:]
-            )
+        Map<Column, Set<Interval>> noMetricMetadata = [(dimensionColumn): (intervalSet3)]
+        DataSourceConstraint constraints = Mock(DataSourceConstraint)
+        constraints.getAllColumnNames() >> [metricColumn1.name]
+
         when:
         table = new ConcretePhysicalTable(
                 name,
                 YEAR.buildZonedTimeGrain(UTC),
-                [new DimensionColumn(dimension)] as Set,
-                ["dimension": "druidDim"]
+                [dimensionColumn, metricColumn1] as Set,
+                ["dimension": "druidDim"],
+                new TestDataSourceMetadataService(noMetricMetadata)
         )
 
         then:
-        table.getAvailability() != null
-        table.getAvailability().getAvailableIntervals().isEmpty()
-
-        when:
-        table.resetColumns(noMetricMetadata, dimensionDictionary)
-        Availability availability = table.availability
-
-        then:
-        availability.availableIntervals.containsKey(dimensionColumn)
-        availability.availableIntervals.get(dimensionColumn).toList() == new SimplifiedIntervalList(intervalSet3) as List
+        table.getAllAvailableIntervals().containsKey(dimensionColumn)
+        table.getAllAvailableIntervals().get(dimensionColumn).asList() == new SimplifiedIntervalList(intervalSet3).asList()
         table.getDimensions() == [dimension] as Set
-        table.getSchema().getColumns(MetricColumn.class) == [] as Set
 
         when:
-        table.resetColumns(segmentMetadata, dimensionDictionary)
+        table.setAvailability(new ConcreteAvailability(physicalTable.getTableName(), physicalTable.getSchema().getColumns(), new TestDataSourceMetadataService(segmentMetadata)))
 
         then:
         table.getDimensions() == [dimension] as Set
-        table.availability.getIntervalsByColumnName(metricColumn1.name).toList() == new SimplifiedIntervalList(intervalSet2) as List
-    }
-
-    def "test the setColumnCache() method"() {
-        def cacheValues = cache.collectEntries {Map.Entry<String, List<Interval>> it -> [(it.key) : (new SimplifiedIntervalList(it.value))]}
-
-        expect:
-        physicalTable.availability.getAvailableIntervals() == cacheValues
+        table.getAvailableIntervals(constraints).asList() == new SimplifiedIntervalList(intervalSet2).asList()
     }
 
     def "test the getIntervalsByColumnName() method"() {
+        setup:
+        DataSourceConstraint constraints = Mock(DataSourceConstraint)
+        constraints.getAllColumnNames() >> [metricColumn2.name]
+
         expect:
-        physicalTable.availability.getIntervalsByColumnName("metric2").toList() == new SimplifiedIntervalList(intervalSet3).toList()
+        physicalTable.getAvailableIntervals(constraints).asList() == new SimplifiedIntervalList(intervalSet3).toList()
     }
 
     def "test the fetching of all dimensions from the table"() {
@@ -156,13 +135,15 @@ class PhysicalTableSpec extends Specification {
         setup:
         PhysicalTable oneDimPhysicalTable = new ConcretePhysicalTable(
                 "test table", DAY.buildZonedTimeGrain(UTC),
-                [new DimensionColumn(dimension)] as Set,
-                ['dimension': 'druidDim']
+                [dimensionColumn] as Set,
+                ['dimension': 'druidDim'],
+                Mock(DataSourceMetadataService)
         )
         PhysicalTable twoDimPhysicalTable = new ConcretePhysicalTable(
                 "test table", DAY.buildZonedTimeGrain(UTC),
-                [new DimensionColumn(dimension)] as Set,
-                ['dimension1': 'druidDim', 'dimension2': 'druidDim']
+                [dimensionColumn] as Set,
+                ['dimension1': 'druidDim', 'dimension2': 'druidDim'],
+                Mock(DataSourceMetadataService)
         )
 
         expect:
