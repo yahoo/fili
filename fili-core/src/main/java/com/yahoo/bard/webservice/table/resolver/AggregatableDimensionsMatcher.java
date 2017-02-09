@@ -1,15 +1,12 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.resolver;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.NO_TABLE_FOR_NON_AGGREGATABLE;
 
-import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
-import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
+import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.util.StreamUtils;
-import com.yahoo.bard.webservice.util.TableUtils;
-import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 
 import org.slf4j.Logger;
@@ -29,23 +26,20 @@ public class AggregatableDimensionsMatcher implements PhysicalTableMatcher {
 
     public static final ErrorMessageFormat MESSAGE_FORMAT = NO_TABLE_FOR_NON_AGGREGATABLE;
 
-    private final DataApiRequest request;
-    private final TemplateDruidQuery query;
+    private final QueryPlanningConstraint requestConstraints;
 
     /**
      * Constructor saves metrics, dimensions, coarsest time grain, and logical table name (for logging).
      *
-     * @param request  The request whose dimensions are being matched on
-     * @param query  The query whose columns are being matched
+     * @param requestConstraints contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
      */
-    public AggregatableDimensionsMatcher(DataApiRequest request, TemplateDruidQuery query) {
-        this.request = request;
-        this.query = query;
+    public AggregatableDimensionsMatcher(QueryPlanningConstraint requestConstraints) {
+        this.requestConstraints = requestConstraints;
     }
 
     @Override
     public boolean test(PhysicalTable table) {
-        Set<String> columnNames = TableUtils.getColumnNames(request, query.getInnermostQuery());
+        Set<String> columnNames = requestConstraints.getAllColumnNames();
 
         // If table contains non-agg dimensions, query must contain all these non-agg dimensions to use this table.
         return table.getDimensions().stream()
@@ -56,12 +50,12 @@ public class AggregatableDimensionsMatcher implements PhysicalTableMatcher {
 
     @Override
     public NoMatchFoundException noneFoundException() {
-        Set<String> aggDimensions = request.getDimensions().stream()
+        Set<String> aggDimensions = requestConstraints.getRequestDimensions().stream()
                 .filter(Dimension::isAggregatable)
                 .map(Dimension::getApiName)
                 .collect(Collectors.toSet());
 
-        Set<String> nonAggDimensions = request.getDimensions().stream()
+        Set<String> nonAggDimensions = requestConstraints.getRequestDimensions().stream()
                 .filter(StreamUtils.not(Dimension::isAggregatable))
                 .map(Dimension::getApiName)
                 .collect(Collectors.toSet());

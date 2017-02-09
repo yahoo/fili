@@ -1,9 +1,10 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.resolver
 
 import com.yahoo.bard.webservice.data.PartialDataHandler
 import com.yahoo.bard.webservice.data.QueryBuildingTestingResources
+import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
 import com.yahoo.bard.webservice.druid.model.query.Granularity
@@ -40,13 +41,14 @@ class VolatileTimeComparatorSpec extends Specification {
                 DefaultTimeGrain.YEAR
         )
         and: "The query of interest"
-        DruidAggregationQuery query = Stub(DruidAggregationQuery)
+        TemplateDruidQuery query = Stub(TemplateDruidQuery)
+        query.getInnermostQuery() >> query
+        query.getTimeGrain() >> null
         query.getIntervals() >> (request.getIntervals() as List)
 
         and: "The volatile time comparator under test"
         VolatileTimeComparator comparator = new VolatileTimeComparator(
-                request,
-                query,
+                new QueryPlanningConstraint(request, query),
                 new PartialDataHandler(),
                 resources.volatileIntervalsService
         )
@@ -93,13 +95,14 @@ class VolatileTimeComparatorSpec extends Specification {
                 requestGranularity
         )
         and: "The query of interest"
-        DruidAggregationQuery query = Stub(DruidAggregationQuery)
+        TemplateDruidQuery query = Stub(TemplateDruidQuery)
+        query.getInnermostQuery() >> query
+        query.getTimeGrain() >> null
         query.getIntervals() >> (request.getIntervals() as List)
 
         and: "The volatile time comparator under test"
         VolatileTimeComparator comparator = new VolatileTimeComparator(
-                request,
-                query,
+                new QueryPlanningConstraint(request, query),
                 new PartialDataHandler(),
                 resources.volatileIntervalsService
         )

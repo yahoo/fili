@@ -1,4 +1,4 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data;
 
@@ -61,8 +61,7 @@ public class PartialDataHandler {
             throw new IllegalArgumentException(message);
         }
         return findMissingTimeGrainIntervals(
-                apiRequest,
-                query,
+                TableUtils.getColumnNames(apiRequest, query),
                 physicalTables,
                 new SimplifiedIntervalList(apiRequest.getIntervals()),
                 apiRequest.getGranularity()
@@ -83,8 +82,7 @@ public class PartialDataHandler {
      * present for a given combination of request metrics and dimensions (pulled from the API request and generated
      * druid query) at the specified granularity.
      *
-     * @param apiRequest  api request made by the end user
-     * @param query  used to fetch data from druid
+     * @param columnNames  all the column names the request depends on
      * @param physicalTables  the tables whose column availabilities are checked
      * @param requestedIntervals  The intervals that may not be fully satisfied
      * @param granularity  The granularity at which to find missing intervals
@@ -92,14 +90,13 @@ public class PartialDataHandler {
      * @return subintervals of the requested intervals with incomplete data
      */
     public SimplifiedIntervalList findMissingTimeGrainIntervals(
-            DataApiRequest apiRequest,
-            DruidAggregationQuery<?> query,
+            Set<String> columnNames,
             Set<PhysicalTable> physicalTables,
             @NotNull SimplifiedIntervalList requestedIntervals,
             Granularity granularity
     ) {
         SimplifiedIntervalList availableIntervals = physicalTables.stream()
-                .map(table -> getAvailability(table, TableUtils.getColumnNames(apiRequest, query)))
+                .map(table -> getAvailability(table, columnNames))
                 .flatMap(SimplifiedIntervalList::stream)
                 .collect(SimplifiedIntervalList.getCollector());
 
@@ -108,6 +105,7 @@ public class PartialDataHandler {
                 requestedIntervals,
                 granularity
         );
+
         if (granularity instanceof AllGranularity && !missingIntervals.isEmpty()) {
             missingIntervals = requestedIntervals;
         }
