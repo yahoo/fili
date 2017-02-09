@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.logging.blocks;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.logging.LogInfo;
-import com.yahoo.bard.webservice.table.Table;
+import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.web.ApiFilter;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -52,7 +52,7 @@ public class DataRequest implements LogInfo {
      * @param format  In which format the request asked for a response
      */
     public DataRequest(
-            Table table,
+            LogicalTable table,
             Set<Interval> intervals,
             Collection<Set<ApiFilter>> filterSuperSet,
             Set<LogicalMetric> metricSet,

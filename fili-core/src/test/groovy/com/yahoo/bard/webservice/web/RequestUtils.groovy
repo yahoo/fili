@@ -2,9 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web
 
-import com.yahoo.bard.webservice.table.PhysicalTable
-import org.joda.time.DateTimeZone
-
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
 import com.yahoo.bard.webservice.data.dimension.Dimension
@@ -18,6 +15,9 @@ import com.yahoo.bard.webservice.druid.model.orderby.TopNMetric
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery
 import com.yahoo.bard.webservice.druid.model.query.TopNQuery
+import com.yahoo.bard.webservice.table.ConcretePhysicalTable
+
+import org.joda.time.DateTimeZone
 
 class RequestUtils {
 
@@ -27,7 +27,13 @@ class RequestUtils {
             List aggregations = [],
             List postAggregations = []
     ) {
-        DataSource dataSource = new TableDataSource(new PhysicalTable(dataSourceName, DAY.buildZonedTimeGrain(DateTimeZone.UTC), [:]))
+        DataSource dataSource = new TableDataSource(new ConcretePhysicalTable(
+                dataSourceName,
+                DAY.buildZonedTimeGrain(DateTimeZone.UTC),
+                [] as Set
+                ,
+                [:]
+        ))
         List dimensions = []
         List intervals = []
         new GroupByQuery(
@@ -50,7 +56,13 @@ class RequestUtils {
             List aggregations = [],
             List postAggregations = []
     ) {
-        DataSource dataSource = new TableDataSource(new PhysicalTable(dataSourceName, DAY.buildZonedTimeGrain(DateTimeZone.UTC), [:]))
+        DataSource dataSource = new TableDataSource(new ConcretePhysicalTable(
+                dataSourceName,
+                DAY.buildZonedTimeGrain(DateTimeZone.UTC),
+                [] as Set
+                ,
+                [:]
+        ))
         List intervals = []
         new TopNQuery(
                 dataSource,
@@ -71,7 +83,13 @@ class RequestUtils {
             List aggregations = [],
             List postAggregations = []
     ) {
-        DataSource dataSource = new TableDataSource(new PhysicalTable(dataSourceName, DAY.buildZonedTimeGrain(DateTimeZone.UTC), [:]))
+        DataSource dataSource = new TableDataSource(new ConcretePhysicalTable(
+                dataSourceName,
+                DAY.buildZonedTimeGrain(DateTimeZone.UTC),
+                [] as Set
+                ,
+                [:]
+        ))
         List intervals = []
         new TimeSeriesQuery(
                 dataSource,

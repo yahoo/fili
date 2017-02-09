@@ -6,6 +6,7 @@ import static com.yahoo.bard.webservice.util.DateTimeFormatterFactory.FULLY_OPTI
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSIONS_NOT_IN_TABLE;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSIONS_UNDEFINED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSION_FIELDS_UNDEFINED;
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_DIMENSION_NOT_IN_TABLE;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.HAVING_METRICS_NOT_IN_QUERY_FORMAT;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INCORRECT_METRIC_FILTER_FORMAT;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTEGER_INVALID;
@@ -1005,7 +1006,17 @@ public class DataApiRequest extends ApiRequest {
             for (String apiFilter : apiFilters) {
                 ApiFilter newFilter;
                 try {
-                    newFilter = new ApiFilter(apiFilter, table, dimensionDictionary);
+                    newFilter = new ApiFilter(apiFilter, dimensionDictionary);
+
+                    // If there is a logical table and the filter is not part of it, throw exception.
+                    if (! table.getDimensions().contains(newFilter.getDimension())) {
+                        String filterDimensionName = newFilter.getDimension().getApiName();
+                        LOG.debug(FILTER_DIMENSION_NOT_IN_TABLE.logFormat(filterDimensionName, table));
+                        throw new BadFilterException(
+                                FILTER_DIMENSION_NOT_IN_TABLE.format(filterDimensionName, table.getName())
+                        );
+                    }
+
                 } catch (BadFilterException filterException) {
                     throw new BadApiRequestException(filterException.getMessage(), filterException);
                 }

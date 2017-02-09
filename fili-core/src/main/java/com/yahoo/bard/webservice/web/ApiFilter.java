@@ -2,7 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web;
 
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_DIMENSION_NOT_IN_TABLE;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_DIMENSION_UNDEFINED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_ERROR;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_FIELD_NOT_IN_DIMENSIONS;
@@ -12,7 +11,6 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_OPERATOR_I
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
-import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.util.FilterTokenizer;
 
 import org.slf4j.Logger;
@@ -81,26 +79,10 @@ public class ApiFilter {
     /**
      * Parses the URL filter Query and generates the ApiFilter object.
      *
-     * @param filterQuery Expects a URL filter query String in the format:
-     * <p>
-     * <code>(dimension name)|(field name)-(operation)[?(value or comma separated values)]?</code>
-     * @param dimensionDictionary cache containing all the valid dimension objects.
-     *
-     * @throws BadFilterException Exception when filter pattern is not matched or when any of its properties are not
-     * valid.
-     */
-    public ApiFilter(@NotNull String filterQuery, DimensionDictionary dimensionDictionary) throws BadFilterException {
-        this(filterQuery, (LogicalTable) null, dimensionDictionary);
-    }
-
-    /**
-     * Parses the URL filter Query and generates the ApiFilter object.
-     *
      * @param filterQuery  Expects a URL filter query String in the format:
      * <p>
      * <code>(dimension name)|(field name)-(operation)[?(value or comma separated values)]?</code>
      *
-     * @param table  The logical table for a data request (if any)
      * @param dimensionDictionary  cache containing all the valid dimension objects.
      *
      * @throws BadFilterException Exception when filter pattern is not matched or when any of its properties are not
@@ -108,7 +90,6 @@ public class ApiFilter {
      */
     public ApiFilter(
             @NotNull String filterQuery,
-            LogicalTable table,
             DimensionDictionary dimensionDictionary
     ) throws BadFilterException {
         LOG.trace("Filter query: {}\n\n DimensionDictionary: {}", filterQuery, dimensionDictionary);
@@ -141,14 +122,6 @@ public class ApiFilter {
             if (dimension == null) {
                 LOG.debug(FILTER_DIMENSION_UNDEFINED.logFormat(filterDimensionName));
                 throw new BadFilterException(FILTER_DIMENSION_UNDEFINED.format(filterDimensionName));
-            }
-
-            // If there is a logical table and the filter is not part of it, throw exception.
-            if (table != null && !table.getDimensions().contains(dimension)) {
-                LOG.debug(FILTER_DIMENSION_NOT_IN_TABLE.logFormat(filterDimensionName, table));
-                throw new BadFilterException(
-                        FILTER_DIMENSION_NOT_IN_TABLE.format(filterDimensionName, table.getName())
-                );
             }
 
             String dimensionFieldName = matcher.group(2);

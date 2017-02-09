@@ -4,17 +4,14 @@ package com.yahoo.bard.webservice.data;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.RESULT_SET_ERROR;
 
-import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
+import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.QueryType;
-import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
-import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
-import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
-import com.yahoo.bard.webservice.table.ZonedSchema;
+import com.yahoo.bard.webservice.table.BaseSchema;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -27,6 +24,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.inject.Singleton;
 
@@ -44,28 +42,23 @@ public class DruidResponseParser {
      *
      * @param druidQuery The query
      * @param granularity The granularity for the schema
-     * @param dateTimeZone The timezone for the schema
      *
      * @return The schema for the query
-     */
-    public ZonedSchema buildSchema(
+    */
+    public ResultSetSchema buildSchema(
                     DruidAggregationQuery<?> druidQuery,
-                    Granularity granularity,
-                    DateTimeZone dateTimeZone
+                    Granularity granularity
     ) {
-        ZonedSchema resultSetSchema = new ZonedSchema(granularity, dateTimeZone);
-
-        for (Aggregation aggregation : druidQuery.getAggregations()) {
-            MetricColumn.addNewMetricColumn(resultSetSchema, aggregation.getName());
-        }
-
-        for (PostAggregation postAggregation : druidQuery.getPostAggregations()) {
-            MetricColumn.addNewMetricColumn(resultSetSchema, postAggregation.getName());
-        }
-
-        for (Dimension dimension : druidQuery.getDimensions()) {
-            DimensionColumn.addNewDimensionColumn(resultSetSchema, dimension);
-        }
+        ResultSetSchema resultSetSchema = new ResultSetSchema(
+                granularity,
+                BaseSchema.buildColumns(
+                        druidQuery.getDimensions().stream(),
+                        Stream.concat(
+                                druidQuery.getAggregations().stream(),
+                                druidQuery.getPostAggregations().stream()
+                        )
+                )
+        );
 
         return resultSetSchema;
     }
@@ -76,11 +69,17 @@ public class DruidResponseParser {
      * @param jsonResult  Druid results in json
      * @param schema  Schema for results
      * @param queryType  the type of query, note that this implementation only supports instances of
+     * @param dateTimeZone the time zone used for format the results
      * {@link DefaultQueryType}
      *
      * @return the set of results
      */
-    public ResultSet parse(JsonNode jsonResult, ZonedSchema schema, QueryType queryType) {
+    public ResultSet parse(
+            JsonNode jsonResult,
+            ResultSetSchema schema,
+            QueryType queryType,
+            DateTimeZone dateTimeZone
+    ) {
 
         LOG.trace("Parsing druid query {} by json result: {} using schema: {}", queryType, jsonResult, schema);
 
@@ -97,16 +96,16 @@ public class DruidResponseParser {
         List<Result> results = null;
         switch (defaultQueryType) {
             case GROUP_BY:
-                results = makeGroupByResults(jsonResult, dimensionColumns, metricColumns, schema.getDateTimeZone());
+                results = makeGroupByResults(jsonResult, dimensionColumns, metricColumns, dateTimeZone);
                 break;
             case TOP_N:
-                results = makeTopNResults(jsonResult, dimensionColumns, metricColumns, schema.getDateTimeZone());
+                results = makeTopNResults(jsonResult, dimensionColumns, metricColumns, dateTimeZone);
                 break;
             case TIMESERIES:
-                results = makeTimeSeriesResults(jsonResult, metricColumns, schema.getDateTimeZone());
+                results = makeTimeSeriesResults(jsonResult, metricColumns, dateTimeZone);
                 break;
             case LOOKBACK:
-                results = makeLookbackResults(jsonResult, dimensionColumns, metricColumns, schema.getDateTimeZone());
+                results = makeLookbackResults(jsonResult, dimensionColumns, metricColumns, dateTimeZone);
                 break;
             default:
                 // Throw an exception for unsupported query types
@@ -114,7 +113,7 @@ public class DruidResponseParser {
         }
 
         LOG.trace("Parsed druid query {} results: {}", queryType, results);
-        return new ResultSet(results, schema);
+        return new ResultSet(schema, results);
     }
 
     /**
