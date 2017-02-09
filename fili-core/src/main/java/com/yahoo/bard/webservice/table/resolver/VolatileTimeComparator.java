@@ -1,16 +1,13 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.resolver;
 
-import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.data.PartialDataHandler;
 import com.yahoo.bard.webservice.data.volatility.VolatileIntervalsService;
-import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
+import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
-import com.yahoo.bard.webservice.util.TableUtils;
-import com.yahoo.bard.webservice.web.DataApiRequest;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -20,28 +17,24 @@ import java.util.Comparator;
  */
 public class VolatileTimeComparator implements Comparator<PhysicalTable> {
 
-    private final DataApiRequest apiRequest;
-    private final DruidAggregationQuery<?> query;
+    private final QueryPlanningConstraint requestConstraints;
     private final PartialDataHandler partialDataHandler;
     private final VolatileIntervalsService volatileIntervalsService;
 
     /**
      * Builds a table comparator that compares tables based on how much data there is in their volatile intervals.
      *
-     * @param query  The query to send to druid, and that requires a table
-     * @param apiRequest  The data request
+     * @param requestConstraints contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
      * @param partialDataHandler  A service for computing partial data information
      * @param volatileIntervalsService  A service to extract the intervals in a query that are volatile with respect
      * to a given table
      */
     public VolatileTimeComparator(
-            DataApiRequest apiRequest,
-            DruidAggregationQuery<?> query,
+            QueryPlanningConstraint requestConstraints,
             PartialDataHandler partialDataHandler,
             VolatileIntervalsService volatileIntervalsService
     ) {
-        this.apiRequest = apiRequest;
-        this.query = query;
+        this.requestConstraints = requestConstraints;
         this.partialDataHandler = partialDataHandler;
         this.volatileIntervalsService = volatileIntervalsService;
     }
@@ -87,12 +80,11 @@ public class VolatileTimeComparator implements Comparator<PhysicalTable> {
      * request granularity, and present at the table granularity
      */
     private long getAvailableVolatileDataDuration(PhysicalTable table) {
-        SimplifiedIntervalList requestIntervals = new SimplifiedIntervalList(apiRequest.getIntervals());
-        Granularity apiRequestGranularity = apiRequest.getGranularity();
+        SimplifiedIntervalList requestIntervals = new SimplifiedIntervalList(requestConstraints.getIntervals());
+        Granularity apiRequestGranularity = requestConstraints.getRequestGranularity();
         // First, find the volatile intervals that are also partial at the request grain.
         SimplifiedIntervalList volatilePartialRequestIntervals = partialDataHandler.findMissingTimeGrainIntervals(
-                apiRequest,
-                query,
+                requestConstraints.getAllColumnNames(),
                 Collections.singleton(table),
                 volatileIntervalsService.getVolatileIntervals(apiRequestGranularity, requestIntervals, table),
                 apiRequestGranularity
@@ -100,7 +92,7 @@ public class VolatileTimeComparator implements Comparator<PhysicalTable> {
         //Next find the intervals on the physical table that are available.
         SimplifiedIntervalList tableAvailability = partialDataHandler.getAvailability(
                 table,
-                TableUtils.getColumnNames(apiRequest, query)
+                requestConstraints.getAllColumnNames()
         );
         //Take the duration of their intersection.
         return IntervalUtils.getTotalDuration(tableAvailability.intersect(volatilePartialRequestIntervals));

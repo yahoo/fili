@@ -1,4 +1,4 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.resolver
 
@@ -71,14 +71,6 @@ class SchemaPhysicalTableMatcherSpec extends Specification {
                 ['dimA':'druidDimA', 'dimCommon': 'druidDimC', 'dimB': 'dimCommon']
         )
 
-
-        dimensionDictionary = new DimensionDictionary(dimSet)
-        schemaPhysicalTableMatcher = new SchemaPhysicalTableMatcher(
-                request,
-                query,
-                DAY.buildZonedTimeGrain(UTC)
-        )
-
         request.getGranularity() >> DAY.buildZonedTimeGrain(UTC)
         query.getInnermostQuery() >> query
         query.getDimensions() >> (['dimB'] as Set)
@@ -86,6 +78,11 @@ class SchemaPhysicalTableMatcherSpec extends Specification {
         query.getDependentFieldNames() >> ([] as Set)
         request.getFilterDimensions() >> []
         request.getDimensions() >> (dimSet)
+
+        dimensionDictionary = new DimensionDictionary(dimSet)
+        schemaPhysicalTableMatcher = new SchemaPhysicalTableMatcher(
+                new QueryPlanningConstraint(request, query)
+        )
     }
 
     def "schema matcher resolves table containing a logical name for a dimension same as physical name for other dimension"() {

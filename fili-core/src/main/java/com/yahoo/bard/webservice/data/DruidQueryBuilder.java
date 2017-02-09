@@ -1,4 +1,4 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data;
 
@@ -29,6 +29,7 @@ import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.bard.webservice.table.TableIdentifier;
+import com.yahoo.bard.webservice.table.resolver.QueryPlanningConstraint;
 import com.yahoo.bard.webservice.table.resolver.NoMatchFoundException;
 import com.yahoo.bard.webservice.table.resolver.PhysicalTableResolver;
 import com.yahoo.bard.webservice.web.DataApiRequest;
@@ -120,7 +121,10 @@ public class DruidQueryBuilder {
         TableGroup group = logicalTable.getTableGroup();
 
         // Resolve the table from the the group, the combined dimensions in request, and template time grain
-        PhysicalTable table = resolver.resolve(group.getPhysicalTables(), request, template);
+        PhysicalTable table = resolver.resolve(
+                group.getPhysicalTables(),
+                new QueryPlanningConstraint(request, template)
+        );
 
         return druidTopNMetric != null ?
             buildTopNQuery(
