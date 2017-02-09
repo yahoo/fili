@@ -101,11 +101,11 @@ public abstract class BasePhysicalTableResolver implements PhysicalTableResolver
     ) throws NoMatchFoundException {
 
         // Minimum grain at which the request can be aggregated from
-        Granularity minimumTableTimeGrain = requestConstraints.getMinimumGranularity();
+        Granularity minimumGranularity = requestConstraints.getMinimumGranularity();
         Set<String> columnNames = requestConstraints.getAllColumnNames();
         LOG.trace(
                 "Resolving Table using TimeGrain: {}, dimension API names: {} and TableGroup: {}",
-                minimumTableTimeGrain,
+                minimumGranularity,
                 columnNames,
                 candidateTables
         );
@@ -121,7 +121,7 @@ public abstract class BasePhysicalTableResolver implements PhysicalTableResolver
             return bestTable;
         } catch (NoMatchFoundException me) {
             // Blow up if we couldn't match a table, log and return if we can
-            logMatchException(requestConstraints, minimumTableTimeGrain);
+            logMatchException(requestConstraints, minimumGranularity);
             throw me;
         }
     }
