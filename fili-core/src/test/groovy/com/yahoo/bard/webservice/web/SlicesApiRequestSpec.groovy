@@ -108,7 +108,7 @@ class SlicesApiRequestSpec extends BaseDataSourceMetadataSpec {
             }
         }
         Set<SortedMap<DateTime, Map<String, SegmentInfo>>> sliceMetadata = dataSourceMetadataService.getTableSegments(
-                Collections.singleton(table)
+                Collections.singleton(table.getTableName())
         );
 
         Map<String, Object> expected = new LinkedHashMap<>()

@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table;
 
+import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.table.availability.Availability;
@@ -18,6 +19,19 @@ import java.util.Set;
  * It may be backed by a single concrete data source or not.
  */
 public interface PhysicalTable extends Table {
+
+    @Override
+    String getName();
+
+    @Override
+    PhysicalTableSchema getSchema();
+
+    /**
+     * Get the name of the current table.
+     *
+     * @return name of the table as TableName
+     */
+    TableName getTableName();
 
     /**
      * Get the value of the actual availability for this physical table.
@@ -41,12 +55,6 @@ public interface PhysicalTable extends Table {
      * @return True if contains a non-default mapping for the logical name, false otherwise
      */
     boolean hasLogicalMapping(String logicalName);
-
-    @Override
-    String getName();
-
-    @Override
-    PhysicalTableSchema getSchema();
 
     /**
      * Fetch a set of intervals given a column name.

@@ -9,10 +9,12 @@ Current
 -------
 
 ### Added:
+- [Refactor DatasourceMetaDataService to fit composite table needs](https://github.com/yahoo/fili/pull/173)
+    * `DataSourceMetadataService` also stores interval data from segment data as intervals by column name map and provides method `getAvailableIntervalsByTable` to retrieve it
+
 - [QueryPlanningConstraint and DataSourceConstraint](https://github.com/yahoo/fili/pull/169)
     * Added `QueryPlanningConstraint` to replace current interface of Matchers and Resolvers arguments during query planning
     * Added `DataSourceConstraint` to allow implementation of `PartitionedFactTable`'s availability in the near future
-
 
 - [dateTime based sort feature for the final ResultSet added](https://github.com/yahoo/fili/pull/178)
    * Now we support dateTime column based sort in ASC or DESC order.
@@ -28,6 +30,10 @@ Current
 - [Support timeouts for lucene search provider](https://github.com/yahoo/fili/pull/183)
 
 ### Changed:
+- [Refactor DatasourceMetaDataService to fit composite table needs](https://github.com/yahoo/fili/pull/173)
+    * `BasePhysicalTable` now stores table name as the `TableName` instead of `String`
+    * `SegmentInfo` now stores dimension and metrics from segment data for constructing column to available interval map
+
 - [QueryPlanningConstraint and DataSourceConstraint](https://github.com/yahoo/fili/pull/169)
     * `QueryPlanningConstraint` replaces current interface of Matchers and Resolvers `DataApiRequest` and `TemplateDruidQuery` arguments during query planning
     * Modified `findMissingTimeGrainIntervals` method in `PartialDataHandler` to take a set of columns instead of `DataApiRequest` and `DruidAggregationQuery`
@@ -38,6 +44,7 @@ Current
     * TestDruidWebService assumes unknown query types behave like GroupBy, TimeSeries, and TopN
     * ResultSetResponseProcessor delegates to DruidResponseProcessor to build expected query schema, 
       allowing subclasses to override and extend the schema behavior
+
 - [Add dimension fields to fullView table format](https://github.com/yahoo/fili/pull/155)
 
 - [Make healthcheck filter reject message nicer](https://github.com/yahoo/fili/pull/153)

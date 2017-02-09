@@ -319,7 +319,7 @@ public abstract class BaseTableLoader implements TableLoader {
         );
 
         return new ConcretePhysicalTable(
-                definition.getName().asName(),
+                definition.getName(),
                 definition.getGrain(),
                 columns,
                 definition.getLogicalToPhysicalNames()
