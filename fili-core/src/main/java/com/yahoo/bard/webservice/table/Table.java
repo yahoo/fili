@@ -1,63 +1,40 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
-import com.yahoo.bard.webservice.druid.model.query.Granularity;
 
 import java.util.LinkedHashSet;
-import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.validation.constraints.NotNull;
-
 /**
- * Table is a schema with dimension columns.
+ * Table has a schema and a name.
  */
-public class Table extends Schema {
-
-    private final String name;
+public interface Table {
 
     /**
-     * Constructor.
+     * The schema for this table.
      *
-     * @param name  The name of the table
-     * @param granularity  The granularity of the table
+     * @return a schema
      */
-    public Table(@NotNull String name, @NotNull Granularity granularity) {
-        super(granularity);
-        this.name = name;
-    }
+    Schema getSchema();
+
+    /**
+     * The name for this table.
+     *
+     * @return The table name
+     */
+    String getName();
 
     /**
      * Getter for set of dimensions.
      *
      * @return Set of Dimension
      */
-    public Set<Dimension> getDimensions() {
-        return this.getColumns(DimensionColumn.class).stream()
+    default LinkedHashSet<Dimension> getDimensions() {
+        return getSchema().getColumns(DimensionColumn.class).stream()
                 .map(DimensionColumn::getDimension)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String toString() {
-        return "{Table:{ name:'" + getName() + "', grain:'" + getGranularity() + "', cols:'" + getColumns() + "'} }";
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        return super.equals(o) && name.equals(((Table) o).name);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), getName());
     }
 }
