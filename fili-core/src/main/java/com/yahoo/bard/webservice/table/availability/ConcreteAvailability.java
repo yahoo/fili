@@ -32,8 +32,8 @@ public class ConcreteAvailability implements Availability {
     private final Set<Column> columns;
     private final DataSourceMetadataService metadataService;
 
-    private final Set<String> cachedColumnNames;
-    private final Set<TableName> cachedDataSourceNames;
+    private final Set<String> columnNames;
+    private final Set<TableName> dataSourceNames;
 
     /**
      * Constructor.
@@ -51,13 +51,13 @@ public class ConcreteAvailability implements Availability {
         this.columns = ImmutableSet.copyOf(columns);
         this.metadataService = metadataService;
 
-        this.cachedColumnNames = columns.stream().map(Column::getName).collect(Collectors.toSet());
-        this.cachedDataSourceNames = Collections.singleton(name);
+        this.columnNames = columns.stream().map(Column::getName).collect(Collectors.toSet());
+        this.dataSourceNames = Collections.singleton(name);
     }
 
     @Override
     public Set<TableName> getDataSourceNames() {
-        return cachedDataSourceNames;
+        return dataSourceNames;
     }
 
     @Override
@@ -79,7 +79,7 @@ public class ConcreteAvailability implements Availability {
     public SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraint) {
 
         Set<String> requestColumns = constraint.getAllColumnNames().stream()
-                .filter(cachedColumnNames::contains)
+                .filter(columnNames::contains)
                 .collect(Collectors.toSet());
 
         if (requestColumns.isEmpty()) {

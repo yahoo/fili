@@ -331,8 +331,7 @@ class ResultSetResponseProcessorSpec extends Specification {
             getQueryType() >> GROUP_BY
         }
         druidResponseParser.parse(_, _, _, _) >> {
-            JsonNode json, Schema schema, DefaultQueryType type, DateTimeZone tz ->
-            new ResultSet(schema, [])
+            JsonNode json, Schema schema, DefaultQueryType type, DateTimeZone tz -> new ResultSet(schema, [])
         }
         druidResponseParser.buildSchemaColumns(query) >> {
             [new DimensionColumn(dim), new MetricColumn(metric1Name), new MetricColumn(metric2Name)].stream()

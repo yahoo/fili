@@ -8,9 +8,17 @@ pull request if there was one.
 Current
 -------
 ### Added:
-- [CompositePhsyicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
+- [CompositePhysicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
     * Added `ConcretePhysicalTable` and `ConcreteAvailability` to model table in druid datasource and its availabillity in the new table availability structure
     * Added class variable for `DataSourceMetadataService` and `ConfigurationLoader` into `AbstractBinderFactory` for application to access
+
+- [PermissiveAvailability and PermissiveConcretePhysicalTable](https://github.com/yahoo/fili/pull/190)
+    * Added `PermissiveConcretePhysicalTable` and `PermissiveAvailability` to model table in druid datasource and its availability in the new table availability structure.
+    `PermissiveConcretePhysicalTable` and `PermissiveAvailability` extends `ConcretePhysicalTable` and `ConcreteAvailability`, respectively.
+    `PermissiveAvailability` differs from `ConcreteAvailability` in the way of returning available intervals: `ConcreteAvailability` returns
+    the available intervals constraint by `DataSourceConstraint` and provides them in intersection. `PermissiveAvailability`, however, returns
+    them without constraint from `DataSourceConstraint` and provides them in union. `PermissiveConcretePhysicalTable` is different from `ConcretePhysicalTable`
+    in that the former is backed by `PermissiveAvailability` while the latter is backed by `ConcreteAvailability`.
 
 - [Refactor DatasourceMetaDataService to fit composite table needs](https://github.com/yahoo/fili/pull/173)
     * `DataSourceMetadataService` also stores interval data from segment data as intervals by column name map and provides method `getAvailableIntervalsByTable` to retrieve it
@@ -52,14 +60,14 @@ Current
 ### Changed:
 
 - [CompositePhsyicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
-    * `TableLoader` now takes an additional constructor argument `DataSourceMetadataService` for creating tables
+    * `TableLoader` now takes an additional constructor argument `DataSourceMetadataService` for creating tables     
     * `findMissingRequestTimeGrainIntervals` method in `PartialDataHandler` now takes `DataSourceConstraint`
-
+ 
 - [Restored flexibility about columns for query from DruidResponseParser](https://github.com/yahoo/fili/pull/198)
     * Immutable schemas prevented custom query types from changing `ResultSetSchema` columns.
     * Columns are now sourced from `DruidResponseParser` and default implemented on `DruidAggregationQuery`
 
-- [Refactor DatasourceMetadataService to fit composite table needs](https://github.com/yahoo/fili/pull/173)
+- [Refactor DatasourceMetaDataService to fit composite table needs](https://github.com/yahoo/fili/pull/173)
     * `BasePhysicalTable` now stores table name as the `TableName` instead of `String`
     * `SegmentInfo` now stores dimension and metrics from segment data for constructing column to available interval map
 
