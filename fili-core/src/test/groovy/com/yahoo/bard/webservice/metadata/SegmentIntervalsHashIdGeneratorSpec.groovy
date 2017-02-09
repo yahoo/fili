@@ -93,8 +93,8 @@ class SegmentIntervalsHashIdGeneratorSpec extends BaseDataSourceMetadataSpec {
         AtomicReference<ConcurrentSkipListMap<DateTime, Map<String, SegmentInfo>>> atomicRef = new AtomicReference<>()
         atomicRef.set(availabilityList1)
 
-        metadataService.allSegments.put(
-                tableDict.get(tableName),
+        metadataService.allSegmentsByTime.put(
+                tableDict.get(tableName).getTableName(),
                 atomicRef
         );
 

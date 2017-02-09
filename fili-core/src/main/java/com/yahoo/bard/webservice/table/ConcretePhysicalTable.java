@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table;
 
+import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.table.availability.ImmutableAvailability;
 
@@ -14,20 +15,17 @@ import javax.validation.constraints.NotNull;
  * An implementation of Physical table that is backed by a single fact table.
  */
 public class ConcretePhysicalTable extends BasePhysicalTable {
-
     /**
      * Create a concrete physical table.
      * The availability on this table is initialized to empty intervals.
      *
-     * @param name  Fili name of the physical table
-     * @param factTableName  Name of the associated table in Druid
+     * @param name  Name of the physical table as TableName
      * @param timeGrain  time grain of the table
      * @param columns  The columns for this table
      * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
      */
     public ConcretePhysicalTable(
-            @NotNull String name,
-            @NotNull String factTableName,
+            @NotNull TableName name,
             @NotNull ZonedTimeGrain timeGrain,
             @NotNull Iterable<Column> columns,
             @NotNull Map<String, String> logicalToPhysicalColumnNames
@@ -37,7 +35,7 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
                 timeGrain,
                 columns,
                 logicalToPhysicalColumnNames,
-                new ImmutableAvailability(factTableName, Collections.emptyMap())
+                new ImmutableAvailability(name, Collections.emptyMap())
         );
     }
 
@@ -45,18 +43,21 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
      * Create a concrete physical table.
      * The fact table name will be defaulted to the name and the availability initialized to empty intervals.
      *
-     * @param name  Fili name of the physical table
+     * @param name  Name of the physical table as String
      * @param timeGrain  time grain of the table
      * @param columns The columns for this table
      * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
+     *
+     * @deprecated Should use constructor with TableName instead of String as table name
      */
+    @Deprecated
     public ConcretePhysicalTable(
             @NotNull String name,
             @NotNull ZonedTimeGrain timeGrain,
             @NotNull Iterable<Column> columns,
             @NotNull Map<String, String> logicalToPhysicalColumnNames
     ) {
-        this(name, name, timeGrain, columns, logicalToPhysicalColumnNames);
+        this(TableName.of(name), timeGrain, columns, logicalToPhysicalColumnNames);
     }
 
     public String getFactTableName() {

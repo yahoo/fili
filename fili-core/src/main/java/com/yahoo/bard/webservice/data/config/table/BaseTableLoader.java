@@ -307,7 +307,7 @@ public abstract class BaseTableLoader implements TableLoader {
         ).collect(Collectors.toCollection(LinkedHashSet::new));
 
         return new ConcretePhysicalTable(
-                definition.getName().asName(),
+                definition.getName(),
                 definition.getGrain(),
                 columns,
                 definition.getLogicalToPhysicalNames()

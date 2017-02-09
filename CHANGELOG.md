@@ -7,8 +7,15 @@ pull request if there was one.
 
 Current
 -------
-
 ### Added:
+- [Refactor DatasourceMetaDataService to fit composite table needs](https://github.com/yahoo/fili/pull/173)
+    * `DataSourceMetadataService` also stores interval data from segment data as intervals by column name map and provides method `getAvailableIntervalsByTable` to retrieve it
+
+- [QueryPlanningConstraint and DataSourceConstraint](https://github.com/yahoo/fili/pull/169)
+    * Added `QueryPlanningConstraint` to replace current interface of Matchers and Resolvers arguments during query planning
+    * Added `DataSourceConstraint` to allow implementation of `PartitionedFactTable`'s availability in the near future
+
+
 - [Major refactor for availability and schemas and tables](https://github.com/yahoo/fili/pull/165)
     * `ImmutableAvailability` - provides immutable, typed replacement for maps of column availabilities
     * New Table Implementations:
@@ -19,14 +26,8 @@ Current
     	* `PhysicalTableSchema` has base plus `ZonedTimeGrain`, name mappings
 	    * `LogicalTableSchema` base with builder from table group
 	    * `ResultSetSchema` base with transforming with-ers
-
     * `ApiName`, `TableName`: Added static factory from String to Name
-
     * `ErrorMessageFormat` for errors during `ResultSetMapper` cycle
-
-- [QueryPlanningConstraint and DataSourceConstraint](https://github.com/yahoo/fili/pull/169)
-    * Added `QueryPlanningConstraint` to replace current interface of Matchers and Resolvers arguments during query planning
-    * Added `DataSourceConstraint` to allow implementation of `PartitionedFactTable`'s availability in the near future
 
 
 - [Added default base class for all dimension types](https://github.com/yahoo/fili/pull/177)
@@ -47,6 +48,14 @@ Current
 - [Support timeouts for lucene search provider](https://github.com/yahoo/fili/pull/183)
 
 ### Changed:
+- [Refactor DatasourceMetaDataService to fit composite table needs](https://github.com/yahoo/fili/pull/173)
+    * `BasePhysicalTable` now stores table name as the `TableName` instead of `String`
+    * `SegmentInfo` now stores dimension and metrics from segment data for constructing column to available interval map
+
+- [QueryPlanningConstraint and DataSourceConstraint](https://github.com/yahoo/fili/pull/169)
+    * `QueryPlanningConstraint` replaces current interface of Matchers and Resolvers `DataApiRequest` and `TemplateDruidQuery` arguments during query planning
+    * Modified `findMissingTimeGrainIntervals` method in `PartialDataHandler` to take a set of columns instead of `DataApiRequest` and `DruidAggregationQuery`
+
 
 - [Major refactor for availability and schemas and tables](https://github.com/yahoo/fili/pull/165)
     * `Schema` and `Table` became interfaces
@@ -72,16 +81,13 @@ Current
 
     * Guava version bumped to 21.0
 
-- [QueryPlanningConstraint and DataSourceConstraint](https://github.com/yahoo/fili/pull/169)
-    * `QueryPlanningConstraint` replaces current interface of Matchers and Resolvers `DataApiRequest` and `TemplateDruidQuery` arguments during query planning
-    * Modified `findMissingTimeGrainIntervals` method in `PartialDataHandler` to take a set of columns instead of `DataApiRequest` and `DruidAggregationQuery`
-
 - [Request IDS now supports underscores.](https://github.com/yahoo/fili/pull/176)
 
 - Added support for extensions defining new Query types
     * TestDruidWebService assumes unknown query types behave like GroupBy, TimeSeries, and TopN
     * ResultSetResponseProcessor delegates to DruidResponseProcessor to build expected query schema, 
       allowing subclasses to override and extend the schema behavior
+
 - [Add dimension fields to fullView table format](https://github.com/yahoo/fili/pull/155)
 
 - [Make healthcheck filter reject message nicer](https://github.com/yahoo/fili/pull/153)
