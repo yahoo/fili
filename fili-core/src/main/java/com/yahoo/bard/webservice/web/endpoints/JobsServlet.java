@@ -502,7 +502,7 @@ public class JobsServlet extends EndpointServlet {
         return paginationParameters
                 .map(pageParams -> new AllPagesPagination<>(preResponse.getResultSet(), pageParams))
                 .map(page -> new PreResponse(
-                        new ResultSet(page.getPageOfData(), preResponse.getResultSet().getSchema()),
+                        new ResultSet(preResponse.getResultSet().getSchema(), page.getPageOfData()),
                         addPaginationInfoToResponseContext(responseContext, uriInfo, page)
                 ))
                 .map(Observable::just)

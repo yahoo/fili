@@ -10,6 +10,8 @@ import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import com.google.common.collect.TreeRangeSet;
@@ -19,7 +21,6 @@ import org.joda.time.Interval;
 
 import io.druid.timeline.DataSegment;
 
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -51,8 +52,8 @@ public class DataSourceMetadata {
             @JsonProperty("segments") List<DataSegment> segments
     ) {
         this.name = name;
-        this.properties = Collections.unmodifiableMap(properties);
-        this.segments = Collections.unmodifiableList(segments);
+        this.properties = ImmutableMap.copyOf(properties);
+        this.segments = ImmutableList.copyOf(segments);
     }
 
     /**

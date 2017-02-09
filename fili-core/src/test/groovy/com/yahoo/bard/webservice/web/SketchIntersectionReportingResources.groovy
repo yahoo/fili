@@ -35,6 +35,7 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationP
 import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationPostAggregation
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
 import com.yahoo.bard.webservice.druid.util.SketchFieldConverter
+import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.TableGroup
@@ -43,7 +44,6 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 import spock.lang.Specification
-
 /**
  * This class is a resource container for intersection report tests.
  *
@@ -103,27 +103,16 @@ class SketchIntersectionReportingResources extends Specification {
         dimensionDict = new DimensionDictionary()
         dimensionDict.addAll([propertyDim, countryDim])
 
-        PhysicalTable physicalTable = new PhysicalTable("NETWORK", DAY.buildZonedTimeGrain(UTC), [:])
 
         //added dimensions to the physical table
-        [propertyDim, countryDim].each {
-            physicalTable.addColumn(DimensionColumn.addNewDimensionColumn(physicalTable, it))
-        }
+        Set columns = [propertyDim, countryDim].collect() { new DimensionColumn(it)}
 
-        Set<ApiMetricName> metrics = [buildMockName("foos"), buildMockName("fooNoBar"), buildMockName("regFoos"), buildMockName("pageViews"), buildMockName("bar"), buildMockName("wiz"), buildMockName("waz"), buildMockName("viz"), buildMockName("unregFoos"), buildMockName("ratioMetric")]
+        // regFoos deliberately omitted
+        Set<ApiMetricName> metrics = [buildMockName("foos"), buildMockName("fooNoBar"), buildMockName("pageViews"), buildMockName("bar"), buildMockName("wiz"), buildMockName("waz"), buildMockName("viz"), buildMockName("unregFoos"), buildMockName("ratioMetric")]
         //added metrics to the physical table
-        metrics.each {
-            physicalTable.addColumn(MetricColumn.addNewMetricColumn(physicalTable, it.apiName))
-        }
+        columns.addAll( metrics.collect() { new MetricColumn(it.apiName)})
 
-        physicalTable.commit()
 
-        TableGroup tableGroup = new TableGroup([physicalTable] as LinkedHashSet, metrics)
-        table = new LogicalTable("NETWORK", DAY, tableGroup)
-
-        for (Dimension dim : tableGroup.getDimensions()) {
-            DimensionColumn.addNewDimensionColumn(table, dim)
-        }
 
         metricDict = new MetricDictionary()
 
@@ -164,7 +153,19 @@ class SketchIntersectionReportingResources extends Specification {
         metricDict.add(ratioMetric)
 
         LogicalMetricColumn lmc = new LogicalMetricColumn("foos", foos.make());
-        table.addColumn(lmc)
+
+        columns.add(lmc)
+
+        PhysicalTable physicalTable = new ConcretePhysicalTable(
+                "NETWORK",
+                DAY.buildZonedTimeGrain(UTC),
+                columns
+                ,
+                [:]
+        )
+
+        TableGroup tableGroup = new TableGroup([physicalTable] as LinkedHashSet, metrics)
+        table = new LogicalTable("NETWORK", DAY, tableGroup, metricDict)
 
         JSONArray metricJsonObjArray = new JSONArray("[{\"filter\":{\"AND\":\"country|id-in[US,IN],property|id-in[114,125]\"},\"name\":\"foo\"},{\"filter\":{},\"name\":\"pageviews\"}]")
         JSONObject jsonobject = metricJsonObjArray.getJSONObject(0)

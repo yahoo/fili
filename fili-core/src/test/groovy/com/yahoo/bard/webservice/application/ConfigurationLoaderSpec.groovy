@@ -9,8 +9,8 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.WEEK
 
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig
-import com.yahoo.bard.webservice.data.config.dimension.KeyValueStoreDimensionLoader
 import com.yahoo.bard.webservice.data.config.dimension.TestDimensions
+import com.yahoo.bard.webservice.data.config.dimension.TypeAwareDimensionLoader
 import com.yahoo.bard.webservice.data.config.metric.TestMetricLoader
 import com.yahoo.bard.webservice.data.config.names.TestApiMetricName
 import com.yahoo.bard.webservice.data.config.names.TestDruidMetricName
@@ -54,7 +54,7 @@ class ConfigurationLoaderSpec extends Specification {
         FieldConverterSupplier.sketchConverter = new SketchFieldConverter()
         LinkedHashSet<DimensionConfig> dimensions = new TestDimensions().getAllDimensionConfigurations()
         loader = new ConfigurationLoader(
-                new KeyValueStoreDimensionLoader(dimensions),
+                new TypeAwareDimensionLoader(dimensions),
                 new TestMetricLoader(),
                 new TestTableLoader()
         )
