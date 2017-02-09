@@ -1,13 +1,11 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.resolver;
 
-import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.data.PartialDataHandler;
-import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
+import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
-import com.yahoo.bard.webservice.web.DataApiRequest;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -18,19 +16,16 @@ import java.util.Comparator;
 public class PartialTimeComparator implements Comparator<PhysicalTable> {
 
     private final PartialDataHandler partialDataHandler;
-    private final DataApiRequest request;
-    private final TemplateDruidQuery query;
+    private final QueryPlanningConstraint requestConstraints;
 
     /**
      * Constructor.
      *
-     * @param request  Request for which we're comparing parial time
-     * @param query  TDQ for which time is being compared
+     * @param requestConstraints contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
      * @param handler  Handler for Partial Data
      */
-    public PartialTimeComparator(DataApiRequest request, TemplateDruidQuery query, PartialDataHandler handler) {
-        this.request = request;
-        this.query = query;
+    public PartialTimeComparator(QueryPlanningConstraint requestConstraints, PartialDataHandler handler) {
+        this.requestConstraints = requestConstraints;
         this.partialDataHandler = handler;
     }
 
@@ -47,20 +42,18 @@ public class PartialTimeComparator implements Comparator<PhysicalTable> {
         // choose table with most data available for given columns
         long missingDurationLeft = IntervalUtils.getTotalDuration(
                 partialDataHandler.findMissingTimeGrainIntervals(
-                        request,
-                        query,
+                        requestConstraints.getAllColumnNames(),
                         Collections.singleton(left),
-                        new SimplifiedIntervalList(request.getIntervals()),
-                        request.getGranularity()
+                        new SimplifiedIntervalList(requestConstraints.getIntervals()),
+                        requestConstraints.getRequestGranularity()
                 )
         );
         long missingDurationRight = IntervalUtils.getTotalDuration(
                 partialDataHandler.findMissingTimeGrainIntervals(
-                        request,
-                        query,
+                        requestConstraints.getAllColumnNames(),
                         Collections.singleton(right),
-                        new SimplifiedIntervalList(request.getIntervals()),
-                        request.getGranularity()
+                        new SimplifiedIntervalList(requestConstraints.getIntervals()),
+                        requestConstraints.getRequestGranularity()
                 )
         );
         long difference = missingDurationLeft - missingDurationRight;

@@ -42,7 +42,6 @@ public class RowNumMapper extends ResultSetMapper {
 
     @Override
     protected Result map(Result result, ResultSetSchema schema) {
-        // map for rows is not
         throw new UnsupportedOperationException("This code should never be reached.");
     }
 

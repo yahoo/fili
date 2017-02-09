@@ -9,12 +9,18 @@ Current
 -------
 
 ### Added:
+- [QueryPlanningConstraint and DataSourceConstraint](https://github.com/yahoo/fili/pull/169)
+    * Added `QueryPlanningConstraint` to replace current interface of Matchers and Resolvers arguments during query planning
+    * Added `DataSourceConstraint` to allow implementation of `PartitionedFactTable`'s availability in the near future
 
 - [Detect unset userPrincipal in Preface log block](https://github.com/yahoo/fili/pull/154)
     * Logs a warning if no userPrincipal is set on the request (ie. we don't know who the user is), and sets the
       `user` field in the `Preface` log block to `NO_USER_PRINCIPAL`.
 
 ### Changed:
+- [QueryPlanningConstraint and DataSourceConstraint](https://github.com/yahoo/fili/pull/169)
+    * `QueryPlanningConstraint` replaces current interface of Matchers and Resolvers `DataApiRequest` and `TemplateDruidQuery` arguments during query planning
+    * Modified `findMissingTimeGrainIntervals` method in `PartialDataHandler` to take a set of columns instead of `DataApiRequest` and `DruidAggregationQuery`
 
 - Added support for extensions defining new Query types
     * TestDruidWebService assumes unknown query types behave like GroupBy, TimeSeries, and TopN

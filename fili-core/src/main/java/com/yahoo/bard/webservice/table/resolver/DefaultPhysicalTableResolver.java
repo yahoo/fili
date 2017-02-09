@@ -1,14 +1,12 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.resolver;
 
-import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.config.BardFeatureFlag;
 import com.yahoo.bard.webservice.data.PartialDataHandler;
-import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.volatility.VolatileIntervalsService;
+import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.util.ChainingComparator;
-import com.yahoo.bard.webservice.web.DataApiRequest;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,30 +49,32 @@ public class DefaultPhysicalTableResolver extends BasePhysicalTableResolver {
     }
 
     @Override
-    public List<PhysicalTableMatcher> getMatchers(DataApiRequest apiRequest, TemplateDruidQuery query) {
-        SchemaPhysicalTableMatcher schemaMatcher = new SchemaPhysicalTableMatcher(
-                apiRequest,
-                query,
-                resolveAcceptingGrain.apply(apiRequest, query)
-        );
-        TimeAlignmentPhysicalTableMatcher timeAlignmentMatcher = new TimeAlignmentPhysicalTableMatcher(apiRequest);
-        AggregatableDimensionsMatcher aggregatabilityMatcher = new AggregatableDimensionsMatcher(apiRequest, query);
+    public List<PhysicalTableMatcher> getMatchers(QueryPlanningConstraint requestConstraints) {
+        SchemaPhysicalTableMatcher schemaMatcher =
+                new SchemaPhysicalTableMatcher(requestConstraints);
+
+        TimeAlignmentPhysicalTableMatcher timeAlignmentMatcher =
+                new TimeAlignmentPhysicalTableMatcher(requestConstraints);
+
+        AggregatableDimensionsMatcher aggregatabilityMatcher =
+                new AggregatableDimensionsMatcher(requestConstraints);
 
         return Arrays.asList(schemaMatcher, aggregatabilityMatcher, timeAlignmentMatcher);
     }
 
     @Override
-    public BinaryOperator<PhysicalTable> getBetterTableOperator(DataApiRequest apiRequest, TemplateDruidQuery query) {
+    public BinaryOperator<PhysicalTable> getBetterTableOperator(QueryPlanningConstraint requestConstraints) {
         List<Comparator<PhysicalTable>> comparators = new ArrayList<>();
 
         if (BardFeatureFlag.PARTIAL_DATA.isOn()) {
-            comparators.add(new PartialTimeComparator(apiRequest, query, partialDataHandler));
             comparators.add(
-                    new VolatileTimeComparator(apiRequest, query, partialDataHandler, volatileIntervalsService)
-            );
+                    new PartialTimeComparator(requestConstraints, partialDataHandler));
+            comparators.add(
+                    new VolatileTimeComparator(requestConstraints, partialDataHandler, volatileIntervalsService));
         }
         comparators.add(COMPARE_GRANULARITY);
         comparators.add(CARDINALITY_COMPARATOR);
+
         ChainingComparator<PhysicalTable> tableComparator = new ChainingComparator<>(comparators);
         return BinaryOperator.minBy(tableComparator);
     }

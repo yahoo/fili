@@ -61,10 +61,9 @@ public class AsyncUtils {
         }
 
         return new PreResponse(
-                new ResultSet(new ResultSetSchema(
-                        AllGranularity.INSTANCE,
-                        Collections.emptySet()),
-                        Collections.emptyList()),
+                new ResultSet(
+                        new ResultSetSchema(AllGranularity.INSTANCE, Collections.emptySet()), Collections.emptyList()
+                ),
                 responseContext
         );
     }
