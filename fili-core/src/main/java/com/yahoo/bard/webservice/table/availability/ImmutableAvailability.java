@@ -76,6 +76,26 @@ public class ImmutableAvailability implements Availability {
     }
 
     /**
+     * Constructor.
+     *
+     * @param tableName  The name of the data source associated with this ImmutableAvailability
+     * @param dimensionIntervals  The dimension availability map by dimension name
+     * @param metricIntervals  The metric availability map
+     * @param dimensionDictionary  The dictionary to resolve dimension names against
+     */
+    public ImmutableAvailability(
+            TableName tableName,
+            Map<String, Set<Interval>> dimensionIntervals,
+            Map<String, Set<Interval>> metricIntervals,
+            DimensionDictionary dimensionDictionary
+    ) {
+        this(
+                tableName,
+                buildAvailabilityMap(dimensionIntervals, metricIntervals, dimensionDictionary)
+        );
+    }
+
+    /**
      * Build an availability map from unbound dimension and metric name maps and dimension dictionaries.
      *
      * @param dimensionIntervals  The dimension availability map by dimension name
