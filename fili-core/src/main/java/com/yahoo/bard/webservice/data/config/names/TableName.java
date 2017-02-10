@@ -16,6 +16,7 @@ public interface TableName {
 
     /**
      * Wrap a string in an anonymous instance of TableName.
+     * Rather than make heavy use of this, instead make a class.
      *
      * @param name the name being wrapped
      *
