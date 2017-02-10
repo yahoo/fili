@@ -9,9 +9,6 @@ import com.yahoo.bard.webservice.data.dimension.DimensionRow;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.QueryType;
-import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
-import com.yahoo.bard.webservice.druid.model.query.Granularity;
-import com.yahoo.bard.webservice.table.BaseSchema;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -24,7 +21,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import javax.inject.Singleton;
 
@@ -38,39 +34,13 @@ public class DruidResponseParser {
     private static final Logger LOG = LoggerFactory.getLogger(DruidResponseParser.class);
 
     /**
-     * Build the schema that should be expected for the specified query.
-     *
-     * @param druidQuery The query
-     * @param granularity The granularity for the schema
-     *
-     * @return The schema for the query
-    */
-    public ResultSetSchema buildSchema(
-                    DruidAggregationQuery<?> druidQuery,
-                    Granularity granularity
-    ) {
-        ResultSetSchema resultSetSchema = new ResultSetSchema(
-                granularity,
-                BaseSchema.buildColumns(
-                        druidQuery.getDimensions().stream(),
-                        Stream.concat(
-                                druidQuery.getAggregations().stream(),
-                                druidQuery.getPostAggregations().stream()
-                        )
-                )
-        );
-
-        return resultSetSchema;
-    }
-
-    /**
      * Parse Druid GroupBy result into ResultSet.
      *
      * @param jsonResult  Druid results in json
      * @param schema  Schema for results
      * @param queryType  the type of query, note that this implementation only supports instances of
-     * @param dateTimeZone the time zone used for format the results
      * {@link DefaultQueryType}
+     * @param dateTimeZone the time zone used for format the results
      *
      * @return the set of results
      */

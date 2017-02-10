@@ -92,7 +92,7 @@ class SlicesApiRequestSpec extends BaseDataSourceMetadataSpec {
         Set<Map<String, Object>> dimensionsResult = new LinkedHashSet<>()
         Set<Map<String, Object>> metricsResult = new LinkedHashSet<>()
 
-        table.getAvailableIntervals().each {
+        table.getAvailability().getAvailableIntervals().each {
             Map<String, Object> row = new LinkedHashMap<>()
             row.put("intervals", it.getValue())
 

@@ -3,19 +3,15 @@
 package com.yahoo.bard.webservice.table;
 
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
-import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.table.availability.Availability;
 
 import org.joda.time.DateTime;
-import org.joda.time.Interval;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
- * An interface describing a config level physical table.
- * It may be backed by a single concrete data source or not.
+ * An interface describing the Fili model for a fact data source (e.g. a table of dimensions and metrics).
+ * It may be backed by a single concrete fact data source or by more than one with underlying joins.
  */
 public interface PhysicalTable extends Table {
 
@@ -35,27 +31,12 @@ public interface PhysicalTable extends Table {
     DateTime getTableAlignment();
 
     /**
-     * Determine whether or not this PhysicalTable has a mapping for a specific logical name.
+     * Get the schema for this physical table.
+     * Schemas contain granularity and column definitions.
      *
-     * @param logicalName  Logical name to check
-     * @return True if contains a non-default mapping for the logical name, false otherwise
+     * @return A physical table schema.
      */
-    boolean hasLogicalMapping(String logicalName);
-
-    @Override
-    String getName();
-
-    @Override
     PhysicalTableSchema getSchema();
-
-    /**
-     * Fetch a set of intervals given a column name.
-     *
-     * @param columnName  Name of the column
-     *
-     * @return Set of intervals associated with a column, empty if column is missing
-     */
-    Set<Interval> getIntervalsByColumnName(String columnName);
 
     /**
      * Translate a logical name into a physical column name. If no translation exists (i.e. they are the same),
@@ -74,6 +55,20 @@ public interface PhysicalTable extends Table {
     String getPhysicalColumnName(String logicalName);
 
     /**
+     * Determine whether or not this PhysicalTable has a mapping for a specific logical name.
+     *
+     * @param logicalName  Logical name to check
+     *
+     * @return True if contains a non-default mapping for the logical name, false otherwise
+     *
+     * @deprecated This may no longer be needed
+     */
+    @Deprecated
+    default boolean hasLogicalMapping(String logicalName) {
+        return getSchema().containsLogicalName(logicalName);
+    }
+
+    /**
      * Get the columns from the schema for this physical table.
      *
      * @return The columns of this physical table
@@ -81,30 +76,20 @@ public interface PhysicalTable extends Table {
      * @deprecated In favor of getting the columns directly from the schema
      */
     @Deprecated
-    Set<Column> getColumns();
-
-    /**
-     * Getter for active column intervals.
-     *
-     * @return tableEntries map of column to set of available intervals
-     *
-     */
-    Map<Column, List<Interval>> getAvailableIntervals();
+    default Set<Column> getColumns() {
+        return getSchema().getColumns();
+    }
 
     /**
      * Get the time grain from granularity.
+     * Physical tables must have time zone associated time grains.
      *
      * @return The time grain of this physical table
      *
-     * @deprecated use getSchema().getGranularity()
+     * @deprecated use getSchema().getTimeGrain()
      */
     @Deprecated
-    ZonedTimeGrain getTimeGrain();
-
-    /**
-     * Get the granularity for the table.
-     *
-     * @return The granularity of this table
-     */
-    Granularity getGranularity();
+    default ZonedTimeGrain getTimeGrain() {
+        return getSchema().getTimeGrain();
+    }
 }

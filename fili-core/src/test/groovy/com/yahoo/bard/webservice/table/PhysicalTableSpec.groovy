@@ -15,6 +15,7 @@ import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.metadata.SegmentMetadata
+import com.yahoo.bard.webservice.table.availability.Availability
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 
 import org.joda.time.Interval
@@ -86,7 +87,7 @@ class PhysicalTableSpec extends Specification {
     @Unroll
     def "Physical table getColumnAvailability returns #expected for column #column"() {
         expect:
-        physicalTable.getIntervalsByColumnName(column).toList() == new SimplifiedIntervalList(expected) as List
+        physicalTable.availability.getIntervalsByColumnName(column).toList() == new SimplifiedIntervalList(expected) as List
 
         where:
         column               | expected
@@ -118,10 +119,11 @@ class PhysicalTableSpec extends Specification {
 
         when:
         table.resetColumns(noMetricMetadata, dimensionDictionary)
+        Availability availability = table.availability
 
         then:
-        table.availableIntervals.containsKey(dimensionColumn)
-        table.availableIntervals.get(dimensionColumn).toList() == new SimplifiedIntervalList(intervalSet3) as List
+        availability.availableIntervals.containsKey(dimensionColumn)
+        availability.availableIntervals.get(dimensionColumn).toList() == new SimplifiedIntervalList(intervalSet3) as List
         table.getDimensions() == [dimension] as Set
         table.getSchema().getColumns(MetricColumn.class) == [] as Set
 
@@ -130,17 +132,19 @@ class PhysicalTableSpec extends Specification {
 
         then:
         table.getDimensions() == [dimension] as Set
-        table.getIntervalsByColumnName(metricColumn1.name).toList() == new SimplifiedIntervalList(intervalSet2) as List
+        table.availability.getIntervalsByColumnName(metricColumn1.name).toList() == new SimplifiedIntervalList(intervalSet2) as List
     }
 
     def "test the setColumnCache() method"() {
+        def cacheValues = cache.collectEntries {Map.Entry<String, List<Interval>> it -> [(it.key) : (new SimplifiedIntervalList(it.value))]}
+
         expect:
-        physicalTable.getAvailableIntervals() == cache.collectEntries {[(it.key) : (new SimplifiedIntervalList(it.value).toList())]}
+        physicalTable.availability.getAvailableIntervals() == cacheValues
     }
 
     def "test the getIntervalsByColumnName() method"() {
         expect:
-        physicalTable.getIntervalsByColumnName("metric2").toList() == new SimplifiedIntervalList(intervalSet3).toList()
+        physicalTable.availability.getIntervalsByColumnName("metric2").toList() == new SimplifiedIntervalList(intervalSet3).toList()
     }
 
     def "test the fetching of all dimensions from the table"() {

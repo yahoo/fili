@@ -20,7 +20,7 @@ public class ResultSet extends ArrayList<Result> {
      */
     public ResultSet(ResultSetSchema schema, List<Result> results) {
         super(results);
-        this.schema = new ResultSetSchema(schema);
+        this.schema = schema;
     }
 
     /**

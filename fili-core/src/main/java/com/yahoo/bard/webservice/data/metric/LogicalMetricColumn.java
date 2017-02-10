@@ -26,8 +26,7 @@ public class LogicalMetricColumn extends MetricColumn {
      * @param metric  The logical metric
      */
     public LogicalMetricColumn(LogicalMetric metric) {
-        super(metric.getName());
-        this.metric = metric;
+        this(metric.getName(), metric);
     }
 
     /**

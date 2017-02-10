@@ -30,6 +30,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Provides commonly-needed methods for loading tables.
@@ -168,7 +169,7 @@ public abstract class BaseTableLoader implements TableLoader {
         // For every legal grain
         for (Granularity grain : validGrains) {
             // Build the logical table
-            LogicalTable logicalTable = buildLogicalTable(logicalTableName, grain, nameGroup, metricDictionary);
+            LogicalTable logicalTable = new LogicalTable(logicalTableName, grain, nameGroup, metricDictionary);
 
             // Load it into the dictionary
             logicalDictionary.put(new TableIdentifier(logicalTable), logicalTable);
@@ -187,7 +188,10 @@ public abstract class BaseTableLoader implements TableLoader {
      * @param metrics  The dictionary of all metrics
      *
      * @return The logical table built
+     *
+     * @deprecated use new LogicalTable(...) by preferences
      */
+    @Deprecated
     public LogicalTable buildLogicalTable(
             String name,
             Granularity granularity,
@@ -221,7 +225,10 @@ public abstract class BaseTableLoader implements TableLoader {
      * @param metrics  The dictionary of all metrics
      *
      * @return The logical table built
+     *
+     * @deprecated The LogicalTable constructor is being mirrored here, can be referenced directly
      */
+    @Deprecated
     public LogicalTable buildLogicalTable(
             String name,
             Granularity granularity,
@@ -232,21 +239,7 @@ public abstract class BaseTableLoader implements TableLoader {
             TableGroup group,
             MetricDictionary metrics
     ) {
-
-        // All Logical tables support the dimension set for their table group
-        PhysicalTable firstPhysicalTable = group.getPhysicalTables().iterator().next();
-        Set<PhysicalTable> tables = group.getPhysicalTables();
-        for (Dimension dim : group.getDimensions()) {
-            // Select the first table with a non-default logical mapping to this dimension name
-            // otherwise, use the defaulting behavior from the first table in the list
-            PhysicalTable physicalTable = tables.stream()
-                    .filter(table -> table.hasLogicalMapping(dim.getApiName()))
-                    .findFirst()
-                    .orElse(firstPhysicalTable);
-
-        }
-
-        LogicalTable logicalTable = new LogicalTable(
+        return new LogicalTable(
                 name,
                 category,
                 longName,
@@ -256,8 +249,6 @@ public abstract class BaseTableLoader implements TableLoader {
                 group,
                 metrics
         );
-
-        return logicalTable;
     }
 
     /**
@@ -303,22 +294,17 @@ public abstract class BaseTableLoader implements TableLoader {
             Set<FieldName> metricNames,
             DimensionDictionary dimensionDictionary
     ) {
-         new LinkedHashSet<>();
-
-        // Load the dimension columns
-        LinkedHashSet<Column> columns = definition.getDimensions().stream()
-                .map(DimensionConfig::getApiName)
-                .map(dimensionDictionary::findByApiName)
-                .map(DimensionColumn::new)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-
-        // And the metric columns
-        columns.addAll(
+        LinkedHashSet<Column> columns = Stream.concat(
+                // Load the dimension columns
+                definition.getDimensions().stream()
+                        .map(DimensionConfig::getApiName)
+                        .map(dimensionDictionary::findByApiName)
+                        .map(DimensionColumn::new),
+                // And the metric columns
                 metricNames.stream()
-                    .map(FieldName::asName)
-                    .map(MetricColumn::new)
-                    .collect(Collectors.toList())
-        );
+                        .map(FieldName::asName)
+                        .map(MetricColumn::new)
+        ).collect(Collectors.toCollection(LinkedHashSet::new));
 
         return new ConcretePhysicalTable(
                 definition.getName().asName(),

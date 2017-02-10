@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.responseprocessors;
 
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.RESULT_MAPPING_FAILURE;
 import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys.API_METRIC_COLUMN_NAMES;
 import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys.HEADERS;
 import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys.REQUESTED_API_DIMENSION_FIELDS;
@@ -40,7 +41,9 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.ws.rs.core.Response.Status;
 
@@ -93,14 +96,7 @@ public class ResultSetResponseProcessor extends MappingResponseProcessor impleme
     public void processResponse(JsonNode json, DruidAggregationQuery<?> druidQuery, LoggingContext metadata) {
         try {
             RequestLog.restore(metadata.getRequestLog());
-            ResultSetSchema resultSetSchema = druidResponseParser.buildSchema(druidQuery, granularity);
-            ResultSet resultSet = druidResponseParser.parse(
-                    json,
-                    resultSetSchema,
-                    druidQuery.getQueryType(),
-                    apiRequest.getTimeZone()
-            );
-
+            ResultSet resultSet = buildResultSet(json, druidQuery, apiRequest.getTimeZone());
             resultSet = mapResultSet(resultSet);
 
             LinkedHashSet<String> apiMetricColumnNames = apiRequest.getLogicalMetrics().stream()
@@ -130,6 +126,14 @@ public class ResultSetResponseProcessor extends MappingResponseProcessor impleme
                     invalidPage,
                     getObjectMappers().getMapper().writer()
             ));
+        } catch (IllegalStateException ise) {
+            LOG.error(RESULT_MAPPING_FAILURE.logFormat(ise.getMessage()));
+            responseEmitter.onError(new ResponseException(
+                    Status.INTERNAL_SERVER_ERROR,
+                    druidQuery,
+                    new Exception(RESULT_MAPPING_FAILURE.format(ise.getMessage())),
+                    getObjectMappers().getMapper().writer()
+            ));
         } catch (Exception exception) {
             LOG.error("Exception processing druid call in success", exception);
             responseEmitter.onError(new ResponseException(
@@ -152,23 +156,17 @@ public class ResultSetResponseProcessor extends MappingResponseProcessor impleme
      */
     public ResultSet buildResultSet(JsonNode json, DruidAggregationQuery<?> druidQuery, DateTimeZone dateTimeZone) {
 
-        LinkedHashSet<Column> columns = druidQuery.getAggregations().stream()
-                .map(Aggregation::getName)
-                .map(MetricColumn::new)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-
-        columns.addAll(
+        LinkedHashSet<Column> columns = Stream.of(
+                druidQuery.getDimensions().stream()
+                        .map(DimensionColumn::new),
+                druidQuery.getAggregations().stream()
+                        .map(Aggregation::getName)
+                        .map(MetricColumn::new),
                 druidQuery.getPostAggregations().stream()
                         .map(PostAggregation::getName)
                         .map(MetricColumn::new)
-                        .collect(Collectors.toList())
-        );
 
-        columns.addAll(
-                druidQuery.getDimensions().stream()
-                .map(DimensionColumn::new)
-                .collect(Collectors.toList())
-        );
+        ).flatMap(Function.identity()).collect(Collectors.toCollection(LinkedHashSet::new));
 
 
         ResultSetSchema resultSetSchema = new ResultSetSchema(granularity, columns);

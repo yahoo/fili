@@ -99,11 +99,8 @@ public class ResultSetSerializationProxy {
     private Map<String, Object> getSchemaComponents(ResultSetSchema schema) {
         Map<String, Object> schemaComponents = new HashMap<>();
 
-        DateTimeUtils.getTimeZone(schema.getGranularity());
         schemaComponents.put(SCHEMA_TIMEZONE, DateTimeUtils.getTimeZone(schema.getGranularity()).getID());
-
         schemaComponents.put(SCHEMA_GRANULARITY, schema.getGranularity().getName());
-
         schemaComponents.put(
                 SCHEMA_DIM_COLUMNS,
                 schema.getColumns(DimensionColumn.class).stream().map(Column::getName).collect(Collectors.toSet())
@@ -112,6 +109,7 @@ public class ResultSetSerializationProxy {
                 SCHEMA_METRIC_COLUMNS,
                 getMetricColumnNames(schema)
         );
+
         return schemaComponents;
     }
 

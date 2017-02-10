@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Class to de-serialize and prepare the PreResponse object from JSON. The advantages of custom deserialization are:
@@ -217,7 +218,7 @@ public class PreResponseDeserializer {
      *
      * @param schemaNode  JsonNode which contains all the columns, timezone and granularity
      *
-     * @return ZonedSchema object generated from the JsonNode
+     * @return ResultSetSchema object generated from the JsonNode
      */
     private ResultSetSchema getResultSetSchema(JsonNode schemaNode) {
         DateTimeZone timezone = generateTimezone(
@@ -227,26 +228,17 @@ public class PreResponseDeserializer {
                 )
         );
 
-        //Recreate ZonedSchema from granularity and timezone values
-        Granularity granularity = generateGranularity(schemaNode.get(SCHEMA_GRANULARITY).asText(), timezone);
-
-        LinkedHashSet<Column> columns = Streams.stream(schemaNode.get(SCHEMA_DIM_COLUMNS))
-                .map(JsonNode::asText)
-                .map(this::resolveDimensionName)
-                .map(DimensionColumn::new)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-
-        Iterable<Map.Entry<String, JsonNode>> metricEntries = () -> schemaNode.get(SCHEMA_METRIC_COLUMNS_TYPE).fields();
-
-        columns.addAll(
-                Streams.stream(metricEntries)
+        //Recreate ResultSetSchema
+        LinkedHashSet<Column> columns = Stream.concat(
+                Streams.stream(schemaNode.get(SCHEMA_DIM_COLUMNS))
+                        .map(JsonNode::asText)
+                        .map(this::resolveDimensionName)
+                        .map(DimensionColumn::new),
+                Streams.stream(() -> schemaNode.get(SCHEMA_METRIC_COLUMNS_TYPE).fields())
                         .map(entry -> new MetricColumnWithValueType(entry.getKey(), entry.getValue().asText()))
-                        .collect(Collectors.toSet())
-        );
+        ).collect(Collectors.toCollection(LinkedHashSet::new));
 
-        return new ResultSetSchema(
-                generateGranularity(schemaNode.get(SCHEMA_GRANULARITY).asText(), timezone), columns
-        );
+        return new ResultSetSchema(generateGranularity(schemaNode.get(SCHEMA_GRANULARITY).asText(), timezone), columns);
     }
 
     /**

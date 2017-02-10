@@ -152,12 +152,18 @@ class SerializationResources extends Specification {
 
         responseContext = new ResponseContext([:])
         responseContext.put("randomHeader", "someHeader")
-        responseContext.put("missingIntervals", ["a","b","c", new SimplifiedIntervalList([interval]), bigDecimal] as ArrayList)
+        responseContext.put(
+                "missingIntervals",
+                (["a", "b", "c", new SimplifiedIntervalList([interval]), bigDecimal] as ArrayList)
+        )
 
         responseContext1 = new ResponseContext([:])
         responseContext1.put("randomHeader", "someHeader")
         responseContext1.put("apiMetricColumnNames", ["metric1, metric2"] as LinkedHashSet)
-        responseContext1.put("requestedApiDimensionFields", [(ageBracketDim.getApiName()) : [BardDimensionField.ID] as Set])
+        responseContext1.put(
+                "requestedApiDimensionFields",
+                [(ageBracketDim.getApiName()): [BardDimensionField.ID] as Set]
+        )
 
         preResponse = new PreResponse(resultSet, responseContext)
 
@@ -165,15 +171,14 @@ class SerializationResources extends Specification {
     }
 
     ResultSetSchema buildSchema(Map<String, String> metricNameClassNames) {
-        LinkedHashSet columns = []
-        columns << new DimensionColumn(dimensionDictionary.findByApiName("ageBracket"))
-        columns << new DimensionColumn(dimensionDictionary.findByApiName("gender"))
-        columns << new DimensionColumn(dimensionDictionary.findByApiName("country"))
+        List columns = []
+        columns.add(new DimensionColumn(dimensionDictionary.findByApiName("ageBracket")))
+        columns.add(new DimensionColumn(dimensionDictionary.findByApiName("gender")))
+        columns.add(new DimensionColumn(dimensionDictionary.findByApiName("country")))
         metricNameClassNames.each {
-             columns << new MetricColumnWithValueType(it.key, it.value)
+             columns.add(new MetricColumnWithValueType(it.key, it.value))
         }
-        ResultSetSchema schema = new ResultSetSchema(granularity, columns)
-        return schema
+        new ResultSetSchema(granularity, columns)
     }
 
     String getSerializedResultSet(){

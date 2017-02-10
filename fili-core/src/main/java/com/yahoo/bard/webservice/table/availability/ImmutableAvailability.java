@@ -7,31 +7,30 @@ import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.table.Column;
-import com.yahoo.bard.webservice.table.PhysicalTableSchema;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import com.google.common.collect.ImmutableMap;
 
 import org.joda.time.Interval;
 
-import avro.shaded.com.google.common.collect.Sets;
-
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
  * An availability which guarantees immutability on its contents.
  */
-//public class ImmutableAvailability extends ImmutableWrapperMap<Column, List<Interval>> implements Availability {
 public class ImmutableAvailability implements Availability {
 
     private final TableName name;
     private final Map<Column, List<Interval>> columnIntervals;
-
+    private final SortedSet<TableName> dataSourceNames;
     /**
      * Constructor.
      *
@@ -41,6 +40,9 @@ public class ImmutableAvailability implements Availability {
     public ImmutableAvailability(TableName tableName, Map<Column, List<Interval>> map) {
         this.name = tableName;
         columnIntervals = ImmutableMap.copyOf(map);
+        SortedSet<TableName> names = new TreeSet<>(TableName.COMPARATOR);
+        names.add(tableName);
+        dataSourceNames = Collections.unmodifiableSortedSet(Collections.unmodifiableSortedSet(names));
     }
 
     /**
@@ -52,59 +54,37 @@ public class ImmutableAvailability implements Availability {
     public ImmutableAvailability(String tableName, Map<Column, List<Interval>> map) {
         this(TableName.of(tableName), map);
     }
-    /**
-     * Constructor.
-     *
-     * @param tableName  The name of the data source associated with this ImmutableAvailability
-     * @param schema  The schema for the availabilities
-     * @param dimensionIntervals  The dimension availability map by dimension name
-     * @param metricIntervals  The metric availability map
-     * @param dimensionDictionary  The dictionary to resolve dimension names against
-     */
-    public ImmutableAvailability(
-            TableName tableName,
-            PhysicalTableSchema schema,
-            Map<String, Set<Interval>> dimensionIntervals,
-            Map<String, Set<Interval>> metricIntervals,
-            DimensionDictionary dimensionDictionary
-    ) {
-        this(tableName, buildAvailabilityMap(schema, dimensionIntervals, metricIntervals, dimensionDictionary));
-    }
 
     /**
      * Constructor.
      *
      * @param tableName  The name of the data source associated with this ImmutableAvailability
-     * @param schema  The schema for the availabilities
      * @param dimensionIntervals  The dimension availability map by dimension name
      * @param metricIntervals  The metric availability map
      * @param dimensionDictionary  The dictionary to resolve dimension names against
      */
     public ImmutableAvailability(
             String tableName,
-            PhysicalTableSchema schema,
             Map<String, Set<Interval>> dimensionIntervals,
             Map<String, Set<Interval>> metricIntervals,
             DimensionDictionary dimensionDictionary
     ) {
         this(
                 TableName.of(tableName),
-                buildAvailabilityMap(schema, dimensionIntervals, metricIntervals, dimensionDictionary)
+                buildAvailabilityMap(dimensionIntervals, metricIntervals, dimensionDictionary)
         );
     }
 
     /**
      * Build an availability map from unbound dimension and metric name maps and dimension dictionaries.
      *
-     * @param schema blah blah blah
-     * @param dimensionIntervals blah blah blah
-     * @param metricIntervals blah blah blah
-     * @param dimensionDictionary blah blah blah
+     * @param dimensionIntervals  The dimension availability map by dimension name
+     * @param metricIntervals  The metric availability map
+     * @param dimensionDictionary  The dictionary to resolve dimension names against
      *
-     * @return blah blah blah
+     * @return A map of available intervals by columns
      */
     private static Map<Column, List<Interval>> buildAvailabilityMap(
-        PhysicalTableSchema schema,
         Map<String, Set<Interval>> dimensionIntervals,
         Map<String, Set<Interval>> metricIntervals,
         DimensionDictionary dimensionDictionary
@@ -126,8 +106,8 @@ public class ImmutableAvailability implements Availability {
     }
 
     @Override
-    public Set<TableName> getDataSourceNames() {
-        return Sets.newHashSet(name);
+    public SortedSet<TableName> getDataSourceNames() {
+        return dataSourceNames;
     }
 
     @Override
@@ -151,12 +131,14 @@ public class ImmutableAvailability implements Availability {
             return true;
         }
         if (obj instanceof ImmutableAvailability) {
-            return Objects.equals(
-                    columnIntervals,
-                    ((ImmutableAvailability) obj).columnIntervals);
+            ImmutableAvailability that = (ImmutableAvailability) obj;
+            return Objects.equals(columnIntervals, that.columnIntervals) &&
+                    Objects.equals(name, that.name);
         }
         if (obj instanceof Availability) {
-            return columnIntervals.equals(((Availability) obj).getAvailableIntervals());
+            Availability that = (Availability) obj;
+            return Objects.equals(columnIntervals, that.getAvailableIntervals()) &&
+                    Objects.equals(getDataSourceNames(), that.getDataSourceNames());
         }
         return false;
     }

@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.web.responseprocessors
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
+import static com.yahoo.bard.webservice.druid.model.DefaultQueryType.GROUP_BY
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.data.DruidResponseParser
@@ -27,23 +28,21 @@ import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
 import com.yahoo.bard.webservice.druid.model.query.Granularity
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.logging.RequestLog
-import com.yahoo.bard.webservice.table.BaseSchema
-import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.table.Schema
 import com.yahoo.bard.webservice.web.DataApiRequest
 import com.yahoo.bard.webservice.web.ResponseFormatType
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
+import com.google.common.collect.Sets
 
 import org.joda.time.DateTimeZone
 
-import avro.shaded.com.google.common.collect.Sets
 import rx.subjects.PublishSubject
 import rx.subjects.Subject
 import spock.lang.Specification
-
-import java.util.stream.Stream
 
 import javax.ws.rs.container.AsyncResponse
 import javax.ws.rs.core.MultivaluedMap
@@ -52,7 +51,11 @@ import javax.ws.rs.core.Response
 import javax.ws.rs.core.UriInfo
 
 class ResultSetResponseProcessorSpec extends Specification {
+
     private static final ObjectMappersSuite MAPPERS = new ObjectMappersSuite()
+
+    private static final ObjectMapper MAPPER = new ObjectMapper()
+            .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
 
     HttpResponseMaker httpResponseMaker
     GroupByQuery groupByQuery
@@ -103,7 +106,6 @@ class ResultSetResponseProcessorSpec extends Specification {
         apiRequest.getGranularity() >> DAY
         apiRequest.getFormat() >> ResponseFormatType.JSON
         apiRequest.getUriInfo() >> uriInfo
-        apiRequest.getTimeZone() >> DateTimeZone.UTC
 
         List<Dimension> dimensions = new ArrayList<Dimension>()
         List<Aggregation> aggregations = new ArrayList<Dimension>()
@@ -130,7 +132,7 @@ class ResultSetResponseProcessorSpec extends Specification {
         postAgg2.getName() >> "otherPostAgg"
 
 
-        DefaultQueryType queryType = DefaultQueryType.GROUP_BY
+        DefaultQueryType queryType = GROUP_BY
         groupByQuery.getQueryType() >> queryType
         groupByQuery.getDimensions() >> dimensions
         groupByQuery.getAggregations() >> aggregations
@@ -210,10 +212,7 @@ class ResultSetResponseProcessorSpec extends Specification {
         setup:
         JsonNode jsonMock = Mock(JsonNode)
         ResultSet resultSetMock = Mock(ResultSet)
-        ResultSetSchema captureSchema = null
-        JsonNode captureJson = null
-        ResultSet actual = null
-        ResultSetSchema zonedSchema
+
         ResultSetResponseProcessor resultSetResponseProcessor = new ResultSetResponseProcessor(
                 apiRequest,
                 responseEmitter,
@@ -222,10 +221,17 @@ class ResultSetResponseProcessorSpec extends Specification {
                 httpResponseMaker
         ) {
             @Override
-            protected ResultSet mapResultSet(ResultSet resultSet) { 
-                actual = resultSet
-                resultSet
+            public ResultSet buildResultSet(
+                    JsonNode json,
+                    DruidAggregationQuery<?> groupByQuery,
+                    DateTimeZone dateTimeZone
+            ) {
+                json.clone();
+                return resultSetMock
             }
+
+            @Override
+            protected ResultSet mapResultSet(ResultSet resultSet) { resultSet.getSchema(); return resultSet }
         }
 
         when:
@@ -236,24 +242,9 @@ class ResultSetResponseProcessorSpec extends Specification {
         )
 
         then:
-        1 * druidResponseParser.buildSchema(_, _) >> { DruidAggregationQuery<?> q, Granularity g ->
-            new ResultSetSchema( g, BaseSchema.buildColumns(
-                    q.getDimensions().stream(),
-                    Stream.concat(q.aggregations.stream(), q.postAggregations.stream())
-            ))
-        }
-
-        1 * druidResponseParser.parse(_,_,_) >> { JsonNode json, Schema schema, DefaultQueryType type -> 
-            captureSchema = schema
-            captureJson = json
-            resultSetMock
-        }
-        1 * resultSetMock.getSchema() >> { zonedSchema }
-        captureSchema.granularity == DAY
-        captureSchema.getColumn("dimension1", DimensionColumn.class).get().dimension == d1
-        captureSchema.getColumn("agg1", MetricColumn.class).present
-        captureSchema.getColumn("postAgg1", MetricColumn.class).present
-        actual == resultSetMock
+        1 * jsonMock.clone()
+        2 * resultSetMock.getSchema()
+        1 == 1
     }
 
     def "Test failure callback"() {
@@ -269,11 +260,9 @@ class ResultSetResponseProcessorSpec extends Specification {
         Throwable t = new Throwable("message1234")
         Response responseCaptor = null
         1 * httpResponseChannel.asyncResponse.resume(_) >> { javax.ws.rs.core.Response r -> responseCaptor = r }
-        
         when:
         fbc.invoke(t)
         String entity = responseCaptor.entity
-        
         then:
         responseCaptor.getStatus() == 500
         entity.contains("message1234")
@@ -300,5 +289,40 @@ class ResultSetResponseProcessorSpec extends Specification {
         responseCaptor.getStatus() == 499
         entity.contains("myreason")
         entity.contains("body123")
+    }
+
+    def "Build the schema from the query"() {
+        setup:
+        ResultSetResponseProcessor processor = new ResultSetResponseProcessor(
+                apiRequest,
+                responseEmitter,
+                druidResponseParser,
+                MAPPERS,
+                httpResponseMaker
+        )
+
+        Granularity granularity = apiRequest.granularity
+        DateTimeZone dateTimeZone = Mock(DateTimeZone)
+        Dimension dim = Mock(Dimension) { getApiName() >> dimension1Name }
+        Aggregation agg = Mock(Aggregation) { getName() >> metric1Name }
+        PostAggregation postAgg = Mock(PostAggregation) { getName() >> metric2Name }
+        DruidAggregationQuery<?> query = Mock(DruidAggregationQuery){
+            getAggregations() >> [agg]
+            getPostAggregations() >> [postAgg]
+            getDimensions() >> [dim]
+            getQueryType() >> GROUP_BY
+        }
+
+        druidResponseParser.parse(_, _, _, _) >> {
+            JsonNode json, Schema schema, DefaultQueryType type, DateTimeZone tz ->
+            new ResultSet(schema, [])
+        }
+        ResultSet actual = processor.buildResultSet(MAPPER.readTree("[]"), query, dateTimeZone)
+
+        expect:
+        actual.schema == new ResultSetSchema(
+                granularity,
+                [new DimensionColumn(dim), new MetricColumn(metric1Name), new MetricColumn(metric2Name)]
+        )
     }
 }

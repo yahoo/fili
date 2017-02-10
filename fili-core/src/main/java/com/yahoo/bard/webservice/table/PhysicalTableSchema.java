@@ -4,9 +4,6 @@ package com.yahoo.bard.webservice.table;
 
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -19,24 +16,9 @@ import javax.validation.constraints.NotNull;
  */
 public class PhysicalTableSchema extends BaseSchema implements Schema {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PhysicalTableSchema.class);
-
-    ZonedTimeGrain timeGrain;
+    private final ZonedTimeGrain timeGrain;
     private final Map<String, String> logicalToPhysicalColumnNames;
     private final Map<String, Set<String>> physicalToLogicalColumnNames;
-
-    /**
-     * Constructor.
-     *
-     * @param timeGrain  The time grain of this physical table
-     * @param columns The columns for this table
-     */
-    public PhysicalTableSchema(
-            @NotNull ZonedTimeGrain timeGrain,
-            Iterable<Column> columns
-    ) {
-        this(timeGrain, columns, Collections.emptyMap());
-    }
 
     /**
      * Constructor.
@@ -50,7 +32,7 @@ public class PhysicalTableSchema extends BaseSchema implements Schema {
             Iterable<Column> columns,
             @NotNull Map<String, String> logicalToPhysicalColumnNames
     ) {
-        super(columns);
+        super(timeGrain, columns);
         this.timeGrain = timeGrain;
 
         this.logicalToPhysicalColumnNames = Collections.unmodifiableMap(logicalToPhysicalColumnNames);
@@ -111,7 +93,7 @@ public class PhysicalTableSchema extends BaseSchema implements Schema {
      *
      * @return the granularity for this schema
      */
-    public ZonedTimeGrain getGranularity() {
+    public ZonedTimeGrain getTimeGrain() {
         return timeGrain;
     }
 }

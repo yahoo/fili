@@ -2,10 +2,10 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric.mappers;
 
-import com.yahoo.bard.webservice.data.metric.MetricColumn;
-import com.yahoo.bard.webservice.data.ResultSetSchema;
 import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.ResultSet;
+import com.yahoo.bard.webservice.data.ResultSetSchema;
+import com.yahoo.bard.webservice.data.metric.MetricColumn;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -27,12 +28,10 @@ public class RowNumMapper extends ResultSetMapper {
     public ResultSet map(ResultSet resultSet) {
 
         ResultSetSchema schema = map(resultSet.getSchema());
-        MetricColumn column = schema.getColumn(ROW_NUM_COLUMN_NAME, MetricColumn.class).orElseThrow(
-                () -> new IllegalStateException("Unexpected missing column")
-        );
+        MetricColumn column = schema.getColumn(ROW_NUM_COLUMN_NAME, MetricColumn.class).get();
 
         int resultSetSize = resultSet.size();
-        ArrayList<Result> newResults = new ArrayList<>(resultSetSize);
+        List<Result> newResults = new ArrayList<>(resultSetSize);
         for (int i = 0; i < resultSetSize; i++) {
             newResults.add(rowNumMap(resultSet.get(i), column, i));
         }
@@ -44,6 +43,7 @@ public class RowNumMapper extends ResultSetMapper {
 
     @Override
     protected Result map(Result result, ResultSetSchema schema) {
+        // map for rows is not
         throw new UnsupportedOperationException("This code should never be reached.");
     }
 

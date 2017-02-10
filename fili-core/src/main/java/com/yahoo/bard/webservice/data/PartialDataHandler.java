@@ -8,15 +8,19 @@ import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.table.PhysicalTable;
+import com.yahoo.bard.webservice.table.availability.Availability;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.util.TableUtils;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 
+import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.inject.Singleton;
@@ -139,11 +143,15 @@ public class PartialDataHandler {
             Collection<String> columnNames,
             PhysicalTable physicalTable
     ) {
+        Availability availability = physicalTable.getAvailability();
         return columnNames.isEmpty() ?
                 new SimplifiedIntervalList() :
-                new SimplifiedIntervalList(columnNames.stream()
-                        .map(physicalTable::getIntervalsByColumnName)
-                        .reduce(null, IntervalUtils::getOverlappingSubintervals));
+                new SimplifiedIntervalList(
+                        columnNames.stream()
+                                .map(availability::getIntervalsByColumnName)
+                                .map(it -> (Set<Interval>) new HashSet<Interval>(it))
+                                .reduce(null, IntervalUtils::getOverlappingSubintervals)
+                );
     }
 
     /**
@@ -159,11 +167,12 @@ public class PartialDataHandler {
             Collection<String> columnNames,
             PhysicalTable physicalTable
     ) {
+        Availability availability = physicalTable.getAvailability();
         return columnNames.isEmpty() ?
                 new SimplifiedIntervalList() :
                 columnNames.stream()
-                        .map(physicalTable::getIntervalsByColumnName)
-                        .flatMap(Set::stream)
+                        .map(availability::getIntervalsByColumnName)
+                        .flatMap(List::stream)
                         .collect(SimplifiedIntervalList.getCollector());
     }
 }

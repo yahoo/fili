@@ -4,12 +4,12 @@ package com.yahoo.bard.webservice.table.resolver;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_SCHEMA_UNDEFINED;
 
-import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.table.Column;
+import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.util.TableUtils;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
@@ -49,7 +49,7 @@ public class SchemaPhysicalTableMatcher implements PhysicalTableMatcher {
 
     @Override
     public boolean test(PhysicalTable table) {
-        if (!granularity.satisfiedBy(table.getSchema().getGranularity())) {
+        if (!granularity.satisfiedBy(table.getSchema().getTimeGrain())) {
             return false;
         }
 

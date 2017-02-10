@@ -50,7 +50,7 @@ class FilteredAggregationSpec extends Specification{
         MetricDictionary metricDictionary = new MetricDictionary()
 
         def filtered_metric_name = "FOO_NO_BAR"
-        Set<ApiMetricName> metricNames = (["FOO", filtered_metric_name].collect() { ApiMetricName.of(it)}) as Set
+        Set<ApiMetricName> metricNames = (["FOO", filtered_metric_name].collect { ApiMetricName.of(it)}) as Set
 
         ageDimension = buildSimpleDimension("age")
         genderDimension = buildSimpleDimension("gender")

@@ -54,7 +54,6 @@ class BaseTableLoaderSpec extends Specification {
     def "table group has correct contents after being build"() {
         when:
         TableGroup group = loader.buildTableGroup(
-                SHAPES.asName(),
                 apiNames,
                 metricNames,
                 physDefs,

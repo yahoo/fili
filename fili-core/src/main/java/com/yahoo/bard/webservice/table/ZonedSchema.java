@@ -11,13 +11,13 @@ import javax.validation.constraints.NotNull;
 /**
  * A schema anchored to a particular time zone.
  *
- * @deprecated This class is no longer used to support ResultSet schemas
+ * @deprecated This class is no longer used as a subclass for {@link com.yahoo.bard.webservice.data.ResultSetSchema}.
+ * Use that class directly now.
  */
 @Deprecated
 public class ZonedSchema extends BaseSchema implements Schema {
 
     private final DateTimeZone dateTimeZone;
-    private final Granularity granularity;
 
     /**
      * Constructor.
@@ -31,8 +31,7 @@ public class ZonedSchema extends BaseSchema implements Schema {
             @NotNull DateTimeZone dateTimeZone,
             @NotNull Iterable<Column> columns
     ) {
-        super(columns);
-        this.granularity = granularity;
+        super(granularity, columns);
         this.dateTimeZone = dateTimeZone;
     }
 
@@ -46,14 +45,5 @@ public class ZonedSchema extends BaseSchema implements Schema {
     }
     public DateTimeZone getDateTimeZone() {
         return dateTimeZone;
-    }
-
-    /**
-     * Granularity.
-     *
-     * @return the granularity for this schema
-     */
-    public Granularity getGranularity() {
-        return granularity;
     }
 }
