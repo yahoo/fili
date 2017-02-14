@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.web.filters;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.http.client.utils.URIBuilder;
 import org.glassfish.jersey.server.monitoring.ApplicationEvent;
 import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
 import org.glassfish.jersey.server.monitoring.RequestEvent;
@@ -13,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
@@ -27,7 +29,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
-import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 /**
@@ -73,16 +74,18 @@ public class QueryParameterNormalizationFilter implements ApplicationEventListen
      * @return  Normalized URI
      */
     private URI buildNormalizedUri(UriInfo uriInfo) {
-        UriBuilder builder = uriInfo.getRequestUriBuilder();
-
-        // Erase existing query parameters from builder
-        builder.replaceQuery("");
+        // Get the URI without any query params
+        URIBuilder builder = new URIBuilder(uriInfo.getAbsolutePath());
 
         // Set normalized values
         getNormalizedQueryParameters(uriInfo)
-                .forEach(keyValue -> builder.queryParam(keyValue.getLeft(), keyValue.getRight()));
+                .forEach(keyValue -> builder.addParameter(keyValue.getLeft(), keyValue.getRight()));
 
-        return builder.build();
+        try {
+            return builder.build();
+        } catch (URISyntaxException e) {
+            throw new RuntimeException("failed to build uri", e);
+        }
     }
 
     /**
@@ -169,7 +172,7 @@ public class QueryParameterNormalizationFilter implements ApplicationEventListen
      * @param clazz Class to extract methods from
      * @return  Stream of methods on class
      */
-    private static Stream<Method> extractMethods(Class clazz) {
+    private static Stream<Method> extractMethods(Class<?> clazz) {
         try {
             Method[] methods = clazz.getMethods();
             if (methods.length > 0) {
