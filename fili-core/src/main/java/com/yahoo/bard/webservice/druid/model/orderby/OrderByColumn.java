@@ -51,6 +51,17 @@ public class OrderByColumn {
     }
 
     /**
+     * Constructor.
+     *
+     * @param dateTime  a dateTime
+     * @param direction  sort direction
+     */
+    public OrderByColumn(String dateTime, SortDirection direction) {
+        this.dimension = dateTime;
+        this.direction = direction;
+    }
+
+    /**
      * Getter for sort column dimension.
      *
      * @return dimension A dimension name, a metric name, an aggregation name or a post aggregation name

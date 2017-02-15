@@ -27,6 +27,7 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_UNDEFINED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TIME_ALIGNMENT;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TOP_N_UNSORTED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.UNSUPPORTED_FILTERED_METRIC_CATEGORY;
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DATE_TIME_SORT_VALUE_INVALID;
 
 import com.yahoo.bard.webservice.config.BardFeatureFlag;
 import com.yahoo.bard.webservice.data.DruidHavingBuilder;
@@ -93,6 +94,7 @@ public class DataApiRequest extends ApiRequest {
     private static final Logger LOG = LoggerFactory.getLogger(DataApiRequest.class);
     private static final String RATIO_METRIC_CATEGORY = "Ratios";
     public static final String REQUEST_MAPPER_NAMESPACE = "dataApiRequestMapper";
+    private static final String DATE_TIME_STRING = "dateTime";
 
     private final LogicalTable table;
 
@@ -113,6 +115,8 @@ public class DataApiRequest extends ApiRequest {
     private final DateTimeZone timeZone;
 
     private final DruidFilterBuilder filterBuilder;
+
+    private Optional<OrderByColumn> dateTimeSort = Optional.ofNullable(null);
 
     /**
      * Parses the API request URL and generates the Api Request object.
@@ -238,6 +242,18 @@ public class DataApiRequest extends ApiRequest {
 
         this.having = DruidHavingBuilder.buildHavings(this.havings);
 
+
+        if (
+                sorts != null &&
+                        !sorts.isEmpty() &&
+                        sorts.toLowerCase(Locale.ENGLISH).contains(DATE_TIME_STRING.toLowerCase(Locale.ENGLISH))
+                ) {
+            //Requested sort on dateTime - It has to be first field in the string
+            this.dateTimeSort = generateDateTimeSortColumn(sorts.substring(0, sorts.indexOf(",")));
+            //Separating dateTimeSort from the complete api sort value string
+            sorts = sorts.substring(sorts.indexOf(",") + 1, sorts.length());
+        }
+
         // Requested sort on metrics - optional, can be empty Set
         this.sorts = generateSortColumns(sorts, this.logicalMetrics, metricDictionary);
 
@@ -349,6 +365,7 @@ public class DataApiRequest extends ApiRequest {
         this.havings = null;
         this.having = null;
         this.sorts = null;
+        this.dateTimeSort = null;
         this.count = 0;
         this.topN = 0;
         this.timeZone = null;
@@ -1098,6 +1115,35 @@ public class DataApiRequest extends ApiRequest {
     }
 
     /**
+     * Generate OrderByColumn instance for dateTime sort column.
+     *
+     * @param dateTimeSort  datetime sort query string
+     *
+     * @return instance of OrderByColumn for dateTime
+     */
+    protected Optional<OrderByColumn> generateDateTimeSortColumn(String dateTimeSort) {
+
+        List<String> dateTimeWithDirection = Arrays.asList(dateTimeSort.split("\\|"));
+        if (DATE_TIME_STRING.equals(dateTimeWithDirection.get(0))) {
+            SortDirection sortDirection;
+            try {
+                sortDirection = dateTimeWithDirection.size() == 2 ?
+                        SortDirection.valueOf(dateTimeWithDirection.get(1).toUpperCase(Locale.ENGLISH)) :
+                        SortDirection.DESC;
+            } catch (IllegalArgumentException ignored) {
+                String sortDirectionName = dateTimeWithDirection.get(1);
+                LOG.debug(SORT_DIRECTION_INVALID.logFormat(sortDirectionName));
+                throw new BadApiRequestException(SORT_DIRECTION_INVALID.format(sortDirectionName));
+            }
+            return Optional.of(new OrderByColumn(dateTimeWithDirection.get(0), sortDirection));
+        }
+        else {
+            LOG.debug(DATE_TIME_SORT_VALUE_INVALID.logFormat());
+            throw new BadApiRequestException(DATE_TIME_SORT_VALUE_INVALID.format());
+        }
+    }
+
+    /**
      * Generates a Set of OrderByColumn.
      *
      * @param apiSortQuery  Expects sort query string in the format: (metricName or dimensionName)|(sortDirection)
@@ -1349,5 +1395,9 @@ public class DataApiRequest extends ApiRequest {
 
     public DruidFilterBuilder getFilterBuilder() {
         return filterBuilder;
+    }
+
+    public Optional<OrderByColumn> getDateTimeSort() {
+        return dateTimeSort;
     }
 }

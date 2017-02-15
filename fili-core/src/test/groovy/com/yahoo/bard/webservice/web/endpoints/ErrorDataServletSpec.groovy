@@ -22,6 +22,7 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_METRICS_UNDE
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_SCHEMA_UNDEFINED
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_UNDEFINED
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.UNKNOWN_GRANULARITY
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DATE_TIME_SORT_VALUE_INVALID
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.config.SystemConfig
@@ -442,6 +443,43 @@ class ErrorDataServletSpec extends Specification {
         then:
         r.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()
         GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), jsonFailure)
+    }
+
+    def "dateTime must always be the first field in the sort list"() {
+        String message = DATE_TIME_SORT_VALUE_INVALID.format()
+
+        String jsonFailure =
+                """{"status":400,
+                    "statusName": "Bad Request",
+                    "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
+                    "description":"${message}",
+                    "druidQuery":null,
+                    "requestId": "SOME UUID"
+                   }
+                """
+
+        when:
+        Response r = jtb.getHarness().target("data/shapes/day/color")
+                .queryParam("metrics","height")
+                .queryParam("dateTime","2014-09-01%2F2014-09-10")
+                .queryParam("sort","height|ASC,dateTime|DESC")
+                .request().get()
+
+        then:
+        r.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()
+        GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), jsonFailure)
+    }
+
+    def "Successful execution if dateTime is first field in sort list"() {
+        when:
+        Response r = jtb.getHarness().target("data/shapes/day/color")
+                .queryParam("metrics","height")
+                .queryParam("dateTime","2014-09-01%2F2014-09-10")
+                .queryParam("sort","dateTime|DESC,height|ASC")
+                .request().get()
+
+        then:
+        r.getStatus() == 200
     }
 
     def "Sort metric not in query fails"() {
