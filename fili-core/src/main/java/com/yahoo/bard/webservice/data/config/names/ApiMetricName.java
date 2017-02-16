@@ -6,6 +6,8 @@ import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 
+import java.util.Objects;
+
 /**
  * Interface to mark metric names.
  * <p>
@@ -60,7 +62,7 @@ public interface ApiMetricName extends FieldName {
     static ApiMetricName of(String name) {
         return new ApiMetricName() {
             @Override
-            public boolean isValidFor(final TimeGrain grain) {
+            public boolean isValidFor(TimeGrain grain) {
                 return true;
             }
 
@@ -72,6 +74,20 @@ public interface ApiMetricName extends FieldName {
             @Override
             public String asName() {
                 return name;
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                if (o == null || ! (o instanceof ApiMetricName)) {
+                    return false;
+                }
+                return Objects.equals(name, ((ApiMetricName) o).asName()) &&
+                    Objects.equals(name, ((ApiMetricName) o).getApiName());
+            }
+
+            @Override
+            public int hashCode() {
+                return name.hashCode();
             }
         };
     }

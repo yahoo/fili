@@ -46,8 +46,7 @@ class TopNQuerySpec extends Specification {
         vars.dataSource = vars.dataSource ?: new TableDataSource<TopNQuery>(new ConcretePhysicalTable(
                 "table_name",
                 DAY.buildZonedTimeGrain(DateTimeZone.UTC),
-                [] as Set
-                ,
+                [] as Set,
                 ["apiLocale": "locale"]
         ))
         vars.dimension = vars.dimension ?: ""

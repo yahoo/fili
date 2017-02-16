@@ -40,8 +40,7 @@ class TimeSeriesQuerySpec extends Specification {
         vars.dataSource = vars.dataSource ?: new TableDataSource(new ConcretePhysicalTable(
                 "table_name",
                 DAY.buildZonedTimeGrain(DateTimeZone.UTC),
-                [] as Set
-                ,
+                [] as Set,
                 [:]
         ))
         vars.granularity = vars.granularity ?: DAY

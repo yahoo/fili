@@ -82,6 +82,7 @@ public class QueryBuildingTestingResources {
     public QueryBuildingTestingResources() {
         init()
     }
+
     public QueryBuildingTestingResources init() {
 
         DateTimeZone.setDefault(UTC)

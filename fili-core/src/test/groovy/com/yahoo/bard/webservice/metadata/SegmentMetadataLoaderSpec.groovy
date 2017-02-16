@@ -100,8 +100,7 @@ class SegmentMetadataLoaderSpec extends Specification {
 
             PhysicalTable table = new ConcretePhysicalTable(
                     it, WEEK.buildZonedTimeGrain(UTC),
-                    [metric1, metric2] as Set
-                    ,
+                    [metric1, metric2] as Set,
                     [:]
             )
             tableDict.put(it, table)

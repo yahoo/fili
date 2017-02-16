@@ -93,14 +93,7 @@ public class ResultSetResponseProcessor extends MappingResponseProcessor impleme
     public void processResponse(JsonNode json, DruidAggregationQuery<?> druidQuery, LoggingContext metadata) {
         try {
             RequestLog.restore(metadata.getRequestLog());
-            ResultSetSchema resultSetSchema = druidResponseParser.buildSchema(druidQuery, granularity);
-            ResultSet resultSet = druidResponseParser.parse(
-                    json,
-                    resultSetSchema,
-                    druidQuery.getQueryType(),
-                    apiRequest.getTimeZone()
-            );
-
+            ResultSet resultSet = buildResultSet(json, druidQuery, apiRequest.getTimeZone());
             resultSet = mapResultSet(resultSet);
 
             LinkedHashSet<String> apiMetricColumnNames = apiRequest.getLogicalMetrics().stream()

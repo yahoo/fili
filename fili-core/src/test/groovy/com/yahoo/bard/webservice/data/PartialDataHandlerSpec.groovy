@@ -38,8 +38,7 @@ class PartialDataHandlerSpec extends Specification {
     Set<PhysicalTable> tables = [new ConcretePhysicalTable(
             "basefact_network",
             DAY.buildZonedTimeGrain(UTC),
-            [] as Set
-            ,
+            [] as Set,
             ["userDeviceType": "user_device_type"]
     )] as Set
     Set<String> columnNames
@@ -79,8 +78,7 @@ class PartialDataHandlerSpec extends Specification {
             new TableDataSource(
                     new ConcretePhysicalTable(
                             "basefact_network", DAY.buildZonedTimeGrain(UTC),
-                            [] as Set
-                            ,
+                            [] as Set,
                             ["userDeviceType": "user_device_type"]
                     )
             )
