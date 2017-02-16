@@ -2,9 +2,9 @@
 PhysicalTableSchema:
 	getFieldName(Column c)
 
-DataSource:
+DataSourceMetadata:
 	String getName()
-	Map<FieldName, Set<Segment>> raw segment data
+	Set<SegmentInfo> raw segment data
 	Map<FieldName, List<Interval>> squashedFromSegments  // optional optimization
 
 	Set<FieldName> getFields() //union of all keys
@@ -12,6 +12,15 @@ DataSource:
 	Map<FieldName,List<Interval>> getIntervals(Set<FieldName>) // map slice from squashedMap
 	List<Interval> getAllIntervals()
 	Set<SegmentId> getSegments(List<Interval>)  // Filter all segments by overlap on time
+
+
+DataSourceMetadataService
+    Map<ConcretePhysicalTable/DataSourceName, DataSourceMetadata> dataSources
+
+    Set<DataSourceName> getDataSourceNames()
+    DataSourceMetadata getDataSource(DataSourceName)
+    boolean putDataSource(DataSourceName, DataSource)
+
 
 DataSourceConstraints // Simple bean parameter object
 	getGrain
