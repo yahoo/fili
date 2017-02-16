@@ -30,8 +30,7 @@ class RequestUtils {
         DataSource dataSource = new TableDataSource(new ConcretePhysicalTable(
                 dataSourceName,
                 DAY.buildZonedTimeGrain(DateTimeZone.UTC),
-                [] as Set
-                ,
+                [] as Set,
                 [:]
         ))
         List dimensions = []
@@ -59,8 +58,7 @@ class RequestUtils {
         DataSource dataSource = new TableDataSource(new ConcretePhysicalTable(
                 dataSourceName,
                 DAY.buildZonedTimeGrain(DateTimeZone.UTC),
-                [] as Set
-                ,
+                [] as Set,
                 [:]
         ))
         List intervals = []
@@ -86,8 +84,7 @@ class RequestUtils {
         DataSource dataSource = new TableDataSource(new ConcretePhysicalTable(
                 dataSourceName,
                 DAY.buildZonedTimeGrain(DateTimeZone.UTC),
-                [] as Set
-                ,
+                [] as Set,
                 [:]
         ))
         List intervals = []

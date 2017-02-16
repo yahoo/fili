@@ -130,13 +130,7 @@ class DruidQueryBuilderSpec extends Specification {
     def "Test recursive buildQueryMethods"() {
         setup:
         Set apiSet = (["abie1234", "abde1129"].collect() { apiFilters.get(it) }) as Set
-        PhysicalTable tab = new ConcretePhysicalTable(
-                "tab1",
-                DAY.buildZonedTimeGrain(UTC),
-                [] as Set
-                ,
-                [:]
-        )
+        PhysicalTable tab = new ConcretePhysicalTable("tab1", DAY.buildZonedTimeGrain(UTC), [] as Set, [:])
         Filter filter = FILTER_BUILDER.buildFilters([(resources.d3): apiSet])
         ZonedTimeGrain granularity = WEEK.buildZonedTimeGrain(UTC)
         Set dimension = [resources.d1] as Set
@@ -234,8 +228,7 @@ class DruidQueryBuilderSpec extends Specification {
         PhysicalTable tab = new ConcretePhysicalTable(
                 "tab1",
                 DAY.buildZonedTimeGrain(UTC),
-                [] as Set
-                ,
+                [] as Set,
                 [:]
         )
         Filter filter = FILTER_BUILDER.buildFilters([(resources.d3): apiSet])

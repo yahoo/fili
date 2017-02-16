@@ -72,8 +72,7 @@ class CardinalityAggregationSpec extends Specification {
         ds.getPhysicalTables() >> [new ConcretePhysicalTable(
                 "table",
                 DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC),
-                [] as Set
-                ,
+                [] as Set,
                 ["d1ApiName": "d1DruidName", "d2ApiName": "d2DruidName"]
         )]
         query.dataSource >> ds

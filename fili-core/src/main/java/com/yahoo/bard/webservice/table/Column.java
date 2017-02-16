@@ -21,6 +21,15 @@ public class Column {
     }
 
     /**
+     * Getter for column name.
+     *
+     * @return name
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
      * Allows comparison based solely on the name between objects of the base class and/or any of the derived classes.
      *
      * @param o  The object to compare against.
@@ -36,15 +45,6 @@ public class Column {
         Column column = (Column) o;
 
         return Objects.equals(name, column.name);
-    }
-
-    /**
-     * Getter for column name.
-     *
-     * @return name
-     */
-    public String getName() {
-        return name;
     }
 
     @Override

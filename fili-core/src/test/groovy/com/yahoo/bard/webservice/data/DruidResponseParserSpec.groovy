@@ -5,7 +5,6 @@ package com.yahoo.bard.webservice.data
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
-import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.dimension.DimensionField
@@ -15,10 +14,6 @@ import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType
 import com.yahoo.bard.webservice.druid.model.QueryType
-import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
-import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
-import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
-import com.yahoo.bard.webservice.druid.model.query.Granularity
 import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.Schema
 
@@ -27,7 +22,6 @@ import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
-import com.sun.org.apache.regexp.internal.RE
 
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
@@ -395,43 +389,6 @@ class DruidResponseParserSpec extends Specification {
         then:
         thrown(UnsupportedOperationException)
 
-    }
-    
-    def "Build the schema from the query"() {
-        setup:
-        DruidResponseParser responseParser = new DruidResponseParser()
-        DruidAggregationQuery<?> query = Mock(DruidAggregationQuery)
-        Granularity granularity = Mock(Granularity)
-        DateTimeZone dateTimeZone = Mock(DateTimeZone)
-        Dimension dim = Mock(Dimension) { getApiName() >> "dimension1" }
-        Aggregation agg = Mock(Aggregation) { getName() >> "agg1" }
-        PostAggregation postAgg = Mock(PostAggregation) { getName() >> "postAgg1" }
-
-        query.getAggregations() >> { 
-            [
-                agg
-            ]
-        }
-        query.getPostAggregations() >> { 
-            [
-                postAgg
-            ]
-        }   
-        query.getDimensions() >> {
-            [
-                dim
-            ]
-        }    
-
-        when:
-        ResultSetSchema schema = responseParser.buildSchema(query, granularity)
-
-        then:
-        schema.granularity == granularity
-        schema.columns.size() == 3
-        schema.getColumn("dimension1", DimensionColumn.class).get().dimension == dim
-        schema.getColumn("agg1", MetricColumn.class).get() != null
-        schema.getColumn("postAgg1", MetricColumn.class).get() != null
     }
 
     String buildResponse(DefaultQueryType queryType, Map complexMetrics) {

@@ -20,7 +20,7 @@ public interface TableName {
      *
      * @param name the name being wrapped
      *
-     * @return an anonymous subclass instance of ApiMetricName
+     * @return an anonymous subclass instance of TableName
      */
     static TableName of(String name) {
         return new TableName() {
@@ -37,7 +37,7 @@ public interface TableName {
             @Override
             public boolean equals(Object o) {
                 if (o != null && o instanceof TableName) {
-                    return asName().equals(((TableName) o).asName());
+                    return name.equals(((TableName) o).asName());
                 }
                 return false;
             }

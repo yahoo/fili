@@ -217,7 +217,7 @@ public class PreResponseDeserializer {
      *
      * @param schemaNode  JsonNode which contains all the columns, timezone and granularity
      *
-     * @return ZonedSchema object generated from the JsonNode
+     * @return ResultSetSchema object generated from the JsonNode
      */
     private ResultSetSchema getResultSetSchema(JsonNode schemaNode) {
         DateTimeZone timezone = generateTimezone(
@@ -227,9 +227,7 @@ public class PreResponseDeserializer {
                 )
         );
 
-        //Recreate ZonedSchema from granularity and timezone values
-        Granularity granularity = generateGranularity(schemaNode.get(SCHEMA_GRANULARITY).asText(), timezone);
-
+        //Recreate ResultSetSchema from granularity and timezone values
         LinkedHashSet<Column> columns = Streams.stream(schemaNode.get(SCHEMA_DIM_COLUMNS))
                 .map(JsonNode::asText)
                 .map(this::resolveDimensionName)

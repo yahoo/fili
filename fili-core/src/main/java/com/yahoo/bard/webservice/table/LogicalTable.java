@@ -24,16 +24,17 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
     public static final String DEFAULT_CATEGORY = "General";
     public static final ReadablePeriod DEFAULT_RETENTION = Years.ONE;
 
+    private String name;
     private TableGroup tableGroup;
     private LogicalTableSchema schema;
-    private Granularity granularity;
-    // parameter used by the compare to method
-    private String name;
-    private String comparableParam;
+
     private String category;
     private String longName;
     private ReadablePeriod retention;
     private String description;
+
+    // parameter used by the compare to method
+    private String comparableParam;
 
     /**
      * Constructor
@@ -82,7 +83,6 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
         this.longName = longName;
         this.retention = retention;
         this.description = description;
-        this.granularity = granularity;
         this.comparableParam = name + granularity.toString();
 
         schema = new LogicalTableSchema(tableGroup, granularity, metricDictionary);
@@ -136,7 +136,7 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
      * @return The granularity
      */
     public Granularity getGranularity() {
-        return granularity;
+        return schema.getGranularity();
     }
 
     @Override

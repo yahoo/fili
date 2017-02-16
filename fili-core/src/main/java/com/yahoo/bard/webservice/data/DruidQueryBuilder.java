@@ -5,12 +5,14 @@ package com.yahoo.bard.webservice.data;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TOP_N_UNSORTED;
 
 import com.yahoo.bard.webservice.config.BardFeatureFlag;
+import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionRowNotFoundException;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource;
 import com.yahoo.bard.webservice.druid.model.datasource.QueryDataSource;
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource;
+import com.yahoo.bard.webservice.druid.model.datasource.UnionDataSource;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.having.Having;
 import com.yahoo.bard.webservice.druid.model.orderby.LimitSpec;
@@ -36,6 +38,9 @@ import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import avro.shaded.com.google.common.collect.Sets;
+
+import java.util.Collections;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -203,9 +208,15 @@ public class DruidQueryBuilder {
         if (!template.isNested()) {
             LOG.trace("Building a single pass druid groupBy query");
 
+            DataSource dataSource;
             // TODO FIXME hardcoding to concrete for now
+            if (table instanceof ConcretePhysicalTable) {
+                dataSource = new TableDataSource((ConcretePhysicalTable) table);
+            } else {
+                dataSource = new UnionDataSource(Sets.newHashSet(table));
+            }
             // The data source is the table directly, since there is no nested query below us
-            DataSource dataSource = new TableDataSource((ConcretePhysicalTable) table);
+            //DataSource dataSource = new TableDataSource((ConcretePhysicalTable) table);
 
             // Filters must be applied at the lowest level as they exclude data from aggregates
             return new GroupByQuery(
@@ -328,7 +339,7 @@ public class DruidQueryBuilder {
     }
 
     /**
-     * Builds a druid timeseries query.
+     * Builds a druid TimeSeries query.
      *
      * @param template  The query template. Not nested since nesting is not supported in druid timeseries queries
      * @param table  The physical table that underlies the lowest-level datasource
@@ -370,9 +381,15 @@ public class DruidQueryBuilder {
 
         LOG.trace("Building a single pass druid timeseries query");
 
-        // TODO FIXME hardcoding to concrete for now
-        // The data source is the table directly, since there is no nested query below us
-        DataSource dataSource = new TableDataSource((ConcretePhysicalTable) table);
+        DataSource dataSource;
+        Set<TableName> names = table.getAvailability().getDataSourceNames();
+        if (names.isEmpty()) {
+            throw new IllegalStateException("Misconfigured table with no backing datasource.");
+        } else if (names.size() == 1 && table instanceof ConcretePhysicalTable) {
+            dataSource = new TableDataSource((ConcretePhysicalTable) table);
+        } else {
+            dataSource = new UnionDataSource(Collections.singleton(table));
+        }
 
         return new TimeSeriesQuery(
                 dataSource,

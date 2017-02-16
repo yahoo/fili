@@ -56,19 +56,17 @@ public class ImmutableAvailability implements Availability {
      * Constructor.
      *
      * @param tableName  The name of the data source associated with this ImmutableAvailability
-     * @param schema  The schema for the availabilities
      * @param dimensionIntervals  The dimension availability map by dimension name
      * @param metricIntervals  The metric availability map
      * @param dimensionDictionary  The dictionary to resolve dimension names against
      */
     public ImmutableAvailability(
             TableName tableName,
-            PhysicalTableSchema schema,
             Map<String, Set<Interval>> dimensionIntervals,
             Map<String, Set<Interval>> metricIntervals,
             DimensionDictionary dimensionDictionary
     ) {
-        this(tableName, buildAvailabilityMap(schema, dimensionIntervals, metricIntervals, dimensionDictionary));
+        this(tableName, buildAvailabilityMap(dimensionIntervals, metricIntervals, dimensionDictionary));
     }
 
     /**
@@ -89,22 +87,20 @@ public class ImmutableAvailability implements Availability {
     ) {
         this(
                 TableName.of(tableName),
-                buildAvailabilityMap(schema, dimensionIntervals, metricIntervals, dimensionDictionary)
+                buildAvailabilityMap(dimensionIntervals, metricIntervals, dimensionDictionary)
         );
     }
 
     /**
      * Build an availability map from unbound dimension and metric name maps and dimension dictionaries.
      *
-     * @param schema blah blah blah
-     * @param dimensionIntervals blah blah blah
-     * @param metricIntervals blah blah blah
-     * @param dimensionDictionary blah blah blah
+     * @param dimensionIntervals  The dimension availability map by dimension name
+     * @param metricIntervals  The metric availability map
+     * @param dimensionDictionary  The dictionary to resolve dimension names against
      *
-     * @return blah blah blah
+     * @return A map of available intervals by columns
      */
     private static Map<Column, List<Interval>> buildAvailabilityMap(
-        PhysicalTableSchema schema,
         Map<String, Set<Interval>> dimensionIntervals,
         Map<String, Set<Interval>> metricIntervals,
         DimensionDictionary dimensionDictionary

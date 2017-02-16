@@ -303,8 +303,6 @@ public abstract class BaseTableLoader implements TableLoader {
             Set<FieldName> metricNames,
             DimensionDictionary dimensionDictionary
     ) {
-         new LinkedHashSet<>();
-
         // Load the dimension columns
         LinkedHashSet<Column> columns = definition.getDimensions().stream()
                 .map(DimensionConfig::getApiName)
