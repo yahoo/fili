@@ -112,8 +112,6 @@ class SketchIntersectionReportingResources extends Specification {
         //added metrics to the physical table
         columns.addAll( metrics.collect() { new MetricColumn(it.apiName)})
 
-
-
         metricDict = new MetricDictionary()
 
         SketchSetOperationMaker setUnionMaker = new SketchSetOperationMaker(
@@ -149,18 +147,19 @@ class SketchIntersectionReportingResources extends Specification {
         metricDict.add(unregFoos.make())
         metricDict.add(viz.make())
 
-        LogicalMetric ratioMetric = new LogicalMetric(metricDict.get("foos").templateDruidQuery, metricDict.get("foos").calculation, "ratioMetric", "ratioMetric Long Name", "Ratios", "Dummy metric Ratio Metric description")
+        LogicalMetric foosMetric = metricDict.get("foos")
+
+        LogicalMetric ratioMetric = new LogicalMetric(foosMetric.templateDruidQuery, foosMetric.calculation, "ratioMetric", "ratioMetric Long Name", "Ratios", "Dummy metric Ratio Metric description")
         metricDict.add(ratioMetric)
 
-        LogicalMetricColumn lmc = new LogicalMetricColumn("foos", foos.make());
+        LogicalMetricColumn lmc = new LogicalMetricColumn(foosMetric);
 
         columns.add(lmc)
 
         PhysicalTable physicalTable = new ConcretePhysicalTable(
                 "NETWORK",
                 DAY.buildZonedTimeGrain(UTC),
-                columns
-                ,
+                columns,
                 [:]
         )
 

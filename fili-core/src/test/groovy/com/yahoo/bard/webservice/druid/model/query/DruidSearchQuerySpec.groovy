@@ -48,8 +48,7 @@ class DruidSearchQuerySpec extends Specification {
                 new ConcretePhysicalTable(
                         "table_name",
                         DAY.buildZonedTimeGrain(DateTimeZone.UTC),
-                        [] as Set
-                        ,
+                        [] as Set,
                         [:]
                 )
         )

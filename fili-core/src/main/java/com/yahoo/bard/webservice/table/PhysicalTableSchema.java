@@ -4,9 +4,6 @@ package com.yahoo.bard.webservice.table;
 
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -19,9 +16,7 @@ import javax.validation.constraints.NotNull;
  */
 public class PhysicalTableSchema extends BaseSchema implements Schema {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PhysicalTableSchema.class);
-
-    ZonedTimeGrain timeGrain;
+    private final ZonedTimeGrain timeGrain;
     private final Map<String, String> logicalToPhysicalColumnNames;
     private final Map<String, Set<String>> physicalToLogicalColumnNames;
 

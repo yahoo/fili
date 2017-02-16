@@ -17,6 +17,8 @@ import java.util.stream.Stream;
  */
 public class LogicalTableSchema extends BaseSchema  {
 
+    private final Granularity granularity;
+
     /**
      * Constructor.
      *
@@ -26,6 +28,11 @@ public class LogicalTableSchema extends BaseSchema  {
      */
     public LogicalTableSchema(TableGroup tableGroup, Granularity granularity, MetricDictionary metricDictionary) {
         super(toColumns(tableGroup, granularity, metricDictionary));
+        this.granularity = granularity;
+    }
+
+    public Granularity getGranularity() {
+        return granularity;
     }
 
     /**

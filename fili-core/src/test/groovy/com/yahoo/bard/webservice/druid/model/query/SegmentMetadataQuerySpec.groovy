@@ -36,8 +36,7 @@ class SegmentMetadataQuerySpec extends Specification {
         DataSource dataSource = new TableDataSource(new ConcretePhysicalTable(
                 tableName,
                 DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC),
-                [] as Set
-                ,
+                [] as Set,
                 [:]
         ))
         Collection<Interval> intervals = [new Interval("2014-07-01/2014-07-15")]
@@ -65,8 +64,7 @@ class SegmentMetadataQuerySpec extends Specification {
         DataSource dataSource = new TableDataSource(new ConcretePhysicalTable(
                 tableName,
                 DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC),
-                [] as Set
-                ,
+                [] as Set,
                 [:]
         ))
         Collection<Interval> intervals = [new Interval("2014-07-01/2014-07-15"), new Interval("2014-08-01/2014-08-15")]

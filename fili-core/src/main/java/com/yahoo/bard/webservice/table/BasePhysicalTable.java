@@ -94,7 +94,6 @@ public abstract class BasePhysicalTable implements PhysicalTable {
         return schema;
     }
 
-
     /**
      * Fetch a set of intervals given a column name.
      *
@@ -166,7 +165,7 @@ public abstract class BasePhysicalTable implements PhysicalTable {
 
     @Override
     public Granularity getGranularity() {
-        return null;
+        return getSchema().getGranularity();
     }
 
     /**

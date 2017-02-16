@@ -11,7 +11,8 @@ import javax.validation.constraints.NotNull;
 /**
  * A schema anchored to a particular time zone.
  *
- * @deprecated This class is no longer used to support ResultSet schemas
+ * @deprecated This class is no longer used as a subclass for {@link com.yahoo.bard.webservice.data.ResultSetSchema}.
+ * Use that class directly now.
  */
 @Deprecated
 public class ZonedSchema extends BaseSchema implements Schema {

@@ -27,9 +27,7 @@ public class RowNumMapper extends ResultSetMapper {
     public ResultSet map(ResultSet resultSet) {
 
         ResultSetSchema schema = map(resultSet.getSchema());
-        MetricColumn column = schema.getColumn(ROW_NUM_COLUMN_NAME, MetricColumn.class).orElseThrow(
-                () -> new IllegalStateException("Unexpected missing column")
-        );
+        MetricColumn column = schema.getColumn(ROW_NUM_COLUMN_NAME, MetricColumn.class).get();
 
         int resultSetSize = resultSet.size();
         ArrayList<Result> newResults = new ArrayList<>(resultSetSize);
@@ -44,6 +42,7 @@ public class RowNumMapper extends ResultSetMapper {
 
     @Override
     protected Result map(Result result, ResultSetSchema schema) {
+        // map for rows is not
         throw new UnsupportedOperationException("This code should never be reached.");
     }
 
