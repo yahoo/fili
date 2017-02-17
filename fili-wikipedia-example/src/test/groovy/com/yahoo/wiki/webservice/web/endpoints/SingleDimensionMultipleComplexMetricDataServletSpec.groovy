@@ -8,7 +8,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.web.endpoints.BaseDataServletComponentSpec
 import com.yahoo.bard.webservice.web.endpoints.DataServlet
 import com.yahoo.wiki.webservice.application.WikiJerseyTestBinder
-import com.yahoo.wiki.webservice.data.config.names.WikiApiDimensionName
+import com.yahoo.wiki.webservice.data.config.names.WikiApiDimensionConfigInfo
 import com.yahoo.wiki.webservice.data.config.names.WikiApiMetricName
 import com.yahoo.wiki.webservice.data.config.names.WikiDruidMetricName
 import com.yahoo.wiki.webservice.data.config.names.WikiDruidTableName
@@ -19,7 +19,7 @@ class SingleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServle
     @Override
     def setup() {
         DimensionDictionary dimensionStore = jtb.configurationLoader.dimensionDictionary
-        dimensionStore.findByApiName(WikiApiDimensionName.PAGE.asName()).with {
+        dimensionStore.findByApiName(WikiApiDimensionConfigInfo.PAGE.asName()).with {
             addDimensionRow(BardDimensionField.makeDimensionRow(it, "Foo", "FooDesc"))
             addDimensionRow(BardDimensionField.makeDimensionRow(it, "Bar", "BarDesc"))
             addDimensionRow(BardDimensionField.makeDimensionRow(it, "Baz", "BazDesc"))
@@ -33,7 +33,7 @@ class SingleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServle
 
     @Override
     String getTarget() {
-        return "data/${WikiLogicalTableName.WIKIPEDIA.asName()}/hour/${WikiApiDimensionName.PAGE.asName()}"
+        return "data/${WikiLogicalTableName.WIKIPEDIA.asName()}/hour/${WikiApiDimensionConfigInfo.PAGE.asName()}"
     }
 
     @Override
@@ -62,24 +62,24 @@ class SingleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServle
               "rows" : [
                   {
                     "dateTime" : "2014-06-02 00:00:00.000",
-                    "${WikiApiDimensionName.PAGE.asName()}|id" : "Foo",
-                    "${WikiApiDimensionName.PAGE.asName()}|desc" : "FooDesc",
+                    "${WikiApiDimensionConfigInfo.PAGE.asName()}|id" : "Foo",
+                    "${WikiApiDimensionConfigInfo.PAGE.asName()}|desc" : "FooDesc",
                     "${WikiApiMetricName.COUNT.asName()}" : 10,
                     "${WikiApiMetricName.ADDED.asName()}" : 10,
                     "${WikiApiMetricName.DELTA.asName()}" : 20
                   },
                   {
                     "dateTime" : "2014-06-02 00:00:00.000",
-                    "${WikiApiDimensionName.PAGE.asName()}|id" : "Bar",
-                    "${WikiApiDimensionName.PAGE.asName()}|desc" : "BarDesc",
+                    "${WikiApiDimensionConfigInfo.PAGE.asName()}|id" : "Bar",
+                    "${WikiApiDimensionConfigInfo.PAGE.asName()}|desc" : "BarDesc",
                     "${WikiApiMetricName.COUNT.asName()}" : 11,
                     "${WikiApiMetricName.ADDED.asName()}" : 11,
                     "${WikiApiMetricName.DELTA.asName()}" : 22
                   },
                   {
                     "dateTime" : "2014-06-02 00:00:00.000",
-                    "${WikiApiDimensionName.PAGE.asName()}|id" : "Baz",
-                    "${WikiApiDimensionName.PAGE.asName()}|desc" : "BazDesc",
+                    "${WikiApiDimensionConfigInfo.PAGE.asName()}|id" : "Baz",
+                    "${WikiApiDimensionConfigInfo.PAGE.asName()}|desc" : "BazDesc",
                     "${WikiApiMetricName.COUNT.asName()}" : 12,
                     "${WikiApiMetricName.ADDED.asName()}" : 12,
                     "${WikiApiMetricName.DELTA.asName()}" : 24
@@ -135,7 +135,7 @@ class SingleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServle
                 "version" : "v1",
                 "timestamp" : "2014-06-02T00:00:00.000Z",
                 "event" : {
-                  "${WikiApiDimensionName.PAGE.asName()}" : "Foo",
+                  "${WikiApiDimensionConfigInfo.PAGE.asName()}" : "Foo",
                   "${WikiApiMetricName.COUNT.asName()}" : 10,
                   "${WikiApiMetricName.ADDED.asName()}" : 10,
                   "${WikiApiMetricName.DELTA.asName()}" : 20
@@ -145,7 +145,7 @@ class SingleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServle
                 "version" : "v1",
                 "timestamp" : "2014-06-02T00:00:00.000Z",
                 "event" : {
-                  "${WikiApiDimensionName.PAGE.asName()}" : "Bar",
+                  "${WikiApiDimensionConfigInfo.PAGE.asName()}" : "Bar",
                   "${WikiApiMetricName.COUNT.asName()}" : 11,
                   "${WikiApiMetricName.ADDED.asName()}" : 11,
                   "${WikiApiMetricName.DELTA.asName()}" : 22
@@ -155,7 +155,7 @@ class SingleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServle
                 "version" : "v1",
                 "timestamp" : "2014-06-02T00:00:00.000Z",
                 "event" : {
-                  "${WikiApiDimensionName.PAGE.asName()}" : "Baz",
+                  "${WikiApiDimensionConfigInfo.PAGE.asName()}" : "Baz",
                   "${WikiApiMetricName.COUNT.asName()}" : 12,
                   "${WikiApiMetricName.ADDED.asName()}" : 12,
                   "${WikiApiMetricName.DELTA.asName()}" : 24

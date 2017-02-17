@@ -4,6 +4,7 @@ package com.yahoo.wiki.webservice.data.config.dimension;
 
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
+import com.yahoo.bard.webservice.data.config.dimension.DefaultKeyValueStoreDimensionConfig;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
@@ -12,7 +13,7 @@ import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager;
 import com.yahoo.bard.webservice.util.StreamUtils;
 import com.yahoo.bard.webservice.util.Utils;
-import com.yahoo.wiki.webservice.data.config.names.WikiApiDimensionName;
+import com.yahoo.wiki.webservice.data.config.names.WikiApiDimensionConfigInfo;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -40,15 +41,18 @@ public class WikiDimensions {
     public WikiDimensions() {
 
         this.dimensionConfigs = Collections.unmodifiableSet(
-                Arrays.stream(WikiApiDimensionName.values())
+                Arrays.stream(WikiApiDimensionConfigInfo.values())
                         .map(
-                                dimensionName -> new WikiDimensionConfig(
-                                        dimensionName,
-                                        dimensionName.asName(),
-                                        getDefaultKeyValueStore(dimensionName),
-                                        getDefaultSearchProvider(dimensionName),
-                                        getDefaultFields()
-                                )
+                            dimensionName -> new DefaultKeyValueStoreDimensionConfig(
+                                dimensionName,
+                                dimensionName.asName(),
+                                dimensionName.getDescription(),
+                                dimensionName.getLongName(),
+                                dimensionName.getCategory(),
+                                getDefaultFields(),
+                                getDefaultKeyValueStore(dimensionName),
+                                getDefaultSearchProvider(dimensionName)
+                            )
                         )
                         .collect(Collectors.toSet())
         );
@@ -74,9 +78,11 @@ public class WikiDimensions {
      *
      * @return set of dimension configurations
      */
-    public LinkedHashSet<DimensionConfig> getDimensionConfigurationsByApiName(WikiApiDimensionName... dimensionNames) {
+    public LinkedHashSet<DimensionConfig> getDimensionConfigurationsByConfigInfo(
+        WikiApiDimensionConfigInfo... dimensionNames
+    ) {
         return Arrays.stream(dimensionNames)
-                .map(WikiApiDimensionName::asName)
+                .map(WikiApiDimensionConfigInfo::asName)
                 .map(wikiApiDimensionNameToConfig::get)
                 .collect(Collectors.toCollection(LinkedHashSet<DimensionConfig>::new));
     }
@@ -88,7 +94,7 @@ public class WikiDimensions {
      *
      * @return A KeyValueStore instance
      */
-    private KeyValueStore getDefaultKeyValueStore(WikiApiDimensionName storeName) {
+    private KeyValueStore getDefaultKeyValueStore(WikiApiDimensionConfigInfo storeName) {
         return MapStoreManager.getInstance(storeName.asName());
     }
 
@@ -99,7 +105,7 @@ public class WikiDimensions {
      *
      * @return  A Scanning Search Provider for the provider name.
      */
-    private SearchProvider getDefaultSearchProvider(WikiApiDimensionName providerName) {
+    private SearchProvider getDefaultSearchProvider(WikiApiDimensionConfigInfo providerName) {
         return ScanSearchProviderManager.getInstance(providerName.asName());
     }
 

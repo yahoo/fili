@@ -10,7 +10,10 @@ Current
 
 ### Added:
 
-
+- [Added default base class for all dimension types](https://github.com/yahoo/fili/pull/177)
+   * Added base classes `DefaultKeyValueStoreDimensionConfig`, `DefaultLookupDimensionConfig` and `DefaultRegisteredLookupDimensionConfig` 
+     to create default dimensions. 
+       
 - [dateTime based sort feature for the final ResultSet added](https://github.com/yahoo/fili/pull/178)
    * Now we support dateTime column based sort in ASC or DESC order.
    * Added `DateTimeSortMapper` to sort the time buckets and `DateTimeSortRequestHandler` to inject to the workflow

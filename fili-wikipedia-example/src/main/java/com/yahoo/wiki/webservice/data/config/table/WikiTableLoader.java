@@ -16,7 +16,7 @@ import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensions;
-import com.yahoo.wiki.webservice.data.config.names.WikiApiDimensionName;
+import com.yahoo.wiki.webservice.data.config.names.WikiApiDimensionConfigInfo;
 import com.yahoo.wiki.webservice.data.config.names.WikiApiMetricName;
 import com.yahoo.wiki.webservice.data.config.names.WikiDruidMetricName;
 import com.yahoo.wiki.webservice.data.config.names.WikiDruidTableName;
@@ -61,8 +61,8 @@ public class WikiTableLoader extends BaseTableLoader {
     private void configureSample(WikiDimensions wikiDimensions) {
 
         // Dimensions
-        Set<DimensionConfig> dimsBasefactDruidTableName = wikiDimensions.getDimensionConfigurationsByApiName(
-                WikiApiDimensionName.values()
+        Set<DimensionConfig> dimsBasefactDruidTableName = wikiDimensions.getDimensionConfigurationsByConfigInfo(
+            WikiApiDimensionConfigInfo.values()
         );
 
         // Physical Tables
