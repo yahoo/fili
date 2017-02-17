@@ -69,7 +69,7 @@ public class BardLoggingFilter implements ContainerRequestFilter, ContainerRespo
     private static final String PROPERTY_NANOS = LoggingFilter.class.getName() + ".nanos";
     private static final String PROPERTY_REQ_LEN = LoggingFilter.class.getName() + ".reqlen";
     private static final String PROPERTY_OUTPUT_STREAM = LoggingFilter.class.getName() + ".ostream";
-    private static final Pattern VALID_REQUEST_ID = Pattern.compile("[a-zA-Z0-9+/=-]+");
+    private static final Pattern VALID_REQUEST_ID = Pattern.compile("[a-zA-Z0-9+/=\\-_]+");
 
     public static final double MILLISECONDS_PER_NANOSECOND = 1000000.0;
     public static final String TOTAL_TIMER = "TotalTime";

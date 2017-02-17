@@ -25,6 +25,8 @@ Current
 
 ### Changed:
 
+-- [Request IDS now supports underscores.](https://github.com/yahoo/fili/pull/176)
+
 - Added support for extensions defining new Query types
     * TestDruidWebService assumes unknown query types behave like GroupBy, TimeSeries, and TopN
     * ResultSetResponseProcessor delegates to DruidResponseProcessor to build expected query schema, 
