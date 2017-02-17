@@ -470,18 +470,6 @@ class ErrorDataServletSpec extends Specification {
         GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), jsonFailure)
     }
 
-    def "Successful execution if dateTime is first field in sort list"() {
-        when:
-        Response r = jtb.getHarness().target("data/shapes/day/color")
-                .queryParam("metrics","height")
-                .queryParam("dateTime","2014-09-01%2F2014-09-10")
-                .queryParam("sort","dateTime|DESC,height|ASC")
-                .request().get()
-
-        then:
-        r.getStatus() == 200
-    }
-
     def "Sort metric not in query fails"() {
         String message = SORT_METRICS_NOT_IN_QUERY_FORMAT.format("[width]")
 

@@ -116,7 +116,7 @@ public class DataApiRequest extends ApiRequest {
 
     private final DruidFilterBuilder filterBuilder;
 
-    private Optional<OrderByColumn> dateTimeSort = Optional.ofNullable(null);
+    private Optional<OrderByColumn> dateTimeSort = Optional.empty();
 
     /**
      * Parses the API request URL and generates the Api Request object.
@@ -242,20 +242,16 @@ public class DataApiRequest extends ApiRequest {
 
         this.having = DruidHavingBuilder.buildHavings(this.havings);
 
-
-        if (
-                sorts != null &&
-                        !sorts.isEmpty() &&
-                        sorts.toLowerCase(Locale.ENGLISH).contains(DATE_TIME_STRING.toLowerCase(Locale.ENGLISH))
-                ) {
-            //Requested sort on dateTime - It has to be first field in the string
+        String sortApiValue = sorts;
+        if (sorts != null && !sorts.isEmpty() && sorts.contains(DATE_TIME_STRING)) {
+            //Requested sort on dateTime - It has to be the first field in string
             this.dateTimeSort = generateDateTimeSortColumn(sorts.substring(0, sorts.indexOf(",")));
             //Separating dateTimeSort from the complete api sort value string
-            sorts = sorts.substring(sorts.indexOf(",") + 1, sorts.length());
+            sortApiValue = sorts.substring(sorts.indexOf(",") + 1, sorts.length());
         }
 
         // Requested sort on metrics - optional, can be empty Set
-        this.sorts = generateSortColumns(sorts, this.logicalMetrics, metricDictionary);
+        this.sorts = generateSortColumns(sortApiValue, this.logicalMetrics, metricDictionary);
 
         // Overall requested number of rows in the response. Ignores grouping in time buckets.
         this.count = generateInteger(count, "count");
@@ -1125,22 +1121,36 @@ public class DataApiRequest extends ApiRequest {
 
         List<String> dateTimeWithDirection = Arrays.asList(dateTimeSort.split("\\|"));
         if (DATE_TIME_STRING.equals(dateTimeWithDirection.get(0))) {
-            SortDirection sortDirection;
-            try {
-                sortDirection = dateTimeWithDirection.size() == 2 ?
-                        SortDirection.valueOf(dateTimeWithDirection.get(1).toUpperCase(Locale.ENGLISH)) :
-                        SortDirection.DESC;
-            } catch (IllegalArgumentException ignored) {
-                String sortDirectionName = dateTimeWithDirection.get(1);
-                LOG.debug(SORT_DIRECTION_INVALID.logFormat(sortDirectionName));
-                throw new BadApiRequestException(SORT_DIRECTION_INVALID.format(sortDirectionName));
-            }
-            return Optional.of(new OrderByColumn(dateTimeWithDirection.get(0), sortDirection));
+            return Optional.of(
+                    new OrderByColumn(dateTimeWithDirection.get(0), getSortDirection(dateTimeWithDirection))
+            );
         }
         else {
             LOG.debug(DATE_TIME_SORT_VALUE_INVALID.logFormat());
             throw new BadApiRequestException(DATE_TIME_SORT_VALUE_INVALID.format());
         }
+    }
+
+    /**
+     * Extract valid sort direction.
+     *
+     * @param columnWithDirection  Column and its sorting direction
+     *
+     * @return Sorting direction
+     */
+    protected SortDirection getSortDirection(List<String> columnWithDirection) {
+
+        SortDirection sortDirection;
+        try {
+            sortDirection = columnWithDirection.size() == 2 ?
+                    SortDirection.valueOf(columnWithDirection.get(1).toUpperCase(Locale.ENGLISH)) :
+                    SortDirection.DESC;
+        } catch (IllegalArgumentException ignored) {
+            String sortDirectionName = columnWithDirection.get(1);
+            LOG.debug(SORT_DIRECTION_INVALID.logFormat(sortDirectionName));
+            throw new BadApiRequestException(SORT_DIRECTION_INVALID.format(sortDirectionName));
+        }
+        return sortDirection;
     }
 
     /**
@@ -1180,17 +1190,7 @@ public class DataApiRequest extends ApiRequest {
                 metricWithDirection = Arrays.asList(sort.split("\\|"));
                 sortMetricName = metricWithDirection.get(0);
 
-                SortDirection sortDirection;
-                try {
-                    sortDirection = metricWithDirection.size() == 2 ?
-                            SortDirection.valueOf(metricWithDirection.get(1).toUpperCase(Locale.ENGLISH)) :
-                            SortDirection.DESC;
-                } catch (IllegalArgumentException ignored) {
-                    String sortDirectionName = metricWithDirection.get(1);
-                    LOG.debug(SORT_DIRECTION_INVALID.logFormat(sortDirectionName));
-                    throw new BadApiRequestException(SORT_DIRECTION_INVALID.format(sortDirectionName));
-                }
-
+                SortDirection sortDirection = getSortDirection(metricWithDirection);
                 LogicalMetric logicalMetric = metricDictionary.get(sortMetricName);
 
                 // If metric dictionary returns a null, it means the requested sort metric is not found.
