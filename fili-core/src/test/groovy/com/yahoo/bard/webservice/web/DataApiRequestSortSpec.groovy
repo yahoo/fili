@@ -64,4 +64,17 @@ class DataApiRequestSortSpec extends Specification {
         then:
         r.getStatus() == 200
     }
+
+    def "Successful execution if dateTime is only field in the sort list"() {
+        when:
+        javax.ws.rs.core.Response r = jtb.getHarness().target("data/shapes/day/")
+                .queryParam("metrics","height")
+                .queryParam("dateTime","2014-09-01%2F2014-09-10")
+                .queryParam("sort","dateTime|DESC")
+                .request().get()
+
+        then:
+        r.getStatus() == 200
+    }
+
 }

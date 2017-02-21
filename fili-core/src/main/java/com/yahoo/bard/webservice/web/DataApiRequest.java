@@ -245,9 +245,13 @@ public class DataApiRequest extends ApiRequest {
         String sortApiValue = sorts;
         if (sorts != null && !sorts.isEmpty() && sorts.contains(DATE_TIME_STRING)) {
             //Requested sort on dateTime - It has to be the first field in string
-            this.dateTimeSort = generateDateTimeSortColumn(sorts.substring(0, sorts.indexOf(",")));
-            //Separating dateTimeSort from the complete api sort value string
-            sortApiValue = sorts.substring(sorts.indexOf(",") + 1, sorts.length());
+            if (sorts.contains(",")) {
+                this.dateTimeSort = generateDateTimeSortColumn(sorts.substring(0, sorts.indexOf(",")));
+                sortApiValue = sorts.substring(sorts.indexOf(",") + 1, sorts.length());
+            }
+            else {
+                sortApiValue = null;
+            }
         }
 
         // Requested sort on metrics - optional, can be empty Set
