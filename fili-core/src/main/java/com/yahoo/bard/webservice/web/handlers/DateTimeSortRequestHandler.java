@@ -39,7 +39,7 @@ public class DateTimeSortRequestHandler implements DataRequestHandler {
         if (request.getDateTimeSort().isPresent() &&
                 request.getDateTimeSort().get().getDirection().equals(SortDirection.DESC)
                 ) {
-            mappingResponse.getMappers().add(new DateTimeSortMapper(request));
+            mappingResponse.getMappers().add(new DateTimeSortMapper());
         }
         return next.handleRequest(context, request, druidQuery, mappingResponse);
     }

@@ -5,7 +5,6 @@ package com.yahoo.bard.webservice.data.metric.mappers;
 import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.ResultSet;
 import com.yahoo.bard.webservice.table.Schema;
-import com.yahoo.bard.webservice.web.ApiRequest;
 
 import org.joda.time.DateTime;
 
@@ -20,17 +19,6 @@ import java.util.stream.Collectors;
  * Default dateTime order of the druid results is ascending. This class reverses the order if user requests.
  */
 public class DateTimeSortMapper extends ResultSetMapper {
-
-    private final ApiRequest apiRequest;
-
-    /**
-     * Constructor.
-     *
-     * @param apiRequest  The api request object to extract the requested sorting order
-     */
-    public DateTimeSortMapper(ApiRequest apiRequest) {
-        this.apiRequest = apiRequest;
-    }
 
     /**
      *  Reverses the resultSet if the requested order is DESC.
