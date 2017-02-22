@@ -235,17 +235,6 @@ public enum ErrorMessageFormat implements MessageFormatter {
         this.loggingFormat = loggingFormat;
     }
 
-    /**
-     * Format a log message for reporting to a user/client.
-     *
-     * @param values The values to populate the format string
-     *
-     * @return The user message
-     */
-    public String format(Object...values) {
-        return String.format(messageFormat, values);
-    }
-
     @Override
     public String getMessageFormat() {
         return messageFormat;
