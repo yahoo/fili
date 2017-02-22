@@ -73,7 +73,7 @@ public enum ErrorMessageFormat implements MessageFormatter {
     SORT_METRICS_NOT_SORTABLE_FORMAT("Sorting not possible on metric(s) '%s'."),
     SORT_METRICS_UNDEFINED("Metric(s) in sort expression '%s' do not exist."),
 
-    DATE_TIME_SORT_VALUE_INVALID("dateTime must always be the first field in the sort list"),
+    DATE_TIME_SORT_VALUE_INVALID("dateTime should be the first field in the sort list"),
 
     ACCEPT_FORMAT_INVALID("Format '%s' is unknown. Choose from 'csv', 'json'."),
 
