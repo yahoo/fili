@@ -13,8 +13,8 @@ public enum ErrorMessageFormat implements MessageFormatter {
     TABLE_ALIGNMENT_UNDEFINED("Table '%s' cannot be aligned to a request with intervals: %s."),
     TABLE_SCHEMA_UNDEFINED(
             "Table '%s' is incompatible with the dimensions '%s', metrics '%s' and granularity '%s' requested.",
-            "No PhysicalTable with the availability-based dimensions '%s', metrics '%s', and granularity '%s' found " +
-                    "for Logical Table '%s'"
+            "No PhysicalTable for Logical Table '%s' with the availability-based dimensions '%s', " +
+                            "metrics '%s', and granularity '%s' found "
     ),
 
     EMPTY_DICTIONARY("%s Dictionary is empty."),
