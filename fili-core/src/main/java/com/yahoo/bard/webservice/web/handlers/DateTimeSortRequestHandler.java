@@ -3,7 +3,6 @@
 package com.yahoo.bard.webservice.web.handlers;
 
 import com.yahoo.bard.webservice.data.metric.mappers.DateTimeSortMapper;
-import com.yahoo.bard.webservice.druid.model.orderby.SortDirection;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.responseprocessors.MappingResponseProcessor;
@@ -34,12 +33,9 @@ public class DateTimeSortRequestHandler implements DataRequestHandler {
             DruidAggregationQuery<?> druidQuery,
             ResponseProcessor response
     ) {
-
         MappingResponseProcessor mappingResponse = (MappingResponseProcessor) response;
-        if (request.getDateTimeSort().isPresent() &&
-                request.getDateTimeSort().get().getDirection().equals(SortDirection.DESC)
-                ) {
-            mappingResponse.getMappers().add(new DateTimeSortMapper());
+        if (request.getDateTimeSort().isPresent()) {
+            mappingResponse.getMappers().add(new DateTimeSortMapper(request.getDateTimeSort().get().getDirection()));
         }
         return next.handleRequest(context, request, druidQuery, mappingResponse);
     }

@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.data.metric.mappers;
 
 import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.ResultSet;
+import com.yahoo.bard.webservice.druid.model.orderby.SortDirection;
 import com.yahoo.bard.webservice.table.Schema;
 
 import org.joda.time.DateTime;
@@ -19,6 +20,17 @@ import java.util.stream.Collectors;
  * Default dateTime order of the druid results is ascending. This class reverses the order if user requests.
  */
 public class DateTimeSortMapper extends ResultSetMapper {
+
+    SortDirection direction;
+
+    /**
+     * Constructor.
+     *
+     * @param direction Sort direction
+     */
+    public DateTimeSortMapper(SortDirection direction) {
+        this.direction = direction;
+    }
 
     /**
      *  Reverses the resultSet if the requested order is DESC.
@@ -37,7 +49,12 @@ public class DateTimeSortMapper extends ResultSetMapper {
         }
 
         List<DateTime> dateTimeList = new ArrayList(bucketizedResultsMap.keySet());
-        Collections.sort(dateTimeList, Collections.reverseOrder());
+
+        Collections.sort(dateTimeList, new DateTimeComparator());
+
+        if (direction.equals(SortDirection.DESC)) {
+            Collections.sort(dateTimeList, Collections.reverseOrder());
+        }
 
         return new ResultSet(
                 dateTimeList.stream()

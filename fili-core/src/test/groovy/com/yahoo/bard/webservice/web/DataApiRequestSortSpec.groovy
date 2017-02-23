@@ -31,17 +31,26 @@ class DataApiRequestSortSpec extends Specification {
         dateTimeSort.get().dimension == "dateTime"
     }
 
-    def "check invalid name of dateTime creates error"() {
+    def "If dateTime is not the first value in the string, then throw an error"() {
         setup:
         // mis spelled dateTime as dateTiem.
         String expectedMessage = ErrorMessageFormat.DATE_TIME_SORT_VALUE_INVALID.format()
 
         when:
-        new DataApiRequest().generateDateTimeSortColumn("dateTiem|desc,height|ASC")
+        new DataApiRequest().generateDateTimeSortColumn("height|ASC,dateTime|desc")
 
         then:
         Exception e = thrown(BadApiRequestException)
         e.getMessage() == expectedMessage
+    }
+
+    def "Generate dateTime sort column when it is requested with other columns"() {
+        when:
+        Optional<OrderByColumn> dateTimeSort = new DataApiRequest().generateDateTimeSortColumn("dateTime|desc,height|ASC")
+
+        then:
+        dateTimeSort.get().direction == SortDirection.DESC
+        dateTimeSort.get().dimension == "dateTime"
     }
 
     def "Generate dateTime sort direction with default value"() {
@@ -51,6 +60,14 @@ class DataApiRequestSortSpec extends Specification {
         then:
         dateTimeSort.get().direction == SortDirection.DESC
         dateTimeSort.get().dimension == "dateTime"
+    }
+
+    def "Generate api sort string after truncating the dateTime column"() {
+        when:
+        String apiSortValue = new DataApiRequest().generateApiSortValue("dateTime|desc,height|ASC")
+
+        then:
+        apiSortValue == 'height|ASC'
     }
 
     def "Successful execution if dateTime is first field in the sort list"() {

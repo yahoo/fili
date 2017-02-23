@@ -242,17 +242,9 @@ public class DataApiRequest extends ApiRequest {
 
         this.having = DruidHavingBuilder.buildHavings(this.havings);
 
-        String sortApiValue = sorts;
-        if (sorts != null && !sorts.isEmpty() && sorts.contains(DATE_TIME_STRING)) {
-            //Requested sort on dateTime - It has to be the first field in string
-            if (sorts.contains(",")) {
-                this.dateTimeSort = generateDateTimeSortColumn(sorts.substring(0, sorts.indexOf(",")));
-                sortApiValue = sorts.substring(sorts.indexOf(",") + 1, sorts.length());
-            }
-            else {
-                sortApiValue = null;
-            }
-        }
+        this.dateTimeSort = generateDateTimeSortColumn(sorts);
+
+        String sortApiValue = generateApiSortValue(sorts);
 
         // Requested sort on metrics - optional, can be empty Set
         this.sorts = generateSortColumns(sortApiValue, this.logicalMetrics, metricDictionary);
@@ -309,6 +301,56 @@ public class DataApiRequest extends ApiRequest {
 
         validateAggregatability(this.dimensions, this.filters);
         validateTimeAlignment(this.granularity, this.intervals);
+    }
+
+    /**
+     * Update sort field string by truncating the dateTime if it is present.
+     *
+     * @param sorts  String of sort columns
+     *
+     * @return Updated sort column if dateTime exists. Otherwise  return as it is received.
+     */
+    protected String generateApiSortValue(String sorts) {
+
+        if (sorts != null && !sorts.isEmpty() && sorts.contains(DATE_TIME_STRING)) {
+            if (sorts.contains(",")) {
+                //Truncate the dateTime sort column from the api sort string
+                return sorts.substring(sorts.indexOf(",") + 1, sorts.length());
+            } else {
+                //If only dateTime column requested for sorting, then rest of the api sort value will be null
+                return null;
+            }
+        } else {
+            //If there is no dateTime string involved, return as it is received
+            return sorts;
+        }
+    }
+
+    /**
+     * Generate OrderByColumn instance for dateTime sort column if it is present in string of sort columns.
+     *
+     * @param sorts  String of sort columns
+     *
+     * @return instance of OrderByColumn for dateTime
+     */
+    protected Optional<OrderByColumn> generateDateTimeSortColumn(String sorts) {
+
+        if (sorts != null && !sorts.isEmpty() && sorts.contains(DATE_TIME_STRING)) {
+            //Requested sort on dateTime - It has to be the first field in string
+            String dateTime = sorts.contains(",") ? sorts.substring(0, sorts.indexOf(",")) : sorts;
+            List<String> dateTimeWithDirection = Arrays.asList(dateTime.split("\\|"));
+            if (DATE_TIME_STRING.equals(dateTimeWithDirection.get(0))) {
+                return Optional.of(
+                        new OrderByColumn(dateTimeWithDirection.get(0), getSortDirection(dateTimeWithDirection))
+                );
+            } else {
+                LOG.debug(DATE_TIME_SORT_VALUE_INVALID.logFormat());
+                throw new BadApiRequestException(DATE_TIME_SORT_VALUE_INVALID.format());
+            }
+        } else {
+            return Optional.empty();
+        }
+
     }
 
     /**
@@ -1111,27 +1153,6 @@ public class DataApiRequest extends ApiRequest {
             return generated;
         } finally {
             RequestLog.stopTiming("GeneratingHavings");
-        }
-    }
-
-    /**
-     * Generate OrderByColumn instance for dateTime sort column.
-     *
-     * @param dateTimeSort  datetime sort query string
-     *
-     * @return instance of OrderByColumn for dateTime
-     */
-    protected Optional<OrderByColumn> generateDateTimeSortColumn(String dateTimeSort) {
-
-        List<String> dateTimeWithDirection = Arrays.asList(dateTimeSort.split("\\|"));
-        if (DATE_TIME_STRING.equals(dateTimeWithDirection.get(0))) {
-            return Optional.of(
-                    new OrderByColumn(dateTimeWithDirection.get(0), getSortDirection(dateTimeWithDirection))
-            );
-        }
-        else {
-            LOG.debug(DATE_TIME_SORT_VALUE_INVALID.logFormat());
-            throw new BadApiRequestException(DATE_TIME_SORT_VALUE_INVALID.format());
         }
     }
 
