@@ -23,10 +23,12 @@ import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
+import com.yahoo.bard.webservice.druid.model.query.Granularity
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.logging.RequestLog
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.Schema
+import com.yahoo.bard.webservice.table.ZonedSchema
 import com.yahoo.bard.webservice.web.DataApiRequest
 import com.yahoo.bard.webservice.web.ResponseFormatType
 
@@ -91,6 +93,7 @@ class ResultSetResponseProcessorSpec extends Specification {
         apiRequest.getGranularity() >> DAY
         apiRequest.getFormat() >> ResponseFormatType.JSON
         apiRequest.getUriInfo() >> uriInfo
+        apiRequest.getTimeZone() >> DateTimeZone.UTC
 
         List<Dimension> dimensions = new ArrayList<Dimension>()
         List<Aggregation> aggregations = new ArrayList<Dimension>()
@@ -147,45 +150,14 @@ class ResultSetResponseProcessorSpec extends Specification {
         resultSetResponseProcessor.druidResponseParser == druidResponseParser
     }
 
-    def "Test buildResultSet"() {
-        setup:
-        def resultSetResponseProcessor = new ResultSetResponseProcessor(
-                apiRequest,
-                responseEmitter,
-                druidResponseParser,
-                MAPPERS,
-                httpResponseMaker
-        )
-        JsonNode jsonMock = Mock(JsonNode)
-        Schema captureSchema = null
-        JsonNode captureJson
-        ResultSet rs = Mock(ResultSet)
-
-        1 * druidResponseParser.parse(_, _, _) >> {
-            JsonNode json, Schema schema, DefaultQueryType type -> captureSchema = schema; captureJson = json; rs
-        }
-        ResultSet actual
-
-        when:
-        actual = resultSetResponseProcessor.buildResultSet(jsonMock, groupByQuery, DateTimeZone.UTC)
-        DimensionColumn dimCol = captureSchema.getColumn("dimension1")
-        MetricColumn m1 = captureSchema.getColumn("agg1")
-        MetricColumn m2 = captureSchema.getColumn("postAgg1")
-
-        then:
-        captureSchema.granularity == DAY
-        dimCol.dimension == d1
-        m1 != null
-        m2 != null
-        actual == rs
-
-    }
-
     def "Test processResponse"() {
         setup:
         JsonNode jsonMock = Mock(JsonNode)
         ResultSet resultSetMock = Mock(ResultSet)
-
+        Schema captureSchema = null
+        JsonNode captureJson = null
+        ResultSet actual = null
+        ZonedSchema z
         ResultSetResponseProcessor resultSetResponseProcessor = new ResultSetResponseProcessor(
                 apiRequest,
                 responseEmitter,
@@ -194,17 +166,11 @@ class ResultSetResponseProcessorSpec extends Specification {
                 httpResponseMaker
         ) {
             @Override
-            public ResultSet buildResultSet(
-                    JsonNode json,
-                    DruidAggregationQuery<?> groupByQuery,
-                    DateTimeZone dateTimeZone
-            ) {
-                json.clone();
-                return resultSetMock
+            protected ResultSet mapResultSet(ResultSet resultSet) { 
+                actual = resultSet; 
+                resultSet.getSchema(); 
+                return resultSet 
             }
-
-            @Override
-            protected ResultSet mapResultSet(ResultSet resultSet) { resultSet.getSchema(); return resultSet }
         }
 
         when:
@@ -215,9 +181,32 @@ class ResultSetResponseProcessorSpec extends Specification {
         )
 
         then:
-        1 * jsonMock.clone()
-        2 * resultSetMock.getSchema()
-        1 == 1
+        1 * druidResponseParser.buildSchema(_, _, _) >> { DruidAggregationQuery<?> q, Granularity g, DateTimeZone tz -> 
+            z = new ZonedSchema(g, tz)
+            for (Aggregation aggregation : q.getAggregations()) {
+                MetricColumn.addNewMetricColumn(z, aggregation.getName())
+            }
+    
+            for (PostAggregation postAggregation : q.getPostAggregations()) {
+                MetricColumn.addNewMetricColumn(z, postAggregation.getName())
+            }
+    
+            for (Dimension dimension : q.getDimensions()) {
+                DimensionColumn.addNewDimensionColumn(z, dimension)
+            }
+            z
+        }
+        1 * druidResponseParser.parse(_,_,_) >> { JsonNode json, Schema schema, DefaultQueryType type -> 
+            captureSchema = schema
+            captureJson = json
+            resultSetMock
+        }
+        2 * resultSetMock.getSchema() >> { z }
+        captureSchema.granularity == DAY
+        captureSchema.getColumn("dimension1").dimension == d1
+        captureSchema.getColumn("agg1") != null
+        captureSchema.getColumn("postAgg1") != null
+        actual == resultSetMock
     }
 
     def "Test failure callback"() {
@@ -233,9 +222,11 @@ class ResultSetResponseProcessorSpec extends Specification {
         Throwable t = new Throwable("message1234")
         Response responseCaptor = null
         1 * httpResponseChannel.asyncResponse.resume(_) >> { javax.ws.rs.core.Response r -> responseCaptor = r }
+        
         when:
         fbc.invoke(t)
         String entity = responseCaptor.entity
+        
         then:
         responseCaptor.getStatus() == 500
         entity.contains("message1234")
