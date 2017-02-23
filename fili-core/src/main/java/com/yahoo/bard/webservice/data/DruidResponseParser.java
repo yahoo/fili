@@ -46,9 +46,11 @@ public class DruidResponseParser {
      * @param dateTimeZone The timezone for the schema
      * @return The schema for the query
      */
-    public ZonedSchema buildSchema(DruidAggregationQuery<?> druidQuery,
-                                    Granularity granularity,
-                                    DateTimeZone dateTimeZone) {
+    public ZonedSchema buildSchema(
+                    DruidAggregationQuery<?> druidQuery,
+                    Granularity granularity,
+                    DateTimeZone dateTimeZone
+    ) {
         ZonedSchema resultSetSchema = new ZonedSchema(granularity, dateTimeZone);
 
         for (Aggregation aggregation : druidQuery.getAggregations()) {
