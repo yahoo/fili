@@ -115,26 +115,27 @@ public class TestDruidWebService implements DruidWebService {
         }
 
         // Set the response to use based on the type of the query we're processing
-        if (!(lastQuery.getQueryType() instanceof DefaultQueryType)) {
-            throw new IllegalArgumentException("Illegal query type : " + lastQuery.getQueryType());
-        }
-
-        DefaultQueryType defaultQueryType = (DefaultQueryType) lastQuery.getQueryType();
-        switch (defaultQueryType) {
-            case GROUP_BY:
-            case TOP_N:
-            case TIMESERIES:
-            case LOOKBACK:
-                // default response is groupBy response
-                break;
-            case SEGMENT_METADATA:
-                jsonResponse = () -> segmentMetadataResponse;
-                break;
-            case TIME_BOUNDARY:
-                jsonResponse = () -> timeBoundaryResponse;
-                break;
-            default:
-                throw new IllegalArgumentException("Illegal query type : " + lastQuery.getQueryType());
+        if (lastQuery.getQueryType() instanceof DefaultQueryType) {
+            DefaultQueryType defaultQueryType = (DefaultQueryType) lastQuery.getQueryType();
+            switch (defaultQueryType) {
+                case GROUP_BY:
+                case TOP_N:
+                case TIMESERIES:
+                case LOOKBACK:
+                    // default response is groupBy response
+                    break;
+                case SEGMENT_METADATA:
+                    jsonResponse = () -> segmentMetadataResponse;
+                    break;
+                case TIME_BOUNDARY:
+                    jsonResponse = () -> timeBoundaryResponse;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Illegal query type : " + lastQuery.getQueryType());
+            }
+        } else {
+            // not a default query type. Assume the response is the default groupBy response
+            // initialized above. Don't need to do anything else here.
         }
 
         try {
