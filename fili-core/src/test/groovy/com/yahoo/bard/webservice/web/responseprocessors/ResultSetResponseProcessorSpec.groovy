@@ -157,7 +157,7 @@ class ResultSetResponseProcessorSpec extends Specification {
         Schema captureSchema = null
         JsonNode captureJson = null
         ResultSet actual = null
-        ZonedSchema z
+        ZonedSchema zonedSchema
         ResultSetResponseProcessor resultSetResponseProcessor = new ResultSetResponseProcessor(
                 apiRequest,
                 responseEmitter,
@@ -167,9 +167,8 @@ class ResultSetResponseProcessorSpec extends Specification {
         ) {
             @Override
             protected ResultSet mapResultSet(ResultSet resultSet) { 
-                actual = resultSet; 
-                resultSet.getSchema(); 
-                return resultSet 
+                actual = resultSet
+                resultSet
             }
         }
 
@@ -182,26 +181,26 @@ class ResultSetResponseProcessorSpec extends Specification {
 
         then:
         1 * druidResponseParser.buildSchema(_, _, _) >> { DruidAggregationQuery<?> q, Granularity g, DateTimeZone tz -> 
-            z = new ZonedSchema(g, tz)
+            zonedSchema = new ZonedSchema(g, tz)
             for (Aggregation aggregation : q.getAggregations()) {
-                MetricColumn.addNewMetricColumn(z, aggregation.getName())
+                MetricColumn.addNewMetricColumn(zonedSchema, aggregation.getName())
             }
     
             for (PostAggregation postAggregation : q.getPostAggregations()) {
-                MetricColumn.addNewMetricColumn(z, postAggregation.getName())
+                MetricColumn.addNewMetricColumn(zonedSchema, postAggregation.getName())
             }
     
             for (Dimension dimension : q.getDimensions()) {
-                DimensionColumn.addNewDimensionColumn(z, dimension)
+                DimensionColumn.addNewDimensionColumn(zonedSchema, dimension)
             }
-            z
+            zonedSchema
         }
         1 * druidResponseParser.parse(_,_,_) >> { JsonNode json, Schema schema, DefaultQueryType type -> 
             captureSchema = schema
             captureJson = json
             resultSetMock
         }
-        2 * resultSetMock.getSchema() >> { z }
+        1 * resultSetMock.getSchema() >> { zonedSchema }
         captureSchema.granularity == DAY
         captureSchema.getColumn("dimension1").dimension == d1
         captureSchema.getColumn("agg1") != null
