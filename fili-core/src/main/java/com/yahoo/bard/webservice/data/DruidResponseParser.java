@@ -4,10 +4,15 @@ package com.yahoo.bard.webservice.data;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.RESULT_SET_ERROR;
 
+import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.druid.model.QueryType;
+import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
+import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
+import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
+import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.table.ZonedSchema;
 
@@ -33,6 +38,37 @@ import javax.inject.Singleton;
 public class DruidResponseParser {
 
     private static final Logger LOG = LoggerFactory.getLogger(DruidResponseParser.class);
+
+    /**
+     * Build the schema that should be expected for the specified query.
+     *
+     * @param druidQuery The query
+     * @param granularity The granularity for the schema
+     * @param dateTimeZone The timezone for the schema
+     *
+     * @return The schema for the query
+     */
+    public ZonedSchema buildSchema(
+                    DruidAggregationQuery<?> druidQuery,
+                    Granularity granularity,
+                    DateTimeZone dateTimeZone
+    ) {
+        ZonedSchema resultSetSchema = new ZonedSchema(granularity, dateTimeZone);
+
+        for (Aggregation aggregation : druidQuery.getAggregations()) {
+            MetricColumn.addNewMetricColumn(resultSetSchema, aggregation.getName());
+        }
+
+        for (PostAggregation postAggregation : druidQuery.getPostAggregations()) {
+            MetricColumn.addNewMetricColumn(resultSetSchema, postAggregation.getName());
+        }
+
+        for (Dimension dimension : druidQuery.getDimensions()) {
+            DimensionColumn.addNewDimensionColumn(resultSetSchema, dimension);
+        }
+
+        return resultSetSchema;
+    }
 
     /**
      * Parse Druid GroupBy result into ResultSet.

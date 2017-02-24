@@ -16,6 +16,10 @@ Current
 
 ### Changed:
 
+- Added support for extensions defining new Query types
+    * TestDruidWebService assumes unknown query types behave like GroupBy, TimeSeries, and TopN
+    * ResultSetResponseProcessor delegates to DruidResponseProcessor to build expected query schema, 
+      allowing subclasses to override and extend the schema behavior
 - [Add dimension fields to fullView table format](https://github.com/yahoo/fili/pull/155)
 
 ### Deprecated:
@@ -23,6 +27,7 @@ Current
 
 
 ### Fixed:
+- Correcting error message logged when no table schema match is found
 - Setting readTimeout on DefaultAsyncHttpClientConfig when building AsyncDruidWebServiceImpl
 
 
