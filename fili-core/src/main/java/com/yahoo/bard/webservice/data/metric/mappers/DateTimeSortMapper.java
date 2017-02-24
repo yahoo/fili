@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Default dateTime order of the druid results is ascending. This class reverses the order if user requests.
+ *  Mapper to sort the result set based on dateTime column sort direction.
  */
 public class DateTimeSortMapper extends ResultSetMapper {
 
