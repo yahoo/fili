@@ -35,7 +35,7 @@ public class DateTimeSortMapper extends ResultSetMapper {
     /**
      *  Sorting the resultSet based on dateTime column sort direction.
      *
-     * @param resultSet  The result set need to be sorted in descending order
+     * @param resultSet  The result set need to be sorted in ascending or descending order
      *
      * @return sorted ResultSet
      */
