@@ -41,9 +41,11 @@ public class DruidResponseParser {
 
     /**
      * Build the schema that should be expected for the specified query.
+     *
      * @param druidQuery The query
      * @param granularity The granularity for the schema
      * @param dateTimeZone The timezone for the schema
+     *
      * @return The schema for the query
      */
     public ZonedSchema buildSchema(
