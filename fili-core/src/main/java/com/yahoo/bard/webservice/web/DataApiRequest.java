@@ -307,7 +307,7 @@ public class DataApiRequest extends ApiRequest {
      *
      * @param sorts  String of sort columns
      *
-     * @return Updated sort column if dateTime exists. Otherwise  return as it is received.
+     * @return Updated sort column if dateTime exists. Otherwise return as it is received.
      */
     protected String truncateTimeSort(String sorts) {
 
@@ -1159,7 +1159,7 @@ public class DataApiRequest extends ApiRequest {
      *
      * @param columnWithDirection  Column and its sorting direction
      *
-     * @return Sorting direction
+     * @return Sorting direction. If no direction provided then the default one will be DESC
      */
     protected SortDirection getSortDirection(List<String> columnWithDirection) {
 

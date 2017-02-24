@@ -11,6 +11,7 @@ import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +50,10 @@ public class DateTimeSortMapper extends ResultSetMapper {
         }
 
         List<DateTime> dateTimeList = new ArrayList(bucketizedResultsMap.keySet());
-        Collections.sort(dateTimeList, new DateTimeComparator(direction));
+
+        Collections.sort(dateTimeList, direction == SortDirection.ASC ?
+                Comparator.<DateTime>naturalOrder() :
+                Comparator.<DateTime>reverseOrder());
 
         return new ResultSet(
                 dateTimeList.stream()
