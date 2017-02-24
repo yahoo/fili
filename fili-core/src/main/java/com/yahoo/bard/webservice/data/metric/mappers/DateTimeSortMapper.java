@@ -26,7 +26,7 @@ public class DateTimeSortMapper extends ResultSetMapper {
     /**
      * Constructor.
      *
-     * @param direction Sort direction
+     * @param direction  Sort direction
      */
     public DateTimeSortMapper(SortDirection direction) {
         this.direction = direction;
