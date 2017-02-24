@@ -33,7 +33,7 @@ public class DateTimeSortMapper extends ResultSetMapper {
     }
 
     /**
-     *  Reverses the resultSet if the requested order is DESC.
+     *  Sorting the resultSet based on dateTime column sort direction.
      *
      * @param resultSet  The result set need to be sorted in descending order
      *
@@ -49,12 +49,7 @@ public class DateTimeSortMapper extends ResultSetMapper {
         }
 
         List<DateTime> dateTimeList = new ArrayList(bucketizedResultsMap.keySet());
-
-        Collections.sort(dateTimeList, new DateTimeComparator());
-
-        if (direction.equals(SortDirection.DESC)) {
-            Collections.sort(dateTimeList, Collections.reverseOrder());
-        }
+        Collections.sort(dateTimeList, new DateTimeComparator(direction));
 
         return new ResultSet(
                 dateTimeList.stream()

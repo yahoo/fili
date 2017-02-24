@@ -64,7 +64,7 @@ class DataApiRequestSortSpec extends Specification {
 
     def "Generate api sort string after truncating the dateTime column"() {
         when:
-        String apiSortValue = new DataApiRequest().generateApiSortValue("dateTime|desc,height|ASC")
+        String apiSortValue = new DataApiRequest().truncateTimeSort("dateTime|desc,height|ASC")
 
         then:
         apiSortValue == 'height|ASC'

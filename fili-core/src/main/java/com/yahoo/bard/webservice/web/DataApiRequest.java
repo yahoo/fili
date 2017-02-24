@@ -242,12 +242,11 @@ public class DataApiRequest extends ApiRequest {
 
         this.having = DruidHavingBuilder.buildHavings(this.havings);
 
+        //Requested sort on dateTime column
         this.dateTimeSort = generateDateTimeSortColumn(sorts);
 
-        String sortApiValue = generateApiSortValue(sorts);
-
         // Requested sort on metrics - optional, can be empty Set
-        this.sorts = generateSortColumns(sortApiValue, this.logicalMetrics, metricDictionary);
+        this.sorts = generateSortColumns(truncateTimeSort(sorts), this.logicalMetrics, metricDictionary);
 
         // Overall requested number of rows in the response. Ignores grouping in time buckets.
         this.count = generateInteger(count, "count");
@@ -310,7 +309,7 @@ public class DataApiRequest extends ApiRequest {
      *
      * @return Updated sort column if dateTime exists. Otherwise  return as it is received.
      */
-    protected String generateApiSortValue(String sorts) {
+    protected String truncateTimeSort(String sorts) {
 
         if (sorts != null && !sorts.isEmpty() && sorts.contains(DATE_TIME_STRING)) {
             if (sorts.contains(",")) {
@@ -350,7 +349,6 @@ public class DataApiRequest extends ApiRequest {
         } else {
             return Optional.empty();
         }
-
     }
 
     /**

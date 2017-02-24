@@ -12,8 +12,8 @@ Current
 
 
 - [dateTime based sort feature for the final ResultSet added](https://github.com/yahoo/fili/pull/178)
-   * Now we can sort the final result set in DESC order. Druid provided results are in ASC order by default.
-   * Added `DateTimeSortMapper` to reverse the time buckets and `DateTimeSortRequestHandler` to inject to the workflow
+   * Now we support dateTime column based sort in ASC or DESC order.
+   * Added `DateTimeSortMapper` to sort the time buckets and `DateTimeSortRequestHandler` to inject to the workflow
 
 - [dateTime specified as sortable field in sorting clause](https://github.com/yahoo/fili/pull/170)
     * added `dateTimeSort` as class parameter in `DataApiRequest`. So it can be tracked down to decide the resultSet
