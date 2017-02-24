@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  */
 public class DateTimeSortMapper extends ResultSetMapper {
 
-    SortDirection direction;
+    private SortDirection direction;
 
     /**
      * Constructor.
