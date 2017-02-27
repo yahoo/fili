@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.dimension.impl;
 
+import com.yahoo.bard.webservice.config.SystemConfig;
+import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.cache.HashDataCache.Pair;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
@@ -29,22 +31,27 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.CollectorManager;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TimeLimitingCollector;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.MMapDirectory;
+import org.apache.lucene.util.Counter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -68,6 +75,11 @@ public class LuceneSearchProvider implements SearchProvider {
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private final String luceneIndexPath;
 
+    private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+    public static final int LUCENE_SEARCH_TIMEOUT_MS = SYSTEM_CONFIG.getIntProperty(
+            SYSTEM_CONFIG.getPackageVariableName("lucene_search_timeout_ms"), 600000
+    );
+
     /**
      * The maximum number of results per page.
      */
@@ -78,18 +90,21 @@ public class LuceneSearchProvider implements SearchProvider {
     private Dimension dimension;
     private boolean luceneIndexIsHealthy;
     private IndexSearcher luceneIndexSearcher;
+    private int searchTimeout;
 
     /**
      * Constructor.
      *
      * @param luceneIndexPath  Path to the lucene index files
      * @param maxResults  Maximum number of allowed results in a page
+     * @param searchTimeout  Maximum time in milliseconds that a lucene search can run
      */
-    public LuceneSearchProvider(String luceneIndexPath, int maxResults) {
+    public LuceneSearchProvider(String luceneIndexPath, int maxResults, int searchTimeout) {
         this.luceneIndexPath = luceneIndexPath;
         Utils.createParentDirectories(this.luceneIndexPath);
 
         this.maxResults = maxResults;
+        this.searchTimeout = searchTimeout;
 
         try {
             luceneDirectory = new MMapDirectory(Paths.get(this.luceneIndexPath));
@@ -99,6 +114,17 @@ public class LuceneSearchProvider implements SearchProvider {
             String message = String.format("Unable to create index directory %s:", this.luceneIndexPath);
             LOG.error(message, e);
         }
+    }
+
+
+    /**
+     * Constructor.
+     *
+     * @param luceneIndexPath  Path to the lucene index files
+     * @param maxResults  Maximum number of allowed results in a page
+     */
+    public LuceneSearchProvider(String luceneIndexPath, int maxResults) {
+        this(luceneIndexPath, maxResults, LUCENE_SEARCH_TIMEOUT_MS);
     }
 
     /**
@@ -648,11 +674,58 @@ public class LuceneSearchProvider implements SearchProvider {
             int perPage,
             int currentPage
     ) {
+        /**
+         * Works around the lack of a way to get at the underlying Collector in TimeLimitingCollector
+         */
+        class AccessibleTimeLimitingCollector extends TimeLimitingCollector {
+            private TopScoreDocCollector wrappedCollector;
+
+            /**
+             * @param collector the wrapped collector
+             * @param clock the clock used to implement the timeout
+             * @param ticksAllowed the amount of time allowed for the search
+             */
+            AccessibleTimeLimitingCollector(TopScoreDocCollector collector, Counter clock, long ticksAllowed) {
+                super(collector, clock, ticksAllowed);
+                wrappedCollector = collector;
+            }
+
+            /**
+             * This is the method TimeLimitingCollector was missing.
+             * @return the wrapped collector
+             */
+            public TopScoreDocCollector getWrappedCollector() {
+                return wrappedCollector;
+            }
+        }
+
+        /**
+         * This parallelizes the lucene search - each thread using a time limited collector.
+         */
+        final CollectorManager<AccessibleTimeLimitingCollector, TopDocs> manager
+                = new CollectorManager<AccessibleTimeLimitingCollector, TopDocs>() {
+
+            @Override
+            public AccessibleTimeLimitingCollector newCollector() throws IOException {
+                return new AccessibleTimeLimitingCollector(
+                        TopScoreDocCollector.create(perPage, lastEntry), Counter.newCounter(false), searchTimeout
+                );
+            }
+
+            @Override
+            public TopDocs reduce(Collection<AccessibleTimeLimitingCollector> collectors) throws IOException {
+                final TopDocs[] docs = collectors.stream()
+                        .map((collector) -> collector.getWrappedCollector().topDocs())
+                        .collect(Collectors.toList())
+                        .toArray(new TopDocs[collectors.size()]);
+
+                return TopDocs.merge(perPage, docs);
+            }
+        };
+
         lock.readLock().lock();
         try {
-            return lastEntry == null ?
-                    indexSearcher.search(query, perPage) :
-                    indexSearcher.searchAfter(lastEntry, query, perPage);
+            return indexSearcher.search(query, manager);
         } catch (IOException e) {
             String errorMessage = "Unable to find dimension rows for page " + currentPage;
             LOG.error(errorMessage);

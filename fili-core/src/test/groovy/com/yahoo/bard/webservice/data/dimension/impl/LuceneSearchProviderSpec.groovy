@@ -1,16 +1,13 @@
 // Copyright 2016 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.dimension.impl
-
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.DimensionRow
 import com.yahoo.bard.webservice.util.DimensionStoreKeyUtils
-import com.yahoo.bard.webservice.web.util.PaginationParameters
 import com.yahoo.bard.webservice.web.RowLimitReachedException
 import com.yahoo.bard.webservice.web.util.PaginationParameters
-
+import org.apache.lucene.search.TimeLimitingCollector
 import org.apache.lucene.store.FSDirectory
-
 /**
  * Specification for behavior specific to the LuceneSearchProvider
  */
@@ -28,6 +25,7 @@ class LuceneSearchProviderSpec extends SearchProviderSpec<LuceneSearchProvider> 
     @Override
     void childCleanup() {
         searchProvider.maxResults = rowLimit
+        searchProvider.searchTimeout = 600000
     }
 
     @Override
@@ -40,6 +38,16 @@ class LuceneSearchProviderSpec extends SearchProviderSpec<LuceneSearchProvider> 
         LuceneSearchProviderManager.removeInstance(dimensionName)
     }
 
+    def "findAllDimensionRows throws exception when the lucene search timeout is reached"() {
+        given:
+        searchProvider.searchTimeout = -1
+
+        when:
+        searchProvider.findAllDimensionRowsPaged(new PaginationParameters(rowLimit, 1))
+
+        then:
+        thrown TimeLimitingCollector.TimeExceededException
+    }
 
     def "findAllDimensionRows doesn't throw an exception when the real cardinality is less than the limit"() {
         given:

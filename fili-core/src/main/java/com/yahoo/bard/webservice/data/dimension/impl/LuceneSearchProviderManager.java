@@ -7,13 +7,13 @@ import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
+import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.validation.constraints.NotNull;
-
 /**
  * Lucene search provider factory.
+ * TODO - move to test.  This class is unused in production code.
  */
 public class LuceneSearchProviderManager {
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
