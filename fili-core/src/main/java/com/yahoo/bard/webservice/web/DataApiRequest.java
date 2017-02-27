@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.web;
 
 import static com.yahoo.bard.webservice.util.DateTimeFormatterFactory.FULLY_OPTIONAL_DATETIME_FORMATTER;
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DATE_TIME_SORT_VALUE_INVALID;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSIONS_NOT_IN_TABLE;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSIONS_UNDEFINED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSION_FIELDS_UNDEFINED;
@@ -27,7 +28,6 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_UNDEFINED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TIME_ALIGNMENT;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TOP_N_UNSORTED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.UNSUPPORTED_FILTERED_METRIC_CATEGORY;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DATE_TIME_SORT_VALUE_INVALID;
 
 import com.yahoo.bard.webservice.config.BardFeatureFlag;
 import com.yahoo.bard.webservice.data.DruidHavingBuilder;
@@ -311,14 +311,11 @@ public class DataApiRequest extends ApiRequest {
      */
     protected String truncateTimeSort(String sorts) {
 
-        if (sorts != null && !sorts.isEmpty() && sorts.contains(DATE_TIME_STRING)) {
-            if (sorts.contains(",")) {
-                //Truncate the dateTime sort column from the api sort string
-                return sorts.substring(sorts.indexOf(",") + 1, sorts.length());
-            } else {
-                //If only dateTime column requested for sorting, then rest of the api sort value will be null
-                return null;
-            }
+        if (sorts != null && !sorts.isEmpty() && isDateTimeSortRequested(sorts)) {
+            //Truncate the dateTime sort column from the api sort string. If only dateTime column requested for
+            // sorting, then rest of the api sort value will be null
+            return sorts.contains(",") ? sorts.substring(sorts.indexOf(",") + 1, sorts.length()) : null;
+
         } else {
             //If there is no dateTime string involved, return as it is received
             return sorts;
@@ -334,9 +331,10 @@ public class DataApiRequest extends ApiRequest {
      */
     protected Optional<OrderByColumn> generateDateTimeSortColumn(String sorts) {
 
-        if (sorts != null && !sorts.isEmpty() && sorts.contains(DATE_TIME_STRING)) {
+        if (sorts != null && !sorts.isEmpty() && isDateTimeSortRequested(sorts)) {
             //Requested sort on dateTime - It has to be the first field in string
             String dateTime = sorts.contains(",") ? sorts.substring(0, sorts.indexOf(",")) : sorts;
+
             List<String> dateTimeWithDirection = Arrays.asList(dateTime.split("\\|"));
             if (DATE_TIME_STRING.equals(dateTimeWithDirection.get(0))) {
                 return Optional.of(
@@ -349,6 +347,23 @@ public class DataApiRequest extends ApiRequest {
         } else {
             return Optional.empty();
         }
+    }
+
+    /**
+     * Method to check the dateTime sort column is requested in a sort list.
+     *
+     * @param sorts  String of sort columns
+     *
+     * @return True if dateTime column sort requested
+     */
+    protected Boolean isDateTimeSortRequested(String sorts) {
+        return Arrays.asList(sorts.split(","))
+                .stream()
+                .map(e -> Arrays.asList(e.split("\\|")))
+                .map(e -> e.get(0))
+                .filter(e -> e.equals(DATE_TIME_STRING))
+                .findAny()
+                .isPresent();
     }
 
     /**

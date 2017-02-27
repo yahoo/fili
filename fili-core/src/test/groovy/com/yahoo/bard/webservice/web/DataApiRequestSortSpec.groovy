@@ -7,6 +7,7 @@ import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn
 import com.yahoo.bard.webservice.druid.model.orderby.SortDirection
 import com.yahoo.bard.webservice.web.endpoints.DataServlet
 import spock.lang.Specification
+import spock.lang.Unroll
 
 class DataApiRequestSortSpec extends Specification {
 
@@ -62,12 +63,44 @@ class DataApiRequestSortSpec extends Specification {
         dateTimeSort.get().dimension == "dateTime"
     }
 
-    def "Generate api sort string after truncating the dateTime column"() {
+    @Unroll
+    def "Validate the sort list #sortString to check dateTime column sort request is #expected"() {
         when:
-        String apiSortValue = new DataApiRequest().truncateTimeSort("dateTime|desc,height|ASC")
+        Boolean actual = new DataApiRequest().isDateTimeSortRequested(sortString)
 
         then:
-        apiSortValue == 'height|ASC'
+        actual == expected
+
+        where:
+        sortString                        | expected
+        "dateTime"                        | true
+        "dateTime|DESC"                   | true
+        "dateTimexyz|DESC"                | false
+        "xyz,dateTime,abc"                | true
+        "xyz,dateTime|DESC,abc"           | true
+        "xyz|DESC,dateTime|DESC,abc|DESC" | true
+        "xyz|DESC,dateTime,abc|DESC"      | true
+        "xyz|DESC,dateTime"               | true
+        "xyz|DESC,dateTme|DESC,abc|DESC"  | false
+        ""                                | false
+        "dinga"                           | false
+
+    }
+
+    @Unroll
+    def "Generate api sort string after truncating the dateTime column"() {
+        when:
+        String apiSortValue = new DataApiRequest().truncateTimeSort(sortString)
+
+        then:
+        apiSortValue == expected
+
+        where:
+        sortString                    |  expected
+        "dateTime|desc,height|ASC"    | 'height|ASC'
+        "dateTimeyoyo|desc,height|ASC"| "dateTimeyoyo|desc,height|ASC"
+        "height|ASC,dateTimeyoyo|desc"| "height|ASC,dateTimeyoyo|desc"
+        "yoyodateTime|desc,height|ASC"| "yoyodateTime|desc,height|ASC"
     }
 
     def "Successful execution if dateTime is first field in the sort list"() {
