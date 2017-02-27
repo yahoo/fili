@@ -10,6 +10,15 @@ Current
 
 ### Added:
 
+
+- [dateTime based sort feature for the final ResultSet added](https://github.com/yahoo/fili/pull/178)
+   * Now we support dateTime column based sort in ASC or DESC order.
+   * Added `DateTimeSortMapper` to sort the time buckets and `DateTimeSortRequestHandler` to inject to the workflow
+
+- [dateTime specified as sortable field in sorting clause](https://github.com/yahoo/fili/pull/170)
+    * added `dateTimeSort` as class parameter in `DataApiRequest`. So it can be tracked down to decide the resultSet
+      sorting direction.
+
 - [Detect unset userPrincipal in Preface log block](https://github.com/yahoo/fili/pull/154)
     * Logs a warning if no userPrincipal is set on the request (ie. we don't know who the user is), and sets the
       `user` field in the `Preface` log block to `NO_USER_PRINCIPAL`.

@@ -17,6 +17,7 @@ import com.yahoo.bard.webservice.web.handlers.DebugRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.PaginationRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.PartialDataRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.SplitQueryRequestHandler;
+import com.yahoo.bard.webservice.web.handlers.DateTimeSortRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.TopNMapperRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.VolatileDataRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.WebServiceSelectorRequestHandler;
@@ -133,6 +134,8 @@ public class DruidWorkflow implements RequestWorkflowProvider {
         //page desired. That mapper should be one of the last mappers to execute, so the handler that adds the mapper
         //to the chain needs to be one of the first handlers to execute.
         handler = new PaginationRequestHandler(handler);
+
+        handler = new DateTimeSortRequestHandler(handler);
 
         handler = new TopNMapperRequestHandler(handler);
 
