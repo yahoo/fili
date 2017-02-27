@@ -51,6 +51,18 @@ public class OrderByColumn {
     }
 
     /**
+     * Constructor which accepts generic column with direction. For example: dateTime column is not part of aggregation
+     * or posAggregation. But still allowed to sort the resultSet based on dateTime value.
+     *
+     * @param column  a column needs to be associated with the direction
+     * @param direction  sort direction
+     */
+    public OrderByColumn(String column, SortDirection direction) {
+        this.dimension = column;
+        this.direction = direction;
+    }
+
+    /**
      * Getter for sort column dimension.
      *
      * @return dimension A dimension name, a metric name, an aggregation name or a post aggregation name
