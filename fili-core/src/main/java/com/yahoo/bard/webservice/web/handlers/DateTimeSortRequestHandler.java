@@ -11,8 +11,8 @@ import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 import javax.validation.constraints.NotNull;
 
 /**
- * Injects the result set mapper for dateTime based sort if an API request asks for result in descending order.
- * The time sort mapper should be second last mappers to execute on the result set.
+ * Injects the result set mapper for dateTime based sort request.
+ * The time sort mapper should be second last mappers to execute in workflow.
  */
 public class DateTimeSortRequestHandler implements DataRequestHandler {
     private final  DataRequestHandler next;

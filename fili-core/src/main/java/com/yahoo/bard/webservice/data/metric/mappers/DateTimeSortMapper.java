@@ -52,11 +52,11 @@ public class DateTimeSortMapper extends ResultSetMapper {
                 bucketizedResultsMap.computeIfAbsent(result.getTimeStamp(), ignored -> new ArrayList<>()).add(result);
             }
 
-            List<DateTime> dateTimeList = new ArrayList(bucketizedResultsMap.keySet());
+            List<DateTime> dateTimeList = new ArrayList<>(bucketizedResultsMap.keySet());
 
             Collections.sort(dateTimeList, direction == SortDirection.ASC ?
-                    Comparator.<DateTime>naturalOrder() :
-                    Comparator.<DateTime>reverseOrder());
+                    Comparator.naturalOrder() :
+                    Comparator.reverseOrder());
 
             return new ResultSet(
                     dateTimeList.stream()

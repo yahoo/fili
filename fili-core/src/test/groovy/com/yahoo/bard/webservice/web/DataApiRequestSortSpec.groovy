@@ -40,11 +40,8 @@ class DataApiRequestSortSpec extends Specification {
 
     @Unroll
     def "Validate the sort column and direction map from #sortString string"() {
-        when:
-        Map<String, SortDirection> actual = new DataApiRequest().generateSortColumns(sortString)
-
-        then:
-        actual == expected
+        expect:
+        new DataApiRequest().generateSortColumns(sortString) == expected
 
         where:
         sortString                        | expected
@@ -62,12 +59,9 @@ class DataApiRequestSortSpec extends Specification {
     }
 
     @Unroll
-    def "Generate dateTime sort column from columnDirection map "() {
-        when:
-        Optional<OrderByColumn> actual = new DataApiRequest().generateDateTimeSortColumn(columnDirection)
-
-        then:
-        actual == expected
+    def "Generate dateTime sort column from columnDirection map #columnDirection"() {
+        expect:
+        new DataApiRequest().generateDateTimeSortColumn(columnDirection) == expected
 
         where:
         columnDirection                                                                          | expected
@@ -80,12 +74,9 @@ class DataApiRequestSortSpec extends Specification {
     }
 
     @Unroll
-    def "Remove dateTime sort column from columnDirection map "() {
-        when:
-        Map<String, SortDirection> actual = new DataApiRequest().removeDateTimeSortColumn(columnDirection)
-
-        then:
-        actual == expected
+    def "Remove dateTime sort column from columnDirection map #columnDirection"() {
+        expect:
+        new DataApiRequest().removeDateTimeSortColumn(columnDirection) == expected
 
         where:
         columnDirection                                                                          | expected
@@ -98,12 +89,9 @@ class DataApiRequestSortSpec extends Specification {
     }
 
     @Unroll
-    def "Check dateTime column is first in the sort list "() {
-        when:
-        Boolean actual = new DataApiRequest().isDateTimeFirstSortField(columnDirection)
-
-        then:
-        actual == expected
+    def "Check dateTime column is first in the sort column map #columnDirection "() {
+        expect:
+        new DataApiRequest().isDateTimeFirstSortField(columnDirection) == expected
 
         where:
         columnDirection                                                                          | expected

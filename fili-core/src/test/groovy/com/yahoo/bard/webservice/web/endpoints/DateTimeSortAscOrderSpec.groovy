@@ -1,15 +1,12 @@
 // Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.endpoints
-
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
-import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 
 class DateTimeSortAscOrderSpec extends BaseDataServletComponentSpec {
     @Override
     def setup() {
-        Dimension dim = Mock(Dimension)
         DimensionDictionary dimensionStore = jtb.configurationLoader.dimensionDictionary
         dimensionStore.findByApiName("color").with {
             addDimensionRow(BardDimensionField.makeDimensionRow(it, "Foo", "FooDesc"))
