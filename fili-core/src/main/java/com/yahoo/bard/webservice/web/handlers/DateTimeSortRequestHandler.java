@@ -1,4 +1,4 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.handlers;
 
@@ -15,14 +15,14 @@ import javax.validation.constraints.NotNull;
  * The time sort mapper should be second last mappers to execute on the result set.
  */
 public class DateTimeSortRequestHandler implements DataRequestHandler {
-    private final @NotNull DataRequestHandler next;
+    private final  DataRequestHandler next;
 
     /**
      * Constructor.
      *
      * @param next  Next Handler in the chain
      */
-    public DateTimeSortRequestHandler(DataRequestHandler next) {
+    public DateTimeSortRequestHandler(@NotNull DataRequestHandler next) {
         this.next = next;
     }
 

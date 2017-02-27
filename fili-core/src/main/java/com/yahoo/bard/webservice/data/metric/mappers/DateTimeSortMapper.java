@@ -1,10 +1,11 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric.mappers;
 
 import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.ResultSet;
 import com.yahoo.bard.webservice.druid.model.orderby.SortDirection;
+import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.table.Schema;
 
 import org.joda.time.DateTime;
@@ -22,7 +23,7 @@ import java.util.stream.Collectors;
  */
 public class DateTimeSortMapper extends ResultSetMapper {
 
-    private SortDirection direction;
+    private final SortDirection direction;
 
     /**
      * Constructor.
@@ -45,22 +46,28 @@ public class DateTimeSortMapper extends ResultSetMapper {
 
         Map<DateTime, List<Result>> bucketizedResultsMap = new LinkedHashMap<>();
 
-        for (Result result: resultSet) {
-            bucketizedResultsMap.computeIfAbsent(result.getTimeStamp(), ignored -> new ArrayList<>()).add(result);
+        RequestLog.startTiming("sortResultSet");
+        try {
+            for (Result result : resultSet) {
+                bucketizedResultsMap.computeIfAbsent(result.getTimeStamp(), ignored -> new ArrayList<>()).add(result);
+            }
+
+            List<DateTime> dateTimeList = new ArrayList(bucketizedResultsMap.keySet());
+
+            Collections.sort(dateTimeList, direction == SortDirection.ASC ?
+                    Comparator.<DateTime>naturalOrder() :
+                    Comparator.<DateTime>reverseOrder());
+
+            return new ResultSet(
+                    dateTimeList.stream()
+                            .map(bucketizedResultsMap::get)
+                            .flatMap(List::stream)
+                            .collect(Collectors.toList()),
+                    resultSet.getSchema()
+            );
+        } finally {
+            RequestLog.stopTiming("sortResultSet");
         }
-
-        List<DateTime> dateTimeList = new ArrayList(bucketizedResultsMap.keySet());
-
-        Collections.sort(dateTimeList, direction == SortDirection.ASC ?
-                Comparator.<DateTime>naturalOrder() :
-                Comparator.<DateTime>reverseOrder());
-
-        return new ResultSet(
-                dateTimeList.stream()
-                        .map(e -> bucketizedResultsMap.get(e))
-                        .flatMap(List::stream).collect(Collectors.toList()),
-                resultSet.getSchema()
-        );
     }
 
     @Override

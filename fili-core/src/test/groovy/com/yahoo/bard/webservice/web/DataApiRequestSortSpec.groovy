@@ -1,4 +1,4 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web
 
@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn
 import com.yahoo.bard.webservice.druid.model.orderby.SortDirection
 import com.yahoo.bard.webservice.web.endpoints.DataServlet
+
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -23,84 +24,95 @@ class DataApiRequestSortSpec extends Specification {
         jtb.tearDown()
     }
 
-    def "Generate dateTime sort column with ASC value"(){
-        when:
-        Optional<OrderByColumn> dateTimeSort = new DataApiRequest().generateDateTimeSortColumn("dateTime|asc")
 
-        then:
-        dateTimeSort.get().direction == SortDirection.ASC
-        dateTimeSort.get().dimension == "dateTime"
-    }
 
-    def "If dateTime is not the first value in the string, then throw an error"() {
+    def "If dateTime is not the first value in the sort list, then throw an error"() {
         setup:
-        // mis spelled dateTime as dateTiem.
         String expectedMessage = ErrorMessageFormat.DATE_TIME_SORT_VALUE_INVALID.format()
 
         when:
-        new DataApiRequest().generateDateTimeSortColumn("height|ASC,dateTime|desc")
+        new DataApiRequest().generateDateTimeSortColumn(["xyz":SortDirection.DESC,"dateTime":SortDirection.DESC])
 
         then:
         Exception e = thrown(BadApiRequestException)
         e.getMessage() == expectedMessage
     }
 
-    def "Generate dateTime sort column when it is requested with other columns"() {
-        when:
-        Optional<OrderByColumn> dateTimeSort = new DataApiRequest().generateDateTimeSortColumn("dateTime|desc,height|ASC")
-
-        then:
-        dateTimeSort.get().direction == SortDirection.DESC
-        dateTimeSort.get().dimension == "dateTime"
-    }
-
-    def "Generate dateTime sort direction with default value"() {
-        when:
-        Optional<OrderByColumn> dateTimeSort = new DataApiRequest().generateDateTimeSortColumn("dateTime")
-
-        then:
-        dateTimeSort.get().direction == SortDirection.DESC
-        dateTimeSort.get().dimension == "dateTime"
-    }
-
     @Unroll
-    def "Validate the sort list #sortString to check dateTime column sort request is #expected"() {
+    def "Validate the sort column and direction map from #sortString string"() {
         when:
-        Boolean actual = new DataApiRequest().isDateTimeSortRequested(sortString)
+        Map<String, SortDirection> actual = new DataApiRequest().generateSortColumns(sortString)
 
         then:
         actual == expected
 
         where:
         sortString                        | expected
-        "dateTime"                        | true
-        "dateTime|DESC"                   | true
-        "dateTimexyz|DESC"                | false
-        "xyz,dateTime,abc"                | true
-        "xyz,dateTime|DESC,abc"           | true
-        "xyz|DESC,dateTime|DESC,abc|DESC" | true
-        "xyz|DESC,dateTime,abc|DESC"      | true
-        "xyz|DESC,dateTime"               | true
-        "xyz|DESC,dateTme|DESC,abc|DESC"  | false
-        ""                                | false
-        "dinga"                           | false
+        "dateTime"                        | ["dateTime":SortDirection.DESC] as Map
+        "dateTime|ASC"                    | ["dateTime":SortDirection.ASC] as Map
+        "dateTimexyz|DESC"                | ["dateTimexyz":SortDirection.DESC] as Map
+        "xyz,dateTime,abc"                | ["xyz":SortDirection.DESC,"dateTime":SortDirection.DESC, "abc":SortDirection.DESC] as Map
+        "xyz,dateTime|DESC,abc"           | ["xyz":SortDirection.DESC,"dateTime":SortDirection.DESC, "abc":SortDirection.DESC] as Map
+        "xyz|DESC,dateTime|DESC,abc|ASC"  | ["xyz":SortDirection.DESC,"dateTime":SortDirection.DESC, "abc":SortDirection.ASC] as Map
+        "xyz|DESC,dateTime,abc|DESC"      | ["xyz":SortDirection.DESC,"dateTime":SortDirection.DESC, "abc":SortDirection.DESC] as Map
+        "xyz|DESC,dateTime"               | ["xyz":SortDirection.DESC,"dateTime":SortDirection.DESC] as Map
+        ""                                | null
+        "dinga"                           | ["dinga":SortDirection.DESC] as Map
 
     }
 
     @Unroll
-    def "Generate api sort string after truncating the dateTime column"() {
+    def "Generate dateTime sort column from columnDirection map "() {
         when:
-        String apiSortValue = new DataApiRequest().truncateTimeSort(sortString)
+        Optional<OrderByColumn> actual = new DataApiRequest().generateDateTimeSortColumn(columnDirection)
 
         then:
-        apiSortValue == expected
+        actual == expected
 
         where:
-        sortString                    |  expected
-        "dateTime|desc,height|ASC"    | 'height|ASC'
-        "dateTimeyoyo|desc,height|ASC"| "dateTimeyoyo|desc,height|ASC"
-        "height|ASC,dateTimeyoyo|desc"| "height|ASC,dateTimeyoyo|desc"
-        "yoyodateTime|desc,height|ASC"| "yoyodateTime|desc,height|ASC"
+        columnDirection                                                                          | expected
+        ["dateTime":SortDirection.DESC] as Map                                                   | Optional.of(new OrderByColumn("dateTime", SortDirection.DESC))
+        ["dateTime":SortDirection.ASC] as Map                                                    | Optional.of(new OrderByColumn("dateTime", SortDirection.ASC))
+        ["dateTimexyz":SortDirection.DESC] as Map                                                | Optional.empty()
+        ["dateTime":SortDirection.DESC, "abc":SortDirection.DESC] as Map                         | Optional.of(new OrderByColumn("dateTime", SortDirection.DESC))
+        null                                                                                     | Optional.empty()
+        ["dinga":SortDirection.DESC] as Map                                                      | Optional.empty()
+    }
+
+    @Unroll
+    def "Remove dateTime sort column from columnDirection map "() {
+        when:
+        Map<String, SortDirection> actual = new DataApiRequest().removeDateTimeSortColumn(columnDirection)
+
+        then:
+        actual == expected
+
+        where:
+        columnDirection                                                                          | expected
+        ["dateTime":SortDirection.DESC] as Map                                                   | [:]
+        ["dateTime":SortDirection.ASC] as Map                                                    | [:]
+        ["dateTimexyz":SortDirection.DESC] as Map                                                | ["dateTimexyz":SortDirection.DESC] as Map
+        ["xyz":SortDirection.DESC,"dateTime":SortDirection.DESC, "abc":SortDirection.DESC] as Map| ["xyz":SortDirection.DESC,"abc":SortDirection.DESC] as Map
+        null                                                                                     | null
+        ["dinga":SortDirection.DESC] as Map                                                      | ["dinga":SortDirection.DESC] as Map
+    }
+
+    @Unroll
+    def "Check dateTime column is first in the sort list "() {
+        when:
+        Boolean actual = new DataApiRequest().isDateTimeFirstSortField(columnDirection)
+
+        then:
+        actual == expected
+
+        where:
+        columnDirection                                                                          | expected
+        ["dateTime":SortDirection.DESC] as Map                                                   | true
+        ["dateTime":SortDirection.ASC] as Map                                                    | true
+        ["dateTimexyz":SortDirection.DESC] as Map                                                | false
+        ["xyz":SortDirection.DESC,"dateTime":SortDirection.DESC, "abc":SortDirection.DESC] as Map| false
+        null                                                                                     | false
+        ["dinga":SortDirection.DESC] as Map                                                      | false
     }
 
     def "Successful execution if dateTime is first field in the sort list"() {

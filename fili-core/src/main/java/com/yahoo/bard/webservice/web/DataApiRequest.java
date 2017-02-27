@@ -24,6 +24,7 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_DIRECTION_IN
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_METRICS_NOT_IN_QUERY_FORMAT;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_METRICS_NOT_SORTABLE_FORMAT;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_METRICS_UNDEFINED;
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_REQUESTED_ON_DUPLICATE_COLUMN;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_UNDEFINED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TIME_ALIGNMENT;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TOP_N_UNSORTED;
@@ -116,7 +117,7 @@ public class DataApiRequest extends ApiRequest {
 
     private final DruidFilterBuilder filterBuilder;
 
-    private Optional<OrderByColumn> dateTimeSort = Optional.empty();
+    private Optional<OrderByColumn> dateTimeSort;
 
     /**
      * Parses the API request URL and generates the Api Request object.
@@ -242,11 +243,16 @@ public class DataApiRequest extends ApiRequest {
 
         this.having = DruidHavingBuilder.buildHavings(this.havings);
 
+        Map<String, SortDirection> sortColumnDirection = generateSortColumns(sorts);
+
         //Requested sort on dateTime column
-        this.dateTimeSort = generateDateTimeSortColumn(sorts);
+        this.dateTimeSort = generateDateTimeSortColumn(sortColumnDirection);
 
         // Requested sort on metrics - optional, can be empty Set
-        this.sorts = generateSortColumns(truncateTimeSort(sorts), this.logicalMetrics, metricDictionary);
+        this.sorts = generateSortColumns(
+                removeDateTimeSortColumn(sortColumnDirection),
+                this.logicalMetrics, metricDictionary
+        );
 
         // Overall requested number of rows in the response. Ignores grouping in time buckets.
         this.count = generateInteger(count, "count");
@@ -303,67 +309,84 @@ public class DataApiRequest extends ApiRequest {
     }
 
     /**
-     * Update sort field string by truncating the dateTime if it is present.
+     * To check whether dateTime column request is first one in the sort list or not.
      *
-     * @param sorts  String of sort columns
+     * @param sortColumns  map of columns and its direction
      *
-     * @return Updated sort column if dateTime exists. Otherwise return as it is received.
+     * @return True if dateTime column is first one in the sort list. False otherwise
      */
-    protected String truncateTimeSort(String sorts) {
-
-        if (sorts != null && !sorts.isEmpty() && isDateTimeSortRequested(sorts)) {
-            //Truncate the dateTime sort column from the api sort string. If only dateTime column requested for
-            // sorting, then rest of the api sort value will be null
-            return sorts.contains(",") ? sorts.substring(sorts.indexOf(",") + 1, sorts.length()) : null;
-
-        } else {
-            //If there is no dateTime string involved, return as it is received
-            return sorts;
+    protected Boolean isDateTimeFirstSortField(Map<String, SortDirection> sortColumns) {
+        if (sortColumns != null) {
+            List<String> columns = new ArrayList(sortColumns.keySet());
+            return columns.get(0).equals(DATE_TIME_STRING);
+        }
+        else {
+            return false;
         }
     }
 
     /**
-     * Generate OrderByColumn instance for dateTime sort column if it is present in string of sort columns.
+     * Method to remove the dateTime column from map of columns and its direction.
      *
-     * @param sorts  String of sort columns
+     * @param sortColumns  map of columns and its direction
      *
-     * @return instance of OrderByColumn for dateTime
+     * @return  Map of columns and its direction without dateTime sort column
      */
-    protected Optional<OrderByColumn> generateDateTimeSortColumn(String sorts) {
+    protected Map<String, SortDirection> removeDateTimeSortColumn(Map<String, SortDirection> sortColumns) {
+        if (sortColumns != null && sortColumns.containsKey(DATE_TIME_STRING)) {
+            sortColumns.remove(DATE_TIME_STRING);
+            return sortColumns;
+        }
+        else {
+            return sortColumns;
+        }
+    }
 
-        if (sorts != null && !sorts.isEmpty() && isDateTimeSortRequested(sorts)) {
-            //Requested sort on dateTime - It has to be the first field in string
-            String dateTime = sorts.contains(",") ? sorts.substring(0, sorts.indexOf(",")) : sorts;
+    /**
+     * Method to generate DateTime sort column from the map of columns and its direction.
+     *
+     * @param sortColumns  map of columns and its direction
+     *
+     * @return Instance of OrderByColumn for dateTime
+     */
+    protected Optional<OrderByColumn> generateDateTimeSortColumn(Map<String, SortDirection> sortColumns) {
 
-            List<String> dateTimeWithDirection = Arrays.asList(dateTime.split("\\|"));
-            if (DATE_TIME_STRING.equals(dateTimeWithDirection.get(0))) {
-                return Optional.of(
-                        new OrderByColumn(dateTimeWithDirection.get(0), getSortDirection(dateTimeWithDirection))
-                );
-            } else {
+        if (sortColumns != null && sortColumns.containsKey(DATE_TIME_STRING)) {
+            if (!isDateTimeFirstSortField(sortColumns)) {
                 LOG.debug(DATE_TIME_SORT_VALUE_INVALID.logFormat());
                 throw new BadApiRequestException(DATE_TIME_SORT_VALUE_INVALID.format());
+            } else {
+                return Optional.of(new OrderByColumn(DATE_TIME_STRING, sortColumns.get(DATE_TIME_STRING)));
             }
+
         } else {
             return Optional.empty();
         }
     }
 
     /**
-     * Method to check the dateTime sort column is requested in a sort list.
+     * Method to convert sort list to column and direction map.
      *
      * @param sorts  String of sort columns
      *
-     * @return True if dateTime column sort requested
+     * @return Map of columns and its direction
      */
-    protected Boolean isDateTimeSortRequested(String sorts) {
-        return Arrays.asList(sorts.split(","))
-                .stream()
-                .map(e -> Arrays.asList(e.split("\\|")))
-                .map(e -> e.get(0))
-                .filter(e -> e.equals(DATE_TIME_STRING))
-                .findAny()
-                .isPresent();
+    protected Map<String, SortDirection> generateSortColumns(String sorts) {
+        if (sorts != null && !sorts.isEmpty()) {
+            return Arrays.asList(sorts.split(",")).stream()
+                    .map(e -> Arrays.asList(e.split("\\|")))
+                    .collect(Collectors.toMap(
+                            e -> e.get(0), e -> getSortDirection(e),
+                                    (u, v) -> {
+                                        LOG.debug(SORT_REQUESTED_ON_DUPLICATE_COLUMN.logFormat(u));
+                                        throw new BadApiRequestException(
+                                                SORT_REQUESTED_ON_DUPLICATE_COLUMN.format(u.name())
+                                        );
+                                    },
+                                    LinkedHashMap::new)
+                    );
+        }
+        return null;
     }
 
     /**
@@ -1194,8 +1217,7 @@ public class DataApiRequest extends ApiRequest {
     /**
      * Generates a Set of OrderByColumn.
      *
-     * @param apiSortQuery  Expects sort query string in the format: (metricName or dimensionName)|(sortDirection)
-     * eg:pageViews|asc
+     * @param sortDirectionMap  Map of columns and its direction
      * @param logicalMetrics  Set of LogicalMetrics in the query
      * @param metricDictionary  Metric dictionary contains the map of valid metric names and logical metric objects.
      *
@@ -1203,32 +1225,25 @@ public class DataApiRequest extends ApiRequest {
      * @throws BadApiRequestException if the sort clause is invalid.
      */
     protected LinkedHashSet<OrderByColumn> generateSortColumns(
-            String apiSortQuery,
+             Map<String, SortDirection> sortDirectionMap,
             Set<LogicalMetric> logicalMetrics,
             MetricDictionary metricDictionary
     ) throws BadApiRequestException {
         RequestLog.startTiming("GeneratingSortColumns");
         try {
             String sortMetricName;
-            List<String> metricWithDirection;
             LinkedHashSet<OrderByColumn> metricSortColumns = new LinkedHashSet<>();
 
-            if ("".equals(apiSortQuery) || apiSortQuery == null) {
+            if (sortDirectionMap == null) {
                 return metricSortColumns;
             }
-
-            // Split on "," to get multiple sorts (if any)
-            List<String> requestedSorts = Arrays.asList(apiSortQuery.split(","));
-
             List<String> unknownMetrics = new ArrayList<>();
             List<String> unmatchedMetrics = new ArrayList<>();
             List<String> unsortableMetrics = new ArrayList<>();
 
-            for (String sort : requestedSorts) {
-                metricWithDirection = Arrays.asList(sort.split("\\|"));
-                sortMetricName = metricWithDirection.get(0);
+            for (Map.Entry<String, SortDirection> entry : sortDirectionMap.entrySet())  {
+                sortMetricName = entry.getKey();
 
-                SortDirection sortDirection = getSortDirection(metricWithDirection);
                 LogicalMetric logicalMetric = metricDictionary.get(sortMetricName);
 
                 // If metric dictionary returns a null, it means the requested sort metric is not found.
@@ -1244,7 +1259,7 @@ public class DataApiRequest extends ApiRequest {
                     unsortableMetrics.add(sortMetricName);
                     continue;
                 }
-                metricSortColumns.add(new OrderByColumn(logicalMetric, sortDirection));
+                metricSortColumns.add(new OrderByColumn(logicalMetric, entry.getValue()));
             }
             if (!unknownMetrics.isEmpty()) {
                 LOG.debug(SORT_METRICS_UNDEFINED.logFormat(unknownMetrics.toString()));
