@@ -485,7 +485,8 @@ public class DataApiRequest extends ApiRequest {
             long asyncAfter,
             DateTimeZone timeZone,
             DruidFilterBuilder filterBuilder,
-            Optional<OrderByColumn> dateTimeSort) {
+            Optional<OrderByColumn> dateTimeSort
+    ) {
         super(format, asyncAfter, paginationParameters, uriInfo, builder);
         this.table = table;
         this.granularity = granularity;
