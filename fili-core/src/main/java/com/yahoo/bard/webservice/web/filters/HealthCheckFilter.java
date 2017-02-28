@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.annotation.Priority;
 import javax.inject.Singleton;
@@ -38,21 +38,16 @@ public class HealthCheckFilter implements ContainerRequestFilter {
 
         if (path.startsWith("/v1/data") || path.startsWith("/data")) {
             // See if we have any unhealthy checks
-            Optional<Map.Entry<String, Result>> firstUnhealthy = getFirstUnhealthy();
-
-            // If we do, stop the request
-            firstUnhealthy.ifPresent(entry -> {
+            Map<String, Result> unhealthyChecks = getUnhealthy();
+            if (!unhealthyChecks.keySet().isEmpty()) {
+                unhealthyChecks.entrySet()
+                        .forEach(entry -> LOG.error("Healthcheck '{}' failed: {}", entry.getKey(), entry.getValue()));
                 RequestLog.stopTiming(this);
-                LOG.error("Healthcheck '{}' failed: {}", entry.getKey(), entry.getValue());
                 requestContext.abortWith(
                         Response.status(Status.SERVICE_UNAVAILABLE)
                                 .entity("Service is unhealthy. At least 1 healthcheck is failing")
                                 .build()
                 );
-            });
-
-            // If we did, return since we already stopped the timer
-            if (firstUnhealthy.isPresent()) {
                 return;
             }
         }
@@ -60,13 +55,13 @@ public class HealthCheckFilter implements ContainerRequestFilter {
     }
 
     /**
-     * Get the first healthcheck that is unhealthy.
+     * Get all the failing healthchecks.
      *
-     * @return the first healthcheck that is found to be unhealthy, if any.
+     * @return A map of all the health checks that are unhealthy
      */
-    public Optional<Map.Entry<String, Result>> getFirstUnhealthy() {
+    public Map<String, Result> getUnhealthy() {
         return HealthCheckRegistryFactory.getRegistry().runHealthChecks().entrySet().stream()
                 .filter(entry -> !entry.getValue().isHealthy())
-                .findFirst();
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 }
