@@ -71,6 +71,16 @@ class ApiFilterSpec extends Specification {
         'dimension2' | 'desc' | 'eq'    | '[foo,bar,baz]' | ['foo', 'bar', 'baz']
         'dimension2' | 'desc' | 'in'    | '[foo,bar,baz]' | ['foo', 'bar', 'baz']
         'dimension2' | 'desc' | 'notin' | '[foo,bar,baz]' | ['foo', 'bar', 'baz']
+        
+        'dimension1' | 'id'   | 'eq'    | '[foo bar]'     | ['foo bar']
+        'dimension1' | 'id'   | 'eq'    | '[ foo bar ]'   | ['foo bar']
+        'dimension1' | 'id'   | 'eq'    | '[ foo , bar ]' | ['foo', 'bar']
+        'dimension1' | 'id'   | 'eq'    | '[" foo ","bar "]' | [' foo ', 'bar ']
+        'dimension1' | 'id'   | 'eq'    | '["foo"]'       | ['foo']
+        'dimension1' | 'id'   | 'eq'    | '["foo,"]'      | ['foo,']
+        'dimension1' | 'id'   | 'eq'    | '["foo,bar"]'   | ['foo,bar']
+        'dimension1' | 'id'   | 'eq'    | '[foo,偉]'      | ['foo', '偉']
+        'dimension1' | 'id'   | 'eq'    | '["偉",foo]'    | ['偉', 'foo']
 
         'dimension1' | 'id'   | 'eq'    | '[foo]'         | ['foo']
         'dimension2' | 'desc' | 'in'    | '[foo,bar]'     | ['foo', 'bar']
@@ -144,7 +154,7 @@ class ApiFilterSpec extends Specification {
         'dimension1|id-contains[ ]'         | BadFilterException | 'Filter requests empty string'
         'dimension1|id-contains[  ]'        | BadFilterException | 'Filter requests empty string'
         'dimension1|id-contains[]'          | BadFilterException | 'Filter requests empty string'
-//        'dimension1|id-in[foo'       | BadFilterException | 'Missing Closing Bracket' // This one's actually OK, since it ends the line
+        'dimension1|id-in[foo'              | BadFilterException | 'Missing Closing Bracket' 
     }
 
     def "toString method returns a correctly formatted ApiFilter object"() {
