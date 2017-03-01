@@ -62,15 +62,15 @@ public interface SearchProvider {
      * and the page of results desired)
      *
      * @return A page of the dimension rows contained in the Search Provider's indices
-     * @throws com.yahoo.bard.webservice.data.dimension.TimeoutException If the search times out.
+     * Throws TimeoutException If the search times out.
      */
     Pagination<DimensionRow> findAllDimensionRowsPaged(@NotNull PaginationParameters paginationParameters);
 
     /**
      * Getter for dimension rows in tree set for consistent order.
+     * Throws TimeoutException If the search times out.
      *
      * @return tree set of dimension rows the Search Provider has in it's indexes
-     * @throws com.yahoo.bard.webservice.data.dimension.TimeoutException If the search times out.
      */
     TreeSet<DimensionRow> findAllOrderedDimensionRows();
 
@@ -98,10 +98,10 @@ public interface SearchProvider {
      * @param filters  ApiFilters to use for finding matching dimension rows
      * @param paginationParameters  The parameters that define a page (i.e. the number of rows per page,
      * and the page of results desired)
+     * Throws TimeoutException If the search times out.
      *
      * @return A page of the dimension rows contained in the Search Provider's indices
      * and matched by the specified filters.
-     * @throws com.yahoo.bard.webservice.data.dimension.TimeoutException If the search times out.
      */
     Pagination<DimensionRow> findFilteredDimensionRowsPaged(
             Set<ApiFilter> filters,
