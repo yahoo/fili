@@ -19,7 +19,6 @@ import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.PageNotFoundException;
 import com.yahoo.bard.webservice.web.RowLimitReachedException;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -31,27 +30,22 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.CollectorManager;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TimeLimitingCollector;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.MMapDirectory;
-import org.apache.lucene.util.Counter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -118,7 +112,7 @@ public class LuceneSearchProvider implements SearchProvider {
 
 
     /**
-     * Constructor.
+     * Constructor.  The search timeout is initialized to the default (or configured) value.
      *
      * @param luceneIndexPath  Path to the lucene index files
      * @param maxResults  Maximum number of allowed results in a page
@@ -674,55 +668,7 @@ public class LuceneSearchProvider implements SearchProvider {
             int perPage,
             int currentPage
     ) {
-        /**
-         * Works around the lack of a way to get at the underlying Collector in TimeLimitingCollector
-         */
-        class AccessibleTimeLimitingCollector extends TimeLimitingCollector {
-            private TopScoreDocCollector wrappedCollector;
-
-            /**
-             * @param collector the wrapped collector
-             * @param clock the clock used to implement the timeout
-             * @param ticksAllowed the amount of time allowed for the search
-             */
-            AccessibleTimeLimitingCollector(TopScoreDocCollector collector, Counter clock, long ticksAllowed) {
-                super(collector, clock, ticksAllowed);
-                wrappedCollector = collector;
-            }
-
-            /**
-             * This is the method TimeLimitingCollector was missing.
-             * @return the wrapped collector
-             */
-            public TopScoreDocCollector getWrappedCollector() {
-                return wrappedCollector;
-            }
-        }
-
-        /**
-         * This parallelizes the lucene search - each thread using a time limited collector.
-         */
-        final CollectorManager<AccessibleTimeLimitingCollector, TopDocs> manager
-                = new CollectorManager<AccessibleTimeLimitingCollector, TopDocs>() {
-
-            @Override
-            public AccessibleTimeLimitingCollector newCollector() throws IOException {
-                return new AccessibleTimeLimitingCollector(
-                        TopScoreDocCollector.create(perPage, lastEntry), Counter.newCounter(false), searchTimeout
-                );
-            }
-
-            @Override
-            public TopDocs reduce(Collection<AccessibleTimeLimitingCollector> collectors) throws IOException {
-                final TopDocs[] docs = collectors.stream()
-                        .map((collector) -> collector.getWrappedCollector().topDocs())
-                        .collect(Collectors.toList())
-                        .toArray(new TopDocs[collectors.size()]);
-
-                return TopDocs.merge(perPage, docs);
-            }
-        };
-
+        TimeLimitingCollectorManager manager = new TimeLimitingCollectorManager(searchTimeout, lastEntry, perPage);
         lock.readLock().lock();
         try {
             return indexSearcher.search(query, manager);

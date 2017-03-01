@@ -13,7 +13,6 @@ import java.util.Map;
 
 /**
  * Lucene search provider factory.
- * TODO - move to test.  This class is unused in production code.
  */
 public class LuceneSearchProviderManager {
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();

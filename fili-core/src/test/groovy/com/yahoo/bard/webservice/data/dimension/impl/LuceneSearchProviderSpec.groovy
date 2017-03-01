@@ -14,18 +14,20 @@ import org.apache.lucene.store.FSDirectory
 class LuceneSearchProviderSpec extends SearchProviderSpec<LuceneSearchProvider> {
 
     int rowLimit;
+    int searchTimeout;
 
     @Override
     void childSetup() {
         //Clears compiler warnings from IntelliJ. Can't use the getter, because that requires knowledge of the
         //dimension name, which this Spec does not have access to.
         rowLimit = searchProvider.maxResults
+        searchTimeout = searchProvider.searchTimeout
     }
 
     @Override
     void childCleanup() {
         searchProvider.maxResults = rowLimit
-        searchProvider.searchTimeout = 600000
+        searchProvider.searchTimeout = searchTimeout
     }
 
     @Override
