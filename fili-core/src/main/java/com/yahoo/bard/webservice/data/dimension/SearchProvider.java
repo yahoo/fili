@@ -7,11 +7,11 @@ import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
-import javax.validation.constraints.NotNull;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import javax.validation.constraints.NotNull;
 
 /**
  * Provides the capability to search through dimension metadata. For example, finding all dimensions whose name
@@ -62,6 +62,7 @@ public interface SearchProvider {
      * and the page of results desired)
      *
      * @return A page of the dimension rows contained in the Search Provider's indices
+     * @throws com.yahoo.bard.webservice.data.dimension.TimeoutException If the search times out.
      */
     Pagination<DimensionRow> findAllDimensionRowsPaged(@NotNull PaginationParameters paginationParameters);
 
@@ -69,6 +70,7 @@ public interface SearchProvider {
      * Getter for dimension rows in tree set for consistent order.
      *
      * @return tree set of dimension rows the Search Provider has in it's indexes
+     * @throws com.yahoo.bard.webservice.data.dimension.TimeoutException If the search times out.
      */
     TreeSet<DimensionRow> findAllOrderedDimensionRows();
 
@@ -99,6 +101,7 @@ public interface SearchProvider {
      *
      * @return A page of the dimension rows contained in the Search Provider's indices
      * and matched by the specified filters.
+     * @throws com.yahoo.bard.webservice.data.dimension.TimeoutException If the search times out.
      */
     Pagination<DimensionRow> findFilteredDimensionRowsPaged(
             Set<ApiFilter> filters,
