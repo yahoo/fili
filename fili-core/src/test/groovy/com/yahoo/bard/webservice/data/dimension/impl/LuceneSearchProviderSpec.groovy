@@ -3,10 +3,10 @@
 package com.yahoo.bard.webservice.data.dimension.impl
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.DimensionRow
+import com.yahoo.bard.webservice.data.dimension.TimeoutException
 import com.yahoo.bard.webservice.util.DimensionStoreKeyUtils
 import com.yahoo.bard.webservice.web.RowLimitReachedException
 import com.yahoo.bard.webservice.web.util.PaginationParameters
-import org.apache.lucene.search.TimeLimitingCollector
 import org.apache.lucene.store.FSDirectory
 /**
  * Specification for behavior specific to the LuceneSearchProvider
@@ -48,7 +48,7 @@ class LuceneSearchProviderSpec extends SearchProviderSpec<LuceneSearchProvider> 
         searchProvider.findAllDimensionRowsPaged(new PaginationParameters(rowLimit, 1))
 
         then:
-        thrown TimeLimitingCollector.TimeExceededException
+        thrown TimeoutException
     }
 
     def "findAllDimensionRows doesn't throw an exception when the real cardinality is less than the limit"() {

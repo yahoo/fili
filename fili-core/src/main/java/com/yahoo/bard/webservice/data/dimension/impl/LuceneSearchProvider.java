@@ -10,6 +10,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
+import com.yahoo.bard.webservice.data.dimension.TimeoutException;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.util.DimensionStoreKeyUtils;
 import com.yahoo.bard.webservice.util.Pagination;
@@ -36,6 +37,7 @@ import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TimeLimitingCollector;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.store.Directory;
@@ -565,6 +567,8 @@ public class LuceneSearchProvider implements SearchProvider {
         TreeSet<DimensionRow> filteredDimRows;
         int documentCount;
         initializeIndexSearcher();
+        LOG.trace("Lucene Query {}", query);
+
         lock.readLock().lock();
         try {
             RequestLog.startTiming("QueryingLucene");
@@ -676,6 +680,9 @@ public class LuceneSearchProvider implements SearchProvider {
             String errorMessage = "Unable to find dimension rows for page " + currentPage;
             LOG.error(errorMessage);
             throw new RuntimeException(errorMessage);
+        } catch (TimeLimitingCollector.TimeExceededException e) {
+            LOG.warn("Lucene query timeout: {}. {}", query, e.getMessage());
+            throw new TimeoutException(e.getMessage());
         } finally {
             lock.readLock().unlock();
         }
