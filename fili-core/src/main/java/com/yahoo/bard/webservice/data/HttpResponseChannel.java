@@ -113,7 +113,7 @@ public class HttpResponseChannel implements Observer<PreResponse> {
      * @param response  The Response to send back to the user
      */
     private void publishResponse(Response response) {
-        if (RequestLog.isStarted(RESPONSE_WORKFLOW_TIMER)) {
+        if (RequestLog.isRunning(RESPONSE_WORKFLOW_TIMER)) {
             RequestLog.stopTiming(RESPONSE_WORKFLOW_TIMER);
         }
         asyncResponse.resume(response);

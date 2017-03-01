@@ -37,9 +37,16 @@ Current
     * The previous message of `reject <url>` wasn't helpful, useful, nor very nice to users, and the message logged was
       not very useful either. The message has been made nicer (`Service is unhealthy. At least 1 healthcheck is
       failing`), and the log has been made better as well.
+- [`RequestLog` timings support the try-with-resources block](https://github.com/yahoo/fili/pull/143)
+    * A block of code can now be timed by wrapping the timed block in a try-with-resources block that 
+        starts the timer. Note: This won't work when performing timings across threads, or across
+        contexts. Those need to be started and stopped manually.
 
 ### Deprecated:
 
+- [`RequestLog::stopMostRecentTimer` has been deprecated](https://github.com/yahoo/fili/pull/143)
+    - This method is a part of the infrastructure to support the recently
+    deprecated `RequestLog::switchTiming`.
 
 
 ### Fixed:

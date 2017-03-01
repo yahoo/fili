@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.web.filters;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 
 import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.TimedPhase;
 import com.yahoo.bard.webservice.logging.blocks.Epilogue;
 import com.yahoo.bard.webservice.logging.blocks.Preface;
 import com.yahoo.bard.webservice.util.CacheLastObserver;
@@ -88,15 +89,15 @@ public class BardLoggingFilter implements ContainerRequestFilter, ContainerRespo
 
         appendRequestId(request.getHeaders().getFirst(X_REQUEST_ID_HEADER));
         RequestLog.startTiming(TOTAL_TIMER);
-        RequestLog.startTiming(this);
-        RequestLog.record(new Preface(request));
+        try (TimedPhase timer = RequestLog.startTiming(this)) {
+            RequestLog.record(new Preface(request));
 
-        // sets PROPERTY_REQ_LEN if content-length not defined
-        lengthOfRequestEntity(request);
+            // sets PROPERTY_REQ_LEN if content-length not defined
+            lengthOfRequestEntity(request);
 
-        // store start time to later calculate elapsed time
-        request.setProperty(PROPERTY_NANOS, System.nanoTime());
-        RequestLog.stopTiming(this);
+            // store start time to later calculate elapsed time
+            request.setProperty(PROPERTY_NANOS, System.nanoTime());
+        }
     }
 
     /**

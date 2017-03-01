@@ -31,6 +31,7 @@ import com.yahoo.bard.webservice.data.time.GranularityParser;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.TimedPhase;
 import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
 import com.yahoo.bard.webservice.logging.blocks.DataRequest;
 import com.yahoo.bard.webservice.logging.blocks.DruidFilterInfo;
@@ -345,9 +346,8 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             @Suspended final AsyncResponse asyncResponse
     ) {
         try {
-            RequestLog.startTiming("DataApiRequest");
             DataApiRequest apiRequest;
-            try {
+            try (TimedPhase timer = RequestLog.startTiming("DataApiRequest")) {
                 apiRequest = new DataApiRequest(
                         tableName,
                         timeGrain,
@@ -367,8 +367,6 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
                         uriInfo,
                         this
                 );
-            } finally {
-                RequestLog.stopTiming("DataApiRequest");
             }
 
             if (requestMapper != null) {
@@ -376,30 +374,21 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             }
 
             // Build the query template
-            RequestLog.startTiming("DruidQueryMerge");
             TemplateDruidQuery templateQuery;
-            try {
+            try (TimedPhase timer = RequestLog.startTiming("DruidQueryMerge")) {
                 templateQuery = templateDruidQueryMerger.merge(apiRequest);
-            } finally {
-                RequestLog.stopTiming("DruidQueryMerge");
             }
 
             // Select the performance slice and build the final query
             DruidAggregationQuery<?> druidQuery;
-            RequestLog.startTiming("DruidQueryBuilder");
-            try {
+            try (TimedPhase timer = RequestLog.startTiming("DruidQueryBuilder")) {
                 druidQuery = druidQueryBuilder.buildQuery(apiRequest, templateQuery);
-            } finally {
-                RequestLog.stopTiming("DruidQueryBuilder");
             }
 
             // Accumulate data needed for request processing workflow
-            RequestLog.startTiming("BuildRequestContext");
             RequestContext context;
-            try {
+            try (TimedPhase timer = RequestLog.startTiming("BuildRequestContext")) {
                 context = new RequestContext(containerRequestContext, readCache);
-            } finally {
-                RequestLog.stopTiming("BuildRequestContext");
             }
 
             //An instance to prepare the Response with different set of arguments
@@ -428,12 +417,9 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
                     httpResponseMaker
             );
 
-            RequestLog.startTiming("logRequestMetrics");
-            try {
+            try (TimedPhase timer = RequestLog.startTiming("logRequestMetrics")) {
                 logRequestMetrics(apiRequest, readCache, druidQuery);
                 RequestLog.record(new DruidFilterInfo(apiRequest.getFilter()));
-            } finally {
-                RequestLog.stopTiming("logRequestMetrics");
             }
 
             // Process the request
