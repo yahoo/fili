@@ -44,7 +44,7 @@ public class SketchRoundUpMapper extends ResultSetMapper implements ColumnMapper
         }
 
         MetricColumn metricColumn = schema.<MetricColumn>getColumn(columnName, MetricColumn.class).orElseThrow(
-                () -> new IllegalStateException("Unexpected missing column")
+                () -> new IllegalStateException("Unexpected missing column: " + columnName)
         );
 
         BigDecimal value = result.getMetricValueAsNumber(metricColumn);

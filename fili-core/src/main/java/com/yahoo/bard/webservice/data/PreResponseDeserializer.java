@@ -242,9 +242,7 @@ public class PreResponseDeserializer {
                         .collect(Collectors.toSet())
         );
 
-        return new ResultSetSchema(
-                generateGranularity(schemaNode.get(SCHEMA_GRANULARITY).asText(), timezone), columns
-        );
+        return new ResultSetSchema(generateGranularity(schemaNode.get(SCHEMA_GRANULARITY).asText(), timezone), columns);
     }
 
     /**

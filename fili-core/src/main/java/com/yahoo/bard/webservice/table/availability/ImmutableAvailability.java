@@ -7,7 +7,6 @@ import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.table.Column;
-import com.yahoo.bard.webservice.table.PhysicalTableSchema;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import com.google.common.collect.ImmutableMap;
@@ -73,14 +72,12 @@ public class ImmutableAvailability implements Availability {
      * Constructor.
      *
      * @param tableName  The name of the data source associated with this ImmutableAvailability
-     * @param schema  The schema for the availabilities
      * @param dimensionIntervals  The dimension availability map by dimension name
      * @param metricIntervals  The metric availability map
      * @param dimensionDictionary  The dictionary to resolve dimension names against
      */
     public ImmutableAvailability(
             String tableName,
-            PhysicalTableSchema schema,
             Map<String, Set<Interval>> dimensionIntervals,
             Map<String, Set<Interval>> metricIntervals,
             DimensionDictionary dimensionDictionary

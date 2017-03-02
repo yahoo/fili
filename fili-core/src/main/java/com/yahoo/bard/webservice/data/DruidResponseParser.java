@@ -39,8 +39,8 @@ public class DruidResponseParser {
      * @param jsonResult  Druid results in json
      * @param schema  Schema for results
      * @param queryType  the type of query, note that this implementation only supports instances of
-     * @param dateTimeZone the time zone used for format the results
      * {@link DefaultQueryType}
+     * @param dateTimeZone the time zone used for format the results
      *
      * @return the set of results
      */
