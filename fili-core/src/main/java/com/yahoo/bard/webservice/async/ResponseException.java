@@ -84,6 +84,7 @@ public class ResponseException extends Exception {
      * @param statusType  Status type of the response
      * @param druidQuery  The druid query being processed
      * @param error  Exception object with error details
+     *
      * @deprecated In order to ensure correct serialization of the Druid Query, an ObjectWriter with all appropriate
      * configuration should be passed in to the constructor
      */

@@ -179,7 +179,6 @@ public abstract class BasePhysicalTable implements PhysicalTable {
         Map<String, Set<Interval>> metricIntervals = segmentMetadata.getMetricIntervals();
         setAvailability(new ImmutableAvailability(
                 name,
-                schema,
                 dimensionIntervals,
                 metricIntervals,
                 dimensionDictionary

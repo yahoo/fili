@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.responseprocessors;
 
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.RESULT_MAPPING_FAILURE;
 import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys.API_METRIC_COLUMN_NAMES;
 import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys.HEADERS;
 import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys.REQUESTED_API_DIMENSION_FIELDS;
@@ -121,6 +122,14 @@ public class ResultSetResponseProcessor extends MappingResponseProcessor impleme
                     invalidPage.getErrorStatus(),
                     druidQuery,
                     invalidPage,
+                    getObjectMappers().getMapper().writer()
+            ));
+        } catch (IllegalStateException ise) {
+            LOG.error(RESULT_MAPPING_FAILURE.logFormat(ise.getMessage()));
+            responseEmitter.onError(new ResponseException(
+                    Status.INTERNAL_SERVER_ERROR,
+                    druidQuery,
+                    new Exception(RESULT_MAPPING_FAILURE.format(ise.getMessage())),
                     getObjectMappers().getMapper().writer()
             ));
         } catch (Exception exception) {

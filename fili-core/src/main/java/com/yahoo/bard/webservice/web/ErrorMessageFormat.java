@@ -212,6 +212,10 @@ public enum ErrorMessageFormat implements MessageFormatter {
             "Failed to retrieve data.",
             "Received %s with status code %s for reason %s when sending %s to Druid"
     ),
+
+    RESULT_MAPPING_FAILURE(
+            "Error occurred while processing response data: %s"
+    )
     ;
 
     private final String messageFormat;
