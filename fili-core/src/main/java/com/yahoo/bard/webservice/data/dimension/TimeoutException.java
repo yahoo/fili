@@ -14,4 +14,14 @@ public class TimeoutException extends RuntimeException {
     public TimeoutException(String message) {
         super(message);
     }
+
+
+    /**
+     * Constructor.
+     * @param message Describes the reason for the timeout.
+     * @param cause Wraps the generating exception.
+     */
+    public TimeoutException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

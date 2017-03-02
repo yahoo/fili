@@ -4,8 +4,8 @@ package com.yahoo.bard.webservice.web.endpoints;
 
 import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.REQUEST_WORKFLOW_TIMER;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.GATEWAY_TIMEOUT;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.REQUEST_TIMEOUT;
 
 import com.yahoo.bard.webservice.application.MetricRegistryFactory;
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
@@ -449,7 +449,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             asyncResponse.resume(RequestHandlerUtils.makeErrorResponse(INTERNAL_SERVER_ERROR, e, writer));
         } catch (TimeoutException e) {
             LOG.info("Exception processing request", e);
-            asyncResponse.resume(RequestHandlerUtils.makeErrorResponse(REQUEST_TIMEOUT, e, writer));
+            asyncResponse.resume(RequestHandlerUtils.makeErrorResponse(GATEWAY_TIMEOUT, e, writer));
         } catch (Error | Exception e) {
             LOG.info("Exception processing request", e);
             asyncResponse.resume(RequestHandlerUtils.makeErrorResponse(BAD_REQUEST, e, writer));

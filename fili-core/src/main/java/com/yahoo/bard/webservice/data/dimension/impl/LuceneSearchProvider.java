@@ -682,7 +682,7 @@ public class LuceneSearchProvider implements SearchProvider {
             throw new RuntimeException(errorMessage);
         } catch (TimeLimitingCollector.TimeExceededException e) {
             LOG.warn("Lucene query timeout: {}. {}", query, e.getMessage());
-            throw new TimeoutException(e.getMessage());
+            throw new TimeoutException(e.getMessage(), e);
         } finally {
             lock.readLock().unlock();
         }
