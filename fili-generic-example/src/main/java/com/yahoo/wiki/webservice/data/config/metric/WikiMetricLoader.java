@@ -74,7 +74,7 @@ public class WikiMetricLoader implements MetricLoader {
         // Metrics that directly aggregate druid fields
         DruidNavigator druidNavigator = new DruidNavigator(null); //TODO how to initialize?
         List<MetricInstance> metrics = new ArrayList<>();
-        MetricNameGenerator.setDefaultTimeGrain(DefaultTimeGrain.HOUR);
+        MetricNameGenerator.setDefaultTimeGrain(DefaultTimeGrain.HOUR); //TODO actually guess time grain
         TableConfig tableConfig = druidNavigator.getAllLoadedTables().get(0); //expand to work for all datasources
         for (String name : tableConfig.getMetrics()) {
             ApiMetricName apiMetricName = MetricNameGenerator.getFiliMetricName(name);
