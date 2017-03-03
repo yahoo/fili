@@ -6,13 +6,20 @@ import com.yahoo.bard.webservice.data.config.metric.MetricInstance;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.metric.makers.CountMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.DoubleSumMaker;
+import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
+import com.yahoo.bard.webservice.data.config.names.FieldName;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
+import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
+import com.yahoo.wiki.webservice.data.config.auto.DruidNavigator;
+import com.yahoo.wiki.webservice.data.config.auto.TableConfig;
+import com.yahoo.wiki.webservice.data.config.names.MetricNameGenerator;
 import com.yahoo.wiki.webservice.data.config.names.WikiApiMetricName;
 import com.yahoo.wiki.webservice.data.config.names.WikiDruidMetricName;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -57,7 +64,6 @@ public class WikiMetricLoader implements MetricLoader {
      */
     protected void buildMetricMakers(MetricDictionary metricDictionary) {
         // Create the various metric makers
-        countMaker = new CountMaker(metricDictionary);
         doubleSumMaker = new DoubleSumMaker(metricDictionary);
     }
 
@@ -66,13 +72,15 @@ public class WikiMetricLoader implements MetricLoader {
         buildMetricMakers(metricDictionary);
 
         // Metrics that directly aggregate druid fields
-        List<MetricInstance> metrics;
-        metrics = Arrays.asList(
-                new MetricInstance(WikiApiMetricName.COUNT, countMaker),
-                new MetricInstance(WikiApiMetricName.ADDED, doubleSumMaker, WikiDruidMetricName.ADDED),
-                new MetricInstance(WikiApiMetricName.DELETED, doubleSumMaker, WikiDruidMetricName.DELETED),
-                new MetricInstance(WikiApiMetricName.DELTA, doubleSumMaker, WikiDruidMetricName.DELTA)
-        );
+        DruidNavigator druidNavigator = new DruidNavigator(null); //TODO how to initialize?
+        List<MetricInstance> metrics = new ArrayList<>();
+        MetricNameGenerator.setDefaultTimeGrain(DefaultTimeGrain.HOUR);
+        TableConfig tableConfig = druidNavigator.getAllLoadedTables().get(0); //expand to work for all datasources
+        for (String name : tableConfig.getMetrics()) {
+            ApiMetricName apiMetricName = MetricNameGenerator.getFiliMetricName(name);
+            FieldName fieldName = MetricNameGenerator.getDruidMetric(name);
+            metrics.add(new MetricInstance(apiMetricName, doubleSumMaker, fieldName));
+        }
         LOG.debug("About to load direct aggregation metrics. Metric dictionary keys: {}", metricDictionary.keySet());
         addToMetricDictionary(metricDictionary, metrics);
     }
