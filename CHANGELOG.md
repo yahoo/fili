@@ -51,6 +51,10 @@ Current
 
 
 ### Fixed:
+
+-[Fix Lookup Dimension Serialization](https://github.com/yahoo/fili/pull/187)
+    * Fix a bug where lookup dimension is serialized as dimension spec in both outer and inner query
+
 - Correcting error message logged when no table schema match is found
 - Setting readTimeout on DefaultAsyncHttpClientConfig when building AsyncDruidWebServiceImpl
 
