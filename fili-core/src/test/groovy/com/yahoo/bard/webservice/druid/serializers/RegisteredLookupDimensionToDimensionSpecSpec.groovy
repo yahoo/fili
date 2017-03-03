@@ -87,7 +87,7 @@ class RegisteredLookupDimensionToDimensionSpecSpec extends Specification{
         druidQuery = builder.buildQuery(apiRequest, resources.simpleNestedTemplateQuery)
         String serializedQuery = objectMapper.writeValueAsString(druidQuery)
 
-        expect:
+        expect: "the inner most query serialize registered lookup dimension to dimension spec while the outer most query serialize as dimension api name"
         serializedQuery.contains('"dimensions":[{"type":"extraction","dimension":"species","outputName":"species","extractionFn":{"type":"registeredLookup","lookup":"SPECIES__BREED","retainMissingValue":false,"replaceMissingValueWith":"Unknown SPECIES__BREED","injective":false,"optimize":true}}]')
         serializedQuery.contains('"dimensions":["species"]')
     }
