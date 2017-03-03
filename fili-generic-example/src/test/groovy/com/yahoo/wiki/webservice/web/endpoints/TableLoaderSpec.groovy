@@ -42,6 +42,33 @@ public class TableLoaderSpec extends Specification {
         }
     }
 
+    String expectedMetricsAndDimensions = """{
+    "name": "wikiticker",
+    "properties": {},
+    "segments": [
+        {
+            "dataSource": "wikiticker",
+            "interval": "2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z",
+            "version": "2017-02-27T03:06:09.422Z",
+            "loadSpec": 
+                {
+                    "type": "local",
+                    "path": "home/khinterlong/Desktop/work/druid-0.9.1.1/var/druid/segments/wikiticker/wikiticker/2015-09-12T00:00:00.000Z_2015-09-13T00:00:00.000Z/2017-02-27T03:06:09.422Z/0/index.zip"
+                },
+            "dimensions": "channel,cityName,comment,countryIsoCode,countryName,isAnonymous,isMinor,isNew,isRobot,isUnpatrolled,metroCode,namespace,page,regionIsoCode,regionName,user",
+            "metrics": "count,added,deleted,delta,user_unique",
+            "shardSpec": 
+                {
+                    "type": "none"
+                },
+            "binaryVersion": 9,
+            "size": 5537610,
+            "identifier": "wikiticker_2015-09-12T00:00:00.000Z_2015-09-13T00:00:00.000Z_2017-02-27T03:06:09.422Z"
+        }
+    ]
+}
+"""
+
     def "get metric names from druid"() {
         setup:
         TableConfig wikiticker;
@@ -52,32 +79,7 @@ public class TableLoaderSpec extends Specification {
         druidWebService.jsonResponse = new Producer<String>() {
             @Override
             String call() {
-                return """{
-                    "name": "wikiticker",
-                    "properties": {},
-                    "segments": [{
-                                     "dataSource": "wikiticker",
-                                     "interval": "2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z",
-                                     "version": "2017-02-27T03:06:09.422Z",
-                                     "loadSpec": {
-                            "type": "local",
-                            "path": "/home/khinterlong/Desktop/work/druid-0.9.1
-                            .1/var/druid/segments/wikiticker/wikiticker/2015-09-12T00:00:00.000Z_2015-09-13T00:00:00
-                            .000Z/2017-02-27T03:06:09.422Z/0/index.zip"
-                        },
-                                     "dimensions": "channel,cityName,comment,countryIsoCode,countryName,isAnonymous,
-                                     isMinor,isNew,isRobot,isUnpatrolled,metroCode,namespace,page,regionIsoCode,
-                                     regionName,user",
-                                     "metrics": "count,added,deleted,delta,user_unique",
-                                     "shardSpec": {
-                            "type": "none"
-                        },
-                                     "binaryVersion": 9,
-                                     "size": 5537610,
-                                     "identifier": "wikiticker_2015-09-12T00:00:00.000Z_2015-09-13T00:00:00
-                                     .000Z_2017-02-27T03:06:09.422Z"
-                                 }]
-                }"""
+                return expectedMetricsAndDimensions;
             }
         }
 
