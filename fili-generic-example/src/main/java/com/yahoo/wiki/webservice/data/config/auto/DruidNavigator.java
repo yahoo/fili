@@ -52,6 +52,7 @@ public class DruidNavigator {
             JsonNode segments = rootNode.get("segments").get(0);
             loadMetrics(table, segments);
             loadDimensions(table, segments);
+            LOG.info("Loaded table " + table.getName());
         }, url);
     }
 
@@ -84,7 +85,7 @@ public class DruidNavigator {
                     LOG.debug("HTTPError " + statusCode + " - " + reasonPhrase);
                 },
                 (throwable) -> {
-                    LOG.debug("Error thrown while fetching " + url + ". " + throwable.getMessage());
+                    LOG.info("Error thrown while fetching " + url + ". " + throwable.getMessage());
                 },
                 url
         );
