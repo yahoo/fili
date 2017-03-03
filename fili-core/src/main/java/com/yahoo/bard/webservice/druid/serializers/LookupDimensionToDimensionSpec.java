@@ -39,7 +39,7 @@ public class LookupDimensionToDimensionSpec  extends JsonSerializer<KeyValueStor
         Optional<ExtractionFunction> extractionFunction = ModelUtil.getExtractionFunction(value);
 
         // Use DimensionToDefaultDimensionSpec serializer if LookupDimension does not contain any namespace or lookups
-        if (!extractionFunction.isPresent()) {
+        if (!extractionFunction.isPresent() || SerializerUtil.hasInnerQuery(gen)) {
             JsonSerializer<Object> dimensionSerializer = provider.findValueSerializer(Dimension.class);
             dimensionSerializer.serialize(value, gen, provider);
             return;

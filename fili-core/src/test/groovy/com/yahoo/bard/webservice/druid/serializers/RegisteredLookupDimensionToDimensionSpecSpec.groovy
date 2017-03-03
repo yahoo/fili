@@ -80,5 +80,16 @@ class RegisteredLookupDimensionToDimensionSpecSpec extends Specification{
         expect:
         objectMapper.writeValueAsString(druidQuery).contains('{"type":"extraction","dimension":"breed","outputName":"breed","extractionFn":{"type":"cascade","extractionFns":[{"type":"registeredLookup","lookup":"BREED__SPECIES","retainMissingValue":false,"replaceMissingValueWith":"Unknown BREED__SPECIES","injective":false,"optimize":true},{"type":"registeredLookup","lookup":"BREED__OTHER","retainMissingValue":false,"replaceMissingValueWith":"Unknown BREED__OTHER","injective":false,"optimize":true},{"type":"registeredLookup","lookup":"BREED__COLOR","retainMissingValue":false,"replaceMissingValueWith":"Unknown BREED__COLOR","injective":false,"optimize":true}]}}')
     }
+
+    def "Given registered lookup dimension with nested query, only the inner most dimension serialize to dimension spec"() {
+        given:
+        apiRequest.getDimensions() >> ([resources.d12])
+        druidQuery = builder.buildQuery(apiRequest, resources.simpleNestedTemplateQuery)
+        String serializedQuery = objectMapper.writeValueAsString(druidQuery)
+
+        expect:
+        serializedQuery.contains('"dimensions":[{"type":"extraction","dimension":"species","outputName":"species","extractionFn":{"type":"registeredLookup","lookup":"SPECIES__BREED","retainMissingValue":false,"replaceMissingValueWith":"Unknown SPECIES__BREED","injective":false,"optimize":true}}]')
+        serializedQuery.contains('"dimensions":["species"]')
+    }
 }
 
