@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * Created by kevin on 2/28/2017.
  */
-public class DruidNavigator {
+public class DruidNavigator implements ConfigLoader {
     private static final int COORDINATOR_PORT = 8081;
     private static final Logger LOG = LoggerFactory.getLogger(DruidNavigator.class);
     private DruidWebService druidWebService;
