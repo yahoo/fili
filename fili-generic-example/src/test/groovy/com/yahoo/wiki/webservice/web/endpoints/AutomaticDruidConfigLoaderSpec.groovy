@@ -9,9 +9,10 @@ import org.json.JSONArray
 
 import spock.lang.Specification
 
-public class TableLoaderSpec extends Specification {
+public class AutomaticDruidConfigLoaderSpec extends Specification {
     TestDruidWebService druidWebService;
     DruidNavigator druidNavigator;
+    String datasource = "wikiticker"
 
     def setup() {
         druidWebService = new TestDruidWebService("testInstance");
@@ -20,13 +21,10 @@ public class TableLoaderSpec extends Specification {
 
     def "get table names from druid"() {
         setup:
-        String[] tables = ["wikiticker"];
-        druidWebService.jsonResponse = new Producer<String>() {
-            @Override
-            String call() {
-                return new JSONArray(tables).toString()
-            }
-        }
+        String[] tables = ["$datasource"];
+        druidWebService.jsonResponse  = {
+            return new JSONArray(tables).toString()
+        };
 
         when: "We send a request"
         List<TableConfig> returnedTables = druidNavigator.getTableNames();
@@ -76,18 +74,16 @@ public class TableLoaderSpec extends Specification {
         String[] dimensions = ["channel", "cityName", "comment", "countryIsoCode", "countryName", "isAnonymous",
                                "isMinor", "isNew", "isRobot", "isUnpatrolled", "metroCode", "namespace", "page",
                                "regionIsoCode", "regionName", "user"];
-        druidWebService.jsonResponse = new Producer<String>() {
-            @Override
-            String call() {
-                return expectedMetricsAndDimensions;
-            }
-        }
+        druidWebService.jsonResponse = {
+            return expectedMetricsAndDimensions
+        };
 
         when: "We send a request"
-        wikiticker = new TableConfig("wikiticker");
+        wikiticker = new TableConfig("$datasource");
         druidNavigator.loadTable(wikiticker);
 
         then: "what we expect"
+        druidWebService.lastUrl == "http://localhost:8081/druid/coordinator/v1/datasources/$datasource/?full"
         List<String> returnedMetrics = wikiticker.getMetrics();
         for (String m : metrics) {
             assert returnedMetrics.contains(m);

@@ -18,7 +18,7 @@ public class DruidNavigator {
     private static final int COORDINATOR_PORT = 8081;
     private static final Logger LOG = LoggerFactory.getLogger(DruidNavigator.class);
     private DruidWebService druidWebService;
-    private List<TableConfig> tableConfigurations; //"wikiticker"
+    private List<TableConfig> tableConfigurations;
 
     public DruidNavigator(DruidWebService druidWebService) {
         this.druidWebService = druidWebService;
@@ -58,7 +58,6 @@ public class DruidNavigator {
 
     private void loadMetrics(final TableConfig table, final JsonNode rootNode) {
         JsonNode metricsArray = rootNode.get("metrics");
-        LOG.info("Metrics json: " + metricsArray);
         String[] metrics = metricsArray.asText().split(",");
         for (String m : metrics) {
             table.addMetric(m);
@@ -75,14 +74,14 @@ public class DruidNavigator {
 
     //TODO: handle errors
     private void getJson(SuccessCallback successCallback, String url) {
-        LOG.info("Fetching " + url);
+        LOG.debug("Fetching " + url);
         druidWebService.getJsonObject(
                 rootNode -> {
-                    LOG.info("Succesfully fetched " + url);
+                    LOG.debug("Succesfully fetched " + url);
                     successCallback.invoke(rootNode);
                 },
                 (statusCode, reasonPhrase, responseBody) -> {
-                    LOG.debug("HTTPError " + statusCode + " - " + reasonPhrase);
+                    LOG.info("HTTPError " + statusCode + " - " + reasonPhrase);
                 },
                 (throwable) -> {
                     LOG.info("Error thrown while fetching " + url + ". " + throwable.getMessage());
