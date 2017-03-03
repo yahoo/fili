@@ -1,0 +1,99 @@
+package com.yahoo.wiki.webservice.web.endpoints
+
+import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService
+import com.yahoo.wiki.webservice.data.config.auto.DruidNavigator
+import com.yahoo.wiki.webservice.data.config.auto.TableConfig
+
+import org.glassfish.jersey.internal.util.Producer
+import org.json.JSONArray
+
+import spock.lang.Specification
+
+public class TableLoaderSpec extends Specification {
+    TestDruidWebService druidWebService;
+    DruidNavigator druidNavigator;
+
+    def setup() {
+        druidWebService = new TestDruidWebService("testInstance");
+        druidNavigator = new DruidNavigator(druidWebService);
+    }
+
+    def "get table names from druid"() {
+        setup:
+        String[] tables = ["wikiticker"];
+        druidWebService.jsonResponse = new Producer<String>() {
+            @Override
+            String call() {
+                return new JSONArray(tables).toString()
+            }
+        }
+
+        when: "We send a request"
+        List<TableConfig> returnedTables = druidNavigator.getTableNames();
+
+        then: "what we expect"
+        druidWebService.lastUrl == "http://localhost:8081/druid/coordinator/v1/datasources/"
+        List<String> returnedTableNames = new ArrayList<>();
+        for (TableConfig t : returnedTables) {
+            returnedTableNames.add(t.getName());
+        }
+        for (String t : tables) {
+            assert returnedTableNames.contains(t);
+        }
+    }
+
+    def "get metric names from druid"() {
+        setup:
+        TableConfig wikiticker;
+        String[] metrics = ["count","added","deleted","delta","user_unique"];
+        String[] dimensions = ["channel", "cityName", "comment", "countryIsoCode", "countryName", "isAnonymous",
+                               "isMinor", "isNew", "isRobot", "isUnpatrolled", "metroCode", "namespace", "page",
+                               "regionIsoCode", "regionName", "user"];
+        druidWebService.jsonResponse = new Producer<String>() {
+            @Override
+            String call() {
+                return """{
+                    "name": "wikiticker",
+                    "properties": {},
+                    "segments": [{
+                                     "dataSource": "wikiticker",
+                                     "interval": "2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z",
+                                     "version": "2017-02-27T03:06:09.422Z",
+                                     "loadSpec": {
+                            "type": "local",
+                            "path": "/home/khinterlong/Desktop/work/druid-0.9.1
+                            .1/var/druid/segments/wikiticker/wikiticker/2015-09-12T00:00:00.000Z_2015-09-13T00:00:00
+                            .000Z/2017-02-27T03:06:09.422Z/0/index.zip"
+                        },
+                                     "dimensions": "channel,cityName,comment,countryIsoCode,countryName,isAnonymous,
+                                     isMinor,isNew,isRobot,isUnpatrolled,metroCode,namespace,page,regionIsoCode,
+                                     regionName,user",
+                                     "metrics": "count,added,deleted,delta,user_unique",
+                                     "shardSpec": {
+                            "type": "none"
+                        },
+                                     "binaryVersion": 9,
+                                     "size": 5537610,
+                                     "identifier": "wikiticker_2015-09-12T00:00:00.000Z_2015-09-13T00:00:00
+                                     .000Z_2017-02-27T03:06:09.422Z"
+                                 }]
+                }"""
+            }
+        }
+
+        when: "We send a request"
+        wikiticker = new TableConfig("wikiticker");
+        druidNavigator.loadTable(wikiticker);
+
+        then: "what we expect"
+        List<String> returnedMetrics = wikiticker.getMetrics();
+        for (String m : metrics) {
+            assert returnedMetrics.contains(m);
+        }
+
+        List<String> returnedDimensions = wikiticker.getDimensions();
+        for (String d : dimensions) {
+            assert returnedDimensions.contains(d);
+        }
+    }
+}

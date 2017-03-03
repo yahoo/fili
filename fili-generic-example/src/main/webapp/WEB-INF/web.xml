@@ -1,0 +1,115 @@
+<web-app version="3.0"
+         xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <listener>
+        <listener-class>com.yahoo.bard.webservice.application.MetricServletContextListener</listener-class>
+    </listener>
+    <listener>
+        <listener-class>com.yahoo.bard.webservice.application.HealthCheckServletContextListener</listener-class>
+    </listener>
+
+    <servlet>
+        <servlet-name>Jersey Web Application</servlet-name>
+        <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+        <init-param>
+            <param-name>jersey.config.server.provider.packages</param-name>
+            <param-value>com.yahoo.bard.webservice.web.endpoints</param-value>
+        </init-param>
+        <init-param>
+            <param-name>javax.ws.rs.Application</param-name>
+            <param-value>com.yahoo.bard.webservice.application.ResourceConfig</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+        <async-supported>true</async-supported>
+    </servlet>
+
+    <servlet>
+        <servlet-name>Admin</servlet-name>
+        <servlet-class>com.codahale.metrics.servlets.AdminServlet</servlet-class>
+        <init-param>
+            <param-name>healthcheck-uri</param-name>
+            <param-value>/status.html</param-value>
+        </init-param>
+    </servlet>
+    
+    <!-- 
+    The following servlet declaration is copied from jetty's webdefault.xml. It is
+    here purely to avoid validation errors in some IDEs, such as eclipse, and is not
+    normally necessary in order to get the system to work. 
+     -->
+    <servlet>
+        <servlet-name>default</servlet-name>
+        <servlet-class>org.eclipse.jetty.servlet.DefaultServlet</servlet-class>
+        <init-param>
+                <param-name>aliases</param-name>
+                <param-value>false</param-value>
+        </init-param>
+        <init-param>
+                <param-name>acceptRanges</param-name>
+                <param-value>true</param-value>
+        </init-param>
+        <init-param>
+                <param-name>dirAllowed</param-name>
+                <param-value>false</param-value>
+        </init-param>
+        <init-param>
+                <param-name>welcomeServlets</param-name>
+                <param-value>false</param-value>
+        </init-param>
+        <init-param>
+                <param-name>redirectWelcome</param-name>
+                <param-value>false</param-value>
+        </init-param>
+        <init-param>
+                <param-name>maxCacheSize</param-name>
+                <param-value>256000000</param-value>
+        </init-param>
+        <init-param>
+                <param-name>maxCachedFileSize</param-name>
+                <param-value>200000000</param-value>
+        </init-param>
+        <init-param>
+                <param-name>maxCachedFiles</param-name>
+                <param-value>2048</param-value>
+        </init-param>
+        <init-param>
+                <param-name>gzip</param-name>
+                <param-value>true</param-value>
+        </init-param>
+        <init-param>
+                <param-name>etags</param-name>
+                <param-value>true</param-value>
+        </init-param>
+        <init-param>
+                <param-name>useFileMappedBuffer</param-name>
+                <param-value>true</param-value>
+        </init-param>
+        <!-- <init-param> <param-name>resourceCache</param-name> <param-value>resourceCache</param-value>
+                </init-param> -->
+        <!-- <init-param> <param-name>cacheControl</param-name> <param-value>max-age=3600,public</param-value>
+                </init-param> -->
+        <load-on-startup>0</load-on-startup>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>Jersey Web Application</servlet-name>
+        <url-pattern>/v1/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>Admin</servlet-name>
+        <url-pattern>/*</url-pattern>
+    </servlet-mapping>
+
+    <filter>
+        <filter-name>instrumentedFilter</filter-name>
+        <filter-class>com.codahale.metrics.servlet.InstrumentedFilter</filter-class>
+        <async-supported>true</async-supported>
+    </filter>
+    <filter-mapping>
+        <filter-name>instrumentedFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+</web-app>
