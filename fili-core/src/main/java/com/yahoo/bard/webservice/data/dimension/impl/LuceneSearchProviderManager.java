@@ -9,7 +9,6 @@ import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.validation.constraints.NotNull;
 
 /**
