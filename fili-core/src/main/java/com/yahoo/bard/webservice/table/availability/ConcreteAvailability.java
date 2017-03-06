@@ -105,4 +105,16 @@ public class ConcreteAvailability implements Availability {
     protected Map<String, List<Interval>> getLatestAvailableIntervalsByTable() {
         return metadataService.getAvailableIntervalsByTable(name);
     }
+
+    public DataSourceMetadataService getMetadataService() {
+        return metadataService;
+    }
+
+    public TableName getName() {
+        return name;
+    }
+
+    public Set<String> getCachedColumnNames() {
+        return cachedColumnNames;
+    }
 }

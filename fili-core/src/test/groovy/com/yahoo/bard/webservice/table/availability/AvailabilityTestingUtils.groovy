@@ -62,4 +62,18 @@ class AvailabilityTestingUtils extends Specification {
                     table.setAvailability(new ConcreteAvailability(table.getTableName(), table.getSchema().getColumns(), new TestDataSourceMetadataService(allIntervals)))
                 }
     }
+
+    /**
+     * Construct a map of Column object to its all available intervals
+     *
+     * @param map a map of Column in String representation to its all available intervals in String representations
+     *
+     * @return a map of Column object to its all available intervals
+     */
+    static Map<Column, Set<Interval>> constructColumnToIntervalMap(Map<String, Set<String>> columnToIntervalInString) {
+        return columnToIntervalInString.collectEntries{
+            key,
+            value -> [ (new Column(key)): value.collect{new Interval(it)} ]
+        }
+    }
 }
