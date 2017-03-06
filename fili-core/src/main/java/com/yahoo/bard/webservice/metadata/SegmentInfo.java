@@ -1,4 +1,4 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.metadata;
 
@@ -10,7 +10,10 @@ import io.druid.timeline.DataSegment;
 import io.druid.timeline.partition.NoneShardSpec;
 import io.druid.timeline.partition.ShardSpec;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A class that holds the useful information of a partition of a druid segment in bard.
@@ -18,6 +21,8 @@ import java.util.Objects;
 public class SegmentInfo {
     private final String dataSource;
     private final Interval interval;
+    private final List<String> dimensions;
+    private final List<String> metrics;
     private final String version;
     private final NumberedShardSpec shardSpec;
     private final long size;
@@ -31,6 +36,8 @@ public class SegmentInfo {
     public SegmentInfo(DataSegment segment) {
         this.dataSource = segment.getDataSource();
         this.interval = segment.getInterval();
+        this.dimensions = segment.getDimensions();
+        this.metrics = segment.getMetrics();
         this.version = segment.getVersion();
         ShardSpec spec = segment.getShardSpec();
         this.shardSpec = spec instanceof NumberedShardSpec ?
@@ -56,6 +63,36 @@ public class SegmentInfo {
      */
     public Interval getInterval() {
         return interval;
+    }
+
+    /**
+     * Getter for the dimensions in this segment.
+     *
+     * @return The list of dimension names
+     */
+    public List<String> getDimensions() {
+        return dimensions;
+    }
+
+    /**
+     * Getter for the metrics in this segment.
+     *
+     * @return The list of metric names
+     */
+    public List<String> getMetrics() {
+        return metrics;
+    }
+
+    /**
+     * Getter for list of dimension and metric names.
+     *
+     * @return The list of dimension and metric names
+     */
+    public List<String> getColumnNames() {
+        return Stream.concat(
+                getDimensions().stream(),
+                getMetrics().stream()
+        ).collect(Collectors.toList());
     }
 
     /**

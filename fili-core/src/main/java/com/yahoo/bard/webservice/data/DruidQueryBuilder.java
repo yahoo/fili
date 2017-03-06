@@ -219,8 +219,6 @@ public class DruidQueryBuilder {
             } else {
                 dataSource = new UnionDataSource(Sets.newHashSet(table));
             }
-            // The data source is the table directly, since there is no nested query below us
-            //DataSource dataSource = new TableDataSource((ConcretePhysicalTable) table);
 
             // Filters must be applied at the lowest level as they exclude data from aggregates
             return new GroupByQuery(

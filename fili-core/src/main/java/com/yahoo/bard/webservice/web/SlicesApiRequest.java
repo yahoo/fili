@@ -1,4 +1,4 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web;
 
@@ -189,7 +189,7 @@ public class SlicesApiRequest extends ApiRequest {
                 );
 
         Set<SortedMap<DateTime, Map<String, SegmentInfo>>> sliceMetadata = dataSourceMetadataService.getTableSegments(
-                Collections.singleton(table)
+                Collections.singleton(table.getTableName())
         );
 
         Map<String, Object> generated = new LinkedHashMap<>();

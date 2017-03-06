@@ -1,15 +1,11 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.metadata
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
-import com.yahoo.bard.webservice.druid.model.datasource.DataSource
-import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
+import com.yahoo.bard.webservice.data.config.names.TableName
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 
-import org.joda.time.DateTime
-
-import java.util.concurrent.ConcurrentSkipListMap
 import java.util.concurrent.atomic.AtomicReference
 
 class DataSourceMetadataServiceSpec extends BaseDataSourceMetadataSpec {
@@ -19,23 +15,39 @@ class DataSourceMetadataServiceSpec extends BaseDataSourceMetadataSpec {
         JerseyTestBinder jtb = new JerseyTestBinder()
         PhysicalTableDictionary tableDict = jtb.configurationLoader.getPhysicalTableDictionary()
         DataSourceMetadataService metadataService = new DataSourceMetadataService()
-
         DataSourceMetadata metadata = new DataSourceMetadata(tableName, [:], segments)
 
         when:
         metadataService.update(tableDict.get(tableName), metadata)
 
         then:
-        metadataService.allSegments.get(tableDict.get(tableName)) instanceof AtomicReference
+        metadataService.allSegmentsByTime.get(tableDict.get(tableName).getTableName()) instanceof AtomicReference
+        metadataService.allSegmentsByColumn.get(tableDict.get(tableName).getTableName()) instanceof AtomicReference
 
         and:
-        metadataService.allSegments.get(tableDict.get(tableName)).get().values()*.keySet() as List ==
+        metadataService.allSegmentsByTime.get(tableDict.get(tableName).getTableName()).get().values()*.keySet() as List ==
         [
                 [segment1.getIdentifier(), segment2.getIdentifier()] as Set,
                 [segment3.getIdentifier(), segment4.getIdentifier()] as Set
         ] as List
 
+        and: "all the intervals by column in metadata service are simplified to interval12"
+        [interval12].containsAll(metadataService.allSegmentsByColumn.get(tableDict.get(tableName).getTableName()).get().values().toSet().getAt(0))
+
         cleanup:
         jtb.tearDown()
+    }
+
+    def "accessing availability by column throws exception if the table does not exist in datasource metadata service"() {
+        setup:
+        DataSourceMetadataService metadataService = new DataSourceMetadataService()
+
+        when:
+        metadataService.getAvailableIntervalsByTable(TableName.of("InvalidTable"))
+
+        then:
+        IllegalStateException e = thrown()
+        e.message == 'Trying to access InvalidTable physical table datasource that is not available in metadata service'
+
     }
 }
