@@ -118,7 +118,7 @@ class TablesServletSpec extends Specification {
                                                     """{
                                                     "category": "General",
                                                     "name": "$it",
-                                                    "longName": "$it",
+                                                    "longName": "wiki $it",
                                                     "cardinality": 0,
                                                     "uri": "http://localhost:9998/dimensions/$it"
                                                     }"""
