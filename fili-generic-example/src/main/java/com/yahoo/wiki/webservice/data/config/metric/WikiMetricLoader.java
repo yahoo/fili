@@ -10,17 +10,15 @@ import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.config.names.FieldName;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
+import com.yahoo.wiki.webservice.data.config.auto.ConfigLoader;
+import com.yahoo.wiki.webservice.data.config.auto.DruidConfig;
 import com.yahoo.wiki.webservice.data.config.auto.DruidNavigator;
-import com.yahoo.wiki.webservice.data.config.auto.TableConfig;
 import com.yahoo.wiki.webservice.data.config.names.MetricNameGenerator;
-import com.yahoo.wiki.webservice.data.config.names.WikiApiMetricName;
-import com.yahoo.wiki.webservice.data.config.names.WikiDruidMetricName;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -30,12 +28,10 @@ import java.util.List;
  */
 public class WikiMetricLoader implements MetricLoader {
 
-    private static final Logger LOG = LoggerFactory.getLogger(WikiMetricLoader.class);
-
     public static final int BYTES_PER_KILOBYTE = 1024;
     public static final int DEFAULT_KILOBYTES_PER_SKETCH = 16;
     public static final int DEFAULT_SKETCH_SIZE_IN_BYTES = DEFAULT_KILOBYTES_PER_SKETCH * BYTES_PER_KILOBYTE;
-
+    private static final Logger LOG = LoggerFactory.getLogger(WikiMetricLoader.class);
     final int sketchSize;
 
     CountMaker countMaker;
@@ -72,10 +68,10 @@ public class WikiMetricLoader implements MetricLoader {
         buildMetricMakers(metricDictionary);
 
         // Metrics that directly aggregate druid fields
-        DruidNavigator druidNavigator = new DruidNavigator(null); //TODO how to initialize?
+        ConfigLoader druidNavigator = new DruidNavigator(null); //TODO how to initialize?
         List<MetricInstance> metrics = new ArrayList<>();
         MetricNameGenerator.setDefaultTimeGrain(DefaultTimeGrain.HOUR); //TODO actually guess time grain
-        TableConfig tableConfig = druidNavigator.getAllLoadedTables().get(0); //expand to work for all datasources
+        DruidConfig tableConfig = druidNavigator.getTableNames().get(0); //expand to work for all datasources
         for (String name : tableConfig.getMetrics()) {
             ApiMetricName apiMetricName = MetricNameGenerator.getFiliMetricName(name);
             FieldName fieldName = MetricNameGenerator.getDruidMetric(name);
