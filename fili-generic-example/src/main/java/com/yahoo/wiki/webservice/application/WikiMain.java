@@ -5,7 +5,6 @@ package com.yahoo.wiki.webservice.application;
 import com.yahoo.bard.webservice.application.HealthCheckServletContextListener;
 import com.yahoo.bard.webservice.application.MetricServletContextListener;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
-import com.yahoo.wiki.webservice.data.config.auto.StaticWikiConfigLoader;
 import com.yahoo.wiki.webservice.data.config.dimension.GenericDimensions;
 
 import com.codahale.metrics.servlet.InstrumentedFilter;
@@ -54,7 +53,7 @@ public class WikiMain {
      * @throws IOException If something goes terribly wrong when building the JSON or sending it
      */
     private static void markDimensionCacheHealthy(int port) throws IOException {
-        for (DimensionConfig dimensionConfig : new GenericDimensions(new StaticWikiConfigLoader())
+        for (DimensionConfig dimensionConfig : new GenericDimensions(GenericBinder.getConfigLoader())
                 .getAllDimensionConfigurations()) {
             String dimension = dimensionConfig.getApiName();
             HttpPost post = new HttpPost("http://localhost:" + port + "/v1/cache/dimensions/" + dimension);

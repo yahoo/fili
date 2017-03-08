@@ -1,0 +1,81 @@
+// Copyright 2016 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
+package com.yahoo.wiki.webservice.data.config.auto;
+
+import com.yahoo.bard.webservice.data.config.names.TableName;
+import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
+import com.yahoo.bard.webservice.data.time.TimeGrain;
+import com.yahoo.bard.webservice.util.EnumUtils;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+/**
+ * Created by kevin on 3/7/2017.
+ */
+public class StaticWikiConfigLoader implements ConfigLoader {
+
+    public static DruidConfig getWikiDruidConfig() {
+        return new DruidConfig() {
+            @Override
+            public String getName() {
+                return "wikiticker";
+            }
+
+            //TODO should this be camelcased?
+            @Override
+            public TableName getTableName() {
+                return this::getName;
+            }
+
+            @Override
+            public List<String> getMetrics() {
+                return Arrays.asList(
+                        "count",
+                        "added",
+                        "deleted",
+                        "delta",
+                        "user_unique"
+                );
+            }
+
+            @Override
+            public List<String> getDimensions() {
+                return Arrays.asList(
+                        "channel",
+                        "cityName",
+                        "comment",
+                        "countryIsoCode",
+                        "countryName",
+                        "isAnonymous",
+                        "isMinor",
+                        "isNew",
+                        "isRobot",
+                        "isUnpatrolled",
+                        "metroCode",
+                        "namespace",
+                        "page",
+                        "regionIsoCode",
+                        "regionName",
+                        "user"
+                );
+            }
+
+            @Override
+            public List<TimeGrain> getValidTimeGrains() {
+                return Arrays.asList(
+                        DefaultTimeGrain.HOUR,
+                        DefaultTimeGrain.DAY
+                );
+            }
+        };
+    }
+
+    @Override
+    public List<DruidConfig> getTableNames() {
+        List<DruidConfig> druidConfigs = new ArrayList<>();
+        druidConfigs.add(getWikiDruidConfig());
+        return druidConfigs;
+    }
+}
