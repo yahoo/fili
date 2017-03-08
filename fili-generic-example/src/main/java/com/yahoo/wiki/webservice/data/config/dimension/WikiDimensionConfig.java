@@ -7,7 +7,7 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
-import com.yahoo.wiki.webservice.data.config.names.WikiApiDimensionName;
+import com.yahoo.bard.webservice.util.EnumUtils;
 
 import java.util.LinkedHashSet;
 
@@ -18,7 +18,7 @@ import javax.validation.constraints.NotNull;
  */
 public class WikiDimensionConfig implements DimensionConfig {
 
-    private final WikiApiDimensionName apiName;
+    private final String apiName;
     private final String physicalName;
     private final String description;
     private final LinkedHashSet<DimensionField> fields;
@@ -35,7 +35,7 @@ public class WikiDimensionConfig implements DimensionConfig {
      * @param fields  Dimension columns defining this dimension
      */
     public WikiDimensionConfig(
-            @NotNull WikiApiDimensionName apiName,
+            @NotNull String apiName,
             @NotNull String physicalName,
             @NotNull KeyValueStore keyValueStore,
             @NotNull SearchProvider searchProvider,
@@ -43,7 +43,7 @@ public class WikiDimensionConfig implements DimensionConfig {
     ) {
         this.apiName = apiName;
         this.physicalName = physicalName;
-        this.description = apiName.asName();
+        this.description = EnumUtils.camelCase(apiName);
         this.keyValueStore = keyValueStore;
         this.searchProvider = searchProvider;
         this.fields = fields;
@@ -51,7 +51,7 @@ public class WikiDimensionConfig implements DimensionConfig {
 
     @Override
     public String getApiName() {
-        return apiName.asName();
+        return EnumUtils.camelCase(apiName);
     }
 
     @Override
@@ -86,7 +86,7 @@ public class WikiDimensionConfig implements DimensionConfig {
 
     @Override
     public String getLongName() {
-        return apiName.asName();
+        return EnumUtils.camelCase(apiName);
     }
 
     @Override

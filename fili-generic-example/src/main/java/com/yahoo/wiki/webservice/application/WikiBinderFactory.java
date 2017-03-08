@@ -6,9 +6,6 @@ import com.yahoo.bard.webservice.application.AbstractBinderFactory;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
-import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensions;
-import com.yahoo.wiki.webservice.data.config.metric.WikiMetricLoader;
-import com.yahoo.wiki.webservice.data.config.table.WikiTableLoader;
 
 import java.util.LinkedHashSet;
 
@@ -19,16 +16,16 @@ public class WikiBinderFactory extends AbstractBinderFactory {
 
     @Override
     protected MetricLoader getMetricLoader() {
-        return new WikiMetricLoader();
+        return GenericBinder.getInstance().buildMetricLoader();
     }
 
     @Override
     protected LinkedHashSet<DimensionConfig> getDimensionConfigurations() {
-        return new LinkedHashSet<>(new WikiDimensions().getAllDimensionConfigurations());
+        return GenericBinder.getInstance().buildDimensionConfigurations();
     }
 
     @Override
     protected TableLoader getTableLoader() {
-        return new WikiTableLoader();
+        return GenericBinder.getInstance().buildTableLoader();
     }
 }

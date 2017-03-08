@@ -10,9 +10,11 @@ import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager;
+import com.yahoo.bard.webservice.util.EnumUtils;
 import com.yahoo.bard.webservice.util.StreamUtils;
 import com.yahoo.bard.webservice.util.Utils;
-import com.yahoo.wiki.webservice.data.config.names.WikiApiDimensionName;
+import com.yahoo.wiki.webservice.data.config.auto.ConfigLoader;
+import com.yahoo.wiki.webservice.data.config.auto.DruidConfig;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -37,16 +39,16 @@ public class WikiDimensions {
     /**
      * Construct the dimension configurations.
      */
-    public WikiDimensions() {
-
+    public WikiDimensions(ConfigLoader configLoader) {
+        DruidConfig config = configLoader.getTableNames().get(0);
         this.dimensionConfigs = Collections.unmodifiableSet(
-                Arrays.stream(WikiApiDimensionName.values())
+                config.getDimensions().stream()
                         .map(
                                 dimensionName -> new WikiDimensionConfig(
                                         dimensionName,
-                                        dimensionName.asName(),
-                                        getDefaultKeyValueStore(dimensionName),
-                                        getDefaultSearchProvider(dimensionName),
+                                        EnumUtils.camelCase(dimensionName),
+                                        getDefaultKeyValueStore(EnumUtils.camelCase(dimensionName)),
+                                        getDefaultSearchProvider(EnumUtils.camelCase(dimensionName)),
                                         getDefaultFields()
                                 )
                         )
@@ -74,9 +76,9 @@ public class WikiDimensions {
      *
      * @return set of dimension configurations
      */
-    public LinkedHashSet<DimensionConfig> getDimensionConfigurationsByApiName(WikiApiDimensionName... dimensionNames) {
+    public LinkedHashSet<DimensionConfig> getDimensionConfigurationsByApiName(String... dimensionNames) {
         return Arrays.stream(dimensionNames)
-                .map(WikiApiDimensionName::asName)
+                .map(EnumUtils::camelCase)
                 .map(wikiApiDimensionNameToConfig::get)
                 .collect(Collectors.toCollection(LinkedHashSet<DimensionConfig>::new));
     }
@@ -88,8 +90,8 @@ public class WikiDimensions {
      *
      * @return A KeyValueStore instance
      */
-    private KeyValueStore getDefaultKeyValueStore(WikiApiDimensionName storeName) {
-        return MapStoreManager.getInstance(storeName.asName());
+    private KeyValueStore getDefaultKeyValueStore(String storeName) {
+        return MapStoreManager.getInstance(storeName);
     }
 
     /**
@@ -97,10 +99,10 @@ public class WikiDimensions {
      *
      * @param providerName  The name of the dimension's indexes
      *
-     * @return  A Scanning Search Provider for the provider name.
+     * @return A Scanning Search Provider for the provider name.
      */
-    private SearchProvider getDefaultSearchProvider(WikiApiDimensionName providerName) {
-        return ScanSearchProviderManager.getInstance(providerName.asName());
+    private SearchProvider getDefaultSearchProvider(String providerName) {
+        return ScanSearchProviderManager.getInstance(providerName);
     }
 
     private LinkedHashSet<DimensionField> getDefaultFields() {

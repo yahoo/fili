@@ -12,7 +12,6 @@ import com.yahoo.wiki.webservice.data.config.names.WikiApiDimensionName
 import com.yahoo.wiki.webservice.data.config.names.WikiApiMetricName
 import com.yahoo.wiki.webservice.data.config.names.WikiDruidMetricName
 import com.yahoo.wiki.webservice.data.config.names.WikiDruidTableName
-import com.yahoo.wiki.webservice.data.config.names.WikiLogicalTableName
 
 class SingleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServletComponentSpec {
 
@@ -33,7 +32,7 @@ class SingleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServle
 
     @Override
     String getTarget() {
-        return "data/${WikiLogicalTableName.WIKIPEDIA.asName()}/hour/${WikiApiDimensionName.PAGE.asName()}"
+        return "data/${WikiDruidTableName.WIKITICKER.asName()}/hour/${WikiApiDimensionName.PAGE.asName()}"
     }
 
     @Override
@@ -44,15 +43,15 @@ class SingleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServle
     @Override
     Map<String, List<String>> getQueryParams() {
         [
-            "metrics" : [
-                    "${WikiApiMetricName.COUNT.asName()}",
-                    "${WikiApiMetricName.ADDED.asName()}",
-                    "${WikiApiMetricName.DELTA.asName()}",
-            ],
-            "dateTime": [
-                "2014-06-02%2F2014-06-09"
-            ],
-            "asyncAfter": ["never"]
+                "metrics"   : [
+                        "${WikiApiMetricName.COUNT.asName()}",
+                        "${WikiApiMetricName.ADDED.asName()}",
+                        "${WikiApiMetricName.DELTA.asName()}",
+                ],
+                "dateTime"  : [
+                        "2014-06-02%2F2014-06-09"
+                ],
+                "asyncAfter": ["never"]
         ]
     }
 
@@ -90,7 +89,7 @@ class SingleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServle
 
     @Override
     String getExpectedDruidQuery() {
-    """{
+        """{
           "aggregations": [
             {
               "name": "${WikiApiMetricName.COUNT.asName()}",

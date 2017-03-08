@@ -4,16 +4,13 @@ package com.yahoo.wiki.webservice.data.config.metric;
 
 import com.yahoo.bard.webservice.data.config.metric.MetricInstance;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
-import com.yahoo.bard.webservice.data.config.metric.makers.CountMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.DoubleSumMaker;
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.config.names.FieldName;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
-import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
+import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.wiki.webservice.data.config.auto.ConfigLoader;
 import com.yahoo.wiki.webservice.data.config.auto.DruidConfig;
-import com.yahoo.wiki.webservice.data.config.auto.DruidNavigator;
-import com.yahoo.wiki.webservice.data.config.names.MetricNameGenerator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,24 +30,25 @@ public class WikiMetricLoader implements MetricLoader {
     public static final int DEFAULT_SKETCH_SIZE_IN_BYTES = DEFAULT_KILOBYTES_PER_SKETCH * BYTES_PER_KILOBYTE;
     private static final Logger LOG = LoggerFactory.getLogger(WikiMetricLoader.class);
     final int sketchSize;
-
-    CountMaker countMaker;
     DoubleSumMaker doubleSumMaker;
+    private ConfigLoader configLoader;
 
     /**
      * Constructs a WikiMetricLoader using the default sketch size.
      */
-    public WikiMetricLoader() {
-        this(DEFAULT_SKETCH_SIZE_IN_BYTES);
+    public WikiMetricLoader(ConfigLoader configLoader) {
+        this(DEFAULT_SKETCH_SIZE_IN_BYTES, configLoader);
     }
 
     /**
      * Constructs a WikiMetricLoader using the given sketch size.
      *
      * @param sketchSize  Sketch size, in number of bytes, to use for sketch operations
+     * @param configLoader
      */
-    public WikiMetricLoader(int sketchSize) {
+    public WikiMetricLoader(int sketchSize, final ConfigLoader configLoader) {
         this.sketchSize = sketchSize;
+        this.configLoader = configLoader;
     }
 
     /**
@@ -68,15 +66,22 @@ public class WikiMetricLoader implements MetricLoader {
         buildMetricMakers(metricDictionary);
 
         // Metrics that directly aggregate druid fields
-        ConfigLoader druidNavigator = new DruidNavigator(null); //TODO how to initialize?
         List<MetricInstance> metrics = new ArrayList<>();
-        MetricNameGenerator.setDefaultTimeGrain(DefaultTimeGrain.HOUR); //TODO actually guess time grain
-        DruidConfig tableConfig = druidNavigator.getTableNames().get(0); //expand to work for all datasources
-        for (String name : tableConfig.getMetrics()) {
-            ApiMetricName apiMetricName = MetricNameGenerator.getFiliMetricName(name);
-            FieldName fieldName = MetricNameGenerator.getDruidMetric(name);
-            metrics.add(new MetricInstance(apiMetricName, doubleSumMaker, fieldName));
+
+        for (DruidConfig tableConfig : configLoader.getTableNames()) {
+            TimeGrain timeGrain = tableConfig.getValidTimeGrains().get(0);
+            MetricNameGenerator.setDefaultTimeGrain(timeGrain);
+            for (String name : tableConfig.getMetrics()) {
+                ApiMetricName apiMetricName = MetricNameGenerator.getFiliMetricName(
+                        name
+                );
+                FieldName fieldName = MetricNameGenerator.getDruidMetric(
+                        name
+                );
+                metrics.add(new MetricInstance(apiMetricName, doubleSumMaker, fieldName));
+            }
         }
+
         LOG.debug("About to load direct aggregation metrics. Metric dictionary keys: {}", metricDictionary.keySet());
         addToMetricDictionary(metricDictionary, metrics);
     }

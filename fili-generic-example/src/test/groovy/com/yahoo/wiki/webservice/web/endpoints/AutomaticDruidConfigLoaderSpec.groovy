@@ -1,11 +1,10 @@
 package com.yahoo.wiki.webservice.web.endpoints
 
+import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService
+import com.yahoo.wiki.webservice.data.config.auto.DruidConfig
 import com.yahoo.wiki.webservice.data.config.auto.DruidNavigator
 import com.yahoo.wiki.webservice.data.config.auto.TableConfig
-
-import org.glassfish.jersey.internal.util.Producer
-import org.json.JSONArray
 
 import spock.lang.Specification
 
@@ -13,33 +12,7 @@ public class AutomaticDruidConfigLoaderSpec extends Specification {
     TestDruidWebService druidWebService;
     DruidNavigator druidNavigator;
     String datasource = "wikiticker"
-
-    def setup() {
-        druidWebService = new TestDruidWebService("testInstance");
-        druidNavigator = new DruidNavigator(druidWebService);
-    }
-
-    def "get table names from druid"() {
-        setup:
-        String[] tables = ["$datasource"];
-        druidWebService.jsonResponse  = {
-            return new JSONArray(tables).toString()
-        };
-
-        when: "We send a request"
-        List<TableConfig> returnedTables = druidNavigator.getTableNames();
-
-        then: "what we expect"
-        druidWebService.lastUrl == "http://localhost:8081/druid/coordinator/v1/datasources/"
-        List<String> returnedTableNames = new ArrayList<>();
-        for (TableConfig t : returnedTables) {
-            returnedTableNames.add(t.getName());
-        }
-        for (String t : tables) {
-            assert returnedTableNames.contains(t);
-        }
-    }
-
+    String expectedDataSources = "[\"$datasource\"]"
     String expectedMetricsAndDimensions = """{
     "name": "wikiticker",
     "properties": {},
@@ -51,9 +24,12 @@ public class AutomaticDruidConfigLoaderSpec extends Specification {
             "loadSpec": 
                 {
                     "type": "local",
-                    "path": "home/khinterlong/Desktop/work/druid-0.9.1.1/var/druid/segments/wikiticker/wikiticker/2015-09-12T00:00:00.000Z_2015-09-13T00:00:00.000Z/2017-02-27T03:06:09.422Z/0/index.zip"
+                    "path": "home/khinterlong/Desktop/work/druid-0.9.1
+                    .1/var/druid/segments/wikiticker/wikiticker/2015-09-12T00:00:00.000Z_2015-09-13T00:00:00
+                    .000Z/2017-02-27T03:06:09.422Z/0/index.zip"
                 },
-            "dimensions": "channel,cityName,comment,countryIsoCode,countryName,isAnonymous,isMinor,isNew,isRobot,isUnpatrolled,metroCode,namespace,page,regionIsoCode,regionName,user",
+            "dimensions": "channel,cityName,comment,countryIsoCode,countryName,isAnonymous,isMinor,isNew,isRobot,
+            isUnpatrolled,metroCode,namespace,page,regionIsoCode,regionName,user",
             "metrics": "count,added,deleted,delta,user_unique",
             "shardSpec": 
                 {
@@ -67,16 +43,52 @@ public class AutomaticDruidConfigLoaderSpec extends Specification {
 }
 """
 
+    def setup() {
+        druidWebService = new TestDruidWebService("testInstance");
+        druidNavigator = new DruidNavigator(druidWebService);
+        druidWebService.jsonResponse = {
+            if (druidWebService.lastUrl == "http://localhost:8081/druid/coordinator/v1/datasources/") {
+                return expectedDataSources
+            } else if (druidWebService.lastUrl == "http://localhost:8081/druid/coordinator/v1/datasources/$datasource" +
+                    "/?full") {
+                return expectedMetricsAndDimensions
+            }
+        }
+    }
+
+    def "get table names from druid"() {
+        setup:
+
+        when: "We send a request"
+        List<DruidConfig> returnedTables = druidNavigator.getTableNames();
+
+        then: "what we expect"
+        druidWebService.lastUrl == "http://localhost:8081/druid/coordinator/v1/datasources/$datasource/?full"
+        List<String> returnedTableNames = new ArrayList<>();
+        for (DruidConfig druidConfig : returnedTables) {
+            returnedTableNames.add(druidConfig.getName());
+        }
+        returnedTableNames.contains("wikiticker");
+    }
+
+    def "get time grains from druid"() {
+        setup:
+
+        when: "We send a request"
+        List<DruidConfig> returnedTables = druidNavigator.getTableNames();
+
+        then: "what we expect"
+        druidWebService.lastUrl == "http://localhost:8081/druid/coordinator/v1/datasources/$datasource/?full"
+        returnedTables.get(0).getValidTimeGrains().get(0) == DefaultTimeGrain.DAY
+    }
+
     def "get metric names from druid"() {
         setup:
         TableConfig wikiticker;
-        String[] metrics = ["count","added","deleted","delta","user_unique"];
+        String[] metrics = ["count", "added", "deleted", "delta", "user_unique"];
         String[] dimensions = ["channel", "cityName", "comment", "countryIsoCode", "countryName", "isAnonymous",
                                "isMinor", "isNew", "isRobot", "isUnpatrolled", "metroCode", "namespace", "page",
                                "regionIsoCode", "regionName", "user"];
-        druidWebService.jsonResponse = {
-            return expectedMetricsAndDimensions
-        };
 
         when: "We send a request"
         wikiticker = new TableConfig("$datasource");

@@ -5,6 +5,7 @@ package com.yahoo.wiki.webservice.application;
 import com.yahoo.bard.webservice.application.HealthCheckServletContextListener;
 import com.yahoo.bard.webservice.application.MetricServletContextListener;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
+import com.yahoo.wiki.webservice.data.config.auto.StaticWikiConfigLoader;
 import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensions;
 
 import com.codahale.metrics.servlet.InstrumentedFilter;
@@ -53,7 +54,8 @@ public class WikiMain {
      * @throws IOException If something goes terribly wrong when building the JSON or sending it
      */
     private static void markDimensionCacheHealthy(int port) throws IOException {
-        for (DimensionConfig dimensionConfig : new WikiDimensions().getAllDimensionConfigurations()) {
+        for (DimensionConfig dimensionConfig : new WikiDimensions(new StaticWikiConfigLoader())
+                .getAllDimensionConfigurations()) {
             String dimension = dimensionConfig.getApiName();
             HttpPost post = new HttpPost("http://localhost:" + port + "/v1/cache/dimensions/" + dimension);
             post.setHeader("Content-type", "application/json");
@@ -98,17 +100,19 @@ public class WikiMain {
 
         // Add the handlers to the server
         HandlerList handlers = new HandlerList();
-        handlers.setHandlers(new Handler[] { resourceHandler, servletContextHandler });
+        handlers.setHandlers(new Handler[] {resourceHandler, servletContextHandler});
         server.setHandler(handlers);
 
         ServletHolder servletHolder = servletContextHandler.addServlet(ServletContainer.class, "/v1/*");
         servletHolder.setInitOrder(1);
         servletHolder.setInitParameter(
                 "javax.ws.rs.Application",
-                "com.yahoo.bard.webservice.application.ResourceConfig");
+                "com.yahoo.bard.webservice.application.ResourceConfig"
+        );
         servletHolder.setInitParameter(
                 "jersey.config.server.provider.packages",
-                "com.yahoo.bard.webservice.web.endpoints");
+                "com.yahoo.bard.webservice.web.endpoints"
+        );
 
         servletContextHandler.addServlet(AdminServlet.class, "/*");
 

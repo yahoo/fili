@@ -24,7 +24,7 @@ public enum WikiLogicalTableName implements TableName {
     /**
      * This logical table as a String.
      *
-     * @return  The logical name as a String.
+     * @return The logical name as a String.
      */
     public String asName() {
         return camelName;

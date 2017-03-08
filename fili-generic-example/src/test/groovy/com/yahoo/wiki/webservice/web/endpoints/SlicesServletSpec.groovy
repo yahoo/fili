@@ -17,7 +17,8 @@ import spock.lang.Specification
 import spock.lang.Timeout
 import spock.lang.Unroll
 
-@Timeout(30)    // Fail test if hangs
+@Timeout(30)
+// Fail test if hangs
 class SlicesServletSpec extends Specification {
     JerseyTestBinder jtb
     JsonSlurper jsonSlurper = new JsonSlurper(JsonSortStrategy.SORT_BOTH)
@@ -67,27 +68,31 @@ class SlicesServletSpec extends Specification {
             "dimensions":
             [
                 ${
-                        dimensionNames.collect {"""
+            dimensionNames.collect {
+                """
                                 {
                                     "name":"$it",
                                     "uri":"http://localhost:9998/dimensions/$it",
                                     "intervals":["$interval"]
                                 }
-                        """}
-                        .join(',')
-                }
+                        """
+            }
+            .join(',')
+        }
             ],
             "metrics":
             [
                 ${
-                        metricNames.collect {"""
+            metricNames.collect {
+                """
                                 {
                                     "name":"$it",
                                     "intervals":["$interval"]
                                 }
-                        """}
-                        .join(',')
-                }
+                        """
+            }
+            .join(',')
+        }
             ]
         }"""
 
@@ -112,8 +117,8 @@ class SlicesServletSpec extends Specification {
         sliceName = WIKITICKER.asName().toLowerCase()
         granularity = "hour"
         dimensionNames = ("page, language, user, unpatrolled, newPage, robot, anonymous, namespace, continent, " +
-                                  "country, region, city").split(',').collect { it.trim()}
-        metricNames = "count, added, delta, deleted".split(',').collect {it.trim()}
+                "country, region, city").split(',').collect { it.trim() }
+        metricNames = "count, added, delta, deleted".split(',').collect { it.trim() }
     }
 
     String makeRequest(String target) {
