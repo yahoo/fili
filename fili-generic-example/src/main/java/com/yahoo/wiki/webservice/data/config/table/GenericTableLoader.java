@@ -17,7 +17,7 @@ import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.wiki.webservice.data.config.auto.ConfigLoader;
 import com.yahoo.wiki.webservice.data.config.auto.DruidConfig;
-import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensions;
+import com.yahoo.wiki.webservice.data.config.dimension.GenericDimensions;
 import com.yahoo.wiki.webservice.data.config.metric.DruidMetricName;
 import com.yahoo.wiki.webservice.data.config.metric.FiliMetricName;
 import com.yahoo.wiki.webservice.data.config.metric.MetricNameGenerator;
@@ -32,7 +32,7 @@ import java.util.Set;
 /**
  * Load the Wikipedia-specific table configuration.
  */
-public class WikiTableLoader extends BaseTableLoader {
+public class GenericTableLoader extends BaseTableLoader {
     private final Map<String, Set<Granularity>> validGrains =
             new HashMap<>();
     // Set up the metrics
@@ -48,23 +48,23 @@ public class WikiTableLoader extends BaseTableLoader {
     /**
      * Constructor.
      */
-    public WikiTableLoader(ConfigLoader configLoader) {
-        WikiDimensions wikiDimensions = new WikiDimensions(configLoader);
+    public GenericTableLoader(ConfigLoader configLoader) {
+        GenericDimensions genericDimensions = new GenericDimensions(configLoader);
         this.configLoader = configLoader;
-        configureSample(wikiDimensions);
+        configureSample(genericDimensions);
     }
 
     /**
      * Set up the tables for this table loader.
      *
-     * @param wikiDimensions  The dimensions to load into test tables.
+     * @param genericDimensions  The dimensions to load into test tables.
      */
-    private void configureSample(WikiDimensions wikiDimensions) {
+    private void configureSample(GenericDimensions genericDimensions) {
 
         for (DruidConfig druidConfig : configLoader.getTableNames()) {
             TimeGrain defaultTimeGrain = druidConfig.getValidTimeGrains().get(0);
 
-            Set<DimensionConfig> dimsBasefactDruidTable = getBaseFactDruidTable(wikiDimensions, druidConfig);
+            Set<DimensionConfig> dimsBasefactDruidTable = getBaseFactDruidTable(genericDimensions, druidConfig);
 
             Set<PhysicalTableDefinition> physicalTableDefinitions = getPhysicalTableDefinitions(
                     druidConfig,
@@ -143,8 +143,8 @@ public class WikiTableLoader extends BaseTableLoader {
         );
     }
 
-    private Set<DimensionConfig> getBaseFactDruidTable(WikiDimensions wikiDimensions, DruidConfig druidConfig) {
-        return wikiDimensions.getDimensionConfigurationsByApiName(
+    private Set<DimensionConfig> getBaseFactDruidTable(GenericDimensions genericDimensions, DruidConfig druidConfig) {
+        return genericDimensions.getDimensionConfigurationsByApiName(
                 (String[]) druidConfig.getDimensions().toArray()
         );
     }

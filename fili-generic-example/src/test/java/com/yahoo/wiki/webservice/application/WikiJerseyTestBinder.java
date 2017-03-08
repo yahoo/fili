@@ -6,10 +6,6 @@ import com.yahoo.bard.webservice.application.JerseyTestBinder;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
-import com.yahoo.wiki.webservice.data.config.auto.StaticWikiConfigLoader;
-import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensions;
-import com.yahoo.wiki.webservice.data.config.metric.WikiMetricLoader;
-import com.yahoo.wiki.webservice.data.config.table.WikiTableLoader;
 
 import java.util.LinkedHashSet;
 

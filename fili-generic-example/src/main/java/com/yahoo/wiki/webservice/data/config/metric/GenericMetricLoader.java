@@ -23,30 +23,30 @@ import java.util.List;
  * such as the LongSumMaker for performing the longSum aggregation, and the divisionMaker, which performs division
  * of two other metrics.
  */
-public class WikiMetricLoader implements MetricLoader {
+public class GenericMetricLoader implements MetricLoader {
 
     public static final int BYTES_PER_KILOBYTE = 1024;
     public static final int DEFAULT_KILOBYTES_PER_SKETCH = 16;
     public static final int DEFAULT_SKETCH_SIZE_IN_BYTES = DEFAULT_KILOBYTES_PER_SKETCH * BYTES_PER_KILOBYTE;
-    private static final Logger LOG = LoggerFactory.getLogger(WikiMetricLoader.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GenericMetricLoader.class);
     final int sketchSize;
     DoubleSumMaker doubleSumMaker;
     private ConfigLoader configLoader;
 
     /**
-     * Constructs a WikiMetricLoader using the default sketch size.
+     * Constructs a GenericMetricLoader using the default sketch size.
      */
-    public WikiMetricLoader(ConfigLoader configLoader) {
+    public GenericMetricLoader(ConfigLoader configLoader) {
         this(DEFAULT_SKETCH_SIZE_IN_BYTES, configLoader);
     }
 
     /**
-     * Constructs a WikiMetricLoader using the given sketch size.
+     * Constructs a GenericMetricLoader using the given sketch size.
      *
      * @param sketchSize  Sketch size, in number of bytes, to use for sketch operations
      * @param configLoader
      */
-    public WikiMetricLoader(int sketchSize, final ConfigLoader configLoader) {
+    public GenericMetricLoader(int sketchSize, final ConfigLoader configLoader) {
         this.sketchSize = sketchSize;
         this.configLoader = configLoader;
     }

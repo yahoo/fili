@@ -15,9 +15,9 @@ import com.yahoo.bard.webservice.table.LogicalTableDictionary
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 import com.yahoo.bard.webservice.table.TableIdentifier
 import com.yahoo.wiki.webservice.data.config.auto.StaticWikiConfigLoader
-import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensions
-import com.yahoo.wiki.webservice.data.config.metric.WikiMetricLoader
-import com.yahoo.wiki.webservice.data.config.table.WikiTableLoader
+import com.yahoo.wiki.webservice.data.config.dimension.GenericDimensions
+import com.yahoo.wiki.webservice.data.config.metric.GenericMetricLoader
+import com.yahoo.wiki.webservice.data.config.table.GenericTableLoader
 
 import spock.lang.Shared
 import spock.lang.Specification
@@ -32,12 +32,12 @@ class ConfigurationLoaderSpec extends Specification {
     @Shared PhysicalTableDictionary physicalTableDictionary
 
     def setupSpec() {
-        LinkedHashSet<DimensionConfig> dimensions = new WikiDimensions(new StaticWikiConfigLoader()).
+        LinkedHashSet<DimensionConfig> dimensions = new GenericDimensions(new StaticWikiConfigLoader()).
                 getAllDimensionConfigurations();
         loader = new ConfigurationLoader(
                 new KeyValueStoreDimensionLoader(dimensions),
-                new WikiMetricLoader(new StaticWikiConfigLoader()),
-                new WikiTableLoader(new StaticWikiConfigLoader())
+                new GenericMetricLoader(new StaticWikiConfigLoader()),
+                new GenericTableLoader(new StaticWikiConfigLoader())
         )
         loader.load();
 
