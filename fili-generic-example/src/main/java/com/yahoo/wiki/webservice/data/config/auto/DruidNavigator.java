@@ -25,11 +25,11 @@ import java.util.List;
  */
 public class DruidNavigator implements ConfigLoader {
     private static final int COORDINATOR_PORT = 8081;
+    private static final String COORDINATOR_BASE = "http://localhost:" + COORDINATOR_PORT + "/druid/coordinator/v1/";
     private static final Logger LOG = LoggerFactory.getLogger(DruidNavigator.class);
     private DruidWebService druidWebService;
     private List<TableConfig> tableConfigurations;
 
-    //TODO how to initialize with actual DruidWebService instead of test
     public DruidNavigator(DruidWebService druidWebService) {
         this.druidWebService = druidWebService;
         tableConfigurations = new ArrayList<>();
@@ -37,7 +37,7 @@ public class DruidNavigator implements ConfigLoader {
 
     @Override
     public List<? extends DruidConfig> getTableNames() {
-        String url = "http://localhost:" + COORDINATOR_PORT + "/druid/coordinator/v1/datasources/";
+        String url = COORDINATOR_BASE + "datasources/";
         getJson(rootNode -> {
             if (rootNode.isArray()) {
                 for (final JsonNode objNode : rootNode) {
@@ -52,8 +52,7 @@ public class DruidNavigator implements ConfigLoader {
     }
 
     public void loadTable(TableConfig table) {
-        String url = "http://localhost:" + COORDINATOR_PORT + "/druid/coordinator/v1/datasources/" + table
-                .getName() + "/?full";
+        String url = COORDINATOR_BASE + "/datasources/" + table.getName() + "/?full";
         getJson(rootNode -> {
             JsonNode segments = rootNode.get("segments").get(0);
             loadMetrics(table, segments);
@@ -95,7 +94,6 @@ public class DruidNavigator implements ConfigLoader {
     //TODO check for " Minute must start and end on the 1st second of a minute." compliance
     private TimeGrain getTimeGrain(DateTime start, DateTime end) {
         Duration diff = new Duration(start, end);
-        Period period = new Period(end.getMillis() - start.getMillis());
         if (diff.getStandardMinutes() == 1) {
             return DefaultTimeGrain.MINUTE;
         } else if (diff.getStandardHours() == 1) {
@@ -107,7 +105,7 @@ public class DruidNavigator implements ConfigLoader {
         } else if (start.getMonthOfYear() + 1 == end.getMonthOfYear() && start.getDayOfMonth() == 1 && end
                 .getDayOfMonth() == 1) {
             return DefaultTimeGrain.MONTH;
-        } else if (/* detect if quarter */ false) {
+        } else if (/* detect if quarter */ false) { //TODO detect quarterly
             return DefaultTimeGrain.QUARTER;
         } else if (start.getYear() + 1 == end.getYear() && start.getMonthOfYear() == DateTimeConstants.JANUARY &&
                 start.getDayOfMonth() == 1 && end
