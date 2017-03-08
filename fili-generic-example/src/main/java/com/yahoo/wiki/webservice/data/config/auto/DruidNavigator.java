@@ -13,7 +13,6 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
-import org.joda.time.Period;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,11 +92,12 @@ public class DruidNavigator implements ConfigLoader {
     }
 
     //TODO check for " Minute must start and end on the 1st second of a minute." compliance
+    //Day is probably safe
     private TimeGrain getTimeGrain(DateTime start, DateTime end) {
         Duration diff = new Duration(start, end);
         if (diff.getStandardMinutes() == 1) {
             return DefaultTimeGrain.MINUTE;
-        } else if (diff.getStandardHours() == 1) {
+        } else if (diff.getStandardHours() == 1) { //todo maybe not use standardHours (daylight savings time)
             return DefaultTimeGrain.HOUR;
         } else if (diff.getStandardDays() == 1) {
             return DefaultTimeGrain.DAY;
@@ -113,8 +113,8 @@ public class DruidNavigator implements ConfigLoader {
                 .getMonthOfYear() == DateTimeConstants.JANUARY && end.getDayOfMonth() == 1) {
             return DefaultTimeGrain.YEAR;
         }
-        LOG.info("Couldn't detect default timegrain " + diff.getStandardDays() + " " + start.getHourOfDay());
-        return null;
+        LOG.info("Couldn't detect default timegrain for " + start + "-" + end + ", defaulting to DAY TimeGrain.");
+        return DefaultTimeGrain.DAY;
     }
 
     private void getJson(SuccessCallback successCallback, String url) {

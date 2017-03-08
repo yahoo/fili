@@ -7,7 +7,7 @@ import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.wiki.webservice.data.config.auto.ConfigLoader;
-import com.yahoo.wiki.webservice.data.config.auto.StaticWikiConfigLoader;
+import com.yahoo.wiki.webservice.data.config.auto.DruidNavigator;
 import com.yahoo.wiki.webservice.data.config.dimension.GenericDimensions;
 import com.yahoo.wiki.webservice.data.config.metric.GenericMetricLoader;
 import com.yahoo.wiki.webservice.data.config.table.GenericTableLoader;
@@ -19,20 +19,25 @@ import java.util.LinkedHashSet;
  */
 public class GenericBinder {
     private static GenericBinder genericBinder;
-    private DruidWebService druidWebService;
-    private ConfigLoader configLoader;
+    private static ConfigLoader configLoader;
 
-    private GenericBinder() {
-        configLoader = new StaticWikiConfigLoader();
-        //druidWebService = null; //TODO how to initialize with actual DruidWebService
-        //configLoader = new DruidNavigator(druidWebService);
+    private GenericBinder(ConfigLoader configLoader) {
+        GenericBinder.configLoader = configLoader;
     }
 
-    public static GenericBinder getInstance() {
+    public static GenericBinder getInstance(DruidWebService druidWebService) {
+        return getInstance(new DruidNavigator(druidWebService));
+    }
+
+    public static GenericBinder getInstance(ConfigLoader configLoader) {
         if (genericBinder == null) {
-            genericBinder = new GenericBinder();
+            genericBinder = new GenericBinder(configLoader);
         }
         return genericBinder;
+    }
+
+    public static ConfigLoader getConfigLoader() {
+        return configLoader;
     }
 
     public TableLoader buildTableLoader() {

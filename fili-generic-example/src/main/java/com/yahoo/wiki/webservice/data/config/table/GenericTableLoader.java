@@ -18,16 +18,15 @@ import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.wiki.webservice.data.config.auto.ConfigLoader;
 import com.yahoo.wiki.webservice.data.config.auto.DruidConfig;
 import com.yahoo.wiki.webservice.data.config.dimension.GenericDimensions;
-import com.yahoo.wiki.webservice.data.config.metric.DruidMetricName;
-import com.yahoo.wiki.webservice.data.config.metric.FiliMetricName;
 import com.yahoo.wiki.webservice.data.config.metric.MetricNameGenerator;
 
 import org.joda.time.DateTimeZone;
 
 import java.util.HashMap;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Load the Wikipedia-specific table configuration.
@@ -78,51 +77,37 @@ public class GenericTableLoader extends BaseTableLoader {
 
             druidMetricNames.put(
                     druidConfig.getName(),
-                    Utils.<FieldName>asLinkedHashSet(getDruidMetricNames(druidConfig))
+                    new LinkedHashSet<>(
+                            druidConfig.getMetrics()
+                                    .stream()
+                                    .map(MetricNameGenerator::getDruidMetric)
+                                    .collect(Collectors.toList())
+                    )
             );
 
             apiMetricNames.put(
                     druidConfig.getName(),
-                    Utils.asLinkedHashSet(getFiliMetricNames(druidConfig))
+                    new LinkedHashSet<>(
+                            druidConfig.getMetrics()
+                                    .stream()
+                                    .map(MetricNameGenerator::getFiliMetricName)
+                                    .collect(Collectors.toList())
+                    )
             );
 
             validGrains.put(
                     druidConfig.getName(),
-                    Utils.asLinkedHashSet(
-                            getAllGranularities(druidConfig)
-                    )
+                    getGranularities(druidConfig)
             );
+
         }
 
     }
 
-    //TODO check AllGranularity.INSTANCE
-    private Granularity[] getAllGranularities(final DruidConfig druidConfig) {
-        List<TimeGrain> timeGrains = druidConfig.getValidTimeGrains();
-        Granularity[] granularities = new Granularity[timeGrains.size() + 1];
-        for (int i = 0; i < timeGrains.size(); i++) {
-            granularities[i] = timeGrains.get(i);
-        }
-        granularities[granularities.length - 1] = AllGranularity.INSTANCE;
+    private Set<Granularity> getGranularities(DruidConfig druidConfig) {
+        LinkedHashSet<Granularity> granularities = new LinkedHashSet<>(druidConfig.getValidTimeGrains());
+        granularities.add(AllGranularity.INSTANCE);
         return granularities;
-    }
-
-    private FiliMetricName[] getFiliMetricNames(final DruidConfig druidConfig) {
-        List<String> metrics = druidConfig.getMetrics();
-        FiliMetricName[] filiMetrics = new FiliMetricName[metrics.size()];
-        for (int i = 0; i < filiMetrics.length; i++) {
-            filiMetrics[i] = MetricNameGenerator.getFiliMetricName(metrics.get(i));
-        }
-        return filiMetrics;
-    }
-
-    private DruidMetricName[] getDruidMetricNames(final DruidConfig druidConfig) {
-        List<String> metrics = druidConfig.getMetrics();
-        DruidMetricName[] druidMetrics = new DruidMetricName[metrics.size()];
-        for (int i = 0; i < druidMetrics.length; i++) {
-            druidMetrics[i] = MetricNameGenerator.getDruidMetric(metrics.get(i));
-        }
-        return druidMetrics;
     }
 
     private Set<PhysicalTableDefinition> getPhysicalTableDefinitions(
@@ -151,21 +136,22 @@ public class GenericTableLoader extends BaseTableLoader {
 
     @Override
     public void loadTableDictionary(ResourceDictionaries dictionaries) {
-        for (DruidConfig table : configLoader.getTableNames()) {
-            TableGroup tableGroup = buildTableGroup(
-                    table.getTableName().asName(),
-                    apiMetricNames.get(table.getName()),
-                    druidMetricNames.get(table.getName()),
-                    tableDefinitions.get(table.getName()),
-                    dictionaries
-            );
-            Set<Granularity> validGranularities = validGrains.get(table.getName());
-            loadLogicalTableWithGranularities(
-                    table.getTableName().asName(),
-                    tableGroup,
-                    validGranularities,
-                    dictionaries
-            );
-        }
+        configLoader.getTableNames()
+                .forEach(table -> {
+                    TableGroup tableGroup = buildTableGroup(
+                            table.getTableName().asName(),
+                            apiMetricNames.get(table.getName()),
+                            druidMetricNames.get(table.getName()),
+                            tableDefinitions.get(table.getName()),
+                            dictionaries
+                    );
+                    Set<Granularity> validGranularities = validGrains.get(table.getName());
+                    loadLogicalTableWithGranularities(
+                            table.getTableName().asName(),
+                            tableGroup,
+                            validGranularities,
+                            dictionaries
+                    );
+                });
     }
 }
