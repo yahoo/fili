@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 /**
  * Hold all the dimension configurations for the sample Bard instance.
  */
-public class WikiDimensions {
+public class GenericDimensions {
 
     private final SystemConfig systemConfig = SystemConfigProvider.getInstance();
 
@@ -39,12 +39,12 @@ public class WikiDimensions {
     /**
      * Construct the dimension configurations.
      */
-    public WikiDimensions(ConfigLoader configLoader) {
+    public GenericDimensions(ConfigLoader configLoader) {
         DruidConfig config = configLoader.getTableNames().get(0);
         this.dimensionConfigs = Collections.unmodifiableSet(
                 config.getDimensions().stream()
                         .map(
-                                dimensionName -> new WikiDimensionConfig(
+                                dimensionName -> new GenericDimensionConfig(
                                         dimensionName,
                                         EnumUtils.camelCase(dimensionName),
                                         getDefaultKeyValueStore(EnumUtils.camelCase(dimensionName)),
@@ -107,8 +107,8 @@ public class WikiDimensions {
 
     private LinkedHashSet<DimensionField> getDefaultFields() {
         return Utils.<DimensionField>asLinkedHashSet(
-                WikiDimensionField.ID,
-                WikiDimensionField.DESC
+                GenericDimensionField.ID,
+                GenericDimensionField.DESC
         );
     }
 }

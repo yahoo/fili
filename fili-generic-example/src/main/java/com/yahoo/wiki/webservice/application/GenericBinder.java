@@ -7,11 +7,10 @@ import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.wiki.webservice.data.config.auto.ConfigLoader;
-import com.yahoo.wiki.webservice.data.config.auto.DruidNavigator;
 import com.yahoo.wiki.webservice.data.config.auto.StaticWikiConfigLoader;
-import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensions;
-import com.yahoo.wiki.webservice.data.config.metric.WikiMetricLoader;
-import com.yahoo.wiki.webservice.data.config.table.WikiTableLoader;
+import com.yahoo.wiki.webservice.data.config.dimension.GenericDimensions;
+import com.yahoo.wiki.webservice.data.config.metric.GenericMetricLoader;
+import com.yahoo.wiki.webservice.data.config.table.GenericTableLoader;
 
 import java.util.LinkedHashSet;
 
@@ -37,14 +36,14 @@ public class GenericBinder {
     }
 
     public TableLoader buildTableLoader() {
-        return new WikiTableLoader(configLoader);
+        return new GenericTableLoader(configLoader);
     }
 
     public LinkedHashSet<DimensionConfig> buildDimensionConfigurations() {
-        return new LinkedHashSet<>(new WikiDimensions(configLoader).getAllDimensionConfigurations());
+        return new LinkedHashSet<>(new GenericDimensions(configLoader).getAllDimensionConfigurations());
     }
 
     public MetricLoader buildMetricLoader() {
-        return new WikiMetricLoader(configLoader);
+        return new GenericMetricLoader(configLoader);
     }
 }

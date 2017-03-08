@@ -16,7 +16,7 @@ import javax.validation.constraints.NotNull;
 /**
  * The Wiki configuration source for dimensions.
  */
-public class WikiDimensionConfig implements DimensionConfig {
+public class GenericDimensionConfig implements DimensionConfig {
 
     private final String apiName;
     private final String physicalName;
@@ -34,7 +34,7 @@ public class WikiDimensionConfig implements DimensionConfig {
      * @param searchProvider  The indexing provider for this dimension
      * @param fields  Dimension columns defining this dimension
      */
-    public WikiDimensionConfig(
+    public GenericDimensionConfig(
             @NotNull String apiName,
             @NotNull String physicalName,
             @NotNull KeyValueStore keyValueStore,

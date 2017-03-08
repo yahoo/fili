@@ -8,7 +8,7 @@ import com.yahoo.bard.webservice.util.EnumUtils;
 /**
  * DimensionField enum.
  */
-public enum WikiDimensionField implements DimensionField {
+public enum GenericDimensionField implements DimensionField {
     ID("Dimension ID"),
     DESC("Dimension Description");
 
@@ -20,7 +20,7 @@ public enum WikiDimensionField implements DimensionField {
      *
      * @param description  Description of this field
      */
-    WikiDimensionField(String description) {
+    GenericDimensionField(String description) {
         this.description = description;
         this.camelName = EnumUtils.camelCase(name());
     }
