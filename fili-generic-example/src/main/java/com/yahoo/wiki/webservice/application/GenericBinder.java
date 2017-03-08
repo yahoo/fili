@@ -7,6 +7,7 @@ import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.wiki.webservice.data.config.auto.ConfigLoader;
+import com.yahoo.wiki.webservice.data.config.auto.DruidNavigator;
 import com.yahoo.wiki.webservice.data.config.auto.StaticWikiConfigLoader;
 import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensions;
 import com.yahoo.wiki.webservice.data.config.metric.WikiMetricLoader;
@@ -24,6 +25,8 @@ public class GenericBinder {
 
     private GenericBinder() {
         configLoader = new StaticWikiConfigLoader();
+        //druidWebService = null; //TODO how to initialize with actual DruidWebService
+        //configLoader = new DruidNavigator(druidWebService);
     }
 
     public static GenericBinder getInstance() {
