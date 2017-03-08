@@ -4,7 +4,6 @@ package com.yahoo.wiki.webservice.application
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR
-import static com.yahoo.wiki.webservice.data.config.names.WikiLogicalTableName.WIKIPEDIA
 import static com.yahoo.wiki.webservice.data.config.names.WikiDruidTableName.WIKITICKER
 
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader
@@ -15,6 +14,7 @@ import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.table.LogicalTableDictionary
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 import com.yahoo.bard.webservice.table.TableIdentifier
+import com.yahoo.wiki.webservice.data.config.auto.StaticWikiConfigLoader
 import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensions
 import com.yahoo.wiki.webservice.data.config.metric.WikiMetricLoader
 import com.yahoo.wiki.webservice.data.config.table.WikiTableLoader
@@ -32,11 +32,12 @@ class ConfigurationLoaderSpec extends Specification {
     @Shared PhysicalTableDictionary physicalTableDictionary
 
     def setupSpec() {
-        LinkedHashSet<DimensionConfig> dimensions = new WikiDimensions().getAllDimensionConfigurations();
+        LinkedHashSet<DimensionConfig> dimensions = new WikiDimensions(new StaticWikiConfigLoader()).
+                getAllDimensionConfigurations();
         loader = new ConfigurationLoader(
                 new KeyValueStoreDimensionLoader(dimensions),
-                new WikiMetricLoader(),
-                new WikiTableLoader()
+                new WikiMetricLoader(new StaticWikiConfigLoader()),
+                new WikiTableLoader(new StaticWikiConfigLoader())
         )
         loader.load();
 
@@ -57,9 +58,9 @@ class ConfigurationLoaderSpec extends Specification {
 
     def "test table keys"() {
         setup:
-        TableIdentifier ti1 = new TableIdentifier( "table", DAY )
-        TableIdentifier ti2 = new TableIdentifier( "table", DAY )
-        TableIdentifier ti3 = new TableIdentifier( "table", HOUR )
+        TableIdentifier ti1 = new TableIdentifier("table", DAY)
+        TableIdentifier ti2 = new TableIdentifier("table", DAY)
+        TableIdentifier ti3 = new TableIdentifier("table", HOUR)
 
         expect:
         ti1 == ti2
@@ -74,8 +75,8 @@ class ConfigurationLoaderSpec extends Specification {
                 logicalTableName
 
         where:
-        tableIdName                      | tableIdGrain | logicalTableName
-        WIKIPEDIA.asName().toLowerCase() | HOUR         | WIKIPEDIA.asName().toLowerCase()
+        tableIdName                       | tableIdGrain | logicalTableName
+        WIKITICKER.asName().toLowerCase() | HOUR         | WIKITICKER.asName().toLowerCase()
     }
 
     def "test fetching of physicalTable by its name"() {
