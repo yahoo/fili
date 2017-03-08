@@ -52,7 +52,7 @@ public class DruidNavigator implements ConfigLoader {
     }
 
     public void loadTable(TableConfig table) {
-        String url = COORDINATOR_BASE + "/datasources/" + table.getName() + "/?full";
+        String url = COORDINATOR_BASE + "datasources/" + table.getName() + "/?full";
         getJson(rootNode -> {
             JsonNode segments = rootNode.get("segments").get(0);
             loadMetrics(table, segments);

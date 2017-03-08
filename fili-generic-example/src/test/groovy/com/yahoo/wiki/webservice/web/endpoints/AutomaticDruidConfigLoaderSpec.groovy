@@ -50,6 +50,7 @@ public class AutomaticDruidConfigLoaderSpec extends Specification {
                     "/?full") {
                 return expectedMetricsAndDimensions
             }
+            return "BAD ERROR WHAT HAPPENED"
         }
     }
 

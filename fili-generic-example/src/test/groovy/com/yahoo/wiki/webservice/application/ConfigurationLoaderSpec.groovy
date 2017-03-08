@@ -4,7 +4,7 @@ package com.yahoo.wiki.webservice.application
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR
-import static com.yahoo.wiki.webservice.data.config.names.WikiDruidTableName.WIKITICKER
+import static com.yahoo.wiki.webservice.data.config.names.names.WikiDruidTableName.WIKITICKER
 
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig

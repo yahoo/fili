@@ -8,10 +8,10 @@ import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.web.endpoints.BaseDataServletComponentSpec
 import com.yahoo.bard.webservice.web.endpoints.DataServlet
 import com.yahoo.wiki.webservice.application.WikiJerseyTestBinder
-import com.yahoo.wiki.webservice.data.config.names.WikiApiDimensionName
-import com.yahoo.wiki.webservice.data.config.names.WikiApiMetricName
-import com.yahoo.wiki.webservice.data.config.names.WikiDruidMetricName
-import com.yahoo.wiki.webservice.data.config.names.WikiDruidTableName
+import com.yahoo.wiki.webservice.data.config.names.names.WikiApiDimensionName
+import com.yahoo.wiki.webservice.data.config.names.names.WikiApiMetricName
+import com.yahoo.wiki.webservice.data.config.names.names.WikiDruidMetricName
+import com.yahoo.wiki.webservice.data.config.names.names.WikiDruidTableName
 
 class SingleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServletComponentSpec {
 

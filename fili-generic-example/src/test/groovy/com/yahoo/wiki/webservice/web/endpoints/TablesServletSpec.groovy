@@ -7,7 +7,7 @@ import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.util.JsonSortStrategy
 import com.yahoo.bard.webservice.web.endpoints.TablesServlet
 import com.yahoo.wiki.webservice.application.WikiJerseyTestBinder
-import com.yahoo.wiki.webservice.data.config.names.WikiDruidTableName
+import com.yahoo.wiki.webservice.data.config.names.names.WikiDruidTableName
 
 import spock.lang.Specification
 import spock.lang.Timeout
