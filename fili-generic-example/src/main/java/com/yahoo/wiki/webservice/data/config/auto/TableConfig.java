@@ -42,12 +42,13 @@ public class TableConfig implements DruidConfig {
         return dimensions.remove(dimension);
     }
 
-    public String getName() {
-        return tableName;
-    }
-
     public void addTimeGrain(TimeGrain t) {
         timeGrains.add(t);
+    }
+
+    @Override
+    public String getName() {
+        return tableName;
     }
 
     @Override

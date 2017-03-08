@@ -39,16 +39,16 @@ public class WikiJerseyTestBinder extends JerseyTestBinder {
 
     @Override
     public LinkedHashSet<DimensionConfig> getDimensionConfiguration() {
-        return new LinkedHashSet<>(new WikiDimensions(new StaticWikiConfigLoader()).getAllDimensionConfigurations());
+        return GenericBinder.getInstance().buildDimensionConfigurations();
     }
 
     @Override
     public MetricLoader getMetricLoader() {
-        return new WikiMetricLoader(new StaticWikiConfigLoader());
+        return GenericBinder.getInstance().buildMetricLoader();
     }
 
     @Override
     public TableLoader getTableLoader() {
-        return new WikiTableLoader(new StaticWikiConfigLoader());
+        return GenericBinder.getInstance().buildTableLoader();
     }
 }

@@ -15,6 +15,7 @@ import java.util.List;
  * Created by kevin on 3/7/2017.
  */
 public class StaticWikiConfigLoader implements ConfigLoader {
+
     public static DruidConfig getWikiDruidConfig() {
         return new DruidConfig() {
             @Override
@@ -22,6 +23,7 @@ public class StaticWikiConfigLoader implements ConfigLoader {
                 return "wikiticker";
             }
 
+            //TODO should this be camelcased?
             @Override
             public TableName getTableName() {
                 return () -> EnumUtils.camelCase(getName());

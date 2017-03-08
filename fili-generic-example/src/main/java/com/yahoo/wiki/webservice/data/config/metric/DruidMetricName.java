@@ -11,11 +11,9 @@ import java.util.Locale;
  */
 public class DruidMetricName implements FieldName {
     private String lowerCaseName;
-    private List<TimeGrain> satisfyingGrains;
 
-    public DruidMetricName(String lowerCaseName, List<TimeGrain> timeGrains) {
+    public DruidMetricName(String lowerCaseName) {
         this.lowerCaseName = lowerCaseName.toLowerCase(Locale.ENGLISH);
-        satisfyingGrains = timeGrains;
     }
 
     @Override
