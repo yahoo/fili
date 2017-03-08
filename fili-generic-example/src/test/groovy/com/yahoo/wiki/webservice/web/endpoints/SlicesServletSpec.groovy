@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.web.endpoints
 
-import static com.yahoo.wiki.webservice.data.config.names.WikiDruidTableName.WIKITICKER
+import static com.yahoo.wiki.webservice.data.config.names.names.WikiDruidTableName.WIKITICKER
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.table.availability.AvailabilityTestingUtils

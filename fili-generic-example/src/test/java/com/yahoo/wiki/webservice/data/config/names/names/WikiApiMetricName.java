@@ -1,6 +1,6 @@
 // Copyright 2016 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.wiki.webservice.data.config.names;
+package com.yahoo.wiki.webservice.data.config.names.names;
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR;
 
