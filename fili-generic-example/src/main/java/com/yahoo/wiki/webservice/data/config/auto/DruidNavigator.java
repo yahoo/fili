@@ -24,9 +24,9 @@ import java.util.List;
  * Created by kevin on 2/28/2017.
  */
 public class DruidNavigator implements ConfigLoader {
+    private static final Logger LOG = LoggerFactory.getLogger(DruidNavigator.class);
     private static final int COORDINATOR_PORT = 8081;
     private static final String COORDINATOR_BASE = "http://localhost:" + COORDINATOR_PORT + "/druid/coordinator/v1/";
-    private static final Logger LOG = LoggerFactory.getLogger(DruidNavigator.class);
     private DruidWebService druidWebService;
     private List<TableConfig> tableConfigurations;
 
@@ -54,6 +54,7 @@ public class DruidNavigator implements ConfigLoader {
     public void loadTable(TableConfig table) {
         String url = COORDINATOR_BASE + "datasources/" + table.getName() + "/?full";
         getJson(rootNode -> {
+            //TODO: handle errors
             JsonNode segments = rootNode.get("segments").get(0);
             loadMetrics(table, segments);
             loadDimensions(table, segments);
@@ -116,7 +117,6 @@ public class DruidNavigator implements ConfigLoader {
         return null;
     }
 
-    //TODO: handle errors
     private void getJson(SuccessCallback successCallback, String url) {
         LOG.debug("Fetching " + url);
         druidWebService.getJsonObject(
