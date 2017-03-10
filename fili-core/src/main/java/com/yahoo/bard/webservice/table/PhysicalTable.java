@@ -73,10 +73,12 @@ public interface PhysicalTable extends Table {
      *
      * @return The time grain of this physical table
      *
-     * @deprecated use getSchema().getGranularity()
+     * @deprecated use getSchema().getTimeGrain()
      */
     @Deprecated
-    ZonedTimeGrain getTimeGrain();
+    default ZonedTimeGrain getTimeGrain() {
+        return getSchema().getTimeGrain();
+    }
 
     /**
      * Get the time grain from the physical table.

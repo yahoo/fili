@@ -32,7 +32,7 @@ public class PhysicalTableSchema extends BaseSchema implements Schema {
             Iterable<Column> columns,
             @NotNull Map<String, String> logicalToPhysicalColumnNames
     ) {
-        super(columns);
+        super(timeGrain, columns);
         this.timeGrain = timeGrain;
 
         this.logicalToPhysicalColumnNames = Collections.unmodifiableMap(logicalToPhysicalColumnNames);

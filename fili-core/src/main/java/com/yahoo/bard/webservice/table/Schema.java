@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table;
 
+import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.util.Utils;
 
 import java.util.LinkedHashSet;
@@ -19,6 +20,13 @@ public interface Schema {
      * @return The columns of this schema
      */
     Set<Column> getColumns();
+
+    /**
+     * Get the time granularity for this Schema.
+     *
+     * @return The columns of this schema
+     */
+    Granularity getGranularity();
 
     /**
      * Getter for set of columns by sub-type.

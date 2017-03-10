@@ -17,8 +17,6 @@ import java.util.stream.Stream;
  */
 public class LogicalTableSchema extends BaseSchema  {
 
-    private final Granularity granularity;
-
     /**
      * Constructor.
      *
@@ -27,12 +25,7 @@ public class LogicalTableSchema extends BaseSchema  {
      * @param metricDictionary  The dictionary to resolve metric names from the table group against
      */
     public LogicalTableSchema(TableGroup tableGroup, Granularity granularity, MetricDictionary metricDictionary) {
-        super(toColumns(tableGroup, granularity, metricDictionary));
-        this.granularity = granularity;
-    }
-
-    public Granularity getGranularity() {
-        return granularity;
+        super(granularity, buildLogicalColumns(tableGroup, granularity, metricDictionary));
     }
 
     /**
@@ -44,7 +37,7 @@ public class LogicalTableSchema extends BaseSchema  {
      *
      * @return  The union of all columns from the table group
      */
-    private static LinkedHashSet<Column> toColumns(
+    private static LinkedHashSet<Column> buildLogicalColumns(
             TableGroup tableGroup,
             Granularity granularity,
             MetricDictionary metricDictionary

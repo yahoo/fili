@@ -10,6 +10,21 @@ Current
 
 ### Added:
 
+- [Major refactor for availability and schemas and tables](https://github.com/yahoo/fili/pull/165)
+    * `ImmutableAvailability` - provides immutable, typed replacement for maps of column availabilities
+    * New Table Implementations:
+	    * `BasePhysicalTable` core implementation
+	    * `ConcretePhysicalTable` creates an ImmutableAvailability
+    * `Schema` implementations
+	    * `BaseSchema` has `Columns`, `Granularity`
+    	* `PhysicalTableSchema` has base plus `ZonedTimeGrain`, name mappings
+	    * `LogicalTableSchema` base with builder from table group
+	    * `ResultSetSchema` base with transforming with-ers
+
+    * `ApiName`, `TableName`: Added static factory from String to Name
+
+    * `ErrorMessageFormat` for errors during `ResultSetMapper` cycle
+
 - [Added default base class for all dimension types](https://github.com/yahoo/fili/pull/177)
    * Added base classes `DefaultKeyValueStoreDimensionConfig`, `DefaultLookupDimensionConfig` and `DefaultRegisteredLookupDimensionConfig` 
      to create default dimensions. 
@@ -29,7 +44,31 @@ Current
 
 ### Changed:
 
--- [Request IDS now supports underscores.](https://github.com/yahoo/fili/pull/176)
+- [Major refactor for availability and schemas and tables](https://github.com/yahoo/fili/pull/165)
+    * `Schema` and `Table` became interfaces
+	    * `Table` has-a `Schema`
+	    * `PhysicalTable` extends `Table`, interface only supports read only operations
+	* `Schema` constructed as immutable, `Column`s no longer bind to `Schema`
+		* Removed addNew...Column method
+	* `Schema` implementations now: `BaseSchema`, `PhysicalTableSchema`, `LogicalTableSchema`, `ResultSetSchema`
+    * `DimensionLoader` uses `ConcretePhysicalTable`
+
+    * `PhysicalTableDefinition` made some fields private, accepts iterables, returns immutable dimensions
+
+    * `ResultSet` constructor parameter order swapped
+    * `ResultSetMapper` now depends on ResultSetSchema
+
+    * `TableDataSource` constructor arg narrows: PhysicalTable->ConcreteTable
+
+    * `DataApiRequest` constructor arg narrows: Table->LogicalTable
+	
+    * `DruidQueryBuilder` now polymorphic on building data sources models from new physical tables
+
+    * `ApiFilter` schema validation moved to DataApiRequest
+
+    * Guava version bumped to 21.0
+
+- [Request IDS now supports underscores.](https://github.com/yahoo/fili/pull/176)
 
 - Added support for extensions defining new Query types
     * TestDruidWebService assumes unknown query types behave like GroupBy, TimeSeries, and TopN
@@ -55,6 +94,11 @@ Current
 
 ### Fixed:
 
+- [Major refactor for availability and schemas and tables](https://github.com/yahoo/fili/pull/165)
+    * Ordering of fields on serialization could be inconsistent if intermediate stages used `HashSet` or `HashMap`.
+    * Several constructors switched to accept `Iterable` and return `LinkedHashSet` to emphasize importance of ordering/prevent `HashSet` intermediates which disrupt ordering.
+
+
 -[Fix Lookup Dimension Serialization](https://github.com/yahoo/fili/pull/187)
     * Fix a bug where lookup dimension is serialized as dimension spec in both outer and inner query
 
@@ -68,6 +112,18 @@ Current
 
 ### Removed:
 
+- [Major refactor for availability and schemas and tables](https://github.com/yahoo/fili/pull/165)
+    *  Removed `ZonedSchema` (all methods moved to child class ResultSetSchema)
+
+    * `PhysicalTable` no longer supports mutable availability
+	    * Removed addColumn, removeColumn, getWorkingIntervals, resetColumns, commit
+		* resetColumns moved to BasePhysicalTable
+		* Other mutators no longer exist, availability is immutable
+		* getAvailableIntervals removed (availability.getAvailableIntervals replaces)	
+
+    * `DruidResponseParser` buildSchema removed, work moved to ResultSetSchema constructor
+
+    * `BaseTableLoader` removed redundant buildLogicalTable methods
 
 
 v0.7.36 - 2017/01/30
