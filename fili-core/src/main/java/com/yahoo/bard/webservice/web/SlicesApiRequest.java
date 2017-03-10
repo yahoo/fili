@@ -165,7 +165,7 @@ public class SlicesApiRequest extends ApiRequest {
             throw new BadApiRequestException(msg);
         }
 
-        Map<Column, List<Interval>> columnCache = table.getAvailableIntervals();
+        Map<Column, List<Interval>> columnCache = table.getAvailability().getAvailableIntervals();
         Set<Map<String, Object>> dimensionsResult = new LinkedHashSet<>();
         Set<Map<String, Object>> metricsResult = new LinkedHashSet<>();
 

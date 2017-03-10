@@ -64,7 +64,8 @@ public class AsyncUtils {
                 new ResultSet(new ResultSetSchema(
                         AllGranularity.INSTANCE,
                         Collections.emptySet()),
-                        Collections.emptyList()),
+                        Collections.emptyList()
+                ),
                 responseContext
         );
     }

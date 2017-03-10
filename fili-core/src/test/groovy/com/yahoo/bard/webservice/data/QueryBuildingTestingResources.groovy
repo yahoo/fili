@@ -53,20 +53,36 @@ import org.joda.time.Interval
 
 public class QueryBuildingTestingResources {
 
-    // Aggregatable dimensions
+    // Aggregatable dimensions, numbered for identification
     public Dimension d1, d2, d3, d4, d5
-    // Non-aggregatable dimensions
+
+    // Non-aggregatable dimensions, numbered for identification
     public Dimension d6, d7, d8, d9, d10, d11, d12, d13
+
+    // Logical metrics, numbered for identification
     public LogicalMetric m1, m2, m3, m4, m5, m6
 
+    // Some intervals
     public Interval interval1, interval2, interval3
 
-    public ConcretePhysicalTable t1h, t1d, t1hShort, t2h, t3d, t4h1, t4h2, t4d1, t4d2, t5h, emptyFirst, partialSecond, wholeThird, emptyLast, tna1236d, tna1237d, tna167d, tna267d, volatileHourTable, volatileDayTable
+    // tables are enumerated by dimension set number, d or h for day or hour
+    public ConcretePhysicalTable t1h, t1d, t1hShort, t2h, t3d, t4h1, t4h2, t4d1, t4d2, t5h
+
+    // table used to test ordering, empty has no availability, partial some, whole largest availability
+    public ConcretePhysicalTable emptyFirst, partialSecond, wholeThird, emptyLast
+
+    // Tables with not aggregatable dimensions, numbers indicate the dimension set
+    public ConcretePhysicalTable tna1236d, tna1237d, tna167d, tna267d
+
+    // Tables with volatile hour and volatile day
+    public ConcretePhysicalTable volatileHourTable, volatileDayTable
 
     public VolatileIntervalsService volatileIntervalsService
 
+    // Table Groups h/d for hour day, number to indicate which concrete tables comprise them, 'na' for non-aggregatable
     public TableGroup tg1h, tg1d, tg1Short, tg2h, tg3d, tg4h, tg5h, tg6h, tg1All, tgna
 
+    // Logical tables for table groups, na for 'non-aggregatable'
     public LogicalTable lt12, lt13, lt14, lt1All, ltna
 
     public LogicalTableDictionary logicalDictionary
@@ -170,7 +186,7 @@ public class QueryBuildingTestingResources {
         d13 = new RegisteredLookupDimension(registeredLookupDimConfig.getAt(2))
 
         dimensionDictionary = new DimensionDictionary()
-        dimensionDictionary.addAll([d1, d2, d3, d4, d5, d6, d7, d8, d9, d10].collect { it })
+        dimensionDictionary.addAll([d1, d2, d3, d4, d5, d6, d7, d8, d9, d10])
 
         m1 = new LogicalMetric(null, null, "metric1")
         m2 = new LogicalMetric(null, null, "metric2")
@@ -201,6 +217,7 @@ public class QueryBuildingTestingResources {
         t2h = new ConcretePhysicalTable("table2", utcHour, [d1, d2, d4, m1, m4, m5].collect{toColumn(it)}.toSet(), [:])
         t3d = new ConcretePhysicalTable("table3", utcDay, [d1, d2, d5, m6].collect{toColumn(it)}.toSet(), [:])
 
+        // Tables with non aggregatable dimensions
         tna1236d = new ConcretePhysicalTable("tableNA1236", utcDay, [d1, d2, d3, d6].collect{toColumn(it)}.toSet(),["ageBracket":"age_bracket"])
         tna1237d = new ConcretePhysicalTable("tableNA1237", utcDay, [d1, d2, d3, d7].collect{toColumn(it)}.toSet(), ["ageBracket":"age_bracket"])
         tna167d = new ConcretePhysicalTable("tableNA167", utcDay, [d1, d6, d7].collect{toColumn(it)}.toSet(), ["ageBracket":"age_bracket", "dim7":"dim_7"])
@@ -287,13 +304,6 @@ public class QueryBuildingTestingResources {
         )
 
         return this
-        /* Example:
-        List<Column> columns = []
-        ConcretePhysicalTable table1 = ConcretePhysicalTable("name", DAY, columns, [:] )
-
-        Map<Column, List<Interval>> availableMap = columns.collectEntries { [(it): [interval2] ]}
-        table1.setAvailability(new ImmutableAvailability(availableMap))
-         */
     }
 
     def setupPartialData() {
@@ -304,19 +314,19 @@ public class QueryBuildingTestingResources {
         partialSecond = new ConcretePhysicalTable("partialSecond", MONTH.buildZonedTimeGrain(UTC), [d1, m1, m2, m3].collect{toColumn(it)}.toSet(), [:])
         wholeThird = new ConcretePhysicalTable("wholeThird", MONTH.buildZonedTimeGrain(UTC), [d1, m1, m2, m3].collect{toColumn(it)}.toSet(), [:])
 
-        Map<Column, List<Interval>> availabilityMap1 = [:]
-        Map<Column, List<Interval>> availabilityMap2 = [:]
-        Map<Column, List<Interval>> availabilityMap3 = [:]
+        Map<Column, List<Interval>> availabilityMapLengthZero = [:]
+        Map<Column, List<Interval>> availabilityMapOneYear = [:]
+        Map<Column, List<Interval>> availabilityMapLongTime = [:]
 
         [d1, d2, m1, m2, m3].each {
-            availabilityMap1.put(toColumn(it), [new Interval("2015/2015")])
-            availabilityMap2.put(toColumn(it), [new Interval("2015/2016")])
-            availabilityMap3.put(toColumn(it), [new Interval("2011/2016")])
+            availabilityMapLengthZero.put(toColumn(it), [new Interval("2015/2015")])
+            availabilityMapOneYear.put(toColumn(it), [new Interval("2015/2016")])
+            availabilityMapLongTime.put(toColumn(it), [new Interval("2011/2016")])
         }
-        emptyFirst.setAvailability(new ImmutableAvailability(emptyFirst.name, availabilityMap1))
-        emptyLast.setAvailability(new ImmutableAvailability(emptyLast.name, availabilityMap1))
-        partialSecond.setAvailability(new ImmutableAvailability(partialSecond.name, availabilityMap2))
-        wholeThird.setAvailability(new ImmutableAvailability(wholeThird.name, availabilityMap3))
+        emptyFirst.setAvailability(new ImmutableAvailability(emptyFirst.name, availabilityMapLengthZero))
+        emptyLast.setAvailability(new ImmutableAvailability(emptyLast.name, availabilityMapLengthZero))
+        partialSecond.setAvailability(new ImmutableAvailability(partialSecond.name, availabilityMapOneYear))
+        wholeThird.setAvailability(new ImmutableAvailability(wholeThird.name, availabilityMapLongTime))
 
         tg1All = new TableGroup([emptyFirst, partialSecond, wholeThird, emptyLast] as LinkedHashSet, [].toSet(), [].toSet())
         ti1All = new TableIdentifier("base1All", AllGranularity.INSTANCE)

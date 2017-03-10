@@ -5,7 +5,6 @@ package com.yahoo.bard.webservice.data;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TOP_N_UNSORTED;
 
 import com.yahoo.bard.webservice.config.BardFeatureFlag;
-import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionRowNotFoundException;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
@@ -33,14 +32,13 @@ import com.yahoo.bard.webservice.table.resolver.NoMatchFoundException;
 import com.yahoo.bard.webservice.table.resolver.PhysicalTableResolver;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 
+import com.google.common.collect.Sets;
+
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import avro.shaded.com.google.common.collect.Sets;
-
-import java.util.Collections;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -205,20 +203,31 @@ public class DruidQueryBuilder {
             granularity = template.getTimeGrain().buildZonedTimeGrain(timeZone);
         }
 
+        DataSource dataSource;
         if (!template.isNested()) {
             LOG.trace("Building a single pass druid groupBy query");
+            dataSource = buildTableDataSource(table);
+        } else {
+            LOG.trace("Building a multi pass druid groupBy query");
+            // Build the inner query without an order by, since we only want to do that at the top level
+            // Sorts don't apply to inner queries and Filters only apply to the innermost query
+            GroupByQuery query = buildGroupByQuery(
+                    template.getInnerQuery(),
+                    table,
+                    granularity,
+                    timeZone,
+                    groupByDimensions,
+                    filter,
+                    having,
+                    intervals,
+                    (LimitSpec) null
+            );
+            dataSource = new QueryDataSource(query);
 
-            DataSource dataSource;
-            // TODO FIXME hardcoding to concrete for now
-            if (table instanceof ConcretePhysicalTable) {
-                dataSource = new TableDataSource((ConcretePhysicalTable) table);
-            } else {
-                dataSource = new UnionDataSource(Sets.newHashSet(table));
-            }
-            // The data source is the table directly, since there is no nested query below us
-            //DataSource dataSource = new TableDataSource((ConcretePhysicalTable) table);
+            filter = null;
+        }
 
-            // Filters must be applied at the lowest level as they exclude data from aggregates
+        // Filters must be applied at the lowest level as they exclude data from aggregates
             return new GroupByQuery(
                     dataSource,
                     granularity,
@@ -232,37 +241,19 @@ public class DruidQueryBuilder {
             );
         }
 
-        LOG.trace("Building a multi pass druid groupBy query");
-
-        // Build the inner query without an order by, since we only want to do that at the top level
-        TemplateDruidQuery nestedQuery = template.getInnerQuery();
-        GroupByQuery query = buildGroupByQuery(
-                nestedQuery,
-                table,
-                granularity,
-                timeZone,
-                groupByDimensions,
-                filter,
-                having,
-                intervals,
-                (LimitSpec) null
-        );
-
-        // The data source is the inner query we just built
-        DataSource dataSource = new QueryDataSource(query);
-
-        // Build the wrapping query without filters
-        return new GroupByQuery(
-                dataSource,
-                granularity,
-                groupByDimensions,
-                (Filter) null,
-                having,
-                template.getAggregations(),
-                template.getPostAggregations(),
-                intervals,
-                druidOrderBy
-        );
+    /**
+     * Build a data source from a table.
+     *
+     * @param table A fact table or fact table view
+     *
+     * @return A table datasource for a fact table or a union data source for a fact table view
+     */
+    private DataSource buildTableDataSource(PhysicalTable table) {
+        if (table instanceof ConcretePhysicalTable) {
+            return new TableDataSource((ConcretePhysicalTable) table);
+        } else {
+            return new UnionDataSource(Sets.newHashSet(table));
+        }
     }
 
     /**
@@ -320,12 +311,9 @@ public class DruidQueryBuilder {
 
         LOG.trace("Building a single pass druid topN query");
 
-        // TODO FIXME hardcoding to concrete for now
         // The data source is the table directly, since there is no nested query below us
-        DataSource dataSource = new TableDataSource((ConcretePhysicalTable) table);
-
         return new TopNQuery(
-                dataSource,
+                buildTableDataSource(table),
                 // The check that the set of dimensions has exactly one element is currently done above
                 granularity,
                 groupByDimension.iterator().next(),
@@ -381,18 +369,8 @@ public class DruidQueryBuilder {
 
         LOG.trace("Building a single pass druid timeseries query");
 
-        DataSource dataSource;
-        Set<TableName> names = table.getAvailability().getDataSourceNames();
-        if (names.isEmpty()) {
-            throw new IllegalStateException("Misconfigured table with no backing datasource.");
-        } else if (names.size() == 1 && table instanceof ConcretePhysicalTable) {
-            dataSource = new TableDataSource((ConcretePhysicalTable) table);
-        } else {
-            dataSource = new UnionDataSource(Collections.singleton(table));
-        }
-
         return new TimeSeriesQuery(
-                dataSource,
+                buildTableDataSource(table),
                 granularity,
                 filter,
                 template.getAggregations(),

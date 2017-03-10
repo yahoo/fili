@@ -36,13 +36,17 @@ class DruidResponseParserSpec extends Specification {
 
     @Shared DimensionDictionary dimensionDictionary
 
+    Set<Column> dimensionColumns
+    Column ageColumn
+    Column genderColumn
+    Column unknownColumn
+
     def setup() {
         def dimensionNames = [
                 "ageBracket",
                 "gender",
                 "unknown"
         ]
-
         LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>()
         dimensionFields.add(BardDimensionField.ID)
         dimensionFields.add(BardDimensionField.DESC)
@@ -71,10 +75,16 @@ class DruidResponseParserSpec extends Specification {
             addDimensionRow(BardDimensionField.makeDimensionRow(it, "u", "u"))
             addDimensionRow(BardDimensionField.makeDimensionRow(it, "f", "u"))
         }
+
+        ageColumn = new DimensionColumn(dimensionDictionary.findByApiName("ageBracket"))
+        genderColumn = new DimensionColumn(dimensionDictionary.findByApiName("gender"))
+        unknownColumn = new DimensionColumn(dimensionDictionary.findByApiName("unknown"))
+        dimensionColumns = [ ageColumn, genderColumn, unknownColumn]
     }
 
     def "parse group by with numeric metrics only into a ResultSet"() {
         given:
+        DimensionField description = BardDimensionField.DESC
 
         String jsonText = """
         [ {
@@ -118,6 +128,9 @@ class DruidResponseParserSpec extends Specification {
         JsonNode jsonResult = MAPPER.readTree(parser)
 
         Schema schema = buildSchema(["pageViews", "time_spent"])
+        Column pageViewsColumn = schema.getColumn("pageViews", MetricColumn.class).get()
+        Column timeSpentColumn = schema.getColumn("time_spent", MetricColumn.class).get()
+
         ResultSet resultSet = new DruidResponseParser().parse(jsonResult, schema, DefaultQueryType.GROUP_BY, DateTimeZone.UTC)
 
         expect:
@@ -126,19 +139,19 @@ class DruidResponseParserSpec extends Specification {
         resultSet.getSchema() == schema
 
         and:
-        Result result = resultSet.get(0)
-        result.getDimensionRow((DimensionColumn) schema.columns.toArray()[0])?.get(BardDimensionField.DESC) == "u"
-        result.getDimensionRow((DimensionColumn) schema.columns.toArray()[2])?.get(BardDimensionField.DESC) == "4"
-        result.getDimensionRow((DimensionColumn) schema.columns.toArray()[3])?.get(BardDimensionField.DESC) == ""
-        result.getDimensionRow((DimensionColumn) schema.columns.toArray()[3])?.get(BardDimensionField.ID) == "foo"
-        resultSet[0].getMetricValueAsNumber(schema.getColumn("pageViews", MetricColumn.class).get()) == 1 as BigDecimal
-        resultSet[0].getMetricValueAsNumber(schema.getColumn("time_spent", MetricColumn.class).get()) == 2 as BigDecimal
+        Result firstResult = resultSet.get(0)
+        List<Column> columns = new ArrayList<>(schema.columns)
+        firstResult.getDimensionRow(genderColumn)?.get(description) == "u"
+        firstResult.getDimensionRow(ageColumn)?.get(description) == "4"
+        firstResult.getDimensionRow(unknownColumn)?.get(description) == ""
+        firstResult.getDimensionRow(unknownColumn)?.get(BardDimensionField.ID) == "foo"
+        firstResult.getMetricValueAsNumber(pageViewsColumn) == 1 as BigDecimal
+        firstResult.getMetricValueAsNumber(timeSpentColumn) == 2 as BigDecimal
 
         and:
         Result resultWithNullDimensionKey = resultSet.get(2)
-        resultWithNullDimensionKey.getDimensionRow((DimensionColumn) schema.columns.toArray()[2])?.get(BardDimensionField.ID) == ""
-        resultWithNullDimensionKey.getDimensionRow((DimensionColumn) schema.columns.toArray()[2])?.get(BardDimensionField.DESC) ==
-                "unknown"
+        resultWithNullDimensionKey.getDimensionRow(ageColumn)?.get(BardDimensionField.ID) == ""
+        resultWithNullDimensionKey.getDimensionRow(ageColumn)?.get(BardDimensionField.DESC) == "unknown"
     }
 
     def "parse sample top N ResultSet with only numeric metrics"() {
@@ -263,6 +276,9 @@ class DruidResponseParserSpec extends Specification {
 
         Schema schema = buildSchema(["pageViews", "lookback_pageViews", "retentionPageViews"])
         ResultSet resultSet = new DruidResponseParser().parse(jsonResult, schema, DefaultQueryType.GROUP_BY, DateTimeZone.UTC)
+        Column pageViewsColumn = schema.getColumn("pageViews", MetricColumn.class).get()
+        Column lookbackPageviewsColumn = schema.getColumn("lookback_pageViews", MetricColumn.class).get()
+        Column retentionPageviewsColumn = schema.getColumn("retentionPageViews", MetricColumn.class).get()
 
         expect:
         resultSet != null
@@ -270,14 +286,14 @@ class DruidResponseParserSpec extends Specification {
         resultSet.getSchema() == schema
 
         and:
-        Result result = resultSet.get(0)
-        result.getDimensionRow((DimensionColumn) schema.columns.toArray()[1])?.get(BardDimensionField.DESC) == "u"
-        result.getDimensionRow((DimensionColumn) schema.columns.toArray()[3])?.get(BardDimensionField.DESC) == "4"
-        result.getDimensionRow((DimensionColumn) schema.columns.toArray()[4])?.get(BardDimensionField.DESC) == ""
-        result.getDimensionRow((DimensionColumn) schema.columns.toArray()[4])?.get(BardDimensionField.ID) == "foo"
-        resultSet[0].getMetricValueAsNumber(schema.getColumn("pageViews", MetricColumn.class).get()) == 1 as BigDecimal
-        resultSet[0].getMetricValueAsNumber(schema.getColumn("lookback_pageViews", MetricColumn.class).get()) == 2 as BigDecimal
-        resultSet[0].getMetricValueAsNumber(schema.getColumn("retentionPageViews", MetricColumn.class).get()) == 1 as BigDecimal
+        Result firstResult = resultSet.get(0)
+        firstResult.getDimensionRow(genderColumn)?.get(BardDimensionField.DESC) == "u"
+        firstResult.getDimensionRow(ageColumn)?.get(BardDimensionField.DESC) == "4"
+        firstResult.getDimensionRow(unknownColumn)?.get(BardDimensionField.DESC) == ""
+        firstResult.getDimensionRow(unknownColumn)?.get(BardDimensionField.ID) == "foo"
+        firstResult.getMetricValueAsNumber(pageViewsColumn) == 1 as BigDecimal
+        firstResult.getMetricValueAsNumber(lookbackPageviewsColumn) == 2 as BigDecimal
+        firstResult.getMetricValueAsNumber(retentionPageviewsColumn) == 1 as BigDecimal
     }
 
     @Unroll
@@ -435,13 +451,10 @@ class DruidResponseParserSpec extends Specification {
 
     ResultSetSchema buildSchema(List<String> metricNames) {
 
-        Set<Column> columns = [new DimensionColumn(dimensionDictionary.findByApiName("ageBracket")), new DimensionColumn(dimensionDictionary.findByApiName("gender")), new DimensionColumn(dimensionDictionary.findByApiName("unknown"))].toSet()
         metricNames.each {
-            columns.add(new MetricColumn(it))
+            dimensionColumns.add(new MetricColumn(it))
         }
 
-        Schema schema = new ResultSetSchema(DAY, columns)
-
-        return schema
+        new ResultSetSchema(DAY, dimensionColumns)
     }
 }

@@ -89,20 +89,10 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
 
     }
 
-    /**
-     * Getter for table group.
-     *
-     * @return tableGroup
-     */
     public TableGroup getTableGroup() {
         return this.tableGroup;
     }
 
-    /**
-     * Getter for logical metrics.
-     *
-     * @return set of LogicalMetric
-     */
     public Set<LogicalMetric> getLogicalMetrics() {
         return schema.getColumns(LogicalMetricColumn.class).stream()
                 .map(LogicalMetricColumn::getLogicalMetric)
@@ -130,11 +120,6 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
         return description;
     }
 
-    /**
-     * Getter.
-     *
-     * @return The granularity
-     */
     public Granularity getGranularity() {
         return schema.getGranularity();
     }

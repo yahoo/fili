@@ -25,12 +25,11 @@ import java.util.stream.Collectors;
 /**
  * An availability which guarantees immutability on its contents.
  */
-//public class ImmutableAvailability extends ImmutableWrapperMap<Column, List<Interval>> implements Availability {
 public class ImmutableAvailability implements Availability {
 
     private final TableName name;
     private final Map<Column, List<Interval>> columnIntervals;
-
+    private final Set<TableName> dataSourceNames;
     /**
      * Constructor.
      *
@@ -40,6 +39,7 @@ public class ImmutableAvailability implements Availability {
     public ImmutableAvailability(TableName tableName, Map<Column, List<Interval>> map) {
         this.name = tableName;
         columnIntervals = ImmutableMap.copyOf(map);
+        dataSourceNames = Sets.newHashSet(name);
     }
 
     /**
@@ -50,22 +50,6 @@ public class ImmutableAvailability implements Availability {
      */
     public ImmutableAvailability(String tableName, Map<Column, List<Interval>> map) {
         this(TableName.of(tableName), map);
-    }
-    /**
-     * Constructor.
-     *
-     * @param tableName  The name of the data source associated with this ImmutableAvailability
-     * @param dimensionIntervals  The dimension availability map by dimension name
-     * @param metricIntervals  The metric availability map
-     * @param dimensionDictionary  The dictionary to resolve dimension names against
-     */
-    public ImmutableAvailability(
-            TableName tableName,
-            Map<String, Set<Interval>> dimensionIntervals,
-            Map<String, Set<Interval>> metricIntervals,
-            DimensionDictionary dimensionDictionary
-    ) {
-        this(tableName, buildAvailabilityMap(dimensionIntervals, metricIntervals, dimensionDictionary));
     }
 
     /**
@@ -120,7 +104,7 @@ public class ImmutableAvailability implements Availability {
 
     @Override
     public Set<TableName> getDataSourceNames() {
-        return Sets.newHashSet(name);
+        return dataSourceNames;
     }
 
     @Override
@@ -144,12 +128,14 @@ public class ImmutableAvailability implements Availability {
             return true;
         }
         if (obj instanceof ImmutableAvailability) {
-            return Objects.equals(
-                    columnIntervals,
-                    ((ImmutableAvailability) obj).columnIntervals);
+            ImmutableAvailability that = (ImmutableAvailability) obj;
+            return Objects.equals(columnIntervals, that.columnIntervals) &&
+                    Objects.equals(name, that.name);
         }
         if (obj instanceof Availability) {
-            return columnIntervals.equals(((Availability) obj).getAvailableIntervals());
+            Availability that = (Availability) obj;
+            return Objects.equals(columnIntervals, that.getAvailableIntervals()) &&
+                    Objects.equals(getDataSourceNames(), that.getDataSourceNames());
         }
         return false;
     }

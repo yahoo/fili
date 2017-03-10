@@ -3,19 +3,15 @@
 package com.yahoo.bard.webservice.table;
 
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
-import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.table.availability.Availability;
 
 import org.joda.time.DateTime;
-import org.joda.time.Interval;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
- * An interface describing a config level physical table.
- * It may be backed by a single concrete data source or not.
+ * An interface describing the Fili model for a fact data source (e.g. a table of dimensions and metrics).
+ * It may be backed by a single concrete fact data source or by more than one with underlying joins.
  */
 public interface PhysicalTable extends Table {
 
@@ -38,24 +34,13 @@ public interface PhysicalTable extends Table {
      * Determine whether or not this PhysicalTable has a mapping for a specific logical name.
      *
      * @param logicalName  Logical name to check
+     *
      * @return True if contains a non-default mapping for the logical name, false otherwise
+     *
+     * @deprecated This may no longer be needed
      */
+    @Deprecated
     boolean hasLogicalMapping(String logicalName);
-
-    @Override
-    String getName();
-
-    @Override
-    PhysicalTableSchema getSchema();
-
-    /**
-     * Fetch a set of intervals given a column name.
-     *
-     * @param columnName  Name of the column
-     *
-     * @return Set of intervals associated with a column, empty if column is missing
-     */
-    Set<Interval> getIntervalsByColumnName(String columnName);
 
     /**
      * Translate a logical name into a physical column name. If no translation exists (i.e. they are the same),
@@ -84,14 +69,6 @@ public interface PhysicalTable extends Table {
     Set<Column> getColumns();
 
     /**
-     * Getter for active column intervals.
-     *
-     * @return tableEntries map of column to set of available intervals
-     *
-     */
-    Map<Column, List<Interval>> getAvailableIntervals();
-
-    /**
      * Get the time grain from granularity.
      *
      * @return The time grain of this physical table
@@ -102,9 +79,10 @@ public interface PhysicalTable extends Table {
     ZonedTimeGrain getTimeGrain();
 
     /**
-     * Get the granularity for the table.
+     * Get the time grain from the physical table.
+     * (This is more specific than the granularity from the Table interface)
      *
-     * @return The granularity of this table
+     * @return A physical table schema.
      */
-    Granularity getGranularity();
+    PhysicalTableSchema getSchema();
 }

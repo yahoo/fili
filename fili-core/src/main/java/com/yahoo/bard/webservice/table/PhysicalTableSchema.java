@@ -23,19 +23,6 @@ public class PhysicalTableSchema extends BaseSchema implements Schema {
     /**
      * Constructor.
      *
-     * @param timeGrain  The time grain of this physical table
-     * @param columns The columns for this table
-     */
-    public PhysicalTableSchema(
-            @NotNull ZonedTimeGrain timeGrain,
-            Iterable<Column> columns
-    ) {
-        this(timeGrain, columns, Collections.emptyMap());
-    }
-
-    /**
-     * Constructor.
-     *
      * @param timeGrain The time grain for this table
      * @param columns The columns for this table
      * @param logicalToPhysicalColumnNames The mapping of logical column names to physical names
@@ -106,7 +93,7 @@ public class PhysicalTableSchema extends BaseSchema implements Schema {
      *
      * @return the granularity for this schema
      */
-    public ZonedTimeGrain getGranularity() {
+    public ZonedTimeGrain getTimeGrain() {
         return timeGrain;
     }
 }

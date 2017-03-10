@@ -22,7 +22,6 @@ import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.bard.webservice.table.TableIdentifier;
 
 import org.joda.time.DateTimeZone;
-import org.joda.time.ReadablePeriod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +29,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Provides commonly-needed methods for loading tables.
@@ -168,96 +168,11 @@ public abstract class BaseTableLoader implements TableLoader {
         // For every legal grain
         for (Granularity grain : validGrains) {
             // Build the logical table
-            LogicalTable logicalTable = buildLogicalTable(logicalTableName, grain, nameGroup, metricDictionary);
+            LogicalTable logicalTable = new LogicalTable(logicalTableName, grain, nameGroup, metricDictionary);
 
             // Load it into the dictionary
             logicalDictionary.put(new TableIdentifier(logicalTable), logicalTable);
         }
-    }
-
-    /**
-     * Build a logical table, supplying it with a name, grain, table group, and metrics, the default category and
-     * longName set to the name.
-     * <p>
-     * Note: This builds a logical table with all valid metrics for the grain of the table
-     *
-     * @param name  The name for this logical table
-     * @param granularity  The granularity for this logical table
-     * @param group  The group of physical tables for this logical table
-     * @param metrics  The dictionary of all metrics
-     *
-     * @return The logical table built
-     */
-    public LogicalTable buildLogicalTable(
-            String name,
-            Granularity granularity,
-            TableGroup group,
-            MetricDictionary metrics
-    ) {
-        return buildLogicalTable(
-                name,
-                granularity,
-                LogicalTable.DEFAULT_CATEGORY,
-                name,
-                LogicalTable.DEFAULT_RETENTION,
-                name,
-                group,
-                metrics
-        );
-    }
-
-    /**
-     * Build a logical table, supplying it with a name, grain, table group, and metrics.
-     * <p>
-     * Note: This builds a logical table with all valid metrics for the grain of the table
-     *
-     * @param name  The name for this logical table
-     * @param granularity  The granularity for this logical table
-     * @param category  The category for this logical table
-     * @param longName  The long name for this logical table
-     * @param retention  The retention for this logical table
-     * @param description  The description for this logical table
-     * @param group  The group of physical tables for this logical table
-     * @param metrics  The dictionary of all metrics
-     *
-     * @return The logical table built
-     */
-    public LogicalTable buildLogicalTable(
-            String name,
-            Granularity granularity,
-            String category,
-            String longName,
-            ReadablePeriod retention,
-            String description,
-            TableGroup group,
-            MetricDictionary metrics
-    ) {
-
-        // All Logical tables support the dimension set for their table group
-        PhysicalTable firstPhysicalTable = group.getPhysicalTables().iterator().next();
-        Set<PhysicalTable> tables = group.getPhysicalTables();
-        for (Dimension dim : group.getDimensions()) {
-            // Select the first table with a non-default logical mapping to this dimension name
-            // otherwise, use the defaulting behavior from the first table in the list
-            PhysicalTable physicalTable = tables.stream()
-                    .filter(table -> table.hasLogicalMapping(dim.getApiName()))
-                    .findFirst()
-                    .orElse(firstPhysicalTable);
-
-        }
-
-        LogicalTable logicalTable = new LogicalTable(
-                name,
-                category,
-                longName,
-                granularity,
-                retention,
-                description,
-                group,
-                metrics
-        );
-
-        return logicalTable;
     }
 
     /**
@@ -303,20 +218,17 @@ public abstract class BaseTableLoader implements TableLoader {
             Set<FieldName> metricNames,
             DimensionDictionary dimensionDictionary
     ) {
-        // Load the dimension columns
-        LinkedHashSet<Column> columns = definition.getDimensions().stream()
-                .map(DimensionConfig::getApiName)
-                .map(dimensionDictionary::findByApiName)
-                .map(DimensionColumn::new)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-
-        // And the metric columns
-        columns.addAll(
+        LinkedHashSet<Column> columns = Stream.concat(
+                // Load the dimension columns
+                definition.getDimensions().stream()
+                        .map(DimensionConfig::getApiName)
+                        .map(dimensionDictionary::findByApiName)
+                        .map(DimensionColumn::new),
+                // And the metric columns
                 metricNames.stream()
-                    .map(FieldName::asName)
-                    .map(MetricColumn::new)
-                    .collect(Collectors.toList())
-        );
+                        .map(FieldName::asName)
+                        .map(MetricColumn::new)
+        ).collect(Collectors.toCollection(LinkedHashSet::new));
 
         return new ConcretePhysicalTable(
                 definition.getName().asName(),

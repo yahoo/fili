@@ -49,7 +49,7 @@ public class SchemaPhysicalTableMatcher implements PhysicalTableMatcher {
 
     @Override
     public boolean test(PhysicalTable table) {
-        if (!granularity.satisfiedBy(table.getSchema().getGranularity())) {
+        if (!granularity.satisfiedBy(table.getSchema().getTimeGrain())) {
             return false;
         }
 

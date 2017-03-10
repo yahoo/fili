@@ -32,10 +32,10 @@ import com.yahoo.bard.webservice.web.DataApiRequest
 import com.yahoo.bard.webservice.web.ResponseFormatType
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.google.common.collect.Sets
 
 import org.joda.time.DateTimeZone
 
-import avro.shaded.com.google.common.collect.Sets
 import rx.subjects.PublishSubject
 import rx.subjects.Subject
 import spock.lang.Specification

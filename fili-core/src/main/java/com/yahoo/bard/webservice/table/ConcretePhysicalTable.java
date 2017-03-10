@@ -11,12 +11,13 @@ import java.util.Map;
 import javax.validation.constraints.NotNull;
 
 /**
- * An instance of Physical table that is backed by a single fact table.
+ * An implementation of Physical table that is backed by a single fact table.
  */
 public class ConcretePhysicalTable extends BasePhysicalTable {
 
     /**
      * Create a concrete physical table.
+     * The availability on this table is initialized to empty intervals.
      *
      * @param name  Fili name of the physical table
      * @param factTableName  Name of the associated table in Druid
@@ -42,6 +43,7 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
 
     /**
      * Create a concrete physical table.
+     * The fact table name will be defaulted to the name and the availability initialized to empty intervals.
      *
      * @param name  Fili name of the physical table
      * @param timeGrain  time grain of the table

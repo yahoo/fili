@@ -154,7 +154,7 @@ class SerializationResources extends Specification {
         responseContext.put("randomHeader", "someHeader")
         responseContext.put(
                 "missingIntervals",
-                ["a", "b", "c", new SimplifiedIntervalList([interval]), bigDecimal] as ArrayList
+                (["a", "b", "c", new SimplifiedIntervalList([interval]), bigDecimal] as ArrayList)
         )
 
         responseContext1 = new ResponseContext([:])
@@ -178,8 +178,7 @@ class SerializationResources extends Specification {
         metricNameClassNames.each {
              columns.add(new MetricColumnWithValueType(it.key, it.value))
         }
-        ResultSetSchema schema = new ResultSetSchema(granularity, columns)
-        return schema
+        new ResultSetSchema(granularity, columns)
     }
 
     String getSerializedResultSet(){
