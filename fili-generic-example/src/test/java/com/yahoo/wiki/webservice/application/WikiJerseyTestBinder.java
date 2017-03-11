@@ -8,6 +8,9 @@ import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
 import com.yahoo.wiki.webservice.data.config.auto.ConfigLoader;
 import com.yahoo.wiki.webservice.data.config.auto.StaticWikiConfigLoader;
+import com.yahoo.wiki.webservice.data.config.dimension.GenericDimensions;
+import com.yahoo.wiki.webservice.data.config.metric.GenericMetricLoader;
+import com.yahoo.wiki.webservice.data.config.table.GenericTableLoader;
 
 import java.util.LinkedHashSet;
 
@@ -38,16 +41,16 @@ public class WikiJerseyTestBinder extends JerseyTestBinder {
 
     @Override
     public LinkedHashSet<DimensionConfig> getDimensionConfiguration() {
-        return GenericBinder.getInstance(configLoader).buildDimensionConfigurations();
+        return new LinkedHashSet<>(new GenericDimensions(configLoader).getAllDimensionConfigurations());
     }
 
     @Override
     public MetricLoader getMetricLoader() {
-        return GenericBinder.getInstance(configLoader).buildMetricLoader();
+        return new GenericMetricLoader(configLoader);
     }
 
     @Override
     public TableLoader getTableLoader() {
-        return GenericBinder.getInstance(configLoader).buildTableLoader();
+        return new GenericTableLoader(configLoader);
     }
 }

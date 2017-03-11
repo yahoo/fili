@@ -16,8 +16,11 @@ import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.wiki.webservice.data.config.auto.ConfigLoader;
 import com.yahoo.wiki.webservice.data.config.auto.DruidConfig;
 
+import com.sun.istack.internal.NotNull;
+
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -39,25 +42,30 @@ public class GenericDimensions {
     /**
      * Construct the dimension configurations.
      */
-    public GenericDimensions(ConfigLoader configLoader) {
-        DruidConfig config = configLoader.getTableNames().get(0);
-        this.dimensionConfigs = Collections.unmodifiableSet(
-                config.getDimensions().stream()
-                        .map(
-                                dimensionName -> new GenericDimensionConfig(
-                                        dimensionName,
-                                        EnumUtils.camelCase(dimensionName),
-                                        getDefaultKeyValueStore(EnumUtils.camelCase(dimensionName)),
-                                        getDefaultSearchProvider(EnumUtils.camelCase(dimensionName)),
-                                        getDefaultFields()
-                                )
-                        )
-                        .collect(Collectors.toSet())
-        );
+    public GenericDimensions(@NotNull ConfigLoader configLoader) {
+        if (configLoader.getTableNames().size() > 0) {
+            DruidConfig config = configLoader.getTableNames().get(0);
+            dimensionConfigs = Collections.unmodifiableSet(
+                    config.getDimensions().stream()
+                            .map(
+                                    dimensionName -> new GenericDimensionConfig(
+                                            dimensionName,
+                                            EnumUtils.camelCase(dimensionName),
+                                            getDefaultKeyValueStore(EnumUtils.camelCase(dimensionName)),
+                                            getDefaultSearchProvider(EnumUtils.camelCase(dimensionName)),
+                                            getDefaultFields()
+                                    )
+                            )
+                            .collect(Collectors.toSet())
+            );
 
-        wikiApiDimensionNameToConfig = dimensionConfigs.stream().collect(
-                StreamUtils.toLinkedMap(DimensionConfig::getApiName, Function.identity())
-        );
+            wikiApiDimensionNameToConfig = dimensionConfigs.stream().collect(
+                    StreamUtils.toLinkedMap(DimensionConfig::getApiName, Function.identity())
+            );
+        } else {
+            dimensionConfigs = new HashSet<>();
+            wikiApiDimensionNameToConfig = new LinkedHashMap<>();
+        }
     }
 
     /**
