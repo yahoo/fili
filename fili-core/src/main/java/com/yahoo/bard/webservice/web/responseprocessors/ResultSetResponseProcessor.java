@@ -41,7 +41,9 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.ws.rs.core.Response.Status;
 
@@ -154,23 +156,17 @@ public class ResultSetResponseProcessor extends MappingResponseProcessor impleme
      */
     public ResultSet buildResultSet(JsonNode json, DruidAggregationQuery<?> druidQuery, DateTimeZone dateTimeZone) {
 
-        LinkedHashSet<Column> columns = druidQuery.getAggregations().stream()
-                .map(Aggregation::getName)
-                .map(MetricColumn::new)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-
-        columns.addAll(
+        LinkedHashSet<Column> columns = Stream.of(
+                druidQuery.getDimensions().stream()
+                        .map(DimensionColumn::new),
+                druidQuery.getAggregations().stream()
+                        .map(Aggregation::getName)
+                        .map(MetricColumn::new),
                 druidQuery.getPostAggregations().stream()
                         .map(PostAggregation::getName)
                         .map(MetricColumn::new)
-                        .collect(Collectors.toList())
-        );
 
-        columns.addAll(
-                druidQuery.getDimensions().stream()
-                .map(DimensionColumn::new)
-                .collect(Collectors.toList())
-        );
+        ).flatMap(Function.identity()).collect(Collectors.toCollection(LinkedHashSet::new));
 
 
         ResultSetSchema resultSetSchema = new ResultSetSchema(granularity, columns);

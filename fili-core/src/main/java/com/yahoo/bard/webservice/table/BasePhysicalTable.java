@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
-import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
@@ -63,12 +62,6 @@ public abstract class BasePhysicalTable implements PhysicalTable {
         );
     }
 
-    // TODO check if REALLY needed
-    @Override
-    public boolean hasLogicalMapping(String logicalName) {
-        return schema.containsLogicalName(logicalName);
-    }
-
     @Override
     public String getName() {
         return name;
@@ -93,16 +86,6 @@ public abstract class BasePhysicalTable implements PhysicalTable {
         return schema.getPhysicalColumnName(logicalName);
     }
 
-    @Override
-    public Set<Column> getColumns() {
-        return getSchema().getColumns();
-    }
-
-    @Override
-    public ZonedTimeGrain getTimeGrain() {
-        return schema.getTimeGrain();
-    }
-
     /**
      * Update the working intervals with values from a map.
      *
@@ -118,7 +101,7 @@ public abstract class BasePhysicalTable implements PhysicalTable {
         ));
     }
 
-    public void setAvailability(Availability availability) {
+    protected void setAvailability(Availability availability) {
         this.availability = availability;
     }
 }

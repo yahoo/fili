@@ -26,7 +26,6 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 
-import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -34,14 +33,17 @@ class DruidResponseParserSpec extends Specification {
     private static final ObjectMapper MAPPER = new ObjectMapper()
             .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
 
-    @Shared DimensionDictionary dimensionDictionary
+    DimensionDictionary dimensionDictionary
 
-    Set<Column> dimensionColumns
-    Column ageColumn
-    Column genderColumn
-    Column unknownColumn
+    Set<DimensionColumn> dimensionColumns
+    DimensionColumn ageColumn
+    DimensionColumn genderColumn
+    DimensionColumn unknownColumn
+    DruidResponseParser responseParser
 
     def setup() {
+        responseParser = new DruidResponseParser()
+
         def dimensionNames = [
                 "ageBracket",
                 "gender",
@@ -131,7 +133,7 @@ class DruidResponseParserSpec extends Specification {
         Column pageViewsColumn = schema.getColumn("pageViews", MetricColumn.class).get()
         Column timeSpentColumn = schema.getColumn("time_spent", MetricColumn.class).get()
 
-        ResultSet resultSet = new DruidResponseParser().parse(jsonResult, schema, DefaultQueryType.GROUP_BY, DateTimeZone.UTC)
+        ResultSet resultSet = responseParser.parse(jsonResult, schema, DefaultQueryType.GROUP_BY, DateTimeZone.UTC)
 
         expect:
         resultSet != null
@@ -140,7 +142,6 @@ class DruidResponseParserSpec extends Specification {
 
         and:
         Result firstResult = resultSet.get(0)
-        List<Column> columns = new ArrayList<>(schema.columns)
         firstResult.getDimensionRow(genderColumn)?.get(description) == "u"
         firstResult.getDimensionRow(ageColumn)?.get(description) == "4"
         firstResult.getDimensionRow(unknownColumn)?.get(description) == ""
@@ -185,7 +186,7 @@ class DruidResponseParserSpec extends Specification {
 
         /* build Schema */
         ResultSetSchema schema = new ResultSetSchema(DAY, [new DimensionColumn(dimensionDictionary.findByApiName("ageBracket")), new MetricColumn("pageViews")].toSet())
-        ResultSet resultSet = new DruidResponseParser().parse(jsonResult, schema, DefaultQueryType.TOP_N, DateTimeZone.UTC)
+        ResultSet resultSet = responseParser.parse(jsonResult, schema, DefaultQueryType.TOP_N, DateTimeZone.UTC)
 
         expect:
         resultSet != null
@@ -229,7 +230,7 @@ class DruidResponseParserSpec extends Specification {
 
         /* build Schema */
         ResultSetSchema schema = new ResultSetSchema(DAY, [new MetricColumn("pageViews"), new MetricColumn("lookback_pageViews"), new MetricColumn("retentionPageViews")].toSet())
-        ResultSet resultSet = new DruidResponseParser().parse(jsonResult, schema, DefaultQueryType.LOOKBACK, DateTimeZone.UTC)
+        ResultSet resultSet = responseParser.parse(jsonResult, schema, DefaultQueryType.LOOKBACK, DateTimeZone.UTC)
 
         expect:
         resultSet != null
@@ -275,7 +276,7 @@ class DruidResponseParserSpec extends Specification {
         JsonNode jsonResult = MAPPER.readTree(parser)
 
         Schema schema = buildSchema(["pageViews", "lookback_pageViews", "retentionPageViews"])
-        ResultSet resultSet = new DruidResponseParser().parse(jsonResult, schema, DefaultQueryType.GROUP_BY, DateTimeZone.UTC)
+        ResultSet resultSet = responseParser.parse(jsonResult, schema, DefaultQueryType.GROUP_BY, DateTimeZone.UTC)
         Column pageViewsColumn = schema.getColumn("pageViews", MetricColumn.class).get()
         Column lookbackPageviewsColumn = schema.getColumn("lookback_pageViews", MetricColumn.class).get()
         Column retentionPageviewsColumn = schema.getColumn("retentionPageViews", MetricColumn.class).get()
@@ -396,7 +397,6 @@ class DruidResponseParserSpec extends Specification {
 
     def "Attempting to parse an unknown query type throws an UnsupportedOperationException"() {
         given:
-        DruidResponseParser responseParser = new DruidResponseParser()
         QueryType mysteryType = Mock(QueryType)
 
         when:
@@ -446,15 +446,13 @@ class DruidResponseParserSpec extends Specification {
 
     ResultSet buildResultSet(String druidResponse, ResultSetSchema schema, DefaultQueryType queryType) {
         JsonNode jsonResult = MAPPER.readTree(new JsonFactory().createParser(druidResponse))
-        return new DruidResponseParser().parse(jsonResult, schema, queryType, DateTimeZone.UTC)
+        return responseParser.parse(jsonResult, schema, queryType, DateTimeZone.UTC)
     }
 
     ResultSetSchema buildSchema(List<String> metricNames) {
-
         metricNames.each {
             dimensionColumns.add(new MetricColumn(it))
         }
-
         new ResultSetSchema(DAY, dimensionColumns)
     }
 }

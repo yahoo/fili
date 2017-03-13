@@ -13,12 +13,13 @@ import com.google.common.collect.ImmutableMap;
 
 import org.joda.time.Interval;
 
-import avro.shaded.com.google.common.collect.Sets;
-
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -29,7 +30,7 @@ public class ImmutableAvailability implements Availability {
 
     private final TableName name;
     private final Map<Column, List<Interval>> columnIntervals;
-    private final Set<TableName> dataSourceNames;
+    private final SortedSet<TableName> dataSourceNames;
     /**
      * Constructor.
      *
@@ -39,7 +40,9 @@ public class ImmutableAvailability implements Availability {
     public ImmutableAvailability(TableName tableName, Map<Column, List<Interval>> map) {
         this.name = tableName;
         columnIntervals = ImmutableMap.copyOf(map);
-        dataSourceNames = Sets.newHashSet(name);
+        dataSourceNames = Collections.unmodifiableSortedSet(
+                Collections.unmodifiableSortedSet(new TreeSet<>(Collections.singleton(tableName)))
+        );
     }
 
     /**
@@ -103,7 +106,7 @@ public class ImmutableAvailability implements Availability {
     }
 
     @Override
-    public Set<TableName> getDataSourceNames() {
+    public SortedSet<TableName> getDataSourceNames() {
         return dataSourceNames;
     }
 

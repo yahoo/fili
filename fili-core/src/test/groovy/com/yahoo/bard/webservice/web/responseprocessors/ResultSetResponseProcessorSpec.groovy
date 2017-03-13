@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.web.responseprocessors
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
+import static com.yahoo.bard.webservice.druid.model.DefaultQueryType.GROUP_BY
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.data.DruidResponseParser
@@ -24,6 +25,7 @@ import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
+import com.yahoo.bard.webservice.druid.model.query.Granularity
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.logging.RequestLog
 import com.yahoo.bard.webservice.table.ConcretePhysicalTable
@@ -32,6 +34,8 @@ import com.yahoo.bard.webservice.web.DataApiRequest
 import com.yahoo.bard.webservice.web.ResponseFormatType
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.google.common.collect.Sets
 
 import org.joda.time.DateTimeZone
@@ -47,7 +51,11 @@ import javax.ws.rs.core.Response
 import javax.ws.rs.core.UriInfo
 
 class ResultSetResponseProcessorSpec extends Specification {
+
     private static final ObjectMappersSuite MAPPERS = new ObjectMappersSuite()
+
+    private static final ObjectMapper MAPPER = new ObjectMapper()
+            .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
 
     HttpResponseMaker httpResponseMaker
     GroupByQuery groupByQuery
@@ -124,7 +132,7 @@ class ResultSetResponseProcessorSpec extends Specification {
         postAgg2.getName() >> "otherPostAgg"
 
 
-        DefaultQueryType queryType = DefaultQueryType.GROUP_BY
+        DefaultQueryType queryType = GROUP_BY
         groupByQuery.getQueryType() >> queryType
         groupByQuery.getDimensions() >> dimensions
         groupByQuery.getAggregations() >> aggregations
@@ -281,5 +289,40 @@ class ResultSetResponseProcessorSpec extends Specification {
         responseCaptor.getStatus() == 499
         entity.contains("myreason")
         entity.contains("body123")
+    }
+
+    def "Build the schema from the query"() {
+        setup:
+        ResultSetResponseProcessor processor = new ResultSetResponseProcessor(
+                apiRequest,
+                responseEmitter,
+                druidResponseParser,
+                MAPPERS,
+                httpResponseMaker
+        )
+
+        Granularity granularity = apiRequest.granularity
+        DateTimeZone dateTimeZone = Mock(DateTimeZone)
+        Dimension dim = Mock(Dimension) { getApiName() >> dimension1Name }
+        Aggregation agg = Mock(Aggregation) { getName() >> metric1Name }
+        PostAggregation postAgg = Mock(PostAggregation) { getName() >> metric2Name }
+        DruidAggregationQuery<?> query = Mock(DruidAggregationQuery){
+            getAggregations() >> [agg]
+            getPostAggregations() >> [postAgg]
+            getDimensions() >> [dim]
+            getQueryType() >> GROUP_BY
+        }
+
+        druidResponseParser.parse(_, _, _, _) >> {
+            JsonNode json, Schema schema, DefaultQueryType type, DateTimeZone tz ->
+            new ResultSet(schema, [])
+        }
+        ResultSet actual = processor.buildResultSet(MAPPER.readTree("[]"), query, dateTimeZone)
+
+        expect:
+        actual.schema == new ResultSetSchema(
+                granularity,
+                [new DimensionColumn(dim), new MetricColumn(metric1Name), new MetricColumn(metric2Name)]
+        )
     }
 }

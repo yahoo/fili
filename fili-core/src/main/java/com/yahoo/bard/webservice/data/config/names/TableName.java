@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.data.config.names;
 /**
  * Marker interface for objects that can be treated as a table name in druid or web services.
  */
-public interface TableName {
+public interface TableName extends Comparable<TableName> {
 
     /**
      * Return a string representation of a table name.
@@ -42,5 +42,16 @@ public interface TableName {
                 return false;
             }
         };
+    }
+
+    /**
+     * Give tables a canonical ordering by using their asName.
+     *
+     * @param other  The second table being compared
+     *
+     * @return the equivalent ordering of the string names of the relevant tables
+     */
+    default int compareTo(TableName other) {
+        return asName().compareTo(other.asName());
     }
 }

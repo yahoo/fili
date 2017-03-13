@@ -31,16 +31,12 @@ public interface PhysicalTable extends Table {
     DateTime getTableAlignment();
 
     /**
-     * Determine whether or not this PhysicalTable has a mapping for a specific logical name.
+     * Get the schema for this physical table.
+     * Schemas contain granularity and column definitions.
      *
-     * @param logicalName  Logical name to check
-     *
-     * @return True if contains a non-default mapping for the logical name, false otherwise
-     *
-     * @deprecated This may no longer be needed
+     * @return A physical table schema.
      */
-    @Deprecated
-    boolean hasLogicalMapping(String logicalName);
+    PhysicalTableSchema getSchema();
 
     /**
      * Translate a logical name into a physical column name. If no translation exists (i.e. they are the same),
@@ -59,6 +55,20 @@ public interface PhysicalTable extends Table {
     String getPhysicalColumnName(String logicalName);
 
     /**
+     * Determine whether or not this PhysicalTable has a mapping for a specific logical name.
+     *
+     * @param logicalName  Logical name to check
+     *
+     * @return True if contains a non-default mapping for the logical name, false otherwise
+     *
+     * @deprecated This may no longer be needed
+     */
+    @Deprecated
+    default boolean hasLogicalMapping(String logicalName) {
+        return getSchema().containsLogicalName(logicalName);
+    }
+
+    /**
      * Get the columns from the schema for this physical table.
      *
      * @return The columns of this physical table
@@ -66,10 +76,13 @@ public interface PhysicalTable extends Table {
      * @deprecated In favor of getting the columns directly from the schema
      */
     @Deprecated
-    Set<Column> getColumns();
+    default Set<Column> getColumns() {
+        return getSchema().getColumns();
+    }
 
     /**
      * Get the time grain from granularity.
+     * Physical tables must have time zone associated time grains.
      *
      * @return The time grain of this physical table
      *
@@ -79,12 +92,4 @@ public interface PhysicalTable extends Table {
     default ZonedTimeGrain getTimeGrain() {
         return getSchema().getTimeGrain();
     }
-
-    /**
-     * Get the time grain from the physical table.
-     * (This is more specific than the granularity from the Table interface)
-     *
-     * @return A physical table schema.
-     */
-    PhysicalTableSchema getSchema();
 }

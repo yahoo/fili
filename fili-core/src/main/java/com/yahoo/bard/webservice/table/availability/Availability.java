@@ -10,7 +10,7 @@ import org.joda.time.Interval;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.SortedSet;
 
 /**
  * Availability describes the intervals available by column for a table.
@@ -22,7 +22,7 @@ public interface Availability {
      *
      * @return A set of names for datasources backing this table
      */
-    Set<TableName> getDataSourceNames();
+    SortedSet<TableName> getDataSourceNames();
 
     /**
      * The availability for a given column.
