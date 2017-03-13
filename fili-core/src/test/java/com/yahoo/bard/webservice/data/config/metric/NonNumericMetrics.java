@@ -29,6 +29,8 @@ import java.util.List;
  */
 public class NonNumericMetrics {
 
+    public static final String UNEXPECTED_MISSING_COLUMN = "Unexpected missing column ";
+
     /**
      * Returns a list of LogicalMetrics whose names are those intended to represent non-numeric metrics.
      *
@@ -98,7 +100,7 @@ public class NonNumericMetrics {
         protected Result map(Result result, ResultSetSchema schema) {
             MetricColumn stringColumn = schema.getColumn(A_STRING_METRIC.asName(), MetricColumn.class)
                     .orElseThrow(
-                            () -> new IllegalStateException("Unexpected missing column " + A_STRING_METRIC.asName())
+                            () -> new IllegalStateException(UNEXPECTED_MISSING_COLUMN + A_STRING_METRIC.asName())
             );
             String stringValue = result.getMetricValueAsString(stringColumn);
             return result.withMetricValue(stringColumn, stringValue + stringValue);
@@ -125,7 +127,7 @@ public class NonNumericMetrics {
         @Override
         protected Result map(Result result, ResultSetSchema schema) {
             MetricColumn column = schema.getColumn(A_BOOLEAN_METRIC.asName(), MetricColumn.class).orElseThrow(
-                    () -> new IllegalStateException("Unexpected missing column " + A_BOOLEAN_METRIC.asName())
+                    () -> new IllegalStateException(UNEXPECTED_MISSING_COLUMN + A_BOOLEAN_METRIC.asName())
             );
             return result.getMetricValueAsBoolean(column) ? result : null;
         }
@@ -152,7 +154,7 @@ public class NonNumericMetrics {
         @Override
         protected Result map(Result result, ResultSetSchema schema) {
             MetricColumn column = schema.getColumn(A_JSON_NODE_METRIC.asName(), MetricColumn.class).orElseThrow(
-                    () -> new IllegalStateException("Unexpected missing column " + A_JSON_NODE_METRIC.asName())
+                    () -> new IllegalStateException(UNEXPECTED_MISSING_COLUMN + A_JSON_NODE_METRIC.asName())
             );
             ObjectNode node = (ObjectNode) result.getMetricValueAsJsonNode(column);
             node.put("length", node.get("clarification").textValue().length());
@@ -180,7 +182,7 @@ public class NonNumericMetrics {
         @Override
         protected Result map(Result result, ResultSetSchema schema) {
             MetricColumn column = schema.getColumn(A_NULL_METRIC.asName(), MetricColumn.class).orElseThrow(
-                    () -> new IllegalStateException("Unexpected missing column " + A_NULL_METRIC.asName())
+                    () -> new IllegalStateException(UNEXPECTED_MISSING_COLUMN + A_NULL_METRIC.asName())
             );
 
             Object nullMetric = result.getMetricValue(column);

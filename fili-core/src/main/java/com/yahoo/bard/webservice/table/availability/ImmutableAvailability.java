@@ -40,9 +40,9 @@ public class ImmutableAvailability implements Availability {
     public ImmutableAvailability(TableName tableName, Map<Column, List<Interval>> map) {
         this.name = tableName;
         columnIntervals = ImmutableMap.copyOf(map);
-        dataSourceNames = Collections.unmodifiableSortedSet(
-                Collections.unmodifiableSortedSet(new TreeSet<>(Collections.singleton(tableName)))
-        );
+        SortedSet<TableName> names = new TreeSet<>(TableName.COMPARATOR);
+        names.add(tableName);
+        dataSourceNames = Collections.unmodifiableSortedSet(Collections.unmodifiableSortedSet(names));
     }
 
     /**

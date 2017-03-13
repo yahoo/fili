@@ -2,10 +2,12 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.names;
 
+import java.util.Comparator;
+
 /**
  * Marker interface for objects that can be treated as a table name in druid or web services.
  */
-public interface TableName extends Comparable<TableName> {
+public interface TableName {
 
     /**
      * Return a string representation of a table name.
@@ -44,14 +46,5 @@ public interface TableName extends Comparable<TableName> {
         };
     }
 
-    /**
-     * Give tables a canonical ordering by using their asName.
-     *
-     * @param other  The second table being compared
-     *
-     * @return the equivalent ordering of the string names of the relevant tables
-     */
-    default int compareTo(TableName other) {
-        return asName().compareTo(other.asName());
-    }
+    Comparator<TableName> COMPARATOR = Comparator.comparing(TableName::asName);
 }
