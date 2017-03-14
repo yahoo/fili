@@ -42,7 +42,7 @@ public class GenericDimensions {
     /**
      * Construct the dimension configurations.
      */
-    public GenericDimensions(@NotNull ConfigLoader configLoader) {
+    public GenericDimensions(ConfigLoader configLoader) {
         if (configLoader.getTableNames().size() > 0) {
             DruidConfig config = configLoader.getTableNames().get(0);
             dimensionConfigs = Collections.unmodifiableSet(
@@ -114,7 +114,7 @@ public class GenericDimensions {
     }
 
     private LinkedHashSet<DimensionField> getDefaultFields() {
-        return Utils.<DimensionField>asLinkedHashSet(
+        return Utils.asLinkedHashSet(
                 GenericDimensionField.ID,
                 GenericDimensionField.DESC
         );

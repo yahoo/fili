@@ -21,7 +21,7 @@ import java.util.LinkedHashSet;
 /**
  * Wiki specialization of the Abstract Binder factory, applying Wiki configuration objects.
  */
-public class WikiBinderFactory extends AbstractBinderFactory {
+public class GenericBinderFactory extends AbstractBinderFactory {
     private static ConfigLoader configLoader;
 
     @Override

@@ -125,7 +125,7 @@ public class DruidNavigator implements ConfigLoader {
                     successCallback.invoke(rootNode);
                 },
                 (statusCode, reasonPhrase, responseBody) -> {
-                    LOG.info("HTTPError " + statusCode + " - " + reasonPhrase);
+                    LOG.info("HTTPError " + statusCode + " - " + reasonPhrase + " for " + url);
                 },
                 (throwable) -> {
                     LOG.info("Error thrown while fetching " + url + ". " + throwable.getMessage());

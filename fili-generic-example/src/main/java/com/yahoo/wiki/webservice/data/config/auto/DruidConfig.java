@@ -11,13 +11,13 @@ import java.util.List;
  * Created by kevin on 3/3/2017.
  */
 public interface DruidConfig {
-    public String getName();
+    String getName();
 
-    public TableName getTableName();
+    TableName getTableName();
 
-    public List<String> getMetrics();
+    List<String> getMetrics();
 
-    public List<String> getDimensions();
+    List<String> getDimensions();
 
-    public List<TimeGrain> getValidTimeGrains();
+    List<TimeGrain> getValidTimeGrains();
 }
