@@ -16,7 +16,7 @@ public interface PhysicalTableResolver {
      * Choose the best fit Physical Table from a table group.
      *
      * @param candidateTables  The tables being considered for match
-     * @param requestConstraints contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
+     * @param requestConstraints  Contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
      *
      * @return The table, if any, that satisfies all criteria and best matches the query
      *

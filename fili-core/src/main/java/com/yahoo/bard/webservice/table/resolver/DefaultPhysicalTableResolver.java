@@ -50,16 +50,11 @@ public class DefaultPhysicalTableResolver extends BasePhysicalTableResolver {
 
     @Override
     public List<PhysicalTableMatcher> getMatchers(QueryPlanningConstraint requestConstraints) {
-        SchemaPhysicalTableMatcher schemaMatcher =
-                new SchemaPhysicalTableMatcher(requestConstraints);
-
-        TimeAlignmentPhysicalTableMatcher timeAlignmentMatcher =
-                new TimeAlignmentPhysicalTableMatcher(requestConstraints);
-
-        AggregatableDimensionsMatcher aggregatabilityMatcher =
-                new AggregatableDimensionsMatcher(requestConstraints);
-
-        return Arrays.asList(schemaMatcher, aggregatabilityMatcher, timeAlignmentMatcher);
+        return Arrays.asList(
+                new SchemaPhysicalTableMatcher(requestConstraints),
+                new AggregatableDimensionsMatcher(requestConstraints),
+                new TimeAlignmentPhysicalTableMatcher(requestConstraints)
+        );
     }
 
     @Override

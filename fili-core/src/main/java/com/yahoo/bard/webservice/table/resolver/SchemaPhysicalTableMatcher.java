@@ -54,7 +54,7 @@ public class SchemaPhysicalTableMatcher implements PhysicalTableMatcher {
     public NoMatchFoundException noneFoundException() {
         String logicalTableName = requestConstraints.getLogicalTable().getName();
         Set<String> logicalMetrics = requestConstraints.getLogicalMetricNames();
-        Set<String> dimensions = requestConstraints.getRequestDimensionNames();
+        Set<String> dimensions = requestConstraints.getAllDimensionNames();
         String grainName = requestConstraints.getMinimumGranularity().getName();
         LOG.error(
                 MESSAGE_FORMAT.logFormat(logicalTableName, dimensions, logicalMetrics, grainName)

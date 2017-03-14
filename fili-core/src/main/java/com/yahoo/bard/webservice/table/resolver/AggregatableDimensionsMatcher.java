@@ -31,7 +31,7 @@ public class AggregatableDimensionsMatcher implements PhysicalTableMatcher {
     /**
      * Constructor saves metrics, dimensions, coarsest time grain, and logical table name (for logging).
      *
-     * @param requestConstraints contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
+     * @param requestConstraints  Contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
      */
     public AggregatableDimensionsMatcher(QueryPlanningConstraint requestConstraints) {
         this.requestConstraints = requestConstraints;

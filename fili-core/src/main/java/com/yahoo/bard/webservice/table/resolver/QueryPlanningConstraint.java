@@ -10,6 +10,7 @@ import com.yahoo.bard.webservice.web.DataApiRequest;
 
 import org.joda.time.Interval;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -23,6 +24,7 @@ public class QueryPlanningConstraint extends DataSourceConstraint {
     private final Set<LogicalMetric> logicalMetrics;
     private final Granularity minimumGranularity;
     private final Granularity requestGranularity;
+    private final Set<String> logicalMetricNames;
 
     /**
      * Constructor.
@@ -34,10 +36,12 @@ public class QueryPlanningConstraint extends DataSourceConstraint {
         super(dataApiRequest, templateDruidQuery);
 
         this.logicalTable = dataApiRequest.getTable();
-        this.intervals = dataApiRequest.getIntervals();
+        this.intervals = Collections.unmodifiableSet(dataApiRequest.getIntervals());
+        this.logicalMetrics = Collections.unmodifiableSet(dataApiRequest.getLogicalMetrics());
         this.minimumGranularity = new RequestQueryGranularityResolver().apply(dataApiRequest, templateDruidQuery);
         this.requestGranularity = dataApiRequest.getGranularity();
-        this.logicalMetrics = dataApiRequest.getLogicalMetrics();
+        this.logicalMetricNames = Collections.unmodifiableSet(
+                logicalMetrics.stream().map(LogicalMetric::getName).collect(Collectors.toSet()));
     }
 
     public LogicalTable getLogicalTable() {
@@ -53,7 +57,7 @@ public class QueryPlanningConstraint extends DataSourceConstraint {
     }
 
     public Set<String> getLogicalMetricNames() {
-        return getLogicalMetrics().stream().map(LogicalMetric::getName).collect(Collectors.toSet());
+        return logicalMetricNames;
     }
 
     public Granularity getMinimumGranularity() {

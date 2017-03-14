@@ -7,6 +7,7 @@ import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -23,6 +24,9 @@ public class DataSourceConstraint {
     private final Set<Dimension> metricDimensions;
     private final Set<String> metricNames;
     private final Map<Dimension, Set<ApiFilter>> apiFilters;
+    private final Set<Dimension> allDimensions;
+    private final Set<String> allDimensionNames;
+    private final Set<String> allColumnNames;
 
     /**
      * Constructor.
@@ -31,19 +35,27 @@ public class DataSourceConstraint {
      * @param templateDruidQuery  Query containing metric constraint information.
      */
     public DataSourceConstraint(DataApiRequest dataApiRequest, DruidAggregationQuery<?> templateDruidQuery) {
-        this.requestDimensions = dataApiRequest.getDimensions();
-        this.filterDimensions = dataApiRequest.getFilterDimensions();
-        this.metricDimensions = templateDruidQuery.getMetricDimensions();
-        this.metricNames = templateDruidQuery.getDependentFieldNames();
-        this.apiFilters = dataApiRequest.getFilters();
+        this.requestDimensions = Collections.unmodifiableSet(dataApiRequest.getDimensions());
+        this.filterDimensions = Collections.unmodifiableSet(dataApiRequest.getFilterDimensions());
+        this.metricDimensions = Collections.unmodifiableSet(templateDruidQuery.getMetricDimensions());
+        this.metricNames = Collections.unmodifiableSet(templateDruidQuery.getDependentFieldNames());
+        this.apiFilters = Collections.unmodifiableMap(dataApiRequest.getFilters());
+        this.allDimensions = Collections.unmodifiableSet(Stream.of(
+                getRequestDimensions().stream(),
+                getFilterDimensions().stream(),
+                getMetricDimensions().stream()
+        ).flatMap(Function.identity()).collect(Collectors.toSet()));
+        this.allDimensionNames = Collections.unmodifiableSet(allDimensions.stream()
+                .map(Dimension::getApiName)
+                .collect(Collectors.toSet()));
+        this.allColumnNames = Collections.unmodifiableSet(Stream.concat(
+                allDimensionNames.stream(),
+                metricNames.stream()
+        ).collect(Collectors.toSet()));
     }
 
     public Set<Dimension> getRequestDimensions() {
         return requestDimensions;
-    }
-
-    public Set<String> getRequestDimensionNames() {
-        return getRequestDimensions().stream().map(Dimension::getApiName).collect(Collectors.toSet());
     }
 
     public Set<Dimension> getFilterDimensions() {
@@ -59,22 +71,15 @@ public class DataSourceConstraint {
     }
 
     public Set<Dimension> getAllDimensions() {
-        return Stream.of(
-                getRequestDimensions().stream(),
-                getFilterDimensions().stream(),
-                getMetricDimensions().stream()
-        ).flatMap(Function.identity()).collect(Collectors.toSet());
+        return allDimensions;
     }
 
     public Set<String> getAllDimensionNames() {
-        return getAllDimensions().stream().map(Dimension::getApiName).collect(Collectors.toSet());
+        return allDimensionNames;
     }
 
     public Set<String> getAllColumnNames() {
-        return Stream.of(
-                getAllDimensionNames().stream(),
-                getMetricNames().stream()
-        ).flatMap(Function.identity()).collect(Collectors.toSet());
+        return allColumnNames;
     }
 
     public Map<Dimension, Set<ApiFilter>> getApiFilters() {

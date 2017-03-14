@@ -78,6 +78,9 @@ class SchemaPhysicalTableMatcherSpec extends Specification {
         query.getDependentFieldNames() >> ([] as Set)
         request.getFilterDimensions() >> []
         request.getDimensions() >> (dimSet)
+        request.getFilters() >> Collections.emptyMap()
+        request.getIntervals() >> []
+        request.getLogicalMetrics() >> []
 
         dimensionDictionary = new DimensionDictionary(dimSet)
         schemaPhysicalTableMatcher = new SchemaPhysicalTableMatcher(
