@@ -35,7 +35,7 @@ public class DruidNavigator implements ConfigLoader {
     }
 
     @Override
-    public List<? extends DruidConfig> getTableNames() {
+    public List<? extends DataSourceConfiguration> getTableNames() {
         String url = COORDINATOR_BASE + "datasources/";
         getJson(rootNode -> {
             if (rootNode.isArray()) {
@@ -65,16 +65,16 @@ public class DruidNavigator implements ConfigLoader {
     private void loadMetrics(final TableConfig table, final JsonNode rootNode) {
         JsonNode metricsArray = rootNode.get("metrics");
         String[] metrics = metricsArray.asText().split(",");
-        for (String m : metrics) {
-            table.addMetric(m);
+        for (String metric : metrics) {
+            table.addMetric(metric);
         }
     }
 
     private void loadDimensions(final TableConfig tableName, final JsonNode rootNode) {
         JsonNode dimensionsArray = rootNode.get("dimensions");
         String[] dimensions = dimensionsArray.asText().split(",");
-        for (String d : dimensions) {
-            tableName.addDimension(d);
+        for (String dimension : dimensions) {
+            tableName.addDimension(dimension);
         }
     }
 

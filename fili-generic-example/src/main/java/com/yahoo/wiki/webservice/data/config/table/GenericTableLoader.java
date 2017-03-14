@@ -16,7 +16,7 @@ import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.wiki.webservice.data.config.auto.ConfigLoader;
-import com.yahoo.wiki.webservice.data.config.auto.DruidConfig;
+import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration;
 import com.yahoo.wiki.webservice.data.config.dimension.GenericDimensions;
 import com.yahoo.wiki.webservice.data.config.metric.MetricNameGenerator;
 
@@ -47,10 +47,9 @@ public class GenericTableLoader extends BaseTableLoader {
     /**
      * Constructor.
      */
-    public GenericTableLoader(ConfigLoader configLoader) {
-        GenericDimensions genericDimensions = new GenericDimensions(configLoader);
+    public GenericTableLoader(ConfigLoader configLoader, GenericDimensions genericDimensions) {
         this.configLoader = configLoader;
-        configureSample(genericDimensions);
+        configureTables(genericDimensions);
     }
 
     /**
@@ -58,27 +57,28 @@ public class GenericTableLoader extends BaseTableLoader {
      *
      * @param genericDimensions  The dimensions to load into test tables.
      */
-    private void configureSample(GenericDimensions genericDimensions) {
+    private void configureTables(GenericDimensions genericDimensions) {
+        configLoader.getTableNames().forEach(dataSourceConfiguration -> {
+            TimeGrain defaultTimeGrain = dataSourceConfiguration.getValidTimeGrains()
+                    .get(0); //TODO this should probably have it's own method
 
-        for (DruidConfig druidConfig : configLoader.getTableNames()) {
-            TimeGrain defaultTimeGrain = druidConfig.getValidTimeGrains().get(0);
-
-            Set<DimensionConfig> dimsBasefactDruidTable = getBaseFactDruidTable(genericDimensions, druidConfig);
+            Set<DimensionConfig> dimsBasefactDruidTable = getBaseFactDruidTable(
+                    genericDimensions,
+                    dataSourceConfiguration
+            );
 
             Set<PhysicalTableDefinition> physicalTableDefinitions = getPhysicalTableDefinitions(
-                    druidConfig,
+                    dataSourceConfiguration,
                     defaultTimeGrain,
                     dimsBasefactDruidTable
             );
 
-            tableDefinitions.put(druidConfig.getName(), physicalTableDefinitions);
-
-            MetricNameGenerator.setDefaultTimeGrain(defaultTimeGrain);
+            tableDefinitions.put(dataSourceConfiguration.getName(), physicalTableDefinitions);
 
             druidMetricNames.put(
-                    druidConfig.getName(),
+                    dataSourceConfiguration.getName(),
                     new LinkedHashSet<>(
-                            druidConfig.getMetrics()
+                            dataSourceConfiguration.getMetrics()
                                     .stream()
                                     .map(MetricNameGenerator::getDruidMetric)
                                     .collect(Collectors.toList())
@@ -86,32 +86,33 @@ public class GenericTableLoader extends BaseTableLoader {
             );
 
             apiMetricNames.put(
-                    druidConfig.getName(),
+                    dataSourceConfiguration.getName(),
                     new LinkedHashSet<>(
-                            druidConfig.getMetrics()
+                            dataSourceConfiguration.getMetrics()
                                     .stream()
-                                    .map(MetricNameGenerator::getFiliMetricName)
+                                    .map(metricName -> MetricNameGenerator.getFiliMetricName(metricName,
+                                            dataSourceConfiguration.getValidTimeGrains()))
                                     .collect(Collectors.toList())
                     )
             );
 
             validGrains.put(
-                    druidConfig.getName(),
-                    getGranularities(druidConfig)
+                    dataSourceConfiguration.getName(),
+                    getGranularities(dataSourceConfiguration)
             );
+        });
 
-        }
 
     }
 
-    private Set<Granularity> getGranularities(DruidConfig druidConfig) {
-        LinkedHashSet<Granularity> granularities = new LinkedHashSet<>(druidConfig.getValidTimeGrains());
+    private Set<Granularity> getGranularities(DataSourceConfiguration dataSourceConfiguration) {
+        LinkedHashSet<Granularity> granularities = new LinkedHashSet<>(dataSourceConfiguration.getValidTimeGrains());
         granularities.add(AllGranularity.INSTANCE);
         return granularities;
     }
 
     private Set<PhysicalTableDefinition> getPhysicalTableDefinitions(
-            final DruidConfig druidConfig,
+            final DataSourceConfiguration dataSourceConfiguration,
             TimeGrain timeGrain,
             final Set<DimensionConfig> dimsBasefactDruidTable
     ) {
@@ -121,16 +122,19 @@ public class GenericTableLoader extends BaseTableLoader {
         );
         return Utils.asLinkedHashSet(
                 new PhysicalTableDefinition(
-                        druidConfig.getTableName(),
+                        dataSourceConfiguration.getTableName(),
                         zonedTimeGrain,
                         dimsBasefactDruidTable
                 )
         );
     }
 
-    private Set<DimensionConfig> getBaseFactDruidTable(GenericDimensions genericDimensions, DruidConfig druidConfig) {
+    private Set<DimensionConfig> getBaseFactDruidTable(
+            GenericDimensions genericDimensions,
+            DataSourceConfiguration dataSourceConfiguration
+    ) {
         return genericDimensions.getDimensionConfigurationsByApiName(
-                (String[]) druidConfig.getDimensions().toArray()
+                (String[]) dataSourceConfiguration.getDimensions().toArray()
         );
     }
 

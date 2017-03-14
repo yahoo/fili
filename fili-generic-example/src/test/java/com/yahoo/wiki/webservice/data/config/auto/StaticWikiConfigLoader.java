@@ -5,7 +5,6 @@ package com.yahoo.wiki.webservice.data.config.auto;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
-import com.yahoo.bard.webservice.util.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,8 +15,8 @@ import java.util.List;
  */
 public class StaticWikiConfigLoader implements ConfigLoader {
 
-    public static DruidConfig getWikiDruidConfig() {
-        return new DruidConfig() {
+    public static DataSourceConfiguration getWikiDruidConfig() {
+        return new DataSourceConfiguration() {
             @Override
             public String getName() {
                 return "wikiticker";
@@ -73,9 +72,9 @@ public class StaticWikiConfigLoader implements ConfigLoader {
     }
 
     @Override
-    public List<DruidConfig> getTableNames() {
-        List<DruidConfig> druidConfigs = new ArrayList<>();
-        druidConfigs.add(getWikiDruidConfig());
-        return druidConfigs;
+    public List<DataSourceConfiguration> getTableNames() {
+        List<DataSourceConfiguration> dataSourceConfigurations = new ArrayList<>();
+        dataSourceConfigurations.add(getWikiDruidConfig());
+        return dataSourceConfigurations;
     }
 }

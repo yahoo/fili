@@ -23,6 +23,19 @@ import java.util.LinkedHashSet;
  */
 public class GenericBinderFactory extends AbstractBinderFactory {
     private static ConfigLoader configLoader;
+    private GenericDimensions genericDimensions;
+
+    @Override
+    protected LinkedHashSet<DimensionConfig> getDimensionConfigurations() {
+        //NOTE: This is guaranteed to be called before getTableLoader()
+        genericDimensions = new GenericDimensions(configLoader);
+        return new LinkedHashSet<>(genericDimensions.getAllDimensionConfigurations());
+    }
+
+    @Override
+    protected TableLoader getTableLoader() {
+        return new GenericTableLoader(configLoader, genericDimensions);
+    }
 
     @Override
     protected MetricLoader getMetricLoader() {
@@ -30,18 +43,9 @@ public class GenericBinderFactory extends AbstractBinderFactory {
     }
 
     @Override
-    protected LinkedHashSet<DimensionConfig> getDimensionConfigurations() {
-        return new LinkedHashSet<>(new GenericDimensions(configLoader).getAllDimensionConfigurations());
-    }
-
-    @Override
-    protected TableLoader getTableLoader() {
-        return new GenericTableLoader(configLoader);
-    }
-
-    @Override
     protected DruidWebService buildDruidWebService(
-            final DruidServiceConfig druidServiceConfig, final ObjectMapper mapper
+            DruidServiceConfig druidServiceConfig,
+            ObjectMapper mapper
     ) {
         DruidWebService druidWebService = super.buildDruidWebService(druidServiceConfig, mapper);
         configLoader = new DruidNavigator(druidWebService);

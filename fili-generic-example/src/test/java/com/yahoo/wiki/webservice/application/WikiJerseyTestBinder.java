@@ -19,6 +19,7 @@ import java.util.LinkedHashSet;
  */
 public class WikiJerseyTestBinder extends JerseyTestBinder {
     private static ConfigLoader configLoader = new StaticWikiConfigLoader();
+    private GenericDimensions genericDimensions;
 
     /**
      * Constructor.
@@ -41,7 +42,8 @@ public class WikiJerseyTestBinder extends JerseyTestBinder {
 
     @Override
     public LinkedHashSet<DimensionConfig> getDimensionConfiguration() {
-        return new LinkedHashSet<>(new GenericDimensions(configLoader).getAllDimensionConfigurations());
+        genericDimensions = new GenericDimensions(configLoader);
+        return new LinkedHashSet<>(genericDimensions.getAllDimensionConfigurations());
     }
 
     @Override
@@ -51,6 +53,6 @@ public class WikiJerseyTestBinder extends JerseyTestBinder {
 
     @Override
     public TableLoader getTableLoader() {
-        return new GenericTableLoader(configLoader);
+        return new GenericTableLoader(configLoader,genericDimensions);
     }
 }

@@ -2,7 +2,7 @@ package com.yahoo.wiki.webservice.data.config.metric;
 
 import com.yahoo.bard.webservice.data.time.TimeGrain;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -19,18 +19,17 @@ public class MetricNameGenerator {
         return new DruidMetricName(name);
     }
 
-    public static FiliMetricName getFiliMetricName(String name) {
+    public static FiliApiMetricName getFiliMetricName(String name) {
         if (defaultTimeGrain == null) {
             throw new RuntimeException("Default time grain must be specified if no time grains are given");
         }
-        return getFiliMetricName(name, defaultTimeGrain);
+        return getFiliMetricName(name, Collections.singletonList(defaultTimeGrain));
     }
 
-    public static FiliMetricName getFiliMetricName(String name, TimeGrain... timeGrains) {
-        List<TimeGrain> timeGrainList = Arrays.asList(timeGrains);
-        if (defaultTimeGrain != null && !timeGrainList.contains(defaultTimeGrain)) {
-            timeGrainList.add(defaultTimeGrain);
+    public static FiliApiMetricName getFiliMetricName(String name, List<TimeGrain> timeGrains) {
+        if (defaultTimeGrain != null && !timeGrains.contains(defaultTimeGrain)) {
+            timeGrains.add(defaultTimeGrain);
         }
-        return new FiliMetricName(name, timeGrainList);
+        return new FiliApiMetricName(name, timeGrains);
     }
 }

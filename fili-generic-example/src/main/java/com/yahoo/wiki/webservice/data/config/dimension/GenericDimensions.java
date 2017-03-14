@@ -14,9 +14,6 @@ import com.yahoo.bard.webservice.util.EnumUtils;
 import com.yahoo.bard.webservice.util.StreamUtils;
 import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.wiki.webservice.data.config.auto.ConfigLoader;
-import com.yahoo.wiki.webservice.data.config.auto.DruidConfig;
-
-import com.sun.istack.internal.NotNull;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -44,20 +41,17 @@ public class GenericDimensions {
      */
     public GenericDimensions(ConfigLoader configLoader) {
         if (configLoader.getTableNames().size() > 0) {
-            DruidConfig config = configLoader.getTableNames().get(0);
-            dimensionConfigs = Collections.unmodifiableSet(
-                    config.getDimensions().stream()
-                            .map(
-                                    dimensionName -> new GenericDimensionConfig(
-                                            dimensionName,
-                                            EnumUtils.camelCase(dimensionName),
-                                            getDefaultKeyValueStore(EnumUtils.camelCase(dimensionName)),
-                                            getDefaultSearchProvider(EnumUtils.camelCase(dimensionName)),
-                                            getDefaultFields()
-                                    )
-                            )
-                            .collect(Collectors.toSet())
-            );
+            dimensionConfigs = Collections.unmodifiableSet(configLoader.getTableNames()
+                    .stream()
+                    .flatMap(tableName -> tableName.getDimensions().stream())
+                    .map(dimensionName -> new GenericDimensionConfig(
+                            dimensionName,
+                            dimensionName,
+                            getDefaultKeyValueStore(dimensionName),
+                            getDefaultSearchProvider(dimensionName),
+                            getDefaultFields()
+                    ))
+                    .collect(Collectors.toSet()));
 
             wikiApiDimensionNameToConfig = dimensionConfigs.stream().collect(
                     StreamUtils.toLinkedMap(DimensionConfig::getApiName, Function.identity())
@@ -115,8 +109,6 @@ public class GenericDimensions {
 
     private LinkedHashSet<DimensionField> getDefaultFields() {
         return Utils.asLinkedHashSet(
-                GenericDimensionField.ID,
-                GenericDimensionField.DESC
-        );
+                GenericDimensionField.ID);
     }
 }
