@@ -41,7 +41,7 @@ public class TableIdentifier extends AbstractMap.SimpleImmutableEntry<String, Op
      *
      * @param table  Logical table for the table identifier
      */
-    public TableIdentifier(Table table) {
+    public TableIdentifier(LogicalTable table) {
         this(table.getName(), table.getGranularity());
     }
 
@@ -64,7 +64,6 @@ public class TableIdentifier extends AbstractMap.SimpleImmutableEntry<String, Op
      * @return an Optional with the period if the granularity had one, or empty otherwise.
      */
     private static Optional<ReadablePeriod> getGranularityPeriod(Granularity granularity) {
-        //TODO: Short lived code, remove once TableIdentifiers no longer need periods
         return Optional.ofNullable(
                 granularity instanceof TimeGrain ? ((TimeGrain) granularity).getPeriod() : null
         );

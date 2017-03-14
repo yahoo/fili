@@ -22,12 +22,12 @@ import javax.inject.Singleton;
 /**
  * A physical table resolver which implements core bard filters and comparator functions
  * <p>
- * {@link com.yahoo.bard.webservice.table.PhysicalTable}) based on the optimum (lowest query cost) table, considering
+ * {@link PhysicalTable}) based on the optimum (lowest query cost) table, considering
  * completeness of data, granularity, time alignment, aggregatability constraints and cardinality for a particular
  * query.
  */
 @Singleton
-public class DefaultPhysicalTableResolver extends BasePhysicalTableResolver implements PhysicalTableResolver {
+public class DefaultPhysicalTableResolver extends BasePhysicalTableResolver {
 
     protected static final GranularityComparator COMPARE_GRANULARITY = new GranularityComparator();
     protected static final DimensionCardinalityComparator CARDINALITY_COMPARATOR = new DimensionCardinalityComparator();

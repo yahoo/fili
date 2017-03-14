@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.table;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricColumn;
+import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 
 import org.joda.time.ReadablePeriod;
@@ -18,18 +19,22 @@ import javax.validation.constraints.NotNull;
 /**
  * A LogicalTable has a grain and a tablegroup of physical tables that satisfy the logical table.
  */
-public class LogicalTable extends Table implements Comparable<LogicalTable> {
+public class LogicalTable implements Table, Comparable<LogicalTable> {
 
     public static final String DEFAULT_CATEGORY = "General";
     public static final ReadablePeriod DEFAULT_RETENTION = Years.ONE;
 
+    private String name;
     private TableGroup tableGroup;
-    // parameter used by the compare to method
-    private String comparableParam;
+    private LogicalTableSchema schema;
+
     private String category;
     private String longName;
     private ReadablePeriod retention;
     private String description;
+
+    // parameter used by the compare to method
+    private String comparableParam;
 
     /**
      * Constructor
@@ -39,9 +44,15 @@ public class LogicalTable extends Table implements Comparable<LogicalTable> {
      * @param name  The logical table name
      * @param granularity  The logical table granularity
      * @param tableGroup  The tablegroup for the logical table
+     * @param metricDictionary The metric dictionary to bind tableGroup's metrics
      */
-    public LogicalTable(@NotNull String name, @NotNull Granularity granularity, TableGroup tableGroup) {
-        this(name, DEFAULT_CATEGORY, name, granularity, DEFAULT_RETENTION, name, tableGroup);
+    public LogicalTable(
+            @NotNull String name,
+            @NotNull Granularity granularity,
+            TableGroup tableGroup,
+            MetricDictionary metricDictionary
+    ) {
+        this(name, DEFAULT_CATEGORY, name, granularity, DEFAULT_RETENTION, name, tableGroup, metricDictionary);
     }
 
     /**
@@ -54,6 +65,7 @@ public class LogicalTable extends Table implements Comparable<LogicalTable> {
      * @param retention  The period the data in the logical table is retained for
      * @param description  The description for this logical table
      * @param tableGroup  The tablegroup for the logical table
+     * @param metricDictionary The metric dictionary to bind tableGroup's metrics
      */
     public LogicalTable(
             @NotNull String name,
@@ -62,33 +74,27 @@ public class LogicalTable extends Table implements Comparable<LogicalTable> {
             @NotNull Granularity granularity,
             ReadablePeriod retention,
             String description,
-            TableGroup tableGroup
+            TableGroup tableGroup,
+            MetricDictionary metricDictionary
     ) {
-        super(name, granularity);
+        this.name = name;
         this.tableGroup = tableGroup;
         this.category = category;
         this.longName = longName;
         this.retention = retention;
         this.description = description;
         this.comparableParam = name + granularity.toString();
+
+        schema = new LogicalTableSchema(tableGroup, granularity, metricDictionary);
+
     }
 
-    /**
-     * Getter for table group.
-     *
-     * @return tableGroup
-     */
     public TableGroup getTableGroup() {
         return this.tableGroup;
     }
 
-    /**
-     * Getter for logical metrics.
-     *
-     * @return set of LogicalMetric
-     */
     public Set<LogicalMetric> getLogicalMetrics() {
-        return getColumns(LogicalMetricColumn.class).stream()
+        return schema.getColumns(LogicalMetricColumn.class).stream()
                 .map(LogicalMetricColumn::getLogicalMetric)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
@@ -112,5 +118,19 @@ public class LogicalTable extends Table implements Comparable<LogicalTable> {
 
     public String getDescription() {
         return description;
+    }
+
+    public Granularity getGranularity() {
+        return schema.getGranularity();
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public LogicalTableSchema getSchema() {
+        return schema;
     }
 }

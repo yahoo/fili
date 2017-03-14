@@ -12,7 +12,7 @@ import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
-import com.yahoo.bard.webservice.table.PhysicalTable;
+import com.yahoo.bard.webservice.table.ConcretePhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -99,6 +99,8 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
     @Override
     public void run() {
         physicalTableDictionary.values().stream()
+                .filter(table -> table instanceof ConcretePhysicalTable)
+                .map(table -> (ConcretePhysicalTable) table)
                 .peek(table -> LOG.trace("Querying metadata for datasource: {}", table))
                 .forEach(this::queryDataSourceMetadata);
         lastRunTimestamp.set(DateTime.now());
@@ -109,7 +111,7 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
      *
      * @param table  The physical table to be updated.
      */
-    protected void queryDataSourceMetadata(PhysicalTable table) {
+    protected void queryDataSourceMetadata(ConcretePhysicalTable table) {
         String resourcePath = String.format(DATASOURCE_METADATA_QUERY_FORMAT, table.getFactTableName());
 
         // Success callback will update datasource metadata on success
@@ -174,7 +176,7 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
      *
      * @return The callback itself.
      */
-    protected final SuccessCallback buildDataSourceMetadataSuccessCallback(PhysicalTable table) {
+    protected final SuccessCallback buildDataSourceMetadataSuccessCallback(ConcretePhysicalTable table) {
         return new SuccessCallback() {
             @Override
             public void invoke(JsonNode rootNode) {
@@ -207,7 +209,7 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
      *
      * @return A newly created http error callback object.
      */
-    protected HttpErrorCallback getErrorCallback(PhysicalTable table) {
+    protected HttpErrorCallback getErrorCallback(ConcretePhysicalTable table) {
         return new TaskHttpErrorCallback(table);
     }
 
@@ -215,14 +217,14 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
      * Defines the callback for http errors.
      */
     private final class TaskHttpErrorCallback extends Loader<?>.TaskHttpErrorCallback {
-        private final PhysicalTable table;
+        private final ConcretePhysicalTable table;
 
         /**
          * Constructor.
          *
          * @param table  PhysicalTable that this error callback is tied to
          */
-        TaskHttpErrorCallback(PhysicalTable table) {
+        TaskHttpErrorCallback(ConcretePhysicalTable table) {
             this.table = table;
         }
 
@@ -242,7 +244,7 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
                 LOG.warn(msg);
                 metadataService.update(
                         table,
-                        new DataSourceMetadata(table.getFactTableName(), Collections.emptyMap(), Collections.emptyList())
+                        new DataSourceMetadata(table.getName(), Collections.emptyMap(), Collections.emptyList())
                 );
             } else {
                 LOG.error(msg);

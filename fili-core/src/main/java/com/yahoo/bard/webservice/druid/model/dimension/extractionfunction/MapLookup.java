@@ -3,8 +3,8 @@
 package com.yahoo.bard.webservice.druid.model.dimension.extractionfunction;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableMap;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
@@ -21,7 +21,7 @@ public class MapLookup extends Lookup {
      */
     public MapLookup(Map<String, String> mapping) {
         super("map");
-        this.mapping = Collections.unmodifiableMap(mapping);
+        this.mapping = ImmutableMap.copyOf(mapping);
     }
 
     @JsonProperty(value = "map")

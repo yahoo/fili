@@ -2,10 +2,10 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.query
 
-import com.yahoo.bard.webservice.table.PhysicalTable
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
+import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.MapStore
@@ -44,7 +44,14 @@ class DruidSearchQuerySpec extends Specification {
 
     DruidSearchQuery defaultQuery(Map vars) {
         vars.queryType = DefaultQueryType.SEARCH
-        vars.dataSource = vars.dataSource ?: new TableDataSource(new PhysicalTable("table_name", DAY.buildZonedTimeGrain(DateTimeZone.UTC), [:]))
+        vars.dataSource = vars.dataSource ?: new TableDataSource(
+                new ConcretePhysicalTable(
+                        "table_name",
+                        DAY.buildZonedTimeGrain(DateTimeZone.UTC),
+                        [] as Set,
+                        [:]
+                )
+        )
         vars.granularity = vars.granularity ?: DAY
         vars.filter = vars.filter ?: null
         vars.intervals = vars.intervals ?: []

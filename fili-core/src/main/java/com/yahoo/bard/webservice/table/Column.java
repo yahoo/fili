@@ -8,6 +8,7 @@ import java.util.Objects;
  * Column.
  */
 public class Column {
+
     private final String name;
 
     /**
@@ -25,7 +26,7 @@ public class Column {
      * @return name
      */
     public String getName() {
-        return this.name;
+        return name;
     }
 
     /**

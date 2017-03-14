@@ -73,6 +73,20 @@ public class IntervalUtils {
     }
 
     /**
+     * Find all the interval overlaps between two collections of intervals.
+     * <p>
+     * If the left set is null, return the right.  This makes this usable in a reduce function.
+     *
+     * @param left  The intervals being streamed over
+     * @param right  The intervals being tested against
+     *
+     * @return A set of intervals describing the time common to both sets
+     */
+    public static Set<Interval> getOverlappingSubintervals(Set<Interval> left, Set<Interval> right) {
+        return getOverlappingSubintervals((Collection) left, (Collection) right);
+    }
+
+    /**
      * Simplify raw intervals and return a map of intervals (dividing them by the grain) to the ordinal of the interval.
      *
      * @param rawIntervals  A collection of intervals to be split

@@ -3,8 +3,8 @@
 package com.yahoo.bard.webservice.async;
 
 import com.yahoo.bard.webservice.data.ResultSet;
+import com.yahoo.bard.webservice.data.ResultSetSchema;
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
-import com.yahoo.bard.webservice.table.Schema;
 import com.yahoo.bard.webservice.web.PreResponse;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys;
@@ -61,7 +61,11 @@ public class AsyncUtils {
         }
 
         return new PreResponse(
-                new ResultSet(Collections.emptyList(), new Schema(AllGranularity.INSTANCE)),
+                new ResultSet(new ResultSetSchema(
+                        AllGranularity.INSTANCE,
+                        Collections.emptySet()),
+                        Collections.emptyList()
+                ),
                 responseContext
         );
     }

@@ -20,6 +20,7 @@ import com.yahoo.bard.webservice.util.Utils;
 import org.joda.time.DateTimeZone;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -67,10 +68,9 @@ public class TestTableLoader extends BaseTableLoader {
 
     @Override
     public void loadTableDictionary(ResourceDictionaries dictionaries) {
-        Map<String, TableGroup> logicalTableTableGroup = new HashMap<>();
+        Map<String, TableGroup> logicalTableTableGroup = new LinkedHashMap<>();
         for (TestLogicalTableName logicalTableName : TestLogicalTableName.values()) {
             TableGroup tableGroup = buildTableGroup(
-                    logicalTableName.asName(),
                     TestApiMetricName.getByLogicalTable(logicalTableName),
                     TestDruidMetricName.getByLogicalTable(logicalTableName),
                     logicalTableTableDefinitions.get(logicalTableName),

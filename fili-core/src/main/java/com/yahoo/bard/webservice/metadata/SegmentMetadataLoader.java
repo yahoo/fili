@@ -10,7 +10,7 @@ import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
-import com.yahoo.bard.webservice.table.PhysicalTable;
+import com.yahoo.bard.webservice.table.ConcretePhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -98,6 +98,8 @@ public class SegmentMetadataLoader extends Loader<Boolean> {
     public void run() {
         physicalTableDictionary.values().stream()
                 .peek(table -> LOG.trace("Querying segment metadata for table: {}", table))
+                .filter(table -> table instanceof ConcretePhysicalTable)
+                .map(table -> (ConcretePhysicalTable) table)
                 .forEach(this::querySegmentMetadata);
         lastRunTimestamp.set(DateTime.now());
     }
@@ -107,7 +109,7 @@ public class SegmentMetadataLoader extends Loader<Boolean> {
      *
      * @param table  The physical table to be updated.
      */
-    protected void querySegmentMetadata(PhysicalTable table) {
+    protected void querySegmentMetadata(ConcretePhysicalTable table) {
         String resourcePath = String.format(SEGMENT_METADATA_QUERY_FORMAT, table.getFactTableName());
 
         // Success callback will update segment metadata on success
@@ -143,7 +145,7 @@ public class SegmentMetadataLoader extends Loader<Boolean> {
      *
      * @return The callback itself.
      */
-    protected final SuccessCallback buildSegmentMetadataSuccessCallback(PhysicalTable table) {
+    protected final SuccessCallback buildSegmentMetadataSuccessCallback(ConcretePhysicalTable table) {
         return new SuccessCallback() {
             @Override
             public void invoke(JsonNode rootNode) {
