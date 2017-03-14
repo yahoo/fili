@@ -4,8 +4,8 @@ package com.yahoo.bard.webservice.data.metric.mappers;
 
 import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.ResultSet;
+import com.yahoo.bard.webservice.data.ResultSetSchema;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
-import com.yahoo.bard.webservice.table.Schema;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,35 +27,29 @@ public class RowNumMapper extends ResultSetMapper {
     @Override
     public ResultSet map(ResultSet resultSet) {
 
-        Schema modifiedSchema = map(resultSet.getSchema());
-        MetricColumn metricColumn = modifiedSchema.getColumn(ROW_NUM_COLUMN_NAME, MetricColumn.class);
-
-        List<Result> newResults = new ArrayList<>();
-        Result newResult;
+        ResultSetSchema schema = map(resultSet.getSchema());
+        MetricColumn column = schema.getColumn(ROW_NUM_COLUMN_NAME, MetricColumn.class).get();
 
         int resultSetSize = resultSet.size();
+        List<Result> newResults = new ArrayList<>(resultSetSize);
         for (int i = 0; i < resultSetSize; i++) {
-            newResult = rowNumMap(resultSet.get(i), metricColumn, i);
-            if (newResult != null) {
-                newResults.add(newResult);
-            }
+            newResults.add(rowNumMap(resultSet.get(i), column, i));
         }
 
-        ResultSet newResultSet = new ResultSet(newResults, modifiedSchema);
+        ResultSet newResultSet = new ResultSet(schema, newResults);
         LOG.trace("Mapped resultSet: {} to new resultSet {}", resultSet, newResultSet);
-
         return newResultSet;
     }
 
     @Override
-    protected Result map(Result result, Schema schema) {
-        return result;
+    protected Result map(Result result, ResultSetSchema schema) {
+        // map for rows is not
+        throw new UnsupportedOperationException("This code should never be reached.");
     }
 
     @Override
-    protected Schema map(Schema schema) {
-        MetricColumn.addNewMetricColumn(schema, ROW_NUM_COLUMN_NAME);
-        return schema;
+    protected ResultSetSchema map(ResultSetSchema schema) {
+        return schema.withAddColumn(new MetricColumn(ROW_NUM_COLUMN_NAME));
     }
 
     /**

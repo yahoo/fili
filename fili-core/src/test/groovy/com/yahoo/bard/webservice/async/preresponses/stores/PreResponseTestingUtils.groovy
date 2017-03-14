@@ -6,12 +6,12 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
 import com.yahoo.bard.webservice.data.Result
 import com.yahoo.bard.webservice.data.ResultSet
+import com.yahoo.bard.webservice.data.ResultSetSchema
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
 import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.DimensionRow
 import com.yahoo.bard.webservice.data.metric.MetricColumn
-import com.yahoo.bard.webservice.table.Schema
 import com.yahoo.bard.webservice.web.PreResponse
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext
 
@@ -38,8 +38,8 @@ class PreResponseTestingUtils {
         Map<Dimension, Set<DimensionField>> dimensionToDimensionFieldMap = new HashMap<>()
         ResponseContext responseContext = new ResponseContext(dimensionToDimensionFieldMap)
 
-        Schema schema = new Schema(DAY)
+        ResultSetSchema schema = new ResultSetSchema(DAY, Collections.emptySet())
 
-        return new PreResponse(new ResultSet([rs], schema), responseContext)
+        return new PreResponse(new ResultSet(schema, [rs]), responseContext)
     }
 }

@@ -93,7 +93,6 @@ public class WikiTableLoader extends BaseTableLoader {
     public void loadTableDictionary(ResourceDictionaries dictionaries) {
         for (WikiLogicalTableName table : WikiLogicalTableName.values()) {
             TableGroup tableGroup = buildTableGroup(
-                    table.asName(),
                     apiMetricNames.get(table),
                     druidMetricNames.get(table),
                     tableDefinitions.get(table),

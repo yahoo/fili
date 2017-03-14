@@ -37,7 +37,7 @@ import com.yahoo.bard.webservice.logging.TimedPhase;
 import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
 import com.yahoo.bard.webservice.logging.blocks.DataRequest;
 import com.yahoo.bard.webservice.logging.blocks.DruidFilterInfo;
-import com.yahoo.bard.webservice.table.Table;
+import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.resolver.NoMatchFoundException;
 import com.yahoo.bard.webservice.util.Either;
 import com.yahoo.bard.webservice.web.DataApiRequest;
@@ -205,7 +205,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
         }
 
         // Log table metric
-        Table table = request.getTable();
+        LogicalTable table = request.getTable();
         REGISTRY.meter("request.logical.table." + table.getName() + "." + table.getGranularity()).mark();
 
         RequestLog.record(new BardQueryInfo(druidQuery.getQueryType().toJson(), false));

@@ -49,11 +49,11 @@ public class SchemaPhysicalTableMatcher implements PhysicalTableMatcher {
 
     @Override
     public boolean test(PhysicalTable table) {
-        if (!granularity.satisfiedBy(table.getGranularity())) {
+        if (!granularity.satisfiedBy(table.getSchema().getTimeGrain())) {
             return false;
         }
 
-        Set<String> supplyNames = table.getColumns().stream()
+        Set<String> supplyNames = table.getSchema().getColumns().stream()
                 .map(Column::getName)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 

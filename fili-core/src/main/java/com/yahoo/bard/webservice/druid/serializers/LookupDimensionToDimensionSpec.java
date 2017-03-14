@@ -6,8 +6,8 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension;
 import com.yahoo.bard.webservice.data.dimension.impl.LookupDimension;
 import com.yahoo.bard.webservice.data.dimension.impl.RegisteredLookupDimension;
-import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction;
 import com.yahoo.bard.webservice.druid.model.dimension.ExtractionDimensionSpec;
+import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction;
 import com.yahoo.bard.webservice.druid.model.util.ModelUtil;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 

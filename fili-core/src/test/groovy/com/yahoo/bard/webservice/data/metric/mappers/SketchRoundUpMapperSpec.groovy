@@ -3,9 +3,9 @@
 package com.yahoo.bard.webservice.data.metric.mappers
 
 import com.yahoo.bard.webservice.data.Result
+import com.yahoo.bard.webservice.data.ResultSetSchema
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
-import com.yahoo.bard.webservice.table.Schema
 
 import org.joda.time.DateTime
 
@@ -14,14 +14,19 @@ import spock.lang.Unroll
 
 class SketchRoundUpMapperSpec extends Specification {
 
-    Schema schema = new Schema(DefaultTimeGrain.DAY)
-    MetricColumn column = MetricColumn.addNewMetricColumn(schema, "Row row row your boat")
+    MetricColumn column = new MetricColumn("Row row row your boat")
+
+    ResultSetSchema schema = new ResultSetSchema(DefaultTimeGrain.DAY, [column].toSet())
     SketchRoundUpMapper mapper = new SketchRoundUpMapper(column.name)
 
     @Unroll
     def "The mapper rounds #floatingPoint to #integer"() {
         given: "A result containing the floating point value"
-        Result result = new Result([:], [(column): floatingPoint as BigDecimal], new DateTime())
+        Result result = new Result(
+                [:],
+                [(column): floatingPoint as BigDecimal] as Map<MetricColumn, Object>,
+                new DateTime()
+        )
 
         expect: "The sketch round up mapper returns a new result with the rounded value"
         mapper.map(result, schema).getMetricValueAsNumber(column) == integer as BigDecimal
