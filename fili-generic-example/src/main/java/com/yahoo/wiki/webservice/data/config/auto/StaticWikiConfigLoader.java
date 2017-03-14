@@ -16,17 +16,16 @@ import java.util.List;
  */
 public class StaticWikiConfigLoader implements ConfigLoader {
 
-    public static DruidConfig getWikiDruidConfig() {
-        return new DruidConfig() {
+    private static DataSourceConfiguration getWikiDruidConfig() {
+        return new DataSourceConfiguration() {
             @Override
             public String getName() {
                 return "wikiticker";
             }
 
-            //TODO should this be camelcased?
             @Override
             public TableName getTableName() {
-                return () -> EnumUtils.camelCase(getName());
+                return this::getName;
             }
 
             @Override
@@ -73,9 +72,9 @@ public class StaticWikiConfigLoader implements ConfigLoader {
     }
 
     @Override
-    public List<DruidConfig> getTableNames() {
-        List<DruidConfig> druidConfigs = new ArrayList<>();
-        druidConfigs.add(getWikiDruidConfig());
-        return druidConfigs;
+    public List<DataSourceConfiguration> getTableNames() {
+        List<DataSourceConfiguration> dataSourceConfigurations = new ArrayList<>();
+        dataSourceConfigurations.add(getWikiDruidConfig());
+        return dataSourceConfigurations;
     }
 }

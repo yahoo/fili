@@ -19,9 +19,9 @@ class SingleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServle
     def setup() {
         DimensionDictionary dimensionStore = jtb.configurationLoader.dimensionDictionary
         dimensionStore.findByApiName(WikiApiDimensionName.PAGE.asName()).with {
-            addDimensionRow(BardDimensionField.makeDimensionRow(it, "Foo", "FooDesc"))
-            addDimensionRow(BardDimensionField.makeDimensionRow(it, "Bar", "BarDesc"))
-            addDimensionRow(BardDimensionField.makeDimensionRow(it, "Baz", "BazDesc"))
+            addDimensionRow(BardDimensionField.makeDimensionRow(it, "Foo"))
+            addDimensionRow(BardDimensionField.makeDimensionRow(it, "Bar"))
+            addDimensionRow(BardDimensionField.makeDimensionRow(it, "Baz"))
         }
     }
 

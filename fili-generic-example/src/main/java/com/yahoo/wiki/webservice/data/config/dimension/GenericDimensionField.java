@@ -9,8 +9,7 @@ import com.yahoo.bard.webservice.util.EnumUtils;
  * DimensionField enum.
  */
 public enum GenericDimensionField implements DimensionField {
-    ID("Dimension ID"),
-    DESC("Dimension Description");
+    ID("Dimension ID");
 
     private String description;
     private String camelName;

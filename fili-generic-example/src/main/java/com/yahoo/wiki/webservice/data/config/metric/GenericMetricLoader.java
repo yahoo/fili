@@ -10,7 +10,7 @@ import com.yahoo.bard.webservice.data.config.names.FieldName;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.wiki.webservice.data.config.auto.ConfigLoader;
-import com.yahoo.wiki.webservice.data.config.auto.DruidConfig;
+import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +46,7 @@ public class GenericMetricLoader implements MetricLoader {
      * @param sketchSize  Sketch size, in number of bytes, to use for sketch operations
      * @param configLoader
      */
-    public GenericMetricLoader(int sketchSize, final ConfigLoader configLoader) {
+    public GenericMetricLoader(int sketchSize, ConfigLoader configLoader) {
         this.sketchSize = sketchSize;
         this.configLoader = configLoader;
     }
@@ -68,7 +68,7 @@ public class GenericMetricLoader implements MetricLoader {
         // Metrics that directly aggregate druid fields
         List<MetricInstance> metrics = new ArrayList<>();
 
-        for (DruidConfig tableConfig : configLoader.getTableNames()) {
+        for (DataSourceConfiguration tableConfig : configLoader.getTableNames()) {
             TimeGrain timeGrain = tableConfig.getValidTimeGrains().get(0);
             MetricNameGenerator.setDefaultTimeGrain(timeGrain);
             for (String name : tableConfig.getMetrics()) {

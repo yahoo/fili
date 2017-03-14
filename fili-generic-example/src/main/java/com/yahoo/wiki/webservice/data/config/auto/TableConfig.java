@@ -13,11 +13,11 @@ import java.util.List;
 /**
  * Created by kevin on 3/3/2017.
  */
-public class TableConfig implements DruidConfig {
-    private String tableName;
-    private List<String> metrics;
-    private List<String> dimensions;
-    private List<TimeGrain> timeGrains;
+public class TableConfig implements DataSourceConfiguration {
+    private final String tableName;
+    private final List<String> metrics;
+    private final List<String> dimensions;
+    private final List<TimeGrain> timeGrains;
 
     public TableConfig(String name) {
         tableName = name;

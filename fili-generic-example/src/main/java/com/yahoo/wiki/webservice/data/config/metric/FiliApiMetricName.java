@@ -8,11 +8,11 @@ import java.util.List;
 /**
  * Created by kevin on 3/7/2017.
  */
-public class FiliMetricName implements ApiMetricName {
+public class FiliApiMetricName implements ApiMetricName {
     private String apiName;
     private List<TimeGrain> satisfyingGrains;
 
-    public FiliMetricName(String name, List<TimeGrain> timeGrains) {
+    public FiliApiMetricName(String name, List<TimeGrain> timeGrains) {
         this.apiName = name;
         satisfyingGrains = timeGrains;
     }
