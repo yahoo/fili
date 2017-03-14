@@ -509,7 +509,7 @@ abstract class SearchProviderSpec<T extends SearchProvider> extends Specificatio
     abstract boolean indicesHaveBeenCleared();
 
     ApiFilter buildFilter(String filterQuery) {
-        new ApiFilter(filterQuery, animalTable, spaceIdDictionary)
+        new ApiFilter(filterQuery, spaceIdDictionary)
     }
 
     def "findAllDimensionRowsPaged and findFilteredDimensionRowsPaged paginates results correctly"() {

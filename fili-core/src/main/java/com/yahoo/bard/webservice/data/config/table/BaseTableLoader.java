@@ -9,14 +9,15 @@ import com.yahoo.bard.webservice.data.config.names.FieldName;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
-import com.yahoo.bard.webservice.data.metric.LogicalMetric;
-import com.yahoo.bard.webservice.data.metric.LogicalMetricColumn;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
+import com.yahoo.bard.webservice.table.Column;
+import com.yahoo.bard.webservice.table.ConcretePhysicalTable;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.table.PhysicalTable;
+import com.yahoo.bard.webservice.table.Schema;
 import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.bard.webservice.table.TableIdentifier;
 
@@ -29,6 +30,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Provides commonly-needed methods for loading tables.
@@ -36,6 +38,7 @@ import java.util.stream.Collectors;
 public abstract class BaseTableLoader implements TableLoader {
 
     private static final Logger LOG = LoggerFactory.getLogger(BaseTableLoader.class);
+
     protected final DateTimeZone defaultTimeZone;
 
     /**
@@ -69,9 +72,33 @@ public abstract class BaseTableLoader implements TableLoader {
      * @param dictionaries  The container for all the data dictionaries
      *
      * @return A table group binding all the tables for a logical table view together.
+     *
+     * @deprecated logicalTableName is not used in TableGroup
      */
+    @Deprecated
     public TableGroup buildTableGroup(
             String logicalTableName,
+            Set<ApiMetricName> apiMetrics,
+            Set<FieldName> druidMetrics,
+            Set<PhysicalTableDefinition> tableDefinitions,
+            ResourceDictionaries dictionaries
+    ) {
+        return buildTableGroup(apiMetrics, druidMetrics, tableDefinitions, dictionaries);
+    }
+
+    /**
+     * Builds a table group.
+     * <p>
+     * Builds and loads the physical tables for the physical table definitions as well.
+     *
+     * @param apiMetrics  The set of metric names surfaced to the api
+     * @param druidMetrics  Names of druid datasource metric columns
+     * @param tableDefinitions  A list of config objects for physical tables
+     * @param dictionaries  The container for all the data dictionaries
+     *
+     * @return A table group binding all the tables for a logical table view together.
+     */
+    public TableGroup buildTableGroup(
             Set<ApiMetricName> apiMetrics,
             Set<FieldName> druidMetrics,
             Set<PhysicalTableDefinition> tableDefinitions,
@@ -86,12 +113,14 @@ public abstract class BaseTableLoader implements TableLoader {
         }
 
         //Derive the logical dimensions by taking the union of all the physical dimensions
-        LinkedHashSet<Dimension> dimensions = physicalTables.stream()
-                .flatMap(table -> table.getColumns(DimensionColumn.class).stream())
+        Set<Dimension> dimensions = physicalTables.stream()
+                .map(PhysicalTable::getSchema)
+                .map(Schema::getColumns)
+                .flatMap(Set::stream)
+                .filter(column -> column instanceof DimensionColumn)
+                .map(column -> (DimensionColumn) column)
                 .map(DimensionColumn::getDimension)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
-
-        // Put all of the table definitions into a new table group
         return new TableGroup(physicalTables, apiMetrics, dimensions);
     }
 
@@ -140,7 +169,7 @@ public abstract class BaseTableLoader implements TableLoader {
         // For every legal grain
         for (Granularity grain : validGrains) {
             // Build the logical table
-            LogicalTable logicalTable = buildLogicalTable(logicalTableName, grain, nameGroup, metricDictionary);
+            LogicalTable logicalTable = new LogicalTable(logicalTableName, grain, nameGroup, metricDictionary);
 
             // Load it into the dictionary
             logicalDictionary.put(new TableIdentifier(logicalTable), logicalTable);
@@ -159,7 +188,10 @@ public abstract class BaseTableLoader implements TableLoader {
      * @param metrics  The dictionary of all metrics
      *
      * @return The logical table built
+     *
+     * @deprecated use new LogicalTable(...) by preferences
      */
+    @Deprecated
     public LogicalTable buildLogicalTable(
             String name,
             Granularity granularity,
@@ -193,7 +225,10 @@ public abstract class BaseTableLoader implements TableLoader {
      * @param metrics  The dictionary of all metrics
      *
      * @return The logical table built
+     *
+     * @deprecated The LogicalTable constructor is being mirrored here, can be referenced directly
      */
+    @Deprecated
     public LogicalTable buildLogicalTable(
             String name,
             Granularity granularity,
@@ -204,39 +239,16 @@ public abstract class BaseTableLoader implements TableLoader {
             TableGroup group,
             MetricDictionary metrics
     ) {
-        LogicalTable logicalTable = new LogicalTable(
+        return new LogicalTable(
                 name,
                 category,
                 longName,
                 granularity,
                 retention,
                 description,
-                group
+                group,
+                metrics
         );
-
-        // All Logical tables support the dimension set for their table group
-        PhysicalTable firstPhysicalTable = group.getPhysicalTables().iterator().next();
-        Set<PhysicalTable> tables = group.getPhysicalTables();
-        for (Dimension dim : group.getDimensions()) {
-            // Select the first table with a non-default logical mapping to this dimension name
-            // otherwise, use the defaulting behavior from the first table in the list
-            PhysicalTable physicalTable = tables.stream()
-                    .filter(table -> table.hasLogicalMapping(dim.getApiName()))
-                    .findFirst()
-                    .orElse(firstPhysicalTable);
-            DimensionColumn.addNewDimensionColumn(logicalTable, dim);
-        }
-
-        // All metrics that are available for a particular logical table grain are added
-        for (ApiMetricName metricName : group.getApiMetricNames()) {
-            // Skip metric if not valid for this table grain
-            if (!metricName.isValidFor(granularity)) {
-                continue;
-            }
-            LogicalMetric metric = metrics.get(metricName.getApiName());
-            LogicalMetricColumn.addNewLogicalMetricColumn(logicalTable, metric.getName(), metric);
-        }
-        return logicalTable;
     }
 
     /**
@@ -282,27 +294,23 @@ public abstract class BaseTableLoader implements TableLoader {
             Set<FieldName> metricNames,
             DimensionDictionary dimensionDictionary
     ) {
-        // Create the physical table
-        PhysicalTable physicalTable = new PhysicalTable(
+        LinkedHashSet<Column> columns = Stream.concat(
+                // Load the dimension columns
+                definition.getDimensions().stream()
+                        .map(DimensionConfig::getApiName)
+                        .map(dimensionDictionary::findByApiName)
+                        .map(DimensionColumn::new),
+                // And the metric columns
+                metricNames.stream()
+                        .map(FieldName::asName)
+                        .map(MetricColumn::new)
+        ).collect(Collectors.toCollection(LinkedHashSet::new));
+
+        return new ConcretePhysicalTable(
                 definition.getName().asName(),
                 definition.getGrain(),
+                columns,
                 definition.getLogicalToPhysicalNames()
         );
-
-        // Load the dimension columns
-        for (DimensionConfig dimensionConfig : definition.getDimensions()) {
-            String apiName = dimensionConfig.getApiName();
-            Dimension dimension = dimensionDictionary.findByApiName(apiName);
-            DimensionColumn.addNewDimensionColumn(physicalTable, dimension);
-        }
-
-        // Load the metric columns
-        for (FieldName druidMetricName : metricNames) {
-            MetricColumn.addNewMetricColumn(physicalTable, druidMetricName.asName());
-        }
-
-        // Build initial cache
-        physicalTable.commit();
-        return physicalTable;
     }
 }

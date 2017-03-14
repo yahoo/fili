@@ -2,8 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.query
 
-import com.yahoo.bard.webservice.table.PhysicalTable
-
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
@@ -15,6 +13,7 @@ import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
+import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -44,7 +43,12 @@ class TopNQuerySpec extends Specification {
 
     TopNQuery defaultQuery(Map vars) {
 
-        vars.dataSource = vars.dataSource ?: new TableDataSource<TopNQuery>(new PhysicalTable("table_name", DAY.buildZonedTimeGrain(DateTimeZone.UTC), ["apiLocale": "locale"]))
+        vars.dataSource = vars.dataSource ?: new TableDataSource<TopNQuery>(new ConcretePhysicalTable(
+                "table_name",
+                DAY.buildZonedTimeGrain(DateTimeZone.UTC),
+                [] as Set,
+                ["apiLocale": "locale"]
+        ))
         vars.dimension = vars.dimension ?: ""
         vars.threshold = vars.threshold ?: 5
         vars.granularity = vars.granularity ?: DAY

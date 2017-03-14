@@ -82,7 +82,7 @@
         <version.lucene>5.3.0</version.lucene>
         <version.jackson>2.6.2</version.jackson>
         <version.groovy>2.4.5</version.groovy>
-        <version.guava>20.0</version.guava>
+        <version.guava>21.0</version.guava>
         <version.druid.api>0.3.8</version.druid.api>
         <profiles.active>test</profiles.active>
 

@@ -4,9 +4,9 @@ package com.yahoo.bard.webservice.data.metric.mappers;
 
 import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.ResultSet;
+import com.yahoo.bard.webservice.data.ResultSetSchema;
 import com.yahoo.bard.webservice.druid.model.orderby.SortDirection;
 import com.yahoo.bard.webservice.logging.RequestLog;
-import com.yahoo.bard.webservice.table.Schema;
 
 import org.joda.time.DateTime;
 
@@ -59,11 +59,11 @@ public class DateTimeSortMapper extends ResultSetMapper {
                     Comparator.reverseOrder());
 
             return new ResultSet(
+                    resultSet.getSchema(),
                     dateTimeList.stream()
                             .map(bucketizedResultsMap::get)
                             .flatMap(List::stream)
-                            .collect(Collectors.toList()),
-                    resultSet.getSchema()
+                            .collect(Collectors.toList())
             );
         } finally {
             RequestLog.stopTiming("sortResultSet");
@@ -71,14 +71,14 @@ public class DateTimeSortMapper extends ResultSetMapper {
     }
 
     @Override
-    protected Result map(Result result, Schema schema) {
+    protected Result map(Result result, ResultSetSchema schema) {
         //Not needed, because this mapper overrides map(ResultSet). So it is just a no-op.
         return result;
     }
 
 
     @Override
-    protected Schema map(Schema schema) {
+    protected ResultSetSchema map(ResultSetSchema schema) {
         //Because this method is not necessary, it just returns the schema unchanged.
         return schema;
     }

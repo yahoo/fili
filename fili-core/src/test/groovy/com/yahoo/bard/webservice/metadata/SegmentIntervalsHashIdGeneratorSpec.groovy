@@ -12,7 +12,7 @@ import com.yahoo.bard.webservice.druid.model.query.LookbackQuery
 import com.yahoo.bard.webservice.druid.model.query.LookbackQuerySpec
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuerySpec
-import com.yahoo.bard.webservice.table.PhysicalTable
+import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 import com.yahoo.bard.webservice.util.DefaultingDictionary
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
@@ -25,7 +25,6 @@ import spock.lang.Unroll
 
 import java.util.concurrent.ConcurrentSkipListMap
 import java.util.concurrent.atomic.AtomicReference
-import java.util.function.Function
 
 import static org.joda.time.DateTimeZone.UTC
 
@@ -102,7 +101,13 @@ class SegmentIntervalsHashIdGeneratorSpec extends BaseDataSourceMetadataSpec {
         TimeSeriesQuerySpec timeSeriesQuerySpec = new TimeSeriesQuerySpec()
         timeSeriesQuery = timeSeriesQuerySpec.defaultQuery(
                 intervals: [interval2],
-                dataSource: new TableDataSource(new PhysicalTable(tableName, DefaultTimeGrain.DAY.buildZonedTimeGrain(UTC), [:]))
+                dataSource: new TableDataSource(
+                        new ConcretePhysicalTable(
+                                tableName, DefaultTimeGrain.DAY.buildZonedTimeGrain(UTC),
+                                [] as Set,
+                                [:]
+                        )
+                )
         )
 
         LookbackQuerySpec lookbackQuerySpec = new LookbackQuerySpec()

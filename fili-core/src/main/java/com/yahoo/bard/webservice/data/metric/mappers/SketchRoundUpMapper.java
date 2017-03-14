@@ -2,10 +2,10 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric.mappers;
 
+import com.yahoo.bard.webservice.data.metric.MetricColumn;
+import com.yahoo.bard.webservice.data.ResultSetSchema;
 import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.config.names.FieldName;
-import com.yahoo.bard.webservice.data.metric.MetricColumn;
-import com.yahoo.bard.webservice.table.Schema;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -38,12 +38,15 @@ public class SketchRoundUpMapper extends ResultSetMapper implements ColumnMapper
     }
 
     @Override
-    protected Result map(Result result, Schema schema) {
+    protected Result map(Result result, ResultSetSchema schema) {
         if (columnName == null) {
             throw new IllegalStateException("Cannot map results without a column name");
         }
 
-        MetricColumn metricColumn = (MetricColumn) schema.getColumn(columnName);
+        MetricColumn metricColumn = schema.getColumn(columnName, MetricColumn.class).orElseThrow(
+                () -> new IllegalStateException("Unexpected missing column: " + columnName)
+        );
+
         BigDecimal value = result.getMetricValueAsNumber(metricColumn);
         if (value == null) {
             return result;
@@ -53,7 +56,7 @@ public class SketchRoundUpMapper extends ResultSetMapper implements ColumnMapper
     }
 
     @Override
-    protected Schema map(Schema schema) {
+    protected ResultSetSchema map(ResultSetSchema schema) {
         return schema;
     }
 

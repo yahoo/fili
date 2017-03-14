@@ -8,7 +8,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.table.Schema;
-import com.yahoo.bard.webservice.table.ZonedSchema;
+import com.yahoo.bard.webservice.util.DateTimeUtils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -96,16 +96,11 @@ public class ResultSetSerializationProxy {
      *
      * @return Schema components.
      */
-    private Map<String, Object> getSchemaComponents(Schema schema) {
+    private Map<String, Object> getSchemaComponents(ResultSetSchema schema) {
         Map<String, Object> schemaComponents = new HashMap<>();
 
-        String timeId = (schema instanceof ZonedSchema) ?
-                ((ZonedSchema) schema).getDateTimeZone().getID() :
-                SYSTEM_CONFIG.getStringProperty(SYSTEM_CONFIG.getPackageVariableName("timezone"), "UTC");
-
-        schemaComponents.put(SCHEMA_TIMEZONE, timeId);
+        schemaComponents.put(SCHEMA_TIMEZONE, DateTimeUtils.getTimeZone(schema.getGranularity()).getID());
         schemaComponents.put(SCHEMA_GRANULARITY, schema.getGranularity().getName());
-
         schemaComponents.put(
                 SCHEMA_DIM_COLUMNS,
                 schema.getColumns(DimensionColumn.class).stream().map(Column::getName).collect(Collectors.toSet())
@@ -114,6 +109,7 @@ public class ResultSetSerializationProxy {
                 SCHEMA_METRIC_COLUMNS,
                 getMetricColumnNames(schema)
         );
+
         return schemaComponents;
     }
 

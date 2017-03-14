@@ -12,9 +12,9 @@ import static com.yahoo.bard.webservice.druid.model.query.QueryContext.Param.USE
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.google.common.collect.ImmutableMap;
 
 import java.util.AbstractMap.SimpleImmutableEntry;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -56,7 +56,7 @@ public class QueryContext {
 
     // ACCEPTING_FIELDS holds the list of legitimate parameters to context and their expected types
     @SuppressWarnings("rawtypes")
-    public static final Map<Param, Class> ACCEPTING_FIELDS = Collections.unmodifiableMap(Stream.of(
+    public static final Map<Param, Class> ACCEPTING_FIELDS = ImmutableMap.copyOf(Stream.of(
             new SimpleImmutableEntry<>(TIMEOUT, Number.class),
             new SimpleImmutableEntry<>(PRIORITY, Number.class),
             new SimpleImmutableEntry<>(QUERY_ID, String.class),
@@ -88,7 +88,7 @@ public class QueryContext {
         }
 
         // Store an immutable copy
-        this.contextMap = Collections.unmodifiableMap(contextMap);
+        this.contextMap = ImmutableMap.copyOf(contextMap);
         this.totalQueries = totalQueries == null ? new AtomicLong(0) : totalQueries;
         this.sequenceNumber = this.totalQueries.incrementAndGet();
     }
@@ -115,7 +115,7 @@ public class QueryContext {
         }
 
         // Store an immutable copy
-        this.contextMap = Collections.unmodifiableMap(contextMap);
+        this.contextMap = ImmutableMap.copyOf(contextMap);
         this.totalQueries = copy.totalQueries;
         this.sequenceNumber = copy.sequenceNumber;
     }

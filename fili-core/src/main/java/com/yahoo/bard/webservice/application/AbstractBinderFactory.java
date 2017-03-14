@@ -167,6 +167,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
             SYSTEM_CONFIG.getPackageVariableName("loader_scheduler_thread_pool_size"),
             LOADER_SCHEDULER_THREAD_POOL_SIZE_DEFAULT
     );
+    public static final String SYSTEM_CONFIG_TIMEZONE_KEY = "timezone";
 
     private ObjectMappersSuite objectMappers;
 
@@ -355,7 +356,10 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      */
     protected Clock getClock() {
         return Clock.system(
-                ZoneId.of(SYSTEM_CONFIG.getStringProperty(SYSTEM_CONFIG.getPackageVariableName("timezone"), "UTC"))
+                ZoneId.of(SYSTEM_CONFIG.getStringProperty(
+                        SYSTEM_CONFIG.getPackageVariableName(SYSTEM_CONFIG_TIMEZONE_KEY),
+                        "UTC"
+                ))
         );
     }
 
