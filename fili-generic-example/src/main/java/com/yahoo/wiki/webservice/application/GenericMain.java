@@ -34,8 +34,8 @@ import javax.servlet.DispatcherType;
 /**
  * Launch Bard in Embedded Jetty.
  */
-public class WikiMain {
-    private static final Logger LOG = LoggerFactory.getLogger(WikiMain.class);
+public class GenericMain {
+    private static final Logger LOG = LoggerFactory.getLogger(GenericMain.class);
 
     /**
      * Makes the dimensions passthrough.
