@@ -52,6 +52,7 @@ class LookupDimensionToDimensionSpecSpec extends Specification{
         apiRequest.getTopN() >> OptionalInt.empty()
         apiRequest.getSorts() >> ([])
         apiRequest.getCount() >> OptionalInt.empty()
+        apiRequest.getFilters() >> Collections.emptyMap()
     }
 
     def "Given lookup dimension with no namespace serialize using dimension serializer"() {

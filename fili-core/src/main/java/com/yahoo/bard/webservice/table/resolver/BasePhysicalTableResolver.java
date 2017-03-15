@@ -1,15 +1,9 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.resolver;
 
-import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.application.MetricRegistryFactory;
-import com.yahoo.bard.webservice.data.dimension.Dimension;
-import com.yahoo.bard.webservice.data.metric.LogicalMetric;
-import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
-import com.yahoo.bard.webservice.druid.model.query.Granularity;
-import com.yahoo.bard.webservice.util.TableUtils;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 
 import com.codahale.metrics.MetricRegistry;
@@ -21,9 +15,7 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
-import java.util.stream.Collectors;
 
 /**
  *  Abstract parent to with business rule agnostic implementations of core methods.
@@ -33,44 +25,29 @@ public abstract class BasePhysicalTableResolver implements PhysicalTableResolver
     private static final Logger LOG = LoggerFactory.getLogger(BasePhysicalTableResolver.class);
     private static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry();
 
-    protected final BiFunction<DataApiRequest, TemplateDruidQuery, Granularity> resolveAcceptingGrain;
-
-    /**
-     * Constructor.
-     */
-    public BasePhysicalTableResolver() {
-        this.resolveAcceptingGrain = new RequestQueryGranularityResolver();
-    }
-
     /**
      * Create a list of matchers based on a request and query.
      *
-     * @param apiRequest  The ApiRequest for the query
-     * @param query a partial query representation
+     * @param requestConstraints contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
      *
      * @return a list of matchers to be applied, in order
      */
-    public abstract List<PhysicalTableMatcher> getMatchers(DataApiRequest apiRequest, TemplateDruidQuery query);
+    public abstract List<PhysicalTableMatcher> getMatchers(QueryPlanningConstraint requestConstraints);
 
     /**
      * Create a binary operator which returns the 'better' of two physical table.
      *
-     * @param apiRequest  The ApiRequest for the query
-     * @param query a partial query representation
+     * @param requestConstraints contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
      *
      * @return a list of matchers to be applied, in order
      */
-    public abstract BinaryOperator<PhysicalTable> getBetterTableOperator(
-            DataApiRequest apiRequest,
-            TemplateDruidQuery query
-    );
+    public abstract BinaryOperator<PhysicalTable> getBetterTableOperator(QueryPlanningConstraint requestConstraints);
 
     /**
      * Filter to a set of tables matching the rules of this resolver.
      *
      * @param candidateTables  The physical tables being filtered
-     * @param apiRequest  The request being filtered to
-     * @param query  a partial query representation
+     * @param requestConstraints contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
      *
      * @return a set of physical tables which all match the criteria of a request and partial query
      *
@@ -78,10 +55,9 @@ public abstract class BasePhysicalTableResolver implements PhysicalTableResolver
      */
     public Set<PhysicalTable> filter(
             Collection<PhysicalTable> candidateTables,
-            DataApiRequest apiRequest,
-            TemplateDruidQuery query
+            QueryPlanningConstraint requestConstraints
     ) throws NoMatchFoundException {
-        return filter(candidateTables, getMatchers(apiRequest, query));
+        return filter(candidateTables, getMatchers(requestConstraints));
     }
 
     /**
@@ -108,64 +84,34 @@ public abstract class BasePhysicalTableResolver implements PhysicalTableResolver
     @Override
     public PhysicalTable resolve(
             Collection<PhysicalTable> candidateTables,
-            DataApiRequest apiRequest,
-            TemplateDruidQuery query
+            QueryPlanningConstraint requestConstraints
     ) throws NoMatchFoundException {
+
         // Minimum grain at which the request can be aggregated from
-        Granularity minimumTableTimeGrain = resolveAcceptingGrain.apply(apiRequest, query);
-        TemplateDruidQuery innerQuery = (TemplateDruidQuery) query.getInnermostQuery();
-        Set<String> columnNames = TableUtils.getDimensions(apiRequest, innerQuery)
-                .map(Dimension::getApiName)
-                .collect(Collectors.toSet());
         LOG.trace(
                 "Resolving Table using TimeGrain: {}, dimension API names: {} and TableGroup: {}",
-                minimumTableTimeGrain,
-                columnNames,
+                requestConstraints.getMinimumGranularity(),
+                requestConstraints.getAllColumnNames(),
                 candidateTables
         );
 
         try {
-            Set<PhysicalTable> physicalTables = filter(candidateTables, apiRequest, query);
+            Set<PhysicalTable> physicalTables = filter(candidateTables, requestConstraints);
 
-            BinaryOperator<PhysicalTable> betterTable = getBetterTableOperator(apiRequest, query);
-            PhysicalTable bestTable = physicalTables.stream().reduce(betterTable).get();
+            PhysicalTable bestTable = physicalTables.stream()
+                    .reduce(getBetterTableOperator(requestConstraints)).get();
 
             REGISTRY.meter("request.physical.table." + bestTable.getName() + "." + bestTable.getTimeGrain()).mark();
             LOG.trace("Found best Table: {}", bestTable);
             return bestTable;
         } catch (NoMatchFoundException me) {
             // Blow up if we couldn't match a table, log and return if we can
-            logMatchException(apiRequest, minimumTableTimeGrain, innerQuery);
+            LOG.error(ErrorMessageFormat.NO_PHYSICAL_TABLE_MATCHED.logFormat(
+                    requestConstraints.getAllDimensionNames(),
+                    requestConstraints.getLogicalMetricNames(),
+                    requestConstraints.getMinimumGranularity()
+            ));
             throw me;
         }
-    }
-
-    /**
-     * Log out inability to find a matching table.
-     *
-     * @param apiRequest  Request for which we're trying to find a table
-     * @param minimumTableTimeGrain  Minimum grain that we needed to meet
-     * @param innerQuery  Innermost query for the query we were trying to match
-     */
-    public void logMatchException(
-            DataApiRequest apiRequest,
-            Granularity minimumTableTimeGrain,
-            TemplateDruidQuery innerQuery
-    ) {
-        // Get the dimensions and metrics as lists of names
-        Set<String> requestDimensionNames = TableUtils.getDimensions(apiRequest, innerQuery)
-                .map(Dimension::getApiName)
-                .collect(Collectors.toSet());
-
-        Set<String> requestMetricNames = apiRequest.getLogicalMetrics().stream()
-                .map(LogicalMetric::getName)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-
-        String msg = ErrorMessageFormat.NO_PHYSICAL_TABLE_MATCHED.logFormat(
-                requestDimensionNames,
-                requestMetricNames,
-                minimumTableTimeGrain
-        );
-        LOG.error(msg);
     }
 }
