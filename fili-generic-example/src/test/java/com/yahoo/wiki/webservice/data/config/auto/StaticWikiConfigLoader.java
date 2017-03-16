@@ -22,7 +22,6 @@ public class StaticWikiConfigLoader implements ConfigLoader {
                 return "wikiticker";
             }
 
-            //TODO should this be camelcased?
             @Override
             public TableName getTableName() {
                 return this::getName;
