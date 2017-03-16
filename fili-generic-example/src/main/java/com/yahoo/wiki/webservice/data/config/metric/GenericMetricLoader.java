@@ -8,7 +8,6 @@ import com.yahoo.bard.webservice.data.config.metric.makers.DoubleSumMaker;
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.config.names.FieldName;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
-import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.wiki.webservice.data.config.auto.ConfigLoader;
 import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration;
 
@@ -69,11 +68,10 @@ public class GenericMetricLoader implements MetricLoader {
         List<MetricInstance> metrics = new ArrayList<>();
 
         for (DataSourceConfiguration tableConfig : configLoader.getTableNames()) {
-            TimeGrain timeGrain = tableConfig.getValidTimeGrains().get(0);
-            MetricNameGenerator.setDefaultTimeGrain(timeGrain);
             for (String name : tableConfig.getMetrics()) {
                 ApiMetricName apiMetricName = MetricNameGenerator.getFiliMetricName(
-                        name
+                        name,
+                        tableConfig.getValidTimeGrains()
                 );
                 FieldName fieldName = MetricNameGenerator.getDruidMetric(
                         name
