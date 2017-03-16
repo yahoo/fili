@@ -14,7 +14,7 @@ import java.util.LinkedHashSet;
 import javax.validation.constraints.NotNull;
 
 /**
- * The Wiki configuration source for dimensions.
+ *
  */
 public class GenericDimensionConfig implements DimensionConfig {
 

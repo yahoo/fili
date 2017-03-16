@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 /**
- * Created by kevin on 2/28/2017.
+ * Searches for all datasources and their dimensions, metrics, and timegrains from druid.
  */
 public class DruidNavigator implements Supplier<List<? extends DataSourceConfiguration>> {
     private static final Logger LOG = LoggerFactory.getLogger(DruidNavigator.class);
@@ -35,10 +35,14 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
         tableConfigurations = new ArrayList<>();
     }
 
+    /**
+     * Queries druid for all datasources and loads each of their configurations.
+     * @return a list of {@link DataSourceConfiguration} containing all known druid datasources configs.
+     */
     @Override
     public List<? extends DataSourceConfiguration> get() {
         String url = COORDINATOR_BASE + "datasources/";
-        getJson(rootNode -> {
+        queryDruid(rootNode -> {
             if (rootNode.isArray()) {
                 for (final JsonNode objNode : rootNode) {
                     TableConfig tableConfig = new TableConfig(objNode.asText());
@@ -51,9 +55,13 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
         return tableConfigurations;
     }
 
+    /**
+     * Load a specific table with all reported metrics, dimensions, and timegrains.
+     * @param table  The TableConfig to be loaded with queries against druid.
+     */
     public void loadTable(TableConfig table) {
         String url = COORDINATOR_BASE + "datasources/" + table.getName() + "/?full";
-        getJson(rootNode -> {
+        queryDruid(rootNode -> {
             //TODO: handle errors
             JsonNode segments = rootNode.get("segments").get(0);
             loadMetrics(table, segments);
@@ -63,24 +71,39 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
         }, url);
     }
 
-    private void loadMetrics(final TableConfig table, final JsonNode rootNode) {
-        JsonNode metricsArray = rootNode.get("metrics");
+    /**
+     * Add all metrics from druid query to the {@link TableConfig}.
+     * @param table  The TableConfig to be loaded.
+     * @param segmentJson  The JsonNode containing a list of metrics.
+     */
+    private void loadMetrics(TableConfig table, JsonNode segmentJson) {
+        JsonNode metricsArray = segmentJson.get("metrics");
         String[] metrics = metricsArray.asText().split(",");
         for (String metric : metrics) {
             table.addMetric(metric);
         }
     }
 
-    private void loadDimensions(final TableConfig tableName, final JsonNode rootNode) {
-        JsonNode dimensionsArray = rootNode.get("dimensions");
+    /**
+     * Add all dimensions from druid query to the {@link TableConfig}.
+     * @param tableName  The TableConfig to be loaded.
+     * @param segmentJson  The JsonNode containing a list of dimensions.
+     */
+    private void loadDimensions(TableConfig tableName, JsonNode segmentJson) {
+        JsonNode dimensionsArray = segmentJson.get("dimensions");
         String[] dimensions = dimensionsArray.asText().split(",");
         for (String dimension : dimensions) {
             tableName.addDimension(dimension);
         }
     }
 
-    private void loadTimeGrains(final TableConfig tableConfig, final JsonNode rootNode) {
-        JsonNode timeInterval = rootNode.get("interval");
+    /**
+     * Find a valid timegrain from druid query to the {@link TableConfig}.
+     * @param tableConfig  The TableConfig to be loaded.
+     * @param segmentJson  The JsonNode containing a time interval.
+     */
+    private void loadTimeGrains(TableConfig tableConfig, JsonNode segmentJson) {
+        JsonNode timeInterval = segmentJson.get("interval");
         String[] utcTimes = timeInterval.asText().split("/");
         if (utcTimes.length >= 2) {
             DateTime start = new DateTime(utcTimes[0], DateTimeZone.UTC);
@@ -93,7 +116,6 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
     }
 
     //TODO check for " Minute must start and end on the 1st second of a minute." compliance
-    //Day is probably safe
     private TimeGrain getTimeGrain(DateTime start, DateTime end) {
         Duration diff = new Duration(start, end);
         if (diff.getStandardMinutes() == 1) {
@@ -115,10 +137,15 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
             return DefaultTimeGrain.YEAR;
         }
         LOG.info("Couldn't detect default timegrain for " + start + "-" + end + ", defaulting to DAY TimeGrain.");
-        return DefaultTimeGrain.DAY;
+        return DefaultTimeGrain.DAY; //Day is probably safe for most configurations
     }
 
-    private void getJson(SuccessCallback successCallback, String url) {
+    /**
+     * Send a request to druid.
+     * @param successCallback  The callback to be done if the query succeeds.
+     * @param url  The url to send the query to.
+     */
+    private void queryDruid(SuccessCallback successCallback, String url) {
         LOG.debug("Fetching " + url);
         druidWebService.getJsonObject(
                 rootNode -> {

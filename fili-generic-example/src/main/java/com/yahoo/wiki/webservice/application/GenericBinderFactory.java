@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 /**
- * Wiki specialization of the Abstract Binder factory, applying Wiki configuration objects.
+ *
  */
 public class GenericBinderFactory extends AbstractBinderFactory {
     private static Supplier<List<? extends DataSourceConfiguration>> configLoader;

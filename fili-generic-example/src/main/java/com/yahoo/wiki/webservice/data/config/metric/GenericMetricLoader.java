@@ -18,9 +18,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 /**
- * Load the Wiki-specific metrics. Currently only loads primitive makers that are considered built-in to Fili,
- * such as the LongSumMaker for performing the longSum aggregation, and the divisionMaker, which performs division
- * of two other metrics.
+ *
  */
 public class GenericMetricLoader implements MetricLoader {
 

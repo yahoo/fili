@@ -9,7 +9,7 @@ import java.util.List;
 
 /**
  * Holds the minimum necessary configuration necessary to set up fili to
- * make reqeusts to druid. This defines all metrics, dimentions, and valid
+ * make requests to druid. This defines all metrics, dimensions, and valid
  * time grains of a datasource.
  */
 public interface DataSourceConfiguration {
