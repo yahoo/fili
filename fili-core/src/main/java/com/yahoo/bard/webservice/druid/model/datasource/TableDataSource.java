@@ -25,7 +25,7 @@ public class TableDataSource extends DataSource {
     public TableDataSource(ConcretePhysicalTable physicalTable) {
         super(DefaultDataSourceType.TABLE, Collections.singleton(physicalTable));
 
-        this.name = physicalTable.getFactTableName();
+        this.name = physicalTable.getAvailability().getDataSourceNames().stream().findFirst().get().asName();
     }
 
     public String getName() {

@@ -1,4 +1,4 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.handlers
 
@@ -13,6 +13,7 @@ import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
+import com.yahoo.bard.webservice.util.TableUtils
 import com.yahoo.bard.webservice.web.DataApiRequest
 import com.yahoo.bard.webservice.web.responseprocessors.MappingResponseProcessor
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext
@@ -47,6 +48,10 @@ class PartialDataRequestHandlerSpec extends Specification {
     )
 
     def setup() {
+        apiRequest.getDimensions() >> Collections.emptySet()
+        apiRequest.getFilterDimensions() >> Collections.emptySet()
+        groupByQuery.getMetricDimensions() >> Collections.emptySet()
+        groupByQuery.getDependentFieldNames() >> Collections.emptySet()
         groupByQuery.getInnermostQuery() >> groupByQuery
         groupByQuery.getDataSource() >> dataSource
         physicalTableDictionary.get(_) >> physicalTables[0]
@@ -61,7 +66,6 @@ class PartialDataRequestHandlerSpec extends Specification {
         setup:
         PARTIAL_DATA.setOn(true)
         boolean success
-        ResponseProcessor capture
         Set intervals = [] as TreeSet
         apiRequest.intervals >> []
 
@@ -71,8 +75,7 @@ class PartialDataRequestHandlerSpec extends Specification {
         then:
         success
         1 * partialDataHandler.findMissingTimeGrainIntervals(
-                apiRequest,
-                groupByQuery,
+                TableUtils.getColumnNames(apiRequest, groupByQuery),
                 physicalTables,
                 new SimplifiedIntervalList(apiRequest.intervals),
                 apiRequest.granularity
@@ -104,8 +107,7 @@ class PartialDataRequestHandlerSpec extends Specification {
         then:
         success
         1 * partialDataHandler.findMissingTimeGrainIntervals(
-                apiRequest,
-                groupByQuery,
+                TableUtils.getColumnNames(apiRequest, groupByQuery),
                 physicalTables,
                 new SimplifiedIntervalList(apiRequest.intervals),
                 apiRequest.granularity
@@ -135,7 +137,7 @@ class PartialDataRequestHandlerSpec extends Specification {
         PARTIAL_DATA.setOn(false)
         boolean success
         Interval i = new Interval(0, 1)
-        SimplifiedIntervalList nonEmptyIntervals = new SimplifiedIntervalList([i]);
+        SimplifiedIntervalList nonEmptyIntervals = new SimplifiedIntervalList([i])
         apiRequest.intervals >> [new Interval(0, 2)]
 
         ResponseContext responseContext = new ResponseContext([:])
@@ -150,8 +152,7 @@ class PartialDataRequestHandlerSpec extends Specification {
         then:
         success
         1 * partialDataHandler.findMissingTimeGrainIntervals(
-                apiRequest,
-                groupByQuery,
+                TableUtils.getColumnNames(apiRequest, groupByQuery),
                 physicalTables,
                 new SimplifiedIntervalList(apiRequest.intervals),
                 apiRequest.granularity
