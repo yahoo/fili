@@ -70,10 +70,10 @@ public class GenericMain {
     }
 
     /**
+     * Run a generic setup which mirrors all information from druid into fili configuration.
      *
-     *
-     * @param args  command line arguments
-     * @throws Exception if the server fails to start or crashes
+     * @param args  Command line arguments.
+     * @throws Exception if the server fails to start or crashes.
      */
     public static void main(String[] args) throws Exception {
         int port = 9998;
