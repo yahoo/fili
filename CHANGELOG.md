@@ -9,6 +9,9 @@ Current
 -------
 
 ### Added:
+- [QueryPlanningConstraint and DataSourceConstraint](https://github.com/yahoo/fili/pull/169)
+    * Added `QueryPlanningConstraint` to replace current interface of Matchers and Resolvers arguments during query planning
+    * Added `DataSourceConstraint` to allow implementation of `PartitionedFactTable`'s availability in the near future
 
 - [Major refactor for availability and schemas and tables](https://github.com/yahoo/fili/pull/165)
     * `ImmutableAvailability` - provides immutable, typed replacement for maps of column availabilities
@@ -43,6 +46,9 @@ Current
 - [Support timeouts for lucene search provider](https://github.com/yahoo/fili/pull/183)
 
 ### Changed:
+- [QueryPlanningConstraint and DataSourceConstraint](https://github.com/yahoo/fili/pull/169)
+    * `QueryPlanningConstraint` replaces current interface of Matchers and Resolvers `DataApiRequest` and `TemplateDruidQuery` arguments during query planning
+    * Modified `findMissingTimeGrainIntervals` method in `PartialDataHandler` to take a set of columns instead of `DataApiRequest` and `DruidAggregationQuery`
 
 - [Major refactor for availability and schemas and tables](https://github.com/yahoo/fili/pull/165)
     * `Schema` and `Table` became interfaces
