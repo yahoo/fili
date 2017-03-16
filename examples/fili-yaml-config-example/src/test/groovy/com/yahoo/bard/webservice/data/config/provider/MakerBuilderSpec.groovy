@@ -26,7 +26,6 @@ class MakerBuilderSpec extends Specification {
 
         expect:
         maker instanceof ThetaSketchMaker
-        maker.sketchSize == 1
     }
 
 }
