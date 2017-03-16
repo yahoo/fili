@@ -114,9 +114,9 @@ public class GenericTableLoader extends BaseTableLoader {
     }
 
     private Set<PhysicalTableDefinition> getPhysicalTableDefinitions(
-            final DataSourceConfiguration dataSourceConfiguration,
+            DataSourceConfiguration dataSourceConfiguration,
             TimeGrain timeGrain,
-            final Set<DimensionConfig> dimsBasefactDruidTable
+            Set<DimensionConfig> dimsBasefactDruidTable
     ) {
         ZonedTimeGrain zonedTimeGrain = new ZonedTimeGrain(
                 (ZonelessTimeGrain) timeGrain,

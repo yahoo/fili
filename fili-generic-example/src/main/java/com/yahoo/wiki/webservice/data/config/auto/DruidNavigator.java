@@ -26,8 +26,8 @@ public class DruidNavigator implements ConfigLoader {
     private static final Logger LOG = LoggerFactory.getLogger(DruidNavigator.class);
     private static final int COORDINATOR_PORT = 8081;
     private static final String COORDINATOR_BASE = "http://localhost:" + COORDINATOR_PORT + "/druid/coordinator/v1/";
-    private DruidWebService druidWebService;
-    private List<TableConfig> tableConfigurations;
+    private final DruidWebService druidWebService;
+    private final List<TableConfig> tableConfigurations;
 
     public DruidNavigator(DruidWebService druidWebService) {
         this.druidWebService = druidWebService;

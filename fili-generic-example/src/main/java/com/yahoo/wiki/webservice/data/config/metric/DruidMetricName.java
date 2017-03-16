@@ -6,7 +6,7 @@ import com.yahoo.bard.webservice.data.config.names.FieldName;
  * Created by kevin on 3/7/2017.
  */
 public class DruidMetricName implements FieldName {
-    private String name;
+    private final String name;
 
     public DruidMetricName(String name) {
         this.name = name;
