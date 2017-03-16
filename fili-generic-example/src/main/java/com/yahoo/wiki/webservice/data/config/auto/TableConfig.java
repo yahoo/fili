@@ -4,7 +4,6 @@ package com.yahoo.wiki.webservice.data.config.auto;
 
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
-import com.yahoo.bard.webservice.util.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;

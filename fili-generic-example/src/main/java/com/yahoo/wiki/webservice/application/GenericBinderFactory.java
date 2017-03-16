@@ -18,20 +18,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
 /**
- *
+ * Builds dimensions, metrics, and tables for all datasources found from druid.
  */
 public class GenericBinderFactory extends AbstractBinderFactory {
     private static Supplier<List<? extends DataSourceConfiguration>> configLoader;
     private GenericDimensions genericDimensions;
 
     @Override
-    protected LinkedHashSet<DimensionConfig> getDimensionConfigurations() {
+    protected Set<DimensionConfig> getDimensionConfigurations() {
         //NOTE: This is guaranteed to be called before getTableLoader()
         genericDimensions = new GenericDimensions(configLoader);
-        return new LinkedHashSet<>(genericDimensions.getAllDimensionConfigurations());
+        return genericDimensions.getAllDimensionConfigurations();
     }
 
     @Override

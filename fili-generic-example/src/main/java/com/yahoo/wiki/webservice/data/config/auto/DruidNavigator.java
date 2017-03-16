@@ -30,6 +30,10 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
     private final DruidWebService druidWebService;
     private final List<TableConfig> tableConfigurations;
 
+    /**
+     * Constructs a DruidNavigator to load datasources from druid.
+     * @param druidWebService  The DruidWebService to be used when talking to druid.
+     */
     public DruidNavigator(DruidWebService druidWebService) {
         this.druidWebService = druidWebService;
         tableConfigurations = new ArrayList<>();

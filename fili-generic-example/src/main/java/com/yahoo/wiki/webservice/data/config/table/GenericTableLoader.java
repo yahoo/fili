@@ -16,7 +16,8 @@ import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration;
 import com.yahoo.wiki.webservice.data.config.dimension.GenericDimensions;
-import com.yahoo.wiki.webservice.data.config.metric.MetricNameGenerator;
+import com.yahoo.wiki.webservice.data.config.metric.DruidMetricName;
+import com.yahoo.wiki.webservice.data.config.metric.FiliApiMetricName;
 
 import org.joda.time.DateTimeZone;
 
@@ -28,6 +29,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * Load the table configuration for any druid setup.
@@ -47,12 +50,12 @@ public class GenericTableLoader extends BaseTableLoader {
 
     /**
      * Constructor.
-     * @param configLoader  Supplier to a list of {@link DataSourceConfiguration}
-     * @param genericDimensions  Reference to the already constructed dimensions
+     * @param configLoader  Gives a list of {@link DataSourceConfiguration} to build tables from.
+     * @param genericDimensions  Reference to the already constructed dimensions.
      */
     public GenericTableLoader(
-            Supplier<List<? extends DataSourceConfiguration>> configLoader,
-            GenericDimensions genericDimensions
+            @NotNull Supplier<List<? extends DataSourceConfiguration>> configLoader,
+            @NotNull GenericDimensions genericDimensions
     ) {
         this.configLoader = configLoader;
         configureTables(genericDimensions);
@@ -80,7 +83,7 @@ public class GenericTableLoader extends BaseTableLoader {
                     new LinkedHashSet<>(
                             dataSourceConfiguration.getMetrics()
                                     .stream()
-                                    .map(MetricNameGenerator::getDruidMetric)
+                                    .map(DruidMetricName::new)
                                     .collect(Collectors.toList())
                     )
             );
@@ -90,7 +93,7 @@ public class GenericTableLoader extends BaseTableLoader {
                     new LinkedHashSet<>(
                             dataSourceConfiguration.getMetrics()
                                     .stream()
-                                    .map(metricName -> MetricNameGenerator.getFiliMetricName(
+                                    .map(metricName -> new FiliApiMetricName(
                                             metricName,
                                             dataSourceConfiguration.getValidTimeGrains()
                                     ))

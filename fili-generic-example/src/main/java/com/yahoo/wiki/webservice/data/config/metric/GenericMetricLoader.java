@@ -17,8 +17,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
+import javax.validation.constraints.NotNull;
+
 /**
- *
+ * Loads all metrics from a list of {@link DataSourceConfiguration}.
  */
 public class GenericMetricLoader implements MetricLoader {
 
@@ -32,8 +34,11 @@ public class GenericMetricLoader implements MetricLoader {
 
     /**
      * Constructs a GenericMetricLoader using the default sketch size.
+     * @param configLoader  Gives a list of {@link DataSourceConfiguration} to build metrics from.
      */
-    public GenericMetricLoader(Supplier<List<? extends DataSourceConfiguration>> configLoader) {
+    public GenericMetricLoader(
+            @NotNull Supplier<List<? extends DataSourceConfiguration>> configLoader
+    ) {
         this(DEFAULT_SKETCH_SIZE_IN_BYTES, configLoader);
     }
 
@@ -41,9 +46,12 @@ public class GenericMetricLoader implements MetricLoader {
      * Constructs a GenericMetricLoader using the given sketch size.
      *
      * @param sketchSize  Sketch size, in number of bytes, to use for sketch operations
-     * @param configLoader
+     * @param configLoader  Gives a list of {@link DataSourceConfiguration} to build the metrics from.
      */
-    public GenericMetricLoader(int sketchSize, Supplier<List<? extends DataSourceConfiguration>> configLoader) {
+    public GenericMetricLoader(
+            int sketchSize,
+            @NotNull Supplier<List<? extends DataSourceConfiguration>> configLoader
+    ) {
         this.sketchSize = sketchSize;
         this.configLoader = configLoader;
     }
@@ -67,13 +75,11 @@ public class GenericMetricLoader implements MetricLoader {
 
         for (DataSourceConfiguration tableConfig : configLoader.get()) {
             for (String name : tableConfig.getMetrics()) {
-                ApiMetricName apiMetricName = MetricNameGenerator.getFiliMetricName(
+                ApiMetricName apiMetricName = new FiliApiMetricName(
                         name,
                         tableConfig.getValidTimeGrains()
                 );
-                FieldName fieldName = MetricNameGenerator.getDruidMetric(
-                        name
-                );
+                FieldName fieldName = new DruidMetricName(name);
                 metrics.add(new MetricInstance(apiMetricName, doubleSumMaker, fieldName));
             }
         }
