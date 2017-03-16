@@ -3,14 +3,12 @@
 package com.yahoo.wiki.webservice.data.config.dimension;
 
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
-import com.yahoo.bard.webservice.util.EnumUtils;
 
 /**
  * DimensionField enum.
  */
 public enum GenericDimensionField implements DimensionField {
-    ID("Dimension ID"),
-    DESC("Dimension Description");
+    ID("Dimension ID");
 
     private String description;
     private String camelName;
@@ -22,7 +20,7 @@ public enum GenericDimensionField implements DimensionField {
      */
     GenericDimensionField(String description) {
         this.description = description;
-        this.camelName = EnumUtils.camelCase(name());
+        this.camelName = name();
     }
 
     @Override

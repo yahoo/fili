@@ -13,7 +13,6 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
-import org.joda.time.Period;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +35,7 @@ public class DruidNavigator implements ConfigLoader {
     }
 
     @Override
-    public List<? extends DruidConfig> getTableNames() {
+    public List<? extends DataSourceConfiguration> getTableNames() {
         String url = COORDINATOR_BASE + "datasources/";
         getJson(rootNode -> {
             if (rootNode.isArray()) {
@@ -66,16 +65,16 @@ public class DruidNavigator implements ConfigLoader {
     private void loadMetrics(final TableConfig table, final JsonNode rootNode) {
         JsonNode metricsArray = rootNode.get("metrics");
         String[] metrics = metricsArray.asText().split(",");
-        for (String m : metrics) {
-            table.addMetric(m);
+        for (String metric : metrics) {
+            table.addMetric(metric);
         }
     }
 
     private void loadDimensions(final TableConfig tableName, final JsonNode rootNode) {
         JsonNode dimensionsArray = rootNode.get("dimensions");
         String[] dimensions = dimensionsArray.asText().split(",");
-        for (String d : dimensions) {
-            tableName.addDimension(d);
+        for (String dimension : dimensions) {
+            tableName.addDimension(dimension);
         }
     }
 
@@ -93,11 +92,12 @@ public class DruidNavigator implements ConfigLoader {
     }
 
     //TODO check for " Minute must start and end on the 1st second of a minute." compliance
+    //Day is probably safe
     private TimeGrain getTimeGrain(DateTime start, DateTime end) {
         Duration diff = new Duration(start, end);
         if (diff.getStandardMinutes() == 1) {
             return DefaultTimeGrain.MINUTE;
-        } else if (diff.getStandardHours() == 1) {
+        } else if (diff.getStandardHours() == 1) { //todo maybe not use standardHours (daylight savings time)
             return DefaultTimeGrain.HOUR;
         } else if (diff.getStandardDays() == 1) {
             return DefaultTimeGrain.DAY;
@@ -113,8 +113,8 @@ public class DruidNavigator implements ConfigLoader {
                 .getMonthOfYear() == DateTimeConstants.JANUARY && end.getDayOfMonth() == 1) {
             return DefaultTimeGrain.YEAR;
         }
-        LOG.info("Couldn't detect default timegrain " + diff.getStandardDays() + " " + start.getHourOfDay());
-        return null;
+        LOG.info("Couldn't detect default timegrain for " + start + "-" + end + ", defaulting to DAY TimeGrain.");
+        return DefaultTimeGrain.DAY;
     }
 
     private void getJson(SuccessCallback successCallback, String url) {
@@ -125,7 +125,7 @@ public class DruidNavigator implements ConfigLoader {
                     successCallback.invoke(rootNode);
                 },
                 (statusCode, reasonPhrase, responseBody) -> {
-                    LOG.info("HTTPError " + statusCode + " - " + reasonPhrase);
+                    LOG.info("HTTPError " + statusCode + " - " + reasonPhrase + " for " + url);
                 },
                 (throwable) -> {
                     LOG.info("Error thrown while fetching " + url + ". " + throwable.getMessage());

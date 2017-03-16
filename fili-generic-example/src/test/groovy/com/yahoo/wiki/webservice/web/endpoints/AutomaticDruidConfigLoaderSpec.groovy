@@ -2,7 +2,7 @@ package com.yahoo.wiki.webservice.web.endpoints
 
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService
-import com.yahoo.wiki.webservice.data.config.auto.DruidConfig
+import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration
 import com.yahoo.wiki.webservice.data.config.auto.DruidNavigator
 import com.yahoo.wiki.webservice.data.config.auto.TableConfig
 
@@ -58,12 +58,12 @@ public class AutomaticDruidConfigLoaderSpec extends Specification {
         setup:
 
         when: "We send a request"
-        List<DruidConfig> returnedTables = druidNavigator.getTableNames();
+        List<DataSourceConfiguration> returnedTables = druidNavigator.getTableNames();
 
         then: "what we expect"
         druidWebService.lastUrl == "http://localhost:8081/druid/coordinator/v1/datasources/$datasource/?full"
         List<String> returnedTableNames = new ArrayList<>();
-        for (DruidConfig druidConfig : returnedTables) {
+        for (DataSourceConfiguration druidConfig : returnedTables) {
             returnedTableNames.add(druidConfig.getName());
         }
         returnedTableNames.contains("wikiticker");
@@ -73,7 +73,7 @@ public class AutomaticDruidConfigLoaderSpec extends Specification {
         setup:
 
         when: "We send a request"
-        List<DruidConfig> returnedTables = druidNavigator.getTableNames();
+        List<DataSourceConfiguration> returnedTables = druidNavigator.getTableNames();
 
         then: "what we expect"
         druidWebService.lastUrl == "http://localhost:8081/druid/coordinator/v1/datasources/$datasource/?full"

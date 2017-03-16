@@ -8,10 +8,10 @@ import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.web.endpoints.BaseDataServletComponentSpec
 import com.yahoo.bard.webservice.web.endpoints.DataServlet
 import com.yahoo.wiki.webservice.application.WikiJerseyTestBinder
-import com.yahoo.wiki.webservice.data.config.names.names.WikiApiDimensionName
-import com.yahoo.wiki.webservice.data.config.names.names.WikiApiMetricName
-import com.yahoo.wiki.webservice.data.config.names.names.WikiDruidMetricName
-import com.yahoo.wiki.webservice.data.config.names.names.WikiDruidTableName
+import com.yahoo.wiki.webservice.data.config.names.WikiApiDimensionName
+import com.yahoo.wiki.webservice.data.config.names.WikiApiMetricName
+import com.yahoo.wiki.webservice.data.config.names.WikiDruidMetricName
+import com.yahoo.wiki.webservice.data.config.names.WikiDruidTableName
 
 class SingleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServletComponentSpec {
 
@@ -19,9 +19,9 @@ class SingleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServle
     def setup() {
         DimensionDictionary dimensionStore = jtb.configurationLoader.dimensionDictionary
         dimensionStore.findByApiName(WikiApiDimensionName.PAGE.asName()).with {
-            addDimensionRow(BardDimensionField.makeDimensionRow(it, "Foo", "FooDesc"))
-            addDimensionRow(BardDimensionField.makeDimensionRow(it, "Bar", "BarDesc"))
-            addDimensionRow(BardDimensionField.makeDimensionRow(it, "Baz", "BazDesc"))
+            addDimensionRow(BardDimensionField.makeDimensionRow(it, "Foo"))
+            addDimensionRow(BardDimensionField.makeDimensionRow(it, "Bar"))
+            addDimensionRow(BardDimensionField.makeDimensionRow(it, "Baz"))
         }
     }
 

@@ -2,8 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.dimension;
 
-import com.yahoo.bard.webservice.config.SystemConfig;
-import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
@@ -14,10 +12,10 @@ import com.yahoo.bard.webservice.util.EnumUtils;
 import com.yahoo.bard.webservice.util.StreamUtils;
 import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.wiki.webservice.data.config.auto.ConfigLoader;
-import com.yahoo.wiki.webservice.data.config.auto.DruidConfig;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -28,11 +26,6 @@ import java.util.stream.Collectors;
  * Hold all the dimension configurations for the sample Bard instance.
  */
 public class GenericDimensions {
-
-    private final SystemConfig systemConfig = SystemConfigProvider.getInstance();
-
-    private final String defaultDimensionBackendKey = systemConfig.getPackageVariableName("dimension_backend");
-
     private final Set<DimensionConfig> dimensionConfigs;
     private final LinkedHashMap<String, DimensionConfig> wikiApiDimensionNameToConfig;
 
@@ -40,24 +33,26 @@ public class GenericDimensions {
      * Construct the dimension configurations.
      */
     public GenericDimensions(ConfigLoader configLoader) {
-        DruidConfig config = configLoader.getTableNames().get(0);
-        this.dimensionConfigs = Collections.unmodifiableSet(
-                config.getDimensions().stream()
-                        .map(
-                                dimensionName -> new GenericDimensionConfig(
-                                        dimensionName,
-                                        EnumUtils.camelCase(dimensionName),
-                                        getDefaultKeyValueStore(EnumUtils.camelCase(dimensionName)),
-                                        getDefaultSearchProvider(EnumUtils.camelCase(dimensionName)),
-                                        getDefaultFields()
-                                )
-                        )
-                        .collect(Collectors.toSet())
-        );
+        if (configLoader.getTableNames().size() > 0) {
+            dimensionConfigs = Collections.unmodifiableSet(configLoader.getTableNames()
+                    .stream()
+                    .flatMap(tableName -> tableName.getDimensions().stream())
+                    .map(dimensionName -> new GenericDimensionConfig(
+                            dimensionName,
+                            dimensionName,
+                            getDefaultKeyValueStore(dimensionName),
+                            getDefaultSearchProvider(dimensionName),
+                            getDefaultFields()
+                    ))
+                    .collect(Collectors.toSet()));
 
-        wikiApiDimensionNameToConfig = dimensionConfigs.stream().collect(
-                StreamUtils.toLinkedMap(DimensionConfig::getApiName, Function.identity())
-        );
+            wikiApiDimensionNameToConfig = dimensionConfigs.stream().collect(
+                    StreamUtils.toLinkedMap(DimensionConfig::getApiName, Function.identity())
+            );
+        } else {
+            dimensionConfigs = new HashSet<>();
+            wikiApiDimensionNameToConfig = new LinkedHashMap<>();
+        }
     }
 
     /**
@@ -106,9 +101,7 @@ public class GenericDimensions {
     }
 
     private LinkedHashSet<DimensionField> getDefaultFields() {
-        return Utils.<DimensionField>asLinkedHashSet(
-                GenericDimensionField.ID,
-                GenericDimensionField.DESC
-        );
+        return Utils.asLinkedHashSet(
+                GenericDimensionField.ID);
     }
 }

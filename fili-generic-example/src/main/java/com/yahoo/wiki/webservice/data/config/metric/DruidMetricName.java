@@ -1,19 +1,15 @@
 package com.yahoo.wiki.webservice.data.config.metric;
 
 import com.yahoo.bard.webservice.data.config.names.FieldName;
-import com.yahoo.bard.webservice.data.time.TimeGrain;
-
-import java.util.List;
-import java.util.Locale;
 
 /**
  * Created by kevin on 3/7/2017.
  */
 public class DruidMetricName implements FieldName {
-    private String lowerCaseName;
+    private String name;
 
-    public DruidMetricName(String lowerCaseName) {
-        this.lowerCaseName = lowerCaseName.toLowerCase(Locale.ENGLISH);
+    public DruidMetricName(String name) {
+        this.name = name;
     }
 
     @Override
@@ -23,6 +19,6 @@ public class DruidMetricName implements FieldName {
 
     @Override
     public String toString() {
-        return lowerCaseName;
+        return name;
     }
 }
