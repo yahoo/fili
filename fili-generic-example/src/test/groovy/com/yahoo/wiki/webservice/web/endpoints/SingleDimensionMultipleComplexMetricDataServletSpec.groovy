@@ -61,24 +61,21 @@ class SingleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServle
               "rows" : [
                   {
                     "dateTime" : "2014-06-02 00:00:00.000",
-                    "${WikiApiDimensionName.PAGE.asName()}|id" : "Foo",
-                    "${WikiApiDimensionName.PAGE.asName()}|desc" : "FooDesc",
+                    "${WikiApiDimensionName.PAGE.asName()}|ID" : "Foo",
                     "${WikiApiMetricName.COUNT.asName()}" : 10,
                     "${WikiApiMetricName.ADDED.asName()}" : 10,
                     "${WikiApiMetricName.DELTA.asName()}" : 20
                   },
                   {
                     "dateTime" : "2014-06-02 00:00:00.000",
-                    "${WikiApiDimensionName.PAGE.asName()}|id" : "Bar",
-                    "${WikiApiDimensionName.PAGE.asName()}|desc" : "BarDesc",
+                    "${WikiApiDimensionName.PAGE.asName()}|ID" : "Bar",
                     "${WikiApiMetricName.COUNT.asName()}" : 11,
                     "${WikiApiMetricName.ADDED.asName()}" : 11,
                     "${WikiApiMetricName.DELTA.asName()}" : 22
                   },
                   {
                     "dateTime" : "2014-06-02 00:00:00.000",
-                    "${WikiApiDimensionName.PAGE.asName()}|id" : "Baz",
-                    "${WikiApiDimensionName.PAGE.asName()}|desc" : "BazDesc",
+                    "${WikiApiDimensionName.PAGE.asName()}|ID" : "Baz",
                     "${WikiApiMetricName.COUNT.asName()}" : 12,
                     "${WikiApiMetricName.ADDED.asName()}" : 12,
                     "${WikiApiMetricName.DELTA.asName()}" : 24
@@ -92,8 +89,9 @@ class SingleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServle
         """{
           "aggregations": [
             {
+              "fieldName": "${WikiDruidMetricName.COUNT.asName()}",
               "name": "${WikiApiMetricName.COUNT.asName()}",
-              "type": "count"
+              "type": "doubleSum"
             },
             {
               "fieldName": "${WikiDruidMetricName.ADDED.asName()}",
