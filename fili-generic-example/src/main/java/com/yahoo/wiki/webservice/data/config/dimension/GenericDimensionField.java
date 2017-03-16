@@ -21,7 +21,7 @@ public enum GenericDimensionField implements DimensionField {
      */
     GenericDimensionField(String description) {
         this.description = description;
-        this.camelName = EnumUtils.camelCase(name());
+        this.camelName = name();
     }
 
     @Override
