@@ -119,8 +119,14 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
         }
     }
 
-    //TODO check for " Minute must start and end on the 1st second of a minute." compliance
+    /**
+     * Find a valid timegrain for the datasource based on the start and end date of the interval.
+     * @param start  Start of interval.
+     * @param end  End of interval.
+     * @return the valid timegrain spanned by the interval.
+     */
     private TimeGrain getTimeGrain(DateTime start, DateTime end) {
+        //TODO check for " Minute must start and end on the 1st second of a minute." compliance
         Duration diff = new Duration(start, end);
         if (diff.getStandardMinutes() == 1) {
             return DefaultTimeGrain.MINUTE;
