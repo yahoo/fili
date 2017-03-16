@@ -15,6 +15,9 @@ import javax.validation.constraints.NotNull;
  * An implementation of Physical table that is backed by a single fact table.
  */
 public class ConcretePhysicalTable extends BasePhysicalTable {
+
+    private final String factTableName;
+
     /**
      * Create a concrete physical table.
      * The availability on this table is initialized to empty intervals.
@@ -37,6 +40,7 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
                 logicalToPhysicalColumnNames,
                 new ImmutableAvailability(name, Collections.emptyMap())
         );
+        this.factTableName = name.asName();
     }
 
     /**
@@ -61,7 +65,7 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
     }
 
     public String getFactTableName() {
-        return getTableName().asName();
+        return factTableName;
     }
 
     @Override
