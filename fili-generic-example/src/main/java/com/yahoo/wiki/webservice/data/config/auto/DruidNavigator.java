@@ -18,11 +18,12 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * Created by kevin on 2/28/2017.
  */
-public class DruidNavigator implements ConfigLoader {
+public class DruidNavigator implements Supplier<List<? extends DataSourceConfiguration>> {
     private static final Logger LOG = LoggerFactory.getLogger(DruidNavigator.class);
     private static final int COORDINATOR_PORT = 8081;
     private static final String COORDINATOR_BASE = "http://localhost:" + COORDINATOR_PORT + "/druid/coordinator/v1/";
@@ -35,7 +36,7 @@ public class DruidNavigator implements ConfigLoader {
     }
 
     @Override
-    public List<? extends DataSourceConfiguration> getTableNames() {
+    public List<? extends DataSourceConfiguration> get() {
         String url = COORDINATOR_BASE + "datasources/";
         getJson(rootNode -> {
             if (rootNode.isArray()) {

@@ -8,7 +8,7 @@ import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
 import com.yahoo.bard.webservice.druid.client.DruidServiceConfig;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
-import com.yahoo.wiki.webservice.data.config.auto.ConfigLoader;
+import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration;
 import com.yahoo.wiki.webservice.data.config.auto.DruidNavigator;
 import com.yahoo.wiki.webservice.data.config.dimension.GenericDimensions;
 import com.yahoo.wiki.webservice.data.config.metric.GenericMetricLoader;
@@ -17,12 +17,14 @@ import com.yahoo.wiki.webservice.data.config.table.GenericTableLoader;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * Wiki specialization of the Abstract Binder factory, applying Wiki configuration objects.
  */
 public class GenericBinderFactory extends AbstractBinderFactory {
-    private static ConfigLoader configLoader;
+    private static Supplier<List<? extends DataSourceConfiguration>> configLoader;
     private GenericDimensions genericDimensions;
 
     @Override

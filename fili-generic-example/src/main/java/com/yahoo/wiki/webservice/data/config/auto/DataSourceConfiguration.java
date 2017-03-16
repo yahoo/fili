@@ -8,7 +8,9 @@ import com.yahoo.bard.webservice.data.time.TimeGrain;
 import java.util.List;
 
 /**
- *
+ * Holds the minimum necessary configuration necessary to set up fili to
+ * make reqeusts to druid. This defines all metrics, dimentions, and valid
+ * time grains of a datasource.
  */
 public interface DataSourceConfiguration {
     /**
@@ -24,7 +26,7 @@ public interface DataSourceConfiguration {
     TableName getTableName();
 
     /**
-     * Gets the names of all the metrics for the current datasource
+     * Gets the names of all the metrics for the current datasource.
      * @return a list of names of metrics for the current datasource.
      */
     List<String> getMetrics();

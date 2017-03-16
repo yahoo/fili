@@ -15,7 +15,6 @@ import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.bard.webservice.util.Utils;
-import com.yahoo.wiki.webservice.data.config.auto.ConfigLoader;
 import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration;
 import com.yahoo.wiki.webservice.data.config.dimension.GenericDimensions;
 import com.yahoo.wiki.webservice.data.config.metric.MetricNameGenerator;
@@ -24,8 +23,10 @@ import org.joda.time.DateTimeZone;
 
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -42,12 +43,12 @@ public class GenericTableLoader extends BaseTableLoader {
     // Set up the table definitions
     private final Map<String, Set<PhysicalTableDefinition>> tableDefinitions =
             new HashMap<>();
-    private final ConfigLoader configLoader;
+    private final Supplier<List<? extends DataSourceConfiguration>> configLoader;
 
     /**
      * Constructor.
      */
-    public GenericTableLoader(ConfigLoader configLoader, GenericDimensions genericDimensions) {
+    public GenericTableLoader(Supplier<List<? extends DataSourceConfiguration>> configLoader, GenericDimensions genericDimensions) {
         this.configLoader = configLoader;
         configureTables(genericDimensions);
     }
@@ -58,7 +59,7 @@ public class GenericTableLoader extends BaseTableLoader {
      * @param genericDimensions  The dimensions to load into test tables.
      */
     private void configureTables(GenericDimensions genericDimensions) {
-        configLoader.getTableNames().forEach(dataSourceConfiguration -> {
+        configLoader.get().forEach(dataSourceConfiguration -> {
             TimeGrain defaultTimeGrain = dataSourceConfiguration.getValidTimeGrains()
                     .get(0); //TODO this should probably have it's own method
 
@@ -142,7 +143,7 @@ public class GenericTableLoader extends BaseTableLoader {
 
     @Override
     public void loadTableDictionary(ResourceDictionaries dictionaries) {
-        configLoader.getTableNames()
+        configLoader.get()
                 .forEach(table -> {
                     TableGroup tableGroup = buildTableGroup(
                             table.getTableName().asName(),
