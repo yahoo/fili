@@ -139,15 +139,12 @@ public class DataSourceMetadataService {
     /**
      * Get a set of intervals available for each column in the table.
      *
-     * @param physicalTableName the table to get the column and availability for
+     * @param physicalTableName  The table to get the column and availability for
      *
      * @return a map of column name to a set of avialable intervals
      */
     public Map<String, Set<Interval>> getAvailableIntervalsByTable(TableName physicalTableName) {
-        try {
-            return allSegmentsByColumn.get(physicalTableName).get();
-
-        } catch (NullPointerException e) {
+        if (!allSegmentsByColumn.containsKey(physicalTableName)) {
             LOG.error(
                     "Trying to access {} physical table datasource that is not available in metadata service",
                     physicalTableName.asName()
@@ -156,8 +153,9 @@ public class DataSourceMetadataService {
                     String.format(
                             "Trying to access %s physical table datasource that is not available in metadata service",
                             physicalTableName.asName()
-                    ), e
+                    )
             );
         }
+        return allSegmentsByColumn.get(physicalTableName).get();
     }
 }

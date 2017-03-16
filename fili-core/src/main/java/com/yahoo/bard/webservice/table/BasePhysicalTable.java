@@ -100,7 +100,7 @@ public abstract class BasePhysicalTable implements PhysicalTable {
      */
     public void resetColumns(SegmentMetadata segmentMetadata, DimensionDictionary dimensionDictionary) {
         setAvailability(new ImmutableAvailability(
-                name,
+                name.asName(),
                 segmentMetadata.getDimensionIntervals(),
                 segmentMetadata.getMetricIntervals(),
                 dimensionDictionary

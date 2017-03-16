@@ -16,23 +16,24 @@ class DataSourceMetadataServiceSpec extends BaseDataSourceMetadataSpec {
         PhysicalTableDictionary tableDict = jtb.configurationLoader.getPhysicalTableDictionary()
         DataSourceMetadataService metadataService = new DataSourceMetadataService()
         DataSourceMetadata metadata = new DataSourceMetadata(tableName, [:], segments)
+        TableName currentTableName = tableDict.get(tableName).getTableName()
 
         when:
         metadataService.update(tableDict.get(tableName), metadata)
 
         then:
-        metadataService.allSegmentsByTime.get(tableDict.get(tableName).getTableName()) instanceof AtomicReference
-        metadataService.allSegmentsByColumn.get(tableDict.get(tableName).getTableName()) instanceof AtomicReference
+        metadataService.allSegmentsByTime.get(currentTableName) instanceof AtomicReference
+        metadataService.allSegmentsByColumn.get(currentTableName) instanceof AtomicReference
 
         and:
-        metadataService.allSegmentsByTime.get(tableDict.get(tableName).getTableName()).get().values()*.keySet() as List ==
+        metadataService.allSegmentsByTime.get(currentTableName).get().values()*.keySet() as List ==
         [
                 [segment1.getIdentifier(), segment2.getIdentifier()] as Set,
                 [segment3.getIdentifier(), segment4.getIdentifier()] as Set
         ] as List
 
         and: "all the intervals by column in metadata service are simplified to interval12"
-        [interval12].containsAll(metadataService.allSegmentsByColumn.get(tableDict.get(tableName).getTableName()).get().values().toSet().getAt(0))
+        [interval12].containsAll(metadataService.allSegmentsByColumn.get(currentTableName).get().values().toSet().getAt(0))
 
         cleanup:
         jtb.tearDown()

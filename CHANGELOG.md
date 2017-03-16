@@ -8,7 +8,7 @@ pull request if there was one.
 Current
 -------
 ### Added:
-- [Refactor DatasourceMetaDataService to fit composite table needs](https://github.com/yahoo/fili/pull/173)
+- [Refactor DatasourceMetadataService to fit composite table needs](https://github.com/yahoo/fili/pull/173)
     * `DataSourceMetadataService` also stores interval data from segment data as intervals by column name map and provides method `getAvailableIntervalsByTable` to retrieve it
 
 - [QueryPlanningConstraint and DataSourceConstraint](https://github.com/yahoo/fili/pull/169)
@@ -48,7 +48,7 @@ Current
 - [Support timeouts for lucene search provider](https://github.com/yahoo/fili/pull/183)
 
 ### Changed:
-- [Refactor DatasourceMetaDataService to fit composite table needs](https://github.com/yahoo/fili/pull/173)
+- [Refactor DatasourceMetadataService to fit composite table needs](https://github.com/yahoo/fili/pull/173)
     * `BasePhysicalTable` now stores table name as the `TableName` instead of `String`
     * `SegmentInfo` now stores dimension and metrics from segment data for constructing column to available interval map
 

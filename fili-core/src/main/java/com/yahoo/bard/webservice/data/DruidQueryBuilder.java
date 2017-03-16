@@ -230,6 +230,7 @@ public class DruidQueryBuilder {
             // Filters have been handled by the inner query, are not needed/allowed on the outer query
             filter = null;
         }
+
         // Filters must be applied at the lowest level as they exclude data from aggregates
         return new GroupByQuery(
                 dataSource,
