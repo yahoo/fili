@@ -11,15 +11,17 @@ import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager;
 import com.yahoo.bard.webservice.util.EnumUtils;
 import com.yahoo.bard.webservice.util.StreamUtils;
 import com.yahoo.bard.webservice.util.Utils;
-import com.yahoo.wiki.webservice.data.config.auto.ConfigLoader;
+import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -32,9 +34,9 @@ public class GenericDimensions {
     /**
      * Construct the dimension configurations.
      */
-    public GenericDimensions(ConfigLoader configLoader) {
-        if (configLoader.getTableNames().size() > 0) {
-            dimensionConfigs = Collections.unmodifiableSet(configLoader.getTableNames()
+    public GenericDimensions(Supplier<List<? extends DataSourceConfiguration>> configLoader) {
+        if (configLoader.get().size() > 0) {
+            dimensionConfigs = Collections.unmodifiableSet(configLoader.get()
                     .stream()
                     .flatMap(tableName -> tableName.getDimensions().stream())
                     .map(dimensionName -> new GenericDimensionConfig(

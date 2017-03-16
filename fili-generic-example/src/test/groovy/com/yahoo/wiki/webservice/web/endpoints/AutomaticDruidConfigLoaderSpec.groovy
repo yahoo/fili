@@ -58,7 +58,7 @@ public class AutomaticDruidConfigLoaderSpec extends Specification {
         setup:
 
         when: "We send a request"
-        List<DataSourceConfiguration> returnedTables = druidNavigator.getTableNames();
+        List<DataSourceConfiguration> returnedTables = druidNavigator.get();
 
         then: "what we expect"
         druidWebService.lastUrl == "http://localhost:8081/druid/coordinator/v1/datasources/$datasource/?full"
@@ -73,7 +73,7 @@ public class AutomaticDruidConfigLoaderSpec extends Specification {
         setup:
 
         when: "We send a request"
-        List<DataSourceConfiguration> returnedTables = druidNavigator.getTableNames();
+        List<DataSourceConfiguration> returnedTables = druidNavigator.get();
 
         then: "what we expect"
         druidWebService.lastUrl == "http://localhost:8081/druid/coordinator/v1/datasources/$datasource/?full"

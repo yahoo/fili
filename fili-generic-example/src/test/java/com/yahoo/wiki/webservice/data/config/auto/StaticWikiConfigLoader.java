@@ -9,11 +9,12 @@ import com.yahoo.bard.webservice.data.time.TimeGrain;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * Created by kevin on 3/7/2017.
  */
-public class StaticWikiConfigLoader implements ConfigLoader {
+public class StaticWikiConfigLoader implements Supplier<List<? extends DataSourceConfiguration>> {
 
     public static DataSourceConfiguration getWikiDruidConfig() {
         return new DataSourceConfiguration() {
@@ -71,7 +72,7 @@ public class StaticWikiConfigLoader implements ConfigLoader {
     }
 
     @Override
-    public List<DataSourceConfiguration> getTableNames() {
+    public List<? extends DataSourceConfiguration> get() {
         List<DataSourceConfiguration> dataSourceConfigurations = new ArrayList<>();
         dataSourceConfigurations.add(getWikiDruidConfig());
         return dataSourceConfigurations;
