@@ -10,16 +10,13 @@ import static org.joda.time.DateTimeZone.UTC
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
-import com.yahoo.bard.webservice.druid.model.datasource.QueryDataSource
-import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity
-import com.yahoo.bard.webservice.druid.model.query.Granularity
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.metadata.SegmentMetadata
 import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTable
+import com.yahoo.bard.webservice.table.resolver.QueryPlanningConstraint
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
-import com.yahoo.bard.webservice.web.DataApiRequest
 
 import org.joda.time.Interval
 
@@ -41,13 +38,11 @@ class PartialDataHandlerSpec extends Specification {
             [] as Set,
             ["userDeviceType": "user_device_type"]
     )] as Set
+
     Set<String> columnNames
-
     GroupByQuery groupByQuery = Mock(GroupByQuery.class)
-
     DimensionDictionary dimensionDictionary
-
-    DataApiRequest apiRequest
+    QueryPlanningConstraint dataSourceConstraint
 
     def cleanup() {
         PERMISSIVE_COLUMN_AVAILABILITY.setOn(originalConfig)
@@ -67,30 +62,8 @@ class PartialDataHandlerSpec extends Specification {
         dimensionDictionary = new DimensionDictionary([dim1, dim2, dim3] as Set)
 
         // Setup mock Request
-        apiRequest = Mock(DataApiRequest.class)
-        apiRequest.getDimensions() >> { [dim1, dim2] as Collection }
-        apiRequest.getFilterDimensions() >> { [] as Set }
-        apiRequest.getFilters() >> { [:] }
-
-        // setup mock inner query
-        GroupByQuery innerQuery = Mock(GroupByQuery.class)
-        innerQuery.getDataSource() >> {
-            new TableDataSource(
-                    new ConcretePhysicalTable(
-                            "basefact_network", DAY.buildZonedTimeGrain(UTC),
-                            [] as Set,
-                            ["userDeviceType": "user_device_type"]
-                    )
-            )
-        }
-        innerQuery.getDependentFieldNames() >> { ["page_views"] as Set }
-
-        groupByQuery.getGranularity() >> WEEK
-        groupByQuery.getIntervals() >> { [new Interval("2014-06-30/2014-07-28")] as List }
-        groupByQuery.getDataSource() >> { new QueryDataSource(innerQuery) }
-        groupByQuery.getDependentFieldNames() >> { innerQuery.getDependentFieldNames() }
-        groupByQuery.getInnermostQuery() >> { innerQuery }
-        groupByQuery.getMetricDimensions() >> []
+        dataSourceConstraint = Stub(QueryPlanningConstraint)
+        dataSourceConstraint.getAllColumnNames() >> columnNames
 
         /*
          * dim1 is missing four days of data internally, dim2 and dim3 are complete over the period and page_views is
@@ -104,15 +77,6 @@ class PartialDataHandlerSpec extends Specification {
         )
 
         tables*.resetColumns(segments, dimensionDictionary)
-    }
-
-    def setupApiRequest(
-            Granularity requestGranularity = WEEK,
-            Collection<Interval> requestedIntervals = [new Interval("2014-06-30/2014-07-28")]
-    ) {
-        apiRequest.getIntervals() >> { requestedIntervals }
-        apiRequest.getGranularity() >> requestGranularity
-        apiRequest
     }
 
     @Unroll
@@ -149,15 +113,15 @@ class PartialDataHandlerSpec extends Specification {
         setup:
         PERMISSIVE_COLUMN_AVAILABILITY.setOn(false)
         SimplifiedIntervalList expectedIntervals = buildIntervals(["2014-06-30/2014-07-14"])
-        apiRequest = setupApiRequest()
+        dataSourceConstraint.getRequestGranularity() >> WEEK
+        dataSourceConstraint.getIntervals() >> [new Interval("2014-06-30/2014-07-28")]
 
         expect:
         expectedIntervals == partialDataHandler.findMissingTimeGrainIntervals(
-                apiRequest,
-                groupByQuery,
+                dataSourceConstraint.getAllColumnNames(),
                 tables,
-                new SimplifiedIntervalList(apiRequest.intervals),
-                apiRequest.granularity
+                new SimplifiedIntervalList(dataSourceConstraint.getIntervals()),
+                dataSourceConstraint.getRequestGranularity()
         )
     }
 
@@ -165,15 +129,15 @@ class PartialDataHandlerSpec extends Specification {
         setup:
         PERMISSIVE_COLUMN_AVAILABILITY.setOn(false)
         SimplifiedIntervalList requestedIntervals = buildIntervals(["2014-06-30/2014-07-14"])
-        apiRequest = setupApiRequest(AllGranularity.INSTANCE, requestedIntervals)
+        dataSourceConstraint.getRequestGranularity() >> AllGranularity.INSTANCE
+        dataSourceConstraint.getIntervals() >> requestedIntervals
 
         expect:
         requestedIntervals == partialDataHandler.findMissingTimeGrainIntervals(
-                apiRequest,
-                groupByQuery,
+                dataSourceConstraint.getAllColumnNames(),
                 tables,
-                new SimplifiedIntervalList(apiRequest.intervals),
-                apiRequest.granularity
+                new SimplifiedIntervalList(dataSourceConstraint.getIntervals()),
+                dataSourceConstraint.getRequestGranularity()
         )
     }
 
