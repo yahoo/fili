@@ -7,10 +7,11 @@ import com.yahoo.bard.webservice.data.config.names.TableName
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 
 import java.util.concurrent.atomic.AtomicReference
+import java.util.stream.Collectors
 
 class DataSourceMetadataServiceSpec extends BaseDataSourceMetadataSpec {
 
-    def "test metadata service updates segment availability for physical tables"() {
+    def "test metadata service updates segment availability for physical tables and access methods behave correctly"() {
         setup:
         JerseyTestBinder jtb = new JerseyTestBinder()
         PhysicalTableDictionary tableDict = jtb.configurationLoader.getPhysicalTableDictionary()
@@ -26,14 +27,15 @@ class DataSourceMetadataServiceSpec extends BaseDataSourceMetadataSpec {
         metadataService.allSegmentsByColumn.get(currentTableName) instanceof AtomicReference
 
         and:
-        metadataService.allSegmentsByTime.get(currentTableName).get().values()*.keySet() as List ==
-        [
-                [segment1.getIdentifier(), segment2.getIdentifier()] as Set,
-                [segment3.getIdentifier(), segment4.getIdentifier()] as Set
-        ] as List
+        metadataService.getTableSegments(Collections.singleton(currentTableName)).stream()
+                .map({it.values()})
+                .flatMap({it.stream()})
+                .map({it.values()})
+                .collect(Collectors.toList()).toString()  == [[segment1.getIdentifier(), segment2.getIdentifier()],
+                                                              [segment3.getIdentifier(), segment4.getIdentifier()]].toString()
 
         and: "all the intervals by column in metadata service are simplified to interval12"
-        [interval12].containsAll(metadataService.allSegmentsByColumn.get(currentTableName).get().values().toSet().getAt(0))
+        [[interval12] as Set].containsAll(metadataService.getAvailableIntervalsByTable(currentTableName).values())
 
         cleanup:
         jtb.tearDown()
