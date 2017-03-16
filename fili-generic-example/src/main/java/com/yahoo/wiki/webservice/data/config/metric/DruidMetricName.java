@@ -5,11 +5,15 @@ package com.yahoo.wiki.webservice.data.config.metric;
 import com.yahoo.bard.webservice.data.config.names.FieldName;
 
 /**
- * Created by kevin on 3/7/2017.
+ * Holds a metric name which is stored in druid.
  */
 public class DruidMetricName implements FieldName {
     private final String name;
 
+    /**
+     * Constructs a DruidMetricName.
+     * @param name  The name of the metric.
+     */
     public DruidMetricName(String name) {
         this.name = name;
     }

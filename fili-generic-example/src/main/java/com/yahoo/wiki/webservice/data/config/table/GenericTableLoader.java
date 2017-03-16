@@ -14,13 +14,13 @@ import com.yahoo.bard.webservice.data.time.ZonelessTimeGrain;
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.table.TableGroup;
-import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration;
 import com.yahoo.wiki.webservice.data.config.dimension.GenericDimensions;
 import com.yahoo.wiki.webservice.data.config.metric.MetricNameGenerator;
 
 import org.joda.time.DateTimeZone;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -30,7 +30,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
- * Load the Wikipedia-specific table configuration.
+ * Load the table configuration for any druid setup.
  */
 public class GenericTableLoader extends BaseTableLoader {
     private final Map<String, Set<Granularity>> validGrains =
@@ -47,15 +47,19 @@ public class GenericTableLoader extends BaseTableLoader {
 
     /**
      * Constructor.
+     * @param configLoader  Supplier to a list of {@link DataSourceConfiguration}
+     * @param genericDimensions  Reference to the already constructed dimensions
      */
-    public GenericTableLoader(Supplier<List<? extends DataSourceConfiguration>> configLoader, GenericDimensions genericDimensions) {
+    public GenericTableLoader(
+            Supplier<List<? extends DataSourceConfiguration>> configLoader,
+            GenericDimensions genericDimensions
+    ) {
         this.configLoader = configLoader;
         configureTables(genericDimensions);
     }
 
     /**
      * Set up the tables for this table loader.
-     *
      * @param genericDimensions  The dimensions to load into test tables.
      */
     private void configureTables(GenericDimensions genericDimensions) {
@@ -63,15 +67,10 @@ public class GenericTableLoader extends BaseTableLoader {
             TimeGrain defaultTimeGrain = dataSourceConfiguration.getValidTimeGrains()
                     .get(0); //TODO this should probably have it's own method
 
-            Set<DimensionConfig> dimsBasefactDruidTable = getBaseFactDruidTable(
-                    genericDimensions,
-                    dataSourceConfiguration
-            );
-
             Set<PhysicalTableDefinition> physicalTableDefinitions = getPhysicalTableDefinitions(
                     dataSourceConfiguration,
                     defaultTimeGrain,
-                    dimsBasefactDruidTable
+                    genericDimensions.getAllDimensionConfigurations()
             );
 
             tableDefinitions.put(dataSourceConfiguration.getName(), physicalTableDefinitions);
@@ -108,12 +107,24 @@ public class GenericTableLoader extends BaseTableLoader {
 
     }
 
+    /**
+     * Creates a set of valid granularities from valid timegrains.
+     * @param dataSourceConfiguration  Reference to datasource configuration.
+     * @return set of valid granularities.
+     */
     private Set<Granularity> getGranularities(DataSourceConfiguration dataSourceConfiguration) {
-        LinkedHashSet<Granularity> granularities = new LinkedHashSet<>(dataSourceConfiguration.getValidTimeGrains());
+        Set<Granularity> granularities = new LinkedHashSet<>(dataSourceConfiguration.getValidTimeGrains());
         granularities.add(AllGranularity.INSTANCE);
         return granularities;
     }
 
+    /**
+     * Creates a {@link PhysicalTableDefinition} definitions.
+     * @param dataSourceConfiguration  DataSourceConfiguration to build physical table definition from.
+     * @param timeGrain  Valid timegrain for table to be created.
+     * @param dimsBasefactDruidTable  Base dimensions to be built into PhysicalTableDefinition.
+     * @return set of PhysicalTableDefinition for the datasource.
+     */
     private Set<PhysicalTableDefinition> getPhysicalTableDefinitions(
             DataSourceConfiguration dataSourceConfiguration,
             TimeGrain timeGrain,
@@ -123,24 +134,20 @@ public class GenericTableLoader extends BaseTableLoader {
                 (ZonelessTimeGrain) timeGrain,
                 DateTimeZone.UTC
         );
-        return Utils.asLinkedHashSet(
-                new PhysicalTableDefinition(
-                        dataSourceConfiguration.getTableName(),
-                        zonedTimeGrain,
-                        dimsBasefactDruidTable
-                )
+        return new LinkedHashSet<>(
+                Collections.singletonList(
+                        new PhysicalTableDefinition(
+                                dataSourceConfiguration.getTableName(),
+                                zonedTimeGrain,
+                                dimsBasefactDruidTable
+                        ))
         );
     }
 
-    private Set<DimensionConfig> getBaseFactDruidTable(
-            GenericDimensions genericDimensions,
-            DataSourceConfiguration dataSourceConfiguration
-    ) {
-        return genericDimensions.getDimensionConfigurationsByApiName(
-                (String[]) dataSourceConfiguration.getDimensions().toArray()
-        );
-    }
-
+    /**
+     * Load each logical table from the datasources given.
+     * @param dictionaries  ResourceDictionaries to load with each table.
+     */
     @Override
     public void loadTableDictionary(ResourceDictionaries dictionaries) {
         configLoader.get()

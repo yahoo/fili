@@ -11,7 +11,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Created by kevin on 3/3/2017.
+ * TableConfig to hold all metrics, dimensions, timegrains, and the name of a datasource.
  */
 public class TableConfig implements DataSourceConfiguration {
     private final String tableName;
@@ -19,6 +19,10 @@ public class TableConfig implements DataSourceConfiguration {
     private final List<String> dimensions;
     private final List<TimeGrain> timeGrains;
 
+    /**
+     * Construct the TableConfig from a name.
+     * @param name  Name of the TableConfig.
+     */
     public TableConfig(String name) {
         tableName = name;
         metrics = new ArrayList<>();
@@ -26,46 +30,70 @@ public class TableConfig implements DataSourceConfiguration {
         timeGrains = new ArrayList<>();
     }
 
+    /**
+     * Add a metric to the datasource.
+     * @param metric  Name of metric to hold in TableConfig.
+     */
     public void addMetric(String metric) {
         metrics.add(metric);
     }
 
-    public boolean removeMetric(String metric) {
-        return metrics.remove(metric);
-    }
-
+    /**
+     * Add a dimension to the datasource.
+     * @param dimension  Name of dimension to hold in the TableConfig.
+     */
     public void addDimension(String dimension) {
         dimensions.add(dimension);
     }
 
-    public boolean removeDimension(String dimension) {
-        return dimensions.remove(dimension);
+    /**
+     * Add a {@link TimeGrain} to the datasource.
+     * @param timeGrain  Valid Timegrain to hold in the TableConfig.
+     */
+    public void addTimeGrain(TimeGrain timeGrain) {
+        timeGrains.add(timeGrain);
     }
 
-    public void addTimeGrain(TimeGrain t) {
-        timeGrains.add(t);
-    }
-
+    /**
+     * Gets the name of the table.
+     * @return the name of the table.
+     */
     @Override
     public String getName() {
         return tableName;
     }
 
+    /**
+     * Gets the {@link TableName} of the current datasource.
+     * @return the TableName for the TableConfig.
+     */
     @Override
     public TableName getTableName() {
-        return () -> EnumUtils.camelCase(tableName);
+        return this::getName;
     }
 
+    /**
+     * Gets the metrics from the datasource.
+     * @return the names of metrics stored in TableConfig.
+     */
     @Override
     public List<String> getMetrics() {
         return Collections.unmodifiableList(metrics);
     }
 
+    /**
+     * Gets the dimensions from the datasource.
+     * @return the names of the dimensions stored in the TableConfig.
+     */
     @Override
     public List<String> getDimensions() {
         return Collections.unmodifiableList(dimensions);
     }
 
+    /**
+     * Gets the valid TimeGrains for the datasource.
+     * @return the valid TimeGrains stored in the TableConfig.
+     */
     @Override
     public List<TimeGrain> getValidTimeGrains() {
         return timeGrains;

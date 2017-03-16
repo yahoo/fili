@@ -70,7 +70,7 @@ public class GenericMain {
     }
 
     /**
-     * Run the Wikipedia application.
+     *
      *
      * @param args  command line arguments
      * @throws Exception if the server fails to start or crashes

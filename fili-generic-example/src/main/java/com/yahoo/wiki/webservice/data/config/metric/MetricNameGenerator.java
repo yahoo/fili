@@ -7,7 +7,7 @@ import com.yahoo.bard.webservice.data.time.TimeGrain;
 import java.util.List;
 
 /**
- * Created by kevin on 2/28/2017.
+ *
  */
 public class MetricNameGenerator {
 
