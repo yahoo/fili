@@ -3,7 +3,6 @@
 package com.yahoo.bard.webservice.util
 
 import com.yahoo.bard.webservice.async.jobs.jobrows.JobRow
-import com.yahoo.bard.webservice.data.config.provider.MakerBuilder
 import com.yahoo.bard.webservice.druid.model.aggregation.LongSumAggregation
 
 import org.joda.time.DateTime

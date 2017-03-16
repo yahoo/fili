@@ -20,6 +20,7 @@
         <module>fili-navi</module>
         <module>fili</module>
         <module>fili-wikipedia-example</module>
+        <module>examples/fili-yaml-config-example</module>
     </modules>
 
     <organization>
