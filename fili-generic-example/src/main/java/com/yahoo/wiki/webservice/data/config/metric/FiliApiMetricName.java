@@ -9,8 +9,8 @@ import java.util.List;
  * Created by kevin on 3/7/2017.
  */
 public class FiliApiMetricName implements ApiMetricName {
-    private String apiName;
-    private List<TimeGrain> satisfyingGrains;
+    private final String apiName;
+    private final List<TimeGrain> satisfyingGrains;
 
     public FiliApiMetricName(String name, List<TimeGrain> timeGrains) {
         this.apiName = name;

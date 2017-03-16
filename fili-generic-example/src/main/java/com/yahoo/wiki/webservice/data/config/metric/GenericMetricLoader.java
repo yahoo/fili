@@ -28,8 +28,8 @@ public class GenericMetricLoader implements MetricLoader {
     public static final int DEFAULT_KILOBYTES_PER_SKETCH = 16;
     public static final int DEFAULT_SKETCH_SIZE_IN_BYTES = DEFAULT_KILOBYTES_PER_SKETCH * BYTES_PER_KILOBYTE;
     private static final Logger LOG = LoggerFactory.getLogger(GenericMetricLoader.class);
-    final int sketchSize;
-    DoubleSumMaker doubleSumMaker;
+    private final int sketchSize;
+    private DoubleSumMaker doubleSumMaker;
     private ConfigLoader configLoader;
 
     /**
