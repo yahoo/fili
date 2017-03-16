@@ -42,7 +42,7 @@ public class GenericTableLoader extends BaseTableLoader {
     // Set up the table definitions
     private final Map<String, Set<PhysicalTableDefinition>> tableDefinitions =
             new HashMap<>();
-    private ConfigLoader configLoader;
+    private final ConfigLoader configLoader;
 
     /**
      * Constructor.
@@ -90,8 +90,10 @@ public class GenericTableLoader extends BaseTableLoader {
                     new LinkedHashSet<>(
                             dataSourceConfiguration.getMetrics()
                                     .stream()
-                                    .map(metricName -> MetricNameGenerator.getFiliMetricName(metricName,
-                                            dataSourceConfiguration.getValidTimeGrains()))
+                                    .map(metricName -> MetricNameGenerator.getFiliMetricName(
+                                            metricName,
+                                            dataSourceConfiguration.getValidTimeGrains()
+                                    ))
                                     .collect(Collectors.toList())
                     )
             );

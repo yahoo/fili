@@ -2,8 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.dimension;
 
-import com.yahoo.bard.webservice.config.SystemConfig;
-import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
@@ -28,11 +26,6 @@ import java.util.stream.Collectors;
  * Hold all the dimension configurations for the sample Bard instance.
  */
 public class GenericDimensions {
-
-    private final SystemConfig systemConfig = SystemConfigProvider.getInstance();
-
-    private final String defaultDimensionBackendKey = systemConfig.getPackageVariableName("dimension_backend");
-
     private final Set<DimensionConfig> dimensionConfigs;
     private final LinkedHashMap<String, DimensionConfig> wikiApiDimensionNameToConfig;
 

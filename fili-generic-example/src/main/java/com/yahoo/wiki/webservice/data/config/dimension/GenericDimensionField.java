@@ -3,7 +3,6 @@
 package com.yahoo.wiki.webservice.data.config.dimension;
 
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
-import com.yahoo.bard.webservice.util.EnumUtils;
 
 /**
  * DimensionField enum.
