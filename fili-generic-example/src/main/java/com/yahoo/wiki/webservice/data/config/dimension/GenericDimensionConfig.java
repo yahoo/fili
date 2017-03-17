@@ -7,14 +7,13 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
-import com.yahoo.bard.webservice.util.EnumUtils;
 
 import java.util.LinkedHashSet;
 
 import javax.validation.constraints.NotNull;
 
 /**
- * The Wiki configuration source for dimensions.
+ * Holds dimensions configuration details.
  */
 public class GenericDimensionConfig implements DimensionConfig {
 
@@ -43,7 +42,7 @@ public class GenericDimensionConfig implements DimensionConfig {
     ) {
         this.apiName = apiName;
         this.physicalName = physicalName;
-        this.description = EnumUtils.camelCase(apiName);
+        this.description = apiName;
         this.keyValueStore = keyValueStore;
         this.searchProvider = searchProvider;
         this.fields = fields;
@@ -51,7 +50,7 @@ public class GenericDimensionConfig implements DimensionConfig {
 
     @Override
     public String getApiName() {
-        return EnumUtils.camelCase(apiName);
+        return apiName;
     }
 
     @Override
@@ -86,7 +85,7 @@ public class GenericDimensionConfig implements DimensionConfig {
 
     @Override
     public String getLongName() {
-        return EnumUtils.camelCase(apiName);
+        return apiName;
     }
 
     @Override

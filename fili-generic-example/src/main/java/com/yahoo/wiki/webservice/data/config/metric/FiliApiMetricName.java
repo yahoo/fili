@@ -1,3 +1,5 @@
+// Copyright 2016 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.metric;
 
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
@@ -6,12 +8,17 @@ import com.yahoo.bard.webservice.data.time.TimeGrain;
 import java.util.List;
 
 /**
- * Created by kevin on 3/7/2017.
+ * Holds a metric name which is stored in fili.
  */
 public class FiliApiMetricName implements ApiMetricName {
     private final String apiName;
     private final List<TimeGrain> satisfyingGrains;
 
+    /**
+     * Constructs a FiliApiMetricName.
+     * @param name  The name of the metric.
+     * @param timeGrains  A list of valid timegrains for this metric.
+     */
     public FiliApiMetricName(String name, List<TimeGrain> timeGrains) {
         this.apiName = name;
         satisfyingGrains = timeGrains;

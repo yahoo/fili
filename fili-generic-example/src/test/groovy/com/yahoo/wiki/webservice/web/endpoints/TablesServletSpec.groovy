@@ -101,10 +101,9 @@ class TablesServletSpec extends Specification {
     @Unroll
     def "Querying for table #tableName at granularity #granularity returns that table's information"() {
         setup:
-        List<String> dimensionNames = ("page, language, user, unpatrolled, newPage, robot, anonymous, namespace, " +
-                "continent, country, region, city").split(',').collect { it.trim() }
+        List<String> dimensionNames = ("channel, cityName, comment, countryIsoCode, countryName, isAnonymous, isMinor, isNew, isRobot, isUnpatrolled, metroCode, namespace, page, regionIsoCode, regionName, user").split(',').collect { it.trim() }
 
-        List<String> metricNames = "count, added, delta, deleted".split(',').collect { it.trim() }
+        List<String> metricNames = "count, added, delta, deleted, user_unique".split(',').collect { it.trim() }
         String expectedResponse = """{
                                         "name":"$tableName",
                                         "longName":"$tableName",
@@ -148,7 +147,7 @@ class TablesServletSpec extends Specification {
         GroovyTestUtils.compareJson(result, expectedResponse, JsonSortStrategy.SORT_BOTH)
 
         where:
-        tableName = WikiDruidTableName.WIKITICKER.asName().toLowerCase()
+        tableName = WikiDruidTableName.WIKITICKER.asName();
         granularity = "hour"
     }
 

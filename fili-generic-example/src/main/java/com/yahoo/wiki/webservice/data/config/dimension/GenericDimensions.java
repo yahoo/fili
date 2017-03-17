@@ -8,33 +8,30 @@ import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager;
-import com.yahoo.bard.webservice.util.EnumUtils;
-import com.yahoo.bard.webservice.util.StreamUtils;
 import com.yahoo.bard.webservice.util.Utils;
-import com.yahoo.wiki.webservice.data.config.auto.ConfigLoader;
+import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
- * Hold all the dimension configurations for the sample Bard instance.
+ * Hold all the dimension configurations for a generic druid configuration.
  */
 public class GenericDimensions {
     private final Set<DimensionConfig> dimensionConfigs;
-    private final LinkedHashMap<String, DimensionConfig> wikiApiDimensionNameToConfig;
 
     /**
      * Construct the dimension configurations.
+     * @param configLoader  Supplies DataSourceConfigurations to build the dimensions from.
      */
-    public GenericDimensions(ConfigLoader configLoader) {
-        if (configLoader.getTableNames().size() > 0) {
-            dimensionConfigs = Collections.unmodifiableSet(configLoader.getTableNames()
+    public GenericDimensions(Supplier<List<? extends DataSourceConfiguration>> configLoader) {
+        if (configLoader.get().size() > 0) {
+            dimensionConfigs = Collections.unmodifiableSet(configLoader.get()
                     .stream()
                     .flatMap(tableName -> tableName.getDimensions().stream())
                     .map(dimensionName -> new GenericDimensionConfig(
@@ -46,12 +43,8 @@ public class GenericDimensions {
                     ))
                     .collect(Collectors.toSet()));
 
-            wikiApiDimensionNameToConfig = dimensionConfigs.stream().collect(
-                    StreamUtils.toLinkedMap(DimensionConfig::getApiName, Function.identity())
-            );
         } else {
             dimensionConfigs = new HashSet<>();
-            wikiApiDimensionNameToConfig = new LinkedHashMap<>();
         }
     }
 
@@ -62,20 +55,6 @@ public class GenericDimensions {
      */
     public Set<DimensionConfig> getAllDimensionConfigurations() {
         return dimensionConfigs;
-    }
-
-    /**
-     * Get dimension configurations provided the dimension api name.
-     *
-     * @param dimensionNames  Names for dimensions by api names
-     *
-     * @return set of dimension configurations
-     */
-    public LinkedHashSet<DimensionConfig> getDimensionConfigurationsByApiName(String... dimensionNames) {
-        return Arrays.stream(dimensionNames)
-                .map(EnumUtils::camelCase)
-                .map(wikiApiDimensionNameToConfig::get)
-                .collect(Collectors.toCollection(LinkedHashSet<DimensionConfig>::new));
     }
 
     /**

@@ -8,7 +8,6 @@ import com.yahoo.bard.webservice.data.config.metric.makers.DoubleSumMaker;
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.config.names.FieldName;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
-import com.yahoo.wiki.webservice.data.config.auto.ConfigLoader;
 import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration;
 
 import org.slf4j.Logger;
@@ -16,37 +15,27 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
+
+import javax.validation.constraints.NotNull;
 
 /**
- * Load the Wiki-specific metrics. Currently only loads primitive makers that are considered built-in to Fili,
- * such as the LongSumMaker for performing the longSum aggregation, and the divisionMaker, which performs division
- * of two other metrics.
+ * Loads all metrics from a list of {@link DataSourceConfiguration}.
  */
 public class GenericMetricLoader implements MetricLoader {
 
-    public static final int BYTES_PER_KILOBYTE = 1024;
-    public static final int DEFAULT_KILOBYTES_PER_SKETCH = 16;
-    public static final int DEFAULT_SKETCH_SIZE_IN_BYTES = DEFAULT_KILOBYTES_PER_SKETCH * BYTES_PER_KILOBYTE;
     private static final Logger LOG = LoggerFactory.getLogger(GenericMetricLoader.class);
-    private final int sketchSize;
     private DoubleSumMaker doubleSumMaker;
-    private ConfigLoader configLoader;
-
-    /**
-     * Constructs a GenericMetricLoader using the default sketch size.
-     */
-    public GenericMetricLoader(ConfigLoader configLoader) {
-        this(DEFAULT_SKETCH_SIZE_IN_BYTES, configLoader);
-    }
+    private Supplier<List<? extends DataSourceConfiguration>> configLoader;
 
     /**
      * Constructs a GenericMetricLoader using the given sketch size.
      *
-     * @param sketchSize  Sketch size, in number of bytes, to use for sketch operations
-     * @param configLoader
+     * @param configLoader  Gives a list of {@link DataSourceConfiguration} to build the metrics from.
      */
-    public GenericMetricLoader(int sketchSize, ConfigLoader configLoader) {
-        this.sketchSize = sketchSize;
+    public GenericMetricLoader(
+            @NotNull Supplier<List<? extends DataSourceConfiguration>> configLoader
+    ) {
         this.configLoader = configLoader;
     }
 
@@ -67,18 +56,18 @@ public class GenericMetricLoader implements MetricLoader {
         // Metrics that directly aggregate druid fields
         List<MetricInstance> metrics = new ArrayList<>();
 
-        for (DataSourceConfiguration tableConfig : configLoader.getTableNames()) {
-            for (String name : tableConfig.getMetrics()) {
-                ApiMetricName apiMetricName = MetricNameGenerator.getFiliMetricName(
-                        name,
-                        tableConfig.getValidTimeGrains()
-                );
-                FieldName fieldName = MetricNameGenerator.getDruidMetric(
-                        name
-                );
-                metrics.add(new MetricInstance(apiMetricName, doubleSumMaker, fieldName));
-            }
-        }
+        configLoader.get()
+                .forEach(dataSourceConfiguration -> {
+                    dataSourceConfiguration.getMetrics()
+                            .forEach(metric -> {
+                                ApiMetricName apiMetricName = new FiliApiMetricName(
+                                        metric,
+                                        dataSourceConfiguration.getValidTimeGrains()
+                                );
+                                FieldName fieldName = new DruidMetricName(metric);
+                                metrics.add(new MetricInstance(apiMetricName, doubleSumMaker, fieldName));
+                            });
+                });
 
         LOG.debug("About to load direct aggregation metrics. Metric dictionary keys: {}", metricDictionary.keySet());
         addToMetricDictionary(metricDictionary, metrics);
