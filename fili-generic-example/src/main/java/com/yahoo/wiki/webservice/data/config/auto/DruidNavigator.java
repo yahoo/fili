@@ -3,6 +3,8 @@
 package com.yahoo.wiki.webservice.data.config.auto;
 
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
+import com.yahoo.bard.webservice.data.time.GranularityDictionary;
+import com.yahoo.bard.webservice.data.time.StandardGranularityParser;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
@@ -10,14 +12,13 @@ import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeConstants;
 import org.joda.time.DateTimeZone;
-import org.joda.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
@@ -126,28 +127,19 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      * @return the valid timegrain spanned by the interval.
      */
     private TimeGrain getTimeGrain(DateTime start, DateTime end) {
-        //TODO check for " Minute must start and end on the 1st second of a minute." compliance
-        Duration diff = new Duration(start, end);
-        if (diff.getStandardMinutes() == 1) {
-            return DefaultTimeGrain.MINUTE;
-        } else if (diff.getStandardHours() == 1) { //todo maybe not use standardHours (daylight savings time)
-            return DefaultTimeGrain.HOUR;
-        } else if (diff.getStandardDays() == 1) {
-            return DefaultTimeGrain.DAY;
-        } else if (diff.getStandardDays() == 7) {
-            return DefaultTimeGrain.WEEK;
-        } else if (start.getMonthOfYear() + 1 == end.getMonthOfYear() && start.getDayOfMonth() == 1 && end
-                .getDayOfMonth() == 1) {
-            return DefaultTimeGrain.MONTH;
-        } else if (/* detect if quarter */ false) { //TODO detect quarterly
-            return DefaultTimeGrain.QUARTER;
-        } else if (start.getYear() + 1 == end.getYear() && start.getMonthOfYear() == DateTimeConstants.JANUARY &&
-                start.getDayOfMonth() == 1 && end
-                .getMonthOfYear() == DateTimeConstants.JANUARY && end.getDayOfMonth() == 1) {
-            return DefaultTimeGrain.YEAR;
+        GranularityDictionary grains = StandardGranularityParser.getDefaultGrainMap();
+        Optional<TimeGrain> grain = grains.values().stream()
+                .filter(granularity -> granularity instanceof TimeGrain)
+                .map(granularity -> (TimeGrain) granularity)
+                .filter(timeGrain -> timeGrain.aligns(start))
+                .filter(timeGrain -> timeGrain.aligns(end))
+                .filter(timeGrain -> start.plus(timeGrain.getPeriod()).equals(end))
+                .findFirst();
+
+        if (!grain.isPresent()) {
+            LOG.info("Couldn't detect default timegrain for " + start + "-" + end + ", defaulting to DAY TimeGrain.");
         }
-        LOG.info("Couldn't detect default timegrain for " + start + "-" + end + ", defaulting to DAY TimeGrain.");
-        return DefaultTimeGrain.DAY; //Day is probably safe for most configurations
+        return grain.orElse(DefaultTimeGrain.DAY);
     }
 
     /**
