@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -49,11 +50,11 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
         String url = COORDINATOR_BASE + "datasources/";
         queryDruid(rootNode -> {
             if (rootNode.isArray()) {
-                for (final JsonNode objNode : rootNode) {
-                    TableConfig tableConfig = new TableConfig(objNode.asText());
+                rootNode.forEach(jsonNode -> {
+                    TableConfig tableConfig = new TableConfig(jsonNode.asText());
                     loadTable(tableConfig);
                     tableConfigurations.add(tableConfig);
-                }
+                });
             }
         }, url);
 
@@ -83,10 +84,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      */
     private void loadMetrics(TableConfig table, JsonNode segmentJson) {
         JsonNode metricsArray = segmentJson.get("metrics");
-        String[] metrics = metricsArray.asText().split(",");
-        for (String metric : metrics) {
-            table.addMetric(metric);
-        }
+        Arrays.asList(metricsArray.asText().split(",")).forEach(table::addMetric);
     }
 
     /**
@@ -96,10 +94,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      */
     private void loadDimensions(TableConfig tableName, JsonNode segmentJson) {
         JsonNode dimensionsArray = segmentJson.get("dimensions");
-        String[] dimensions = dimensionsArray.asText().split(",");
-        for (String dimension : dimensions) {
-            tableName.addDimension(dimension);
-        }
+        Arrays.asList(dimensionsArray.asText().split(",")).forEach(tableName::addDimension);
     }
 
     /**
@@ -111,8 +106,8 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
         JsonNode timeInterval = segmentJson.get("interval");
         String[] utcTimes = timeInterval.asText().split("/");
         if (utcTimes.length >= 2) {
-            DateTime start = new DateTime(utcTimes[0], DateTimeZone.UTC);
-            DateTime end = new DateTime(utcTimes[1], DateTimeZone.UTC);
+            DateTime start = new DateTime(utcTimes[0]);
+            DateTime end = new DateTime(utcTimes[1]);
             TimeGrain timeGrain = getTimeGrain(start, end);
             if (timeGrain != null) {
                 tableConfig.addTimeGrain(timeGrain);
