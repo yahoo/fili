@@ -1,4 +1,4 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.metadata;
 
@@ -92,7 +92,11 @@ public class SegmentIntervalsHashIdGenerator implements QuerySigningService<Long
 
         //get all table segments
         Set<SortedMap<DateTime, Map<String, SegmentInfo>>> tableSegments =
-                dataSourceMetadataService.getTableSegments(physicalTables);
+                dataSourceMetadataService.getTableSegments(
+                        physicalTables.stream()
+                                .map(PhysicalTable::getTableName)
+                                .collect(Collectors.toSet())
+                );
 
         // Check if we have no tables with segments
         if (tableSegments.isEmpty()) {
