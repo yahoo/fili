@@ -43,7 +43,7 @@ public class GenericDimensionConfig implements DimensionConfig {
     ) {
         this.apiName = apiName;
         this.physicalName = physicalName;
-        this.description = EnumUtils.camelCase(apiName);
+        this.description = apiName;
         this.keyValueStore = keyValueStore;
         this.searchProvider = searchProvider;
         this.fields = fields;
@@ -51,7 +51,7 @@ public class GenericDimensionConfig implements DimensionConfig {
 
     @Override
     public String getApiName() {
-        return EnumUtils.camelCase(apiName);
+        return apiName;
     }
 
     @Override
@@ -86,7 +86,7 @@ public class GenericDimensionConfig implements DimensionConfig {
 
     @Override
     public String getLongName() {
-        return EnumUtils.camelCase(apiName);
+        return apiName;
     }
 
     @Override
