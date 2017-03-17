@@ -40,7 +40,7 @@ public class PartialDataHandler {
      * present for a given combination of request metrics and dimensions (pulled from the API request and generated
      * druid query) at the specified granularity.
      *
-     * @param constraints all the column names the request depends on
+     * @param constraints  Constraint containing all the column names the request depends on
      * @param physicalTables  the tables whose column availabilities are checked
      * @param requestedIntervals  The intervals that may not be fully satisfied
      * @param granularity  The granularity at which to find missing intervals

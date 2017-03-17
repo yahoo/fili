@@ -18,19 +18,13 @@ import javax.validation.constraints.NotNull;
 public class ResultSetSchema extends BaseSchema {
 
     /**
-     * The granularity of the ResultSet.
-     */
-    private final Granularity granularity;
-
-    /**
      * Constructor.
      *
      * @param granularity The bucketing time grain for this schema
      * @param columns The columns in this schema
      */
     public ResultSetSchema(@NotNull Granularity granularity, Iterable<Column> columns) {
-        super(columns);
-        this.granularity = granularity;
+        super(granularity, columns);
     }
 
     /**
@@ -44,32 +38,5 @@ public class ResultSetSchema extends BaseSchema {
         LinkedHashSet<Column> columns = new LinkedHashSet<>(this.getColumns());
         columns.add(column);
         return new ResultSetSchema(this.getGranularity(), columns);
-    }
-
-    /**
-     * Granularity.
-     *
-     * @return the granularity for this schema
-     */
-    public Granularity getGranularity() {
-        return granularity;
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) { return true; }
-        if (!(o instanceof ResultSetSchema)) { return false; }
-        if (!super.equals(o)) { return false; }
-
-        final ResultSetSchema that = (ResultSetSchema) o;
-
-        return granularity != null ? granularity.equals(that.granularity) : that.granularity == null;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + (granularity != null ? granularity.hashCode() : 0);
-        return result;
     }
 }
