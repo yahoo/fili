@@ -74,7 +74,7 @@ public abstract class BasePhysicalTable implements PhysicalTable {
 
     @Override
     public DateTime getTableAlignment() {
-        return schema.getGranularity().roundFloor(
+        return schema.getTimeGrain().roundFloor(
                 IntervalUtils.firstMoment(getAvailability().getAllAvailableIntervals().values()).orElse(new DateTime())
         );
     }
@@ -115,17 +115,5 @@ public abstract class BasePhysicalTable implements PhysicalTable {
      */
     protected void setAvailability(Availability availability) {
         this.availability = availability;
-    }
-
-    @Override
-    @Deprecated
-    public Set<Column> getColumns() {
-        return getSchema().getColumns();
-    }
-
-    @Override
-    @Deprecated
-    public ZonedTimeGrain getTimeGrain() {
-        return schema.getGranularity();
     }
 }

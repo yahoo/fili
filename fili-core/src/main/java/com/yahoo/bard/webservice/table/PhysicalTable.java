@@ -97,15 +97,20 @@ public interface PhysicalTable extends Table {
      * @deprecated In favor of getting the columns directly from the schema
      */
     @Deprecated
-    Set<Column> getColumns();
+    default Set<Column> getColumns() {
+        return getSchema().getColumns();
+    }
 
     /**
      * Get the time grain from granularity.
+     * Physical tables must have time zone associated time grains.
      *
      * @return The time grain of this physical table
      *
-     * @deprecated use getSchema().getGranularity()
+     * @deprecated use getSchema().getTimeGrain()
      */
     @Deprecated
-    ZonedTimeGrain getTimeGrain();
+    default ZonedTimeGrain getTimeGrain() {
+        return getSchema().getTimeGrain();
+    }
 }

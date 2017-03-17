@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.web.responseprocessors
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
+import static com.yahoo.bard.webservice.druid.model.DefaultQueryType.GROUP_BY
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.data.DruidResponseParser
@@ -34,10 +35,12 @@ import com.yahoo.bard.webservice.web.DataApiRequest
 import com.yahoo.bard.webservice.web.ResponseFormatType
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
+import com.google.common.collect.Sets
 
 import org.joda.time.DateTimeZone
 
-import avro.shaded.com.google.common.collect.Sets
 import rx.subjects.PublishSubject
 import rx.subjects.Subject
 import spock.lang.Specification
@@ -49,7 +52,11 @@ import javax.ws.rs.core.Response
 import javax.ws.rs.core.UriInfo
 
 class ResultSetResponseProcessorSpec extends Specification {
+
     private static final ObjectMappersSuite MAPPERS = new ObjectMappersSuite()
+
+    private static final ObjectMapper MAPPER = new ObjectMapper()
+            .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
 
     HttpResponseMaker httpResponseMaker
     GroupByQuery groupByQuery
@@ -134,14 +141,12 @@ class ResultSetResponseProcessorSpec extends Specification {
         postAgg2.getName() >> "otherPostAgg"
 
 
-        DefaultQueryType queryType = DefaultQueryType.GROUP_BY
+        DefaultQueryType queryType = GROUP_BY
         groupByQuery.getQueryType() >> queryType
         groupByQuery.getDimensions() >> dimensions
         groupByQuery.getAggregations() >> aggregations
         groupByQuery.getPostAggregations() >> postAggs
         groupByQuery.getDataSource() >> new TableDataSource(new ConcretePhysicalTable("table_name", DAY.buildZonedTimeGrain(DateTimeZone.UTC), [] as Set, ["dimension1":"dimension1"], Mock(DataSourceMetadataService)))
-
-
 
         ResultSetSchema schema = new ResultSetSchema(DAY, Sets.newHashSet(new MetricColumn("lm1")))
 
