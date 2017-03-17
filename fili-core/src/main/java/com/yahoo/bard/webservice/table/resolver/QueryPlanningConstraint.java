@@ -40,8 +40,8 @@ public class QueryPlanningConstraint extends DataSourceConstraint {
         this.logicalMetrics = Collections.unmodifiableSet(dataApiRequest.getLogicalMetrics());
         this.minimumGranularity = new RequestQueryGranularityResolver().apply(dataApiRequest, templateDruidQuery);
         this.requestGranularity = dataApiRequest.getGranularity();
-        this.logicalMetricNames = Collections.unmodifiableSet(
-                logicalMetrics.stream().map(LogicalMetric::getName).collect(Collectors.toSet()));
+        this.logicalMetricNames = Collections.unmodifiableSet(this.logicalMetrics.stream()
+                .map(LogicalMetric::getName).collect(Collectors.toSet()));
     }
 
     public LogicalTable getLogicalTable() {
