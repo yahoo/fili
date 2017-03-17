@@ -24,35 +24,18 @@ import javax.validation.constraints.NotNull;
  */
 public class GenericMetricLoader implements MetricLoader {
 
-    public static final int BYTES_PER_KILOBYTE = 1024;
-    public static final int DEFAULT_KILOBYTES_PER_SKETCH = 16;
-    public static final int DEFAULT_SKETCH_SIZE_IN_BYTES = DEFAULT_KILOBYTES_PER_SKETCH * BYTES_PER_KILOBYTE;
     private static final Logger LOG = LoggerFactory.getLogger(GenericMetricLoader.class);
-    private final int sketchSize;
     private DoubleSumMaker doubleSumMaker;
     private Supplier<List<? extends DataSourceConfiguration>> configLoader;
 
     /**
-     * Constructs a GenericMetricLoader using the default sketch size.
-     * @param configLoader  Gives a list of {@link DataSourceConfiguration} to build metrics from.
-     */
-    public GenericMetricLoader(
-            @NotNull Supplier<List<? extends DataSourceConfiguration>> configLoader
-    ) {
-        this(DEFAULT_SKETCH_SIZE_IN_BYTES, configLoader);
-    }
-
-    /**
      * Constructs a GenericMetricLoader using the given sketch size.
      *
-     * @param sketchSize  Sketch size, in number of bytes, to use for sketch operations
      * @param configLoader  Gives a list of {@link DataSourceConfiguration} to build the metrics from.
      */
     public GenericMetricLoader(
-            int sketchSize,
             @NotNull Supplier<List<? extends DataSourceConfiguration>> configLoader
     ) {
-        this.sketchSize = sketchSize;
         this.configLoader = configLoader;
     }
 
