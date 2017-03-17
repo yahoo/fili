@@ -73,16 +73,18 @@ public class GenericMetricLoader implements MetricLoader {
         // Metrics that directly aggregate druid fields
         List<MetricInstance> metrics = new ArrayList<>();
 
-        for (DataSourceConfiguration tableConfig : configLoader.get()) {
-            for (String name : tableConfig.getMetrics()) {
-                ApiMetricName apiMetricName = new FiliApiMetricName(
-                        name,
-                        tableConfig.getValidTimeGrains()
-                );
-                FieldName fieldName = new DruidMetricName(name);
-                metrics.add(new MetricInstance(apiMetricName, doubleSumMaker, fieldName));
-            }
-        }
+        configLoader.get()
+                .forEach(dataSourceConfiguration -> {
+                    dataSourceConfiguration.getMetrics()
+                            .forEach(metric -> {
+                                ApiMetricName apiMetricName = new FiliApiMetricName(
+                                        metric,
+                                        dataSourceConfiguration.getValidTimeGrains()
+                                );
+                                FieldName fieldName = new DruidMetricName(metric);
+                                metrics.add(new MetricInstance(apiMetricName, doubleSumMaker, fieldName));
+                            });
+                });
 
         LOG.debug("About to load direct aggregation metrics. Metric dictionary keys: {}", metricDictionary.keySet());
         addToMetricDictionary(metricDictionary, metrics);
