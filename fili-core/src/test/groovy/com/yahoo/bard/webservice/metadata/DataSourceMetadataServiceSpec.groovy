@@ -1,41 +1,87 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.metadata
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
-import com.yahoo.bard.webservice.druid.model.datasource.DataSource
-import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
+import com.yahoo.bard.webservice.data.config.names.TableName
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 
 import org.joda.time.DateTime
+import org.joda.time.Interval
 
 import java.util.concurrent.ConcurrentSkipListMap
 import java.util.concurrent.atomic.AtomicReference
+import java.util.stream.Collectors
 
 class DataSourceMetadataServiceSpec extends BaseDataSourceMetadataSpec {
 
-    def "test metadata service updates segment availability for physical tables"() {
+    DataSourceMetadata metadata
+
+    def setup() {
+        metadata = new DataSourceMetadata(tableName, [:], segments)
+    }
+
+    def "test metadata service updates segment availability for physical tables and access methods behave correctly"() {
         setup:
         JerseyTestBinder jtb = new JerseyTestBinder()
         PhysicalTableDictionary tableDict = jtb.configurationLoader.getPhysicalTableDictionary()
         DataSourceMetadataService metadataService = new DataSourceMetadataService()
-
-        DataSourceMetadata metadata = new DataSourceMetadata(tableName, [:], segments)
+        TableName currentTableName = tableDict.get(tableName).getTableName()
 
         when:
         metadataService.update(tableDict.get(tableName), metadata)
 
         then:
-        metadataService.allSegments.get(tableDict.get(tableName)) instanceof AtomicReference
+        metadataService.allSegmentsByTime.get(currentTableName) instanceof AtomicReference
+        metadataService.allSegmentsByColumn.get(currentTableName) instanceof AtomicReference
 
         and:
-        metadataService.allSegments.get(tableDict.get(tableName)).get().values()*.keySet() as List ==
-        [
-                [segment1.getIdentifier(), segment2.getIdentifier()] as Set,
-                [segment3.getIdentifier(), segment4.getIdentifier()] as Set
-        ] as List
+        metadataService.getTableSegments(Collections.singleton(currentTableName)).stream()
+                .map({it.values()})
+                .flatMap({it.stream()})
+                .map({it.values()})
+                .collect(Collectors.toList()).toString()  == [[segment1.getIdentifier(), segment2.getIdentifier()],
+                                                              [segment3.getIdentifier(), segment4.getIdentifier()]].toString()
+
+        and: "all the intervals by column in metadata service are simplified to interval12"
+        [[interval12] as Set].containsAll(metadataService.getAvailableIntervalsByTable(currentTableName).values())
 
         cleanup:
         jtb.tearDown()
+    }
+
+    def "grouping segment data by date time behave as expected"() {
+        given:
+        ConcurrentSkipListMap<DateTime, Map<String, SegmentInfo>> segmentByTime = DataSourceMetadataService.groupSegmentByTime(metadata)
+        DateTime dateTime1 = new DateTime(interval1.getStart())
+        DateTime dateTime2 = new DateTime(interval2.getStart())
+
+        expect:
+        segmentByTime.keySet() == [dateTime1, dateTime2] as Set
+        segmentByTime.get(new DateTime(interval2.getStart())).keySet() == [segment3.getIdentifier(), segment4.getIdentifier()] as Set
+    }
+
+
+    def "grouping intervals by column behave as expected"() {
+        given:
+        Map<String, Set<Interval>> intervalByColumn = DataSourceMetadataService.groupIntervalByColumn(metadata)
+
+        expect:
+        intervalByColumn.keySet() == (dimensions123 + metrics123) as Set
+        intervalByColumn.get(dimensions123.get(0)) == [interval12] as Set
+    }
+
+
+    def "accessing availability by column throws exception if the table does not exist in datasource metadata service"() {
+        setup:
+        DataSourceMetadataService metadataService = new DataSourceMetadataService()
+
+        when:
+        metadataService.getAvailableIntervalsByTable(TableName.of("InvalidTable"))
+
+        then:
+        IllegalStateException e = thrown()
+        e.message == 'Trying to access InvalidTable physical table datasource that is not available in metadata service'
+
     }
 }

@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table;
 
+import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.metadata.SegmentMetadata;
@@ -23,7 +24,7 @@ import javax.validation.constraints.NotNull;
 public abstract class BasePhysicalTable implements PhysicalTable {
     private static final Logger LOG = LoggerFactory.getLogger(BasePhysicalTable.class);
 
-    private final String name;
+    private final TableName name;
     private final PhysicalTableSchema schema;
     private volatile Availability availability;
 
@@ -37,7 +38,7 @@ public abstract class BasePhysicalTable implements PhysicalTable {
      * @param availability  The availability of columns in this table
      */
     public BasePhysicalTable(
-            @NotNull String name,
+            @NotNull TableName name,
             @NotNull ZonedTimeGrain timeGrain,
             @NotNull Iterable<Column> columns,
             @NotNull Map<String, String> logicalToPhysicalColumnNames,
@@ -63,8 +64,13 @@ public abstract class BasePhysicalTable implements PhysicalTable {
     }
 
     @Override
-    public String getName() {
+    public TableName getTableName() {
         return name;
+    }
+
+    @Override
+    public String getName() {
+        return name.asName();
     }
 
     @Override
@@ -94,7 +100,7 @@ public abstract class BasePhysicalTable implements PhysicalTable {
      */
     public void resetColumns(SegmentMetadata segmentMetadata, DimensionDictionary dimensionDictionary) {
         setAvailability(new ImmutableAvailability(
-                name,
+                name.asName(),
                 segmentMetadata.getDimensionIntervals(),
                 segmentMetadata.getMetricIntervals(),
                 dimensionDictionary
