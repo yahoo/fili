@@ -116,6 +116,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -168,7 +169,10 @@ public abstract class AbstractBinderFactory implements BinderFactory {
 
     private ObjectMappersSuite objectMappers;
 
+    private static DataSourceMetadataService dataSourceMetadataService = new DataSourceMetadataService();
+
     private final TaskScheduler loaderScheduler = new TaskScheduler(LOADER_SCHEDULER_THREAD_POOL_SIZE);
+
 
     /**
      * Constructor.
@@ -224,11 +228,10 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 FieldConverterSupplier.metricsFilterSetBuilder =  initializeMetricsFilterSetBuilder();
 
                 // Build the datasource metadata service containing the data segments
-                DataSourceMetadataService dataSourceMetadataService = buildDataSourceMetadataService();
                 bind(dataSourceMetadataService).to(DataSourceMetadataService.class);
 
                 // Build the configuration loader and load configuration
-                ConfigurationLoader loader = buildConfigurationLoader(dataSourceMetadataService);
+                ConfigurationLoader loader = buildConfigurationLoader();
                 loader.load();
 
                 // Bind the configuration dictionaries
@@ -567,8 +570,11 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      *
      * @return A datasource metadata service
      */
-    protected DataSourceMetadataService buildDataSourceMetadataService() {
-        return new DataSourceMetadataService();
+    protected DataSourceMetadataService getDataSourceMetadataService() {
+        if (Objects.isNull(dataSourceMetadataService)) {
+            dataSourceMetadataService = new DataSourceMetadataService();
+        }
+        return dataSourceMetadataService;
     }
 
     /**
@@ -776,15 +782,13 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     /**
      * Build an application specific configuration loader initialized with pluggable loaders.
      *
-     * @param metadataService  Datasource metadata service containing data segments for tables
-     *
      * @return A configuration loader instance
      */
-    protected final ConfigurationLoader buildConfigurationLoader(DataSourceMetadataService metadataService) {
+    protected final ConfigurationLoader buildConfigurationLoader() {
         DimensionLoader dimensionLoader = getDimensionLoader();
         TableLoader tableLoader = getTableLoader();
         MetricLoader metricLoader = getMetricLoader();
-        return buildConfigurationLoader(dimensionLoader, metricLoader, tableLoader, metadataService);
+        return buildConfigurationLoader(dimensionLoader, metricLoader, tableLoader);
     }
 
     /**
@@ -793,17 +797,15 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      * @param dimensionLoader  A dimension loader
      * @param metricLoader  A metric loader
      * @param tableLoader  A table loader
-     * @param metadataService  Datasource metadata service containing data segments for tables
      *
      * @return A configurationLoader instance
      */
     protected ConfigurationLoader buildConfigurationLoader(
             DimensionLoader dimensionLoader,
             MetricLoader metricLoader,
-            TableLoader tableLoader,
-            DataSourceMetadataService metadataService
+            TableLoader tableLoader
     ) {
-        return new ConfigurationLoader(dimensionLoader, metricLoader, tableLoader, metadataService);
+        return new ConfigurationLoader(dimensionLoader, metricLoader, tableLoader);
     }
 
     /**

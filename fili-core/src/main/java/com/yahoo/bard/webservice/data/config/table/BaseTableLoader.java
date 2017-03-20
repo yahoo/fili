@@ -42,22 +42,26 @@ public abstract class BaseTableLoader implements TableLoader {
 
     protected final DateTimeZone defaultTimeZone;
 
-    private DataSourceMetadataService metadataService;
+    private final DataSourceMetadataService metadataService;
+
+    /**
+     * A table loader using a standard time context and UTC default time zone.
+     *
+     * @param metadataService  Service containing the segment data for constructing tables
+     */
+    protected BaseTableLoader(DataSourceMetadataService metadataService) {
+        this(DateTimeZone.UTC, metadataService);
+    }
 
     /**
      * A table loader using a time context and a default time zone.
      *
      * @param defaultTimeZone  The default time zone to tables being loaded
+     * @param metadataService  Service containing the segment data for constructing tables
      */
-    protected BaseTableLoader(DateTimeZone defaultTimeZone) {
+    protected BaseTableLoader(DateTimeZone defaultTimeZone, DataSourceMetadataService metadataService) {
         this.defaultTimeZone = defaultTimeZone;
-    }
-
-    /**
-     * A table loader using a standard time context and UTC default time zone.
-     */
-    protected BaseTableLoader() {
-        this(DateTimeZone.UTC);
+        this.metadataService = metadataService;
     }
 
     /**
@@ -66,15 +70,6 @@ public abstract class BaseTableLoader implements TableLoader {
      * @param dictionaries dictionary to be loaded with user configured tables
      */
     public abstract void loadTableDictionary(ResourceDictionaries dictionaries);
-
-    @Override
-    public void loadTableDictionary(
-            ResourceDictionaries dictionaries,
-            DataSourceMetadataService metadataService
-    ) {
-        this.metadataService = metadataService;
-        this.loadTableDictionary(dictionaries);
-    }
 
     /**
      * Builds a table group.

@@ -400,7 +400,7 @@ public class AbstractBinderFactorySpec extends Specification {
 
         when:
         systemConfig.setProperty(DIMENSION_BACKEND_KEY, "memory")
-        ConfigurationLoader cl = localBinderFactory.buildConfigurationLoader(Mock(DataSourceMetadataService))
+        ConfigurationLoader cl = localBinderFactory.buildConfigurationLoader()
 
         then:
         cl.dimensionLoader instanceof TypeAwareDimensionLoader

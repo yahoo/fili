@@ -39,8 +39,7 @@ class ConfigurationLoaderSpec extends Specification {
         loader = new ConfigurationLoader(
                 new TypeAwareDimensionLoader(dimensions),
                 new WikiMetricLoader(),
-                new WikiTableLoader(),
-                new TestDataSourceMetadataService()
+                new WikiTableLoader()
         )
         loader.load();
 

@@ -13,6 +13,7 @@ import com.yahoo.bard.webservice.data.config.table.BaseTableLoader;
 import com.yahoo.bard.webservice.data.config.table.PhysicalTableDefinition;
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensions;
@@ -46,8 +47,12 @@ public class WikiTableLoader extends BaseTableLoader {
 
     /**
      * Constructor.
+     *
+     * @param metadataService  Service containing the segment data for constructing tables
      */
-    public WikiTableLoader() {
+    public WikiTableLoader(DataSourceMetadataService metadataService) {
+        super(metadataService);
+
         WikiDimensions wikiDimensions = new WikiDimensions();
 
         configureSample(wikiDimensions);
