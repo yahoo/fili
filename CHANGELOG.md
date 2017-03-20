@@ -48,6 +48,11 @@ Current
 - [Support timeouts for lucene search provider](https://github.com/yahoo/fili/pull/183)
 
 ### Changed:
+
+- [Restored flexibility about columns for query from DruidResponseParser]()
+    * Immutable schemas prevented custom query types from changing `ResultSetSchema` columns.
+    * Columns are now sourced from `DruidResponseParser` and default implemented on `DruidAggregationQuery`
+
 - [Refactor DatasourceMetadataService to fit composite table needs](https://github.com/yahoo/fili/pull/173)
     * `BasePhysicalTable` now stores table name as the `TableName` instead of `String`
     * `SegmentInfo` now stores dimension and metrics from segment data for constructing column to available interval map

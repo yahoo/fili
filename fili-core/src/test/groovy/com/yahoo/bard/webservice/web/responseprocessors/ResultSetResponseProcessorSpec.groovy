@@ -68,8 +68,11 @@ class ResultSetResponseProcessorSpec extends Specification {
     MultivaluedMap paramMap
 
     String dimension1Name = "dimension1"
+    String dimension2Name = "dimension2"
     Dimension d1
     Dimension d2
+    DimensionColumn dim1Column
+    DimensionColumn dim2Column
 
     String metric1Name = "agg1"
     String metric2Name = "postagg1"
@@ -110,12 +113,17 @@ class ResultSetResponseProcessorSpec extends Specification {
         List<Dimension> dimensions = new ArrayList<Dimension>()
         List<Aggregation> aggregations = new ArrayList<Dimension>()
         List<PostAggregation> postAggs = new ArrayList<Dimension>()
-        d1 = Mock(Dimension)
+        d1 = Mock(Dimension) {
+            getApiName() >> dimension1Name
+        }
+        Dimension d2 = Mock(Dimension) {
+            getApiName() >> "dimension2"
+        }
         dimensions.add(d1)
-        d1.getApiName() >> dimension1Name
-        Dimension d2 = Mock(Dimension)
         dimensions.add(d2)
-        d2.getApiName() >> "dimension2"
+        dim1Column = new DimensionColumn(d1)
+        dim2Column = new DimensionColumn(d2)
+
 
         Aggregation agg1 = Mock(Aggregation)
         aggregations.add(agg1)
@@ -181,6 +189,17 @@ class ResultSetResponseProcessorSpec extends Specification {
         ResultSetSchema captureSchema = null
         JsonNode captureJson
         ResultSet rs = Mock(ResultSet)
+        DimensionColumn dimCol = Mock(DimensionColumn) {
+            getName() >> dimension1Name
+            getDimension() >> d1
+        }
+        MetricColumn m1 = Mock(MetricColumn) {
+            getName() >> metric1Name
+        }
+
+        MetricColumn m2 = Mock(MetricColumn) {
+            getName() >> metric2Name
+        }
 
         1 * druidResponseParser.parse(_, _, _, _) >> {
             JsonNode json, Schema schema, DefaultQueryType type, DateTimeZone dateTimeZone
@@ -189,21 +208,21 @@ class ResultSetResponseProcessorSpec extends Specification {
                 captureJson = json;
                 rs
         }
+        druidResponseParser.buildSchemaColumns(groupByQuery) >> {
+            [dimCol, m1, m2].stream()
+        }
+
         ResultSet actual
 
         when:
         actual = resultSetResponseProcessor.buildResultSet(jsonMock, groupByQuery, DateTimeZone.UTC)
-        DimensionColumn dimCol = captureSchema.getColumn(dimension1Name, DimensionColumn.class).get()
-        MetricColumn m1 = captureSchema.getColumn(metric1Name, MetricColumn.class).get()
-        MetricColumn m2 = captureSchema.getColumn(metric2Name, MetricColumn.class).get()
-        Optional<MetricColumn> m3 = captureSchema.getColumn("fakeMetric", MetricColumn.class)
 
         then:
         captureSchema.granularity == DAY
         dimCol.dimension == d1
-        m1 != null
-        m2 != null
-        m3 == Optional.empty()
+        captureSchema.getColumn(metric1Name, MetricColumn.class).get() == m1
+        captureSchema.getColumn(metric2Name, MetricColumn.class).get() == m2
+        captureSchema.getColumn("fakeMetric", MetricColumn.class) == Optional.empty()
         actual == rs
 
     }
@@ -312,10 +331,12 @@ class ResultSetResponseProcessorSpec extends Specification {
             getDimensions() >> [dim]
             getQueryType() >> GROUP_BY
         }
-
         druidResponseParser.parse(_, _, _, _) >> {
             JsonNode json, Schema schema, DefaultQueryType type, DateTimeZone tz ->
             new ResultSet(schema, [])
+        }
+        druidResponseParser.buildSchemaColumns(query) >> {
+            [new DimensionColumn(dim), new MetricColumn(metric1Name), new MetricColumn(metric2Name)].stream()
         }
         ResultSet actual = processor.buildResultSet(MAPPER.readTree("[]"), query, dateTimeZone)
 
