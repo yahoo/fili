@@ -14,6 +14,7 @@ import com.yahoo.bard.webservice.data.config.names.TestDruidMetricName
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
+import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.TableGroup
 
@@ -24,6 +25,11 @@ import spock.lang.Specification
  */
 class BaseTableLoaderSpec extends Specification {
     static class SimpleBaseTableLoader extends BaseTableLoader {
+
+        public SimpleBaseTableLoader(DataSourceMetadataService metadataService) {
+            super(metadataService)
+        }
+
         @Override
         public void loadTableDictionary(ResourceDictionaries dictionaries) {
             // stub to allow testing of abstract class in unit tests
@@ -39,7 +45,7 @@ class BaseTableLoaderSpec extends Specification {
     Collection<Dimension> dims
 
     def setup() {
-        loader = new SimpleBaseTableLoader()
+        loader = new SimpleBaseTableLoader(new TestDataSourceMetadataService())
         dicts = new ResourceDictionaries()
         apiNames = TestApiMetricName.getByLogicalTable(SHAPES)
         metricNames = TestDruidMetricName.getByLogicalTable(SHAPES)

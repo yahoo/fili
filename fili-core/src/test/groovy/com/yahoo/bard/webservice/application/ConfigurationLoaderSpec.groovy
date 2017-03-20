@@ -58,8 +58,7 @@ class ConfigurationLoaderSpec extends Specification {
         loader = new ConfigurationLoader(
                 new TypeAwareDimensionLoader(dimensions),
                 new TestMetricLoader(),
-                new TestTableLoader(),
-                new TestDataSourceMetadataService()
+                new TestTableLoader(new TestDataSourceMetadataService())
         )
         loader.load()
 

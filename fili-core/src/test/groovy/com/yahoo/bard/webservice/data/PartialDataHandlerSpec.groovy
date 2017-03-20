@@ -58,10 +58,10 @@ class PartialDataHandlerSpec extends Specification {
          * starts inside the dim1 hole and goes to the end of the period.
          */
         Map<Column, Set<Interval>> segmentIntervals = [
-                (new Column("userDeviceType")): buildIntervals(["2014-07-01/2014-07-09","2014-07-11/2014-07-29"]).toSet(),
-                (new Column("property")): buildIntervals(["2014-07-01/2014-07-29"]).toSet(),
-                (new Column("os")): buildIntervals(["2014-07-01/2014-07-29"]).toSet(),
-                (new Column("page_views")): buildIntervals(["2014-07-04/2014-07-29"]).toSet()
+                (new Column("userDeviceType")): buildIntervals(["2014-07-01/2014-07-09","2014-07-11/2014-07-29"]) as Set,
+                (new Column("property")): buildIntervals(["2014-07-01/2014-07-29"]) as Set,
+                (new Column("os")): buildIntervals(["2014-07-01/2014-07-29"]) as Set,
+                (new Column("page_views")): buildIntervals(["2014-07-04/2014-07-29"]) as Set
         ]
 
         table = new ConcretePhysicalTable(
@@ -82,7 +82,7 @@ class PartialDataHandlerSpec extends Specification {
         expect:
         expectedIntervals == partialDataHandler.findMissingTimeGrainIntervals(
                 dataSourceConstraint,
-                [table].toSet(),
+                [table] as Set,
                 new SimplifiedIntervalList(dataSourceConstraint.getIntervals()),
                 dataSourceConstraint.getRequestGranularity()
         )
@@ -97,7 +97,7 @@ class PartialDataHandlerSpec extends Specification {
         expect:
         requestedIntervals == partialDataHandler.findMissingTimeGrainIntervals(
                 dataSourceConstraint,
-                [table].toSet(),
+                [table] as Set,
                 new SimplifiedIntervalList(dataSourceConstraint.getIntervals()),
                 dataSourceConstraint.getRequestGranularity()
         )

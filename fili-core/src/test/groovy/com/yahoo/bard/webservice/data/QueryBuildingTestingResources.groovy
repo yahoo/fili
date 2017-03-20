@@ -108,7 +108,7 @@ public class QueryBuildingTestingResources {
         DateTimeZone.setDefault(UTC)
         def ages = ["1": "0-10", "2": "11-14", "3": "14-29", "4": "30-40", "5": "41-59", "6": "60+"]
 
-        metadataService = new TestDataSourceMetadataService(Collections.emptyMap())
+        metadataService = new TestDataSourceMetadataService([:])
 
         LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>()
         dimensionFields.add(BardDimensionField.ID)

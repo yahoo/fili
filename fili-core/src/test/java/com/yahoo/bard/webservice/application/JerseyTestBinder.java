@@ -21,6 +21,7 @@ import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier;
 import com.yahoo.bard.webservice.druid.util.FieldConverters;
 import com.yahoo.bard.webservice.druid.util.SketchFieldConverter;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
+import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService;
 import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService;
 import com.yahoo.bard.webservice.web.FilteredSketchMetricsHelper;
 import com.yahoo.bard.webservice.web.MetricsFilterSetBuilder;
@@ -385,7 +386,7 @@ public class JerseyTestBinder {
     }
 
     public TableLoader getTableLoader() {
-        return new TestTableLoader();
+        return new TestTableLoader(new TestDataSourceMetadataService());
     }
 
     /**
