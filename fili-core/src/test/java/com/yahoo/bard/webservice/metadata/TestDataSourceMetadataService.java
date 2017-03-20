@@ -28,8 +28,7 @@ public class TestDataSourceMetadataService extends DataSourceMetadataService {
      */
     public TestDataSourceMetadataService(Map<Column, Set<Interval>> testData) {
         super();
-        this.testAvailableIntervals = testData.entrySet()
-                .stream()
+        this.testAvailableIntervals = testData.entrySet().stream()
                 .collect(Collectors.toMap(entry -> entry.getKey().getName(), Map.Entry::getValue));
     }
 

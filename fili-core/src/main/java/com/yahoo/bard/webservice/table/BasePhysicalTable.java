@@ -21,11 +21,10 @@ import java.util.Set;
 import javax.validation.constraints.NotNull;
 
 /**
- * Physical Table represents a druid table.
- * Working availabilities a transactional sensibility to changing availabilities.
+ * Base implementation of physical table that are shared across various types of physical tables.
  */
 public abstract class BasePhysicalTable implements PhysicalTable {
-    private static final Logger LOG = LoggerFactory.getLogger(PhysicalTable.class);
+    private static final Logger LOG = LoggerFactory.getLogger(BasePhysicalTable.class);
 
     private final TableName name;
     private final PhysicalTableSchema schema;
@@ -63,6 +62,11 @@ public abstract class BasePhysicalTable implements PhysicalTable {
     }
 
     @Override
+    public Availability getAvailability() {
+        return availability;
+    }
+
+    @Override
     public PhysicalTableSchema getSchema() {
         return schema;
     }
@@ -77,11 +81,6 @@ public abstract class BasePhysicalTable implements PhysicalTable {
         return schema.getTimeGrain().roundFloor(
                 IntervalUtils.firstMoment(getAvailability().getAllAvailableIntervals().values()).orElse(new DateTime())
         );
-    }
-
-    @Override
-    public Availability getAvailability() {
-        return availability;
     }
 
     @Override
@@ -111,8 +110,11 @@ public abstract class BasePhysicalTable implements PhysicalTable {
     /**
      * Used only for testing to inject test availability data into table.
      *
-     * @param availability the test availability for this table
+     * @param availability  The test availability for this table
+     *
+     * @deprecated  Should avoid this method and refine testing strategy to remove this method
      */
+    @Deprecated
     protected void setAvailability(Availability availability) {
         this.availability = availability;
     }

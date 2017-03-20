@@ -13,7 +13,6 @@ import static com.yahoo.bard.webservice.web.handlers.SplitQueryRequestHandler.SP
 import com.yahoo.bard.webservice.application.healthchecks.AllDimensionsLoadedHealthCheck;
 import com.yahoo.bard.webservice.application.healthchecks.DataSourceMetadataLoaderHealthCheck;
 import com.yahoo.bard.webservice.application.healthchecks.DruidDimensionsLoaderHealthCheck;
-import com.yahoo.bard.webservice.application.healthchecks.SegmentMetadataLoaderHealthCheck;
 import com.yahoo.bard.webservice.application.healthchecks.VersionHealthCheck;
 import com.yahoo.bard.webservice.async.broadcastchannels.BroadcastChannel;
 import com.yahoo.bard.webservice.async.broadcastchannels.SimpleBroadcastChannel;
@@ -72,7 +71,6 @@ import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
 import com.yahoo.bard.webservice.metadata.RequestedIntervalsFunction;
 import com.yahoo.bard.webservice.metadata.SegmentIntervalsHashIdGenerator;
-import com.yahoo.bard.webservice.metadata.SegmentMetadataLoader;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 import com.yahoo.bard.webservice.table.resolver.DefaultPhysicalTableResolver;
@@ -137,7 +135,6 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractBinderFactory.class);
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
-    public static final String HEALTH_CHECK_NAME_SEGMENT_METADATA = "segment metadata loader";
     public static final String HEALTH_CHECK_NAME_DATASOURCE_METADATA = "datasource metadata loader";
     public static final String HEALTH_CHECK_NAME_DRUID_DIM_LOADER = "druid dimensions loader";
     public static final String HEALTH_CHECK_VERSION = "version";
@@ -281,14 +278,6 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                         loader.getPhysicalTableDictionary(),
                         dataSourceMetadataService
                 );
-
-                SegmentMetadataLoader segmentMetadataLoader = buildSegmentMetadataLoader(
-                        uiDruidWebService,
-                        loader.getPhysicalTableDictionary(),
-                        loader.getDimensionDictionary(),
-                        getMappers().getMapper()
-                );
-                setupPartialData(healthCheckRegistry, segmentMetadataLoader);
 
                 if (DRUID_COORDINATOR_METADATA.isOn()) {
                     DataSourceMetadataLoader dataSourceMetadataLoader = buildDataSourceMetadataLoader(
@@ -618,33 +607,6 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     }
 
     /**
-     * Build a segment metadata loader.
-     *
-     * @param webService  The web service used by the timer to query partial data
-     * @param physicalTableDictionary  The table to update dimensions on
-     * @param dimensionDictionary  The dimensions to update
-     * @param mapper  The object mapper to process segment metadata json
-     *
-     * @return A segment metadata loader
-     *
-     * @deprecated The http endpoints in Druid that this service relies on have been deprecated
-     */
-    @Deprecated
-    protected SegmentMetadataLoader buildSegmentMetadataLoader(
-            DruidWebService webService,
-            PhysicalTableDictionary physicalTableDictionary,
-            DimensionDictionary dimensionDictionary,
-            ObjectMapper mapper
-    ) {
-        return new SegmentMetadataLoader(
-                physicalTableDictionary,
-                dimensionDictionary,
-                webService,
-                mapper
-        );
-    }
-
-    /**
      * Build a datasource metadata loader.
      *
      * @param webService  The web service used by the loader to query druid for segments availability.
@@ -687,26 +649,6 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 dimensionDictionary,
                 webService
         );
-    }
-
-    /**
-     * Schedule a segment metadata loader and register its health check.
-     *
-     * @param healthCheckRegistry  The health check registry to register partial data health checks
-     * @param segmentMetadataLoader  The segment metadata loader to use for partial data monitoring and health checks
-     */
-    protected final void setupPartialData(
-            HealthCheckRegistry healthCheckRegistry,
-            SegmentMetadataLoader segmentMetadataLoader
-    ) {
-        scheduleLoader(segmentMetadataLoader);
-
-        // Register Segment metadata loader health check
-        HealthCheck segMetaLoaderHealthCheck = new SegmentMetadataLoaderHealthCheck(
-                segmentMetadataLoader,
-                SEG_LOADER_HC_LAST_RUN_PERIOD_MILLIS
-        );
-        healthCheckRegistry.register(HEALTH_CHECK_NAME_SEGMENT_METADATA, segMetaLoaderHealthCheck);
     }
 
     /**
@@ -833,7 +775,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     /**
      * Build an application specific configuration loader initialized with pluggable loaders.
      *
-     * @param metadataService datasource metadata service containing data segments for tables
+     * @param metadataService  Datasource metadata service containing data segments for tables
      *
      * @return A configuration loader instance
      */
@@ -850,7 +792,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      * @param dimensionLoader  A dimension loader
      * @param metricLoader  A metric loader
      * @param tableLoader  A table loader
-     * @param metadataService datasource metadata service containing data segments for tables
+     * @param metadataService  Datasource metadata service containing data segments for tables
      *
      * @return A configurationLoader instance
      */

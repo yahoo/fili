@@ -3,7 +3,6 @@
 package com.yahoo.bard.webservice.table;
 
 import com.yahoo.bard.webservice.data.config.names.TableName;
-import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.table.availability.Availability;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
@@ -20,9 +19,6 @@ import java.util.Set;
  * It may be backed by a single concrete data source or not.
  */
 public interface PhysicalTable extends Table {
-
-    @Override
-    String getName();
 
     @Override
     PhysicalTableSchema getSchema();
@@ -81,11 +77,11 @@ public interface PhysicalTable extends Table {
     String getPhysicalColumnName(String logicalName);
 
     /**
-     * Getter for active column intervals.
+     * Get available intervals satisfying the given constraints.
      *
-     * @param constraints data constraint containing columns and api filters
+     * @param constraints  Data constraint containing columns and api filters
      *
-     * @return tableEntries map of column to set of available intervals
+     * @return tableEntries a simplified interval list of available interval
      */
     SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraints);
 
@@ -107,10 +103,10 @@ public interface PhysicalTable extends Table {
      *
      * @return The time grain of this physical table
      *
-     * @deprecated use getSchema().getTimeGrain()
+     * @deprecated use getSchema().getGranularity()
      */
     @Deprecated
-    default ZonedTimeGrain getTimeGrain() {
-        return getSchema().getTimeGrain();
+    default Granularity getTimeGrain() {
+        return getSchema().getGranularity();
     }
 }

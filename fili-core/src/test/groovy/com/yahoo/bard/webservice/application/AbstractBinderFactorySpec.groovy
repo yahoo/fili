@@ -4,7 +4,6 @@ package com.yahoo.bard.webservice.application
 
 import static com.yahoo.bard.webservice.application.AbstractBinderFactory.HEALTH_CHECK_NAME_DATASOURCE_METADATA
 import static com.yahoo.bard.webservice.application.AbstractBinderFactory.HEALTH_CHECK_NAME_DIMENSION
-import static com.yahoo.bard.webservice.application.AbstractBinderFactory.HEALTH_CHECK_NAME_SEGMENT_METADATA
 import static com.yahoo.bard.webservice.application.AbstractBinderFactory.HEALTH_CHECK_NAME_DRUID_DIM_LOADER
 import static com.yahoo.bard.webservice.application.AbstractBinderFactory.HEALTH_CHECK_VERSION
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_CACHE
@@ -21,7 +20,6 @@ import static com.yahoo.bard.webservice.druid.client.DruidClientConfigHelper.UI_
 import com.yahoo.bard.webservice.application.healthchecks.AllDimensionsLoadedHealthCheck
 import com.yahoo.bard.webservice.application.healthchecks.DataSourceMetadataLoaderHealthCheck
 import com.yahoo.bard.webservice.application.healthchecks.DruidDimensionsLoaderHealthCheck
-import com.yahoo.bard.webservice.application.healthchecks.SegmentMetadataLoaderHealthCheck
 import com.yahoo.bard.webservice.application.healthchecks.VersionHealthCheck
 import com.yahoo.bard.webservice.config.SystemConfig
 import com.yahoo.bard.webservice.config.SystemConfigException
@@ -41,7 +39,6 @@ import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.druid.client.DruidWebService
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataLoader
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
-import com.yahoo.bard.webservice.metadata.SegmentMetadataLoader
 import com.yahoo.bard.webservice.table.LogicalTableDictionary
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 
@@ -131,7 +128,6 @@ public class AbstractBinderFactorySpec extends Specification {
         DRUID_COORDINATOR_METADATA.setOn(coordinatorStatus)
         DRUID_CACHE.setOn(cacheStatus)
         DRUID_CACHE_V2.setOn(cacheV2Status)
-        propertyRestore(SegmentMetadataLoader.DRUID_SEG_LOADER_TIMER_DELAY_KEY, null)
         propertyRestore(UI_DRUID_BROKER_URL_KEY, oldUiURL)
         propertyRestore(NON_UI_DRUID_BROKER_URL_KEY, oldNonUiURL)
         propertyRestore(DRUID_COORD_URL_KEY, oldCoordURL)
@@ -222,7 +218,6 @@ public class AbstractBinderFactorySpec extends Specification {
         then:
         reg.getNames().contains(HEALTH_CHECK_VERSION)
         reg.getNames().contains(HEALTH_CHECK_NAME_DIMENSION)
-        reg.getNames().contains(HEALTH_CHECK_NAME_SEGMENT_METADATA)
     }
 
     def "test keyValueStore health check"() {
@@ -286,34 +281,6 @@ public class AbstractBinderFactorySpec extends Specification {
         }
         1 * registry.register(HEALTH_CHECK_VERSION, _ as VersionHealthCheck)
         capturedHealthCheck.dimensionDictionary.is(dimensionDictionary)
-    }
-
-    def "Test Setup Partial Data"() {
-        setup:
-        SegmentMetadataLoaderHealthCheck capturedHealthCheck = null
-        PhysicalTableDictionary physicalTableDictionary = new PhysicalTableDictionary()
-        DimensionDictionary dimensionDictionary = new DimensionDictionary()
-
-        DruidWebService webService = Mock(DruidWebService)
-        HealthCheckRegistry registry = Mock(HealthCheckRegistry)
-
-        when:
-        SegmentMetadataLoader segmentMetadataLoader = binderFactory.buildSegmentMetadataLoader(
-                webService,
-                physicalTableDictionary,
-                dimensionDictionary,
-                MAPPER
-        )
-        binderFactory.setupPartialData(registry, segmentMetadataLoader)
-        binderFactory.shutdownLoaderScheduler()
-
-        then:
-        segmentMetadataLoader.druidWebService.is(webService)
-        segmentMetadataLoader.physicalTableDictionary.is(physicalTableDictionary)
-        1 * registry.register(HEALTH_CHECK_NAME_SEGMENT_METADATA, _ as SegmentMetadataLoaderHealthCheck) >> {
-            string, healthCheck -> capturedHealthCheck = healthCheck
-        }
-        capturedHealthCheck.loader.is(segmentMetadataLoader)
     }
 
     def "Test Setup Druid Dimensions Loader"() {

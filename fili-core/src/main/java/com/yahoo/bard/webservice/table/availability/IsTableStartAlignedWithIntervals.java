@@ -33,6 +33,6 @@ public class IsTableStartAlignedWithIntervals implements IsTableAligned {
      */
     @Override
     public boolean test(PhysicalTable table) {
-        return alignsTo.stream().allMatch(table.getTimeGrain()::aligns);
+        return alignsTo.stream().allMatch(table.getSchema().getTimeGrain()::aligns);
     }
 }

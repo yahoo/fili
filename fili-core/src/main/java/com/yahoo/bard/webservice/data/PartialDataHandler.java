@@ -70,20 +70,4 @@ public class PartialDataHandler {
         LOG.debug("Missing intervals: {} for grain {}", missingIntervals, granularity);
         return missingIntervals;
     }
-
-    /**
-     * Given a table and a list of column names, get the intervals for those columns from the physical table then
-     * merge into a single availability list.
-     *
-     * @param physicalTable  The fact source for the columns
-     * @param constraints data constraint containing columns and api filters
-     *
-     * @return the simplified available intervals
-     *
-     * @deprecated use getAvailableIntervals function on physical tables instead
-     */
-    @Deprecated
-    public SimplifiedIntervalList getAvailability(PhysicalTable physicalTable, DataSourceConstraint constraints) {
-        return physicalTable.getAvailableIntervals(constraints);
-    }
 }

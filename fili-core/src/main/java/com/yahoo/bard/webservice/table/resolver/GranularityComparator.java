@@ -27,9 +27,9 @@ public class GranularityComparator implements Comparator<PhysicalTable> {
     @Override
     public int compare(final PhysicalTable table1, final PhysicalTable table2) {
         // compare to returns -1 if the timeGrain for table1 is finer (expressed in more milliseconds) than table2
-        int compare = table1.getTimeGrain()
+        int compare = table1.getSchema().getTimeGrain()
                 .getEstimatedDuration()
-                .compareTo(table2.getTimeGrain().getEstimatedDuration());
+                .compareTo(table2.getSchema().getTimeGrain().getEstimatedDuration());
         LOG.trace("{} {} {}", table1, compare < 0 ? "<" : ">", table2);
         // shorter duration means more rows per time, so negate to order by fewer rows rather than shorter duration
         return -1 * compare;
