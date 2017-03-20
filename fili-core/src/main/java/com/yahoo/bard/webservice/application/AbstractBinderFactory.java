@@ -305,12 +305,13 @@ public abstract class AbstractBinderFactory implements BinderFactory {
 
                 bind(getClock()).to(Clock.class);
 
+                DruidDimensionsLoader druidDimensionsLoader = buildDruidDimensionsLoader(
+                        nonUiDruidWebService,
+                        loader.getPhysicalTableDictionary(),
+                        loader.getDimensionDictionary()
+                );
+
                 if (DRUID_DIMENSIONS_LOADER.isOn()) {
-                    DruidDimensionsLoader druidDimensionsLoader = buildDruidDimensionsLoader(
-                            nonUiDruidWebService,
-                            loader.getPhysicalTableDictionary(),
-                            loader.getDimensionDictionary()
-                    );
                     setupDruidDimensionsLoader(healthCheckRegistry, druidDimensionsLoader);
                 }
                 // Call post-binding hook to allow for additional binding
