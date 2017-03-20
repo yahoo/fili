@@ -12,6 +12,8 @@ import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.google.common.collect.ImmutableMap;
 
 import org.joda.time.Interval;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
@@ -27,6 +29,8 @@ import java.util.stream.Collectors;
  * An availability which guarantees immutability on its contents.
  */
 public class ImmutableAvailability implements Availability {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ImmutableAvailability.class);
 
     private final TableName name;
     private final Map<Column, List<Interval>> columnIntervals;
@@ -97,11 +101,15 @@ public class ImmutableAvailability implements Availability {
                 entry -> new SimplifiedIntervalList(entry.getValue());
 
         Map<Column, List<Interval>> map = dimensionIntervals.entrySet().stream()
+                .filter(entry -> dimensionDictionary.findByApiName(entry.getKey()) != null)
                 .collect(Collectors.toMap(dimensionKeyMapper, valueMapper));
         map.putAll(
                 metricIntervals.entrySet().stream()
                         .collect(Collectors.toMap(metricKeyMapper, valueMapper))
         );
+        if (map.size() == 0) {
+            LOG.warn("No legal availability columns discovered when building availability instance.");
+        }
         return map;
     }
 
@@ -111,7 +119,7 @@ public class ImmutableAvailability implements Availability {
     }
 
     @Override
-    public List<Interval> get(final Column c) {
+    public List<Interval> get(Column c) {
         return columnIntervals.get(c);
     }
 
