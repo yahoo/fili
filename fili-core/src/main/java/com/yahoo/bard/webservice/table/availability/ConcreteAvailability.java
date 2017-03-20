@@ -11,6 +11,8 @@ import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import org.joda.time.Interval;
 
+import avro.shaded.com.google.common.collect.ImmutableSet;
+
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -20,7 +22,7 @@ import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 
 /**
- * An availability which guarantees immutability on its contents.
+ * An availability that provides column and table available interval services for concrete physical table.
  */
 public class ConcreteAvailability implements Availability {
 
@@ -28,12 +30,14 @@ public class ConcreteAvailability implements Availability {
     private final Set<Column> columns;
     private final DataSourceMetadataService metadataService;
 
+    private final Set<String> columnNames;
+
     /**
      * Constructor.
      *
-     * @param tableName The name of the data source associated with this ImmutableAvailability
-     * @param columns The columns associated with the table and availability
-     * @param metadataService A service containing the datasource segment data
+     * @param tableName  The name of the table and data source associated with this Availability
+     * @param columns  The columns associated with the table and availability
+     * @param metadataService  A service containing the datasource segment data
      */
     public ConcreteAvailability(
             TableName tableName,
@@ -41,8 +45,10 @@ public class ConcreteAvailability implements Availability {
             @NotNull DataSourceMetadataService metadataService
     ) {
         this.name = tableName;
-        this.columns = columns;
+        this.columns = ImmutableSet.copyOf(columns);
         this.metadataService = metadataService;
+
+        this.columnNames = columns.stream().map(Column::getName).collect(Collectors.toSet());
     }
 
     @Override
@@ -66,11 +72,9 @@ public class ConcreteAvailability implements Availability {
     @Override
     public SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraints) {
 
-        Set<String> configuredColumns = columns.stream()
-                .map(Column::getName).collect(Collectors.toSet());
-
         Set<String> requestColumns = constraints.getAllColumnNames().stream()
-                .filter(requestColumn -> configuredColumns.contains(requestColumn)).collect(Collectors.toSet());
+                .filter(columnNames::contains)
+                .collect(Collectors.toSet());
 
         if (requestColumns.isEmpty()) {
             return new SimplifiedIntervalList();

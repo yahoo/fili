@@ -313,8 +313,7 @@ class ResultSetResponseProcessorSpec extends Specification {
         }
 
         druidResponseParser.parse(_, _, _, _) >> {
-            JsonNode json, Schema schema, DefaultQueryType type, DateTimeZone tz ->
-                new ResultSet(schema, [])
+            JsonNode json, Schema schema, DefaultQueryType type, DateTimeZone tz -> new ResultSet(schema, [])
         }
         ResultSet actual = processor.buildResultSet(MAPPER.readTree("[]"), query, dateTimeZone)
 

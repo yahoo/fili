@@ -193,8 +193,8 @@ public class SlicesApiRequest extends ApiRequest {
 
         Map<String, Object> generated = new LinkedHashMap<>();
         generated.put("name", sliceName);
-        generated.put("timeGrain", table.getTimeGrain().getName());
-        generated.put("timeZone", table.getTimeGrain().getTimeZoneName());
+        generated.put("timeGrain", table.getSchema().getTimeGrain().getName());
+        generated.put("timeZone", table.getSchema().getTimeGrain().getTimeZoneName());
         generated.put("dimensions", dimensionsResult);
         generated.put("metrics", metricsResult);
         generated.put("segmentInfo", generateSegmentMetadataView(sliceMetadata));

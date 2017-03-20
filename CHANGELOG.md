@@ -107,8 +107,8 @@ Current
 ### Deprecated:
 
 - [CompositePhsyicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
-    * `getAvailability` method on `PartialDataHandler` is now deprecated since the logic is pushed into `Availability`
-    * `loadTableDictionary` method only taking one `ResourceDictionaries` argument, should use the one taking an additional `DataSourceMetadataService` instead
+    * Deprecated `loadTableDictionary` method only taking one `ResourceDictionaries` argument, should use the one taking an additional `DataSourceMetadataService` instead
+    * Deprecated `setAvailability` method on `BasePhysicalTable` to discourage using it for testing, should refine testing strategy to avoid it
 
 - [`RequestLog::stopMostRecentTimer` has been deprecated](https://github.com/yahoo/fili/pull/143)
     - This method is a part of the infrastructure to support the recently
@@ -140,6 +140,9 @@ Current
     * Removed `getIntersectSubintervalsForColumns` and `getUnionSubintervalsForColumns` from `PartialDataHandler` since the logic is pushed into `Availability` now
     * Removed `getIntervalsByColumnName`, `resetColumns` and `hasLogicalMapping` methods in `PhysicalTable` since no longer needed with the availability structure
     * Removed deprecated `buildTableGroup` method in `BaseTableLoader`
+    * Removed `getAvailability` method on `PartialDataHandler` since the logic is pushed into `Availability`
+    * Removed `SegmentMetadataLoader` class which is deprecated in both fili and the corresponding endpoint in druid, use `DataSourceMetadataLoader` instead
+    * Removed `SegmentMetadataLoaderHealthCheck` and `SegmentMetadataLoaderHealthCheckSpec` classes since `SegmentMetadataLoader` is not longer available
 
 - [Major refactor for availability and schemas and tables](https://github.com/yahoo/fili/pull/165)
     *  Removed `ZonedSchema` (all methods moved to child class ResultSetSchema)

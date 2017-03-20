@@ -12,11 +12,10 @@ import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 public interface TableLoader {
 
     /**
-     * Load all of the logical tables, their table groups, and the physical tables for those groups.
+     * Load datasource metadata service and call loadTableDictionary implemented by the user above.
      *
      * @param dictionaries  The resource dictionaries that will be loaded with table configuration
-     * @param metadataService datasource metadata service containing segments for building table
+     * @param metadataService  Datasource metadata service containing segments for building table
      */
     void loadTableDictionary(ResourceDictionaries dictionaries, DataSourceMetadataService metadataService);
-
 }

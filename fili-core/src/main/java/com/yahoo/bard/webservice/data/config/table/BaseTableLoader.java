@@ -64,10 +64,7 @@ public abstract class BaseTableLoader implements TableLoader {
      * Load user configured tables into resource dictionary.
      *
      * @param dictionaries dictionary to be loaded with user configured tables
-     *
-     * @deprecated should use the same method that takes an additional DataSourceMetadataService argument instead
      */
-    @Deprecated
     public abstract void loadTableDictionary(ResourceDictionaries dictionaries);
 
     @Override
@@ -261,11 +258,7 @@ public abstract class BaseTableLoader implements TableLoader {
         PhysicalTable existingTable = dictionaries.getPhysicalDictionary().get(definition.getName().asName());
         if (existingTable == null) {
             // Build the physical table
-            existingTable = buildPhysicalTable(
-                    definition,
-                    metricNames,
-                    dictionaries.getDimensionDictionary()
-            );
+            existingTable = buildPhysicalTable(definition, metricNames, dictionaries.getDimensionDictionary());
 
             // Add the table to the dictionary
             LOG.debug("Physical table: {} \n\n" + "Cache: {} ",

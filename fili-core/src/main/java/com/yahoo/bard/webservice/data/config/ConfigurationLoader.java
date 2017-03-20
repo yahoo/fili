@@ -33,7 +33,6 @@ public class ConfigurationLoader {
     protected final DimensionLoader dimensionLoader;
     protected final TableLoader tableLoader;
     protected final MetricLoader metricLoader;
-
     protected final DataSourceMetadataService metadataService;
 
     // Default JodaTime zone to UTC
@@ -48,7 +47,7 @@ public class ConfigurationLoader {
      * @param dimensionLoader  DimensionLoader to load dimensions from
      * @param metricLoader  MetricLoader to load metrics from
      * @param tableLoader  TableLoader to load tables from
-     * @param metadataService datasource metadata service containing segments for building table
+     * @param metadataService  Datasource metadata service containing segments for building table
      */
     @Inject
     public ConfigurationLoader(

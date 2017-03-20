@@ -56,9 +56,23 @@ class AvailabilityTestingUtils extends Specification {
                     Map<Column, Set<Interval>> allIntervals = Stream.concat(
                             dimensionIntervals.entrySet().stream(),
                             metricIntervals.entrySet().stream()
-                    ).collect(Collectors.toMap({table.getSchema().getColumn(it.key)}, {it.value}));
+                    ).collect(
+                            Collectors.toMap(
+                                    {
+                                        table.getSchema().getColumn(it.key)
+                                            .orElseThrow(
+                                                {
+                                                    return new NoSuchElementException(
+                                                            "Column " + it.key + " not found in "
+                                                                    + table.getName() + " table schema"
+                                                    )
+                                                }
+                                            )
+                                    }, { it.value }
+                            )
+                    );
 
-                    // set new cache
+            // set new cache
                     table.setAvailability(new ConcreteAvailability(table.getTableName(), table.getSchema().getColumns(), new TestDataSourceMetadataService(allIntervals)));
                 }
     }

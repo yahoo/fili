@@ -78,7 +78,7 @@ class ConcretePhysicalTableSpec extends Specification {
         constraints.getAllColumnNames() >> [column.name]
 
         expect:
-        physicalTable.getAvailableIntervals(constraints).asList() == new SimplifiedIntervalList(expected).asList()
+        physicalTable.getAvailableIntervals(constraints) as List == new SimplifiedIntervalList(expected) as List
 
         where:
         column                      | expected
@@ -106,7 +106,7 @@ class ConcretePhysicalTableSpec extends Specification {
 
         then:
         table.getAllAvailableIntervals().containsKey(dimensionColumn)
-        table.getAllAvailableIntervals().get(dimensionColumn).asList() == new SimplifiedIntervalList(intervalSet3).asList()
+        table.getAllAvailableIntervals().get(dimensionColumn) as List == new SimplifiedIntervalList(intervalSet3) as List
         table.getDimensions() == [dimension] as Set
 
         when:
@@ -114,7 +114,7 @@ class ConcretePhysicalTableSpec extends Specification {
 
         then:
         table.getDimensions() == [dimension] as Set
-        table.getAvailableIntervals(constraints).asList() == new SimplifiedIntervalList(intervalSet2).asList()
+        table.getAvailableIntervals(constraints) as List == new SimplifiedIntervalList(intervalSet2) as List
     }
 
     def "test the getIntervalsByColumnName() method"() {

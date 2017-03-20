@@ -27,7 +27,7 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
      * @param timeGrain  time grain of the table
      * @param columns  The columns for this table
      * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
-     * @param metadataService datasource metadata service containing availability data for the table
+     * @param metadataService  Datasource metadata service containing availability data for the table
      */
     public ConcretePhysicalTable(
             @NotNull TableName name,
@@ -54,7 +54,7 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
      * @param timeGrain  time grain of the table
      * @param columns The columns for this table
      * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
-     * @param metadataService datasource metadata service containing availability data for the table
+     * @param metadataService  Datasource metadata service containing availability data for the table
      *
      * @deprecated Should use constructor with TableName instead of String as table name
      */

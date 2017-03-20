@@ -8,6 +8,7 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.WEEK
 
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
 import com.yahoo.bard.webservice.table.PhysicalTable
+import com.yahoo.bard.webservice.table.PhysicalTableSchema
 
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
@@ -23,7 +24,7 @@ import spock.lang.Unroll
 class IsTableStartAlignedWithIntervalsSpec extends Specification {
 
     @Shared
-    PhysicalTable tableUTC, tableCST, tableUTCHour, tableHalfHourly, tableHourlyAtHalfHour
+    PhysicalTable tableUTC, tableCST, tableUTCHour
 
     @Shared
     List<Interval> utcDays, cstDays, pacificDays, iranDays, utcHours, utcWeeks
@@ -45,15 +46,18 @@ class IsTableStartAlignedWithIntervalsSpec extends Specification {
         iranDay = new ZonedTimeGrain(DAY, iran)
 
         tableUTC = Mock(PhysicalTable)
-        tableUTC.getTimeGrain() >> utcDay
+        tableUTC.getSchema() >> Mock(PhysicalTableSchema)
+        tableUTC.getSchema().getTimeGrain() >> utcDay
         tableUTC.getTableAlignment() >> utcDay.roundFloor(new DateTime())
 
         tableUTCHour = Mock(PhysicalTable)
-        tableUTCHour.getTimeGrain() >> utcHour
+        tableUTCHour.getSchema() >> Mock(PhysicalTableSchema)
+        tableUTCHour.getSchema().getTimeGrain() >> utcHour
         tableUTCHour.getTableAlignment() >> utcDay.roundFloor(new DateTime())
 
         tableCST = Mock(PhysicalTable)
-        tableCST.getTimeGrain() >> chicagoDay
+        tableCST.getSchema() >> Mock(PhysicalTableSchema)
+        tableCST.getSchema().getTimeGrain() >> chicagoDay
         tableCST.getTableAlignment() >> chicagoDay.roundFloor(new DateTime())
 
         //utcDays, cstDays, pacificDays, indiaDays, utcHours, utcWeeks, utcMonths
