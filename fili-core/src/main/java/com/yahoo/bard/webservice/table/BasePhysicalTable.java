@@ -4,7 +4,6 @@ package com.yahoo.bard.webservice.table;
 
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
-import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.table.availability.Availability;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.util.IntervalUtils;
@@ -28,7 +27,7 @@ public abstract class BasePhysicalTable implements PhysicalTable {
 
     private final TableName name;
     private final PhysicalTableSchema schema;
-    private volatile Availability availability;
+    private Availability availability;
 
     /**
      * Create a physical table.
@@ -72,14 +71,9 @@ public abstract class BasePhysicalTable implements PhysicalTable {
     }
 
     @Override
-    public Granularity getGranularity() {
-        return getSchema().getGranularity();
-    }
-
-    @Override
     public DateTime getTableAlignment() {
-        return schema.getTimeGrain().roundFloor(
-                IntervalUtils.firstMoment(getAvailability().getAllAvailableIntervals().values()).orElse(new DateTime())
+        return getSchema().getTimeGrain().roundFloor(
+                IntervalUtils.firstMoment(getAllAvailableIntervals().values()).orElse(new DateTime())
         );
     }
 

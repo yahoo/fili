@@ -3,7 +3,7 @@
 package com.yahoo.bard.webservice.table;
 
 import com.yahoo.bard.webservice.data.config.names.TableName;
-import com.yahoo.bard.webservice.druid.model.query.Granularity;
+import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.table.availability.Availability;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
@@ -15,8 +15,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * An interface describing a config level physical table.
- * It may be backed by a single concrete data source or not.
+ * An interface describing a fact level physical table. It may be backed by a single fact table or multiple.
  */
 public interface PhysicalTable extends Table {
 
@@ -36,13 +35,6 @@ public interface PhysicalTable extends Table {
      * @return The current actual physical availability or a runtime exception if there isn't one yet.
      */
     Availability getAvailability();
-
-    /**
-     * Get the granularity for the table.
-     *
-     * @return the granularity of this table
-     */
-    Granularity getGranularity();
 
     /**
      * Get a date time that the table will align to based on grain and available intervals.
@@ -103,10 +95,10 @@ public interface PhysicalTable extends Table {
      *
      * @return The time grain of this physical table
      *
-     * @deprecated use getSchema().getGranularity()
+     * @deprecated use getSchema().getTimeGrain()
      */
     @Deprecated
-    default Granularity getTimeGrain() {
-        return getSchema().getGranularity();
+    default ZonedTimeGrain getTimeGrain() {
+        return getSchema().getTimeGrain();
     }
 }

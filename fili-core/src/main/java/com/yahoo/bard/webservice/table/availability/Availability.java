@@ -36,7 +36,7 @@ public interface Availability {
      *
      * @param constraints  Data constraint containing columns and api filters
      *
-     * @return Set of intervals associated with each corresponding column in a map, empty if column is missing
+     * @return A simplified list of intervals associated with all column in constraint, empty if column is missing
      */
     SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraints);
 }

@@ -85,6 +85,7 @@ class ConcretePhysicalTableSpec extends Specification {
         dimensionColumn             | intervalSet1
         metricColumn1               | intervalSet2
         metricColumn2               | intervalSet3
+        new Column("MissingName")   | [] as Set
     }
 
     def "test datasource metadata service correctly initializes"() {

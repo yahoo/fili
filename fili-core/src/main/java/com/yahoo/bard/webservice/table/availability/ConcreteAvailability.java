@@ -9,9 +9,9 @@ import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
-import org.joda.time.Interval;
+import com.google.common.collect.ImmutableSet;
 
-import avro.shaded.com.google.common.collect.ImmutableSet;
+import org.joda.time.Interval;
 
 import java.util.Collections;
 import java.util.Map;
@@ -30,7 +30,8 @@ public class ConcreteAvailability implements Availability {
     private final Set<Column> columns;
     private final DataSourceMetadataService metadataService;
 
-    private final Set<String> columnNames;
+    private final Set<String> cachedColumnNames;
+    private final Set<TableName> cachedDataSourceNames;
 
     /**
      * Constructor.
@@ -40,7 +41,7 @@ public class ConcreteAvailability implements Availability {
      * @param metadataService  A service containing the datasource segment data
      */
     public ConcreteAvailability(
-            TableName tableName,
+            @NotNull TableName tableName,
             @NotNull Set<Column> columns,
             @NotNull DataSourceMetadataService metadataService
     ) {
@@ -48,12 +49,13 @@ public class ConcreteAvailability implements Availability {
         this.columns = ImmutableSet.copyOf(columns);
         this.metadataService = metadataService;
 
-        this.columnNames = columns.stream().map(Column::getName).collect(Collectors.toSet());
+        this.cachedColumnNames = columns.stream().map(Column::getName).collect(Collectors.toSet());
+        this.cachedDataSourceNames = Collections.singleton(name);
     }
 
     @Override
     public Set<TableName> getDataSourceNames() {
-        return Collections.singleton(name);
+        return cachedDataSourceNames;
     }
 
     @Override
@@ -73,7 +75,7 @@ public class ConcreteAvailability implements Availability {
     public SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraints) {
 
         Set<String> requestColumns = constraints.getAllColumnNames().stream()
-                .filter(columnNames::contains)
+                .filter(cachedColumnNames::contains)
                 .collect(Collectors.toSet());
 
         if (requestColumns.isEmpty()) {
