@@ -73,7 +73,7 @@ class AvailabilityTestingUtils extends Specification {
                     );
 
             // set new cache
-                    table.setAvailability(new ConcreteAvailability(table.getTableName(), table.getSchema().getColumns(), new TestDataSourceMetadataService(allIntervals)));
+                    table.setAvailability(new ConcreteAvailability(table.getTableName(), table.getSchema().getColumns(), new TestDataSourceMetadataService(allIntervals)))
                 }
     }
 }

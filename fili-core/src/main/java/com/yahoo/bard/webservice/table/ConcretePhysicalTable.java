@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.table;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
+import com.yahoo.bard.webservice.table.availability.Availability;
 import com.yahoo.bard.webservice.table.availability.ConcreteAvailability;
 
 import java.util.Map;
@@ -21,9 +22,8 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
 
     /**
      * Create a concrete physical table.
-     * The availability on this table is initialized to empty intervals.
      *
-     * @param name  Name of the physical table as TableName
+     * @param name  Name of the physical table as TableName, also used as fact table name
      * @param timeGrain  time grain of the table
      * @param columns  The columns for this table
      * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
@@ -36,12 +36,37 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
             @NotNull Map<String, String> logicalToPhysicalColumnNames,
             @NotNull DataSourceMetadataService metadataService
     ) {
-        super(
+        this(
                 name,
                 timeGrain,
                 columns,
                 logicalToPhysicalColumnNames,
                 new ConcreteAvailability(name, columns, metadataService)
+        );
+    }
+
+    /**
+     * Create a concrete physical table, the availability on this table is built externally.
+     *
+     * @param name  Name of the physical table as TableName, also used as fact table name
+     * @param timeGrain  time grain of the table
+     * @param columns  The columns for this table
+     * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
+     * @param availability  Availability that serves interval availability for columns
+     */
+    public ConcretePhysicalTable(
+            @NotNull TableName name,
+            @NotNull ZonedTimeGrain timeGrain,
+            @NotNull Set<Column> columns,
+            @NotNull Map<String, String> logicalToPhysicalColumnNames,
+            @NotNull Availability availability
+    ) {
+        super(
+                name,
+                timeGrain,
+                columns,
+                logicalToPhysicalColumnNames,
+                availability
         );
         this.factTableName = name.asName();
     }
@@ -50,7 +75,7 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
      * Create a concrete physical table.
      * The fact table name will be defaulted to the name and the availability initialized to empty intervals.
      *
-     * @param name  Name of the physical table as String
+     * @param name  Name of the physical table as String, also used as fact table name
      * @param timeGrain  time grain of the table
      * @param columns The columns for this table
      * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
@@ -59,7 +84,7 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
      * @deprecated Should use constructor with TableName instead of String as table name
      */
     @Deprecated
-    public ConcretePhysicalTable(
+    private ConcretePhysicalTable(
             @NotNull String name,
             @NotNull ZonedTimeGrain timeGrain,
             @NotNull Set<Column> columns,

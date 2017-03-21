@@ -67,7 +67,7 @@ public abstract class BaseTableLoader implements TableLoader {
     /**
      * Load user configured tables into resource dictionary.
      *
-     * @param dictionaries dictionary to be loaded with user configured tables
+     * @param dictionaries dictionary to be loaded with configured tables
      */
     public abstract void loadTableDictionary(ResourceDictionaries dictionaries);
 

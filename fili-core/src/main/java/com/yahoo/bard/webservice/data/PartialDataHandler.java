@@ -18,8 +18,7 @@ import javax.inject.Singleton;
 import javax.validation.constraints.NotNull;
 
 /**
- * Partial data handler deals with finding the missing intervals for a given request, as well as filtering out partial
- * results from the result set.
+ * Partial data handler deals with finding the missing intervals for a given request.
  */
 @Singleton
 public class PartialDataHandler {
