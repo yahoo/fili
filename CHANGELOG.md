@@ -108,7 +108,7 @@ Current
 
 ### Fixed:
 
-- [Fixed Segment Metadata Loader Unconfigured Dimension Bug]()
+- [Fixed Segment Metadata Loader Unconfigured Dimension Bug](https://github.com/yahoo/fili/pull/197)
     * Immutable availability was failing when attempting to bind segment dimension columns not configured in dimension dictionary.
     * Fix to filter irrelevant column names. 
 

@@ -32,7 +32,7 @@ class ImmutableAvailabilitySpec extends Specification {
         Map<String, List<Interval>> segmentMetricData = [:]
 
         expect: "segment availability is passed to be bound to dimension and metric columns"
-        (ImmutableAvailability.buildAvailabilityMap(segmentDimensionData, segmentMetricData, dictionary)).size() == 0
+        ImmutableAvailability.buildAvailabilityMap("testTable", segmentDimensionData, segmentMetricData, dictionary).size() == 0
     }
 
     def "Availability loads and binds dimension and metric columns from String maps"() {
@@ -45,7 +45,7 @@ class ImmutableAvailabilitySpec extends Specification {
         List<MetricColumn> metricColumns = segmentMetricData.collect { new MetricColumn(it.getKey())}
 
         when: "segment availability is passed to be bound to dimension and metric columns"
-        Map<Column, List<Interval>> result = ImmutableAvailability.buildAvailabilityMap(segmentDimensionData, segmentMetricData, dictionary)
+        Map<Column, List<Interval>> result = ImmutableAvailability.buildAvailabilityMap("testTable", segmentDimensionData, segmentMetricData, dictionary)
 
         then: "all configured dimension columns and all metric columns now have associated availability"
         columns.every() {
