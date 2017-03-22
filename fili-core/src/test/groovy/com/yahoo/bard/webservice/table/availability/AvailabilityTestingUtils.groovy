@@ -44,33 +44,19 @@ class AvailabilityTestingUtils extends Specification {
         physicalTableDictionary
                 .findAll { tableName, _ -> tableName in tableNames}
                 .each { _, ConcretePhysicalTable table ->
-                    Map<String, Set<Interval>> metricIntervals = table.getSchema().getColumns(MetricColumn.class)
+                    Map<Column, Set<Interval>> metricIntervals = table.getSchema().getColumns(MetricColumn.class)
                             .collectEntries {
-                                    [(it.name): intervalSet]
+                                    [(it): intervalSet]
                             }
-                    Map<String, Set<Interval>> dimensionIntervals = table.getSchema().getColumns(DimensionColumn.class)
+                    Map<Column, Set<Interval>> dimensionIntervals = table.getSchema().getColumns(DimensionColumn.class)
                             .collectEntries {
-                                    [(it.getDimension().getApiName()): intervalSet]
+                                    [(it): intervalSet]
                             }
 
                     Map<Column, Set<Interval>> allIntervals = Stream.concat(
                             dimensionIntervals.entrySet().stream(),
                             metricIntervals.entrySet().stream()
-                    ).collect(
-                            Collectors.toMap(
-                                    {
-                                        table.getSchema().getColumn(it.key)
-                                            .orElseThrow(
-                                                {
-                                                    return new NoSuchElementException(
-                                                            "Column " + it.key + " not found in "
-                                                                    + table.getName() + " table schema"
-                                                    )
-                                                }
-                                            )
-                                    }, { it.value }
-                            )
-                    );
+                    ).collect(Collectors.toMap({it.key}, { it.value }))
 
             // set new cache
                     table.setAvailability(new ConcreteAvailability(table.getTableName(), table.getSchema().getColumns(), new TestDataSourceMetadataService(allIntervals)))

@@ -69,6 +69,7 @@ public abstract class BaseTableLoader implements TableLoader {
      *
      * @param dictionaries dictionary to be loaded with configured tables
      */
+    @Override
     public abstract void loadTableDictionary(ResourceDictionaries dictionaries);
 
     /**
@@ -296,7 +297,16 @@ public abstract class BaseTableLoader implements TableLoader {
                 definition.getGrain(),
                 columns,
                 definition.getLogicalToPhysicalNames(),
-                metadataService
+                getDataSourceMetadataService()
         );
+    }
+
+    /**
+     * Getter for the data source metadata service use for creating physical tables.
+     *
+     * @return the data source metadata service associated with the table loader
+     */
+    protected DataSourceMetadataService getDataSourceMetadataService() {
+        return metadataService;
     }
 }

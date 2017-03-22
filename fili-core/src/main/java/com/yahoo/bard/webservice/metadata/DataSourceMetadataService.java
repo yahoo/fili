@@ -17,6 +17,7 @@ import io.druid.timeline.DataSegment;
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -41,7 +42,7 @@ public class DataSourceMetadataService {
      */
     private final Map<TableName, AtomicReference<ConcurrentSkipListMap<DateTime, Map<String, SegmentInfo>>>>
             allSegmentsByTime;
-    private final Map<TableName, AtomicReference<ImmutableMap<String, Set<Interval>>>>
+    private final Map<TableName, AtomicReference<ImmutableMap<String, List<Interval>>>>
             allSegmentsByColumn;
 
     /**
@@ -79,7 +80,7 @@ public class DataSourceMetadataService {
      *
      * @return a map of column name to a set of avialable intervals
      */
-    public Map<String, Set<Interval>> getAvailableIntervalsByTable(TableName physicalTableName) {
+    public Map<String, List<Interval>> getAvailableIntervalsByTable(TableName physicalTableName) {
         if (!allSegmentsByColumn.containsKey(physicalTableName)) {
             LOG.error(
                     "Trying to access {} physical table datasource that is not available in metadata service",
@@ -108,7 +109,7 @@ public class DataSourceMetadataService {
         ConcurrentSkipListMap<DateTime, Map<String, SegmentInfo>> currentByTime = groupSegmentByTime(metadata);
 
         // Group segment interval by every column present in the segment
-        Map<String, Set<Interval>> currentByColumn = groupIntervalByColumn(metadata);
+        Map<String, List<Interval>> currentByColumn = groupIntervalByColumn(metadata);
 
         allSegmentsByTime.computeIfAbsent(table.getTableName(), ignored -> new AtomicReference<>())
                 .set(currentByTime);
@@ -162,7 +163,7 @@ public class DataSourceMetadataService {
      *
      * @return map of data time to a map of segment id to segment info
      */
-    protected static Map<String, Set<Interval>> groupIntervalByColumn(DataSourceMetadata metadata) {
+    protected static Map<String, List<Interval>> groupIntervalByColumn(DataSourceMetadata metadata) {
         Map<String, Set<Interval>> currentByColumn = new LinkedHashMap<>();
 
         // Accumulate all intervals by column name
@@ -178,7 +179,7 @@ public class DataSourceMetadataService {
                 .collect(
                         Collectors.toMap(
                                 Map.Entry::getKey,
-                                entry -> new HashSet<>(new SimplifiedIntervalList(entry.getValue()))
+                                entry -> new SimplifiedIntervalList(entry.getValue())
                         )
                 );
     }

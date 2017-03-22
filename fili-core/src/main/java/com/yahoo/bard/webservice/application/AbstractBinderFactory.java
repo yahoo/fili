@@ -169,7 +169,8 @@ public abstract class AbstractBinderFactory implements BinderFactory {
 
     private ObjectMappersSuite objectMappers;
 
-    private static DataSourceMetadataService dataSourceMetadataService = new DataSourceMetadataService();
+    private DataSourceMetadataService dataSourceMetadataService;
+    private ConfigurationLoader loader;
 
     private final TaskScheduler loaderScheduler = new TaskScheduler(LOADER_SCHEDULER_THREAD_POOL_SIZE);
 
@@ -228,10 +229,10 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 FieldConverterSupplier.metricsFilterSetBuilder =  initializeMetricsFilterSetBuilder();
 
                 // Build the datasource metadata service containing the data segments
-                bind(dataSourceMetadataService).to(DataSourceMetadataService.class);
+                bind(getDataSourceMetadataService()).to(DataSourceMetadataService.class);
 
                 // Build the configuration loader and load configuration
-                ConfigurationLoader loader = buildConfigurationLoader();
+                loader = getConfigurationLoader();
                 loader.load();
 
                 // Bind the configuration dictionaries
@@ -308,13 +309,12 @@ public abstract class AbstractBinderFactory implements BinderFactory {
 
                 bind(getClock()).to(Clock.class);
 
-                DruidDimensionsLoader druidDimensionsLoader = buildDruidDimensionsLoader(
-                        nonUiDruidWebService,
-                        loader.getPhysicalTableDictionary(),
-                        loader.getDimensionDictionary()
-                );
-
                 if (DRUID_DIMENSIONS_LOADER.isOn()) {
+                    DruidDimensionsLoader druidDimensionsLoader = buildDruidDimensionsLoader(
+                            nonUiDruidWebService,
+                            loader.getPhysicalTableDictionary(),
+                            loader.getDimensionDictionary()
+                    );
                     setupDruidDimensionsLoader(healthCheckRegistry, druidDimensionsLoader);
                 }
                 // Call post-binding hook to allow for additional binding
@@ -566,7 +566,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     }
 
     /**
-     * Create a service to store the datasource metadata.
+     * Get the stored metadata service, if not exist yet, create the service and store it.
      *
      * @return A datasource metadata service
      */
@@ -780,15 +780,15 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     }
 
     /**
-     * Build an application specific configuration loader initialized with pluggable loaders.
+     * Get the application specific configuration loader, if not exist already, initialize with pluggable loaders.
      *
      * @return A configuration loader instance
      */
-    protected final ConfigurationLoader buildConfigurationLoader() {
-        DimensionLoader dimensionLoader = getDimensionLoader();
-        TableLoader tableLoader = getTableLoader();
-        MetricLoader metricLoader = getMetricLoader();
-        return buildConfigurationLoader(dimensionLoader, metricLoader, tableLoader);
+    protected final ConfigurationLoader getConfigurationLoader() {
+        if (Objects.isNull(loader)) {
+            loader = buildConfigurationLoader(getDimensionLoader(), getMetricLoader(), getTableLoader());
+        }
+        return loader;
     }
 
     /**

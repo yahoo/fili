@@ -9,7 +9,7 @@ import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import org.joda.time.Interval;
 
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -40,12 +40,12 @@ public class TestDataSourceMetadataService extends DataSourceMetadataService {
     }
 
     @Override
-    public Map<String, Set<Interval>> getAvailableIntervalsByTable(TableName physicalTableName) {
+    public Map<String, List<Interval>> getAvailableIntervalsByTable(TableName physicalTableName) {
         return testAvailableIntervals.entrySet().stream()
                 .collect(
                         Collectors.toMap(
                                 Map.Entry::getKey,
-                                entry -> new HashSet<>(new SimplifiedIntervalList(entry.getValue()))
+                                entry -> new SimplifiedIntervalList(entry.getValue())
                         )
                 );
     }

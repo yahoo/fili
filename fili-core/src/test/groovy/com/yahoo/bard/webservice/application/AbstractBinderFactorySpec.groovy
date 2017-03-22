@@ -161,7 +161,7 @@ public class AbstractBinderFactorySpec extends Specification {
     def "test config builder"() {
         when:
         systemConfig.setProperty(DIMENSION_BACKEND_KEY, "redis")
-        ConfigurationLoader cl = binderFactory.buildConfigurationLoader()
+        ConfigurationLoader cl = binderFactory.getConfigurationLoader()
 
         then:
         cl.dictionaries != null
@@ -400,7 +400,7 @@ public class AbstractBinderFactorySpec extends Specification {
 
         when:
         systemConfig.setProperty(DIMENSION_BACKEND_KEY, "memory")
-        ConfigurationLoader cl = localBinderFactory.buildConfigurationLoader()
+        ConfigurationLoader cl = localBinderFactory.getConfigurationLoader()
 
         then:
         cl.dimensionLoader instanceof TypeAwareDimensionLoader

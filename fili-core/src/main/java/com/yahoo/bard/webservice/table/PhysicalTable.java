@@ -11,6 +11,7 @@ import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -45,11 +46,11 @@ public interface PhysicalTable extends Table {
     DateTime getTableAlignment();
 
     /**
-     * Getter for all possible column available intervals.
+     * Getter for all the available intervals for the corresponding column.
      *
-     * @return tableEntries map of column to set of available intervals
+     * @return map of column to set of available intervals
      */
-    Map<Column, Set<Interval>> getAllAvailableIntervals();
+    Map<Column, List<Interval>> getAllAvailableIntervals();
 
     /**
      * Translate a logical name into a physical column name. If no translation exists (i.e. they are the same),

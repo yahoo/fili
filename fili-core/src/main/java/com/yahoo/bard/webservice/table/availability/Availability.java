@@ -9,6 +9,7 @@ import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import org.joda.time.Interval;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -29,7 +30,7 @@ public interface Availability {
      *
      * @return The intervals, by column, available.
      */
-    Map<Column, Set<Interval>> getAllAvailableIntervals();
+    Map<Column, List<Interval>> getAllAvailableIntervals();
 
     /**
      * Fetch a set of intervals given a set of column name in DataSourceConstraint.

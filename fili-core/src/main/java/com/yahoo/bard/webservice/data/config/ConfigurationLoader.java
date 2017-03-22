@@ -47,11 +47,7 @@ public class ConfigurationLoader {
      * @param tableLoader  TableLoader to load tables from
      */
     @Inject
-    public ConfigurationLoader(
-            DimensionLoader dimensionLoader,
-            MetricLoader metricLoader,
-            TableLoader tableLoader
-    ) {
+    public ConfigurationLoader(DimensionLoader dimensionLoader, MetricLoader metricLoader, TableLoader tableLoader) {
         DateTimeZone.setDefault(DateTimeZone.forID(TIMEZONE));
 
         // Set the max lucene query clauses as high as it can go
