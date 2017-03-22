@@ -49,7 +49,7 @@ Current
 
 ### Changed:
 
-- [Restored flexibility about columns for query from DruidResponseParser]()
+- [Restored flexibility about columns for query from DruidResponseParser](https://github.com/yahoo/fili/pull/198)
     * Immutable schemas prevented custom query types from changing `ResultSetSchema` columns.
     * Columns are now sourced from `DruidResponseParser` and default implemented on `DruidAggregationQuery`
 

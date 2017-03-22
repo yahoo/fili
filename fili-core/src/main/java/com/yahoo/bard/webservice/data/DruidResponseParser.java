@@ -311,13 +311,13 @@ public class DruidResponseParser {
 
     /**
      * Produce the schema-defining columns for a given druid query.
-     * Pass through to druid query to allow for possible behavior customization on injected DruidResponseParsers.
      *
      * @param druidQuery  The query being modelled.
      *
      * @return A stream of columns based on the signature of the Druid Query.
      */
     public Stream<Column> buildSchemaColumns(DruidAggregationQuery<?> druidQuery) {
+        // Pass through to druid query to allow for possible behavior customization on injected DruidResponseParsers.
         return druidQuery.buildSchemaColumns();
     }
 }

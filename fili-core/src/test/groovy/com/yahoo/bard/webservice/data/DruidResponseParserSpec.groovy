@@ -415,11 +415,8 @@ class DruidResponseParserSpec extends Specification {
         DruidAggregationQuery query = Mock(DruidAggregationQuery)
         1 * query.buildSchemaColumns() >> columnStream
 
-        when:
-        def result = responseParser.buildSchemaColumns(query)
-
-        then:
-        result == columnStream
+        expect:
+        responseParser.buildSchemaColumns(query) == columnStream
     }
 
     String buildResponse(DefaultQueryType queryType, Map complexMetrics) {

@@ -103,6 +103,21 @@ public interface DruidAggregationQuery<Q extends DruidAggregationQuery<? super Q
     }
 
     /**
+     * Produce a stream of metric field names (combining aggregations and post-aggregations).
+     *
+     * @return A stream of all the aggregation and post aggregation names.
+     */
+    @JsonIgnore
+    default Stream<String> getMetricFieldNames() {
+        return Stream.concat(
+                getAggregations().stream()
+                    .map(Aggregation::getName),
+                getPostAggregations().stream()
+                        .map(PostAggregation::getName)
+        );
+    }
+
+    /**
      * Produce the schema-defining columns for a given druid query.
      *
      * @return A stream of columns based on the signature of the Druid Query.
@@ -111,12 +126,7 @@ public interface DruidAggregationQuery<Q extends DruidAggregationQuery<? super Q
         return Stream.of(
                 getDimensions().stream()
                         .map(DimensionColumn::new),
-                getAggregations().stream()
-                        .map(Aggregation::getName)
-                        .map(MetricColumn::new),
-                getPostAggregations().stream()
-                        .map(PostAggregation::getName)
-                        .map(MetricColumn::new)
+                getMetricFieldNames().map(MetricColumn::new)
         ).flatMap(Function.identity());
     }
 }
