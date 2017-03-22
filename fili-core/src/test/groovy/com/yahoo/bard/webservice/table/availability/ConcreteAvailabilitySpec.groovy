@@ -42,9 +42,9 @@ class ConcreteAvailabilitySpec extends Specification{
     def "getAllAvailability returns the correct availabilities for each columns configured to the table"() {
         expect:
         concreteAvailability.getAllAvailableIntervals() == [
-                (column1): [interval1].toSet(),
-                (column2): [interval2].toSet(),
-                (column3): [].toSet(),
+                (column1): [interval1],
+                (column2): [interval2],
+                (column3): [],
         ] as LinkedHashMap
     }
 

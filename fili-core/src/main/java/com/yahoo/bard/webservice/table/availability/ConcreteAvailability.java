@@ -13,7 +13,9 @@ import com.google.common.collect.ImmutableSet;
 
 import org.joda.time.Interval;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -59,14 +61,16 @@ public class ConcreteAvailability implements Availability {
     }
 
     @Override
-    public Map<Column, Set<Interval>> getAllAvailableIntervals() {
+    public Map<Column, List<Interval>> getAllAvailableIntervals() {
 
-        Map<String, Set<Interval>> allAvailableIntervals = metadataService.getAvailableIntervalsByTable(name);
+        Map<String, List<Interval>> allAvailableIntervals = getLatestAvailableIntervalsByTable();
         return columns.stream()
                 .collect(
                         Collectors.toMap(
                                 Function.identity(),
-                                column -> allAvailableIntervals.getOrDefault(column.getName(), Collections.emptySet())
+                                column -> new SimplifiedIntervalList(
+                                        allAvailableIntervals.getOrDefault(column.getName(), Collections.emptyList())
+                                )
                         )
                 );
     }
@@ -82,11 +86,23 @@ public class ConcreteAvailability implements Availability {
             return new SimplifiedIntervalList();
         }
 
-        Map<String, Set<Interval>> allAvailableIntervals = metadataService.getAvailableIntervalsByTable(name);
+        Map<String, List<Interval>> allAvailableIntervals = getLatestAvailableIntervalsByTable();
+
+        // Need to ensure requestColumns is not empty in order to prevent returning null by reduce operation
         return new SimplifiedIntervalList(
                 requestColumns.stream()
-                        .map(columnName -> allAvailableIntervals.getOrDefault(columnName, Collections.emptySet()))
+                        .map(columnName -> allAvailableIntervals.getOrDefault(columnName, Collections.emptyList()))
+                        .map(intervals -> (Collection<Interval>) intervals)
                         .reduce(null, IntervalUtils::getOverlappingSubintervals)
         );
+    }
+
+    /**
+     * Retrieves the most up to date column to available interval map from data source metadata service.
+     *
+     * @return map of column name to list of avialable intervals
+     */
+    protected Map<String, List<Interval>> getLatestAvailableIntervalsByTable() {
+        return metadataService.getAvailableIntervalsByTable(name);
     }
 }

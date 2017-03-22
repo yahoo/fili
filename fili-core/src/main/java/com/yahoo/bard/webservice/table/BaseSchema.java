@@ -8,7 +8,6 @@ import com.google.common.collect.Sets;
 
 import java.util.LinkedHashSet;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * A parent class for most schema implementations.
@@ -27,13 +26,6 @@ public class BaseSchema implements Schema {
     protected BaseSchema(Granularity granularity, Iterable<Column> columns) {
         this.granularity = granularity;
         this.columns = Sets.newLinkedHashSet(columns);
-    }
-
-    @Override
-    public Optional<Column> getColumn(String columnName) {
-        return getColumns().stream()
-                .filter(column -> column.getName().equals(columnName))
-                .findFirst();
     }
 
     @Override

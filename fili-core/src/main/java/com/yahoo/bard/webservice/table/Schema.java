@@ -15,15 +15,6 @@ import java.util.Set;
 public interface Schema {
 
     /**
-     * Retrieve a column from schema given the name of the column.
-     *
-     * @param columnName  The column name in string
-     *
-     * @return an optional of the matching name column
-     */
-    Optional<Column> getColumn(String columnName);
-
-    /**
      * Get all the columns underlying this Schema.
      *
      * @return The columns of this schema

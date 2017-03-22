@@ -10,7 +10,7 @@ Current
 ### Added:
 - [CompositePhsyicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
     * Added `ConcretePhysicalTable` and `ConcreteAvailability` to model table in druid datasource and its availabillity in the new table availability structure
-    * Added method `containsColumn` to `Schema`
+    * Added class variable for `DataSourceMetadataService` and `ConfigurationLoader` for easy access
 
 - [Refactor DatasourceMetaDataService to fit composite table needs](https://github.com/yahoo/fili/pull/173)
     * `DataSourceMetadataService` also stores interval data from segment data as intervals by column name map and provides method `getAvailableIntervalsByTable` to retrieve it
@@ -52,7 +52,7 @@ Current
 ### Changed:
 
 - [CompositePhsyicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
-    * `ConfigurationLoader` now takes an additional constructor argument `DataSourceMetadataService` for creating tables
+    * `TableLoader` now takes an additional constructor argument `DataSourceMetadataService` for creating tables
     * `findMissingRequestTimeGrainIntervals` method in `PartialDataHandler` now takes `DataSourceConstraint`
 
 - [Restored flexibility about columns for query from DruidResponseParser](https://github.com/yahoo/fili/pull/198)
@@ -112,7 +112,6 @@ Current
 ### Deprecated:
 
 - [CompositePhsyicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
-    * Deprecated `loadTableDictionary` method only taking one `ResourceDictionaries` argument, should use the one taking an additional `DataSourceMetadataService` instead
     * Deprecated `setAvailability` method on `BasePhysicalTable` to discourage using it for testing, should refine testing strategy to avoid it
 
 - [`RequestLog::stopMostRecentTimer` has been deprecated](https://github.com/yahoo/fili/pull/143)
@@ -148,9 +147,9 @@ Current
     * Removed `permissive_column_availability_enabled` feature flag support and corresponding functionality in `PartialDataHandler`, permissive availability will be a table configuration
     * Removed `getIntersectSubintervalsForColumns` and `getUnionSubintervalsForColumns` from `PartialDataHandler` since the logic is pushed into `Availability` now
     * Removed `getIntervalsByColumnName`, `resetColumns` and `hasLogicalMapping` methods in `PhysicalTable` since no longer needed with the availability structure
-    * Removed deprecated `buildTableGroup` method in `BaseTableLoader`
+    * Removed already deprecated `buildTableGroup` method in `BaseTableLoader`
     * Removed `getAvailability` method on `PartialDataHandler` since the logic is pushed into `Availability`
-    * Removed `SegmentMetadataLoader` class which is deprecated in both fili and the corresponding endpoint in druid, use `DataSourceMetadataLoader` instead
+    * Removed `SegmentMetadataLoader` and corresponding tests class which is deprecated in both fili and the corresponding endpoint in druid, use `DataSourceMetadataLoader` instead
     * Removed `SegmentMetadataLoaderHealthCheck` and `SegmentMetadataLoaderHealthCheckSpec` classes since `SegmentMetadataLoader` is not longer available
 
 - [Major refactor for availability and schemas and tables](https://github.com/yahoo/fili/pull/165)
