@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.metric.makers;
 
+import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
@@ -48,12 +49,12 @@ public abstract class RawAggregationMetricMaker extends MetricMaker {
 
 
     @Override
-    protected LogicalMetric makeInner(String metricName, List<String> dependentMetrics) {
-        Aggregation aggregation = aggregationFactory.apply(metricName, dependentMetrics.get(0));
+    protected LogicalMetric makeInner(ApiMetricName metricName, List<String> dependentMetrics) {
+        Aggregation aggregation = aggregationFactory.apply(metricName.asName(), dependentMetrics.get(0));
         return new LogicalMetric(
                 new TemplateDruidQuery(Collections.singleton(aggregation), Collections.emptySet()),
-                getResultSetMapper(metricName),
-                metricName
+                getResultSetMapper(metricName.asName()),
+                metricName.asName()
         );
     }
 

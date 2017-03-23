@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.data.config.metric.makers
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
+import com.yahoo.bard.webservice.data.config.names.ApiMetricName
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
@@ -26,8 +27,8 @@ import spock.lang.Specification
 
 class AggregationAverageMakerSpec extends Specification{
 
-    static final String NAME = "users"
-    static final String DESCRIPTION  = NAME
+    static final ApiMetricName NAME = ApiMetricName.of("users")
+    static final String DESCRIPTION  = NAME.asName()
     static final String ESTIMATE_NAME = "users_estimate"
     static final String ESTIMATE_SUM_NAME = "users_estimate_sum"
     static final int SKETCH_SIZE = 16000
@@ -38,7 +39,7 @@ class AggregationAverageMakerSpec extends Specification{
     Aggregation sketchMerge
 
     def setup(){
-        sketchMerge = new SketchMergeAggregation(NAME, NAME, SKETCH_SIZE)
+        sketchMerge = new SketchMergeAggregation(NAME.asName(), NAME.asName(), SKETCH_SIZE)
         //Initializing the Sketch field converter
         FieldConverterSupplier.sketchConverter = new SketchFieldConverter();
     }
@@ -49,7 +50,7 @@ class AggregationAverageMakerSpec extends Specification{
 
     def "Build a correct LogicalMetric when passed a sketch count aggregation."(){
         given: "a logical metric for counting the number of users each day"
-        Aggregation userSketchCount = new SketchCountAggregation(NAME, NAME, 16000)
+        Aggregation userSketchCount = new SketchCountAggregation(NAME.asName(), NAME.asName(), 16000)
         TemplateDruidQuery sketchQuery = new TemplateDruidQuery(
                 [userSketchCount] as Set,
                 [] as Set
@@ -70,7 +71,7 @@ class AggregationAverageMakerSpec extends Specification{
         LogicalMetric expectedMetric = buildExpectedMetric(sketchEstimate)
 
         expect:
-        maker.make(NAME, NAME).equals(expectedMetric)
+        maker.make(NAME, NAME.asName()).equals(expectedMetric)
     }
 
     def "Build a correct LogicalMetric when passed a sketch merge and sketch estimate"(){
@@ -95,12 +96,12 @@ class AggregationAverageMakerSpec extends Specification{
         LogicalMetric expectedMetric = buildExpectedMetric(sketchEstimate)
 
         expect:
-        maker.make(NAME, NAME).equals(expectedMetric)
+        maker.make(NAME, NAME.asName()).equals(expectedMetric)
     }
 
     def "Build a correct LogicalMetric when passed only a sketch merge."(){
         given: "A Logical Metric containing only a sketch estimate"
-        Aggregation sketchMerge = new SketchMergeAggregation(NAME, NAME, SKETCH_SIZE)
+        Aggregation sketchMerge = new SketchMergeAggregation(NAME.asName(), NAME.asName(), SKETCH_SIZE)
         TemplateDruidQuery sketchEstimateQuery = new TemplateDruidQuery(
                 [sketchMerge] as Set,
                 [] as Set
@@ -120,11 +121,11 @@ class AggregationAverageMakerSpec extends Specification{
         LogicalMetric expectedMetric = buildExpectedMetric(sketchEstimate)
 
         expect:
-        maker.make(NAME, NAME).equals(expectedMetric)
+        maker.make(NAME, NAME.asName()).equals(expectedMetric)
     }
 
     LogicalMetric buildDependentMetric(TemplateDruidQuery dependentQuery){
-        return new LogicalMetric(dependentQuery, new NoOpResultSetMapper(), NAME, DESCRIPTION)
+        return new LogicalMetric(dependentQuery, new NoOpResultSetMapper(), NAME.asName(), DESCRIPTION)
     }
     /**
      * Builds the LogicalMetric expected by the tests.
@@ -164,7 +165,7 @@ class AggregationAverageMakerSpec extends Specification{
         Aggregation outerSum = new DoubleSumAggregation(ESTIMATE_SUM_NAME, ESTIMATE_NAME)
         FieldAccessorPostAggregation outerSumLookup = new FieldAccessorPostAggregation(outerSum)
         PostAggregation average = new ArithmeticPostAggregation(
-                NAME,
+                NAME.asName(),
                 ArithmeticPostAggregation.ArithmeticPostAggregationFunction.DIVIDE,
                 [outerSumLookup, AggregationAverageMaker.COUNT_FIELD_OUTER]
         )
@@ -174,6 +175,6 @@ class AggregationAverageMakerSpec extends Specification{
                 innerQueryTemplate
         )
 
-        return new LogicalMetric(outerQuery, new NoOpResultSetMapper(), NAME, DESCRIPTION)
+        return new LogicalMetric(outerQuery, new NoOpResultSetMapper(), NAME.asName(), DESCRIPTION)
     }
 }

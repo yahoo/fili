@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.metric.makers
 
+import com.yahoo.bard.webservice.data.config.names.ApiMetricName
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
@@ -21,6 +22,7 @@ class SketchSetOperationMakerSpec extends Specification {
 
     private static final int SKETCH_SIZE = 16000
     private static final String METRIC_NAME = "all users"
+    private static final ApiMetricName METRIC_API_NAME = ApiMetricName.of("all users")
     private static final SketchSetOperationPostAggFunction SET_FUNCTION = SketchSetOperationPostAggFunction.UNION
 
     def """A sketch set operation metric is built correctly when the dependent metrics have both an aggregation
@@ -58,6 +60,6 @@ class SketchSetOperationMakerSpec extends Specification {
         allUsers.each { maker.metrics.add(it) }
 
         expect:
-        maker.make(METRIC_NAME, allUsers*.getName()) == metric
+        maker.make(METRIC_API_NAME, allUsers*.getName()) == metric
     }
 }

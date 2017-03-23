@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.metric.makers;
 
+import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
@@ -42,7 +43,7 @@ public class SketchSetOperationMaker extends MetricMaker {
     }
 
     @Override
-    protected LogicalMetric makeInner(String metricName, List<String> dependentMetrics) {
+    protected LogicalMetric makeInner(ApiMetricName metricName, List<String> dependentMetrics) {
 
         TemplateDruidQuery mergedQuery = getMergedQuery(dependentMetrics);
 
@@ -53,12 +54,12 @@ public class SketchSetOperationMaker extends MetricMaker {
         // Create the SketchSetOperationPostAggregation
         SketchSetOperationPostAggregation setPostAggregation;
         setPostAggregation = new SketchSetOperationPostAggregation(
-                metricName,
+                metricName.asName(),
                 function,
                 Arrays.asList(operandOne, operandTwo)
         );
 
-        PostAggregation estimate = new SketchEstimatePostAggregation(metricName, setPostAggregation);
+        PostAggregation estimate = new SketchEstimatePostAggregation(metricName.asName(), setPostAggregation);
         Set<PostAggregation> postAggs = Collections.singleton(estimate);
 
         TemplateDruidQuery query = new TemplateDruidQuery(
@@ -68,7 +69,7 @@ public class SketchSetOperationMaker extends MetricMaker {
                 mergedQuery.getTimeGrain()
         );
 
-        return new LogicalMetric(query, new SketchRoundUpMapper(metricName), metricName);
+        return new LogicalMetric(query, new SketchRoundUpMapper(metricName.asName()), metricName.asName());
     }
 
     @Override

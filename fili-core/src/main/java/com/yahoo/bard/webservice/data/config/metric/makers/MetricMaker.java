@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.metric.makers;
 
+import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
@@ -64,12 +65,12 @@ public abstract class MetricMaker {
      *
      * @return The new logicalMetric
      */
-    public LogicalMetric make(String metricName, List<String> dependentMetrics) {
+    public LogicalMetric make(ApiMetricName metricName, List<String> dependentMetrics) {
         // Check that all of the dependent metrics are in the dictionary
         assertDependentMetricsExist(dependentMetrics);
 
         // Check that we have the right number of metrics
-        assertRequiredDependentMetricCount(metricName, dependentMetrics);
+        assertRequiredDependentMetricCount(metricName.asName(), dependentMetrics);
 
         // Have the subclass actually build the metric
         return this.makeInner(metricName, dependentMetrics);
@@ -78,16 +79,16 @@ public abstract class MetricMaker {
     /**
      * Checks that we have the right number of metrics, and throws an exception if we don't.
      *
-     * @param dictionaryName  Name of the metric being made
+     * @param name  Name of the metric being made
      * @param dependentMetrics  List of dependent metrics needed to make the metric
      */
-    protected void assertRequiredDependentMetricCount(String dictionaryName, List<String> dependentMetrics) {
+    protected void assertRequiredDependentMetricCount(String name, List<String> dependentMetrics) {
         int requiredCount = getDependentMetricsRequired();
         int actualCount = dependentMetrics.size();
         if (actualCount != requiredCount) {
             String message = String.format(
                     INCORRECT_NUMBER_OF_DEPS_FORMAT,
-                    dictionaryName,
+                    name,
                     actualCount,
                     requiredCount
             );
@@ -122,7 +123,7 @@ public abstract class MetricMaker {
      *
      * @return The new logicalMetric
      */
-    public LogicalMetric make(String metricName, String dependentMetric) {
+    public LogicalMetric make(ApiMetricName metricName, String dependentMetric) {
         return this.make(metricName, Collections.singletonList(dependentMetric));
     }
 
@@ -134,7 +135,7 @@ public abstract class MetricMaker {
      *
      * @return The new logicalMetric
      */
-    protected abstract LogicalMetric makeInner(String metricName, List<String> dependentMetrics);
+    protected abstract LogicalMetric makeInner(ApiMetricName metricName, List<String> dependentMetrics);
 
     /**
      * Get the number of dependent metrics the maker requires for making the metric.
@@ -153,8 +154,8 @@ public abstract class MetricMaker {
      * @deprecated Instead get the metric in the calling function and then get the TDQ out only if necessary
      */
     @Deprecated
-    protected TemplateDruidQuery getDependentQuery(String name) {
-        LogicalMetric dependentMetric = metrics.get(name);
+    protected TemplateDruidQuery getDependentQuery(ApiMetricName name) {
+        LogicalMetric dependentMetric = metrics.get(name.asName());
         return dependentMetric.getTemplateDruidQuery();
     }
 
@@ -176,30 +177,6 @@ public abstract class MetricMaker {
                     LOG.error(message);
                     return new IllegalArgumentException(message);
                 });
-    }
-
-    /**
-     * Prepare a post aggregation for a field expecting a numeric value.
-     * <p>
-     * The post-agg is created per the following heuristics:
-     * <dl>
-     *     <dt>If it's an aggregator
-     *     <dd>wrap it in a field accessor
-     *     <dt>If it's a sketch
-     *     <dd>wrap it in a sketch estimate
-     *     <dt>If it's already a numeric post aggregator
-     *     <dd>simply return it
-     * </dl>
-     *
-     * @param fieldName  The name for the aggregation or post aggregation column being gotten
-     *
-     * @return A post aggregator representing a number field value
-     *
-     * @deprecated use the static version {@link #getNumericField(MetricField)} by preference
-     */
-    @Deprecated
-    protected PostAggregation getNumericField(String fieldName) {
-        return getNumericField(metrics.get(fieldName).getMetricField());
     }
 
     /**

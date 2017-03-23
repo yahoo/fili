@@ -3,12 +3,13 @@
 package com.yahoo.bard.webservice.data.config.metric;
 
 import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker;
+import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.config.names.FieldName;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A Metric instance holds all of the information needed to construct a LogicalMetric.
@@ -23,7 +24,7 @@ import java.util.List;
  */
 public class MetricInstance {
 
-    private final String metricName;
+    private final ApiMetricName metricName;
     private final List<String> dependencyMetricNames;
     private final MetricMaker maker;
 
@@ -35,29 +36,47 @@ public class MetricInstance {
      * @param dependencyMetricNames  The names of metrics either in the dictionary or raw druid metrics that this
      * Logical Metric depends on
      */
-    public MetricInstance(String metricName, MetricMaker maker, String... dependencyMetricNames) {
+
+    public MetricInstance(ApiMetricName metricName, MetricMaker maker, String... dependencyMetricNames) {
         this.metricName = metricName;
         this.maker = maker;
-        this.dependencyMetricNames = Arrays.asList(dependencyMetricNames);
+        this.dependencyMetricNames = Stream.of(dependencyMetricNames).collect(Collectors.toList());
     }
+
 
     /**
      * Construct a MetricInstance from FieldNames with a list of dependencyFields.
+     * This method has an initial fieldName to disambiguate calls with empty lists.
      *
      * @param metricName  The name of the Logical Metric when it's in the metric dictionary
      * @param maker  The Metric Maker that creates the actual Logical Metric
+     * @param firstField  The first fieldName instance (used to disambiguate from string array constructor
      * @param dependencyFields  The field names that this Logical Metric depends on
      */
-    public MetricInstance(FieldName metricName, MetricMaker maker, FieldName... dependencyFields) {
-        this.metricName = metricName.asName();
-        this.maker = maker;
-        this.dependencyMetricNames = new ArrayList<>();
-        for (FieldName fieldName : dependencyFields) {
-            this.dependencyMetricNames.add(fieldName.asName());
-        }
+    public MetricInstance(
+            ApiMetricName metricName,
+            MetricMaker maker,
+            FieldName firstField,
+            FieldName... dependencyFields
+    ) {
+        this(metricName, maker, toMetricNames(firstField, dependencyFields));
     }
 
-    public String getMetricName() {
+    /**
+     * A helper method for turning FieldNames into String metic names.
+     *
+     * @param firstField  The first fieldName in a list
+     * @param fieldNames The rest of the fieldNames
+     *
+     * @return An array of the names from the field names
+     */
+    private static String[] toMetricNames(FieldName firstField, FieldName[] fieldNames) {
+        return Stream.concat(Stream.of(firstField), Stream.of(fieldNames))
+                .map(FieldName::asName)
+                .toArray(String[]::new);
+    }
+
+    public ApiMetricName getMetricName() {
         return metricName;
     }
 
@@ -75,7 +94,7 @@ public class MetricInstance {
      * @param metricName The name of the Logical Metric in the metric dictionary
      * @return copy of the logical Metric
      */
-    public MetricInstance withName(String metricName) {
+    public MetricInstance withName(ApiMetricName metricName) {
         return new MetricInstance(
                 metricName,
                 maker,

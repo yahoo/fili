@@ -50,8 +50,9 @@ class FilteredAggregationSpec extends Specification{
     def setup() {
         MetricDictionary metricDictionary = new MetricDictionary()
 
-        def filtered_metric_name = "FOO_NO_BAR"
-        Set<ApiMetricName> metricNames = (["FOO", filtered_metric_name].collect { ApiMetricName.of(it)}) as Set
+        String filteredMetricName = "FOO_NO_BAR"
+        ApiMetricName filteredApiName = ApiMetricName.of(filteredMetricName)
+        Set<ApiMetricName> metricNames = (["FOO", filteredMetricName].collect { ApiMetricName.of(it)}) as Set
 
         ageDimension = buildSimpleDimension("age")
         genderDimension = buildSimpleDimension("gender")
@@ -72,9 +73,9 @@ class FilteredAggregationSpec extends Specification{
         )
 
         ThetaSketchMaker sketchCountMaker = new ThetaSketchMaker(new MetricDictionary(), 16384)
-        MetricInstance fooNoBarSketchPm = new MetricInstance(filtered_metric_name,sketchCountMaker,"FOO_NO_BAR_SKETCH")
+        MetricInstance fooNoBarSketchPm = new MetricInstance(filteredApiName, sketchCountMaker,"FOO_NO_BAR_SKETCH")
         LogicalMetric fooNoBarSketch = fooNoBarSketchPm.make()
-        metricDictionary.put(filtered_metric_name, fooNoBarSketch)
+        metricDictionary.put(filteredMetricName, fooNoBarSketch)
 
         metricAgg = fooNoBarSketch.getTemplateDruidQuery().getAggregations().first()
         genderDependentMetricAgg = Mock(Aggregation)
@@ -82,7 +83,7 @@ class FilteredAggregationSpec extends Specification{
         genderDependentMetricAgg.withName(_) >> genderDependentMetricAgg
         genderDependentMetricAgg.withFieldName(_) >> genderDependentMetricAgg
 
-        LogicalMetric logicalMetric = new LogicalMetric(null, null, filtered_metric_name)
+        LogicalMetric logicalMetric = new LogicalMetric(null, null, filteredMetricName)
 
         Set<ApiFilter> filterSet = [new ApiFilter("age|id-in[114,125]", dimensionDictionary)] as Set
 

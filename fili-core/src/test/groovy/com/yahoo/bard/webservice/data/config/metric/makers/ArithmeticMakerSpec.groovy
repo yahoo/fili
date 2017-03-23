@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.data.config.metric.makers
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
 import com.yahoo.bard.webservice.data.config.metric.MetricInstance
+import com.yahoo.bard.webservice.data.config.names.ApiMetricName
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
@@ -27,10 +28,10 @@ import spock.lang.Unroll
 import java.util.function.Function
 
 class ArithmeticMakerSpec extends Specification {
-    public static final String AGG_AVERAGE_NAME = "aggregationMetric"
-    public static final String METRIC_FIELD_NAME = "aggregationField"
-    public static final String AVERAGE_PER_OTHER_METRIC_NAME = "averagePerOtherMetric"
-    public static final String AVERAGE_PER_OTHER_METRIC_ROUNDED_METRIC_NAME = "averagePerOtherMetricRounded"
+    public static final ApiMetricName AGG_AVERAGE_NAME = ApiMetricName.of("aggregationMetric")
+    public static final ApiMetricName METRIC_FIELD_NAME = ApiMetricName.of("aggregationField")
+    public static final ApiMetricName AVERAGE_PER_OTHER_METRIC_NAME = ApiMetricName.of("averagePerOtherMetric")
+    public static final ApiMetricName AVERAGE_PER_OTHER_METRIC_ROUNDED_METRIC_NAME = ApiMetricName.of("averagePerOtherMetricRounded")
     LogicalMetric unRoundedMetric
     LogicalMetric roundedUpMetric
 
@@ -98,9 +99,9 @@ class ArithmeticMakerSpec extends Specification {
         //The ConstantMaker relies on the dependent metric string being a number, the
         //the SketchCountMaker doesn't care.
         List<LogicalMetric> operands = (1..numOperands).collect{
-            operandMaker.make("metric$it", it as String)
+            operandMaker.make(ApiMetricName.of("metric$it"), it as String)
         }
-        String metricName = "sum"
+        ApiMetricName metricName = ApiMetricName.of("sum")
         List<TemplateDruidQuery> operandQueries = operands*.getTemplateDruidQuery()
         Set<Aggregation> aggregations = operandQueries*.getAggregations().flatten() as Set<Aggregation>
 
@@ -122,7 +123,7 @@ class ArithmeticMakerSpec extends Specification {
 
         and: "the expected LogicalMetric"
         PostAggregation sumPostAggregation = new ArithmeticPostAggregation(
-                metricName,
+                metricName.asName(),
                 OPERATION,
                 postAggregationsForArithmetic
         )
@@ -133,7 +134,7 @@ class ArithmeticMakerSpec extends Specification {
         LogicalMetric expectedMetric = new LogicalMetric(
             expectedQuery,
             MetricMaker.NO_OP_MAPPER,
-            metricName
+            metricName.asName()
         )
 
         and: "a populated metric dictionary for the maker"

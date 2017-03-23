@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.metric.makers;
 
+import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
@@ -27,13 +28,13 @@ public class CountMaker extends MetricMaker {
     }
 
     @Override
-    protected LogicalMetric makeInner(String metricName, List<String> dependentMetrics) {
+    protected LogicalMetric makeInner(ApiMetricName metricName, List<String> dependentMetrics) {
         TemplateDruidQuery query = new TemplateDruidQuery(
-                Collections.singleton(new CountAggregation(metricName)),
+                Collections.singleton(new CountAggregation(metricName.asName())),
                 Collections.emptySet()
         );
 
-        return new LogicalMetric(query, NO_OP_MAPPER, metricName);
+        return new LogicalMetric(query, NO_OP_MAPPER, metricName.asName());
     }
 
     @Override

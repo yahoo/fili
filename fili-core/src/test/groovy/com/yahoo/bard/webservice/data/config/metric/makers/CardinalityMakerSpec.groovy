@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.data.config.metric.makers
 
 import com.yahoo.bard.webservice.data.config.metric.MetricInstance
+import com.yahoo.bard.webservice.data.config.names.ApiMetricName
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
@@ -21,6 +22,7 @@ class CardinalityMakerSpec extends Specification {
 
     Dimension dimension = Mock(Dimension)
     String dimensionApiName = "ApiName"
+    public static final ApiMetricName METRIC_NAME = ApiMetricName.of("metricName")
 
     def setup() {
         dimension.getApiName() >> dimensionApiName
@@ -35,11 +37,11 @@ class CardinalityMakerSpec extends Specification {
                 dimensionDictionary,
                 true
         )
-        LogicalMetric actualMetric = cardinalityMaker.make("metricName", dimensionApiName)
+        LogicalMetric actualMetric = cardinalityMaker.make(METRIC_NAME, dimensionApiName)
         CardinalityAggregation actual = (CardinalityAggregation) actualMetric.getTemplateDruidQuery().getMetricField("metricName")
 
         expect:
-        actual.getName() == "metricName"
+        actual.getName() == METRIC_NAME.asName()
         actual.dependentDimensions == [dimension] as Set
         actual.byRow
         actual.fieldName == ""
@@ -53,12 +55,12 @@ class CardinalityMakerSpec extends Specification {
                 dimensionDictionary,
                 true
         )
-        MetricInstance metricInstance = new MetricInstance("metricName", cardinalityMaker, dimensionApiName)
+        MetricInstance metricInstance = new MetricInstance(METRIC_NAME, cardinalityMaker, dimensionApiName)
         LogicalMetric actualMetric = metricInstance.make()
         CardinalityAggregation actual = (CardinalityAggregation) actualMetric.getTemplateDruidQuery().getMetricField("metricName")
 
         expect:
-        actual.getName() == "metricName"
+        actual.getName() == METRIC_NAME.asName()
         actual.dependentDimensions == [dimension] as Set
         actual.byRow
         actual.fieldName == ""

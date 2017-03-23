@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.metric.makers
 
+import com.yahoo.bard.webservice.data.config.names.ApiMetricName
 import com.yahoo.bard.webservice.data.config.names.TestApiMetricName
 import com.yahoo.bard.webservice.data.config.names.TestDruidMetricName
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
@@ -20,6 +21,7 @@ class SketchCountMakerSpec extends Specification {
     def "A Logical Metric that performs a sketch count is built correctly"() {
         given: "A name for this , and the name of the metric this metric relies on"
         String metricName = TestApiMetricName.A_OTHER_USERS.asName()
+        ApiMetricName metricApiNAme = TestApiMetricName.A_OTHER_USERS
         String dependentMetricName = TestDruidMetricName.USERS.asName()
 
         and: "The logical metric the maker is expected to build"
@@ -34,6 +36,6 @@ class SketchCountMakerSpec extends Specification {
         MetricMaker maker = new SketchCountMaker(new MetricDictionary(), SKETCH_SIZE)
 
         expect:
-        maker.make(metricName, [dependentMetricName]) == expectedMetric
+        maker.make(metricApiNAme, [dependentMetricName]) == expectedMetric
     }
 }

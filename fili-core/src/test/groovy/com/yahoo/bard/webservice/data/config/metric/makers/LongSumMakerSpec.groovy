@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.metric.makers
 
+import com.yahoo.bard.webservice.data.config.names.ApiMetricName
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
@@ -13,6 +14,7 @@ import spock.lang.Specification;
 class LongSumMakerSpec extends Specification{
 
     private static final String METRIC_NAME = "pageViews"
+    private static final ApiMetricName METRIC_API_NAME = ApiMetricName.of(METRIC_NAME)
     private static final String DEPENDENT_METRIC_NAME = "totalPageViews"
 
     def "A long sum logical metric is made correctly"(){
@@ -27,6 +29,6 @@ class LongSumMakerSpec extends Specification{
         LogicalMetric expectedMetric = new LogicalMetric(query, new NoOpResultSetMapper(), METRIC_NAME)
 
         expect:
-        maker.make(METRIC_NAME, [DEPENDENT_METRIC_NAME]) == expectedMetric
+        maker.make(METRIC_API_NAME, [DEPENDENT_METRIC_NAME]) == expectedMetric
     }
 }

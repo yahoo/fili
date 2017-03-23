@@ -74,7 +74,7 @@ class SketchNestedQuerySpec extends Specification {
     }
 
     def "Intersection reporting when Logical Metric has nested query"(){
-        LinkedHashSet<LogicalMetric> logicalMetrics =  new DataApiRequest().generateLogicalMetrics("dayAvgFoos(AND(country|id-in[US,IN],property|id-in[114,125]))", resources.metricDict, resources.dimensionDict, resources.table)
+        LinkedHashSet<LogicalMetric> logicalMetrics =  new DataApiRequest().generateLogicalMetrics("dayAvgFoos(AND(country|id-in[US,IN],property|id-in[114,125]))", resources.metricDictionary, resources.dimensionDictionary, resources.table)
         TemplateDruidQuery nestedQuery = logicalMetrics.first().getTemplateDruidQuery().getInnerQuery()
 
         Set<Aggregation> expectedNestedAggs = new HashSet<>()
@@ -98,7 +98,7 @@ class SketchNestedQuerySpec extends Specification {
     }
 
     def "metric filter on viz metric and expect children of unRegFoos have right sketch operation function"(){
-        LinkedHashSet<LogicalMetric> logicalMetrics =  new DataApiRequest().generateLogicalMetrics("viz(AND(country|id-in[US,IN],property|id-in[14,125]))", resources.metricDict, resources.dimensionDict, resources.table)
+        LinkedHashSet<LogicalMetric> logicalMetrics =  new DataApiRequest().generateLogicalMetrics("viz(AND(country|id-in[US,IN],property|id-in[14,125]))", resources.metricDictionary, resources.dimensionDictionary, resources.table)
         ArithmeticPostAggregation postAggregation = logicalMetrics.first().templateDruidQuery.getPostAggregations().first()
 
         FuzzySetPostAggregation unRegFoo1;
@@ -117,7 +117,7 @@ class SketchNestedQuerySpec extends Specification {
 
     def "When metrics of Ratio category are filtered, BadApiException is thrown"() {
         when:
-        new DataApiRequest().generateLogicalMetrics("ratioMetric(AND(country|id-in[US,IN],property|id-in[14,125]))", resources.metricDict, resources.dimensionDict, resources.table)
+        new DataApiRequest().generateLogicalMetrics("ratioMetric(AND(country|id-in[US,IN],property|id-in[14,125]))", resources.metricDictionary, resources.dimensionDictionary, resources.table)
 
         then:
         Exception e = thrown(BadApiRequestException)
@@ -125,7 +125,7 @@ class SketchNestedQuerySpec extends Specification {
     }
 
     def "The dimensions returned from the filtered nested logical metric are correct"() {
-        LinkedHashSet<LogicalMetric> logicalMetrics = new DataApiRequest().generateLogicalMetrics("dayAvgFoos(AND(country|id-in[US,IN],property|id-in[114,125]))", resources.metricDict, resources.dimensionDict, resources.table)
+        LinkedHashSet<LogicalMetric> logicalMetrics = new DataApiRequest().generateLogicalMetrics("dayAvgFoos(AND(country|id-in[US,IN],property|id-in[114,125]))", resources.metricDictionary, resources.dimensionDictionary, resources.table)
 
         expect:
         logicalMetrics.first().templateDruidQuery.getMetricDimensions().sort() == [resources.propertyDim, resources.countryDim].sort()

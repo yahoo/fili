@@ -6,6 +6,7 @@ import static com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPo
         .ArithmeticPostAggregationFunction.DIVIDE;
 import static com.yahoo.bard.webservice.druid.util.FieldConverterSupplier.sketchConverter;
 
+import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
@@ -71,7 +72,7 @@ public class AggregationAverageMaker extends MetricMaker {
     }
 
     @Override
-    protected LogicalMetric makeInner(String metricName, List<String> dependentMetrics) {
+    protected LogicalMetric makeInner(ApiMetricName metricName, List<String> dependentMetrics) {
         // Get the Metric that is being averaged over
         LogicalMetric dependentMetric = metrics.get(dependentMetrics.get(0));
 
@@ -80,9 +81,9 @@ public class AggregationAverageMaker extends MetricMaker {
 
         // Build the TemplateDruidQuery for the metric
         TemplateDruidQuery innerQuery = buildInnerQuery(sourceMetric, dependentMetric.getTemplateDruidQuery());
-        TemplateDruidQuery outerQuery = buildOuterQuery(metricName, sourceMetric, innerQuery);
+        TemplateDruidQuery outerQuery = buildOuterQuery(metricName.asName(), sourceMetric, innerQuery);
 
-        return new LogicalMetric(outerQuery, NO_OP_MAPPER, metricName);
+        return new LogicalMetric(outerQuery, NO_OP_MAPPER, metricName.asName());
     }
 
     /**

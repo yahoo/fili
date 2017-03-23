@@ -6,6 +6,7 @@ import static com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker.IN
 import static com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation.ArithmeticPostAggregationFunction.MULTIPLY
 import static com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationPostAggFunction.UNION
 
+import com.yahoo.bard.webservice.data.config.names.ApiMetricName
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
@@ -32,7 +33,7 @@ import spock.lang.Unroll
  */
 class MetricMakerSpec extends Specification {
 
-    static final String METRIC_NAME = "metric name"
+    static final ApiMetricName METRIC_NAME = ApiMetricName.of("metric name")
     static final int DEPENDENT_METRICS = 3
 
     static final FieldConverters originalConverter = FieldConverterSupplier.sketchConverter
@@ -125,7 +126,7 @@ class MetricMakerSpec extends Specification {
     MetricMaker getMakerInstance(){
         new MetricMaker(dictionary) {
             @Override
-            protected LogicalMetric makeInner(String metricName, List<String> dependentMetrics) {
+            protected LogicalMetric makeInner(ApiMetricName metricName, List<String> dependentMetrics) {
                 DEFAULT_METRIC
             }
 
@@ -185,7 +186,7 @@ class MetricMakerSpec extends Specification {
 
         then:
         Exception exception = thrown(IllegalArgumentException)
-        exception.getMessage() == String.format(INCORRECT_NUMBER_OF_DEPS_FORMAT, METRIC_NAME, DEPENDENT_METRICS+adjustment, DEPENDENT_METRICS)
+        exception.getMessage() == String.format(INCORRECT_NUMBER_OF_DEPS_FORMAT, METRIC_NAME.asName(), DEPENDENT_METRICS+adjustment, DEPENDENT_METRICS)
 
         where:
         adjective | adjustment

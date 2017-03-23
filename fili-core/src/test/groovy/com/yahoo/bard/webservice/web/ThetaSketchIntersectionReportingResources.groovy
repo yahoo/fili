@@ -51,8 +51,8 @@ import spock.lang.Specification
  * This class is a resource container for intersection report tests.
  */
 class ThetaSketchIntersectionReportingResources extends Specification {
-    public DimensionDictionary dimensionDict
-    public MetricDictionary metricDict
+    public DimensionDictionary dimensionDictionary
+    public MetricDictionary metricDictionary
     public LogicalTable table
     public JSONObject filterObj
     public PostAggregation fooPostAggregation;
@@ -66,6 +66,18 @@ class ThetaSketchIntersectionReportingResources extends Specification {
     public TemplateDruidQuery dayAvgFoosTdq
     public Dimension propertyDim
     public Dimension countryDim
+
+    public static final ApiMetricName PAGE_VIEWS = ApiMetricName.of("pageViews")
+    public static final ApiMetricName FOO_NO_BAR = ApiMetricName.of("fooNoBar")
+    public static final ApiMetricName FOOS = ApiMetricName.of("foos")
+    public static final ApiMetricName FOO = ApiMetricName.of("foo")
+    public static final ApiMetricName REG_FOOS = ApiMetricName.of("regFoos")
+    public static final ApiMetricName DAY_AVG_FOOS = ApiMetricName.of("dayAvgFoos")
+    public static final ApiMetricName UNREG_FOOS = ApiMetricName.of("unregFoos")
+    public static final ApiMetricName WIZ = ApiMetricName.of("wiz")
+    public static final ApiMetricName WAZ = ApiMetricName.of("waz")
+    public static final ApiMetricName VIZ = ApiMetricName.of("viz")
+    public static final ApiMetricName RATIO_METRIC = ApiMetricName.of("ratioMetric")
 
     ThetaSketchIntersectionReportingResources init() {
         LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>()
@@ -99,10 +111,10 @@ class ThetaSketchIntersectionReportingResources extends Specification {
         countryDim.addDimensionRow(BardDimensionField.makeDimensionRow(countryDim, "IN"))
 
 
-        dimensionDict = new DimensionDictionary()
-        dimensionDict.addAll([propertyDim, countryDim])
+        dimensionDictionary = new DimensionDictionary()
+        dimensionDictionary.addAll([propertyDim, countryDim])
         //Reg foos omitted to make invalid on table
-        Set<ApiMetricName> metrics = [buildMockName("foos"), buildMockName("fooNoBar"), buildMockName("pageViews"), buildMockName("foo"), buildMockName("wiz"), buildMockName("waz"), buildMockName("viz"), buildMockName("unregFoos"), buildMockName("ratioMetric")]
+        Set<ApiMetricName> metrics = [FOOS, FOO_NO_BAR, PAGE_VIEWS, FOO, WIZ, WAZ, VIZ, UNREG_FOOS, RATIO_METRIC]
 
         Set<Column> columns = (Set<? extends Column>) (metrics.collect {
             new MetricColumn(it.apiName)
@@ -112,44 +124,44 @@ class ThetaSketchIntersectionReportingResources extends Specification {
         columns.add(new DimensionColumn(countryDim))
 
 
-        metricDict = new MetricDictionary()
+        metricDictionary = new MetricDictionary()
 
         ThetaSketchSetOperationMaker setUnionMaker = new ThetaSketchSetOperationMaker(
-                metricDict,
+                metricDictionary,
                 SketchSetOperationPostAggFunction.UNION
         )
         ThetaSketchMaker ThetaSketchMaker = new ThetaSketchMaker(new MetricDictionary(), 16384)
-        ArithmeticMaker sumMaker = new ArithmeticMaker(metricDict, ArithmeticPostAggregation.ArithmeticPostAggregationFunction.PLUS);
-        ThetaSketchSetOperationMaker setDifferenceMaker = new ThetaSketchSetOperationMaker(metricDict, SketchSetOperationPostAggFunction.NOT);
-        AggregationAverageMaker simpleDailyAverageMaker = new AggregationAverageMaker(metricDict, DAY)
+        ArithmeticMaker sumMaker = new ArithmeticMaker(metricDictionary, ArithmeticPostAggregation.ArithmeticPostAggregationFunction.PLUS);
+        ThetaSketchSetOperationMaker setDifferenceMaker = new ThetaSketchSetOperationMaker(metricDictionary, SketchSetOperationPostAggFunction.NOT);
+        AggregationAverageMaker simpleDailyAverageMaker = new AggregationAverageMaker(metricDictionary, DAY)
 
-        MetricInstance pageViews = new MetricInstance("pageViews", new LongSumMaker(metricDict), "pageViews")
-        MetricInstance fooNoBarInstance = new MetricInstance("fooNoBar", ThetaSketchMaker, "fooNoBar")
-        MetricInstance regFoosInstance = new MetricInstance("regFoos", ThetaSketchMaker, "regFoos")
-        MetricInstance foos = new MetricInstance("foos", setUnionMaker, "fooNoBar", "regFoos")
-        MetricInstance dayAvgFoos = new MetricInstance("dayAvgFoos", simpleDailyAverageMaker, "foos")
+        MetricInstance pageViews = new MetricInstance(PAGE_VIEWS, new LongSumMaker(metricDictionary), PAGE_VIEWS)
+        MetricInstance fooNoBarInstance = new MetricInstance(FOO_NO_BAR, ThetaSketchMaker, FOO_NO_BAR)
+        MetricInstance regFoosInstance = new MetricInstance(REG_FOOS, ThetaSketchMaker, REG_FOOS)
+        MetricInstance foos = new MetricInstance(FOOS, setUnionMaker, FOO_NO_BAR, REG_FOOS)
+        MetricInstance dayAvgFoos = new MetricInstance(DAY_AVG_FOOS, simpleDailyAverageMaker, FOOS)
 
-        MetricInstance foo = new MetricInstance("foo", ThetaSketchMaker, "foo")
-        MetricInstance wiz = new MetricInstance("wiz", ThetaSketchMaker, "wiz")
-        MetricInstance waz = new MetricInstance("waz", sumMaker, "foo", "wiz")
-        MetricInstance unregFoos = new MetricInstance("unregFoos", setDifferenceMaker, "fooNoBar", "regFoos")
-        MetricInstance viz = new MetricInstance("viz", sumMaker, "waz", "unregFoos")
+        MetricInstance foo = new MetricInstance(FOO, ThetaSketchMaker, FOO)
+        MetricInstance wiz = new MetricInstance(WIZ, ThetaSketchMaker, WIZ)
+        MetricInstance waz = new MetricInstance(WAZ, sumMaker, FOO, WIZ)
+        MetricInstance unregFoos = new MetricInstance(UNREG_FOOS, setDifferenceMaker, FOO_NO_BAR, REG_FOOS)
+        MetricInstance viz = new MetricInstance(VIZ, sumMaker, WAZ, UNREG_FOOS)
 
-        metricDict.add(pageViews.make())
-        metricDict.add(fooNoBarInstance.make())
-        metricDict.add(regFoosInstance.make())
-        metricDict.add(foos.make())
-        metricDict.add(dayAvgFoos.make())
+        metricDictionary.add(pageViews.make())
+        metricDictionary.add(fooNoBarInstance.make())
+        metricDictionary.add(regFoosInstance.make())
+        metricDictionary.add(foos.make())
+        metricDictionary.add(dayAvgFoos.make())
 
-        metricDict.add(foo.make())
-        metricDict.add(wiz.make())
-        metricDict.add(waz.make())
-        metricDict.add(unregFoos.make())
-        metricDict.add(viz.make())
+        metricDictionary.add(foo.make())
+        metricDictionary.add(wiz.make())
+        metricDictionary.add(waz.make())
+        metricDictionary.add(unregFoos.make())
+        metricDictionary.add(viz.make())
 
-        LogicalMetric foosMetric = metricDict.get("foos")
+        LogicalMetric foosMetric = metricDictionary.get(FOOS.asName())
         LogicalMetric ratioMetric = new LogicalMetric(foosMetric.templateDruidQuery, foosMetric.calculation, "ratioMetric", "ratioMetric Long Name", "Ratios", "Dummy metric Ratio Metric description")
-        metricDict.add(ratioMetric)
+        metricDictionary.add(ratioMetric)
 
         LogicalMetricColumn lmc = new LogicalMetricColumn(foosMetric);
 
@@ -165,7 +177,7 @@ class ThetaSketchIntersectionReportingResources extends Specification {
 
         TableGroup tableGroup = new TableGroup([physicalTable] as LinkedHashSet, metrics)
 
-        table = new LogicalTable("NETWORK", DAY, tableGroup, metricDict)
+        table = new LogicalTable("NETWORK", DAY, tableGroup, metricDictionary)
 
         JSONArray metricJsonObjArray = new JSONArray("[{\"filter\":{\"AND\":\"country|id-in[US,IN],property|id-in[114,125]\"},\"name\":\"foo\"},{\"filter\":{},\"name\":\"pageviews\"}]")
         JSONObject jsonobject = metricJsonObjArray.getJSONObject(0)
@@ -178,10 +190,10 @@ class ThetaSketchIntersectionReportingResources extends Specification {
         fooNoBarAggregation = fooNoBarInstance.make().templateDruidQuery.aggregations.first()
         Aggregation regFoosAggregation = regFoosInstance.make().templateDruidQuery.aggregations.first()
 
-        fooNoBarFilteredAggregationSet = FieldConverterSupplier.metricsFilterSetBuilder.getFilteredAggregation(filterObj, fooNoBarAggregation, dimensionDict, table, new DataApiRequest())
+        fooNoBarFilteredAggregationSet = FieldConverterSupplier.metricsFilterSetBuilder.getFilteredAggregation(filterObj, fooNoBarAggregation, dimensionDictionary, table, new DataApiRequest())
         fooNoBarPostAggregationInterim = ThetaSketchSetOperationHelper.makePostAggFromAgg(SketchSetOperationPostAggFunction.INTERSECT, "fooNoBar", new ArrayList<>(fooNoBarFilteredAggregationSet))
 
-        fooRegFoosFilteredAggregationSet = FieldConverterSupplier.metricsFilterSetBuilder.getFilteredAggregation(filterObj, regFoosAggregation, dimensionDict, table, new DataApiRequest())
+        fooRegFoosFilteredAggregationSet = FieldConverterSupplier.metricsFilterSetBuilder.getFilteredAggregation(filterObj, regFoosAggregation, dimensionDictionary, table, new DataApiRequest())
         fooRegFoosPostAggregationInterim = ThetaSketchSetOperationHelper.makePostAggFromAgg(SketchSetOperationPostAggFunction.INTERSECT, "regFoos", new ArrayList<>(fooRegFoosFilteredAggregationSet))
 
         interimPostAggDictionary = [:]
@@ -189,9 +201,5 @@ class ThetaSketchIntersectionReportingResources extends Specification {
         interimPostAggDictionary.put(regFoosAggregation.getName(), fooRegFoosFilteredAggregationSet as List)
 
         return this
-    }
-
-    ApiMetricName buildMockName(String name) {
-        return ApiMetricName.of(name)
     }
 }

@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.metric.makers
 
+import com.yahoo.bard.webservice.data.config.names.ApiMetricName
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
@@ -12,12 +13,12 @@ import spock.lang.Specification
 
 class ConstantMakerSpec extends Specification {
 
-    final String AGGREGATION_NAME = "one"
+    final ApiMetricName AGGREGATION_NAME = ApiMetricName.of("one")
     final double CONSTANT_VALUE = 1.0
 
     def "A constant is built correctly when its 'dependent metric' is the string representation of a number."(){
         given: "A Logical Metric representing a constant of value CONSTANT_VALUE"
-        PostAggregation postAggregation = new ConstantPostAggregation(AGGREGATION_NAME, CONSTANT_VALUE)
+        PostAggregation postAggregation = new ConstantPostAggregation(AGGREGATION_NAME.asName(), CONSTANT_VALUE)
         TemplateDruidQuery constantQuery = new TemplateDruidQuery(
             [] as Set,
             [postAggregation] as Set
@@ -25,7 +26,7 @@ class ConstantMakerSpec extends Specification {
         LogicalMetric expectedMetric = new LogicalMetric(
             constantQuery,
             new NoOpResultSetMapper(),
-            AGGREGATION_NAME
+            AGGREGATION_NAME.asName()
         )
 
         and:

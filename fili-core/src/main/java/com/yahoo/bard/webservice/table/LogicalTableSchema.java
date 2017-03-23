@@ -44,8 +44,7 @@ public class LogicalTableSchema extends BaseSchema {
             MetricDictionary metricDictionary
     ) {
         return Stream.concat(
-                tableGroup.getDimensions().stream()
-                        .map(DimensionColumn::new),
+                tableGroup.getDimensions().stream().map(DimensionColumn::new),
                 buildMetricColumns(tableGroup.getApiMetricNames(), granularity, metricDictionary)
         ).collect(Collectors.toCollection(LinkedHashSet::new));
     }

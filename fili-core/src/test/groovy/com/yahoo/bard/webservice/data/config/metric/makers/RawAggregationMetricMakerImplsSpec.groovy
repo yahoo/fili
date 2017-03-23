@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.metric.makers
 
+import com.yahoo.bard.webservice.data.config.names.ApiMetricName
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
@@ -18,7 +19,6 @@ import com.yahoo.bard.webservice.druid.model.aggregation.ThetaSketchAggregation
 
 import spock.lang.Specification
 import spock.lang.Unroll
-
 /**
  * Tests for raw aggregation makers.
  */
@@ -26,6 +26,7 @@ class RawAggregationMetricMakerImplsSpec extends Specification {
 
     public static String NAME = "FOO"
     public static String FIELD_NAME = "BAR"
+    public static ApiMetricName METRIC_NAME = ApiMetricName.of(NAME)
 
     @Unroll
     def "Expected numeric aggregation is produced for #makerClass.simpleName"() {
@@ -33,7 +34,7 @@ class RawAggregationMetricMakerImplsSpec extends Specification {
         RawAggregationMetricMaker maker = makerClass.newInstance()
 
         expect:
-        maker.make(NAME, FIELD_NAME) == makeNumericMetric(aggregation)
+        maker.make(METRIC_NAME, FIELD_NAME) == makeNumericMetric(aggregation)
 
         where:
         makerClass     | aggregation
@@ -51,7 +52,7 @@ class RawAggregationMetricMakerImplsSpec extends Specification {
         RawAggregationMetricMaker maker = makerClass.newInstance((MetricDictionary) null, 5)
 
         expect:
-        maker.make(NAME, FIELD_NAME) == makeSketchMetric(aggregation)
+        maker.make(METRIC_NAME, FIELD_NAME) == makeSketchMetric(aggregation)
 
         where:
         makerClass     | aggregation

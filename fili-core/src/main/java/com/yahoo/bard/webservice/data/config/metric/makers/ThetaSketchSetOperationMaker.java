@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.metric.makers;
 
+import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
@@ -37,7 +38,7 @@ public class ThetaSketchSetOperationMaker extends MetricMaker {
     }
 
     @Override
-    protected LogicalMetric makeInner(String metricName, List<String> dependentMetrics) {
+    protected LogicalMetric makeInner(ApiMetricName metricName, List<String> dependentMetrics) {
 
         TemplateDruidQuery mergedQuery = getMergedQuery(dependentMetrics);
 
@@ -48,14 +49,14 @@ public class ThetaSketchSetOperationMaker extends MetricMaker {
 
         // Create the ThetaSketchSetOperationPostAggregation
         ThetaSketchSetOperationPostAggregation setPostAggregation = new ThetaSketchSetOperationPostAggregation(
-                metricName,
+                metricName.asName(),
                 function,
                 sketchPostAggregations
         );
 
-        PostAggregation estimate = new ThetaSketchEstimatePostAggregation(metricName, setPostAggregation);
+        PostAggregation estimate = new ThetaSketchEstimatePostAggregation(metricName.asName(), setPostAggregation);
         TemplateDruidQuery query = mergedQuery.withPostAggregations(Collections.singleton(estimate));
-        return new LogicalMetric(query, new SketchRoundUpMapper(metricName), metricName);
+        return new LogicalMetric(query, new SketchRoundUpMapper(metricName.asName()), metricName.asName());
     }
 
     @Override

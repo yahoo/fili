@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.metric.makers;
 
+import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
@@ -66,14 +67,22 @@ public class CardinalityMaker extends MetricMaker {
     }
 
     @Override
-    protected LogicalMetric makeInner(String metricName, List<String> dependentDimensions) {
+    protected LogicalMetric makeInner(ApiMetricName metricName, List<String> dependentDimensions) {
         Set<Dimension> dimensions = dependentDimensions.stream()
                 .map(dimensionDictionary::findByApiName)
                 .collect(Collectors.toSet());
 
-        Set<Aggregation> aggs = Collections.singleton(new CardinalityAggregation(metricName, dimensions, byRow));
+        Set<Aggregation> aggs = Collections.singleton(new CardinalityAggregation(
+                metricName.asName(),
+                dimensions,
+                byRow
+        ));
 
-        return new LogicalMetric(new TemplateDruidQuery(aggs, Collections.emptySet()), NO_OP_MAPPER, metricName);
+        return new LogicalMetric(
+                new TemplateDruidQuery(aggs, Collections.emptySet()),
+                NO_OP_MAPPER,
+                metricName.asName()
+        );
     }
 
     @Override

@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.metric.makers;
 
+import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
@@ -33,26 +34,26 @@ public class ConstantMaker extends MetricMaker {
     }
 
     @Override
-    public LogicalMetric make(String metricName, List<String> dependentMetrics) {
+    public LogicalMetric make(ApiMetricName metricName, List<String> dependentMetrics) {
         // Check that we have the right number of metrics
-        assertRequiredDependentMetricCount(metricName, dependentMetrics);
+        assertRequiredDependentMetricCount(metricName.asName(), dependentMetrics);
 
         // Actually build the metric.
         return makeInner(metricName, dependentMetrics);
     }
 
     @Override
-    protected LogicalMetric makeInner(String metricName, List<String> dependentMetrics) {
+    protected LogicalMetric makeInner(ApiMetricName metricName, List<String> dependentMetrics) {
         try {
             Set<PostAggregation> postAggregations = Collections.singleton(new ConstantPostAggregation(
-                    metricName,
+                    metricName.asName(),
                     new Double(dependentMetrics.get(0))
             ));
 
             return new LogicalMetric(
                     new TemplateDruidQuery(Collections.emptySet(), postAggregations),
                     NO_OP_MAPPER,
-                    metricName
+                    metricName.asName()
             );
         } catch (NumberFormatException nfe) {
             String message = String.format(

@@ -3,6 +3,7 @@
 
 package com.yahoo.bard.webservice.data.config.metric.makers;
 
+import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
@@ -51,13 +52,13 @@ public class FilteredAggregationMaker extends MetricMaker {
     }
 
     @Override
-    protected LogicalMetric makeInner(String metricName, List<String> dependentMetrics) {
+    protected LogicalMetric makeInner(ApiMetricName metricName, List<String> dependentMetrics) {
         LogicalMetric sourceMetric = metricDictionary.get(dependentMetrics.get(0));
 
         Aggregation sourceAggregation = assertDependentIsAggregationMetric(sourceMetric);
 
         FilteredAggregation filteredAggregation = new FilteredAggregation(
-                metricName,
+                metricName.asName(),
                 sourceAggregation,
                 filter
         );
@@ -69,7 +70,7 @@ public class FilteredAggregationMaker extends MetricMaker {
                         sourceMetric.getTemplateDruidQuery().getInnerQuery()
                 ),
                 sourceMetric.getCalculation(),
-                metricName
+                metricName.asName()
         );
     }
 

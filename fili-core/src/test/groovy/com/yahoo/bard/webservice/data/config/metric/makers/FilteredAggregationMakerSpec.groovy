@@ -3,6 +3,7 @@
 
 package com.yahoo.bard.webservice.data.config.metric.makers
 
+import com.yahoo.bard.webservice.data.config.names.ApiMetricName
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore
 import com.yahoo.bard.webservice.data.dimension.SearchProvider
@@ -22,7 +23,10 @@ import spock.lang.Specification
 public class FilteredAggregationMakerSpec extends Specification{
 
     private static final String DEPENDENT_METRIC_NAME = "totalPageViews"
-    private static final String FILT_METRIC_NAME = "filteredPageViews"
+    private static final ApiMetricName FILT_METRIC_NAME = ApiMetricName.of("filteredPageViews")
+
+    public final String longSum = "longSum"
+    public final ApiMetricName longSumApiName = ApiMetricName.of(longSum)
 
     MetricDictionary metricDictionary = new MetricDictionary();
     LongSumMaker longSumMaker = new LongSumMaker(metricDictionary)
@@ -34,14 +38,14 @@ public class FilteredAggregationMakerSpec extends Specification{
         Filter filter = new SelectorFilter(dim, "1")
 
         MetricMaker maker = new FilteredAggregationMaker(metricDictionary, filter)
-        LogicalMetric metric = longSumMaker.make("longSum", DEPENDENT_METRIC_NAME)
-        metricDictionary.put("longSum", metric);
+        LogicalMetric metric = longSumMaker.make(longSumApiName, DEPENDENT_METRIC_NAME)
+        metricDictionary.put(longSum, metric);
 
         and: "The expected metric"
-        Aggregation expectedAgg = new FilteredAggregation(FILT_METRIC_NAME, new LongSumAggregation("longSum", DEPENDENT_METRIC_NAME), filter);
-        LogicalMetric expectedMetric = new LogicalMetric(new TemplateDruidQuery([expectedAgg], [] as Set), new NoOpResultSetMapper(), FILT_METRIC_NAME)
+        Aggregation expectedAgg = new FilteredAggregation(FILT_METRIC_NAME.asName(), new LongSumAggregation("longSum", DEPENDENT_METRIC_NAME), filter);
+        LogicalMetric expectedMetric = new LogicalMetric(new TemplateDruidQuery([expectedAgg], [] as Set), new NoOpResultSetMapper(), FILT_METRIC_NAME.asName())
 
         expect:
-        maker.make(FILT_METRIC_NAME, ["longSum"]) == expectedMetric
+        maker.make(FILT_METRIC_NAME, [longSum]) == expectedMetric
     }
 }

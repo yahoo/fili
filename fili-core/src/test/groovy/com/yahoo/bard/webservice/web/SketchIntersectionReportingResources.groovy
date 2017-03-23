@@ -36,7 +36,6 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationP
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
 import com.yahoo.bard.webservice.druid.util.SketchFieldConverter
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
-import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService
 import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.PhysicalTable
@@ -54,8 +53,8 @@ import spock.lang.Specification
  */
 @Deprecated
 class SketchIntersectionReportingResources extends Specification {
-    public DimensionDictionary dimensionDict
-    public MetricDictionary metricDict
+    public DimensionDictionary dimensionDictionary
+    public MetricDictionary metricDictionary
     public LogicalTable table
     public JSONObject filterObj
     public PostAggregation fooPostAggregation;
@@ -69,6 +68,19 @@ class SketchIntersectionReportingResources extends Specification {
     public TemplateDruidQuery dayAvgFoosTdq
     public Dimension propertyDim
     public Dimension countryDim
+
+
+    public static final ApiMetricName PAGE_VIEWS = ApiMetricName.of("pageViews")
+    public static final ApiMetricName FOO_NO_BAR = ApiMetricName.of("fooNoBar")
+    public static final ApiMetricName FOOS = ApiMetricName.of("foos")
+    public static final ApiMetricName FOO = ApiMetricName.of("foo")
+    public static final ApiMetricName REG_FOOS = ApiMetricName.of("regFoos")
+    public static final ApiMetricName DAY_AVG_FOOS = ApiMetricName.of("dayAvgFoos")
+    public static final ApiMetricName UNREG_FOOS = ApiMetricName.of("unregFoos")
+    public static final ApiMetricName WIZ = ApiMetricName.of("wiz")
+    public static final ApiMetricName WAZ = ApiMetricName.of("waz")
+    public static final ApiMetricName VIZ = ApiMetricName.of("viz")
+    public static final ApiMetricName RATIO_METRIC = ApiMetricName.of("ratioMetric")
 
     SketchIntersectionReportingResources init() {
         LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>()
@@ -102,57 +114,58 @@ class SketchIntersectionReportingResources extends Specification {
         countryDim.addDimensionRow(BardDimensionField.makeDimensionRow(countryDim, "IN"))
 
 
-        dimensionDict = new DimensionDictionary()
-        dimensionDict.addAll([propertyDim, countryDim])
+        dimensionDictionary = new DimensionDictionary()
+        dimensionDictionary.addAll([propertyDim, countryDim])
 
 
         //added dimensions to the physical table
         Set columns = [propertyDim, countryDim].collect() { new DimensionColumn(it)}
 
         // regFoos deliberately omitted
-        Set<ApiMetricName> metrics = [buildMockName("foos"), buildMockName("fooNoBar"), buildMockName("pageViews"), buildMockName("bar"), buildMockName("wiz"), buildMockName("waz"), buildMockName("viz"), buildMockName("unregFoos"), buildMockName("ratioMetric")]
+        Set<ApiMetricName> metrics = [FOOS, FOO_NO_BAR, PAGE_VIEWS, FOO, WIZ, WAZ, VIZ, UNREG_FOOS, RATIO_METRIC]
         //added metrics to the physical table
         columns.addAll( metrics.collect() { new MetricColumn(it.apiName)})
 
-        metricDict = new MetricDictionary()
+        metricDictionary = new MetricDictionary()
 
         SketchSetOperationMaker setUnionMaker = new SketchSetOperationMaker(
-                metricDict,
+                metricDictionary,
                 SketchSetOperationPostAggFunction.UNION
         )
         SketchCountMaker sketchCountMaker = new SketchCountMaker(new MetricDictionary(), 16384)
-        ArithmeticMaker sumMaker = new ArithmeticMaker(metricDict, ArithmeticPostAggregation.ArithmeticPostAggregationFunction.PLUS);
-        SketchSetOperationMaker setDifferenceMaker = new SketchSetOperationMaker(metricDict, SketchSetOperationPostAggFunction.NOT);
-        AggregationAverageMaker simpleDailyAverageMaker = new AggregationAverageMaker(metricDict, DAY)
+        ArithmeticMaker sumMaker = new ArithmeticMaker(metricDictionary, ArithmeticPostAggregation.ArithmeticPostAggregationFunction.PLUS);
+        SketchSetOperationMaker setDifferenceMaker = new SketchSetOperationMaker(metricDictionary, SketchSetOperationPostAggFunction.NOT);
+        AggregationAverageMaker simpleDailyAverageMaker = new AggregationAverageMaker(metricDictionary, DAY)
 
-        MetricInstance pageViews = new MetricInstance("pageViews", new LongSumMaker(metricDict), "pageViews")
-        MetricInstance fooNoBarInstance = new MetricInstance("fooNoBar", sketchCountMaker, "fooNoBar")
-        MetricInstance regFoosInstance = new MetricInstance("regFoos", sketchCountMaker, "regFoos")
-        MetricInstance foos = new MetricInstance("foos", setUnionMaker, "fooNoBar", "regFoos")
-        MetricInstance dayAvgFoos = new MetricInstance("dayAvgFoos", simpleDailyAverageMaker, "foos")
 
-        MetricInstance bar = new MetricInstance("bar", sketchCountMaker, "bar")
-        MetricInstance wiz = new MetricInstance("wiz", sketchCountMaker, "wiz")
-        MetricInstance waz = new MetricInstance("waz", sumMaker, "bar", "wiz")
-        MetricInstance unregFoos = new MetricInstance("unregFoos", setDifferenceMaker, "fooNoBar", "regFoos")
-        MetricInstance viz = new MetricInstance("viz", sumMaker, "waz", "unregFoos")
+        MetricInstance pageViews = new MetricInstance(PAGE_VIEWS, new LongSumMaker(metricDictionary), PAGE_VIEWS)
+        MetricInstance fooNoBarInstance = new MetricInstance(FOO_NO_BAR, sketchCountMaker, FOO_NO_BAR)
+        MetricInstance regFoosInstance = new MetricInstance(REG_FOOS, sketchCountMaker, REG_FOOS)
+        MetricInstance foos = new MetricInstance(FOOS, setUnionMaker, FOO_NO_BAR, REG_FOOS)
+        MetricInstance dayAvgFoos = new MetricInstance(DAY_AVG_FOOS, simpleDailyAverageMaker, FOOS)
 
-        metricDict.add(pageViews.make())
-        metricDict.add(fooNoBarInstance.make())
-        metricDict.add(regFoosInstance.make())
-        metricDict.add(foos.make())
-        metricDict.add(dayAvgFoos.make())
+        MetricInstance foo = new MetricInstance(FOO, sketchCountMaker, FOO)
+        MetricInstance wiz = new MetricInstance(WIZ, sketchCountMaker, WIZ)
+        MetricInstance waz = new MetricInstance(WAZ, sumMaker, FOO, WIZ)
+        MetricInstance unregFoos = new MetricInstance(UNREG_FOOS, setDifferenceMaker, FOO_NO_BAR, REG_FOOS)
+        MetricInstance viz = new MetricInstance(VIZ, sumMaker, WAZ, UNREG_FOOS)
 
-        metricDict.add(bar.make())
-        metricDict.add(wiz.make())
-        metricDict.add(waz.make())
-        metricDict.add(unregFoos.make())
-        metricDict.add(viz.make())
+        metricDictionary.add(pageViews.make())
+        metricDictionary.add(fooNoBarInstance.make())
+        metricDictionary.add(regFoosInstance.make())
+        metricDictionary.add(foos.make())
+        metricDictionary.add(dayAvgFoos.make())
 
-        LogicalMetric foosMetric = metricDict.get("foos")
+        metricDictionary.add(foo.make())
+        metricDictionary.add(wiz.make())
+        metricDictionary.add(waz.make())
+        metricDictionary.add(unregFoos.make())
+        metricDictionary.add(viz.make())
+
+        LogicalMetric foosMetric = metricDictionary.get(FOOS.asName())
 
         LogicalMetric ratioMetric = new LogicalMetric(foosMetric.templateDruidQuery, foosMetric.calculation, "ratioMetric", "ratioMetric Long Name", "Ratios", "Dummy metric Ratio Metric description")
-        metricDict.add(ratioMetric)
+        metricDictionary.add(ratioMetric)
 
         LogicalMetricColumn lmc = new LogicalMetricColumn(foosMetric);
 
@@ -167,7 +180,7 @@ class SketchIntersectionReportingResources extends Specification {
         )
 
         TableGroup tableGroup = new TableGroup([physicalTable] as LinkedHashSet, metrics)
-        table = new LogicalTable("NETWORK", DAY, tableGroup, metricDict)
+        table = new LogicalTable("NETWORK", DAY, tableGroup, metricDictionary)
 
         JSONArray metricJsonObjArray = new JSONArray("[{\"filter\":{\"AND\":\"country|id-in[US,IN],property|id-in[114,125]\"},\"name\":\"foo\"},{\"filter\":{},\"name\":\"pageviews\"}]")
         JSONObject jsonobject = metricJsonObjArray.getJSONObject(0)
@@ -180,10 +193,10 @@ class SketchIntersectionReportingResources extends Specification {
         fooNoBarAggregation = fooNoBarInstance.make().templateDruidQuery.aggregations.first()
         Aggregation regFoosAggregation = regFoosInstance.make().templateDruidQuery.aggregations.first()
 
-        fooNoBarFilteredAggregationSet = FieldConverterSupplier.metricsFilterSetBuilder.getFilteredAggregation(filterObj, fooNoBarAggregation, dimensionDict, table, new DataApiRequest())
+        fooNoBarFilteredAggregationSet = FieldConverterSupplier.metricsFilterSetBuilder.getFilteredAggregation(filterObj, fooNoBarAggregation, dimensionDictionary, table, new DataApiRequest())
         fooNoBarPostAggregationInterim = SketchSetOperationHelper.makePostAggFromAgg(SketchSetOperationPostAggFunction.INTERSECT, "fooNoBar", new ArrayList<>(fooNoBarFilteredAggregationSet))
 
-        fooRegFoosFilteredAggregationSet = FieldConverterSupplier.metricsFilterSetBuilder.getFilteredAggregation(filterObj, regFoosAggregation, dimensionDict, table, new DataApiRequest())
+        fooRegFoosFilteredAggregationSet = FieldConverterSupplier.metricsFilterSetBuilder.getFilteredAggregation(filterObj, regFoosAggregation, dimensionDictionary, table, new DataApiRequest())
         fooRegFoosPostAggregationInterim = SketchSetOperationHelper.makePostAggFromAgg(SketchSetOperationPostAggFunction.INTERSECT, "regFoos", new ArrayList<>(fooRegFoosFilteredAggregationSet))
 
         interimPostAggDictionary = [:]
@@ -191,9 +204,5 @@ class SketchIntersectionReportingResources extends Specification {
         interimPostAggDictionary.put(regFoosAggregation.getName(), fooRegFoosFilteredAggregationSet as List)
 
         return this
-    }
-
-    ApiMetricName buildMockName(String name) {
-        return ApiMetricName.of(name)
     }
 }
