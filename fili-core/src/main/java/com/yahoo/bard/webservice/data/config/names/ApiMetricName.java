@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.names;
 
+import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
@@ -29,6 +30,11 @@ public interface ApiMetricName extends FieldName {
 
     /**
      * Determine if this API Metric Name is valid for the given time grain.
+     * This capability is provided as a convenience for configurers to filter metrics from a TableGroup onto a set of
+     * LogicalTable instances at configuration time.
+     * <p>
+     * This version only takes the time grain into account.  The default implementation simply sets a required minimum
+     * grain for the metric.
      * <p>
      * An example of this is a DailyAverage metric than doesn't make sense to query by the HOUR grain, but does at WEEK.
      *
@@ -42,6 +48,23 @@ public interface ApiMetricName extends FieldName {
         } else {
             return granularity instanceof AllGranularity;
         }
+    }
+
+    /**
+     * Determine if this API Metric Name is valid for the given time grain.
+     * This capability is provided as a convenience for configurers to filter metrics from a TableGroup onto a set of
+     * LogicalTable instances at configuration time.  This version allows the logical metric itself to be used for
+     * filtering.
+     * <p>
+     * An example of this is a DailyAverage metric than doesn't make sense to query by the HOUR grain, but does at WEEK.
+     *
+     * @param logicalMetric  The metric whose validity is being tested.
+     * @param granularity  TimeGrain to determine validity for
+     *
+     * @return True if the ApiMetricName is valid for the time grain
+     */
+    default boolean isValidFor(LogicalMetric logicalMetric, Granularity granularity) {
+        return isValidFor(granularity);
     }
 
     /**

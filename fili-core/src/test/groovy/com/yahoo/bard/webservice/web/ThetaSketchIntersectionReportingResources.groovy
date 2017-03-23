@@ -192,7 +192,7 @@ class ThetaSketchIntersectionReportingResources extends Specification {
     ApiMetricName buildMockName(String name) {
         Stub(ApiMetricName) {
             getApiName() >> name
-            isValidFor(_) >> true
+            isValidFor(_, _) >> true
         }
     }
 }
