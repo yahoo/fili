@@ -11,29 +11,35 @@ import spock.lang.Specification
 class LogicalTableSchemaSpec extends Specification {
 
     def "Build metric called the apiMetricName is Valid and filters metrics as indicated" () {
-        String metricName1 = "name1"
-        String metricName2 = "name2"
+        String metricNameGood = "nameGood"
+        String metricNameBad = "nameBad"
 
-        LogicalMetric logicalMetric1 = Mock(LogicalMetric)
-        LogicalMetric logicalMetric2 = Mock(LogicalMetric)
-
-        ApiMetricName apiName1 = Mock(ApiMetricName) {
-            getApiName() >> metricName1
+        LogicalMetric logicalMetricGood = Mock(LogicalMetric) {
+            getName() >> metricNameGood
         }
-        ApiMetricName apiName2 = Mock(ApiMetricName) {
-            getApiName() >> metricName2
+        LogicalMetric logicalMetricBad = Mock(LogicalMetric) {
+            getName() >> metricNameBad
         }
-        1 * apiName1.isValidFor(logicalMetric1, _) >> true
-        1 * apiName2.isValidFor(logicalMetric2, _) >> false
-        0 * apiName1.isValidFor(_)
-        0 * apiName2.isValidFor(_)
 
-        List<LogicalMetricColumn> columns = [new LogicalMetricColumn(logicalMetric1)]
+        ApiMetricName apiNameGood = Mock(ApiMetricName) {
+            getApiName() >> metricNameGood
+            asName() >> metricNameGood
+        }
+        ApiMetricName apiNameBad = Mock(ApiMetricName) {
+            getApiName() >> metricNameBad
+            asName() >> metricNameBad
+        }
+        1 * apiNameGood.isValidFor(_, logicalMetricGood) >> true
+        1 * apiNameBad.isValidFor(_, logicalMetricBad) >> false
+        0 * apiNameGood.isValidFor(_)
+        0 * apiNameBad.isValidFor(_)
+
+        List<LogicalMetricColumn> columns = [new LogicalMetricColumn(logicalMetricGood)]
         MetricDictionary metricDictionary = new MetricDictionary()
-        metricDictionary.put(metricName1, logicalMetric1)
-        metricDictionary.put(metricName2, logicalMetric2)
+        metricDictionary.put(metricNameGood, logicalMetricGood)
+        metricDictionary.put(metricNameBad, logicalMetricBad)
 
         expect:
-        LogicalTableSchema.buildMetricColumns([apiName1, apiName2], DefaultTimeGrain.DAY, metricDictionary).collect() {it} == columns
+        LogicalTableSchema.buildMetricColumns([apiNameGood, apiNameBad], DefaultTimeGrain.DAY, metricDictionary).collect() {it} == columns
     }
 }

@@ -36,7 +36,7 @@ public interface ApiMetricName extends FieldName {
      * This version only takes the time grain into account.  The default implementation simply sets a required minimum
      * grain for the metric.
      * <p>
-     * An example of this is a DailyAverage metric than doesn't make sense to query by the HOUR grain, but does at WEEK.
+     * An example of this is a DailyAverage metric that doesn't make sense to query by the HOUR grain, but does at WEEK.
      *
      * @param granularity  TimeGrain to determine validity for
      *
@@ -56,14 +56,14 @@ public interface ApiMetricName extends FieldName {
      * LogicalTable instances at configuration time.  This version allows the logical metric itself to be used for
      * filtering.
      * <p>
-     * An example of this is a DailyAverage metric than doesn't make sense to query by the HOUR grain, but does at WEEK.
+     * An example of this is a DailyAverage metric that doesn't make sense to query by the HOUR grain, but does at WEEK.
      *
-     * @param logicalMetric  The metric whose validity is being tested.
      * @param granularity  TimeGrain to determine validity for
+     * @param logicalMetric  The metric whose validity is being tested.
      *
      * @return True if the ApiMetricName is valid for the time grain
      */
-    default boolean isValidFor(LogicalMetric logicalMetric, Granularity granularity) {
+    default boolean isValidFor(Granularity granularity, LogicalMetric logicalMetric) {
         return isValidFor(granularity);
     }
 

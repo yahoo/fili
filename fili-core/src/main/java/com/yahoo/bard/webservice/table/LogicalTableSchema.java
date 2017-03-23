@@ -5,14 +5,11 @@ package com.yahoo.bard.webservice.table;
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricColumn;
-import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -48,7 +45,7 @@ public class LogicalTableSchema extends BaseSchema {
     ) {
         return Stream.concat(
                 tableGroup.getDimensions().stream()
-                .map(DimensionColumn::new),
+                        .map(DimensionColumn::new),
                 buildMetricColumns(tableGroup.getApiMetricNames(), granularity, metricDictionary)
         ).collect(Collectors.toCollection(LinkedHashSet::new));
     }
@@ -63,16 +60,15 @@ public class LogicalTableSchema extends BaseSchema {
      *
      * @return A stream of metric columns, filtered for compatibility with the grain.
      */
-    private static Stream<MetricColumn> buildMetricColumns(
+    private static Stream<LogicalMetricColumn> buildMetricColumns(
             Collection<ApiMetricName> apiMetricNames,
             Granularity granularity,
             MetricDictionary metricDictionary
     ) {
         return apiMetricNames.stream()
-                .collect(Collectors.toMap(Function.identity(), entry -> metricDictionary.get(entry.getApiName())))
-                .entrySet().stream()
-                .filter(entry -> entry.getKey().isValidFor(entry.getValue(), granularity))
-                .map(Map.Entry::getValue)
+                .filter(name -> name.isValidFor(granularity, metricDictionary.get(name.asName())))
+                .map(ApiMetricName::asName)
+                .map(metricDictionary::get)
                 .map(LogicalMetricColumn::new);
     }
 }
