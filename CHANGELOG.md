@@ -8,6 +8,14 @@ pull request if there was one.
 Current
 -------
 ### Added:
+- [PermissiveAvailability and PermissiveConcretePhysicalTable](https://github.com/yahoo/fili/pull/190)
+    * Added `PermissiveConcretePhysicalTable` and `PermissiveAvailability` to model table in druid datasource and its availability in the new table availability structure.
+    `PermissiveConcretePhysicalTable` and `PermissiveAvailability` extends `ConcretePhysicalTable` and `ConcreteAvailability`, respectively.
+    `PermissiveAvailability` differs from `ConcreteAvailability` in the way of returning available intervals: `ConcreteAvailability` returns
+    the available intervals constraint by `DataSourceConstraint` and provides them in intersection. `PermissiveAvailability`, however, returns
+    them without constraint from `DataSourceConstraint` and provides them in union. `PermissiveConcretePhysicalTable` is different from `ConcretePhysicalTable`
+    in that the former is backed by `PermissiveAvailability` while the latter is backed by `ConcreteAvailability`.
+
 - [CompositePhsyicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
     * Added `ConcretePhysicalTable` and `ConcreteAvailability` to model table in druid datasource and its availabillity in the new table availability structure
     * Added class variable for `DataSourceMetadataService` and `ConfigurationLoader` for easy access
