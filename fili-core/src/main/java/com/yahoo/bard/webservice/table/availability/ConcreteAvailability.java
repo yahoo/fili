@@ -106,14 +106,11 @@ public class ConcreteAvailability implements Availability {
         return metadataService.getAvailableIntervalsByTable(name);
     }
 
-    public DataSourceMetadataService getMetadataService() {
-        return metadataService;
-    }
-
-    public TableName getName() {
-        return name;
-    }
-
+    /**
+     * Returns column names, in <tt>String</tt> representation, associated with the table and availability.
+     *
+     * @return the column names associated with the table and availability
+     */
     public Set<String> getColumnNames() {
         return columnNames;
     }

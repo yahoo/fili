@@ -18,6 +18,8 @@ import javax.validation.constraints.NotNull;
 
 /**
  * An availability which allows missing intervals, i.e. returns union of available intervals, on its contents.
+ * This availability returns available intervals without restrictions from <tt>DataSourceConstraint</tt>, because the
+ * nature of this availability is to returns as much available intervals as possible.
  */
 public class PermissiveAvailability extends ConcreteAvailability {
 
@@ -44,14 +46,15 @@ public class PermissiveAvailability extends ConcreteAvailability {
      * com.yahoo.bard.webservice.table.availability.ConcreteAvailability#getAvailableIntervals(DataSourceConstraint)};
      * Instead of returning the intersection of all available intervals, this method returns the union of them.
      *
-     * @param constraints  Data constraint containing columns and api filters
+     * @param ignoredConstraints  Data constraint containing columns and api filters. Constrains are ignored, because
+     * <tt>PermissiveAvailability</tt> returns as much available intervals as possible by, for example, allowing
+     * missing intervals and returning unions of available intervals
      *
      * @return the union of all available intervals
      */
     @Override
-    public SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraints) {
-        Map<String, List<Interval>> allAvailableIntervals = getMetadataService()
-                .getAvailableIntervalsByTable(getName());
+    public SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint ignoredConstraints) {
+        Map<String, List<Interval>> allAvailableIntervals = getLatestAvailableIntervalsByTable();
         return new SimplifiedIntervalList(
                 getColumnNames().stream()
                         .map(columnName -> allAvailableIntervals.getOrDefault(columnName, Collections.emptyList()))

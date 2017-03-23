@@ -71,9 +71,8 @@ class AvailabilityTestingUtils extends Specification {
      * @return a map of Column object to its all available intervals
      */
     static Map<Column, Set<Interval>> constructColumnToIntervalMap(Map<String, Set<String>> columnToIntervalInString) {
-        return columnToIntervalInString.collectEntries{
-            key,
-            value -> [ (new Column(key)): value.collect{new Interval(it)} ]
+        return columnToIntervalInString.collectEntries{key, value ->
+            [ (new Column(key)): value.collect{new Interval(it)} ]
         }
     }
 }
