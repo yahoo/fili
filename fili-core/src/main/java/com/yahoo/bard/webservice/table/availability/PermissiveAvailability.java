@@ -53,7 +53,7 @@ public class PermissiveAvailability extends ConcreteAvailability {
         Map<String, List<Interval>> allAvailableIntervals = getMetadataService()
                 .getAvailableIntervalsByTable(getName());
         return new SimplifiedIntervalList(
-                getCachedColumnNames().stream()
+                getColumnNames().stream()
                         .map(columnName -> allAvailableIntervals.getOrDefault(columnName, Collections.emptyList()))
                         .flatMap(List::stream)
                         .collect(SimplifiedIntervalList.getCollector())
