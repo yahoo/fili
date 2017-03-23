@@ -26,7 +26,7 @@ public class GenericMetricLoader implements MetricLoader {
 
     private static final Logger LOG = LoggerFactory.getLogger(GenericMetricLoader.class);
     private DoubleSumMaker doubleSumMaker;
-    private Supplier<List<? extends DataSourceConfiguration>> configLoader;
+    private final Supplier<List<? extends DataSourceConfiguration>> configLoader;
 
     /**
      * Constructs a GenericMetricLoader using the given sketch size.

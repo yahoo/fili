@@ -12,7 +12,6 @@ import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
