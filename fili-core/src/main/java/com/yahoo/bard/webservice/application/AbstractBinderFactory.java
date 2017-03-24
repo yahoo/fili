@@ -165,6 +165,10 @@ public abstract class AbstractBinderFactory implements BinderFactory {
             SYSTEM_CONFIG.getPackageVariableName("loader_scheduler_thread_pool_size"),
             LOADER_SCHEDULER_THREAD_POOL_SIZE_DEFAULT
     );
+
+    public static final String DEPRECATED_PERMISSIVE_AVAILABILITY_FLAG = SYSTEM_CONFIG.getPackageVariableName(
+            "permissive_column_availability_enabled");
+
     public static final String SYSTEM_CONFIG_TIMEZONE_KEY = "timezone";
 
     private ObjectMappersSuite objectMappers;
@@ -173,7 +177,6 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     private ConfigurationLoader loader;
 
     private final TaskScheduler loaderScheduler = new TaskScheduler(LOADER_SCHEDULER_THREAD_POOL_SIZE);
-
 
     /**
      * Constructor.
@@ -226,7 +229,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 FieldConverterSupplier.sketchConverter = initializeSketchConverter();
 
                 //Initialize the metrics filter helper
-                FieldConverterSupplier.metricsFilterSetBuilder =  initializeMetricsFilterSetBuilder();
+                FieldConverterSupplier.metricsFilterSetBuilder = initializeMetricsFilterSetBuilder();
 
                 // Build the datasource metadata service containing the data segments
                 bind(getDataSourceMetadataService()).to(DataSourceMetadataService.class);
@@ -245,23 +248,28 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 // Bind the request mappers
                 Map<String, RequestMapper> requestMappers = getRequestMappers(loader.getDictionaries());
                 bind(requestMappers.getOrDefault(DimensionsApiRequest.REQUEST_MAPPER_NAMESPACE,
-                        new DimensionApiRequestMapper(loader.getDictionaries())))
-                        .named(DimensionsApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
+                        new DimensionApiRequestMapper(loader.getDictionaries())
+                )).named(DimensionsApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
+
                 bind(requestMappers.getOrDefault(MetricsApiRequest.REQUEST_MAPPER_NAMESPACE,
-                        new NoOpRequestMapper(loader.getDictionaries())))
-                        .named(MetricsApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
+                        new NoOpRequestMapper(loader.getDictionaries())
+                )).named(MetricsApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
+
                 bind(requestMappers.getOrDefault(SlicesApiRequest.REQUEST_MAPPER_NAMESPACE,
-                        new NoOpRequestMapper(loader.getDictionaries())))
-                        .named(SlicesApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
+                        new NoOpRequestMapper(loader.getDictionaries())
+                )).named(SlicesApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
+
                 bind(requestMappers.getOrDefault(TablesApiRequest.REQUEST_MAPPER_NAMESPACE,
-                        new NoOpRequestMapper(loader.getDictionaries())))
-                        .named(TablesApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
+                        new NoOpRequestMapper(loader.getDictionaries())
+                )).named(TablesApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
+
                 bind(requestMappers.getOrDefault(DataApiRequest.REQUEST_MAPPER_NAMESPACE,
-                        new NoOpRequestMapper(loader.getDictionaries())))
-                        .named(DataApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
+                        new NoOpRequestMapper(loader.getDictionaries())
+                )).named(DataApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
+
                 bind(requestMappers.getOrDefault(JobsApiRequest.REQUEST_MAPPER_NAMESPACE,
-                        new NoOpRequestMapper(loader.getDictionaries())))
-                        .named(JobsApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
+                        new NoOpRequestMapper(loader.getDictionaries())
+                )).named(JobsApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
 
                 // Setup end points and back end services
                 setupHealthChecks(healthCheckRegistry, loader.getDimensionDictionary());
@@ -293,6 +301,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
 
                     setupDataSourceMetaData(healthCheckRegistry, dataSourceMetadataLoader);
                 }
+
                 bind(querySigningService).to(QuerySigningService.class);
 
                 bind(buildJobRowBuilder()).to(JobRowBuilder.class);
@@ -316,6 +325,11 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                             loader.getDimensionDictionary()
                     );
                     setupDruidDimensionsLoader(healthCheckRegistry, druidDimensionsLoader);
+                }
+                if (SYSTEM_CONFIG.getBooleanProperty(DEPRECATED_PERMISSIVE_AVAILABILITY_FLAG, false)) {
+                    LOG.warn(
+                            "Permissive column availability feature flag is no longer supported, please use " +
+                                    "PermissiveConcretePhysicalTable to enable permissive column availability.");
                 }
                 // Call post-binding hook to allow for additional binding
                 afterBinding(this);
@@ -822,7 +836,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     /**
      * The Builder to be used to serialize a JobRow into the the job to be returned to the user.
      *
-     * @return  A DefaultJobPayloadBuilder
+     * @return A DefaultJobPayloadBuilder
      */
     protected JobPayloadBuilder buildJobPayloadBuilder() {
         return new DefaultJobPayloadBuilder();
@@ -995,13 +1009,13 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     protected void scheduleLoader(Loader<?> loader) {
         loader.setFuture(
                 loader.isPeriodic ?
-                loaderScheduler.scheduleAtFixedRate(
-                        loader,
-                        loader.getDefinedDelay(),
-                        loader.getDefinedPeriod(),
-                        TimeUnit.MILLISECONDS
-                ) :
-                loaderScheduler.schedule(loader, loader.getDefinedDelay(), TimeUnit.MILLISECONDS)
+                        loaderScheduler.scheduleAtFixedRate(
+                                loader,
+                                loader.getDefinedDelay(),
+                                loader.getDefinedPeriod(),
+                                TimeUnit.MILLISECONDS
+                        ) :
+                        loaderScheduler.schedule(loader, loader.getDefinedDelay(), TimeUnit.MILLISECONDS)
         );
     }
 

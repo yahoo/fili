@@ -97,7 +97,7 @@ public class WikiTableLoader extends BaseTableLoader {
     @Override
     public void loadTableDictionary(ResourceDictionaries dictionaries) {
         for (WikiLogicalTableName table : WikiLogicalTableName.values()) {
-            TableGroup tableGroup = buildTableGroup(
+            TableGroup tableGroup = buildDimensionSpanningTableGroup(
                     apiMetricNames.get(table),
                     druidMetricNames.get(table),
                     tableDefinitions.get(table),

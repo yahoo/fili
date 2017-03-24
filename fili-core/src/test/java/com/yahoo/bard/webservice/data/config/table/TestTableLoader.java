@@ -86,7 +86,7 @@ public class TestTableLoader extends BaseTableLoader {
     public void loadTableDictionary(ResourceDictionaries dictionaries) {
         Map<String, TableGroup> logicalTableTableGroup = new LinkedHashMap<>();
         for (TestLogicalTableName logicalTableName : TestLogicalTableName.values()) {
-            TableGroup tableGroup = buildTableGroup(
+            TableGroup tableGroup = buildDimensionSpanningTableGroup(
                     TestApiMetricName.getByLogicalTable(logicalTableName),
                     TestDruidMetricName.getByLogicalTable(logicalTableName),
                     logicalTableTableDefinitions.get(logicalTableName),

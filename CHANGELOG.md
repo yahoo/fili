@@ -10,7 +10,7 @@ Current
 ### Added:
 - [CompositePhsyicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
     * Added `ConcretePhysicalTable` and `ConcreteAvailability` to model table in druid datasource and its availabillity in the new table availability structure
-    * Added class variable for `DataSourceMetadataService` and `ConfigurationLoader` for easy access
+    * Added class variable for `DataSourceMetadataService` and `ConfigurationLoader` into `AbstractBinderFactory` for application to access
 
 - [Refactor DatasourceMetaDataService to fit composite table needs](https://github.com/yahoo/fili/pull/173)
     * `DataSourceMetadataService` also stores interval data from segment data as intervals by column name map and provides method `getAvailableIntervalsByTable` to retrieve it
@@ -147,7 +147,6 @@ Current
     * Removed `permissive_column_availability_enabled` feature flag support and corresponding functionality in `PartialDataHandler`, permissive availability will be a table configuration
     * Removed `getIntersectSubintervalsForColumns` and `getUnionSubintervalsForColumns` from `PartialDataHandler` since the logic is pushed into `Availability` now
     * Removed `getIntervalsByColumnName`, `resetColumns` and `hasLogicalMapping` methods in `PhysicalTable` since no longer needed with the availability structure
-    * Removed already deprecated `buildTableGroup` method in `BaseTableLoader`
     * Removed `getAvailability` method on `PartialDataHandler` since the logic is pushed into `Availability`
     * Removed `SegmentMetadataLoader` and corresponding tests class which is deprecated in both fili and the corresponding endpoint in druid, use `DataSourceMetadataLoader` instead
     * Removed `SegmentMetadataLoaderHealthCheck` and `SegmentMetadataLoaderHealthCheckSpec` classes since `SegmentMetadataLoader` is not longer available

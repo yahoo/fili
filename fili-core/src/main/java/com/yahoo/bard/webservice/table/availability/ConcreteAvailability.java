@@ -76,9 +76,9 @@ public class ConcreteAvailability implements Availability {
     }
 
     @Override
-    public SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraints) {
+    public SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraint) {
 
-        Set<String> requestColumns = constraints.getAllColumnNames().stream()
+        Set<String> requestColumns = constraint.getAllColumnNames().stream()
                 .filter(cachedColumnNames::contains)
                 .collect(Collectors.toSet());
 

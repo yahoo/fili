@@ -83,8 +83,8 @@ public abstract class BasePhysicalTable implements PhysicalTable {
     }
 
     @Override
-    public SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraints) {
-        return getAvailability().getAvailableIntervals(constraints);
+    public SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraint) {
+        return getAvailability().getAvailableIntervals(constraint);
     }
 
     @Override

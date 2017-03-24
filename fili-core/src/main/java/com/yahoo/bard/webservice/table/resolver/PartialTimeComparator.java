@@ -16,16 +16,16 @@ import java.util.Comparator;
 public class PartialTimeComparator implements Comparator<PhysicalTable> {
 
     private final PartialDataHandler partialDataHandler;
-    private final QueryPlanningConstraint requestConstraints;
+    private final QueryPlanningConstraint requestConstraint;
 
     /**
      * Constructor.
      *
-     * @param requestConstraints contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
+     * @param requestConstraint contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
      * @param handler  Handler for Partial Data
      */
-    public PartialTimeComparator(QueryPlanningConstraint requestConstraints, PartialDataHandler handler) {
-        this.requestConstraints = requestConstraints;
+    public PartialTimeComparator(QueryPlanningConstraint requestConstraint, PartialDataHandler handler) {
+        this.requestConstraint = requestConstraint;
         this.partialDataHandler = handler;
     }
 
@@ -42,18 +42,18 @@ public class PartialTimeComparator implements Comparator<PhysicalTable> {
         // choose table with most data available for given columns
         long missingDurationLeft = IntervalUtils.getTotalDuration(
                 partialDataHandler.findMissingTimeGrainIntervals(
-                        requestConstraints,
+                        requestConstraint,
                         Collections.singleton(left),
-                        new SimplifiedIntervalList(requestConstraints.getIntervals()),
-                        requestConstraints.getRequestGranularity()
+                        new SimplifiedIntervalList(requestConstraint.getIntervals()),
+                        requestConstraint.getRequestGranularity()
                 )
         );
         long missingDurationRight = IntervalUtils.getTotalDuration(
                 partialDataHandler.findMissingTimeGrainIntervals(
-                        requestConstraints,
+                        requestConstraint,
                         Collections.singleton(right),
-                        new SimplifiedIntervalList(requestConstraints.getIntervals()),
-                        requestConstraints.getRequestGranularity()
+                        new SimplifiedIntervalList(requestConstraint.getIntervals()),
+                        requestConstraint.getRequestGranularity()
                 )
         );
         long difference = missingDurationLeft - missingDurationRight;

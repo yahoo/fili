@@ -72,11 +72,11 @@ public interface PhysicalTable extends Table {
     /**
      * Get available intervals satisfying the given constraints.
      *
-     * @param constraints  Data constraint containing columns and api filters
+     * @param constraint  Data constraint containing columns and api filters
      *
      * @return tableEntries a simplified interval list of available interval
      */
-    SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraints);
+    SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraint);
 
     /**
      * Get the columns from the schema for this physical table.

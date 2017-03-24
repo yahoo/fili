@@ -30,15 +30,15 @@ public class TimeAlignmentPhysicalTableMatcher implements PhysicalTableMatcher {
      * Stores the request table name and intervals and creates a predicate to test a physical table based on request
      * intervals.
      *
-     * @param requestConstraints  Contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
+     * @param requestConstraint  Contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
      */
-    public TimeAlignmentPhysicalTableMatcher(QueryPlanningConstraint requestConstraints) {
-        if (requestConstraints.getIntervals().isEmpty()) {
+    public TimeAlignmentPhysicalTableMatcher(QueryPlanningConstraint requestConstraint) {
+        if (requestConstraint.getIntervals().isEmpty()) {
             throw new IllegalStateException("Intervals cannot be empty");
         }
-        logicalTableName = requestConstraints.getLogicalTable().getName();
-        requestIntervals = requestConstraints.getIntervals();
-        isTableAligned = new IsTableStartAlignedWithIntervals(requestConstraints.getIntervals());
+        logicalTableName = requestConstraint.getLogicalTable().getName();
+        requestIntervals = requestConstraint.getIntervals();
+        isTableAligned = new IsTableStartAlignedWithIntervals(requestConstraint.getIntervals());
     }
 
     @Override

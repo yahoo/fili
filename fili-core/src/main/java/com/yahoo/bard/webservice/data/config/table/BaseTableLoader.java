@@ -18,7 +18,6 @@ import com.yahoo.bard.webservice.table.ConcretePhysicalTable;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.table.PhysicalTable;
-import com.yahoo.bard.webservice.table.Schema;
 import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.bard.webservice.table.TableIdentifier;
 
@@ -84,7 +83,7 @@ public abstract class BaseTableLoader implements TableLoader {
      *
      * @return A table group binding all the tables for a logical table view together.
      */
-    public TableGroup buildTableGroup(
+    public TableGroup buildDimensionSpanningTableGroup(
             Set<ApiMetricName> apiMetrics,
             Set<FieldName> druidMetrics,
             Set<PhysicalTableDefinition> tableDefinitions,
@@ -93,18 +92,15 @@ public abstract class BaseTableLoader implements TableLoader {
         // Load a physical table for each of the table definitions
         LinkedHashSet<PhysicalTable> physicalTables = new LinkedHashSet<>();
         for (PhysicalTableDefinition def : tableDefinitions) {
-            PhysicalTable table;
-            table = loadPhysicalTable(def, druidMetrics, dictionaries);
+            PhysicalTable table = loadPhysicalTable(def, druidMetrics, dictionaries);
             physicalTables.add(table);
         }
 
         //Derive the logical dimensions by taking the union of all the physical dimensions
         Set<Dimension> dimensions = physicalTables.stream()
                 .map(PhysicalTable::getSchema)
-                .map(Schema::getColumns)
+                .map(schema -> schema.getColumns(DimensionColumn.class))
                 .flatMap(Set::stream)
-                .filter(column -> column instanceof DimensionColumn)
-                .map(column -> (DimensionColumn) column)
                 .map(DimensionColumn::getDimension)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         return new TableGroup(physicalTables, apiMetrics, dimensions);
@@ -235,6 +231,32 @@ public abstract class BaseTableLoader implements TableLoader {
                 group,
                 metrics
         );
+    }
+
+    /**
+     * Builds a table group.
+     * <p>
+     * Builds and loads the physical tables for the physical table definitions as well.
+     *
+     * @param logicalTableName  The logical table for the table group
+     * @param apiMetrics  The set of metric names surfaced to the api
+     * @param druidMetrics  Names of druid datasource metric columns
+     * @param tableDefinitions  A list of config objects for physical tables
+     * @param dictionaries  The container for all the data dictionaries
+     *
+     * @return A table group binding all the tables for a logical table view together.
+     *
+     * @deprecated logicalTableName is not used in TableGroup, use buildDimensionSpanningTableGroup instead
+     */
+    @Deprecated
+    public TableGroup buildTableGroup(
+            String logicalTableName,
+            Set<ApiMetricName> apiMetrics,
+            Set<FieldName> druidMetrics,
+            Set<PhysicalTableDefinition> tableDefinitions,
+            ResourceDictionaries dictionaries
+    ) {
+        return buildDimensionSpanningTableGroup(apiMetrics, druidMetrics, tableDefinitions, dictionaries);
     }
 
     /**

@@ -35,9 +35,9 @@ public interface Availability {
     /**
      * Fetch a set of intervals given a set of column name in DataSourceConstraint.
      *
-     * @param constraints  Data constraint containing columns and api filters
+     * @param constraint  Data constraint containing columns and api filters
      *
      * @return A simplified list of intervals associated with all column in constraint, empty if column is missing
      */
-    SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraints);
+    SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraint);
 }
