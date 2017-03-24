@@ -8,7 +8,7 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
-import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.RequestLogUtils;
 import com.yahoo.bard.webservice.logging.blocks.MetricRequest;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.web.MetricsApiRequest;
@@ -107,8 +107,8 @@ public class MetricsServlet extends EndpointServlet {
             @Context final ContainerRequestContext containerRequestContext
     ) {
         try {
-            RequestLog.startTiming(this);
-            RequestLog.record(new MetricRequest("all"));
+            RequestLogUtils.startTiming(this);
+            RequestLogUtils.record(new MetricRequest("all"));
 
             MetricsApiRequest apiRequest = new MetricsApiRequest(
                     null,
@@ -134,21 +134,21 @@ public class MetricsServlet extends EndpointServlet {
                     null
             );
             LOG.debug("Metrics Endpoint Response: {}", response.getEntity());
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             return response;
         } catch (RequestValidationException e) {
             LOG.debug(e.getMessage(), e);
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             return Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
         } catch (IOException e) {
             String msg = String.format("Internal server error. IOException : %s", e.getMessage());
             LOG.error(msg, e);
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             return Response.status(INTERNAL_SERVER_ERROR).entity(msg).build();
         } catch (Error | Exception e) {
             String msg = String.format("Exception processing request: %s", e.getMessage());
             LOG.info(msg, e);
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             return Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
         }
     }
@@ -173,8 +173,8 @@ public class MetricsServlet extends EndpointServlet {
             @Context final ContainerRequestContext containerRequestContext
     ) {
         try {
-            RequestLog.startTiming(this);
-            RequestLog.record(new MetricRequest(metricName));
+            RequestLogUtils.startTiming(this);
+            RequestLogUtils.record(new MetricRequest(metricName));
 
             MetricsApiRequest apiRequest = new MetricsApiRequest(metricName, null, "", "", metricDictionary, uriInfo);
 
@@ -190,21 +190,21 @@ public class MetricsServlet extends EndpointServlet {
 
             String output = objectMappers.getMapper().writeValueAsString(result);
             LOG.debug("Metric Endpoint Response: {}", output);
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             return Response.status(Status.OK).entity(output).build();
         } catch (RequestValidationException e) {
             LOG.debug(e.getMessage(), e);
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             return Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
         } catch (IOException e) {
             String msg = String.format("Internal server error. IOException : %s", e.getMessage());
             LOG.error(msg, e);
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             return Response.status(INTERNAL_SERVER_ERROR).entity(msg).build();
         } catch (Error | Exception e) {
             String msg = String.format("Exception processing request: %s", e.getMessage());
             LOG.info(msg, e);
-            RequestLog.stopTiming(this);
+            RequestLogUtils.stopTiming(this);
             return Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
         }
     }

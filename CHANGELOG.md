@@ -104,6 +104,12 @@ Current
         starts the timer. Note: This won't work when performing timings across threads, or across
         contexts. Those need to be started and stopped manually.
 
+- [Expose the request phase durations stored by RequestLog](https://github.com/yahoo/fili/pull/100)
+    * Refactored the RequestLog by spinning the model out into a seperate class and marking the existing class as a
+    utility
+
+### Changed:
+
 ### Deprecated:
 
 - [`RequestLog::stopMostRecentTimer` has been deprecated](https://github.com/yahoo/fili/pull/143)

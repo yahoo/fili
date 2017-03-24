@@ -6,7 +6,7 @@ import com.yahoo.bard.webservice.data.cache.HashDataCache.Pair
 import com.yahoo.bard.webservice.druid.client.FailureCallback
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
-import com.yahoo.bard.webservice.logging.RequestLog
+import com.yahoo.bard.webservice.logging.RequestLogUtils
 import com.yahoo.bard.webservice.web.DataApiRequest
 
 import com.fasterxml.jackson.databind.JsonNode
@@ -56,7 +56,7 @@ public class SplitQueryResponseProcessorSpec extends Specification {
                 apiRequest,
                 groupByQuery1,
                 expectedIntervals,
-                RequestLog.dump()
+                RequestLogUtils.dump()
         )
     }
 
@@ -112,8 +112,8 @@ public class SplitQueryResponseProcessorSpec extends Specification {
 
     def "Test stitch Json"() {
         setup:
-        completedIntervals.add(new Pair<>(node1, new LoggingContext(RequestLog.dump())))
-        completedIntervals.add(new Pair<>(node2, new LoggingContext(RequestLog.dump())))
+        completedIntervals.add(new Pair<>(node1, new LoggingContext(RequestLogUtils.dump())))
+        completedIntervals.add(new Pair<>(node2, new LoggingContext(RequestLogUtils.dump())))
 
         when:
         Pair<JsonNode, LoggingContext> result = sqrp.mergeResponses(completedIntervals)
@@ -127,7 +127,7 @@ public class SplitQueryResponseProcessorSpec extends Specification {
         groupByQuery2.getIntervals() >> [interval1] >> [interval2]
 
         when:
-        sqrp.processResponse(node1, groupByQuery2, new LoggingContext(RequestLog.dump()))
+        sqrp.processResponse(node1, groupByQuery2, new LoggingContext(RequestLogUtils.dump()))
 
         then:
         sqrp.completed.get() == 1
@@ -136,7 +136,7 @@ public class SplitQueryResponseProcessorSpec extends Specification {
         0 * next.processResponse(_, _, _)
 
         when:
-        sqrp.processResponse(node2, groupByQuery2, new LoggingContext(RequestLog.dump()))
+        sqrp.processResponse(node2, groupByQuery2, new LoggingContext(RequestLogUtils.dump()))
         then:
         sqrp.completed.get() == 0
         !sqrp.failed.get()

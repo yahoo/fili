@@ -34,7 +34,7 @@ class TimingSpec extends Specification {
         // Hook with test appender
         logAppender = new TestLogAppender()
         // Reset request log before using it in this test
-        RequestLog.dump()
+        RequestLogUtils.dump()
     }
 
     def cleanupSpec() {
@@ -91,10 +91,10 @@ class TimingSpec extends Specification {
         String timerName = "StartStopTest"
 
         when: "We start the timer, wait the expected duration, and stop the timer"
-        RequestLog.startTiming(timerName)
+        RequestLogUtils.startTiming(timerName)
         sleep((int) expectedDuration)
-        RequestLog.stopTiming(timerName)
-        RequestLog.log()
+        RequestLogUtils.stopTiming(timerName)
+        RequestLogUtils.log()
         Map res = extractTimesFromLogs(timerName)
 
         then: "One log line is produced in the expected duration range"
@@ -106,10 +106,10 @@ class TimingSpec extends Specification {
         String timerName = "StartStopTest"
 
         when: "We start the timer and stop it twice"
-        RequestLog.startTiming(timerName)
-        RequestLog.stopTiming(timerName)
-        RequestLog.stopTiming(timerName)
-        RequestLog.log()
+        RequestLogUtils.startTiming(timerName)
+        RequestLogUtils.stopTiming(timerName)
+        RequestLogUtils.stopTiming(timerName)
+        RequestLogUtils.log()
 
         then: "One log line is produced and a warning"
         String warningLine
@@ -133,10 +133,10 @@ class TimingSpec extends Specification {
         String timerName = "StartStopTest"
 
         when: "We start the timer and stop it twice"
-        RequestLog.startTiming(timerName)
-        RequestLog.startTiming(timerName)
-        RequestLog.stopTiming(timerName)
-        RequestLog.log()
+        RequestLogUtils.startTiming(timerName)
+        RequestLogUtils.startTiming(timerName)
+        RequestLogUtils.stopTiming(timerName)
+        RequestLogUtils.log()
 
         then: "One log line is produced and a warning"
         String warningLine
@@ -167,14 +167,14 @@ class TimingSpec extends Specification {
         String timerName = "ThreadSwitchTest"
 
         when: "We start the timer in one thread and stop it in the other after waiting for the expected duration"
-        RequestLog.startTiming("ThreadSwitchTest")
+        RequestLogUtils.startTiming("ThreadSwitchTest")
 
-        final RequestLog ctx = RequestLog.dump()
+        final RequestLog ctx = RequestLogUtils.dump()
         def thread = Thread.start {
             sleep(500)
-            RequestLog.restore(ctx)
-            RequestLog.stopTiming("ThreadSwitchTest")
-            RequestLog.log()
+            RequestLogUtils.restore(ctx)
+            RequestLogUtils.stopTiming("ThreadSwitchTest")
+            RequestLogUtils.log()
         }
         thread.join()
 
@@ -201,14 +201,14 @@ class TimingSpec extends Specification {
 
         when: "We nest a timer within another timer in a for loop"
         for (int i = 0; i < 2; ++i) {
-            RequestLog.startTiming(outerTimerName)
+            RequestLogUtils.startTiming(outerTimerName)
             sleep(duration)
-            RequestLog.startTiming(innerTimerName)
+            RequestLogUtils.startTiming(innerTimerName)
             sleep(duration)
-            RequestLog.stopMostRecentTimer()
-            RequestLog.stopTiming(outerTimerName)
+            RequestLogUtils.stopMostRecentTimer()
+            RequestLogUtils.stopTiming(outerTimerName)
         }
-        RequestLog.log()
+        RequestLogUtils.log()
         Map res = extractTimesFromLogs(outerTimerName, innerTimerName)
 
         then: "One log line is produced in the expected duration range"
@@ -220,7 +220,7 @@ class TimingSpec extends Specification {
     @Unroll
     def "Test parsing order of LogInfo parts in RequestLog for requested order: #inputOrderString"() {
         expect:
-        RequestLog.generateLogInfoOrder(inputOrderString) == expectedList
+        RequestLogUtils.generateLogInfoOrder(inputOrderString) == expectedList
 
         where:
         expectedList << [[], [], [], [pkgString + "Part1", pkgString + "Part2"], [pkgString + "Part2", pkgString +

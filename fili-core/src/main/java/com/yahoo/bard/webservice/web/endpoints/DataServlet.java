@@ -32,7 +32,7 @@ import com.yahoo.bard.webservice.data.metric.TemplateDruidQueryMerger;
 import com.yahoo.bard.webservice.data.time.GranularityParser;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
-import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.RequestLogUtils;
 import com.yahoo.bard.webservice.logging.TimedPhase;
 import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
 import com.yahoo.bard.webservice.logging.blocks.DataRequest;
@@ -208,8 +208,8 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
         LogicalTable table = request.getTable();
         REGISTRY.meter("request.logical.table." + table.getName() + "." + table.getGranularity()).mark();
 
-        RequestLog.record(new BardQueryInfo(druidQuery.getQueryType().toJson(), false));
-        RequestLog.record(
+        RequestLogUtils.record(new BardQueryInfo(druidQuery.getQueryType().toJson(), false));
+        RequestLogUtils.record(
                 new DataRequest(
                         table,
                         request.getIntervals(),
@@ -346,7 +346,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
     ) {
         try {
             DataApiRequest apiRequest;
-            try (TimedPhase timer = RequestLog.startTiming("DataApiRequest")) {
+            try (TimedPhase timer = RequestLogUtils.startTiming("DataApiRequest")) {
                 apiRequest = new DataApiRequest(
                         tableName,
                         timeGrain,
@@ -374,19 +374,19 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
 
             // Build the query template
             TemplateDruidQuery templateQuery;
-            try (TimedPhase timer = RequestLog.startTiming("DruidQueryMerge")) {
+            try (TimedPhase timer = RequestLogUtils.startTiming("DruidQueryMerge")) {
                 templateQuery = templateDruidQueryMerger.merge(apiRequest);
             }
 
             // Select the performance slice and build the final query
             DruidAggregationQuery<?> druidQuery;
-            try (TimedPhase timer = RequestLog.startTiming("DruidQueryBuilder")) {
+            try (TimedPhase timer = RequestLogUtils.startTiming("DruidQueryBuilder")) {
                 druidQuery = druidQueryBuilder.buildQuery(apiRequest, templateQuery);
             }
 
             // Accumulate data needed for request processing workflow
             RequestContext context;
-            try (TimedPhase timer = RequestLog.startTiming("BuildRequestContext")) {
+            try (TimedPhase timer = RequestLogUtils.startTiming("BuildRequestContext")) {
                 context = new RequestContext(containerRequestContext, readCache);
             }
 
@@ -416,13 +416,13 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
                     httpResponseMaker
             );
 
-            try (TimedPhase timer = RequestLog.startTiming("logRequestMetrics")) {
+            try (TimedPhase timer = RequestLogUtils.startTiming("logRequestMetrics")) {
                 logRequestMetrics(apiRequest, readCache, druidQuery);
-                RequestLog.record(new DruidFilterInfo(apiRequest.getFilter()));
+                RequestLogUtils.record(new DruidFilterInfo(apiRequest.getFilter()));
             }
 
             // Process the request
-            RequestLog.startTiming(REQUEST_WORKFLOW_TIMER);
+            RequestLogUtils.startTiming(REQUEST_WORKFLOW_TIMER);
             boolean complete = dataRequestHandler.handleRequest(context, apiRequest, druidQuery, response);
             if (! complete) {
                 throw new IllegalStateException("No request handler accepted request.");

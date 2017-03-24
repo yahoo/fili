@@ -7,6 +7,7 @@ import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.RequestLogUtils;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -124,7 +125,7 @@ public class SplitQueryResponseProcessor implements ResponseProcessor {
 
         if (completed.decrementAndGet() == 0) {
             Pair<JsonNode, LoggingContext> mergedResponse = mergeResponses(completedIntervals);
-            RequestLog.restore(mergedResponse.getValue().getRequestLog());
+            RequestLogUtils.restore(mergedResponse.getValue().getRequestLog());
             next.processResponse(mergedResponse.getKey(), queryBeforeSplit, mergedResponse.getValue());
         }
     }
@@ -153,14 +154,14 @@ public class SplitQueryResponseProcessor implements ResponseProcessor {
     private Pair<JsonNode, LoggingContext> mergeResponses(List<Pair<JsonNode, LoggingContext>> responses) {
         JsonNodeFactory factory = new JsonNodeFactory(true);
         ArrayNode result = factory.arrayNode();
-        RequestLog.restore(logCtx);
+        RequestLogUtils.restore(logCtx);
         for (Pair<JsonNode, LoggingContext> entry : responses) {
             for (JsonNode jsonNode : entry.getKey()) {
                 result.add(jsonNode);
             }
-            RequestLog.accumulate(entry.getValue().getRequestLog());
+            RequestLogUtils.accumulate(entry.getValue().getRequestLog());
         }
-        RequestLog updatedCtx = RequestLog.dump();
+        RequestLog updatedCtx = RequestLogUtils.dump();
         return new Pair<>(result, new LoggingContext(updatedCtx));
     }
 }
