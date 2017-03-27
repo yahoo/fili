@@ -108,6 +108,10 @@ Current
 
 ### Fixed:
 
+- [Fixed Segment Metadata Loader Unconfigured Dimension Bug](https://github.com/yahoo/fili/pull/197)
+    * Immutable availability was failing when attempting to bind segment dimension columns not configured in dimension dictionary.
+    * Fix to filter irrelevant column names. 
+
 - [Major refactor for availability and schemas and tables](https://github.com/yahoo/fili/pull/165)
     * Ordering of fields on serialization could be inconsistent if intermediate stages used `HashSet` or `HashMap`.
     * Several constructors switched to accept `Iterable` and return `LinkedHashSet` to emphasize importance of ordering/prevent `HashSet` intermediates which disrupt ordering.

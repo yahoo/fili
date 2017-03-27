@@ -12,6 +12,8 @@ import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.google.common.collect.ImmutableMap;
 
 import org.joda.time.Interval;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
@@ -20,13 +22,20 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
  * An availability which guarantees immutability on its contents.
  */
 public class ImmutableAvailability implements Availability {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ImmutableAvailability.class);
+
+    public static final String FILTERED_DIMENSION_FORMAT =
+            "Found unknown dimension name '{}' when building availability for table: '{}'.";
 
     private final TableName name;
     private final Map<Column, List<Interval>> columnIntervals;
@@ -71,13 +80,14 @@ public class ImmutableAvailability implements Availability {
     ) {
         this(
                 TableName.of(tableName),
-                buildAvailabilityMap(dimensionIntervals, metricIntervals, dimensionDictionary)
+                buildAvailabilityMap(tableName, dimensionIntervals, metricIntervals, dimensionDictionary)
         );
     }
 
     /**
      * Build an availability map from unbound dimension and metric name maps and dimension dictionaries.
      *
+     * @param tableName  The name of the table being loaded
      * @param dimensionIntervals  The dimension availability map by dimension name
      * @param metricIntervals  The metric availability map
      * @param dimensionDictionary  The dictionary to resolve dimension names against
@@ -85,6 +95,7 @@ public class ImmutableAvailability implements Availability {
      * @return A map of available intervals by columns
      */
     private static Map<Column, List<Interval>> buildAvailabilityMap(
+        String tableName,
         Map<String, Set<Interval>> dimensionIntervals,
         Map<String, Set<Interval>> metricIntervals,
         DimensionDictionary dimensionDictionary
@@ -96,12 +107,26 @@ public class ImmutableAvailability implements Availability {
         Function<Map.Entry<String, Set<Interval>>, List<Interval>> valueMapper =
                 entry -> new SimplifiedIntervalList(entry.getValue());
 
+        Predicate<Map.Entry<String, Set<Interval>>> knowDimension = (entry) ->
+                dimensionDictionary.findByApiName(entry.getKey()) != null;
+
+        Consumer<Map.Entry<String, Set<Interval>>> logUnknownDimension = (entry) -> {
+            if (! knowDimension.test(entry)) {
+                LOG.trace(String.format(FILTERED_DIMENSION_FORMAT, entry.getKey(), tableName));
+            }
+        };
+
         Map<Column, List<Interval>> map = dimensionIntervals.entrySet().stream()
+                .peek(logUnknownDimension)
+                .filter(knowDimension)
                 .collect(Collectors.toMap(dimensionKeyMapper, valueMapper));
         map.putAll(
                 metricIntervals.entrySet().stream()
                         .collect(Collectors.toMap(metricKeyMapper, valueMapper))
         );
+        if (map.isEmpty()) {
+            LOG.warn("No legal availability columns discovered when building availability for {}.", tableName);
+        }
         return map;
     }
 
@@ -111,7 +136,7 @@ public class ImmutableAvailability implements Availability {
     }
 
     @Override
-    public List<Interval> get(final Column c) {
+    public List<Interval> get(Column c) {
         return columnIntervals.get(c);
     }
 
