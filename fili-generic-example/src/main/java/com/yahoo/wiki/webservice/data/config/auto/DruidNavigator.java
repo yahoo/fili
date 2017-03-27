@@ -2,15 +2,13 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.auto;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
 import com.yahoo.bard.webservice.data.time.GranularityDictionary;
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
-
-import com.fasterxml.jackson.databind.JsonNode;
-
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +31,8 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
 
     /**
      * Constructs a DruidNavigator to load datasources from druid.
-     * @param druidWebService  The DruidWebService to be used when talking to druid.
+     *
+     * @param druidWebService The DruidWebService to be used when talking to druid.
      */
     public DruidNavigator(DruidWebService druidWebService) {
         this.druidWebService = druidWebService;
@@ -42,6 +41,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
 
     /**
      * Queries druid for all datasources and loads each of their configurations.
+     *
      * @return a list of {@link DataSourceConfiguration} containing all known druid datasources configs.
      */
     @Override
@@ -62,7 +62,8 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
 
     /**
      * Load a specific table with all reported metrics, dimensions, and timegrains.
-     * @param table  The TableConfig to be loaded with queries against druid.
+     *
+     * @param table The TableConfig to be loaded with queries against druid.
      */
     public void loadTable(TableConfig table) {
         String url = COORDINATOR_BASE + "datasources/" + table.getName() + "/?full";
@@ -78,8 +79,9 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
 
     /**
      * Add all metrics from druid query to the {@link TableConfig}.
-     * @param table  The TableConfig to be loaded.
-     * @param segmentJson  The JsonNode containing a list of metrics.
+     *
+     * @param table       The TableConfig to be loaded.
+     * @param segmentJson The JsonNode containing a list of metrics.
      */
     private void loadMetrics(TableConfig table, JsonNode segmentJson) {
         JsonNode metricsArray = segmentJson.get("metrics");
@@ -88,8 +90,9 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
 
     /**
      * Add all dimensions from druid query to the {@link TableConfig}.
-     * @param tableName  The TableConfig to be loaded.
-     * @param segmentJson  The JsonNode containing a list of dimensions.
+     *
+     * @param tableName   The TableConfig to be loaded.
+     * @param segmentJson The JsonNode containing a list of dimensions.
      */
     private void loadDimensions(TableConfig tableName, JsonNode segmentJson) {
         JsonNode dimensionsArray = segmentJson.get("dimensions");
@@ -98,48 +101,52 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
 
     /**
      * Find a valid timegrain from druid query to the {@link TableConfig}.
-     * @param tableConfig  The TableConfig to be loaded.
-     * @param segmentJson  The JsonNode containing a time interval.
+     *
+     * @param tableConfig The TableConfig to be loaded.
+     * @param segmentJson The JsonNode containing a time interval.
      */
     private void loadTimeGrains(TableConfig tableConfig, JsonNode segmentJson) {
         JsonNode timeInterval = segmentJson.get("interval");
         String[] utcTimes = timeInterval.asText().split("/");
-        if (utcTimes.length >= 2) {
-            DateTime start = new DateTime(utcTimes[0]);
-            DateTime end = new DateTime(utcTimes[1]);
-            TimeGrain timeGrain = getTimeGrain(start, end);
-            if (timeGrain != null) {
-                tableConfig.addTimeGrain(timeGrain);
+        Optional<TimeGrain> timeGrain = Optional.empty();
+        try {
+            if (utcTimes.length >= 2) {
+                DateTime start = new DateTime(utcTimes[0]);
+                DateTime end = new DateTime(utcTimes[1]);
+                timeGrain = getTimeGrain(start, end);
             }
+        } catch (IllegalArgumentException ignored) {
         }
+
+        if (!timeGrain.isPresent()) {
+            LOG.info("Couldn't detect timegrain for " + timeInterval.asText() + ", defaulting to DAY TimeGrain.");
+        }
+        tableConfig.addTimeGrain(timeGrain.orElse(DefaultTimeGrain.DAY));
     }
 
     /**
      * Find a valid timegrain for the datasource based on the start and end date of the interval.
-     * @param start  Start of interval.
-     * @param end  End of interval.
+     *
+     * @param start Start of interval.
+     * @param end   End of interval.
      * @return the valid timegrain spanned by the interval.
      */
-    private TimeGrain getTimeGrain(DateTime start, DateTime end) {
+    private Optional<TimeGrain> getTimeGrain(DateTime start, DateTime end) {
         GranularityDictionary grains = StandardGranularityParser.getDefaultGrainMap();
-        Optional<TimeGrain> grain = grains.values().stream()
+        return grains.values().stream()
                 .filter(granularity -> granularity instanceof TimeGrain)
                 .map(granularity -> (TimeGrain) granularity)
                 .filter(timeGrain -> timeGrain.aligns(start))
                 .filter(timeGrain -> timeGrain.aligns(end))
                 .filter(timeGrain -> start.plus(timeGrain.getPeriod()).equals(end))
                 .findFirst();
-
-        if (!grain.isPresent()) {
-            LOG.info("Couldn't detect default timegrain for " + start + "-" + end + ", defaulting to DAY TimeGrain.");
-        }
-        return grain.orElse(DefaultTimeGrain.DAY);
     }
 
     /**
      * Send a request to druid.
-     * @param successCallback  The callback to be done if the query succeeds.
-     * @param url  The url to send the query to.
+     *
+     * @param successCallback The callback to be done if the query succeeds.
+     * @param url             The url to send the query to.
      */
     private void queryDruid(SuccessCallback successCallback, String url) {
         LOG.debug("Fetching " + url);
