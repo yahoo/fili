@@ -16,5 +16,4 @@ public interface TableLoader {
      * @param dictionaries  The resource dictionaries that will be loaded with table configuration
      */
     void loadTableDictionary(ResourceDictionaries dictionaries);
-
 }

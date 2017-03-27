@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.druid.model.query
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionField
@@ -49,7 +50,8 @@ class DruidSearchQuerySpec extends Specification {
                         "table_name",
                         DAY.buildZonedTimeGrain(DateTimeZone.UTC),
                         [] as Set,
-                        [:]
+                        [:],
+                        Mock(DataSourceMetadataService)
                 )
         )
         vars.granularity = vars.granularity ?: DAY

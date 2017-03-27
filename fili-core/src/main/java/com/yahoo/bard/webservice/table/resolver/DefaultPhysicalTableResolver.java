@@ -49,23 +49,23 @@ public class DefaultPhysicalTableResolver extends BasePhysicalTableResolver {
     }
 
     @Override
-    public List<PhysicalTableMatcher> getMatchers(QueryPlanningConstraint requestConstraints) {
+    public List<PhysicalTableMatcher> getMatchers(QueryPlanningConstraint requestConstraint) {
         return Arrays.asList(
-                new SchemaPhysicalTableMatcher(requestConstraints),
-                new AggregatableDimensionsMatcher(requestConstraints),
-                new TimeAlignmentPhysicalTableMatcher(requestConstraints)
+                new SchemaPhysicalTableMatcher(requestConstraint),
+                new AggregatableDimensionsMatcher(requestConstraint),
+                new TimeAlignmentPhysicalTableMatcher(requestConstraint)
         );
     }
 
     @Override
-    public BinaryOperator<PhysicalTable> getBetterTableOperator(QueryPlanningConstraint requestConstraints) {
+    public BinaryOperator<PhysicalTable> getBetterTableOperator(QueryPlanningConstraint requestConstraint) {
         List<Comparator<PhysicalTable>> comparators = new ArrayList<>();
 
         if (BardFeatureFlag.PARTIAL_DATA.isOn()) {
             comparators.add(
-                    new PartialTimeComparator(requestConstraints, partialDataHandler));
+                    new PartialTimeComparator(requestConstraint, partialDataHandler));
             comparators.add(
-                    new VolatileTimeComparator(requestConstraints, partialDataHandler, volatileIntervalsService));
+                    new VolatileTimeComparator(requestConstraint, partialDataHandler, volatileIntervalsService));
         }
         comparators.add(COMPARE_GRANULARITY);
         comparators.add(CARDINALITY_COMPARATOR);

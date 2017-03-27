@@ -29,6 +29,6 @@ public class WikiBinderFactory extends AbstractBinderFactory {
 
     @Override
     protected TableLoader getTableLoader() {
-        return new WikiTableLoader();
+        return new WikiTableLoader(getDataSourceMetadataService());
     }
 }

@@ -2,14 +2,13 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data
 
-import static com.yahoo.bard.webservice.config.BardFeatureFlag.PARTIAL_DATA
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_CACHE
+import static com.yahoo.bard.webservice.config.BardFeatureFlag.PARTIAL_DATA
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.data.cache.TestDataCache
 import com.yahoo.bard.webservice.table.availability.AvailabilityTestingUtils
 import com.yahoo.bard.webservice.util.GroovyTestUtils
-import com.yahoo.bard.webservice.web.endpoints.BaseDataServletComponentSpec
 import com.yahoo.bard.webservice.web.endpoints.DataServlet
 
 import org.joda.time.Interval

@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.druid.model.query
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 
@@ -37,7 +38,8 @@ class SegmentMetadataQuerySpec extends Specification {
                 tableName,
                 DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC),
                 [] as Set,
-                [:]
+                [:],
+                Mock(DataSourceMetadataService)
         ))
         Collection<Interval> intervals = [new Interval("2014-07-01/2014-07-15")]
 
@@ -65,7 +67,8 @@ class SegmentMetadataQuerySpec extends Specification {
                 tableName,
                 DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC),
                 [] as Set,
-                [:]
+                [:],
+                Mock(DataSourceMetadataService)
         ))
         Collection<Interval> intervals = [new Interval("2014-07-01/2014-07-15"), new Interval("2014-08-01/2014-08-15")]
 

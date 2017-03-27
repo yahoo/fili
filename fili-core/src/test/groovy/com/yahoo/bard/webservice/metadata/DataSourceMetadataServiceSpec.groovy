@@ -44,7 +44,7 @@ class DataSourceMetadataServiceSpec extends BaseDataSourceMetadataSpec {
                                                               [segment3.getIdentifier(), segment4.getIdentifier()]].toString()
 
         and: "all the intervals by column in metadata service are simplified to interval12"
-        [[interval12] as Set].containsAll(metadataService.getAvailableIntervalsByTable(currentTableName).values())
+        [[interval12]].containsAll(metadataService.getAvailableIntervalsByTable(currentTableName).values())
 
         cleanup:
         jtb.tearDown()
@@ -68,7 +68,7 @@ class DataSourceMetadataServiceSpec extends BaseDataSourceMetadataSpec {
 
         expect:
         intervalByColumn.keySet() == (dimensions123 + metrics123) as Set
-        intervalByColumn.get(dimensions123.get(0)) == [interval12] as Set
+        intervalByColumn.get(dimensions123.get(0)) == [interval12]
     }
 
 
