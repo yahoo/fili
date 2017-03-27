@@ -2,7 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.availability;
 
-import com.google.common.collect.Sets;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.table.Column;
@@ -11,9 +10,10 @@ import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
+import com.google.common.collect.Sets;
+
 import org.joda.time.Interval;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -90,12 +90,7 @@ public class MetricUnionAvailability implements Availability {
                         Collectors.toMap(
                                 entry -> entry.getKey(),
                                 entry -> entry.getValue(),
-                                (value1, value2) -> {
-                                    List<Interval> combined = new ArrayList<>();
-                                    combined.addAll(value1);
-                                    combined.addAll(value2);
-                                    return combined;
-                                }
+                                (value1, value2) -> SimplifiedIntervalList.simplifyIntervals(value1, value2)
                         )
                 );
     }
