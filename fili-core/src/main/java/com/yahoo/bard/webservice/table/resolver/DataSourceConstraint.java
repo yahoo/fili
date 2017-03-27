@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.table.resolver;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.DataApiRequest;
@@ -54,6 +55,39 @@ public class DataSourceConstraint {
         ).collect(Collectors.toSet()));
     }
 
+    /**
+     * Constructor.
+     *
+     * @param requestDimensions  Dimensions contained in request
+     * @param filterDimensions  Filtered dimensions
+     * @param metricDimensions  Metric related dimensions
+     * @param metricNames  Names of metrics
+     * @param allDimensions  Set of all dimension objects
+     * @param allDimensionNames  Set of all dimension names
+     * @param allColumnNames  Set of all column names
+     * @param apiFilters  Map of dimension to its set of API filters
+     */
+    public DataSourceConstraint(
+            Set<Dimension> requestDimensions,
+            Set<Dimension> filterDimensions,
+            Set<Dimension> metricDimensions,
+            Set<String> metricNames,
+            Set<Dimension> allDimensions,
+            Set<String> allDimensionNames,
+            Set<String> allColumnNames,
+            Map<Dimension, Set<ApiFilter>> apiFilters
+    ) {
+        this.requestDimensions = requestDimensions;
+        this.filterDimensions = filterDimensions;
+        this.metricDimensions = metricDimensions;
+        this.metricNames = metricNames;
+        this.allDimensions = allDimensions;
+        this.allDimensionNames = allDimensionNames;
+        this.allColumnNames = allColumnNames;
+        this.apiFilters = apiFilters;
+    }
+
+
     public Set<Dimension> getRequestDimensions() {
         return requestDimensions;
     }
@@ -84,5 +118,31 @@ public class DataSourceConstraint {
 
     public Map<Dimension, Set<ApiFilter>> getApiFilters() {
         return apiFilters;
+    }
+
+    /**
+     * Create a new <tt>DataSourceConstraint</tt> instance with a new subset of metric names.
+     * <p>
+     * The new set of metric names will be an intersection between old metric names and
+     * a user provided set of metric names
+     *
+     * @param metricColumns  The user provided set of metric names
+     *
+     * @return the new <tt>DataSourceConstraint</tt> instance with a new subset of metric names
+     */
+    public DataSourceConstraint withMetricIntersection(Set<MetricColumn> metricColumns) {
+        return new DataSourceConstraint(
+                requestDimensions,
+                filterDimensions,
+                metricDimensions,
+                metricColumns.stream()
+                        .filter(metricColumn -> metricNames.contains(metricColumn.getName()))
+                        .map(MetricColumn::getName)
+                        .collect(Collectors.toSet()),
+                allDimensions,
+                allDimensionNames,
+                allColumnNames,
+                apiFilters
+        );
     }
 }
