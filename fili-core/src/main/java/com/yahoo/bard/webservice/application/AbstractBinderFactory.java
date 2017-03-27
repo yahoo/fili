@@ -246,30 +246,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 bind(loader.getDictionaries()).to(ResourceDictionaries.class);
 
                 // Bind the request mappers
-                Map<String, RequestMapper> requestMappers = getRequestMappers(loader.getDictionaries());
-                bind(requestMappers.getOrDefault(DimensionsApiRequest.REQUEST_MAPPER_NAMESPACE,
-                        new DimensionApiRequestMapper(loader.getDictionaries())
-                )).named(DimensionsApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
-
-                bind(requestMappers.getOrDefault(MetricsApiRequest.REQUEST_MAPPER_NAMESPACE,
-                        new NoOpRequestMapper(loader.getDictionaries())
-                )).named(MetricsApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
-
-                bind(requestMappers.getOrDefault(SlicesApiRequest.REQUEST_MAPPER_NAMESPACE,
-                        new NoOpRequestMapper(loader.getDictionaries())
-                )).named(SlicesApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
-
-                bind(requestMappers.getOrDefault(TablesApiRequest.REQUEST_MAPPER_NAMESPACE,
-                        new NoOpRequestMapper(loader.getDictionaries())
-                )).named(TablesApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
-
-                bind(requestMappers.getOrDefault(DataApiRequest.REQUEST_MAPPER_NAMESPACE,
-                        new NoOpRequestMapper(loader.getDictionaries())
-                )).named(DataApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
-
-                bind(requestMappers.getOrDefault(JobsApiRequest.REQUEST_MAPPER_NAMESPACE,
-                        new NoOpRequestMapper(loader.getDictionaries())
-                )).named(JobsApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
+                bindRequestMappers(this);
 
                 // Setup end points and back end services
                 setupHealthChecks(healthCheckRegistry, loader.getDimensionDictionary());
@@ -335,6 +312,44 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 afterBinding(this);
             }
         };
+    }
+
+    /**
+     * Bind ApiRequest instances to resource scope names.
+     *
+     * @param binder  The binder being used to bind the request mappers.
+     */
+    private void bindRequestMappers(AbstractBinder binder) {
+        Map<String, RequestMapper> requestMappers = getRequestMappers(loader.getDictionaries());
+        binder.bind(requestMappers.getOrDefault(
+                DimensionsApiRequest.REQUEST_MAPPER_NAMESPACE,
+                new DimensionApiRequestMapper(loader.getDictionaries())
+        )).named(DimensionsApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
+
+        binder.bind(requestMappers.getOrDefault(
+                MetricsApiRequest.REQUEST_MAPPER_NAMESPACE,
+                new NoOpRequestMapper(loader.getDictionaries())
+        )).named(MetricsApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
+
+        binder.bind(requestMappers.getOrDefault(
+                SlicesApiRequest.REQUEST_MAPPER_NAMESPACE,
+                new NoOpRequestMapper(loader.getDictionaries())
+        )).named(SlicesApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
+
+        binder.bind(requestMappers.getOrDefault(
+                TablesApiRequest.REQUEST_MAPPER_NAMESPACE,
+                new NoOpRequestMapper(loader.getDictionaries())
+        )).named(TablesApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
+
+        binder.bind(requestMappers.getOrDefault(
+                DataApiRequest.REQUEST_MAPPER_NAMESPACE,
+                new NoOpRequestMapper(loader.getDictionaries())
+        )).named(DataApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
+
+        binder.bind(requestMappers.getOrDefault(
+                JobsApiRequest.REQUEST_MAPPER_NAMESPACE,
+                new NoOpRequestMapper(loader.getDictionaries())
+        )).named(JobsApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
     }
 
     /**
