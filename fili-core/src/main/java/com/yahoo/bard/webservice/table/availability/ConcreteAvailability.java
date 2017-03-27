@@ -63,7 +63,7 @@ public class ConcreteAvailability implements Availability {
     @Override
     public Map<Column, List<Interval>> getAllAvailableIntervals() {
 
-        Map<String, List<Interval>> allAvailableIntervals = getLatestAvailableIntervalsByTable();
+        Map<String, List<Interval>> allAvailableIntervals = getAvailableIntervalsByTable();
         return columns.stream()
                 .collect(
                         Collectors.toMap(
@@ -86,7 +86,7 @@ public class ConcreteAvailability implements Availability {
             return new SimplifiedIntervalList();
         }
 
-        Map<String, List<Interval>> allAvailableIntervals = getLatestAvailableIntervalsByTable();
+        Map<String, List<Interval>> allAvailableIntervals = getAvailableIntervalsByTable();
 
         // Need to ensure requestColumns is not empty in order to prevent returning null by reduce operation
         return new SimplifiedIntervalList(
@@ -102,11 +102,11 @@ public class ConcreteAvailability implements Availability {
      *
      * @return map of column name to list of avialable intervals
      */
-    protected Map<String, List<Interval>> getLatestAvailableIntervalsByTable() {
+    protected Map<String, List<Interval>> getAvailableIntervalsByTable() {
         return metadataService.getAvailableIntervalsByTable(name);
     }
 
-    public Set<String> getColumnNames() {
+    protected Set<String> getColumnNames() {
         return columnNames;
     }
 }

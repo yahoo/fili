@@ -54,12 +54,10 @@ public class PermissiveAvailability extends ConcreteAvailability {
      */
     @Override
     public SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint ignoredConstraints) {
-        Map<String, List<Interval>> allAvailableIntervals = getLatestAvailableIntervalsByTable();
-        return new SimplifiedIntervalList(
-                getColumnNames().stream()
-                        .map(columnName -> allAvailableIntervals.getOrDefault(columnName, Collections.emptyList()))
-                        .flatMap(List::stream)
-                        .collect(SimplifiedIntervalList.getCollector())
-        );
+        Map<String, List<Interval>> allAvailableIntervals = getAvailableIntervalsByTable();
+        return getColumnNames().stream()
+                .map(columnName -> allAvailableIntervals.getOrDefault(columnName, Collections.emptyList()))
+                .flatMap(List::stream)
+                .collect(SimplifiedIntervalList.getCollector());
     }
 }

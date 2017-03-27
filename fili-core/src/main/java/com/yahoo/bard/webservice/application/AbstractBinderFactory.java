@@ -178,7 +178,6 @@ public abstract class AbstractBinderFactory implements BinderFactory {
 
     private final TaskScheduler loaderScheduler = new TaskScheduler(LOADER_SCHEDULER_THREAD_POOL_SIZE);
 
-
     /**
      * Constructor.
      */
@@ -231,9 +230,6 @@ public abstract class AbstractBinderFactory implements BinderFactory {
 
                 //Initialize the metrics filter helper
                 FieldConverterSupplier.metricsFilterSetBuilder = initializeMetricsFilterSetBuilder();
-
-                // Build the datasource metadata service containing the data segments
-                bind(getDataSourceMetadataService()).to(DataSourceMetadataService.class);
 
                 // Build the datasource metadata service containing the data segments
                 bind(getDataSourceMetadataService()).to(DataSourceMetadataService.class);
@@ -315,8 +311,6 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 // Call post-binding hook to allow for additional binding
                 afterBinding(this);
             }
-
-
         };
     }
 
