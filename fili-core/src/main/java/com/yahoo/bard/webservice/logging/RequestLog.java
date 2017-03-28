@@ -130,7 +130,7 @@ public class RequestLog {
     /**
      * Get the aggregate durations for this request.
      *
-     * @return A map of phase -> duration (ns)
+     * @return A map of phase to duration (ns)
      */
     public static Map<String, Long> getDurations() {
         RequestLog log = RLOG.get();
@@ -149,7 +149,7 @@ public class RequestLog {
     /**
      * Get the aggregate durations for this request.
      *
-     * @return A map of phase -> duration (ms)
+     * @return A map of phase to duration (ms)
      */
     public static Map<String, Float> getAggregateDurations() {
         return RLOG.get().aggregateDurations();
