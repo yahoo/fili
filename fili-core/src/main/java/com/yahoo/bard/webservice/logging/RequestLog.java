@@ -128,12 +128,31 @@ public class RequestLog {
     }
 
     /**
+     * Get the aggregate durations for this request.
+     *
+     * @return A map of phase to duration (ns)
+     */
+    public static Map<String, Long> getDurations() {
+        RequestLog log = RLOG.get();
+        return log.durations();
+    }
+
+    /**
      * Adds the durations in milliseconds of all the recorded timed phases to a map.
      *
      * @return the map containing all the recorded times per phase in milliseconds
      */
-    private Map<String, Long> getDurations() {
+    private Map<String, Long> durations() {
         return times.values().stream().collect(Collectors.toMap(TimedPhase::getName, TimedPhase::getDuration));
+    }
+
+    /**
+     * Get the aggregate durations for this request.
+     *
+     * @return A map of phase to duration (ms)
+     */
+    public static Map<String, Float> getAggregateDurations() {
+        return RLOG.get().aggregateDurations();
     }
 
     /**
@@ -142,7 +161,7 @@ public class RequestLog {
      * @return the map containing all the recorded times per phase in milliseconds
      */
     private Map<String, Float> aggregateDurations() {
-        Map<String, Long> durations = getDurations();
+        Map<String, Long> durations = durations();
 
         OptionalLong max = durations.entrySet()
                 .stream()
@@ -166,15 +185,14 @@ public class RequestLog {
      *
      * @param caller  the caller to name this stopwatch with its class's simple name
      *
-     * @return whether this stopwatch is started
+     * @return whether this stopwatch is currently running
      */
-
     public static boolean isRunning(Object caller) {
         return isRunning(caller.getClass().getSimpleName());
     }
 
     /**
-     * Check if a stopwatch is started.
+     * Check if a stopwatch is currently running.
      *
      * @param timePhaseName  the name of this stopwatch
      *
