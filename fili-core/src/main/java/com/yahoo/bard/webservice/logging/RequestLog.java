@@ -127,7 +127,6 @@ public class RequestLog {
         MDC.put(ID_KEY, logId);
     }
 
-
     /**
      * Get the aggregate durations for this request.
      *
@@ -146,7 +145,6 @@ public class RequestLog {
     private Map<String, Long> durations() {
         return times.values().stream().collect(Collectors.toMap(TimedPhase::getName, TimedPhase::getDuration));
     }
-
 
     /**
      * Get the aggregate durations for this request.
