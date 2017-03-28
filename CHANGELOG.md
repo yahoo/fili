@@ -59,6 +59,9 @@ Current
 
 ### Changed:
 
+- [Make `TemplateDruidQuery::getMetricField` get the first field instead of any field](https://github.com/yahoo/fili/pull/210)
+    * Previously, order was by luck, now it's by the contract of `findFirst`
+
 - [Restore non-default query support in TestDruidWebservice](https://github.com/yahoo/fili/pull/202)
 
 - [Base TableDataSource serialization on ConcretePhysicalTable fact name](https://github.com/yahoo/fili/pull/202)
