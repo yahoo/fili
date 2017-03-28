@@ -130,6 +130,11 @@ Current
     - This method is a part of the infrastructure to support the recently
     deprecated `RequestLog::switchTiming`.
 
+- [LogicalMetricColumn doesn't need a 2-arg constructor](https://github.com/yahoo/fili/pull/204)
+    * It's only used in one place, and there's no real need for it because the other constructor does the same thing
+
+- [DimensionColumn's 2-arg constructor is only used by a deprecated class](https://github.com/yahoo/fili/pull/204)
+    * When that deprecated class (`LogicalDimensionColumn`) goes away, this constructor will go away as well
 
 ### Fixed:
 
