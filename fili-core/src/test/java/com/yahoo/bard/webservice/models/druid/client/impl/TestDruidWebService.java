@@ -115,10 +115,6 @@ public class TestDruidWebService implements DruidWebService {
         }
 
         // Set the response to use based on the type of the query we're processing
-        if (!(lastQuery.getQueryType() instanceof DefaultQueryType)) {
-            throw new IllegalArgumentException("Illegal query type : " + lastQuery.getQueryType());
-        }
-
         DefaultQueryType defaultQueryType = (DefaultQueryType) lastQuery.getQueryType();
         switch (defaultQueryType) {
             case GROUP_BY:

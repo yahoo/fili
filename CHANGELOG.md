@@ -59,6 +59,10 @@ Current
 
 ### Changed:
 
+- [Restore non-default query support in TestDruidWebservice](https://github.com/yahoo/fili/pull/202)
+
+- [Base TableDataSource serialization on ConcretePhysicalTable fact name](https://github.com/yahoo/fili/pull/202)
+
 - [CompositePhsyicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
     * `TableLoader` now takes an additional constructor argument `DataSourceMetadataService` for creating tables     
     * `findMissingRequestTimeGrainIntervals` method in `PartialDataHandler` now takes `DataSourceConstraint`
