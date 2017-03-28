@@ -26,7 +26,7 @@ class LongSumMakerSpec extends Specification{
         Aggregation sumAggregation = new LongSumAggregation(METRIC_NAME, DEPENDENT_METRIC_NAME)
         Set<Aggregation> aggregations = [sumAggregation] as Set
         TemplateDruidQuery query = new TemplateDruidQuery(aggregations, [] as Set)
-        LogicalMetric expectedMetric = new LogicalMetric(query, new NoOpResultSetMapper(), METRIC_NAME)
+        LogicalMetric expectedMetric = new LogicalMetric(query, new NoOpResultSetMapper(), METRIC_NAME, {true})
 
         expect:
         maker.make(METRIC_API_NAME, [DEPENDENT_METRIC_NAME]) == expectedMetric

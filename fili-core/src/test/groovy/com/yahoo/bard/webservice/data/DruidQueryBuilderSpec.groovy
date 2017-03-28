@@ -91,7 +91,7 @@ class DruidQueryBuilderSpec extends Specification {
             druidFilters.put(it.key, FILTER_BUILDER.buildFilters([(resources.d3): [it.value as ApiFilter] as Set]))
         }
 
-        LogicalMetric metric = new LogicalMetric(null, null, "m1")
+        LogicalMetric metric = new LogicalMetric(null, null, "m1", {true})
         Set<OrderByColumn> orderByColumns = [new OrderByColumn(metric, SortDirection.DESC)]
         limitSpec = new LimitSpec(orderByColumns)
         topNMetric = new TopNMetric("m1", SortDirection.DESC)
@@ -328,7 +328,7 @@ class DruidQueryBuilderSpec extends Specification {
         apiRequest = Mock(DataApiRequest)
 
         apiRequest.getTopN() >> OptionalInt.of(5)
-        apiRequest.getSorts() >> ([new OrderByColumn(new LogicalMetric(null, null, "m1"), SortDirection.DESC)] as Set)
+        apiRequest.getSorts() >> ([new OrderByColumn(new LogicalMetric(null, null, "m1", {true}), SortDirection.DESC)] as Set)
         apiRequest.getHavings() >> havingMap
         apiRequest.getHaving() >> { DruidHavingBuilder.buildHavings(havingMap) }
 
@@ -353,7 +353,7 @@ class DruidQueryBuilderSpec extends Specification {
 
         apiRequest.getDimensions() >> ([resources.d1, resources.d2] as Set)
         apiRequest.getTopN() >> OptionalInt.of(5)
-        apiRequest.getSorts() >> ([new OrderByColumn(new LogicalMetric(null, null, "m1"), SortDirection.DESC)] as Set)
+        apiRequest.getSorts() >> ([new OrderByColumn(new LogicalMetric(null, null, "m1", {true}), SortDirection.DESC)] as Set)
 
         initDefault(apiRequest)
 
@@ -370,8 +370,8 @@ class DruidQueryBuilderSpec extends Specification {
 
         apiRequest.getTopN() >> OptionalInt.of(5)
         apiRequest.getSorts() >> ([
-                new OrderByColumn(new LogicalMetric(null, null, "m1"), SortDirection.DESC),
-                new OrderByColumn(new LogicalMetric(null, null, "m2"), SortDirection.ASC)
+                new OrderByColumn(new LogicalMetric(null, null, "m1", {true}), SortDirection.DESC),
+                new OrderByColumn(new LogicalMetric(null, null, "m2", {true}), SortDirection.ASC)
         ] as Set)
 
         initDefault(apiRequest)
@@ -391,8 +391,8 @@ class DruidQueryBuilderSpec extends Specification {
 
         apiRequest.getTopN() >> OptionalInt.of(5)
         apiRequest.getSorts() >> ([
-                new OrderByColumn(new LogicalMetric(null, null, "m1"), SortDirection.ASC),
-                new OrderByColumn(new LogicalMetric(null, null, "m2"), SortDirection.DESC)
+                new OrderByColumn(new LogicalMetric(null, null, "m1", {true}), SortDirection.ASC),
+                new OrderByColumn(new LogicalMetric(null, null, "m2", {true}), SortDirection.DESC)
         ] as Set)
 
         initDefault(apiRequest)
@@ -439,10 +439,10 @@ havingMap:#havingMap"""() {
         apiRequest.getTopN() >> OptionalInt.of(5)
         apiRequest.getSorts() >> {
             nSorts > 1 ? [
-                    new OrderByColumn(new LogicalMetric(null, null, "m1"), SortDirection.DESC),
-                    new OrderByColumn(new LogicalMetric(null, null, "m2"), SortDirection.ASC)
+                    new OrderByColumn(new LogicalMetric(null, null, "m1", {true}), SortDirection.DESC),
+                    new OrderByColumn(new LogicalMetric(null, null, "m2", {true}), SortDirection.ASC)
             ] as Set :
-                    [new OrderByColumn(new LogicalMetric(null, null, "m1"), SortDirection.DESC)] as Set
+                    [new OrderByColumn(new LogicalMetric(null, null, "m1", {true}), SortDirection.DESC)] as Set
         }
         apiRequest.getHavings() >> havingMap
         apiRequest.getHaving() >> { DruidHavingBuilder.buildHavings(havingMap) }
@@ -478,7 +478,7 @@ havingMap:#havingMap"""() {
 
         apiRequest.getSorts() >> {
             nSorts > 0 ?
-                    [new OrderByColumn(new LogicalMetric(null, null, "m1"), SortDirection.DESC)] as Set :
+                    [new OrderByColumn(new LogicalMetric(null, null, "m1", {true}), SortDirection.DESC)] as Set :
                     [] as Set
         }
         apiRequest.getHavings() >> havingMap

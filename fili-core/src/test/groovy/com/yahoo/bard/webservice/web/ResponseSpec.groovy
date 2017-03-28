@@ -202,7 +202,7 @@ class ResponseSpec extends Specification {
     ResultSet buildTestResultSet(Map<MetricColumn, Object> metricValues, Set<MetricColumn> requestedMetrics) {
         // Setup logical metrics for the API request mock
         testLogicalMetrics = requestedMetrics.collect {
-            new LogicalMetric(null, null, it.name)
+            new LogicalMetric(null, null, it.name, {true})
         } as Set
 
         apiRequest.getLogicalMetrics() >> { return testLogicalMetrics }

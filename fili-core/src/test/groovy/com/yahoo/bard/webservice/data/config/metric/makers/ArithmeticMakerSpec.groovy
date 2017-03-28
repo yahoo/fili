@@ -134,7 +134,8 @@ class ArithmeticMakerSpec extends Specification {
         LogicalMetric expectedMetric = new LogicalMetric(
             expectedQuery,
             MetricMaker.NO_OP_MAPPER,
-            metricName.asName()
+            metricName.asName(),
+            metricName.&isValidFor
         )
 
         and: "a populated metric dictionary for the maker"

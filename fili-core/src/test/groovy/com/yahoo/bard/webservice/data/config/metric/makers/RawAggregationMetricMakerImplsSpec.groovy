@@ -69,7 +69,8 @@ class RawAggregationMetricMakerImplsSpec extends Specification {
         new LogicalMetric(
                 new TemplateDruidQuery(Collections.singleton(aggregation), Collections.emptySet()),
                 MetricMaker.NO_OP_MAPPER,
-                aggregation.getName()
+                aggregation.getName(),
+                {true}
         );
     }
 
@@ -77,7 +78,8 @@ class RawAggregationMetricMakerImplsSpec extends Specification {
         new LogicalMetric(
                 new TemplateDruidQuery(Collections.singleton(aggregation), Collections.emptySet()),
                 new SketchRoundUpMapper(aggregation.getName()),
-                aggregation.getName()
+                aggregation.getName(),
+                {true}
         );
     }
 

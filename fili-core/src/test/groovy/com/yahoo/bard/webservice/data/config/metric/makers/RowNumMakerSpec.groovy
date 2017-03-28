@@ -18,7 +18,13 @@ class RowNumMakerSpec extends Specification {
 
     def "Build a logical metric that generates row numbers"() {
         given: "A logical metric that generates row numbers"
-        LogicalMetric metric = new LogicalMetric(null, new RowNumMapper(), METRIC_NAME, DESCRIPTION)
+        LogicalMetric metric = new LogicalMetric(
+                null,
+                new RowNumMapper(),
+                METRIC_NAME,
+                DESCRIPTION,
+                METRIC_API_NAME.&isValidFor
+        )
 
         expect:
         //RowSumMaker does not rely on the metric dictionary.

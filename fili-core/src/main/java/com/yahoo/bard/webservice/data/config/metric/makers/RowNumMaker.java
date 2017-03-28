@@ -33,7 +33,8 @@ public class RowNumMaker extends MetricMaker {
                 null,
                 ROW_NUM_MAPPER,
                 metricName.asName(),
-                "Generator for Row Numbers"
+                "Generator for Row Numbers",
+                metricName::isValidFor
         );
     }
 

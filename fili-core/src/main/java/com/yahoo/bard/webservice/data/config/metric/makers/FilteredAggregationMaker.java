@@ -70,7 +70,8 @@ public class FilteredAggregationMaker extends MetricMaker {
                         sourceMetric.getTemplateDruidQuery().getInnerQuery()
                 ),
                 sourceMetric.getCalculation(),
-                metricName.asName()
+                metricName.asName(),
+                metricName::isValidFor
         );
     }
 

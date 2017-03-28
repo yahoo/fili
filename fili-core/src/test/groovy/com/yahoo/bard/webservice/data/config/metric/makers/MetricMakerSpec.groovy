@@ -69,29 +69,29 @@ class MetricMakerSpec extends Specification {
 
         TemplateDruidQuery queryTemplate
         queryTemplate = new TemplateDruidQuery([] as Set, [number] as Set)
-        constantMetric = new LogicalMetric(queryTemplate, new NoOpResultSetMapper(), constantName)
+        constantMetric = new LogicalMetric(queryTemplate, new NoOpResultSetMapper(), constantName, {true})
 
         Aggregation longSum = new LongSumAggregation(sumName, "columnName")
         queryTemplate = new TemplateDruidQuery([longSum] as Set, [] as Set)
-        longSumMetric = new LogicalMetric(queryTemplate, new NoOpResultSetMapper(), longSum.name)
+        longSumMetric = new LogicalMetric(queryTemplate, new NoOpResultSetMapper(), longSum.name, {true})
 
         longSumFieldAccessor = new FieldAccessorPostAggregation(longSum)
         PostAggregation square = new ArithmeticPostAggregation(squareName, MULTIPLY, [longSumFieldAccessor, longSumFieldAccessor])
 
         queryTemplate = new TemplateDruidQuery([longSum] as Set, [square] as Set)
-        squareMetric = new LogicalMetric(queryTemplate, new NoOpResultSetMapper(), square.name)
+        squareMetric = new LogicalMetric(queryTemplate, new NoOpResultSetMapper(), square.name, {true})
 
         // Theta Sketches
         Aggregation sketchAggregation = new ThetaSketchAggregation(sketchName, "columnName", 16000)
         queryTemplate = new TemplateDruidQuery([sketchAggregation] as Set, [] as Set)
-        sketchAggregationMetric = new LogicalMetric(queryTemplate, new SketchRoundUpMapper(sketchAggregation.name), sketchAggregation.name)
+        sketchAggregationMetric = new LogicalMetric(queryTemplate, new SketchRoundUpMapper(sketchAggregation.name), sketchAggregation.name, {true})
 
         PostAggregation sketchEstimateAggregation = CONVERTER.asSketchEstimate(sketchAggregation)
 
         sketchFieldAccessor = sketchEstimateAggregation.getField()
 
         queryTemplate = new TemplateDruidQuery([sketchAggregation] as Set, [sketchEstimateAggregation] as Set)
-        sketchEstimateMetric = new LogicalMetric(queryTemplate, new SketchRoundUpMapper(sketchEstimateAggregation.name), sketchEstimateAggregation.name)
+        sketchEstimateMetric = new LogicalMetric(queryTemplate, new SketchRoundUpMapper(sketchEstimateAggregation.name), sketchEstimateAggregation.name, {true})
 
         PostAggregation sketchSetAggregation = new ThetaSketchSetOperationPostAggregation(
                 sketchUnionName,
@@ -99,11 +99,11 @@ class MetricMakerSpec extends Specification {
                 [sketchFieldAccessor, sketchFieldAccessor]
         )
         queryTemplate = new TemplateDruidQuery([sketchAggregation] as Set, [sketchSetAggregation] as Set)
-        sketchUnionMetric = new LogicalMetric(queryTemplate, new SketchRoundUpMapper(sketchSetAggregation.name), sketchSetAggregation.name)
+        sketchUnionMetric = new LogicalMetric(queryTemplate, new SketchRoundUpMapper(sketchSetAggregation.name), sketchSetAggregation.name, {true})
 
         PostAggregation sketchSetEstimate = CONVERTER.asSketchEstimate(sketchSetAggregation)
         queryTemplate = new TemplateDruidQuery([sketchAggregation] as Set, [sketchSetEstimate] as Set)
-        sketchUnionEstimateMetric = new LogicalMetric(queryTemplate, new SketchRoundUpMapper(sketchSetEstimate.name), sketchSetEstimate.name)
+        sketchUnionEstimateMetric = new LogicalMetric(queryTemplate, new SketchRoundUpMapper(sketchSetEstimate.name), sketchSetEstimate.name, {true})
     }
 
     def cleanupSpec() {
@@ -114,7 +114,8 @@ class MetricMakerSpec extends Specification {
             new TemplateDruidQuery([] as Set, [] as Set),
             new NoOpResultSetMapper(),
             "no name",
-            "no description"
+            "no description",
+            {true}
     )
 
     /**
@@ -156,7 +157,7 @@ class MetricMakerSpec extends Specification {
      */
     Map<String, LogicalMetric> makeEmptyMetrics(List<String> metricNames){
         metricNames.collectEntries {
-            [(it): new LogicalMetric(null, null, it)]
+            [(it): new LogicalMetric(null, null, it, {true})]
         }
     }
 

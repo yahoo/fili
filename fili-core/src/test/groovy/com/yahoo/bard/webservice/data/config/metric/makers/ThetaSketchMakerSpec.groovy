@@ -42,7 +42,8 @@ class ThetaSketchMakerSpec extends Specification {
         LogicalMetric expectedMetric = new LogicalMetric(
                 new TemplateDruidQuery(aggregations, [] as Set),
                 new SketchRoundUpMapper(metricName),
-                metricName
+                metricName,
+                {true}
         )
 
         and:

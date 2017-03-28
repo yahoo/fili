@@ -41,7 +41,7 @@ class IntersectionReportingFlagOffSpec extends Specification {
 
         metricDict = new MetricDictionary()
         [ "met1", "met2", "met3", "met4" ].each { String name ->
-            metricDict.put(name, new LogicalMetric(null, null, name))
+            metricDict.put(name, new LogicalMetric(null, null, name, {true}))
         }
         TableGroup tg = Mock(TableGroup)
         tg.getApiMetricNames() >> ([] as Set)

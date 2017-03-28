@@ -81,7 +81,8 @@ public class CardinalityMaker extends MetricMaker {
         return new LogicalMetric(
                 new TemplateDruidQuery(aggs, Collections.emptySet()),
                 NO_OP_MAPPER,
-                metricName.asName()
+                metricName.asName(),
+                metricName::isValidFor
         );
     }
 

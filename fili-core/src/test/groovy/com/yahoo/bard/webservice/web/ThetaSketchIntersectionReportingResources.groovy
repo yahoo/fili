@@ -160,7 +160,7 @@ class ThetaSketchIntersectionReportingResources extends Specification {
         metricDictionary.add(viz.make())
 
         LogicalMetric foosMetric = metricDictionary.get(FOOS.asName())
-        LogicalMetric ratioMetric = new LogicalMetric(foosMetric.templateDruidQuery, foosMetric.calculation, "ratioMetric", "ratioMetric Long Name", "Ratios", "Dummy metric Ratio Metric description")
+        LogicalMetric ratioMetric = new LogicalMetric(foosMetric.templateDruidQuery, foosMetric.calculation, "ratioMetric", "ratioMetric Long Name", "Ratios", "Dummy metric Ratio Metric description", {true})
         metricDictionary.add(ratioMetric)
 
         LogicalMetricColumn lmc = new LogicalMetricColumn(foosMetric);

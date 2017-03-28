@@ -106,7 +106,12 @@ public class ArithmeticMaker extends MetricMaker {
         ));
 
         TemplateDruidQuery query = getMergedQuery(dependentMetrics).withPostAggregations(postAggregations);
-        return new LogicalMetric(query, resultSetMapperSupplier.apply(metricName.asName()), metricName.asName());
+        return new LogicalMetric(
+                query,
+                resultSetMapperSupplier.apply(metricName.asName()),
+                metricName.asName(),
+                metricName::isValidFor
+        );
     }
 
     @Override

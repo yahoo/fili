@@ -16,9 +16,9 @@ class ApiHavingSpec extends Specification {
     LogicalMetric metric3
 
     def setup() {
-        metric1 = new LogicalMetric(null, null, "metric1")
-        metric2 = new LogicalMetric(null, null, "metric2")
-        metric3 = new LogicalMetric(null, null, "metric3")
+        metric1 = new LogicalMetric(null, null, "metric1", {true})
+        metric2 = new LogicalMetric(null, null, "metric2", {true})
+        metric3 = new LogicalMetric(null, null, "metric3", {true})
 
         metricStore = new MetricDictionary()
         metricStore.add(metric1)

@@ -4,12 +4,17 @@ package com.yahoo.bard.webservice.table;
 
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
+import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricColumn;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -64,10 +69,15 @@ public class LogicalTableSchema extends BaseSchema {
             Granularity granularity,
             MetricDictionary metricDictionary
     ) {
+        Predicate<Pair<ApiMetricName, LogicalMetric>> fallbackGrainValidityFilter = (entry) ->
+                entry.getValue().getIsValidFor() == null ?
+                        entry.getKey().isValidFor(granularity, entry.getValue()) :
+                        entry.getValue().getIsValidFor().test(granularity);
+
         return apiMetricNames.stream()
-                .filter(name -> name.isValidFor(granularity, metricDictionary.get(name.asName())))
-                .map(ApiMetricName::asName)
-                .map(metricDictionary::get)
+                .map(apiName -> new ImmutablePair<>(apiName, metricDictionary.get(apiName.asName())))
+                .filter(fallbackGrainValidityFilter)
+                .map(Pair::getRight)
                 .map(LogicalMetricColumn::new);
     }
 }

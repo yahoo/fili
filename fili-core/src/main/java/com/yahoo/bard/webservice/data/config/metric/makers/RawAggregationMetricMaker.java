@@ -54,7 +54,8 @@ public abstract class RawAggregationMetricMaker extends MetricMaker {
         return new LogicalMetric(
                 new TemplateDruidQuery(Collections.singleton(aggregation), Collections.emptySet()),
                 getResultSetMapper(metricName.asName()),
-                metricName.asName()
+                metricName.asName(),
+                metricName::isValidFor
         );
     }
 

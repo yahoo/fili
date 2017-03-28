@@ -83,7 +83,7 @@ public class AggregationAverageMaker extends MetricMaker {
         TemplateDruidQuery innerQuery = buildInnerQuery(sourceMetric, dependentMetric.getTemplateDruidQuery());
         TemplateDruidQuery outerQuery = buildOuterQuery(metricName.asName(), sourceMetric, innerQuery);
 
-        return new LogicalMetric(outerQuery, NO_OP_MAPPER, metricName.asName());
+        return new LogicalMetric(outerQuery, NO_OP_MAPPER, metricName.asName(), metricName::isValidFor);
     }
 
     /**

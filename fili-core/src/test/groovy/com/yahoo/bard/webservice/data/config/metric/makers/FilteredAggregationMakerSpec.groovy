@@ -43,7 +43,7 @@ public class FilteredAggregationMakerSpec extends Specification{
 
         and: "The expected metric"
         Aggregation expectedAgg = new FilteredAggregation(FILT_METRIC_NAME.asName(), new LongSumAggregation("longSum", DEPENDENT_METRIC_NAME), filter);
-        LogicalMetric expectedMetric = new LogicalMetric(new TemplateDruidQuery([expectedAgg], [] as Set), new NoOpResultSetMapper(), FILT_METRIC_NAME.asName())
+        LogicalMetric expectedMetric = new LogicalMetric(new TemplateDruidQuery([expectedAgg], [] as Set), new NoOpResultSetMapper(), FILT_METRIC_NAME.asName(), {true})
 
         expect:
         maker.make(FILT_METRIC_NAME, [longSum]) == expectedMetric

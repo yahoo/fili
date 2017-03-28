@@ -50,7 +50,8 @@ public class NonNumericMetrics {
                     ),
                     new StringMetricMapper(),
                     A_STRING_METRIC.getApiName(),
-                    "ImAStringISwear"
+                    "ImAStringISwear",
+                    (ignored) -> true
             ),
             new LogicalMetric(
                     new TemplateDruidQuery(
@@ -59,7 +60,9 @@ public class NonNumericMetrics {
                     ),
                     new BooleanMetricMapper(),
                     A_BOOLEAN_METRIC.getApiName(),
-                    "ImBooleanISwear"
+                    "ImBooleanISwear",
+                    (ignored) -> true
+
             ),
             new LogicalMetric(
                     new TemplateDruidQuery(
@@ -70,7 +73,9 @@ public class NonNumericMetrics {
                     ),
                     new JsonNodeMetricMapper(),
                     A_JSON_NODE_METRIC.getApiName(),
-                    "ImAJsonNodeISwear"
+                    "ImAJsonNodeISwear",
+                    (ignored) -> true
+
             ),
             new LogicalMetric(
                     new TemplateDruidQuery(
@@ -79,7 +84,8 @@ public class NonNumericMetrics {
                     ),
                     new NullMetricMapper(),
                     A_NULL_METRIC.getApiName(),
-                    "ImNullISwear"
+                    "ImNullISwear",
+                    (ignored) -> true
             )
         );
     }

@@ -83,7 +83,7 @@ class FilteredAggregationSpec extends Specification{
         genderDependentMetricAgg.withName(_) >> genderDependentMetricAgg
         genderDependentMetricAgg.withFieldName(_) >> genderDependentMetricAgg
 
-        LogicalMetric logicalMetric = new LogicalMetric(null, null, filteredMetricName)
+        LogicalMetric logicalMetric = new LogicalMetric(null, null, filteredMetricName, {true})
 
         Set<ApiFilter> filterSet = [new ApiFilter("age|id-in[114,125]", dimensionDictionary)] as Set
 

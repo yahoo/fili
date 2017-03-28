@@ -34,7 +34,7 @@ public class CountMaker extends MetricMaker {
                 Collections.emptySet()
         );
 
-        return new LogicalMetric(query, NO_OP_MAPPER, metricName.asName());
+        return new LogicalMetric(query, NO_OP_MAPPER, metricName.asName(), (ignored) -> true);
     }
 
     @Override

@@ -125,7 +125,13 @@ class AggregationAverageMakerSpec extends Specification{
     }
 
     LogicalMetric buildDependentMetric(TemplateDruidQuery dependentQuery){
-        return new LogicalMetric(dependentQuery, new NoOpResultSetMapper(), NAME.asName(), DESCRIPTION)
+        return new LogicalMetric(
+                dependentQuery,
+                new NoOpResultSetMapper(),
+                NAME.asName(),
+                DESCRIPTION,
+                NAME.&isValidFor
+        );
     }
     /**
      * Builds the LogicalMetric expected by the tests.
@@ -175,6 +181,6 @@ class AggregationAverageMakerSpec extends Specification{
                 innerQueryTemplate
         )
 
-        return new LogicalMetric(outerQuery, new NoOpResultSetMapper(), NAME.asName(), DESCRIPTION)
+        return new LogicalMetric(outerQuery, new NoOpResultSetMapper(), NAME.asName(), DESCRIPTION, NAME.&isValidFor)
     }
 }

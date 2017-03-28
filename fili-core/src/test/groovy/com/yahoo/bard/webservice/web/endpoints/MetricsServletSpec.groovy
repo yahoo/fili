@@ -29,7 +29,7 @@ class MetricsServletSpec extends Specification {
         //Rather than use the default TestMetricLoader data, throw it out and load a simpler data set
         jtb.configurationLoader.dictionaries.metricDictionary.clearLocal()
         ["metricA", "metricB", "metricC"].each { String metricName ->
-            jtb.configurationLoader.metricDictionary.put(metricName, new LogicalMetric(null, mapper, metricName))
+            jtb.configurationLoader.metricDictionary.put(metricName, new LogicalMetric(null, mapper, metricName, {true}))
         }
     }
 

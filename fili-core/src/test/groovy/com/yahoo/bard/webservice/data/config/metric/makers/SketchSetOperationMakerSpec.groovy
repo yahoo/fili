@@ -41,19 +41,21 @@ class SketchSetOperationMakerSpec extends Specification {
                 new TemplateDruidQuery([allYahoos] as Set, [] as Set),
                 new NoOpResultSetMapper(),
                 "all_yahoos",
-                "All users from Yahoo"
+                "All users from Yahoo",
+                {true}
         )
         LogicalMetric secondMetric = new LogicalMetric(
                 new TemplateDruidQuery([allNonYahoos] as Set, [] as Set),
                 new NoOpResultSetMapper(),
                 "all_nonyahoos",
-                "All users not from Yahoo"
+                "All users not from Yahoo",
+                {true}
         )
         List<LogicalMetric> allUsers = [firstMetric, secondMetric]
 
         and: "the expected LogicalMetric"
         TemplateDruidQuery expectedQuery = new TemplateDruidQuery([allYahoos, allNonYahoos] as Set, [userNumber] as Set)
-        LogicalMetric metric = new LogicalMetric(expectedQuery, new SketchRoundUpMapper(METRIC_NAME), METRIC_NAME)
+        LogicalMetric metric = new LogicalMetric(expectedQuery, new SketchRoundUpMapper(METRIC_NAME), METRIC_NAME, {true})
 
         and: "the maker with populated metrics."
         MetricMaker maker = new SketchSetOperationMaker(new MetricDictionary(), SET_FUNCTION)

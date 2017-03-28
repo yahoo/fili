@@ -26,7 +26,8 @@ class ConstantMakerSpec extends Specification {
         LogicalMetric expectedMetric = new LogicalMetric(
             constantQuery,
             new NoOpResultSetMapper(),
-            AGGREGATION_NAME.asName()
+            AGGREGATION_NAME.asName(),
+            {true}
         )
 
         and:

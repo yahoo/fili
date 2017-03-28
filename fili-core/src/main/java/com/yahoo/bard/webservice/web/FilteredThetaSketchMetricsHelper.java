@@ -118,7 +118,12 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
             );
         }
         //build new LogicalMetric and return
-        return new LogicalMetric(templateDruidQuery, logicalMetric.getCalculation(), logicalMetric.getName());
+        return new LogicalMetric(
+                templateDruidQuery,
+                logicalMetric.getCalculation(),
+                logicalMetric.getName(),
+                logicalMetric.getIsValidFor()
+        );
     }
 
     @Override

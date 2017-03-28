@@ -69,7 +69,12 @@ public class SketchSetOperationMaker extends MetricMaker {
                 mergedQuery.getTimeGrain()
         );
 
-        return new LogicalMetric(query, new SketchRoundUpMapper(metricName.asName()), metricName.asName());
+        return new LogicalMetric(
+                query,
+                new SketchRoundUpMapper(metricName.asName()),
+                metricName.asName(),
+                metricName::isValidFor
+        );
     }
 
     @Override

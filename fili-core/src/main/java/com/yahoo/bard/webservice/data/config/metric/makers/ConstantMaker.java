@@ -53,7 +53,8 @@ public class ConstantMaker extends MetricMaker {
             return new LogicalMetric(
                     new TemplateDruidQuery(Collections.emptySet(), postAggregations),
                     NO_OP_MAPPER,
-                    metricName.asName()
+                    metricName.asName(),
+                    (ignored) -> true
             );
         } catch (NumberFormatException nfe) {
             String message = String.format(
