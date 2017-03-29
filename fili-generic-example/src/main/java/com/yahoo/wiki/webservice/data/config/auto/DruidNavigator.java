@@ -2,13 +2,15 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.auto;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
 import com.yahoo.bard.webservice.data.time.GranularityDictionary;
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
+
+import com.fasterxml.jackson.databind.JsonNode;
+
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
