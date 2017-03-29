@@ -12,6 +12,7 @@ import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,8 +114,8 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
         Optional<TimeGrain> timeGrain = Optional.empty();
         try {
             if (utcTimes.length >= 2) {
-                DateTime start = new DateTime(utcTimes[0]);
-                DateTime end = new DateTime(utcTimes[1]);
+                DateTime start = new DateTime(utcTimes[0], DateTimeZone.UTC);
+                DateTime end = new DateTime(utcTimes[1], DateTimeZone.UTC);
                 timeGrain = getTimeGrain(start, end);
             }
         } catch (IllegalArgumentException ignored) {
