@@ -56,9 +56,10 @@ public class GenericTableLoader extends BaseTableLoader {
      */
     public GenericTableLoader(
             @NotNull Supplier<List<? extends DataSourceConfiguration>> configLoader,
-            @NotNull GenericDimensions genericDimensions
+            @NotNull GenericDimensions genericDimensions,
+            DataSourceMetadataService metadataService
     ) {
-        super(new DataSourceMetadataService());
+        super(metadataService);
         this.configLoader = configLoader;
         configureTables(genericDimensions);
     }
