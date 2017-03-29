@@ -163,7 +163,7 @@ class ThetaSketchIntersectionReportingResources extends Specification {
                 Mock(DataSourceMetadataService)
         )
 
-        TableGroup tableGroup = new TableGroup([physicalTable] as LinkedHashSet, metrics)
+        TableGroup tableGroup = new TableGroup([physicalTable] as LinkedHashSet, metrics, physicalTable.dimensions)
 
         table = new LogicalTable("NETWORK", DAY, tableGroup, metricDict)
 
