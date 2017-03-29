@@ -8,6 +8,7 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetricColumn;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -15,7 +16,7 @@ import java.util.stream.Stream;
 /**
  * The schema for a logical table.
  */
-public class LogicalTableSchema extends BaseSchema  {
+public class LogicalTableSchema extends BaseSchema {
 
     /**
      * Constructor.
@@ -35,7 +36,7 @@ public class LogicalTableSchema extends BaseSchema  {
      * @param granularity  The granularity for this schema
      * @param metricDictionary  The dictionary to build logical metrics from names.
      *
-     * @return  The union of all columns from the table group
+     * @return The union of all columns from the table group
      */
     private static LinkedHashSet<Column> buildLogicalColumns(
             TableGroup tableGroup,
@@ -44,11 +45,30 @@ public class LogicalTableSchema extends BaseSchema  {
     ) {
         return Stream.concat(
                 tableGroup.getDimensions().stream()
-                .map(DimensionColumn::new),
-                tableGroup.getApiMetricNames().stream()
-                        .filter(apiMetricName ->  apiMetricName.isValidFor(granularity))
-                        .map(ApiMetricName::getApiName)
-                        .map(name -> new LogicalMetricColumn(name, metricDictionary.get(name)))
+                        .map(DimensionColumn::new),
+                buildMetricColumns(tableGroup.getApiMetricNames(), granularity, metricDictionary)
         ).collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    /**
+     * Buid a stream of metric columns by filtering the table group's collection of ApiMetricNames.
+     * Metric names are resolved and then filtered considering the table granularity and the metric referenced.
+     *
+     * @param apiMetricNames  The names of the apiMetrics being bound and filtered
+     * @param granularity  The grain used to filter those metric names
+     * @param metricDictionary  The dictionary to resolve the logical metric instances from
+     *
+     * @return A stream of metric columns, filtered for compatibility with the grain.
+     */
+    private static Stream<LogicalMetricColumn> buildMetricColumns(
+            Collection<ApiMetricName> apiMetricNames,
+            Granularity granularity,
+            MetricDictionary metricDictionary
+    ) {
+        return apiMetricNames.stream()
+                .filter(name -> name.isValidFor(granularity, metricDictionary.get(name.asName())))
+                .map(ApiMetricName::asName)
+                .map(metricDictionary::get)
+                .map(LogicalMetricColumn::new);
     }
 }

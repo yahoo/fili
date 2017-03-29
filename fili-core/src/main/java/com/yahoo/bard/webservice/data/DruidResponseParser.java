@@ -9,6 +9,8 @@ import com.yahoo.bard.webservice.data.dimension.DimensionRow;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.QueryType;
+import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
+import com.yahoo.bard.webservice.table.Column;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -21,6 +23,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.inject.Singleton;
 
@@ -304,5 +307,17 @@ public class DruidResponseParser {
                 node.isBoolean() ? node.booleanValue() :
                 node.isNull() ? null :
                 node;
+    }
+
+    /**
+     * Produce the schema-defining columns for a given druid query.
+     *
+     * @param druidQuery  The query being modelled.
+     *
+     * @return A stream of columns based on the signature of the Druid Query.
+     */
+    public Stream<Column> buildSchemaColumns(DruidAggregationQuery<?> druidQuery) {
+        // Pass through to druid query to allow for possible behavior customization on injected DruidResponseParsers.
+        return druidQuery.buildSchemaColumns();
     }
 }
