@@ -9,6 +9,9 @@ Current
 -------
 ### Added:
 
+- [Add Permissive Concrete Physical Table Definition]()
+    * Added `PermissiveConcretePhysicalTableDefinition` for defining a `PermissiveConcretePhysicalTable`
+
 - [Fix to use physical name instead of logical name to retrieve available interval](https://github.com/yahoo/fili/pull/226)
     * Added `PhysicalDataSourceConstraint` class to capture physical names of columns for retrieving available intervals
 
