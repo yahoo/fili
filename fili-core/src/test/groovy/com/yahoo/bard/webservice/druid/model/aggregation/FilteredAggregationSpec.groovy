@@ -21,6 +21,7 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTable
@@ -66,7 +67,8 @@ class FilteredAggregationSpec extends Specification{
                 "NETWORK",
                 DAY.buildZonedTimeGrain(UTC),
                 columns,
-                [:]
+                [:],
+                Mock(DataSourceMetadataService)
         )
 
         ThetaSketchMaker sketchCountMaker = new ThetaSketchMaker(new MetricDictionary(), 16384)

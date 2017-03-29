@@ -100,12 +100,12 @@ class BasePhysicalTableResolverSpec extends Specification {
             BinaryOperator<PhysicalTable> betterTable
 
             @Override
-            List<PhysicalTableMatcher> getMatchers(QueryPlanningConstraint requestConstraints) {
+            List<PhysicalTableMatcher> getMatchers(QueryPlanningConstraint requestConstraint) {
                 return matchers
             }
 
             @Override
-            BinaryOperator<PhysicalTable> getBetterTableOperator(QueryPlanningConstraint requestConstraints) {
+            BinaryOperator<PhysicalTable> getBetterTableOperator(QueryPlanningConstraint requestConstraint) {
                 return betterTable
             }
         }

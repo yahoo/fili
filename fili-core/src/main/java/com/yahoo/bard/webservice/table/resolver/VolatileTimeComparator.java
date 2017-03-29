@@ -17,24 +17,24 @@ import java.util.Comparator;
  */
 public class VolatileTimeComparator implements Comparator<PhysicalTable> {
 
-    private final QueryPlanningConstraint requestConstraints;
+    private final QueryPlanningConstraint requestConstraint;
     private final PartialDataHandler partialDataHandler;
     private final VolatileIntervalsService volatileIntervalsService;
 
     /**
      * Builds a table comparator that compares tables based on how much data there is in their volatile intervals.
      *
-     * @param requestConstraints  Contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
+     * @param requestConstraint  Contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
      * @param partialDataHandler  A service for computing partial data information
      * @param volatileIntervalsService  A service to extract the intervals in a query that are volatile with respect
      * to a given table
      */
     public VolatileTimeComparator(
-            QueryPlanningConstraint requestConstraints,
+            QueryPlanningConstraint requestConstraint,
             PartialDataHandler partialDataHandler,
             VolatileIntervalsService volatileIntervalsService
     ) {
-        this.requestConstraints = requestConstraints;
+        this.requestConstraint = requestConstraint;
         this.partialDataHandler = partialDataHandler;
         this.volatileIntervalsService = volatileIntervalsService;
     }
@@ -80,20 +80,18 @@ public class VolatileTimeComparator implements Comparator<PhysicalTable> {
      * request granularity, and present at the table granularity
      */
     private long getAvailableVolatileDataDuration(PhysicalTable table) {
-        SimplifiedIntervalList requestIntervals = new SimplifiedIntervalList(requestConstraints.getIntervals());
-        Granularity apiRequestGranularity = requestConstraints.getRequestGranularity();
+        SimplifiedIntervalList requestIntervals = new SimplifiedIntervalList(requestConstraint.getIntervals());
+        Granularity apiRequestGranularity = requestConstraint.getRequestGranularity();
         // First, find the volatile intervals that are also partial at the request grain.
         SimplifiedIntervalList volatilePartialRequestIntervals = partialDataHandler.findMissingTimeGrainIntervals(
-                requestConstraints.getAllColumnNames(),
+                requestConstraint,
                 Collections.singleton(table),
                 volatileIntervalsService.getVolatileIntervals(apiRequestGranularity, requestIntervals, table),
                 apiRequestGranularity
         );
         //Next find the intervals on the physical table that are available.
-        SimplifiedIntervalList tableAvailability = partialDataHandler.getAvailability(
-                table,
-                requestConstraints.getAllColumnNames()
-        );
+        SimplifiedIntervalList tableAvailability = table.getAvailableIntervals(requestConstraint);
+
         //Take the duration of their intersection.
         return IntervalUtils.getTotalDuration(tableAvailability.intersect(volatilePartialRequestIntervals));
     }

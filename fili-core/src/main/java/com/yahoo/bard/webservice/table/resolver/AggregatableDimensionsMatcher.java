@@ -26,20 +26,20 @@ public class AggregatableDimensionsMatcher implements PhysicalTableMatcher {
 
     public static final ErrorMessageFormat MESSAGE_FORMAT = NO_TABLE_FOR_NON_AGGREGATABLE;
 
-    private final QueryPlanningConstraint requestConstraints;
+    private final QueryPlanningConstraint requestConstraint;
 
     /**
      * Constructor saves metrics, dimensions, coarsest time grain, and logical table name (for logging).
      *
-     * @param requestConstraints  Contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
+     * @param requestConstraint  Contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
      */
-    public AggregatableDimensionsMatcher(QueryPlanningConstraint requestConstraints) {
-        this.requestConstraints = requestConstraints;
+    public AggregatableDimensionsMatcher(QueryPlanningConstraint requestConstraint) {
+        this.requestConstraint = requestConstraint;
     }
 
     @Override
     public boolean test(PhysicalTable table) {
-        Set<String> columnNames = requestConstraints.getAllColumnNames();
+        Set<String> columnNames = requestConstraint.getAllColumnNames();
 
         // If table contains non-agg dimensions, query must contain all these non-agg dimensions to use this table.
         return table.getDimensions().stream()
@@ -50,12 +50,12 @@ public class AggregatableDimensionsMatcher implements PhysicalTableMatcher {
 
     @Override
     public NoMatchFoundException noneFoundException() {
-        Set<String> aggDimensions = requestConstraints.getRequestDimensions().stream()
+        Set<String> aggDimensions = requestConstraint.getRequestDimensions().stream()
                 .filter(Dimension::isAggregatable)
                 .map(Dimension::getApiName)
                 .collect(Collectors.toSet());
 
-        Set<String> nonAggDimensions = requestConstraints.getRequestDimensions().stream()
+        Set<String> nonAggDimensions = requestConstraint.getRequestDimensions().stream()
                 .filter(StreamUtils.not(Dimension::isAggregatable))
                 .map(Dimension::getApiName)
                 .collect(Collectors.toSet());

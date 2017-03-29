@@ -28,6 +28,7 @@ import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
 import com.yahoo.bard.webservice.druid.model.query.Granularity
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.logging.RequestLog
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.table.Schema
 import com.yahoo.bard.webservice.web.DataApiRequest
@@ -145,9 +146,7 @@ class ResultSetResponseProcessorSpec extends Specification {
         groupByQuery.getDimensions() >> dimensions
         groupByQuery.getAggregations() >> aggregations
         groupByQuery.getPostAggregations() >> postAggs
-        groupByQuery.getDataSource() >> new TableDataSource(new ConcretePhysicalTable("table_name", DAY.buildZonedTimeGrain(DateTimeZone.UTC), [] as Set, ["dimension1":"dimension1"]))
-
-
+        groupByQuery.getDataSource() >> new TableDataSource(new ConcretePhysicalTable("table_name", DAY.buildZonedTimeGrain(DateTimeZone.UTC), [] as Set, ["dimension1":"dimension1"], Mock(DataSourceMetadataService)))
 
         ResultSetSchema schema = new ResultSetSchema(DAY, Sets.newHashSet(new MetricColumn("lm1")))
 
@@ -332,8 +331,7 @@ class ResultSetResponseProcessorSpec extends Specification {
             getQueryType() >> GROUP_BY
         }
         druidResponseParser.parse(_, _, _, _) >> {
-            JsonNode json, Schema schema, DefaultQueryType type, DateTimeZone tz ->
-            new ResultSet(schema, [])
+            JsonNode json, Schema schema, DefaultQueryType type, DateTimeZone tz -> new ResultSet(schema, [])
         }
         druidResponseParser.buildSchemaColumns(query) >> {
             [new DimensionColumn(dim), new MetricColumn(metric1Name), new MetricColumn(metric2Name)].stream()

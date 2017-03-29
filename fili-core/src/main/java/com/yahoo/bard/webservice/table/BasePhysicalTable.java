@@ -3,30 +3,31 @@
 package com.yahoo.bard.webservice.table;
 
 import com.yahoo.bard.webservice.data.config.names.TableName;
-import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
-import com.yahoo.bard.webservice.metadata.SegmentMetadata;
 import com.yahoo.bard.webservice.table.availability.Availability;
-import com.yahoo.bard.webservice.table.availability.ImmutableAvailability;
+import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.util.IntervalUtils;
+import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import org.joda.time.DateTime;
+import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
 /**
- * Base Physical Table implements common PhysicalTable capabilities.
+ * Base implementation of physical table that are shared across various types of physical tables.
  */
 public abstract class BasePhysicalTable implements PhysicalTable {
     private static final Logger LOG = LoggerFactory.getLogger(BasePhysicalTable.class);
 
     private final TableName name;
     private final PhysicalTableSchema schema;
-    private volatile Availability availability;
+    private Availability availability;
 
     /**
      * Create a physical table.
@@ -49,20 +50,6 @@ public abstract class BasePhysicalTable implements PhysicalTable {
         this.schema = new PhysicalTableSchema(timeGrain, columns, logicalToPhysicalColumnNames);
     }
 
-
-    @Override
-    public Availability getAvailability() {
-        return availability;
-    }
-
-
-    @Override
-    public DateTime getTableAlignment() {
-        return schema.getTimeGrain().roundFloor(
-                IntervalUtils.firstMoment(getAvailability().getAvailableIntervals().values()).orElse(new DateTime())
-        );
-    }
-
     @Override
     public TableName getTableName() {
         return name;
@@ -74,8 +61,30 @@ public abstract class BasePhysicalTable implements PhysicalTable {
     }
 
     @Override
+    public Availability getAvailability() {
+        return availability;
+    }
+
+    @Override
     public PhysicalTableSchema getSchema() {
         return schema;
+    }
+
+    @Override
+    public DateTime getTableAlignment() {
+        return getSchema().getTimeGrain().roundFloor(
+                IntervalUtils.firstMoment(getAllAvailableIntervals().values()).orElse(new DateTime())
+        );
+    }
+
+    @Override
+    public Map<Column, List<Interval>> getAllAvailableIntervals() {
+        return getAvailability().getAllAvailableIntervals();
+    }
+
+    @Override
+    public SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraint) {
+        return getAvailability().getAvailableIntervals(constraint);
     }
 
     @Override
@@ -93,20 +102,13 @@ public abstract class BasePhysicalTable implements PhysicalTable {
     }
 
     /**
-     * Update the working intervals with values from a map.
+     * Used only for testing to inject test availability data into table.
      *
-     * @param segmentMetadata  A map of names of metrics and sets of intervals over which they are valid
-     * @param dimensionDictionary  The dimension dictionary from which to look up dimensions by name
+     * @param availability  The test availability for this table
+     *
+     * @deprecated  Should avoid this method and refine testing strategy to remove this method
      */
-    public void resetColumns(SegmentMetadata segmentMetadata, DimensionDictionary dimensionDictionary) {
-        setAvailability(new ImmutableAvailability(
-                name.asName(),
-                segmentMetadata.getDimensionIntervals(),
-                segmentMetadata.getMetricIntervals(),
-                dimensionDictionary
-        ));
-    }
-
+    @Deprecated
     protected void setAvailability(Availability availability) {
         this.availability = availability;
     }

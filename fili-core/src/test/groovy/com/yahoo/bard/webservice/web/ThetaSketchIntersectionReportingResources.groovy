@@ -35,6 +35,7 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationP
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchSetOperationPostAggregation
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
 import com.yahoo.bard.webservice.druid.util.ThetaSketchFieldConverter
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.table.LogicalTable
@@ -158,7 +159,8 @@ class ThetaSketchIntersectionReportingResources extends Specification {
                 "NETWORK",
                 DAY.buildZonedTimeGrain(UTC),
                 columns,
-                ["property": "property", "country": "country"]
+                ["property": "property", "country": "country"],
+                Mock(DataSourceMetadataService)
         )
 
         TableGroup tableGroup = new TableGroup([physicalTable] as LinkedHashSet, metrics)

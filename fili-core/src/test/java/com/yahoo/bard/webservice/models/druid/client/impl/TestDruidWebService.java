@@ -114,27 +114,30 @@ public class TestDruidWebService implements DruidWebService {
             return;
         }
 
-        // Set the response to use based on the type of the query we're processing
-        if (!(lastQuery.getQueryType() instanceof DefaultQueryType)) {
-            throw new IllegalArgumentException("Illegal query type : " + lastQuery.getQueryType());
-        }
+        if (lastQuery.getQueryType() instanceof DefaultQueryType) {
+            // For known response types, create a default response provider
 
-        DefaultQueryType defaultQueryType = (DefaultQueryType) lastQuery.getQueryType();
-        switch (defaultQueryType) {
-            case GROUP_BY:
-            case TOP_N:
-            case TIMESERIES:
-            case LOOKBACK:
-                // default response is groupBy response
-                break;
-            case SEGMENT_METADATA:
-                jsonResponse = () -> segmentMetadataResponse;
-                break;
-            case TIME_BOUNDARY:
-                jsonResponse = () -> timeBoundaryResponse;
-                break;
-            default:
-                throw new IllegalArgumentException("Illegal query type : " + lastQuery.getQueryType());
+            // Set the response to use based on the type of the query we're processing
+            DefaultQueryType defaultQueryType = (DefaultQueryType) lastQuery.getQueryType();
+            switch (defaultQueryType) {
+                case GROUP_BY:
+                case TOP_N:
+                case TIMESERIES:
+                case LOOKBACK:
+                    // default response is groupBy response
+                    break;
+                case SEGMENT_METADATA:
+                    jsonResponse = () -> segmentMetadataResponse;
+                    break;
+                case TIME_BOUNDARY:
+                    jsonResponse = () -> timeBoundaryResponse;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Illegal query type : " + lastQuery.getQueryType());
+            }
+
+        } else {
+            // Otherwise extended query types will have to set up their own responses
         }
 
         try {
