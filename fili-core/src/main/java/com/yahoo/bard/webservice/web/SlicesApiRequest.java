@@ -172,24 +172,23 @@ public class SlicesApiRequest extends ApiRequest {
         Set<Map<String, Object>> dimensionsResult = new LinkedHashSet<>();
         Set<Map<String, Object>> metricsResult = new LinkedHashSet<>();
 
-        columnCache.entrySet().stream()
-                .forEach(
-                        e -> {
-                            Map<String, Object> row = new LinkedHashMap<>();
-                            row.put("intervals", e.getValue());
+        columnCache.entrySet().forEach(
+                e -> {
+                    Map<String, Object> row = new LinkedHashMap<>();
+                    row.put("intervals", e.getValue());
 
-                            Column key = e.getKey();
-                            if (key instanceof DimensionColumn) {
-                                Dimension dimension = ((DimensionColumn) key).getDimension();
-                                row.put("name", dimension.getApiName());
-                                row.put("uri", DimensionsServlet.getDimensionUrl(dimension, uriInfo));
-                                dimensionsResult.add(row);
-                            } else {
-                                row.put("name", key.getName());
-                                metricsResult.add(row);
-                            }
-                        }
-                );
+                    Column key = e.getKey();
+                    if (key instanceof DimensionColumn) {
+                        Dimension dimension = ((DimensionColumn) key).getDimension();
+                        row.put("name", dimension.getApiName());
+                        row.put("uri", DimensionsServlet.getDimensionUrl(dimension, uriInfo));
+                        dimensionsResult.add(row);
+                    } else {
+                        row.put("name", key.getName());
+                        metricsResult.add(row);
+                    }
+                }
+        );
 
         Set<SortedMap<DateTime, Map<String, SegmentInfo>>> sliceMetadata = dataSourceMetadataService.getTableSegments(
                 Collections.singleton(table.getTableName())
