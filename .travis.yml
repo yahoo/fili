@@ -20,12 +20,8 @@ env:
   - secure: j9idy7d7Jb9lvi2YVWW66kMEl3jFq+ukf3ndI68oIU1ySpGk9dVPXD+BK7rPf0YPCZRco37DnGLBYqtxDdjVeN9F4EoKGUrYRVcocp5l4qKJFFUCSl4W8VKkq1QOP8ABhfvRIjEaUfNFI5Ps7MZ8eHqvpbFqOd4PhVb+Bbdm2bBxP/wGQcg+361pZylgcNoKc5lltGNV4XrgnBj++8YlRYApHzGaum9UN2t7Wsxl5P6U5gFKL+FCpPUyKbHjVFbJ/awoLnEr+lVDS0FOSInu1x9ENU0V/Cpa0ttkiQ+1oOwVX401CosDUcII20ckf7y4clyiXzsA7GaxfQfv8O7mD6eLJ0hMz5KNGdUY8se0hnHglMIUMqyxNNWR8qkC3Dp+vDDUt9LZk0URslhNK2yV8w4Tfw8xLxB7glYpmYyVhC1LWnyfZlWX70fNJCbwRKfbx2uAyPCxYnS0ajidVwOVYHBXwcs+R/NASibL28//b8oSJwwV2mMM7iDJjrvJmzdeazfc6pqa6IWYcxN05N7gbY5924pVtasH0NmFCUTWEd8y2ULshUSlmNWatunfLJGG2YrFoBeN/rJDfvMpVw2+/0flwCJWHCyBSv2Amz2sei9UDHKwlMe3FKuJC53I9O3xyURE5xYlJaKgd9NRqkvdeGgJZWNYW6h/lFNZeKqMGQE=
 
 before_install:
-- git remote set-url origin git@github.com:yahoo/fili.git
-- openssl aes-256-cbc -K $encrypted_3b73c80ce5a3_key -iv $encrypted_3b73c80ce5a3_iv
-  -in github_key.enc -out github_key -d
-- chmod 600 github_key
-- eval `ssh-agent -s`
-- ssh-add github_key
+- 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then bash ./travis/run_on_pull_requests.bash; fi'
+- 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then bash ./travis/run_on_non_pull_requests.bash; fi'
 
 install:
 - travis/install.bash
