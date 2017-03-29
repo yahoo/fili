@@ -10,6 +10,7 @@ import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.config.names.FieldName;
 import com.yahoo.bard.webservice.data.config.table.BaseTableLoader;
+import com.yahoo.bard.webservice.data.config.table.ConcretePhysicalTableDefinition;
 import com.yahoo.bard.webservice.data.config.table.PhysicalTableDefinition;
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
@@ -22,6 +23,8 @@ import com.yahoo.wiki.webservice.data.config.names.WikiApiMetricName;
 import com.yahoo.wiki.webservice.data.config.names.WikiDruidMetricName;
 import com.yahoo.wiki.webservice.data.config.names.WikiDruidTableName;
 import com.yahoo.wiki.webservice.data.config.names.WikiLogicalTableName;
+
+import org.joda.time.DateTimeZone;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -70,17 +73,6 @@ public class WikiTableLoader extends BaseTableLoader {
             WikiApiDimensionConfigInfo.values()
         );
 
-        // Physical Tables
-        Set<PhysicalTableDefinition> samplePhysicalTableDefinition = Utils.asLinkedHashSet(
-                new PhysicalTableDefinition(
-                        WikiDruidTableName.WIKITICKER,
-                        HOUR,
-                        dimsBasefactDruidTableName
-                )
-        );
-
-        tableDefinitions.put(WikiLogicalTableName.WIKIPEDIA, samplePhysicalTableDefinition);
-
         druidMetricNames.put(
                 WikiLogicalTableName.WIKIPEDIA,
                 Utils.<FieldName>asLinkedHashSet(WikiDruidMetricName.values())
@@ -91,6 +83,18 @@ public class WikiTableLoader extends BaseTableLoader {
                 Utils.<ApiMetricName>asLinkedHashSet(WikiApiMetricName.values())
         );
 
+        // Physical Tables
+        Set<PhysicalTableDefinition> samplePhysicalTableDefinition = Utils.asLinkedHashSet(
+                new ConcretePhysicalTableDefinition(
+                        WikiDruidTableName.WIKITICKER,
+                        HOUR.buildZonedTimeGrain(DateTimeZone.UTC),
+                        druidMetricNames.get(WikiLogicalTableName.WIKIPEDIA),
+                        dimsBasefactDruidTableName
+                )
+        );
+
+        tableDefinitions.put(WikiLogicalTableName.WIKIPEDIA, samplePhysicalTableDefinition);
+
         validGrains.put(WikiLogicalTableName.WIKIPEDIA, Utils.asLinkedHashSet(HOUR, DAY, AllGranularity.INSTANCE));
     }
 
@@ -99,7 +103,6 @@ public class WikiTableLoader extends BaseTableLoader {
         for (WikiLogicalTableName table : WikiLogicalTableName.values()) {
             TableGroup tableGroup = buildDimensionSpanningTableGroup(
                     apiMetricNames.get(table),
-                    druidMetricNames.get(table),
                     tableDefinitions.get(table),
                     dictionaries
             );

@@ -62,23 +62,38 @@ public class TestTableLoader extends BaseTableLoader {
         // Set up the table definitions
         logicalTableTableDefinitions.put(
                 TestLogicalTableName.SHAPES,
-                TestPhysicalTableDefinitionUtils.buildShapeTableDefinitions(testDimensions)
+                TestPhysicalTableDefinitionUtils.buildShapeTableDefinitions(
+                        testDimensions,
+                        TestDruidMetricName.getByLogicalTable(TestLogicalTableName.SHAPES)
+                )
         );
         logicalTableTableDefinitions.put(
                 TestLogicalTableName.PETS,
-                TestPhysicalTableDefinitionUtils.buildPetTableDefinitions(testDimensions)
+                TestPhysicalTableDefinitionUtils.buildPetTableDefinitions(
+                        testDimensions,
+                        TestDruidMetricName.getByLogicalTable(TestLogicalTableName.PETS)
+                )
         );
         logicalTableTableDefinitions.put(
                 TestLogicalTableName.MONTHLY,
-                TestPhysicalTableDefinitionUtils.buildMonthlyTableDefinitions(testDimensions)
+                TestPhysicalTableDefinitionUtils.buildMonthlyTableDefinitions(
+                        testDimensions,
+                        TestDruidMetricName.getByLogicalTable(TestLogicalTableName.MONTHLY)
+                )
         );
         logicalTableTableDefinitions.put(
                 TestLogicalTableName.HOURLY,
-                TestPhysicalTableDefinitionUtils.buildHourlyTableDefinitions(testDimensions)
+                TestPhysicalTableDefinitionUtils.buildHourlyTableDefinitions(
+                        testDimensions,
+                        TestDruidMetricName.getByLogicalTable(TestLogicalTableName.HOURLY)
+                )
         );
         logicalTableTableDefinitions.put(
                 TestLogicalTableName.HOURLY_MONTHLY,
-                TestPhysicalTableDefinitionUtils.buildHourlyMonthlyTableDefinitions(testDimensions)
+                TestPhysicalTableDefinitionUtils.buildHourlyMonthlyTableDefinitions(
+                        testDimensions,
+                        TestDruidMetricName.getByLogicalTable(TestLogicalTableName.HOURLY_MONTHLY)
+                )
         );
     }
 
@@ -88,7 +103,6 @@ public class TestTableLoader extends BaseTableLoader {
         for (TestLogicalTableName logicalTableName : TestLogicalTableName.values()) {
             TableGroup tableGroup = buildDimensionSpanningTableGroup(
                     TestApiMetricName.getByLogicalTable(logicalTableName),
-                    TestDruidMetricName.getByLogicalTable(logicalTableName),
                     logicalTableTableDefinitions.get(logicalTableName),
                     dictionaries
             );
@@ -111,6 +125,5 @@ public class TestTableLoader extends BaseTableLoader {
                 logicalTableTableGroup.get(TestLogicalTableName.HOURLY_MONTHLY.asName())
         );
         loadLogicalTablesWithGranularities(hourlyMonthlyGroup, Utils.asLinkedHashSet(HOUR, MONTH), dictionaries);
-
     }
 }
