@@ -15,6 +15,8 @@ import com.yahoo.bard.webservice.druid.model.orderby.TopNMetric
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery
 import com.yahoo.bard.webservice.druid.model.query.TopNQuery
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
+import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService
 import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 
 import org.joda.time.DateTimeZone
@@ -27,12 +29,15 @@ class RequestUtils {
             List aggregations = [],
             List postAggregations = []
     ) {
-        DataSource dataSource = new TableDataSource(new ConcretePhysicalTable(
-                dataSourceName,
-                DAY.buildZonedTimeGrain(DateTimeZone.UTC),
-                [] as Set,
-                [:]
-        ))
+        DataSource dataSource = new TableDataSource(
+                new ConcretePhysicalTable(
+                        dataSourceName,
+                        DAY.buildZonedTimeGrain(DateTimeZone.UTC),
+                        [] as Set,
+                        [:],
+                        new TestDataSourceMetadataService()
+                )
+        )
         List dimensions = []
         List intervals = []
         new GroupByQuery(
@@ -55,12 +60,15 @@ class RequestUtils {
             List aggregations = [],
             List postAggregations = []
     ) {
-        DataSource dataSource = new TableDataSource(new ConcretePhysicalTable(
-                dataSourceName,
-                DAY.buildZonedTimeGrain(DateTimeZone.UTC),
-                [] as Set,
-                [:]
-        ))
+        DataSource dataSource = new TableDataSource(
+                new ConcretePhysicalTable(
+                        dataSourceName,
+                        DAY.buildZonedTimeGrain(DateTimeZone.UTC),
+                        [] as Set,
+                        [:],
+                        new TestDataSourceMetadataService()
+                )
+        )
         List intervals = []
         new TopNQuery(
                 dataSource,
@@ -81,12 +89,15 @@ class RequestUtils {
             List aggregations = [],
             List postAggregations = []
     ) {
-        DataSource dataSource = new TableDataSource(new ConcretePhysicalTable(
-                dataSourceName,
-                DAY.buildZonedTimeGrain(DateTimeZone.UTC),
-                [] as Set,
-                [:]
-        ))
+        DataSource dataSource = new TableDataSource(
+                new ConcretePhysicalTable(
+                        dataSourceName,
+                        DAY.buildZonedTimeGrain(DateTimeZone.UTC),
+                        [] as Set,
+                        [:],
+                        new TestDataSourceMetadataService()
+                )
+        )
         List intervals = []
         new TimeSeriesQuery(
                 dataSource,

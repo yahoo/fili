@@ -162,7 +162,7 @@ class DataSourceMetadataLoaderSpec extends Specification {
     def setup() {
         jtb = new JerseyTestBinder()
         segmentSetIdGenerator = jtb.testBinderFactory.getQuerySigningService()
-        metadataService = jtb.testBinderFactory.getDataSourceMetaDataService()
+        metadataService = jtb.testBinderFactory.getDataSourceMetadataService()
         dimensionDict = jtb.configurationLoader.getDimensionDictionary()
         tableDict = jtb.configurationLoader.getPhysicalTableDictionary()
         druidWS.jsonResponse = {fullDataSourceMetadataJson}

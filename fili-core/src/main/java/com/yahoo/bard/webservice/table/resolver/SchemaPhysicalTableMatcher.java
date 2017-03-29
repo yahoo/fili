@@ -24,20 +24,20 @@ public class SchemaPhysicalTableMatcher implements PhysicalTableMatcher {
 
     public static final ErrorMessageFormat MESSAGE_FORMAT = TABLE_SCHEMA_UNDEFINED;
 
-    private final QueryPlanningConstraint requestConstraints;
+    private final QueryPlanningConstraint requestConstraint;
 
     /**
      * Constructor saves metrics, dimensions, coarsest time grain, and logical table name (for logging).
      *
-     * @param requestConstraints contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
+     * @param requestConstraint contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
      */
-    public SchemaPhysicalTableMatcher(QueryPlanningConstraint requestConstraints) {
-        this.requestConstraints = requestConstraints;
+    public SchemaPhysicalTableMatcher(QueryPlanningConstraint requestConstraint) {
+        this.requestConstraint = requestConstraint;
     }
 
     @Override
     public boolean test(PhysicalTable table) {
-        if (!requestConstraints.getMinimumGranularity().satisfiedBy(table.getSchema().getTimeGrain())) {
+        if (!requestConstraint.getMinimumGranularity().satisfiedBy(table.getSchema().getGranularity())) {
             return false;
         }
 
@@ -45,22 +45,21 @@ public class SchemaPhysicalTableMatcher implements PhysicalTableMatcher {
                 .map(Column::getName)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
-        Set<String> columnNames = requestConstraints.getAllColumnNames();
+        Set<String> columnNames = requestConstraint.getAllColumnNames();
 
         return supplyNames.containsAll(columnNames);
     }
 
     @Override
     public NoMatchFoundException noneFoundException() {
-        String logicalTableName = requestConstraints.getLogicalTable().getName();
-        Set<String> logicalMetrics = requestConstraints.getLogicalMetricNames();
-        Set<String> dimensions = requestConstraints.getAllDimensionNames();
-        String grainName = requestConstraints.getMinimumGranularity().getName();
-        LOG.error(
-                MESSAGE_FORMAT.logFormat(logicalTableName, dimensions, logicalMetrics, grainName)
-        );
+        String logicalTableName = requestConstraint.getLogicalTable().getName();
+        Set<String> logicalMetrics = requestConstraint.getLogicalMetricNames();
+        Set<String> dimensions = requestConstraint.getAllDimensionNames();
+        String grainName = requestConstraint.getMinimumGranularity().getName();
+
+        LOG.error(MESSAGE_FORMAT.logFormat(logicalTableName, dimensions, logicalMetrics, grainName));
+
         return new NoMatchFoundException(
-                MESSAGE_FORMAT.format(logicalTableName, dimensions, logicalMetrics, grainName)
-        );
+                MESSAGE_FORMAT.format(logicalTableName, dimensions, logicalMetrics, grainName));
     }
 }

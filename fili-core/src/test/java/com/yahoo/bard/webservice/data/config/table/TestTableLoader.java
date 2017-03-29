@@ -14,6 +14,7 @@ import com.yahoo.bard.webservice.data.config.names.TestDruidMetricName;
 import com.yahoo.bard.webservice.data.config.names.TestLogicalTableName;
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.bard.webservice.util.Utils;
 
@@ -37,9 +38,11 @@ public class TestTableLoader extends BaseTableLoader {
      * Constructor.
      * <p>
      * Uses a new TestDimension and sets the timezone to UTC.
+     *
+     * @param metadataService  Service containing the segment data for constructing tables
      */
-    public TestTableLoader() {
-        this(new TestDimensions(), DateTimeZone.UTC);
+    public TestTableLoader(DataSourceMetadataService metadataService) {
+        this(new TestDimensions(), DateTimeZone.UTC, metadataService);
     }
 
     /**
@@ -47,19 +50,32 @@ public class TestTableLoader extends BaseTableLoader {
      *
      * @param testDimensions  Dimensions to use when loading the tables
      * @param defaultTimeZone  Timezone to default the tables to
+     * @param metadataService  Service containing the segment data for constructing tables
      */
-    public TestTableLoader(TestDimensions testDimensions, DateTimeZone defaultTimeZone) {
-        super(defaultTimeZone);
+    public TestTableLoader(
+            TestDimensions testDimensions,
+            DateTimeZone defaultTimeZone,
+            DataSourceMetadataService metadataService
+    ) {
+        super(defaultTimeZone, metadataService);
         logicalTableTableDefinitions = new HashMap<>();
         // Set up the table definitions
-        logicalTableTableDefinitions.put(TestLogicalTableName.SHAPES,
-                        TestPhysicalTableDefinitionUtils.buildShapeTableDefinitions(testDimensions));
-        logicalTableTableDefinitions.put(TestLogicalTableName.PETS,
-                        TestPhysicalTableDefinitionUtils.buildPetTableDefinitions(testDimensions));
-        logicalTableTableDefinitions.put(TestLogicalTableName.MONTHLY,
-                        TestPhysicalTableDefinitionUtils.buildMonthlyTableDefinitions(testDimensions));
-        logicalTableTableDefinitions.put(TestLogicalTableName.HOURLY,
-                        TestPhysicalTableDefinitionUtils.buildHourlyTableDefinitions(testDimensions));
+        logicalTableTableDefinitions.put(
+                TestLogicalTableName.SHAPES,
+                TestPhysicalTableDefinitionUtils.buildShapeTableDefinitions(testDimensions)
+        );
+        logicalTableTableDefinitions.put(
+                TestLogicalTableName.PETS,
+                TestPhysicalTableDefinitionUtils.buildPetTableDefinitions(testDimensions)
+        );
+        logicalTableTableDefinitions.put(
+                TestLogicalTableName.MONTHLY,
+                TestPhysicalTableDefinitionUtils.buildMonthlyTableDefinitions(testDimensions)
+        );
+        logicalTableTableDefinitions.put(
+                TestLogicalTableName.HOURLY,
+                TestPhysicalTableDefinitionUtils.buildHourlyTableDefinitions(testDimensions)
+        );
         logicalTableTableDefinitions.put(
                 TestLogicalTableName.HOURLY_MONTHLY,
                 TestPhysicalTableDefinitionUtils.buildHourlyMonthlyTableDefinitions(testDimensions)
@@ -70,7 +86,7 @@ public class TestTableLoader extends BaseTableLoader {
     public void loadTableDictionary(ResourceDictionaries dictionaries) {
         Map<String, TableGroup> logicalTableTableGroup = new LinkedHashMap<>();
         for (TestLogicalTableName logicalTableName : TestLogicalTableName.values()) {
-            TableGroup tableGroup = buildTableGroup(
+            TableGroup tableGroup = buildDimensionSpanningTableGroup(
                     TestApiMetricName.getByLogicalTable(logicalTableName),
                     TestDruidMetricName.getByLogicalTable(logicalTableName),
                     logicalTableTableDefinitions.get(logicalTableName),

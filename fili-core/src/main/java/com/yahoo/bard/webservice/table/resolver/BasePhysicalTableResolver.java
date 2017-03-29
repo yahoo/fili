@@ -28,26 +28,26 @@ public abstract class BasePhysicalTableResolver implements PhysicalTableResolver
     /**
      * Create a list of matchers based on a request and query.
      *
-     * @param requestConstraints contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
+     * @param requestConstraint contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
      *
      * @return a list of matchers to be applied, in order
      */
-    public abstract List<PhysicalTableMatcher> getMatchers(QueryPlanningConstraint requestConstraints);
+    public abstract List<PhysicalTableMatcher> getMatchers(QueryPlanningConstraint requestConstraint);
 
     /**
      * Create a binary operator which returns the 'better' of two physical table.
      *
-     * @param requestConstraints contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
+     * @param requestConstraint contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
      *
      * @return a list of matchers to be applied, in order
      */
-    public abstract BinaryOperator<PhysicalTable> getBetterTableOperator(QueryPlanningConstraint requestConstraints);
+    public abstract BinaryOperator<PhysicalTable> getBetterTableOperator(QueryPlanningConstraint requestConstraint);
 
     /**
      * Filter to a set of tables matching the rules of this resolver.
      *
      * @param candidateTables  The physical tables being filtered
-     * @param requestConstraints contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
+     * @param requestConstraint contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
      *
      * @return a set of physical tables which all match the criteria of a request and partial query
      *
@@ -55,9 +55,9 @@ public abstract class BasePhysicalTableResolver implements PhysicalTableResolver
      */
     public Set<PhysicalTable> filter(
             Collection<PhysicalTable> candidateTables,
-            QueryPlanningConstraint requestConstraints
+            QueryPlanningConstraint requestConstraint
     ) throws NoMatchFoundException {
-        return filter(candidateTables, getMatchers(requestConstraints));
+        return filter(candidateTables, getMatchers(requestConstraint));
     }
 
     /**
@@ -84,22 +84,22 @@ public abstract class BasePhysicalTableResolver implements PhysicalTableResolver
     @Override
     public PhysicalTable resolve(
             Collection<PhysicalTable> candidateTables,
-            QueryPlanningConstraint requestConstraints
+            QueryPlanningConstraint requestConstraint
     ) throws NoMatchFoundException {
 
         // Minimum grain at which the request can be aggregated from
         LOG.trace(
                 "Resolving Table using TimeGrain: {}, dimension API names: {} and TableGroup: {}",
-                requestConstraints.getMinimumGranularity(),
-                requestConstraints.getAllColumnNames(),
+                requestConstraint.getMinimumGranularity(),
+                requestConstraint.getAllColumnNames(),
                 candidateTables
         );
 
         try {
-            Set<PhysicalTable> physicalTables = filter(candidateTables, requestConstraints);
+            Set<PhysicalTable> physicalTables = filter(candidateTables, requestConstraint);
 
             PhysicalTable bestTable = physicalTables.stream()
-                    .reduce(getBetterTableOperator(requestConstraints)).get();
+                    .reduce(getBetterTableOperator(requestConstraint)).get();
 
             REGISTRY.meter("request.physical.table." + bestTable.getName() + "." + bestTable.getTimeGrain()).mark();
             LOG.trace("Found best Table: {}", bestTable);
@@ -107,9 +107,9 @@ public abstract class BasePhysicalTableResolver implements PhysicalTableResolver
         } catch (NoMatchFoundException me) {
             // Blow up if we couldn't match a table, log and return if we can
             LOG.error(ErrorMessageFormat.NO_PHYSICAL_TABLE_MATCHED.logFormat(
-                    requestConstraints.getAllDimensionNames(),
-                    requestConstraints.getLogicalMetricNames(),
-                    requestConstraints.getMinimumGranularity()
+                    requestConstraint.getAllDimensionNames(),
+                    requestConstraint.getLogicalMetricNames(),
+                    requestConstraint.getMinimumGranularity()
             ));
             throw me;
         }

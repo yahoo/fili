@@ -8,13 +8,24 @@ pull request if there was one.
 Current
 -------
 ### Added:
-- [Refactor DatasourceMetadataService to fit composite table needs](https://github.com/yahoo/fili/pull/173)
+- [CompositePhysicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
+    * Added `ConcretePhysicalTable` and `ConcreteAvailability` to model table in druid datasource and its availabillity in the new table availability structure
+    * Added class variable for `DataSourceMetadataService` and `ConfigurationLoader` into `AbstractBinderFactory` for application to access
+
+- [PermissiveAvailability and PermissiveConcretePhysicalTable](https://github.com/yahoo/fili/pull/190)
+    * Added `PermissiveConcretePhysicalTable` and `PermissiveAvailability` to model table in druid datasource and its availability in the new table availability structure.
+    `PermissiveConcretePhysicalTable` and `PermissiveAvailability` extends `ConcretePhysicalTable` and `ConcreteAvailability`, respectively.
+    `PermissiveAvailability` differs from `ConcreteAvailability` in the way of returning available intervals: `ConcreteAvailability` returns
+    the available intervals constraint by `DataSourceConstraint` and provides them in intersection. `PermissiveAvailability`, however, returns
+    them without constraint from `DataSourceConstraint` and provides them in union. `PermissiveConcretePhysicalTable` is different from `ConcretePhysicalTable`
+    in that the former is backed by `PermissiveAvailability` while the latter is backed by `ConcreteAvailability`.
+
+- [Refactor DatasourceMetaDataService to fit composite table needs](https://github.com/yahoo/fili/pull/173)
     * `DataSourceMetadataService` also stores interval data from segment data as intervals by column name map and provides method `getAvailableIntervalsByTable` to retrieve it
 
 - [QueryPlanningConstraint and DataSourceConstraint](https://github.com/yahoo/fili/pull/169)
     * Added `QueryPlanningConstraint` to replace current interface of Matchers and Resolvers arguments during query planning
     * Added `DataSourceConstraint` to allow implementation of `PartitionedFactTable`'s availability in the near future
-
 
 - [Major refactor for availability and schemas and tables](https://github.com/yahoo/fili/pull/165)
     * `ImmutableAvailability` - provides immutable, typed replacement for maps of column availabilities
@@ -29,11 +40,10 @@ Current
     * `ApiName`, `TableName`: Added static factory from String to Name
     * `ErrorMessageFormat` for errors during `ResultSetMapper` cycle
 
-
 - [Added default base class for all dimension types](https://github.com/yahoo/fili/pull/177)
    * Added base classes `DefaultKeyValueStoreDimensionConfig`, `DefaultLookupDimensionConfig` and `DefaultRegisteredLookupDimensionConfig` 
      to create default dimensions. 
-       
+
 - [dateTime based sort feature for the final ResultSet added](https://github.com/yahoo/fili/pull/178)
    * Now we support dateTime column based sort in ASC or DESC order.
    * Added `DateTimeSortMapper` to sort the time buckets and `DateTimeSortRequestHandler` to inject to the workflow
@@ -49,18 +59,25 @@ Current
 
 ### Changed:
 
+- [Restore non-default query support in TestDruidWebservice](https://github.com/yahoo/fili/pull/202)
+
+- [Base TableDataSource serialization on ConcretePhysicalTable fact name](https://github.com/yahoo/fili/pull/202)
+
+- [CompositePhsyicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
+    * `TableLoader` now takes an additional constructor argument `DataSourceMetadataService` for creating tables     
+    * `findMissingRequestTimeGrainIntervals` method in `PartialDataHandler` now takes `DataSourceConstraint`
+ 
 - [Restored flexibility about columns for query from DruidResponseParser](https://github.com/yahoo/fili/pull/198)
     * Immutable schemas prevented custom query types from changing `ResultSetSchema` columns.
     * Columns are now sourced from `DruidResponseParser` and default implemented on `DruidAggregationQuery`
 
-- [Refactor DatasourceMetadataService to fit composite table needs](https://github.com/yahoo/fili/pull/173)
+- [Refactor DatasourceMetaDataService to fit composite table needs](https://github.com/yahoo/fili/pull/173)
     * `BasePhysicalTable` now stores table name as the `TableName` instead of `String`
     * `SegmentInfo` now stores dimension and metrics from segment data for constructing column to available interval map
 
 - [QueryPlanningConstraint and DataSourceConstraint](https://github.com/yahoo/fili/pull/169)
     * `QueryPlanningConstraint` replaces current interface of Matchers and Resolvers `DataApiRequest` and `TemplateDruidQuery` arguments during query planning
     * Modified `findMissingTimeGrainIntervals` method in `PartialDataHandler` to take a set of columns instead of `DataApiRequest` and `DruidAggregationQuery`
-
 
 - [Major refactor for availability and schemas and tables](https://github.com/yahoo/fili/pull/165)
     * `Schema` and `Table` became interfaces
@@ -106,12 +123,17 @@ Current
 
 ### Deprecated:
 
+- [CompositePhsyicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
+    * Deprecated `setAvailability` method on `BasePhysicalTable` to discourage using it for testing, should refine testing strategy to avoid it
+
 - [`RequestLog::stopMostRecentTimer` has been deprecated](https://github.com/yahoo/fili/pull/143)
     - This method is a part of the infrastructure to support the recently
     deprecated `RequestLog::switchTiming`.
 
 
 ### Fixed:
+
+- [Reenable custom query types in TestDruidWebService]()
 
 - [Fixed Segment Metadata Loader Unconfigured Dimension Bug](https://github.com/yahoo/fili/pull/197)
     * Immutable availability was failing when attempting to bind segment dimension columns not configured in dimension dictionary.
@@ -134,6 +156,14 @@ Current
 
 
 ### Removed:
+- [CompositePhsyicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
+    * Removed deprecated method `findMissingRequestTimeGrainIntervals` from `PartialDataHandler`
+    * Removed `permissive_column_availability_enabled` feature flag support and corresponding functionality in `PartialDataHandler`, permissive availability will be a table configuration
+    * Removed `getIntersectSubintervalsForColumns` and `getUnionSubintervalsForColumns` from `PartialDataHandler` since the logic is pushed into `Availability` now
+    * Removed `getIntervalsByColumnName`, `resetColumns` and `hasLogicalMapping` methods in `PhysicalTable` since no longer needed with the availability structure
+    * Removed `getAvailability` method on `PartialDataHandler` since the logic is pushed into `Availability`
+    * Removed `SegmentMetadataLoader` and corresponding tests class which is deprecated in both fili and the corresponding endpoint in druid, use `DataSourceMetadataLoader` instead
+    * Removed `SegmentMetadataLoaderHealthCheck` and `SegmentMetadataLoaderHealthCheckSpec` classes since `SegmentMetadataLoader` is not longer available
 
 - [Major refactor for availability and schemas and tables](https://github.com/yahoo/fili/pull/165)
     *  Removed `ZonedSchema` (all methods moved to child class ResultSetSchema)

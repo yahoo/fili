@@ -1,7 +1,7 @@
 Fili 
 ====
 
-[![Download](https://api.bintray.com/packages/yahoo/maven/fili/images/download.svg)](https://bintray.com/yahoo/maven/fili/_latestVersion) [![Gitter](https://img.shields.io/gitter/room/yahoo/fili.svg?maxAge=2592000)](https://gitter.im/yahoo/fili) [![Travis](https://img.shields.io/travis/yahoo/fili/master.svg?maxAge=2592000)](https://travis-ci.org/yahoo/fili/builds/) [![Codacy grade](https://img.shields.io/codacy/grade/91fa6c38f25d4ea0ae3569ee70a33e38.svg?maxAge=2592000)](https://www.codacy.com/app/Fili/fili/dashboard) [![Codacy coverage](https://img.shields.io/codacy/coverage/91fa6c38f25d4ea0ae3569ee70a33e38.svg?label=test coverage&maxAge=2592000)](https://www.codacy.com/app/Fili/fili/dashboard) [![VersionEye](https://img.shields.io/versioneye/d/user/projects/57eb1529bd6fa600512e4af1.svg?maxAge=2592000)](https://www.versioneye.com/user/projects/57eb1529bd6fa600512e4af1)
+[![Download](https://api.bintray.com/packages/yahoo/maven/fili/images/download.svg)](https://bintray.com/yahoo/maven/fili/_latestVersion) [![Gitter](https://img.shields.io/gitter/room/yahoo/fili.svg?maxAge=2592000)](https://gitter.im/yahoo/fili) [![Travis](https://img.shields.io/travis/yahoo/fili/master.svg?maxAge=2592000)](https://travis-ci.org/yahoo/fili/builds/) [![Codacy grade](https://img.shields.io/codacy/grade/91fa6c38f25d4ea0ae3569ee70a33e38.svg?maxAge=21600)](https://www.codacy.com/app/Fili/fili/dashboard) [![Users Google Group](https://img.shields.io/badge/google_group-users-blue.svg?maxAge=2592000)](https://groups.google.com/forum/#!forum/fili-users) [![Developers Google Group](https://img.shields.io/badge/google_group-developers-blue.svg?maxAge=2592000)](https://groups.google.com/forum/#!forum/fili-developers)
 
 Fili is a Java-based framework that makes it easy to build and maintain RESTful web services for time series reporting 
 and analytics. Fili's HTTP GET-based [reporting API](docs/end-user-api.md) is clean and user-friendly, hiding the 
@@ -42,8 +42,8 @@ Fili also provides a plethora of other capabilities. Here are some of them:
 | Modular architecture                            |                                                    |
 
 
-Community [![Gitter](https://img.shields.io/gitter/room/yahoo/fili.svg?maxAge=2592000)](https://gitter.im/yahoo/fili)
----------------------------------------------------------------------------------------------------------------------
+Community [![Gitter](https://img.shields.io/gitter/room/yahoo/fili.svg?maxAge=2592000)](https://gitter.im/yahoo/fili) [![Users Google Group](https://img.shields.io/badge/google_group-users-blue.svg?maxAge=2592000)](https://groups.google.com/forum/#!forum/fili-users) [![Developers Google Group](https://img.shields.io/badge/google_group-developers-blue.svg?maxAge=2592000)](https://groups.google.com/forum/#!forum/fili-developers)
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 The Fili community generally hangs out [on Gitter](https://gitter.im/yahoo/fili), so please drop by if you have any 
 questions, comments, concerns, wishes, hopes, dreams, wants, needs, yearnings, musings, or idle curiosities about Fili.
@@ -127,7 +127,7 @@ There's a module system for config and modules depending on other modules! There
 the time, look at the time!
 
 
-Contributing
+Contributing [![Developers Google Group](https://img.shields.io/badge/google_group-developers-blue.svg?maxAge=2592000)](https://groups.google.com/forum/#!forum/fili-developers)
 ------------
 
 More details can be found in the [CONTRIBUTING](CONTRIBUTING.md) file, but here are the basics to get you started.
@@ -151,7 +151,7 @@ $ cd fili/
 $ mvn test
 ```
 
-### Testing & Code Style [![Codecov](https://img.shields.io/codecov/c/github/yahoo/fili.svg?label=test coverage&maxAge=2592000)](https://codecov.io/gh/yahoo/fili) [![Coveralls](https://img.shields.io/coveralls/yahoo/fili.svg?label=test coverage&maxAge=2592000)](https://coveralls.io/github/yahoo/fili)
+### Testing & Code Style
 
 We're _big_ believers in testing our code, both for correctness, as well as to ensure that changes don't unintentionally
 break existing contracts unintentionally. We rely heavily on the [Spock](http://spockframework.org/) framework for our 

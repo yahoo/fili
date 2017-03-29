@@ -13,7 +13,6 @@ import static com.yahoo.bard.webservice.web.handlers.SplitQueryRequestHandler.SP
 import com.yahoo.bard.webservice.application.healthchecks.AllDimensionsLoadedHealthCheck;
 import com.yahoo.bard.webservice.application.healthchecks.DataSourceMetadataLoaderHealthCheck;
 import com.yahoo.bard.webservice.application.healthchecks.DruidDimensionsLoaderHealthCheck;
-import com.yahoo.bard.webservice.application.healthchecks.SegmentMetadataLoaderHealthCheck;
 import com.yahoo.bard.webservice.application.healthchecks.VersionHealthCheck;
 import com.yahoo.bard.webservice.async.broadcastchannels.BroadcastChannel;
 import com.yahoo.bard.webservice.async.broadcastchannels.SimpleBroadcastChannel;
@@ -72,7 +71,6 @@ import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
 import com.yahoo.bard.webservice.metadata.RequestedIntervalsFunction;
 import com.yahoo.bard.webservice.metadata.SegmentIntervalsHashIdGenerator;
-import com.yahoo.bard.webservice.metadata.SegmentMetadataLoader;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 import com.yahoo.bard.webservice.table.resolver.DefaultPhysicalTableResolver;
@@ -118,6 +116,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -137,7 +136,6 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractBinderFactory.class);
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
-    public static final String HEALTH_CHECK_NAME_SEGMENT_METADATA = "segment metadata loader";
     public static final String HEALTH_CHECK_NAME_DATASOURCE_METADATA = "datasource metadata loader";
     public static final String HEALTH_CHECK_NAME_DRUID_DIM_LOADER = "druid dimensions loader";
     public static final String HEALTH_CHECK_VERSION = "version";
@@ -167,9 +165,16 @@ public abstract class AbstractBinderFactory implements BinderFactory {
             SYSTEM_CONFIG.getPackageVariableName("loader_scheduler_thread_pool_size"),
             LOADER_SCHEDULER_THREAD_POOL_SIZE_DEFAULT
     );
+
+    public static final String DEPRECATED_PERMISSIVE_AVAILABILITY_FLAG = SYSTEM_CONFIG.getPackageVariableName(
+            "permissive_column_availability_enabled");
+
     public static final String SYSTEM_CONFIG_TIMEZONE_KEY = "timezone";
 
     private ObjectMappersSuite objectMappers;
+
+    private DataSourceMetadataService dataSourceMetadataService;
+    private ConfigurationLoader loader;
 
     private final TaskScheduler loaderScheduler = new TaskScheduler(LOADER_SCHEDULER_THREAD_POOL_SIZE);
 
@@ -224,10 +229,13 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 FieldConverterSupplier.sketchConverter = initializeSketchConverter();
 
                 //Initialize the metrics filter helper
-                FieldConverterSupplier.metricsFilterSetBuilder =  initializeMetricsFilterSetBuilder();
+                FieldConverterSupplier.metricsFilterSetBuilder = initializeMetricsFilterSetBuilder();
+
+                // Build the datasource metadata service containing the data segments
+                bind(getDataSourceMetadataService()).to(DataSourceMetadataService.class);
 
                 // Build the configuration loader and load configuration
-                ConfigurationLoader loader = buildConfigurationLoader();
+                loader = getConfigurationLoader();
                 loader.load();
 
                 // Bind the configuration dictionaries
@@ -238,25 +246,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 bind(loader.getDictionaries()).to(ResourceDictionaries.class);
 
                 // Bind the request mappers
-                Map<String, RequestMapper> requestMappers = getRequestMappers(loader.getDictionaries());
-                bind(requestMappers.getOrDefault(DimensionsApiRequest.REQUEST_MAPPER_NAMESPACE,
-                        new DimensionApiRequestMapper(loader.getDictionaries())))
-                        .named(DimensionsApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
-                bind(requestMappers.getOrDefault(MetricsApiRequest.REQUEST_MAPPER_NAMESPACE,
-                        new NoOpRequestMapper(loader.getDictionaries())))
-                        .named(MetricsApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
-                bind(requestMappers.getOrDefault(SlicesApiRequest.REQUEST_MAPPER_NAMESPACE,
-                        new NoOpRequestMapper(loader.getDictionaries())))
-                        .named(SlicesApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
-                bind(requestMappers.getOrDefault(TablesApiRequest.REQUEST_MAPPER_NAMESPACE,
-                        new NoOpRequestMapper(loader.getDictionaries())))
-                        .named(TablesApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
-                bind(requestMappers.getOrDefault(DataApiRequest.REQUEST_MAPPER_NAMESPACE,
-                        new NoOpRequestMapper(loader.getDictionaries())))
-                        .named(DataApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
-                bind(requestMappers.getOrDefault(JobsApiRequest.REQUEST_MAPPER_NAMESPACE,
-                        new NoOpRequestMapper(loader.getDictionaries())))
-                        .named(JobsApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
+                bindRequestMappers(this);
 
                 // Setup end points and back end services
                 setupHealthChecks(healthCheckRegistry, loader.getDimensionDictionary());
@@ -273,22 +263,10 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 bind(PartialDataHandler.class).to(PartialDataHandler.class);
                 bind(getVolatileIntervalsService()).to(VolatileIntervalsService.class);
 
-                DataSourceMetadataService dataSourceMetadataService = buildDataSourceMetadataService();
-
-                bind(dataSourceMetadataService).to(DataSourceMetadataService.class);
-
                 QuerySigningService<?> querySigningService = buildQuerySigningService(
                         loader.getPhysicalTableDictionary(),
                         dataSourceMetadataService
                 );
-
-                SegmentMetadataLoader segmentMetadataLoader = buildSegmentMetadataLoader(
-                        uiDruidWebService,
-                        loader.getPhysicalTableDictionary(),
-                        loader.getDimensionDictionary(),
-                        getMappers().getMapper()
-                );
-                setupPartialData(healthCheckRegistry, segmentMetadataLoader);
 
                 if (DRUID_COORDINATOR_METADATA.isOn()) {
                     DataSourceMetadataLoader dataSourceMetadataLoader = buildDataSourceMetadataLoader(
@@ -300,6 +278,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
 
                     setupDataSourceMetaData(healthCheckRegistry, dataSourceMetadataLoader);
                 }
+
                 bind(querySigningService).to(QuerySigningService.class);
 
                 bind(buildJobRowBuilder()).to(JobRowBuilder.class);
@@ -324,10 +303,53 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                     );
                     setupDruidDimensionsLoader(healthCheckRegistry, druidDimensionsLoader);
                 }
+                if (SYSTEM_CONFIG.getBooleanProperty(DEPRECATED_PERMISSIVE_AVAILABILITY_FLAG, false)) {
+                    LOG.warn(
+                            "Permissive column availability feature flag is no longer supported, please use " +
+                                    "PermissiveConcretePhysicalTable to enable permissive column availability.");
+                }
                 // Call post-binding hook to allow for additional binding
                 afterBinding(this);
             }
         };
+    }
+
+    /**
+     * Bind ApiRequest instances to resource scope names.
+     *
+     * @param binder  The binder being used to bind the request mappers.
+     */
+    private void bindRequestMappers(AbstractBinder binder) {
+        Map<String, RequestMapper> requestMappers = getRequestMappers(loader.getDictionaries());
+        binder.bind(requestMappers.getOrDefault(
+                DimensionsApiRequest.REQUEST_MAPPER_NAMESPACE,
+                new DimensionApiRequestMapper(loader.getDictionaries())
+        )).named(DimensionsApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
+
+        binder.bind(requestMappers.getOrDefault(
+                MetricsApiRequest.REQUEST_MAPPER_NAMESPACE,
+                new NoOpRequestMapper(loader.getDictionaries())
+        )).named(MetricsApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
+
+        binder.bind(requestMappers.getOrDefault(
+                SlicesApiRequest.REQUEST_MAPPER_NAMESPACE,
+                new NoOpRequestMapper(loader.getDictionaries())
+        )).named(SlicesApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
+
+        binder.bind(requestMappers.getOrDefault(
+                TablesApiRequest.REQUEST_MAPPER_NAMESPACE,
+                new NoOpRequestMapper(loader.getDictionaries())
+        )).named(TablesApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
+
+        binder.bind(requestMappers.getOrDefault(
+                DataApiRequest.REQUEST_MAPPER_NAMESPACE,
+                new NoOpRequestMapper(loader.getDictionaries())
+        )).named(DataApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
+
+        binder.bind(requestMappers.getOrDefault(
+                JobsApiRequest.REQUEST_MAPPER_NAMESPACE,
+                new NoOpRequestMapper(loader.getDictionaries())
+        )).named(JobsApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
     }
 
     /**
@@ -573,12 +595,15 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     }
 
     /**
-     * Create a service to store the datasource metadata.
+     * Get the stored metadata service, if not exist yet, create the service and store it.
      *
      * @return A datasource metadata service
      */
-    protected DataSourceMetadataService buildDataSourceMetadataService() {
-        return new DataSourceMetadataService();
+    protected DataSourceMetadataService getDataSourceMetadataService() {
+        if (Objects.isNull(dataSourceMetadataService)) {
+            dataSourceMetadataService = new DataSourceMetadataService();
+        }
+        return dataSourceMetadataService;
     }
 
     /**
@@ -615,33 +640,6 @@ public abstract class AbstractBinderFactory implements BinderFactory {
         signingFunctions.put(LookbackQuery.class, new LookbackQuery.LookbackQueryRequestedIntervalsFunction());
 
         return signingFunctions;
-    }
-
-    /**
-     * Build a segment metadata loader.
-     *
-     * @param webService  The web service used by the timer to query partial data
-     * @param physicalTableDictionary  The table to update dimensions on
-     * @param dimensionDictionary  The dimensions to update
-     * @param mapper  The object mapper to process segment metadata json
-     *
-     * @return A segment metadata loader
-     *
-     * @deprecated The http endpoints in Druid that this service relies on have been deprecated
-     */
-    @Deprecated
-    protected SegmentMetadataLoader buildSegmentMetadataLoader(
-            DruidWebService webService,
-            PhysicalTableDictionary physicalTableDictionary,
-            DimensionDictionary dimensionDictionary,
-            ObjectMapper mapper
-    ) {
-        return new SegmentMetadataLoader(
-                physicalTableDictionary,
-                dimensionDictionary,
-                webService,
-                mapper
-        );
     }
 
     /**
@@ -687,26 +685,6 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 dimensionDictionary,
                 webService
         );
-    }
-
-    /**
-     * Schedule a segment metadata loader and register its health check.
-     *
-     * @param healthCheckRegistry  The health check registry to register partial data health checks
-     * @param segmentMetadataLoader  The segment metadata loader to use for partial data monitoring and health checks
-     */
-    protected final void setupPartialData(
-            HealthCheckRegistry healthCheckRegistry,
-            SegmentMetadataLoader segmentMetadataLoader
-    ) {
-        scheduleLoader(segmentMetadataLoader);
-
-        // Register Segment metadata loader health check
-        HealthCheck segMetaLoaderHealthCheck = new SegmentMetadataLoaderHealthCheck(
-                segmentMetadataLoader,
-                SEG_LOADER_HC_LAST_RUN_PERIOD_MILLIS
-        );
-        healthCheckRegistry.register(HEALTH_CHECK_NAME_SEGMENT_METADATA, segMetaLoaderHealthCheck);
     }
 
     /**
@@ -831,15 +809,15 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     }
 
     /**
-     * Build an application specific configuration loader initialized with pluggable loaders.
+     * Get the application specific configuration loader, if not exist already, initialize with pluggable loaders.
      *
      * @return A configuration loader instance
      */
-    protected final ConfigurationLoader buildConfigurationLoader() {
-        DimensionLoader dimensionLoader = getDimensionLoader();
-        TableLoader tableLoader = getTableLoader();
-        MetricLoader metricLoader = getMetricLoader();
-        return buildConfigurationLoader(dimensionLoader, metricLoader, tableLoader);
+    protected final ConfigurationLoader getConfigurationLoader() {
+        if (Objects.isNull(loader)) {
+            loader = buildConfigurationLoader(getDimensionLoader(), getMetricLoader(), getTableLoader());
+        }
+        return loader;
     }
 
     /**
@@ -873,7 +851,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     /**
      * The Builder to be used to serialize a JobRow into the the job to be returned to the user.
      *
-     * @return  A DefaultJobPayloadBuilder
+     * @return A DefaultJobPayloadBuilder
      */
     protected JobPayloadBuilder buildJobPayloadBuilder() {
         return new DefaultJobPayloadBuilder();
@@ -1046,13 +1024,13 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     protected void scheduleLoader(Loader<?> loader) {
         loader.setFuture(
                 loader.isPeriodic ?
-                loaderScheduler.scheduleAtFixedRate(
-                        loader,
-                        loader.getDefinedDelay(),
-                        loader.getDefinedPeriod(),
-                        TimeUnit.MILLISECONDS
-                ) :
-                loaderScheduler.schedule(loader, loader.getDefinedDelay(), TimeUnit.MILLISECONDS)
+                        loaderScheduler.scheduleAtFixedRate(
+                                loader,
+                                loader.getDefinedDelay(),
+                                loader.getDefinedPeriod(),
+                                TimeUnit.MILLISECONDS
+                        ) :
+                        loaderScheduler.schedule(loader, loader.getDefinedDelay(), TimeUnit.MILLISECONDS)
         );
     }
 
