@@ -123,7 +123,10 @@ public class SlicesApiRequest extends ApiRequest {
                         e -> {
                             Map<String, String> res = new LinkedHashMap<>();
                             res.put("name", e.getKey());
-                            res.put("timeGrain", e.getValue().getTimeGrain().getName().toLowerCase(Locale.ENGLISH));
+                            res.put(
+                                    "timeGrain",
+                                    e.getValue().getSchema().getTimeGrain().getName().toLowerCase(Locale.ENGLISH)
+                            );
                             res.put("uri", SlicesServlet.getSliceDetailUrl(e.getKey(), uriInfo));
                             return res;
                         }
