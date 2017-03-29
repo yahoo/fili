@@ -14,6 +14,7 @@ import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.web.DataApiRequest
@@ -68,7 +69,8 @@ class SchemaPhysicalTableMatcherSpec extends Specification {
                 "test table",
                 DAY.buildZonedTimeGrain(UTC),
                 dimSet.collect {new DimensionColumn(it)}.toSet(),
-                ['dimA':'druidDimA', 'dimCommon': 'druidDimC', 'dimB': 'dimCommon']
+                ['dimA':'druidDimA', 'dimCommon': 'druidDimC', 'dimB': 'dimCommon'],
+                Mock(DataSourceMetadataService)
         )
 
         request.getGranularity() >> DAY.buildZonedTimeGrain(UTC)

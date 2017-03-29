@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 
@@ -73,7 +74,8 @@ class CardinalityAggregationSpec extends Specification {
                 "table",
                 DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC),
                 [] as Set,
-                ["d1ApiName": "d1DruidName", "d2ApiName": "d2DruidName"]
+                ["d1ApiName": "d1DruidName", "d2ApiName": "d2DruidName"],
+                Mock(DataSourceMetadataService)
         )]
         query.dataSource >> ds
         query.aggregations >> [a1]

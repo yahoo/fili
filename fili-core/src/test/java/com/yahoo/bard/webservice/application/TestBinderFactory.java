@@ -21,10 +21,8 @@ import com.yahoo.bard.webservice.data.cache.HashDataCache;
 import com.yahoo.bard.webservice.data.cache.StubDataCache;
 import com.yahoo.bard.webservice.data.cache.TestDataCache;
 import com.yahoo.bard.webservice.data.cache.TestTupleDataCache;
-import com.yahoo.bard.webservice.data.config.ConfigurationLoader;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
-import com.yahoo.bard.webservice.data.config.dimension.DimensionLoader;
 import com.yahoo.bard.webservice.data.config.dimension.TestDimensions;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
@@ -37,6 +35,7 @@ import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
 import com.yahoo.bard.webservice.metadata.SegmentIntervalsHashIdGenerator;
+import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService;
 import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
@@ -54,6 +53,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -69,7 +69,7 @@ public class TestBinderFactory extends AbstractBinderFactory {
     public boolean afterBindingHookWasCalled = false;
     public boolean afterRegistrationHookWasCalled = false;
 
-    public ConfigurationLoader configurationLoader;
+    public DataSourceMetadataService dataSourceMetadataService;
 
     /**
      * Constructor.
@@ -129,7 +129,7 @@ public class TestBinderFactory extends AbstractBinderFactory {
     protected VolatileIntervalsService getVolatileIntervalsService() {
         Map<PhysicalTable, VolatileIntervalsFunction> hourlyMonthlyVolatileIntervals = new LinkedHashMap<>();
         hourlyMonthlyVolatileIntervals.put(
-                configurationLoader.getPhysicalTableDictionary().get(HOURLY.asName()),
+                getConfigurationLoader().getPhysicalTableDictionary().get(HOURLY.asName()),
                 () -> new SimplifiedIntervalList(
                         Collections.singleton(
                                 new Interval(new DateTime(2016, 8, 15, 0, 0), new DateTime(2016, 8, 16, 0, 0))
@@ -137,7 +137,7 @@ public class TestBinderFactory extends AbstractBinderFactory {
                 )
         );
         hourlyMonthlyVolatileIntervals.put(
-                configurationLoader.getPhysicalTableDictionary().get(MONTHLY.asName()),
+                getConfigurationLoader().getPhysicalTableDictionary().get(MONTHLY.asName()),
                 () -> new SimplifiedIntervalList(
                         Collections.singleton(
                                 new Interval(new DateTime(2016, 8, 1, 0, 0), new DateTime(2016, 9, 1, 0, 0))
@@ -150,10 +150,6 @@ public class TestBinderFactory extends AbstractBinderFactory {
         );
     }
 
-    public ConfigurationLoader getConfigurationLoader() {
-        return configurationLoader;
-    }
-
     /**
      * Get the query signing service for the test.
      *
@@ -161,18 +157,17 @@ public class TestBinderFactory extends AbstractBinderFactory {
      */
     public QuerySigningService<?> getQuerySigningService() {
         return buildQuerySigningService(
-                configurationLoader.getPhysicalTableDictionary(),
-                getDataSourceMetaDataService()
+                getConfigurationLoader().getPhysicalTableDictionary(),
+                getDataSourceMetadataService()
         );
     }
 
-    /**
-     * Get the datasource metadata for the test.
-     *
-     * @return the datasource metadata service
-     */
-    public DataSourceMetadataService getDataSourceMetaDataService() {
-        return buildDataSourceMetadataService();
+    @Override
+    protected DataSourceMetadataService getDataSourceMetadataService() {
+        if (Objects.isNull(dataSourceMetadataService)) {
+            this.dataSourceMetadataService = new TestDataSourceMetadataService();
+        }
+        return dataSourceMetadataService;
     }
 
     @Override
@@ -192,17 +187,6 @@ public class TestBinderFactory extends AbstractBinderFactory {
                 ignored -> "greg",
                 Clock.systemDefaultZone()
         );
-    }
-
-    @Override
-    protected ConfigurationLoader buildConfigurationLoader(
-            DimensionLoader dimensionLoader,
-            MetricLoader metricLoader,
-            TableLoader tableLoader
-    ) {
-        // Store the config loader so that we can get access to it, and then return it
-        this.configurationLoader = super.buildConfigurationLoader(dimensionLoader, metricLoader, tableLoader);
-        return configurationLoader;
     }
 
     @Override

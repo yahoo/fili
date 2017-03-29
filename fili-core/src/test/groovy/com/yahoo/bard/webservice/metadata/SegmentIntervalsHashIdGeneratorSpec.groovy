@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.metadata
 
+import static org.joda.time.DateTimeZone.UTC
+
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource
@@ -25,8 +27,6 @@ import spock.lang.Unroll
 
 import java.util.concurrent.ConcurrentSkipListMap
 import java.util.concurrent.atomic.AtomicReference
-
-import static org.joda.time.DateTimeZone.UTC
 
 class SegmentIntervalsHashIdGeneratorSpec extends BaseDataSourceMetadataSpec {
     @Shared
@@ -66,7 +66,7 @@ class SegmentIntervalsHashIdGeneratorSpec extends BaseDataSourceMetadataSpec {
 
         jtb = new JerseyTestBinder()
         tableDict = jtb.configurationLoader.getPhysicalTableDictionary()
-        metadataService = jtb.testBinderFactory.getDataSourceMetaDataService()
+        metadataService = new DataSourceMetadataService()
 
         segmentSetIdGenerator = new SegmentIntervalsHashIdGenerator(
                 tableDict,
@@ -105,7 +105,8 @@ class SegmentIntervalsHashIdGeneratorSpec extends BaseDataSourceMetadataSpec {
                         new ConcretePhysicalTable(
                                 tableName, DefaultTimeGrain.DAY.buildZonedTimeGrain(UTC),
                                 [] as Set,
-                                [:]
+                                [:],
+                                Mock(DataSourceMetadataService)
                         )
                 )
         )

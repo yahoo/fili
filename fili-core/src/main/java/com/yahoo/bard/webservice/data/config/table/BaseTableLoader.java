@@ -12,12 +12,12 @@ import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.table.ConcretePhysicalTable;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.table.PhysicalTable;
-import com.yahoo.bard.webservice.table.Schema;
 import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.bard.webservice.table.TableIdentifier;
 
@@ -41,22 +41,33 @@ public abstract class BaseTableLoader implements TableLoader {
 
     protected final DateTimeZone defaultTimeZone;
 
+    private final DataSourceMetadataService metadataService;
+
+    /**
+     * A table loader using a standard time context and UTC default time zone.
+     *
+     * @param metadataService  Service containing the segment data for constructing tables
+     */
+    protected BaseTableLoader(DataSourceMetadataService metadataService) {
+        this(DateTimeZone.UTC, metadataService);
+    }
+
     /**
      * A table loader using a time context and a default time zone.
      *
      * @param defaultTimeZone  The default time zone to tables being loaded
+     * @param metadataService  Service containing the segment data for constructing tables
      */
-    protected BaseTableLoader(DateTimeZone defaultTimeZone) {
+    protected BaseTableLoader(DateTimeZone defaultTimeZone, DataSourceMetadataService metadataService) {
         this.defaultTimeZone = defaultTimeZone;
+        this.metadataService = metadataService;
     }
 
     /**
-     * A table loader using a standard time context and UTC default time zone.
+     * Load user configured tables into resource dictionary.
+     *
+     * @param dictionaries dictionary to be loaded with configured tables
      */
-    protected BaseTableLoader() {
-        this(DateTimeZone.UTC);
-    }
-
     @Override
     public abstract void loadTableDictionary(ResourceDictionaries dictionaries);
 
@@ -65,32 +76,6 @@ public abstract class BaseTableLoader implements TableLoader {
      * <p>
      * Builds and loads the physical tables for the physical table definitions as well.
      *
-     * @param logicalTableName  The logical table for the table group
-     * @param apiMetrics  The set of metric names surfaced to the api
-     * @param druidMetrics  Names of druid datasource metric columns
-     * @param tableDefinitions  A list of config objects for physical tables
-     * @param dictionaries  The container for all the data dictionaries
-     *
-     * @return A table group binding all the tables for a logical table view together.
-     *
-     * @deprecated logicalTableName is not used in TableGroup
-     */
-    @Deprecated
-    public TableGroup buildTableGroup(
-            String logicalTableName,
-            Set<ApiMetricName> apiMetrics,
-            Set<FieldName> druidMetrics,
-            Set<PhysicalTableDefinition> tableDefinitions,
-            ResourceDictionaries dictionaries
-    ) {
-        return buildTableGroup(apiMetrics, druidMetrics, tableDefinitions, dictionaries);
-    }
-
-    /**
-     * Builds a table group.
-     * <p>
-     * Builds and loads the physical tables for the physical table definitions as well.
-     *
      * @param apiMetrics  The set of metric names surfaced to the api
      * @param druidMetrics  Names of druid datasource metric columns
      * @param tableDefinitions  A list of config objects for physical tables
@@ -98,7 +83,7 @@ public abstract class BaseTableLoader implements TableLoader {
      *
      * @return A table group binding all the tables for a logical table view together.
      */
-    public TableGroup buildTableGroup(
+    public TableGroup buildDimensionSpanningTableGroup(
             Set<ApiMetricName> apiMetrics,
             Set<FieldName> druidMetrics,
             Set<PhysicalTableDefinition> tableDefinitions,
@@ -107,18 +92,15 @@ public abstract class BaseTableLoader implements TableLoader {
         // Load a physical table for each of the table definitions
         LinkedHashSet<PhysicalTable> physicalTables = new LinkedHashSet<>();
         for (PhysicalTableDefinition def : tableDefinitions) {
-            PhysicalTable table;
-            table = loadPhysicalTable(def, druidMetrics, dictionaries);
+            PhysicalTable table = loadPhysicalTable(def, druidMetrics, dictionaries);
             physicalTables.add(table);
         }
 
         //Derive the logical dimensions by taking the union of all the physical dimensions
         Set<Dimension> dimensions = physicalTables.stream()
                 .map(PhysicalTable::getSchema)
-                .map(Schema::getColumns)
+                .map(schema -> schema.getColumns(DimensionColumn.class))
                 .flatMap(Set::stream)
-                .filter(column -> column instanceof DimensionColumn)
-                .map(column -> (DimensionColumn) column)
                 .map(DimensionColumn::getDimension)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         return new TableGroup(physicalTables, apiMetrics, dimensions);
@@ -252,6 +234,32 @@ public abstract class BaseTableLoader implements TableLoader {
     }
 
     /**
+     * Builds a table group.
+     * <p>
+     * Builds and loads the physical tables for the physical table definitions as well.
+     *
+     * @param logicalTableName  The logical table for the table group
+     * @param apiMetrics  The set of metric names surfaced to the api
+     * @param druidMetrics  Names of druid datasource metric columns
+     * @param tableDefinitions  A list of config objects for physical tables
+     * @param dictionaries  The container for all the data dictionaries
+     *
+     * @return A table group binding all the tables for a logical table view together.
+     *
+     * @deprecated logicalTableName is not used in TableGroup, use buildDimensionSpanningTableGroup instead
+     */
+    @Deprecated
+    public TableGroup buildTableGroup(
+            String logicalTableName,
+            Set<ApiMetricName> apiMetrics,
+            Set<FieldName> druidMetrics,
+            Set<PhysicalTableDefinition> tableDefinitions,
+            ResourceDictionaries dictionaries
+    ) {
+        return buildDimensionSpanningTableGroup(apiMetrics, druidMetrics, tableDefinitions, dictionaries);
+    }
+
+    /**
      * Load a new physical table into the dictionary and return the loaded physical table.
      *
      * @param definition  A config object for the physical table
@@ -310,7 +318,17 @@ public abstract class BaseTableLoader implements TableLoader {
                 definition.getName(),
                 definition.getGrain(),
                 columns,
-                definition.getLogicalToPhysicalNames()
+                definition.getLogicalToPhysicalNames(),
+                getDataSourceMetadataService()
         );
+    }
+
+    /**
+     * Getter for the data source metadata service use for creating physical tables.
+     *
+     * @return the data source metadata service associated with the table loader
+     */
+    protected DataSourceMetadataService getDataSourceMetadataService() {
+        return metadataService;
     }
 }

@@ -5,16 +5,23 @@ package com.yahoo.bard.webservice.table;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.table.availability.Availability;
+import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
+import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import org.joda.time.DateTime;
+import org.joda.time.Interval;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
- * An interface describing the Fili model for a fact data source (e.g. a table of dimensions and metrics).
- * It may be backed by a single concrete fact data source or by more than one with underlying joins.
+ * An interface describing a fact level physical table. It may be backed by a single fact table or multiple.
  */
 public interface PhysicalTable extends Table {
+
+    @Override
+    PhysicalTableSchema getSchema();
 
     /**
      * Get the name of the current table.
@@ -39,12 +46,11 @@ public interface PhysicalTable extends Table {
     DateTime getTableAlignment();
 
     /**
-     * Get the schema for this physical table.
-     * Schemas contain granularity and column definitions.
+     * Getter for all the available intervals for the corresponding column.
      *
-     * @return A physical table schema.
+     * @return map of column to set of available intervals
      */
-    PhysicalTableSchema getSchema();
+    Map<Column, List<Interval>> getAllAvailableIntervals();
 
     /**
      * Translate a logical name into a physical column name. If no translation exists (i.e. they are the same),
@@ -58,23 +64,19 @@ public interface PhysicalTable extends Table {
      * should likely use their own serialization strategy so as to not hit this defaulting behavior.
      *
      * @param logicalName  Logical name to lookup in physical table
+     *
      * @return Translated logicalName if applicable
      */
     String getPhysicalColumnName(String logicalName);
 
     /**
-     * Determine whether or not this PhysicalTable has a mapping for a specific logical name.
+     * Get available intervals satisfying the given constraints.
      *
-     * @param logicalName  Logical name to check
+     * @param constraint  Data constraint containing columns and api filters
      *
-     * @return True if contains a non-default mapping for the logical name, false otherwise
-     *
-     * @deprecated This may no longer be needed
+     * @return tableEntries a simplified interval list of available interval
      */
-    @Deprecated
-    default boolean hasLogicalMapping(String logicalName) {
-        return getSchema().containsLogicalName(logicalName);
-    }
+    SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraint);
 
     /**
      * Get the columns from the schema for this physical table.
