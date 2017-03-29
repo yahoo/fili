@@ -103,7 +103,6 @@ public class WikiTableLoader extends BaseTableLoader {
         for (WikiLogicalTableName table : WikiLogicalTableName.values()) {
             TableGroup tableGroup = buildDimensionSpanningTableGroup(
                     apiMetricNames.get(table),
-                    druidMetricNames.get(table),
                     tableDefinitions.get(table),
                     dictionaries
             );
