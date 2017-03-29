@@ -6,10 +6,12 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
+import com.yahoo.bard.webservice.data.dimension.DimensionColumn
 import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
+import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.data.time.TimeGrain
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.LongSumAggregation
@@ -24,6 +26,7 @@ import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
+import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 
@@ -35,6 +38,8 @@ import org.joda.time.Interval
 
 import spock.lang.Shared
 import spock.lang.Specification
+
+import java.util.stream.Collectors
 
 class GroupByQuerySpec extends Specification {
     private static final ObjectMapper MAPPER = new ObjectMapper()
@@ -51,6 +56,49 @@ class GroupByQuerySpec extends Specification {
 
     def shutdownSpec() {
         DateTimeZone.setDefault(currentTZ)
+    }
+
+    Dimension dimension1
+    Dimension dimension2
+    Dimension dimension3
+
+    Aggregation aggregation1 = new LongSumAggregation("pageViewsSum", "pageViews")
+    Aggregation aggregation2 = new LongSumAggregation("timeSpentSum", "timeSpent")
+    PostAggregation postAggregation1 = new FieldAccessorPostAggregation(aggregation1)
+    PostAggregation postAggregation2 = new FieldAccessorPostAggregation(aggregation2)
+    PostAggregation postAggregation3 = new ArithmeticPostAggregation(
+            "postAggDiv",
+            ArithmeticPostAggregation.ArithmeticPostAggregationFunction.DIVIDE,
+            [postAggregation1, postAggregation2]
+    )
+
+
+    def setup() {
+        LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>()
+        dimensionFields.add(BardDimensionField.ID)
+        dimensionFields.add(BardDimensionField.DESC)
+
+        dimension1 = new KeyValueStoreDimension(
+                "apiLocale",
+                "localeDescription",
+                dimensionFields,
+                MapStoreManager.getInstance("apiLocale"),
+                ScanSearchProviderManager.getInstance("apiLocale")
+        )
+        dimension2 = new KeyValueStoreDimension(
+                "apiPlatform",
+                "platformDescription",
+                dimensionFields,
+                MapStoreManager.getInstance("apiPlatform"),
+                ScanSearchProviderManager.getInstance("apiPlatform")
+        )
+        dimension3 = new KeyValueStoreDimension(
+                "apiProduct",
+                "productDescription",
+                dimensionFields,
+                MapStoreManager.getInstance("apiProduct"),
+                ScanSearchProviderManager.getInstance("apiProduct")
+        )
     }
 
     GroupByQuery defaultQuery(Map vars) {
@@ -116,32 +164,6 @@ class GroupByQuerySpec extends Specification {
     }
 
     def "check dimensions serialization"() {
-        LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>()
-        dimensionFields.add(BardDimensionField.ID)
-        dimensionFields.add(BardDimensionField.DESC)
-
-        Dimension dimension1 = new KeyValueStoreDimension(
-                "apiLocale",
-                "localeDescription",
-                dimensionFields,
-                MapStoreManager.getInstance("apiLocale"),
-                ScanSearchProviderManager.getInstance("apiLocale")
-        )
-        Dimension dimension2 = new KeyValueStoreDimension(
-                "apiPlatform",
-                "platformDescription",
-                dimensionFields,
-                MapStoreManager.getInstance("apiPlatform"),
-                ScanSearchProviderManager.getInstance("apiPlatform")
-        )
-        Dimension dimension3 = new KeyValueStoreDimension(
-                "apiProduct",
-                "productDescription",
-                dimensionFields,
-                MapStoreManager.getInstance("apiProduct"),
-                ScanSearchProviderManager.getInstance("apiProduct")
-        )
-
         //no dimensions
         List<Dimension> dimensions1 = []
         //single dimension
@@ -263,9 +285,6 @@ class GroupByQuerySpec extends Specification {
     }
 
     def "check aggregation serialization"() {
-        Aggregation aggregation1 = new LongSumAggregation("pageViewsSum", "pageViews")
-        Aggregation aggregation2 = new LongSumAggregation("timeSpentSum", "timeSpent")
-
         List<Aggregation> aggregations1 = []
         List<Aggregation> aggregations2 = [aggregation1]
         List<Aggregation> aggregations3 = [aggregation1, aggregation2]
@@ -314,14 +333,6 @@ class GroupByQuerySpec extends Specification {
     def "check post aggregation serialization"() {
         Aggregation aggregation1 = new LongSumAggregation("pageViewsSum", "pageViews")
         Aggregation aggregation2 = new LongSumAggregation("timeSpentSum", "timeSpent")
-
-        PostAggregation postAggregation1 = new FieldAccessorPostAggregation(aggregation1)
-        PostAggregation postAggregation2 = new FieldAccessorPostAggregation(aggregation2)
-        PostAggregation postAggregation3 = new ArithmeticPostAggregation(
-                "postAggDiv",
-                ArithmeticPostAggregation.ArithmeticPostAggregationFunction.DIVIDE,
-                [postAggregation1, postAggregation2]
-        )
 
         List<PostAggregation> postAggregations1 = []
         List<PostAggregation> postAggregations2 = [postAggregation1]
@@ -499,5 +510,19 @@ class GroupByQuerySpec extends Specification {
         converted.intervals == endingIntervals
         converted.innerQuery.intervals == endingIntervals
         converted.innerQuery.innerQuery.intervals == endingIntervals
+    }
+
+    def "Check column stream is generated for query"() {
+        setup:
+        List<Dimension> dimensions = [dimension1, dimension2]
+        List<Aggregation> aggregations = [aggregation1, aggregation2]
+        List<PostAggregation> postAggregations = [postAggregation3]
+
+        GroupByQuery query = defaultQuery(dimensions: dimensions, aggregations: aggregations, postAggregations: postAggregations )
+        List<Column> columns = [dimension1, dimension2].collect {new DimensionColumn(it)}
+        columns.addAll([aggregation1, aggregation2, postAggregation3].collect {new MetricColumn(it.getName())})
+
+        expect:
+        query.buildSchemaColumns().collect(Collectors.toList()) == columns
     }
 }

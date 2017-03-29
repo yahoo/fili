@@ -14,6 +14,7 @@ import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType
 import com.yahoo.bard.webservice.druid.model.QueryType
+import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
 import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.Schema
 
@@ -28,6 +29,8 @@ import org.joda.time.DateTimeZone
 
 import spock.lang.Specification
 import spock.lang.Unroll
+
+import java.util.stream.Stream
 
 class DruidResponseParserSpec extends Specification {
     private static final ObjectMapper MAPPER = new ObjectMapper()
@@ -404,7 +407,16 @@ class DruidResponseParserSpec extends Specification {
 
         then:
         thrown(UnsupportedOperationException)
+    }
 
+    def "Druid response parser delegates to query for schema columns"() {
+        setup:
+        Stream<Column> columnStream = Mock(Stream)
+        DruidAggregationQuery query = Mock(DruidAggregationQuery)
+        1 * query.buildSchemaColumns() >> columnStream
+
+        expect:
+        responseParser.buildSchemaColumns(query) == columnStream
     }
 
     String buildResponse(DefaultQueryType queryType, Map complexMetrics) {

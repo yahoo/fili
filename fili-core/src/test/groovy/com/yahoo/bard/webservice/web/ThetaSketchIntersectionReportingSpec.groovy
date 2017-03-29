@@ -176,7 +176,7 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
         LinkedHashSet<LogicalMetric> logicalMetrics =  new DataApiRequest().generateLogicalMetrics("regFoos(AND(country|id-in[US,IN],property|id-in[14,125]))", resources.metricDict, resources.dimensionDict, resources.table)
 
         when:
-        new DataApiRequest().validateMetrics(logicalMetrics,resources.table)
+        new DataApiRequest().validateMetrics(logicalMetrics, resources.table)
 
         then:
         String expectedMessage = "Requested metric(s) '[regFoos]' are not supported by the table 'NETWORK'."
@@ -189,7 +189,7 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
         LinkedHashSet<LogicalMetric> logicalMetrics =  new DataApiRequest().generateLogicalMetrics("foos(AND(country|id-in[US,IN],property|id-in[14,125]))", resources.metricDict, resources.dimensionDict, resources.table)
 
         when:
-        new DataApiRequest().validateMetrics(logicalMetrics,resources.table)
+        new DataApiRequest().validateMetrics(logicalMetrics, resources.table)
 
         then:
         noExceptionThrown()

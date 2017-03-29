@@ -3,15 +3,20 @@
 package com.yahoo.bard.webservice.druid.model.query;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
+import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
+import com.yahoo.bard.webservice.table.Column;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Common interface for Druid Query classes.
@@ -95,5 +100,23 @@ public interface DruidAggregationQuery<Q extends DruidAggregationQuery<? super Q
     @JsonIgnore
     default DruidAggregationQuery<?> getInnermostQuery() {
         return (DruidAggregationQuery<?>) DruidFactQuery.super.getInnermostQuery();
+    }
+
+    /**
+     * Produce the schema-defining columns for a given druid query.
+     *
+     * @return A stream of columns based on the signature of the Druid Query.
+     */
+    default Stream<Column> buildSchemaColumns() {
+        return Stream.of(
+                getDimensions().stream()
+                        .map(DimensionColumn::new),
+                Stream.concat(
+                        getAggregations().stream()
+                                .map(Aggregation::getName),
+                        getPostAggregations().stream()
+                                .map(PostAggregation::getName)
+                ).map(MetricColumn::new)
+        ).flatMap(Function.identity());
     }
 }

@@ -13,14 +13,10 @@ import com.yahoo.bard.webservice.data.DruidResponseParser;
 import com.yahoo.bard.webservice.data.HttpResponseMaker;
 import com.yahoo.bard.webservice.data.ResultSet;
 import com.yahoo.bard.webservice.data.ResultSetSchema;
-import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
-import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
-import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
-import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.logging.RequestLog;
@@ -41,9 +37,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.ws.rs.core.Response.Status;
 
@@ -156,18 +150,8 @@ public class ResultSetResponseProcessor extends MappingResponseProcessor impleme
      */
     public ResultSet buildResultSet(JsonNode json, DruidAggregationQuery<?> druidQuery, DateTimeZone dateTimeZone) {
 
-        LinkedHashSet<Column> columns = Stream.of(
-                druidQuery.getDimensions().stream()
-                        .map(DimensionColumn::new),
-                druidQuery.getAggregations().stream()
-                        .map(Aggregation::getName)
-                        .map(MetricColumn::new),
-                druidQuery.getPostAggregations().stream()
-                        .map(PostAggregation::getName)
-                        .map(MetricColumn::new)
-
-        ).flatMap(Function.identity()).collect(Collectors.toCollection(LinkedHashSet::new));
-
+        LinkedHashSet<Column> columns = druidResponseParser.buildSchemaColumns(druidQuery)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
 
         ResultSetSchema resultSetSchema = new ResultSetSchema(granularity, columns);
 
