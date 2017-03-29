@@ -11,6 +11,10 @@ Current
 
 - [Add Reciprocal `satisfies()` relationship complementing `satisfiedBy()` on Granularity](https://github.com/yahoo/fili/issues/222)
 
+- [MetricUnionAvailability](https://github.com/yahoo/fili/pull/193)
+    * Added `MetricUnionAvailability`  which joins physical tables with the same dimension schema
+    but non-intersecting metric schemas. Metrics on the `MetricUnionAvailability` are sourced from exactly one of the participating tables.
+
 - [Method for finding coarsest ZonedTimeGrain](https://github.com/yahoo/fili/pull/230)
     * Added utility method for returning coarsest `ZonedTimeGrain` from a collection of `ZonedTimeGrain`s. This is
     useful to construct composite tables that requires the coarsest `ZonedTimeGrain` among a set of tables.
