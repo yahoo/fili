@@ -57,9 +57,9 @@ class ConfigurationLoaderSpec extends Specification {
 
     def "test table keys"() {
         setup:
-        TableIdentifier ti1 = new TableIdentifier( "table", DAY )
-        TableIdentifier ti2 = new TableIdentifier( "table", DAY )
-        TableIdentifier ti3 = new TableIdentifier( "table", HOUR )
+        TableIdentifier ti1 = new TableIdentifier("table", DAY)
+        TableIdentifier ti2 = new TableIdentifier("table", DAY)
+        TableIdentifier ti3 = new TableIdentifier("table", HOUR)
 
         expect:
         ti1 == ti2
