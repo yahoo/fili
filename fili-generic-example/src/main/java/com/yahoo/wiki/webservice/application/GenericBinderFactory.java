@@ -8,6 +8,7 @@ import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
 import com.yahoo.bard.webservice.druid.client.DruidServiceConfig;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration;
 import com.yahoo.wiki.webservice.data.config.auto.DruidNavigator;
 import com.yahoo.wiki.webservice.data.config.dimension.GenericDimensions;
@@ -26,6 +27,7 @@ import java.util.function.Supplier;
 public class GenericBinderFactory extends AbstractBinderFactory {
     private static Supplier<List<? extends DataSourceConfiguration>> configLoader;
     private GenericDimensions genericDimensions;
+    private DataSourceMetadataService dataSourceMetadataService;
 
     @Override
     protected Set<DimensionConfig> getDimensionConfigurations() {
@@ -36,7 +38,8 @@ public class GenericBinderFactory extends AbstractBinderFactory {
 
     @Override
     protected TableLoader getTableLoader() {
-        return new GenericTableLoader(configLoader, genericDimensions);
+        dataSourceMetadataService = new DataSourceMetadataService();
+        return new GenericTableLoader(configLoader, genericDimensions,dataSourceMetadataService);
     }
 
     @Override
