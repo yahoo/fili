@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.application.JerseyTestBinder;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration;
 import com.yahoo.wiki.webservice.data.config.auto.StaticWikiConfigLoader;
 import com.yahoo.wiki.webservice.data.config.dimension.GenericDimensions;
@@ -55,6 +56,6 @@ public class WikiJerseyTestBinder extends JerseyTestBinder {
 
     @Override
     public TableLoader getTableLoader() {
-        return new GenericTableLoader(configLoader, genericDimensions);
+        return new GenericTableLoader(configLoader, genericDimensions, new DataSourceMetadataService());
     }
 }

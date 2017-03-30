@@ -84,6 +84,38 @@ public class DruidDimensionsLoader extends Loader<Boolean> {
             DimensionDictionary dimensionDictionary,
             DruidWebService druidWebService
     ) {
+        this(
+                druidWebService,
+                buildDimensionList(dimensionDictionary),
+                buildDataSourcesList(physicalTableDictionary)
+        );
+    }
+
+    public static List<DataSource> buildDataSourcesList(final PhysicalTableDictionary physicalTableDictionary) {
+        return physicalTableDictionary.values().stream()
+                .filter(physicalTable -> physicalTable instanceof ConcretePhysicalTable)
+                .map(physicalTable -> (ConcretePhysicalTable) physicalTable)
+                .map(TableDataSource::new)
+                .collect(Collectors.toList());
+    }
+
+    public static List<List<Dimension>> buildDimensionList(final DimensionDictionary dimensionDictionary) {
+        //Our configuration framework automatically converts a comma-separated config value into a list.
+        List<String> dimensionStr = SYSTEM_CONFIG.getListProperty(DRUID_DIM_LOADER_DIMENSIONS);
+
+        // A DruidSearchQuery requires a list of dimensions, which we would have to explicitly create at serialization
+        // time if `dimensions` were a flat list instead of a list of singleton lists.
+        return dimensionStr.stream()
+                .map(dimensionDictionary::findByApiName)
+                .map(Collections::singletonList)
+                .collect(Collectors.toList());
+    }
+
+    public DruidDimensionsLoader(
+            DruidWebService druidWebService,
+            List<List<Dimension>> dimensions,
+            List<DataSource> dataSources
+    ) {
         super(
                 DruidDimensionsLoader.class.getSimpleName(),
                 SYSTEM_CONFIG.getLongProperty(DRUID_DIM_LOADER_TIMER_DELAY_KEY, 0),
@@ -100,21 +132,9 @@ public class DruidDimensionsLoader extends Loader<Boolean> {
 
         lastRunTimestamp = new AtomicReference<>();
 
-        //Our configuration framework automatically converts a comma-separated config value into a list.
-        List<String> dimensionStr = SYSTEM_CONFIG.getListProperty(DRUID_DIM_LOADER_DIMENSIONS);
+        this.dimensions = dimensions;
 
-       // A DruidSearchQuery requires a list of dimensions, which we would have to explicitly create at serialization
-       // time if `dimensions` were a flat list instead of a list of singleton lists.
-        dimensions = dimensionStr.stream()
-                .map(dimensionDictionary::findByApiName)
-                .map(Collections::singletonList)
-                .collect(Collectors.toList());
-
-        dataSources = physicalTableDictionary.values().stream()
-                .filter(physicalTable -> physicalTable instanceof ConcretePhysicalTable)
-                .map(physicalTable -> (ConcretePhysicalTable) physicalTable)
-                .map(TableDataSource::new)
-                .collect(Collectors.toList());
+        this.dataSources = dataSources;
     }
 
 

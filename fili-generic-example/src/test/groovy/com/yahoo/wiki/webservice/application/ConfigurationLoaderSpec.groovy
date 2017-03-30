@@ -11,6 +11,7 @@ import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig
 import com.yahoo.bard.webservice.data.config.dimension.KeyValueStoreDimensionLoader
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.LogicalTableDictionary
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 import com.yahoo.bard.webservice.table.TableIdentifier
@@ -39,7 +40,7 @@ class ConfigurationLoaderSpec extends Specification {
         loader = new ConfigurationLoader(
                 new KeyValueStoreDimensionLoader(dimensions),
                 new GenericMetricLoader(wikiConfigLoader),
-                new GenericTableLoader(wikiConfigLoader,genericDimensions)
+                new GenericTableLoader(wikiConfigLoader, genericDimensions, new DataSourceMetadataService())
         )
         loader.load();
 
