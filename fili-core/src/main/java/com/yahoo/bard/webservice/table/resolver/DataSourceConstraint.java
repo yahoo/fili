@@ -126,7 +126,8 @@ public class DataSourceConstraint {
      * The new set of metric names will be an intersection between old metric names and
      * a user provided set of metric names
      *
-     * @param metricColumns  The user provided set of metric names
+     * @param metricColumns  The set of metric columns that are to be intersected with metric names in
+     * <tt>this DataSourceConstraint</tt>
      *
      * @return the new <tt>DataSourceConstraint</tt> instance with a new subset of metric names
      */

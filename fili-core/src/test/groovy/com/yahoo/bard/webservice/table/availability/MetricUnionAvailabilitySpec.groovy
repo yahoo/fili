@@ -2,9 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.availability
 
-import com.yahoo.bard.webservice.data.config.names.TableName
-
 import com.google.common.collect.Sets
+import com.yahoo.bard.webservice.data.config.names.TableName
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTableSchema
@@ -64,7 +63,7 @@ class MetricUnionAvailabilitySpec extends Specification {
         physicalTable2.getSchema() >> schema2
     }
 
-    def "dataSourceNames aggregates from availabilities not physical tables in MetricUnionAvailability constructor"() {
+    def "getDataSourceNames returns sources from availabilities not from physical tables"() {
         given:
         availability1.getAvailableIntervals(_ as DataSourceConstraint) >> new SimplifiedIntervalList(
                 Sets.newHashSet(interval1)
@@ -150,14 +149,14 @@ class MetricUnionAvailabilitySpec extends Specification {
         ]
     }
 
-    def "test getAvailableIntervals"() {
+    def "getAvailableIntervals returns the intersection of requested columns when available intervals have #reason"() {
         given:
         availability1.getAvailableIntervals(_ as DataSourceConstraint) >> new SimplifiedIntervalList(
-                Sets.newHashSet(interval1)
+                availableIntervals1.collect{it -> new Interval(it)} as Set
         )
         availability1.getDataSourceNames() >> Sets.newHashSet(TableName.of('source1'))
         availability2.getAvailableIntervals(_ as DataSourceConstraint) >> new SimplifiedIntervalList(
-                Sets.newHashSet(interval2, interval4)
+                availableIntervals2.collect{it -> new Interval(it)} as Set
         )
         availability2.getDataSourceNames() >> Sets.newHashSet(TableName.of('source2'))
 
@@ -183,7 +182,20 @@ class MetricUnionAvailabilitySpec extends Specification {
         expect:
         metricUnionAvailability.constructSubConstraint(dataSourceConstraint).size() == 2
         metricUnionAvailability.getAvailableIntervals(dataSourceConstraint) == new SimplifiedIntervalList(
-                Collections.emptySet()
+                availableIntervals.collect{it -> new Interval(it)} as Set
         )
+
+        where:
+        availableIntervals1 | availableIntervals2 | availableIntervals | reason
+        []                        | []                        | []                        | "two empty intervals collections"
+        ['2018-01-01/2018-02-01'] | []                        | []                        | "one interval collection being empty"
+        ['2017-01-01/2017-02-01'] | ['2017-01-01/2017-02-01'] | ['2017-01-01/2017-02-01'] | "full overlap (start/end, start/end)"
+        ['2017-01-01/2017-02-01'] | ['2018-01-01/2018-02-01'] | []                        | "0 overlap (-10/-1, 0/10)"
+        ['2017-01-01/2017-02-01'] | ['2017-02-01/2017-03-01'] | []                        | "0 overlap abutting (-10/0, 0/10)"
+        ['2017-01-01/2017-02-01'] | ['2017-01-15/2017-03-01'] | ['2017-01-15/2017-02-01'] | "partial front overlap (0/10, 5/15)"
+        ['2017-01-01/2017-02-01'] | ['2016-10-01/2017-01-15'] | ['2017-01-01/2017-01-15'] | "partial back overlap (0/10, -5/5)"
+        ['2017-01-01/2017-02-01'] | ['2017-01-15/2017-02-01'] | ['2017-01-15/2017-02-01'] | "full front overlap (0/10, 5/10)"
+        ['2017-01-01/2017-02-01'] | ['2017-01-01/2017-01-15'] | ['2017-01-01/2017-01-15'] | "full back overlap (0/10, 0/5)"
+        ['2017-01-01/2017-02-01'] | ['2017-01-15/2017-01-25'] | ['2017-01-15/2017-01-25'] | "fully contain (0/10, 3/9)"
     }
 }

@@ -23,7 +23,7 @@ public class MetricUnionCompositeTable extends BasePhysicalTable {
      *
      * @param name  Name of the physical table as TableName, also used as fact table name
      * @param columns  The columns for this table
-     * @param physicalTables  A set of <tt>PhysicalTable</tt>'s
+     * @param physicalTables  A set of <tt>PhysicalTable</tt>s
      * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
      */
     public MetricUnionCompositeTable(
@@ -42,15 +42,15 @@ public class MetricUnionCompositeTable extends BasePhysicalTable {
     }
 
     /**
-     * Returns the coarsest <tt>ZonedTimeGrain</tt> among a set of <tt>PhysicalTables</tt>'s.
+     * Returns the coarsest <tt>ZonedTimeGrain</tt> that satisfies all tables.
      * <p>
      * If the set of <tt>PhysicalTables</tt>'s is empty or the coarsest <tt>ZonedTimeGrain</tt> is not
-     * compatible with any of the <tt>PhysicalTables</tt>'s, throw <tt>IllegalArgumentException</tt>.
+     * compatible with any of the <tt>PhysicalTables</tt>s, throw <tt>IllegalArgumentException</tt>.
      *
-     * @param physicalTables  A set of <tt>PhysicalTable</tt>'s among which the coarsest <tt>ZonedTimeGrain</tt>
+     * @param physicalTables  A set of <tt>PhysicalTable</tt>s among which the coarsest <tt>ZonedTimeGrain</tt>
      * is to be returned.
      *
-     * @return the coarsest <tt>ZonedTimeGrain</tt> among a set of <tt>PhysicalTables</tt>'s
+     * @return the coarsest <tt>ZonedTimeGrain</tt> among a set of <tt>PhysicalTables</tt>s
      */
     private static ZonedTimeGrain getCoarsestTimeGrain(Set<PhysicalTable> physicalTables) {
         if (physicalTables.isEmpty()) {

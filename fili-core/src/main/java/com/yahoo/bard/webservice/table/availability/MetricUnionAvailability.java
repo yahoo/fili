@@ -68,24 +68,25 @@ public class MetricUnionAvailability implements Availability {
 
     private final Set<TableName> dataSourceNames;
     private final Set<MetricColumn> metricColumns;
-    private final Map<Availability, Set<MetricColumn>> availabilityToAvailableColumns;
+    private final Map<Availability, Set<MetricColumn>> availabilitiesToAvailableColumns;
 
     /**
      * Constructor.
      *
-     * @param physicalTables  A set of <tt>PhysicalTable</tt>'s whose sharing metric columns are to be joined together
+     * @param physicalTables  A set of <tt>PhysicalTable</tt>s containing the same metric schema
      * @param columns  The set of columns supplied by this availability
      */
     public MetricUnionAvailability(@NotNull Set<PhysicalTable> physicalTables, @NotNull Set<Column> columns) {
-        metricColumns =  columns.stream()
-                .filter(column -> column instanceof MetricColumn)
-                .map(column -> Utils.getSubsetByType(columns, MetricColumn.class))
-                .flatMap(Set::stream)
-                .collect(Collectors.toSet());
+        metricColumns = Utils.getSubsetByType(
+                columns.stream()
+                        .filter(column -> column instanceof MetricColumn)
+                        .collect(Collectors.toSet()),
+                MetricColumn.class
+        );
 
-        // get a mapping from availability to its available metric columns intersected with configured metric columns
+        // get a map from availability to its available metric columns intersected with configured metric columns
         // i.e. metricColumns
-        availabilityToAvailableColumns = physicalTables.stream()
+        availabilitiesToAvailableColumns = physicalTables.stream()
                 .collect(
                         Collectors.toMap(
                                 PhysicalTable::getAvailability,
@@ -99,7 +100,7 @@ public class MetricUnionAvailability implements Availability {
 
         // validate metric uniqueness such that
         // each table's underlying datasource schema don't have repeated metric column
-        Map<MetricColumn, Set<Availability>> duplicates = getDuplicateValue(availabilityToAvailableColumns);
+        Map<MetricColumn, Set<Availability>> duplicates = getDuplicateValue(availabilitiesToAvailableColumns);
         if (!duplicates.isEmpty()) {
             String message = String.format(
                     "While constructing MetricUnionAvailability, Metric columns are not unique - {}",
@@ -109,7 +110,7 @@ public class MetricUnionAvailability implements Availability {
             throw new IllegalArgumentException(message);
         }
 
-        dataSourceNames = availabilityToAvailableColumns.entrySet().stream()
+        dataSourceNames = availabilitiesToAvailableColumns.entrySet().stream()
                 .map(Map.Entry::getKey)
                 .map(Availability::getDataSourceNames)
                 .flatMap(Set::stream)
@@ -123,7 +124,7 @@ public class MetricUnionAvailability implements Availability {
 
     @Override
     public Map<Column, List<Interval>> getAllAvailableIntervals() {
-        return availabilityToAvailableColumns.keySet().stream()
+        return availabilitiesToAvailableColumns.keySet().stream()
                 .map(Availability::getAllAvailableIntervals)
                 .map(Map::entrySet)
                 .flatMap(Set::stream)
@@ -147,11 +148,16 @@ public class MetricUnionAvailability implements Availability {
         );
     }
 
+    @Override
+    public String toString() {
+        return "metric union availability";
+    }
+
     /**
-     * Returns duplicate values of <tt>MetricColumn</tt>'s in a map of <tt>Availability</tt>
+     * Returns duplicate values of <tt>MetricColumn</tt>s in a map of <tt>Availability</tt>
      * to a set of <tt>MetricColumn</tt>'s contained in that <tt>Availability</tt>.
      * <p>
-     * The return value is a map of duplicate <tt>MetricColumn</tt> to all <tt>Availability</tt>'s that contains
+     * The return value is a map of duplicate <tt>MetricColumn</tt> to all <tt>Availabilities</tt>' that contains
      * this <tt>MetricColumn</tt>
      * <p>
      * For example, when a map of {availability1: [metricCol1, metricCol2], availability2: [metricCol1]} is passed to
@@ -160,7 +166,7 @@ public class MetricUnionAvailability implements Availability {
      * @param availabilityToAvailableColumns  A map from <tt>Availability</tt> to set of <tt>MetricColumn</tt>
      * contained in that <tt>Availability</tt>
      *
-     * @return duplicate values of <tt>MetricColumn</tt>'s
+     * @return duplicate values of <tt>MetricColumn</tt>s
      */
     private static Map<MetricColumn, Set<Availability>> getDuplicateValue(
             Map<Availability, Set<MetricColumn>> availabilityToAvailableColumns
@@ -197,18 +203,20 @@ public class MetricUnionAvailability implements Availability {
     }
 
     /**
-     * Given a <tt>DataSourceConstraint</tt> - DSC1, construct a mapping from a type of <tt>Availability</tt>, A, to its
-     * <tt>DataSourceConstraint</tt>, DSC2. DSC2 is constructed as the intersection of metric columns between DSC1 and
+     * Given a <tt>DataSourceConstraint</tt> - DSC1, construct a map from each availability, A, in this MetricUnion to
+     * its <tt>DataSourceConstraint</tt>, DSC2.
+     * <p>
+     * DSC2 is constructed as the intersection of metric columns between DSC1 and
      * A's available metric columns. There are cases in which the intersection is empty; this method filters out
-     * mapping entries that maps to <tt>DataSourceConstraint</tt> with empty set of metric names.
+     * map entries that maps to <tt>DataSourceConstraint</tt> with empty set of metric names.
      *
-     * @param constraint data constraint whose contained metric columns will be intersected with availabilities'
+     * @param constraint  The data constraint whose contained metric columns will be intersected with availabilities'
      * metric columns
      *
-     * @return A mapping from <tt>Availability</tt> to <tt>DataSourceConstraint</tt> with non-empty metric names
+     * @return A map from <tt>Availability</tt> to <tt>DataSourceConstraint</tt> with non-empty metric names
      */
     private Map<Availability, DataSourceConstraint> constructSubConstraint(DataSourceConstraint constraint) {
-        return availabilityToAvailableColumns.entrySet().stream()
+        return availabilitiesToAvailableColumns.entrySet().stream()
                 .map(entry ->
                         new AbstractMap.SimpleEntry<>(
                                 entry.getKey(),

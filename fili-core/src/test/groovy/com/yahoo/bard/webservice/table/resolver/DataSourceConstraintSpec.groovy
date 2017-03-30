@@ -4,10 +4,12 @@ package com.yahoo.bard.webservice.table.resolver
 
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import spock.lang.Specification
+import spock.lang.Unroll
 
 class DataSourceConstraintSpec extends Specification {
 
-    def "test withIntersectedColumnNames"() {
+    @Unroll
+    def "#metricNames intersected with #other produces #newMetricNames"() {
         given:
         DataSourceConstraint newDataSourceConstraint = new DataSourceConstraint(
                 Collections.emptySet(),

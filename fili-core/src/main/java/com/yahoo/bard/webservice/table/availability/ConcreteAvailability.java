@@ -109,4 +109,9 @@ public class ConcreteAvailability implements Availability {
     protected Set<String> getColumnNames() {
         return columnNames;
     }
+
+    @Override
+    public String toString() {
+        return "concrete availability";
+    }
 }
