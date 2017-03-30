@@ -214,7 +214,7 @@ class WeightEvaluationQuerySpec extends Specification {
 
         and: "The weight-check query doesn't have a sort at either level"
         !new WeightEvaluationQuery(groupByQuery, 1).limitSpec.columns
-        !new WeightEvaluationQuery(groupByQuery, 1).innermostQuery.limitSpec.schema.columns
+        !new WeightEvaluationQuery(groupByQuery, 1).innermostQuery.limitSpec.columns
     }
 
     @Unroll
