@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 public class GenericBinderFactory extends AbstractBinderFactory {
     private Supplier<List<? extends DataSourceConfiguration>> configLoader;
     private GenericDimensions genericDimensions;
-    private DataSourceMetadataService dataSourceMetadataService;
 
     @Override
     protected Set<DimensionConfig> getDimensionConfigurations() {
@@ -44,8 +43,7 @@ public class GenericBinderFactory extends AbstractBinderFactory {
 
     @Override
     protected TableLoader getTableLoader() {
-        dataSourceMetadataService = new DataSourceMetadataService();
-        return new GenericTableLoader(configLoader, genericDimensions, dataSourceMetadataService);
+        return new GenericTableLoader(configLoader, genericDimensions, getDataSourceMetadataService());
     }
 
     @Override
