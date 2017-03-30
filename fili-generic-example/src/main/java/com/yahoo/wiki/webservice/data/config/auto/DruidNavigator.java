@@ -48,6 +48,23 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      */
     @Override
     public List<? extends DataSourceConfiguration> get() {
+        if(tableConfigurations.isEmpty()) {
+            loadAllDatasources();
+            LOG.info("Loading all datasources");
+            try {
+                //TODO Fix this so it waits for druid's responses
+                // instead of waiting 1 second for everything to be configured
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            LOG.info("Finished loading");
+        }
+
+        return tableConfigurations;
+    }
+
+    private void loadAllDatasources() {
         queryDruid(rootNode -> {
             if (rootNode.isArray()) {
                 rootNode.forEach(jsonNode -> {
@@ -57,8 +74,6 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
                 });
             }
         }, DATASOURCES);
-
-        return tableConfigurations;
     }
 
     /**
@@ -87,17 +102,19 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
     private void loadMetrics(TableConfig table, JsonNode segmentJson) {
         JsonNode metricsArray = segmentJson.get("metrics");
         Arrays.asList(metricsArray.asText().split(",")).forEach(table::addMetric);
+        LOG.info("loaded metrics {}", table.getMetrics());
     }
 
     /**
      * Add all dimensions from druid query to the {@link TableConfig}.
      *
-     * @param tableName   The TableConfig to be loaded.
+     * @param table   The TableConfig to be loaded.
      * @param segmentJson The JsonNode containing a list of dimensions.
      */
-    private void loadDimensions(TableConfig tableName, JsonNode segmentJson) {
+    private void loadDimensions(TableConfig table, JsonNode segmentJson) {
         JsonNode dimensionsArray = segmentJson.get("dimensions");
-        Arrays.asList(dimensionsArray.asText().split(",")).forEach(tableName::addDimension);
+        Arrays.asList(dimensionsArray.asText().split(",")).forEach(table::addDimension);
+        LOG.info("loaded dimensions {}", table.getDimensions());
     }
 
     /**

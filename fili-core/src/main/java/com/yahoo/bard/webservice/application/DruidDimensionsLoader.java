@@ -91,7 +91,12 @@ public class DruidDimensionsLoader extends Loader<Boolean> {
         );
     }
 
-    public static List<DataSource> buildDataSourcesList(final PhysicalTableDictionary physicalTableDictionary) {
+    /**
+     * Builds a list of datasources from the physical tables.
+     * @param physicalTableDictionary  The physical tables to load from.
+     * @return the list of datasources.
+     */
+    public static List<DataSource> buildDataSourcesList(PhysicalTableDictionary physicalTableDictionary) {
         return physicalTableDictionary.values().stream()
                 .filter(physicalTable -> physicalTable instanceof ConcretePhysicalTable)
                 .map(physicalTable -> (ConcretePhysicalTable) physicalTable)
@@ -99,7 +104,12 @@ public class DruidDimensionsLoader extends Loader<Boolean> {
                 .collect(Collectors.toList());
     }
 
-    public static List<List<Dimension>> buildDimensionList(final DimensionDictionary dimensionDictionary) {
+    /**
+     * Builds a list of dimensions from the dimension dictionary
+     * @param dimensionDictionary  The dimension dictionary to load from.
+     * @return the list of dimensions.
+     */
+    public static List<List<Dimension>> buildDimensionList(DimensionDictionary dimensionDictionary) {
         //Our configuration framework automatically converts a comma-separated config value into a list.
         List<String> dimensionStr = SYSTEM_CONFIG.getListProperty(DRUID_DIM_LOADER_DIMENSIONS);
 
@@ -111,6 +121,12 @@ public class DruidDimensionsLoader extends Loader<Boolean> {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * DruidDimensionsLoader fetches data from Druid and adds it to the dimension cache.
+     * @param druidWebService  The druid webservice to query.
+     * @param dimensions  The dimensions to use.
+     * @param dataSources  The datasources to use.
+     */
     public DruidDimensionsLoader(
             DruidWebService druidWebService,
             List<List<Dimension>> dimensions,

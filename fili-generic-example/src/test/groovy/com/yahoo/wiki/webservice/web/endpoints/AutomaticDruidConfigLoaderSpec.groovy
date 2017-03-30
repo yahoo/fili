@@ -53,14 +53,12 @@ public class AutomaticDruidConfigLoaderSpec extends Specification {
         druidWebService = new TestDruidWebService("testInstance");
         druidNavigator = new DruidNavigator(druidWebService);
         druidWebService.jsonResponse = {
-            if (druidWebService.lastUrl == "http://localhost:8081/druid/coordinator/v1/datasources/") {
+            if (druidWebService.lastUrl == "/datasources/") {
                 return expectedDataSources
-            } else if (druidWebService.lastUrl == 'http://localhost:8081/druid/coordinator/v1/datasources/' +
-                    datasource +
-                    "/?full") {
+            } else if (druidWebService.lastUrl == '/datasources/' + datasource + "/?full") {
                 return expectedMetricsAndDimensions
             }
-            return "BAD ERROR WHAT HAPPENED"
+            return "Unexpected URL"
         }
     }
 
@@ -71,7 +69,7 @@ public class AutomaticDruidConfigLoaderSpec extends Specification {
         List<DataSourceConfiguration> returnedTables = druidNavigator.get();
 
         then: "what we expect"
-        druidWebService.lastUrl == 'http://localhost:8081/druid/coordinator/v1/datasources/' + datasource + '/?full'
+        druidWebService.lastUrl == '/datasources/' + datasource + '/?full'
         List<String> returnedTableNames = new ArrayList<>();
         for (DataSourceConfiguration druidConfig : returnedTables) {
             returnedTableNames.add(druidConfig.getName());
@@ -86,7 +84,7 @@ public class AutomaticDruidConfigLoaderSpec extends Specification {
         List<DataSourceConfiguration> returnedTables = druidNavigator.get();
 
         then: "what we expect"
-        druidWebService.lastUrl == 'http://localhost:8081/druid/coordinator/v1/datasources/' + datasource + '/?full'
+        druidWebService.lastUrl == '/datasources/' + datasource + '/?full'
         returnedTables.get(0).getValidTimeGrains().get(0) == DefaultTimeGrain.DAY
     }
 
@@ -99,7 +97,7 @@ public class AutomaticDruidConfigLoaderSpec extends Specification {
         druidNavigator.loadTable(wikiticker);
 
         then: "what we expect"
-        druidWebService.lastUrl == 'http://localhost:8081/druid/coordinator/v1/datasources/' + datasource + '/?full'
+        druidWebService.lastUrl == '/datasources/' + datasource + '/?full'
         List<String> returnedMetrics = wikiticker.getMetrics();
         for (String m : metrics) {
             assert returnedMetrics.contains(m);

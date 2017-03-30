@@ -34,6 +34,12 @@ public class GenericBinderFactory extends AbstractBinderFactory {
     private Supplier<List<? extends DataSourceConfiguration>> configLoader;
     private GenericDimensions genericDimensions;
 
+    public GenericBinderFactory() {
+        DruidWebService druidWebService = buildMetadataDruidWebService(getMappers().getMapper());
+        configLoader = new DruidNavigator(druidWebService);
+        configLoader.get();
+    }
+
     @Override
     protected Set<DimensionConfig> getDimensionConfigurations() {
         //NOTE: This is guaranteed to be called before getTableLoader()
@@ -63,16 +69,5 @@ public class GenericBinderFactory extends AbstractBinderFactory {
     @Override
     protected MetricLoader getMetricLoader() {
         return new GenericMetricLoader(configLoader);
-    }
-
-    @Override
-    protected DruidWebService buildDruidWebService(
-            DruidServiceConfig druidServiceConfig,
-            ObjectMapper mapper
-    ) {
-        DruidWebService druidWebService = super.buildDruidWebService(druidServiceConfig, mapper);
-        configLoader = new DruidNavigator(druidWebService);
-        //TODO should probably build my own webservice to be safe but this will work for now
-        return druidWebService;
     }
 }
