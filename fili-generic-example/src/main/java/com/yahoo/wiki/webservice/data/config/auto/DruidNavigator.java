@@ -27,8 +27,7 @@ import java.util.function.Supplier;
  */
 public class DruidNavigator implements Supplier<List<? extends DataSourceConfiguration>> {
     private static final Logger LOG = LoggerFactory.getLogger(DruidNavigator.class);
-    private static final int COORDINATOR_PORT = 8081;
-    private static final String COORDINATOR_BASE = "http://localhost:" + COORDINATOR_PORT + "/druid/coordinator/v1/";
+    private static final String DATASOURCES = "/datasources/";
     private final DruidWebService druidWebService;
     private final List<TableConfig> tableConfigurations;
 
@@ -49,7 +48,6 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      */
     @Override
     public List<? extends DataSourceConfiguration> get() {
-        String url = COORDINATOR_BASE + "datasources/";
         queryDruid(rootNode -> {
             if (rootNode.isArray()) {
                 rootNode.forEach(jsonNode -> {
@@ -58,7 +56,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
                     tableConfigurations.add(tableConfig);
                 });
             }
-        }, url);
+        }, DATASOURCES);
 
         return tableConfigurations;
     }
@@ -69,7 +67,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      * @param table The TableConfig to be loaded with queries against druid.
      */
     public void loadTable(TableConfig table) {
-        String url = COORDINATOR_BASE + "datasources/" + table.getName() + "/?full";
+        String url = DATASOURCES + table.getName() + "/?full";
         queryDruid(rootNode -> {
             //TODO: handle errors
             JsonNode segments = rootNode.get("segments").get(0);
