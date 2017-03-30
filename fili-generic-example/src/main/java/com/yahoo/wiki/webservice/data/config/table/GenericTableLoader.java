@@ -53,6 +53,7 @@ public class GenericTableLoader extends BaseTableLoader {
      * Constructor.
      * @param configLoader  Gives a list of {@link DataSourceConfiguration} to build tables from.
      * @param genericDimensions  Reference to the already constructed dimensions.
+     * @param metadataService  Service containing the segment data for constructing tables.
      */
     public GenericTableLoader(
             @NotNull Supplier<List<? extends DataSourceConfiguration>> configLoader,
