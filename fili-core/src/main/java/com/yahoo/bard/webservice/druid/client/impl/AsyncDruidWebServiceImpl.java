@@ -115,6 +115,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
                 .setRequestTimeout(requestTimeout)
                 .setConnectionTtl(requestTimeout)
                 .setPooledConnectionIdleTimeout(requestTimeout)
+                .setFollowRedirect(true)
                 .build();
 
         return new DefaultAsyncHttpClient(config);
@@ -326,7 +327,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
 
         BoundRequestBuilder requestBuilder = webClient.preparePost(serviceConfig.getUrl())
                 .setBody(entityBody)
-                .addHeader("Content-Type", "application/json");
+                .addHeader("Content-Type", "application/json; charset=UTF-8");
 
         headersToAppend.get().forEach(requestBuilder::addHeader);
 

@@ -59,6 +59,9 @@ Current
 
 ### Changed:
 
+- [Make `TemplateDruidQuery::getMetricField` get the first field instead of any field](https://github.com/yahoo/fili/pull/210)
+    * Previously, order was by luck, now it's by the contract of `findFirst`
+
 - [Restore non-default query support in TestDruidWebservice](https://github.com/yahoo/fili/pull/202)
 
 - [Base TableDataSource serialization on ConcretePhysicalTable fact name](https://github.com/yahoo/fili/pull/202)
@@ -130,8 +133,19 @@ Current
     - This method is a part of the infrastructure to support the recently
     deprecated `RequestLog::switchTiming`.
 
+- [LogicalMetricColumn doesn't need a 2-arg constructor](https://github.com/yahoo/fili/pull/204)
+    * It's only used in one place, and there's no real need for it because the other constructor does the same thing
+
+- [DimensionColumn's 2-arg constructor is only used by a deprecated class](https://github.com/yahoo/fili/pull/204)
+    * When that deprecated class (`LogicalDimensionColumn`) goes away, this constructor will go away as well
 
 ### Fixed:
+
+- [Specify the character encoding to support unicode characters](https://github.com/yahoo/fili/pull/221)
+    * Default character set used by the back end was mangling Unicode characters.
+
+- [Default the AsyncDruidWebServiceImpl to follow redirects](https://github.com/yahoo/fili/pull/214)
+    * It defaulted to not following redirects, and now it doesn't
 
 - [Reenable custom query types in TestDruidWebService]()
 
@@ -152,7 +166,6 @@ Current
 
 
 ### Known Issues:
-
 
 
 ### Removed:
