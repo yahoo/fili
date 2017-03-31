@@ -141,6 +141,9 @@ Current
 
 ### Fixed:
 
+- [Specify the character encoding to support unicode characters](https://github.com/yahoo/fili/pull/221)
+    * Default character set used by the back end was mangling Unicode characters.
+
 - [Default the AsyncDruidWebServiceImpl to follow redirects](https://github.com/yahoo/fili/pull/214)
     * It defaulted to not following redirects, and now it doesn't
 
@@ -163,7 +166,6 @@ Current
 
 
 ### Known Issues:
-
 
 
 ### Removed:
