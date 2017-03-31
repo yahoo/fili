@@ -115,6 +115,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
                 .setRequestTimeout(requestTimeout)
                 .setConnectionTtl(requestTimeout)
                 .setPooledConnectionIdleTimeout(requestTimeout)
+                .setFollowRedirect(true)
                 .build();
 
         return new DefaultAsyncHttpClient(config);
