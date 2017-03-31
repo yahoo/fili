@@ -133,6 +133,9 @@ Current
 
 ### Fixed:
 
+- [Default the AsyncDruidWebServiceImpl to follow redirects](https://github.com/yahoo/fili/pull/214)
+    * It defaulted to not following redirects, and now it doesn't
+
 - [Reenable custom query types in TestDruidWebService]()
 
 - [Fixed Segment Metadata Loader Unconfigured Dimension Bug](https://github.com/yahoo/fili/pull/197)
