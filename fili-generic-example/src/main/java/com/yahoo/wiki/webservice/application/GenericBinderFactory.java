@@ -68,9 +68,9 @@ public class GenericBinderFactory extends AbstractBinderFactory {
 
     @Override
     protected DruidDimensionsLoader buildDruidDimensionsLoader(
-            final DruidWebService webService,
-            final PhysicalTableDictionary physicalTableDictionary,
-            final DimensionDictionary dimensionDictionary
+            DruidWebService webService,
+            PhysicalTableDictionary physicalTableDictionary,
+            DimensionDictionary dimensionDictionary
     ) {
         List<List<Dimension>> dimensions = genericDimensions.getAllDimensionConfigurations().stream()
                 .map(DimensionConfig::getApiName)
