@@ -50,7 +50,7 @@
                             <tasks>
                                 <delete
                                         quiet="true"
-                                        file="${project.build.directory}/moduleJars"/>
+                                        dir="${project.build.directory}/moduleJars"/>
                                 <mkdir
                                         dir="${project.build.directory}/moduleJars/jars"/>
                                 <jar
@@ -93,8 +93,8 @@
                 <configuration>
                     <additionalClasspathElements>
                         <!-- One set of paths makes maven happy, the other set makes the IDE happy -->
-                        <additionalClasspathElement>${basedir}/target/moduleJars/jars/fili-system-config-test1.jar</additionalClasspathElement>
-                        <additionalClasspathElement>${basedir}/target/moduleJars/jars/fili-system-config-test2.jar</additionalClasspathElement>
+                        <additionalClasspathElement>${project.basedir}/target/moduleJars/jars/fili-system-config-test1.jar</additionalClasspathElement>
+                        <additionalClasspathElement>${project.basedir}/target/moduleJars/jars/fili-system-config-test2.jar</additionalClasspathElement>
                         <additionalClasspathElement>target/moduleJars/jars/fili-system-config-test1.jar</additionalClasspathElement>
                         <additionalClasspathElement>target/moduleJars/jars/fili-system-config-test2.jar</additionalClasspathElement>
                     </additionalClasspathElements>
