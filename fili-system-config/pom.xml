@@ -48,19 +48,17 @@
                         <phase>generate-test-resources</phase>
                         <configuration>
                             <tasks>
-                                <tasks>
-                                    <delete
-                                            quiet="true"
-                                            file="${project.build.directory}/moduleJars"/>
-                                    <mkdir
-                                            dir="${project.build.directory}/moduleJars/jars"/>
-                                    <jar
-                                            destfile="${project.build.directory}/moduleJars/jars/fili-system-config-test1.jar"
-                                            basedir="${project.basedir}/src/test/resources/jar1-contents"/>
-                                    <jar
-                                            destfile="${project.build.directory}/moduleJars/jars/fili-system-config-test2.jar"
-                                            basedir="${project.basedir}/src/test/resources/jar2-contents"/>
-                                </tasks>
+                                <delete
+                                        quiet="true"
+                                        file="${project.build.directory}/moduleJars"/>
+                                <mkdir
+                                        dir="${project.build.directory}/moduleJars/jars"/>
+                                <jar
+                                        destfile="${project.build.directory}/moduleJars/jars/fili-system-config-test1.jar"
+                                        basedir="${project.basedir}/src/test/resources/jar1-contents"/>
+                                <jar
+                                        destfile="${project.build.directory}/moduleJars/jars/fili-system-config-test2.jar"
+                                        basedir="${project.basedir}/src/test/resources/jar2-contents"/>
                             </tasks>
                         </configuration>
                         <goals>
