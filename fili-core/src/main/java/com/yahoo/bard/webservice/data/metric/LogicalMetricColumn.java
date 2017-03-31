@@ -14,7 +14,11 @@ public class LogicalMetricColumn extends MetricColumn {
      *
      * @param name  The column name
      * @param metric  The logical metric
+     *
+     * @deprecated because LogicalMetricColumn is really only a thing for LogicalTable, so there's no reason for there
+     * to be an alias on the LogicalMetric inside the LogicalTableSchema.
      */
+    @Deprecated
     public LogicalMetricColumn(String name, LogicalMetric metric) {
         super(name);
         this.metric = metric;
@@ -26,7 +30,8 @@ public class LogicalMetricColumn extends MetricColumn {
      * @param metric  The logical metric
      */
     public LogicalMetricColumn(LogicalMetric metric) {
-        this(metric.getName(), metric);
+        super(metric.getName());
+        this.metric = metric;
     }
 
     /**
