@@ -48,11 +48,19 @@
                         <phase>generate-test-resources</phase>
                         <configuration>
                             <tasks>
-                                <exec
-                                    dir="${project.basedir}/src/test/scripts"
-                                    executable="./prepjars.bash"
-                                    failonerror="true">
-                                </exec>
+                                <tasks>
+                                    <delete
+                                            quiet="true"
+                                            file="${project.build.directory}/moduleJars"/>
+                                    <mkdir
+                                            dir="${project.build.directory}/moduleJars/jars"/>
+                                    <jar
+                                            destfile="${project.build.directory}/moduleJars/jars/fili-system-config-test1.jar"
+                                            basedir="${project.basedir}/src/test/resources/jar1-contents"/>
+                                    <jar
+                                            destfile="${project.build.directory}/moduleJars/jars/fili-system-config-test2.jar"
+                                            basedir="${project.basedir}/src/test/resources/jar2-contents"/>
+                                </tasks>
                             </tasks>
                         </configuration>
                         <goals>
@@ -67,10 +75,10 @@
                 <configuration>
                     <additionalClasspathElements>
                         <!-- One set of paths makes maven happy, the other set makes the IDE happy -->
-                        <additionalClasspathElement>${basedir}/src/test/resources/jars/fili-system-config-test1.jar</additionalClasspathElement>
-                        <additionalClasspathElement>${basedir}/src/test/resources/jars/fili-system-config-test2.jar</additionalClasspathElement>
-                        <additionalClasspathElement>src/test/resources/jars/fili-system-config-test1.jar</additionalClasspathElement>
-                        <additionalClasspathElement>src/test/resources/jars/fili-system-config-test2.jar</additionalClasspathElement>
+                        <additionalClasspathElement>${basedir}/target/moduleJars/jars/fili-system-config-test1.jar</additionalClasspathElement>
+                        <additionalClasspathElement>${basedir}/target/moduleJars/jars/fili-system-config-test2.jar</additionalClasspathElement>
+                        <additionalClasspathElement>target/moduleJars/jars/fili-system-config-test1.jar</additionalClasspathElement>
+                        <additionalClasspathElement>target/moduleJars/jars/fili-system-config-test2.jar</additionalClasspathElement>
                     </additionalClasspathElements>
                 </configuration>
             </plugin>
