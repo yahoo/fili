@@ -116,7 +116,7 @@ dependencies {
 
 The most bleeding-edge version is: [![Bleeding-edge](https://api.bintray.com/packages/yahoo/maven/fili/images/download.svg)](https://bintray.com/yahoo/maven/fili/_latestVersion)
 
-The most recent stable version is: [![Stable](https://img.shields.io/badge/Stable-0.7.36-blue.svg)](https://bintray.com/yahoo/maven/fili/0.7.36)
+The most recent stable version is: [![Stable](https://img.shields.io/badge/Stable-0.7.37-blue.svg)](https://bintray.com/yahoo/maven/fili/0.7.37)
 
 
 Extending

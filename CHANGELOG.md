@@ -27,6 +27,16 @@ Current
 ### Removed:
 
 
+v0.7.37 - 2017/04/04
+--------------------
+
+This patch is to back-port a fix for getting Druid to handle international / UTF character sets correctly
+
+### Fixed:
+
+- [Specify the character encoding to support unicode characters](https://github.com/yahoo/fili/pull/221)
+    * Default character set used by the back end was mangling Unicode characters.
+
 
 v0.7.36 - 2017/01/30
 --------------------

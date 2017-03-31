@@ -325,7 +325,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
 
         BoundRequestBuilder requestBuilder = webClient.preparePost(serviceConfig.getUrl())
                 .setBody(entityBody)
-                .addHeader("Content-Type", "application/json");
+                .addHeader("Content-Type", "application/json; charset=UTF-8");
 
         headersToAppend.get().forEach(requestBuilder::addHeader);
 
