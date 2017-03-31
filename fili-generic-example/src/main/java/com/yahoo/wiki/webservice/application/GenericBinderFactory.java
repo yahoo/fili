@@ -33,17 +33,31 @@ import java.util.stream.Collectors;
 public class GenericBinderFactory extends AbstractBinderFactory {
     private Supplier<List<? extends DataSourceConfiguration>> configLoader;
     private GenericDimensions genericDimensions;
+    private static Set<DimensionConfig> dimensions;
 
+    /**
+     * Constructs a GenericBinderFactory which starts configuring with druid.
+     */
     public GenericBinderFactory() {
         DruidWebService druidWebService = buildMetadataDruidWebService(getMappers().getMapper());
         configLoader = new DruidNavigator(druidWebService);
         configLoader.get();
     }
 
+    /**
+     * Provides a way for {@link GenericMain} to access the dimensions.
+     * TODO: This is a bad solution to getting the dimensions from GenericMain
+     * @return the dimensions found from druid.
+     */
+    public static Set<DimensionConfig> getDimensions() {
+        return dimensions;
+    }
+
     @Override
     protected Set<DimensionConfig> getDimensionConfigurations() {
         //NOTE: This is guaranteed to be called before getTableLoader()
         genericDimensions = new GenericDimensions(configLoader);
+        dimensions = genericDimensions.getAllDimensionConfigurations();
         return genericDimensions.getAllDimensionConfigurations();
     }
 

@@ -54,6 +54,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
             try {
                 //TODO Fix this so it waits for druid's responses
                 // instead of waiting 1 second for everything to be configured
+                // in order to wait for druid's response, DruidWebService will have to return a future
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
