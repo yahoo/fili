@@ -30,7 +30,10 @@ public class DimensionColumn extends Column {
      *
      * @param dimension  The column's corresponding dimension
      * @param columnName  Column name backing dimension
+     *
+     * @deprecated LogicalDimensionColumn is the only caller of this, and since it's deprecated, so is this constructor
      */
+    @Deprecated
     protected DimensionColumn(@NotNull Dimension dimension, @NotNull String columnName) {
         super(columnName);
         this.dimension = dimension;

@@ -412,7 +412,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
     public MetricField getMetricField(String name) {
         return Stream.concat(postAggregations.stream(), aggregations.stream())
                 .filter(field -> field.getName().equals(name))
-                .findAny()
+                .findFirst()
                 .orElseThrow(IllegalArgumentException::new);
     }
 
