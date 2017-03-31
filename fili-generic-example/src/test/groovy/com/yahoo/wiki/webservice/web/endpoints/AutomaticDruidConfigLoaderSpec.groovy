@@ -127,7 +127,7 @@ public class AutomaticDruidConfigLoaderSpec extends Specification {
         "2015-01-01T00:00:00.000Z/2016-01-01T00:00:00.000Z" | Optional.of(DefaultTimeGrain.YEAR)
         "2017-01-01T00:00:00.000Z/2017-02-01T00:00:00.000Z" | Optional.of(DefaultTimeGrain.MONTH)
         "2017-02-27T00:00:00.000Z/2017-03-06T00:00:00.000Z" | Optional.of(DefaultTimeGrain.WEEK)
-        "2015-09-12T00:00:00.000Z/2015-09-13T01:01:01.000Z" | Optional.empty() //expected failure -> day
+        "2015-09-12T00:00:00.000Z/2015-09-13T01:01:01.000Z" | Optional.empty() //expected failure
         "2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z" | Optional.of(DefaultTimeGrain.DAY)
         "2015-09-12T00:00:00.000Z/2015-09-12T01:00:00.000Z" | Optional.of(DefaultTimeGrain.HOUR)
         "2015-09-12T00:00:00.000Z/2015-09-12T00:01:00.000Z" | Optional.of(DefaultTimeGrain.MINUTE)
