@@ -5,7 +5,6 @@ package com.yahoo.wiki.webservice.application;
 import com.yahoo.bard.webservice.application.HealthCheckServletContextListener;
 import com.yahoo.bard.webservice.application.MetricServletContextListener;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
-import com.yahoo.wiki.webservice.data.config.dimension.GenericDimensions;
 
 import com.codahale.metrics.servlet.InstrumentedFilter;
 import com.codahale.metrics.servlets.AdminServlet;
