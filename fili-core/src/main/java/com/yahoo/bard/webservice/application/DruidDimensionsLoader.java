@@ -105,7 +105,8 @@ public class DruidDimensionsLoader extends Loader<Boolean> {
     }
 
     /**
-     * Builds a list of dimensions from the dimension dictionary
+     * Builds a list of dimensions from the dimension dictionary.
+     * 
      * @param dimensionDictionary  The dimension dictionary to load from.
      * @return the list of dimensions.
      */
