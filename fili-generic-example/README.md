@@ -25,7 +25,7 @@ mvn -pl fili-generic-example exec:java
 From another window, run a test query against the default druid data:
 
 ```bash
-curl "http://localhost:9998/v1/data/wikiticker/hour/?metrics=deleted&dateTime=2015-09-12/PT24H" -H "Content-Type: application/json" | python -m json.tool
+curl "http://localhost:9998/v1/data/wikiticker/day/?metrics=deleted&dateTime=2015-09-12/PT24H" -H "Content-Type: application/json" | python -m json.tool
 ```
 
 If everything is working you should see something like:
@@ -61,11 +61,20 @@ Here are some sample queries that you can run to verify your server:
 
 - Count of edits by hour for the last 72 hours:  
   
-      GET http://localhost:9998/v1/data/wikiticker/hour/?metrics=count&dateTime=PT724H/current
+      GET http://localhost:9998/v1/data/wikiticker/day/?metrics=count&dateTime=PT72H/current
+    Note: this will should be something like the response below unless you have streaming data.
+    ```json
+    {
+        "rows": [],
+        "meta": {
+            "missingIntervals": ["2017-03-30 00:00:00.000/2017-04-02 00:00:00.000"]
+        }
+    }
+    ```  
 
 - Show debug info, including the query sent to Druid:  
 
-      GET http://localhost:9998/v1/data/wikiticker/hour/?format=debug&metrics=count&dateTime=PT724H/current
+      GET http://localhost:9998/v1/data/wikiticker/day/?format=debug&metrics=count&dateTime=PT72H/current
 
 ## Importing and Running in IntelliJ
 
