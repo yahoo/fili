@@ -53,9 +53,7 @@ public class GenericMain {
      * @throws IOException If something goes terribly wrong when building the JSON or sending it
      */
     private static void markDimensionCacheHealthy(int port) throws IOException {
-        //TODO need to get dimensions
-        for (DimensionConfig dimensionConfig : new GenericDimensions(null)
-                .getAllDimensionConfigurations()) {
+        for (DimensionConfig dimensionConfig : GenericBinderFactory.getDimensions()) {
             String dimension = dimensionConfig.getApiName();
             HttpPost post = new HttpPost("http://localhost:" + port + "/v1/cache/dimensions/" + dimension);
             post.setHeader("Content-type", "application/json");
@@ -118,6 +116,6 @@ public class GenericMain {
 
         server.start();
 
-        //markDimensionCacheHealthy(port);
+        markDimensionCacheHealthy(port);
     }
 }

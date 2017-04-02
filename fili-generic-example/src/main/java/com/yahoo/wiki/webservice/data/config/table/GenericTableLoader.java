@@ -13,6 +13,7 @@ import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.data.time.ZonelessTimeGrain;
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration;
 import com.yahoo.wiki.webservice.data.config.dimension.GenericDimensions;
@@ -52,11 +53,14 @@ public class GenericTableLoader extends BaseTableLoader {
      * Constructor.
      * @param configLoader  Gives a list of {@link DataSourceConfiguration} to build tables from.
      * @param genericDimensions  Reference to the already constructed dimensions.
+     * @param metadataService  Service containing the segment data for constructing tables.
      */
     public GenericTableLoader(
             @NotNull Supplier<List<? extends DataSourceConfiguration>> configLoader,
-            @NotNull GenericDimensions genericDimensions
+            @NotNull GenericDimensions genericDimensions,
+            DataSourceMetadataService metadataService
     ) {
+        super(metadataService);
         this.configLoader = configLoader;
         configureTables(genericDimensions);
     }

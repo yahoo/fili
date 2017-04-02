@@ -2,14 +2,17 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.auto;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
 import com.yahoo.bard.webservice.data.time.GranularityDictionary;
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
+
+import com.fasterxml.jackson.databind.JsonNode;
+
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,8 +27,7 @@ import java.util.function.Supplier;
  */
 public class DruidNavigator implements Supplier<List<? extends DataSourceConfiguration>> {
     private static final Logger LOG = LoggerFactory.getLogger(DruidNavigator.class);
-    private static final int COORDINATOR_PORT = 8081;
-    private static final String COORDINATOR_BASE = "http://localhost:" + COORDINATOR_PORT + "/druid/coordinator/v1/";
+    private static final String DATASOURCES = "/datasources/";
     private final DruidWebService druidWebService;
     private final List<TableConfig> tableConfigurations;
 
@@ -46,7 +48,24 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      */
     @Override
     public List<? extends DataSourceConfiguration> get() {
-        String url = COORDINATOR_BASE + "datasources/";
+        if(tableConfigurations.isEmpty()) {
+            loadAllDatasources();
+            LOG.info("Loading all datasources");
+            try {
+                //TODO Fix this so it waits for druid's responses
+                // instead of waiting 1 second for everything to be configured
+                // in order to wait for druid's response, DruidWebService will have to return a future
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            LOG.info("Finished loading");
+        }
+
+        return tableConfigurations;
+    }
+
+    private void loadAllDatasources() {
         queryDruid(rootNode -> {
             if (rootNode.isArray()) {
                 rootNode.forEach(jsonNode -> {
@@ -55,9 +74,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
                     tableConfigurations.add(tableConfig);
                 });
             }
-        }, url);
-
-        return tableConfigurations;
+        }, DATASOURCES);
     }
 
     /**
@@ -66,7 +83,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      * @param table The TableConfig to be loaded with queries against druid.
      */
     public void loadTable(TableConfig table) {
-        String url = COORDINATOR_BASE + "datasources/" + table.getName() + "/?full";
+        String url = DATASOURCES + table.getName() + "/?full";
         queryDruid(rootNode -> {
             //TODO: handle errors
             JsonNode segments = rootNode.get("segments").get(0);
@@ -86,17 +103,19 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
     private void loadMetrics(TableConfig table, JsonNode segmentJson) {
         JsonNode metricsArray = segmentJson.get("metrics");
         Arrays.asList(metricsArray.asText().split(",")).forEach(table::addMetric);
+        LOG.info("loaded metrics {}", table.getMetrics());
     }
 
     /**
      * Add all dimensions from druid query to the {@link TableConfig}.
      *
-     * @param tableName   The TableConfig to be loaded.
+     * @param table   The TableConfig to be loaded.
      * @param segmentJson The JsonNode containing a list of dimensions.
      */
-    private void loadDimensions(TableConfig tableName, JsonNode segmentJson) {
+    private void loadDimensions(TableConfig table, JsonNode segmentJson) {
         JsonNode dimensionsArray = segmentJson.get("dimensions");
-        Arrays.asList(dimensionsArray.asText().split(",")).forEach(tableName::addDimension);
+        Arrays.asList(dimensionsArray.asText().split(",")).forEach(table::addDimension);
+        LOG.info("loaded dimensions {}", table.getDimensions());
     }
 
     /**
@@ -111,8 +130,8 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
         Optional<TimeGrain> timeGrain = Optional.empty();
         try {
             if (utcTimes.length >= 2) {
-                DateTime start = new DateTime(utcTimes[0]);
-                DateTime end = new DateTime(utcTimes[1]);
+                DateTime start = new DateTime(utcTimes[0], DateTimeZone.UTC);
+                DateTime end = new DateTime(utcTimes[1], DateTimeZone.UTC);
                 timeGrain = getTimeGrain(start, end);
             }
         } catch (IllegalArgumentException ignored) {

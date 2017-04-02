@@ -84,6 +84,54 @@ public class DruidDimensionsLoader extends Loader<Boolean> {
             DimensionDictionary dimensionDictionary,
             DruidWebService druidWebService
     ) {
+        this(
+                druidWebService,
+                buildDimensionList(dimensionDictionary),
+                buildDataSourcesList(physicalTableDictionary)
+        );
+    }
+
+    /**
+     * Builds a list of datasources from the physical tables.
+     * @param physicalTableDictionary  The physical tables to load from.
+     * @return the list of datasources.
+     */
+    public static List<DataSource> buildDataSourcesList(PhysicalTableDictionary physicalTableDictionary) {
+        return physicalTableDictionary.values().stream()
+                .filter(physicalTable -> physicalTable instanceof ConcretePhysicalTable)
+                .map(physicalTable -> (ConcretePhysicalTable) physicalTable)
+                .map(TableDataSource::new)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Builds a list of dimensions from the dimension dictionary
+     * @param dimensionDictionary  The dimension dictionary to load from.
+     * @return the list of dimensions.
+     */
+    public static List<List<Dimension>> buildDimensionList(DimensionDictionary dimensionDictionary) {
+        //Our configuration framework automatically converts a comma-separated config value into a list.
+        List<String> dimensionStr = SYSTEM_CONFIG.getListProperty(DRUID_DIM_LOADER_DIMENSIONS);
+
+        // A DruidSearchQuery requires a list of dimensions, which we would have to explicitly create at serialization
+        // time if `dimensions` were a flat list instead of a list of singleton lists.
+        return dimensionStr.stream()
+                .map(dimensionDictionary::findByApiName)
+                .map(Collections::singletonList)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * DruidDimensionsLoader fetches data from Druid and adds it to the dimension cache.
+     * @param druidWebService  The druid webservice to query.
+     * @param dimensions  The dimensions to use.
+     * @param dataSources  The datasources to use.
+     */
+    public DruidDimensionsLoader(
+            DruidWebService druidWebService,
+            List<List<Dimension>> dimensions,
+            List<DataSource> dataSources
+    ) {
         super(
                 DruidDimensionsLoader.class.getSimpleName(),
                 SYSTEM_CONFIG.getLongProperty(DRUID_DIM_LOADER_TIMER_DELAY_KEY, 0),
@@ -100,21 +148,9 @@ public class DruidDimensionsLoader extends Loader<Boolean> {
 
         lastRunTimestamp = new AtomicReference<>();
 
-        //Our configuration framework automatically converts a comma-separated config value into a list.
-        List<String> dimensionStr = SYSTEM_CONFIG.getListProperty(DRUID_DIM_LOADER_DIMENSIONS);
+        this.dimensions = dimensions;
 
-       // A DruidSearchQuery requires a list of dimensions, which we would have to explicitly create at serialization
-       // time if `dimensions` were a flat list instead of a list of singleton lists.
-        dimensions = dimensionStr.stream()
-                .map(dimensionDictionary::findByApiName)
-                .map(Collections::singletonList)
-                .collect(Collectors.toList());
-
-        dataSources = physicalTableDictionary.values().stream()
-                .filter(physicalTable -> physicalTable instanceof ConcretePhysicalTable)
-                .map(physicalTable -> (ConcretePhysicalTable) physicalTable)
-                .map(TableDataSource::new)
-                .collect(Collectors.toList());
+        this.dataSources = dataSources;
     }
 
 

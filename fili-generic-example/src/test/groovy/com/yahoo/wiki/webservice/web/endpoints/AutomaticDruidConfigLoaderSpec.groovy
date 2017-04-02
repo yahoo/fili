@@ -8,6 +8,7 @@ import com.yahoo.wiki.webservice.data.config.auto.DruidNavigator
 import com.yahoo.wiki.webservice.data.config.auto.TableConfig
 
 import org.joda.time.DateTime
+import org.joda.time.DateTimeZone
 
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -52,14 +53,12 @@ public class AutomaticDruidConfigLoaderSpec extends Specification {
         druidWebService = new TestDruidWebService("testInstance");
         druidNavigator = new DruidNavigator(druidWebService);
         druidWebService.jsonResponse = {
-            if (druidWebService.lastUrl == "http://localhost:8081/druid/coordinator/v1/datasources/") {
+            if (druidWebService.lastUrl == "/datasources/") {
                 return expectedDataSources
-            } else if (druidWebService.lastUrl == 'http://localhost:8081/druid/coordinator/v1/datasources/' +
-                    datasource +
-                    "/?full") {
+            } else if (druidWebService.lastUrl == '/datasources/' + datasource + "/?full") {
                 return expectedMetricsAndDimensions
             }
-            return "BAD ERROR WHAT HAPPENED"
+            return "Unexpected URL"
         }
     }
 
@@ -70,7 +69,7 @@ public class AutomaticDruidConfigLoaderSpec extends Specification {
         List<DataSourceConfiguration> returnedTables = druidNavigator.get();
 
         then: "what we expect"
-        druidWebService.lastUrl == 'http://localhost:8081/druid/coordinator/v1/datasources/' + datasource + '/?full'
+        druidWebService.lastUrl == '/datasources/' + datasource + '/?full'
         List<String> returnedTableNames = new ArrayList<>();
         for (DataSourceConfiguration druidConfig : returnedTables) {
             returnedTableNames.add(druidConfig.getName());
@@ -85,7 +84,7 @@ public class AutomaticDruidConfigLoaderSpec extends Specification {
         List<DataSourceConfiguration> returnedTables = druidNavigator.get();
 
         then: "what we expect"
-        druidWebService.lastUrl == 'http://localhost:8081/druid/coordinator/v1/datasources/' + datasource + '/?full'
+        druidWebService.lastUrl == '/datasources/' + datasource + '/?full'
         returnedTables.get(0).getValidTimeGrains().get(0) == DefaultTimeGrain.DAY
     }
 
@@ -98,7 +97,7 @@ public class AutomaticDruidConfigLoaderSpec extends Specification {
         druidNavigator.loadTable(wikiticker);
 
         then: "what we expect"
-        druidWebService.lastUrl == 'http://localhost:8081/druid/coordinator/v1/datasources/' + datasource + '/?full'
+        druidWebService.lastUrl == '/datasources/' + datasource + '/?full'
         List<String> returnedMetrics = wikiticker.getMetrics();
         for (String m : metrics) {
             assert returnedMetrics.contains(m);
@@ -114,23 +113,23 @@ public class AutomaticDruidConfigLoaderSpec extends Specification {
     def "test getTimeGrain from interval - #expectedTimeGrain"() {
         setup:
         String[] dates = interval.split("/")
-        DateTime start = new DateTime(dates[0])
-        DateTime end = new DateTime(dates[1])
+        DateTime start = new DateTime(dates[0],DateTimeZone.UTC)
+        DateTime end = new DateTime(dates[1],DateTimeZone.UTC)
 
         when: "we parse the time"
-        TimeGrain timeGrain = druidNavigator.getTimeGrain(start, end)
+        Optional<TimeGrain> timeGrain = druidNavigator.getTimeGrain(start, end)
 
         then: "what we expect"
         timeGrain == expectedTimeGrain
 
         where:
         interval                                            | expectedTimeGrain
-        "2015-01-01T00:00:00.000Z/2016-01-01T00:00:00.000Z" | DefaultTimeGrain.YEAR
-        "2017-01-01T00:00:00.000Z/2017-02-01T00:00:00.000Z" | DefaultTimeGrain.MONTH
-        "2017-02-27T00:00:00.000Z/2017-03-06T00:00:00.000Z" | DefaultTimeGrain.WEEK
-        "2015-09-12T00:00:00.000Z/2015-09-13T01:01:01.000Z" | DefaultTimeGrain.DAY //expected failure -> day
-        "2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z" | DefaultTimeGrain.DAY
-        "2015-09-12T00:00:00.000Z/2015-09-12T01:00:00.000Z" | DefaultTimeGrain.HOUR
-        "2015-09-12T00:00:00.000Z/2015-09-12T00:01:00.000Z" | DefaultTimeGrain.MINUTE
+        "2015-01-01T00:00:00.000Z/2016-01-01T00:00:00.000Z" | Optional.of(DefaultTimeGrain.YEAR)
+        "2017-01-01T00:00:00.000Z/2017-02-01T00:00:00.000Z" | Optional.of(DefaultTimeGrain.MONTH)
+        "2017-02-27T00:00:00.000Z/2017-03-06T00:00:00.000Z" | Optional.of(DefaultTimeGrain.WEEK)
+        "2015-09-12T00:00:00.000Z/2015-09-13T01:01:01.000Z" | Optional.empty() //expected failure
+        "2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z" | Optional.of(DefaultTimeGrain.DAY)
+        "2015-09-12T00:00:00.000Z/2015-09-12T01:00:00.000Z" | Optional.of(DefaultTimeGrain.HOUR)
+        "2015-09-12T00:00:00.000Z/2015-09-12T00:01:00.000Z" | Optional.of(DefaultTimeGrain.MINUTE)
     }
 }
