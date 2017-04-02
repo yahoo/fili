@@ -48,7 +48,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      */
     @Override
     public List<? extends DataSourceConfiguration> get() {
-        if(tableConfigurations.isEmpty()) {
+        if (tableConfigurations.isEmpty()) {
             loadAllDatasources();
             LOG.info("Loading all datasources");
             try {
@@ -56,10 +56,10 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
                 // instead of waiting 1 second for everything to be configured
                 // in order to wait for druid's response, DruidWebService will have to return a future
                 Thread.sleep(1000);
+                LOG.info("Finished loading");
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                LOG.info("Interrupted while waiting for druid to respond - {}", e);
             }
-            LOG.info("Finished loading");
         }
 
         return tableConfigurations;
@@ -129,12 +129,13 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
         String[] utcTimes = timeInterval.asText().split("/");
         Optional<TimeGrain> timeGrain = Optional.empty();
         try {
-            if (utcTimes.length >= 2) {
+            if (utcTimes.length == 2) {
                 DateTime start = new DateTime(utcTimes[0], DateTimeZone.UTC);
                 DateTime end = new DateTime(utcTimes[1], DateTimeZone.UTC);
                 timeGrain = getTimeGrain(start, end);
             }
         } catch (IllegalArgumentException ignored) {
+            LOG.debug("Unable to parse time intervals {} correctly", Arrays.toString(utcTimes));
         }
 
         if (!timeGrain.isPresent()) {

@@ -9,17 +9,13 @@ import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
-import com.yahoo.bard.webservice.druid.client.DruidServiceConfig;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
-import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration;
 import com.yahoo.wiki.webservice.data.config.auto.DruidNavigator;
 import com.yahoo.wiki.webservice.data.config.dimension.GenericDimensions;
 import com.yahoo.wiki.webservice.data.config.metric.GenericMetricLoader;
 import com.yahoo.wiki.webservice.data.config.table.GenericTableLoader;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.Collections;
 import java.util.List;
@@ -31,7 +27,7 @@ import java.util.stream.Collectors;
  * Builds dimensions, metrics, and tables for all datasources found from druid.
  */
 public class GenericBinderFactory extends AbstractBinderFactory {
-    private Supplier<List<? extends DataSourceConfiguration>> configLoader;
+    private final Supplier<List<? extends DataSourceConfiguration>> configLoader;
     private GenericDimensions genericDimensions;
     private static Set<DimensionConfig> dimensions;
 
@@ -77,7 +73,11 @@ public class GenericBinderFactory extends AbstractBinderFactory {
                 .map(dimensionDictionary::findByApiName)
                 .map(Collections::singletonList)
                 .collect(Collectors.toList());
-        return new DruidDimensionsLoader(webService, dimensions, DruidDimensionsLoader.buildDataSourcesList(physicalTableDictionary));
+        return new DruidDimensionsLoader(
+                webService,
+                dimensions,
+                DruidDimensionsLoader.buildDataSourcesList(physicalTableDictionary)
+        );
     }
 
     @Override
