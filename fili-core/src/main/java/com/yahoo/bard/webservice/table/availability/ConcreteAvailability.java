@@ -106,12 +106,31 @@ public class ConcreteAvailability implements Availability {
         return metadataService.getAvailableIntervalsByTable(name);
     }
 
+    /**
+     * Returns the configured columns in their String representation.
+     *
+     * @return the configured columns in their String representation
+     */
     protected Set<String> getColumnNames() {
         return columnNames;
     }
 
+    /**
+     * Returns the name of the table and data source associated with this Availability.
+     *
+     * @return the name of the table and data source associated with this Availability
+     */
+    protected TableName getName() {
+        return name;
+    }
+
     @Override
     public String toString() {
-        return "concrete availability";
+        return String.format("ConcreteAvailability with table name = %s and Configured columns = [%s]",
+                name.asName(),
+                columns.stream()
+                        .map(Column::getName)
+                        .collect(Collectors.joining(", "))
+        );
     }
 }

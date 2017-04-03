@@ -25,16 +25,13 @@ class MetricUnionAvailabilitySpec extends Specification {
     MetricColumn metricColumn1
     MetricColumn metricColumn2
 
-    Interval interval1
-    Interval interval2
-    Interval interval3
-    Interval interval4
-
     PhysicalTableSchema schema1
     PhysicalTableSchema schema2
 
     PhysicalTable physicalTable1
     PhysicalTable physicalTable2
+
+    Set<PhysicalTable> physicalTables
 
     MetricUnionAvailability metricUnionAvailability
 
@@ -42,13 +39,11 @@ class MetricUnionAvailabilitySpec extends Specification {
         availability1 = Mock(Availability)
         availability2 = Mock(Availability)
 
+        availability1.getDataSourceNames() >> Sets.newHashSet(TableName.of('source1'))
+        availability2.getDataSourceNames() >> Sets.newHashSet(TableName.of('source2'))
+
         metricColumn1 = new MetricColumn('metric1')
         metricColumn2 = new MetricColumn('metric2')
-
-        interval1 = new Interval('2018-01-01/2018-02-01')
-        interval2 = new Interval('2018-02-01/2018-03-01')
-        interval3 = new Interval('2019-01-01/2019-02-01')
-        interval4 = new Interval('2018-11-01/2018-12-01')
 
         schema1 = Mock(PhysicalTableSchema)
         schema2 = Mock(PhysicalTableSchema)
@@ -61,37 +56,47 @@ class MetricUnionAvailabilitySpec extends Specification {
 
         physicalTable1.getSchema() >> schema1
         physicalTable2.getSchema() >> schema2
+
+        physicalTables = [physicalTable1, physicalTable2] as Set
     }
 
-    def "getDataSourceNames returns sources from availabilities not from physical tables"() {
+    def "Metric columns are initialized by fetching columns from availabilities, not from physical tables"() {
         given:
-        availability1.getAvailableIntervals(_ as DataSourceConstraint) >> new SimplifiedIntervalList(
-                Sets.newHashSet(interval1)
-        )
-        availability1.getDataSourceNames() >> Sets.newHashSet(TableName.of('source1'))
-        availability2.getAvailableIntervals(_ as DataSourceConstraint) >> new SimplifiedIntervalList(
-                Sets.newHashSet(interval2, interval4)
-        )
-        availability2.getDataSourceNames() >> Sets.newHashSet(TableName.of('source2'))
+        availability1.getAllAvailableIntervals() >> [
+                (metricColumn1): Collections.emptyList()
+        ]
+        availability2.getAllAvailableIntervals() >> [
+                (metricColumn2): Collections.emptyList()
+        ]
 
-        schema1.getColumns(MetricColumn.class) >> Sets.newHashSet(metricColumn1)
-        schema2.getColumns(MetricColumn.class) >> Sets.newHashSet(metricColumn2)
+        MetricColumn tableColumn1 = new MetricColumn("shouldNotBeReturned1")
+        MetricColumn tableColumn2 = new MetricColumn("shouldNotBeReturned2")
 
-        metricUnionAvailability = new MetricUnionAvailability(
-                [physicalTable1, physicalTable2] as Set,
-                [metricColumn1, metricColumn2] as Set
-        )
+        schema1.getColumns(_) >> Sets.newHashSet(tableColumn1)
+        schema2.getColumns(_) >> Sets.newHashSet(tableColumn2)
 
-        PhysicalTable physicalTable3 = Mock(PhysicalTable)
-        physicalTable3.getAvailability() >> metricUnionAvailability
-        physicalTable3.getSchema() >> schema1
-        MetricUnionAvailability outerMetricUnionAvailability = new MetricUnionAvailability(
-                [physicalTable3] as Set,
-                [metricColumn1, metricColumn2] as Set
-        )
+        physicalTable1.getSchema() >> schema1
+        physicalTable2.getSchema() >> schema2
 
-        expect:
-        outerMetricUnionAvailability.getDataSourceNames() == [TableName.of('source1'), TableName.of('source2')] as Set
+        metricUnionAvailability = new MetricUnionAvailability(physicalTables, [metricColumn1, metricColumn2] as Set)
+
+        when:
+        Map<Availability, Set<MetricColumn>> availabilitiesToAvailableColumns = metricUnionAvailability.availabilitiesToAvailableColumns
+
+        then:
+        availabilitiesToAvailableColumns.size() == 2
+
+        availabilitiesToAvailableColumns.containsKey(availability1)
+        Set<MetricColumn> availableColumns1 = availabilitiesToAvailableColumns.get(availability1)
+        availableColumns1.contains(metricColumn1)
+        !availableColumns1.contains(tableColumn1)
+        !availableColumns1.contains(tableColumn2)
+
+        availabilitiesToAvailableColumns.containsKey(availability2)
+        Set<MetricColumn> availableColumns2 = availabilitiesToAvailableColumns.get(availability2)
+        availableColumns2.contains(metricColumn2)
+        !availableColumns2.contains(tableColumn1)
+        !availableColumns2.contains(tableColumn2)
     }
 
     @Unroll
@@ -121,52 +126,79 @@ class MetricUnionAvailabilitySpec extends Specification {
         ['metric1']            | ['metric2']        | [:]            | 'two tables having no intersections'
     }
 
-    def "getAllAvailableIntervals returns configured metric columns with their corresponding available intervals in union"() {
+    def "constructor throws IllegalArgumentException when 2 availabilities have the same metric column"() {
         given:
         availability1.getAllAvailableIntervals() >> [
-                (new MetricColumn('metric1')): [interval1] as List,
-                (new MetricColumn('metric3')): [interval3] as List
+                (metricColumn1): Collections.emptyList()
         ]
-        availability1.getDataSourceNames() >> Sets.newHashSet(TableName.of('source1'))
         availability2.getAllAvailableIntervals() >> [
-                (new MetricColumn('metric1')): [interval4] as List,
-                (new MetricColumn('metric2')): [interval2] as List
+                (metricColumn1): Collections.emptyList()
         ]
-        availability2.getDataSourceNames() >> Sets.newHashSet(TableName.of('source2'))
 
-        schema1.getColumns(_) >> Collections.emptySet()
-        schema2.getColumns(_) >> Collections.emptySet()
+        when:
+        metricUnionAvailability = new MetricUnionAvailability(physicalTables, Collections.singleton(metricColumn1))
 
-        metricUnionAvailability = new MetricUnionAvailability(
-                [physicalTable1, physicalTable2] as Set,
-                [metricColumn1, metricColumn2] as Set
+        then:
+        IllegalArgumentException exception = thrown()
+        exception.message.startsWith("While constructing MetricUnionAvailability, Metric columns are not unique")
+    }
+
+
+    def "getDataSourceNames returns sources from availabilities not from physical tables"() {
+        given:
+        availability1.getAllAvailableIntervals() >> Collections.emptyMap()
+        availability2.getAllAvailableIntervals() >> Collections.emptyMap()
+
+        metricUnionAvailability = new MetricUnionAvailability(physicalTables, Collections.emptySet())
+
+        PhysicalTable physicalTable3 = Mock(PhysicalTable)
+        physicalTable3.getAvailability() >> metricUnionAvailability
+        MetricUnionAvailability outerMetricUnionAvailability = new MetricUnionAvailability(
+                Collections.singleton(physicalTable3),
+                Collections.emptySet()
         )
 
         expect:
-        metricUnionAvailability.getAllAvailableIntervals() == [
-                (metricColumn1): [interval1, interval4] as List,
-                (metricColumn2): [interval2] as List,
-        ]
+        outerMetricUnionAvailability.getDataSourceNames() == [TableName.of('source1'), TableName.of('source2')] as Set
     }
 
+    def "getAllAvailableIntervals returns the combined intervals of configured metric columns of all availabilities"() {
+        given:
+        availability1.getAllAvailableIntervals() >> [
+                (metricColumn1): [new Interval('2018-01-01/2018-02-01')]
+        ]
+        availability2.getAllAvailableIntervals() >> [
+                (metricColumn2): [new Interval('2019-01-01/2019-02-01')]
+        ]
+
+        metricUnionAvailability = new MetricUnionAvailability(physicalTables, Collections.singleton(metricColumn1))
+
+        expect:
+        metricUnionAvailability.getAllAvailableIntervals() == [
+                (metricColumn1): [new Interval('2018-01-01/2018-02-01')]
+        ]
+
+    }
     def "getAvailableIntervals returns the intersection of requested columns when available intervals have #reason"() {
         given:
+        availability1.getAllAvailableIntervals() >> [
+                (metricColumn1): Collections.emptyList()
+        ]
+        availability2.getAllAvailableIntervals() >> [
+                (metricColumn2): Collections.emptyList()
+        ]
+
         availability1.getAvailableIntervals(_ as DataSourceConstraint) >> new SimplifiedIntervalList(
                 availableIntervals1.collect{it -> new Interval(it)} as Set
         )
-        availability1.getDataSourceNames() >> Sets.newHashSet(TableName.of('source1'))
         availability2.getAvailableIntervals(_ as DataSourceConstraint) >> new SimplifiedIntervalList(
                 availableIntervals2.collect{it -> new Interval(it)} as Set
         )
-        availability2.getDataSourceNames() >> Sets.newHashSet(TableName.of('source2'))
 
         schema1.getColumns(MetricColumn.class) >> Sets.newHashSet(metricColumn1)
         schema2.getColumns(MetricColumn.class) >> Sets.newHashSet(metricColumn2)
 
-        metricUnionAvailability = new MetricUnionAvailability(
-                [physicalTable1, physicalTable2] as Set,
-                [metricColumn1, metricColumn2] as Set
-        )
+        metricUnionAvailability = new MetricUnionAvailability(physicalTables, [metricColumn1, metricColumn2] as Set)
 
         DataSourceConstraint dataSourceConstraint = new DataSourceConstraint(
                 Collections.emptySet(),

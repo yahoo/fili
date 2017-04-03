@@ -18,52 +18,50 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.AbstractMap;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
 
 /**
- * An implementation of availability which joins physical tables with the same metric schema
- * but non-intersecting metric schemas. Metrics on the <tt>MetricUnionAvailability</tt> are sourced from
- * exactly one of the participating tables.
+ * An implementation of availability which puts metric columns of different availabilities together so that we can
+ * query different metric columns from different availabilities at the same time.
  * <p>
- * For example, two tables of the following
- *
- * table1:
- * +---------+---------+---------+
- * | metric1 | metric2 | metric3 |
- * +---------+---------+---------+
- * |         |         |         |
- * |         |         |         |
- * +---------+---------+---------+
- *
- * table2
- * +---------+---------+---------+
- * | metric1 | metric2 | metric4 |
- * +---------+---------+---------+
- * |         |         |         |
- * |         |         |         |
- * +---------+---------+---------+
- *
- * are joined into a table
- *
- * +---------+---------+
- * | metric1 | metric2 |
- * +---------+---------+
- * |         |         |
- * |         |         |
- * +---------+---------+
- *
- * and this joined table is backed by the <tt>MetricUnionAvailability</tt>
- *
+ * For example, two availabilities of the following
+ * <pre>
+ * {@code
+ * +---------------+---------------+
+ * | metricColumn1 | metricColumn2 |
+ * +---------------+---------------+
+ * | [1/10]        | [20/30]       |
+ * +---------------+---------------+
+
+ * +---------------+---------------+---------------+
+ * | metricColumn3 | metricColumn4 | metricColumn5 |
+ * +---------------+---------------+---------------+
+ * | [5/15]        | [25/50]       | [90/100]      |
+ * +---------------+---------------+---------------+
+ * }
+ * </pre>
+ * are joined into a metric union availability below
+ * <pre>
+ * {@code
+ * +---------------+---------------+---------------+---------------+---------------+
+ * | metricColumn1 | metricColumn2 | metricColumn3 | metricColumn4 | metricColumn5 |
+ * +---------------+---------------+---------------+---------------+---------------+
+ * | [1/10]        | [20/30]       | [5/15]        | [25/50]       | [90/100]      |
+ * +---------------+---------------+---------------+---------------+---------------+
+ * }
+ * </pre>
+ * Note that the joining availabilities must have completely different set of metric columns.
  */
 public class MetricUnionAvailability implements Availability {
-
     private static final Logger LOG = LoggerFactory.getLogger(MetricUnionAvailability.class);
 
     private final Set<TableName> dataSourceNames;
@@ -73,16 +71,12 @@ public class MetricUnionAvailability implements Availability {
     /**
      * Constructor.
      *
-     * @param physicalTables  A set of <tt>PhysicalTable</tt>s containing the same metric schema
-     * @param columns  The set of columns supplied by this availability
+     * @param physicalTables  A set of <tt>PhysicalTable</tt>s containing overlapping metric schema
+     * @param columns  The set of all configured columns, including dimension columns, that metric union availability
+     * will respond with
      */
     public MetricUnionAvailability(@NotNull Set<PhysicalTable> physicalTables, @NotNull Set<Column> columns) {
-        metricColumns = Utils.getSubsetByType(
-                columns.stream()
-                        .filter(column -> column instanceof MetricColumn)
-                        .collect(Collectors.toSet()),
-                MetricColumn.class
-        );
+        metricColumns = Utils.getSubsetByType(columns, MetricColumn.class);
 
         // get a map from availability to its available metric columns intersected with configured metric columns
         // i.e. metricColumns
@@ -92,7 +86,13 @@ public class MetricUnionAvailability implements Availability {
                                 PhysicalTable::getAvailability,
                                 physicalTable ->
                                         Sets.intersection(
-                                                physicalTable.getSchema().getColumns(MetricColumn.class),
+                                                Utils.getSubsetByType(
+                                                        physicalTable
+                                                                .getAvailability()
+                                                                .getAllAvailableIntervals()
+                                                                .keySet(),
+                                                        MetricColumn.class
+                                                ),
                                                 metricColumns
                                         )
                         )
@@ -103,18 +103,22 @@ public class MetricUnionAvailability implements Availability {
         Map<MetricColumn, Set<Availability>> duplicates = getDuplicateValue(availabilitiesToAvailableColumns);
         if (!duplicates.isEmpty()) {
             String message = String.format(
-                    "While constructing MetricUnionAvailability, Metric columns are not unique - {}",
+                    "While constructing MetricUnionAvailability, Metric columns are not unique - %s",
                     duplicates
             );
             LOG.error(message);
             throw new IllegalArgumentException(message);
         }
 
-        dataSourceNames = availabilitiesToAvailableColumns.entrySet().stream()
-                .map(Map.Entry::getKey)
+        dataSourceNames = availabilitiesToAvailableColumns.keySet().stream()
                 .map(Availability::getDataSourceNames)
                 .flatMap(Set::stream)
-                .collect(Collectors.toSet());
+                .collect(
+                        Collectors.collectingAndThen(
+                                Collectors.toSet(),
+                                Collections::unmodifiableSet
+                        )
+                );
     }
 
     @Override
@@ -122,9 +126,22 @@ public class MetricUnionAvailability implements Availability {
         return dataSourceNames;
     }
 
+    /**
+     * Combines and returns intervals of all availabilities' metric columns.
+     * <p>
+     * Intervals of the same metric column are associated with the same metric column key. Overlapping intervals under
+     * the same metric column key are collapsed into single interval.
+     *
+     * @return a map of metric column to all of its available intervals in union
+     */
     @Override
     public Map<Column, List<Interval>> getAllAvailableIntervals() {
-        return availabilitiesToAvailableColumns.keySet().stream()
+        // get all availabilities
+        Set<Availability> availabilities = availabilitiesToAvailableColumns.keySet();
+
+        // take available interval maps from all availabilities and merge the maps together
+        return Stream.of(availabilities)
+                .flatMap(Set::stream)
                 .map(Availability::getAllAvailableIntervals)
                 .map(Map::entrySet)
                 .flatMap(Set::stream)
@@ -150,7 +167,14 @@ public class MetricUnionAvailability implements Availability {
 
     @Override
     public String toString() {
-        return "metric union availability";
+        return String.format("MetricUnionAvailability with data source names: [%s] and Configured metric columns: [%s]",
+                dataSourceNames.stream()
+                        .map(TableName::asName)
+                        .collect(Collectors.joining(", ")),
+                metricColumns.stream()
+                        .map(Column::getName)
+                        .collect(Collectors.joining(", "))
+        );
     }
 
     /**

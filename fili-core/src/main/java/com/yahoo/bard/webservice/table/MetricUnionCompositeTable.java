@@ -7,6 +7,9 @@ import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.table.availability.MetricUnionAvailability;
 import com.yahoo.bard.webservice.table.resolver.GranularityComparator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -16,14 +19,53 @@ import javax.validation.constraints.NotNull;
 
 /**
  * An implementation of <tt>BasePhysicalTable</tt> backed by metric union availability.
+ * <p>
+ * The composite table joins physical tables puts metric columns of different tables together so that we can
+ * query different metric columns from different tables at the same time.
+ * <p>
+ * For example, two tables of the following
+ *
+ * table1:
+ * +---------+---------+---------+
+ * | metric1 | metric2 | metric3 |
+ * +---------+---------+---------+
+ * |         |         |         |
+ * |         |         |         |
+ * +---------+---------+---------+
+ *
+ * table2
+ * +---------+---------+---------+
+ * | metric4 | metric5 | metric5 |
+ * +---------+---------+---------+
+ * |         |         |         |
+ * |         |         |         |
+ * +---------+---------+---------+
+ *
+ * are put together into a table
+ *
+ * +---------+---------+---------+---------+---------+---------+
+ * | metric1 | metric2 | metric3 | metric4 | metric5 | metric5 |
+ * +---------+---------+---------+---------+---------+---------+
+ * |         |         |         |         |         |         |
+ * |         |         |         |         |         |         |
+ * +---------+---------+---------+---------+---------+---------+
+ *
+ * and this joined table is backed by the <tt>MetricUnionAvailability</tt>
+ *
  */
 public class MetricUnionCompositeTable extends BasePhysicalTable {
+    private static final Logger LOG = LoggerFactory.getLogger(MetricUnionCompositeTable.class);
+    private static final GranularityComparator GRANULARITY_COMPARATOR = new GranularityComparator();
+
     /**
      * Constructor.
      *
-     * @param name  Name of the physical table as TableName, also used as fact table name
+     * @param name  Name that represents set of fact table names joined together
      * @param columns  The columns for this table
-     * @param physicalTables  A set of <tt>PhysicalTable</tt>s
+     * @param physicalTables  A set of <tt>PhysicalTable</tt>s whose same metric schema is to be joined together. The
+     * tables will be used to construct MetricUnionAvailability, as well as to compute common/coarsest time grain among
+     * them. The <tt>PhysicalTable</tt>s needs to have mutually satisfying time grains in order to calculate the
+     * common/coarsest time grain.
      * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
      */
     public MetricUnionCompositeTable(
@@ -45,44 +87,40 @@ public class MetricUnionCompositeTable extends BasePhysicalTable {
      * Returns the coarsest <tt>ZonedTimeGrain</tt> that satisfies all tables.
      * <p>
      * If the set of <tt>PhysicalTables</tt>'s is empty or the coarsest <tt>ZonedTimeGrain</tt> is not
-     * compatible with any of the <tt>PhysicalTables</tt>s, throw <tt>IllegalArgumentException</tt>.
+     * compatible with all of the <tt>PhysicalTables</tt>s, throw <tt>IllegalArgumentException</tt>.
      *
      * @param physicalTables  A set of <tt>PhysicalTable</tt>s among which the coarsest <tt>ZonedTimeGrain</tt>
      * is to be returned.
      *
      * @return the coarsest <tt>ZonedTimeGrain</tt> among a set of <tt>PhysicalTables</tt>s
+     * @throws IllegalArgumentException when no PhysicalTable is provided or there is not mutually satisfying grain
+     * among the table's time grain
      */
-    private static ZonedTimeGrain getCoarsestTimeGrain(Set<PhysicalTable> physicalTables) {
-        if (physicalTables.isEmpty()) {
-            throw new IllegalArgumentException("At least 1 physical table needs to be provided");
-        }
-
-        GranularityComparator granularityComparator = new GranularityComparator();
-
-        // sort tables by <tt>ZonedTimeGrain</tt> in increasing order
-        List<PhysicalTable> sortedTables = physicalTables.stream()
-                .sorted((table1, table2) -> granularityComparator.compare(table1, table2))
+    private static ZonedTimeGrain getCoarsestTimeGrain(Set<PhysicalTable> physicalTables)
+            throws IllegalArgumentException {
+        // sort <tt>ZonedTimeGrain</tt>s in decreasing order
+        List<ZonedTimeGrain> sortedTimeGrains = physicalTables.stream()
+                .sorted(GRANULARITY_COMPARATOR)
+                .map(PhysicalTable::getSchema)
+                .map(PhysicalTableSchema::getTimeGrain)
                 .collect(Collectors.toList());
 
         // check to see if all <tt>ZonedTimeGrain</tt>'s is compatible with the coarsest <tt>ZonedTimeGrain</tt>
-        ZonedTimeGrain coarsestTimeGrain = sortedTables.get(0).getSchema().getTimeGrain();
-        List<PhysicalTable> incompatibles = sortedTables.stream()
-                .filter(table -> !table.getSchema().getTimeGrain().satisfiedBy(coarsestTimeGrain))
-                .collect(Collectors.toList());
-        if (!incompatibles.isEmpty()) {
-            throw new IllegalArgumentException(
-                    String.format(
-                            "The following ZonedTimeGrains are not compatible with the coarsest ZoneTimeGrain({}) - {}",
-                            coarsestTimeGrain,
-                            incompatibles.stream()
-                                    .collect(
-                                            Collectors.toMap(
-                                                    table -> table.getSchema().getTimeGrain(),
-                                                    table -> table.getTableName().asName()
-                                            )
-                                    )
-                    )
+        ZonedTimeGrain coarsestTimeGrain = sortedTimeGrains.stream()
+                .findFirst()
+                .orElseThrow(() -> {
+                        String message = "At least 1 physical table needs to be provided";
+                        LOG.error(message);
+                        return new IllegalArgumentException(message);
+                });
+
+        if (sortedTimeGrains.stream().anyMatch(grain -> grain.satisfiedBy(coarsestTimeGrain))) {
+            String message = String.format(
+                    "There is no mutually satisfying grain among: %s",
+                    sortedTimeGrains
             );
+            LOG.error(message);
+            throw new IllegalArgumentException(message);
         }
 
         return coarsestTimeGrain;
