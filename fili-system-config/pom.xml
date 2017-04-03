@@ -92,7 +92,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <additionalClasspathElements>
-                        <!-- One set of paths makes maven happy, the other set makes the IDE happy -->
+                        <!-- One set of paths makes maven happy, the other set makes the IDE happy. -->
                         <additionalClasspathElement>${project.basedir}/target/moduleJars/jars/fili-system-config-test1.jar</additionalClasspathElement>
                         <additionalClasspathElement>${project.basedir}/target/moduleJars/jars/fili-system-config-test2.jar</additionalClasspathElement>
                         <additionalClasspathElement>target/moduleJars/jars/fili-system-config-test1.jar</additionalClasspathElement>
