@@ -10,6 +10,7 @@ import com.yahoo.bard.webservice.table.availability.ConcreteAvailability;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
@@ -41,7 +42,14 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
                 timeGrain,
                 columns,
                 logicalToPhysicalColumnNames,
-                new ConcreteAvailability(name, columns, metadataService)
+                new ConcreteAvailability(
+                        name,
+                        columns.stream()
+                                .map(Column::getName)
+                                .map(logicalToPhysicalColumnNames::get)
+                                .collect(Collectors.toSet()),
+                        metadataService
+                )
         );
     }
 

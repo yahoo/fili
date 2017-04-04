@@ -54,6 +54,22 @@ public class DataSourceConstraint {
         ).collect(Collectors.toSet()));
     }
 
+    /**
+     * Copy Constructor.
+     *
+     * @param dataSourceConstraint  The data source constarint to copy from
+     */
+    public DataSourceConstraint(DataSourceConstraint dataSourceConstraint) {
+        this.requestDimensions = dataSourceConstraint.getRequestDimensions();
+        this.filterDimensions = dataSourceConstraint.getFilterDimensions();
+        this.metricDimensions = dataSourceConstraint.getMetricDimensions();
+        this.metricNames = dataSourceConstraint.getMetricNames();
+        this.apiFilters = dataSourceConstraint.getApiFilters();
+        this.allDimensions = dataSourceConstraint.getAllDimensions();
+        this.allDimensionNames = this.getAllDimensionNames();
+        this.allColumnNames = this.getAllColumnNames();
+    }
+
     public Set<Dimension> getRequestDimensions() {
         return requestDimensions;
     }

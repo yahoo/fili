@@ -4,8 +4,8 @@ package com.yahoo.bard.webservice.table.availability;
 
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
-import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
+import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
@@ -29,29 +29,27 @@ import javax.validation.constraints.NotNull;
 public class ConcreteAvailability implements Availability {
 
     private final TableName name;
-    private final Set<Column> columns;
+    private final Set<String> columnPhysicalNames;
     private final DataSourceMetadataService metadataService;
 
-    private final Set<String> columnNames;
     private final Set<TableName> dataSourceNames;
 
     /**
      * Constructor.
      *
      * @param tableName  The name of the table and data source associated with this Availability
-     * @param columns  The columns associated with the table and availability
+     * @param columnPhysicalNames  The physical name of columns associated with the table and availability
      * @param metadataService  A service containing the datasource segment data
      */
     public ConcreteAvailability(
             @NotNull TableName tableName,
-            @NotNull Set<Column> columns,
+            @NotNull Set<String> columnPhysicalNames,
             @NotNull DataSourceMetadataService metadataService
     ) {
         this.name = tableName;
-        this.columns = ImmutableSet.copyOf(columns);
+        this.columnPhysicalNames = ImmutableSet.copyOf(columnPhysicalNames);
         this.metadataService = metadataService;
 
-        this.columnNames = columns.stream().map(Column::getName).collect(Collectors.toSet());
         this.dataSourceNames = Collections.singleton(name);
     }
 
@@ -61,25 +59,25 @@ public class ConcreteAvailability implements Availability {
     }
 
     @Override
-    public Map<Column, List<Interval>> getAllAvailableIntervals() {
+    public Map<String, List<Interval>> getAllAvailableIntervals() {
 
         Map<String, List<Interval>> allAvailableIntervals = getAvailableIntervalsByTable();
-        return columns.stream()
+        return columnPhysicalNames.stream()
                 .collect(
                         Collectors.toMap(
                                 Function.identity(),
-                                column -> new SimplifiedIntervalList(
-                                        allAvailableIntervals.getOrDefault(column.getName(), Collections.emptyList())
+                                physicalName -> new SimplifiedIntervalList(
+                                        allAvailableIntervals.getOrDefault(physicalName, Collections.emptyList())
                                 )
                         )
                 );
     }
 
     @Override
-    public SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraint) {
+    public SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint constraint) {
 
-        Set<String> requestColumns = constraint.getAllColumnNames().stream()
-                .filter(columnNames::contains)
+        Set<String> requestColumns = constraint.getAllColumnPhysicalNames().stream()
+                .filter(columnPhysicalNames::contains)
                 .collect(Collectors.toSet());
 
         if (requestColumns.isEmpty()) {
@@ -106,7 +104,7 @@ public class ConcreteAvailability implements Availability {
         return metadataService.getAvailableIntervalsByTable(name);
     }
 
-    protected Set<String> getColumnNames() {
-        return columnNames;
+    protected Set<String> getColumnPhysicalNames() {
+        return columnPhysicalNames;
     }
 }

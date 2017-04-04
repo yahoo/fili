@@ -9,6 +9,7 @@ import com.yahoo.bard.webservice.table.availability.PermissiveAvailability;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
@@ -44,7 +45,14 @@ public class PermissiveConcretePhysicalTable extends ConcretePhysicalTable {
                 timeGrain,
                 columns,
                 logicalToPhysicalColumnNames,
-                new PermissiveAvailability(name, columns, dataSourceMetadataService)
+                new PermissiveAvailability(
+                        name,
+                        columns.stream()
+                                .map(Column::getName)
+                                .map(logicalToPhysicalColumnNames::get)
+                                .collect(Collectors.toSet()),
+                        dataSourceMetadataService
+                )
         );
     }
 }

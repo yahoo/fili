@@ -16,14 +16,14 @@ import spock.lang.Specification
 class ConcreteAvailabilitySpec extends Specification{
 
     ConcreteAvailability concreteAvailability
-    Column column1, column2, column3
+    String column1, column2, column3
     Interval interval1, interval2
 
     def setup() {
 
-        column1 = new Column('column1')
-        column2 = new Column('column2')
-        column3 = new Column('no_availability')
+        column1 = 'column_one'
+        column2 = 'column_two'
+        column3 = 'column_three'
 
         interval1 = new Interval('2000-01-01/2015-12-31')
         interval2 = new Interval('2010-01-01/2020-12-31')
@@ -32,9 +32,9 @@ class ConcreteAvailabilitySpec extends Specification{
                 TableName.of('table'),
                 [column1, column2, column3] as Set,
                 new TestDataSourceMetadataService([
-                        (column1): [interval1] as Set,
-                        (column2): [interval2] as Set,
-                        (new Column('ignored')): [new Interval('2010-01-01/2500-12-31')] as Set
+                        'column_one': [interval1] as Set,
+                        'column_two': [interval2] as Set,
+                        'ignored_column': [new Interval('2010-01-01/2500-12-31')] as Set
                 ])
         )
     }
@@ -63,7 +63,7 @@ class ConcreteAvailabilitySpec extends Specification{
         )
 
         DataSourceConstraint dataSourceConstraint = Mock(DataSourceConstraint)
-        dataSourceConstraint.getAllColumnNames() >> ['column1', 'column2']
+        dataSourceConstraint.getAllColumnNames() >> ['column_one', 'column_two']
 
         expect:
         concreteAvailability.getAvailableIntervals(dataSourceConstraint) == new SimplifiedIntervalList(

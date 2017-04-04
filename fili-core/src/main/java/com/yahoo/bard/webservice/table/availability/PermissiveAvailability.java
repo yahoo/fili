@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
+import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import org.joda.time.Interval;
 
@@ -26,16 +27,16 @@ public class PermissiveAvailability extends ConcreteAvailability {
     /**
      * Constructor.
      *
-     * @param tableName The name of the data source
-     * @param columns A set of columns associated with the data source
-     * @param metadataService A service containing the data source segment data
+     * @param tableName  The name of the data source
+     * @param columnPhysicalNames  A set of column physical names associated with the data source
+     * @param metadataService  A service containing the data source segment data
      */
     public PermissiveAvailability(
             @NotNull TableName tableName,
-            @NotNull Set<Column> columns,
+            @NotNull Set<String> columnPhysicalNames,
             @NotNull DataSourceMetadataService metadataService
     ) {
-        super(tableName, columns, metadataService);
+        super(tableName, columnPhysicalNames, metadataService);
     }
 
     /**
@@ -53,9 +54,10 @@ public class PermissiveAvailability extends ConcreteAvailability {
      * @return the union of all available intervals
      */
     @Override
-    public SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint ignoredConstraints) {
+    public SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint ignoredConstraints) {
         Map<String, List<Interval>> allAvailableIntervals = getAvailableIntervalsByTable();
-        return getColumnNames().stream()
+
+        return getColumnPhysicalNames().stream()
                 .map(columnName -> allAvailableIntervals.getOrDefault(columnName, Collections.emptyList()))
                 .flatMap(List::stream)
                 .collect(SimplifiedIntervalList.getCollector());
