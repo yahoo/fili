@@ -15,12 +15,12 @@ import java.util.Comparator;
 public class GranularityComparator implements Comparator<PhysicalTable> {
 
     private static final Logger LOG = LoggerFactory.getLogger(GranularityComparator.class);
-    private static GranularityComparator granularityComparator;
+    private static final GranularityComparator COMPARATOR = new GranularityComparator();
 
     /**
-     * Disable constructor to force using getInstance() method.
+     * A constructor provided in case other classes need to subclass GranularityComparator.
      */
-    private GranularityComparator() { }
+    protected GranularityComparator() { }
 
     /**
      * Factory method for creating new GranularityComparator instance.
@@ -28,10 +28,7 @@ public class GranularityComparator implements Comparator<PhysicalTable> {
      * @return a new GranularityComparator instance
      */
     public static synchronized GranularityComparator getInstance() {
-        if (granularityComparator == null) {
-            granularityComparator = new GranularityComparator();
-        }
-        return granularityComparator;
+        return COMPARATOR;
     }
 
     /**
