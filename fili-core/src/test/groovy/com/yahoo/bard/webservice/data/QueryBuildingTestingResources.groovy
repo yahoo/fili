@@ -233,21 +233,21 @@ public class QueryBuildingTestingResources {
         t4d1 = new ConcretePhysicalTable("table4d1", utcDay, [d1, d2, m1, m2, m3].collect{toColumn(it)}.toSet(), [:], metadataService)
         t4d2 = new ConcretePhysicalTable("table4d2", utcDay, [d1, d2, m1, m2, m3].collect{toColumn(it)}.toSet(), [:], metadataService)
 
-        Map<Column, Set<Interval>> availabilityMap1 = [:]
-        Map<Column, Set<Interval>> availabilityMap2 = [:]
+        Map<String, Set<Interval>> availabilityMap1 = [:]
+        Map<String, Set<Interval>> availabilityMap2 = [:]
 
         [d1, d2, m1, m2, m3].each {
-            availabilityMap1.put(toColumn(it), [interval1].toSet())
-            availabilityMap2.put(toColumn(it), [interval2].toSet())
+            availabilityMap1.put(toColumn(it).getName(), [interval1].toSet())
+            availabilityMap2.put(toColumn(it).getName(), [interval2].toSet())
         }
 
-        t4h1.setAvailability(new ConcreteAvailability(t4h1.getTableName(), t4h1.getSchema().getColumns(), new TestDataSourceMetadataService(availabilityMap1)))
-        t4d1.setAvailability(new ConcreteAvailability(t4d1.getTableName(), t4d1.getSchema().getColumns(), new TestDataSourceMetadataService(availabilityMap1)))
+        t4h1.setAvailability(new ConcreteAvailability(t4h1.getTableName(), new TestDataSourceMetadataService(availabilityMap1)))
+        t4d1.setAvailability(new ConcreteAvailability(t4d1.getTableName(), new TestDataSourceMetadataService(availabilityMap1)))
 
         t5h = new ConcretePhysicalTable("table5d", utcHour, [d8, d9, d10, d11, d12, d13, m1].collect{toColumn(it)}.toSet(), [:], metadataService)
 
-        t4h2.setAvailability(new ConcreteAvailability(t4h2.getTableName(), t4h2.getSchema().getColumns(), new TestDataSourceMetadataService(availabilityMap2)))
-        t4d2.setAvailability(new ConcreteAvailability(t4d1.getTableName(), t4d1.getSchema().getColumns(), new TestDataSourceMetadataService(availabilityMap2)))
+        t4h2.setAvailability(new ConcreteAvailability(t4h2.getTableName(), new TestDataSourceMetadataService(availabilityMap2)))
+        t4d2.setAvailability(new ConcreteAvailability(t4d1.getTableName(), new TestDataSourceMetadataService(availabilityMap2)))
 
         setupPartialData()
 
@@ -319,19 +319,19 @@ public class QueryBuildingTestingResources {
         partialSecond = new ConcretePhysicalTable("partialSecond", MONTH.buildZonedTimeGrain(UTC), [d1, m1, m2, m3].collect{toColumn(it)}.toSet(), [:], metadataService)
         wholeThird = new ConcretePhysicalTable("wholeThird", MONTH.buildZonedTimeGrain(UTC), [d1, m1, m2, m3].collect{toColumn(it)}.toSet(), [:], metadataService)
 
-        Map<Column, Set<Interval>> availabilityMap1 = [:]
-        Map<Column, Set<Interval>> availabilityMap2 = [:]
-        Map<Column, Set<Interval>> availabilityMap3 = [:]
+        Map<String, Set<Interval>> availabilityMap1 = [:]
+        Map<String, Set<Interval>> availabilityMap2 = [:]
+        Map<String, Set<Interval>> availabilityMap3 = [:]
 
         [d1, d2, m1, m2, m3].each {
-            availabilityMap1.put(toColumn(it), [new Interval("2015/2015")].toSet())
-            availabilityMap2.put(toColumn(it), [new Interval("2015/2016")].toSet())
-            availabilityMap3.put(toColumn(it), [new Interval("2011/2016")].toSet())
+            availabilityMap1.put(toColumn(it).getName(), [new Interval("2015/2015")].toSet())
+            availabilityMap2.put(toColumn(it).getName(), [new Interval("2015/2016")].toSet())
+            availabilityMap3.put(toColumn(it).getName(), [new Interval("2011/2016")].toSet())
         }
-        emptyFirst.setAvailability(new ConcreteAvailability(emptyFirst.getTableName(), emptyFirst.getSchema().getColumns(), new TestDataSourceMetadataService(availabilityMap1)))
-        emptyLast.setAvailability(new ConcreteAvailability(emptyLast.getTableName(), emptyLast.getSchema().getColumns(), new TestDataSourceMetadataService(availabilityMap1)))
-        partialSecond.setAvailability(new ConcreteAvailability(partialSecond.getTableName(), partialSecond.getSchema().getColumns(), new TestDataSourceMetadataService(availabilityMap2)))
-        wholeThird.setAvailability(new ConcreteAvailability(wholeThird.getTableName(), wholeThird.getSchema().getColumns(), new TestDataSourceMetadataService(availabilityMap3)))
+        emptyFirst.setAvailability(new ConcreteAvailability(emptyFirst.getTableName(), new TestDataSourceMetadataService(availabilityMap1)))
+        emptyLast.setAvailability(new ConcreteAvailability(emptyLast.getTableName(), new TestDataSourceMetadataService(availabilityMap1)))
+        partialSecond.setAvailability(new ConcreteAvailability(partialSecond.getTableName(), new TestDataSourceMetadataService(availabilityMap2)))
+        wholeThird.setAvailability(new ConcreteAvailability(wholeThird.getTableName(), new TestDataSourceMetadataService(availabilityMap3)))
 
         tg1All = new TableGroup([emptyFirst, partialSecond, wholeThird, emptyLast] as LinkedHashSet, [].toSet(), [].toSet())
         ti1All = new TableIdentifier("base1All", AllGranularity.INSTANCE)
@@ -350,9 +350,8 @@ public class QueryBuildingTestingResources {
             table.setAvailability(
                     new ConcreteAvailability(
                             table.getTableName(),
-                            table.getSchema().getColumns(),
                             new TestDataSourceMetadataService(
-                                [new DimensionColumn(d1), new LogicalMetricColumn(m1)].collectEntries() {
+                                [new DimensionColumn(d1).getName(), new LogicalMetricColumn(m1).getName()].collectEntries() {
                                     [(it): [availability]]
                                 }
                             )

@@ -2,8 +2,7 @@ package com.yahoo.bard.webservice.table.availability
 
 import com.yahoo.bard.webservice.data.config.names.TableName
 import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService
-import com.yahoo.bard.webservice.table.Column
-import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
+import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 
 import org.joda.time.Interval
@@ -16,35 +15,34 @@ import spock.lang.Specification
 class ConcreteAvailabilitySpec extends Specification{
 
     ConcreteAvailability concreteAvailability
-    Column column1, column2, column3
+    String columnPhysicalName1, columnPhysicalName2, columnPhysicalName3
     Interval interval1, interval2
 
     def setup() {
 
-        column1 = new Column('column1')
-        column2 = new Column('column2')
-        column3 = new Column('no_availability')
+        columnPhysicalName1 = 'column_one'
+        columnPhysicalName2 = 'column_two'
+        columnPhysicalName3 = 'column_three'
 
         interval1 = new Interval('2000-01-01/2015-12-31')
         interval2 = new Interval('2010-01-01/2020-12-31')
 
         concreteAvailability = new ConcreteAvailability(
                 TableName.of('table'),
-                [column1, column2, column3] as Set,
                 new TestDataSourceMetadataService([
-                        (column1): [interval1] as Set,
-                        (column2): [interval2] as Set,
-                        (new Column('ignored')): [new Interval('2010-01-01/2500-12-31')] as Set
+                        (columnPhysicalName1): [interval1] as Set,
+                        (columnPhysicalName2): [interval2] as Set,
+                        'hidden_column'     : [interval1] as Set
                 ])
         )
     }
 
-    def "getAllAvailability returns the correct availabilities for each columns configured to the table"() {
+    def "getAllAvailability returns all availabilities for all column in datasource metadata service"() {
         expect:
         concreteAvailability.getAllAvailableIntervals() == [
-                (column1): [interval1],
-                (column2): [interval2],
-                (column3): [],
+                (columnPhysicalName1): [interval1],
+                (columnPhysicalName2): [interval2],
+                'hidden_column'     : [interval1],
         ] as LinkedHashMap
     }
 
@@ -55,15 +53,14 @@ class ConcreteAvailabilitySpec extends Specification{
 
         concreteAvailability = new ConcreteAvailability(
                 TableName.of('table'),
-                [column1, column2] as Set,
                 new TestDataSourceMetadataService([
-                        (column1): [interval1] as Set,
-                        (column2): [interval2] as Set
+                        (columnPhysicalName1): [interval1] as Set,
+                        (columnPhysicalName2): [interval2] as Set
                 ])
         )
 
-        DataSourceConstraint dataSourceConstraint = Mock(DataSourceConstraint)
-        dataSourceConstraint.getAllColumnNames() >> ['column1', 'column2']
+        PhysicalDataSourceConstraint dataSourceConstraint = Mock(PhysicalDataSourceConstraint)
+        dataSourceConstraint.getAllColumnPhysicalNames() >> [columnPhysicalName1, columnPhysicalName2]
 
         expect:
         concreteAvailability.getAvailableIntervals(dataSourceConstraint) == new SimplifiedIntervalList(
@@ -82,10 +79,10 @@ class ConcreteAvailabilitySpec extends Specification{
         '2017-01-01/2017-02-01' | '2017-01-15/2017-01-25' | ['2017-01-15/2017-01-25']  | "fully contain"
     }
 
-    def "getAvailableInterval returns empty interval if given column not configured to the table"() {
+    def "getAvailableInterval returns empty interval if given column is not in data source metadata service"() {
         given:
-        DataSourceConstraint constraint = Mock(DataSourceConstraint)
-        constraint.getAllColumnNames() >> ['ignored']
+        PhysicalDataSourceConstraint constraint = Mock(PhysicalDataSourceConstraint)
+        constraint.getAllColumnPhysicalNames() >> ['ignored']
 
         expect:
         concreteAvailability.getAvailableIntervals(constraint) == new SimplifiedIntervalList()
@@ -93,8 +90,8 @@ class ConcreteAvailabilitySpec extends Specification{
 
     def "getAvailableInterval returns empty interval if given empty column request"() {
         given:
-        DataSourceConstraint constraint = Mock(DataSourceConstraint)
-        constraint.getAllColumnNames() >> []
+        PhysicalDataSourceConstraint constraint = Mock(PhysicalDataSourceConstraint)
+        constraint.getAllColumnPhysicalNames() >> []
 
         expect:
         concreteAvailability.getAvailableIntervals(constraint) == new SimplifiedIntervalList()

@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.table.availability.Availability;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
+import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
@@ -16,6 +17,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
@@ -79,12 +82,21 @@ public abstract class BasePhysicalTable implements PhysicalTable {
 
     @Override
     public Map<Column, List<Interval>> getAllAvailableIntervals() {
-        return getAvailability().getAllAvailableIntervals();
+        Map<String, List<Interval>> availableIntervals = getAvailability().getAllAvailableIntervals();
+
+        return getSchema().getColumns().stream()
+                .collect(Collectors.toMap(
+                        Function.identity(),
+                        column -> availableIntervals.getOrDefault(
+                                getSchema().getPhysicalColumnName(column.getName()),
+                                new SimplifiedIntervalList()
+                        )
+                ));
     }
 
     @Override
     public SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraint) {
-        return getAvailability().getAvailableIntervals(constraint);
+        return getAvailability().getAvailableIntervals(new PhysicalDataSourceConstraint(constraint, getSchema()));
     }
 
     @Override

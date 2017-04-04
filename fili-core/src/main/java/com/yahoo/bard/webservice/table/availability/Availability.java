@@ -3,8 +3,7 @@
 package com.yahoo.bard.webservice.table.availability;
 
 import com.yahoo.bard.webservice.data.config.names.TableName;
-import com.yahoo.bard.webservice.table.Column;
-import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
+import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import org.joda.time.Interval;
@@ -30,14 +29,14 @@ public interface Availability {
      *
      * @return The intervals, by column, available.
      */
-    Map<Column, List<Interval>> getAllAvailableIntervals();
+    Map<String, List<Interval>> getAllAvailableIntervals();
 
     /**
      * Fetch a set of intervals given a set of column name in DataSourceConstraint.
      *
-     * @param constraint  Data constraint containing columns and api filters
+     * @param constraint  Physical data source constraint containing column's physical name, metrics names, api filters
      *
      * @return A simplified list of intervals associated with all column in constraint, empty if column is missing
      */
-    SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraint);
+    SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint constraint);
 }

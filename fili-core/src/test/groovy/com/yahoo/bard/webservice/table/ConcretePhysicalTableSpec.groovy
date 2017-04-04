@@ -6,6 +6,7 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.YEAR
 import static org.joda.time.DateTimeZone.UTC
 
+import com.yahoo.bard.webservice.data.config.names.TableName
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
@@ -37,14 +38,14 @@ class ConcretePhysicalTableSpec extends Specification {
 
     @Shared Set<Interval> intervalSet1, intervalSet2, intervalSet3
 
-    @Shared Map<Column, Set<Interval>> segmentMetadata
+    @Shared Map<String, Set<Interval>> segmentMetadata
 
     def setupSpec() {
-        dimension = new KeyValueStoreDimension("dimension", null, [BardDimensionField.ID] as LinkedHashSet, MapStoreManager.getInstance("dimension"), ScanSearchProviderManager.getInstance("apiProduct"))
+        dimension = new KeyValueStoreDimension("dimensionOne", null, [BardDimensionField.ID] as LinkedHashSet, MapStoreManager.getInstance("dimension"), ScanSearchProviderManager.getInstance("apiProduct"))
 
         dimensionColumn = new DimensionColumn(dimension)
-        metricColumn1 = new MetricColumn("metric1")
-        metricColumn2 = new MetricColumn("metric2")
+        metricColumn1 = new MetricColumn("metricOne")
+        metricColumn2 = new MetricColumn("metricTwo")
 
         dimensionDictionary = new DimensionDictionary([dimension].toSet())
 
@@ -57,16 +58,16 @@ class ConcretePhysicalTableSpec extends Specification {
         intervalSet3 = [interval1, interval2, interval3] as Set
 
         segmentMetadata = [
-                (dimensionColumn): (intervalSet1),
-                (metricColumn1): (intervalSet2),
-                (metricColumn2): (intervalSet3)
+                'dimension_one' : (intervalSet1),
+                'metric_one'    : (intervalSet2),
+                'metric_two'    : (intervalSet3)
         ]
 
         physicalTable = new ConcretePhysicalTable(
-                "test table",
+                TableName.of("test table"),
                 DAY.buildZonedTimeGrain(UTC),
                 [dimensionColumn, metricColumn1, metricColumn2] as Set,
-                ['dimension': 'druidDim'],
+                ['dimensionOne': 'dimension_one', 'metricOne': 'metric_one', 'metricTwo': 'metric_two'],
                 new TestDataSourceMetadataService(segmentMetadata)
         )
     }
@@ -92,16 +93,16 @@ class ConcretePhysicalTableSpec extends Specification {
         setup:
         String name = "test a"
         PhysicalTable table
-        Map<Column, Set<Interval>> noMetricMetadata = [(dimensionColumn): (intervalSet3)]
+        Map<String, Set<Interval>> noMetricMetadata = ['dimension_one' : (intervalSet3)]
         DataSourceConstraint constraints = Mock(DataSourceConstraint)
         constraints.getAllColumnNames() >> [metricColumn1.name]
 
         when:
         table = new ConcretePhysicalTable(
-                name,
+                TableName.of(name),
                 YEAR.buildZonedTimeGrain(UTC),
                 [dimensionColumn, metricColumn1] as Set,
-                ["dimension": "druidDim"],
+                ['dimensionOne': 'dimension_one', 'metricOne': 'metric_one'],
                 new TestDataSourceMetadataService(noMetricMetadata)
         )
 
@@ -111,7 +112,7 @@ class ConcretePhysicalTableSpec extends Specification {
         table.getDimensions() == [dimension] as Set
 
         when:
-        table.setAvailability(new ConcreteAvailability(physicalTable.getTableName(), physicalTable.getSchema().getColumns(), new TestDataSourceMetadataService(segmentMetadata)))
+        table.setAvailability(new ConcreteAvailability(physicalTable.getTableName(), new TestDataSourceMetadataService(segmentMetadata)))
 
         then:
         table.getDimensions() == [dimension] as Set
@@ -132,23 +133,25 @@ class ConcretePhysicalTableSpec extends Specification {
         physicalTable.getDimensions() == [dimension] as Set
     }
 
-    def "test physical to logical mapping is constructed correctly"() {
+    def "test physical to logical mapping is constructed correctly with multiple logical name to one physical name"() {
         setup:
         PhysicalTable oneDimPhysicalTable = new ConcretePhysicalTable(
-                "test table", DAY.buildZonedTimeGrain(UTC),
+                TableName.of("test table"),
+                DAY.buildZonedTimeGrain(UTC),
                 [dimensionColumn] as Set,
-                ['dimension': 'druidDim'],
+                ['dimensionOne': 'dimension_one'],
                 Mock(DataSourceMetadataService)
         )
         PhysicalTable twoDimPhysicalTable = new ConcretePhysicalTable(
-                "test table", DAY.buildZonedTimeGrain(UTC),
+                TableName.of("test table"),
+                DAY.buildZonedTimeGrain(UTC),
                 [dimensionColumn] as Set,
-                ['dimension1': 'druidDim', 'dimension2': 'druidDim'],
+                ['dimensionOne': 'dimension_one', 'dimensionTwo': 'dimension_one'],
                 Mock(DataSourceMetadataService)
         )
 
         expect:
-        oneDimPhysicalTable.getSchema().getLogicalColumnNames('druidDim') == ['dimension'] as Set
-        twoDimPhysicalTable.getSchema().getLogicalColumnNames('druidDim') == ['dimension1', 'dimension2'] as Set
+        oneDimPhysicalTable.getSchema().getLogicalColumnNames('dimension_one') == ['dimensionOne'] as Set
+        twoDimPhysicalTable.getSchema().getLogicalColumnNames('dimension_one') == ['dimensionOne', 'dimensionTwo'] as Set
     }
 }
