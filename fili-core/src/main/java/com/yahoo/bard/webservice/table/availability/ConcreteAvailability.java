@@ -4,7 +4,6 @@ package com.yahoo.bard.webservice.table.availability;
 
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
-import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
@@ -43,7 +42,7 @@ public class ConcreteAvailability implements Availability {
      */
     public ConcreteAvailability(
             @NotNull TableName tableName,
-            @NotNull Set<String> columnPhysicalNames,
+            @NotNull Iterable<String> columnPhysicalNames,
             @NotNull DataSourceMetadataService metadataService
     ) {
         this.name = tableName;

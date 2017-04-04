@@ -3,8 +3,10 @@
 package com.yahoo.bard.webservice.table;
 
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
+import com.yahoo.bard.webservice.util.TableUtils;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -63,6 +65,17 @@ public class PhysicalTableSchema extends BaseSchema implements Schema {
      */
     public String getPhysicalColumnName(String logicalName) {
         return logicalToPhysicalColumnNames.getOrDefault(logicalName, logicalName);
+    }
+
+    /**
+     * Get the list of physical column names for this schema.
+     *
+     * @return A list of physical column names
+     */
+    public List<String> getPhysicalColumnNames() {
+        return getColumns().stream()
+                .map(column -> TableUtils.getColumnName(column, logicalToPhysicalColumnNames))
+                .collect(Collectors.toList());
     }
 
     /**
