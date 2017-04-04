@@ -20,7 +20,9 @@ public class GranularityComparator implements Comparator<PhysicalTable> {
     /**
      * A constructor provided in case other classes need to subclass GranularityComparator.
      */
-    protected GranularityComparator() { }
+    protected GranularityComparator() {
+        // This constructor is intentionally empty. Nothing special is needed here.
+    }
 
     /**
      * Factory method for creating new GranularityComparator instance.
