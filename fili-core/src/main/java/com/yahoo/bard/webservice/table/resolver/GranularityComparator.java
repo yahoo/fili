@@ -27,7 +27,7 @@ public class GranularityComparator implements Comparator<PhysicalTable> {
      *
      * @return a new GranularityComparator instance
      */
-    public static synchronized GranularityComparator getInstance() {
+    public static GranularityComparator getInstance() {
         return COMPARATOR;
     }
 
