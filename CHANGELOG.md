@@ -59,6 +59,11 @@ Current
 
 ### Changed:
 
+- [Allow GranularityComparator to return static instance](https://github.com/yahoo/fili/pull/225)
+    * Implementation of [PR #193](https://github.com/yahoo/fili/pull/193) suggests an possible improvement
+    on GranularityComparator: Put the static instance on the GranularityComparator class itself, so that
+    everywhere in the system that wants it could just call `GranularityComparator.getInstance()`
+
 - [Make `TemplateDruidQuery::getMetricField` get the first field instead of any field](https://github.com/yahoo/fili/pull/210)
     * Previously, order was by luck, now it's by the contract of `findFirst`
 
