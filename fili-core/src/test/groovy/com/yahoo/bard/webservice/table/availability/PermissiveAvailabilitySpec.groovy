@@ -4,8 +4,8 @@ package com.yahoo.bard.webservice.table.availability
 
 import com.yahoo.bard.webservice.data.config.names.TableName
 import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService
-import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
+import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 
 import org.joda.time.Interval
@@ -17,23 +17,25 @@ class PermissiveAvailabilitySpec extends Specification  {
 
     PermissiveAvailability permissiveAvailability
     TableName tableName
-    Column column1
-    Column column2
+    String column1 = 'column1'
+    String column2 = 'column2'
+
+    Set<String> columnNames = [column1, column2] as Set
+
     Interval interval1
     Interval interval2
 
     def setup() {
         tableName = TableName.of('table')
 
-        column1 = new Column('column1')
-        column2 = new Column('column2')
+
 
         interval1 = new Interval('2017-01-01/2017-02-01')
         interval2 = new Interval('2018-01-01/2018-02-01')
 
         permissiveAvailability = new PermissiveAvailability(
                 tableName,
-                [column1, column2] as Set,
+                columnNames,
                 new TestDataSourceMetadataService([
                         (column1): [interval1] as Set,
                         (column2): [interval2] as Set
@@ -49,16 +51,15 @@ class PermissiveAvailabilitySpec extends Specification  {
 
         permissiveAvailability = new PermissiveAvailability(
                 tableName,
-                [column1, column2] as Set,
+                columnNames,
                 new TestDataSourceMetadataService([
                         (column1): [interval1] as Set,
                         (column2): [interval2] as Set
                 ])
         )
 
-        DataSourceConstraint dataSourceConstraint = Mock(DataSourceConstraint)
-        dataSourceConstraint.getAllColumnNames() >> ['column1', 'column2']
-
+        PhysicalDataSourceConstraint dataSourceConstraint = Mock(PhysicalDataSourceConstraint)
+        dataSourceConstraint.getAllColumnPhysicalNames() >> (columnNames as List)
         expect:
         permissiveAvailability.getAvailableIntervals(dataSourceConstraint) == new SimplifiedIntervalList(
                 expected.collect{new Interval(it)} as Set
@@ -78,7 +79,7 @@ class PermissiveAvailabilitySpec extends Specification  {
 
     def "getAvailableIntervals doesn't return column that is not configured in DataSourceConstraint"() {
         given:
-        DataSourceConstraint dataSourceConstraint = Mock(DataSourceConstraint)
+        DataSourceConstraint dataSourceConstraint = Mock(PhysicalDataSourceConstraint)
         dataSourceConstraint.getAllColumnNames() >> ['unConfiguredColumn']
 
         expect:
@@ -89,7 +90,7 @@ class PermissiveAvailabilitySpec extends Specification  {
 
     def "getAvailableIntervals returns configured columns when there is no column in DataSourceConstraint"() {
         given:
-        DataSourceConstraint dataSourceConstraint = Mock(DataSourceConstraint)
+        DataSourceConstraint dataSourceConstraint = Mock(PhysicalDataSourceConstraint)
         dataSourceConstraint.getAllColumnNames() >> []
 
         expect:
