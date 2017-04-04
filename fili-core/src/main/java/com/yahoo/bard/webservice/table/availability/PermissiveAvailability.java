@@ -4,10 +4,9 @@ package com.yahoo.bard.webservice.table.availability;
 
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
-import com.yahoo.bard.webservice.table.Column;
-import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
+
 import org.joda.time.Interval;
 
 import java.util.Collections;
@@ -44,7 +43,8 @@ public class PermissiveAvailability extends ConcreteAvailability {
      * <p>
      * This is different from its parent's
      * {@link
-     * com.yahoo.bard.webservice.table.availability.ConcreteAvailability#getAvailableIntervals(DataSourceConstraint)};
+     * com.yahoo.bard.webservice.table.availability.ConcreteAvailability#getAvailableIntervals(
+     * PhysicalDataSourceConstraint)};
      * Instead of returning the intersection of all available intervals, this method returns the union of them.
      *
      * @param ignoredConstraints  Data constraint containing columns and api filters. Constrains are ignored, because

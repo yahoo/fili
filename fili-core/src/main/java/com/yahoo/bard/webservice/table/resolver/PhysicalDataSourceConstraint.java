@@ -2,10 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.resolver;
 
-import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableSchema;
 
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -22,7 +20,10 @@ public class PhysicalDataSourceConstraint extends DataSourceConstraint {
      * @param dataSourceConstraint  Data soruce contraint containing all the column names as logical names
      * @param physicalTableSchema  A map from logical column name to physical column names
      */
-    public PhysicalDataSourceConstraint(DataSourceConstraint dataSourceConstraint, PhysicalTableSchema physicalTableSchema) {
+    public PhysicalDataSourceConstraint(
+            DataSourceConstraint dataSourceConstraint,
+            PhysicalTableSchema physicalTableSchema
+    ) {
         super(dataSourceConstraint);
         this.allColumnPhysicalNames = dataSourceConstraint.getAllColumnNames().stream()
                 .map(physicalTableSchema::getPhysicalColumnName)

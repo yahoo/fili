@@ -7,6 +7,7 @@ import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.availability.Availability;
 import com.yahoo.bard.webservice.table.availability.ConcreteAvailability;
+import com.yahoo.bard.webservice.util.TableUtils;
 
 import java.util.Map;
 import java.util.Set;
@@ -45,8 +46,7 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
                 new ConcreteAvailability(
                         name,
                         columns.stream()
-                                .map(Column::getName)
-                                .map(logicalToPhysicalColumnNames::get)
+                                .map(col -> TableUtils.getColumnName(col, logicalToPhysicalColumnNames))
                                 .collect(Collectors.toSet()),
                         metadataService
                 )

@@ -3,7 +3,6 @@
 package com.yahoo.bard.webservice.metadata;
 
 import com.yahoo.bard.webservice.data.config.names.TableName;
-import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import org.joda.time.Interval;

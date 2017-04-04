@@ -3,10 +3,13 @@
 package com.yahoo.bard.webservice.util;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
+import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -43,6 +46,25 @@ public class TableUtils {
                         .map(table::getPhysicalColumnName),
                 query.getDependentFieldNames().stream()
         ).flatMap(Function.identity()).collect(Collectors.toSet());
+    }
+
+
+    /**
+     * Resolve a column name to a physical name by either mapping it to a physical dimension name or unwrapping it.
+     *
+     * @param column  The column being looked up
+     * @param logicalToPhysicalDimensionColumnNames  The dimension column name mappings
+     *
+     * @return  Either a physical metric or dimension column name
+     */
+    public static String getColumnName(
+            Column column,
+            Map<String, String> logicalToPhysicalDimensionColumnNames
+    ) {
+        return column instanceof DimensionColumn ?
+                logicalToPhysicalDimensionColumnNames.getOrDefault(((DimensionColumn) column).getDimension()
+                        .getApiName(), ((DimensionColumn) column).getDimension().getApiName())
+                : column.getName();
     }
 
     /**
