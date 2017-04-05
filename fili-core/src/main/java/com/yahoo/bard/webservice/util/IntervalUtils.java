@@ -6,14 +6,11 @@ import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
-import com.yahoo.bard.webservice.table.resolver.GranularityComparator;
 
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.joda.time.Interval;
 import org.joda.time.base.AbstractInterval;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -34,9 +31,6 @@ import java.util.stream.StreamSupport;
  * Methods and Iterators which support interval slicing alignment and set operations.
  */
 public class IntervalUtils {
-
-    private static final Logger LOG = LoggerFactory.getLogger(IntervalUtils.class);
-    private static final GranularityComparator GRANULARITY_COMPARATOR = GranularityComparator.getInstance();
 
     public static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
