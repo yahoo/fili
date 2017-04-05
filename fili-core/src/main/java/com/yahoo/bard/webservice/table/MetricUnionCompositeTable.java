@@ -24,7 +24,8 @@ import javax.validation.constraints.NotNull;
  * query different metric columns from different tables at the same time.
  * <p>
  * For example, two tables of the following
- *
+ * <pre>
+ * {@code
  * table1:
  * +---------+---------+---------+
  * | metric1 | metric2 | metric3 |
@@ -40,16 +41,19 @@ import javax.validation.constraints.NotNull;
  * |         |         |         |
  * |         |         |         |
  * +---------+---------+---------+
- *
+ * }
+ * </pre>
  * are put together into a table
- *
+ * <pre>
+ * {@code
  * +---------+---------+---------+---------+---------+---------+
  * | metric1 | metric2 | metric3 | metric4 | metric5 | metric5 |
  * +---------+---------+---------+---------+---------+---------+
  * |         |         |         |         |         |         |
  * |         |         |         |         |         |         |
  * +---------+---------+---------+---------+---------+---------+
- *
+ * }
+ * </pre>
  * and this joined table is backed by the <tt>MetricUnionAvailability</tt>
  *
  */
