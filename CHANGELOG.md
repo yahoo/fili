@@ -8,6 +8,11 @@ pull request if there was one.
 Current
 -------
 ### Added:
+
+- [MetricUnionAvailability](https://github.com/yahoo/fili/pull/193)
+    * Added `MetricUnionAvailability`  which joins physical tables with the same dimension schema
+    but non-intersecting metric schemas. Metrics on the `MetricUnionAvailability` are sourced from exactly one of the participating tables.
+
 - [CompositePhysicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
     * Added `ConcretePhysicalTable` and `ConcreteAvailability` to model table in druid datasource and its availabillity in the new table availability structure
     * Added class variable for `DataSourceMetadataService` and `ConfigurationLoader` into `AbstractBinderFactory` for application to access
