@@ -27,7 +27,7 @@ import javax.inject.Singleton;
 @Singleton
 public class DefaultPhysicalTableResolver extends BasePhysicalTableResolver {
 
-    protected static final GranularityComparator COMPARE_GRANULARITY = new GranularityComparator();
+    protected static final GranularityComparator COMPARE_GRANULARITY = GranularityComparator.getInstance();
     protected static final DimensionCardinalityComparator CARDINALITY_COMPARATOR = new DimensionCardinalityComparator();
 
     private final PartialDataHandler partialDataHandler;

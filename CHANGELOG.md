@@ -59,6 +59,11 @@ Current
 
 ### Changed:
 
+- [Allow GranularityComparator to return static instance](https://github.com/yahoo/fili/pull/225)
+    * Implementation of [PR #193](https://github.com/yahoo/fili/pull/193) suggests an possible improvement
+    on GranularityComparator: Put the static instance on the GranularityComparator class itself, so that
+    everywhere in the system that wants it could just call `GranularityComparator.getInstance()`
+
 - [Make `TemplateDruidQuery::getMetricField` get the first field instead of any field](https://github.com/yahoo/fili/pull/210)
     * Previously, order was by luck, now it's by the contract of `findFirst`
 
@@ -123,6 +128,12 @@ Current
     * A block of code can now be timed by wrapping the timed block in a try-with-resources block that 
         starts the timer. Note: This won't work when performing timings across threads, or across
         contexts. Those need to be started and stopped manually.
+
+- [Clean up logging and responses in `DimensionCacheLoaderServlet`](https://github.com/yahoo/fili/pull/163)
+    * Switched a number of `error`-level logs to `debug` level to line up with logging guidance when request failures
+      were result of client error
+    * Reduced some `info`-level logs down to `debug`
+    * Converted to 404 when error was cause by not finding a path element
 
 ### Deprecated:
 

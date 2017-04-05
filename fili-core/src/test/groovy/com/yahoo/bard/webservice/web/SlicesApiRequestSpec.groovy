@@ -8,10 +8,8 @@ import com.yahoo.bard.webservice.metadata.BaseDataSourceMetadataSpec
 import com.yahoo.bard.webservice.metadata.DataSourceMetadata
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.metadata.SegmentInfo
-import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 import com.yahoo.bard.webservice.table.Table
-import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
 import com.yahoo.bard.webservice.web.endpoints.SlicesServlet
 
 import org.joda.time.DateTime
@@ -28,7 +26,7 @@ class SlicesApiRequestSpec extends BaseDataSourceMetadataSpec {
     UriInfo uriInfo = Mock(UriInfo)
     UriBuilder builder = Mock(UriBuilder)
     String baseUri = "http://localhost:9998/v1/slices/"
-    DataSourceMetadataService dataSourceMetadataService = new DataSourceMetadataService();
+    DataSourceMetadataService dataSourceMetadataService = new DataSourceMetadataService()
 
     @Shared
     PhysicalTableDictionary fullDictionary
@@ -43,8 +41,8 @@ class SlicesApiRequestSpec extends BaseDataSourceMetadataSpec {
         builder.path(_) >> builder
         builder.path(_, _) >> builder
 
-        DataSourceMetadata dataSourceMetadata = new DataSourceMetadata("all_pets", [:], segments);
-        dataSourceMetadataService.update(fullDictionary.get("all_pets"), dataSourceMetadata);
+        DataSourceMetadata dataSourceMetadata = new DataSourceMetadata("all_pets", [:], segments)
+        dataSourceMetadataService.update(fullDictionary.get("all_pets"), dataSourceMetadata)
     }
 
     def cleanup() {
@@ -54,15 +52,15 @@ class SlicesApiRequestSpec extends BaseDataSourceMetadataSpec {
     def "check api request construction for the top level endpoint (all slices)"() {
         setup:
         builder.build(_) >> { List<List<String>> args ->
-            new URI(baseUri+args[0][0])
+            new URI(baseUri + args[0][0])
         }
 
         Set<Map<String, String>> expected = fullDictionary.collect {
-            Map<String, String> res = new LinkedHashMap<>()
-            res.put("name", it.getKey())
-            res.put("timeGrain", it.getValue().getTimeGrain().getName().toLowerCase(Locale.ENGLISH))
-            res.put("uri", baseUri + it.getKey())
-            res
+            [
+                "name": it.key,
+                "timeGrain": it.value.schema.timeGrain.name.toLowerCase(Locale.ENGLISH),
+                "uri": baseUri + it.key
+            ] as LinkedHashMap
         }
 
         when:
@@ -77,50 +75,47 @@ class SlicesApiRequestSpec extends BaseDataSourceMetadataSpec {
         )
 
         then:
-        apiRequest.getSlices() == expected
+        apiRequest.slices == expected
     }
 
     def "check api request construction for a given table name"() {
         setup:
         String name = "all_pets"
-        Table table = fullDictionary.get(name);
+        Table table = fullDictionary.get(name)
         String uri = baseUri.replaceAll("/slices/.*", "") + "/dimensions/"
 
         builder.build(_) >> { List<List<String>> args ->
-            new URI(uri+args[0][0])
+            new URI(uri + args[0][0])
         }
 
         Set<Map<String, Object>> dimensionsResult = new LinkedHashSet<>()
         Set<Map<String, Object>> metricsResult = new LinkedHashSet<>()
 
-        table.getAvailability().getAllAvailableIntervals().each {
+        table.availability.allAvailableIntervals.each {
             Map<String, Object> row = new LinkedHashMap<>()
-            row.put("intervals", it.getValue())
-
-            Column key = it.getKey()
-            if (key instanceof DimensionColumn) {
-                String apiName = ((DimensionColumn) key).getDimension().getApiName()
-                row.put("name", apiName)
-                row.put("uri", uri + apiName)
+            row["intervals"] = it.value
+            row["name"] = it.key.name
+            if (it.key instanceof DimensionColumn) {
+                row["uri"] = uri + it.key.name
                 dimensionsResult.add(row)
             } else {
-                row.put("name", key.getName())
                 metricsResult.add(row)
             }
         }
         Set<SortedMap<DateTime, Map<String, SegmentInfo>>> sliceMetadata = dataSourceMetadataService.getTableSegments(
-                Collections.singleton(table.getTableName())
-        );
+                [table.tableName] as Set
+        )
 
-        Map<String, Object> expected = new LinkedHashMap<>()
-        expected.put("name", name);
-        expected.put("timeGrain", fullDictionary.get(name).getTimeGrain().getName());
-        expected.put("timeZone", "UTC");
-        expected.put("dimensions", dimensionsResult);
-        expected.put("metrics", metricsResult);
-        // This test compares generated metadata against itself, meaning that the contents of this generation are not
-        // under test.
-        expected.put("segmentInfo", SlicesApiRequest.generateSegmentMetadataView(sliceMetadata))
+        Map<String, Object> expected = [
+            "name": name,
+            "timeGrain": fullDictionary.get(name).schema.timeGrain.name,
+            "timeZone": "UTC",
+            "dimensions": dimensionsResult,
+            "metrics": metricsResult,
+            // This test compares generated metadata against itself, meaning that the contents of this generation are
+            // not under test.
+            "segmentInfo": SlicesApiRequest.generateSegmentMetadataView(sliceMetadata)
+        ] as LinkedHashMap
 
         when:
         SlicesApiRequest apiRequest = new SlicesApiRequest(
@@ -141,7 +136,7 @@ class SlicesApiRequestSpec extends BaseDataSourceMetadataSpec {
     def "api request construction throws #exception.simpleName because #reason"() {
         setup:
         builder.build(_) >> { List<List<String>> args ->
-            new URI(baseUri+args[0][0])
+            new URI(baseUri + args[0][0])
         }
 
         when:
