@@ -20,7 +20,7 @@ import javax.validation.constraints.NotNull;
 /**
  * An implementation of <tt>BasePhysicalTable</tt> backed by metric union availability.
  * <p>
- * The composite table joins physical tables puts metric columns of different tables together so that we can
+ * The composite table puts metric columns of different tables together so that we can
  * query different metric columns from different tables at the same time.
  * <p>
  * For example, two tables of the following
@@ -55,7 +55,7 @@ import javax.validation.constraints.NotNull;
  */
 public class MetricUnionCompositeTable extends BasePhysicalTable {
     private static final Logger LOG = LoggerFactory.getLogger(MetricUnionCompositeTable.class);
-    private static final GranularityComparator GRANULARITY_COMPARATOR = new GranularityComparator();
+    private static final GranularityComparator GRANULARITY_COMPARATOR = GranularityComparator.getInstance();
 
     /**
      * Constructor.
