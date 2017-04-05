@@ -36,7 +36,6 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationP
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
 import com.yahoo.bard.webservice.druid.util.SketchFieldConverter
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
-import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService
 import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.PhysicalTable
@@ -166,7 +165,7 @@ class SketchIntersectionReportingResources extends Specification {
                 Mock(DataSourceMetadataService)
         )
 
-        TableGroup tableGroup = new TableGroup([physicalTable] as LinkedHashSet, metrics)
+        TableGroup tableGroup = new TableGroup([physicalTable] as LinkedHashSet, metrics, physicalTable.dimensions)
         table = new LogicalTable("NETWORK", DAY, tableGroup, metricDict)
 
         JSONArray metricJsonObjArray = new JSONArray("[{\"filter\":{\"AND\":\"country|id-in[US,IN],property|id-in[114,125]\"},\"name\":\"foo\"},{\"filter\":{},\"name\":\"pageviews\"}]")

@@ -15,6 +15,23 @@ import java.util.Comparator;
 public class GranularityComparator implements Comparator<PhysicalTable> {
 
     private static final Logger LOG = LoggerFactory.getLogger(GranularityComparator.class);
+    private static final GranularityComparator COMPARATOR = new GranularityComparator();
+
+    /**
+     * A constructor provided in case other classes need to subclass GranularityComparator.
+     */
+    protected GranularityComparator() {
+        // This constructor is intentionally empty. Nothing special is needed here.
+    }
+
+    /**
+     * Factory method for creating new GranularityComparator instance.
+     *
+     * @return a new GranularityComparator instance
+     */
+    public static GranularityComparator getInstance() {
+        return COMPARATOR;
+    }
 
     /**
      * Compare two physical tables identifying which one has fewer time buckets.

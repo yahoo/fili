@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.table.resolver
 
 import com.yahoo.bard.webservice.table.PhysicalTable
+import com.yahoo.bard.webservice.table.PhysicalTableSchema
 
 import spock.lang.Shared
 import spock.lang.Specification
@@ -24,13 +25,17 @@ class BasePhysicalTableResolverSpec extends Specification {
     QueryPlanningConstraint dataSourceConstraint
 
     def setupSpec() {
+        PhysicalTableSchema commonSchema = Mock(PhysicalTableSchema)
         one = Mock(PhysicalTable)
         two = Mock(PhysicalTable)
         three = Mock(PhysicalTable)
 
         one.getName() >> "one"
+        one.getSchema() >> commonSchema
         two.getName() >> "two"
+        two.getSchema() >> commonSchema
         three.getName() >> "three"
+        three.getSchema() >> commonSchema
 
         pickFirst = { PhysicalTable table1, PhysicalTable table2 -> table1 } as BinaryOperator<PhysicalTable>
         pickLast  = { PhysicalTable table1, PhysicalTable table2 -> table2 } as BinaryOperator<PhysicalTable>
