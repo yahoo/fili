@@ -65,6 +65,9 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
         return tableConfigurations;
     }
 
+    /**
+     * Queries druid for all datasources and loads all of their tables.
+     */
     private void loadAllDatasources() {
         queryDruid(rootNode -> {
             if (rootNode.isArray()) {
@@ -82,7 +85,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      *
      * @param table The TableConfig to be loaded with queries against druid.
      */
-    public void loadTable(TableConfig table) {
+    private void loadTable(TableConfig table) {
         String url = DATASOURCES + table.getName() + "/?full";
         queryDruid(rootNode -> {
             //TODO: handle errors
