@@ -7,11 +7,13 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MONTH
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.WEEK
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.YEAR
 
+import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity
 import com.yahoo.bard.webservice.druid.model.query.Granularity
 
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
+import org.joda.time.Duration
 import org.joda.time.Interval
 
 import spock.lang.Specification
@@ -324,6 +326,32 @@ class IntervalUtilsSpec extends Specification {
         YEAR  | ["2013/2018"]             | ["2017/2018"]
         MONTH | ["2013/2017-04"]          | ["2017-02/2017-04"]
         DAY   | ["2012-02-03/2017-04-04"] | ["2012-02-03/2012-05-04", "2017-02-03/2017-04-04"]
+    }
+
+    @Unroll
+    def "getCoarsestTimeGrain returns duration of #expected among #duration1, #duration2, #duration3"() {
+        given:
+        ZonedTimeGrain zonedTimeGrain1 = Mock(ZonedTimeGrain)
+        ZonedTimeGrain zonedTimeGrain2 = Mock(ZonedTimeGrain)
+        ZonedTimeGrain zonedTimeGrain3 = Mock(ZonedTimeGrain)
+
+        zonedTimeGrain1.getEstimatedDuration() >> new Duration(duration1)
+        zonedTimeGrain2.getEstimatedDuration() >> new Duration(duration2)
+        zonedTimeGrain3.getEstimatedDuration() >> new Duration(duration3)
+
+        expect:
+        IntervalUtils.getCoarsestTimeGrain([zonedTimeGrain1, zonedTimeGrain2, zonedTimeGrain3]).getEstimatedDuration().equals(new Duration(expected))
+
+        where:
+        duration1 | duration2 | duration3 | expected
+        1         | 2         | 3         | 1
+        1         | 1         | 3         | 1
+        3         | 3         | 3         | 3
+    }
+
+    def "getCoarsestTimeGrain returns null on empty input time grain collections"() {
+        expect:
+        IntervalUtils.getCoarsestTimeGrain(Collections.emptyList()) == null
     }
 
     /**
