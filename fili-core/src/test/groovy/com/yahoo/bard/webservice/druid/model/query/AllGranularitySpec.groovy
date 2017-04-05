@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.query
 
+import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -13,10 +14,11 @@ import org.joda.time.Interval
 import org.joda.time.Weeks
 
 import spock.lang.Specification
+import spock.lang.Unroll
 
 class AllGranularitySpec extends Specification {
 
-    AllGranularity allGranularity = AllGranularity.INSTANCE
+    static AllGranularity allGranularity = AllGranularity.INSTANCE
 
     def "All granularity serializes to 'all'"() {
         setup:
@@ -24,6 +26,19 @@ class AllGranularitySpec extends Specification {
 
         expect:
         writer.writeValueAsString(allGranularity) == /"all"/
+    }
+
+    @Unroll
+    def "All granularity #relationship  #grain"() {
+
+        expect:
+        allGranularity.satisfiedBy(grain)
+        grain.satisfies(allGranularity)
+
+        where:
+
+        grain << ((DefaultTimeGrain.values() as List) + allGranularity)
+        relationship = " is satisfied by "
     }
 
     def "All granularity iterates over simplified intervals without otherwise changing them"() {

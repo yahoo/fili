@@ -2,6 +2,9 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.time
 
+import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.*
+
+import com.yahoo.bard.webservice.druid.model.query.AllGranularity
 import com.yahoo.bard.webservice.druid.model.query.Granularity
 
 import org.joda.time.DateTime
@@ -93,6 +96,27 @@ class TimeGrainSpec extends Specification {
         "2015"       | "2015"
         "2014-12-31" | "2015"
         "2015-01-02" | "2015-02"
+    }
+
+    @Unroll
+    def "#grain1 granularity #relationship #grain2"() {
+
+        expect:
+        grain1.satisfiedBy(grain2) == satisfies
+        grain2.satisfies(grain1) == satisfies
+
+        where:
+        grain1                  | grain2                  | satisfies
+        DAY                     | DAY                     | true
+        DAY                     | WEEK                    | false
+        DAY                     | MONTH                   | false
+        WEEK                    | DAY                     | true
+        MONTH                   | DAY                     | true
+        WEEK                    | MONTH                   | false
+        MONTH                   | WEEK                    | false
+        AllGranularity.INSTANCE | DAY                     | true
+        DAY                     | AllGranularity.INSTANCE | false
+        relationship = satisfies ? " is satisfied by " : " is not satisfiedBy "
     }
 
     @Unroll
