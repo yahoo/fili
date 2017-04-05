@@ -68,14 +68,14 @@ public class GenericBinderFactory extends AbstractBinderFactory {
             PhysicalTableDictionary physicalTableDictionary,
             DimensionDictionary dimensionDictionary
     ) {
-        List<List<Dimension>> dimensions = genericDimensions.getAllDimensionConfigurations().stream()
+        List<List<Dimension>> dimensionsList = genericDimensions.getAllDimensionConfigurations().stream()
                 .map(DimensionConfig::getApiName)
                 .map(dimensionDictionary::findByApiName)
                 .map(Collections::singletonList)
                 .collect(Collectors.toList());
         return new DruidDimensionsLoader(
                 webService,
-                dimensions,
+                dimensionsList,
                 DruidDimensionsLoader.buildDataSourcesList(physicalTableDictionary)
         );
     }
