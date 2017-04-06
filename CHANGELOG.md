@@ -8,6 +8,9 @@ pull request if there was one.
 Current
 -------
 ### Added:
+- [Should also setConnectTimeout when using setReadTimeout](https://github.com/yahoo/fili/pull/231)
+    * Setting connectTimeout on DefaultAsyncHttpClientConfig when building AsyncDruidWebServiceImpl
+        
 - [CompositePhysicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
     * Added `ConcretePhysicalTable` and `ConcreteAvailability` to model table in druid datasource and its availabillity in the new table availability structure
     * Added class variable for `DataSourceMetadataService` and `ConfigurationLoader` into `AbstractBinderFactory` for application to access
