@@ -113,6 +113,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
         AsyncHttpClientConfig config = new DefaultAsyncHttpClientConfig.Builder()
                 .setReadTimeout(requestTimeout)
                 .setRequestTimeout(requestTimeout)
+                .setConnectTimeout(requestTimeout)
                 .setConnectionTtl(requestTimeout)
                 .setPooledConnectionIdleTimeout(requestTimeout)
                 .setFollowRedirect(true)
