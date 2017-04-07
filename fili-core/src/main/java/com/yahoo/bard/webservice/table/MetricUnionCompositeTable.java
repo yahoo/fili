@@ -90,8 +90,7 @@ public class MetricUnionCompositeTable extends BasePhysicalTable {
     /**
      * Returns the coarsest <tt>ZonedTimeGrain</tt> that satisfies all tables.
      * <p>
-     * If the set of <tt>PhysicalTables</tt>'s is empty or the coarsest <tt>ZonedTimeGrain</tt> is not
-     * compatible with all of the <tt>PhysicalTables</tt>s, throw <tt>IllegalArgumentException</tt>.
+     * If the set of <tt>PhysicalTables</tt>'s is empty throw <tt>IllegalArgumentException</tt>.
      *
      * @param physicalTables  A set of <tt>PhysicalTable</tt>s among which the coarsest <tt>ZonedTimeGrain</tt>
      * is to be returned.
