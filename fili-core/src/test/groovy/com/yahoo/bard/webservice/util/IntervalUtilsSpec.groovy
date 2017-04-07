@@ -372,7 +372,7 @@ class IntervalUtilsSpec extends Specification {
 
     }
 
-    def "getCoarsestTimeGrain returns empty on empty input time grain collections"() {
+    def "getCoarsestTimeGrain returns empty on empty input physical table collections"() {
         expect:
         IntervalUtils.getCoarsestTimeGrain([]) == Optional.empty()
     }
