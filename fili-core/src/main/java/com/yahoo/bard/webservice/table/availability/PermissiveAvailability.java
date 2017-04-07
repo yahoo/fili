@@ -40,8 +40,9 @@ public class PermissiveAvailability extends ConcreteAvailability {
      * <p>
      * This is different from its parent's
      * {@link
-     * com.yahoo.bard.webservice.table.availability.ConcreteAvailability#getAvailableIntervals
-     * (PhysicalDataSourceConstraint)};
+     * com.yahoo.bard.webservice.table.availability.ConcreteAvailability#getAvailableIntervals(
+     * PhysicalDataSourceConstraint
+     * )};
      * Instead of returning the intersection of all available intervals, this method returns the union of them.
      *
      * @param constraint  Data constraint containing columns and api filters. Constrains are ignored, because

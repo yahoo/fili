@@ -74,12 +74,11 @@ class PermissiveConcretePhysicalTableSpec extends Specification {
 
         where:
         allColumnNames                                                | expected
-        ["disjointIntervalColumn"]                                    | [disjointInterval] as Set
-        ["leftAbuttingIntervalColumn"]                                | [leftAbuttingInterval] as Set
-        ["rightAbuttingIntervalColumn"]                               | [rightAbuttingInterval] as Set
-        ["disjointIntervalColumn", "leftAbuttingIntervalColumn"]      | [disjointInterval, leftAbuttingInterval] as Set
-        ["disjointIntervalColumn",  "rightAbuttingIntervalColumn"]    | [disjointInterval, rightAbuttingInterval] as Set
-        ["leftAbuttingIntervalColumn", "rightAbuttingIntervalColumn"] | [leftAbuttingInterval, rightAbuttingInterval] as Set
-
+        ["disjointIntervalColumn"]                                    | [disjointInterval, leftAbuttingInterval, rightAbuttingInterval] as Set
+        ["leftAbuttingIntervalColumn"]                                | [disjointInterval, leftAbuttingInterval, rightAbuttingInterval] as Set
+        ["rightAbuttingIntervalColumn"]                               | [disjointInterval, leftAbuttingInterval, rightAbuttingInterval] as Set
+        ["disjointIntervalColumn", "leftAbuttingIntervalColumn"]      | [disjointInterval, leftAbuttingInterval, rightAbuttingInterval] as Set
+        ["disjointIntervalColumn",  "rightAbuttingIntervalColumn"]    | [disjointInterval, leftAbuttingInterval, rightAbuttingInterval] as Set
+        ["leftAbuttingIntervalColumn", "rightAbuttingIntervalColumn"] | [disjointInterval, leftAbuttingInterval, rightAbuttingInterval] as Set
     }
 }

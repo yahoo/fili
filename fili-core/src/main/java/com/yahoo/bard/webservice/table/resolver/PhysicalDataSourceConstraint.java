@@ -27,12 +27,31 @@ public class PhysicalDataSourceConstraint extends DataSourceConstraint {
     ) {
         super(dataSourceConstraint);
 
+        Set<String> schemaColumnNames = physicalTableSchema.getColumnNames();
+
+        this.allColumnPhysicalNames = dataSourceConstraint.getAllColumnNames().stream()
+                .filter(schemaColumnNames::contains)
+                .map(physicalTableSchema::getPhysicalColumnName)
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * Private Constructor that union columns in constraint and schema, use buildWithSchemaUnion to invoke.
+     *
+     * @param physicalTableSchema  A map from logical column name to physical column names
+     * @param dataSourceConstraint  Data source constraint containing all the column names as logical names
+     */
+    private PhysicalDataSourceConstraint(
+            PhysicalTableSchema physicalTableSchema,
+            DataSourceConstraint dataSourceConstraint
+    ) {
+        super(dataSourceConstraint);
+
         Set<String> schemaColumnNames = physicalTableSchema.getColumns().stream()
                 .map(Column::getName)
                 .collect(Collectors.toSet());
 
-        this.allColumnPhysicalNames = dataSourceConstraint.getAllColumnNames().stream()
-                .filter(schemaColumnNames::contains)
+        this.allColumnPhysicalNames = schemaColumnNames.stream()
                 .map(physicalTableSchema::getPhysicalColumnName)
                 .collect(Collectors.toSet());
     }
@@ -44,5 +63,20 @@ public class PhysicalDataSourceConstraint extends DataSourceConstraint {
      */
     public Set<String> getAllColumnPhysicalNames() {
         return allColumnPhysicalNames;
+    }
+
+    /**
+     * Builds a physical data source constraint with the union of columns in schema.
+     *
+     * @param dataSourceConstraint  Data source constraint containing all the column names as logical names
+     * @param physicalTableSchema  A map from logical column name to physical column names
+     *
+     * @return a new physical data source constraint with all columns in schema
+     */
+    public static PhysicalDataSourceConstraint buildWithSchemaUnion(
+            DataSourceConstraint dataSourceConstraint,
+            PhysicalTableSchema physicalTableSchema
+    ) {
+        return new PhysicalDataSourceConstraint(physicalTableSchema, dataSourceConstraint);
     }
 }
