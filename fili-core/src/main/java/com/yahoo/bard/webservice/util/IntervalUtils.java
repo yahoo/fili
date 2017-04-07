@@ -6,6 +6,9 @@ import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
+import com.yahoo.bard.webservice.table.PhysicalTable;
+import com.yahoo.bard.webservice.table.PhysicalTableSchema;
+import com.yahoo.bard.webservice.table.resolver.GranularityComparator;
 
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
@@ -13,7 +16,6 @@ import org.joda.time.Interval;
 import org.joda.time.base.AbstractInterval;
 
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -31,6 +33,8 @@ import java.util.stream.StreamSupport;
  * Methods and Iterators which support interval slicing alignment and set operations.
  */
 public class IntervalUtils {
+
+    private static final GranularityComparator COMPARATOR = GranularityComparator.getInstance();
 
     public static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
@@ -213,18 +217,17 @@ public class IntervalUtils {
     }
 
     /**
-     * Returns the coarsest ZonedTimeGrain among a set of ZonedTimeGrains.
-     * <p>
-     * If the set of ZonedTimeGrains is empty, return null.
+     * Returns the coarsest ZonedTimeGrain among a set of PhysicalTables.
      *
-     * @param zonedTimeGrains  A set of ZonedTimeGrains among which the coarsest ZonedTimeGrain is to be returned.
+     * @param physicalTables  A set of PhysicalTables among which the coarsest ZonedTimeGrain is to be found.
      *
-     * @return the coarsest ZonedTimeGrain among a set of ZonedTimeGrains
+     * @return the coarsest ZonedTimeGrain among a set of PhysicalTables
      */
-    public static ZonedTimeGrain getCoarsestTimeGrain(Collection<ZonedTimeGrain> zonedTimeGrains) {
-        return zonedTimeGrains.stream()
-                .sorted(Comparator.comparing(ZonedTimeGrain::getEstimatedDuration))
+    public static Optional<ZonedTimeGrain> getCoarsestTimeGrain(Collection<PhysicalTable> physicalTables) {
+        return physicalTables.stream()
+                .sorted(COMPARATOR)
                 .findFirst()
-                .orElse(null);
+                .map(PhysicalTable::getSchema)
+                .map(PhysicalTableSchema::getTimeGrain);
     }
 }

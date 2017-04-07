@@ -3,6 +3,8 @@
 package com.yahoo.bard.webservice.util
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
+import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR
+import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MINUTE
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MONTH
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.WEEK
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.YEAR
@@ -10,10 +12,11 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.YEAR
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity
 import com.yahoo.bard.webservice.druid.model.query.Granularity
+import com.yahoo.bard.webservice.table.PhysicalTable
+import com.yahoo.bard.webservice.table.PhysicalTableSchema
 
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
-import org.joda.time.Duration
 import org.joda.time.Interval
 
 import spock.lang.Specification
@@ -329,29 +332,43 @@ class IntervalUtilsSpec extends Specification {
     }
 
     @Unroll
-    def "getCoarsestTimeGrain returns duration of #expected among #duration1, #duration2, #duration3"() {
+    def "getCoarsestTimeGrain returns coarsest grain in the case of #description"() {
         given:
-        ZonedTimeGrain zonedTimeGrain1 = Mock(ZonedTimeGrain)
-        ZonedTimeGrain zonedTimeGrain2 = Mock(ZonedTimeGrain)
-        ZonedTimeGrain zonedTimeGrain3 = Mock(ZonedTimeGrain)
+        PhysicalTableSchema schema1 = Mock(PhysicalTableSchema)
+        PhysicalTableSchema schema2 = Mock(PhysicalTableSchema)
+        PhysicalTableSchema schema3 = Mock(PhysicalTableSchema)
 
-        zonedTimeGrain1.getEstimatedDuration() >> new Duration(duration1)
-        zonedTimeGrain2.getEstimatedDuration() >> new Duration(duration2)
-        zonedTimeGrain3.getEstimatedDuration() >> new Duration(duration3)
+        schema1.getTimeGrain() >> new ZonedTimeGrain(timeGrain1, DateTimeZone.forID(timeZone1))
+        schema2.getTimeGrain() >> new ZonedTimeGrain(timeGrain2, DateTimeZone.forID(timeZone2))
+        schema3.getTimeGrain() >> new ZonedTimeGrain(timeGrain3, DateTimeZone.forID(timeZone3))
+
+        PhysicalTable physicalTable1 = Mock(PhysicalTable)
+        PhysicalTable physicalTable2 = Mock(PhysicalTable)
+        PhysicalTable physicalTable3 = Mock(PhysicalTable)
+
+        physicalTable1.getSchema() >> schema1
+        physicalTable2.getSchema() >> schema2
+        physicalTable3.getSchema() >> schema3
 
         expect:
-        IntervalUtils.getCoarsestTimeGrain([zonedTimeGrain1, zonedTimeGrain2, zonedTimeGrain3]).getEstimatedDuration().equals(new Duration(expected))
+        IntervalUtils.getCoarsestTimeGrain(
+                [
+                        physicalTable1,
+                        physicalTable2,
+                        physicalTable3
+                ]
+        ).get() == new ZonedTimeGrain(expectedTimeGrain, DateTimeZone.forID(expectedTimeZone))
 
         where:
-        duration1 | duration2 | duration3 | expected
-        1         | 2         | 3         | 1
-        1         | 1         | 3         | 1
-        3         | 3         | 3         | 3
+        timeGrain1 | timeGrain2 | timeGrain3 | timeZone1         | timeZone2             | timeZone3         | expectedTimeGrain | expectedTimeZone  | description
+        DAY        | DAY        | DAY        | 'America/Chicago' | 'America/Los_Angeles' | 'America/Phoenix' | DAY               | 'America/Chicago' | 'same grain but different time zones'
+        MINUTE     | HOUR       | DAY        | 'America/Phoenix' | 'America/Phoenix'     | 'America/Phoenix' | DAY               | 'America/Phoenix' | 'same time zone but different grans'
+        MINUTE     | HOUR       | DAY        | 'America/Chicago' | 'America/Los_Angeles' | 'America/Phoenix' | DAY               | 'America/Phoenix' | 'different grains and different time zones'
     }
 
     def "getCoarsestTimeGrain returns null on empty input time grain collections"() {
         expect:
-        IntervalUtils.getCoarsestTimeGrain(Collections.emptyList()) == null
+        IntervalUtils.getCoarsestTimeGrain(Collections.emptyList()) == Optional.empty()
     }
 
     /**
