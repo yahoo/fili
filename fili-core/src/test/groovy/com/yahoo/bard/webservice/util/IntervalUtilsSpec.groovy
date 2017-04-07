@@ -6,6 +6,7 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MINUTE
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MONTH
+import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.QUARTER
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.WEEK
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.YEAR
 
@@ -363,12 +364,17 @@ class IntervalUtilsSpec extends Specification {
         timeGrain1 | timeGrain2 | timeGrain3 | timeZone1         | timeZone2             | timeZone3         | expectedTimeGrain | expectedTimeZone  | description
         DAY        | DAY        | DAY        | 'America/Chicago' | 'America/Los_Angeles' | 'America/Phoenix' | DAY               | 'America/Chicago' | 'same grain but different time zones'
         MINUTE     | HOUR       | DAY        | 'America/Phoenix' | 'America/Phoenix'     | 'America/Phoenix' | DAY               | 'America/Phoenix' | 'same time zone but different grans'
-        MINUTE     | HOUR       | DAY        | 'America/Chicago' | 'America/Los_Angeles' | 'America/Phoenix' | DAY               | 'America/Phoenix' | 'different grains and different time zones'
+        MINUTE     | HOUR       | DAY        | 'America/Chicago' | 'America/Los_Angeles' | 'America/Phoenix' | DAY               | 'America/Phoenix' | 'different grains, with DAY as the coarsest grain, and different time zones'
+        HOUR       | DAY        | WEEK       | 'America/Chicago' | 'America/Los_Angeles' | 'America/Phoenix' | WEEK              | 'America/Phoenix' | 'different grains, with WEEK as the coarsest grain, and different time zones'
+        DAY        | WEEK       | MONTH      | 'America/Chicago' | 'America/Los_Angeles' | 'America/Phoenix' | MONTH             | 'America/Phoenix' | 'different grains, with MONTH as the coarsest grain, and different time zones'
+        WEEK       | MONTH      | QUARTER    | 'America/Chicago' | 'America/Los_Angeles' | 'America/Phoenix' | QUARTER           | 'America/Phoenix' | 'different grains, with QUARTER as the coarsest grain, and different time zones'
+        MONTH      | QUARTER    | YEAR       | 'America/Chicago' | 'America/Los_Angeles' | 'America/Phoenix' | YEAR              | 'America/Phoenix' | 'different grains, with YEAR as the coarsest grain, and different time zones'
+
     }
 
-    def "getCoarsestTimeGrain returns null on empty input time grain collections"() {
+    def "getCoarsestTimeGrain returns empty on empty input time grain collections"() {
         expect:
-        IntervalUtils.getCoarsestTimeGrain(Collections.emptyList()) == Optional.empty()
+        IntervalUtils.getCoarsestTimeGrain([]) == Optional.empty()
     }
 
     /**
