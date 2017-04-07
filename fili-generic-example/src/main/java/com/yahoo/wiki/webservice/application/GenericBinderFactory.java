@@ -73,6 +73,7 @@ public class GenericBinderFactory extends AbstractBinderFactory {
                 .map(dimensionDictionary::findByApiName)
                 .map(Collections::singletonList)
                 .collect(Collectors.toList());
+
         return new DruidDimensionsLoader(
                 webService,
                 dimensionsList,

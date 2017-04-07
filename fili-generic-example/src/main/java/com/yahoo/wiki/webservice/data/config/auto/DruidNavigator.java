@@ -3,16 +3,16 @@
 package com.yahoo.wiki.webservice.data.config.auto;
 
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
-import com.yahoo.bard.webservice.data.time.GranularityDictionary;
-import com.yahoo.bard.webservice.data.time.StandardGranularityParser;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
+import com.yahoo.bard.webservice.util.IntervalUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +58,8 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
                 Thread.sleep(1000);
                 LOG.info("Finished loading");
             } catch (InterruptedException e) {
-                LOG.info("Interrupted while waiting for druid to respond - {}", e);
+                LOG.error("Interrupted while waiting for druid to respond - {}", e);
+                throw new RuntimeException("Interrupted during auto configuration.");
             }
         }
 
@@ -66,7 +67,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
     }
 
     /**
-     * Queries druid for all datasources and loads all of their tables.
+     * Queries druid for all datasources and loads all of the discovered tables.
      */
     private void loadAllDatasources() {
         queryDruid(rootNode -> {
@@ -88,37 +89,36 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
     private void loadTable(TableConfig table) {
         String url = DATASOURCES + table.getName() + "/?full";
         queryDruid(rootNode -> {
-            //TODO: handle errors
             JsonNode segments = rootNode.get("segments").get(0);
             loadMetrics(table, segments);
             loadDimensions(table, segments);
             loadTimeGrains(table, segments);
-            LOG.info("Loaded table " + table.getName());
+            LOG.debug("Loaded table " + table.getName());
         }, url);
     }
 
     /**
      * Add all metrics from druid query to the {@link TableConfig}.
      *
-     * @param table       The TableConfig to be loaded.
+     * @param table  The TableConfig to be loaded.
      * @param segmentJson The JsonNode containing a list of metrics.
      */
     private void loadMetrics(TableConfig table, JsonNode segmentJson) {
         JsonNode metricsArray = segmentJson.get("metrics");
         Arrays.asList(metricsArray.asText().split(",")).forEach(table::addMetric);
-        LOG.info("loaded metrics {}", table.getMetrics());
+        LOG.debug("loaded metrics {}", table.getMetrics());
     }
 
     /**
      * Add all dimensions from druid query to the {@link TableConfig}.
      *
-     * @param table   The TableConfig to be loaded.
+     * @param table  The TableConfig to be loaded.
      * @param segmentJson The JsonNode containing a list of dimensions.
      */
     private void loadDimensions(TableConfig table, JsonNode segmentJson) {
         JsonNode dimensionsArray = segmentJson.get("dimensions");
         Arrays.asList(dimensionsArray.asText().split(",")).forEach(table::addDimension);
-        LOG.info("loaded dimensions {}", table.getDimensions());
+        LOG.debug("loaded dimensions {}", table.getDimensions());
     }
 
     /**
@@ -135,41 +135,24 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
             if (utcTimes.length == 2) {
                 DateTime start = new DateTime(utcTimes[0], DateTimeZone.UTC);
                 DateTime end = new DateTime(utcTimes[1], DateTimeZone.UTC);
-                timeGrain = getTimeGrain(start, end);
+                Interval interval = new Interval(start.toInstant(), end.toInstant());
+                timeGrain = IntervalUtils.getTimeGrain(interval);
             }
         } catch (IllegalArgumentException ignored) {
-            LOG.debug("Unable to parse time intervals {} correctly", Arrays.toString(utcTimes));
+            LOG.warn("Unable to parse time intervals {} correctly", Arrays.toString(utcTimes));
         }
 
         if (!timeGrain.isPresent()) {
-            LOG.info("Couldn't detect timegrain for " + timeInterval.asText() + ", defaulting to DAY TimeGrain.");
+            LOG.warn("Couldn't detect timegrain for {}, defaulting to DAY TimeGrain.", timeInterval.asText());
         }
         tableConfig.addTimeGrain(timeGrain.orElse(DefaultTimeGrain.DAY));
     }
 
     /**
-     * Find a valid timegrain for the datasource based on the start and end date of the interval.
-     *
-     * @param start Start of interval.
-     * @param end   End of interval.
-     * @return the valid timegrain spanned by the interval.
-     */
-    private Optional<TimeGrain> getTimeGrain(DateTime start, DateTime end) {
-        GranularityDictionary grains = StandardGranularityParser.getDefaultGrainMap();
-        return grains.values().stream()
-                .filter(granularity -> granularity instanceof TimeGrain)
-                .map(granularity -> (TimeGrain) granularity)
-                .filter(timeGrain -> timeGrain.aligns(start))
-                .filter(timeGrain -> timeGrain.aligns(end))
-                .filter(timeGrain -> start.plus(timeGrain.getPeriod()).equals(end))
-                .findFirst();
-    }
-
-    /**
      * Send a request to druid.
      *
-     * @param successCallback The callback to be done if the query succeeds.
-     * @param url             The url to send the query to.
+     * @param successCallback  The callback to be done if the query succeeds.
+     * @param url  The url to send the query to.
      */
     private void queryDruid(SuccessCallback successCallback, String url) {
         LOG.debug("Fetching " + url);
@@ -179,10 +162,12 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
                     successCallback.invoke(rootNode);
                 },
                 (statusCode, reasonPhrase, responseBody) -> {
-                    LOG.info("HTTPError " + statusCode + " - " + reasonPhrase + " for " + url);
+                    LOG.error("HTTPError {} - {} for {}", statusCode, reasonPhrase, url);
+                    throw new RuntimeException("HTTPError " + statusCode + " occurred while contacting druid");
                 },
                 (throwable) -> {
-                    LOG.info("Error thrown while fetching " + url + ". " + throwable.getMessage());
+                    LOG.error("Error thrown while fetching " + url + ". " + throwable.getMessage());
+                    throw new RuntimeException(throwable);
                 },
                 url
         );

@@ -7,6 +7,8 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MONTH
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.WEEK
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.YEAR
 
+import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
+import com.yahoo.bard.webservice.data.time.TimeGrain
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity
 import com.yahoo.bard.webservice.druid.model.query.Granularity
 
@@ -324,6 +326,31 @@ class IntervalUtilsSpec extends Specification {
         YEAR  | ["2013/2018"]             | ["2017/2018"]
         MONTH | ["2013/2017-04"]          | ["2017-02/2017-04"]
         DAY   | ["2012-02-03/2017-04-04"] | ["2012-02-03/2012-05-04", "2017-02-03/2017-04-04"]
+    }
+
+    @Unroll
+    def "test getTimeGrain from interval - #expectedTimeGrain"() {
+        setup:
+        String[] dates = stringInterval.split("/")
+        DateTime start = new DateTime(dates[0], DateTimeZone.UTC)
+        DateTime end = new DateTime(dates[1], DateTimeZone.UTC)
+        Interval interval = new Interval(start.toInstant(), end.toInstant())
+
+        when: "we parse the time"
+        Optional<TimeGrain> timeGrain = IntervalUtils.getTimeGrain(interval)
+
+        then: "what we expect"
+        timeGrain == expectedTimeGrain
+
+        where:
+        stringInterval                                      | expectedTimeGrain
+        "2015-01-01T00:00:00.000Z/2016-01-01T00:00:00.000Z" | Optional.of(YEAR)
+        "2017-01-01T00:00:00.000Z/2017-02-01T00:00:00.000Z" | Optional.of(MONTH)
+        "2017-02-27T00:00:00.000Z/2017-03-06T00:00:00.000Z" | Optional.of(WEEK)
+        "2015-09-12T00:00:00.000Z/2015-09-13T01:01:01.000Z" | Optional.empty()
+        "2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z" | Optional.of(DAY)
+        "2015-09-12T00:00:00.000Z/2015-09-12T01:00:00.000Z" | Optional.of(DefaultTimeGrain.HOUR)
+        "2015-09-12T00:00:00.000Z/2015-09-12T00:01:00.000Z" | Optional.of(DefaultTimeGrain.MINUTE)
     }
 
     /**

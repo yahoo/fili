@@ -23,10 +23,9 @@ import com.yahoo.wiki.webservice.data.config.metric.FiliApiMetricName;
 import org.joda.time.DateTimeZone;
 
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -37,16 +36,12 @@ import javax.validation.constraints.NotNull;
  * Load the table configuration for any druid setup.
  */
 public class GenericTableLoader extends BaseTableLoader {
-    private final Map<String, Set<Granularity>> validGrains =
-            new HashMap<>();
+    private Set<Granularity> validGrains = new HashSet<>();
     // Set up the metrics
-    private final Map<String, Set<FieldName>> druidMetricNames =
-            new HashMap<>();
-    private final Map<String, Set<ApiMetricName>> apiMetricNames =
-            new HashMap<>();
+    private Set<FieldName> druidMetricNames = new HashSet<>();
+    private Set<ApiMetricName> apiMetricNames = new HashSet<>();
     // Set up the table definitions
-    private final Map<String, Set<PhysicalTableDefinition>> tableDefinitions =
-            new HashMap<>();
+    private Set<PhysicalTableDefinition> tableDefinitions = new HashSet<>();
     private final Supplier<List<? extends DataSourceConfiguration>> configLoader;
 
     /**
@@ -74,41 +69,26 @@ public class GenericTableLoader extends BaseTableLoader {
             TimeGrain defaultTimeGrain = dataSourceConfiguration.getValidTimeGrains()
                     .get(0); //TODO this should probably have it's own method
 
-            Set<PhysicalTableDefinition> physicalTableDefinitions = getPhysicalTableDefinitions(
+            tableDefinitions = getPhysicalTableDefinitions(
                     dataSourceConfiguration,
                     defaultTimeGrain,
                     genericDimensions.getAllDimensionConfigurations()
             );
 
-            tableDefinitions.put(dataSourceConfiguration.getName(), physicalTableDefinitions);
+            druidMetricNames = dataSourceConfiguration.getMetrics()
+                    .stream()
+                    .map(DruidMetricName::new)
+                    .collect(Collectors.toSet());
 
-            druidMetricNames.put(
-                    dataSourceConfiguration.getName(),
-                    new LinkedHashSet<>(
-                            dataSourceConfiguration.getMetrics()
-                                    .stream()
-                                    .map(DruidMetricName::new)
-                                    .collect(Collectors.toList())
-                    )
-            );
+            apiMetricNames = dataSourceConfiguration.getMetrics()
+                    .stream()
+                    .map(metricName -> new FiliApiMetricName(
+                            metricName,
+                            dataSourceConfiguration.getValidTimeGrains()
+                    ))
+                    .collect(Collectors.toSet());
 
-            apiMetricNames.put(
-                    dataSourceConfiguration.getName(),
-                    new LinkedHashSet<>(
-                            dataSourceConfiguration.getMetrics()
-                                    .stream()
-                                    .map(metricName -> new FiliApiMetricName(
-                                            metricName,
-                                            dataSourceConfiguration.getValidTimeGrains()
-                                    ))
-                                    .collect(Collectors.toList())
-                    )
-            );
-
-            validGrains.put(
-                    dataSourceConfiguration.getName(),
-                    getGranularities(dataSourceConfiguration)
-            );
+            validGrains = getGranularities(dataSourceConfiguration);
         });
 
 
@@ -147,7 +127,8 @@ public class GenericTableLoader extends BaseTableLoader {
                                 dataSourceConfiguration.getTableName(),
                                 zonedTimeGrain,
                                 dimsBasefactDruidTable
-                        ))
+                        )
+                )
         );
     }
 
@@ -159,18 +140,16 @@ public class GenericTableLoader extends BaseTableLoader {
     public void loadTableDictionary(ResourceDictionaries dictionaries) {
         configLoader.get()
                 .forEach(table -> {
-                    TableGroup tableGroup = buildTableGroup(
-                            table.getTableName().asName(),
-                            apiMetricNames.get(table.getName()),
-                            druidMetricNames.get(table.getName()),
-                            tableDefinitions.get(table.getName()),
+                    TableGroup tableGroup = buildDimensionSpanningTableGroup(
+                            apiMetricNames,
+                            druidMetricNames,
+                            tableDefinitions,
                             dictionaries
                     );
-                    Set<Granularity> validGranularities = validGrains.get(table.getName());
                     loadLogicalTableWithGranularities(
                             table.getTableName().asName(),
                             tableGroup,
-                            validGranularities,
+                            validGrains,
                             dictionaries
                     );
                 });

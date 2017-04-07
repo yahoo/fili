@@ -12,7 +12,6 @@ import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -30,22 +29,21 @@ public class GenericDimensions {
      * @param configLoader  Supplies DataSourceConfigurations to build the dimensions from.
      */
     public GenericDimensions(Supplier<List<? extends DataSourceConfiguration>> configLoader) {
-        if (configLoader.get().size() > 0) {
-            dimensionConfigs = Collections.unmodifiableSet(configLoader.get()
-                    .stream()
-                    .flatMap(tableName -> tableName.getDimensions().stream())
-                    .map(dimensionName -> new GenericDimensionConfig(
-                            dimensionName,
-                            dimensionName,
-                            getDefaultKeyValueStore(dimensionName),
-                            getDefaultSearchProvider(dimensionName),
-                            getDefaultFields()
-                    ))
-                    .collect(Collectors.toSet()));
-
-        } else {
-            dimensionConfigs = new HashSet<>();
-        }
+        dimensionConfigs = configLoader.get().stream()
+                .flatMap(tableName -> tableName.getDimensions().stream())
+                .map(dimensionName -> new GenericDimensionConfig(
+                        dimensionName,
+                        dimensionName,
+                        getDefaultKeyValueStore(dimensionName),
+                        getDefaultSearchProvider(dimensionName),
+                        getDefaultFields()
+                ))
+                .collect(
+                        Collectors.collectingAndThen(
+                                Collectors.toSet(),
+                                Collections::unmodifiableSet
+                        )
+                );
     }
 
     /**
