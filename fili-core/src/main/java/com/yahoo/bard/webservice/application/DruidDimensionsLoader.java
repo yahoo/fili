@@ -93,7 +93,9 @@ public class DruidDimensionsLoader extends Loader<Boolean> {
 
     /**
      * Builds a list of datasources from the physical tables.
+     *
      * @param physicalTableDictionary  The physical tables to load from.
+     *
      * @return the list of datasources.
      */
     public static List<DataSource> buildDataSourcesList(PhysicalTableDictionary physicalTableDictionary) {
@@ -106,7 +108,9 @@ public class DruidDimensionsLoader extends Loader<Boolean> {
 
     /**
      * Builds a list of dimensions from the dimension dictionary.
+     *
      * @param dimensionDictionary  The dimension dictionary to load from.
+     *
      * @return the list of dimensions.
      */
     public static List<List<Dimension>> buildDimensionList(DimensionDictionary dimensionDictionary) {
@@ -123,6 +127,7 @@ public class DruidDimensionsLoader extends Loader<Boolean> {
 
     /**
      * DruidDimensionsLoader fetches data from Druid and adds it to the dimension cache.
+     *
      * @param druidWebService  The druid webservice to query.
      * @param dimensions  The dimensions to use.
      * @param dataSources  The datasources to use.

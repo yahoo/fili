@@ -62,11 +62,8 @@ public class StaticWikiConfigLoader implements Supplier<List<? extends DataSourc
             }
 
             @Override
-            public List<TimeGrain> getValidTimeGrains() {
-                return Arrays.asList(
-                        DefaultTimeGrain.HOUR,
-                        DefaultTimeGrain.DAY
-                );
+            public TimeGrain getValidTimeGrain() {
+                return DefaultTimeGrain.HOUR;
             }
         };
     }

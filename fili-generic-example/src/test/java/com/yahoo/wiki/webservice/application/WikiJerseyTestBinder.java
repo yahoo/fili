@@ -9,7 +9,7 @@ import com.yahoo.bard.webservice.data.config.table.TableLoader;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration;
 import com.yahoo.wiki.webservice.data.config.auto.StaticWikiConfigLoader;
-import com.yahoo.wiki.webservice.data.config.dimension.GenericDimensions;
+import com.yahoo.wiki.webservice.data.config.dimension.GenericDimensionConfigs;
 import com.yahoo.wiki.webservice.data.config.metric.GenericMetricLoader;
 import com.yahoo.wiki.webservice.data.config.table.GenericTableLoader;
 
@@ -22,7 +22,7 @@ import java.util.function.Supplier;
  */
 public class WikiJerseyTestBinder extends JerseyTestBinder {
     private static Supplier<List<? extends DataSourceConfiguration>> configLoader = new StaticWikiConfigLoader();
-    private GenericDimensions genericDimensions;
+    private GenericDimensionConfigs genericDimensionConfigs;
 
     /**
      * Constructor.
@@ -45,8 +45,8 @@ public class WikiJerseyTestBinder extends JerseyTestBinder {
 
     @Override
     public LinkedHashSet<DimensionConfig> getDimensionConfiguration() {
-        genericDimensions = new GenericDimensions(configLoader);
-        return new LinkedHashSet<>(genericDimensions.getAllDimensionConfigurations());
+        genericDimensionConfigs = new GenericDimensionConfigs(configLoader);
+        return new LinkedHashSet<>(genericDimensionConfigs.getAllDimensionConfigurations());
     }
 
     @Override
@@ -56,6 +56,6 @@ public class WikiJerseyTestBinder extends JerseyTestBinder {
 
     @Override
     public TableLoader getTableLoader() {
-        return new GenericTableLoader(configLoader, genericDimensions, new DataSourceMetadataService());
+        return new GenericTableLoader(configLoader, genericDimensionConfigs, new DataSourceMetadataService());
     }
 }

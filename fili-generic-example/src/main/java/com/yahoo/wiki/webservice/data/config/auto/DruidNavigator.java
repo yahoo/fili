@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 /**
@@ -30,6 +32,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
     private static final String DATASOURCES = "/datasources/";
     private final DruidWebService druidWebService;
     private final List<TableConfig> tableConfigurations;
+    private final CountDownLatch countDownLatch;
 
     /**
      * Constructs a DruidNavigator to load datasources from druid.
@@ -39,6 +42,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
     public DruidNavigator(DruidWebService druidWebService) {
         this.druidWebService = druidWebService;
         tableConfigurations = new ArrayList<>();
+        countDownLatch = new CountDownLatch(1);
     }
 
     /**
@@ -52,14 +56,10 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
             loadAllDatasources();
             LOG.info("Loading all datasources");
             try {
-                //TODO Fix this so it waits for druid's responses
-                // instead of waiting 1 second for everything to be configured
-                // in order to wait for druid's response, DruidWebService will have to return a future
-                Thread.sleep(1000);
-                LOG.info("Finished loading");
+                countDownLatch.await(5, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
-                LOG.error("Interrupted while waiting for druid to respond - {}", e);
-                throw new RuntimeException("Interrupted during auto configuration.");
+                LOG.error("Interrupted while waiting for a response from druid", e);
+                throw new RuntimeException("Unable to automatically configure correctly", e);
             }
         }
 
@@ -145,7 +145,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
         if (!timeGrain.isPresent()) {
             LOG.warn("Couldn't detect timegrain for {}, defaulting to DAY TimeGrain.", timeInterval.asText());
         }
-        tableConfig.addTimeGrain(timeGrain.orElse(DefaultTimeGrain.DAY));
+        tableConfig.setTimeGrain(timeGrain.orElse(DefaultTimeGrain.DAY));
     }
 
     /**
@@ -160,6 +160,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
                 rootNode -> {
                     LOG.debug("Succesfully fetched " + url);
                     successCallback.invoke(rootNode);
+                    countDownLatch.countDown();
                 },
                 (statusCode, reasonPhrase, responseBody) -> {
                     LOG.error("HTTPError {} - {} for {}", statusCode, reasonPhrase, url);

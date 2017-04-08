@@ -4,16 +4,10 @@ package com.yahoo.wiki.webservice.application;
 
 import com.yahoo.bard.webservice.application.HealthCheckServletContextListener;
 import com.yahoo.bard.webservice.application.MetricServletContextListener;
-import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 
 import com.codahale.metrics.servlet.InstrumentedFilter;
 import com.codahale.metrics.servlets.AdminServlet;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.HandlerList;
@@ -22,10 +16,7 @@ import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.servlet.ServletContainer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.EnumSet;
 
 import javax.servlet.DispatcherType;
@@ -34,37 +25,6 @@ import javax.servlet.DispatcherType;
  * Launch Bard in Embedded Jetty.
  */
 public class GenericMain {
-    private static final Logger LOG = LoggerFactory.getLogger(GenericMain.class);
-
-    /**
-     * Makes the dimensions passthrough.
-     * <p>
-     * This method sends a lastUpdated date to each dimension in the dimension cache, allowing the health checks
-     * to pass without having to set up a proper dimension loader. For each dimension, d, the following query is
-     * sent to the /v1/cache/dimensions/d endpoint:
-     * {
-     *     "name": "d",
-     *     "lastUpdated": "2016-01-01"
-     * }
-     *
-     * @param port  The port through which we access the webservice
-     *
-     * @throws IOException If something goes terribly wrong when building the JSON or sending it
-     */
-    private static void markDimensionCacheHealthy(int port) throws IOException {
-        for (DimensionConfig dimensionConfig : GenericBinderFactory.getDimensions()) {
-            String dimension = dimensionConfig.getApiName();
-            HttpPost post = new HttpPost("http://localhost:" + port + "/v1/cache/dimensions/" + dimension);
-            post.setHeader("Content-type", "application/json");
-            post.setEntity(
-                    new StringEntity(
-                            String.format("{\n \"name\":\"%s\",\n \"lastUpdated\":\"2016-01-01\"\n}", dimension)
-                    ));
-            CloseableHttpClient client = HttpClientBuilder.create().build();
-            CloseableHttpResponse response = client.execute(post);
-            LOG.debug("Mark Dimension Cache Updated Response: ", response);
-        }
-    }
 
     /**
      * Run a generic setup which mirrors all information from druid into fili configuration.
@@ -114,7 +74,5 @@ public class GenericMain {
         servletContextHandler.addServlet(AdminServlet.class, "/*");
 
         server.start();
-
-        markDimensionCacheHealthy(port);
     }
 }
