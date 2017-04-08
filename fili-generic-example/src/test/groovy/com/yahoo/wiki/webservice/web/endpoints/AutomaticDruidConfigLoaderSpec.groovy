@@ -80,7 +80,7 @@ public class AutomaticDruidConfigLoaderSpec extends Specification {
 
         then: "what we expect"
         druidWebService.lastUrl == '/datasources/' + datasource + '/?full'
-        returnedTables.get(0).getValidTimeGrains().get(0) == DefaultTimeGrain.DAY
+        returnedTables.get(0).getValidTimeGrain().get(0) == DefaultTimeGrain.DAY
     }
 
     def "get metric names from druid"() {

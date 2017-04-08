@@ -12,6 +12,7 @@ public class DruidMetricName implements FieldName {
 
     /**
      * Constructs a DruidMetricName.
+     *
      * @param name  The name of the metric.
      */
     public DruidMetricName(String name) {

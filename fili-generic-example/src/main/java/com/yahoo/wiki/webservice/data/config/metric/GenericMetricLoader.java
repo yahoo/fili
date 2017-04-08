@@ -62,7 +62,7 @@ public class GenericMetricLoader implements MetricLoader {
                             .forEach(metric -> {
                                 ApiMetricName apiMetricName = new FiliApiMetricName(
                                         metric,
-                                        dataSourceConfiguration.getValidTimeGrains()
+                                        dataSourceConfiguration.getValidTimeGrain()
                                 );
                                 FieldName fieldName = new DruidMetricName(metric);
                                 metrics.add(new MetricInstance(apiMetricName, doubleSumMaker, fieldName));

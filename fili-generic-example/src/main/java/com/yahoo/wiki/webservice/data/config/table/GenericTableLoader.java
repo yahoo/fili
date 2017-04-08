@@ -16,7 +16,7 @@ import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration;
-import com.yahoo.wiki.webservice.data.config.dimension.GenericDimensions;
+import com.yahoo.wiki.webservice.data.config.dimension.GenericDimensionConfigs;
 import com.yahoo.wiki.webservice.data.config.metric.DruidMetricName;
 import com.yahoo.wiki.webservice.data.config.metric.FiliApiMetricName;
 
@@ -46,33 +46,33 @@ public class GenericTableLoader extends BaseTableLoader {
 
     /**
      * Constructor.
+     *
      * @param configLoader  Gives a list of {@link DataSourceConfiguration} to build tables from.
-     * @param genericDimensions  Reference to the already constructed dimensions.
+     * @param genericDimensionConfigs  Reference to the already constructed dimensions.
      * @param metadataService  Service containing the segment data for constructing tables.
      */
     public GenericTableLoader(
             @NotNull Supplier<List<? extends DataSourceConfiguration>> configLoader,
-            @NotNull GenericDimensions genericDimensions,
+            @NotNull GenericDimensionConfigs genericDimensionConfigs,
             DataSourceMetadataService metadataService
     ) {
         super(metadataService);
         this.configLoader = configLoader;
-        configureTables(genericDimensions);
+        configureTables(genericDimensionConfigs);
     }
 
     /**
      * Set up the tables for this table loader.
-     * @param genericDimensions  The dimensions to load into test tables.
+     *
+     * @param genericDimensionConfigs  The dimensions to load into test tables.
      */
-    private void configureTables(GenericDimensions genericDimensions) {
+    private void configureTables(GenericDimensionConfigs genericDimensionConfigs) {
         configLoader.get().forEach(dataSourceConfiguration -> {
-            TimeGrain defaultTimeGrain = dataSourceConfiguration.getValidTimeGrains()
-                    .get(0); //TODO this should probably have it's own method
 
             tableDefinitions = getPhysicalTableDefinitions(
                     dataSourceConfiguration,
-                    defaultTimeGrain,
-                    genericDimensions.getAllDimensionConfigurations()
+                    dataSourceConfiguration.getValidTimeGrain(),
+                    genericDimensionConfigs.getAllDimensionConfigurations()
             );
 
             druidMetricNames = dataSourceConfiguration.getMetrics()
@@ -84,7 +84,7 @@ public class GenericTableLoader extends BaseTableLoader {
                     .stream()
                     .map(metricName -> new FiliApiMetricName(
                             metricName,
-                            dataSourceConfiguration.getValidTimeGrains()
+                            dataSourceConfiguration.getValidTimeGrain()
                     ))
                     .collect(Collectors.toSet());
 
@@ -96,20 +96,25 @@ public class GenericTableLoader extends BaseTableLoader {
 
     /**
      * Creates a set of valid granularities from valid timegrains.
+     *
      * @param dataSourceConfiguration  Reference to datasource configuration.
+     *
      * @return set of valid granularities.
      */
     private Set<Granularity> getGranularities(DataSourceConfiguration dataSourceConfiguration) {
-        Set<Granularity> granularities = new LinkedHashSet<>(dataSourceConfiguration.getValidTimeGrains());
+        Set<Granularity> granularities = new LinkedHashSet<>();
         granularities.add(AllGranularity.INSTANCE);
+        granularities.add(dataSourceConfiguration.getValidTimeGrain());
         return granularities;
     }
 
     /**
      * Creates a {@link PhysicalTableDefinition} definitions.
+     *
      * @param dataSourceConfiguration  DataSourceConfiguration to build physical table definition from.
      * @param timeGrain  Valid timegrain for table to be created.
      * @param dimsBasefactDruidTable  Base dimensions to be built into PhysicalTableDefinition.
+     *
      * @return set of PhysicalTableDefinition for the datasource.
      */
     private Set<PhysicalTableDefinition> getPhysicalTableDefinitions(
@@ -134,6 +139,7 @@ public class GenericTableLoader extends BaseTableLoader {
 
     /**
      * Load each logical table from the datasources given.
+     *
      * @param dictionaries  ResourceDictionaries to load with each table.
      */
     @Override

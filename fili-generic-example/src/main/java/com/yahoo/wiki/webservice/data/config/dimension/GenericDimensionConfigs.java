@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.dimension;
 
+import com.yahoo.bard.webservice.data.config.dimension.DefaultDimensionField;
+import com.yahoo.bard.webservice.data.config.dimension.DefaultKeyValueStoreDimensionConfig;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
@@ -21,22 +23,26 @@ import java.util.stream.Collectors;
 /**
  * Hold all the dimension configurations for a generic druid configuration.
  */
-public class GenericDimensions {
+public class GenericDimensionConfigs {
     private final Set<DimensionConfig> dimensionConfigs;
 
     /**
      * Construct the dimension configurations.
+     *
      * @param configLoader  Supplies DataSourceConfigurations to build the dimensions from.
      */
-    public GenericDimensions(Supplier<List<? extends DataSourceConfiguration>> configLoader) {
+    public GenericDimensionConfigs(Supplier<List<? extends DataSourceConfiguration>> configLoader) {
         dimensionConfigs = configLoader.get().stream()
                 .flatMap(tableName -> tableName.getDimensions().stream())
-                .map(dimensionName -> new GenericDimensionConfig(
+                .map(dimensionName -> new DefaultKeyValueStoreDimensionConfig(
+                        () -> dimensionName,
                         dimensionName,
+                        "",
                         dimensionName,
+                        "General",
+                        getDefaultFields(),
                         getDefaultKeyValueStore(dimensionName),
-                        getDefaultSearchProvider(dimensionName),
-                        getDefaultFields()
+                        getDefaultSearchProvider(dimensionName)
                 ))
                 .collect(
                         Collectors.collectingAndThen(
@@ -79,6 +85,6 @@ public class GenericDimensions {
 
     private LinkedHashSet<DimensionField> getDefaultFields() {
         return Utils.asLinkedHashSet(
-                GenericDimensionField.ID);
+                DefaultDimensionField.ID);
     }
 }

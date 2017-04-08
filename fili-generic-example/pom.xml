@@ -15,8 +15,8 @@
     <artifactId>fili-generic-example</artifactId>
     <packaging>war</packaging>
     <name>Fili: Generic Example</name>
-    <description>Fili Wikipedia Example serves as a standalone sample implementation using core Fili services to stand
-        in front of the Druid wiki tutorial and automatically configure
+    <description>Fili Generic Example serves as a standalone app using core Fili services to stand
+        in front any Druid setup and automatically configure
     </description>
 
     <licenses>
@@ -110,8 +110,10 @@
                         <configuration>
                             <target>
                                 <exec executable="/bin/sh">
-                                    <env key="BUILD_NUMBER" value="${project.build}" />
-                                    <arg value="-c" />
+                                    <env key="BUILD_NUMBER" value="${project.build}"
+                                    />
+                                    <arg value="-c"
+                                    />
                                     <arg
                                         value="echo ${project.version}.${BUILD_NUMBER:=0} | sed -e s/-SNAPSHOT//g &gt; target/buildVersion" />
                                 </exec>
@@ -129,7 +131,11 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.1</version>
                 <executions>
-                    <execution><goals><goal>java</goal></goals></execution>
+                    <execution>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                    </execution>
                 </executions>
                 <configuration>
                     <mainClass>com.yahoo.wiki.webservice.application.GenericMain</mainClass>

@@ -1,12 +1,13 @@
 Fili Generic Loader Application
 ==================================
 
-This is application is meant to be able to run and connect to any instance of Druid to show the basic metrics and dimensions.
+This application will automatically configure fili to work with **any** instance of Druid and show the basic metrics and dimensions. This lets you test what it's like using Fili without putting any effort into setting it up.
+
+In order to set up, this will connect to druid at  [http://localhost:8081/druid/coordinator/v1](http://localhost:8081/druid/coordinator/v1). If your set up is different, you'll have to change the `bard__druid_coord` url in `applicationConfig.properties`.
 
 ## Setup and Launching
 
-1. Follow the [Druid instructions](http://druid.io/docs/latest/tutorials/quickstart.html) to bring up a local Druid 
-   cluster on your Unix based machine.
+1. Have a [Druid](http://druid.io/docs/latest/tutorials/quickstart.html) cluster running on your Unix based machine.
    
 2. Clone this repository to your computer.
     ```bash
@@ -14,30 +15,14 @@ This is application is meant to be able to run and connect to any instance of Dr
     ```
 3. Use Maven to install and launch the Fili Generic example:
 
-Simliar to the [Wikipedia example](../fili-wikipedia-example) 
 
 ```bash
 cd fili
 mvn install
 mvn -pl fili-generic-example exec:java
 ```
-  
-From another window, run a test query against the default druid data:
 
-```bash
-curl "http://localhost:9998/v1/data/wikiticker/day/?metrics=deleted&dateTime=2015-09-12/PT24H" -H "Content-Type: application/json" | python -m json.tool
-```
-
-If everything is working you should see something like:
-    
-```
-{
-	"rows": [{
-		"dateTime": "2015-09-12 00:00:00.000",
-		"deleted": 394298.0
-	}]
-}
-```
+From another window, run a test query against the default druid data.
 
 ## Example Queries
 
@@ -57,7 +42,21 @@ Here are some sample queries that you can run to verify your server:
   
       GET http://localhost:9998/v1/metrics/
 
-### Specific to Wikipedia Example
+### Specific to Wikipedia data
+
+- If everything is working, the query below
+    ```bash
+    curl "http://localhost:9998/v1/data/wikiticker/day/?metrics=deleted&dateTime=2015-09-12/PT24H" -H "Content-Type: application/json" | python -m json.tool
+    ```
+     should show something like:
+    ```
+    {
+        "rows": [{
+            "dateTime": "2015-09-12 00:00:00.000",
+            "deleted": 394298.0
+        }]
+    }
+    ```
 
 - Count of edits by hour for the last 72 hours:  
   
