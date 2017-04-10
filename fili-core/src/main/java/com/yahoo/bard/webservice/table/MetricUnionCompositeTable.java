@@ -5,15 +5,14 @@ package com.yahoo.bard.webservice.table;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.table.availability.MetricUnionAvailability;
-import com.yahoo.bard.webservice.table.resolver.GranularityComparator;
+import com.yahoo.bard.webservice.util.IntervalUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
@@ -59,7 +58,6 @@ import javax.validation.constraints.NotNull;
  */
 public class MetricUnionCompositeTable extends BasePhysicalTable {
     private static final Logger LOG = LoggerFactory.getLogger(MetricUnionCompositeTable.class);
-    private static final GranularityComparator GRANULARITY_COMPARATOR = GranularityComparator.getInstance();
 
     /**
      * Constructor.
@@ -80,7 +78,7 @@ public class MetricUnionCompositeTable extends BasePhysicalTable {
     ) {
         super(
                 name,
-                getCoarsestTimeGrain(physicalTables),
+                verifyCoarsestTimeGrain(IntervalUtils.getCoarsestTimeGrain(physicalTables), physicalTables),
                 columns,
                 logicalToPhysicalColumnNames,
                 new MetricUnionAvailability(physicalTables, columns)
@@ -88,39 +86,34 @@ public class MetricUnionCompositeTable extends BasePhysicalTable {
     }
 
     /**
-     * Returns the coarsest <tt>ZonedTimeGrain</tt> that satisfies all tables.
-     * <p>
-     * If the set of <tt>PhysicalTables</tt>'s is empty throw <tt>IllegalArgumentException</tt>.
+     * Verifies and returns the coarsest <tt>ZonedTimeGrain</tt> if that satisfies all tables.
      *
-     * @param physicalTables  A set of <tt>PhysicalTable</tt>s among which the coarsest <tt>ZonedTimeGrain</tt>
-     * is to be returned.
+     * @param coarsestGrain  The coarsest <tt>ZonedTimeGrain</tt> to be verified
+     * @param physicalTables  A set of <tt>PhysicalTable</tt>s whose <tt>ZonedTimeGrain</tt>s are checked to make sure
+     * they all satisfies with the given coarsest <tt>ZonedTimeGrain</tt>
      *
      * @return the coarsest <tt>ZonedTimeGrain</tt> among a set of <tt>PhysicalTables</tt>s
      * @throws IllegalArgumentException when no PhysicalTable is provided or there is not mutually satisfying grain
      * among the table's time grain
      */
-    private static ZonedTimeGrain getCoarsestTimeGrain(Set<PhysicalTable> physicalTables)
-            throws IllegalArgumentException {
-        // sort <tt>ZonedTimeGrain</tt>s in decreasing order
-        List<ZonedTimeGrain> sortedTimeGrains = physicalTables.stream()
-                .sorted(GRANULARITY_COMPARATOR)
-                .map(PhysicalTable::getSchema)
-                .map(PhysicalTableSchema::getTimeGrain)
-                .collect(Collectors.toList());
-
-        // check to see if all <tt>ZonedTimeGrain</tt>'s is compatible with the coarsest <tt>ZonedTimeGrain</tt>
-        ZonedTimeGrain coarsestTimeGrain = sortedTimeGrains.stream()
-                .findFirst()
+    private static ZonedTimeGrain verifyCoarsestTimeGrain(
+            Optional<ZonedTimeGrain> coarsestGrain,
+            Set<PhysicalTable> physicalTables
+    ) throws IllegalArgumentException {
+        ZonedTimeGrain coarsestTimeGrain = coarsestGrain
                 .orElseThrow(() -> {
                         String message = "At least 1 physical table needs to be provided";
                         LOG.error(message);
                         return new IllegalArgumentException(message);
                 });
 
-        if (sortedTimeGrains.stream().anyMatch(grain -> grain.satisfiedBy(coarsestTimeGrain))) {
+        if (physicalTables.stream()
+                .map(PhysicalTable::getSchema)
+                .map(PhysicalTableSchema::getTimeGrain)
+                .anyMatch(grain -> grain.satisfiedBy(coarsestTimeGrain))) {
             String message = String.format(
                     "There is no mutually satisfying grain among: %s",
-                    sortedTimeGrains
+                    physicalTables
             );
             LOG.error(message);
             throw new IllegalArgumentException(message);
