@@ -4,6 +4,8 @@ package com.yahoo.wiki.webservice.application;
 
 import com.yahoo.bard.webservice.application.HealthCheckServletContextListener;
 import com.yahoo.bard.webservice.application.MetricServletContextListener;
+import com.yahoo.bard.webservice.config.SystemConfig;
+import com.yahoo.bard.webservice.config.SystemConfigProvider;
 
 import com.codahale.metrics.servlet.InstrumentedFilter;
 import com.codahale.metrics.servlets.AdminServlet;
@@ -25,6 +27,8 @@ import javax.servlet.DispatcherType;
  * Launch Bard in Embedded Jetty.
  */
 public class GenericMain {
+    private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+    public static final String FILI_PORT = SYSTEM_CONFIG.getPackageVariableName("fili_port");
 
     /**
      * Run a generic setup which mirrors all information from druid into fili configuration.
@@ -33,7 +37,7 @@ public class GenericMain {
      * @throws Exception if the server fails to start or crashes.
      */
     public static void main(String[] args) throws Exception {
-        int port = 9998;
+        int port = SYSTEM_CONFIG.getIntProperty(FILI_PORT);
 
         Server server = new Server(port);
         ServletContextHandler servletContextHandler = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
