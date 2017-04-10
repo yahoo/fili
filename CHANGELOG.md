@@ -62,6 +62,17 @@ Current
 
 ### Changed:
 
+- [Update Lucene version 5.3.0 -> 6.5.0](https://github.com/yahoo/fili/pull/233)
+    * [Added IndexSearcher#getQueryCache and #getQueryCachingPolicy](https://issues.apache.org/jira/browse/LUCENE-6838)
+    * [org.apache.lucene.search.Filter is now deprecated](http://issues.apache.org/jira/browse/LUCENE-6301).
+    You should use Query objects instead of Filters, and the BooleanClause.Occur.FILTER clause in order to let Lucene
+    know that a Query should be used for filtering but not scoring.
+    * [MatchAllDocsQuery now has a dedicated BulkScorer for better performance when used as a top-level query.]
+    (http://issues.apache.org/jira/browse/LUCENE-6756)
+    * [Added a IndexWriter#getFieldNames() method (experimental) to return all field names as visible from the
+    IndexWriter](http://issues.apache.org/jira/browse/LUCENE-7659). This would be useful for
+    IndexWriter#updateDocValues() calls, to prevent calling with non-existent docValues fields
+
 - [Allow GranularityComparator to return static instance](https://github.com/yahoo/fili/pull/225)
     * Implementation of [PR #193](https://github.com/yahoo/fili/pull/193) suggests an possible improvement
     on GranularityComparator: Put the static instance on the GranularityComparator class itself, so that
