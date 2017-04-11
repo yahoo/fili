@@ -7,7 +7,6 @@ import com.yahoo.bard.webservice.application.DruidDimensionsLoader;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
-import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
@@ -17,7 +16,6 @@ import com.yahoo.wiki.webservice.data.config.dimension.GenericDimensionConfigs;
 import com.yahoo.wiki.webservice.data.config.metric.GenericMetricLoader;
 import com.yahoo.wiki.webservice.data.config.table.GenericTableLoader;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -31,7 +29,8 @@ public class GenericBinderFactory extends AbstractBinderFactory {
     private final GenericDimensionConfigs genericDimensionConfigs;
 
     /**
-     * Constructs a GenericBinderFactory which starts configuring with druid.
+     * Constructs a GenericBinderFactory using the MetadataDruidWebService
+     * to configure dimensions, tables, and metrics from Druid.
      */
     public GenericBinderFactory() {
         DruidWebService druidWebService = buildMetadataDruidWebService(getMappers().getMapper());
@@ -55,16 +54,15 @@ public class GenericBinderFactory extends AbstractBinderFactory {
             PhysicalTableDictionary physicalTableDictionary,
             DimensionDictionary dimensionDictionary
     ) {
-        List<List<Dimension>> dimensionsList = getDimensionConfigurations().stream()
+        List<String> dimensionsList = getDimensionConfigurations().stream()
                 .map(DimensionConfig::getApiName)
-                .map(dimensionDictionary::findByApiName)
-                .map(Collections::singletonList)
                 .collect(Collectors.toList());
 
         return new DruidDimensionsLoader(
-                webService,
+                physicalTableDictionary,
+                dimensionDictionary,
                 dimensionsList,
-                DruidDimensionsLoader.buildDataSourcesList(physicalTableDictionary)
+                webService
         );
     }
 

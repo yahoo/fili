@@ -9,8 +9,10 @@ import java.util.List;
 
 /**
  * Holds the minimum necessary configuration necessary to set up fili to
- * make requests to druid. This defines all metrics, dimensions, and valid
- * time grains of a datasource.
+ * make requests to druid. This defines all metrics, dimensions, and *one*
+ * valid time grain of a datasource.
+ * Note the restriction to one time grain, a druid datasource could have
+ * more than one, but it *should* have just a single grain.
  */
 public interface DataSourceConfiguration {
     /**
@@ -43,6 +45,8 @@ public interface DataSourceConfiguration {
 
     /**
      * Gets the {@link TimeGrain} which is valid for use in queries.
+     * Note: In theory, a Datasource in Druid could have more than 1 grain at
+     * different times, but for now we only want to support one.
      *
      * @return a {@link TimeGrain} for the current table.
      */

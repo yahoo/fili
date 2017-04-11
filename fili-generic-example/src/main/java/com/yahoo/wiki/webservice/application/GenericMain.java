@@ -28,12 +28,13 @@ import javax.servlet.DispatcherType;
  */
 public class GenericMain {
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
-    public static final String FILI_PORT = SYSTEM_CONFIG.getPackageVariableName("fili_port");
+    private static final String FILI_PORT = SYSTEM_CONFIG.getPackageVariableName("fili_port");
 
     /**
      * Run a generic setup which mirrors all information from druid into fili configuration.
      *
      * @param args  Command line arguments.
+     *
      * @throws Exception if the server fails to start or crashes.
      */
     public static void main(String[] args) throws Exception {

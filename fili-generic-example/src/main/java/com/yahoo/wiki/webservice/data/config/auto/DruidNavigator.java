@@ -29,7 +29,7 @@ import java.util.function.Supplier;
  */
 public class DruidNavigator implements Supplier<List<? extends DataSourceConfiguration>> {
     private static final Logger LOG = LoggerFactory.getLogger(DruidNavigator.class);
-    private static final String DATASOURCES = "/datasources/";
+    private static final String COORDINATOR_TABLES_PATH = "/datasources/";
     private final DruidWebService druidWebService;
     private final List<TableConfig> tableConfigurations;
     private final CountDownLatch countDownLatch;
@@ -56,6 +56,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
             loadAllDatasources();
             LOG.info("Loading all datasources");
             try {
+                //TODO Druid should ideally return a future, but this accomplishes the same result.
                 countDownLatch.await(5, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 LOG.error("Interrupted while waiting for a response from druid", e);
@@ -78,7 +79,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
                     tableConfigurations.add(tableConfig);
                 });
             }
-        }, DATASOURCES);
+        }, COORDINATOR_TABLES_PATH);
     }
 
     /**
@@ -87,7 +88,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      * @param table The TableConfig to be loaded with queries against druid.
      */
     private void loadTable(TableConfig table) {
-        String url = DATASOURCES + table.getName() + "/?full";
+        String url = COORDINATOR_TABLES_PATH + table.getName() + "/?full";
         queryDruid(rootNode -> {
             JsonNode segments = rootNode.get("segments").get(0);
             loadMetrics(table, segments);

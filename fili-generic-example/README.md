@@ -22,6 +22,12 @@ mvn install
 mvn -pl fili-generic-example exec:java
 ```
 
+- Note that if your setup is different you can adjust it by changing the default parameters below
+
+    ```bash
+    mvn -pl fili-generic-example exec:java -Dbard__fili_port=9998 -Dbard__druid_coord=http://localhost:8081/druid/coordinator/v1
+    ```
+
 From another window, run a test query against the default druid data.
 
 ## Example Queries
@@ -74,6 +80,11 @@ Here are some sample queries that you can run to verify your server:
 - Show debug info, including the query sent to Druid:  
 
       GET http://localhost:9998/v1/data/wikiticker/day/?format=debug&metrics=count&dateTime=PT72H/current
+
+## Notable Restrictions
+
+- Using this is great for testing out fili and druid, but it can't do interesting things with metrics.
+- This can only use 1 timegrain even though a datasource in druid *could* have more.
 
 ## Importing and Running in IntelliJ
 
