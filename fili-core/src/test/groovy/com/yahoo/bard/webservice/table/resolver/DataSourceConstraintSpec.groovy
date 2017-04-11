@@ -12,14 +12,14 @@ class DataSourceConstraintSpec extends Specification {
     def "#metricNames intersected with #other produces #newMetricNames"() {
         given:
         DataSourceConstraint newDataSourceConstraint = new DataSourceConstraint(
-                Collections.emptySet(),
-                Collections.emptySet(),
-                Collections.emptySet(),
+                [] as Set,
+                [] as Set,
+                [] as Set,
                 metricNames as Set,
-                Collections.emptySet(),
-                Collections.emptySet(),
-                Collections.emptySet(),
-                Collections.emptyMap()
+                [] as Set,
+                [] as Set,
+                [] as Set,
+                [:]
         ).withMetricIntersection(other.collect{it -> new MetricColumn(it)} as Set)
 
         expect:
