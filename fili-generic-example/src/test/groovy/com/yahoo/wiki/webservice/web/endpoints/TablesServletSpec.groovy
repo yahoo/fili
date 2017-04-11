@@ -42,13 +42,6 @@ class TablesServletSpec extends Specification {
                                             },
                                             {
                                                     "category":"General",
-                                                    "granularity":"day",
-                                                    "name":"$tableName",
-                                                    "longName":"$tableName",
-                                                    "uri":"http://localhost:9998/tables/$tableName/day"
-                                            },
-                                            {
-                                                    "category":"General",
                                                     "granularity":"all",
                                                     "name":"$tableName",
                                                     "longName":"$tableName",
@@ -72,13 +65,6 @@ class TablesServletSpec extends Specification {
                                                 "name":"$tableName",
                                                 "longName":"$tableName",
                                                 "uri":"http://localhost:9998/tables/$tableName/hour"
-                                            },
-                                            {
-                                                "category":"General",
-                                                "granularity":"day",
-                                                "name":"$tableName",
-                                                "longName":"$tableName",
-                                                "uri":"http://localhost:9998/tables/$tableName/day"
                                             },
                                             {
                                                 "category":"General",

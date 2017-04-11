@@ -5,6 +5,8 @@ package com.yahoo.bard.webservice.util;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
+import com.yahoo.bard.webservice.data.time.StandardGranularityParser;
+import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableSchema;
@@ -229,5 +231,22 @@ public class IntervalUtils {
                 .findFirst()
                 .map(PhysicalTable::getSchema)
                 .map(PhysicalTableSchema::getTimeGrain);
+    }
+
+    /**
+     * Find a valid timegrain for the interval based on the start and end date of the interval.
+     *
+     * @param interval  The interval to find a timegrain for.
+     * @return the valid timegrain spanned by the interval.
+     */
+    public static Optional<TimeGrain> getTimeGrain(Interval interval) {
+        return StandardGranularityParser.getDefaultGrainMap()
+                .values()
+                .stream()
+                .filter(granularity -> granularity instanceof TimeGrain)
+                .map(granularity -> (TimeGrain) granularity)
+                .filter(timeGrain -> timeGrain.aligns(interval))
+                .filter(timeGrain -> interval.getStart().plus(timeGrain.getPeriod()).equals(interval.getEnd()))
+                .findFirst();
     }
 }

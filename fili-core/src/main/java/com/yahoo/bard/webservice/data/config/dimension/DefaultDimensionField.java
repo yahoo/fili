@@ -1,13 +1,13 @@
 // Copyright 2016 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.wiki.webservice.data.config.dimension;
+package com.yahoo.bard.webservice.data.config.dimension;
 
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 
 /**
  * DimensionField enum.
  */
-public enum GenericDimensionField implements DimensionField {
+public enum DefaultDimensionField implements DimensionField {
     ID("Dimension ID");
 
     private String description;
@@ -18,7 +18,7 @@ public enum GenericDimensionField implements DimensionField {
      *
      * @param description  Description of this field
      */
-    GenericDimensionField(String description) {
+    DefaultDimensionField(String description) {
         this.description = description;
         this.camelName = name();
     }

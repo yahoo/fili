@@ -16,7 +16,7 @@ import com.yahoo.bard.webservice.table.LogicalTableDictionary
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 import com.yahoo.bard.webservice.table.TableIdentifier
 import com.yahoo.wiki.webservice.data.config.auto.StaticWikiConfigLoader
-import com.yahoo.wiki.webservice.data.config.dimension.GenericDimensions
+import com.yahoo.wiki.webservice.data.config.dimension.GenericDimensionConfigs
 import com.yahoo.wiki.webservice.data.config.metric.GenericMetricLoader
 import com.yahoo.wiki.webservice.data.config.table.GenericTableLoader
 
@@ -34,7 +34,7 @@ class ConfigurationLoaderSpec extends Specification {
 
     def setupSpec() {
         StaticWikiConfigLoader wikiConfigLoader = new StaticWikiConfigLoader();
-        GenericDimensions genericDimensions = new GenericDimensions(wikiConfigLoader);
+        GenericDimensionConfigs genericDimensions = new GenericDimensionConfigs(wikiConfigLoader);
         LinkedHashSet<DimensionConfig> dimensions = genericDimensions.
                 getAllDimensionConfigurations();
         loader = new ConfigurationLoader(

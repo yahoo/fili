@@ -7,17 +7,15 @@ import com.yahoo.bard.webservice.application.DruidDimensionsLoader;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
-import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration;
 import com.yahoo.wiki.webservice.data.config.auto.DruidNavigator;
-import com.yahoo.wiki.webservice.data.config.dimension.GenericDimensions;
+import com.yahoo.wiki.webservice.data.config.dimension.GenericDimensionConfigs;
 import com.yahoo.wiki.webservice.data.config.metric.GenericMetricLoader;
 import com.yahoo.wiki.webservice.data.config.table.GenericTableLoader;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -28,38 +26,26 @@ import java.util.stream.Collectors;
  */
 public class GenericBinderFactory extends AbstractBinderFactory {
     private final Supplier<List<? extends DataSourceConfiguration>> configLoader;
-    private GenericDimensions genericDimensions;
-    private static Set<DimensionConfig> dimensions;
+    private final GenericDimensionConfigs genericDimensionConfigs;
 
     /**
-     * Constructs a GenericBinderFactory which starts configuring with druid.
+     * Constructs a GenericBinderFactory using the MetadataDruidWebService
+     * to configure dimensions, tables, and metrics from Druid.
      */
     public GenericBinderFactory() {
         DruidWebService druidWebService = buildMetadataDruidWebService(getMappers().getMapper());
         configLoader = new DruidNavigator(druidWebService);
-        configLoader.get();
-    }
-
-    /**
-     * Provides a way for {@link GenericMain} to access the dimensions.
-     * TODO: This is a bad solution to getting the dimensions from GenericMain
-     * @return the dimensions found from druid.
-     */
-    public static Set<DimensionConfig> getDimensions() {
-        return dimensions;
+        genericDimensionConfigs = new GenericDimensionConfigs(configLoader);
     }
 
     @Override
     protected Set<DimensionConfig> getDimensionConfigurations() {
-        //NOTE: This is guaranteed to be called before getTableLoader()
-        genericDimensions = new GenericDimensions(configLoader);
-        dimensions = genericDimensions.getAllDimensionConfigurations();
-        return genericDimensions.getAllDimensionConfigurations();
+        return genericDimensionConfigs.getAllDimensionConfigurations();
     }
 
     @Override
     protected TableLoader getTableLoader() {
-        return new GenericTableLoader(configLoader, genericDimensions, getDataSourceMetadataService());
+        return new GenericTableLoader(configLoader, genericDimensionConfigs, getDataSourceMetadataService());
     }
 
     @Override
@@ -68,15 +54,15 @@ public class GenericBinderFactory extends AbstractBinderFactory {
             PhysicalTableDictionary physicalTableDictionary,
             DimensionDictionary dimensionDictionary
     ) {
-        List<List<Dimension>> dimensionsList = genericDimensions.getAllDimensionConfigurations().stream()
+        List<String> dimensionsList = getDimensionConfigurations().stream()
                 .map(DimensionConfig::getApiName)
-                .map(dimensionDictionary::findByApiName)
-                .map(Collections::singletonList)
                 .collect(Collectors.toList());
+
         return new DruidDimensionsLoader(
-                webService,
+                physicalTableDictionary,
+                dimensionDictionary,
                 dimensionsList,
-                DruidDimensionsLoader.buildDataSourcesList(physicalTableDictionary)
+                webService
         );
     }
 

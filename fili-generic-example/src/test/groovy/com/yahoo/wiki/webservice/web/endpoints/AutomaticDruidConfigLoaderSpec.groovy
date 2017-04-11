@@ -1,17 +1,12 @@
 package com.yahoo.wiki.webservice.web.endpoints
 
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
-import com.yahoo.bard.webservice.data.time.TimeGrain
 import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService
 import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration
 import com.yahoo.wiki.webservice.data.config.auto.DruidNavigator
 import com.yahoo.wiki.webservice.data.config.auto.TableConfig
 
-import org.joda.time.DateTime
-import org.joda.time.DateTimeZone
-
 import spock.lang.Specification
-import spock.lang.Unroll
 
 public class AutomaticDruidConfigLoaderSpec extends Specification {
     TestDruidWebService druidWebService;
@@ -85,7 +80,7 @@ public class AutomaticDruidConfigLoaderSpec extends Specification {
 
         then: "what we expect"
         druidWebService.lastUrl == '/datasources/' + datasource + '/?full'
-        returnedTables.get(0).getValidTimeGrains().get(0) == DefaultTimeGrain.DAY
+        returnedTables.get(0).getValidTimeGrain() == DefaultTimeGrain.DAY
     }
 
     def "get metric names from druid"() {
@@ -107,29 +102,5 @@ public class AutomaticDruidConfigLoaderSpec extends Specification {
         for (String d : dimensions) {
             assert returnedDimensions.contains(d);
         }
-    }
-
-    @Unroll
-    def "test getTimeGrain from interval - #expectedTimeGrain"() {
-        setup:
-        String[] dates = interval.split("/")
-        DateTime start = new DateTime(dates[0],DateTimeZone.UTC)
-        DateTime end = new DateTime(dates[1],DateTimeZone.UTC)
-
-        when: "we parse the time"
-        Optional<TimeGrain> timeGrain = druidNavigator.getTimeGrain(start, end)
-
-        then: "what we expect"
-        timeGrain == expectedTimeGrain
-
-        where:
-        interval                                            | expectedTimeGrain
-        "2015-01-01T00:00:00.000Z/2016-01-01T00:00:00.000Z" | Optional.of(DefaultTimeGrain.YEAR)
-        "2017-01-01T00:00:00.000Z/2017-02-01T00:00:00.000Z" | Optional.of(DefaultTimeGrain.MONTH)
-        "2017-02-27T00:00:00.000Z/2017-03-06T00:00:00.000Z" | Optional.of(DefaultTimeGrain.WEEK)
-        "2015-09-12T00:00:00.000Z/2015-09-13T01:01:01.000Z" | Optional.empty() //expected failure
-        "2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z" | Optional.of(DefaultTimeGrain.DAY)
-        "2015-09-12T00:00:00.000Z/2015-09-12T01:00:00.000Z" | Optional.of(DefaultTimeGrain.HOUR)
-        "2015-09-12T00:00:00.000Z/2015-09-12T00:01:00.000Z" | Optional.of(DefaultTimeGrain.MINUTE)
     }
 }
