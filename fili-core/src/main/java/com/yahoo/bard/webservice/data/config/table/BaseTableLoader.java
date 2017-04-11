@@ -281,7 +281,7 @@ public abstract class BaseTableLoader implements TableLoader {
             // Add the table to the dictionary
             LOG.debug("Physical table: {} \n\n" + "Cache: {} ",
                             definition.getName().asName(),
-                            existingTable.getColumns());
+                            existingTable.getSchema().getColumns());
             dictionaries.getPhysicalDictionary().put(definition.getName().asName(), existingTable);
         }
 

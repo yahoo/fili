@@ -24,7 +24,7 @@ public interface Schema {
     /**
      * Get the time granularity for this Schema.
      *
-     * @return The columns of this schema
+     * @return The time granularity of this schema
      */
     Granularity getGranularity();
 
