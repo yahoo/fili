@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import javax.validation.constraints.NotNull;
@@ -78,47 +77,38 @@ public class MetricUnionCompositeTable extends BasePhysicalTable {
     ) {
         super(
                 name,
-                verifyCoarsestTimeGrain(IntervalUtils.getCoarsestTimeGrain(physicalTables), physicalTables),
+                IntervalUtils.getCoarsestTimeGrain(physicalTables).orElseThrow(() -> {
+                    String message = "At least 1 physical table needs to be provided";
+                    LOG.error(message);
+                    return new IllegalArgumentException(message);
+                }),
                 columns,
                 logicalToPhysicalColumnNames,
                 new MetricUnionAvailability(physicalTables, columns)
         );
+        verifyGrainSatisfiesAllTables(IntervalUtils.getCoarsestTimeGrain(physicalTables).get(), physicalTables);
     }
 
     /**
-     * Verifies and returns the coarsest <tt>ZonedTimeGrain</tt> if that satisfies all tables.
+     * Verifies that the coarsest <tt>ZonedTimeGrain</tt> satisfies all tables.
      *
-     * @param coarsestGrain  The coarsest <tt>ZonedTimeGrain</tt> to be verified
+     * @param coarsestTimeGrain  The coarsest <tt>ZonedTimeGrain</tt> to be verified
      * @param physicalTables  A set of <tt>PhysicalTable</tt>s whose <tt>ZonedTimeGrain</tt>s are checked to make sure
      * they all satisfies with the given coarsest <tt>ZonedTimeGrain</tt>
      *
-     * @return the coarsest <tt>ZonedTimeGrain</tt> among a set of <tt>PhysicalTables</tt>s
-     * @throws IllegalArgumentException when no PhysicalTable is provided or there is not mutually satisfying grain
-     * among the table's time grain
+     * @throws IllegalArgumentException when there is no mutually satisfying grain among the table's time grains
      */
-    private static ZonedTimeGrain verifyCoarsestTimeGrain(
-            Optional<ZonedTimeGrain> coarsestGrain,
+    private static void verifyGrainSatisfiesAllTables(
+            ZonedTimeGrain coarsestTimeGrain,
             Set<PhysicalTable> physicalTables
     ) throws IllegalArgumentException {
-        ZonedTimeGrain coarsestTimeGrain = coarsestGrain
-                .orElseThrow(() -> {
-                        String message = "At least 1 physical table needs to be provided";
-                        LOG.error(message);
-                        return new IllegalArgumentException(message);
-                });
-
-        if (physicalTables.stream()
+        if (!physicalTables.stream()
                 .map(PhysicalTable::getSchema)
                 .map(PhysicalTableSchema::getTimeGrain)
-                .anyMatch(grain -> grain.satisfiedBy(coarsestTimeGrain))) {
-            String message = String.format(
-                    "There is no mutually satisfying grain among: %s",
-                    physicalTables
-            );
+                .allMatch(grain -> grain.satisfiedBy(coarsestTimeGrain))) {
+            String message = String.format("There is no mutually satisfying grain among: %s", physicalTables);
             LOG.error(message);
             throw new IllegalArgumentException(message);
         }
-
-        return coarsestTimeGrain;
     }
 }

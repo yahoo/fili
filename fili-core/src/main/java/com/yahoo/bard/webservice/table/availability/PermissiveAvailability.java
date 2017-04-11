@@ -13,7 +13,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
@@ -66,7 +65,7 @@ public class PermissiveAvailability extends ConcreteAvailability {
     public String toString() {
         return String.format("PermissiveAvailability with table name = %s and Configured columns = [%s]",
                 getName().asName(),
-                getColumnNames().stream()
-                        .collect(Collectors.joining(", "))
-        );    }
+                getColumnNames()
+        );
+    }
 }

@@ -24,8 +24,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
 
@@ -71,7 +71,8 @@ public class MetricUnionAvailability implements Availability {
     /**
      * Constructor.
      *
-     * @param physicalTables  A set of <tt>PhysicalTable</tt>s containing overlapping metric schema
+     * @param physicalTables  A set of <tt>PhysicalTable</tt>s whose Dimension schemas are the same and
+     * the Metric Schemas are fully different(i.e. no overlap) on every table
      * @param columns  The set of all configured columns, including dimension columns, that metric union availability
      * will respond with
      */
@@ -81,14 +82,14 @@ public class MetricUnionAvailability implements Availability {
         // get a map from availability to its available metric columns intersected with configured metric columns
         // i.e. metricColumns
         availabilitiesToAvailableColumns = physicalTables.stream()
+                .map(PhysicalTable::getAvailability)
                 .collect(
                         Collectors.toMap(
-                                PhysicalTable::getAvailability,
-                                physicalTable ->
+                                Function.identity(),
+                                availability ->
                                         Sets.intersection(
                                                 Utils.getSubsetByType(
-                                                        physicalTable
-                                                                .getAvailability()
+                                                        availability
                                                                 .getAllAvailableIntervals()
                                                                 .keySet(),
                                                         MetricColumn.class
@@ -136,16 +137,11 @@ public class MetricUnionAvailability implements Availability {
      */
     @Override
     public Map<Column, List<Interval>> getAllAvailableIntervals() {
-        // get all availabilities
-        Set<Availability> availabilities = availabilitiesToAvailableColumns.keySet();
-
-        // take available interval maps from all availabilities and merge the maps together
-        return Stream.of(availabilities)
-                .flatMap(Set::stream)
+        // get all availabilities take available interval maps from all availabilities and merge the maps together
+        return availabilitiesToAvailableColumns.keySet().stream()
                 .map(Availability::getAllAvailableIntervals)
                 .map(Map::entrySet)
                 .flatMap(Set::stream)
-                .filter(entry -> metricColumns.contains(entry.getKey()))
                 .collect(
                         Collectors.toMap(
                                 Map.Entry::getKey,

@@ -137,8 +137,8 @@ public class DataSourceConstraint {
                 filterDimensions,
                 metricDimensions,
                 metricColumns.stream()
-                        .filter(metricColumn -> metricNames.contains(metricColumn.getName()))
                         .map(MetricColumn::getName)
+                        .filter(metricNames::contains)
                         .collect(Collectors.toSet()),
                 allDimensions,
                 allDimensionNames,
