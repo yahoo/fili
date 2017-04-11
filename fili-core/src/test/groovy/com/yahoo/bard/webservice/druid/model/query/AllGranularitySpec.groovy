@@ -29,16 +29,14 @@ class AllGranularitySpec extends Specification {
     }
 
     @Unroll
-    def "All granularity #relationship  #grain"() {
+    def "All granularity is satisfied by  #grain"() {
 
         expect:
         allGranularity.satisfiedBy(grain)
         grain.satisfies(allGranularity)
 
         where:
-
         grain << ((DefaultTimeGrain.values() as List) + allGranularity)
-        relationship = " is satisfied by "
     }
 
     def "All granularity iterates over simplified intervals without otherwise changing them"() {
