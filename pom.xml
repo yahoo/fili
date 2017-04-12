@@ -72,7 +72,7 @@
 
         <version.fili>0.8-SNAPSHOT</version.fili>
 
-        <version.slf4j>1.7.21</version.slf4j>
+        <version.slf4j>1.7.25</version.slf4j>
         <version.servlet>3.1.0</version.servlet>
         <version.jersey>2.24</version.jersey>
         <version.hk2>2.5.0-b05</version.hk2>

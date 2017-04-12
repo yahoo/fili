@@ -69,6 +69,13 @@ Current
 
 ### Changed:
 
+- [Update SLF4J version 1.7.21 -> 1.7.25]
+    * When running under Java 9, log4j version 1.2.x is unable to correctly parse the "java.version" system property.
+    Assuming an inccorect Java version, it proceeded to disable its MDC functionality. The slf4j-log4j12 module shipping
+    in this release fixes the issue by tweaking MDC internals by reflection, allowing log4j to run under Java 9.
+    * The slf4j-simple module now uses the latest reference to System.out or System.err.
+    * In slf4j-simple module, added a configuration option to enable/disable caching of the System.out/err target.
+
 - [Update Lucene version 5.3.0 -> 6.5.0](https://github.com/yahoo/fili/pull/233)
     * [Added IndexSearcher#getQueryCache and #getQueryCachingPolicy](https://issues.apache.org/jira/browse/LUCENE-6838)
     * [org.apache.lucene.search.Filter is now deprecated](http://issues.apache.org/jira/browse/LUCENE-6301).
