@@ -99,7 +99,7 @@ public class MetricUnionAvailability implements Availability {
 
         // validate metric uniqueness such that
         // each table's underlying datasource schema don't have repeated metric column
-        Map<MetricColumn, Set<Availability>> duplicates = getDuplicateValue(availabilitiesToAvailableColumns);
+        Map<MetricColumn, Set<Availability>> duplicates = getDuplicateValues(availabilitiesToAvailableColumns);
         if (!duplicates.isEmpty()) {
             String message = String.format(
                     "While constructing MetricUnionAvailability, Metric columns are not unique - %s",
@@ -186,7 +186,7 @@ public class MetricUnionAvailability implements Availability {
      *
      * @return duplicate values of <tt>MetricColumn</tt>s
      */
-    private static Map<MetricColumn, Set<Availability>> getDuplicateValue(
+    private static Map<MetricColumn, Set<Availability>> getDuplicateValues(
             Map<Availability, Set<MetricColumn>> availabilityToAvailableColumns
     ) {
         Map<MetricColumn, Set<Availability>> metricColumnSetMap = new HashMap<>();
