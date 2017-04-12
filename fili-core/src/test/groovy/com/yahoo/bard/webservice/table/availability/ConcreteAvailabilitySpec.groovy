@@ -32,7 +32,7 @@ class ConcreteAvailabilitySpec extends Specification{
                 new TestDataSourceMetadataService([
                         (columnPhysicalName1): [interval1] as Set,
                         (columnPhysicalName2): [interval2] as Set,
-                        'hidden_column'     : [interval1] as Set
+                        'hidden_column'      : [interval1] as Set
                 ])
         )
     }
@@ -42,7 +42,7 @@ class ConcreteAvailabilitySpec extends Specification{
         concreteAvailability.getAllAvailableIntervals() == [
                 (columnPhysicalName1): [interval1],
                 (columnPhysicalName2): [interval2],
-                'hidden_column'     : [interval1],
+                'hidden_column'      : [interval1],
         ] as LinkedHashMap
     }
 

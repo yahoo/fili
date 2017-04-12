@@ -6,9 +6,6 @@ import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.availability.PermissiveAvailability;
-import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
-import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
-import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import java.util.Map;
 import java.util.Set;
@@ -49,13 +46,5 @@ public class PermissiveConcretePhysicalTable extends ConcretePhysicalTable {
                 logicalToPhysicalColumnNames,
                 new PermissiveAvailability(name, dataSourceMetadataService)
         );
-    }
-
-    @Override
-    public SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraint) {
-        return getAvailability().getAvailableIntervals(PhysicalDataSourceConstraint.buildWithSchemaUnion(
-                constraint,
-                getSchema()
-        ));
     }
 }

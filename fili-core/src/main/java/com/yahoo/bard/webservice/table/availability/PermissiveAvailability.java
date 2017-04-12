@@ -7,12 +7,6 @@ import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
-import org.joda.time.Interval;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
 import javax.validation.constraints.NotNull;
 
 /**
@@ -45,20 +39,18 @@ public class PermissiveAvailability extends ConcreteAvailability {
      * )};
      * Instead of returning the intersection of all available intervals, this method returns the union of them.
      *
-     * @param constraint  Data constraint containing columns and api filters. Constrains are ignored, because
+     * @param ignoredConstraint  Data constraint containing columns and api filters. Constrains are ignored, because
      * <tt>PermissiveAvailability</tt> returns as much available intervals as possible by, for example, allowing
      * missing intervals and returning unions of available intervals
      *
      * @return the union of all available intervals
      */
     @Override
-    public SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint constraint) {
-        Map<String, List<Interval>> allAvailableIntervals = getAllAvailableIntervals();
+    public SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint ignoredConstraint) {
 
-        return constraint.getAllColumnPhysicalNames().stream()
-                .map(columnName -> allAvailableIntervals.getOrDefault(columnName, Collections.emptyList()))
-                .flatMap(List::stream)
-                .collect(SimplifiedIntervalList.getCollector());
+        return getAllAvailableIntervals().values().stream()
+                .map(SimplifiedIntervalList::new)
+                .reduce(new SimplifiedIntervalList(), SimplifiedIntervalList::simplifyIntervals);
     }
 
     @Override
