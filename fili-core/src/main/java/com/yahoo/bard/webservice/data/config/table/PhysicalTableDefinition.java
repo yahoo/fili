@@ -14,7 +14,7 @@ import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 
-import avro.shaded.com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSet;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;

@@ -61,7 +61,7 @@ public abstract class BasePhysicalTable implements PhysicalTable {
 
     @Override
     public String getName() {
-        return name.asName();
+        return getTableName().asName();
     }
 
     @Override
