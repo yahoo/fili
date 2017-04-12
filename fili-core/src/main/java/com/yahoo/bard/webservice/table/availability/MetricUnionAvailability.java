@@ -49,7 +49,8 @@ import javax.validation.constraints.NotNull;
  * +---------------+---------------+---------------+
  * }
  * </pre>
- * are joined into a metric union availability below
+ * are joined into a metric union availability below (note that metric columns available on one availability must not
+ * exist on any other availabilities.)
  * <pre>
  * {@code
  * +---------------+---------------+---------------+---------------+---------------+
@@ -59,7 +60,6 @@ import javax.validation.constraints.NotNull;
  * +---------------+---------------+---------------+---------------+---------------+
  * }
  * </pre>
- * Note that the joining availabilities must have completely different set of metric columns.
  */
 public class MetricUnionAvailability implements Availability {
     private static final Logger LOG = LoggerFactory.getLogger(MetricUnionAvailability.class);
