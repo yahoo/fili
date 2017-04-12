@@ -68,6 +68,16 @@ Current
 - [Support timeouts for lucene search provider](https://github.com/yahoo/fili/pull/183)
 
 ### Changed:
+- [Update Metrics version 3.1.2 -> 3.2.2]
+    * [Added support for disabling reporting of metric attributes.](https://github.com/dropwizard/metrics/pull/1048)
+    * [Support for setting a custom initial delay for reporters.](https://github.com/dropwizard/metrics/pull/999)
+    * [Support for custom details in a result of a health check.](https://github.com/dropwizard/metrics/issues/663)
+    * [Support for asynchronous health checks](https://github.com/dropwizard/metrics/pull/1077)
+    * [Added a listener for health checks.](https://github.com/dropwizard/metrics/pull/1068)
+    * [Health checks are reported as unhealthy on exceptions.](https://github.com/dropwizard/metrics/issues/783)
+    * [Added support for Jetty 9.3 and higher.](https://github.com/dropwizard/metrics/pull/1038)
+    * [Shutdown health check registry](https://github.com/dropwizard/metrics/pull/1084)
+    * [Add support for the default shared health check registry name](https://github.com/dropwizard/metrics/pull/1095)
 
 - [Update SLF4J version 1.7.21 -> 1.7.25]
     * When running under Java 9, log4j version 1.2.x is unable to correctly parse the "java.version" system property.
