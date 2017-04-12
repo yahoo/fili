@@ -68,7 +68,19 @@ Current
 - [Support timeouts for lucene search provider](https://github.com/yahoo/fili/pull/183)
 
 ### Changed:
-- [Update Metrics version 3.1.2 -> 3.2.2]
+
+- [Update LogBack version 1.1.7 -> 1.2.3](https://github.com/yahoo/fili/pull/235)
+    * In web-applications, logback-classic will automatically install a listener which will stop the logging context and
+    release resources when your web-app is reloaded.
+    * Logback-classic now searches for the file logback-test.xml first, logback.groovy second and logback.xml third.
+    In previous versions logback.groovy was looked up first which was non-sensical in presense of logback-test.xml.
+    * AsyncAppender no longer drops events when the current thread has its interrupt flag set.
+    * Critical parts of the code now use COWArrayList, a custom developed allocation-free lock-free thread-safe
+    implementation of the {@link List} interface. It is optimized for cases where iterations over the list vastly
+    outnumber modifications on the list. It is based on CopyOnWriteArrayList but allows allocation-free iterations over
+    the list.
+
+- [Update Metrics version 3.1.2 -> 3.2.2](https://github.com/yahoo/fili/pull/235)
     * [Added support for disabling reporting of metric attributes.](https://github.com/dropwizard/metrics/pull/1048)
     * [Support for setting a custom initial delay for reporters.](https://github.com/dropwizard/metrics/pull/999)
     * [Support for custom details in a result of a health check.](https://github.com/dropwizard/metrics/issues/663)
@@ -79,7 +91,11 @@ Current
     * [Shutdown health check registry](https://github.com/dropwizard/metrics/pull/1084)
     * [Add support for the default shared health check registry name](https://github.com/dropwizard/metrics/pull/1095)
 
-- [Update SLF4J version 1.7.21 -> 1.7.25]
+- [Update hk2 version 2.5.0-b05 -> 2.5.0-b36](https://github.com/yahoo/fili/pull/235)
+    * [Add class-proxy in the case of a generic factory using a registered contract]
+    (https://github.com/hk2-project/hk2/releases)
+
+- [Update SLF4J version 1.7.21 -> 1.7.25](https://github.com/yahoo/fili/pull/235)
     * When running under Java 9, log4j version 1.2.x is unable to correctly parse the "java.version" system property.
     Assuming an inccorect Java version, it proceeded to disable its MDC functionality. The slf4j-log4j12 module shipping
     in this release fixes the issue by tweaking MDC internals by reflection, allowing log4j to run under Java 9.
