@@ -89,9 +89,7 @@ public class MetricUnionAvailability implements Availability {
                                 availability ->
                                         Sets.intersection(
                                                 Utils.getSubsetByType(
-                                                        availability
-                                                                .getAllAvailableIntervals()
-                                                                .keySet(),
+                                                        availability.getAllAvailableIntervals().keySet(),
                                                         MetricColumn.class
                                                 ),
                                                 metricColumns
@@ -133,7 +131,7 @@ public class MetricUnionAvailability implements Availability {
      * Intervals of the same metric column are associated with the same metric column key. Overlapping intervals under
      * the same metric column key are collapsed into single interval.
      *
-     * @return a map of metric column to all of its available intervals in union
+     * @return a map of column to all of its available intervals in union
      */
     @Override
     public Map<Column, List<Interval>> getAllAvailableIntervals() {

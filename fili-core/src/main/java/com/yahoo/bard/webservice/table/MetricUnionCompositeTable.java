@@ -86,7 +86,7 @@ public class MetricUnionCompositeTable extends BasePhysicalTable {
                 logicalToPhysicalColumnNames,
                 new MetricUnionAvailability(physicalTables, columns)
         );
-        verifyGrainSatisfiesAllTables(IntervalUtils.getCoarsestTimeGrain(physicalTables).get(), physicalTables);
+        verifyGrainSatisfiesAllTables(getSchema().getTimeGrain(), physicalTables);
     }
 
     /**
