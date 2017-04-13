@@ -78,7 +78,11 @@ public class MetricUnionCompositeTable extends BasePhysicalTable {
         super(
                 name,
                 IntervalUtils.getCoarsestTimeGrain(physicalTables).orElseThrow(() -> {
-                    String message = "At least 1 physical table needs to be provided";
+                    String message = String.format(
+                            "At least 1 physical table needs to be provided in order to calculate " +
+                                    "coarsest time grain for %s",
+                            name.asName()
+                    );
                     LOG.error(message);
                     return new IllegalArgumentException(message);
                 }),
@@ -86,7 +90,7 @@ public class MetricUnionCompositeTable extends BasePhysicalTable {
                 logicalToPhysicalColumnNames,
                 new MetricUnionAvailability(physicalTables, columns)
         );
-        verifyGrainSatisfiesAllTables(getSchema().getTimeGrain(), physicalTables);
+        verifyGrainSatisfiesAllTables(getSchema().getTimeGrain(), physicalTables, name);
     }
 
     /**
@@ -95,18 +99,25 @@ public class MetricUnionCompositeTable extends BasePhysicalTable {
      * @param coarsestTimeGrain  The coarsest <tt>ZonedTimeGrain</tt> to be verified
      * @param physicalTables  A set of <tt>PhysicalTable</tt>s whose <tt>ZonedTimeGrain</tt>s are checked to make sure
      * they all satisfies with the given coarsest <tt>ZonedTimeGrain</tt>
+     * @param name  Name of the current <tt>MetricUnionCompositeTable</tt> that represents set of fact table names
+     * joined together
      *
      * @throws IllegalArgumentException when there is no mutually satisfying grain among the table's time grains
      */
     private static void verifyGrainSatisfiesAllTables(
             ZonedTimeGrain coarsestTimeGrain,
-            Set<PhysicalTable> physicalTables
+            Set<PhysicalTable> physicalTables,
+            TableName name
     ) throws IllegalArgumentException {
         if (!physicalTables.stream()
                 .map(PhysicalTable::getSchema)
                 .map(PhysicalTableSchema::getTimeGrain)
                 .allMatch(grain -> grain.satisfiedBy(coarsestTimeGrain))) {
-            String message = String.format("There is no mutually satisfying grain among: %s", physicalTables);
+            String message = String.format("There is no mutually satisfying grain among: %s for current table " +
+                    "%s",
+                    physicalTables,
+                    name.asName()
+            );
             LOG.error(message);
             throw new IllegalArgumentException(message);
         }

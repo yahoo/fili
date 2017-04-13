@@ -36,28 +36,28 @@ import javax.validation.constraints.NotNull;
  * For example, two availabilities of the following
  * <pre>
  * {@code
- * +---------------+---------------+
- * | metricColumn1 | metricColumn2 |
- * +---------------+---------------+
- * | [1/10]        | [20/30]       |
- * +---------------+---------------+
+ * +-------------------------+-------------------------+
+ * |      metricColumn1      |      metricColumn2      |
+ * +-------------------------+-------------------------+
+ * | [2017-01-01/2017-02-01] | [2018-01-01/2018-02-01] |
+ * +-------------------------+-------------------------+
 
- * +---------------+---------------+---------------+
- * | metricColumn3 | metricColumn4 | metricColumn5 |
- * +---------------+---------------+---------------+
- * | [5/15]        | [25/50]       | [90/100]      |
- * +---------------+---------------+---------------+
+ * +---------------------------+-------------------------+
+ * |       metricColumn3       |      metricColumn4      |
+ * +---------------------------+-------------------------+
+ * | [[2019-01-01/2019-02-01]] | [2020-01-01/2020-02-01] |
+ * +---------------------------+-------------------------+
  * }
  * </pre>
  * are joined into a metric union availability below (note that metric columns available on one availability must not
  * exist on any other availabilities.)
  * <pre>
  * {@code
- * +---------------+---------------+---------------+---------------+---------------+
- * | metricColumn1 | metricColumn2 | metricColumn3 | metricColumn4 | metricColumn5 |
- * +---------------+---------------+---------------+---------------+---------------+
- * | [1/10]        | [20/30]       | [5/15]        | [25/50]       | [90/100]      |
- * +---------------+---------------+---------------+---------------+---------------+
+ * +-------------------------+-------------------------+---------------------------+-------------------------+
+ * |      metricColumn1      |      metricColumn2      |       metricColumn3       |      metricColumn4      |
+ * +-------------------------+-------------------------+---------------------------+-------------------------+
+ * | [2017-01-01/2017-02-01] | [2018-01-01/2018-02-01] | [[2019-01-01/2019-02-01]] | [2020-01-01/2020-02-01] |
+ * +-------------------------+-------------------------+---------------------------+-------------------------+
  * }
  * </pre>
  */
@@ -154,7 +154,7 @@ public class MetricUnionAvailability implements Availability {
         return new SimplifiedIntervalList(
                 constructSubConstraint(constraints).entrySet().stream()
                         .map(entry -> entry.getKey().getAvailableIntervals(entry.getValue()))
-                        .map(i -> (Set<Interval>) new HashSet<>(i))
+                        .map(simplifiedIntervalList -> (Set<Interval>) new HashSet<>(simplifiedIntervalList))
                         .reduce(null, IntervalUtils::getOverlappingSubintervals)
         );
     }

@@ -4,7 +4,6 @@ package com.yahoo.bard.webservice.table.availability
 
 import com.yahoo.bard.webservice.table.Column
 
-import com.google.common.collect.Sets
 import com.yahoo.bard.webservice.data.config.names.TableName
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.table.PhysicalTable
@@ -37,8 +36,8 @@ class MetricUnionAvailabilitySpec extends Specification {
         availability1 = Mock(Availability)
         availability2 = Mock(Availability)
 
-        availability1.getDataSourceNames() >> Sets.newHashSet(TableName.of('source1'))
-        availability2.getDataSourceNames() >> Sets.newHashSet(TableName.of('source2'))
+        availability1.getDataSourceNames() >> ([TableName.of('source1')] as Set)
+        availability2.getDataSourceNames() >> ([TableName.of('source2')] as Set)
 
         metricColumn1 = new MetricColumn('metric1')
         metricColumn2 = new MetricColumn('metric2')
@@ -88,7 +87,7 @@ class MetricUnionAvailabilitySpec extends Specification {
     @Unroll
     def "checkDuplicateValue returns duplicate metric column names or empty, if no duplicates, from 2 physical tables in the case of #caseDescription"() {
         when:
-        Map<MetricColumn, Set<Availability>> actual = MetricUnionAvailability.getDuplicateValue(
+        Map<MetricColumn, Set<Availability>> actual = MetricUnionAvailability.getDuplicateValues(
                 [
                         (availability1): metricColumnNames1.collect{it -> new MetricColumn(it)} as Set,
                         (availability2): metricColumnNames2.collect{it -> new MetricColumn(it)} as Set
