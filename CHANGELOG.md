@@ -11,6 +11,10 @@ Current
 
 - [Add Reciprocal `satisfies()` relationship complementing `satisfiedBy()` on Granularity](https://github.com/yahoo/fili/issues/222)
 
+- [MetricUnionAvailability and MetricUnionCompositeTable](https://github.com/yahoo/fili/pull/193)
+    * Added `MetricUnionAvailability` which puts metric columns of different availabilities together and
+    `MetricUnionCompositeTable` which puts metric columns of different tables together in a single table.
+
 - [Method for finding coarsest ZonedTimeGrain](https://github.com/yahoo/fili/pull/230)
     * Added utility method for returning coarsest `ZonedTimeGrain` from a collection of `ZonedTimeGrain`s. This is
     useful to construct composite tables that requires the coarsest `ZonedTimeGrain` among a set of tables.
