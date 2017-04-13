@@ -55,9 +55,8 @@ public class PermissiveAvailability extends ConcreteAvailability {
 
     @Override
     public String toString() {
-        return String.format("PermissiveAvailability with table name = %s and Configured columns = [%s]",
-                getName().asName(),
-                getColumnNames()
+        return String.format("PermissiveAvailability with table name = %s",
+                getName().asName()
         );
     }
 }

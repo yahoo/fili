@@ -3,7 +3,6 @@
 package com.yahoo.bard.webservice.table.resolver;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
-import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.DataApiRequest;
@@ -87,6 +86,22 @@ public class DataSourceConstraint {
         this.apiFilters = apiFilters;
     }
 
+    /**
+     * Copy Constructor.
+     *
+     * @param dataSourceConstraint  The data source constraint to copy from
+     */
+    protected DataSourceConstraint(DataSourceConstraint dataSourceConstraint) {
+        this.requestDimensions = dataSourceConstraint.getRequestDimensions();
+        this.filterDimensions = dataSourceConstraint.getFilterDimensions();
+        this.metricDimensions = dataSourceConstraint.getMetricDimensions();
+        this.metricNames = dataSourceConstraint.getMetricNames();
+        this.apiFilters = dataSourceConstraint.getApiFilters();
+        this.allDimensions = dataSourceConstraint.getAllDimensions();
+        this.allDimensionNames = dataSourceConstraint.getAllDimensionNames();
+        this.allColumnNames = dataSourceConstraint.getAllColumnNames();
+    }
+
     public Set<Dimension> getRequestDimensions() {
         return requestDimensions;
     }
@@ -126,19 +141,18 @@ public class DataSourceConstraint {
      * The new set of metric names will be an intersection between old metric names and
      * a user provided set of metric names
      *
-     * @param metricColumns  The set of metric columns that are to be intersected with metric names in
+     * @param metricNames  The set of metric names that are to be intersected with metric names in
      * <tt>this DataSourceConstraint</tt>
      *
      * @return the new <tt>DataSourceConstraint</tt> instance with a new subset of metric names
      */
-    public DataSourceConstraint withMetricIntersection(Set<MetricColumn> metricColumns) {
+    public DataSourceConstraint withMetricIntersection(Set<String> metricNames) {
         return new DataSourceConstraint(
                 requestDimensions,
                 filterDimensions,
                 metricDimensions,
-                metricColumns.stream()
-                        .map(MetricColumn::getName)
-                        .filter(metricNames::contains)
+                metricNames.stream()
+                        .filter(this.metricNames::contains)
                         .collect(Collectors.toSet()),
                 allDimensions,
                 allDimensionNames,

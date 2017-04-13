@@ -20,7 +20,7 @@ class DataSourceConstraintSpec extends Specification {
                 [] as Set,
                 [] as Set,
                 [:]
-        ).withMetricIntersection(other.collect{it -> new MetricColumn(it)} as Set)
+        ).withMetricIntersection(other as Set)
 
         expect:
         newDataSourceConstraint.getMetricNames() == newMetricNames as Set
