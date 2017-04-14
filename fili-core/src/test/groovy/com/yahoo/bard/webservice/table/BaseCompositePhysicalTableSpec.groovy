@@ -4,10 +4,11 @@ package com.yahoo.bard.webservice.table
 
 import com.yahoo.bard.webservice.data.config.names.TableName
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
+import com.yahoo.bard.webservice.table.availability.Availability
 
 import spock.lang.Specification
 
-class MetricUnionCompositeTableSpec extends Specification {
+class BaseCompositePhysicalTableSpec extends Specification {
     TableName tableName
 
     def setup() {
@@ -16,11 +17,12 @@ class MetricUnionCompositeTableSpec extends Specification {
 
     def "Constructor throws illegal argument exception on empty physical tables"() {
         when:
-        MetricUnionCompositeTable metricUnionCompositeTable = new MetricUnionCompositeTable(
+        BaseCompositePhysicalTable baseCompositePhysicalTable = new BaseCompositePhysicalTable(
                 tableName,
                 [] as Set,
                 [] as Set,
-                [:]
+                [:],
+                Mock(Availability)
         )
 
         then:

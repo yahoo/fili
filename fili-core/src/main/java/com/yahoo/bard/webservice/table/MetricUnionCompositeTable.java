@@ -3,9 +3,7 @@
 package com.yahoo.bard.webservice.table;
 
 import com.yahoo.bard.webservice.data.config.names.TableName;
-import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.table.availability.MetricUnionAvailability;
-import com.yahoo.bard.webservice.util.IntervalUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +53,7 @@ import javax.validation.constraints.NotNull;
  * and this joined table is backed by the <tt>MetricUnionAvailability</tt>
  *
  */
-public class MetricUnionCompositeTable extends BasePhysicalTable {
+public class MetricUnionCompositeTable extends BaseCompositePhysicalTable {
     private static final Logger LOG = LoggerFactory.getLogger(MetricUnionCompositeTable.class);
 
     /**
@@ -77,49 +75,10 @@ public class MetricUnionCompositeTable extends BasePhysicalTable {
     ) {
         super(
                 name,
-                IntervalUtils.getCoarsestTimeGrain(physicalTables).orElseThrow(() -> {
-                    String message = String.format(
-                            "At least 1 physical table needs to be provided in order to calculate " +
-                                    "coarsest time grain for %s",
-                            name.asName()
-                    );
-                    LOG.error(message);
-                    return new IllegalArgumentException(message);
-                }),
                 columns,
+                physicalTables,
                 logicalToPhysicalColumnNames,
                 new MetricUnionAvailability(physicalTables, columns)
         );
-        verifyGrainSatisfiesAllTables(getSchema().getTimeGrain(), physicalTables, name);
-    }
-
-    /**
-     * Verifies that the coarsest <tt>ZonedTimeGrain</tt> satisfies all tables.
-     *
-     * @param coarsestTimeGrain  The coarsest <tt>ZonedTimeGrain</tt> to be verified
-     * @param physicalTables  A set of <tt>PhysicalTable</tt>s whose <tt>ZonedTimeGrain</tt>s are checked to make sure
-     * they all satisfies with the given coarsest <tt>ZonedTimeGrain</tt>
-     * @param name  Name of the current <tt>MetricUnionCompositeTable</tt> that represents set of fact table names
-     * joined together
-     *
-     * @throws IllegalArgumentException when there is no mutually satisfying grain among the table's time grains
-     */
-    private static void verifyGrainSatisfiesAllTables(
-            ZonedTimeGrain coarsestTimeGrain,
-            Set<PhysicalTable> physicalTables,
-            TableName name
-    ) throws IllegalArgumentException {
-        if (!physicalTables.stream()
-                .map(PhysicalTable::getSchema)
-                .map(PhysicalTableSchema::getTimeGrain)
-                .allMatch(grain -> grain.satisfiedBy(coarsestTimeGrain))) {
-            String message = String.format("There is no mutually satisfying grain among: %s for current table " +
-                    "%s",
-                    physicalTables,
-                    name.asName()
-            );
-            LOG.error(message);
-            throw new IllegalArgumentException(message);
-        }
     }
 }
