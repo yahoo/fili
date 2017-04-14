@@ -10,10 +10,10 @@ Current
 ### Added:
 
 - [Fix to use physical name instead of logical name to retrieve available interval](https://github.com/yahoo/fili/pull/226)
-    * Added `PhysicalDataSourceConstraint` class to capture physical names of columns for retrieving availble interval
+    * Added `PhysicalDataSourceConstraint` class to capture physical names of columns for retrieving available intervals
 
 - [BaseCompositePhysicalTable](https://github.com/yahoo/fili/pull/242)
-    * `ConcretePhysicalTable` provides common operations, such as validating coarsest ZonedTimeGrain, for composite
+    * `BaseCompositePhysicalTable` provides common operations, such as validating coarsest ZonedTimeGrain, for composite
     tables.
 
 - [Add Reciprocal `satisfies()` relationship complementing `satisfiedBy()` on Granularity](https://github.com/yahoo/fili/issues/222)
@@ -81,10 +81,10 @@ Current
 ### Changed:
 
 - [Fix to use physical name instead of logical name to retrieve available interval](https://github.com/yahoo/fili/pull/226)
-    * `getAllAvailbleIntervals` in `ConcreteAvailability` no longer filters out unconfigured columns, instead table's `getAllAvailbleIntervals` does
+    * `getAllAvailbleIntervals` in `ConcreteAvailability` no longer filters out un-configured columns, instead table's `getAllAvailbleIntervals` does
     * `getAvailbleIntervals` in `Availbality` now takes `PhysicalDataSourceConstraint` instead of `DataSourceConstraint`
     * `Availability` no longer takes a set of columns on the table, only table needs to know
-    * `getAllAvailbleIntervals` in `Availability` now returns a map of column physical name to interval list instead of column to interval list
+    * `getAllAvailbleIntervals` in `Availability` now returns a map of column physical name string to interval list instead of column to interval list
     * `TestDataSourceMetadataService` now takes map from string to list of intervals instead of column to list of intervals for constructor
 
 - [Reduced number of queries sent by `LuceneSearchProvider` by 50% in the common case](https://github.com/yahoo/fili/pull/234)

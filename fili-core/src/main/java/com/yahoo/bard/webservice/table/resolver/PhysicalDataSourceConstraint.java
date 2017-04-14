@@ -38,7 +38,8 @@ public class PhysicalDataSourceConstraint extends DataSourceConstraint {
     }
 
     /**
-     * Constructor, use with care, beware of inconsistent caching behavior.
+     * Constructor, use with care, beware of possible inconsistent between underlying dimension and metrics property
+     * and allColumnPhysicalName.
      *
      * @param dataSourceConstraint  Data source constraint containing all the column names as logical names
      * @param allColumnPhysicalNames  The physical names of the columns

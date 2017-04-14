@@ -4,11 +4,12 @@ package com.yahoo.bard.webservice.table.availability
 
 import com.yahoo.bard.webservice.data.config.names.TableName
 import com.yahoo.bard.webservice.data.metric.MetricColumn
+import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
 import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.PhysicalTable
+import com.yahoo.bard.webservice.table.PhysicalTableSchema
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint
-import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraintSpec
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 
 import org.joda.time.Interval
@@ -171,14 +172,14 @@ class MetricUnionAvailabilitySpec extends Specification {
 
     }
 
-    def "constructSubConstraint correctly intersect metrics configured on the table with the metrics supported by availability's underlying datasource"() {
+    def "constructSubConstraint correctly intersects metrics configured on the table with the metrics supported by availability's underlying datasource"() {
         given:
         availability1.getAllAvailableIntervals() >> [
                 (metric1): []
         ]
         availability2.getAllAvailableIntervals() >> [
                 (metric2): [],
-                'ignored1': []
+                'un_requested': []
         ]
 
         metricUnionAvailability = new MetricUnionAvailability(physicalTables, [metricColumn1, metricColumn2] as Set)
@@ -187,10 +188,10 @@ class MetricUnionAvailabilitySpec extends Specification {
                 [] as Set,
                 [] as Set,
                 [] as Set,
-                [metric1, metric2, 'ignored2'] as Set,
+                [metric1, metric2, 'un_configured'] as Set,
                 [] as Set,
                 [] as Set,
-                [metric1, metric2, 'ignored2'] as Set,
+                [metric1, metric2, 'un_configured'] as Set,
                 [:]
         )
 
@@ -250,5 +251,39 @@ class MetricUnionAvailabilitySpec extends Specification {
         ['2017-01-01/2017-02-01'] | ['2017-01-15/2017-02-01'] | ['2017-01-15/2017-02-01'] | "full front overlap (0/10, 5/10)"
         ['2017-01-01/2017-02-01'] | ['2017-01-01/2017-01-15'] | ['2017-01-01/2017-01-15'] | "full back overlap (0/10, 0/5)"
         ['2017-01-01/2017-02-01'] | ['2017-01-15/2017-01-25'] | ['2017-01-15/2017-01-25'] | "fully contain (0/10, 3/9)"
+    }
+
+    def "getAvailableInterval requesting un-configured column on the table will result in empty available interval"() {
+        given:
+        Interval interval = new Interval('2000-01-01/3000-01-01')
+        availability1.getAllAvailableIntervals() >> [
+                (metric1): [interval]
+        ]
+        availability2.getAllAvailableIntervals() >> [
+                (metric2): [interval]
+        ]
+
+        availability1.getAvailableIntervals(_ as PhysicalDataSourceConstraint) >> new SimplifiedIntervalList([interval])
+        availability2.getAvailableIntervals(_ as PhysicalDataSourceConstraint) >> new SimplifiedIntervalList([interval])
+
+        metricUnionAvailability = new MetricUnionAvailability(physicalTables, [metricColumn1, metricColumn2] as Set)
+
+        DataSourceConstraint dataSourceConstraint = new DataSourceConstraint(
+                [] as Set,
+                [] as Set,
+                [] as Set,
+                [metric1, metric2, 'un_configured'] as Set,
+                [] as Set,
+                [] as Set,
+                [metric1, metric2, 'un_configured'] as Set,
+                [:]
+        )
+
+        PhysicalTableSchema physicalTableSchema = new PhysicalTableSchema(Mock(ZonedTimeGrain), [new Column(metric1), new Column(metric2)], [:])
+
+        PhysicalDataSourceConstraint physicalDataSourceConstraint = new PhysicalDataSourceConstraint(dataSourceConstraint, physicalTableSchema)
+
+        expect:
+        metricUnionAvailability.getAvailableIntervals(physicalDataSourceConstraint) == new SimplifiedIntervalList()
     }
 }

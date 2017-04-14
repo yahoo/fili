@@ -124,10 +124,9 @@ public class MetricUnionAvailability implements Availability {
     }
 
     /**
-     * Combines and returns intervals of all availabilities' metric columns.
+     * Retrieve all available intervals for all columns across all the underlying datasources.
      * <p>
-     * Intervals of the same metric column are associated with the same metric column key. Overlapping intervals under
-     * the same metric column key are collapsed into single interval.
+     * Available intervals for the same columns are unioned into a <tt>SimplifiedIntervalList</tt>
      *
      * @return a map of column to all of its available intervals in union
      */
@@ -148,9 +147,15 @@ public class MetricUnionAvailability implements Availability {
     }
 
     @Override
-    public SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint constraints) {
+    public SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint constraint) {
+
+        // If there are columns requested that are not configured on this table
+        if (constraint.getAllColumnPhysicalNames().size() != constraint.getAllColumnNames().size()) {
+            return new SimplifiedIntervalList();
+        }
+
         return new SimplifiedIntervalList(
-                constructSubConstraint(constraints).entrySet().stream()
+                constructSubConstraint(constraint).entrySet().stream()
                         .map(entry -> entry.getKey().getAvailableIntervals(entry.getValue()))
                         .map(simplifiedIntervalList -> (Set<Interval>) new HashSet<>(simplifiedIntervalList))
                         .reduce(null, IntervalUtils::getOverlappingSubintervals)
@@ -169,7 +174,7 @@ public class MetricUnionAvailability implements Availability {
     }
 
     /**
-     * Validates whether the metric columns are unique accross each of the underlying datasource.
+     * Validates whether the metric columns are unique across each of the underlying datasource.
      *
      * @param availabilityToMetricNames  A map from <tt>Availability</tt> to set of <tt>MetricColumn</tt>
      * contained in that <tt>Availability</tt>

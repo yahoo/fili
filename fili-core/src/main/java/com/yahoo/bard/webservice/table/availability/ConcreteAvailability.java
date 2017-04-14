@@ -68,7 +68,10 @@ public class ConcreteAvailability implements Availability {
         // Need to ensure requestColumns is not empty in order to prevent returning null by reduce operation
         return new SimplifiedIntervalList(
                 requestColumns.stream()
-                        .map(physicalName -> allAvailableIntervals.getOrDefault(physicalName, Collections.emptyList()))
+                        .map(physicalName -> allAvailableIntervals.getOrDefault(
+                                physicalName,
+                                new SimplifiedIntervalList()
+                        ))
                         .map(intervals -> (Collection<Interval>) intervals)
                         .reduce(null, IntervalUtils::getOverlappingSubintervals)
         );
