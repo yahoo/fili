@@ -47,7 +47,6 @@ public class PermissiveAvailability extends ConcreteAvailability {
      */
     @Override
     public SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint ignoredConstraint) {
-
         return getAllAvailableIntervals().values().stream()
                 .map(SimplifiedIntervalList::new)
                 .reduce(new SimplifiedIntervalList(), SimplifiedIntervalList::simplifyIntervals);
@@ -55,8 +54,6 @@ public class PermissiveAvailability extends ConcreteAvailability {
 
     @Override
     public String toString() {
-        return String.format("PermissiveAvailability with table name = %s",
-                getName().asName()
-        );
+        return String.format("PermissiveAvailability with table name = %s", getName().asName());
     }
 }

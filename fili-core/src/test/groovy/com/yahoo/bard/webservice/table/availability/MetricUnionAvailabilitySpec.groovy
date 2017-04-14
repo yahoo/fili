@@ -4,9 +4,11 @@ package com.yahoo.bard.webservice.table.availability
 
 import com.yahoo.bard.webservice.data.config.names.TableName
 import com.yahoo.bard.webservice.data.metric.MetricColumn
+import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint
+import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraintSpec
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 
 import org.joda.time.Interval
@@ -24,6 +26,9 @@ class MetricUnionAvailabilitySpec extends Specification {
     String metric1
     String metric2
 
+    Column metricColumn1
+    Column metricColumn2
+
     PhysicalTable physicalTable1
     PhysicalTable physicalTable2
 
@@ -40,6 +45,9 @@ class MetricUnionAvailabilitySpec extends Specification {
 
         metric1 = 'metric1'
         metric2 = 'metric2'
+
+        metricColumn1 = new MetricColumn(metric1)
+        metricColumn2 = new MetricColumn(metric2)
 
         physicalTable1 = Mock(PhysicalTable)
         physicalTable2 = Mock(PhysicalTable)
@@ -62,7 +70,7 @@ class MetricUnionAvailabilitySpec extends Specification {
         MetricColumn tableColumn1 = new MetricColumn("shouldNotBeReturned1")
         MetricColumn tableColumn2 = new MetricColumn("shouldNotBeReturned2")
 
-        metricUnionAvailability = new MetricUnionAvailability(physicalTables, [new MetricColumn(metric1), new MetricColumn(metric2)] as Set)
+        metricUnionAvailability = new MetricUnionAvailability(physicalTables, [metricColumn1, metricColumn2] as Set)
 
         when:
         Map<Availability, Set<String>> availabilitiesToAvailableColumns = metricUnionAvailability.availabilitiesToMetricNames
@@ -84,7 +92,7 @@ class MetricUnionAvailabilitySpec extends Specification {
     }
 
     @Unroll
-    def "checkDuplicateValue returns duplicate metric column names or empty, if no duplicates, from 2 physical tables in the case of #caseDescription"() {
+    def "isMetricUnique returns true if and only if metric is unique across all data sources in the case of #caseDescription"() {
         when:
         boolean actual = MetricUnionAvailability.isMetricUnique(
                 [
@@ -116,7 +124,7 @@ class MetricUnionAvailabilitySpec extends Specification {
         ]
 
         when:
-        metricUnionAvailability = new MetricUnionAvailability(physicalTables, [new MetricColumn(metric1)] as Set)
+        metricUnionAvailability = new MetricUnionAvailability(physicalTables, [metricColumn1] as Set)
 
         then:
         RuntimeException exception = thrown()
@@ -146,13 +154,13 @@ class MetricUnionAvailabilitySpec extends Specification {
         given:
         availability1.getAllAvailableIntervals() >> [
                 (metric1): [new Interval('2018-01-01/2018-02-01')],
-                ('column'): [new Interval('2018-01-01/2018-02-01')]
+                'column' : [new Interval('2018-01-01/2018-02-01')]
         ]
         availability2.getAllAvailableIntervals() >> [
                 (metric2): [new Interval('2019-01-01/2019-02-01')]
         ]
 
-        metricUnionAvailability = new MetricUnionAvailability(physicalTables, [metric1] as Set)
+        metricUnionAvailability = new MetricUnionAvailability(physicalTables, [metricColumn1] as Set)
 
         expect:
         metricUnionAvailability.getAllAvailableIntervals() == [
@@ -161,6 +169,36 @@ class MetricUnionAvailabilitySpec extends Specification {
                 'column' : [new Interval('2018-01-01/2018-02-01')]
         ]
 
+    }
+
+    def "constructSubConstraint correctly intersect metrics configured on the table with the metrics supported by availability's underlying datasource"() {
+        given:
+        availability1.getAllAvailableIntervals() >> [
+                (metric1): []
+        ]
+        availability2.getAllAvailableIntervals() >> [
+                (metric2): [],
+                'ignored1': []
+        ]
+
+        metricUnionAvailability = new MetricUnionAvailability(physicalTables, [metricColumn1, metricColumn2] as Set)
+
+        DataSourceConstraint dataSourceConstraint = new DataSourceConstraint(
+                [] as Set,
+                [] as Set,
+                [] as Set,
+                [metric1, metric2, 'ignored2'] as Set,
+                [] as Set,
+                [] as Set,
+                [metric1, metric2, 'ignored2'] as Set,
+                [:]
+        )
+
+        PhysicalDataSourceConstraint physicalDataSourceConstraint = new PhysicalDataSourceConstraint(dataSourceConstraint, [metric1, metric2, 'ignored2'] as Set)
+
+        expect:
+        metricUnionAvailability.constructSubConstraint(physicalDataSourceConstraint).get(availability1).getMetricNames() == [metric1] as Set
+        metricUnionAvailability.constructSubConstraint(physicalDataSourceConstraint).get(availability2).getMetricNames() == [metric2] as Set
     }
 
     @Unroll
@@ -173,32 +211,30 @@ class MetricUnionAvailabilitySpec extends Specification {
                 (metric2): []
         ]
 
-        availability1.getAvailableIntervals(_ as DataSourceConstraint) >> new SimplifiedIntervalList(
+        availability1.getAvailableIntervals(_ as PhysicalDataSourceConstraint) >> new SimplifiedIntervalList(
                 availableIntervals1.collect{it -> new Interval(it)} as Set
         )
-        availability2.getAvailableIntervals(_ as DataSourceConstraint) >> new SimplifiedIntervalList(
+        availability2.getAvailableIntervals(_ as PhysicalDataSourceConstraint) >> new SimplifiedIntervalList(
                 availableIntervals2.collect{it -> new Interval(it)} as Set
         )
 
-        metricUnionAvailability = new MetricUnionAvailability(physicalTables, [new MetricColumn(metric1), new MetricColumn(metric2)] as Set)
+        metricUnionAvailability = new MetricUnionAvailability(physicalTables, [metricColumn1, metricColumn2] as Set)
 
-
-
-        PhysicalDataSourceConstraint dataSourceConstraint = new PhysicalDataSourceConstraint(
+        DataSourceConstraint dataSourceConstraint = new DataSourceConstraint(
                 [] as Set,
                 [] as Set,
                 [] as Set,
-                ['metric1', 'metric2'] as Set,
+                [metric1, metric2] as Set,
                 [] as Set,
                 [] as Set,
-                [] as Set,
-                [:],
-                ['metric1', 'metric2'] as Set
+                [metric1, metric2] as Set,
+                [:]
         )
 
+        PhysicalDataSourceConstraint physicalDataSourceConstraint = new PhysicalDataSourceConstraint(dataSourceConstraint, [metric1, metric2] as Set)
+
         expect:
-        metricUnionAvailability.constructSubConstraint(dataSourceConstraint).size() == 2
-        metricUnionAvailability.getAvailableIntervals(dataSourceConstraint) == new SimplifiedIntervalList(
+        metricUnionAvailability.getAvailableIntervals(physicalDataSourceConstraint) == new SimplifiedIntervalList(
                 availableIntervals.collect{it -> new Interval(it)} as Set
         )
 

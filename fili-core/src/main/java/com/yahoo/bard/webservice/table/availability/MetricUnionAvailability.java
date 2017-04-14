@@ -80,7 +80,8 @@ public class MetricUnionAvailability implements Availability {
                 .map(MetricColumn::getName)
                 .collect(Collectors.toSet());
 
-        // map each metric to its corresponding availability object
+        // Construct a map of availability to its assigned metric
+        // by intersecting its underlying datasource metrics with table configured metrics
         availabilitiesToMetricNames = physicalTables.stream()
                 .map(PhysicalTable::getAvailability)
                 .collect(
@@ -178,8 +179,7 @@ public class MetricUnionAvailability implements Availability {
     private static boolean isMetricUnique(Map<Availability, Set<String>> availabilityToMetricNames) {
         Set<String> uniqueMetrics = new HashSet<>();
 
-        return availabilityToMetricNames.entrySet().stream()
-                .map(Map.Entry::getValue)
+        return availabilityToMetricNames.values().stream()
                 .flatMap(Set::stream)
                 .allMatch(uniqueMetrics::add);
     }
