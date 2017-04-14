@@ -86,7 +86,20 @@ class ConcretePhysicalTableSpec extends Specification {
         dimensionColumn             | intervalSet1
         metricColumn1               | intervalSet2
         metricColumn2               | intervalSet3
-        new Column("MissingName")   | [] as Set
+    }
+
+    @Unroll
+    def "Physical table getAvailableIntervals throws exception when requesting a column not on the table"() {
+        given:
+        DataSourceConstraint constraints = Mock(DataSourceConstraint)
+        constraints.getAllColumnNames() >> ['un_configured']
+
+        when:
+        physicalTable.getAvailableIntervals(constraints)
+
+        then:
+        RuntimeException exception = thrown()
+        exception.message == 'Received invalid request requesting for columns: un_configured that is not available in this table: test table'
     }
 
     def "test datasource metadata service correctly initializes"() {

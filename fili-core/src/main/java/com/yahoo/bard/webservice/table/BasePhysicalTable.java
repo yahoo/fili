@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -96,6 +97,22 @@ public abstract class BasePhysicalTable implements PhysicalTable {
 
     @Override
     public SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraint) {
+
+        Set<String> tableColumnNames = getSchema().getColumnNames();
+        Set<String> invalidColumnNames = constraint.getAllColumnNames().stream()
+                .filter(name -> !tableColumnNames.contains(name))
+                .collect(Collectors.toSet());
+
+        if (!constraint.getAllColumnNames().stream().allMatch(tableColumnNames::contains)) {
+            String message = String.format(
+                    "Received invalid request requesting for columns: %s that is not available in this table: %s",
+                    invalidColumnNames.stream().collect(Collectors.joining(",")),
+                    getName()
+            );
+            LOG.error(message);
+            throw new RuntimeException(message);
+        }
+
         return getAvailability().getAvailableIntervals(new PhysicalDataSourceConstraint(constraint, getSchema()));
     }
 

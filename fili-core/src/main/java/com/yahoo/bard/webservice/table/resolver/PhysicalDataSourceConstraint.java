@@ -29,10 +29,7 @@ public class PhysicalDataSourceConstraint extends DataSourceConstraint {
     ) {
         super(dataSourceConstraint);
 
-        Set<String> schemaColumnNames = physicalTableSchema.getColumnNames();
-
         this.allColumnPhysicalNames = dataSourceConstraint.getAllColumnNames().stream()
-                .filter(schemaColumnNames::contains)
                 .map(physicalTableSchema::getPhysicalColumnName)
                 .collect(Collectors.collectingAndThen(Collectors.toSet(), Collections::unmodifiableSet));
     }

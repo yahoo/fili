@@ -148,12 +148,6 @@ public class MetricUnionAvailability implements Availability {
 
     @Override
     public SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint constraint) {
-
-        // If there are columns requested that are not configured on this table
-        if (constraint.getAllColumnPhysicalNames().size() != constraint.getAllColumnNames().size()) {
-            return new SimplifiedIntervalList();
-        }
-
         return new SimplifiedIntervalList(
                 constructSubConstraint(constraint).entrySet().stream()
                         .map(entry -> entry.getKey().getAvailableIntervals(entry.getValue()))

@@ -23,30 +23,25 @@ class PhysicalDataSourceConstraintSpec extends Specification {
                 ['columnThree', 'columnFour', 'columnFive'] as Set,
                 [] as Set,
                 [] as Set,
-                ['columnOne', 'columnTwo', 'columnThree', 'columnFour', 'columnFive'] as Set,
+                ['columnOne', 'columnTwo', 'columnThree', 'columnFour'] as Set,
                 [:]
         )
 
-        physicalTableSchema = new PhysicalTableSchema(Mock(ZonedTimeGrain), [new Column('columnOne'), new Column('columnThree'), new Column('columnFour'), new Column('columnFive')], ['columnOne': 'column_one', 'columnTwo': 'column_two'])
+        physicalTableSchema = new PhysicalTableSchema(Mock(ZonedTimeGrain), [new Column('columnOne'), new Column('columnTwo'), new Column('columnThree'), new Column('columnFour')], ['columnOne': 'column_one', 'columnTwo': 'column_two'])
         physicalDataSourceConstraint = new PhysicalDataSourceConstraint(dataSourceConstraint, physicalTableSchema)
-    }
-
-    def "physical data source constraint filters out columns not in the given schema"() {
-        expect:
-        !physicalDataSourceConstraint.getAllColumnPhysicalNames().contains('column_two')
     }
 
     def "physical data source constraint maps to physical name correctly even if mapping does not exist"() {
         expect:
-        physicalDataSourceConstraint.getAllColumnPhysicalNames() == ['column_one', 'columnThree', 'columnFour', 'columnFive'] as Set
+        physicalDataSourceConstraint.getAllColumnPhysicalNames() == ['column_one', 'column_two', 'columnThree', 'columnFour'] as Set
     }
 
     def "withMetricIntersection correctly intersects metricNames and allPhysicalColumnNames with the provided metrics"() {
         given:
-        PhysicalDataSourceConstraint subConstraint = physicalDataSourceConstraint.withMetricIntersection(['columnThree', 'columnFour'] as Set)
+        PhysicalDataSourceConstraint subConstraint = physicalDataSourceConstraint.withMetricIntersection(['columnFour'] as Set)
 
         expect:
-        subConstraint.getMetricNames() == ['columnThree', 'columnFour'] as Set
-        subConstraint.withMetricIntersection(['columnThree', 'columnFour'] as Set).getAllColumnPhysicalNames() == ['column_one', 'columnThree', 'columnFour'] as Set
+        subConstraint.getMetricNames() == ['columnFour'] as Set
+        subConstraint.withMetricIntersection(['columnFour'] as Set).getAllColumnPhysicalNames() == ['column_one', 'column_two', 'columnFour'] as Set
     }
 }
