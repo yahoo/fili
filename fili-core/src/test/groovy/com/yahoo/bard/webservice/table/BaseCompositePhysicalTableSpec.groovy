@@ -4,29 +4,11 @@ package com.yahoo.bard.webservice.table
 
 import com.yahoo.bard.webservice.data.config.names.TableName
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
+import com.yahoo.bard.webservice.table.availability.Availability
 
 import spock.lang.Specification
 
-class MetricUnionCompositeTableSpec extends Specification {
-    TableName tableName
-
-    def setup() {
-        tableName =  TableName.of("table1")
-    }
-
-    def "Constructor throws illegal argument exception on empty physical tables"() {
-        when:
-        MetricUnionCompositeTable metricUnionCompositeTable = new MetricUnionCompositeTable(
-                tableName,
-                [] as Set,
-                [] as Set,
-                [:]
-        )
-
-        then:
-        IllegalArgumentException illegalArgumentException = thrown()
-        illegalArgumentException.message == 'At least 1 physical table needs to be provided in order to calculate coarsest time grain for table1'
-    }
+class BaseCompositePhysicalTableSpec extends Specification {
 
     def "verifyGrainSatisfiesAllTables throws illegal argument exception on non-mutually satisfying grain among physical tables"() {
         given:
@@ -50,7 +32,7 @@ class MetricUnionCompositeTableSpec extends Specification {
         physicalTable2.getSchema() >> schema2
 
         when:
-        MetricUnionCompositeTable.verifyGrainSatisfiesAllTables(coarsestTimeGrain, [physicalTable1, physicalTable2] as Set, tableName)
+        MetricUnionCompositeTable.verifyGrainSatisfiesAllTables(coarsestTimeGrain, [physicalTable1, physicalTable2] as Set, TableName.of("table1"))
 
         then:
         IllegalArgumentException illegalArgumentException = thrown()

@@ -9,6 +9,10 @@ Current
 -------
 ### Added:
 
+- [BaseCompositePhysicalTable](https://github.com/yahoo/fili/pull/242)
+    * `ConcretePhysicalTable` provides common operations, such as validating coarsest ZonedTimeGrain, for composite
+    tables.
+
 - [Add Reciprocal `satisfies()` relationship complementing `satisfiedBy()` on Granularity](https://github.com/yahoo/fili/issues/222)
 
 - [MetricUnionAvailability and MetricUnionCompositeTable](https://github.com/yahoo/fili/pull/193)
