@@ -5,9 +5,6 @@ package com.yahoo.bard.webservice.table;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.table.availability.MetricUnionAvailability;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Map;
 import java.util.Set;
 
@@ -54,7 +51,6 @@ import javax.validation.constraints.NotNull;
  *
  */
 public class MetricUnionCompositeTable extends BaseCompositePhysicalTable {
-    private static final Logger LOG = LoggerFactory.getLogger(MetricUnionCompositeTable.class);
 
     /**
      * Constructor.
