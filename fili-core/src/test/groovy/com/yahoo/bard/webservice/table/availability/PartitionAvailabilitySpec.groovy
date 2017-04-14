@@ -38,8 +38,8 @@ class PartitionAvailabilitySpec extends Specification{
     @Unroll
     def "getDataSourceNames returns #expected from #dataSourceNames1 and #dataSourceNames2"() {
         given:
-        availability1.getDataSourceNames() >> Sets.newHashSet(dataSourceNames1.collect{it -> TableName.of(it)})
-        availability2.getDataSourceNames() >> Sets.newHashSet(dataSourceNames2.collect{it -> TableName.of(it)})
+        availability1.getDataSourceNames() >> (dataSourceNames1.collect{TableName.of(it)} as Set)
+        availability2.getDataSourceNames() >> (dataSourceNames2.collect{TableName.of(it)} as Set)
 
         partitionAvailability = new PartitionAvailability(
                 [availability1, availability2] as Set,
@@ -64,12 +64,11 @@ class PartitionAvailabilitySpec extends Specification{
         column1 = new Column('col1')
         column2 = new Column(column2Name)
 
-        availability1.getAllAvailableIntervals() >> [
-                (column1): intervallist1.collect{it -> new Interval(it)}
-        ]
-        availability2.getAllAvailableIntervals() >> [
-                (column2): intervallist2.collect{it -> new Interval(it)}
-        ]
+        availability1.getDataSourceNames() >> ([TableName.of('source1')] as Set)
+        availability2.getDataSourceNames() >> ([TableName.of('source2')] as Set)
+
+        availability1.getAllAvailableIntervals() >> [(column1): intervallist1.collect{new Interval(it)}]
+        availability2.getAllAvailableIntervals() >> [(column2): intervallist2.collect{new Interval(it)}]
 
         partitionAvailability = new PartitionAvailability(
                 [availability1, availability2] as Set,
@@ -84,9 +83,9 @@ class PartitionAvailabilitySpec extends Specification{
 
         where:
         column2Name | intervallist1              | intervallist2                                      | expected                                                           | caseDescription
-        'col2'      | []                         | []                                                 | [:]                                                                | "different empty columns"
-        'col1'      | []                         | []                                                 | [:]                                                                | "the same empty columns"
-        'col2'      | ['2018-01-01/2018-02-01']  | []                                                 | [col1: ['2018-01-01/2018-02-01']]                                  | "different columns with one column being empty"
+        'col2'      | []                         | []                                                 | [col1:[], col2: []]                                                | "different empty columns"
+        'col1'      | []                         | []                                                 | [col1:[]]                                                          | "the same empty columns"
+        'col2'      | ['2018-01-01/2018-02-01']  | []                                                 | [col1: ['2018-01-01/2018-02-01'], col2: []]                        | "different columns with one column being empty"
         'col1'      | ['2018-01-01/2018-02-01']  | []                                                 | [col1: ['2018-01-01/2018-02-01']]                                  | "the same columns with one column being empty"
         'col2'      | ['2018-01-01/2018-02-01']  | ['2018-01-01/2018-02-01']                          | [col1: ['2018-01-01/2018-02-01'], col2: ['2018-01-01/2018-02-01']] | "different columns with same list of intervals"
         'col1'      | ['2018-01-01/2018-02-01']  | ['2018-01-01/2018-02-01']                          | [col1: ['2018-01-01/2018-02-01']]                                  | "the same columns with same list of intervals"
@@ -98,12 +97,11 @@ class PartitionAvailabilitySpec extends Specification{
         column1 = new Column('col1')
         column2 = new Column('col2')
 
-        availability1.getAllAvailableIntervals() >> [
-                (column1): ['2018-01-01/2018-02-01']
-        ]
-        availability2.getAllAvailableIntervals() >> [
-                (column2): ['2018-01-01/2018-02-01']
-        ]
+        availability1.getDataSourceNames() >> ([TableName.of('source1')] as Set)
+        availability2.getDataSourceNames() >> ([TableName.of('source2')] as Set)
+
+        availability1.getAllAvailableIntervals() >> [(column1): ['2018-01-01/2018-02-01']]
+        availability2.getAllAvailableIntervals() >> [(column2): ['2018-01-01/2018-02-01']]
 
         partitionAvailability = new PartitionAvailability(
                 [availability1, availability2] as Set,
@@ -119,8 +117,12 @@ class PartitionAvailabilitySpec extends Specification{
         !actual.containsKey(column2)
     }
 
+    @Unroll
     def "getAvailableIntervals returns intervals in intersection when intervals have #reason"() {
         given:
+        availability1.getDataSourceNames() >> ([TableName.of('source1')] as Set)
+        availability2.getDataSourceNames() >> ([TableName.of('source2')] as Set)
+
         availability1.getAvailableIntervals(_ as DataSourceConstraint) >> new SimplifiedIntervalList(
                 availableIntervals1.collect{it -> new Interval(it)} as Set
         )
@@ -128,8 +130,8 @@ class PartitionAvailabilitySpec extends Specification{
                 availableIntervals2.collect{it -> new Interval(it)} as Set
         )
 
-        Function<DataSourceConstraint, Set<Availability>> partitionFunction = Mock(Function.class)
-        partitionFunction.apply(_ as DataSourceConstraint) >> Sets.newHashSet(availability1, availability2)
+        Function<DataSourceConstraint, Set<Availability>> partitionFunction = Mock(Function)
+        partitionFunction.apply(_ as DataSourceConstraint) >> ([availability1, availability2] as Set)
 
         partitionAvailability = new PartitionAvailability(
                 [availability1, availability2] as Set,
@@ -154,6 +156,26 @@ class PartitionAvailabilitySpec extends Specification{
         ['2017-01-01/2017-02-01'] | ['2017-01-15/2017-02-01'] | ['2017-01-15/2017-02-01'] | "full front overlap (0/10, 5/10)"
         ['2017-01-01/2017-02-01'] | ['2017-01-01/2017-01-15'] | ['2017-01-01/2017-01-15'] | "full back overlap (0/10, 0/5)"
         ['2017-01-01/2017-02-01'] | ['2017-01-15/2017-01-25'] | ['2017-01-15/2017-01-25'] | "fully contain (0/10, 3/9)"
+    }
 
+    def "getAvailableIntervals returns intervals of availability that is provided by partition function only"() {
+        given:
+        availability1.getDataSourceNames() >> ([TableName.of('source1')] as Set)
+        availability2.getDataSourceNames() >> ([TableName.of('source2')] as Set)
+        
+        availability1.getAvailableIntervals(_ as DataSourceConstraint) >> new SimplifiedIntervalList([new Interval('2017-01-01/2017-02-01')] as Set)
+        availability2.getAvailableIntervals(_ as DataSourceConstraint) >> new SimplifiedIntervalList([new Interval('2018-01-01/2018-02-01')] as Set)
+
+        Function<DataSourceConstraint, Set<Availability>> partitionFunction = Mock(Function)
+        partitionFunction.apply(_ as DataSourceConstraint) >> ([availability1] as Set)
+
+        partitionAvailability = new PartitionAvailability(
+                [availability1, availability2] as Set,
+                Collections.emptySet(),
+                partitionFunction
+        )
+
+        expect:
+        partitionAvailability.getAvailableIntervals(Mock(DataSourceConstraint)) == new SimplifiedIntervalList([new Interval('2017-01-01/2017-02-01')] as Set)
     }
 }

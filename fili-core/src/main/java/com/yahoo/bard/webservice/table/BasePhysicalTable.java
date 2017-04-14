@@ -132,7 +132,7 @@ public abstract class BasePhysicalTable implements PhysicalTable {
             throw new IllegalArgumentException("At least 1 physical table needs to be provided");
         }
 
-        GranularityComparator granularityComparator = new GranularityComparator();
+        GranularityComparator granularityComparator = GranularityComparator.getInstance();
 
         // sort tables by <tt>ZonedTimeGrain</tt> in increasing order
         List<PhysicalTable> sortedTables = physicalTables.stream()

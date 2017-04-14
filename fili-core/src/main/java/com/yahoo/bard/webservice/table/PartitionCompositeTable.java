@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.table;
 
 import com.yahoo.bard.webservice.data.config.names.TableName;
+import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.table.availability.Availability;
 import com.yahoo.bard.webservice.table.availability.PartitionAvailability;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
@@ -15,21 +16,23 @@ import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 
 /**
- * An implementation of <tt>BasePhysicalTable</tt> backed by partition availability.
+ * An implementation of <tt>BaseCompositePhysicalTable</tt> backed by partition availability.
  */
-public class PartitionCompositeTable extends BasePhysicalTable {
+public class PartitionCompositeTable extends BaseCompositePhysicalTable {
     /**
      * Constructor.
      *
      * @param name  Name of the physical table as TableName, also used as fact table name
+     * @param timeGrain  The time grain of the table. The time grain has to satisfy all grains of the tables
      * @param columns  The columns for this table
-     * @param physicalTables  A set of <tt>PhysicalTable</tt>s
+     * @param physicalTables  A set of PhysicalTables that are put together under this table. The
+     * tables shall have zoned time grains that all satisfy the provided timeGrain
      * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
-     * @param partitionFunction  A function that transform a DataSourceConstraint to a set of
-     * Availabilities
+     * @param partitionFunction  A function that transform a DataSourceConstraint to a set of Availabilities
      */
     public PartitionCompositeTable(
             @NotNull TableName name,
+            @NotNull ZonedTimeGrain timeGrain,
             @NotNull Set<Column> columns,
             @NotNull Set<PhysicalTable> physicalTables,
             @NotNull Map<String, String> logicalToPhysicalColumnNames,
@@ -37,8 +40,9 @@ public class PartitionCompositeTable extends BasePhysicalTable {
     ) {
         super(
                 name,
-                getCoarsestTimeGrain(physicalTables),
+                timeGrain,
                 columns,
+                physicalTables,
                 logicalToPhysicalColumnNames,
                 new PartitionAvailability(
                         physicalTables.stream()

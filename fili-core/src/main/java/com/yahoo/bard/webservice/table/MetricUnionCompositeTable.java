@@ -12,7 +12,7 @@ import java.util.Set;
 import javax.validation.constraints.NotNull;
 
 /**
- * An implementation of <tt>BasePhysicalTable</tt> backed by metric union availability.
+ * An implementation of <tt>BaseCompositePhysicalTable</tt> backed by metric union availability.
  * <p>
  * The composite table puts metric columns of different tables together so that we can
  * query different metric columns from different tables at the same time.
