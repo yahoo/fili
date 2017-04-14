@@ -12,7 +12,7 @@ import com.yahoo.bard.webservice.table.ConcretePhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 
 import java.util.Collections;
-import java.util.Optional;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -37,24 +37,39 @@ public class ConcretePhysicalTableDefinition extends PhysicalTableDefinition {
         super(name, timeGrain, metricNames, dimensionConfigs);
     }
 
+    /**
+     * Define a physical table with provided logical to physical column name mappings.
+     *
+     * @param name  The table name
+     * @param timeGrain  The zoned time grain
+     * @param metricNames  The Set of metric names on the table
+     * @param dimensionConfigs  The dimension configurations
+     * @param logicalToPhysicalNames  A map from logical column names to physical column names
+     */
+    public ConcretePhysicalTableDefinition(
+            TableName name,
+            ZonedTimeGrain timeGrain,
+            Set<FieldName> metricNames,
+            Set<? extends DimensionConfig> dimensionConfigs,
+            Map<String, String> logicalToPhysicalNames
+
+    ) {
+        super(name, timeGrain, metricNames, dimensionConfigs, logicalToPhysicalNames);
+    }
+
     @Override
     public Set<TableName> getDependentTableNames() {
         return Collections.emptySet();
     }
 
     @Override
-    public Optional<PhysicalTable> build(
-            ResourceDictionaries dictionaries,
-            DataSourceMetadataService metadataService
-    ) {
-        return Optional.of(
-                new ConcretePhysicalTable(
+    public PhysicalTable build(ResourceDictionaries dictionaries, DataSourceMetadataService metadataService) {
+        return new ConcretePhysicalTable(
                         getName(),
                         getTimeGrain(),
                         buildColumns(dictionaries.getDimensionDictionary()),
                         getLogicalToPhysicalNames(),
                         metadataService
-                )
-        );
+                );
     }
 }

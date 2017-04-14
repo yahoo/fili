@@ -14,12 +14,15 @@ import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -28,6 +31,7 @@ import java.util.stream.Stream;
  * Common configurations necessary to build a physical table.
  */
 public abstract class PhysicalTableDefinition {
+    private static final Logger LOG = LoggerFactory.getLogger(PhysicalTableDefinition.class);
 
     private final TableName name;
     private final ZonedTimeGrain timeGrain;
@@ -57,6 +61,29 @@ public abstract class PhysicalTableDefinition {
     }
 
     /**
+     * Constructor with provided logical to physical name mapping.
+     *
+     * @param name  Table name of the physical table
+     * @param timeGrain  Zoned time grain of the table
+     * @param metricNames  The Set of metric names on the table
+     * @param dimensionConfigs  Set of dimensions on the table as dimension configs
+     * @param logicalToPhysicalNames  A map from logical column names to physical column names
+     */
+    protected PhysicalTableDefinition(
+            TableName name,
+            ZonedTimeGrain timeGrain,
+            Set<FieldName> metricNames,
+            Set<? extends DimensionConfig> dimensionConfigs,
+            Map<String, String> logicalToPhysicalNames
+    ) {
+        this.name = name;
+        this.timeGrain = timeGrain;
+        this.metricNames = ImmutableSet.copyOf(metricNames);
+        this.dimensionConfigs = ImmutableSet.copyOf(dimensionConfigs);
+        this.logicalToPhysicalNames = ImmutableMap.copyOf(logicalToPhysicalNames);
+    }
+
+    /**
      * Get the set of physical tables required to build the current physical table.
      *
      * @return a set of physical table names
@@ -64,14 +91,14 @@ public abstract class PhysicalTableDefinition {
     public abstract Set<TableName> getDependentTableNames();
 
     /**
-     * Given a set of metric names and a data source metadata service, build the corresponding physical table.
+     * Given the resource dictionaries and a data source metadata service, build the corresponding physical table.
      *
      * @param dictionaries  Dictionary containing dimension dictionary and physical table dictionary
      * @param metadataService  Service containing column available interval information
      *
      * @return optional of the corresponding type of physical table, empty optional if could not be build.
      */
-    public abstract Optional<PhysicalTable> build(
+    public abstract PhysicalTable build(
             ResourceDictionaries dictionaries,
             DataSourceMetadataService metadataService
     );
@@ -111,8 +138,9 @@ public abstract class PhysicalTableDefinition {
                                 config -> {
                                     String physicalName = config.getPhysicalName();
                                     if (physicalName == null) {
-                                        throw new RuntimeException("No physical name found for dimension: "
-                                                + config.getApiName());
+                                        LOG.debug("No physical name found for dimension: "
+                                                + config.getApiName(), "using api name as physical name");
+                                        return config.getApiName();
                                     }
                                     return physicalName;
                                 }

@@ -86,7 +86,7 @@ Current
     * `PhysicalTableDefinition` now requires a `build` methods to be implemented that builds a physical table
     * `BaseTableLoader` now constructs physical tables by calling `build` method on `PhysicalTableDefinition`s in `buildPhysicalTablesWithDependency`
     * `buildDimensionSpanningTableGroup` method in `BaseTableLoader` now uses `loadPhysicalTablesWithDependency` instead of removed `loadPhysicalTables`
-    * `buildDimensionSpanningTableGroup` method in `BaseTableLoader` now does not take druid metric as arguments, instead `PhysicalTableDefinition` does
+    * `buildDimensionSpanningTableGroup` method in `BaseTableLoader` now does not take druid metrics as arguments, instead `PhysicalTableDefinition` does
 
 - [Fix to use physical name instead of logical name to retrieve available interval](https://github.com/yahoo/fili/pull/226)
     * `getAllAvailbleIntervals` in `ConcreteAvailability` no longer filters out un-configured columns, instead table's `getAllAvailbleIntervals` does

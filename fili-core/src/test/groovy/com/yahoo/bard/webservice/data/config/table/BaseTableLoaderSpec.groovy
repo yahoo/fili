@@ -67,23 +67,20 @@ class BaseTableLoaderSpec extends Specification {
         }
 
         @Override
-        Optional<PhysicalTable> build(
+        PhysicalTable build(
                 ResourceDictionaries dictionaries,
                 DataSourceMetadataService metadataService
         ) {
             if (!Objects.isNull(physicalTable)) {
-                return Optional.of(physicalTable)
+                return physicalTable
             }
-            return dictionaries.getPhysicalDictionary().containsKey(dependentTableName) ?
-                    Optional.of(
-                            new ConcretePhysicalTable(
-                                    TableName.of(getName().asName()),
-                                    DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC),
-                                    [] as Set,
-                                    [:],
-                                    metadataService
-                            )
-                    ) : Optional.empty()
+            return new ConcretePhysicalTable(
+                    TableName.of(getName().asName()),
+                    DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC),
+                    [] as Set,
+                    [:],
+                    metadataService
+            )
         }
     }
 
@@ -97,12 +94,12 @@ class BaseTableLoaderSpec extends Specification {
     Set<TableName> tableNames
     Set<PhysicalTableDefinition> allDependentDefinitions
 
-    PhysicalTableDefinition definition1
-    PhysicalTableDefinition definition2
-    PhysicalTableDefinition definition3
-    PhysicalTableDefinition definition4
-    PhysicalTableDefinition definition5
-    PhysicalTableDefinition definition6
+    PhysicalTableDefinition dependentDefinition1
+    PhysicalTableDefinition satisfiedDefinition2
+    PhysicalTableDefinition dependentDefinition3
+    PhysicalTableDefinition selfDependentDefinition4
+    PhysicalTableDefinition circularDependentDefinition5
+    PhysicalTableDefinition circularDependentDefinition6
 
     PhysicalTable physicalTable
     PhysicalTableSchema physicalTableSchema
@@ -114,7 +111,7 @@ class BaseTableLoaderSpec extends Specification {
         metricNames = TestDruidMetricName.getByLogicalTable(SHAPES)
         physDefs = TestPhysicalTableDefinitionUtils.buildShapeTableDefinitions(new TestDimensions(), metricNames)
         dimNames = TestApiDimensionName.getByLogicalTable(SHAPES)
-        tableNames = physDefs.stream().map({it -> it.getName()}).collect(Collectors.toSet())
+        tableNames = physDefs.collect {it.name} as Set
 
         dims = dimNames.collect {
             name -> new KeyValueStoreDimension(TestDimensions.buildStandardDimensionConfig(name))
@@ -128,14 +125,14 @@ class BaseTableLoaderSpec extends Specification {
         physicalTable.getTableName() >> TableName.of('definition2')
         physicalTable.getSchema() >> physicalTableSchema
 
-        definition1 = new SimpleDependencyPhysicalTableDefinition('definition1', 'definition2')
-        definition2 = new SimpleDependencyPhysicalTableDefinition('definition2', physicalTable)
-        definition3 = new SimpleDependencyPhysicalTableDefinition('definition3', 'definition1')
-        definition4 = new SimpleDependencyPhysicalTableDefinition('definition4', 'definition4')
-        definition5 = new SimpleDependencyPhysicalTableDefinition('definition5', 'definition6')
-        definition6 = new SimpleDependencyPhysicalTableDefinition('definition6', 'definition5')
+        dependentDefinition1 = new SimpleDependencyPhysicalTableDefinition('definition1', 'definition2')
+        satisfiedDefinition2 = new SimpleDependencyPhysicalTableDefinition('definition2', physicalTable)
+        dependentDefinition3 = new SimpleDependencyPhysicalTableDefinition('definition3', 'definition1')
+        selfDependentDefinition4 = new SimpleDependencyPhysicalTableDefinition('definition4', 'definition4')
+        circularDependentDefinition5 = new SimpleDependencyPhysicalTableDefinition('definition5', 'definition6')
+        circularDependentDefinition6 = new SimpleDependencyPhysicalTableDefinition('definition6', 'definition5')
 
-        allDependentDefinitions = [definition1, definition2, definition3, definition4, definition5, definition6]
+        allDependentDefinitions = [dependentDefinition1, satisfiedDefinition2, dependentDefinition3, selfDependentDefinition4, circularDependentDefinition5, circularDependentDefinition6]
 
     }
 
@@ -165,12 +162,12 @@ class BaseTableLoaderSpec extends Specification {
 
         then:
         dicts.physicalDictionary.size() == 6
-        group.physicalTables.stream().map({it.getTableName()}).collect(Collectors.toSet()) as Set == tableNames
+        group.physicalTables.collect {it.getTableName()} as Set == tableNames
     }
 
     def "loading physical tables with dependency loads all satisfied dependency physical tables"() {
         given:
-        Set<TableName> currentTableNames = [definition1.getName(), definition2.getName(), definition3.getName()]
+        Set<TableName> currentTableNames = [dependentDefinition1.name, satisfiedDefinition2.name, dependentDefinition3.name]
 
         when:
         TableGroup group = loader.buildDimensionSpanningTableGroup(
@@ -182,12 +179,12 @@ class BaseTableLoaderSpec extends Specification {
 
         then:
         dicts.physicalDictionary.size() == 3
-        group.physicalTables.stream().map({ it.getTableName() }).collect(Collectors.toSet()) == currentTableNames
+        group.physicalTables.collect {it.getTableName()} as Set == currentTableNames
     }
 
     def "loading a physical table with dependency outside of the current table group will be loaded successfully"() {
         given:
-        Set<TableName> currentTableNames = [definition2.getName(), definition3.getName()]
+        Set<TableName> currentTableNames = [satisfiedDefinition2.name, dependentDefinition3.name]
 
         when:
         TableGroup group = loader.buildDimensionSpanningTableGroup(
@@ -199,17 +196,17 @@ class BaseTableLoaderSpec extends Specification {
 
         then:
         dicts.physicalDictionary.size() == 3
-        group.physicalTables.stream().map({ it.getTableName() }).collect(Collectors.toSet()) == currentTableNames
+        group.physicalTables.collect { it.getTableName() } as Set == currentTableNames
     }
 
     def "unsatisfied dependency physical table definition loading will throw an exception"() {
         given:
-        Set<TableName> currentTableNames = [definition2.getName(), definition3.getName()]
+        Set<TableName> currentTableNames = [satisfiedDefinition2.name, dependentDefinition3.name]
 
         when:
         loader.buildDimensionSpanningTableGroup(
                 currentTableNames,
-                [definition2, definition3] as Set,
+                [satisfiedDefinition2, dependentDefinition3] as Set,
                 dicts,
                 apiNames
         )
@@ -221,7 +218,7 @@ class BaseTableLoaderSpec extends Specification {
 
     def "circular dependency physical table definition loading will throw an exception"() {
         given:
-        Set<TableName> currentTableNames = [definition1.getName(), definition2.getName(), definition3.getName(), definition5.getName(), definition6.getName()]
+        Set<TableName> currentTableNames = [dependentDefinition1.name, satisfiedDefinition2.name, dependentDefinition3.name, circularDependentDefinition5.name, circularDependentDefinition6.name]
 
         when:
         loader.buildDimensionSpanningTableGroup(
@@ -238,7 +235,7 @@ class BaseTableLoaderSpec extends Specification {
 
     def "self dependency physical table definition loading will throw an exception"() {
         given:
-        Set<TableName> currentTableNames = [definition1.getName(), definition2.getName(), definition3.getName(), definition4.getName()]
+        Set<TableName> currentTableNames = [dependentDefinition1.name, satisfiedDefinition2.name, dependentDefinition3.name, selfDependentDefinition4.name]
 
         when:
         loader.buildDimensionSpanningTableGroup(
@@ -270,7 +267,7 @@ class BaseTableLoaderSpec extends Specification {
 
         then:
         dicts.physicalDictionary.size() == 6
-        group1.physicalTables.stream().map({it.getTableName()}).collect(Collectors.toSet()) as Set == tableNames
-        group2.physicalTables.stream().map({it.getTableName()}).collect(Collectors.toSet()) as Set == tableNames
+        group1.physicalTables.collect {it.getTableName()} as Set == tableNames
+        group2.physicalTables.collect {it.getTableName()} as Set == tableNames
     }
 }
