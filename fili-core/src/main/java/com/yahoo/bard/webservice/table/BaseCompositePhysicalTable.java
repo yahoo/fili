@@ -5,7 +5,6 @@ package com.yahoo.bard.webservice.table;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.table.availability.Availability;
-import com.yahoo.bard.webservice.util.IntervalUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,21 +19,22 @@ import javax.validation.constraints.NotNull;
  */
 public class BaseCompositePhysicalTable extends BasePhysicalTable {
 
-    private static final Logger LOG = LoggerFactory.getLogger(MetricUnionCompositeTable.class);
+    private static final Logger LOG = LoggerFactory.getLogger(BaseCompositePhysicalTable.class);
 
     /**
      * Constructor.
      *
      * @param name  Name that represents set of fact table names that are put together under this table
+     * @param timeGrain  The time grain of the table. The time grain has to satisfy all grains of the tables
      * @param columns  The columns for this table
      * @param physicalTables  A set of PhysicalTables that are put together under this table. The
-     * tables will be used to compute common/coarsest time grain among them. The PhysicalTables needs to have mutually
-     * satisfying time grains in order to calculate the common/coarsest time grain.
+     * tables shall have zoned time grains that all satisfy the provided timeGrain
      * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
      * @param availability  The Availability of this table
      */
     public BaseCompositePhysicalTable(
             @NotNull TableName name,
+            @NotNull ZonedTimeGrain timeGrain,
             @NotNull Set<Column> columns,
             @NotNull Set<PhysicalTable> physicalTables,
             @NotNull Map<String, String> logicalToPhysicalColumnNames,
@@ -42,15 +42,7 @@ public class BaseCompositePhysicalTable extends BasePhysicalTable {
     ) {
         super(
                 name,
-                IntervalUtils.getCoarsestTimeGrain(physicalTables).orElseThrow(() -> {
-                    String message = String.format(
-                            "At least 1 physical table needs to be provided in order to calculate " +
-                                    "coarsest time grain for %s",
-                            name.asName()
-                    );
-                    LOG.error(message);
-                    return new IllegalArgumentException(message);
-                }),
+                timeGrain,
                 columns,
                 logicalToPhysicalColumnNames,
                 availability
@@ -77,9 +69,9 @@ public class BaseCompositePhysicalTable extends BasePhysicalTable {
         if (!physicalTables.stream()
                 .map(PhysicalTable::getSchema)
                 .map(PhysicalTableSchema::getTimeGrain)
-                .allMatch(grain -> grain.satisfiedBy(coarsestTimeGrain))) {
-            String message = String.format("There is no mutually satisfying grain among: %s for current table " +
-                            "%s",
+                .allMatch(coarsestTimeGrain::satisfies)) {
+            String message = String.format(
+                    "There is no mutually satisfying grain among: %s for current table %s",
                     physicalTables,
                     name.asName()
             );

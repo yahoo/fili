@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.table;
 
 import com.yahoo.bard.webservice.data.config.names.TableName;
+import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.table.availability.MetricUnionAvailability;
 
 import java.util.Map;
@@ -56,21 +57,22 @@ public class MetricUnionCompositeTable extends BaseCompositePhysicalTable {
      * Constructor.
      *
      * @param name  Name that represents set of fact table names joined together
+     * @param timeGrain  The time grain of the table. The time grain has to satisfy all grains of the tables
      * @param columns  The columns for this table
-     * @param physicalTables  A set of <tt>PhysicalTable</tt>s whose same metric schema is to be joined together. The
-     * tables will be used to construct MetricUnionAvailability, as well as to compute common/coarsest time grain among
-     * them. The <tt>PhysicalTable</tt>s needs to have mutually satisfying time grains in order to calculate the
-     * common/coarsest time grain.
+     * @param physicalTables  A set of PhysicalTables that are put together under this table. The
+     * tables shall have zoned time grains that all satisfy the provided timeGrain
      * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
      */
     public MetricUnionCompositeTable(
             @NotNull TableName name,
+            @NotNull ZonedTimeGrain timeGrain,
             @NotNull Set<Column> columns,
             @NotNull Set<PhysicalTable> physicalTables,
             @NotNull Map<String, String> logicalToPhysicalColumnNames
     ) {
         super(
                 name,
+                timeGrain,
                 columns,
                 physicalTables,
                 logicalToPhysicalColumnNames,
