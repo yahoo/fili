@@ -69,6 +69,9 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
 
     /**
      * Queries druid for all datasources and loads all of the discovered tables.
+     *
+     * The expected response is:
+     * ["wikiticker"]
      */
     private void loadAllDatasources() {
         queryDruid(rootNode -> {
@@ -84,6 +87,20 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
 
     /**
      * Load a specific table with all reported metrics, dimensions, and timegrains.
+     * The expected response is:
+     * {
+     *      ...
+     *      "segments": [
+     *          {
+     *              "dataSource": "wikiticker",
+     *              "interval": "2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z",
+     *              ...,
+     *              "dimensions": "channel,cityName,comment,...",
+     *              "metrics": "count,added,deleted,delta,user_unique",
+     *              ...
+     *          }
+     *      ]
+     * }
      *
      * @param table The TableConfig to be loaded with queries against druid.
      */
@@ -101,6 +118,13 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
     /**
      * Add all metrics from druid query to the {@link TableConfig}.
      *
+     * The expected response is:
+     * {
+     *      ...,
+     *      "metrics": "count,added,deleted,delta,user_unique",
+     *      ...
+     * }
+     *
      * @param table  The TableConfig to be loaded.
      * @param segmentJson The JsonNode containing a list of metrics.
      */
@@ -113,6 +137,13 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
     /**
      * Add all dimensions from druid query to the {@link TableConfig}.
      *
+     * The expected response is:
+     * {
+     *      ...,
+     *      "dimensions": "channel,cityName,comment,...",
+     *      ...
+     * }
+     *
      * @param table  The TableConfig to be loaded.
      * @param segmentJson The JsonNode containing a list of dimensions.
      */
@@ -124,6 +155,12 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
 
     /**
      * Find a valid timegrain from druid query to the {@link TableConfig}.
+     *
+     * {
+     *      ...,
+     *      "interval": "2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z",
+     *      ...
+     * }
      *
      * @param tableConfig The TableConfig to be loaded.
      * @param segmentJson The JsonNode containing a time interval.
