@@ -79,6 +79,19 @@ public interface Granularity {
      */
     boolean satisfiedBy(Granularity that);
 
+
+    /**
+     * Determine the reciprocal relationship to satisfiedBy, that this granularity fulfils an aggregate of another
+     * granularity.
+     *
+     * @param that The granularity to be compared against.
+     *
+     * @return true if that granularity can be expressed in terms of elements of this granularity
+     */
+    default boolean satisfies(Granularity that) {
+        return that.satisfiedBy(this);
+    }
+
     /**
      * Determine if all intervals align with a granularity.
      *

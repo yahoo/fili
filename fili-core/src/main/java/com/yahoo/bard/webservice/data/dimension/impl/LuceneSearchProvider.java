@@ -574,13 +574,15 @@ public class LuceneSearchProvider implements SearchProvider {
         try {
             ScoreDoc[] hits;
             try (TimedPhase timer = RequestLog.startTiming("QueryingLucene")) {
-                hits = getPageOfData(
+                TopDocs hitDocs = getPageOfData(
                         luceneIndexSearcher,
                         null,
                         query,
                         perPage,
                         requestedPageNumber
-                ).scoreDocs;
+                );
+                hits = hitDocs.scoreDocs;
+                documentCount = hitDocs.totalHits;
                 if (hits.length == 0) {
                     if (requestedPageNumber == 1) {
                         return new SinglePagePagination<>(Collections.emptyList(), paginationParameters, 0);
@@ -615,12 +617,6 @@ public class LuceneSearchProvider implements SearchProvider {
                         .map(dimension::findDimensionRowByKeyValue)
                         .collect(Collectors.toCollection(TreeSet::new));
             }
-
-            documentCount = luceneIndexSearcher.count(query); //throws the caught IOException
-        } catch (IOException e) {
-            LOG.error("Unable to get count of matched rows for the query " + query.toString() +
-                    " with " + paginationParameters.toString());
-            throw new RuntimeException(e);
         } finally {
             lock.readLock().unlock();
         }

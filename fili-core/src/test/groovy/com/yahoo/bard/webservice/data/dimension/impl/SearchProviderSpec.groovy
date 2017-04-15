@@ -16,6 +16,7 @@ import com.yahoo.bard.webservice.data.dimension.KeyValueStore
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.SearchProvider
 import com.yahoo.bard.webservice.table.LogicalTable
+import com.yahoo.bard.webservice.util.Pagination
 import com.yahoo.bard.webservice.web.ApiFilter
 import com.yahoo.bard.webservice.web.FilterOperation
 import com.yahoo.bard.webservice.web.util.PaginationParameters
@@ -501,12 +502,36 @@ abstract class SearchProviderSpec<T extends SearchProvider> extends Specificatio
         searchProvider.findFilteredDimensionRowsPaged([newDescription] as Set, paginationParameters).getPageOfData() == [dimensionRow2new] as List
     }
 
+    def "The pagination information contains the correct number of results, but only sends the desired page"() {
+        setup: "Given a filter that will filter down to three rows"
+        /* Expected rows, not necessarily in this order:
+                name: "hawk", description: "this is a raptor"
+                name: "eagle", description: "this is a raptor"
+                name: "kumquat", description: "this is not an animal"
+        */
+        Set<ApiFilter> filters = [
+                buildFilter("animal|desc-startswith[this]"),
+                buildFilter("animal|desc-notin[this is an owl]")
+        ]
+        and: "We get the second page, where each page has two rows (so the last page has to have only one result)"
+        PaginationParameters parameters = new PaginationParameters(2, 2)
+
+        when: "We query the search provider"
+        Pagination<DimensionRow> resultsPage = searchProvider.findFilteredDimensionRowsPaged(filters, parameters)
+
+        then: "We get only the last page of results (which has one value)"
+        resultsPage.getPageOfData().size() == 1
+
+        and: "The pagination metadata includes the correct number of total results"
+        resultsPage.numResults == 3
+    }
+
     /**
      * Checks that this search provider's indices have been cleared.
      *
      * @return true if the search provider's indices have been cleared properly, false otherwise
      */
-    abstract boolean indicesHaveBeenCleared();
+    abstract boolean indicesHaveBeenCleared()
 
     ApiFilter buildFilter(String filterQuery) {
         new ApiFilter(filterQuery, spaceIdDictionary)
