@@ -72,13 +72,13 @@
 
         <version.fili>0.8-SNAPSHOT</version.fili>
 
-        <version.slf4j>1.7.21</version.slf4j>
+        <version.slf4j>1.7.25</version.slf4j>
         <version.servlet>3.1.0</version.servlet>
         <version.jersey>2.24</version.jersey>
-        <version.hk2>2.5.0-b05</version.hk2>
-        <version.metrics>3.1.2</version.metrics>
-        <version.logback>1.1.7</version.logback>
-        <version.lucene>5.3.0</version.lucene>
+        <version.hk2>2.5.0-b36</version.hk2>
+        <version.metrics>3.2.2</version.metrics>
+        <version.logback>1.2.3</version.logback>
+        <version.lucene>6.5.0</version.lucene>
         <version.jackson>2.6.2</version.jackson>
         <version.groovy>2.4.5</version.groovy>
         <version.guava>21.0</version.guava>

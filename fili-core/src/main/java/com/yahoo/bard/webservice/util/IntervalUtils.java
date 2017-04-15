@@ -4,10 +4,7 @@ package com.yahoo.bard.webservice.util;
 
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
-import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
-import com.yahoo.bard.webservice.table.PhysicalTable;
-import com.yahoo.bard.webservice.table.PhysicalTableSchema;
 import com.yahoo.bard.webservice.table.resolver.GranularityComparator;
 
 import org.joda.time.DateTime;
@@ -214,20 +211,5 @@ public class IntervalUtils {
         return intervalSets.stream().flatMap(Collection::stream)
                 .map(Interval::getStart)
                 .reduce(Utils::getMinValue);
-    }
-
-    /**
-     * Returns the coarsest ZonedTimeGrain among a set of PhysicalTables.
-     *
-     * @param physicalTables  A set of PhysicalTables among which the coarsest ZonedTimeGrain is to be found.
-     *
-     * @return the coarsest ZonedTimeGrain among a set of PhysicalTables
-     */
-    public static Optional<ZonedTimeGrain> getCoarsestTimeGrain(Collection<PhysicalTable> physicalTables) {
-        return physicalTables.stream()
-                .sorted(COMPARATOR)
-                .findFirst()
-                .map(PhysicalTable::getSchema)
-                .map(PhysicalTableSchema::getTimeGrain);
     }
 }
