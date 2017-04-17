@@ -9,7 +9,7 @@ Current
 -------
 ### Added:
 
-- [Add Permissive Concrete Physical Table Definition]()
+- [Add Permissive Concrete Physical Table Definition](https://github.com/yahoo/fili/pull/212)
     * Added `PermissiveConcretePhysicalTableDefinition` for defining a `PermissiveConcretePhysicalTable`
 
 - [Fix to use physical name instead of logical name to retrieve available interval](https://github.com/yahoo/fili/pull/226)

@@ -103,6 +103,7 @@ public class TestTableLoader extends BaseTableLoader {
         for (TestLogicalTableName logicalTableName : TestLogicalTableName.values()) {
             TableGroup tableGroup = buildDimensionSpanningTableGroup(
                     TestApiMetricName.getByLogicalTable(logicalTableName),
+                    TestDruidMetricName.getByLogicalTable(logicalTableName),
                     logicalTableTableDefinitions.get(logicalTableName),
                     dictionaries
             );

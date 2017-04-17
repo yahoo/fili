@@ -11,7 +11,7 @@ import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.PermissiveConcretePhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 
-import java.util.Optional;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -36,19 +36,38 @@ public class PermissiveConcretePhysicalTableDefinition extends ConcretePhysicalT
         super(name, timeGrain, metricNames, dimensionConfigs);
     }
 
+    /**
+     * Define a permissive concrete physical table with provided logical to physical column name mappings.
+     *
+     * @param name  The table name
+     * @param timeGrain  The zoned time grain
+     * @param metricNames  The Set of metric names on the table
+     * @param dimensionConfigs  The dimension configurations
+     * @param logicalToPhysicalNames  A map from logical column names to physical column names
+     */
+    public PermissiveConcretePhysicalTableDefinition(
+            TableName name,
+            ZonedTimeGrain timeGrain,
+            Set<FieldName> metricNames,
+            Set<? extends DimensionConfig> dimensionConfigs,
+            Map<String, String> logicalToPhysicalNames
+
+    ) {
+        super(name, timeGrain, metricNames, dimensionConfigs, logicalToPhysicalNames);
+    }
+
+
     @Override
-    public Optional<PhysicalTable> build(
+    public PhysicalTable build(
             ResourceDictionaries dictionaries,
             DataSourceMetadataService metadataService
     ) {
-        return Optional.of(
-                new PermissiveConcretePhysicalTable(
-                        getName(),
-                        getTimeGrain(),
-                        buildColumns(dictionaries.getDimensionDictionary()),
-                        getLogicalToPhysicalNames(),
-                        metadataService
-                )
+        return new PermissiveConcretePhysicalTable(
+                getName(),
+                getTimeGrain(),
+                buildColumns(dictionaries.getDimensionDictionary()),
+                getLogicalToPhysicalNames(),
+                metadataService
         );
     }
 }
