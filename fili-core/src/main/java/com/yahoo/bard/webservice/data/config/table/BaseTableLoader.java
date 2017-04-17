@@ -177,7 +177,7 @@ public abstract class BaseTableLoader implements TableLoader {
      * <p>
      * note: current physical table not loaded into physical table dictionary, only dependencies will
      *
-     * @param currentTableName  Iterator for the mutable definition
+     * @param currentTableName  Table name of the table being built
      * @param availableTableDefinitions  A map of table name to table definition that are available globally
      * @param dictionaries  Contains both dimension and physical table dictionary for building and dependency resolution
      *
