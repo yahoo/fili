@@ -252,7 +252,7 @@ public abstract class BaseTableLoader implements TableLoader {
      *
      * @return The physical table created
      *
-     * @deprecated use buildPhysicalTableWithDependency instead, which supports building table with dependencies
+     * @deprecated use buildPhysicalTableWithDependency instead, which also supports building table with dependencies
      */
     @Deprecated
     protected PhysicalTable loadPhysicalTable(

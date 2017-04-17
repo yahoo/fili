@@ -85,7 +85,7 @@ Current
     * `PhysicalTableDefinition` is now an abstract class, construct using `ConcretePhysicalTableDefinition` instead
     * `PhysicalTableDefinition` now requires a `build` methods to be implemented that builds a physical table
     * `BaseTableLoader` now constructs physical tables by calling `build` method on `PhysicalTableDefinition`s in `buildPhysicalTablesWithDependency`
-    * `buildDimensionSpanningTableGroup` method in `BaseTableLoader` now uses `loadPhysicalTablesWithDependency` instead of removed `loadPhysicalTables`
+    * `buildDimensionSpanningTableGroup` method in `BaseTableLoader` now uses `loadPhysicalTablesWithDependency` instead of deprecated `loadPhysicalTables`
     * `buildDimensionSpanningTableGroup` method in `BaseTableLoader` now does not take druid metrics as arguments, instead `PhysicalTableDefinition` does
 
 - [Fix to use physical name instead of logical name to retrieve available interval](https://github.com/yahoo/fili/pull/226)
@@ -223,6 +223,9 @@ Current
 
 ### Deprecated:
 
+- [Refactor Physical Table Definition and Update Table Loader](https://github.com/yahoo/fili/pull/207)
+    * Deprecated `loadPhysicalTable` in `BaseTableLoader`, use `loadPhysicalTablesWithDependency` instead
+
 - [CompositePhsyicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
     * Deprecated `setAvailability` method on `BasePhysicalTable` to discourage using it for testing, should refine testing strategy to avoid it
 
@@ -269,7 +272,6 @@ Current
 
 - [Refactor Physical Table Definition and Update Table Loader](https://github.com/yahoo/fili/pull/207)
     * Removed deprecated `PhysicalTableDefinition` constructor that takes an `ZonlessTimeGrain`, use `ZonedTimeGrain` instead
-    * Removed `loadPhysicalTable` in `BaseTableLoader`, use `loadPhysicalTablesWithDependency` instead
     * Removed `buildPhysicalTable` in `BaseTableLoader`, building table logic is pushed into `PhysicalTableDefinition`
 
 - [CompositePhsyicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
