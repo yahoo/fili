@@ -46,20 +46,22 @@ class AvailabilityTestingUtils extends Specification {
                 .each { _, ConcretePhysicalTable table ->
                     Map<Column, Set<Interval>> metricIntervals = table.getSchema().getColumns(MetricColumn.class)
                             .collectEntries {
-                                    [(it): intervalSet]
-                            }
-                    Map<Column, Set<Interval>> dimensionIntervals = table.getSchema().getColumns(DimensionColumn.class)
-                            .collectEntries {
-                                    [(it): intervalSet]
+                                    [(it.getName()): intervalSet]
                             }
 
-                    Map<Column, Set<Interval>> allIntervals = Stream.concat(
+                    // Below code assumes unique one-to-one mapping from logical to physical name in testing resource
+                    Map<String, Set<Interval>> dimensionIntervals = table.getSchema().getColumns(DimensionColumn.class)
+                            .collectEntries {
+                                    [(table.getSchema().getPhysicalColumnName(it.getName())): intervalSet]
+                            }
+
+                    Map<String, Set<Interval>> allIntervals = Stream.concat(
                             dimensionIntervals.entrySet().stream(),
                             metricIntervals.entrySet().stream()
-                    ).collect(Collectors.toMap({it.key}, { it.value }))
+                    ).collect(Collectors.toMap({ it.key }, { it.value }))
 
             // set new cache
-                    table.setAvailability(new ConcreteAvailability(table.getTableName(), table.getSchema().getColumns(), new TestDataSourceMetadataService(allIntervals)))
+                    table.setAvailability(new ConcreteAvailability(table.getTableName(), new TestDataSourceMetadataService(allIntervals)))
                 }
     }
 }

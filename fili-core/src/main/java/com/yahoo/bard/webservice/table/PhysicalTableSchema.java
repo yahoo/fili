@@ -14,7 +14,7 @@ import javax.validation.constraints.NotNull;
 /**
  * The schema for a physical table.
  */
-public class PhysicalTableSchema extends BaseSchema implements Schema {
+public class PhysicalTableSchema extends BaseSchema {
 
     private final ZonedTimeGrain timeGrain;
     private final Map<String, String> logicalToPhysicalColumnNames;

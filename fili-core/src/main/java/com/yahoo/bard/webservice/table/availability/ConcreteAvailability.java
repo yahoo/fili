@@ -4,12 +4,9 @@ package com.yahoo.bard.webservice.table.availability;
 
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
-import com.yahoo.bard.webservice.table.Column;
-import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
+import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
-
-import com.google.common.collect.ImmutableSet;
 
 import org.joda.time.Interval;
 
@@ -18,8 +15,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
@@ -29,29 +24,23 @@ import javax.validation.constraints.NotNull;
 public class ConcreteAvailability implements Availability {
 
     private final TableName name;
-    private final Set<Column> columns;
     private final DataSourceMetadataService metadataService;
 
-    private final Set<String> columnNames;
     private final Set<TableName> dataSourceNames;
 
     /**
      * Constructor.
      *
      * @param tableName  The name of the table and data source associated with this Availability
-     * @param columns  The columns associated with the table and availability
      * @param metadataService  A service containing the datasource segment data
      */
     public ConcreteAvailability(
             @NotNull TableName tableName,
-            @NotNull Set<Column> columns,
             @NotNull DataSourceMetadataService metadataService
     ) {
         this.name = tableName;
-        this.columns = ImmutableSet.copyOf(columns);
         this.metadataService = metadataService;
 
-        this.columnNames = columns.stream().map(Column::getName).collect(Collectors.toSet());
         this.dataSourceNames = Collections.singleton(name);
     }
 
@@ -61,59 +50,33 @@ public class ConcreteAvailability implements Availability {
     }
 
     @Override
-    public Map<Column, List<Interval>> getAllAvailableIntervals() {
-
-        Map<String, List<Interval>> allAvailableIntervals = getAvailableIntervalsByTable();
-        return columns.stream()
-                .collect(
-                        Collectors.toMap(
-                                Function.identity(),
-                                column -> new SimplifiedIntervalList(
-                                        allAvailableIntervals.getOrDefault(column.getName(), Collections.emptyList())
-                                )
-                        )
-                );
+    public Map<String, List<Interval>> getAllAvailableIntervals() {
+        return metadataService.getAvailableIntervalsByTable(name);
     }
 
     @Override
-    public SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraint) {
+    public SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint constraint) {
 
-        Set<String> requestColumns = constraint.getAllColumnNames().stream()
-                .filter(columnNames::contains)
-                .collect(Collectors.toSet());
+        Set<String> requestColumns = constraint.getAllColumnPhysicalNames();
 
         if (requestColumns.isEmpty()) {
             return new SimplifiedIntervalList();
         }
 
-        Map<String, List<Interval>> allAvailableIntervals = getAvailableIntervalsByTable();
+        Map<String, List<Interval>> allAvailableIntervals = getAllAvailableIntervals();
 
         // Need to ensure requestColumns is not empty in order to prevent returning null by reduce operation
         return new SimplifiedIntervalList(
                 requestColumns.stream()
-                        .map(columnName -> allAvailableIntervals.getOrDefault(columnName, Collections.emptyList()))
+                        .map(physicalName -> allAvailableIntervals.getOrDefault(
+                                physicalName,
+                                new SimplifiedIntervalList()
+                        ))
                         .map(intervals -> (Collection<Interval>) intervals)
                         .reduce(null, IntervalUtils::getOverlappingSubintervals)
         );
     }
 
-    /**
-     * Retrieves the most up to date column to available interval map from data source metadata service.
-     *
-     * @return map of column name to list of avialable intervals
-     */
-    protected Map<String, List<Interval>> getAvailableIntervalsByTable() {
-        return metadataService.getAvailableIntervalsByTable(name);
-    }
-
-    /**
-     * Returns the configured columns in their String representation.
-     *
-     * @return the configured columns in their String representation
-     */
-    protected Set<String> getColumnNames() {
-        return columnNames;
-    }
 
     /**
      * Returns the name of the table and data source associated with this Availability.
@@ -126,11 +89,8 @@ public class ConcreteAvailability implements Availability {
 
     @Override
     public String toString() {
-        return String.format("ConcreteAvailability with table name = %s and Configured columns = [%s]",
-                name.asName(),
-                columns.stream()
-                        .map(Column::getName)
-                        .collect(Collectors.joining(", "))
+        return String.format("ConcreteAvailability for table: %s",
+                name.asName()
         );
     }
 }

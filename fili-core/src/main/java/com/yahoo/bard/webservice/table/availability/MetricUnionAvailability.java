@@ -6,7 +6,7 @@ import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.table.PhysicalTable;
-import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
+import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.util.Utils;
@@ -19,7 +19,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.AbstractMap;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -65,51 +64,38 @@ public class MetricUnionAvailability implements Availability {
     private static final Logger LOG = LoggerFactory.getLogger(MetricUnionAvailability.class);
 
     private final Set<TableName> dataSourceNames;
-    private final Set<MetricColumn> metricColumns;
-    private final Map<Availability, Set<MetricColumn>> availabilitiesToAvailableColumns;
+    private final Set<String> metricNames;
+    private final Map<Availability, Set<String>> availabilitiesToMetricNames;
 
     /**
      * Constructor.
      *
      * @param physicalTables  A set of <tt>PhysicalTable</tt>s whose Dimension schemas are the same and
-     * the Metric Schemas are fully different(i.e. no overlap) on every table
+     * the Metric columns are unique(i.e. no overlap) on every table
      * @param columns  The set of all configured columns, including dimension columns, that metric union availability
      * will respond with
      */
     public MetricUnionAvailability(@NotNull Set<PhysicalTable> physicalTables, @NotNull Set<Column> columns) {
-        metricColumns = Utils.getSubsetByType(columns, MetricColumn.class);
+        metricNames = Utils.getSubsetByType(columns, MetricColumn.class).stream()
+                .map(MetricColumn::getName)
+                .collect(Collectors.toSet());
 
-        // get a map from availability to its available metric columns intersected with configured metric columns
-        // i.e. metricColumns
-        availabilitiesToAvailableColumns = physicalTables.stream()
+        // Construct a map of availability to its assigned metric
+        // by intersecting its underlying datasource metrics with table configured metrics
+        availabilitiesToMetricNames = physicalTables.stream()
                 .map(PhysicalTable::getAvailability)
                 .collect(
                         Collectors.toMap(
                                 Function.identity(),
                                 availability ->
                                         Sets.intersection(
-                                                Utils.getSubsetByType(
-                                                        availability.getAllAvailableIntervals().keySet(),
-                                                        MetricColumn.class
-                                                ),
-                                                metricColumns
+                                                availability.getAllAvailableIntervals().keySet(),
+                                                metricNames
                                         )
                         )
                 );
 
-        // validate metric uniqueness such that
-        // each table's underlying datasource schema don't have repeated metric column
-        Map<MetricColumn, Set<Availability>> duplicates = getDuplicateValues(availabilitiesToAvailableColumns);
-        if (!duplicates.isEmpty()) {
-            String message = String.format(
-                    "While constructing MetricUnionAvailability, Metric columns are not unique - %s",
-                    duplicates
-            );
-            LOG.error(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        dataSourceNames = availabilitiesToAvailableColumns.keySet().stream()
+        dataSourceNames = availabilitiesToMetricNames.keySet().stream()
                 .map(Availability::getDataSourceNames)
                 .flatMap(Set::stream)
                 .collect(
@@ -118,6 +104,18 @@ public class MetricUnionAvailability implements Availability {
                                 Collections::unmodifiableSet
                         )
                 );
+
+        // validate metric uniqueness such that
+        // each table's underlying datasource schema don't have repeated metric column
+        if (!isMetricUnique(availabilitiesToMetricNames)) {
+                String message = String.format(
+                        "Metric columns must be unique across the metric union data sources, but duplicate was found " +
+                                "across the following data sources: %s",
+                        getDataSourceNames().stream().map(TableName::asName).collect(Collectors.joining(", "))
+                );
+                LOG.error(message);
+                throw new RuntimeException(message);
+        }
     }
 
     @Override
@@ -126,17 +124,16 @@ public class MetricUnionAvailability implements Availability {
     }
 
     /**
-     * Combines and returns intervals of all availabilities' metric columns.
+     * Retrieve all available intervals for all columns across all the underlying datasources.
      * <p>
-     * Intervals of the same metric column are associated with the same metric column key. Overlapping intervals under
-     * the same metric column key are collapsed into single interval.
+     * Available intervals for the same columns are unioned into a <tt>SimplifiedIntervalList</tt>
      *
      * @return a map of column to all of its available intervals in union
      */
     @Override
-    public Map<Column, List<Interval>> getAllAvailableIntervals() {
+    public Map<String, List<Interval>> getAllAvailableIntervals() {
         // get all availabilities take available interval maps from all availabilities and merge the maps together
-        return availabilitiesToAvailableColumns.keySet().stream()
+        return availabilitiesToMetricNames.keySet().stream()
                 .map(Availability::getAllAvailableIntervals)
                 .map(Map::entrySet)
                 .flatMap(Set::stream)
@@ -150,9 +147,19 @@ public class MetricUnionAvailability implements Availability {
     }
 
     @Override
-    public SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraints) {
+    public SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint constraint) {
+
+        Set<String> dataSourceMetricNames = availabilitiesToMetricNames.values().stream()
+                .flatMap(Set::stream)
+                .collect(Collectors.toSet());
+
+        // If the table is configured with a column that is not supported by the underlying data sources
+        if (!constraint.getMetricNames().stream().allMatch(dataSourceMetricNames::contains)) {
+            return new SimplifiedIntervalList();
+        }
+
         return new SimplifiedIntervalList(
-                constructSubConstraint(constraints).entrySet().stream()
+                constructSubConstraint(constraint).entrySet().stream()
                         .map(entry -> entry.getKey().getAvailableIntervals(entry.getValue()))
                         .map(simplifiedIntervalList -> (Set<Interval>) new HashSet<>(simplifiedIntervalList))
                         .reduce(null, IntervalUtils::getOverlappingSubintervals)
@@ -165,59 +172,25 @@ public class MetricUnionAvailability implements Availability {
                 dataSourceNames.stream()
                         .map(TableName::asName)
                         .collect(Collectors.joining(", ")),
-                metricColumns.stream()
-                        .map(Column::getName)
+                metricNames.stream()
                         .collect(Collectors.joining(", "))
         );
     }
 
     /**
-     * Returns duplicate values of <tt>MetricColumn</tt>s in a map of <tt>Availability</tt>
-     * to a set of <tt>MetricColumn</tt>'s contained in that <tt>Availability</tt>.
-     * <p>
-     * The return value is a map of duplicate <tt>MetricColumn</tt> to all <tt>Availabilities</tt>' that contains
-     * this <tt>MetricColumn</tt>
-     * <p>
-     * For example, when a map of {availability1: [metricCol1, metricCol2], availability2: [metricCol1]} is passed to
-     * this method, the method returns {metricCol1: [availability1, availability2]}
+     * Validates whether the metric columns are unique across each of the underlying datasource.
      *
-     * @param availabilityToAvailableColumns  A map from <tt>Availability</tt> to set of <tt>MetricColumn</tt>
+     * @param availabilityToMetricNames  A map from <tt>Availability</tt> to set of <tt>MetricColumn</tt>
      * contained in that <tt>Availability</tt>
      *
-     * @return duplicate values of <tt>MetricColumn</tt>s
+     * @return true if metric is unique across data sources, false otherwise
      */
-    private static Map<MetricColumn, Set<Availability>> getDuplicateValues(
-            Map<Availability, Set<MetricColumn>> availabilityToAvailableColumns
-    ) {
-        Map<MetricColumn, Set<Availability>> metricColumnSetMap = new HashMap<>();
+    private static boolean isMetricUnique(Map<Availability, Set<String>> availabilityToMetricNames) {
+        Set<String> uniqueMetrics = new HashSet<>();
 
-        for (Map.Entry<Availability, Set<MetricColumn>> entry : availabilityToAvailableColumns.entrySet()) {
-            Availability availability = entry.getKey();
-            for (MetricColumn metricColumn : entry.getValue()) {
-                metricColumnSetMap.put(
-                        metricColumn,
-                        Sets.union(
-                                metricColumnSetMap.getOrDefault(metricColumn, new HashSet<>()),
-                                Sets.newHashSet(availability)
-                        )
-                );
-            }
-        }
-
-        // For example, when a map of {availability1: [metricCol1, metricCol2], availability2: [metricCol1]} is
-        // passed to this method, at this point,
-        // "metricColumnSetMap" =  {metricCol1: [availability1, availability2], {metricCol2: [availability1]}}
-        // The duplicate metric columns is "metricCol1" which can be selected by knowing that the value of "metricCol1"
-        // has a collection whose size is greater than 1; with that, we return
-        // {metricCol1: [availability1, availability2]}
-        return metricColumnSetMap.entrySet().stream()
-                .filter(entry -> entry.getValue().size() > 1)
-                .collect(
-                        Collectors.toMap(
-                                Map.Entry::getKey,
-                                Map.Entry::getValue
-                        )
-                );
+        return availabilityToMetricNames.values().stream()
+                .flatMap(Set::stream)
+                .allMatch(uniqueMetrics::add);
     }
 
     /**
@@ -233,8 +206,10 @@ public class MetricUnionAvailability implements Availability {
      *
      * @return A map from <tt>Availability</tt> to <tt>DataSourceConstraint</tt> with non-empty metric names
      */
-    private Map<Availability, DataSourceConstraint> constructSubConstraint(DataSourceConstraint constraint) {
-        return availabilitiesToAvailableColumns.entrySet().stream()
+    private Map<Availability, PhysicalDataSourceConstraint> constructSubConstraint(
+            PhysicalDataSourceConstraint constraint
+    ) {
+        return availabilitiesToMetricNames.entrySet().stream()
                 .map(entry ->
                         new AbstractMap.SimpleEntry<>(
                                 entry.getKey(),
@@ -242,11 +217,6 @@ public class MetricUnionAvailability implements Availability {
                         )
                 )
                 .filter(entry -> !entry.getValue().getMetricNames().isEmpty())
-                .collect(
-                        Collectors.toMap(
-                                Map.Entry::getKey,
-                                Map.Entry::getValue
-                        )
-                );
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 }

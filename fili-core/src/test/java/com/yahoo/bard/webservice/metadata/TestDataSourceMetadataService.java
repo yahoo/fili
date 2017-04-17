@@ -3,7 +3,6 @@
 package com.yahoo.bard.webservice.metadata;
 
 import com.yahoo.bard.webservice.data.config.names.TableName;
-import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import org.joda.time.Interval;
@@ -26,10 +25,10 @@ public class TestDataSourceMetadataService extends DataSourceMetadataService {
      *
      * @param testData interval data to be injected into this test metadata service with key as column
      */
-    public TestDataSourceMetadataService(Map<Column, Set<Interval>> testData) {
+    public TestDataSourceMetadataService(Map<String, Set<Interval>> testData) {
         super();
         this.testAvailableIntervals = testData.entrySet().stream()
-                .collect(Collectors.toMap(entry -> entry.getKey().getName(), Map.Entry::getValue));
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     /**
