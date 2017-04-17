@@ -99,16 +99,14 @@ public abstract class BasePhysicalTable implements PhysicalTable {
     public SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraint) {
 
         Set<String> tableColumnNames = getSchema().getColumnNames();
-        Set<String> invalidColumnNames = constraint.getAllColumnNames().stream()
-                .filter(name -> !tableColumnNames.contains(name))
-                .collect(Collectors.toSet());
 
+        // Validate that the requested columns are answerable by the current table
         if (!constraint.getAllColumnNames().stream().allMatch(tableColumnNames::contains)) {
             String message = String.format(
                     "Received invalid request requesting for columns: %s that is not available in this table: %s",
-                    invalidColumnNames.stream().collect(Collectors.joining(",")),
-                    getName()
-            );
+                    constraint.getAllColumnNames().stream()
+                            .filter(name -> !tableColumnNames.contains(name))
+                            .collect(Collectors.joining(",")), getName());
             LOG.error(message);
             throw new RuntimeException(message);
         }

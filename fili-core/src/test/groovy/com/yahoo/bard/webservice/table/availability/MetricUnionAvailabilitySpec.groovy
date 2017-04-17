@@ -252,4 +252,39 @@ class MetricUnionAvailabilitySpec extends Specification {
         ['2017-01-01/2017-02-01'] | ['2017-01-01/2017-01-15'] | ['2017-01-01/2017-01-15'] | "full back overlap (0/10, 0/5)"
         ['2017-01-01/2017-02-01'] | ['2017-01-15/2017-01-25'] | ['2017-01-15/2017-01-25'] | "fully contain (0/10, 3/9)"
     }
+
+    def "getAvailableIntervals returns empty availability if requesting a column on table that is not supported by the underlying data sources"() {
+        given:
+        availability1.getAllAvailableIntervals() >> [
+                (metric1): ['2018-01-01/2018-02-01']
+        ]
+        availability2.getAllAvailableIntervals() >> [
+                (metric2): ['2018-01-01/2018-02-01']
+        ]
+
+        availability1.getAvailableIntervals(_ as PhysicalDataSourceConstraint) >> new SimplifiedIntervalList(
+                [new Interval('2018-01-01/2018-02-01')]
+        )
+        availability2.getAvailableIntervals(_ as PhysicalDataSourceConstraint) >> new SimplifiedIntervalList(
+                [new Interval('2018-01-01/2018-02-01')]
+        )
+
+        metricUnionAvailability = new MetricUnionAvailability(physicalTables, [metricColumn1, metricColumn2] as Set)
+
+        DataSourceConstraint dataSourceConstraint = new DataSourceConstraint(
+                [] as Set,
+                [] as Set,
+                [] as Set,
+                [metric1, metric2, 'un_configured'] as Set,
+                [] as Set,
+                [] as Set,
+                [metric1, metric2, 'un_configured'] as Set,
+                [:]
+        )
+
+        PhysicalDataSourceConstraint physicalDataSourceConstraint = new PhysicalDataSourceConstraint(dataSourceConstraint, [metric1, metric2, 'un_configured'] as Set)
+
+        expect:
+        metricUnionAvailability.getAvailableIntervals(physicalDataSourceConstraint) == new SimplifiedIntervalList()
+    }
 }

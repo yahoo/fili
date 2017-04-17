@@ -88,7 +88,6 @@ class ConcretePhysicalTableSpec extends Specification {
         metricColumn2               | intervalSet3
     }
 
-    @Unroll
     def "Physical table getAvailableIntervals throws exception when requesting a column not on the table"() {
         given:
         DataSourceConstraint constraints = Mock(DataSourceConstraint)
