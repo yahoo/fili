@@ -24,11 +24,15 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR;
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MONTH;
 
 import com.yahoo.bard.webservice.data.config.dimension.TestDimensions;
+import com.yahoo.bard.webservice.data.config.names.FieldName;
+import com.yahoo.bard.webservice.data.config.names.TestDruidMetricName;
 import com.yahoo.bard.webservice.util.Utils;
 
 import org.joda.time.DateTimeZone;
 
+import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -40,14 +44,19 @@ public class TestPhysicalTableDefinitionUtils {
      * Build the hourly table definitions.
      *
      * @param testDimensions  Dimensions to build the tables with
+     * @param metricNames  The field name of metrics to build with
      *
      * @return the hourly table definitions
      */
-    public static LinkedHashSet<PhysicalTableDefinition> buildHourlyTableDefinitions(TestDimensions testDimensions) {
+    public static LinkedHashSet<PhysicalTableDefinition> buildHourlyTableDefinitions(
+            TestDimensions testDimensions,
+            Set<FieldName> metricNames
+    ) {
         return Utils.asLinkedHashSet(
-                new PhysicalTableDefinition(
+                new ConcretePhysicalTableDefinition(
                         HOURLY,
                         HOUR.buildZonedTimeGrain(DateTimeZone.UTC),
+                        new LinkedHashSet<>(Arrays.asList(TestDruidMetricName.values())),
                         testDimensions.getDimensionConfigurationsByApiName(OTHER)
                 )
         );
@@ -57,14 +66,19 @@ public class TestPhysicalTableDefinitionUtils {
      * Build the monthly table definitions.
      *
      * @param testDimensions  Dimensions to build the tables with
+     * @param metricNames  The field name of metrics to build with
      *
      * @return the monthly table definitions
      */
-    public static LinkedHashSet<PhysicalTableDefinition> buildMonthlyTableDefinitions(TestDimensions testDimensions) {
+    public static LinkedHashSet<PhysicalTableDefinition> buildMonthlyTableDefinitions(
+            TestDimensions testDimensions,
+            Set<FieldName> metricNames
+    ) {
         return Utils.asLinkedHashSet(
-                new PhysicalTableDefinition(
+                new ConcretePhysicalTableDefinition(
                         MONTHLY,
                         MONTH.buildZonedTimeGrain(DateTimeZone.UTC),
+                        new LinkedHashSet<>(Arrays.asList(TestDruidMetricName.values())),
                         testDimensions.getDimensionConfigurationsByApiName(OTHER)
                 )
         );
@@ -74,15 +88,17 @@ public class TestPhysicalTableDefinitionUtils {
      * Build hourly monthly table definitions.
      *
      * @param testDimensions  Dimensions to load in the tables
+     * @param metricNames  The field name of metrics to build with
      *
      * @return the hourly monthly table definitions
      */
     public static LinkedHashSet<PhysicalTableDefinition> buildHourlyMonthlyTableDefinitions(
-            TestDimensions testDimensions
+            TestDimensions testDimensions,
+            Set<FieldName> metricNames
     ) {
         return Stream.concat(
-                buildHourlyTableDefinitions(testDimensions).stream(),
-                buildMonthlyTableDefinitions(testDimensions).stream()
+                buildHourlyTableDefinitions(testDimensions, metricNames).stream(),
+                buildMonthlyTableDefinitions(testDimensions, metricNames).stream()
         ).collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
@@ -91,14 +107,19 @@ public class TestPhysicalTableDefinitionUtils {
      * Build the pet table definitions.
      *
      * @param testDimensions  Dimensions to build the tables with
+     * @param metricNames  The field name of metrics to build with
      *
      * @return the pet table definitions
      */
-    public static LinkedHashSet<PhysicalTableDefinition> buildPetTableDefinitions(TestDimensions testDimensions) {
+    public static LinkedHashSet<PhysicalTableDefinition> buildPetTableDefinitions(
+            TestDimensions testDimensions,
+            Set<FieldName> metricNames
+    ) {
         return Utils.asLinkedHashSet(
-                new PhysicalTableDefinition(
+                new ConcretePhysicalTableDefinition(
                         ALL_PETS,
                         DAY.buildZonedTimeGrain(DateTimeZone.UTC),
+                        metricNames,
                         testDimensions.getDimensionConfigurationsByApiName(BREED, SEX, SPECIES)
                 )
         );
@@ -108,39 +129,49 @@ public class TestPhysicalTableDefinitionUtils {
      * Build the shape table definitions.
      *
      * @param testDimensions  Dimensions to build the tables with
+     * @param metricNames  The field name of metrics to build with
      *
      * @return the shape table definitions
      */
-    public static LinkedHashSet<PhysicalTableDefinition> buildShapeTableDefinitions(TestDimensions testDimensions) {
+    public static LinkedHashSet<PhysicalTableDefinition> buildShapeTableDefinitions(
+            TestDimensions testDimensions,
+            Set<FieldName> metricNames
+    ) {
         return Utils.asLinkedHashSet(
-                new PhysicalTableDefinition(
+                new ConcretePhysicalTableDefinition(
                         ALL_SHAPES,
                         DAY.buildZonedTimeGrain(DateTimeZone.UTC),
+                        metricNames,
                         testDimensions.getDimensionConfigurationsByApiName(COLOR, SIZE, SHAPE, OTHER, MODEL)
                 ),
-                new PhysicalTableDefinition(
+                new ConcretePhysicalTableDefinition(
                         COLOR_SHAPES_HOURLY,
                         HOUR.buildZonedTimeGrain(DateTimeZone.UTC),
+                        metricNames,
                         testDimensions.getDimensionConfigurationsByApiName(COLOR)
                 ),
-                new PhysicalTableDefinition(
+                new ConcretePhysicalTableDefinition(
                         COLOR_SHAPES,
                         DAY.buildZonedTimeGrain(DateTimeZone.UTC),
+                        metricNames,
                         testDimensions.getDimensionConfigurationsByApiName(COLOR)
                 ),
-                new PhysicalTableDefinition(
+                new ConcretePhysicalTableDefinition(
                         COLOR_SHAPES_MONTHLY,
                         MONTH.buildZonedTimeGrain(DateTimeZone.UTC),
+                        metricNames,
                         testDimensions.getDimensionConfigurationsByApiName(COLOR)
                 ),
-                new PhysicalTableDefinition(
+                new ConcretePhysicalTableDefinition(
                         COLOR_SIZE_SHAPES,
                         DAY.buildZonedTimeGrain(DateTimeZone.UTC),
+                        metricNames,
                         testDimensions.getDimensionConfigurationsByApiName(COLOR, SIZE)
                 ),
-                new PhysicalTableDefinition(
+                new ConcretePhysicalTableDefinition(
                         COLOR_SIZE_SHAPE_SHAPES,
                         DAY.buildZonedTimeGrain(DateTimeZone.UTC),
+                        metricNames,
                         testDimensions.getDimensionConfigurationsByApiName(COLOR, SIZE, SHAPE)
                 )
         );
