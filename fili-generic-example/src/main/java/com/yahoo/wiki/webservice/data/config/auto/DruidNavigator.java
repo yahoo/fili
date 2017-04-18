@@ -26,6 +26,7 @@ import java.util.function.Supplier;
 
 /**
  * Searches for all datasources and their dimensions, metrics, and timegrains from druid.
+ * The first segment returned from a druid table's schema is used for configuration.
  */
 public class DruidNavigator implements Supplier<List<? extends DataSourceConfiguration>> {
     private static final Logger LOG = LoggerFactory.getLogger(DruidNavigator.class);
@@ -87,6 +88,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
 
     /**
      * Load a specific table with all reported metrics, dimensions, and timegrains.
+     * The schema from the first segment in druid's response is used for configuration.
      * The expected response is:
      * {
      *      ...
@@ -106,8 +108,13 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      */
     private void loadTable(TableConfig table) {
         String url = COORDINATOR_TABLES_PATH + table.getName() + "/?full";
+        String segmentsPath = "segments";
         queryDruid(rootNode -> {
-            JsonNode segments = rootNode.get("segments").get(0);
+            if (rootNode.get(segmentsPath).size() == 0) {
+                LOG.error("The segments list returned from {} was empty.", url);
+                throw new RuntimeException("Can't configure table without segment data.");
+            }
+            JsonNode segments = rootNode.get(segmentsPath).get(0);
             loadMetrics(table, segments);
             loadDimensions(table, segments);
             loadTimeGrains(table, segments);
