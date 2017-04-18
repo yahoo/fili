@@ -60,4 +60,12 @@ public class PermissiveAvailability extends ConcreteAvailability {
                 .flatMap(List::stream)
                 .collect(SimplifiedIntervalList.getCollector());
     }
+
+    @Override
+    public String toString() {
+        return String.format("PermissiveAvailability with table name = %s and Configured columns = [%s]",
+                getName().asName(),
+                getColumnNames()
+        );
+    }
 }
