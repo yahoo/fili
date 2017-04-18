@@ -91,7 +91,6 @@ public class GenericTableLoader extends BaseTableLoader {
             validGrains = getGranularities(dataSourceConfiguration);
         });
 
-
     }
 
     /**
