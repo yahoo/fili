@@ -40,7 +40,8 @@ class ClassScannerSpec extends Specification {
                  new DateTime(20000),
                  new Interval(1, 2),
                  Days.days(1),
-                 DateTimeZone.UTC
+                 DateTimeZone.UTC,
+                 Long.class // for class-type arguments
                 ])
     }
 
@@ -51,8 +52,8 @@ class ClassScannerSpec extends Specification {
     /**
      * Load all available classes under com.yahoo.bard.* that declare given method
      *
-     * @param method declared method to find
-     * @param parameterTypes parameter types for declared method
+     * @param method  declared method to find
+     * @param parameterTypes  parameter types for declared method
      * @return classes that match to be tested
      */
     static List<Class> getClassesDeclaring(String method, Class<?>... parameterTypes) {
