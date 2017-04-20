@@ -369,7 +369,9 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             }
 
             if (requestMapper != null) {
-                apiRequest = (DataApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
+                try (TimedPhase timer = RequestLog.startTiming("DataApiRequestMappers")) {
+                    apiRequest = (DataApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
+                }
             }
 
             // Build the query template
