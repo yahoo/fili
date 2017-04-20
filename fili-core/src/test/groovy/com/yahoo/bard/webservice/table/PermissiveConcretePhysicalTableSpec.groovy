@@ -31,6 +31,7 @@ class PermissiveConcretePhysicalTableSpec extends Specification {
     @Shared Interval leftAbuttingInterval
     @Shared Interval rightAbuttingInterval
     @Shared Interval disjointInterval
+    @Shared Interval invisibleInterval
 
     def setupSpec() {
         disjointIntervalColumn = new DimensionColumn(
@@ -48,17 +49,18 @@ class PermissiveConcretePhysicalTableSpec extends Specification {
         disjointInterval = new Interval("2018-01-01/2018-02-01")
         leftAbuttingInterval = new Interval("2017-01-01/2017-02-01")
         rightAbuttingInterval = new Interval("2017-02-01/2017-03-01")
+        invisibleInterval = new Interval("2016-01-01/2016-02-01")
 
         permissiveConcretePhysicalTable = new PermissiveConcretePhysicalTable(
                 TableName.of('test table'),
                 DAY.buildZonedTimeGrain(UTC),
                 [disjointIntervalColumn, leftAbuttingIntervalColumn, rightAbuttingIntervalColumn] as Set,
-                ['dimension': 'druidDim'],
+                [:],
                 new TestDataSourceMetadataService([
-                        (disjointIntervalColumn)     : [disjointInterval] as Set,
-                        (leftAbuttingIntervalColumn) : [leftAbuttingInterval] as Set,
-                        (rightAbuttingIntervalColumn): [rightAbuttingInterval] as Set,
-                        (new Column('ignored'))      : [new Interval('2010-01-01/2500-12-31')] as Set
+                        (disjointIntervalColumn.getName())     : [disjointInterval] as Set,
+                        (leftAbuttingIntervalColumn.getName()) : [leftAbuttingInterval] as Set,
+                        (rightAbuttingIntervalColumn.getName()): [rightAbuttingInterval] as Set,
+                        (new Column('invisible').getName())    : [invisibleInterval] as Set
                 ])
         )
     }
@@ -74,12 +76,11 @@ class PermissiveConcretePhysicalTableSpec extends Specification {
 
         where:
         allColumnNames                                                | expected
-        ["disjointIntervalColumn"]                                    | [disjointInterval, leftAbuttingInterval, rightAbuttingInterval] as Set
-        ["leftAbuttingIntervalColumn"]                                | [disjointInterval, leftAbuttingInterval, rightAbuttingInterval] as Set
-        ["rightAbuttingIntervalColumn"]                               | [disjointInterval, leftAbuttingInterval, rightAbuttingInterval] as Set
-        ["disjointIntervalColumn", "leftAbuttingIntervalColumn"]      | [disjointInterval, leftAbuttingInterval, rightAbuttingInterval] as Set
-        ["disjointIntervalColumn",  "rightAbuttingIntervalColumn"]    | [disjointInterval, leftAbuttingInterval, rightAbuttingInterval] as Set
-        ["leftAbuttingIntervalColumn", "rightAbuttingIntervalColumn"] | [disjointInterval, leftAbuttingInterval, rightAbuttingInterval] as Set
-
+        ["disjointIntervalColumn"]                                    | [invisibleInterval, disjointInterval, leftAbuttingInterval, rightAbuttingInterval] as Set
+        ["leftAbuttingIntervalColumn"]                                | [invisibleInterval, disjointInterval, leftAbuttingInterval, rightAbuttingInterval] as Set
+        ["rightAbuttingIntervalColumn"]                               | [invisibleInterval, disjointInterval, leftAbuttingInterval, rightAbuttingInterval] as Set
+        ["disjointIntervalColumn", "leftAbuttingIntervalColumn"]      | [invisibleInterval, disjointInterval, leftAbuttingInterval, rightAbuttingInterval] as Set
+        ["disjointIntervalColumn",  "rightAbuttingIntervalColumn"]    | [invisibleInterval, disjointInterval, leftAbuttingInterval, rightAbuttingInterval] as Set
+        ["leftAbuttingIntervalColumn", "rightAbuttingIntervalColumn"] | [invisibleInterval, disjointInterval, leftAbuttingInterval, rightAbuttingInterval] as Set
     }
 }

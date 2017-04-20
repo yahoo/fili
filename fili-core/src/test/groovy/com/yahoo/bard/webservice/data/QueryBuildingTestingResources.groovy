@@ -213,53 +213,53 @@ public class QueryBuildingTestingResources {
         TimeGrain utcHour = HOUR.buildZonedTimeGrain(UTC)
         TimeGrain utcDay = DAY.buildZonedTimeGrain(UTC)
 
-        volatileHourTable = new ConcretePhysicalTable("hour", HOUR.buildZonedTimeGrain(UTC), [d1, m1].collect{toColumn(it)}.toSet(), [:], metadataService)
-        volatileDayTable = new ConcretePhysicalTable("day", DAY.buildZonedTimeGrain(UTC), [d1, m1].collect{toColumn(it)}.toSet(), [:], metadataService)
+        volatileHourTable = new ConcretePhysicalTable("hour", HOUR.buildZonedTimeGrain(UTC), [d1, m1].collect{toColumn(it)} as Set, [:], metadataService)
+        volatileDayTable = new ConcretePhysicalTable("day", DAY.buildZonedTimeGrain(UTC), [d1, m1].collect{toColumn(it)} as Set, [:], metadataService)
 
-        t1h = new ConcretePhysicalTable("table1h", utcHour, [d1, d2, d3, m1, m2, m3].collect{toColumn(it)}.toSet(), ["ageBracket":"age_bracket"], metadataService)
-        t1d = new ConcretePhysicalTable("table1d", utcDay, [d1, d2, d3, m1, m2, m3].collect{toColumn(it)}.toSet(), ["ageBracket":"age_bracket"], metadataService)
-        t1hShort = new ConcretePhysicalTable("table1Short", utcHour, [d1, d2, m1, m2, m3].collect{toColumn(it)}.toSet(), [:], metadataService)
+        t1h = new ConcretePhysicalTable("table1h", utcHour, [d1, d2, d3, m1, m2, m3].collect{toColumn(it)} as Set, ["ageBracket":"age_bracket"], metadataService)
+        t1d = new ConcretePhysicalTable("table1d", utcDay, [d1, d2, d3, m1, m2, m3].collect{toColumn(it)} as Set, ["ageBracket":"age_bracket"], metadataService)
+        t1hShort = new ConcretePhysicalTable("table1Short", utcHour, [d1, d2, m1, m2, m3].collect{toColumn(it)} as Set, [:], metadataService)
 
-        t2h = new ConcretePhysicalTable("table2", utcHour, [d1, d2, d4, m1, m4, m5].collect{toColumn(it)}.toSet(), [:], metadataService)
-        t3d = new ConcretePhysicalTable("table3", utcDay, [d1, d2, d5, m6].collect{toColumn(it)}.toSet(), [:], metadataService)
+        t2h = new ConcretePhysicalTable("table2", utcHour, [d1, d2, d4, m1, m4, m5].collect{toColumn(it)} as Set, [:], metadataService)
+        t3d = new ConcretePhysicalTable("table3", utcDay, [d1, d2, d5, m6].collect{toColumn(it)} as Set, [:], metadataService)
 
-        tna1236d = new ConcretePhysicalTable("tableNA1236", utcDay, [d1, d2, d3, d6].collect{toColumn(it)}.toSet(),["ageBracket":"age_bracket"], metadataService)
-        tna1237d = new ConcretePhysicalTable("tableNA1237", utcDay, [d1, d2, d3, d7].collect{toColumn(it)}.toSet(), ["ageBracket":"age_bracket"], metadataService)
-        tna167d = new ConcretePhysicalTable("tableNA167", utcDay, [d1, d6, d7].collect{toColumn(it)}.toSet(), ["ageBracket":"age_bracket", "dim7":"dim_7"], metadataService)
-        tna267d = new ConcretePhysicalTable("tableNA267", utcDay, [d2, d6, d7].collect{toColumn(it)}.toSet(), ["dim7":"dim_7"], metadataService)
+        tna1236d = new ConcretePhysicalTable("tableNA1236", utcDay, [d1, d2, d3, d6].collect{toColumn(it)} as Set,["ageBracket":"age_bracket"], metadataService)
+        tna1237d = new ConcretePhysicalTable("tableNA1237", utcDay, [d1, d2, d3, d7].collect{toColumn(it)} as Set, ["ageBracket":"age_bracket"], metadataService)
+        tna167d = new ConcretePhysicalTable("tableNA167", utcDay, [d1, d6, d7].collect{toColumn(it)} as Set, ["ageBracket":"age_bracket", "dim7":"dim_7"], metadataService)
+        tna267d = new ConcretePhysicalTable("tableNA267", utcDay, [d2, d6, d7].collect{toColumn(it)} as Set, ["dim7":"dim_7"], metadataService)
 
-        t4h1 = new ConcretePhysicalTable("table4h1", utcHour, [d1, d2, m1, m2, m3].collect{toColumn(it)}.toSet(), [:], metadataService)
-        t4h2 = new ConcretePhysicalTable("table4h2", utcHour, [d1, d2, m1, m2, m3].collect{toColumn(it)}.toSet(), [:], metadataService)
-        t4d1 = new ConcretePhysicalTable("table4d1", utcDay, [d1, d2, m1, m2, m3].collect{toColumn(it)}.toSet(), [:], metadataService)
-        t4d2 = new ConcretePhysicalTable("table4d2", utcDay, [d1, d2, m1, m2, m3].collect{toColumn(it)}.toSet(), [:], metadataService)
+        t4h1 = new ConcretePhysicalTable("table4h1", utcHour, [d1, d2, m1, m2, m3].collect{toColumn(it)} as Set, [:], metadataService)
+        t4h2 = new ConcretePhysicalTable("table4h2", utcHour, [d1, d2, m1, m2, m3].collect{toColumn(it)} as Set, [:], metadataService)
+        t4d1 = new ConcretePhysicalTable("table4d1", utcDay, [d1, d2, m1, m2, m3].collect{toColumn(it)} as Set, [:], metadataService)
+        t4d2 = new ConcretePhysicalTable("table4d2", utcDay, [d1, d2, m1, m2, m3].collect{toColumn(it)} as Set, [:], metadataService)
 
-        Map<Column, Set<Interval>> availabilityMap1 = [:]
-        Map<Column, Set<Interval>> availabilityMap2 = [:]
+        Map<String, Set<Interval>> availabilityMap1 = [:]
+        Map<String, Set<Interval>> availabilityMap2 = [:]
 
         [d1, d2, m1, m2, m3].each {
-            availabilityMap1.put(toColumn(it), [interval1].toSet())
-            availabilityMap2.put(toColumn(it), [interval2].toSet())
+            availabilityMap1.put(toColumn(it).getName(), [interval1] as Set)
+            availabilityMap2.put(toColumn(it).getName(), [interval2] as Set)
         }
 
-        t4h1.setAvailability(new ConcreteAvailability(t4h1.getTableName(), t4h1.getSchema().getColumns(), new TestDataSourceMetadataService(availabilityMap1)))
-        t4d1.setAvailability(new ConcreteAvailability(t4d1.getTableName(), t4d1.getSchema().getColumns(), new TestDataSourceMetadataService(availabilityMap1)))
+        t4h1.setAvailability(new ConcreteAvailability(t4h1.getTableName(), new TestDataSourceMetadataService(availabilityMap1)))
+        t4d1.setAvailability(new ConcreteAvailability(t4d1.getTableName(), new TestDataSourceMetadataService(availabilityMap1)))
 
-        t5h = new ConcretePhysicalTable("table5d", utcHour, [d8, d9, d10, d11, d12, d13, m1].collect{toColumn(it)}.toSet(), [:], metadataService)
+        t5h = new ConcretePhysicalTable("table5d", utcHour, [d8, d9, d10, d11, d12, d13, m1].collect{toColumn(it)} as Set, [:], metadataService)
 
-        t4h2.setAvailability(new ConcreteAvailability(t4h2.getTableName(), t4h2.getSchema().getColumns(), new TestDataSourceMetadataService(availabilityMap2)))
-        t4d2.setAvailability(new ConcreteAvailability(t4d1.getTableName(), t4d1.getSchema().getColumns(), new TestDataSourceMetadataService(availabilityMap2)))
+        t4h2.setAvailability(new ConcreteAvailability(t4h2.getTableName(), new TestDataSourceMetadataService(availabilityMap2)))
+        t4d2.setAvailability(new ConcreteAvailability(t4d1.getTableName(), new TestDataSourceMetadataService(availabilityMap2)))
 
         setupPartialData()
 
-        tg1h = new TableGroup([t1h, t1d, t1hShort] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())}.toSet(), [d1].toSet())
-        tg1d = new TableGroup([t1d] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())}.toSet(), [d1].toSet())
-        tg1Short = new TableGroup([t1hShort] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())}.toSet(), [].toSet())
-        tg2h = new TableGroup([t2h] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())}.toSet(), [].toSet())
-        tg3d = new TableGroup([t3d] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())}.toSet(), [].toSet())
-        tg4h = new TableGroup([t1h, t2h] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())}.toSet(), [].toSet())
-        tg5h = new TableGroup([t2h, t1h] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())}.toSet(), [].toSet())
-        tg6h = new TableGroup([t5h] as LinkedHashSet, [].toSet(), [].toSet())
-        tgna = new TableGroup([tna1236d, tna1237d, tna167d, tna267d] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())}.toSet(), [].toSet())
+        tg1h = new TableGroup([t1h, t1d, t1hShort] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())} as Set, [d1] as Set)
+        tg1d = new TableGroup([t1d] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())} as Set, [d1] as Set)
+        tg1Short = new TableGroup([t1hShort] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())} as Set, [] as Set)
+        tg2h = new TableGroup([t2h] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())} as Set, [] as Set)
+        tg3d = new TableGroup([t3d] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())} as Set, [] as Set)
+        tg4h = new TableGroup([t1h, t2h] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())} as Set, [] as Set)
+        tg5h = new TableGroup([t2h, t1h] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())} as Set, [] as Set)
+        tg6h = new TableGroup([t5h] as LinkedHashSet, [] as Set, [] as Set)
+        tgna = new TableGroup([tna1236d, tna1237d, tna167d, tna267d] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())} as Set, [] as Set)
 
         lt12 = new LogicalTable("base12", HOUR, tg1h, metricDictionary)
         lt13 = new LogicalTable("base13", DAY, tg1d, metricDictionary)
@@ -314,26 +314,26 @@ public class QueryBuildingTestingResources {
     def setupPartialData() {
         // In the event of partiality on all data, the coarsest table will be selected and the leftmost of the
         // coarsest tables should be selected
-        emptyFirst = new ConcretePhysicalTable("emptyFirst", MONTH.buildZonedTimeGrain(UTC), [d1, m1, m2, m3].collect{toColumn(it)}.toSet(), [:], metadataService)
-        emptyLast = new ConcretePhysicalTable("emptyLast", MONTH.buildZonedTimeGrain(UTC), [d1, m1, m2, m3].collect{toColumn(it)}.toSet(), [:], metadataService)
-        partialSecond = new ConcretePhysicalTable("partialSecond", MONTH.buildZonedTimeGrain(UTC), [d1, m1, m2, m3].collect{toColumn(it)}.toSet(), [:], metadataService)
-        wholeThird = new ConcretePhysicalTable("wholeThird", MONTH.buildZonedTimeGrain(UTC), [d1, m1, m2, m3].collect{toColumn(it)}.toSet(), [:], metadataService)
+        emptyFirst = new ConcretePhysicalTable("emptyFirst", MONTH.buildZonedTimeGrain(UTC), [d1, m1, m2, m3].collect{toColumn(it)} as Set, [:], metadataService)
+        emptyLast = new ConcretePhysicalTable("emptyLast", MONTH.buildZonedTimeGrain(UTC), [d1, m1, m2, m3].collect{toColumn(it)} as Set, [:], metadataService)
+        partialSecond = new ConcretePhysicalTable("partialSecond", MONTH.buildZonedTimeGrain(UTC), [d1, m1, m2, m3].collect{toColumn(it)} as Set, [:], metadataService)
+        wholeThird = new ConcretePhysicalTable("wholeThird", MONTH.buildZonedTimeGrain(UTC), [d1, m1, m2, m3].collect{toColumn(it)} as Set, [:], metadataService)
 
-        Map<Column, Set<Interval>> availabilityMap1 = [:]
-        Map<Column, Set<Interval>> availabilityMap2 = [:]
-        Map<Column, Set<Interval>> availabilityMap3 = [:]
+        Map<String, Set<Interval>> availabilityMap1 = [:]
+        Map<String, Set<Interval>> availabilityMap2 = [:]
+        Map<String, Set<Interval>> availabilityMap3 = [:]
 
         [d1, d2, m1, m2, m3].each {
-            availabilityMap1.put(toColumn(it), [new Interval("2015/2015")].toSet())
-            availabilityMap2.put(toColumn(it), [new Interval("2015/2016")].toSet())
-            availabilityMap3.put(toColumn(it), [new Interval("2011/2016")].toSet())
+            availabilityMap1.put(toColumn(it).getName(), [new Interval("2015/2015")] as Set)
+            availabilityMap2.put(toColumn(it).getName(), [new Interval("2015/2016")] as Set)
+            availabilityMap3.put(toColumn(it).getName(), [new Interval("2011/2016")] as Set)
         }
-        emptyFirst.setAvailability(new ConcreteAvailability(emptyFirst.getTableName(), emptyFirst.getSchema().getColumns(), new TestDataSourceMetadataService(availabilityMap1)))
-        emptyLast.setAvailability(new ConcreteAvailability(emptyLast.getTableName(), emptyLast.getSchema().getColumns(), new TestDataSourceMetadataService(availabilityMap1)))
-        partialSecond.setAvailability(new ConcreteAvailability(partialSecond.getTableName(), partialSecond.getSchema().getColumns(), new TestDataSourceMetadataService(availabilityMap2)))
-        wholeThird.setAvailability(new ConcreteAvailability(wholeThird.getTableName(), wholeThird.getSchema().getColumns(), new TestDataSourceMetadataService(availabilityMap3)))
+        emptyFirst.setAvailability(new ConcreteAvailability(emptyFirst.getTableName(), new TestDataSourceMetadataService(availabilityMap1)))
+        emptyLast.setAvailability(new ConcreteAvailability(emptyLast.getTableName(), new TestDataSourceMetadataService(availabilityMap1)))
+        partialSecond.setAvailability(new ConcreteAvailability(partialSecond.getTableName(), new TestDataSourceMetadataService(availabilityMap2)))
+        wholeThird.setAvailability(new ConcreteAvailability(wholeThird.getTableName(), new TestDataSourceMetadataService(availabilityMap3)))
 
-        tg1All = new TableGroup([emptyFirst, partialSecond, wholeThird, emptyLast] as LinkedHashSet, [].toSet(), [].toSet())
+        tg1All = new TableGroup([emptyFirst, partialSecond, wholeThird, emptyLast] as LinkedHashSet, [] as Set, [] as Set)
         ti1All = new TableIdentifier("base1All", AllGranularity.INSTANCE)
     }
 
@@ -350,9 +350,8 @@ public class QueryBuildingTestingResources {
             table.setAvailability(
                     new ConcreteAvailability(
                             table.getTableName(),
-                            table.getSchema().getColumns(),
                             new TestDataSourceMetadataService(
-                                [new DimensionColumn(d1), new LogicalMetricColumn(m1)].collectEntries() {
+                                [new DimensionColumn(d1).getName(), new LogicalMetricColumn(m1).getName()].collectEntries() {
                                     [(it): [availability]]
                                 }
                             )

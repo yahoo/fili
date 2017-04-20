@@ -2,7 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.resolver
 
-import com.yahoo.bard.webservice.data.metric.MetricColumn
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -20,7 +19,7 @@ class DataSourceConstraintSpec extends Specification {
                 [] as Set,
                 [] as Set,
                 [:]
-        ).withMetricIntersection(other.collect{it -> new MetricColumn(it)} as Set)
+        ).withMetricIntersection(other as Set)
 
         expect:
         newDataSourceConstraint.getMetricNames() == newMetricNames as Set

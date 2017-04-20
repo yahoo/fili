@@ -3,21 +3,18 @@
 package com.yahoo.bard.webservice.data.config.table;
 
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
-import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.config.names.FieldName;
+import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
-import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
-import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
-import com.yahoo.bard.webservice.table.Column;
-import com.yahoo.bard.webservice.table.ConcretePhysicalTable;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.table.PhysicalTable;
+import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.bard.webservice.table.TableIdentifier;
 
@@ -28,9 +25,10 @@ import org.slf4j.LoggerFactory;
 
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Provides commonly-needed methods for loading tables.
@@ -72,37 +70,52 @@ public abstract class BaseTableLoader implements TableLoader {
     public abstract void loadTableDictionary(ResourceDictionaries dictionaries);
 
     /**
-     * Builds a table group.
+     * Builds a table group that derive its dimensions by taking the union of all the underlying physical dimensions.
      * <p>
-     * Builds and loads the physical tables for the physical table definitions as well.
+     * Builds and loads the physical tables from table definitions for the current table group.
      *
-     * @param apiMetrics  The set of metric names surfaced to the api
-     * @param druidMetrics  Names of druid datasource metric columns
-     * @param tableDefinitions  A list of config objects for physical tables
+     * @param currentTableGroupTableNames  Set of table name of tables belonging to this table group
+     * @param tableDefinitions  A list of config objects for building physical tables and its dependent physical tables
      * @param dictionaries  The container for all the data dictionaries
+     * @param apiMetrics  The set of metric names surfaced to the api
      *
      * @return A table group binding all the tables for a logical table view together.
      */
     public TableGroup buildDimensionSpanningTableGroup(
-            Set<ApiMetricName> apiMetrics,
-            Set<FieldName> druidMetrics,
+            Set<TableName> currentTableGroupTableNames,
             Set<PhysicalTableDefinition> tableDefinitions,
-            ResourceDictionaries dictionaries
+            ResourceDictionaries dictionaries,
+            Set<ApiMetricName> apiMetrics
     ) {
-        // Load a physical table for each of the table definitions
-        LinkedHashSet<PhysicalTable> physicalTables = new LinkedHashSet<>();
-        for (PhysicalTableDefinition def : tableDefinitions) {
-            PhysicalTable table = loadPhysicalTable(def, druidMetrics, dictionaries);
-            physicalTables.add(table);
-        }
+        Map<String, PhysicalTableDefinition> availableTableDefinitions = buildPhysicalTableDefinitionDictionary(
+                tableDefinitions
+        );
 
-        //Derive the logical dimensions by taking the union of all the physical dimensions
+        PhysicalTableDictionary physicalTableDictionary = dictionaries.getPhysicalDictionary();
+
+        // Get the physical table from physical table dictionary, if not exist, build it and put it in dictionary
+        LinkedHashSet<PhysicalTable> physicalTables = currentTableGroupTableNames.stream()
+                .map(TableName::asName)
+                .map(
+                        tableName -> physicalTableDictionary.computeIfAbsent(
+                                tableName,
+                                tableNameKey -> buildPhysicalTableWithDependency(
+                                        tableNameKey,
+                                        availableTableDefinitions,
+                                        dictionaries
+                                )
+                        )
+                ).collect(Collectors.toCollection(LinkedHashSet::new));
+
+
+        // Derive the dimensions by taking the union of all the physical dimensions
         Set<Dimension> dimensions = physicalTables.stream()
                 .map(PhysicalTable::getSchema)
                 .map(schema -> schema.getColumns(DimensionColumn.class))
                 .flatMap(Set::stream)
                 .map(DimensionColumn::getDimension)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
+
         return new TableGroup(physicalTables, apiMetrics, dimensions);
     }
 
@@ -156,6 +169,136 @@ public abstract class BaseTableLoader implements TableLoader {
             // Load it into the dictionary
             logicalDictionary.put(new TableIdentifier(logicalTable), logicalTable);
         }
+    }
+
+    /**
+     * Build and return the current physical table given its table name and definition, if dependency exists, build its
+     * dependencies and load the dependencies into physical table dictionary.
+     * <p>
+     * note: current physical table not loaded into physical table dictionary, only dependencies will
+     *
+     * @param currentTableName  Table name of the table being built
+     * @param availableTableDefinitions  A map of table name to table definition that are available globally
+     * @param dictionaries  Contains both dimension and physical table dictionary for building and dependency resolution
+     *
+     * @return the current physical table built from table definitions
+     */
+    protected PhysicalTable buildPhysicalTableWithDependency(
+            String currentTableName,
+            Map<String, PhysicalTableDefinition> availableTableDefinitions,
+            ResourceDictionaries dictionaries
+    ) {
+        PhysicalTableDictionary physicalTableDictionary = dictionaries.getPhysicalDictionary();
+
+        // Check if table is already built
+        if (physicalTableDictionary.containsKey(currentTableName)) {
+            return physicalTableDictionary.get(currentTableName);
+        }
+
+        // Remove the current definition from map so that we don't try to circle back to it if circular dependency exist
+        PhysicalTableDefinition currentTableDefinition = availableTableDefinitions.remove(currentTableName);
+
+        // If the table definition is currently being build or missing
+        if (Objects.isNull(currentTableDefinition)) {
+            String message = String.format(
+                    "Unable to resolve physical table dependency for physical table: %s, might be missing or " +
+                            "circular dependency", currentTableName);
+
+            LOG.error(message);
+            throw new IllegalStateException(message);
+        }
+
+        // If dependent table not in physical table dictionary, try to recursively build it and put it in the dictionary
+        currentTableDefinition.getDependentTableNames()
+                .forEach(tableName -> physicalTableDictionary.computeIfAbsent(
+                        tableName.asName(),
+                        name -> buildPhysicalTableWithDependency(name, availableTableDefinitions, dictionaries)
+                ));
+
+        LOG.debug("Table Loader Building Physical Table {}");
+        // Build the current physical table using physical table dictionary to resolve dependency
+        return currentTableDefinition.build(dictionaries, getDataSourceMetadataService());
+    }
+
+    /**
+     * Getter for the data source metadata service use for creating physical tables.
+     *
+     * @return the data source metadata service associated with the table loader
+     */
+    protected DataSourceMetadataService getDataSourceMetadataService() {
+        return metadataService;
+    }
+
+    /**
+     * Build a map from physical table name to its table definition.
+     *
+     * @param physicalTableDefinitions  Definitions to build the map from
+     *
+     * @return the map of physical table name to its table definition
+     */
+    private Map<String, PhysicalTableDefinition> buildPhysicalTableDefinitionDictionary(
+            Set<PhysicalTableDefinition> physicalTableDefinitions
+    ) {
+        return physicalTableDefinitions.stream()
+                .collect(Collectors.toMap(definition -> definition.getName().asName(), Function.identity()));
+    }
+
+    /**
+     * Load a new physical table into the dictionary and return the loaded physical table.
+     *
+     * @param definition  A config object for the physical table
+     * @param metricNames  The Set of metric names on the table
+     * @param dictionaries  The resource dictionaries for reading and storing resource data
+     *
+     * @return The physical table created
+     *
+     * @deprecated use buildPhysicalTableWithDependency instead, which also supports building table with dependencies
+     */
+    @Deprecated
+    protected PhysicalTable loadPhysicalTable(
+            PhysicalTableDefinition definition,
+            Set<FieldName> metricNames,
+            ResourceDictionaries dictionaries
+    ) {
+        LOG.debug(
+                "Building table {} with deprecated loadPhysicalTable method, use buildPhysicalTableWithDependency " +
+                        "instead",
+                definition.getName().asName()
+        );
+        return definition.build(dictionaries, getDataSourceMetadataService());
+    }
+
+    /**
+     * Builds a table group.
+     * <p>
+     * Builds and loads the physical tables for the physical table definitions as well.
+     *
+     * @param apiMetrics  The set of metric names surfaced to the api
+     * @param druidMetrics  Names of druid datasource metric columns
+     * @param tableDefinitions  A list of config objects for physical tables
+     * @param dictionaries  The container for all the data dictionaries
+     *
+     * @return A table group binding all the tables for a logical table view together.
+     *
+     * @deprecated does not load table with external dependency, use the other buildDimensionSpanningTableGroup instead
+     */
+    @Deprecated
+    public TableGroup buildDimensionSpanningTableGroup(
+            Set<ApiMetricName> apiMetrics,
+            Set<FieldName> druidMetrics,
+            Set<PhysicalTableDefinition> tableDefinitions,
+            ResourceDictionaries dictionaries
+    ) {
+        Set<TableName> currentTableGroupTableNames = tableDefinitions.stream()
+                .map(PhysicalTableDefinition::getName)
+                .collect(Collectors.toSet());
+
+        return buildDimensionSpanningTableGroup(
+                currentTableGroupTableNames,
+                tableDefinitions,
+                dictionaries,
+                apiMetrics
+        );
     }
 
     /**
@@ -257,78 +400,5 @@ public abstract class BaseTableLoader implements TableLoader {
             ResourceDictionaries dictionaries
     ) {
         return buildDimensionSpanningTableGroup(apiMetrics, druidMetrics, tableDefinitions, dictionaries);
-    }
-
-    /**
-     * Load a new physical table into the dictionary and return the loaded physical table.
-     *
-     * @param definition  A config object for the physical table
-     * @param metricNames  The Set of metric names on the table
-     * @param dictionaries  The resource dictionaries for reading and storing resource data
-     *
-     * @return The physical table created
-     */
-    protected PhysicalTable loadPhysicalTable(
-            PhysicalTableDefinition definition,
-            Set<FieldName> metricNames,
-            ResourceDictionaries dictionaries
-    ) {
-        PhysicalTable existingTable = dictionaries.getPhysicalDictionary().get(definition.getName().asName());
-        if (existingTable == null) {
-            // Build the physical table
-            existingTable = buildPhysicalTable(definition, metricNames, dictionaries.getDimensionDictionary());
-
-            // Add the table to the dictionary
-            LOG.debug("Physical table: {} \n\n" + "Cache: {} ",
-                            definition.getName().asName(),
-                            existingTable.getSchema().getColumns());
-            dictionaries.getPhysicalDictionary().put(definition.getName().asName(), existingTable);
-        }
-
-        return existingTable;
-    }
-
-    /**
-     * Build a physical table, populating columns and initializing the cache.
-     *
-     * @param definition  A config object for the physical table
-     * @param metricNames  Set of Druid metrics on the table
-     * @param dimensionDictionary  The dimension dictionary
-     *
-     * @return The physical table, configured per the parameters
-     */
-    protected PhysicalTable buildPhysicalTable(
-            PhysicalTableDefinition definition,
-            Set<FieldName> metricNames,
-            DimensionDictionary dimensionDictionary
-    ) {
-        LinkedHashSet<Column> columns = Stream.concat(
-                // Load the dimension columns
-                definition.getDimensions().stream()
-                        .map(DimensionConfig::getApiName)
-                        .map(dimensionDictionary::findByApiName)
-                        .map(DimensionColumn::new),
-                // And the metric columns
-                metricNames.stream()
-                        .map(FieldName::asName)
-                        .map(MetricColumn::new)
-        ).collect(Collectors.toCollection(LinkedHashSet::new));
-
-        return new ConcretePhysicalTable(
-                definition.getName(),
-                definition.getGrain(),
-                columns,
-                definition.getLogicalToPhysicalNames(),
-                getDataSourceMetadataService()
-        );
-    }
-
-    /**
-     * Getter for the data source metadata service use for creating physical tables.
-     *
-     * @return the data source metadata service associated with the table loader
-     */
-    protected DataSourceMetadataService getDataSourceMetadataService() {
-        return metadataService;
     }
 }
