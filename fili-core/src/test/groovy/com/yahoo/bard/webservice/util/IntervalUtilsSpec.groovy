@@ -10,6 +10,8 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.QUARTER
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.WEEK
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.YEAR
 
+import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
+import com.yahoo.bard.webservice.data.time.TimeGrain
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity
 import com.yahoo.bard.webservice.druid.model.query.Granularity
@@ -330,6 +332,76 @@ class IntervalUtilsSpec extends Specification {
         YEAR  | ["2013/2018"]             | ["2017/2018"]
         MONTH | ["2013/2017-04"]          | ["2017-02/2017-04"]
         DAY   | ["2012-02-03/2017-04-04"] | ["2012-02-03/2012-05-04", "2017-02-03/2017-04-04"]
+    }
+
+    @Unroll
+    def "getCoarsestTimeGrain returns coarsest grain in the case of #description"() {
+        given:
+        PhysicalTableSchema schema1 = Mock(PhysicalTableSchema)
+        PhysicalTableSchema schema2 = Mock(PhysicalTableSchema)
+        PhysicalTableSchema schema3 = Mock(PhysicalTableSchema)
+
+        schema1.getTimeGrain() >> new ZonedTimeGrain(timeGrain1, DateTimeZone.forID(timeZone1))
+        schema2.getTimeGrain() >> new ZonedTimeGrain(timeGrain2, DateTimeZone.forID(timeZone2))
+        schema3.getTimeGrain() >> new ZonedTimeGrain(timeGrain3, DateTimeZone.forID(timeZone3))
+
+        PhysicalTable physicalTable1 = Mock(PhysicalTable)
+        PhysicalTable physicalTable2 = Mock(PhysicalTable)
+        PhysicalTable physicalTable3 = Mock(PhysicalTable)
+
+        physicalTable1.getSchema() >> schema1
+        physicalTable2.getSchema() >> schema2
+        physicalTable3.getSchema() >> schema3
+
+        expect:
+        IntervalUtils.getCoarsestTimeGrain(
+                [
+                        physicalTable1,
+                        physicalTable2,
+                        physicalTable3
+                ]
+        ).get() == new ZonedTimeGrain(expectedTimeGrain, DateTimeZone.forID(expectedTimeZone))
+
+        where:
+        timeGrain1 | timeGrain2 | timeGrain3 | timeZone1         | timeZone2             | timeZone3         | expectedTimeGrain | expectedTimeZone  | description
+        DAY        | DAY        | DAY        | 'America/Chicago' | 'America/Los_Angeles' | 'America/Phoenix' | DAY               | 'America/Chicago' | 'same grain but different time zones'
+        MINUTE     | HOUR       | DAY        | 'America/Phoenix' | 'America/Phoenix'     | 'America/Phoenix' | DAY               | 'America/Phoenix' | 'same time zone but different grans'
+        MINUTE     | HOUR       | DAY        | 'America/Chicago' | 'America/Los_Angeles' | 'America/Phoenix' | DAY               | 'America/Phoenix' | 'different grains, with DAY as the coarsest grain, and different time zones'
+        HOUR       | DAY        | WEEK       | 'America/Chicago' | 'America/Los_Angeles' | 'America/Phoenix' | WEEK              | 'America/Phoenix' | 'different grains, with WEEK as the coarsest grain, and different time zones'
+        DAY        | WEEK       | MONTH      | 'America/Chicago' | 'America/Los_Angeles' | 'America/Phoenix' | MONTH             | 'America/Phoenix' | 'different grains, with MONTH as the coarsest grain, and different time zones'
+        WEEK       | MONTH      | QUARTER    | 'America/Chicago' | 'America/Los_Angeles' | 'America/Phoenix' | QUARTER           | 'America/Phoenix' | 'different grains, with QUARTER as the coarsest grain, and different time zones'
+        MONTH      | QUARTER    | YEAR       | 'America/Chicago' | 'America/Los_Angeles' | 'America/Phoenix' | YEAR              | 'America/Phoenix' | 'different grains, with YEAR as the coarsest grain, and different time zones'
+
+    }
+
+    def "getCoarsestTimeGrain returns empty on empty input physical table collections"() {
+        expect:
+        IntervalUtils.getCoarsestTimeGrain([]) == Optional.empty()
+    }
+
+    @Unroll
+    def "test getTimeGrain from interval - #expectedTimeGrain"() {
+        setup:
+        String[] dates = stringInterval.split("/")
+        DateTime start = new DateTime(dates[0], DateTimeZone.UTC)
+        DateTime end = new DateTime(dates[1], DateTimeZone.UTC)
+        Interval interval = new Interval(start.toInstant(), end.toInstant())
+
+        when: "we parse the time"
+        Optional<TimeGrain> timeGrain = IntervalUtils.getTimeGrain(interval)
+
+        then: "what we expect"
+        timeGrain == expectedTimeGrain
+
+        where:
+        stringInterval                                      | expectedTimeGrain
+        "2015-01-01T00:00:00.000Z/2016-01-01T00:00:00.000Z" | Optional.of(YEAR)
+        "2017-01-01T00:00:00.000Z/2017-02-01T00:00:00.000Z" | Optional.of(MONTH)
+        "2017-02-27T00:00:00.000Z/2017-03-06T00:00:00.000Z" | Optional.of(WEEK)
+        "2015-09-12T00:00:00.000Z/2015-09-13T01:01:01.000Z" | Optional.empty()
+        "2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z" | Optional.of(DAY)
+        "2015-09-12T00:00:00.000Z/2015-09-12T01:00:00.000Z" | Optional.of(DefaultTimeGrain.HOUR)
+        "2015-09-12T00:00:00.000Z/2015-09-12T00:01:00.000Z" | Optional.of(DefaultTimeGrain.MINUTE)
     }
 
     /**

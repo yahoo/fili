@@ -20,6 +20,7 @@
         <module>fili-navi</module>
         <module>fili</module>
         <module>fili-wikipedia-example</module>
+        <module>fili-generic-example</module>
     </modules>
 
     <organization>
