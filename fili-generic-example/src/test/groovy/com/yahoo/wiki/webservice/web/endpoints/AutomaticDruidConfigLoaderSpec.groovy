@@ -9,12 +9,12 @@ import com.yahoo.wiki.webservice.data.config.auto.TableConfig
 import spock.lang.Specification
 
 public class AutomaticDruidConfigLoaderSpec extends Specification {
-    TestDruidWebService druidWebService;
-    DruidNavigator druidNavigator;
-    private String[] metrics = ["count", "added", "deleted", "delta", "user_unique"];
+    TestDruidWebService druidWebService
+    DruidNavigator druidNavigator
+    private String[] metrics = ["count", "added", "deleted", "delta", "user_unique"]
     private String[] dimensions = ["channel", "cityName", "comment", "countryIsoCode", "countryName", "isAnonymous",
                                    "isMinor", "isNew", "isRobot", "isUnpatrolled", "metroCode", "namespace", "page",
-                                   "regionIsoCode", "regionName", "user"];
+                                   "regionIsoCode", "regionName", "user"]
     String datasource = "wikiticker"
     String expectedDataSources = "[\"$datasource\"]"
     String expectedMetricsAndDimensions = """{
@@ -45,8 +45,8 @@ public class AutomaticDruidConfigLoaderSpec extends Specification {
 """
 
     def setup() {
-        druidWebService = new TestDruidWebService("testInstance");
-        druidNavigator = new DruidNavigator(druidWebService);
+        druidWebService = new TestDruidWebService("testInstance")
+        druidNavigator = new DruidNavigator(druidWebService)
         druidWebService.jsonResponse = {
             if (druidWebService.lastUrl == "/datasources/") {
                 return expectedDataSources
@@ -58,49 +58,45 @@ public class AutomaticDruidConfigLoaderSpec extends Specification {
     }
 
     def "get table names from druid"() {
-        setup:
-
         when: "We send a request"
-        List<DataSourceConfiguration> returnedTables = druidNavigator.get();
+        List<DataSourceConfiguration> returnedTables = druidNavigator.get()
 
         then: "what we expect"
         druidWebService.lastUrl == '/datasources/' + datasource + '/?full'
-        List<String> returnedTableNames = new ArrayList<>();
+        List<String> returnedTableNames = new ArrayList<>()
         for (DataSourceConfiguration druidConfig : returnedTables) {
-            returnedTableNames.add(druidConfig.getName());
+            returnedTableNames.add(druidConfig.getName())
         }
-        returnedTableNames.contains("wikiticker");
+        returnedTableNames.contains("wikiticker")
     }
 
     def "get time grains from druid"() {
-        setup:
-
         when: "We send a request"
-        List<DataSourceConfiguration> returnedTables = druidNavigator.get();
+        List<DataSourceConfiguration> returnedTables = druidNavigator.get()
 
         then: "what we expect"
         druidWebService.lastUrl == '/datasources/' + datasource + '/?full'
-        returnedTables.get(0).getValidTimeGrain().get(0) == DefaultTimeGrain.DAY
+        returnedTables.get(0).getValidTimeGrain() == DefaultTimeGrain.DAY
     }
 
     def "get metric names from druid"() {
         setup:
-        TableConfig wikiticker;
+        TableConfig wikiticker
 
         when: "We send a request"
-        wikiticker = new TableConfig("$datasource");
-        druidNavigator.loadTable(wikiticker);
+        wikiticker = new TableConfig("$datasource")
+        druidNavigator.loadTable(wikiticker)
 
         then: "what we expect"
         druidWebService.lastUrl == '/datasources/' + datasource + '/?full'
-        List<String> returnedMetrics = wikiticker.getMetrics();
+        List<String> returnedMetrics = wikiticker.getMetrics()
         for (String m : metrics) {
-            assert returnedMetrics.contains(m);
+            assert returnedMetrics.contains(m)
         }
 
-        List<String> returnedDimensions = wikiticker.getDimensions();
+        List<String> returnedDimensions = wikiticker.getDimensions()
         for (String d : dimensions) {
-            assert returnedDimensions.contains(d);
+            assert returnedDimensions.contains(d)
         }
     }
 }
