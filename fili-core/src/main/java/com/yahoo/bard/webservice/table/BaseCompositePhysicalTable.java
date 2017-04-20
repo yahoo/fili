@@ -17,7 +17,7 @@ import javax.validation.constraints.NotNull;
 /**
  * An implementation of BasePhysicalTable that contains multiple tables.
  */
-public class BaseCompositePhysicalTable extends BasePhysicalTable {
+public abstract class BaseCompositePhysicalTable extends BasePhysicalTable {
 
     private static final Logger LOG = LoggerFactory.getLogger(BaseCompositePhysicalTable.class);
 

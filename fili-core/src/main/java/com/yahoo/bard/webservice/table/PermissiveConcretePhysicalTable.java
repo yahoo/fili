@@ -44,7 +44,7 @@ public class PermissiveConcretePhysicalTable extends ConcretePhysicalTable {
                 timeGrain,
                 columns,
                 logicalToPhysicalColumnNames,
-                new PermissiveAvailability(name, columns, dataSourceMetadataService)
+                new PermissiveAvailability(name, dataSourceMetadataService)
         );
     }
 }
