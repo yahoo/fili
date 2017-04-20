@@ -9,6 +9,12 @@ Current
 -------
 ### Added:
 
+- [Add constructor to specify DruidDimensionLoader dimensions directly](https://github.com/yahoo/fili/pull/191)
+
+- [Add `IntervalUtils::getTimeGrain` to determine the grain given an Interval](https://github.com/yahoo/fili/pull/191)
+
+- [Add example for slurping in config from a Druid instance](https://github.com/yahoo/fili/pull/191)
+
 - [Add Permissive Concrete Physical Table Definition](https://github.com/yahoo/fili/pull/212)
     * Added `PermissiveConcretePhysicalTableDefinition` for defining a `PermissiveConcretePhysicalTable`
 
