@@ -46,7 +46,9 @@ public class GenericMetricLoader implements MetricLoader {
      */
     protected void buildMetricMakers(MetricDictionary metricDictionary) {
         // Create the various metric makers
-        doubleSumMaker = new DoubleSumMaker(metricDictionary);
+        if (doubleSumMaker == null) {
+            doubleSumMaker = new DoubleSumMaker(metricDictionary);
+        }
     }
 
     @Override
