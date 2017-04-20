@@ -6,7 +6,9 @@ import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.config.names.FieldName;
+import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.config.table.BaseTableLoader;
+import com.yahoo.bard.webservice.data.config.table.ConcretePhysicalTableDefinition;
 import com.yahoo.bard.webservice.data.config.table.PhysicalTableDefinition;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
@@ -127,9 +129,10 @@ public class GenericTableLoader extends BaseTableLoader {
         );
         return new LinkedHashSet<>(
                 Collections.singletonList(
-                        new PhysicalTableDefinition(
+                        new ConcretePhysicalTableDefinition(
                                 dataSourceConfiguration.getTableName(),
                                 zonedTimeGrain,
+                                druidMetricNames,
                                 dimsBasefactDruidTable
                         )
                 )
@@ -145,11 +148,14 @@ public class GenericTableLoader extends BaseTableLoader {
     public void loadTableDictionary(ResourceDictionaries dictionaries) {
         configLoader.get()
                 .forEach(table -> {
+                    Set<TableName> currentTableGroupTableNames = tableDefinitions.stream()
+                            .map(PhysicalTableDefinition::getName)
+                            .collect(Collectors.toSet());
                     TableGroup tableGroup = buildDimensionSpanningTableGroup(
-                            apiMetricNames,
-                            druidMetricNames,
+                            currentTableGroupTableNames,
                             tableDefinitions,
-                            dictionaries
+                            dictionaries,
+                            apiMetricNames
                     );
                     loadLogicalTableWithGranularities(
                             table.getTableName().asName(),
