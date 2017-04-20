@@ -21,6 +21,8 @@ Current
 
 - [Add Reciprocal `satisfies()` relationship complementing `satisfiedBy()` on Granularity](https://github.com/yahoo/fili/issues/222)
 
+- [Add a timer around DataApiRequestMappers](https://github.com/yahoo/fili/pull/250)
+
 - [MetricUnionAvailability and MetricUnionCompositeTable](https://github.com/yahoo/fili/pull/193)
     * Added `MetricUnionAvailability` which puts metric columns of different availabilities together and
     `MetricUnionCompositeTable` which puts metric columns of different tables together in a single table.
