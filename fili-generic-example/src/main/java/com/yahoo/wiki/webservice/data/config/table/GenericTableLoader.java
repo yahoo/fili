@@ -71,23 +71,20 @@ public class GenericTableLoader extends BaseTableLoader {
     private void configureTables(GenericDimensionConfigs genericDimensionConfigs) {
         configLoader.get().forEach(dataSourceConfiguration -> {
 
+            druidMetricNames = dataSourceConfiguration.getMetrics()
+                    .stream()
+                    .map(DruidMetricName::new)
+                    .collect(Collectors.toSet());
+
             tableDefinitions = getPhysicalTableDefinitions(
                     dataSourceConfiguration,
                     dataSourceConfiguration.getValidTimeGrain(),
                     genericDimensionConfigs.getAllDimensionConfigurations()
             );
 
-            druidMetricNames = dataSourceConfiguration.getMetrics()
-                    .stream()
-                    .map(DruidMetricName::new)
-                    .collect(Collectors.toSet());
-
             apiMetricNames = dataSourceConfiguration.getMetrics()
                     .stream()
-                    .map(metricName -> new FiliApiMetricName(
-                            metricName,
-                            dataSourceConfiguration.getValidTimeGrain()
-                    ))
+                    .map(metricName -> new FiliApiMetricName(metricName, dataSourceConfiguration.getValidTimeGrain()))
                     .collect(Collectors.toSet());
 
             validGrains = getGranularities(dataSourceConfiguration);
