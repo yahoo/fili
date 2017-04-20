@@ -9,9 +9,23 @@ Current
 -------
 ### Added:
 
+- [Add Permissive Concrete Physical Table Definition](https://github.com/yahoo/fili/pull/212)
+    * Added `PermissiveConcretePhysicalTableDefinition` for defining a `PermissiveConcretePhysicalTable`
+
+- [Fix to use physical name instead of logical name to retrieve available interval](https://github.com/yahoo/fili/pull/226)
+    * Added `PhysicalDataSourceConstraint` class to capture physical names of columns for retrieving available intervals
+
+- [BaseCompositePhysicalTable](https://github.com/yahoo/fili/pull/242)
+    * `BaseCompositePhysicalTable` provides common operations, such as validating coarsest ZonedTimeGrain, for composite
+    tables.
+
 - [Add Reciprocal `satisfies()` relationship complementing `satisfiedBy()` on Granularity](https://github.com/yahoo/fili/issues/222)
 
 - [Add a timer around DataApiRequestMappers](https://github.com/yahoo/fili/pull/250)
+
+- [MetricUnionAvailability and MetricUnionCompositeTable](https://github.com/yahoo/fili/pull/193)
+    * Added `MetricUnionAvailability` which puts metric columns of different availabilities together and
+    `MetricUnionCompositeTable` which puts metric columns of different tables together in a single table.
 
 - [Method for finding coarsest ZonedTimeGrain](https://github.com/yahoo/fili/pull/230)
     * Added utility method for returning coarsest `ZonedTimeGrain` from a collection of `ZonedTimeGrain`s. This is
@@ -23,6 +37,7 @@ Current
 - [CompositePhysicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
     * Added `ConcretePhysicalTable` and `ConcreteAvailability` to model table in druid datasource and its availabillity in the new table availability structure
     * Added class variable for `DataSourceMetadataService` and `ConfigurationLoader` into `AbstractBinderFactory` for application to access
+    * Added `loadPhsycialTablesWithDependency` into `BaseTableLoader` to load physical tables with dependencies
 
 - [PermissiveAvailability and PermissiveConcretePhysicalTable](https://github.com/yahoo/fili/pull/190)
     * Added `PermissiveConcretePhysicalTable` and `PermissiveAvailability` to model table in druid datasource and its availability in the new table availability structure.
@@ -70,6 +85,20 @@ Current
 - [Support timeouts for lucene search provider](https://github.com/yahoo/fili/pull/183)
 
 ### Changed:
+
+- [Refactor Physical Table Definition and Update Table Loader](https://github.com/yahoo/fili/pull/207)
+    * `PhysicalTableDefinition` is now an abstract class, construct using `ConcretePhysicalTableDefinition` instead
+    * `PhysicalTableDefinition` now requires a `build` methods to be implemented that builds a physical table
+    * `BaseTableLoader` now constructs physical tables by calling `build` method on `PhysicalTableDefinition`s in `buildPhysicalTablesWithDependency`
+    * `buildDimensionSpanningTableGroup` method in `BaseTableLoader` now uses `loadPhysicalTablesWithDependency` instead of deprecated `loadPhysicalTables`
+    * `buildDimensionSpanningTableGroup` method in `BaseTableLoader` now does not take druid metrics as arguments, instead `PhysicalTableDefinition` does
+
+- [Fix to use physical name instead of logical name to retrieve available interval](https://github.com/yahoo/fili/pull/226)
+    * `getAllAvailbleIntervals` in `ConcreteAvailability` no longer filters out un-configured columns, instead table's `getAllAvailbleIntervals` does
+    * `getAvailbleIntervals` in `Availbality` now takes `PhysicalDataSourceConstraint` instead of `DataSourceConstraint`
+    * `Availability` no longer takes a set of columns on the table, only table needs to know
+    * `getAllAvailbleIntervals` in `Availability` now returns a map of column physical name string to interval list instead of column to interval list
+    * `TestDataSourceMetadataService` now takes map from string to list of intervals instead of column to list of intervals for constructor
 
 - [Reduced number of queries sent by `LuceneSearchProvider` by 50% in the common case](https://github.com/yahoo/fili/pull/234)
     * Before, we were using `IndexSearcher::count` to get the total number of documents, which spawned an entire second query
@@ -135,6 +164,7 @@ Current
 - [CompositePhsyicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
     * `TableLoader` now takes an additional constructor argument `DataSourceMetadataService` for creating tables     
     * `findMissingRequestTimeGrainIntervals` method in `PartialDataHandler` now takes `DataSourceConstraint`
+    * Renamed `buildTableGroup` method to `buildDimensionSpanningTableGroup`
  
 - [Restored flexibility about columns for query from DruidResponseParser](https://github.com/yahoo/fili/pull/198)
     * Immutable schemas prevented custom query types from changing `ResultSetSchema` columns.
@@ -198,6 +228,9 @@ Current
 
 ### Deprecated:
 
+- [Refactor Physical Table Definition and Update Table Loader](https://github.com/yahoo/fili/pull/207)
+    * Deprecated `loadPhysicalTable` in `BaseTableLoader`, use `loadPhysicalTablesWithDependency` instead
+
 - [CompositePhsyicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
     * Deprecated `setAvailability` method on `BasePhysicalTable` to discourage using it for testing, should refine testing strategy to avoid it
 
@@ -241,6 +274,11 @@ Current
 
 
 ### Removed:
+
+- [Refactor Physical Table Definition and Update Table Loader](https://github.com/yahoo/fili/pull/207)
+    * Removed deprecated `PhysicalTableDefinition` constructor that takes an `ZonlessTimeGrain`, use `ZonedTimeGrain` instead
+    * Removed `buildPhysicalTable` in `BaseTableLoader`, building table logic is pushed into `PhysicalTableDefinition`
+
 - [CompositePhsyicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
     * Removed deprecated method `findMissingRequestTimeGrainIntervals` from `PartialDataHandler`
     * Removed `permissive_column_availability_enabled` feature flag support and corresponding functionality in `PartialDataHandler`, permissive availability will be a table configuration

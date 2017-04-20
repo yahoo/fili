@@ -46,7 +46,7 @@ public interface PhysicalTable extends Table {
     DateTime getTableAlignment();
 
     /**
-     * Getter for all the available intervals for the corresponding column.
+     * Getter for all the available intervals for the corresponding columns configured on the table.
      *
      * @return map of column to set of available intervals
      */

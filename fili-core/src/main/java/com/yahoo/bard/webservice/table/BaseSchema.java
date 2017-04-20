@@ -8,6 +8,7 @@ import com.google.common.collect.Sets;
 
 import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * A parent class for most schema implementations.
@@ -31,6 +32,17 @@ public class BaseSchema implements Schema {
     @Override
     public LinkedHashSet<Column> getColumns() {
         return columns;
+    }
+
+    /**
+     * Get the names of the columns returned by getColumns method.
+     *
+     * @return linked hash set of column names in this schema
+     */
+    public LinkedHashSet<String> getColumnNames() {
+        return getColumns().stream()
+                .map(Column::getName)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     @Override

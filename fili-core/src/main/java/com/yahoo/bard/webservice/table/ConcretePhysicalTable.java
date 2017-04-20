@@ -41,7 +41,7 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
                 timeGrain,
                 columns,
                 logicalToPhysicalColumnNames,
-                new ConcreteAvailability(name, columns, metadataService)
+                new ConcreteAvailability(name, metadataService)
         );
     }
 
