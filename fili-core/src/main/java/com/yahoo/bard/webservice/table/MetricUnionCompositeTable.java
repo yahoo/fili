@@ -12,10 +12,11 @@ import java.util.Set;
 import javax.validation.constraints.NotNull;
 
 /**
- * An implementation of <tt>BasePhysicalTable</tt> backed by metric union availability.
+ * An implementation of <tt>PhysicalTable</tt> backed by metric union availability.
  * <p>
- * The composite table puts metric columns of different tables together so that we can
- * query different metric columns from different tables at the same time.
+ * Under this composite, unioning is only legal if all metrics are uniquely sourced within the source tables.
+ * Additionally, availability is true over times where all tables which participate (via their metrics being used) have
+ * legal availability.
  * <p>
  * For example, two tables of the following
  * <pre>
@@ -37,7 +38,7 @@ import javax.validation.constraints.NotNull;
  * +---------+---------+---------+
  * }
  * </pre>
- * are put together into a table
+ * are put together into a view such as
  * <pre>
  * {@code
  * +---------+---------+---------+---------+---------+---------+

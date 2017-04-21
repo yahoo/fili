@@ -5,14 +5,9 @@ package com.yahoo.bard.webservice.table.availability;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
-import com.yahoo.bard.webservice.util.IntervalUtils;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
-import org.joda.time.Interval;
-
-import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -50,7 +45,7 @@ public class ConcreteAvailability implements Availability {
     }
 
     @Override
-    public Map<String, List<Interval>> getAllAvailableIntervals() {
+    public Map<String, SimplifiedIntervalList> getAllAvailableIntervals() {
         return metadataService.getAvailableIntervalsByTable(name);
     }
 
@@ -63,18 +58,12 @@ public class ConcreteAvailability implements Availability {
             return new SimplifiedIntervalList();
         }
 
-        Map<String, List<Interval>> allAvailableIntervals = getAllAvailableIntervals();
-
         // Need to ensure requestColumns is not empty in order to prevent returning null by reduce operation
-        return new SimplifiedIntervalList(
-                requestColumns.stream()
-                        .map(physicalName -> allAvailableIntervals.getOrDefault(
-                                physicalName,
-                                new SimplifiedIntervalList()
-                        ))
-                        .map(intervals -> (Collection<Interval>) intervals)
-                        .reduce(null, IntervalUtils::getOverlappingSubintervals)
-        );
+        return requestColumns.stream()
+                .map(physicalName -> getAllAvailableIntervals().getOrDefault(
+                        physicalName,
+                        new SimplifiedIntervalList()
+                )).reduce(SimplifiedIntervalList::intersect).orElse(new SimplifiedIntervalList());
     }
 
 
@@ -89,8 +78,7 @@ public class ConcreteAvailability implements Availability {
 
     @Override
     public String toString() {
-        return String.format("ConcreteAvailability for table: %s",
-                name.asName()
+        return String.format("ConcreteAvailability for table: %s", name.asName()
         );
     }
 }
