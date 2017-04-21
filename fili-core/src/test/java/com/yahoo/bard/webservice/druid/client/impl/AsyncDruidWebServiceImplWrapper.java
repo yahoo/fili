@@ -62,7 +62,7 @@ public class AsyncDruidWebServiceImplWrapper extends AsyncDruidWebServiceImpl {
             final AtomicLong outstanding
     ) {
         this.request = requestBuilder.build();
-        return ConcurrentUtils.constantFuture(null);
+        return ConcurrentUtils.constantFuture(null); //no request to be sent
     }
 
     public HttpHeaders getHeaders() {

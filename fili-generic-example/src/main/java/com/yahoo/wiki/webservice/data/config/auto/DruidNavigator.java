@@ -21,10 +21,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 /**
@@ -36,7 +34,6 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
     private static final String COORDINATOR_TABLES_PATH = "/datasources/";
     private final DruidWebService druidWebService;
     private final List<TableConfig> tableConfigurations;
-    private final CountDownLatch countDownLatch;
 
     /**
      * Constructs a DruidNavigator to load datasources from druid.
@@ -46,7 +43,6 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
     public DruidNavigator(DruidWebService druidWebService) {
         this.druidWebService = druidWebService;
         tableConfigurations = new ArrayList<>();
-        countDownLatch = new CountDownLatch(1);
     }
 
     /**
@@ -207,7 +203,6 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
                 rootNode -> {
                     LOG.debug("Succesfully fetched " + url);
                     successCallback.invoke(rootNode);
-                    countDownLatch.countDown();
                 },
                 (statusCode, reasonPhrase, responseBody) -> {
                     LOG.error("HTTPError {} - {} for {}", statusCode, reasonPhrase, url);

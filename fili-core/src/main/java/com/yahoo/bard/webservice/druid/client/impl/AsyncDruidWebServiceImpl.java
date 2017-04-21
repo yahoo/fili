@@ -9,6 +9,7 @@ import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.RESP
 import com.yahoo.bard.webservice.application.MetricRegistryFactory;
 import com.yahoo.bard.webservice.druid.client.DruidServiceConfig;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
+import com.yahoo.bard.webservice.druid.client.FailedFutureResponse;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
@@ -191,7 +192,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
     ) {
         RequestLog.startTiming(timerName);
         final RequestLog logCtx = RequestLog.dump();
-        Future<Response> responseFuture = null;
+        Future<Response> responseFuture;
         try {
             responseFuture = requestBuilder.execute(
                 new AsyncCompletionHandler<Response>() {
@@ -267,6 +268,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
             }
             LOG.error("druid {} http request failed: ", serviceConfig.getNameAndUrl(), t);
             failure.invoke(t);
+            responseFuture = new FailedFutureResponse("Failed to reach druid");
         }
         return responseFuture;
     }
