@@ -1,3 +1,5 @@
+// Copyright 2016 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.util;
 
 import java.util.concurrent.ExecutionException;
@@ -7,7 +9,8 @@ import java.util.concurrent.TimeoutException;
 
 /**
  * A future response which cannot be completed and will throw
- * an execution exception upon {@link Future#get()}
+ * an execution exception upon {@link Future#get()}.
+ * @param <E>  The type to be returned by the future.
  */
 public class FailedFuture<E> implements Future<E> {
     private final String reason;
