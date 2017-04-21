@@ -22,6 +22,8 @@ public interface DruidWebService {
      * @param error  callback for handling http errors.
      * @param failure  callback for handling exception failures.
      * @param query  The druid query object to serialize.
+     *
+     * @return a future response to the post query.
      */
     Future<Response> postDruidQuery(
             RequestContext context,
@@ -38,6 +40,8 @@ public interface DruidWebService {
      * @param error  callback for handling http errors.
      * @param failure  callback for handling exception failures.
      * @param resourcePath  The url suffix for the remote resource. The prefix should be the shared Broker endpoint url.
+     *
+     * @return a future response to the get request.
      */
     Future<Response> getJsonObject(
             SuccessCallback success,

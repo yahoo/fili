@@ -9,7 +9,6 @@ import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.RESP
 import com.yahoo.bard.webservice.application.MetricRegistryFactory;
 import com.yahoo.bard.webservice.druid.client.DruidServiceConfig;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
-import com.yahoo.bard.webservice.druid.client.FailedFutureResponse;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
@@ -17,6 +16,7 @@ import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.druid.model.query.WeightEvaluationQuery;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.DruidResponse;
+import com.yahoo.bard.webservice.util.FailedFuture;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
 
 import com.codahale.metrics.Meter;
@@ -181,6 +181,8 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
      * @param requestBuilder  The bound request builder for the request to be sent.
      * @param timerName  The name that distinguishes this request as part of a druid query or segment metadata request
      * @param outstanding  The counter that keeps track of the outstanding (in flight) requests for the top level query
+     *
+     * @return a future response for the query being sent
      */
     protected Future<Response> sendRequest(
             final SuccessCallback success,
@@ -268,7 +270,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
             }
             LOG.error("druid {} http request failed: ", serviceConfig.getNameAndUrl(), t);
             failure.invoke(t);
-            responseFuture = new FailedFutureResponse("Failed to reach druid");
+            responseFuture = new FailedFuture<>("Failed to reach druid");
         }
         return responseFuture;
     }

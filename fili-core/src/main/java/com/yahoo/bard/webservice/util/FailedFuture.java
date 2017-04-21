@@ -1,6 +1,4 @@
-package com.yahoo.bard.webservice.druid.client;
-
-import org.asynchttpclient.Response;
+package com.yahoo.bard.webservice.util;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -8,12 +6,18 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Created by kevin on 4/21/2017.
+ * A future response which cannot be completed and will throw
+ * an execution exception upon {@link Future#get()}
  */
-public class FailedFutureResponse implements Future<Response> {
-    private String reason;
+public class FailedFuture<E> implements Future<E> {
+    private final String reason;
 
-    public FailedFutureResponse(String reason) {
+    /**
+     * Construct a future which is already known to have failed.
+     *
+     * @param reason  The reason the future could not be completed.
+     */
+    public FailedFuture(String reason) {
         this.reason = reason;
     }
 
@@ -33,12 +37,12 @@ public class FailedFutureResponse implements Future<Response> {
     }
 
     @Override
-    public Response get() throws InterruptedException, ExecutionException {
+    public E get() throws InterruptedException, ExecutionException {
         throw new ExecutionException(new RuntimeException(reason));
     }
 
     @Override
-    public Response get(final long timeout, final TimeUnit unit)
+    public E get(final long timeout, final TimeUnit unit)
             throws InterruptedException, ExecutionException, TimeoutException {
         return get();
     }
