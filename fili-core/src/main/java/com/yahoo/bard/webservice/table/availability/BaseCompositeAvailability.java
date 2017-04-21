@@ -17,15 +17,15 @@ import java.util.stream.Stream;
 public abstract class BaseCompositeAvailability implements Availability {
 
     /**
-     * Return a stream of all the dependent availabilities.
+     * Return a stream of all the availabilities which this table composites from.
      *
      * @return A stream of availabilities
      */
-    protected abstract Stream<Availability> getAllDependentAvailabilities();
+    protected abstract Stream<Availability> getAllSourceAvailabilities();
 
     @Override
     public Set<TableName> getDataSourceNames() {
-        return getAllDependentAvailabilities()
+        return getAllSourceAvailabilities()
                 .map(Availability::getDataSourceNames)
                 .flatMap(Set::stream)
                 .collect(
@@ -45,7 +45,7 @@ public abstract class BaseCompositeAvailability implements Availability {
      */
     @Override
     public Map<String, SimplifiedIntervalList> getAllAvailableIntervals() {
-        return getAllDependentAvailabilities()
+        return getAllSourceAvailabilities()
                 .map(Availability::getAllAvailableIntervals)
                 .map(Map::entrySet)
                 .flatMap(Set::stream)

@@ -12,45 +12,36 @@ import java.util.Set;
 import javax.validation.constraints.NotNull;
 
 /**
- * An implementation of <tt>PhysicalTable</tt> backed by metric union availability.
+ * An implementation of {@link PhysicalTable} backed by  {@link MetricUnionAvailability}.
  * <p>
  * Under this composite, unioning is only legal if all metrics are uniquely sourced within the source tables.
- * Additionally, availability is true over times where all tables which participate (via their metrics being used) have
- * legal availability.
  * <p>
- * For example, two tables of the following
+ * For example, given two source tables with metrics such that
  * <pre>
  * {@code
  * table1:
  * +---------+---------+---------+
  * | metric1 | metric2 | metric3 |
  * +---------+---------+---------+
- * |         |         |         |
- * |         |         |         |
- * +---------+---------+---------+
  *
  * table2
  * +---------+---------+---------+
  * | metric4 | metric5 | metric5 |
  * +---------+---------+---------+
- * |         |         |         |
- * |         |         |         |
- * +---------+---------+---------+
  * }
  * </pre>
- * are put together into a view such as
+ * the metric schema of this composite table will look like
  * <pre>
  * {@code
  * +---------+---------+---------+---------+---------+---------+
  * | metric1 | metric2 | metric3 | metric4 | metric5 | metric5 |
  * +---------+---------+---------+---------+---------+---------+
- * |         |         |         |         |         |         |
- * |         |         |         |         |         |         |
- * +---------+---------+---------+---------+---------+---------+
  * }
  * </pre>
- * and this joined table is backed by the <tt>MetricUnionAvailability</tt>
+ * The available times are based on overlapping availability of participating sources provided by
+ * {@link MetricUnionAvailability}.
  *
+ * @see MetricUnionAvailability
  */
 public class MetricUnionCompositeTable extends BaseCompositePhysicalTable {
 

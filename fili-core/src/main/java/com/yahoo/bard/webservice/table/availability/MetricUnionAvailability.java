@@ -26,35 +26,48 @@ import java.util.stream.Stream;
 import javax.validation.constraints.NotNull;
 
 /**
- * An implementation of availability which puts metric columns of different availabilities together so that we can
- * query different metric columns from different availabilities at the same time.
+ * An implementation of {@link Availability} which describes a union of source availabilities, filtered by required
+ * metrics and then intersected on time available for required columns.
  * <p>
- * For example, two availabilities of the following
+ * For example, with three source availabilities with the following metric availability:
  * <pre>
  * {@code
- * +-------------------------+-------------------------+
- * |      metricColumn1      |      metricColumn2      |
- * +-------------------------+-------------------------+
- * | [2017-01-01/2017-02-01] | [2018-01-01/2018-02-01] |
- * +-------------------------+-------------------------+
-
- * +---------------------------+-------------------------+
- * |       metricColumn3       |      metricColumn4      |
- * +---------------------------+-------------------------+
- * | [[2019-01-01/2019-02-01]] | [2020-01-01/2020-02-01] |
- * +---------------------------+-------------------------+
+ * Source Availability 1:
+ * +---------------+
+ * |  metric1      |
+ * +---------------+
+ * |  [2017/2018]  |
+ * +---------------+
+ *
+ * Source Availability 2:
+ * +------------------+
+ * |  metric2         |
+ * +------------------+
+ * |  [2016/2017-03]  |
+ * +------------------+
+ *
+ * Source Availability 3:
+ * +-----------+
+ * |  metric3  |
+ * +-----------+
+ * |  None     |
+ * +-----------+
  * }
  * </pre>
- * are joined into a metric union availability below (note that metric columns available on one availability must not
- * exist on any other availabilities.)
+ *
+ * Then the available intervals for the following sets of metrics required by a constraint are:
  * <pre>
- * {@code
- * +-------------------------+-------------------------+---------------------------+-------------------------+
- * |      metricColumn1      |      metricColumn2      |       metricColumn3       |      metricColumn4      |
- * +-------------------------+-------------------------+---------------------------+-------------------------+
- * | [2017-01-01/2017-02-01] | [2018-01-01/2018-02-01] | [[2019-01-01/2019-02-01]] | [2020-01-01/2020-02-01] |
- * +-------------------------+-------------------------+---------------------------+-------------------------+
- * }
+ * +----------------------+------------------+
+ * |  Requested metrics   |  Available       |
+ * +----------------------+------------------+
+ * |  [metric1]           |  [2017/2018]     |
+ * +----------------------+------------------+
+ * |  [metric2]           |  [2016/2017-03]  |
+ * +----------------------+------------------+
+ * |  [metric1, metric2]  | [2017/2018]      |
+ * +----------------------+------------------+
+ * |  [metric1, metric3]  |  []              |
+ * +-------------------+---------------------+
  * </pre>
  */
 public class MetricUnionAvailability extends BaseCompositeAvailability implements Availability {
@@ -68,8 +81,8 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
     /**
      * Constructor.
      *
-     * @param physicalTables  A set of <tt>PhysicalTable</tt>s whose Dimension schemas are the same and
-     * the Metric columns are unique(i.e. no overlap) on every table
+     * @param physicalTables  A set of <tt>PhysicalTable</tt>s whose dimension schemas are (typically) the same and
+     *  Metric columns are unique(i.e. no overlap) on every table
      * @param columns  The set of all configured columns, including dimension columns, that metric union availability
      * will respond with
      */
@@ -186,7 +199,7 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
     }
 
     @Override
-    protected Stream<Availability> getAllDependentAvailabilities() {
+    protected Stream<Availability> getAllSourceAvailabilities() {
         return availabilitiesToMetricNames.keySet().stream();
     }
 }

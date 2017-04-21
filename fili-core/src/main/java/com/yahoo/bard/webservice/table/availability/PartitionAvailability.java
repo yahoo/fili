@@ -15,38 +15,38 @@ import java.util.stream.Stream;
 import javax.validation.constraints.NotNull;
 
 /**
- * An implementation of Availability which merges distinct record rows from multiple availabilities, using the
- * intersection of the availability of the child availabilities, taking into consideration only children whose rows
- * are expected to participate.
- * The default assumption is that the schemas of all tables will be the same, and if they are not, outer join
- * semantics are generally expected. A partition function determines which availabilities will participate given a
- * set of constraints, typically splitting on dimension values.
+ * An implementation of {@link Availability} which describes a union of source availabilities, filtered by request
+ * parameters, such that all sources which pertain to a query are considered when calculating availability.
+ * The supplied availabilityFilters also allows the query to be optimized such that only relevant availabilities are
+ * used to determine the availability for a given {@link PhysicalDataSourceConstraint}.
  * <p>
- * Note that this is for union across availabilities with the same dimension columns who's values are non-overlapping.
- * For example, two availabilities of the following
+ * The typical use is that the schemas of all sources will be the same, and if they are not, the non merging columns
+ * will be expanded with null values.
+ * <p>
+ * For example, with two source availabilities such that:
  * <pre>
  * {@code
- * +---------------------+----------------------+
- * |      part 1         |       part 2         |
- * +-------------------------+------------------+
- * | [2017-01/2017-02]   |  [2017/2018]         |
- * +---------------------+----------------------+
+ * +------------------+---------------+
+ * |  part 1          |  part 2       |
+ * +------------------+---------------+
+ * |  [2017/2017-02]  |  [2017/2018]  |
+ * +------------------+---------------+
  *
- * If constraints participates in all parts:
+ * If the constraint participates in both parts:
  *
- * +-------------------------+
- * |  availability(1,2)      |
- * +-------------------------+
- * | [2017-01/2017-02]       |
- * +-------------------------+
+ * +---------------------+
+ * |  availability(1,2)  |
+ * +---------------------+
+ * |  [2017/2017-02]     |
+ * +---------------------+
 
- * If a query participates only in the larger partition
+ * If the constraint participates only in the larger partition:
  *
- * +-------------------------+
- * |  availability(2)        |
- * +-------------------------+
- * | [2017-01/2018]          |
- * +-------------------------+
+ * +-------------------+
+ * |  availability(2)  |
+ * +-------------------+
+ * | [2017/2018]       |
+ * +-------------------+
  * }
  * </pre>
  */
@@ -54,34 +54,12 @@ public class PartitionAvailability extends BaseCompositeAvailability implements 
 
     private final Map<Availability, DataSourceFilter> availabilityFilters;
     private final Set<TableName> dataSourceNames;
+
     /**
      * Constructor.
      *
-     * @param availabilityFilters  Filters to identify which availabilities apply for a set of constraints
-     * Availabilities. The function is composed of the following works functions/transformations
-     * <pre>
-     * {@code
-     * 1. Function(DataSourceConstraint) -> Boolean
-     *
-     *
-     * 2. Function(ApiFilter) -> sef of PartitionKeys:
-     *        Dimension
-     *        Map<DimensionRow, PartitionKey>
-     *
-     *        SingleDimensionValueMap(Dimension, Map<DimensionRow, PartitionKey>)
-     *
-     *        apply():
-     *            dimension.getSearchProvider(ApiFilters)
-     *                    .findFilteredDimensionRowsPaged(
-     *                            apiFilters,
-     *                            PaginationParameters.EVERYTHING_IN_ONE_PAGE
-     *                    ).stream()
-     *                    .map(map::get)  // This will fail in potentially bad ways if the key isn't mapped
-     *                    .collect(Collectors.toSet());
-     *
-     * 3. Map<PartitionKey, Availability>
-     * }
-     * </pre>
+     * @param availabilityFilters  A map of availabilities to filter functions that determine which requests they
+     * participate in
      */
     public PartitionAvailability(
             @NotNull Map<Availability, DataSourceFilter> availabilityFilters
@@ -91,7 +69,7 @@ public class PartitionAvailability extends BaseCompositeAvailability implements 
     }
 
     @Override
-    protected Stream<Availability> getAllDependentAvailabilities() {
+    protected Stream<Availability> getAllSourceAvailabilities() {
         return availabilityFilters.keySet().stream();
     }
 
@@ -101,9 +79,7 @@ public class PartitionAvailability extends BaseCompositeAvailability implements 
     }
 
     /**
-     * Retrieve all available intervals for all child availabilities.
-     * <p>
-     * Available intervals for the same datasource columns are unioned into a <tt>SimplifiedIntervalList</tt>
+     * Retrieve the union of all available intervals for all source availabilities.
      *
      * @return a map of column to all of its available intervals in union
      */

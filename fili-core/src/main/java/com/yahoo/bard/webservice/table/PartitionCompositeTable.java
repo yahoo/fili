@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 
 /**
- * An implementation of <tt>BaseCompositePhysicalTable</tt> backed by partition availability.
+ * An implementation of {@link PhysicalTable} backed by {@link PartitionAvailability} availability.
  */
 public class PartitionCompositeTable extends BaseCompositePhysicalTable {
 
