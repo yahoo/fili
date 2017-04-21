@@ -47,33 +47,31 @@ public abstract class BaseCompositePhysicalTable extends BasePhysicalTable {
                 logicalToPhysicalColumnNames,
                 availability
         );
-        verifyGrainSatisfiesAllTables(getSchema().getTimeGrain(), physicalTables, name);
+        verifyGrainSatisfiesAllSourceTables(getSchema().getTimeGrain(), physicalTables);
     }
 
     /**
      * Verifies that the coarsest ZonedTimeGrain satisfies all tables.
      *
-     * @param coarsestTimeGrain  The coarsest ZonedTimeGrain to be verified
+     * @param timeGrain  The coarsest ZonedTimeGrain being validated
      * @param physicalTables  A set of PhysicalTables whose ZonedTimeGrains are checked to make sure
      * they all satisfies with the given coarsest ZonedTimeGrain
-     * @param name  Name of the current MetricUnionCompositeTable that represents set of fact table names
-     * joined together
      *
      * @throws IllegalArgumentException when there is no mutually satisfying grain among the table's time grains
      */
-    private static void verifyGrainSatisfiesAllTables(
-            ZonedTimeGrain coarsestTimeGrain,
-            Set<PhysicalTable> physicalTables,
-            TableName name
+    private void verifyGrainSatisfiesAllSourceTables(
+            ZonedTimeGrain timeGrain,
+            Set<PhysicalTable> physicalTables
     ) throws IllegalArgumentException {
         if (!physicalTables.stream()
                 .map(PhysicalTable::getSchema)
                 .map(PhysicalTableSchema::getTimeGrain)
-                .allMatch(coarsestTimeGrain::satisfies)) {
+                .allMatch(timeGrain::satisfies)) {
             String message = String.format(
-                    "There is no mutually satisfying grain among: %s for current table %s",
-                    physicalTables,
-                    name.asName()
+                    "There is no mutually satisfying grain among: %s for composite table %s",
+                    physicalTables.stream()
+                            .map(Table::getName),
+                    getTableName()
             );
             LOG.error(message);
             throw new IllegalArgumentException(message);
