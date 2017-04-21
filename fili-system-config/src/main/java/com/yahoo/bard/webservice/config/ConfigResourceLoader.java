@@ -75,7 +75,7 @@ public class ConfigResourceLoader {
      */
     public Stream<Resource> loadResourcesWithName(String name) throws IOException {
         String resourceName = RESOURCE_LOADER_PREFIX + name;
-        LOG.debug("Attempting to load resources named {}", resourceName);
+        LOG.debug("Loading resources named '{}'", resourceName);
         return Arrays.stream(resolver.getResources(resourceName))
                 .peek(it -> LOG.debug(RESOURCE_LOAD_MESSAGE.logFormat(name, it)));
     }

@@ -81,7 +81,7 @@ public class ModuleLoader {
         try {
             Map<Configuration, String> configurationFileNameMap = configResourceLoader
                     .loadResourcesWithName(MODULE_CONFIG_FILE_NAME)
-                    .collect(Collectors.toMap(configResourceLoader::loadConfigFromResource, Resource::getFilename)
+                    .collect(Collectors.toMap(configResourceLoader::loadConfigFromResource, Resource::getDescription)
             );
             return new ConfigurationGraph(configurationFileNameMap, ModuleLoader::validateModuleName);
 

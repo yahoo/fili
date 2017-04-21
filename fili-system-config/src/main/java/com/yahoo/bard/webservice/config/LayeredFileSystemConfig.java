@@ -76,9 +76,9 @@ public class LayeredFileSystemConfig implements SystemConfig {
         try {
             // Loader pulls resources in from class path locations.
             ConfigResourceLoader loader = new ConfigResourceLoader();
-            List<Configuration> userConfig = loader.loadConfigurations(USER_CONFIG_FILE_NAME);
 
             // User configuration provides overrides for configuration on a specific environment or specialized role
+            List<Configuration> userConfig = loader.loadConfigurations(USER_CONFIG_FILE_NAME);
             if (userConfig.size() > 1) {
                 List<Resource> resources = loader.loadResourcesWithName(USER_CONFIG_FILE_NAME)
                         .collect(Collectors.toList());
@@ -91,7 +91,6 @@ public class LayeredFileSystemConfig implements SystemConfig {
 
             // Application configuration defines configuration at an application level for a bard instance
             List<Configuration> applicationConfig = loader.loadConfigurations(APPLICATION_CONFIG_FILE_NAME);
-
             if (applicationConfig.size() > 1) {
                 List<Resource> resources = loader.loadResourcesWithName(APPLICATION_CONFIG_FILE_NAME)
                         .collect(Collectors.toList());

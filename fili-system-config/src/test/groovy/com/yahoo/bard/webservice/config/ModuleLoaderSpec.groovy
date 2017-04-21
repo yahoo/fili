@@ -81,7 +81,17 @@ class ModuleLoaderSpec extends Specification{
         RESOURCE_G.getFilename() >> RESOURCE_NAME_G
         RESOURCE_H.getFilename() >> RESOURCE_NAME_H
         RESOURCE_J.getFilename() >> RESOURCE_NAME_J
+        RESOURCE_A.getDescription() >> RESOURCE_NAME_A
+        RESOURCE_B.getDescription() >> RESOURCE_NAME_B
+        RESOURCE_C.getDescription() >> RESOURCE_NAME_C
+        RESOURCE_D.getDescription() >> RESOURCE_NAME_D
+        RESOURCE_E.getDescription() >> RESOURCE_NAME_E
+        RESOURCE_F.getDescription() >> RESOURCE_NAME_F
+        RESOURCE_G.getDescription() >> RESOURCE_NAME_G
+        RESOURCE_H.getDescription() >> RESOURCE_NAME_H
+        RESOURCE_J.getDescription() >> RESOURCE_NAME_J
         RESOURCE_MISSING_CHILD.getFilename() >> RESOURCE_NAME_MISSING_CHILD
+        RESOURCE_MISSING_CHILD.getDescription() >> RESOURCE_NAME_MISSING_CHILD
 
         resourceLoader = Mock(ConfigResourceLoader)
         resourceLoader.loadResourcesWithName(_) >> resourceConfigurationMap.keySet().stream()
