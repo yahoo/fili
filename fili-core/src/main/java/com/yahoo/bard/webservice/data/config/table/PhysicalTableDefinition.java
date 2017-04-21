@@ -96,7 +96,7 @@ public abstract class PhysicalTableDefinition {
      * @param dictionaries  Dictionary containing dimension dictionary and physical table dictionary
      * @param metadataService  Service containing column available interval information
      *
-     * @return optional of the corresponding type of physical table, empty optional if could not be build.
+     * @return the type of physical table which was built.
      */
     public abstract PhysicalTable build(
             ResourceDictionaries dictionaries,
