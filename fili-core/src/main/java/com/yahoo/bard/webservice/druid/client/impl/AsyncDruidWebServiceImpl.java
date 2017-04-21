@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
@@ -180,7 +181,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
      * @param timerName  The name that distinguishes this request as part of a druid query or segment metadata request
      * @param outstanding  The counter that keeps track of the outstanding (in flight) requests for the top level query
      */
-    protected void sendRequest(
+    protected Future<Response> sendRequest(
             final SuccessCallback success,
             final HttpErrorCallback error,
             final FailureCallback failure,
@@ -190,9 +191,9 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
     ) {
         RequestLog.startTiming(timerName);
         final RequestLog logCtx = RequestLog.dump();
-
+        Future<Response> responseFuture = null;
         try {
-            requestBuilder.execute(
+            responseFuture = requestBuilder.execute(
                 new AsyncCompletionHandler<Response>() {
                     @Override
                     public Response onCompleted(Response response) {
@@ -267,10 +268,11 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
             LOG.error("druid {} http request failed: ", serviceConfig.getNameAndUrl(), t);
             failure.invoke(t);
         }
+        return responseFuture;
     }
 
     @Override
-    public void getJsonObject(
+    public Future<Response> getJsonObject(
             SuccessCallback success,
             HttpErrorCallback error,
             FailureCallback failure,
@@ -281,7 +283,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
         BoundRequestBuilder requestBuilder = webClient.prepareGet(url);
         headersToAppend.get().forEach(requestBuilder::addHeader);
 
-        sendRequest(
+        return sendRequest(
                 success,
                 error,
                 failure,
@@ -292,7 +294,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
     }
 
     @Override
-    public void postDruidQuery(
+    public Future<Response> postDruidQuery(
             RequestContext context,
             SuccessCallback success,
             HttpErrorCallback error,
@@ -333,7 +335,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
         headersToAppend.get().forEach(requestBuilder::addHeader);
 
         LOG.debug("druid json request: {}", entityBody);
-        sendRequest(
+        return sendRequest(
                 success,
                 error,
                 failure,

@@ -10,6 +10,7 @@ import com.yahoo.bard.webservice.util.IntervalUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import org.asynchttpclient.Response;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
@@ -21,6 +22,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
@@ -54,14 +57,13 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
     @Override
     public List<? extends DataSourceConfiguration> get() {
         if (tableConfigurations.isEmpty()) {
-            loadAllDatasources();
+            Future<Response> responseFuture = loadAllDatasources();
             LOG.info("Loading all datasources");
             try {
-                //TODO Druid should ideally return a future, but this accomplishes the same result.
-                countDownLatch.await(5, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
+                responseFuture.get();
+            } catch (InterruptedException | ExecutionException e) {
                 LOG.error("Interrupted while waiting for a response from druid", e);
-                throw new RuntimeException("Unable to automatically configure correctly", e);
+                throw new RuntimeException("Unable to automatically configure correctly, no response from druid.", e);
             }
         }
 
@@ -74,8 +76,8 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      * The expected response is:
      * ["wikiticker"]
      */
-    private void loadAllDatasources() {
-        queryDruid(rootNode -> {
+    private Future<Response> loadAllDatasources() {
+        return queryDruid(rootNode -> {
             if (rootNode.isArray()) {
                 rootNode.forEach(jsonNode -> {
                     TableConfig tableConfig = new TableConfig(jsonNode.asText());
@@ -106,10 +108,10 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      *
      * @param table The TableConfig to be loaded with queries against druid.
      */
-    private void loadTable(TableConfig table) {
+    private Future<Response> loadTable(TableConfig table) {
         String url = COORDINATOR_TABLES_PATH + table.getName() + "/?full";
         String segmentsPath = "segments";
-        queryDruid(rootNode -> {
+        return queryDruid(rootNode -> {
             if (rootNode.get(segmentsPath).size() == 0) {
                 LOG.error("The segments list returned from {} was empty.", url);
                 throw new RuntimeException("Can't configure table without segment data.");
@@ -199,9 +201,9 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      * @param successCallback  The callback to be done if the query succeeds.
      * @param url  The url to send the query to.
      */
-    private void queryDruid(SuccessCallback successCallback, String url) {
+    private Future<Response> queryDruid(SuccessCallback successCallback, String url) {
         LOG.debug("Fetching " + url);
-        druidWebService.getJsonObject(
+        return druidWebService.getJsonObject(
                 rootNode -> {
                     LOG.debug("Succesfully fetched " + url);
                     successCallback.invoke(rootNode);

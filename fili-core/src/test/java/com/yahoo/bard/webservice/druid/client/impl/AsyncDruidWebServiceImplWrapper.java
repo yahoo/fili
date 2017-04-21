@@ -9,12 +9,15 @@ import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.apache.commons.lang3.concurrent.ConcurrentUtils;
 import org.asynchttpclient.BoundRequestBuilder;
 import org.asynchttpclient.Request;
+import org.asynchttpclient.Response;
 
 import io.netty.handler.codec.http.HttpHeaders;
 
 import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
@@ -50,7 +53,7 @@ public class AsyncDruidWebServiceImplWrapper extends AsyncDruidWebServiceImpl {
      * @param outstanding  The counter that keeps track of the outstanding (in flight) requests for the top level query
      */
     @Override
-    protected void sendRequest(
+    protected Future<Response> sendRequest(
             final SuccessCallback success,
             final HttpErrorCallback error,
             final FailureCallback failure,
@@ -59,6 +62,7 @@ public class AsyncDruidWebServiceImplWrapper extends AsyncDruidWebServiceImpl {
             final AtomicLong outstanding
     ) {
         this.request = requestBuilder.build();
+        return ConcurrentUtils.constantFuture(null);
     }
 
     public HttpHeaders getHeaders() {

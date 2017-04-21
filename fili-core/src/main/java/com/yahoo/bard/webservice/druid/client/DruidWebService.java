@@ -5,6 +5,10 @@ package com.yahoo.bard.webservice.druid.client;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
 
+import org.asynchttpclient.Response;
+
+import java.util.concurrent.Future;
+
 /**
  * Represents the druid web service endpoint.
  */
@@ -19,7 +23,7 @@ public interface DruidWebService {
      * @param failure  callback for handling exception failures.
      * @param query  The druid query object to serialize.
      */
-    void postDruidQuery(
+    Future<Response> postDruidQuery(
             RequestContext context,
             SuccessCallback success,
             HttpErrorCallback error,
@@ -35,7 +39,7 @@ public interface DruidWebService {
      * @param failure  callback for handling exception failures.
      * @param resourcePath  The url suffix for the remote resource. The prefix should be the shared Broker endpoint url.
      */
-    void getJsonObject(
+    Future<Response> getJsonObject(
             SuccessCallback success,
             HttpErrorCallback error,
             FailureCallback failure,

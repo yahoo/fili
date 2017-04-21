@@ -18,12 +18,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
+import org.apache.commons.lang3.concurrent.ConcurrentUtils;
 import org.glassfish.jersey.internal.util.Producer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 import javax.ws.rs.core.Response;
 
@@ -89,7 +91,7 @@ public class TestDruidWebService implements DruidWebService {
      */
     @Override
     @SuppressWarnings("checkstyle:cyclomaticcomplexity")
-    public void postDruidQuery(
+    public Future<org.asynchttpclient.Response> postDruidQuery(
             RequestContext context,
             SuccessCallback success,
             HttpErrorCallback error,
@@ -111,7 +113,7 @@ public class TestDruidWebService implements DruidWebService {
         // Invoke failure callback if we have a throwable to give it
         if (throwable != null) {
             failure.invoke(throwable);
-            return;
+            return ConcurrentUtils.constantFuture(null);
         }
 
         if (lastQuery.getQueryType() instanceof DefaultQueryType) {
@@ -151,6 +153,8 @@ public class TestDruidWebService implements DruidWebService {
         } catch (IOException e) {
             failure.invoke(e);
         }
+
+        return ConcurrentUtils.constantFuture(null);
     }
 
     /**
@@ -212,7 +216,7 @@ public class TestDruidWebService implements DruidWebService {
     }
 
     @Override
-    public void getJsonObject(
+    public Future<org.asynchttpclient.Response> getJsonObject(
             SuccessCallback success,
             HttpErrorCallback error,
             FailureCallback failure,
@@ -226,7 +230,7 @@ public class TestDruidWebService implements DruidWebService {
         // Invoke failure callback if we have a throwable to give it
         if (throwable != null) {
             failure.invoke(throwable);
-            return;
+            return ConcurrentUtils.constantFuture(null);
         }
 
          try {
@@ -238,5 +242,6 @@ public class TestDruidWebService implements DruidWebService {
         } catch (IOException e) {
             failure.invoke(e);
         }
+        return ConcurrentUtils.constantFuture(null);
     }
 }
