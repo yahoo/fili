@@ -7,24 +7,21 @@ import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
-import com.yahoo.bard.webservice.util.IntervalUtils;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.util.Utils;
 
 import com.google.common.collect.Sets;
 
-import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.AbstractMap;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
 
@@ -60,7 +57,8 @@ import javax.validation.constraints.NotNull;
  * }
  * </pre>
  */
-public class MetricUnionAvailability implements Availability {
+public class MetricUnionAvailability extends BaseCompositeAvailability implements Availability {
+
     private static final Logger LOG = LoggerFactory.getLogger(MetricUnionAvailability.class);
 
     private final Set<TableName> dataSourceNames;
@@ -95,15 +93,7 @@ public class MetricUnionAvailability implements Availability {
                         )
                 );
 
-        dataSourceNames = availabilitiesToMetricNames.keySet().stream()
-                .map(Availability::getDataSourceNames)
-                .flatMap(Set::stream)
-                .collect(
-                        Collectors.collectingAndThen(
-                                Collectors.toSet(),
-                                Collections::unmodifiableSet
-                        )
-                );
+        dataSourceNames = super.getDataSourceNames();
 
         // validate metric uniqueness such that
         // each table's underlying datasource schema don't have repeated metric column
@@ -123,29 +113,6 @@ public class MetricUnionAvailability implements Availability {
         return dataSourceNames;
     }
 
-    /**
-     * Retrieve all available intervals for all columns across all the underlying datasources.
-     * <p>
-     * Available intervals for the same columns are unioned into a <tt>SimplifiedIntervalList</tt>
-     *
-     * @return a map of column to all of its available intervals in union
-     */
-    @Override
-    public Map<String, List<Interval>> getAllAvailableIntervals() {
-        // get all availabilities take available interval maps from all availabilities and merge the maps together
-        return availabilitiesToMetricNames.keySet().stream()
-                .map(Availability::getAllAvailableIntervals)
-                .map(Map::entrySet)
-                .flatMap(Set::stream)
-                .collect(
-                        Collectors.toMap(
-                                Map.Entry::getKey,
-                                Map.Entry::getValue,
-                                (value1, value2) -> SimplifiedIntervalList.simplifyIntervals(value1, value2)
-                        )
-                );
-    }
-
     @Override
     public SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint constraint) {
 
@@ -158,12 +125,10 @@ public class MetricUnionAvailability implements Availability {
             return new SimplifiedIntervalList();
         }
 
-        return new SimplifiedIntervalList(
-                constructSubConstraint(constraint).entrySet().stream()
-                        .map(entry -> entry.getKey().getAvailableIntervals(entry.getValue()))
-                        .map(simplifiedIntervalList -> (Set<Interval>) new HashSet<>(simplifiedIntervalList))
-                        .reduce(null, IntervalUtils::getOverlappingSubintervals)
-        );
+        return constructSubConstraint(constraint).entrySet().stream()
+                .map(entry -> entry.getKey().getAvailableIntervals(entry.getValue()))
+                .reduce(SimplifiedIntervalList::intersect).orElse(new SimplifiedIntervalList());
+
     }
 
     @Override
@@ -218,5 +183,10 @@ public class MetricUnionAvailability implements Availability {
                 )
                 .filter(entry -> !entry.getValue().getMetricNames().isEmpty())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    @Override
+    protected Stream<Availability> getAllDependentAvailabilities() {
+        return availabilitiesToMetricNames.keySet().stream();
     }
 }
