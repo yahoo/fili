@@ -194,9 +194,8 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
     ) {
         RequestLog.startTiming(timerName);
         final RequestLog logCtx = RequestLog.dump();
-        Future<Response> responseFuture;
         try {
-            responseFuture = requestBuilder.execute(
+            return requestBuilder.execute(
                 new AsyncCompletionHandler<Response>() {
                     @Override
                     public Response onCompleted(Response response) {
@@ -270,9 +269,8 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
             }
             LOG.error("druid {} http request failed: ", serviceConfig.getNameAndUrl(), t);
             failure.invoke(t);
-            responseFuture = new FailedFuture<>("Failed to reach druid");
         }
-        return responseFuture;
+        return new FailedFuture<>(new RuntimeException("Failed to reach druid"));
     }
 
     @Override

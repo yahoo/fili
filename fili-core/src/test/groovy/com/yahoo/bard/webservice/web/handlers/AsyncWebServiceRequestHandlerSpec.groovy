@@ -42,6 +42,7 @@ class AsyncWebServiceRequestHandlerSpec extends Specification {
         1 * dws.postDruidQuery(rc, _, null, null, groupByQuery) >> { a0, a1, a2, a3, a4 ->
             // Save the success callback
             sc = a1
+            return null
         }
 
         when:

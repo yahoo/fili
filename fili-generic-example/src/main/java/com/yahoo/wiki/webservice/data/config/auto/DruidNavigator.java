@@ -53,14 +53,8 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
     @Override
     public List<? extends DataSourceConfiguration> get() {
         if (tableConfigurations.isEmpty()) {
-            Future<Response> responseFuture = loadAllDatasources();
+            loadAllDatasources();
             LOG.info("Loading all datasources");
-            try {
-                responseFuture.get();
-            } catch (InterruptedException | ExecutionException e) {
-                LOG.error("Interrupted while waiting for a response from druid", e);
-                throw new RuntimeException("Unable to automatically configure correctly, no response from druid.", e);
-            }
         }
 
         return tableConfigurations;
@@ -72,8 +66,8 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      * The expected response is:
      * ["wikiticker"]
      */
-    private Future<Response> loadAllDatasources() {
-        return queryDruid(rootNode -> {
+    private void loadAllDatasources() {
+        queryDruid(rootNode -> {
             if (rootNode.isArray()) {
                 rootNode.forEach(jsonNode -> {
                     TableConfig tableConfig = new TableConfig(jsonNode.asText());
@@ -104,10 +98,10 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      *
      * @param table The TableConfig to be loaded with queries against druid.
      */
-    private Future<Response> loadTable(TableConfig table) {
+    private void loadTable(TableConfig table) {
         String url = COORDINATOR_TABLES_PATH + table.getName() + "/?full";
         String segmentsPath = "segments";
-        return queryDruid(rootNode -> {
+        queryDruid(rootNode -> {
             if (rootNode.get(segmentsPath).size() == 0) {
                 LOG.error("The segments list returned from {} was empty.", url);
                 throw new RuntimeException("Can't configure table without segment data.");
@@ -192,14 +186,14 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
     }
 
     /**
-     * Send a request to druid.
+     * Send a blocking request to druid. All queries are finished before continuing.
      *
      * @param successCallback  The callback to be done if the query succeeds.
      * @param url  The url to send the query to.
      */
-    private Future<Response> queryDruid(SuccessCallback successCallback, String url) {
+    private void queryDruid(SuccessCallback successCallback, String url) {
         LOG.debug("Fetching " + url);
-        return druidWebService.getJsonObject(
+        Future<Response> responseFuture =  druidWebService.getJsonObject(
                 rootNode -> {
                     LOG.debug("Succesfully fetched " + url);
                     successCallback.invoke(rootNode);
@@ -214,5 +208,13 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
                 },
                 url
         );
+
+        try {
+            //calling get so we wait until responses are loaded before returning and processing continues
+            responseFuture.get();
+        } catch (InterruptedException | ExecutionException e) {
+            LOG.error("Interrupted while waiting for a response from druid", e);
+            throw new RuntimeException("Unable to automatically configure correctly, no response from druid.", e);
+        }
     }
 }

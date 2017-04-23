@@ -13,19 +13,19 @@ import java.util.concurrent.TimeoutException;
  * @param <E>  The type to be returned by the future.
  */
 public class FailedFuture<E> implements Future<E> {
-    private final String reason;
+    private final Throwable reason;
 
     /**
      * Construct a future which is already known to have failed.
      *
      * @param reason  The reason the future could not be completed.
      */
-    public FailedFuture(String reason) {
+    public FailedFuture(Throwable reason) {
         this.reason = reason;
     }
 
     @Override
-    public boolean cancel(final boolean mayInterruptIfRunning) {
+    public boolean cancel(boolean mayInterruptIfRunning) {
         return false;
     }
 
@@ -41,7 +41,7 @@ public class FailedFuture<E> implements Future<E> {
 
     @Override
     public E get() throws InterruptedException, ExecutionException {
-        throw new ExecutionException(new RuntimeException(reason));
+        throw new ExecutionException(reason);
     }
 
     @Override
