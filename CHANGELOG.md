@@ -92,6 +92,9 @@ Current
 
 ### Changed:
 
+- [Queries to Druid Web Service now return a Future](https://github.com/yahoo/fili/pull/254)
+    * Queries now return a `Future<Response>` in addition to having method callbacks.
+
 - [Refactor Physical Table Definition and Update Table Loader](https://github.com/yahoo/fili/pull/207)
     * `PhysicalTableDefinition` is now an abstract class, construct using `ConcretePhysicalTableDefinition` instead
     * `PhysicalTableDefinition` now requires a `build` methods to be implemented that builds a physical table
