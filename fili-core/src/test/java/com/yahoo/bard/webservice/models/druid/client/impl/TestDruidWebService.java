@@ -10,6 +10,7 @@ import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.druid.model.query.WeightEvaluationQuery;
+import com.yahoo.bard.webservice.util.FailedFuture;
 import com.yahoo.bard.webservice.util.JsonSlurper;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
 
@@ -88,6 +89,7 @@ public class TestDruidWebService implements DruidWebService {
     /**
      * If TestDruidWebService#throwable is set, invokes the failure callback.  Otherwise invokes success or failure
      * dependent on whether TestDruidWebService#statusCode equals 200.
+     * Note that since this doesn't send requests to druid all the responses will be null or {@link FailedFuture}.
      */
     @Override
     @SuppressWarnings("checkstyle:cyclomaticcomplexity")
@@ -113,7 +115,7 @@ public class TestDruidWebService implements DruidWebService {
         // Invoke failure callback if we have a throwable to give it
         if (throwable != null) {
             failure.invoke(throwable);
-            return ConcurrentUtils.constantFuture(null);
+            return new FailedFuture<>(throwable);
         }
 
         if (lastQuery.getQueryType() instanceof DefaultQueryType) {
@@ -145,16 +147,18 @@ public class TestDruidWebService implements DruidWebService {
         try {
             if (query instanceof WeightEvaluationQuery) {
                 success.invoke(mapper.readTree(weightResponse));
+                return ConcurrentUtils.constantFuture(null);
             } else if (statusCode == 200) {
                 success.invoke(mapper.readTree(jsonResponse.call()));
+                return ConcurrentUtils.constantFuture(null);
             } else {
                 error.invoke(statusCode, reasonPhrase, jsonResponse.call());
+                return ConcurrentUtils.constantFuture(null);
             }
         } catch (IOException e) {
             failure.invoke(e);
+            return new FailedFuture<>(e);
         }
-
-        return ConcurrentUtils.constantFuture(null);
     }
 
     /**

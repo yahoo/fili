@@ -269,8 +269,8 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
             }
             LOG.error("druid {} http request failed: ", serviceConfig.getNameAndUrl(), t);
             failure.invoke(t);
+            return new FailedFuture<>(t);
         }
-        return new FailedFuture<>(new RuntimeException("Failed to reach druid"));
     }
 
     @Override
