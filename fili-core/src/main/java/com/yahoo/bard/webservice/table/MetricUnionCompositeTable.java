@@ -26,7 +26,7 @@ import javax.validation.constraints.NotNull;
  *
  * table2
  * +---------+---------+---------+
- * | metric4 | metric5 | metric5 |
+ * | metric4 | metric5 | metric6 |
  * +---------+---------+---------+
  * }
  * </pre>
@@ -34,7 +34,7 @@ import javax.validation.constraints.NotNull;
  * <pre>
  * {@code
  * +---------+---------+---------+---------+---------+---------+
- * | metric1 | metric2 | metric3 | metric4 | metric5 | metric5 |
+ * | metric1 | metric2 | metric3 | metric4 | metric5 | metric6 |
  * +---------+---------+---------+---------+---------+---------+
  * }
  * </pre>

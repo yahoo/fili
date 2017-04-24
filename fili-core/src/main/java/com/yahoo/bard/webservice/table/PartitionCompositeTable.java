@@ -52,8 +52,8 @@ public class PartitionCompositeTable extends BaseCompositePhysicalTable {
      *
      * @return  The availability describing the partition
      */
-    private static Availability buildAvailability(final Map<PhysicalTable, DataSourceFilter> dataSourceFilterMap) {
+    private static Availability buildAvailability(Map<PhysicalTable, DataSourceFilter> dataSourceFilterMap) {
         return new PartitionAvailability(dataSourceFilterMap.entrySet().stream()
-                .collect(Collectors.toMap(entry -> entry.getKey().getAvailability(), entry -> entry.getValue())));
+                .collect(Collectors.toMap(entry -> entry.getKey().getAvailability(), Map.Entry::getValue)));
     }
 }

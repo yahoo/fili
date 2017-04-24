@@ -32,7 +32,14 @@ class BaseCompositePhysicalTableSpec extends Specification {
         physicalTable2.getSchema() >> schema2
 
         when:
-        MetricUnionCompositeTable.verifyGrainSatisfiesAllTables(coarsestTimeGrain, [physicalTable1, physicalTable2] as Set, TableName.of("table1"))
+        new BaseCompositePhysicalTable(
+                TableName.of("test"),
+                coarsestTimeGrain,
+                Collections.emptySet(),
+                [physicalTable1, physicalTable2] as Set,
+                [:],
+                Mock(Availability)
+                ) {}
 
         then:
         IllegalArgumentException illegalArgumentException = thrown()

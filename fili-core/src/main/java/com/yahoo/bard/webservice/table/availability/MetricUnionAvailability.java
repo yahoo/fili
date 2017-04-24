@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
 
@@ -74,7 +73,6 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
 
     private static final Logger LOG = LoggerFactory.getLogger(MetricUnionAvailability.class);
 
-    private final Set<TableName> dataSourceNames;
     private final Set<String> metricNames;
     private final Map<Availability, Set<String>> availabilitiesToMetricNames;
 
@@ -87,6 +85,8 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
      * will respond with
      */
     public MetricUnionAvailability(@NotNull Set<PhysicalTable> physicalTables, @NotNull Set<Column> columns) {
+        super(physicalTables.stream().map(PhysicalTable::getAvailability));
+
         metricNames = Utils.getSubsetByType(columns, MetricColumn.class).stream()
                 .map(MetricColumn::getName)
                 .collect(Collectors.toSet());
@@ -106,8 +106,6 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
                         )
                 );
 
-        dataSourceNames = super.getDataSourceNames();
-
         // validate metric uniqueness such that
         // each table's underlying datasource schema don't have repeated metric column
         if (!isMetricUnique(availabilitiesToMetricNames)) {
@@ -119,11 +117,6 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
                 LOG.error(message);
                 throw new RuntimeException(message);
         }
-    }
-
-    @Override
-    public Set<TableName> getDataSourceNames() {
-        return dataSourceNames;
     }
 
     @Override
@@ -142,17 +135,6 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
                 .map(entry -> entry.getKey().getAvailableIntervals(entry.getValue()))
                 .reduce(SimplifiedIntervalList::intersect).orElse(new SimplifiedIntervalList());
 
-    }
-
-    @Override
-    public String toString() {
-        return String.format("MetricUnionAvailability with data source names: [%s] and Configured metric columns: [%s]",
-                dataSourceNames.stream()
-                        .map(TableName::asName)
-                        .collect(Collectors.joining(", ")),
-                metricNames.stream()
-                        .collect(Collectors.joining(", "))
-        );
     }
 
     /**
@@ -199,7 +181,13 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
     }
 
     @Override
-    protected Stream<Availability> getAllSourceAvailabilities() {
-        return availabilitiesToMetricNames.keySet().stream();
+    public String toString() {
+        return String.format("MetricUnionAvailability with data source names: [%s] and Configured metric columns: [%s]",
+                getDataSourceNames().stream()
+                        .map(TableName::asName)
+                        .collect(Collectors.joining(", ")),
+                metricNames.stream()
+                        .collect(Collectors.joining(", "))
+        );
     }
 }

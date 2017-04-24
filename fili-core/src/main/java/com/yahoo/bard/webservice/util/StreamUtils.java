@@ -2,14 +2,18 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.util;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Utils for dealing with streams.
@@ -112,6 +116,18 @@ public class StreamUtils {
             Function<? super S, ? extends K> keyMapper, Supplier<M> mapSupplier
     ) {
         return Collectors.toMap(keyMapper, Function.identity(), StreamUtils.throwingMerger(), mapSupplier);
+    }
+
+    /**
+     * Collect a stream into an unmodifiable set preserving first-in ordering.
+     *
+     * @param <T> The type of the value stream
+     * @param values  The stream of values to be collected
+     *
+     * @return An unmodifiable copy of a linked hash set view of the stream
+     */
+    public static <T> Set<T> toUnmodifiableSet(Stream<T> values) {
+        return Collections.unmodifiableSet((Set<T>) values.collect(Collectors.toCollection(LinkedHashSet::new)));
     }
 
     /**

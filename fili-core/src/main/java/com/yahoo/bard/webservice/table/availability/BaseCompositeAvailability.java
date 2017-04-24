@@ -4,8 +4,8 @@ package com.yahoo.bard.webservice.table.availability;
 
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
+import com.yahoo.bard.webservice.util.StreamUtils;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -16,30 +16,39 @@ import java.util.stream.Stream;
  */
 public abstract class BaseCompositeAvailability implements Availability {
 
-    /**
-     * Return a stream of all the availabilities which this table composites from.
-     *
-     * @return A stream of availabilities
-     */
-    protected abstract Stream<Availability> getAllSourceAvailabilities();
+    private final Set<Availability> sourceAvailabilities;
+    private final Set<TableName> dataSourcesNames;
 
-    @Override
-    public Set<TableName> getDataSourceNames() {
-        return getAllSourceAvailabilities()
-                .map(Availability::getDataSourceNames)
-                .flatMap(Set::stream)
-                .collect(
-                        Collectors.collectingAndThen(
-                                Collectors.toSet(),
-                                Collections::unmodifiableSet
-                        )
-                );
+    /**
+     * Constructor.
+     *
+     * @param availabilityStream  A potentially ordered stream of availabilities which supply this composite view
+     */
+    public BaseCompositeAvailability(Stream<Availability> availabilityStream) {
+        sourceAvailabilities = StreamUtils.toUnmodifiableSet(availabilityStream);
+        dataSourcesNames = StreamUtils.toUnmodifiableSet(sourceAvailabilities.stream()
+                .map(Availability::getDataSourceNames).flatMap(Set::stream)
+        );
     }
 
     /**
-     * Retrieve all available intervals for all columns across all the underlying datasources.
+     * Return a stream of all the availabilities which this availability composites from.
+     *
+     * @return A stream of availabilities
+     */
+    protected Stream<Availability> getAllSourceAvailabilities() {
+        return sourceAvailabilities.stream();
+    };
+
+    @Override
+    public Set<TableName> getDataSourceNames() {
+        return dataSourcesNames;
+    }
+
+    /**
+     * Retrieve all available intervals for all data source fields across all the underlying datasources.
      * <p>
-     * Available intervals for the same columns are unioned into a <tt>SimplifiedIntervalList</tt>
+     * Available intervals for the same underlying names are unioned into a <tt>SimplifiedIntervalList</tt>
      *
      * @return a map of column to all of its available intervals in union
      */

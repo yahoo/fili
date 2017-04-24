@@ -69,8 +69,7 @@ public abstract class BaseCompositePhysicalTable extends BasePhysicalTable {
                 .allMatch(timeGrain::satisfies)) {
             String message = String.format(
                     "There is no mutually satisfying grain among: %s for composite table %s",
-                    physicalTables.stream()
-                            .map(Table::getName),
+                    physicalTables.stream().map(Table::getName),
                     getTableName()
             );
             LOG.error(message);
