@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
 import org.apache.commons.lang3.concurrent.ConcurrentUtils;
+import org.asynchttpclient.Response;
 import org.glassfish.jersey.internal.util.Producer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +29,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 /**
  * Test druid web service acts as a proxy for a real web service, accepting requests and saving them and providing
@@ -93,7 +94,7 @@ public class TestDruidWebService implements DruidWebService {
      */
     @Override
     @SuppressWarnings("checkstyle:cyclomaticcomplexity")
-    public Future<org.asynchttpclient.Response> postDruidQuery(
+    public Future<Response> postDruidQuery(
             RequestContext context,
             SuccessCallback success,
             HttpErrorCallback error,
@@ -183,7 +184,7 @@ public class TestDruidWebService implements DruidWebService {
      * @param reason  failure reason string
      * @param response  json response
      */
-    public void setFailure(Response.Status status, String reason, String response) {
+    public void setFailure(Status status, String reason, String response) {
         setFailure(status.getStatusCode(), status.name(), reason, response);
     }
 
@@ -219,7 +220,7 @@ public class TestDruidWebService implements DruidWebService {
     }
 
     @Override
-    public Future<org.asynchttpclient.Response> getJsonObject(
+    public Future<Response> getJsonObject(
             SuccessCallback success,
             HttpErrorCallback error,
             FailureCallback failure,

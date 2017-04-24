@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
 /**
@@ -193,7 +195,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      */
     private void queryDruid(SuccessCallback successCallback, String url) {
         LOG.debug("Fetching " + url);
-        Future<Response> responseFuture =  druidWebService.getJsonObject(
+        Future<Response> responseFuture = druidWebService.getJsonObject(
                 rootNode -> {
                     LOG.debug("Succesfully fetched " + url);
                     successCallback.invoke(rootNode);
@@ -211,8 +213,8 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
 
         try {
             //calling get so we wait until responses are loaded before returning and processing continues
-            responseFuture.get();
-        } catch (InterruptedException | ExecutionException e) {
+            responseFuture.get(30, TimeUnit.SECONDS);
+        } catch (TimeoutException | InterruptedException | ExecutionException e) {
             LOG.error("Interrupted while waiting for a response from druid", e);
             throw new RuntimeException("Unable to automatically configure correctly, no response from druid.", e);
         }
