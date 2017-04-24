@@ -14,6 +14,8 @@ import com.fasterxml.jackson.databind.ObjectWriter
 
 import spock.lang.Specification
 
+import java.util.concurrent.Future
+
 class AsyncWebServiceRequestHandlerSpec extends Specification {
 
     def "Test handle request invokes asynch call"() {
@@ -42,6 +44,7 @@ class AsyncWebServiceRequestHandlerSpec extends Specification {
         1 * dws.postDruidQuery(rc, _, null, null, groupByQuery) >> { a0, a1, a2, a3, a4 ->
             // Save the success callback
             sc = a1
+            return Mock(Future)
         }
 
         when:

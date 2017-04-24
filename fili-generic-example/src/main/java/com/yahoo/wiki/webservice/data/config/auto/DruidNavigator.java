@@ -10,6 +10,7 @@ import com.yahoo.bard.webservice.util.IntervalUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import org.asynchttpclient.Response;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
@@ -20,8 +21,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
 /**
@@ -33,7 +36,6 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
     private static final String COORDINATOR_TABLES_PATH = "/datasources/";
     private final DruidWebService druidWebService;
     private final List<TableConfig> tableConfigurations;
-    private final CountDownLatch countDownLatch;
 
     /**
      * Constructs a DruidNavigator to load datasources from druid.
@@ -43,7 +45,6 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
     public DruidNavigator(DruidWebService druidWebService) {
         this.druidWebService = druidWebService;
         tableConfigurations = new ArrayList<>();
-        countDownLatch = new CountDownLatch(1);
     }
 
     /**
@@ -56,13 +57,6 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
         if (tableConfigurations.isEmpty()) {
             loadAllDatasources();
             LOG.info("Loading all datasources");
-            try {
-                //TODO Druid should ideally return a future, but this accomplishes the same result.
-                countDownLatch.await(5, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                LOG.error("Interrupted while waiting for a response from druid", e);
-                throw new RuntimeException("Unable to automatically configure correctly", e);
-            }
         }
 
         return tableConfigurations;
@@ -194,18 +188,17 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
     }
 
     /**
-     * Send a request to druid.
+     * Send a blocking request to druid. All queries are finished before continuing.
      *
      * @param successCallback  The callback to be done if the query succeeds.
      * @param url  The url to send the query to.
      */
     private void queryDruid(SuccessCallback successCallback, String url) {
         LOG.debug("Fetching " + url);
-        druidWebService.getJsonObject(
+        Future<Response> responseFuture = druidWebService.getJsonObject(
                 rootNode -> {
                     LOG.debug("Succesfully fetched " + url);
                     successCallback.invoke(rootNode);
-                    countDownLatch.countDown();
                 },
                 (statusCode, reasonPhrase, responseBody) -> {
                     LOG.error("HTTPError {} - {} for {}", statusCode, reasonPhrase, url);
@@ -217,5 +210,13 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
                 },
                 url
         );
+
+        try {
+            //calling get so we wait until responses are loaded before returning and processing continues
+            responseFuture.get(30, TimeUnit.SECONDS);
+        } catch (TimeoutException | InterruptedException | ExecutionException e) {
+            LOG.error("Interrupted while waiting for a response from druid", e);
+            throw new RuntimeException("Unable to automatically configure correctly, no response from druid.", e);
+        }
     }
 }

@@ -9,12 +9,15 @@ import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.apache.commons.lang3.concurrent.ConcurrentUtils;
 import org.asynchttpclient.BoundRequestBuilder;
 import org.asynchttpclient.Request;
+import org.asynchttpclient.Response;
 
 import io.netty.handler.codec.http.HttpHeaders;
 
 import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
@@ -41,6 +44,7 @@ public class AsyncDruidWebServiceImplWrapper extends AsyncDruidWebServiceImpl {
 
     /**
      * Capture arguments to test for expected values.
+     * Since there is no response, the future will hold a null value.
      *
      * @param success  callback for handling successful requests.
      * @param error  callback for handling http errors.
@@ -48,9 +52,11 @@ public class AsyncDruidWebServiceImplWrapper extends AsyncDruidWebServiceImpl {
      * @param requestBuilder  The bound request builder for the request to be sent.
      * @param timerName  The name that distinguishes this request as part of a druid query or segment metadata request
      * @param outstanding  The counter that keeps track of the outstanding (in flight) requests for the top level query
+     *
+     * @return a future with a null response.
      */
     @Override
-    protected void sendRequest(
+    protected Future<Response> sendRequest(
             final SuccessCallback success,
             final HttpErrorCallback error,
             final FailureCallback failure,
@@ -59,6 +65,7 @@ public class AsyncDruidWebServiceImplWrapper extends AsyncDruidWebServiceImpl {
             final AtomicLong outstanding
     ) {
         this.request = requestBuilder.build();
+        return ConcurrentUtils.constantFuture(null);
     }
 
     public HttpHeaders getHeaders() {

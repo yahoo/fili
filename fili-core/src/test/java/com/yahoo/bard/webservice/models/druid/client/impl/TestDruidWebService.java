@@ -10,6 +10,7 @@ import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.druid.model.query.WeightEvaluationQuery;
+import com.yahoo.bard.webservice.util.FailedFuture;
 import com.yahoo.bard.webservice.util.JsonSlurper;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
 
@@ -18,14 +19,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
+import org.apache.commons.lang3.concurrent.ConcurrentUtils;
+import org.asynchttpclient.Response;
 import org.glassfish.jersey.internal.util.Producer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.Future;
 
-import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 /**
  * Test druid web service acts as a proxy for a real web service, accepting requests and saving them and providing
@@ -86,10 +90,11 @@ public class TestDruidWebService implements DruidWebService {
     /**
      * If TestDruidWebService#throwable is set, invokes the failure callback.  Otherwise invokes success or failure
      * dependent on whether TestDruidWebService#statusCode equals 200.
+     * Note that since this doesn't send requests to druid all the responses will be null or {@link FailedFuture}.
      */
     @Override
     @SuppressWarnings("checkstyle:cyclomaticcomplexity")
-    public void postDruidQuery(
+    public Future<Response> postDruidQuery(
             RequestContext context,
             SuccessCallback success,
             HttpErrorCallback error,
@@ -111,7 +116,7 @@ public class TestDruidWebService implements DruidWebService {
         // Invoke failure callback if we have a throwable to give it
         if (throwable != null) {
             failure.invoke(throwable);
-            return;
+            return new FailedFuture<>(throwable);
         }
 
         if (lastQuery.getQueryType() instanceof DefaultQueryType) {
@@ -150,7 +155,10 @@ public class TestDruidWebService implements DruidWebService {
             }
         } catch (IOException e) {
             failure.invoke(e);
+            return new FailedFuture<>(e);
         }
+
+        return ConcurrentUtils.constantFuture(null);
     }
 
     /**
@@ -176,7 +184,7 @@ public class TestDruidWebService implements DruidWebService {
      * @param reason  failure reason string
      * @param response  json response
      */
-    public void setFailure(Response.Status status, String reason, String response) {
+    public void setFailure(Status status, String reason, String response) {
         setFailure(status.getStatusCode(), status.name(), reason, response);
     }
 
@@ -212,7 +220,7 @@ public class TestDruidWebService implements DruidWebService {
     }
 
     @Override
-    public void getJsonObject(
+    public Future<Response> getJsonObject(
             SuccessCallback success,
             HttpErrorCallback error,
             FailureCallback failure,
@@ -226,7 +234,7 @@ public class TestDruidWebService implements DruidWebService {
         // Invoke failure callback if we have a throwable to give it
         if (throwable != null) {
             failure.invoke(throwable);
-            return;
+            return new FailedFuture<>(throwable);
         }
 
          try {
@@ -237,6 +245,9 @@ public class TestDruidWebService implements DruidWebService {
             }
         } catch (IOException e) {
             failure.invoke(e);
+             return new FailedFuture<>(e);
         }
+
+        return ConcurrentUtils.constantFuture(null);
     }
 }
