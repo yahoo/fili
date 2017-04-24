@@ -147,18 +147,17 @@ public class TestDruidWebService implements DruidWebService {
         try {
             if (query instanceof WeightEvaluationQuery) {
                 success.invoke(mapper.readTree(weightResponse));
-                return ConcurrentUtils.constantFuture(null);
             } else if (statusCode == 200) {
                 success.invoke(mapper.readTree(jsonResponse.call()));
-                return ConcurrentUtils.constantFuture(null);
             } else {
                 error.invoke(statusCode, reasonPhrase, jsonResponse.call());
-                return ConcurrentUtils.constantFuture(null);
             }
         } catch (IOException e) {
             failure.invoke(e);
             return new FailedFuture<>(e);
         }
+
+        return ConcurrentUtils.constantFuture(null);
     }
 
     /**
@@ -234,7 +233,7 @@ public class TestDruidWebService implements DruidWebService {
         // Invoke failure callback if we have a throwable to give it
         if (throwable != null) {
             failure.invoke(throwable);
-            return ConcurrentUtils.constantFuture(null);
+            return new FailedFuture<>(throwable);
         }
 
          try {
@@ -245,7 +244,9 @@ public class TestDruidWebService implements DruidWebService {
             }
         } catch (IOException e) {
             failure.invoke(e);
+             return new FailedFuture<>(e);
         }
+
         return ConcurrentUtils.constantFuture(null);
     }
 }
