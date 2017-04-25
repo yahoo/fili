@@ -24,10 +24,11 @@ public abstract class BaseCompositeAvailability implements Availability {
      *
      * @param availabilityStream  A potentially ordered stream of availabilities which supply this composite view
      */
-    public BaseCompositeAvailability(Stream<Availability> availabilityStream) {
+    protected BaseCompositeAvailability(Stream<Availability> availabilityStream) {
         sourceAvailabilities = StreamUtils.toUnmodifiableSet(availabilityStream);
-        dataSourcesNames = StreamUtils.toUnmodifiableSet(sourceAvailabilities.stream()
-                .map(Availability::getDataSourceNames).flatMap(Set::stream)
+        dataSourcesNames = StreamUtils.toUnmodifiableSet(
+                sourceAvailabilities.stream()
+                        .map(Availability::getDataSourceNames).flatMap(Set::stream)
         );
     }
 
@@ -50,7 +51,7 @@ public abstract class BaseCompositeAvailability implements Availability {
      * <p>
      * Available intervals for the same underlying names are unioned into a <tt>SimplifiedIntervalList</tt>
      *
-     * @return a map of column to all of its available intervals in union
+     * @return a map of metadata field names to all of its available intervals in union
      */
     @Override
     public Map<String, SimplifiedIntervalList> getAllAvailableIntervals() {
