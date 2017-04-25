@@ -948,7 +948,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     protected Supplier<Map<String, String>> buildDruidWebServiceHeaderSupplier() {
         Supplier<Map<String, String>> supplier = HashMap::new;
         String customSupplierClassString = SYSTEM_CONFIG.getStringProperty(DRUID_HEADER_SUPPLIER_CLASS, null);
-        if (customSupplierClassString != null && customSupplierClassString.equals("")) {
+        if (customSupplierClassString != null && !customSupplierClassString.equals("")) {
             try {
                 Class<?> c = Class.forName(customSupplierClassString);
                 Constructor<?> constructor = c.getConstructor();
