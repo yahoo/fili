@@ -82,9 +82,7 @@ public class PartitionAvailability extends BaseCompositeAvailability implements 
      *
      * @return The intervals which are available for the given constraint
      */
-    private SimplifiedIntervalList mergeAvailabilities(
-            PhysicalDataSourceConstraint constraint
-    ) {
+    private SimplifiedIntervalList mergeAvailabilities(PhysicalDataSourceConstraint constraint) {
         return filteredAvailabilities(constraint)
                 .map(availability -> availability.getAvailableIntervals(constraint))
                 .reduce(SimplifiedIntervalList::intersect).orElse(new SimplifiedIntervalList());
