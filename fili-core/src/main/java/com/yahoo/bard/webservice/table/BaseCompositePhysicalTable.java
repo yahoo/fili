@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
@@ -47,33 +49,37 @@ public abstract class BaseCompositePhysicalTable extends BasePhysicalTable {
                 logicalToPhysicalColumnNames,
                 availability
         );
-        verifyGrainSatisfiesAllTables(getSchema().getTimeGrain(), physicalTables, name);
+        verifyGrainSatisfiesAllSourceTables(getSchema().getTimeGrain(), physicalTables);
     }
 
     /**
      * Verifies that the coarsest ZonedTimeGrain satisfies all tables.
      *
-     * @param coarsestTimeGrain  The coarsest ZonedTimeGrain to be verified
+     * @param timeGrain  The coarsest ZonedTimeGrain being validated
      * @param physicalTables  A set of PhysicalTables whose ZonedTimeGrains are checked to make sure
      * they all satisfies with the given coarsest ZonedTimeGrain
-     * @param name  Name of the current MetricUnionCompositeTable that represents set of fact table names
-     * joined together
      *
      * @throws IllegalArgumentException when there is no mutually satisfying grain among the table's time grains
      */
-    private static void verifyGrainSatisfiesAllTables(
-            ZonedTimeGrain coarsestTimeGrain,
-            Set<PhysicalTable> physicalTables,
-            TableName name
+    private void verifyGrainSatisfiesAllSourceTables(
+            ZonedTimeGrain timeGrain,
+            Set<PhysicalTable> physicalTables
     ) throws IllegalArgumentException {
-        if (!physicalTables.stream()
-                .map(PhysicalTable::getSchema)
-                .map(PhysicalTableSchema::getTimeGrain)
-                .allMatch(coarsestTimeGrain::satisfies)) {
+        Predicate<PhysicalTable> tableDoesNotSatisfyFilter = (physicalTable) -> ! physicalTable.getSchema()
+                .getTimeGrain()
+                .satisfies(timeGrain);
+
+        Set<String> unsatisfied = physicalTables.stream()
+                .filter(tableDoesNotSatisfyFilter)
+                .map(PhysicalTable::getTableName)
+                .map(TableName::asName)
+                .collect(Collectors.toSet());
+
+        if (! unsatisfied.isEmpty()) {
             String message = String.format(
-                    "There is no mutually satisfying grain among: %s for current table %s",
-                    physicalTables,
-                    name.asName()
+                    "Time grain: '%s' cannot be satisfied by source table(s) %s",
+                    timeGrain,
+                    unsatisfied
             );
             LOG.error(message);
             throw new IllegalArgumentException(message);

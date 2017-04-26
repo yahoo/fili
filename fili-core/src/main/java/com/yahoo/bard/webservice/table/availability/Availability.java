@@ -6,9 +6,6 @@ import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
-import org.joda.time.Interval;
-
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -29,7 +26,7 @@ public interface Availability {
      *
      * @return The intervals, by column, available.
      */
-    Map<String, List<Interval>> getAllAvailableIntervals();
+    Map<String, SimplifiedIntervalList> getAllAvailableIntervals();
 
     /**
      * Fetch a set of intervals given a set of column name in DataSourceConstraint.

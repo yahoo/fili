@@ -83,7 +83,7 @@ public abstract class BasePhysicalTable implements PhysicalTable {
 
     @Override
     public Map<Column, List<Interval>> getAllAvailableIntervals() {
-        Map<String, List<Interval>> availableIntervals = getAvailability().getAllAvailableIntervals();
+        Map<String, SimplifiedIntervalList> availableIntervals = getAvailability().getAllAvailableIntervals();
 
         return getSchema().getColumns().stream()
                 .collect(Collectors.toMap(

@@ -12,30 +12,50 @@ class BaseCompositePhysicalTableSpec extends Specification {
 
     def "verifyGrainSatisfiesAllTables throws illegal argument exception on non-mutually satisfying grain among physical tables"() {
         given:
-        ZonedTimeGrain satisfyingGrain = Mock(ZonedTimeGrain)
-        ZonedTimeGrain nonSatisfyingGrain = Mock(ZonedTimeGrain)
-        ZonedTimeGrain coarsestTimeGrain = Mock(ZonedTimeGrain)
 
-        satisfyingGrain.satisfiedBy(coarsestTimeGrain) >> true
-        nonSatisfyingGrain.satisfiedBy(coarsestTimeGrain) >> false
+        ZonedTimeGrain coarsestTimeGrain = Mock(ZonedTimeGrain) {
+            toString() >> "MockTimeGrain"
+        }
+        TableName tableName1 = TableName.of("satisfyingTable")
+        TableName tableName2 = TableName.of("notMatchingTimeGrainTable")
 
-        PhysicalTableSchema schema1 = Mock(PhysicalTableSchema)
-        PhysicalTableSchema schema2 = Mock(PhysicalTableSchema)
+        ZonedTimeGrain satisfyingGrain = Mock(ZonedTimeGrain) {
+            satisfies(coarsestTimeGrain) >> true
+        }
+        ZonedTimeGrain nonSatisfyingGrain = Mock(ZonedTimeGrain) {
+            satisfies(coarsestTimeGrain) >> false
+        }
 
-        schema1.getTimeGrain() >> satisfyingGrain
-        schema2.getTimeGrain() >> nonSatisfyingGrain
+        PhysicalTableSchema schema1 = Mock(PhysicalTableSchema) {
+            getTimeGrain() >> satisfyingGrain
+        }
+        PhysicalTableSchema schema2 = Mock(PhysicalTableSchema) {
+            getTimeGrain() >> nonSatisfyingGrain
+        }
 
-        PhysicalTable physicalTable1 = Mock(PhysicalTable)
-        PhysicalTable physicalTable2 = Mock(PhysicalTable)
-
-        physicalTable1.getSchema() >> schema1
-        physicalTable2.getSchema() >> schema2
+        PhysicalTable physicalTable1 = Mock(PhysicalTable) {
+            getSchema() >> schema1
+            getTableName() >> tableName1
+        }
+        PhysicalTable physicalTable2 = Mock(PhysicalTable) {
+            getSchema() >> schema2
+            getTableName() >> tableName2
+        }
 
         when:
-        MetricUnionCompositeTable.verifyGrainSatisfiesAllTables(coarsestTimeGrain, [physicalTable1, physicalTable2] as Set, TableName.of("table1"))
+        new BaseCompositePhysicalTable(
+                TableName.of("test"),
+                coarsestTimeGrain,
+                Collections.emptySet(),
+                [physicalTable1, physicalTable2] as Set,
+                [:],
+                Mock(Availability)
+                ) {}
 
         then:
         IllegalArgumentException illegalArgumentException = thrown()
-        illegalArgumentException.message.startsWith("There is no mutually satisfying grain among")
+        illegalArgumentException.message.contains("cannot be satisfied by")
+        illegalArgumentException.message.contains("notMatchingTimeGrainTable")
+        ! illegalArgumentException.message.contains("satisfyingTable")
     }
 }
