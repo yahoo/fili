@@ -8,17 +8,21 @@ import com.yahoo.bard.webservice.data.config.names.FieldName;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
-import com.yahoo.bard.webservice.table.ConcretePhysicalTable;
+import com.yahoo.bard.webservice.table.MetricUnionCompositeTable;
 import com.yahoo.bard.webservice.table.PhysicalTable;
+import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 
-import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Holds the fields needed to define a Metric Union Composite Table.
  */
 public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition {
+
+    private final Set<TableName> dependentTableNames;
 
     /**
      * Define a physical table using a zoned time grain.
@@ -26,15 +30,18 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
      * @param name  The table name
      * @param timeGrain  The zoned time grain
      * @param metricNames  The Set of metric names on the table
+     * @param dependentTableNames  The set of dependent table names on the table
      * @param dimensionConfigs  The dimension configurations
      */
     public MetricUnionCompositeTableDefinition(
             TableName name,
             ZonedTimeGrain timeGrain,
             Set<FieldName> metricNames,
+            Set<TableName> dependentTableNames,
             Set<? extends DimensionConfig> dimensionConfigs
     ) {
         super(name, timeGrain, metricNames, dimensionConfigs);
+        this.dependentTableNames = dependentTableNames;
     }
 
     /**
@@ -44,6 +51,7 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
      * @param timeGrain  The zoned time grain
      * @param metricNames  The Set of metric names on the table
      * @param dimensionConfigs  The dimension configurations
+     * @param dependentTableNames  The set of dependent table names on the table
      * @param logicalToPhysicalNames  A map from logical column names to physical column names
      */
     public MetricUnionCompositeTableDefinition(
@@ -51,25 +59,42 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
             ZonedTimeGrain timeGrain,
             Set<FieldName> metricNames,
             Set<? extends DimensionConfig> dimensionConfigs,
+            Set<TableName> dependentTableNames,
             Map<String, String> logicalToPhysicalNames
 
     ) {
         super(name, timeGrain, metricNames, dimensionConfigs, logicalToPhysicalNames);
+        this.dependentTableNames = dependentTableNames;
     }
 
     @Override
     public Set<TableName> getDependentTableNames() {
-        return Collections.emptySet();
+        return dependentTableNames;
     }
 
     @Override
     public PhysicalTable build(ResourceDictionaries dictionaries, DataSourceMetadataService metadataService) {
-        return new ConcretePhysicalTable(
+        return new MetricUnionCompositeTable(
                 getName(),
                 getTimeGrain(),
                 buildColumns(dictionaries.getDimensionDictionary()),
-                getLogicalToPhysicalNames(),
-                metadataService
+                getPhysicalTables(dictionaries),
+                getLogicalToPhysicalNames()
         );
+    }
+
+    /**
+     * Returns set of PhysicalTables from ResourceDictionaries.
+     *
+     * @param resourceDictionaries  The ResourceDictionaries from which the tables are to be retrieved
+     *
+     * @return set of PhysicalTables from the ResourceDictionaries
+     */
+    private Set<PhysicalTable> getPhysicalTables(ResourceDictionaries resourceDictionaries) {
+        PhysicalTableDictionary physicalTableDictionary = resourceDictionaries.getPhysicalDictionary();
+        return dependentTableNames.stream()
+                .map(name -> physicalTableDictionary.getOrDefault(name, null))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
     }
 }
