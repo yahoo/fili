@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
@@ -63,14 +65,21 @@ public abstract class BaseCompositePhysicalTable extends BasePhysicalTable {
             ZonedTimeGrain timeGrain,
             Set<PhysicalTable> physicalTables
     ) throws IllegalArgumentException {
-        if (!physicalTables.stream()
-                .map(PhysicalTable::getSchema)
-                .map(PhysicalTableSchema::getTimeGrain)
-                .allMatch(timeGrain::satisfies)) {
+        Predicate<PhysicalTable> tableDoesNotSatisfyFilter = (physicalTable) -> ! physicalTable.getSchema()
+                .getTimeGrain()
+                .satisfies(timeGrain);
+
+        Set<String> unsatisfied = physicalTables.stream()
+                .filter(tableDoesNotSatisfyFilter)
+                .map(PhysicalTable::getTableName)
+                .map(TableName::asName)
+                .collect(Collectors.toSet());
+
+        if (! unsatisfied.isEmpty()) {
             String message = String.format(
-                    "There is no mutually satisfying grain among: %s for composite table %s",
-                    physicalTables.stream().map(Table::getName),
-                    getTableName()
+                    "Time grain: '%s' cannot be satisfied by source table(s) %s",
+                    timeGrain,
+                    unsatisfied
             );
             LOG.error(message);
             throw new IllegalArgumentException(message);
