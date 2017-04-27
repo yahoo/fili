@@ -88,7 +88,6 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
         );
     }
 
-
     /**
      * Returns set of PhysicalTables from ResourceDictionaries.
      *
