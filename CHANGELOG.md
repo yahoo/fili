@@ -9,6 +9,8 @@ Current
 -------
 ### Added:
 
+- [Add MetricUnionCompositeTableDefinition](https://github.com/yahoo/fili/pull/258)
+
 - [Add partition availability and table](https://github.com/yahoo/fili/pull/244)
 
 - [Add constructor to specify DruidDimensionLoader dimensions directly](https://github.com/yahoo/fili/pull/191)
