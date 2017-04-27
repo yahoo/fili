@@ -11,6 +11,10 @@ import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.MetricUnionCompositeTable;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
+import com.yahoo.bard.webservice.table.availability.MetricUnionAvailability;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Objects;
@@ -21,6 +25,8 @@ import java.util.stream.Collectors;
  * Holds the fields needed to define a Metric Union Composite Table.
  */
 public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition {
+
+    private static final Logger LOG = LoggerFactory.getLogger(MetricUnionCompositeTableDefinition.class);
 
     private final Set<TableName> dependentTableNames;
 
@@ -93,7 +99,12 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
     private Set<PhysicalTable> getPhysicalTables(ResourceDictionaries resourceDictionaries) {
         PhysicalTableDictionary physicalTableDictionary = resourceDictionaries.getPhysicalDictionary();
         return dependentTableNames.stream()
-                .map(name -> physicalTableDictionary.getOrDefault(name, null))
+                .peek(name -> {
+                    if (physicalTableDictionary.get(name) == null) {
+                        LOG.warn("{} is not found in ResourceDictionaries", name);
+                    }
+                })
+                .map(physicalTableDictionary::get)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
     }
