@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -95,5 +96,21 @@ public class PhysicalTableSchema extends BaseSchema {
      */
     public ZonedTimeGrain getTimeGrain() {
         return timeGrain;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (o instanceof PhysicalTableSchema) {
+            PhysicalTableSchema that = (PhysicalTableSchema) o;
+            return Objects.equals(timeGrain, that.timeGrain)
+                    && Objects.equals(logicalToPhysicalColumnNames, that.logicalToPhysicalColumnNames)
+                    && Objects.equals(physicalToLogicalColumnNames, that.physicalToLogicalColumnNames);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(timeGrain, logicalToPhysicalColumnNames, physicalToLogicalColumnNames);
     }
 }

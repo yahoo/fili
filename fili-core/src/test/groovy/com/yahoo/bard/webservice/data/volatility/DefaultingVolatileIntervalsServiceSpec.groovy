@@ -7,14 +7,12 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
 import com.yahoo.bard.webservice.table.PhysicalTable
-import com.yahoo.bard.webservice.util.DefaultingDictionary
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 
 import org.joda.time.DateTime
 import org.joda.time.Interval
 
 import spock.lang.Specification
-
 /**
  * Test the default intervals service
  */
@@ -23,9 +21,15 @@ class DefaultingVolatileIntervalsServiceSpec extends Specification {
     DruidAggregationQuery query = Mock(DruidAggregationQuery)
     DruidAggregationQuery allGrainQuery = Mock(DruidAggregationQuery)
 
-    PhysicalTable table = Mock(PhysicalTable)
-    PhysicalTable table2 = Mock(PhysicalTable)
-    PhysicalTable table3 = Mock(PhysicalTable)
+    PhysicalTable table = Mock(PhysicalTable) {
+        getName() >> "name1"
+    }
+    PhysicalTable table2 = Mock(PhysicalTable) {
+        getName() >> "name2"
+    }
+    PhysicalTable table3 = Mock(PhysicalTable) {
+        getName() >> "name3"
+    }
 
     VolatileIntervalsFunction defaultFunction = Mock(VolatileIntervalsFunction)
     VolatileIntervalsFunction mockFunction2 = Mock(VolatileIntervalsFunction)
@@ -38,7 +42,7 @@ class DefaultingVolatileIntervalsServiceSpec extends Specification {
 
     SimplifiedIntervalList fullRange = new SimplifiedIntervalList([new Interval(origin, end)])
 
-    DefaultingDictionary<PhysicalTable, VolatileIntervalsFunction> intervalsFunctions
+    Map<PhysicalTable, VolatileIntervalsFunction> intervalsFunctions
 
     def setup() {
         // Create intervals which are distinct subintervals from a common base interval
@@ -59,7 +63,7 @@ class DefaultingVolatileIntervalsServiceSpec extends Specification {
         allGrainQuery.intervals >> fullRange
         allGrainQuery.granularity >> AllGranularity.INSTANCE
 
-        intervalsFunctions = new DefaultingDictionary<>(defaultFunction)
+        intervalsFunctions = new HashMap<>()
         intervalsFunctions.put(table2, mockFunction2)
         intervalsFunctions.put(table3, mockFunction3)
     }
@@ -100,7 +104,7 @@ class DefaultingVolatileIntervalsServiceSpec extends Specification {
 
     def "getVolatileIntervals for all granularity buckets correctly"() {
         given:
-        DefaultingVolatileIntervalsService service = new DefaultingVolatileIntervalsService(intervalsFunctions)
+        DefaultingVolatileIntervalsService service = new DefaultingVolatileIntervalsService(defaultFunction, intervalsFunctions)
 
         expect:
         service.getVolatileIntervals(allGrainQuery.granularity, allGrainQuery.intervals, table) == fullRange

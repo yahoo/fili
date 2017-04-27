@@ -9,6 +9,7 @@ import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.validation.constraints.NotNull;
@@ -79,5 +80,23 @@ public class ConcreteAvailability implements Availability {
     @Override
     public String toString() {
         return String.format("ConcreteAvailability for table: %s", name.asName());
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj instanceof ConcreteAvailability) {
+            ConcreteAvailability that = (ConcreteAvailability) obj;
+            return Objects.equals(name.asName(), that.name.asName())
+                    && Objects.equals(dataSourceNames, that.dataSourceNames)
+                    // Since metadata service is mutable, use instance equality to ensure table equality is stable
+                    && metadataService == that.metadataService;
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        // Leave metadataService out of hash because it is mutable
+        return Objects.hash(name.asName(), dataSourceNames);
     }
 }

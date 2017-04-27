@@ -56,4 +56,9 @@ public class PartitionCompositeTable extends BaseCompositePhysicalTable {
         return new PartitionAvailability(dataSourceFilterMap.entrySet().stream()
                 .collect(Collectors.toMap(entry -> entry.getKey().getAvailability(), Map.Entry::getValue)));
     }
+
+    @Override
+    public String toString() {
+        return getName() + ":" + getSchema().getTimeGrain() + ":" + getAvailability();
+    }
 }

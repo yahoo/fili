@@ -7,6 +7,7 @@ import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
@@ -91,5 +92,24 @@ public class PartitionAvailability extends BaseCompositeAvailability implements 
     @Override
     public SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint constraint) {
         return mergeAvailabilities(constraint);
+    }
+
+    @Override
+    public String toString() {
+        return availabilityFilters.toString();
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj instanceof PartitionAvailability) {
+            PartitionAvailability that = (PartitionAvailability) obj;
+            return Objects.equals(availabilityFilters, that.availabilityFilters);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(availabilityFilters);
     }
 }
