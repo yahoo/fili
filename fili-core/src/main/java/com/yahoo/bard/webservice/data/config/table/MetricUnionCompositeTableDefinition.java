@@ -11,7 +11,6 @@ import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.MetricUnionCompositeTable;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
-import com.yahoo.bard.webservice.table.availability.MetricUnionAvailability;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,16 +55,16 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
      * @param name  The table name
      * @param timeGrain  The zoned time grain
      * @param metricNames  The Set of metric names on the table
-     * @param dimensionConfigs  The dimension configurations
      * @param dependentTableNames  The set of dependent table names on the table
+     * @param dimensionConfigs  The dimension configurations
      * @param logicalToPhysicalNames  A map from logical column names to physical column names
      */
     public MetricUnionCompositeTableDefinition(
             TableName name,
             ZonedTimeGrain timeGrain,
             Set<FieldName> metricNames,
-            Set<? extends DimensionConfig> dimensionConfigs,
             Set<TableName> dependentTableNames,
+            Set<? extends DimensionConfig> dimensionConfigs,
             Map<String, String> logicalToPhysicalNames
 
     ) {
@@ -101,7 +100,12 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
         return dependentTableNames.stream()
                 .peek(name -> {
                     if (physicalTableDictionary.get(name) == null) {
-                        LOG.warn("{} is not found in ResourceDictionaries", name);
+                        LOG.warn(
+                                "{} is needed to build {}, but it's not found in ResourceDictionaries in" +
+                                        "MetricUnionCompositeTableDefinition",
+                                name,
+                                getName()
+                        );
                     }
                 })
                 .map(physicalTableDictionary::get)
