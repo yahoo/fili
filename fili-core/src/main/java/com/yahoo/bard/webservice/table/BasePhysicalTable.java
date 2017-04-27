@@ -157,4 +157,9 @@ public abstract class BasePhysicalTable implements PhysicalTable {
     public int hashCode() {
         return Objects.hash(name.asName(), schema, availability);
     }
+
+    @Override
+    public String toString() {
+        return "Physical table: " + name.asName() + ": schema: " + schema + ": availability :" + availability;
+    }
 }

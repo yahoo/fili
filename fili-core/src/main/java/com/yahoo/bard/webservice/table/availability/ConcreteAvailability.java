@@ -79,7 +79,7 @@ public class ConcreteAvailability implements Availability {
 
     @Override
     public String toString() {
-        return String.format("ConcreteAvailability for table: %s", name.asName());
+        return String.format("ConcreteAvailability for table: %s", name.asName() + " with data source names: " + dataSourceNames);
     }
 
     @Override

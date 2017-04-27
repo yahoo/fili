@@ -113,4 +113,9 @@ public class PhysicalTableSchema extends BaseSchema {
     public int hashCode() {
         return Objects.hash(timeGrain, logicalToPhysicalColumnNames, physicalToLogicalColumnNames);
     }
+
+    @Override
+    public String toString() {
+        return "time grain: " + timeGrain + ": logicalToPhysicalColumnNames: " + logicalToPhysicalColumnNames;
+    }
 }
