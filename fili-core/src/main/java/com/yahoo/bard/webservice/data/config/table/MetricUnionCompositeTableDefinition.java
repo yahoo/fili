@@ -88,6 +88,7 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
         );
     }
 
+
     /**
      * Returns set of PhysicalTables from ResourceDictionaries.
      *
@@ -98,13 +99,14 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
     private Set<PhysicalTable> getPhysicalTables(ResourceDictionaries resourceDictionaries) {
         PhysicalTableDictionary physicalTableDictionary = resourceDictionaries.getPhysicalDictionary();
         return dependentTableNames.stream()
+                .map(TableName::asName)
                 .peek(name -> {
                     if (physicalTableDictionary.get(name) == null) {
                         LOG.warn(
                                 "{} is needed to build {}, but it's not found in ResourceDictionaries in" +
                                         "MetricUnionCompositeTableDefinition",
                                 name,
-                                getName()
+                                getName().asName()
                         );
                     }
                 })
