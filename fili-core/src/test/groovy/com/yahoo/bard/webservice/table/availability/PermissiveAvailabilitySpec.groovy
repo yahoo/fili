@@ -4,8 +4,6 @@ package com.yahoo.bard.webservice.table.availability
 
 import com.yahoo.bard.webservice.data.config.names.TableName
 import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService
-import com.yahoo.bard.webservice.table.Column
-import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 
@@ -50,7 +48,7 @@ class PermissiveAvailabilitySpec extends Specification  {
         )
 
         PhysicalDataSourceConstraint dataSourceConstraint = Mock(PhysicalDataSourceConstraint)
-        dataSourceConstraint.getAllColumnPhysicalNames() >> [column1, column2]
+        dataSourceConstraint.allColumnPhysicalNames >> [column1, column2]
 
         expect:
         permissiveAvailability.getAvailableIntervals(dataSourceConstraint) == new SimplifiedIntervalList(
