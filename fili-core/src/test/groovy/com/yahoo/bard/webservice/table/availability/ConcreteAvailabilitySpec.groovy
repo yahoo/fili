@@ -8,6 +8,7 @@ import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 import org.joda.time.Interval
 
 import spock.lang.Specification
+import spock.lang.Unroll
 
 /**
  * Test for concrete availability behavior.
@@ -19,7 +20,6 @@ class ConcreteAvailabilitySpec extends Specification{
     Interval interval1, interval2
 
     def setup() {
-
         columnPhysicalName1 = 'column_one'
         columnPhysicalName2 = 'column_two'
         columnPhysicalName3 = 'column_three'
@@ -46,7 +46,8 @@ class ConcreteAvailabilitySpec extends Specification{
         ] as LinkedHashMap
     }
 
-    def "getAvailableIntervals returns the intersection of the requested column available intervals"() {
+    @Unroll
+    def "getAvailableIntervals returns the intersection of the requested column available intervals when there is #description"() {
         given:
         interval1 = new Interval(firstInterval)
         interval2 = new Interval(secondInterval)
@@ -60,7 +61,7 @@ class ConcreteAvailabilitySpec extends Specification{
         )
 
         PhysicalDataSourceConstraint dataSourceConstraint = Mock(PhysicalDataSourceConstraint)
-        dataSourceConstraint.getAllColumnPhysicalNames() >> [columnPhysicalName1, columnPhysicalName2]
+        dataSourceConstraint.allColumnPhysicalNames >> [columnPhysicalName1, columnPhysicalName2]
 
         expect:
         concreteAvailability.getAvailableIntervals(dataSourceConstraint) == new SimplifiedIntervalList(
@@ -82,7 +83,7 @@ class ConcreteAvailabilitySpec extends Specification{
     def "getAvailableInterval returns empty interval if given column is not in data source metadata service"() {
         given:
         PhysicalDataSourceConstraint constraint = Mock(PhysicalDataSourceConstraint)
-        constraint.getAllColumnPhysicalNames() >> ['ignored']
+        constraint.allColumnPhysicalNames >> ['ignored']
 
         expect:
         concreteAvailability.getAvailableIntervals(constraint) == new SimplifiedIntervalList()
@@ -91,7 +92,7 @@ class ConcreteAvailabilitySpec extends Specification{
     def "getAvailableInterval returns empty interval if given empty column request"() {
         given:
         PhysicalDataSourceConstraint constraint = Mock(PhysicalDataSourceConstraint)
-        constraint.getAllColumnPhysicalNames() >> []
+        constraint.allColumnPhysicalNames >> []
 
         expect:
         concreteAvailability.getAvailableIntervals(constraint) == new SimplifiedIntervalList()

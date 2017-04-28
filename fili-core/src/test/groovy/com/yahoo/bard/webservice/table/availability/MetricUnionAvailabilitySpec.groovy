@@ -59,12 +59,8 @@ class MetricUnionAvailabilitySpec extends Specification {
 
     def "Metric columns are initialized by fetching columns from availabilities, not from physical tables"() {
         given:
-        availability1.getAllAvailableIntervals() >> [
-                (metric1): []
-        ]
-        availability2.getAllAvailableIntervals() >> [
-                (metric2): []
-        ]
+        availability1.getAllAvailableIntervals() >> [(metric1): []]
+        availability2.getAllAvailableIntervals() >> [(metric2): []]
 
         MetricColumn tableColumn1 = new MetricColumn("shouldNotBeReturned1")
         MetricColumn tableColumn2 = new MetricColumn("shouldNotBeReturned2")
@@ -92,16 +88,13 @@ class MetricUnionAvailabilitySpec extends Specification {
 
     @Unroll
     def "isMetricUnique returns true if and only if metric is unique across all data sources in the case of #caseDescription"() {
-        when:
-        boolean actual = MetricUnionAvailability.isMetricUnique(
+        expect:
+        expected == MetricUnionAvailability.isMetricUnique(
                 [
-                        (availability1): metricColumnNames1.collect{it -> it} as Set,
-                        (availability2): metricColumnNames2.collect{it -> it} as Set
+                        (availability1): metricColumnNames1 as Set,
+                        (availability2): metricColumnNames2 as Set
                 ]
         )
-
-        then:
-        actual == expected
 
         where:
         metricColumnNames1     | metricColumnNames2                | expected           | caseDescription
@@ -115,12 +108,8 @@ class MetricUnionAvailabilitySpec extends Specification {
 
     def "constructor throws IllegalArgumentException when 2 availabilities have the same metric column"() {
         given:
-        availability1.getAllAvailableIntervals() >> [
-                (metric1): []
-        ]
-        availability2.getAllAvailableIntervals() >> [
-                (metric1): []
-        ]
+        availability1.getAllAvailableIntervals() >> [(metric1): []]
+        availability2.getAllAvailableIntervals() >> [(metric1): []]
 
         when:
         metricUnionAvailability = new MetricUnionAvailability(physicalTables, [metricColumn1] as Set)
@@ -129,7 +118,6 @@ class MetricUnionAvailabilitySpec extends Specification {
         RuntimeException exception = thrown()
         exception.message.startsWith("Metric columns must be unique across the metric union data sources, but duplicate was found across the following data sources: source1, source2")
     }
-
 
     def "getDataSourceNames returns sources from availabilities not from physical tables"() {
         given:
@@ -167,14 +155,11 @@ class MetricUnionAvailabilitySpec extends Specification {
                 (metric2): [new Interval('2019-01-01/2019-02-01')],
                 'column' : [new Interval('2018-01-01/2018-02-01')]
         ]
-
     }
 
     def "constructSubConstraint correctly intersects metrics configured on the table with the metrics supported by availability's underlying datasource"() {
         given:
-        availability1.getAllAvailableIntervals() >> [
-                (metric1): []
-        ]
+        availability1.getAllAvailableIntervals() >> [(metric1): []]
         availability2.getAllAvailableIntervals() >> [
                 (metric2): [],
                 'un_requested': []
@@ -203,12 +188,8 @@ class MetricUnionAvailabilitySpec extends Specification {
     @Unroll
     def "getAvailableIntervals returns the intersection of requested columns when available intervals have #reason"() {
         given:
-        availability1.getAllAvailableIntervals() >> [
-                (metric1): []
-        ]
-        availability2.getAllAvailableIntervals() >> [
-                (metric2): []
-        ]
+        availability1.getAllAvailableIntervals() >> [(metric1): []]
+        availability2.getAllAvailableIntervals() >> [(metric2): []]
 
         availability1.getAvailableIntervals(_ as PhysicalDataSourceConstraint) >> new SimplifiedIntervalList(
                 availableIntervals1.collect{it -> new Interval(it)} as Set
@@ -253,12 +234,8 @@ class MetricUnionAvailabilitySpec extends Specification {
 
     def "getAvailableIntervals returns empty availability if requesting a column on table that is not supported by the underlying data sources"() {
         given:
-        availability1.getAllAvailableIntervals() >> [
-                (metric1): ['2018-01-01/2018-02-01']
-        ]
-        availability2.getAllAvailableIntervals() >> [
-                (metric2): ['2018-01-01/2018-02-01']
-        ]
+        availability1.getAllAvailableIntervals() >> [(metric1): ['2018-01-01/2018-02-01']]
+        availability2.getAllAvailableIntervals() >> [(metric2): ['2018-01-01/2018-02-01']]
 
         availability1.getAvailableIntervals(_ as PhysicalDataSourceConstraint) >> new SimplifiedIntervalList(
                 [new Interval('2018-01-01/2018-02-01')]

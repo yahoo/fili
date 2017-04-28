@@ -22,7 +22,7 @@ import spock.lang.Specification
 
 class BaseDataSourceMetadataSpec extends Specification {
     @Shared
-    String tableName = TestDruidTableName.ALL_PETS.asName();
+    String tableName = TestDruidTableName.ALL_PETS.asName()
 
     @Shared
     String intervalString1
@@ -72,7 +72,7 @@ class BaseDataSourceMetadataSpec extends Specification {
 
     def setupSpec() {
         currentTZ = DateTimeZone.getDefault()
-        DateTimeZone.setDefault(DateTimeZone.UTC);
+        DateTimeZone.setDefault(DateTimeZone.UTC)
 
         intervalString1 = "2015-01-01T00:00:00.000Z/2015-01-02T00:00:00.000Z"
         intervalString2 = "2015-01-02T00:00:00.000Z/2015-01-03T00:00:00.000Z"

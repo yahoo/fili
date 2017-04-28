@@ -26,15 +26,13 @@ import javax.ws.rs.core.MultivaluedMap
 import javax.ws.rs.core.Response
 
 @Timeout(30)
-// Fail test if hangs
 abstract class BaseDataServletComponentSpec extends Specification {
 
+    private static final Logger LOG = LoggerFactory.getLogger(BaseDataServletComponentSpec.class)
     private static final ObjectMapper MAPPER = new ObjectMapper()
             .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
 
-    private static GranularityParser granularityParser = new StandardGranularityParser();
-
-    private static final Logger LOG = LoggerFactory.getLogger(BaseDataServletComponentSpec.class)
+    private static GranularityParser granularityParser = new StandardGranularityParser()
 
     JerseyTestBinder jtb
 
@@ -66,7 +64,6 @@ abstract class BaseDataServletComponentSpec extends Specification {
 
 
     def setup() {
-        // Create the test web container to test the resources
         jtb = buildTestBinder()
 
         populatePhysicalTableAvailability()
@@ -103,39 +100,37 @@ abstract class BaseDataServletComponentSpec extends Specification {
 
     def "test druid query"() {
         given: "An expected Query"
-        validateJson(getExpectedDruidQuery())
+        validateJson(expectedDruidQuery)
 
         when: "We send a request"
         makeAbstractRequest()
 
         then: "The query sent to druid is what we expect"
-        String jsonQuery
-        if (jtb.nonUiDruidWebService instanceof TestDruidWebService) {
-            jsonQuery = jtb.nonUiDruidWebService.jsonQuery
-        } else {
-            jsonQuery = "{}"
-        }
-
-        // Most aspects of a Druid query are order-independent, so normalize both lists and maps.
-        compareResult(jsonQuery, getExpectedDruidQuery(), JsonSortStrategy.SORT_BOTH)
+        compareResult(
+                jtb.nonUiDruidWebService instanceof TestDruidWebService ?
+                        jtb.nonUiDruidWebService.jsonQuery :
+                        "{}",
+                expectedDruidQuery,
+                JsonSortStrategy.SORT_BOTH // Most of a Druid query is order-neutral, so normalize both lists and maps.
+        )
     }
 
     @Timeout(10)
     def "test api response"() {
         given: "A known Druid response"
-        validateFakeDruidResponse(getFakeDruidResponse())
-        validateExpectedApiResponse(getExpectedApiResponse())
+        validateFakeDruidResponse(fakeDruidResponse)
+        validateExpectedApiResponse(expectedApiResponse)
 
-        injectDruidResponse(getFakeDruidResponseClosure())
+        injectDruidResponse(fakeDruidResponseClosure)
 
         when: "We send a request"
         Response response = makeAbstractRequest()
 
         then: "The response headers are what we expect"
-        headersAreCorrect(response.getHeaders())
+        headersAreCorrect(response.headers)
 
         and: "The response rows are what we expect"
-        compareResult(response.readEntity(String), getExpectedApiResponse())
+        compareResult(response.readEntity(String), expectedApiResponse)
     }
 
     def validateFakeDruidResponse(String fakeDruidResponse) {
@@ -146,13 +141,16 @@ abstract class BaseDataServletComponentSpec extends Specification {
         validateJson(expectedApiResponse)
     }
 
-    boolean compareResult(String result, String expectedResult, JsonSortStrategy sortStrategy = JsonSortStrategy.SORT_MAPS) {
+    boolean compareResult(
+            String result,
+            String expectedResult,
+            JsonSortStrategy sortStrategy = JsonSortStrategy.SORT_MAPS
+    ) {
         GroovyTestUtils.compareJson(result, expectedResult, sortStrategy)
     }
 
     /**
-     *  Injects the fake Druid response into the Druid backend used by the test harness, if
-     *  applicable.
+     *  Injects the fake Druid response into the Druid backend used by the test harness, if applicable.
      *
      *  @param  druidResponse The fake response to be injected.
      */
@@ -170,7 +168,6 @@ abstract class BaseDataServletComponentSpec extends Specification {
         if (jtb.nonUiDruidWebService instanceof TestDruidWebService) {
             jtb.nonUiDruidWebService.jsonResponse = druidResponse
         }
-
     }
 
     /*
@@ -206,7 +203,7 @@ abstract class BaseDataServletComponentSpec extends Specification {
      */
     Response makeAbstractRequest(Closure queryParams=this.&getQueryParams) {
         // Set target of call
-        def httpCall = jtb.getHarness().target(getTarget())
+        def httpCall = jtb.harness.target(target)
 
         // Add query params to call
         queryParams().each { String key, List<String> values ->
@@ -214,15 +211,14 @@ abstract class BaseDataServletComponentSpec extends Specification {
         }
 
         // Make the call
-        Response response = httpCall.request().headers(getAdditionalApiRequestHeaders()).get()
+        Response response = httpCall.request().headers(additionalApiRequestHeaders).get()
         if (response.status != 200) {
-            LOG.error( "***  *** Response status: ${response.status}: ${response.readEntity(String)}")
+            LOG.trace("***  *** Response status: ${response.status}: ${response.readEntity(String)}")
         }
         response
     }
 
     public static String getTimeGrainString(String name = "day", String dateTimeZone = "UTC") {
-        DateTimeZone timeZone = DateTimeZone.forID(dateTimeZone);
-        return MAPPER.writeValueAsString(granularityParser.parseGranularity(name, timeZone))
+        MAPPER.writeValueAsString(granularityParser.parseGranularity(name, DateTimeZone.forID(dateTimeZone)))
     }
 }
