@@ -104,7 +104,7 @@ class CsvEndpointDataServletSpec extends BaseDataServletComponentSpec {
     }
 
     @Override
-    def validateExpectedApiResponse(String expectedApiResponse) {
+    boolean validateExpectedApiResponse(String expectedApiResponse) {
         true
     }
 

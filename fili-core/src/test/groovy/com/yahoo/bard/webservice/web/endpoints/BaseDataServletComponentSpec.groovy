@@ -25,6 +25,12 @@ import javax.ws.rs.core.MultivaluedHashMap
 import javax.ws.rs.core.MultivaluedMap
 import javax.ws.rs.core.Response
 
+/**
+ * This spec serves as a base spec for functional tests against the DataServlet resource. These tests are run in 2
+ * phases, the "request" half of request processing, going from an HTTP request to an in-memory version of the application
+ * back to a mock Druid client, and then the "response" half of request processing, going from a mock Druid response to
+ * an API response.
+ */
 @Timeout(30)
 abstract class BaseDataServletComponentSpec extends Specification {
 
@@ -36,15 +42,72 @@ abstract class BaseDataServletComponentSpec extends Specification {
 
     JerseyTestBinder jtb
 
+    /**
+     * Get the classes for the Jersey resources / Jersey components to have the Jersey test harness load.
+     *
+     * @return the classes for Jersey to load
+     */
     abstract Class<?>[] getResourceClasses()
 
+    /**
+     * Get the URL path (just the path segments, starting at the Jersey resource) for the test to request.
+     * <p>
+     * For example, "data/shapes/week/color".
+     *
+     * @return the URL path to request for the test
+     */
     abstract String getTarget()
 
+    /**
+     * Get the query parameters to include in the request for the test.
+     *
+     * @return the query parameters to add to the request
+     */
     abstract Map<String, List<String>> getQueryParams()
 
+    /**
+     * Get the expected Druid query that the request will generate, as a String form of JSON.
+     *
+     * @return the expected Druid query as a JSON string
+     */
     abstract String getExpectedDruidQuery()
 
+    /**
+     * Get the expected API response that the request will generate, as a String form of JSON.
+     *
+     * @return the expected API response as a JSON string
+     */
     abstract String getExpectedApiResponse()
+
+    /**
+     * Get the Druid response to have the test Druid client return when verifying the return portion of the processing
+     * cycle is correct. (ie. from Druid response to API response).
+     *
+     * @return the string representation of the Druid JSON response, defaulting to "[]" (ie. an empty array)
+     */
+    String getFakeDruidResponse() {
+        "[]"
+    }
+
+    /**
+     * Get a closure that returns the Druid response to have the test Druid client return when verifying the return
+     * portion of the processing cycle is correct. (ie. from Druid response to API response).
+     *
+     * @return a closure returning the string representation of the Druid JSON response, defaulting to "[]" (ie. an
+     * empty array)
+     */
+    Closure<String> getFakeDruidResponseClosure() {
+        return { fakeDruidResponse }
+    }
+
+    /**
+     * Get the headers to include in the request for the test.
+     *
+     * @return the headers to add to the request
+     */
+    MultivaluedHashMap<String, String> getAdditionalApiRequestHeaders() {
+        [:]
+    }
 
     /**
      * Performs any checks necessary on the response headers, such as making sure that links that should be in the
@@ -56,46 +119,32 @@ abstract class BaseDataServletComponentSpec extends Specification {
         true
     }
 
-    String getFakeDruidResponse() { "[]" }
-
-    Closure<String> getFakeDruidResponseClosure() {
-        return { getFakeDruidResponse() }
-    }
-
-
     def setup() {
         jtb = buildTestBinder()
 
         populatePhysicalTableAvailability()
     }
 
-    /**
-     * Used to append headers to API request made by this spec.
-     */
-    MultivaluedHashMap<String, String> getAdditionalApiRequestHeaders() {
-        return [:]
+    def cleanup() {
+        jtb.tearDown()
     }
 
     /**
-     * Populates the interval availability of the physical tables.
+     * Create the test web container to test the resources.
+     *
+     * @return the test web container for testing the resources
+     */
+    JerseyTestBinder buildTestBinder() {
+        new JerseyTestBinder(resourceClasses)
+    }
+
+    /**
+     * Populate the interval availability of the physical table availabilities.
      * <p>
      * By default, every Physical table believes that it has complete data from January 1st 2010 to December 31 2500.
      */
     void populatePhysicalTableAvailability() {
         AvailabilityTestingUtils.populatePhysicalTableCacheIntervals(jtb, new Interval("2010-01-01/2500-12-31"))
-    }
-
-    def cleanup() {
-        // Release the test web container
-        jtb.tearDown()
-    }
-
-    JerseyTestBinder buildTestBinder() {
-        new JerseyTestBinder(getResourceClasses())
-    }
-
-    void validateJson(String json) {
-        MAPPER.readTree(json)
     }
 
     def "test druid query"() {
@@ -133,14 +182,54 @@ abstract class BaseDataServletComponentSpec extends Specification {
         compareResult(response.readEntity(String), expectedApiResponse)
     }
 
-    def validateFakeDruidResponse(String fakeDruidResponse) {
+    /**
+     * Validate the string is valid JSON.
+     *
+     * @param json  String representation of JSON to validate
+     *
+     * @return true if the string is valid JSON
+     *
+     * @throws RuntimeException if the json string is not valid
+     */
+    boolean validateJson(String json) {
+        MAPPER.readTree(json)
+    }
+
+    /**
+     * Validate the fake Druid response.
+     *
+     * @param fakeDruidResponse  String representation of the JSON response to validate
+     *
+     * @return true if the response is valid
+     *
+     * @throws RuntimeException if the fake Druid response is not valid
+     */
+    boolean validateFakeDruidResponse(String fakeDruidResponse) {
         validateJson(fakeDruidResponse)
     }
 
-    def validateExpectedApiResponse(String expectedApiResponse) {
+    /**
+     * Validate the expected API response.
+     *
+     * @param expectedApiResponse  String representation of the JSON response to validate
+     *
+     * @return true if the response is valid
+     *
+     * @throws RuntimeException if the expected API response is not valid
+     */
+    boolean validateExpectedApiResponse(String expectedApiResponse) {
         validateJson(expectedApiResponse)
     }
 
+    /**
+     * Compare the given result with the expected result as JSON made from strings, sorting maps by default.
+     *
+     * @param result  JSON string of the result in question
+     * @param expectedResult  JSON string of the expected result
+     * @param sortStrategy  Sorting strategy for the JSON contents, defaulting to sorting only maps
+     *
+     * @return true if the results are the same
+     */
     boolean compareResult(
             String result,
             String expectedResult,
@@ -218,6 +307,14 @@ abstract class BaseDataServletComponentSpec extends Specification {
         response
     }
 
+    /**
+     * Given a granularity name and a timezone name, parse them into a time grain and serialize it to a String.
+     *
+     * @param name  Name of the granularity for which to get the time grain, defaults to day.
+     * @param dateTimeZone  Name of the timezone for which to get the time grain, defaults to UTC
+     *
+     * @return the serialized time grain
+     */
     public static String getTimeGrainString(String name = "day", String dateTimeZone = "UTC") {
         MAPPER.writeValueAsString(granularityParser.parseGranularity(name, DateTimeZone.forID(dateTimeZone)))
     }
