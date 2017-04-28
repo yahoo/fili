@@ -101,7 +101,7 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
                 .map(TableName::asName)
                 .peek(name -> {
                     if (physicalTableDictionary.get(name) == null) {
-                        LOG.warn(
+                        LOG.error(
                                 "{} is needed to build {}, but it's not found in ResourceDictionaries in" +
                                         "MetricUnionCompositeTableDefinition",
                                 name,

@@ -30,11 +30,7 @@ class MetricUnionCompositeTableDefinitionSpec extends Specification {
         ResourceDictionaries resourceDictionaries = Mock(ResourceDictionaries)
         resourceDictionaries.getPhysicalDictionary() >> [(existing.asName()) : physicalTable]
 
-        when:
-        Set<PhysicalTable> physicalTables = metricUnionCompositeTableDefinition.getPhysicalTables(resourceDictionaries)
-
-        then:
-        physicalTables.size() == 1
-        physicalTables.contains(physicalTable)
+        expect:
+        metricUnionCompositeTableDefinition.getPhysicalTables(resourceDictionaries) == [physicalTable] as Set
     }
 }
