@@ -71,8 +71,7 @@ public abstract class BaseCompositePhysicalTable extends BasePhysicalTable {
 
         Set<String> unsatisfied = physicalTables.stream()
                 .filter(tableDoesNotSatisfy)
-                .map(PhysicalTable::getTableName)
-                .map(TableName::asName)
+                .map(PhysicalTable::getName)
                 .collect(Collectors.toSet());
 
         if (!unsatisfied.isEmpty()) {
