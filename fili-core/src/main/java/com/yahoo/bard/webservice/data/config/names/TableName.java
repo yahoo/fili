@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.data.config.names;
 import java.util.Comparator;
 
 /**
- * Marker interface for objects that can be treated as a table name in druid or web services.
+ * Marker interface for objects that can be treated as a table name.
  */
 public interface TableName {
 
@@ -54,5 +54,13 @@ public interface TableName {
     /**
      * Comparator to order TableNames by their asName methods, using the native String comparator.
      */
+    Comparator<TableName> AS_NAME_COMPARATOR = Comparator.comparing(TableName::asName);
+
+    /**
+     * Comparator to order TableNames by their asName methods, using the native String comparator.
+     *
+     * @deprecated due to name change. Use AS_NAME_COMPARATOR instead.
+     */
+    @Deprecated
     Comparator<TableName> COMPARATOR = Comparator.comparing(TableName::asName);
 }
