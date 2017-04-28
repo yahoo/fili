@@ -12,10 +12,9 @@ import javax.validation.constraints.NotNull;
 /**
  * An availability which allows missing intervals, i.e. returns union of available intervals, on its contents.
  * This availability returns available intervals without restrictions from <tt>DataSourceConstraint</tt>, because the
- * nature of this availability is to returns as much available intervals as possible.
+ * nature of this availability is to returns as many available intervals as possible.
  */
 public class PermissiveAvailability extends ConcreteAvailability {
-
     /**
      * Constructor.
      *
@@ -39,9 +38,9 @@ public class PermissiveAvailability extends ConcreteAvailability {
      * )};
      * Instead of returning the intersection of all available intervals, this method returns the union of them.
      *
-     * @param ignoredConstraint  Data constraint containing columns and api filters. Constrains are ignored, because
-     * <tt>PermissiveAvailability</tt> returns as much available intervals as possible by, for example, allowing
-     * missing intervals and returning unions of available intervals
+     * @param ignoredConstraint  Constrains are ignored, because <tt>PermissiveAvailability</tt> returns as many
+     * available intervals as possible by, for example, allowing missing intervals and returning unions of available
+     * intervals
      *
      * @return the union of all available intervals
      */
