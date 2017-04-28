@@ -30,11 +30,6 @@ public class SegmentIntervalsHashIdGenerator implements QuerySigningService<Long
     private static final Logger LOG = LoggerFactory.getLogger(SegmentIntervalsHashIdGenerator.class);
 
     /**
-     * The dictionary of the physical tables.
-     */
-    private final PhysicalTableDictionary physicalTableDictionary;
-
-    /**
      * Maps a Class (type of query) to the Function that should be used to compute requestedIntervals for a given query.
      */
     private final Map<Class, RequestedIntervalsFunction> requestedIntervalsQueryExtractionFunctions;
@@ -51,13 +46,29 @@ public class SegmentIntervalsHashIdGenerator implements QuerySigningService<Long
      * @param dataSourceMetadataService  A Service to get information about segment metadata
      * @param requestedIntervalsQueryExtractionFunctions  Maps a Class to the Function that should be used to compute
      * requestedIntervals for a given query
+     *
+     * @deprecated  phyiscalTableDictionary is not used
      */
+    @Deprecated
     public SegmentIntervalsHashIdGenerator(
             PhysicalTableDictionary physicalTableDictionary,
             DataSourceMetadataService dataSourceMetadataService,
             Map<Class, RequestedIntervalsFunction> requestedIntervalsQueryExtractionFunctions
     ) {
-        this.physicalTableDictionary = physicalTableDictionary;
+        this(dataSourceMetadataService, requestedIntervalsQueryExtractionFunctions);
+    }
+
+    /**
+     * Build a SegmentIntervalsHashIdGenerator that generates a segmentId using the provided signingFunctions.
+     *
+     * @param dataSourceMetadataService  A Service to get information about segment metadata
+     * @param requestedIntervalsQueryExtractionFunctions  Maps a Class to the Function that should be used to compute
+     * requestedIntervals for a given query
+     */
+    public SegmentIntervalsHashIdGenerator(
+            DataSourceMetadataService dataSourceMetadataService,
+            Map<Class, RequestedIntervalsFunction> requestedIntervalsQueryExtractionFunctions
+    ) {
         this.dataSourceMetadataService = dataSourceMetadataService;
         this.requestedIntervalsQueryExtractionFunctions = requestedIntervalsQueryExtractionFunctions;
     }
@@ -66,15 +77,27 @@ public class SegmentIntervalsHashIdGenerator implements QuerySigningService<Long
      * Build a SegmentIntervalsHashIdGenerator that uses the raw simplified intervals of a druidAggregationQuery to
      * create a segmentId.
      *
-     * @param physicalTableDictionary  The dictionary of the physical tables
-     * @param dataSourceMetadataService  A Service to get information about segment metadata
+     * @param physicalTableDictionary The dictionary of the physical tables
+     * @param dataSourceMetadataService A Service to get information about segment metadata
+     *
+     * @deprecated  phyiscalTableDictionary is not used
      */
+    @Deprecated
     public SegmentIntervalsHashIdGenerator(
             PhysicalTableDictionary physicalTableDictionary,
             DataSourceMetadataService dataSourceMetadataService
     ) {
+        this(dataSourceMetadataService);
+    }
+
+    /**
+     * Build a SegmentIntervalsHashIdGenerator that uses the raw simplified intervals of a druidAggregationQuery to
+     * create a segmentId.
+     *
+     * @param dataSourceMetadataService A Service to get information about segment metadata
+     */
+    public SegmentIntervalsHashIdGenerator(DataSourceMetadataService dataSourceMetadataService) {
         this(
-                physicalTableDictionary,
                 dataSourceMetadataService,
                 new DefaultingDictionary<>(
                         druidAggregationQuery -> new SimplifiedIntervalList(druidAggregationQuery.getIntervals())
