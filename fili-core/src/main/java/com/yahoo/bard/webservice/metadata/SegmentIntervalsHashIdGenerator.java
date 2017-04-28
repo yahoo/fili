@@ -19,6 +19,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * An implementation of the QuerySigningService that generates segment id for requested interval.
@@ -34,10 +35,9 @@ public class SegmentIntervalsHashIdGenerator implements QuerySigningService<Long
     private final PhysicalTableDictionary physicalTableDictionary;
 
     /**
-     * signingFunctions maps a Class to the Function that should be used to compute requestedIntervals for
-     * a given query.
+     * Maps a Class (type of query) to the Function that should be used to compute requestedIntervals for a given query.
      */
-    private final Map<Class, RequestedIntervalsFunction> signingFunctions;
+    private final Map<Class, RequestedIntervalsFunction> requestedIntervalsQueryExtractionFunctions;
 
     /**
      * A Service to get information about segment metadata.
@@ -49,17 +49,17 @@ public class SegmentIntervalsHashIdGenerator implements QuerySigningService<Long
      *
      * @param physicalTableDictionary  The dictionary of the physical tables
      * @param dataSourceMetadataService  A Service to get information about segment metadata
-     * @param signingFunctions  signingFunctions maps a Class to the Function that should be used to compute
+     * @param requestedIntervalsQueryExtractionFunctions  Maps a Class to the Function that should be used to compute
      * requestedIntervals for a given query
      */
     public SegmentIntervalsHashIdGenerator(
             PhysicalTableDictionary physicalTableDictionary,
             DataSourceMetadataService dataSourceMetadataService,
-            Map<Class, RequestedIntervalsFunction> signingFunctions
+            Map<Class, RequestedIntervalsFunction> requestedIntervalsQueryExtractionFunctions
     ) {
         this.physicalTableDictionary = physicalTableDictionary;
         this.dataSourceMetadataService = dataSourceMetadataService;
-        this.signingFunctions = signingFunctions;
+        this.requestedIntervalsQueryExtractionFunctions = requestedIntervalsQueryExtractionFunctions;
     }
 
     /**
@@ -104,17 +104,13 @@ public class SegmentIntervalsHashIdGenerator implements QuerySigningService<Long
             return Optional.empty();
         }
 
-        //get requested intervals
-        SimplifiedIntervalList requestedIntervals = signingFunctions.get(query.getClass()).apply(query);
-
-        //get requested segments
-        Set<SortedMap<DateTime, Map<String, SegmentInfo>>> requestedSegments = requestedIntervals.stream()
-                .flatMap(interval -> tableSegments.stream()
+        // Get requested intervals, then their segments, and sum their hash codes into a long
+        return getSegmentHash(
+                requestedIntervalsQueryExtractionFunctions.get(query.getClass()).apply(query).stream()
+                        .flatMap(interval -> tableSegments.stream()
                                 .map(segments -> segments.subMap(interval.getStart(), interval.getEnd()))
-                )
-                .collect(Collectors.toSet());
-        //return segment hash
-        return Optional.of(getSegmentHash(requestedSegments));
+                        )
+        );
     }
 
     /**
@@ -124,9 +120,11 @@ public class SegmentIntervalsHashIdGenerator implements QuerySigningService<Long
      *
      * @return A hash of the given segments
      */
-    public long getSegmentHash(Set<SortedMap<DateTime, Map<String, SegmentInfo>>> requestedSegments) {
-        return requestedSegments.stream()
-                .mapToLong(Object::hashCode)
-                .sum();
+    public Optional<Long> getSegmentHash(Stream<SortedMap<DateTime, Map<String, SegmentInfo>>> requestedSegments) {
+        return requestedSegments
+                .distinct()
+                .map(Object::hashCode)
+                .map(Integer::longValue)
+                .reduce(Long::sum);
     }
 }
