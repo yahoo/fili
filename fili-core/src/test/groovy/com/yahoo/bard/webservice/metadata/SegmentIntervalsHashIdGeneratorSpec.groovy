@@ -137,18 +137,20 @@ class SegmentIntervalsHashIdGeneratorSpec extends BaseDataSourceMetadataSpec {
     @Unroll
     def "test getSegmentHash produces the #expectedHash for #requestedSegment"() {
         expect:
-        segmentSetIdGenerator.getSegmentHash(requestedSegment) == expectedHash
+        segmentSetIdGenerator.getSegmentHash(requestedSegment.stream()) == expectedHash
 
         where:
-        requestedSegment                                | expectedHash
-        [] as Set                                       | 0 as Long
+        requestedSegment                                | expectedValue
+        [] as Set                                       | null
         [availabilityList1] as Set                      | availabilityList1.hashCode()
-        [availabilityList2, availabilityList1] as Set   | (availabilityList2.hashCode() + availabilityList1.hashCode()) as long
+        [availabilityList2, availabilityList1] as Set   | availabilityList2.hashCode() + availabilityList1.hashCode()
+
+        expectedHash = !expectedValue ? Optional.empty() : Optional.of(expectedValue as long)
     }
 
     def "test different segments have different hashcodes"() {
         expect:
-        segmentSetIdGenerator.getSegmentHash([availabilityList1] as Set) != segmentSetIdGenerator.getSegmentHash([availabilityList2] as Set)
+        segmentSetIdGenerator.getSegmentHash([availabilityList1].stream()).get() != segmentSetIdGenerator.getSegmentHash([availabilityList2].stream()).get()
     }
 
     @Unroll
