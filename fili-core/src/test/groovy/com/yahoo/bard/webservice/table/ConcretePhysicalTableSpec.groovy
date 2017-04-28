@@ -124,7 +124,12 @@ class ConcretePhysicalTableSpec extends Specification {
         table.dimensions == [dimension] as Set
 
         when:
-        table.setAvailability(new ConcreteAvailability(physicalTable.getTableName(), new TestDataSourceMetadataService(segmentMetadata)))
+        table.setAvailability(
+                new ConcreteAvailability(
+                        physicalTable.dataSourceName,
+                        new TestDataSourceMetadataService(segmentMetadata)
+                )
+        )
 
         then:
         table.getDimensions() == [dimension] as Set

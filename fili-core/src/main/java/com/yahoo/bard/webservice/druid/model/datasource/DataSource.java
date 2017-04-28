@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.datasource;
 
-import com.yahoo.bard.webservice.data.config.names.TableName;
+import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.table.ConstrainedTable;
 
@@ -69,7 +69,7 @@ public abstract class DataSource {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Set<String> getNames() {
         return getPhysicalTable().getDataSourceNames().stream()
-                .map(TableName::asName)
+                .map(DataSourceName::asName)
                 .collect(
                         Collectors.collectingAndThen(
                                 Collectors.toCollection(LinkedHashSet::new),

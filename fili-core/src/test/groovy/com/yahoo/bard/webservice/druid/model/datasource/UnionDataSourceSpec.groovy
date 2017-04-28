@@ -2,8 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.datasource
 
-import com.yahoo.bard.webservice.data.config.names.TableName
 import com.yahoo.bard.webservice.data.dimension.Dimension
+import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.table.ConstrainedTable
 
 import spock.lang.Specification
@@ -28,9 +28,9 @@ class UnionDataSourceSpec extends Specification {
     def "Test simple construction"() {
         setup:
         Set<String> expectedNames = ["test1", "test2"] as Set
-        table.getDataSourceNames() >> ((expectedNames.collect {TableName.of(it)} ) as Set)
+        table.getDataSourceNames() >> (expectedNames.collect {DataSourceName.of(it)} as Set)
 
         expect:
-        (new UnionDataSource(table)).getNames() == expectedNames
+        new UnionDataSource(table).names == expectedNames
     }
 }

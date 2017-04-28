@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.availability
 
-import com.yahoo.bard.webservice.data.config.names.TableName
+import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable
@@ -39,8 +39,8 @@ class MetricUnionAvailabilitySpec extends Specification {
         availability1 = Mock(Availability)
         availability2 = Mock(Availability)
 
-        availability1.getDataSourceNames() >> ([TableName.of('source1')] as Set)
-        availability2.getDataSourceNames() >> ([TableName.of('source2')] as Set)
+        availability1.dataSourceNames >> ([DataSourceName.of('source1')] as Set)
+        availability2.dataSourceNames >> ([DataSourceName.of('source2')] as Set)
 
         metric1 = 'metric1'
         metric2 = 'metric2'
@@ -134,7 +134,7 @@ class MetricUnionAvailabilitySpec extends Specification {
         )
 
         expect:
-        outerMetricUnionAvailability.getDataSourceNames() == [TableName.of('source1'), TableName.of('source2')] as Set
+        outerMetricUnionAvailability.dataSourceNames == [DataSourceName.of('source1'), DataSourceName.of('source2')] as Set
     }
 
     def "getAllAvailableIntervals returns the combined intervals of all columns of all availabilities"() {

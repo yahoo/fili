@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.metadata;
 
-import com.yahoo.bard.webservice.data.config.names.TableName;
+import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
@@ -39,9 +39,9 @@ public class DataSourceMetadataService {
     /**
      * The container that holds the segment metadata for every table. It should support concurrent access.
      */
-    private final Map<TableName, AtomicReference<ConcurrentSkipListMap<DateTime, Map<String, SegmentInfo>>>>
+    private final Map<DataSourceName, AtomicReference<ConcurrentSkipListMap<DateTime, Map<String, SegmentInfo>>>>
             allSegmentsByTime;
-    private final Map<TableName, AtomicReference<ImmutableMap<String, SimplifiedIntervalList>>>
+    private final Map<DataSourceName, AtomicReference<ImmutableMap<String, SimplifiedIntervalList>>>
             allSegmentsByColumn;
 
     /**
@@ -58,14 +58,14 @@ public class DataSourceMetadataService {
     }
 
     /**
-     * Get all the segments associated with the given Set of physical tables.
+     * Get all the segments associated with the given Set of data source names.
      *
-     * @param physicalTableNames  A Set of physical TableNames used by the DruidQuery
+     * @param dataSourceNames  A Set of physical data source names
      *
-     * @return A set of segments associated with the given tables
+     * @return A set of segments associated with the given data sources
      */
-    public Set<SortedMap<DateTime, Map<String, SegmentInfo>>> getTableSegments(Set<TableName> physicalTableNames) {
-        return physicalTableNames.stream()
+    public Set<SortedMap<DateTime, Map<String, SegmentInfo>>> getSegments(Set<DataSourceName> dataSourceNames) {
+        return dataSourceNames.stream()
                 .map(allSegmentsByTime::get)
                 .filter(Objects::nonNull)
                 .map(AtomicReference::get)
@@ -73,36 +73,46 @@ public class DataSourceMetadataService {
     }
 
     /**
-     * Get a set of intervals available for each column in the table.
+     * Get a set of intervals available for each column in the data source.
      *
-     * @param physicalTableName  The table to get the column and availability for
+     * @param dataSourceName  The data source for which to get the availability by column
      *
      * @return a map of column name to a set of available intervals
      */
-    public Map<String, SimplifiedIntervalList> getAvailableIntervalsByTable(TableName physicalTableName) {
-        if (!allSegmentsByColumn.containsKey(physicalTableName)) {
-            LOG.error(
-                    "Trying to access {} physical table datasource that is not available in metadata service",
-                    physicalTableName.asName()
+    public Map<String, SimplifiedIntervalList> getAvailableIntervalsByDataSource(DataSourceName dataSourceName) {
+        if (!allSegmentsByColumn.containsKey(dataSourceName)) {
+            String message = String.format(
+                    "Datasource '%s' is not available in the metadata service",
+                    dataSourceName.asName()
             );
-            throw new IllegalStateException(
-                    String.format(
-                            "Trying to access %s physical table datasource that is not available in metadata service",
-                            physicalTableName.asName()
-                    )
-            );
+            LOG.error(message);
+            throw new IllegalStateException(message);
         }
-        return allSegmentsByColumn.get(physicalTableName).get();
+        return allSegmentsByColumn.get(dataSourceName).get();
     }
 
     /**
-     * Update the information with respect to the segment metadata of a particular physical table.
-     * This operation should be atomic per table.
+     * Update the information with respect to the segment metadata of a particular data source.
+     * This operation should be atomic per dataSourceName.
      *
      * @param table  The physical table to which the metadata are referring to.
      * @param metadata  The updated datasource metadata.
+     *
+     * @deprecated  Pass the DataSourceName directly, rather than via the PhysicalTable
      */
+    @Deprecated
     public void update(PhysicalTable table, DataSourceMetadata metadata) {
+        table.getDataSourceNames().forEach(dataSourceName -> update(dataSourceName, metadata));
+    }
+
+    /**
+     * Update the information with respect to the segment metadata of a particular data source.
+     * This operation update both segment mappings for the dataSourceName.
+     *
+     * @param dataSourceName  The data source to which the metadata refer.
+     * @param metadata  The updated datasource metadata.
+     */
+    public void update(DataSourceName dataSourceName, DataSourceMetadata metadata) {
         // Group all the segments by the starting date of their interval.
         // Accumulate all the partitions of a segment in a map indexed by their identifier.
         ConcurrentSkipListMap<DateTime, Map<String, SegmentInfo>> currentByTime = groupSegmentByTime(metadata);
@@ -110,9 +120,9 @@ public class DataSourceMetadataService {
         // Group segment interval by every column present in the segment
         Map<String, SimplifiedIntervalList> currentByColumn = groupIntervalByColumn(metadata);
 
-        allSegmentsByTime.computeIfAbsent(table.getTableName(), ignored -> new AtomicReference<>())
+        allSegmentsByTime.computeIfAbsent(dataSourceName, ignored -> new AtomicReference<>())
                 .set(currentByTime);
-        allSegmentsByColumn.computeIfAbsent(table.getTableName(), ignored -> new AtomicReference<>())
+        allSegmentsByColumn.computeIfAbsent(dataSourceName, ignored -> new AtomicReference<>())
                 .set(ImmutableMap.copyOf(currentByColumn));
     }
 

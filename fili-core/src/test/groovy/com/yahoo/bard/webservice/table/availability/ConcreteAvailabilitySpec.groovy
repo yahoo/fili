@@ -1,6 +1,6 @@
 package com.yahoo.bard.webservice.table.availability
 
-import com.yahoo.bard.webservice.data.config.names.TableName
+import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
@@ -28,7 +28,7 @@ class ConcreteAvailabilitySpec extends Specification{
         interval2 = new Interval('2010-01-01/2020-12-31')
 
         concreteAvailability = new ConcreteAvailability(
-                TableName.of('table'),
+                DataSourceName.of('table'),
                 new TestDataSourceMetadataService([
                         (columnPhysicalName1): [interval1] as Set,
                         (columnPhysicalName2): [interval2] as Set,
@@ -53,7 +53,7 @@ class ConcreteAvailabilitySpec extends Specification{
         interval2 = new Interval(secondInterval)
 
         concreteAvailability = new ConcreteAvailability(
-                TableName.of('table'),
+                DataSourceName.of('table'),
                 new TestDataSourceMetadataService([
                         (columnPhysicalName1): [interval1] as Set,
                         (columnPhysicalName2): [interval2] as Set

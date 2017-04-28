@@ -8,14 +8,15 @@ import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import com.yahoo.bard.webservice.application.Loader;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
+import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.table.ConcretePhysicalTable;
+import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.joda.time.DateTime;
@@ -24,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -82,7 +84,7 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
                 SYSTEM_CONFIG.getLongProperty(DRUID_SEG_LOADER_TIMER_DELAY_KEY, 0),
                 SYSTEM_CONFIG.getLongProperty(
                         DRUID_SEG_LOADER_TIMER_DURATION_KEY,
-                        TimeUnit.MILLISECONDS.toMillis(60000)
+                        TimeUnit.MINUTES.toMillis(1)
                 )
         );
 
@@ -97,8 +99,9 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
     @Override
     public void run() {
         physicalTableDictionary.values().stream()
-                .filter(table -> table instanceof ConcretePhysicalTable)
-                .map(table -> (ConcretePhysicalTable) table)
+                .map(PhysicalTable::getDataSourceNames)
+                .flatMap(Set::stream)
+                .distinct()
                 .peek(dataSourceName -> LOG.trace("Querying metadata for datasource: {}", dataSourceName))
                 .forEach(this::queryDataSourceMetadata);
         lastRunTimestamp.set(DateTime.now());
@@ -108,13 +111,25 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
      * Queries Druid for updated datasource metadata and then updates the datasource metadata service.
      *
      * @param table  The physical table to be updated.
+     *
+     * @deprecated  Pass the DataSourceName directly, rather than via the PhysicalTable
      */
+    @Deprecated
     protected void queryDataSourceMetadata(ConcretePhysicalTable table) {
-        String resourcePath = String.format(DATASOURCE_METADATA_QUERY_FORMAT, table.getFactTableName());
+        queryDataSourceMetadata(table.getDataSourceName());
+    }
+
+    /**
+     * Queries Druid for updated datasource metadata and then updates the datasource metadata service.
+     *
+     * @param dataSourceName  The data source to be updated.
+     */
+    protected void queryDataSourceMetadata(DataSourceName dataSourceName) {
+        String resourcePath = String.format(DATASOURCE_METADATA_QUERY_FORMAT, dataSourceName.asName());
 
         // Success callback will update datasource metadata on success
-        SuccessCallback success = buildDataSourceMetadataSuccessCallback(table);
-        HttpErrorCallback errorCallback = getErrorCallback(table);
+        SuccessCallback success = buildDataSourceMetadataSuccessCallback(dataSourceName);
+        HttpErrorCallback errorCallback = getErrorCallback(dataSourceName);
         druidWebService.getJsonObject(success, errorCallback, failureCallback, resourcePath);
     }
 
@@ -173,20 +188,77 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
      * @param table  The table to inject into this callback.
      *
      * @return The callback itself.
+     *
+     * @deprecated  Pass the DataSourceName directly, rather than via the PhysicalTable
      */
+    @Deprecated
     protected final SuccessCallback buildDataSourceMetadataSuccessCallback(ConcretePhysicalTable table) {
-        return new SuccessCallback() {
-            @Override
-            public void invoke(JsonNode rootNode) {
-                try {
-                    DataSourceMetadata dataSourceMetadata = mapper.treeToValue(rootNode, DataSourceMetadata.class);
-                    metadataService.update(table, dataSourceMetadata);
-                } catch (IOException e) {
-                    throw new UnsupportedOperationException(
-                            DRUID_METADATA_READ_ERROR.format(table.getFactTableName()),
-                            e
-                    );
-                }
+        return buildDataSourceMetadataSuccessCallback(table.getDataSourceName());
+    }
+
+    /**
+     * Callback to parse druid datasource metadata response.
+     * <p>
+     * Typical druid datasource metadata response:
+     * <pre>
+     *  """
+     *  {
+     *      "name": "tableName",
+     *      "properties": { },
+     *      "segments": [
+     *          {
+     *              "dataSource": "tableName",
+     *              "interval": "2015-01-01T00:00:00.000Z/2015-01-02T00:00:00.000Z",
+     *              "version": "2015-01-15T18:08:20.435Z",
+     *              "loadSpec": {
+     *                  "type": "hdfs",
+     *                  "path": "hdfs:/some_hdfs_URL/tableName/.../index.zip"
+     *              },
+     *              "dimensions": "color", "shape",
+     *              "metrics": "height", "width",
+     *              "shardSpec": {
+     *                  "type":"hashed",
+     *                  "partitionNum": 0,
+     *                  "partitions": 2
+     *              },
+     *              "binaryVersion":9,
+     *              "size":1024,
+     *              "identifier":"tableName_2015-01-01T00:00:00.000Z_2015-01-02T00:00:00.000Z_2015-02-15T18:08:20.435Z"
+     *          },
+     *          {
+     *              "dataSource": "tableName",
+     *              "interval": "2015-01-01T00:00:00.000Z/2015-01-02T00:00:00.000Z",
+     *              "version": "2015-02-01T07:02:05.912Z",
+     *              "loadSpec": {
+     *                  "type": "hdfs",
+     *                  "path": "hdfs:/some_hdfs_URL/tableName/.../index.zip"
+     *              },
+     *              "dimensions": "color", "shape",
+     *              "metrics": "height", "width",
+     *              "shardSpec": {
+     *                  "type":"hashed",
+     *                  "partitionNum": 1,
+     *                  "partitions": 2
+     *              },
+     *              "binaryVersion":9,
+     *              "size":512,
+     *              "identifier":"tableName_2015-01-01T00:00:00.000Z_2015-01-02T00:00:00.000Z_2015-02-01T07:02:05.912Z"
+     *          }
+     *      ]
+     *   }"""
+     * </pre>
+     *
+     * @param dataSourceName  The datasource name to inject into this callback.
+     *
+     * @return The callback itself.
+     */
+    protected SuccessCallback buildDataSourceMetadataSuccessCallback(DataSourceName dataSourceName) {
+        return rootNode -> {
+            try {
+                metadataService.update(dataSourceName, mapper.treeToValue(rootNode, DataSourceMetadata.class));
+            } catch (IOException e) {
+                LOG.error(DRUID_METADATA_READ_ERROR.format(dataSourceName.asName()), e);
+                throw new UnsupportedOperationException(DRUID_METADATA_READ_ERROR.format(dataSourceName.asName()), e);
             }
         };
     }
@@ -206,45 +278,77 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
      * @param table  The PhysicalTable that the error callback will relate to.
      *
      * @return A newly created http error callback object.
+     *
+     * @deprecated  Pass the DataSourceName directly, rather than via the PhysicalTable
      */
+    @Deprecated
     protected HttpErrorCallback getErrorCallback(ConcretePhysicalTable table) {
-        return new TaskHttpErrorCallback(table);
+        return getErrorCallback(table.getDataSourceName());
+    }
+
+    /**
+     * Get a default callback for an http error.
+     *
+     * @param dataSourceName  The data source that the error callback will relate to.
+     *
+     * @return A newly created http error callback object.
+     */
+    protected HttpErrorCallback getErrorCallback(DataSourceName dataSourceName) {
+        return new TaskHttpErrorCallback(dataSourceName);
     }
 
     /**
      * Defines the callback for http errors.
      */
     private final class TaskHttpErrorCallback extends Loader<?>.TaskHttpErrorCallback {
-        private final ConcretePhysicalTable table;
+        private final DataSourceName dataSourceName;
 
         /**
          * Constructor.
          *
          * @param table  PhysicalTable that this error callback is tied to
+         *
+         * @deprecated  Pass the DataSourceName directly, rather than via the PhysicalTable
          */
+        @Deprecated
         TaskHttpErrorCallback(ConcretePhysicalTable table) {
-            this.table = table;
+            this(table.getDataSourceName());
         }
 
-        @SuppressWarnings("checkstyle:linelength")
+        /**
+         * Constructor.
+         *
+         * @param dataSourceName  Data source that this error callback is tied to
+         */
+        TaskHttpErrorCallback(DataSourceName dataSourceName) {
+            this.dataSourceName = dataSourceName;
+        }
+
         @Override
         public void invoke(int statusCode, String reason, String responseBody) {
-            String msg = String.format(
-                    "%s: HTTP error while trying to load metadata for table: %s - Status: %d, Cause: %s, Response body: %s",
-                    getName(),
-                    table.getFactTableName(),
-                    statusCode,
-                    reason,
-                    responseBody
-            );
-
+            // No Content is an expected but A-typical response.
+            // Usually, it means Druid knows about the data source, but no segments have been loaded
             if (statusCode == NO_CONTENT.getStatusCode()) {
+                String msg = String.format(
+                        "Druid returned 204 NO CONTENT when loading metadata for the '%s' datasource. While not an " +
+                                "error, it is unusual for a Druid data source to report having no data in it. Please " +
+                                "verify that your cluster is healthy.",
+                        dataSourceName.asName()
+                );
                 LOG.warn(msg);
                 metadataService.update(
-                        table,
-                        new DataSourceMetadata(table.getName(), Collections.emptyMap(), Collections.emptyList())
+                        dataSourceName,
+                        new DataSourceMetadata(dataSourceName.asName(), Collections.emptyMap(), Collections.emptyList())
                 );
             } else {
+                String msg = String.format(
+                        "%s: HTTP error while trying to load metadata for data source: %s - %d %s, Response body: %s",
+                        getName(),
+                        dataSourceName.asName(),
+                        statusCode,
+                        reason,
+                        responseBody
+                );
                 LOG.error(msg);
             }
         }

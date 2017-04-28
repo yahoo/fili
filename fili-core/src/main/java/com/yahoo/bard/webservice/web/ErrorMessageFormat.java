@@ -118,7 +118,7 @@ public enum ErrorMessageFormat implements MessageFormatter {
     LOGINFO_CLASS_INVALID("Invalid LogInfo class: %s. Cannot define its order. Ignoring."),
 
     DRUID_METADATA_READ_ERROR("Unable to read metadata for: '%s'."),
-    DRUID_METADATA_SEGMENTS_MISSING("No segment metadata available for tables: '%s'."),
+    DRUID_METADATA_SEGMENTS_MISSING("No segment metadata available for data sources: '%s'."),
 
     DRUID_URL_INVALID("Druid %s url is unset."),
 
@@ -230,7 +230,10 @@ public enum ErrorMessageFormat implements MessageFormatter {
             "More than %s interval missing information received from druid, inspect if query " +
                     "expects more than %s missing intervals or increase " +
                     "uncoveredIntervalsLimit configuration value"
-    )
+    ),
+
+    TOO_MANY_BACKING_DATA_SOURCES("TableDataSource built with too many backing data sources: %s"),
+    TOO_FEW_BACKING_DATA_SOURCES("TableDataSource built with insufficient backing data sources: %s")
     ;
 
     private final String messageFormat;
