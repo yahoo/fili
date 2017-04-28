@@ -118,7 +118,7 @@ public enum ErrorMessageFormat implements MessageFormatter {
     LOGINFO_CLASS_INVALID("Invalid LogInfo class: %s. Cannot define its order. Ignoring."),
 
     DRUID_METADATA_READ_ERROR("Unable to read metadata for: '%s'."),
-    DRUID_METADATA_SEGMENTS_MISSING("No segment metadata available for tables: '%s'."),
+    DRUID_METADATA_SEGMENTS_MISSING("No segment metadata available for data sources: '%s'."),
 
     DRUID_URL_INVALID("Druid %s url is unset."),
 

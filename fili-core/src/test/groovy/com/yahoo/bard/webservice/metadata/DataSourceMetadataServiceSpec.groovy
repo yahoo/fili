@@ -3,7 +3,7 @@
 package com.yahoo.bard.webservice.metadata
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
-import com.yahoo.bard.webservice.data.config.names.TableName
+import com.yahoo.bard.webservice.data.config.names.DataSourceName
 
 import org.joda.time.DateTime
 import org.joda.time.Interval
@@ -23,20 +23,19 @@ class DataSourceMetadataServiceSpec extends BaseDataSourceMetadataSpec {
     def "test metadata service updates segment availability for physical tables and access methods behave correctly"() {
         setup:
         JerseyTestBinder jtb = new JerseyTestBinder()
-        PhysicalTableDictionary tableDict = jtb.configurationLoader.getPhysicalTableDictionary()
+        DataSourceName dataSourceName = DataSourceName.of(tableName)
 
         DataSourceMetadataService metadataService = new DataSourceMetadataService()
-        TableName currentTableName = tableDict.get(tableName).getTableName()
 
         when:
-        metadataService.update(tableDict.get(tableName), metadata)
+        metadataService.update(dataSourceName, metadata)
 
         then:
-        metadataService.allSegmentsByTime.get(currentTableName) instanceof AtomicReference
-        metadataService.allSegmentsByColumn.get(currentTableName) instanceof AtomicReference
+        metadataService.allSegmentsByTime.get(dataSourceName) instanceof AtomicReference
+        metadataService.allSegmentsByColumn.get(dataSourceName) instanceof AtomicReference
 
         and:
-        metadataService.getTableSegments(Collections.singleton(currentTableName)).stream()
+        metadataService.getSegments([dataSourceName] as Set).stream()
                 .map({it.values()})
                 .flatMap({it.stream()})
                 .map({it.values()})
@@ -47,7 +46,7 @@ class DataSourceMetadataServiceSpec extends BaseDataSourceMetadataSpec {
                 ]
 
         and: "all the intervals by column in metadata service are simplified to interval12"
-        [[interval12]].containsAll(metadataService.getAvailableIntervalsByTable(currentTableName).values())
+        [[interval12]].containsAll(metadataService.getAvailableIntervalsByDataSource(dataSourceName).values())
 
         cleanup:
         jtb.tearDown()
@@ -78,11 +77,10 @@ class DataSourceMetadataServiceSpec extends BaseDataSourceMetadataSpec {
         DataSourceMetadataService metadataService = new DataSourceMetadataService()
 
         when:
-        metadataService.getAvailableIntervalsByTable(TableName.of("InvalidTable"))
+        metadataService.getAvailableIntervalsByDataSource(DataSourceName.of("InvalidTable"))
 
         then:
         IllegalStateException e = thrown()
-        e.message == 'Trying to access InvalidTable physical table datasource that is not available in metadata service'
-
+        e.message == "Datasource 'InvalidTable' is not available in the metadata service"
     }
 }

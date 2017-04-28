@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.availability;
 
-import com.yahoo.bard.webservice.data.config.names.TableName;
+import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.util.StreamUtils;
 
@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 public abstract class BaseCompositeAvailability implements Availability {
 
     private final Set<Availability> sourceAvailabilities;
-    private final Set<TableName> dataSourcesNames;
+    private final Set<DataSourceName> dataSourcesNames;
 
     /**
      * Constructor.
@@ -41,7 +41,7 @@ public abstract class BaseCompositeAvailability implements Availability {
     };
 
     @Override
-    public Set<TableName> getDataSourceNames() {
+    public Set<DataSourceName> getDataSourceNames() {
         return dataSourcesNames;
     }
 

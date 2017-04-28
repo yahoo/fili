@@ -2,10 +2,12 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.availability;
 
-import com.yahoo.bard.webservice.data.config.names.TableName;
+import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
+
+import java.util.Objects;
 
 import javax.validation.constraints.NotNull;
 
@@ -14,18 +16,18 @@ import javax.validation.constraints.NotNull;
  * This availability returns available intervals without restrictions from <tt>DataSourceConstraint</tt>, because the
  * nature of this availability is to returns as many available intervals as possible.
  */
-public class PermissiveAvailability extends ConcreteAvailability {
+public class PermissiveAvailability extends BaseMetadataAvailability {
     /**
      * Constructor.
      *
-     * @param tableName  The name of the data source
+     * @param dataSourceName  The name of the data source associated with this Availability
      * @param metadataService  A service containing the data source segment data
      */
     public PermissiveAvailability(
-            @NotNull TableName tableName,
+            @NotNull DataSourceName dataSourceName,
             @NotNull DataSourceMetadataService metadataService
     ) {
-        super(tableName, metadataService);
+        super(dataSourceName, metadataService);
     }
 
     /**
@@ -53,6 +55,23 @@ public class PermissiveAvailability extends ConcreteAvailability {
 
     @Override
     public String toString() {
-        return String.format("PermissiveAvailability with table name = %s", getName().asName());
+        return String.format("PermissiveAvailability for data source = %s", getDataSourceName().asName());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof PermissiveAvailability) {
+            PermissiveAvailability that = (PermissiveAvailability) obj;
+            return Objects.equals(getDataSourceName().asName(), that.getDataSourceName().asName())
+                    // Since metadata service is mutable, use instance equality to ensure table equality is stable
+                    && getDataSourceMetadataService() == that.getDataSourceMetadataService();
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        // Leave metadataService out of hash because it is mutable
+        return Objects.hash(getDataSourceName());
     }
 }

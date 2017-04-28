@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.metadata;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DRUID_METADATA_SEGMENTS_MISSING;
 
+import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
@@ -84,23 +85,20 @@ public class SegmentIntervalsHashIdGenerator implements QuerySigningService<Long
 
     @Override
     public Optional<Long> getSegmentSetId(DruidAggregationQuery<?> query) {
-        //get physical tables
-        Set<String> tableNames = query.getInnermostQuery().getDataSource().getNames();
-        Set<PhysicalTable> physicalTables = tableNames.stream()
-                .map(physicalTableDictionary::get)
+        // Gather the data source names backing the query
+        Set<DataSourceName> dataSourceNames = query.getInnermostQuery().getDataSource().getPhysicalTables().stream()
+                .map(PhysicalTable::getDataSourceNames)
+                .flatMap(Set::stream)
                 .collect(Collectors.toSet());
 
-        //get all table segments
-        Set<SortedMap<DateTime, Map<String, SegmentInfo>>> tableSegments =
-                dataSourceMetadataService.getTableSegments(
-                        physicalTables.stream()
-                                .map(PhysicalTable::getTableName)
-                                .collect(Collectors.toSet())
-                );
+        // Get all the segments for the data sources of the query's physical tables
+        Set<SortedMap<DateTime, Map<String, SegmentInfo>>> tableSegments = dataSourceMetadataService.getSegments(
+                dataSourceNames
+        );
 
         // Check if we have no tables with segments
         if (tableSegments.isEmpty()) {
-            LOG.warn(DRUID_METADATA_SEGMENTS_MISSING.logFormat(tableNames));
+            LOG.warn(DRUID_METADATA_SEGMENTS_MISSING.logFormat(dataSourceNames));
             return Optional.empty();
         }
 

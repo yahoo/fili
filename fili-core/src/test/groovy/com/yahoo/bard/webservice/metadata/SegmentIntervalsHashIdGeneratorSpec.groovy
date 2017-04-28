@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.metadata
 import static org.joda.time.DateTimeZone.UTC
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
+import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource
 import com.yahoo.bard.webservice.druid.model.datasource.QueryDataSource
@@ -14,6 +15,7 @@ import com.yahoo.bard.webservice.druid.model.query.LookbackQuery
 import com.yahoo.bard.webservice.druid.model.query.LookbackQuerySpec
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuerySpec
+import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 import com.yahoo.bard.webservice.table.TableTestUtils
 import com.yahoo.bard.webservice.util.DefaultingDictionary
@@ -92,7 +94,7 @@ class SegmentIntervalsHashIdGeneratorSpec extends BaseDataSourceMetadataSpec {
         atomicRef.set(availabilityList1)
 
         metadataService.allSegmentsByTime.put(
-                tableDict.get(tableName).getTableName(),
+                tableDict.get(tableName).dataSourceNames[0],
                 atomicRef
         )
 
@@ -100,7 +102,8 @@ class SegmentIntervalsHashIdGeneratorSpec extends BaseDataSourceMetadataSpec {
                 intervals: [interval2],
                 dataSource: new TableDataSource(
                         TableTestUtils.buildTable(
-                                tableName, DefaultTimeGrain.DAY.buildZonedTimeGrain(UTC),
+                                tableName,
+                                DefaultTimeGrain.DAY.buildZonedTimeGrain(UTC),
                                 [] as Set,
                                 [:],
                                 Mock(DataSourceMetadataService)
@@ -121,7 +124,10 @@ class SegmentIntervalsHashIdGeneratorSpec extends BaseDataSourceMetadataSpec {
     def "test metadata service returns valid segment ids"() {
         setup:
         DataSource<?> dataSource = Mock(DataSource)
-        dataSource.getNames() >> ([tableName] as Set)
+        dataSource.physicalTables >> ([Mock(PhysicalTable) {
+            getDataSourceNames() >> ([DataSourceName.of(tableName)] as Set)
+        }] as Set)
+
         DruidAggregationQuery<?> query = Mock(DruidAggregationQuery)
         query.intervals >> [interval1, interval2]
         query.innermostQuery >> query

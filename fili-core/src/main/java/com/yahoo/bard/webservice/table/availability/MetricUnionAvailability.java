@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.availability;
 
-import com.yahoo.bard.webservice.data.config.names.TableName;
+import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
@@ -113,7 +113,7 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
                 String message = String.format(
                         "Metric columns must be unique across the metric union data sources, but duplicate was found " +
                                 "across the following data sources: %s",
-                        getDataSourceNames().stream().map(TableName::asName).collect(Collectors.joining(", "))
+                        getDataSourceNames().stream().map(DataSourceName::asName).collect(Collectors.joining(", "))
                 );
                 LOG.error(message);
                 throw new RuntimeException(message);
@@ -183,7 +183,7 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
     public String toString() {
         return String.format("MetricUnionAvailability with data source names: [%s] and Configured metric columns: %s",
                 getDataSourceNames().stream()
-                        .map(TableName::asName)
+                        .map(DataSourceName::asName)
                         .collect(Collectors.joining(", ")),
                 metricNames
         );

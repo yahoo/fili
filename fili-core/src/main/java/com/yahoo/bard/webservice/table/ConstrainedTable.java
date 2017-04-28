@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table;
 
+import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.table.availability.Availability;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
@@ -22,7 +23,7 @@ public class ConstrainedTable implements PhysicalTable {
 
     private final DataSourceConstraint constraint;
     private final PhysicalTable sourceTable;
-    private final Set<TableName> dataSourceNames;
+    private final Set<DataSourceName> dataSourceNames;
     private final SimplifiedIntervalList availableIntervals;
     private final Map<Column, SimplifiedIntervalList> allAvailableIntervals;
 
@@ -77,7 +78,7 @@ public class ConstrainedTable implements PhysicalTable {
     }
 
     @Override
-    public Set<TableName> getDataSourceNames() {
+    public Set<DataSourceName> getDataSourceNames() {
         return dataSourceNames;
     }
 
@@ -129,7 +130,7 @@ public class ConstrainedTable implements PhysicalTable {
      * @return A set of tablenames for backing dataSources
      */
     @Override
-    public Set<TableName> getDataSourceNames(DataSourceConstraint constraint) {
+    public Set<DataSourceName> getDataSourceNames(DataSourceConstraint constraint) {
         if (getConstraint().equals(constraint)) {
             return getDataSourceNames();
         }

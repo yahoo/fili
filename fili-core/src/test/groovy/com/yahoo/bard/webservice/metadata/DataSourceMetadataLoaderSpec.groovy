@@ -7,6 +7,7 @@ import static com.yahoo.bard.webservice.data.Columns.METRICS
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
+import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.data.config.names.TestApiDimensionName
 import com.yahoo.bard.webservice.data.config.names.TestApiMetricName
 import com.yahoo.bard.webservice.data.config.names.TestDruidTableName
@@ -20,6 +21,7 @@ import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
 import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService
 import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.ConcretePhysicalTable
+import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 
 import org.joda.time.DateTime
@@ -187,7 +189,10 @@ class DataSourceMetadataLoaderSpec extends Specification {
                 MAPPERS.mapper
         )
         DataSource dataSource = Mock(DataSource)
-        dataSource.getNames() >> ([tableName] as Set)
+        dataSource.physicalTables >> ([Mock(PhysicalTable) {
+            getDataSourceNames() >> ([DataSourceName.of(tableName)] as Set)
+        }] as Set)
+
         DruidAggregationQuery<?> query = Mock(DruidAggregationQuery)
         query.intervals >> [interval1, interval2]
         query.innermostQuery >> query
@@ -210,15 +215,15 @@ class DataSourceMetadataLoaderSpec extends Specification {
         )
         druidWS.jsonResponse = {gappyDataSourceMetadataJson}
         ConcretePhysicalTable table = Mock(ConcretePhysicalTable)
-        table.getFactTableName() >> "test"
+        table.dataSourceName >> DataSourceName.of("test")
         DataSourceMetadata capture
 
         when: "JSON metadata return successfully"
-        SuccessCallback success = loader.buildDataSourceMetadataSuccessCallback(table)
+        SuccessCallback success = loader.buildDataSourceMetadataSuccessCallback(table.dataSourceName)
         success.invoke(MAPPERS.mapper.readTree(gappyDataSourceMetadataJson))
 
         then: "the segment metadata are loaded to the metadata service as expected"
-        1 * localMetadataService.update(table, _) >> { physicalTable, dataSourceMetadata ->
+        1 * localMetadataService.update(table.dataSourceName, _ as DataSourceMetadata) >> { physicalTable, dataSourceMetadata ->
             capture = dataSourceMetadata
         }
         def intervals = DataSourceMetadata.getIntervalLists(capture)
@@ -242,10 +247,10 @@ class DataSourceMetadataLoaderSpec extends Specification {
                 MAPPERS.mapper
         )
         ConcretePhysicalTable table = Mock(ConcretePhysicalTable)
-        table.getFactTableName() >> "test"
+        table.dataSourceName >> DataSourceName.of("test")
 
         when: "loader issues a metadata query"
-        loader.queryDataSourceMetadata(table)
+        loader.queryDataSourceMetadata(table.dataSourceName)
 
         then: "the query is issued to the webservice that was specified to query the druid metadata endpoint"
         1 * testWs.getJsonObject(_, _, _, _)

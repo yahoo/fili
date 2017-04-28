@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table;
 
+import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.table.availability.Availability;
@@ -63,13 +64,18 @@ public abstract class BasePhysicalTable implements ConfigPhysicalTable {
     }
 
     @Override
-    public Availability getAvailability() {
-        return availability;
+    public Set<DataSourceName> getDataSourceNames() {
+        return getAvailability().getDataSourceNames();
     }
 
     @Override
     public PhysicalTableSchema getSchema() {
         return schema;
+    }
+
+    @Override
+    public Availability getAvailability() {
+        return availability;
     }
 
     @Override
@@ -130,11 +136,6 @@ public abstract class BasePhysicalTable implements ConfigPhysicalTable {
     public ConstrainedTable withConstraint(DataSourceConstraint constraint) {
         validateConstraintSchema(constraint);
         return new ConstrainedTable(this, new PhysicalDataSourceConstraint(constraint, getSchema()));
-    }
-
-    @Override
-    public Set<TableName> getDataSourceNames() {
-        return getAvailability().getDataSourceNames();
     }
 
     /**

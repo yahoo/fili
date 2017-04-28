@@ -19,6 +19,12 @@ Current
 - [Moved UnionDataSource to support only single tables](https://github.com/yahoo/fili/pull/262/files)
     * `DataSource` now supports getDataSource() operation
 
+- [Add `DataSourceName` concept, removing responsibility from `TableName`](https://github.com/yahoo/fili/pull/263)
+    * `TableName` was serving double-duty, and it was causing problems and confusion. Splitting the concepts fixes it.
+
+- [Add a `BaseMetadataAvailability` as a parallel to `BaseCompositeAvailability`](https://github.com/yahoo/fili/pull/263)
+    * `Concrete` and `PermissiveAvailability` both extend this new base `Availability`
+
 - [Prepare For Partial Data V2](https://github.com/yahoo/fili/pull/264)
     * Add new query context for druid's uncovered interval feature
     * Add a configurable property named "druid_uncovered_interval_limit"
@@ -131,6 +137,16 @@ Current
     * `DataSource` now supports getDataSource() operation
     * `IntervalUtils.collectBucketedIntervalsNotInIntervalList` moved to `PartialDataHandler`
     
+- [Add `DataSourceName` concept, removing responsibility from `TableName`](https://github.com/yahoo/fili/pull/263)
+    * Impacts:
+        - `DataSource` & children
+        - `DataSourceMetadataService` & `DataSourceMetadataLoader`
+        - `SegmentIntervalsHashIdGenerator`
+        - `PhysicalTable` & children
+        - `Availability` & children
+        - `ErrorMessageFormat`
+        - `SlicesApiRequest`
+
 - [Force `ConcretePhysicalTable` only take a `ConcreteAvailability`](https://github.com/yahoo/fili/pull/263)
     * Only a `ConcreteAvailability` makes sense, so let the types enforce it
 
@@ -321,6 +337,11 @@ Current
 
 - [SimplifiedIntervalList::NO_INTERVALS](https://github.com/yahoo/fili/pull/262/files)
     * This is unsafe since it is modifiable
+
+- [Add `DataSourceName` concept, removing responsibility from `TableName`](https://github.com/yahoo/fili/pull/263)
+    * Impacts:
+        - `DataSourceMetadataService` & `DataSourceMetadataLoader`
+        - `ConcretePhysicalTable`
 
 - [Deprecate old static `TableName` comparator](https://github.com/yahoo/fili/pull/263)
     * Change to `AS_NAME_COMPARATOR`, so the old name is deprecated

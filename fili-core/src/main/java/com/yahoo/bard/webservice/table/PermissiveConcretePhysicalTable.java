@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table;
 
+import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
@@ -41,7 +42,7 @@ public class PermissiveConcretePhysicalTable extends ConcretePhysicalTable {
                 timeGrain,
                 columns,
                 logicalToPhysicalColumnNames,
-                new PermissiveAvailability(name, dataSourceMetadataService)
+                new PermissiveAvailability(DataSourceName.of(name.asName()), dataSourceMetadataService)
         );
     }
 }
