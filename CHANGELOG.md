@@ -131,7 +131,9 @@ Current
     * `DataSource` now supports getDataSource() operation
     * `IntervalUtils.collectBucketedIntervalsNotInIntervalList` moved to `PartialDataHandler`
     
-    
+- [Clarify name of built-in static `TableName` comparator](https://github.com/yahoo/fili/pull/263)
+    * Change to `AS_NAME_COMPARATOR`
+
 - [Druid filters are now lazy](https://github.com/yahoo/fili/pull/269)
     - The Druid filter is built when requested, NOT at DatApiRequest construction. This will
         make it easier to write performant `DataApiRequest` mappers.
@@ -316,6 +318,9 @@ Current
 
 - [SimplifiedIntervalList::NO_INTERVALS](https://github.com/yahoo/fili/pull/262/files)
     * This is unsafe since it is modifiable
+
+- [Deprecate old static `TableName` comparator](https://github.com/yahoo/fili/pull/263)
+    * Change to `AS_NAME_COMPARATOR`, so the old name is deprecated
 
 - [Support for Lucene 5 indexes](https://github.com/yahoo/fili/pull/265)
     * Added lucene-backward-codecs.jar as a dependency to restore support for indexes built on earlier instances.
