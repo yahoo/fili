@@ -8,6 +8,7 @@ import com.yahoo.bard.webservice.table.availability.MetricUnionAvailability;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
@@ -68,7 +69,10 @@ public class MetricUnionCompositeTable extends BaseCompositePhysicalTable {
                 columns,
                 physicalTables,
                 logicalToPhysicalColumnNames,
-                new MetricUnionAvailability(physicalTables, columns)
+                new MetricUnionAvailability(
+                        physicalTables.stream().map(PhysicalTable::getAvailability).collect(Collectors.toSet()),
+                        columns
+                )
         );
     }
 }
