@@ -141,6 +141,10 @@ Current
         to execute one step (which is a no-op for them) in a complex system they aren't using. Until we can revisit how
         we log report asynchronous errors, we reduce the log level to `DEBUG` to reduce noise.
 
+- [Clean up `BaseDataSourceComponentSpec`](https://github.com/yahoo/fili/pull/263)
+    * Drop a log from `error` to `trace` when a response comes back as an error
+    * Make JSON validation helpers return `boolean` instead of `def`
+
 - [Make `BasePhysicalTable` take a more extension-friendly set of `PhysicalTable`s](https://github.com/yahoo/fili/pull/263)
     * Take `<? extends PhysicalTable>` instead of just `PhysicalTable`
 
