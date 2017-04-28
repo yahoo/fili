@@ -132,7 +132,7 @@ Current
     * `IntervalUtils.collectBucketedIntervalsNotInIntervalList` moved to `PartialDataHandler`
     
     
-- [Druid filters are now lazy.](https://github.com/yahoo/fili/pull/269)
+- [Druid filters are now lazy](https://github.com/yahoo/fili/pull/269)
     - The Druid filter is built when requested, NOT at DatApiRequest construction. This will
         make it easier to write performant `DataApiRequest` mappers.
 
@@ -140,6 +140,9 @@ Current
     * Customers who aren't using the asynchronous infrastructure shouldn't be seeing spurious warnings about a failure
         to execute one step (which is a no-op for them) in a complex system they aren't using. Until we can revisit how
         we log report asynchronous errors, we reduce the log level to `DEBUG` to reduce noise.
+
+- [Make `BasePhysicalTable` take a more extension-friendly set of `PhysicalTable`s](https://github.com/yahoo/fili/pull/263)
+    * Take `<? extends PhysicalTable>` instead of just `PhysicalTable`
 
 - [Update availabilities for PartitionAvailability](https://github.com/yahoo/fili/pull/244)
     * Created `BaseCompositeAvailability` for common features

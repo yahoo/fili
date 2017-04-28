@@ -47,7 +47,6 @@ public class PhysicalDataSourceConstraint extends DataSourceConstraint {
     ) {
         super(dataSourceConstraint);
         this.allColumnPhysicalNames = allColumnPhysicalNames;
-
     }
 
     /**

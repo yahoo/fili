@@ -10,7 +10,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -68,10 +67,9 @@ public abstract class DataSource {
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Set<String> getNames() {
-        return Collections.unmodifiableSet((LinkedHashSet<String>) getPhysicalTable().getDataSourceNames().stream()
+        return getPhysicalTable().getDataSourceNames().stream()
                 .map(TableName::asName)
-                .collect(Collectors.toCollection(LinkedHashSet::new))
-        );
+                .collect(Collectors.collectingAndThen(Collectors.toSet(), Collections::unmodifiableSet));
     }
 
     /**

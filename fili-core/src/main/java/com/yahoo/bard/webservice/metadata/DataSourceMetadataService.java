@@ -77,7 +77,7 @@ public class DataSourceMetadataService {
      *
      * @param physicalTableName  The table to get the column and availability for
      *
-     * @return a map of column name to a set of avialable intervals
+     * @return a map of column name to a set of available intervals
      */
     public Map<String, SimplifiedIntervalList> getAvailableIntervalsByTable(TableName physicalTableName) {
         if (!allSegmentsByColumn.containsKey(physicalTableName)) {

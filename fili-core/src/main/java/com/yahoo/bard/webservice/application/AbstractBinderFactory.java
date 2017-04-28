@@ -785,7 +785,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      * @return The list of valid feature flags
      */
     protected List<FeatureFlag> collectFeatureFlags() {
-        return Collections.<FeatureFlag>emptyList();
+        return Collections.emptyList();
     }
 
     /**

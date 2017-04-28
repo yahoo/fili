@@ -53,29 +53,29 @@ public abstract class BaseCompositePhysicalTable extends BasePhysicalTable {
     }
 
     /**
-     * Verifies that the coarsest ZonedTimeGrain satisfies all tables.
+     * Verifies that the ZonedTimeGrain satisfies all tables.
      *
-     * @param timeGrain  The coarsest ZonedTimeGrain being validated
-     * @param physicalTables  A set of PhysicalTables whose ZonedTimeGrains are checked to make sure
-     * they all satisfies with the given coarsest ZonedTimeGrain
+     * @param timeGrain  The ZonedTimeGrain being validated
+     * @param physicalTables  A set of PhysicalTables whose ZonedTimeGrains are checked to make sure they all satisfy
+     * the given ZonedTimeGrain
      *
-     * @throws IllegalArgumentException when there is no mutually satisfying grain among the table's time grains
+     * @throws IllegalArgumentException when the grain is not satisfied by the tables' time grains
      */
     private void verifyGrainSatisfiesAllSourceTables(
             ZonedTimeGrain timeGrain,
             Set<? extends PhysicalTable> physicalTables
     ) throws IllegalArgumentException {
-        Predicate<PhysicalTable> tableDoesNotSatisfyFilter = (physicalTable) -> ! physicalTable.getSchema()
+        Predicate<PhysicalTable> tableDoesNotSatisfy = physicalTable -> !physicalTable.getSchema()
                 .getTimeGrain()
                 .satisfies(timeGrain);
 
         Set<String> unsatisfied = physicalTables.stream()
-                .filter(tableDoesNotSatisfyFilter)
+                .filter(tableDoesNotSatisfy)
                 .map(PhysicalTable::getTableName)
                 .map(TableName::asName)
                 .collect(Collectors.toSet());
 
-        if (! unsatisfied.isEmpty()) {
+        if (!unsatisfied.isEmpty()) {
             String message = String.format(
                     "Time grain: '%s' cannot be satisfied by source table(s) %s",
                     timeGrain,

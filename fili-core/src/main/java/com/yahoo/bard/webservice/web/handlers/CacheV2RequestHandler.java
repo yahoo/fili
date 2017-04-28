@@ -93,10 +93,11 @@ public class CacheV2RequestHandler extends BaseDataRequestHandler {
                 if (cacheEntry != null) {
                     // Make sure that if the optional return value is empty, the statement always evaluates to false
                     // Metadata type needs to be int.
-                    if (Objects.equals(
-                            cacheEntry.getMeta(),
-                            querySigningService.getSegmentSetId(druidQuery).orElse(null)
-                    )) {
+                    if (
+                            querySigningService.getSegmentSetId(druidQuery)
+                                    .map(id -> Objects.equals(cacheEntry.getMeta(), id))
+                                    .orElse(false)
+                    ) {
                         try {
                             if (context.getNumberOfOutgoing().decrementAndGet() == 0) {
                                 RequestLog.record(new BardQueryInfo(druidQuery.getQueryType().toJson(), true));

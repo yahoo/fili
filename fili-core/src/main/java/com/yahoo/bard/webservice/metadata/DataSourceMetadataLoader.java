@@ -32,13 +32,14 @@ import javax.inject.Singleton;
 /**
  * Datasource metadata loader sends requests to the druid datasource metadata endpoint ('datasources') and returns the
  * lists of available data segments for each datasource. It then builds Datasource Metadata objects which pivot this
- * data into columns of intervals and then updates the Physical Table instances in the physical table dictionary.
+ * data into columns of intervals and then updates the {@link DataSourceMetadataService}.
  * <p>
  * Note that this uses the segmentMetadata query that touches the coordinator.
  */
 @Singleton
 public class DataSourceMetadataLoader extends Loader<Boolean> {
 
+    private static final Logger LOG = LoggerFactory.getLogger(DataSourceMetadataLoader.class);
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     public static final String DATASOURCE_METADATA_QUERY_FORMAT = "/datasources/%s?full";
@@ -55,8 +56,6 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
     public static final String DRUID_SEG_LOADER_TIMER_DELAY_KEY =
             SYSTEM_CONFIG.getPackageVariableName("druid_seg_loader_timer_delay");
 
-    private static final Logger LOG = LoggerFactory.getLogger(DataSourceMetadataLoader.class);
-
     private final DruidWebService druidWebService;
     private final PhysicalTableDictionary physicalTableDictionary;
     private final DataSourceMetadataService metadataService;
@@ -65,9 +64,9 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
     private final FailureCallback failureCallback;
 
     /**
-     * Datasource metadata loader fetches data from the druid endpoint and updates the dimensions on that table.
+     * Datasource metadata loader fetches data from the druid coordinator and updates the datasource metadata service.
      *
-     * @param physicalTableDictionary  The physical tables to update
+     * @param physicalTableDictionary  The physical tables with data sources to update
      * @param metadataService  The service that will store the metadata loaded by this loader
      * @param druidWebService  The druid webservice to query
      * @param mapper  Object mapper to parse druid metadata
@@ -92,8 +91,7 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
         this.druidWebService = druidWebService;
         this.mapper = mapper;
         this.failureCallback = getFailureCallback();
-
-        lastRunTimestamp = new AtomicReference<>();
+        this.lastRunTimestamp = new AtomicReference<>();
     }
 
     @Override
@@ -101,13 +99,13 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
         physicalTableDictionary.values().stream()
                 .filter(table -> table instanceof ConcretePhysicalTable)
                 .map(table -> (ConcretePhysicalTable) table)
-                .peek(table -> LOG.trace("Querying metadata for datasource: {}", table))
+                .peek(dataSourceName -> LOG.trace("Querying metadata for datasource: {}", dataSourceName))
                 .forEach(this::queryDataSourceMetadata);
         lastRunTimestamp.set(DateTime.now());
     }
 
     /**
-     * Queries the data mart for updated datasource metadata and then updates the physical table.
+     * Queries Druid for updated datasource metadata and then updates the datasource metadata service.
      *
      * @param table  The physical table to be updated.
      */
