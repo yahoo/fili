@@ -115,6 +115,9 @@ Current
 
 ### Changed:
 
+- [Force `ConcretePhysicalTable` only take a `ConcreteAvailability`](https://github.com/yahoo/fili/pull/263)
+    * Only a `ConcreteAvailability` makes sense, so let the types enforce it
+
 - [Clarify name of built-in static `TableName` comparator](https://github.com/yahoo/fili/pull/263)
     * Change to `AS_NAME_COMPARATOR`
 
