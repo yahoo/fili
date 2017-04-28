@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.table;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -36,7 +37,8 @@ public class PhysicalTableSchema extends BaseSchema {
         super(timeGrain, columns);
         this.timeGrain = timeGrain;
 
-        this.logicalToPhysicalColumnNames = Collections.unmodifiableMap(logicalToPhysicalColumnNames);
+        this.logicalToPhysicalColumnNames = Collections.unmodifiableMap(new LinkedHashMap<>
+                (logicalToPhysicalColumnNames));
         this.physicalToLogicalColumnNames = Collections.unmodifiableMap(
                 this.logicalToPhysicalColumnNames.entrySet().stream().collect(
                         Collectors.groupingBy(

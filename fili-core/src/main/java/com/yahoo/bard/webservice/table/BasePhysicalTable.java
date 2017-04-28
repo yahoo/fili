@@ -160,6 +160,11 @@ public abstract class BasePhysicalTable implements PhysicalTable {
 
     @Override
     public String toString() {
-        return "Physical table: " + name.asName() + ": schema: " + schema + ": availability :" + availability;
+        return String.format(
+                "Physical table: '%s', schema: '%s', availability: '%s'",
+                name.asName(),
+                schema,
+                availability
+        );
     }
 }
