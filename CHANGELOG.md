@@ -9,6 +9,12 @@ Current
 -------
 ### Added:
 
+- [Add `DataSourceName` concept, removing responsibility from `TableName`](https://github.com/yahoo/fili/pull/263)
+    * `TableName` was serving double-duty, and it was causing problems and confusion. Splitting the concepts fixes it.
+
+- [Add a `BaseMetadataAvailability` as a parallel to `BaseCompositeAvailability`](https://github.com/yahoo/fili/pull/263)
+    * `Concrete` and `PermissiveAvailability` both extend this new base `Availability`
+
 - [Constrained Table Support for Table Serialization](https://github.com/yahoo/fili/pull/262/files)
     * Add ConstrainedTable which closes over a physical table and an availability, caching all availability merges.
     * Add PartialDataHandler method to use `ConstrainedTable`
@@ -114,6 +120,22 @@ Current
 - [Support timeouts for lucene search provider](https://github.com/yahoo/fili/pull/183)
 
 ### Changed:
+
+- [Make `PermissiveConcretePhysicalTable` a sibling, instead of extend from, `ConcretePhysicalTable`](https://github.com/yahoo/fili/pull/263)
+    * The main difference is in the accepted availabilities, so make the class structure match that.
+
+- [Make `MetricUnionAvailability` take a set of `Availability` instead of `PhysicalTable`](https://github.com/yahoo/fili/pull/263)
+    * Since it was just unwrapping anyways, simplifying the dependency and pushing the unwrap up-stream makes sense
+
+- [Add `DataSourceName` concept, removing responsibility from `TableName`](https://github.com/yahoo/fili/pull/263)
+    * Impacts:
+        - `DataSource` & children
+        - `DataSourceMetadataService` & `DataSourceMetadataLoader`
+        - `SegmentIntervalsHashIdGenerator`
+        - `PhysicalTable` & children
+        - `Availability` & children
+        - `ErrorMessageFormat`
+        - `SlicesApiRequest`
 
 - [Force `ConcretePhysicalTable` only take a `ConcreteAvailability`](https://github.com/yahoo/fili/pull/263)
     * Only a `ConcreteAvailability` makes sense, so let the types enforce it
@@ -311,6 +333,11 @@ Current
     * Converted to 404 when error was cause by not finding a path element
 
 ### Deprecated:
+
+- [Add `DataSourceName` concept, removing responsibility from `TableName`](https://github.com/yahoo/fili/pull/263)
+    * Impacts:
+        - `DataSourceMetadataService` & `DataSourceMetadataLoader`
+        - `ConcretePhysicalTable`
 
 - [Deprecate old static `TableName` comparator](https://github.com/yahoo/fili/pull/263)
     * Change to `AS_NAME_COMPARATOR`, so the old name is deprecated

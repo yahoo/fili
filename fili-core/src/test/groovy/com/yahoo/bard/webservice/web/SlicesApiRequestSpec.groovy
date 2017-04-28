@@ -42,7 +42,7 @@ class SlicesApiRequestSpec extends BaseDataSourceMetadataSpec {
         builder.path(_, _) >> builder
 
         DataSourceMetadata dataSourceMetadata = new DataSourceMetadata("all_pets", [:], segments)
-        dataSourceMetadataService.update(fullDictionary.get("all_pets"), dataSourceMetadata)
+        dataSourceMetadataService.update(fullDictionary.get("all_pets").dataSourceNames[0], dataSourceMetadata)
     }
 
     def cleanup() {
@@ -102,8 +102,8 @@ class SlicesApiRequestSpec extends BaseDataSourceMetadataSpec {
                 metricsResult.add(row)
             }
         }
-        Set<SortedMap<DateTime, Map<String, SegmentInfo>>> sliceMetadata = dataSourceMetadataService.getTableSegments(
-                [table.tableName] as Set
+        Set<SortedMap<DateTime, Map<String, SegmentInfo>>> sliceMetadata = dataSourceMetadataService.getSegments(
+                table.dataSourceNames
         )
 
         Map<String, Object> expected = [

@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table;
 
+import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
@@ -17,7 +18,7 @@ import javax.validation.constraints.NotNull;
  */
 public class ConcretePhysicalTable extends BasePhysicalTable {
 
-    private final String factTableName;
+    private final DataSourceName dataSourceName;
 
     /**
      * Create a concrete physical table.
@@ -40,7 +41,7 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
                 timeGrain,
                 columns,
                 logicalToPhysicalColumnNames,
-                new ConcreteAvailability(name, metadataService)
+                new ConcreteAvailability(DataSourceName.of(name.asName()), metadataService)
         );
     }
 
@@ -67,7 +68,7 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
                 logicalToPhysicalColumnNames,
                 availability
         );
-        this.factTableName = name.asName();
+        this.dataSourceName = availability.getDataSourceName();
     }
 
     /**
@@ -93,7 +94,24 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
         this(TableName.of(name), timeGrain, columns, logicalToPhysicalColumnNames, metadataService);
     }
 
+    /**
+     * Get the name of the fact table.
+     *
+     * @return the name of the fact table.
+     *
+     * @deprecated  Use getDataSourceName instead.
+     */
+    @Deprecated
     public String getFactTableName() {
-        return factTableName;
+        return getDataSourceName().asName();
+    }
+
+    public DataSourceName getDataSourceName() {
+        return dataSourceName;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + " datasourceName: " + getDataSourceName();
     }
 }

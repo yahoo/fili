@@ -1,26 +1,18 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.names;
 
 import java.util.Comparator;
 
 /**
- * Marker interface for objects that can be treated as a table name.
+ * Marker interface for objects that can be treated as a data source name in druid.
  */
-public interface TableName {
+public interface DataSourceName {
 
     /**
-     * Comparator to order TableNames by their asName methods, using the native String comparator.
+     * Comparator to order DataSourceNames by their asName methods, using the native String comparator.
      */
-    Comparator<TableName> AS_NAME_COMPARATOR = Comparator.comparing(TableName::asName);
-
-    /**
-     * Comparator to order TableNames by their asName methods, using the native String comparator.
-     *
-     * @deprecated due to name change. Use AS_NAME_COMPARATOR instead.
-     */
-    @Deprecated
-    Comparator<TableName> COMPARATOR = Comparator.comparing(TableName::asName);
+    Comparator<DataSourceName> AS_NAME_COMPARATOR = Comparator.comparing(DataSourceName::asName);
 
     /**
      * Return a string representation of a table name.
@@ -33,12 +25,12 @@ public interface TableName {
      * Wrap a string in an anonymous instance of TableName.
      * Rather than make heavy use of this, instead make a class.
      *
-     * @param name the name being wrapped
+     * @param name   The name being wrapped
      *
      * @return an anonymous subclass instance of TableName
      */
-    static TableName of(String name) {
-        return new TableName() {
+    static DataSourceName of(String name) {
+        return new DataSourceName() {
             @Override
             public String asName() {
                 return name;
@@ -51,8 +43,8 @@ public interface TableName {
 
             @Override
             public boolean equals(Object o) {
-                if (o != null && o instanceof TableName) {
-                    return name.equals(((TableName) o).asName());
+                if (o != null && o instanceof DataSourceName) {
+                    return name.equals(((DataSourceName) o).asName());
                 }
                 return false;
             }

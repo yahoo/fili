@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.availability
 
-import com.yahoo.bard.webservice.data.config.names.TableName
+import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
@@ -14,7 +14,7 @@ import spock.lang.Unroll
 
 class PermissiveAvailabilitySpec extends Specification  {
 
-    TableName tableName
+    DataSourceName dataSourceName
     String column1
     String column2
     Interval interval1
@@ -22,7 +22,7 @@ class PermissiveAvailabilitySpec extends Specification  {
     Interval interval3
 
     def setup() {
-        tableName = TableName.of('table')
+        dataSourceName = DataSourceName.of('table')
 
         column1 = 'column_one'
         column2 = 'column_two'
@@ -39,7 +39,7 @@ class PermissiveAvailabilitySpec extends Specification  {
         interval2 = new Interval(secondInterval)
 
         PermissiveAvailability permissiveAvailability = new PermissiveAvailability(
-                tableName,
+                dataSourceName,
                 new TestDataSourceMetadataService([
                         (column1): [interval1] as Set,
                         (column2): [interval2] as Set,
@@ -70,7 +70,7 @@ class PermissiveAvailabilitySpec extends Specification  {
     def "getAllAvailability returns the correct availabilities for each column in datasource metadata service"() {
         given:
         PermissiveAvailability permissiveAvailability = new PermissiveAvailability(
-                tableName,
+                dataSourceName,
                 new TestDataSourceMetadataService([
                         (column1)   : [interval1] as Set,
                         (column2)   : [interval2] as Set,

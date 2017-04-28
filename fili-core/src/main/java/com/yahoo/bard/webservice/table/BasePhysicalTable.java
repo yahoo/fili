@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table;
 
+import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.table.availability.Availability;
@@ -14,6 +15,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -63,13 +65,20 @@ public abstract class BasePhysicalTable implements ConfigPhysicalTable {
     }
 
     @Override
-    public Availability getAvailability() {
-        return availability;
+    public Set<DataSourceName> getDataSourceNames() {
+        // TODO: Once the availability setter is removed from this class, move this to the constructor
+        return getAvailability().getDataSourceNames().stream()
+                .collect(Collectors.collectingAndThen(Collectors.toSet(), Collections::unmodifiableSet));
     }
 
     @Override
     public PhysicalTableSchema getSchema() {
         return schema;
+    }
+
+    @Override
+    public Availability getAvailability() {
+        return availability;
     }
 
     @Override
@@ -130,11 +139,6 @@ public abstract class BasePhysicalTable implements ConfigPhysicalTable {
     public ConstrainedTable withConstraint(DataSourceConstraint constraint) {
         validateConstraintSchema(constraint);
         return new ConstrainedTable(this, new PhysicalDataSourceConstraint(constraint, getSchema()));
-    }
-
-    @Override
-    public Set<TableName> getDataSourceNames() {
-        return getAvailability().getDataSourceNames();
     }
 
     /**

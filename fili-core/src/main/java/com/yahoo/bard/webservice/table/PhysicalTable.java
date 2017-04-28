@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.table;
 
 import com.yahoo.bard.webservice.data.config.names.TableName;
+import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
@@ -62,20 +63,20 @@ public interface PhysicalTable extends Table {
     }
 
     /**
-     * Return the {@link TableName} of the dataSources which back this table.
+     * Get the names of the data sources that back this physical table.
      *
-     * @return A set of tablenames for backing dataSources
+     * @return the names of all data sources that back this physical table.
      */
-    Set<TableName> getDataSourceNames();
+    Set<DataSourceName> getDataSourceNames();
 
     /**
-     * Return the {@link TableName} of the dataSources which back this table given a constraint.
+     * Return the {@link DataSourceName} of the dataSources which back this table given a constraint.
      *
      * @param constraint  A constraint which may narrow the data sources participating.
      *
-     * @return A set of tablenames for backing dataSources, given the constraints
+     * @return A set of names for backing dataSources, given the constraints
      */
-    default Set<TableName> getDataSourceNames(DataSourceConstraint constraint) {
+    default Set<DataSourceName> getDataSourceNames(DataSourceConstraint constraint) {
         return getDataSourceNames();
     }
 
