@@ -341,6 +341,10 @@ Current
 - [SimplifiedIntervalList::NO_INTERVALS](https://github.com/yahoo/fili/pull/262/files)
     * This is unsafe since it is modifiable
 
+- [Remove `PhysicalTable::getTableName` to use `getName` instead](https://github.com/yahoo/fili/pull/263)
+    * Having more than 1 method for the same concept (ie. what's the name of this physical table) was confusing and not
+      very useful.
+
 - [Remove `PhysicalTableDictionary` dependency from `SegmentIntervalHashIdGenerator`](https://github.com/yahoo/fili/pull/263)
     * Constructors taking the dictionary have been deprecated, since it is not used any more
 

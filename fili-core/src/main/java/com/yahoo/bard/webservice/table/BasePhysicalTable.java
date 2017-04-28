@@ -28,7 +28,8 @@ import javax.validation.constraints.NotNull;
 public abstract class BasePhysicalTable implements ConfigPhysicalTable {
     private static final Logger LOG = LoggerFactory.getLogger(BasePhysicalTable.class);
 
-    private final TableName name;
+    private final String name;
+    private final TableName tableName;
     private final PhysicalTableSchema schema;
     private Availability availability;
 
@@ -48,19 +49,20 @@ public abstract class BasePhysicalTable implements ConfigPhysicalTable {
             @NotNull Map<String, String> logicalToPhysicalColumnNames,
             @NotNull Availability availability
     ) {
-        this.name = name;
+        this.name = name.asName();
+        this.tableName = name;
         this.availability = availability;
         this.schema = new PhysicalTableSchema(timeGrain, columns, logicalToPhysicalColumnNames);
     }
 
     @Override
     public TableName getTableName() {
-        return name;
+        return tableName;
     }
 
     @Override
     public String getName() {
-        return getTableName().asName();
+        return name;
     }
 
     @Override
@@ -167,7 +169,7 @@ public abstract class BasePhysicalTable implements ConfigPhysicalTable {
         }
         if (obj instanceof BasePhysicalTable) {
             BasePhysicalTable that = (BasePhysicalTable) obj;
-            return Objects.equals(name.asName(), that.name.asName())
+            return Objects.equals(name, that.name)
                     && Objects.equals(schema, that.schema)
                     && Objects.equals(availability, that.availability);
         }
@@ -176,14 +178,14 @@ public abstract class BasePhysicalTable implements ConfigPhysicalTable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(name.asName(), schema, availability);
+        return Objects.hash(name, schema, availability);
     }
 
     @Override
     public String toString() {
         return String.format(
                 "Physical table: '%s', schema: '%s', availability: '%s'",
-                name.asName(),
+                name,
                 schema,
                 availability
         );

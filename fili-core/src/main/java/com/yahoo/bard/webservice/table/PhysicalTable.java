@@ -39,6 +39,14 @@ public interface PhysicalTable extends Table {
     }
 
     /**
+     * @return name of the table as TableName
+     *
+     * @deprecated  Use Table::getName instead
+     */
+    @Deprecated
+    TableName getTableName();
+
+    /**
      * Return a view of the available intervals for this table given a constraint.
      *
      * @param constraint  The constraint which limits available intervals
@@ -107,13 +115,6 @@ public interface PhysicalTable extends Table {
      * table's time grain.
      */
     DateTime getTableAlignment();
-
-    /**
-     * Get the name of the current table.
-     *
-     * @return name of the table as TableName
-     */
-    TableName getTableName();
 
     /**
      * Get the time grain from granularity.
