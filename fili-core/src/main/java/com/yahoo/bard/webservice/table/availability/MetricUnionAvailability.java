@@ -5,7 +5,6 @@ package com.yahoo.bard.webservice.table.availability;
 import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.table.Column;
-import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.util.Utils;
@@ -80,22 +79,20 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
     /**
      * Constructor.
      *
-     * @param physicalTables  A set of <tt>PhysicalTable</tt>s whose dimension schemas are (typically) the same and
-     *  Metric columns are unique(i.e. no overlap) on every table
+     * @param availabilities  A set of <tt>Availabilities</tt> whose Dimension schemas are (typically) the same and
+     * the Metric columns are unique(i.e. no overlap) on every availability
      * @param columns  The set of all configured columns, including dimension columns, that metric union availability
      * will respond with
      */
-    public MetricUnionAvailability(@NotNull Set<ConfigPhysicalTable> physicalTables, @NotNull Set<Column> columns) {
-        super(physicalTables.stream().map(ConfigPhysicalTable::getAvailability));
-
+    public MetricUnionAvailability(@NotNull Set<Availability> availabilities, @NotNull Set<Column> columns) {
+        super(availabilities.stream());
         metricNames = Utils.getSubsetByType(columns, MetricColumn.class).stream()
                 .map(MetricColumn::getName)
                 .collect(Collectors.toSet());
 
         // Construct a map of availability to its assigned metric
         // by intersecting its underlying datasource metrics with table configured metrics
-        availabilitiesToMetricNames = physicalTables.stream()
-                .map(ConfigPhysicalTable::getAvailability)
+        availabilitiesToMetricNames = availabilities.stream()
                 .collect(
                         Collectors.toMap(
                                 Function.identity(),
