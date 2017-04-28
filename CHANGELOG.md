@@ -338,6 +338,9 @@ Current
 - [SimplifiedIntervalList::NO_INTERVALS](https://github.com/yahoo/fili/pull/262/files)
     * This is unsafe since it is modifiable
 
+- [Remove `PhysicalTableDictionary` dependency from `SegmentIntervalHashIdGenerator`](https://github.com/yahoo/fili/pull/263)
+    * Constructors taking the dictionary have been deprecated, since it is not used any more
+
 - [Add `DataSourceName` concept, removing responsibility from `TableName`](https://github.com/yahoo/fili/pull/263)
     * Impacts:
         - `DataSourceMetadataService` & `DataSourceMetadataLoader`

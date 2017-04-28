@@ -70,19 +70,15 @@ class SegmentIntervalsHashIdGeneratorSpec extends BaseDataSourceMetadataSpec {
         tableDict = jtb.configurationLoader.physicalTableDictionary
         metadataService = new DataSourceMetadataService()
 
-        segmentSetIdGenerator = new SegmentIntervalsHashIdGenerator(
-                tableDict,
-                metadataService
-        )
+        segmentSetIdGenerator = new SegmentIntervalsHashIdGenerator(metadataService)
 
-        Map<Class, RequestedIntervalsFunction> signingFunctions = new DefaultingDictionary<>({new SimplifiedIntervalList(it.getIntervals())} as RequestedIntervalsFunction)
-        signingFunctions.put(LookbackQuery.class, new LookbackQuery.LookbackQueryRequestedIntervalsFunction())
-
-        customSegmentSetIdGenerator = new SegmentIntervalsHashIdGenerator(
-                tableDict,
-                metadataService,
-                signingFunctions
+        Map<Class, RequestedIntervalsFunction> signingFunctions = new DefaultingDictionary<>(
+                { DruidAggregationQuery query -> new SimplifiedIntervalList(query.intervals) } as RequestedIntervalsFunction
         )
+        signingFunctions.put(LookbackQuery, new LookbackQuery.LookbackQueryRequestedIntervalsFunction())
+
+        customSegmentSetIdGenerator = new SegmentIntervalsHashIdGenerator(metadataService, signingFunctions)
+
         availabilityList1 = [
                 (interval1.start): segmentInfoMap1,
                 (interval2.start): segmentInfoMap2
