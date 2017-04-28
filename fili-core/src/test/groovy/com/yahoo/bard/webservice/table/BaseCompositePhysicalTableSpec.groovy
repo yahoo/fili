@@ -16,8 +16,8 @@ class BaseCompositePhysicalTableSpec extends Specification {
         ZonedTimeGrain coarsestTimeGrain = Mock(ZonedTimeGrain) {
             toString() >> "MockTimeGrain"
         }
-        TableName tableName1 = TableName.of("satisfyingTable")
-        TableName tableName2 = TableName.of("notMatchingTimeGrainTable")
+        String tableName1 = "satisfyingTable"
+        String tableName2 = "notMatchingTimeGrainTable"
 
         ZonedTimeGrain satisfyingGrain = Mock(ZonedTimeGrain) {
             satisfies(coarsestTimeGrain) >> true
@@ -35,11 +35,11 @@ class BaseCompositePhysicalTableSpec extends Specification {
 
         PhysicalTable physicalTable1 = Mock(PhysicalTable) {
             getSchema() >> schema1
-            getTableName() >> tableName1
+            getName() >> tableName1
         }
         PhysicalTable physicalTable2 = Mock(PhysicalTable) {
             getSchema() >> schema2
-            getTableName() >> tableName2
+            getName() >> tableName2
         }
 
         when:

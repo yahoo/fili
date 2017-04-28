@@ -112,7 +112,7 @@ class BaseTableLoaderSpec extends Specification {
         physicalTableSchema.getColumns(DimensionColumn.class) >> []
 
         physicalTable = Mock(ConfigPhysicalTable)
-        physicalTable.getTableName() >> TableName.of('definition2')
+        physicalTable.name >> 'definition2'
         physicalTable.schema >> physicalTableSchema
 
         dependentDefinition1 = new SimpleDependencyPhysicalTableDefinition('definition1', 'definition2')
@@ -151,7 +151,7 @@ class BaseTableLoaderSpec extends Specification {
 
         then:
         dicts.physicalDictionary.size() == 6
-        group.physicalTables.collect {it.getTableName()} as Set == tableNames
+        group.physicalTables.name == tableNames*.asName()
     }
 
     def "loading physical tables with dependency loads all satisfied dependency physical tables"() {
@@ -168,7 +168,7 @@ class BaseTableLoaderSpec extends Specification {
 
         then:
         dicts.physicalDictionary.size() == 3
-        group.physicalTables.collect {it.getTableName()} as Set == currentTableNames
+        group.physicalTables.name == currentTableNames*.asName()
     }
 
     def "loading a physical table with dependency outside of the current table group will be loaded successfully"() {
@@ -185,7 +185,7 @@ class BaseTableLoaderSpec extends Specification {
 
         then:
         dicts.physicalDictionary.size() == 3
-        group.physicalTables.collect { it.getTableName() } as Set == currentTableNames
+        group.physicalTables.collect { it.name } as Set == currentTableNames*.asName() as Set
     }
 
     def "unsatisfied dependency physical table definition loading will throw an exception"() {
@@ -267,7 +267,7 @@ class BaseTableLoaderSpec extends Specification {
 
         then:
         dicts.physicalDictionary.size() == 6
-        group1.physicalTables.collect {it.getTableName()} as Set == tableNames
-        group2.physicalTables.collect {it.getTableName()} as Set == tableNames
+        group1.physicalTables.name == tableNames*.asName()
+        group2.physicalTables.name == tableNames*.asName()
     }
 }
