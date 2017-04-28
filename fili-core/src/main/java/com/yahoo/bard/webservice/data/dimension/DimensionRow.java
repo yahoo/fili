@@ -14,7 +14,7 @@ import javax.validation.constraints.NotNull;
  */
 public class DimensionRow extends LinkedHashMap<DimensionField, String> implements Comparable<DimensionRow> {
 
-    private String keyValue;
+    private final String keyValue;
 
     /**
      * Build a dimension row with a key field value and a map of field values.

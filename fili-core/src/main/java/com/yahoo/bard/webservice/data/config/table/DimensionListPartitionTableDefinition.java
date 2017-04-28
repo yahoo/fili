@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  */
 public class DimensionListPartitionTableDefinition extends PhysicalTableDefinition {
 
-    Map<TableName, Map<String, Set<String>>> tablePartDefinitions;
+    private final Map<TableName, Map<String, Set<String>>> tablePartDefinitions;
 
     /**
      * Constructor.
