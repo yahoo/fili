@@ -14,8 +14,9 @@ abstract class BaseDimensionShowClauseCsvDataServletSpec extends BaseDimensionSh
     }
 
     @Override
-    def validateExpectedApiResponse(String expectedApiResponse) {
+    boolean validateExpectedApiResponse(String expectedApiResponse) {
         // NoOp, we don't have a way to validate CSV right now
+        true
     }
 
     @Override
