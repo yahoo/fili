@@ -88,11 +88,11 @@ class SlicesApiRequestSpec extends BaseDataSourceMetadataSpec {
             new URI(uri + args[0][0])
         }
 
-        Set<Map<String, Object>> dimensionsResult = new LinkedHashSet<>()
-        Set<Map<String, Object>> metricsResult = new LinkedHashSet<>()
+        Set<Map<String, Object>> dimensionsResult = [] as LinkedHashSet
+        Set<Map<String, Object>> metricsResult = [] as LinkedHashSet
 
-        table.getAllAvailableIntervals().each {
-            Map<String, Object> row = new LinkedHashMap<>()
+        table.allAvailableIntervals.each {
+            Map<String, Object> row = [:] as LinkedHashMap
             row["intervals"] = it.value
             row["name"] = it.key.name
             if (it.key instanceof DimensionColumn) {

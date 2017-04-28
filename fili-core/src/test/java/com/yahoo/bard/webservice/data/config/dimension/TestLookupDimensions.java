@@ -46,7 +46,7 @@ public class TestLookupDimensions extends TestDimensions {
             case "SIZE":
                 return Arrays.asList("SPECIES", "BREED", "GENDER");
             case "SHAPE":
-                return Arrays.asList("SPECIES");
+                return Collections.singletonList("SPECIES");
             default:
                 return Collections.emptyList();
         }

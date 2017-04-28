@@ -76,22 +76,22 @@ class ConcretePhysicalTableSpec extends Specification {
     def "Physical table getAvailableIntervals returns #expected for column #column"() {
         setup:
         DataSourceConstraint constraints = Mock(DataSourceConstraint)
-        constraints.getAllColumnNames() >> [column.name]
+        constraints.allColumnNames >> [column.name]
 
         expect:
         physicalTable.getAvailableIntervals(constraints) as List == new SimplifiedIntervalList(expected) as List
 
         where:
-        column                      | expected
-        dimensionColumn             | intervalSet1
-        metricColumn1               | intervalSet2
-        metricColumn2               | intervalSet3
+        column          | expected
+        dimensionColumn | intervalSet1
+        metricColumn1   | intervalSet2
+        metricColumn2   | intervalSet3
     }
 
     def "Physical table getAvailableIntervals throws exception when requesting a column not on the table"() {
         given:
         DataSourceConstraint constraints = Mock(DataSourceConstraint)
-        constraints.getAllColumnNames() >> ['un_configured']
+        constraints.allColumnNames >> ['un_configured']
 
         when:
         physicalTable.getAvailableIntervals(constraints)
@@ -107,7 +107,7 @@ class ConcretePhysicalTableSpec extends Specification {
         PhysicalTable table
         Map<String, Set<Interval>> noMetricMetadata = ['dimension_one' : (intervalSet3)]
         DataSourceConstraint constraints = Mock(DataSourceConstraint)
-        constraints.getAllColumnNames() >> [metricColumn1.name]
+        constraints.allColumnNames >> [metricColumn1.name]
 
         when:
         table = new ConcretePhysicalTable(
@@ -119,9 +119,9 @@ class ConcretePhysicalTableSpec extends Specification {
         )
 
         then:
-        table.getAllAvailableIntervals().containsKey(dimensionColumn)
-        table.getAllAvailableIntervals().get(dimensionColumn) as List == new SimplifiedIntervalList(intervalSet3) as List
-        table.getDimensions() == [dimension] as Set
+        table.allAvailableIntervals.containsKey(dimensionColumn)
+        table.allAvailableIntervals.get(dimensionColumn) as List == new SimplifiedIntervalList(intervalSet3) as List
+        table.dimensions == [dimension] as Set
 
         when:
         table.setAvailability(new ConcreteAvailability(physicalTable.getTableName(), new TestDataSourceMetadataService(segmentMetadata)))
@@ -134,7 +134,7 @@ class ConcretePhysicalTableSpec extends Specification {
     def "test the getIntervalsByColumnName() method"() {
         setup:
         DataSourceConstraint constraints = Mock(DataSourceConstraint)
-        constraints.getAllColumnNames() >> [metricColumn2.name]
+        constraints.allColumnNames >> [metricColumn2.name]
 
         expect:
         physicalTable.getAvailableIntervals(constraints).asList() == new SimplifiedIntervalList(intervalSet3).toList()
@@ -142,7 +142,7 @@ class ConcretePhysicalTableSpec extends Specification {
 
     def "test the fetching of all dimensions from the table"() {
         expect:
-        physicalTable.getDimensions() == [dimension] as Set
+        physicalTable.dimensions == [dimension] as Set
     }
 
     def "test physical to logical mapping is constructed correctly with multiple logical name to one physical name"() {
@@ -163,7 +163,7 @@ class ConcretePhysicalTableSpec extends Specification {
         )
 
         expect:
-        oneDimPhysicalTable.getSchema().getLogicalColumnNames('dimension_one') == ['dimensionOne'] as Set
-        twoDimPhysicalTable.getSchema().getLogicalColumnNames('dimension_one') == ['dimensionOne', 'dimensionTwo'] as Set
+        oneDimPhysicalTable.schema.getLogicalColumnNames('dimension_one') == ['dimensionOne'] as Set
+        twoDimPhysicalTable.schema.getLogicalColumnNames('dimension_one') == ['dimensionOne', 'dimensionTwo'] as Set
     }
 }

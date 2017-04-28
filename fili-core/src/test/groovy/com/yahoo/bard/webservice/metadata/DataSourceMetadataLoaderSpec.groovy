@@ -161,10 +161,10 @@ class DataSourceMetadataLoaderSpec extends Specification {
 
     def setup() {
         jtb = new JerseyTestBinder()
-        segmentSetIdGenerator = jtb.testBinderFactory.getQuerySigningService()
+        segmentSetIdGenerator = jtb.testBinderFactory.querySigningService
         metadataService = jtb.testBinderFactory.getDataSourceMetadataService()
-        dimensionDict = jtb.configurationLoader.getDimensionDictionary()
-        tableDict = jtb.configurationLoader.getPhysicalTableDictionary()
+        dimensionDict = jtb.configurationLoader.dimensionDictionary
+        tableDict = jtb.configurationLoader.physicalTableDictionary
         druidWS.jsonResponse = {fullDataSourceMetadataJson}
 
         expectedIntervalsMap = [:]
@@ -184,20 +184,20 @@ class DataSourceMetadataLoaderSpec extends Specification {
                 tableDict,
                 metadataService,
                 druidWS,
-                MAPPERS.getMapper()
+                MAPPERS.mapper
         )
-        DataSource<?> dataSource = Mock(DataSource)
+        DataSource dataSource = Mock(DataSource)
         dataSource.getNames() >> ([tableName] as Set)
         DruidAggregationQuery<?> query = Mock(DruidAggregationQuery)
-        query.getIntervals() >> [interval1, interval2]
-        query.getInnermostQuery() >> query
-        query.getDataSource() >> dataSource
+        query.intervals >> [interval1, interval2]
+        query.innermostQuery >> query
+        query.dataSource >> dataSource
+
         loader.run()
 
         expect: "cache gets loaded as expected"
         segmentSetIdGenerator.getSegmentSetId(query) != OptionalInt.empty()
     }
-
 
     def "Test datasource metadata can deserialize JSON correctly"() {
         setup: "instantiate the loader"
@@ -206,7 +206,7 @@ class DataSourceMetadataLoaderSpec extends Specification {
                 tableDict,
                 localMetadataService,
                 druidWS,
-                MAPPERS.getMapper()
+                MAPPERS.mapper
         )
         druidWS.jsonResponse = {gappyDataSourceMetadataJson}
         ConcretePhysicalTable table = Mock(ConcretePhysicalTable)
@@ -215,7 +215,7 @@ class DataSourceMetadataLoaderSpec extends Specification {
 
         when: "JSON metadata return successfully"
         SuccessCallback success = loader.buildDataSourceMetadataSuccessCallback(table)
-        success.invoke(MAPPERS.getMapper().readTree(gappyDataSourceMetadataJson))
+        success.invoke(MAPPERS.mapper.readTree(gappyDataSourceMetadataJson))
 
         then: "the segment metadata are loaded to the metadata service as expected"
         1 * localMetadataService.update(table, _) >> { physicalTable, dataSourceMetadata ->
@@ -225,11 +225,11 @@ class DataSourceMetadataLoaderSpec extends Specification {
         intervals.get(DIMENSIONS).containsKey(dim3.asName())
         intervals.get(DIMENSIONS).get(dim3.asName()).size() == 1
         intervals.get(METRICS).get(met2.asName()).size() == 2
-        capture.getName() == tableName
-        capture.getProperties() == [:]
-        capture.getSegments().get(0).getDimensions() == dimensions123
-        capture.getSegments().get(1).getSize() == size2
-        capture.getSegments().get(1).getShardSpec().getPartitionNum() == 1
+        capture.name == tableName
+        capture.properties == [:]
+        capture.segments[0].dimensions == dimensions123
+        capture.segments[1].size == size2
+        capture.segments[1].shardSpec.partitionNum == 1
     }
 
     def "Test queryDataSourceMetadata builds callbacks and sends query"() {
@@ -239,7 +239,7 @@ class DataSourceMetadataLoaderSpec extends Specification {
                 tableDict,
                 metadataService,
                 testWs,
-                MAPPERS.getMapper()
+                MAPPERS.mapper
         )
         ConcretePhysicalTable table = Mock(ConcretePhysicalTable)
         table.getFactTableName() >> "test"

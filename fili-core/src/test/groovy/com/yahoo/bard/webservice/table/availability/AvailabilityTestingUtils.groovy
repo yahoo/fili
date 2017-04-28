@@ -6,8 +6,6 @@ import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService
-import com.yahoo.bard.webservice.table.Column
-import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 
 import org.joda.time.Interval
@@ -42,18 +40,16 @@ class AvailabilityTestingUtils extends Specification {
         Set<String> tableNames = namesOfTablesToPopulate ?: physicalTableDictionary.keySet()
 
         physicalTableDictionary
-                .findAll { tableName, _ -> tableName in tableNames}
-                .each { _, ConcretePhysicalTable table ->
-                    Map<Column, Set<Interval>> metricIntervals = table.getSchema().getColumns(MetricColumn.class)
-                            .collectEntries {
-                                    [(it.getName()): intervalSet]
-                            }
+                .findAll { tableName, _ -> tableName in tableNames }
+                .each { _, table ->
+                    Map<String, Set<Interval>> metricIntervals = table.schema.getColumns(MetricColumn)
+                            .collectEntries { [(it.name): intervalSet] }
 
                     // Below code assumes unique one-to-one mapping from logical to physical name in testing resource
-                    Map<String, Set<Interval>> dimensionIntervals = table.getSchema().getColumns(DimensionColumn.class)
+                    Map<String, Set<Interval>> dimensionIntervals = table.schema.getColumns(DimensionColumn)
                             .collectEntries {
-                                    [(table.getSchema().getPhysicalColumnName(it.getName())): intervalSet]
-                            }
+                        [(table.schema.getPhysicalColumnName(it.name)): intervalSet]
+                    }
 
                     Map<String, Set<Interval>> allIntervals = Stream.concat(
                             dimensionIntervals.entrySet().stream(),

@@ -110,9 +110,7 @@ public class QueryBuildingTestingResources {
 
         metadataService = new TestDataSourceMetadataService([:])
 
-        LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>()
-        dimensionFields.add(BardDimensionField.ID)
-        dimensionFields.add(BardDimensionField.DESC)
+        LinkedHashSet<DimensionField> dimensionFields = [BardDimensionField.ID, BardDimensionField.DESC] as LinkedHashSet
 
         LinkedHashSet<DimensionConfig> lookupDimConfig = new TestLookupDimensions().getDimensionConfigurationsByApiName(SIZE, SHAPE, COLOR)
         LinkedHashSet<DimensionConfig> registeredLookupDimConfig = new TestRegisteredLookupDimensions().getDimensionConfigurationsByApiName(BREED, SPECIES, OTHER);
@@ -178,8 +176,6 @@ public class QueryBuildingTestingResources {
                 ScanSearchProviderManager.getInstance("dim7"),
                 false
         )
-
-        LinkedHashSet<DimensionConfig> dimConfig = new TestLookupDimensions().getDimensionConfigurationsByApiName(SIZE, SHAPE, COLOR)
 
         // lookup dimensions with multiple, one, and none lookups
         d8 = new LookupDimension(lookupDimConfig.getAt(0))
@@ -251,15 +247,15 @@ public class QueryBuildingTestingResources {
 
         setupPartialData()
 
-        tg1h = new TableGroup([t1h, t1d, t1hShort] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())} as Set, [d1] as Set)
-        tg1d = new TableGroup([t1d] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())} as Set, [d1] as Set)
-        tg1Short = new TableGroup([t1hShort] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())} as Set, [] as Set)
-        tg2h = new TableGroup([t2h] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())} as Set, [] as Set)
-        tg3d = new TableGroup([t3d] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())} as Set, [] as Set)
-        tg4h = new TableGroup([t1h, t2h] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())} as Set, [] as Set)
-        tg5h = new TableGroup([t2h, t1h] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())} as Set, [] as Set)
+        tg1h = new TableGroup([t1h, t1d, t1hShort] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.name)} as Set, [d1] as Set)
+        tg1d = new TableGroup([t1d] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.name)} as Set, [d1] as Set)
+        tg1Short = new TableGroup([t1hShort] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.name)} as Set, [] as Set)
+        tg2h = new TableGroup([t2h] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.name)} as Set, [] as Set)
+        tg3d = new TableGroup([t3d] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.name)} as Set, [] as Set)
+        tg4h = new TableGroup([t1h, t2h] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.name)} as Set, [] as Set)
+        tg5h = new TableGroup([t2h, t1h] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.name)} as Set, [] as Set)
         tg6h = new TableGroup([t5h] as LinkedHashSet, [] as Set, [] as Set)
-        tgna = new TableGroup([tna1236d, tna1237d, tna167d, tna267d] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())} as Set, [] as Set)
+        tgna = new TableGroup([tna1236d, tna1237d, tna167d, tna267d] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.name)} as Set, [] as Set)
 
         lt12 = new LogicalTable("base12", HOUR, tg1h, metricDictionary)
         lt13 = new LogicalTable("base13", DAY, tg1d, metricDictionary)
@@ -285,25 +281,25 @@ public class QueryBuildingTestingResources {
         logicalDictionary = new LogicalTableDictionary()
         logicalDictionary.putAll(baseMap)
 
-        simpleTemplateQuery = new TemplateDruidQuery(new LinkedHashSet(), new LinkedHashSet(), null, null)
+        simpleTemplateQuery = new TemplateDruidQuery([] as LinkedHashSet, [] as LinkedHashSet, null, null)
         simpleNestedTemplateQuery = simpleTemplateQuery.nest()
         complexTemplateQuery = new TemplateDruidQuery(
-                new LinkedHashSet(),
-                new LinkedHashSet(),
+                [] as LinkedHashSet,
+                [] as LinkedHashSet,
                 simpleTemplateQuery,
                 null
         )
 
-        simpleTemplateWithGrainQuery = new TemplateDruidQuery(new LinkedHashSet(), new LinkedHashSet(), DAY)
+        simpleTemplateWithGrainQuery = new TemplateDruidQuery([] as LinkedHashSet, [] as LinkedHashSet, DAY)
         complexTemplateWithInnerGrainQuery = new TemplateDruidQuery(
-                new LinkedHashSet(),
-                new LinkedHashSet(),
+                [] as LinkedHashSet,
+                [] as LinkedHashSet,
                 simpleTemplateWithGrainQuery,
                 null
         )
         complexTemplateWithDoubleGrainQuery = new TemplateDruidQuery(
-                new LinkedHashSet(),
-                new LinkedHashSet(),
+                [] as LinkedHashSet,
+                [] as LinkedHashSet,
                 simpleTemplateWithGrainQuery,
                 WEEK
         )
@@ -324,9 +320,9 @@ public class QueryBuildingTestingResources {
         Map<String, Set<Interval>> availabilityMap3 = [:]
 
         [d1, d2, m1, m2, m3].each {
-            availabilityMap1.put(toColumn(it).getName(), [new Interval("2015/2015")] as Set)
-            availabilityMap2.put(toColumn(it).getName(), [new Interval("2015/2016")] as Set)
-            availabilityMap3.put(toColumn(it).getName(), [new Interval("2011/2016")] as Set)
+            availabilityMap1.put(toColumn(it).name, [new Interval("2015/2015")] as Set)
+            availabilityMap2.put(toColumn(it).name, [new Interval("2015/2016")] as Set)
+            availabilityMap3.put(toColumn(it).name, [new Interval("2011/2016")] as Set)
         }
         emptyFirst.setAvailability(new ConcreteAvailability(emptyFirst.getTableName(), new TestDataSourceMetadataService(availabilityMap1)))
         emptyLast.setAvailability(new ConcreteAvailability(emptyLast.getTableName(), new TestDataSourceMetadataService(availabilityMap1)))
@@ -351,9 +347,9 @@ public class QueryBuildingTestingResources {
                     new ConcreteAvailability(
                             table.getTableName(),
                             new TestDataSourceMetadataService(
-                                [new DimensionColumn(d1).getName(), new LogicalMetricColumn(m1).getName()].collectEntries() {
-                                    [(it): [availability]]
-                                }
+                                    [new DimensionColumn(d1).name, new LogicalMetricColumn(m1).name].collectEntries() {
+                                        [(it): [availability]]
+                                    }
                             )
                     )
             )
