@@ -115,6 +115,9 @@ Current
 
 ### Changed:
 
+- [Clarify name of built-in static `TableName` comparator](https://github.com/yahoo/fili/pull/263)
+    * Change to `AS_NAME_COMPARATOR`
+
 - [Constrained Table Support for Table Serialization](https://github.com/yahoo/fili/pull/262/files)
     * Switched `PartialDataRequestHandler` to use the table from the query rather than the `PhysicalTableDictionary`
     * `DruidQueryBuilder` uses constrained tables to dynamically pick between Union and Table DataSource implementations
@@ -305,6 +308,9 @@ Current
     * Converted to 404 when error was cause by not finding a path element
 
 ### Deprecated:
+
+- [Deprecate old static `TableName` comparator](https://github.com/yahoo/fili/pull/263)
+    * Change to `AS_NAME_COMPARATOR`, so the old name is deprecated
 
 - [Constrained Table Support for Table Serialization](https://github.com/yahoo/fili/pull/262/files)
     * Deprecated static empty instance of SimplifiedIntervalList.NO_INTERVALS
