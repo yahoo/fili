@@ -54,7 +54,6 @@ public class ConcreteAvailability implements Availability {
     public SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint constraint) {
 
         Set<String> requestColumns = constraint.getAllColumnPhysicalNames();
-
         if (requestColumns.isEmpty()) {
             return new SimplifiedIntervalList();
         }

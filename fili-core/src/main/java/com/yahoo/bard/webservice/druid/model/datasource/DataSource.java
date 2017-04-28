@@ -68,10 +68,14 @@ public abstract class DataSource {
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Set<String> getNames() {
-        return Collections.unmodifiableSet((LinkedHashSet<String>) getPhysicalTable().getDataSourceNames().stream()
+        return getPhysicalTable().getDataSourceNames().stream()
                 .map(TableName::asName)
-                .collect(Collectors.toCollection(LinkedHashSet::new))
-        );
+                .collect(
+                        Collectors.collectingAndThen(
+                                Collectors.toCollection(LinkedHashSet::new),
+                                Collections::unmodifiableSet
+                        )
+                );
     }
 
     /**

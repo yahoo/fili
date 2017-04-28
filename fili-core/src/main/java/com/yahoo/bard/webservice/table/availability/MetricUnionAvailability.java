@@ -147,7 +147,6 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
      */
     private static boolean isMetricUnique(Map<Availability, Set<String>> availabilityToMetricNames) {
         Set<String> uniqueMetrics = new HashSet<>();
-
         return availabilityToMetricNames.values().stream()
                 .flatMap(Set::stream)
                 .allMatch(uniqueMetrics::add);
@@ -182,12 +181,11 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
 
     @Override
     public String toString() {
-        return String.format("MetricUnionAvailability with data source names: [%s] and Configured metric columns: [%s]",
+        return String.format("MetricUnionAvailability with data source names: [%s] and Configured metric columns: %s",
                 getDataSourceNames().stream()
                         .map(TableName::asName)
                         .collect(Collectors.joining(", ")),
-                metricNames.stream()
-                        .collect(Collectors.joining(", "))
+                metricNames
         );
     }
 

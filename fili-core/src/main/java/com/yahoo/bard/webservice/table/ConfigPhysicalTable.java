@@ -10,9 +10,9 @@ import com.yahoo.bard.webservice.table.availability.Availability;
 public interface ConfigPhysicalTable extends PhysicalTable  {
 
     /**
-     * Get the value of the actual availability for this physical table.
+     * Get the value of the backing availability instance for this physical table.
      *
-     * @return The current actual physical availability or a runtime exception if there isn't one yet.
+     * @return The availability or a runtime exception if there isn't one.
      */
     Availability getAvailability();
 }

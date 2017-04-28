@@ -51,5 +51,8 @@ public interface TableName {
         };
     }
 
+    /**
+     * Comparator to order TableNames by their asName methods, using the native String comparator.
+     */
     Comparator<TableName> COMPARATOR = Comparator.comparing(TableName::asName);
 }

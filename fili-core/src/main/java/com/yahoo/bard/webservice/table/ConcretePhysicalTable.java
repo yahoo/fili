@@ -23,7 +23,7 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
     /**
      * Create a concrete physical table.
      *
-     * @param name  Name of the physical table as TableName, also used as fact table name
+     * @param name  Name of the physical table as TableName, also used as data source name
      * @param timeGrain  time grain of the table
      * @param columns  The columns for this table
      * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
