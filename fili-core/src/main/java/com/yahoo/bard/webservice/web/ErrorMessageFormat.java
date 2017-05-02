@@ -215,6 +215,17 @@ public enum ErrorMessageFormat implements MessageFormatter {
 
     RESULT_MAPPING_FAILURE(
             "Error occurred while processing response data: %s"
+    ),
+
+    DATA_AVAILABILITY_MISMATCH(
+            "Data availability expectation does not match with actual query result obtained from druid for the " +
+                    "following intervals %s where druid does not have data"
+    ),
+
+    TOO_MUCH_INTERVAL_MISSING(
+            "More than %s interval missing information received from druid, inspect if query " +
+                    "expects more than %s missing intervals or increase " +
+                    "uncoveredIntervalsLimit configuration value\n"
     )
     ;
 

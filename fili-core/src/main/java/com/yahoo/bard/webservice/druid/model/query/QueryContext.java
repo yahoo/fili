@@ -8,6 +8,7 @@ import static com.yahoo.bard.webservice.druid.model.query.QueryContext.Param.POP
 import static com.yahoo.bard.webservice.druid.model.query.QueryContext.Param.PRIORITY;
 import static com.yahoo.bard.webservice.druid.model.query.QueryContext.Param.QUERY_ID;
 import static com.yahoo.bard.webservice.druid.model.query.QueryContext.Param.TIMEOUT;
+import static com.yahoo.bard.webservice.druid.model.query.QueryContext.Param.UNCOVERED_INTERVALS_LIMIT;
 import static com.yahoo.bard.webservice.druid.model.query.QueryContext.Param.USE_CACHE;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -36,7 +37,8 @@ public class QueryContext {
         USE_CACHE("useCache"),
         POPULATE_CACHE("populateCache"),
         BY_SEGMENT("bySegment"),
-        FINALIZE("finalize");
+        FINALIZE("finalize"),
+        UNCOVERED_INTERVALS_LIMIT("uncoveredIntervalsLimit");
 
         private final String jsonName;
 
@@ -63,7 +65,8 @@ public class QueryContext {
             new SimpleImmutableEntry<>(USE_CACHE, Boolean.class),
             new SimpleImmutableEntry<>(POPULATE_CACHE, Boolean.class),
             new SimpleImmutableEntry<>(BY_SEGMENT, Boolean.class),
-            new SimpleImmutableEntry<>(FINALIZE, Boolean.class))
+            new SimpleImmutableEntry<>(FINALIZE, Boolean.class),
+            new SimpleImmutableEntry<>(UNCOVERED_INTERVALS_LIMIT, Number.class))
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
 
     @JsonIgnore
@@ -208,6 +211,10 @@ public class QueryContext {
     public QueryContext withFinalize(Boolean finalize) {
         return withValue(FINALIZE, finalize);
     }
+
+    public QueryContext withUncoveredIntervalsLimit(Integer uncoveredIntervalsLimit) {
+        return withValue(UNCOVERED_INTERVALS_LIMIT, uncoveredIntervalsLimit);
+    }
     // CHECKSTYLE:ON
 
     @JsonIgnore
@@ -253,6 +260,11 @@ public class QueryContext {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Boolean getFinalize() {
         return (Boolean) contextMap.get(FINALIZE);
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Integer getUncoveredIntervalsLimit() {
+        return (Integer) contextMap.get(UNCOVERED_INTERVALS_LIMIT);
     }
 
     @Override
