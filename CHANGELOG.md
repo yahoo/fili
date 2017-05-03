@@ -245,6 +245,10 @@ Current
 
 ### Deprecated:
 
+- [Support for Lucene 5 indexes]()
+    * Added lucene-backward-codecs.jar as a dependency to restore support for indexes built on earlier instances.
+    * Support for indexes will only remain while the current Lucene generation supports them.  All customers should rebuild indexes on Lucene 6 to avoid later pain.
+
 - [Refactor Physical Table Definition and Update Table Loader](https://github.com/yahoo/fili/pull/207)
     * Deprecated `loadPhysicalTable` in `BaseTableLoader`, use `loadPhysicalTablesWithDependency` instead
 
@@ -262,6 +266,9 @@ Current
     * When that deprecated class (`LogicalDimensionColumn`) goes away, this constructor will go away as well
 
 ### Fixed:
+
+- [Support for Lucene 5 indexes restored]()
+    * Added lucene-backward-codecs.jar as a dependency to restore support for indexes built on earlier instances.
 
 - [Specify the character encoding to support unicode characters](https://github.com/yahoo/fili/pull/221)
     * Default character set used by the back end was mangling Unicode characters.
