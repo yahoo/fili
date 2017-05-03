@@ -442,6 +442,11 @@
                 <artifactId>lucene-queries</artifactId>
                 <version>${version.lucene}</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-backward-codecs</artifactId>
+                <version>${version.lucene}</version>
+            </dependency>
 
             <!-- Guava -->
             <!-- Currently what we mainly use is the RangeSet containers -->
