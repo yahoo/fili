@@ -245,7 +245,7 @@ Current
 
 ### Deprecated:
 
-- [Support for Lucene 5 indexes]()
+- [Support for Lucene 5 indexes](https://github.com/yahoo/fili/pull/265)
     * Added lucene-backward-codecs.jar as a dependency to restore support for indexes built on earlier instances.
     * Support for indexes will only remain while the current Lucene generation supports them.  All customers should rebuild indexes on Lucene 6 to avoid later pain.
 
@@ -267,7 +267,7 @@ Current
 
 ### Fixed:
 
-- [Support for Lucene 5 indexes restored]()
+- [Support for Lucene 5 indexes restored](https://github.com/yahoo/fili/pull/265)
     * Added lucene-backward-codecs.jar as a dependency to restore support for indexes built on earlier instances.
 
 - [Specify the character encoding to support unicode characters](https://github.com/yahoo/fili/pull/221)
