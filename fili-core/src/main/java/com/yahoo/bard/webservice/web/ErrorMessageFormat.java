@@ -225,7 +225,7 @@ public enum ErrorMessageFormat implements MessageFormatter {
     TOO_MUCH_INTERVAL_MISSING(
             "More than %s interval missing information received from druid, inspect if query " +
                     "expects more than %s missing intervals or increase " +
-                    "uncoveredIntervalsLimit configuration value\n"
+                    "uncoveredIntervalsLimit configuration value"
     )
     ;
 
