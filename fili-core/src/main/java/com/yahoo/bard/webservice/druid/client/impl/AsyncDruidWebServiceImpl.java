@@ -56,8 +56,8 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
 
     private final AsyncHttpClient webClient;
     private final ObjectWriter writer;
-    private final Meter httpErrorMeter;
-    private final Meter exceptionMeter;
+    protected final Meter httpErrorMeter;
+    protected final Meter exceptionMeter;
     private static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry();
     public static final String DRUID_TIMER = "DruidProcessing";
     public static final String DRUID_QUERY_TIMER = DRUID_TIMER + "_Q_";
@@ -66,8 +66,8 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
     public static final String DRUID_WEIGHTED_QUERY_TIMER = DRUID_TIMER + "_W_";
     public static final String DRUID_SEGMENT_METADATA_TIMER = DRUID_TIMER + "_S_0";
 
-    private final Supplier<Map<String, String>> headersToAppend;
-    private final DruidServiceConfig serviceConfig;
+    protected final Supplier<Map<String, String>> headersToAppend;
+    protected final DruidServiceConfig serviceConfig;
 
     /**
      * Friendly non-DI constructor useful for manual tests.

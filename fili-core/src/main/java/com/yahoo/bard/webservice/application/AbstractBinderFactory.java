@@ -62,6 +62,7 @@ import com.yahoo.bard.webservice.druid.client.DruidClientConfigHelper;
 import com.yahoo.bard.webservice.druid.client.DruidServiceConfig;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.impl.AsyncDruidWebServiceImpl;
+import com.yahoo.bard.webservice.druid.client.impl.AsyncDruidWebServiceImplV2;
 import com.yahoo.bard.webservice.druid.model.query.LookbackQuery;
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier;
 import com.yahoo.bard.webservice.druid.util.FieldConverters;
@@ -168,6 +169,11 @@ public abstract class AbstractBinderFactory implements BinderFactory {
 
     public static final String DEPRECATED_PERMISSIVE_AVAILABILITY_FLAG = SYSTEM_CONFIG.getPackageVariableName(
             "permissive_column_availability_enabled");
+
+    public static final int DRUID_UNCOVERED_INTERVAL_LIMIT = SYSTEM_CONFIG.getIntProperty(
+            SYSTEM_CONFIG.getPackageVariableName("druid_uncovered_interval_limit"),
+            -1
+    );
 
     public static final String SYSTEM_CONFIG_TIMEZONE_KEY = "timezone";
 
@@ -937,7 +943,9 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      */
     protected DruidWebService buildDruidWebService(DruidServiceConfig druidServiceConfig, ObjectMapper mapper) {
         Supplier<Map<String, String>> supplier = buildDruidWebServiceHeaderSupplier();
-        return new AsyncDruidWebServiceImpl(druidServiceConfig, mapper, supplier);
+        return DRUID_UNCOVERED_INTERVAL_LIMIT >= 0
+                ? new AsyncDruidWebServiceImplV2(druidServiceConfig, mapper, supplier)
+                : new AsyncDruidWebServiceImpl(druidServiceConfig, mapper, supplier);
     }
 
     /**
