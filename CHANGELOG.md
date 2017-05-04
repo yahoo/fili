@@ -96,6 +96,11 @@ Current
 
 ### Changed:
 
+- [Reduce log level of failure to store a result in the asynchronous job store](https://github.com/yahoo/fili/pull/266)
+    * Customers who aren't using the asynchronous infrastructure shouldn't be seeing spurious warnings about a failure
+        to execute one step (which is a no-op for them) in a complex system they aren't using. Until we can revisit how
+        we log report asynchronous errors, we reduce the log level to `DEBUG` to reduce noise.
+
 - [Update availabilities for PartitionAvailability](https://github.com/yahoo/fili/pull/244)
     * Created `BaseCompositeAvailability` for common features
     * Refactored `DataSourceMetadataService` methods to use SimplifiedIntervaList to standardize intersections
