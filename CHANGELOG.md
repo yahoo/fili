@@ -14,6 +14,10 @@ Current
     * Add a configurable property named "druid_uncovered_interval_limit"
     * Add new response error messages as needed by Partial Data V2
 
+- [Merge Druid Response Header into Druid Response Body Json Node in AsyncDruidWebServiceImplV2](https://github.com/yahoo/fili/pull/267)
+    * Make the use of BinderFactory as an injected behavior. By using JSON node builder strategy, we can customize the
+    content of the JSON response
+
 - [Add MetricUnionCompositeTableDefinition](https://github.com/yahoo/fili/pull/258)
 
 - [Add partition availability and table](https://github.com/yahoo/fili/pull/244)
