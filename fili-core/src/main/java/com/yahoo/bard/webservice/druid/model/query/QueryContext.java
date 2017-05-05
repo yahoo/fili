@@ -38,7 +38,8 @@ public class QueryContext {
         POPULATE_CACHE("populateCache"),
         BY_SEGMENT("bySegment"),
         FINALIZE("finalize"),
-        UNCOVERED_INTERVALS_LIMIT("uncoveredIntervalsLimit");
+        UNCOVERED_INTERVALS_LIMIT("uncoveredIntervalsLimit")
+        ;
 
         private final String jsonName;
 
