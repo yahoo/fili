@@ -139,7 +139,7 @@ public class DruidWorkflow implements RequestWorkflowProvider {
 
         handler = new TopNMapperRequestHandler(handler);
 
-        handler = new PartialDataRequestHandler(handler, physicalTableDictionary, partialDataHandler);
+        handler = new PartialDataRequestHandler(handler, partialDataHandler);
 
         handler = new VolatileDataRequestHandler(
                 handler,

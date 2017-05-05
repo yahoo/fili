@@ -10,9 +10,9 @@ import com.yahoo.bard.webservice.data.metric.mappers.PartialDataResultSetMapper
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
+import com.yahoo.bard.webservice.table.ConstrainedTable
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
-import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 import com.yahoo.bard.webservice.web.DataApiRequest
 import com.yahoo.bard.webservice.web.responseprocessors.MappingResponseProcessor
@@ -32,7 +32,7 @@ class PartialDataRequestHandlerSpec extends Specification {
 
     DataRequestHandler next = Mock(DataRequestHandler)
     PhysicalTableDictionary physicalTableDictionary = Mock(PhysicalTableDictionary)
-    Set<PhysicalTable> physicalTables = [Mock(PhysicalTable)] as Set
+    Set<? extends PhysicalTable> physicalTables = [Mock(ConstrainedTable)] as Set
     PartialDataHandler partialDataHandler = Mock(PartialDataHandler)
 
     RequestContext rc = Mock(RequestContext)
@@ -43,7 +43,6 @@ class PartialDataRequestHandlerSpec extends Specification {
 
     PartialDataRequestHandler handler = new PartialDataRequestHandler(
             next,
-            physicalTableDictionary,
             partialDataHandler
     )
 
@@ -55,8 +54,9 @@ class PartialDataRequestHandlerSpec extends Specification {
         groupByQuery.getDependentFieldNames() >> Collections.emptySet()
         groupByQuery.getInnermostQuery() >> groupByQuery
         groupByQuery.getDataSource() >> dataSource
-        physicalTableDictionary.get(_) >> physicalTables[0]
-        dataSource.getNames() >> ["name"]
+        //physicalTableDictionary.get(_) >> physicalTables[0]
+        //dataSource.getNames() >> ["name"]
+        dataSource.getPhysicalTables() >> physicalTables
     }
 
     def cleanup() {
@@ -76,7 +76,6 @@ class PartialDataRequestHandlerSpec extends Specification {
         then:
         success
         1 * partialDataHandler.findMissingTimeGrainIntervals(
-                _ as DataSourceConstraint,
                 physicalTables,
                 new SimplifiedIntervalList(apiRequest.intervals),
                 apiRequest.granularity
@@ -108,7 +107,6 @@ class PartialDataRequestHandlerSpec extends Specification {
         then:
         success
         1 * partialDataHandler.findMissingTimeGrainIntervals(
-                _ as DataSourceConstraint,
                 physicalTables,
                 new SimplifiedIntervalList(apiRequest.intervals),
                 apiRequest.granularity
@@ -153,7 +151,6 @@ class PartialDataRequestHandlerSpec extends Specification {
         then:
         success
         1 * partialDataHandler.findMissingTimeGrainIntervals(
-                _ as DataSourceConstraint,
                 physicalTables,
                 new SimplifiedIntervalList(apiRequest.intervals),
                 apiRequest.granularity

@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.data;
 
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
+import com.yahoo.bard.webservice.table.ConstrainedTable;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.util.IntervalUtils;
@@ -27,17 +28,6 @@ public class PartialDataHandler {
 
     /**
      * Find the holes in the passed in intervals at a given granularity.
-     * <pre>
-     * Interval with grain         : |--------|--------|--------|--------|--------|--------|--------|--------|
-     * Dim1 intervals:               |-------------|            |--------------------------------------------|
-     * Dim2 intervals:               |-------------------|  |------------------------| |---------------------|
-     * Metric intervals:             |--------|                       |--------------------------------------|
-     * Missing Intervals:                     |--------|--------|--------|        |--------|
-     * </pre>
-     * <p>
-     * This method computes the subintervals of the specified intervals for which partial data is
-     * present for a given combination of request metrics and dimensions (pulled from the API request and generated
-     * druid query) at the specified granularity.
      *
      * @param constraint  Constraint containing all the column names the request depends on
      * @param physicalTables  the tables whose column availabilities are checked
@@ -53,10 +43,62 @@ public class PartialDataHandler {
             Granularity granularity
     ) {
         SimplifiedIntervalList availableIntervals = physicalTables.stream()
-                .map(table -> table.getAvailableIntervals(constraint))
-                .flatMap(SimplifiedIntervalList::stream)
-                .collect(SimplifiedIntervalList.getCollector());
+                .map(table -> table.withConstraint(constraint))
+                .map(table -> table.getAvailableIntervals())
+                .reduce(SimplifiedIntervalList::intersect)
+                .orElse(new SimplifiedIntervalList());
 
+        return findMissingTimeGrainIntervals(availableIntervals, requestedIntervals, granularity);
+    }
+
+
+    /**
+     * Find the holes in the passed in intervals at a given granularity.
+     *
+     * @param physicalTables  the tables whose column availabilities are checked
+     * @param requestedIntervals  The intervals that may not be fully satisfied
+     * @param granularity  The granularity at which to find missing intervals
+     *
+     * @return subintervals of the requested intervals with incomplete data
+     */
+    public SimplifiedIntervalList findMissingTimeGrainIntervals(
+            Set<ConstrainedTable> physicalTables,
+            @NotNull SimplifiedIntervalList requestedIntervals,
+            Granularity granularity
+    ) {
+
+        SimplifiedIntervalList availableIntervals = physicalTables.stream()
+                .map(table -> table.getAvailableIntervals())
+                .reduce(SimplifiedIntervalList::intersect)
+                .orElse(new SimplifiedIntervalList());
+        return findMissingTimeGrainIntervals(availableIntervals, requestedIntervals, granularity);
+    }
+
+    /**
+     * Find the holes in the passed in intervals at a given granularity.
+     * <pre>
+     * Interval with grain         : |--------|--------|--------|--------|--------|--------|--------|--------|
+     * Dim1 intervals:               |-------------|            |--------------------------------------------|
+     * Dim2 intervals:               |-------------------|  |------------------------| |---------------------|
+     * Metric intervals:             |--------|                       |--------------------------------------|
+     * Missing Intervals:                     |--------|--------|--------|        |--------|
+     * </pre>
+     * <p>
+     * This method computes the subintervals of the specified intervals for which partial data is
+     * present for a given combination of request metrics and dimensions (pulled from the API request and generated
+     * druid query) at the specified granularity.
+     *
+     * @param availableIntervals  the intervals available in the tables
+     * @param requestedIntervals  The intervals that may not be fully satisfied
+     * @param granularity  The granularity at which to find missing intervals
+     *
+     * @return subintervals of the requested intervals with incomplete data
+     */
+    public SimplifiedIntervalList findMissingTimeGrainIntervals(
+            @NotNull SimplifiedIntervalList availableIntervals,
+            @NotNull SimplifiedIntervalList requestedIntervals,
+            Granularity granularity
+    ) {
         SimplifiedIntervalList missingIntervals = IntervalUtils.collectBucketedIntervalsNotInIntervalList(
                 availableIntervals,
                 requestedIntervals,

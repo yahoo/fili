@@ -17,6 +17,7 @@ import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.table.resolver.QueryPlanningConstraint
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 
+import org.joda.time.DateTimeZone
 import org.joda.time.Interval
 
 import spock.lang.Specification
@@ -35,6 +36,17 @@ class PartialDataHandlerSpec extends Specification {
     GroupByQuery groupByQuery = Mock(GroupByQuery.class)
     DimensionDictionary dimensionDictionary
     QueryPlanningConstraint dataSourceConstraint
+
+    static DateTimeZone dateTimeZone;
+
+    def setupSpec() {
+        dateTimeZone = DateTimeZone.getDefault()
+        DateTimeZone.setDefault(UTC)
+    }
+
+    def cleanupSpec() {
+        DateTimeZone.setDefault(dateTimeZone)
+    }
 
     def setup() {
         columnNames = ["userDeviceType", "property", "os",  "page_views"] as Set
@@ -104,6 +116,6 @@ class PartialDataHandlerSpec extends Specification {
     }
 
     SimplifiedIntervalList buildIntervals(List<String> intervals) {
-        intervals.collect({ new Interval(it) }) as SimplifiedIntervalList
+        intervals.collect({ (new Interval(it)) }) as SimplifiedIntervalList
     }
 }

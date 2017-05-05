@@ -22,10 +22,9 @@ import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery;
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery;
 import com.yahoo.bard.webservice.druid.model.query.TopNQuery;
-import com.yahoo.bard.webservice.table.ConcretePhysicalTable;
+import com.yahoo.bard.webservice.table.ConstrainedTable;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
-import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.bard.webservice.table.TableIdentifier;
 import com.yahoo.bard.webservice.table.resolver.NoMatchFoundException;
@@ -119,10 +118,11 @@ public class DruidQueryBuilder {
         TableGroup group = logicalTable.getTableGroup();
 
         // Resolve the table from the the group, the combined dimensions in request, and template time grain
-        PhysicalTable table = resolver.resolve(
+        QueryPlanningConstraint constraint = new QueryPlanningConstraint(request, template);
+        ConstrainedTable table = resolver.resolve(
                 group.getPhysicalTables(),
-                new QueryPlanningConstraint(request, template)
-        );
+                constraint
+        ).withConstraint(constraint);
 
         return druidTopNMetric != null ?
             buildTopNQuery(
@@ -175,7 +175,7 @@ public class DruidQueryBuilder {
      */
     protected GroupByQuery buildGroupByQuery(
             TemplateDruidQuery template,
-            PhysicalTable table,
+            ConstrainedTable table,
             Granularity granularity,
             DateTimeZone timeZone,
             Set<Dimension> groupByDimensions,
@@ -252,9 +252,9 @@ public class DruidQueryBuilder {
      *
      * @return A table datasource for a fact table or a union data source for a fact table view
      */
-    private DataSource buildTableDataSource(PhysicalTable table) {
-        if (table instanceof ConcretePhysicalTable) {
-            return new TableDataSource((ConcretePhysicalTable) table);
+    private DataSource buildTableDataSource(ConstrainedTable table) {
+        if (table.getDataSourceNames().size() == 1) {
+            return new TableDataSource(table, table.getDataSourceNames().stream().findFirst().get());
         } else {
             return new UnionDataSource(Sets.newHashSet(table));
         }
@@ -277,7 +277,7 @@ public class DruidQueryBuilder {
      */
     protected TopNQuery buildTopNQuery(
             TemplateDruidQuery template,
-            PhysicalTable table,
+            ConstrainedTable table,
             Granularity granularity,
             DateTimeZone timeZone,
             Set<Dimension> groupByDimension,
@@ -344,7 +344,7 @@ public class DruidQueryBuilder {
      */
     protected TimeSeriesQuery buildTimeSeriesQuery(
             TemplateDruidQuery template,
-            PhysicalTable table,
+            ConstrainedTable table,
             Granularity granularity,
             DateTimeZone timeZone,
             Filter filter,
