@@ -943,7 +943,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      */
     protected DruidWebService buildDruidWebService(DruidServiceConfig druidServiceConfig, ObjectMapper mapper) {
         Supplier<Map<String, String>> supplier = buildDruidWebServiceHeaderSupplier();
-        return DRUID_UNCOVERED_INTERVAL_LIMIT >= 0
+        return DRUID_UNCOVERED_INTERVAL_LIMIT > 0
                 ? new AsyncDruidWebServiceImplV2(druidServiceConfig, mapper, supplier)
                 : new AsyncDruidWebServiceImpl(druidServiceConfig, mapper, supplier);
     }
