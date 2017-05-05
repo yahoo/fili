@@ -9,6 +9,8 @@ Current
 -------
 ### Added:
 
+- [Prepare For Partial Data V2](https://github.com/yahoo/fili/pull/264)
+
 - [Add MetricUnionCompositeTableDefinition](https://github.com/yahoo/fili/pull/258)
 
 - [Add partition availability and table](https://github.com/yahoo/fili/pull/244)
