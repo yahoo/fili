@@ -17,8 +17,9 @@ import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.DruidSearchQuery;
 import com.yahoo.bard.webservice.druid.model.query.RegexSearchQuerySpec;
 import com.yahoo.bard.webservice.druid.model.query.SearchQuerySpec;
-import com.yahoo.bard.webservice.table.ConcretePhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
+import com.yahoo.bard.webservice.table.availability.ConcreteAvailability;
+import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -133,8 +134,8 @@ public class DruidDimensionsLoader extends Loader<Boolean> {
                 .collect(Collectors.toList());
 
         this.dataSources = physicalTableDictionary.values().stream()
-                .filter(physicalTable -> physicalTable instanceof ConcretePhysicalTable)
-                .map(physicalTable -> (ConcretePhysicalTable) physicalTable)
+                .filter(physicalTable -> physicalTable.getAvailability() instanceof ConcreteAvailability)
+                .map(table -> table.withConstraint(DataSourceConstraint.emptyConstraint(table)))
                 .map(TableDataSource::new)
                 .collect(Collectors.toList());
     }

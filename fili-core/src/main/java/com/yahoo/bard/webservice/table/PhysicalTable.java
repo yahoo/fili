@@ -4,53 +4,80 @@ package com.yahoo.bard.webservice.table;
 
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
-import com.yahoo.bard.webservice.table.availability.Availability;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import org.joda.time.DateTime;
-import org.joda.time.Interval;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * An interface describing a fact level physical table. It may be backed by a single fact table or multiple.
  */
 public interface PhysicalTable extends Table {
-
-    @Override
-    PhysicalTableSchema getSchema();
-
-    /**
-     * Get the name of the current table.
-     *
-     * @return name of the table as TableName
-     */
-    TableName getTableName();
-
-    /**
-     * Get the value of the actual availability for this physical table.
-     *
-     * @return The current actual physical availability or a runtime exception if there isn't one yet.
-     */
-    Availability getAvailability();
-
-    /**
-     * Get a date time that the table will align to based on grain and available intervals.
-     *
-     * @return The time of either the first available interval of any columns in this table or now, floored to the
-     * table's time grain.
-     */
-    DateTime getTableAlignment();
-
     /**
      * Getter for all the available intervals for the corresponding columns configured on the table.
      *
      * @return map of column to set of available intervals
      */
-    Map<Column, List<Interval>> getAllAvailableIntervals();
+    Map<Column, SimplifiedIntervalList> getAllAvailableIntervals();
+
+    /**
+     * Return a view of the available intervals for this table given a data source constraint.
+     *
+     * @return The intervals that the table can report on, given the constraint
+     */
+    default SimplifiedIntervalList getAvailableIntervals() {
+        return getAllAvailableIntervals().values()
+                .stream()
+                .reduce(SimplifiedIntervalList::union)
+                .orElse(SimplifiedIntervalList.empty());
+    }
+
+    /**
+     * Return a view of the available intervals for this table given a constraint.
+     *
+     * @param constraint  The constraint which limits available intervals
+     *
+     * @return The intervals that the table can report on
+     */
+    default SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraint) {
+        // Default to unconstrained
+        return getAvailableIntervals();
+    }
+
+    /**
+     * Get the columns from the schema for this physical table.
+     *
+     * @return The columns of this physical table
+     *
+     * @deprecated In favor of getting the columns directly from the schema
+     */
+    @Deprecated
+    default Set<Column> getColumns() {
+        return getSchema().getColumns();
+    }
+
+    /**
+     * Return the {@link TableName} of the dataSources which back this table.
+     *
+     * @return A set of tablenames for backing dataSources
+     */
+    Set<TableName> getDataSourceNames();
+
+    /**
+     * Return the {@link TableName} of the dataSources which back this table given a constraint.
+     *
+     * @param constraint  A constraint which may narrow the data sources participating.
+     *
+     * @return A set of tablenames for backing dataSources
+     */
+    default Set<TableName> getDataSourceNames(DataSourceConstraint constraint) {
+        return getDataSourceNames();
+    }
 
     /**
      * Translate a logical name into a physical column name. If no translation exists (i.e. they are the same),
@@ -69,26 +96,23 @@ public interface PhysicalTable extends Table {
      */
     String getPhysicalColumnName(String logicalName);
 
-    /**
-     * Get available intervals satisfying the given constraints.
-     *
-     * @param constraint  Data constraint containing columns and api filters
-     *
-     * @return tableEntries a simplified interval list of available interval
-     */
-    SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraint);
+    @Override
+    PhysicalTableSchema getSchema();
 
     /**
-     * Get the columns from the schema for this physical table.
+     * Get a date time that the table will align to based on grain and available intervals.
      *
-     * @return The columns of this physical table
-     *
-     * @deprecated In favor of getting the columns directly from the schema
+     * @return The time of either the first available interval of any columns in this table or now, floored to the
+     * table's time grain.
      */
-    @Deprecated
-    default Set<Column> getColumns() {
-        return getSchema().getColumns();
-    }
+    DateTime getTableAlignment();
+
+    /**
+     * Get the name of the current table.
+     *
+     * @return name of the table as TableName
+     */
+    TableName getTableName();
 
     /**
      * Get the time grain from granularity.

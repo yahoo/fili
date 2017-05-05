@@ -59,7 +59,7 @@ public class MetricUnionCompositeTable extends BaseCompositePhysicalTable {
             @NotNull TableName name,
             @NotNull ZonedTimeGrain timeGrain,
             @NotNull Set<Column> columns,
-            @NotNull Set<PhysicalTable> physicalTables,
+            @NotNull Set<ConfigPhysicalTable> physicalTables,
             @NotNull Map<String, String> logicalToPhysicalColumnNames
     ) {
         super(

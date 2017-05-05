@@ -11,6 +11,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
+import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.table.PhysicalTable;
@@ -183,7 +184,7 @@ public abstract class BaseTableLoader implements TableLoader {
      *
      * @return the current physical table built from table definitions
      */
-    protected PhysicalTable buildPhysicalTableWithDependency(
+    protected ConfigPhysicalTable buildPhysicalTableWithDependency(
             String currentTableName,
             Map<String, PhysicalTableDefinition> availableTableDefinitions,
             ResourceDictionaries dictionaries

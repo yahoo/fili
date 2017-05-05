@@ -38,7 +38,7 @@ public abstract class BaseCompositePhysicalTable extends BasePhysicalTable {
             @NotNull TableName name,
             @NotNull ZonedTimeGrain timeGrain,
             @NotNull Set<Column> columns,
-            @NotNull Set<PhysicalTable> physicalTables,
+            @NotNull Set<ConfigPhysicalTable> physicalTables,
             @NotNull Map<String, String> logicalToPhysicalColumnNames,
             @NotNull Availability availability
     ) {
@@ -63,7 +63,7 @@ public abstract class BaseCompositePhysicalTable extends BasePhysicalTable {
      */
     private void verifyGrainSatisfiesAllSourceTables(
             ZonedTimeGrain timeGrain,
-            Set<PhysicalTable> physicalTables
+            Set<? extends PhysicalTable> physicalTables
     ) throws IllegalArgumentException {
         Predicate<PhysicalTable> tableDoesNotSatisfyFilter = (physicalTable) -> ! physicalTable.getSchema()
                 .getTimeGrain()

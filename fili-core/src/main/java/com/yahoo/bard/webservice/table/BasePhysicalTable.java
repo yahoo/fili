@@ -27,7 +27,7 @@ import javax.validation.constraints.NotNull;
 /**
  * Base implementation of physical table that are shared across various types of physical tables.
  */
-public abstract class BasePhysicalTable implements PhysicalTable {
+public abstract class BasePhysicalTable implements ConfigPhysicalTable {
     private static final Logger LOG = LoggerFactory.getLogger(BasePhysicalTable.class);
 
     private final TableName name;

@@ -10,6 +10,6 @@ import javax.inject.Singleton;
  * Map of a druid table name to PhysicalTable.
  */
 @Singleton
-public class PhysicalTableDictionary extends LinkedHashMap<String, PhysicalTable> {
+public class PhysicalTableDictionary extends LinkedHashMap<String, ConfigPhysicalTable> {
     // Empty Class
 }

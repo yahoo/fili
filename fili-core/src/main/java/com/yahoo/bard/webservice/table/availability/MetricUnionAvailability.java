@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.table.availability;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.table.Column;
-import com.yahoo.bard.webservice.table.PhysicalTable;
+import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.util.Utils;
@@ -85,8 +85,8 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
      * @param columns  The set of all configured columns, including dimension columns, that metric union availability
      * will respond with
      */
-    public MetricUnionAvailability(@NotNull Set<PhysicalTable> physicalTables, @NotNull Set<Column> columns) {
-        super(physicalTables.stream().map(PhysicalTable::getAvailability));
+    public MetricUnionAvailability(@NotNull Set<ConfigPhysicalTable> physicalTables, @NotNull Set<Column> columns) {
+        super(physicalTables.stream().map(ConfigPhysicalTable::getAvailability));
 
         metricNames = Utils.getSubsetByType(columns, MetricColumn.class).stream()
                 .map(MetricColumn::getName)
@@ -95,7 +95,7 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
         // Construct a map of availability to its assigned metric
         // by intersecting its underlying datasource metrics with table configured metrics
         availabilitiesToMetricNames = physicalTables.stream()
-                .map(PhysicalTable::getAvailability)
+                .map(ConfigPhysicalTable::getAvailability)
                 .collect(
                         Collectors.toMap(
                                 Function.identity(),

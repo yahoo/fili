@@ -33,7 +33,7 @@ public class PartitionCompositeTable extends BaseCompositePhysicalTable {
             @NotNull ZonedTimeGrain timeGrain,
             @NotNull Set<Column> columns,
             @NotNull Map<String, String> logicalToPhysicalColumnNames,
-            @NotNull Map<PhysicalTable, DataSourceFilter> availabilityFilters
+            @NotNull Map<ConfigPhysicalTable, DataSourceFilter> availabilityFilters
     ) {
         super(
                 name,
@@ -52,7 +52,7 @@ public class PartitionCompositeTable extends BaseCompositePhysicalTable {
      *
      * @return  The availability describing the partition
      */
-    private static Availability buildAvailability(Map<PhysicalTable, DataSourceFilter> dataSourceFilterMap) {
+    private static Availability buildAvailability(Map<ConfigPhysicalTable, DataSourceFilter> dataSourceFilterMap) {
         return new PartitionAvailability(dataSourceFilterMap.entrySet().stream()
                 .collect(Collectors.toMap(entry -> entry.getKey().getAvailability(), Map.Entry::getValue)));
     }
