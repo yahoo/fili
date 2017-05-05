@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.table.resolver;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
+import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 
@@ -158,6 +159,28 @@ public class DataSourceConstraint {
                 allDimensionNames,
                 allColumnNames,
                 apiFilters
+        );
+    }
+
+    /**
+     * Build a constraint which should filter away no part of a given table.
+     *
+     * @param table  The table whose dimensions and metrics are to be queried
+     *
+     * @return  A constraint which should provide no restrictions
+     */
+    public static DataSourceConstraint emptyConstraint(PhysicalTable table) {
+        return new DataSourceConstraint(
+                table.getDimensions(),
+                Collections.emptySet(),
+                Collections.emptySet(),
+                table.getSchema().getMetricColumnNames(),
+                table.getDimensions(),
+                table.getDimensions().stream()
+                        .map(Dimension::getApiName)
+                        .collect(Collectors.toSet()),
+                table.getSchema().getColumnNames(),
+                Collections.emptyMap()
         );
     }
 }

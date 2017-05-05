@@ -126,4 +126,35 @@ public interface PhysicalTable extends Table {
     default ZonedTimeGrain getTimeGrain() {
         return getSchema().getTimeGrain();
     }
+
+    /**
+     * Create a constrained copy of this table.
+     *
+     * @param constraint  The dataSourceConstraint which narrows the view of the underlying availability
+     *
+     * @return a constrained table whose availability and serialization are narrowed by this constraint
+     */
+    ConstrainedTable withConstraint(DataSourceConstraint constraint);
+
+    /**
+     * Filter a map of raw intervals to those included in a physical schema.
+     *
+     * @param rawIntervals  The map of name to {@link SimplifiedIntervalList}s as the source availability
+     * @param schema  The schema describing the columns of this table
+     *
+     * @return map of column to set of available intervals
+     */
+    static Map<Column, SimplifiedIntervalList> getAllAvailableIntervals(
+            Map<String, SimplifiedIntervalList> rawIntervals,
+            PhysicalTableSchema schema
+    ) {
+        return schema.getColumns().stream()
+                .collect(Collectors.toMap(
+                        Function.identity(),
+                        column -> rawIntervals.getOrDefault(
+                                schema.getPhysicalColumnName(column.getName()),
+                                new SimplifiedIntervalList()
+                        )
+                ));
+    }
 }

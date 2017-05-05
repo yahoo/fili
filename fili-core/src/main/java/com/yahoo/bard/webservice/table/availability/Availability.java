@@ -22,6 +22,17 @@ public interface Availability {
     Set<TableName> getDataSourceNames();
 
     /**
+     * The names of the data sources backing this availability as filtered by the constraint.
+     *
+     * @param constraint  The constraint to filter data source names.
+     *
+     * @return A set of names for data sources backing this table
+     */
+    default Set<TableName> getDataSourceNames(PhysicalDataSourceConstraint constraint) {
+        return getDataSourceNames();
+    }
+
+    /**
      * The availability of all columns.
      *
      * @return The intervals, by column, available.
@@ -29,11 +40,25 @@ public interface Availability {
     Map<String, SimplifiedIntervalList> getAllAvailableIntervals();
 
     /**
-     * Fetch a set of intervals given a set of column name in DataSourceConstraint.
+     * Fetch a {@link SimplifiedIntervalList} representing the coalesced available intervals on this availability.
      *
-     * @param constraint  Physical data source constraint containing column's physical name, metrics names, api filters
-     *
-     * @return A simplified list of intervals associated with all column in constraint, empty if column is missing
+     * @return A <tt>SimplifiedIntervalList</tt> of intervals available
      */
-    SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint constraint);
+    default SimplifiedIntervalList getAvailableIntervals() {
+        return getAllAvailableIntervals().values().stream()
+                .reduce(SimplifiedIntervalList::intersect).orElse(new SimplifiedIntervalList());
+    }
+
+    /**
+     *
+     * Fetch a {@link SimplifiedIntervalList} representing the coalesced available intervals on this availability as
+     * filtered by the {@link PhysicalDataSourceConstraint}.
+     *
+     * @param constraint  <tt>PhysicalDataSourceConstraint</tt> containing {@link Schema} and {@link ApiFilter}s
+     *
+     * @return A <tt>SimplifiedIntervalList</tt> of intervals available
+     */
+    default SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint constraint) {
+        return getAvailableIntervals();
+    }
 }

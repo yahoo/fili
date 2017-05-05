@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.druid.model.datasource;
 
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
+import com.yahoo.bard.webservice.table.ConstrainedTable;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -11,7 +12,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.Collections;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  */
 public abstract class DataSource {
     private final DataSourceType type;
-    private final Set<PhysicalTable> physicalTables;
+    private final Set<ConstrainedTable> physicalTables;
 
     /**
      * Constructor.
@@ -27,7 +27,7 @@ public abstract class DataSource {
      * @param type  Type of the data source
      * @param physicalTables  PhysicalTables pointed to by the DataSource
      */
-    public DataSource(DataSourceType type, Set<PhysicalTable> physicalTables) {
+    public DataSource(DataSourceType type, Set<ConstrainedTable> physicalTables) {
         this.type = type;
         this.physicalTables = Collections.unmodifiableSet(physicalTables);
     }
@@ -42,7 +42,7 @@ public abstract class DataSource {
      * @return the set of physical tables for the data source
      */
     @JsonIgnore
-    public Set<PhysicalTable> getPhysicalTables() {
+    public Set<ConstrainedTable> getPhysicalTables() {
         return physicalTables;
     }
 
@@ -55,9 +55,8 @@ public abstract class DataSource {
     public Set<String> getNames() {
         return Collections.unmodifiableSet(getPhysicalTables()
                 .stream()
-                .map(PhysicalTable::getAvailability)
-                .map(it -> it.getDataSourceNames().stream())
-                .flatMap(Function.identity())
+                .map(PhysicalTable::getDataSourceNames)
+                .flatMap(Set::stream)
                 .map(TableName::asName)
                 .collect(Collectors.toSet())
         );

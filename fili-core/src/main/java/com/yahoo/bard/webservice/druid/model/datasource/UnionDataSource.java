@@ -4,7 +4,7 @@ package com.yahoo.bard.webservice.druid.model.datasource;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
-import com.yahoo.bard.webservice.table.PhysicalTable;
+import com.yahoo.bard.webservice.table.ConstrainedTable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -27,7 +27,7 @@ public class UnionDataSource extends DataSource {
      *
      * @param physicalTables  The physical tables of the data source
      */
-    public UnionDataSource(Set<PhysicalTable> physicalTables) {
+    public UnionDataSource(Set<ConstrainedTable> physicalTables) {
         super(DefaultDataSourceType.UNION, physicalTables);
         // Check whether or not our union'd tables' dimensions match
         physicalTables.forEach(table ->
