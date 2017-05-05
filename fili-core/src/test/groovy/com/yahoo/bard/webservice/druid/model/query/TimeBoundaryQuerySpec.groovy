@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.druid.model.query
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
-import com.yahoo.bard.webservice.table.ConcretePhysicalTable
+import com.yahoo.bard.webservice.table.TableTestUtils
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -23,7 +23,7 @@ class TimeBoundaryQuerySpec extends Specification {
         given: "A Table data source"
         String tableName = "basefact_network"
         TableDataSource dataSource = new TableDataSource(
-                new ConcretePhysicalTable(
+                TableTestUtils.buildTable(
                         tableName,
                         DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC),
                         [] as Set,

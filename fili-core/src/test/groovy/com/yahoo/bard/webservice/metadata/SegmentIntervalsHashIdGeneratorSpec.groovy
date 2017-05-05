@@ -14,8 +14,8 @@ import com.yahoo.bard.webservice.druid.model.query.LookbackQuery
 import com.yahoo.bard.webservice.druid.model.query.LookbackQuerySpec
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuerySpec
-import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
+import com.yahoo.bard.webservice.table.TableTestUtils
 import com.yahoo.bard.webservice.util.DefaultingDictionary
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 
@@ -102,7 +102,7 @@ class SegmentIntervalsHashIdGeneratorSpec extends BaseDataSourceMetadataSpec {
         timeSeriesQuery = timeSeriesQuerySpec.defaultQuery(
                 intervals: [interval2],
                 dataSource: new TableDataSource(
-                        new ConcretePhysicalTable(
+                        TableTestUtils.buildTable(
                                 tableName, DefaultTimeGrain.DAY.buildZonedTimeGrain(UTC),
                                 [] as Set,
                                 [:],

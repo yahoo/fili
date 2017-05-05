@@ -29,8 +29,8 @@ import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery
 import com.yahoo.bard.webservice.druid.model.query.TopNQuery
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
-import com.yahoo.bard.webservice.table.ConcretePhysicalTable
-import com.yahoo.bard.webservice.table.PhysicalTable
+import com.yahoo.bard.webservice.table.ConstrainedTable
+import com.yahoo.bard.webservice.table.TableTestUtils
 import com.yahoo.bard.webservice.table.resolver.DefaultPhysicalTableResolver
 import com.yahoo.bard.webservice.web.ApiFilter
 import com.yahoo.bard.webservice.web.ApiHaving
@@ -131,7 +131,7 @@ class DruidQueryBuilderSpec extends Specification {
     def "Test recursive buildQueryMethods"() {
         setup:
         Set apiSet = (["abie1234", "abde1129"].collect() { apiFilters.get(it) }) as Set
-        PhysicalTable tab = new ConcretePhysicalTable(
+        ConstrainedTable tab = TableTestUtils.buildTable(
                 "tab1",
                 DAY.buildZonedTimeGrain(UTC),
                 [] as Set,
@@ -232,7 +232,7 @@ class DruidQueryBuilderSpec extends Specification {
 
         when:
         Set apiSet = (["abie1234", "abde1129"].collect() { apiFilters.get(it) }) as Set
-        PhysicalTable tab = new ConcretePhysicalTable(
+        ConstrainedTable tab = TableTestUtils.buildTable(
                 "tab1",
                 DAY.buildZonedTimeGrain(UTC),
                 [] as Set,

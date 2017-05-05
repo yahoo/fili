@@ -7,7 +7,8 @@ import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
-import com.yahoo.bard.webservice.table.ConcretePhysicalTable
+import com.yahoo.bard.webservice.table.ConstrainedTable
+import com.yahoo.bard.webservice.table.TableTestUtils
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -28,11 +29,19 @@ class CardinalityAggregationSpec extends Specification {
     Dimension d2
     CardinalityAggregation a1
 
+    ConstrainedTable constrainedTable
+
     def setupSpec() {
         MAPPER.readTree(expectedJson)
     }
 
     def setup() {
+        constrainedTable = TableTestUtils.buildTable("table",
+                DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC),
+                [] as Set,
+                ["d1ApiName": "d1DruidName", "d2ApiName": "d2DruidName"],
+                Mock(DataSourceMetadataService)
+        )
         d1 = Mock(Dimension)
         d2 = Mock(Dimension)
 
@@ -70,13 +79,7 @@ class CardinalityAggregationSpec extends Specification {
         //       Consequently, query's also need this to be serialized.
         DruidAggregationQuery query = Mock(DruidAggregationQuery)
         DataSource ds = Mock(DataSource)
-        ds.getPhysicalTables() >> [new ConcretePhysicalTable(
-                "table",
-                DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC),
-                [] as Set,
-                ["d1ApiName": "d1DruidName", "d2ApiName": "d2DruidName"],
-                Mock(DataSourceMetadataService)
-        )]
+        ds.getPhysicalTables() >> [constrainedTable]
         query.dataSource >> ds
         query.aggregations >> [a1]
 

@@ -14,7 +14,7 @@ import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
-import com.yahoo.bard.webservice.table.ConcretePhysicalTable
+import com.yahoo.bard.webservice.table.TableTestUtils
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -44,7 +44,7 @@ class TopNQuerySpec extends Specification {
 
     TopNQuery defaultQuery(Map vars) {
 
-        vars.dataSource = vars.dataSource ?: new TableDataSource<TopNQuery>(new ConcretePhysicalTable(
+        vars.dataSource = vars.dataSource ?: new TableDataSource<TopNQuery>(TableTestUtils.buildTable(
                 "table_name",
                 DAY.buildZonedTimeGrain(DateTimeZone.UTC),
                 [] as Set,

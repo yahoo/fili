@@ -3,7 +3,7 @@
 package com.yahoo.bard.webservice.druid.model.datasource
 
 import com.yahoo.bard.webservice.data.dimension.Dimension
-import com.yahoo.bard.webservice.table.PhysicalTable
+import com.yahoo.bard.webservice.table.ConstrainedTable
 
 import spock.lang.Specification
 
@@ -11,8 +11,8 @@ class UnionDataSourceSpec extends Specification {
     Dimension dimension1
     Dimension dimension2
 
-    PhysicalTable table1
-    PhysicalTable table2
+    ConstrainedTable table1
+    ConstrainedTable table2
 
     def setup() {
         dimension1 = Mock(Dimension)
@@ -21,8 +21,8 @@ class UnionDataSourceSpec extends Specification {
         dimension1.getApiName() >> "example"
         dimension2.getApiName() >> "otherExample"
 
-        table1 = Mock(PhysicalTable)
-        table2 = Mock(PhysicalTable)
+        table1 = Mock(ConstrainedTable)
+        table2 = Mock(ConstrainedTable)
     }
 
     def "check duplicate physical mappings for same name fails"() {
@@ -32,7 +32,7 @@ class UnionDataSourceSpec extends Specification {
         table1.getDimensions() >> [dimension1]
         table2.getDimensions() >> [dimension1]
 
-        Set<PhysicalTable> tables = [table1, table2]
+        Set<ConstrainedTable> tables = [table1, table2]
 
         when:
         new UnionDataSource(tables)
@@ -48,7 +48,7 @@ class UnionDataSourceSpec extends Specification {
         table1.getDimensions() >> [dimension1]
         table2.getDimensions() >> [dimension1]
 
-        Set<PhysicalTable> tables = [table1, table2]
+        Set<ConstrainedTable> tables = [table1, table2]
 
         when:
         new UnionDataSource(tables)
@@ -65,7 +65,7 @@ class UnionDataSourceSpec extends Specification {
         table1.getPhysicalColumnName("otherExample") >> "otherMapping"
         table2.getPhysicalColumnName("example") >> "woot"
 
-        Set<PhysicalTable> tables = [table1, table2]
+        Set<ConstrainedTable> tables = [table1, table2]
 
         when:
         new UnionDataSource(tables)
@@ -83,7 +83,7 @@ class UnionDataSourceSpec extends Specification {
         table1.getPhysicalColumnName("otherExample") >> "otherMapping"
         table2.getPhysicalColumnName("example") >> "woot"
 
-        Set<PhysicalTable> tables = [table1, table2]
+        Set<ConstrainedTable> tables = [table1, table2]
 
         when:
         new UnionDataSource(tables)

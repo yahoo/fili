@@ -6,7 +6,7 @@ import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
-import com.yahoo.bard.webservice.table.ConcretePhysicalTable
+import com.yahoo.bard.webservice.table.TableTestUtils
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -34,7 +34,7 @@ class SegmentMetadataQuerySpec extends Specification {
     def "SegmentMetadataQuery serializes to JSON correctly with one interval"() {
         given: "A Table data source and interval"
         String tableName = "basefact_network"
-        DataSource dataSource = new TableDataSource(new ConcretePhysicalTable(
+        DataSource dataSource = new TableDataSource(TableTestUtils.buildTable(
                 tableName,
                 DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC),
                 [] as Set,
@@ -63,7 +63,7 @@ class SegmentMetadataQuerySpec extends Specification {
     def "SegmentMetadataQuery serializes to JSON correctly with multiple intervals"() {
         given: "A Table data source and interval"
         String tableName = "basefact_network"
-        DataSource dataSource = new TableDataSource(new ConcretePhysicalTable(
+        DataSource dataSource = new TableDataSource(TableTestUtils.buildTable(
                 tableName,
                 DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC),
                 [] as Set,
