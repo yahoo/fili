@@ -13,6 +13,7 @@ import org.joda.time.DateTime
 import org.joda.time.Interval
 
 import spock.lang.Specification
+
 /**
  * Test the default intervals service
  */
@@ -63,9 +64,7 @@ class DefaultingVolatileIntervalsServiceSpec extends Specification {
         allGrainQuery.intervals >> fullRange
         allGrainQuery.granularity >> AllGranularity.INSTANCE
 
-        intervalsFunctions = new HashMap<>()
-        intervalsFunctions.put(table2, mockFunction2)
-        intervalsFunctions.put(table3, mockFunction3)
+        intervalsFunctions = [(table2): mockFunction2, (table3): mockFunction3]
     }
 
 

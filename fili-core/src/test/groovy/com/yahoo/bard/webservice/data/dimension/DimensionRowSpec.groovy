@@ -17,6 +17,7 @@ class DimensionRowSpec extends Specification {
         keyField.name >> keyFieldFieldName
         nonKeyField.name >> nonKeyFieldName
     }
+
     def "healthy initialization returns correct state"() {
         setup:
         DimensionRow testRow = new DimensionRow(keyField, [(keyField): keyValue, (nonKeyField): nonKeyValue])

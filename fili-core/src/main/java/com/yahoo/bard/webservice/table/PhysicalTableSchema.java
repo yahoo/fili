@@ -37,8 +37,9 @@ public class PhysicalTableSchema extends BaseSchema {
         super(timeGrain, columns);
         this.timeGrain = timeGrain;
 
-        this.logicalToPhysicalColumnNames = Collections.unmodifiableMap(new LinkedHashMap<>
-                (logicalToPhysicalColumnNames));
+        this.logicalToPhysicalColumnNames = Collections.unmodifiableMap(
+                new LinkedHashMap<>(logicalToPhysicalColumnNames)
+        );
         this.physicalToLogicalColumnNames = Collections.unmodifiableMap(
                 this.logicalToPhysicalColumnNames.entrySet().stream().collect(
                         Collectors.groupingBy(
@@ -101,10 +102,14 @@ public class PhysicalTableSchema extends BaseSchema {
     }
 
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
         if (o instanceof PhysicalTableSchema) {
             PhysicalTableSchema that = (PhysicalTableSchema) o;
-            return Objects.equals(timeGrain, that.timeGrain)
+            return super.equals(o)
+                    && Objects.equals(timeGrain, that.timeGrain)
                     && Objects.equals(logicalToPhysicalColumnNames, that.logicalToPhysicalColumnNames)
                     && Objects.equals(physicalToLogicalColumnNames, that.physicalToLogicalColumnNames);
         }
@@ -113,11 +118,11 @@ public class PhysicalTableSchema extends BaseSchema {
 
     @Override
     public int hashCode() {
-        return Objects.hash(timeGrain, logicalToPhysicalColumnNames, physicalToLogicalColumnNames);
+        return Objects.hash(super.hashCode(), timeGrain, logicalToPhysicalColumnNames, physicalToLogicalColumnNames);
     }
 
     @Override
     public String toString() {
-        return "time grain: " + timeGrain + ": logicalToPhysicalColumnNames: " + logicalToPhysicalColumnNames;
+        return String.format("%s logicalToPhysicalNameMap: %s", super.toString(), logicalToPhysicalColumnNames);
     }
 }

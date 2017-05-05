@@ -10,7 +10,6 @@ import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
-import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.PartitionCompositeTable
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTableSchema
@@ -77,8 +76,8 @@ class DimensionListPartitionTableDefinitionSpec extends Specification {
         DimensionListPartitionTableDefinition definition = new DimensionListPartitionTableDefinition(
                 TableName.of("partition"),
                 DAY_UTC,
-                Collections.emptySet(),
-                Collections.emptySet(),
+                [] as Set,
+                [] as Set,
                 mappings
         )
 
@@ -87,7 +86,7 @@ class DimensionListPartitionTableDefinitionSpec extends Specification {
         PartitionCompositeTable expected = new PartitionCompositeTable(
                 TableName.of("partition"),
                 DAY_UTC,
-                (Set<Column>) Collections.emptySet(),
+                [] as Set,
                 [:],
                 [(part1): new DimensionIdFilter([(testDimension): (["part1Value"] as Set)]),
                  (part2): new DimensionIdFilter([(testDimension): (["part2Value"] as Set)])]

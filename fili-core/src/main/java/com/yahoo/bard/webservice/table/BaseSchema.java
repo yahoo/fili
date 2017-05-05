@@ -51,6 +51,11 @@ public class BaseSchema implements Schema {
     }
 
     @Override
+    public String toString() {
+        return String.format("%s: columns: %s granularity: %s", getClass().getSimpleName(), columns, granularity);
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;

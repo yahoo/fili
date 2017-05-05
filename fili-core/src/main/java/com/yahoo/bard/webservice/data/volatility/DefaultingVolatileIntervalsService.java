@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.data.volatility;
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.table.PhysicalTable;
+import com.yahoo.bard.webservice.util.DefaultingDictionary;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
@@ -18,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * An implementation of VolatileIntervalsService backed by DefaultingDictionary.
+ * An implementation of VolatileIntervalsService.
  */
 public class DefaultingVolatileIntervalsService implements VolatileIntervalsService {
 
@@ -48,6 +49,20 @@ public class DefaultingVolatileIntervalsService implements VolatileIntervalsServ
      */
     public DefaultingVolatileIntervalsService(VolatileIntervalsFunction defaultIntervalsFunction) {
         this(defaultIntervalsFunction, Collections.emptyMap());
+    }
+
+    /**
+     * Use the map of specific functions for physical tables.
+     *
+     * @param intervalsFunctions  the map of specific functions for physical tables
+     *
+     * @deprecated Simply use maps and default values
+     */
+    @Deprecated
+    public DefaultingVolatileIntervalsService(
+                DefaultingDictionary<PhysicalTable, VolatileIntervalsFunction> intervalsFunctions
+    ) {
+        this(intervalsFunctions.getDefaultValue(), intervalsFunctions);
     }
 
     /**

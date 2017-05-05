@@ -142,7 +142,9 @@ public abstract class BasePhysicalTable implements PhysicalTable {
     }
 
     @Override
-    public boolean equals(final Object obj) {
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
         if (obj instanceof BasePhysicalTable) {
             BasePhysicalTable that = (BasePhysicalTable) obj;
             return Objects.equals(name.asName(), that.name.asName())

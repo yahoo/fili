@@ -39,10 +39,7 @@ public class PaginationParameters {
     /**
      * Return only the first result.
      */
-    public static final PaginationParameters ONE_RESULT = new PaginationParameters(
-            1,
-            1
-    );
+    public static final PaginationParameters ONE_RESULT = new PaginationParameters(1, 1);
 
     private final int perPage;
     private final int page;

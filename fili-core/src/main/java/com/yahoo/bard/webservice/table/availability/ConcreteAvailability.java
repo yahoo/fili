@@ -87,7 +87,7 @@ public class ConcreteAvailability implements Availability {
     }
 
     @Override
-    public boolean equals(final Object obj) {
+    public boolean equals(Object obj) {
         if (obj instanceof ConcreteAvailability) {
             ConcreteAvailability that = (ConcreteAvailability) obj;
             return Objects.equals(name.asName(), that.name.asName())

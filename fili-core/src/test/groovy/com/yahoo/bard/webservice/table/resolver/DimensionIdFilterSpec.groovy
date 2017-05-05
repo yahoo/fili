@@ -60,7 +60,7 @@ class DimensionIdFilterSpec extends Specification {
         searchProvider.hasAnyRows(_) >> searchRowsExist
 
         expect: "filter matches when there are no constraints or they exist and return rows from search provider"
-        expected == filter.emptyConstraintOrAnyRows(dimension, constraintMap)
+        filter.emptyConstraintOrAnyRows(dimension, constraintMap) == expected
 
         where:
         hasApiFilter  | emptyApiFilter | searchRowsExist | expected | description
@@ -116,10 +116,10 @@ class DimensionIdFilterSpec extends Specification {
         }
 
         expect: "True as long as the dimension that doesnt return rows is not constrained"
-        dimensionIdFilter.apply(constraint) == success
+        dimensionIdFilter.apply(constraint) == expected
 
         where:
-        constrainFailure | constrainSuccess | constrainOther | success
+        constrainFailure | constrainSuccess | constrainOther | expected
         true             | true             | true           | false
         true             | true             | false          | false
         true             | false            | true           | false
