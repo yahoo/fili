@@ -27,7 +27,6 @@ public class DimensionIdFilter implements DataSourceFilter {
     /**
      * Constructor.
      *
-     *
      * @param dimensionMappingValues  The map of dimension to sets of dimension values which map this table.
      */
     public DimensionIdFilter(Map<Dimension, Set<String>> dimensionMappingValues) {
@@ -47,7 +46,7 @@ public class DimensionIdFilter implements DataSourceFilter {
      * @param dimension  The dimension whose rows are being tested on.
      * @param constraintFilters  The api filters from the constraint
      *
-     * @return  True if for this dimension there are rows matching the query filters AND the embedded filters.
+     * @return true if for this dimension there are rows matching the query filters AND the embedded filters.
      */
     protected boolean anyRowsMatch(@NotNull Dimension dimension, @NotNull Set<ApiFilter> constraintFilters) {
         if (!dimensionKeySelectFilters.containsKey(dimension)) {
@@ -92,6 +91,9 @@ public class DimensionIdFilter implements DataSourceFilter {
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj instanceof DimensionIdFilter) {
             return Objects.equals(dimensionKeySelectFilters, ((DimensionIdFilter) obj).dimensionKeySelectFilters);
         }

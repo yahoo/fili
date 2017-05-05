@@ -101,6 +101,9 @@ public class PartitionAvailability extends BaseCompositeAvailability implements 
 
     @Override
     public boolean equals(final Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj instanceof PartitionAvailability) {
             PartitionAvailability that = (PartitionAvailability) obj;
             return Objects.equals(availabilityFilters, that.availabilityFilters);

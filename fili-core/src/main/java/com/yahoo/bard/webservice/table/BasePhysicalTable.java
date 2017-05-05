@@ -151,9 +151,8 @@ public abstract class BasePhysicalTable implements PhysicalTable {
             return Objects.equals(name.asName(), that.name.asName())
                     && Objects.equals(schema, that.schema)
                     && Objects.equals(availability, that.availability);
-        } else {
-            return false;
         }
+        return false;
     }
 
     @Override

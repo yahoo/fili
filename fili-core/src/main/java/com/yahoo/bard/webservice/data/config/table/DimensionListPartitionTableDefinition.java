@@ -33,7 +33,7 @@ public class DimensionListPartitionTableDefinition extends PhysicalTableDefiniti
      * @param timeGrain  Zoned time grain of the table
      * @param metricNames  The Set of metric names on the table
      * @param dimensionConfigs  Set of dimensions on the table as dimension configs
-     * @param tablePartDefinitions A map from table names to a map of dimension names to sets of values for those
+     * @param tablePartDefinitions  A map from table names to a map of dimension names to sets of values for those
      * dimensions.  The named table will match if for every dimension named at least one of the set of values is part
      * of the query.
      */
@@ -79,7 +79,7 @@ public class DimensionListPartitionTableDefinition extends PhysicalTableDefiniti
      * @param dimensionNameMap  The configuration map from dimension names to sets of dimension key values.
      * @param dimensionDictionary  The dictionary of dimensions to use for binding.
      *
-     * @return A map of dimensions to dimension key values.
+     * @return a map of dimensions to dimension key values.
      */
     private Map<Dimension, Set<String>> toDimensionValuesMap(
             Map<String, Set<String>> dimensionNameMap,

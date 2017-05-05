@@ -170,7 +170,7 @@ public class StreamUtils {
      * @param value  The value being appended to the set.
      * @param <T>  The type of the set
      *
-     * @return The new set containing the additional value
+     * @return the new set containing the additional value
      */
     public static <T> Set<T> append(Set<T> set, T value) {
         HashSet<T> result = new HashSet<T>(set);

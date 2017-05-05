@@ -193,6 +193,9 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj instanceof MetricUnionAvailability) {
             MetricUnionAvailability that = (MetricUnionAvailability) obj;
             return Objects.equals(metricNames, that.metricNames)
