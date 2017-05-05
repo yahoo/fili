@@ -30,6 +30,7 @@ import javax.validation.constraints.NotNull;
  */
 public class SimplifiedIntervalList extends LinkedList<Interval> {
 
+    @Deprecated
     public static final SimplifiedIntervalList NO_INTERVALS = new SimplifiedIntervalList();
 
     /**
@@ -103,6 +104,14 @@ public class SimplifiedIntervalList extends LinkedList<Interval> {
                 .collect(getCollector());
     }
 
+    /**
+     * Static method to provide an empty list.
+     *
+     * @return  A new, empty list.
+     */
+    public static SimplifiedIntervalList empty() {
+        return new SimplifiedIntervalList();
+    }
 
     /**
      * Given a sorted linked list of intervals, add the following interval to the end, merging the incoming interval
@@ -324,7 +333,7 @@ public class SimplifiedIntervalList extends LinkedList<Interval> {
         List<Interval> collected = new ArrayList<>();
 
         if (thisCurrent == null) {
-            return SimplifiedIntervalList.NO_INTERVALS;
+            return SimplifiedIntervalList.empty();
         }
 
         while (thisCurrent != null && thatCurrent != null) {
