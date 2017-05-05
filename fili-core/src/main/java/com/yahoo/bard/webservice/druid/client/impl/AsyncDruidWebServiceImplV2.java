@@ -55,7 +55,6 @@ public class AsyncDruidWebServiceImplV2 extends AsyncDruidWebServiceImpl {
         super(config, mapper, headersToAppend);
     }
 
-    @Override
     /**
      * Serializes the provided query and invokes a request on the druid broker.
      *
@@ -68,6 +67,7 @@ public class AsyncDruidWebServiceImplV2 extends AsyncDruidWebServiceImpl {
      *
      * @return a future response for the query being sent
      */
+    @Override
     protected Future<Response> sendRequest(
             final SuccessCallback success,
             final HttpErrorCallback error,
@@ -103,7 +103,7 @@ public class AsyncDruidWebServiceImplV2 extends AsyncDruidWebServiceImpl {
                             );
 
                             if (status != javax.ws.rs.core.Response.Status.OK) {
-                                httpErrorMeter.mark();
+                                getHttpErrorMeter().mark();
                                 LOG.debug(
                                         "druid {} error: {} {} {} and druid query id: {}",
                                         serviceConfig.getNameAndUrl(),
@@ -151,7 +151,7 @@ public class AsyncDruidWebServiceImplV2 extends AsyncDruidWebServiceImpl {
                             if (outstanding.decrementAndGet() == 0) {
                                 RequestLog.startTiming(RESPONSE_WORKFLOW_TIMER);
                             }
-                            exceptionMeter.mark();
+                            getExceptionMeter().mark();
                             LOG.error("druid {} request failed:", serviceConfig.getNameAndUrl(), t);
                             failure.invoke(t);
                         }

@@ -56,8 +56,9 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
 
     private final AsyncHttpClient webClient;
     private final ObjectWriter writer;
-    protected final Meter httpErrorMeter;
-    protected final Meter exceptionMeter;
+
+    private final Meter httpErrorMeter;
+    private final Meter exceptionMeter;
     private static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry();
     public static final String DRUID_TIMER = "DruidProcessing";
     public static final String DRUID_QUERY_TIMER = DRUID_TIMER + "_Q_";
@@ -355,5 +356,13 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
     @Override
     public DruidServiceConfig getServiceConfig() {
         return serviceConfig;
+    }
+
+    public Meter getHttpErrorMeter() {
+        return httpErrorMeter;
+    }
+
+    public Meter getExceptionMeter() {
+        return exceptionMeter;
     }
 }
