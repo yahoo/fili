@@ -56,7 +56,6 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
 
     private final AsyncHttpClient webClient;
     private final ObjectWriter writer;
-
     private final Meter httpErrorMeter;
     private final Meter exceptionMeter;
     private static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry();
