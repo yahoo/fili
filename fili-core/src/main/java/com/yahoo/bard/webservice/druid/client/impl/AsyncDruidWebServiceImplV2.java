@@ -96,7 +96,7 @@ public class AsyncDruidWebServiceImplV2 extends AsyncDruidWebServiceImpl {
                             );
                             LOG.debug(
                                     "druid {} response code: {} {} and druid query id: {}",
-                                    serviceConfig.getNameAndUrl(),
+                                    getServiceConfig().getNameAndUrl(),
                                     status.getStatusCode(),
                                     status,
                                     druidQueryId
@@ -106,7 +106,7 @@ public class AsyncDruidWebServiceImplV2 extends AsyncDruidWebServiceImpl {
                                 getHttpErrorMeter().mark();
                                 LOG.debug(
                                         "druid {} error: {} {} {} and druid query id: {}",
-                                        serviceConfig.getNameAndUrl(),
+                                        getServiceConfig().getNameAndUrl(),
                                         status.getStatusCode(),
                                         status.getReasonPhrase(),
                                         response.getResponseBody(),
@@ -152,7 +152,7 @@ public class AsyncDruidWebServiceImplV2 extends AsyncDruidWebServiceImpl {
                                 RequestLog.startTiming(RESPONSE_WORKFLOW_TIMER);
                             }
                             getExceptionMeter().mark();
-                            LOG.error("druid {} request failed:", serviceConfig.getNameAndUrl(), t);
+                            LOG.error("druid {} request failed:", getServiceConfig().getNameAndUrl(), t);
                             failure.invoke(t);
                         }
                     });
@@ -162,7 +162,7 @@ public class AsyncDruidWebServiceImplV2 extends AsyncDruidWebServiceImpl {
             if (outstanding.decrementAndGet() == 0) {
                 RequestLog.startTiming(RESPONSE_WORKFLOW_TIMER);
             }
-            LOG.error("druid {} http request failed: ", serviceConfig.getNameAndUrl(), t);
+            LOG.error("druid {} http request failed: ", getDruidServiceConfig().getNameAndUrl(), t);
             failure.invoke(t);
             return new FailedFuture<>(t);
         }

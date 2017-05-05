@@ -14,6 +14,12 @@ Current
     * Add a configurable property named "druid_uncovered_interval_limit"
     * Add new response error messages as needed by Partial Data V2
 
+- [Merge Druid Response Header into Druid Response Body Json Node in AsyncDruidWebServiceImplV2](https://github.com/yahoo/fili/pull/267)
+    * Added `AsyncDruidWebServiceImplV2` which overrides `sendRequest` method in `AsyncDruidWebServiceImpl` by adding
+    "X-Druid-Response-Context" to the response JSON
+    * AbstractBinderFactory::buildDruidWebService returns `AsyncDruidWebServiceImplV2` or `AsyncDruidWebServiceImplV2`
+     based on the "druid_uncovered_interval_limit" config value
+
 - [Add MetricUnionCompositeTableDefinition](https://github.com/yahoo/fili/pull/258)
 
 - [Add partition availability and table](https://github.com/yahoo/fili/pull/244)

@@ -172,7 +172,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
 
     public static final int DRUID_UNCOVERED_INTERVAL_LIMIT = SYSTEM_CONFIG.getIntProperty(
             SYSTEM_CONFIG.getPackageVariableName("druid_uncovered_interval_limit"),
-            -1
+            0
     );
 
     public static final String SYSTEM_CONFIG_TIMEZONE_KEY = "timezone";

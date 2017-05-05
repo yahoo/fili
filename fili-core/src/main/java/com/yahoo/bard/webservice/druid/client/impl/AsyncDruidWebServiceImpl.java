@@ -67,8 +67,8 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
     public static final String DRUID_WEIGHTED_QUERY_TIMER = DRUID_TIMER + "_W_";
     public static final String DRUID_SEGMENT_METADATA_TIMER = DRUID_TIMER + "_S_0";
 
-    protected final Supplier<Map<String, String>> headersToAppend;
-    protected final DruidServiceConfig serviceConfig;
+    private final Supplier<Map<String, String>> headersToAppend;
+    private final DruidServiceConfig serviceConfig;
 
     /**
      * Friendly non-DI constructor useful for manual tests.
@@ -358,11 +358,15 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
         return serviceConfig;
     }
 
-    public Meter getHttpErrorMeter() {
+    protected Meter getHttpErrorMeter() {
         return httpErrorMeter;
     }
 
-    public Meter getExceptionMeter() {
+    protected Meter getExceptionMeter() {
         return exceptionMeter;
+    }
+
+    protected DruidServiceConfig getDruidServiceConfig() {
+        return serviceConfig;
     }
 }
