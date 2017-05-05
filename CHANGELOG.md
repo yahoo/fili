@@ -10,6 +10,9 @@ Current
 ### Added:
 
 - [Prepare For Partial Data V2](https://github.com/yahoo/fili/pull/264)
+    * Add new query context for druid's uncovered interval feature
+    * Add a configurable property named "druid_uncovered_interval_limit"
+    * Add new response error messages as needed by Partial Data V2
 
 - [Add MetricUnionCompositeTableDefinition](https://github.com/yahoo/fili/pull/258)
 
