@@ -91,7 +91,7 @@ public class DimensionIdFilter implements DataSourceFilter {
     }
 
     @Override
-    public boolean equals(final Object obj) {
+    public boolean equals(Object obj) {
         if (obj instanceof DimensionIdFilter) {
             return Objects.equals(dimensionKeySelectFilters, ((DimensionIdFilter) obj).dimensionKeySelectFilters);
         }
