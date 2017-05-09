@@ -3,18 +3,13 @@
 package com.yahoo.bard.webservice.druid.client.impl;
 
 import com.yahoo.bard.webservice.druid.client.DruidServiceConfig;
-
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.asynchttpclient.Response;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -49,23 +44,9 @@ public class AsyncDruidWebServiceImplV2 extends AsyncDruidWebServiceImpl {
 
     @Override
     protected JsonNode constructJsonResponse(Response response) throws IOException {
-        MappingJsonFactory mappingJsonFactory = new MappingJsonFactory();
-        JsonNode jsonNode;
-
-        try (InputStream responseStream = response.getResponseBodyAsStream();
-             JsonParser jsonParser = mappingJsonFactory.createParser(responseStream)) {
-            jsonNode = jsonParser.readValueAsTree();
-        }
-
-        ObjectNode objectNode = (ObjectNode) OBJECT_MAPPER.readTree(jsonNode.asText());
-        objectNode.put(
-                "X-Druid-Response-Context",
-                response.getHeader("X-Druid-Response-Context")
-                        .getBytes(StandardCharsets.UTF_8));
-        objectNode.put(
-                "status-code",
-                Status.fromStatusCode(response.getStatusCode()).getStatusCode()
-        );
+        ObjectNode objectNode = (ObjectNode) OBJECT_MAPPER.readTree(response.getResponseBody());
+        objectNode.put("X-Druid-Response-Context", response.getHeader("X-Druid-Response-Context"));
+        objectNode.put("status-code", response.getStatusCode());
 
         return objectNode;
     }
