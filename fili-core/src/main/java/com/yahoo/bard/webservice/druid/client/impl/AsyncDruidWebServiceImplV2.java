@@ -16,6 +16,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.asynchttpclient.AsyncCompletionHandler;
 import org.asynchttpclient.BoundRequestBuilder;
@@ -122,19 +123,21 @@ public class AsyncDruidWebServiceImplV2 extends AsyncDruidWebServiceImpl {
                                 MappingJsonFactory jsonFactory = new MappingJsonFactory();
                                 try {
                                     JsonNode rootNode;
+                                    ObjectNode objectNode;
                                     try (
-                                            InputStream responseStream = new SequenceInputStream(
-                                                    response.getResponseBodyAsStream(),
-                                                    new ByteArrayInputStream(
-                                                            response.getHeader("X-Druid-Response-Context")
-                                                                    .getBytes(StandardCharsets.UTF_8)
-                                                    )
-                                            );
-                                            JsonParser jsonParser = jsonFactory.createParser(responseStream)
+                                            JsonParser jsonParser = jsonFactory.createParser(
+                                                    response.getResponseBodyAsStream()
+                                            )
                                     ) {
                                         rootNode = jsonParser.readValueAsTree();
+                                        objectNode = (ObjectNode) rootNode;
+                                        objectNode.put(
+                                                "X-Druid-Response-Context",
+                                                response.getHeader("X-Druid-Response-Context")
+                                                        .getBytes(StandardCharsets.UTF_8));
+                                        objectNode.put("status-code", status.getStatusCode());
                                     }
-                                    success.invoke(rootNode);
+                                    success.invoke(objectNode);
                                 } catch (RuntimeException | IOException e) {
                                     failure.invoke(e);
                                 }
