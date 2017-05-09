@@ -199,50 +199,20 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
                 new AsyncCompletionHandler<Response>() {
                     @Override
                     public Response onCompleted(Response response) {
-                        RequestLog.restore(logCtx);
-                        RequestLog.stopTiming(timerName);
-                        if (outstanding.decrementAndGet() == 0) {
-                            RequestLog.startTiming(RESPONSE_WORKFLOW_TIMER);
-                        }
                         String druidQueryId = response.getHeader("X-Druid-Query-Id");
-                        RequestLog.record(new DruidResponse(druidQueryId));
                         Status status = Status.fromStatusCode(response.getStatusCode());
-                        LOG.debug(
-                                "druid {} response code: {} {} and druid query id: {}",
-                                serviceConfig.getNameAndUrl(),
-                                status.getStatusCode(),
-                                status,
-                                druidQueryId
-                        );
+                        logRequest(logCtx, timerName, outstanding, druidQueryId, status);
 
-                        if (status != Status.OK) {
-                            httpErrorMeter.mark();
-                            LOG.debug(
-                                    "druid {} error: {} {} {} and druid query id: {}",
-                                    serviceConfig.getNameAndUrl(),
-                                    status.getStatusCode(),
-                                    status.getReasonPhrase(),
-                                    response.getResponseBody(),
-                                    druidQueryId
-                            );
-
-                            error.invoke(
-                                    status.getStatusCode(),
-                                    status.getReasonPhrase(),
-                                    response.getResponseBody()
-                            );
+                        if (hasError(status)) {
+                            markError(status, response, druidQueryId, error);
                         } else {
-                            MappingJsonFactory jsonFactory = new MappingJsonFactory();
                             try {
-                                JsonNode rootNode;
-                                try (InputStream responseStream = response.getResponseBodyAsStream();
-                                    JsonParser jp = jsonFactory.createParser(responseStream)) {
-                                    rootNode = jp.readValueAsTree();
-                                }
-                                success.invoke(rootNode);
+                                JsonNode jsonNode = constructJsonResponse(response);
+                                success.invoke(jsonNode);
                             } catch (RuntimeException | IOException e) {
                                 failure.invoke(e);
                             }
+
                         }
 
                         // we consumed this response, so pass null to any chains
@@ -367,5 +337,94 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
 
     protected DruidServiceConfig getDruidServiceConfig() {
         return serviceConfig;
+    }
+
+    /**
+     * Log request using RequestLog.
+     *
+     * @param logCtx  The snapshot of the request log of the current thread
+     * @param timerName  The name that distinguishes this request as part of a druid query or segment metadata request
+     * @param outstanding  The counter that keeps track of the outstanding (in flight) requests for the top level query
+     * @param druidQueryId  The Druid query ID
+     * @param status  The response status
+     */
+    private void logRequest(
+            RequestLog logCtx,
+            String timerName,
+            AtomicLong outstanding,
+            String druidQueryId,
+            Status status
+    ) {
+        RequestLog.restore(logCtx);
+        RequestLog.stopTiming(timerName);
+        if (outstanding.decrementAndGet() == 0) {
+            RequestLog.startTiming(RESPONSE_WORKFLOW_TIMER);
+        }
+        RequestLog.record(new DruidResponse(druidQueryId));
+
+        LOG.debug(
+                "druid {} response code: {} {} and druid query id: {}",
+                serviceConfig.getNameAndUrl(),
+                status.getStatusCode(),
+                status,
+                druidQueryId
+        );
+    }
+
+    /**
+     * Return true if response status code indicates an error.
+     *
+     * @param status  The Status object that contains status code to be checked
+     *
+     * @return true if the status code indicates an error
+     */
+    protected boolean hasError(Status status) {
+        return status != Status.OK;
+    }
+
+    /**
+     * Log and invoke error response on non-OK druid response.
+     *
+     * @param status  The response status
+     * @param response  The druid response
+     * @param druidQueryId  The Druid query ID
+     * @param error  callback for handling http errors.
+     */
+    private void markError(Status status, Response response, String druidQueryId, HttpErrorCallback error) {
+        httpErrorMeter.mark();
+        LOG.debug(
+                "druid {} error: {} {} {} and druid query id: {}",
+                serviceConfig.getNameAndUrl(),
+                status.getStatusCode(),
+                status.getReasonPhrase(),
+                response.getResponseBody(),
+                druidQueryId
+        );
+
+        error.invoke(
+                status.getStatusCode(),
+                status.getReasonPhrase(),
+                response.getResponseBody()
+        );
+    }
+
+    /**
+     * Extract relevant information from response and wrap them into a JSON node.
+     *
+     * @param response  The response from which the information is to be retrieved.
+     *
+     * @return the relevant information in a JSON node
+     * @throws IOException when there is a JSON parsing error
+     */
+    protected JsonNode constructJsonResponse(Response response) throws IOException {
+        MappingJsonFactory jsonFactory = new MappingJsonFactory();
+        JsonNode rootNode;
+
+        try (InputStream responseStream = response.getResponseBodyAsStream();
+             JsonParser jp = jsonFactory.createParser(responseStream)) {
+            rootNode = jp.readValueAsTree();
+        }
+
+        return rootNode;
     }
 }

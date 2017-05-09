@@ -14,7 +14,7 @@ public enum ErrorMessageFormat implements MessageFormatter {
     TABLE_SCHEMA_UNDEFINED(
             "Table '%s' is incompatible with the dimensions '%s', metrics '%s' and granularity '%s' requested.",
             "No PhysicalTable for Logical Table '%s' with the availability-based dimensions '%s', " +
-                            "metrics '%s', and granularity '%s' found "
+                    "metrics '%s', and granularity '%s' found "
     ),
 
     EMPTY_DICTIONARY("%s Dictionary is empty."),
