@@ -101,6 +101,11 @@ Current
 
 ### Changed:
 
+- [Druid filters are now lazy.](https://github.com/yahoo/fili/pull/269)
+    - The Druid filter is built when requested, NOT at DatApiRequest construction. This will
+        make it easier to write performant `DataApiRequest` mappers.
+
+
 - [Reduce log level of failure to store a result in the asynchronous job store](https://github.com/yahoo/fili/pull/266)
     * Customers who aren't using the asynchronous infrastructure shouldn't be seeing spurious warnings about a failure
         to execute one step (which is a no-op for them) in a complex system they aren't using. Until we can revisit how
