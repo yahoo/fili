@@ -146,7 +146,7 @@ public class DefaultAsynchronousWorkflowsBuilder implements AsynchronousWorkflow
         return asynchronousPayload
                 .flatMap(apiJobStore::save)
                 .onErrorReturn(error -> {
-                    LOG.warn(ErrorMessageFormat.FAILED_TO_SAVE_JOB_ROW.format(jobRow), error);
+                    LOG.debug(ErrorMessageFormat.FAILED_TO_SAVE_JOB_ROW.format(jobRow), error);
                     return jobRow;
                 });
     }
