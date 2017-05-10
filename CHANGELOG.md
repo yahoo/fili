@@ -189,6 +189,11 @@ Current
 - [Make `TemplateDruidQuery::getMetricField` get the first field instead of any field](https://github.com/yahoo/fili/pull/210)
     * Previously, order was by luck, now it's by the contract of `findFirst`
 
+- [Clean up config loading and add more logs and checks]()
+    * Assert no more than 1 `testApplicationConfig` on classpath
+      - Assertion already existed for `userConfig` and `applicationConfig`)
+    * Add error / logging messages for too many test application configs
+
 - [Restore non-default query support in TestDruidWebservice](https://github.com/yahoo/fili/pull/202)
 
 - [Base TableDataSource serialization on ConcretePhysicalTable fact name](https://github.com/yahoo/fili/pull/202)

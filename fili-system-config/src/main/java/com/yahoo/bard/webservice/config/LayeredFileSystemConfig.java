@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.config;
 
 import static com.yahoo.bard.webservice.config.ConfigMessageFormat.TOO_MANY_APPLICATION_CONFIGS;
+import static com.yahoo.bard.webservice.config.ConfigMessageFormat.TOO_MANY_TEST_APPLICATION_CONFIGS;
 import static com.yahoo.bard.webservice.config.ConfigMessageFormat.TOO_MANY_USER_CONFIGS;
 
 import org.apache.commons.configuration.CompositeConfiguration;
@@ -88,6 +89,12 @@ public class LayeredFileSystemConfig implements SystemConfig {
 
             // Test application configuration provides overrides for configuration in a testing environment
             List<Configuration> testApplicationConfig = loader.loadConfigurationsNoJars(TEST_CONFIG_FILE_NAME);
+            if (testApplicationConfig.size() > 1) {
+                List<Resource> resources = loader.loadResourcesWithName(TEST_CONFIG_FILE_NAME)
+                        .collect(Collectors.toList());
+                LOG.error(TOO_MANY_TEST_APPLICATION_CONFIGS.logFormat(resources.toString()));
+                throw new SystemConfigException(TOO_MANY_TEST_APPLICATION_CONFIGS.format(resources.size()));
+            }
 
             // Application configuration defines configuration at an application level for a bard instance
             List<Configuration> applicationConfig = loader.loadConfigurations(APPLICATION_CONFIG_FILE_NAME);
