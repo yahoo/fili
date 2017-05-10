@@ -21,7 +21,6 @@ import com.yahoo.bard.webservice.web.handlers.RequestContext;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
@@ -39,7 +38,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -207,8 +205,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
                             markError(status, response, druidQueryId, error);
                         } else {
                             try {
-                                JsonNode jsonNode = constructJsonResponse(response);
-                                success.invoke(jsonNode);
+                                success.invoke(constructJsonResponse(response));
                             } catch (RuntimeException | IOException e) {
                                 failure.invoke(e);
                             }
@@ -340,7 +337,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
     }
 
     /**
-     * Log request using RequestLog.
+     * Logs request using RequestLog and logs Druid response.
      *
      * @param logCtx  The snapshot of the request log of the current thread
      * @param timerName  The name that distinguishes this request as part of a druid query or segment metadata request
@@ -364,7 +361,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
 
         LOG.debug(
                 "druid {} response code: {} {} and druid query id: {}",
-                serviceConfig.getNameAndUrl(),
+                getServiceConfig().getNameAndUrl(),
                 status.getStatusCode(),
                 status,
                 druidQueryId
@@ -383,7 +380,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
     }
 
     /**
-     * Log and invoke error response on non-OK druid response.
+     * Count and log error, then send error response.
      *
      * @param status  The response status
      * @param response  The druid response
@@ -391,10 +388,10 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
      * @param error  callback for handling http errors.
      */
     private void markError(Status status, Response response, String druidQueryId, HttpErrorCallback error) {
-        httpErrorMeter.mark();
+        getHttpErrorMeter().mark();
         LOG.debug(
                 "druid {} error: {} {} {} and druid query id: {}",
-                serviceConfig.getNameAndUrl(),
+                getServiceConfig().getNameAndUrl(),
                 status.getStatusCode(),
                 status.getReasonPhrase(),
                 response.getResponseBody(),
@@ -417,14 +414,6 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
      * @throws IOException when there is a JSON parsing error
      */
     protected JsonNode constructJsonResponse(Response response) throws IOException {
-        MappingJsonFactory jsonFactory = new MappingJsonFactory();
-        JsonNode rootNode;
-
-        try (InputStream responseStream = response.getResponseBodyAsStream();
-             JsonParser jp = jsonFactory.createParser(responseStream)) {
-            rootNode = jp.readValueAsTree();
-        }
-
-        return rootNode;
+        return new MappingJsonFactory().createParser(response.getResponseBodyAsStream()).readValueAsTree();
     }
 }

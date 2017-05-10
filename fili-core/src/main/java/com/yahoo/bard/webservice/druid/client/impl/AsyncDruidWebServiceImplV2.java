@@ -3,8 +3,11 @@
 package com.yahoo.bard.webservice.druid.client.impl;
 
 import com.yahoo.bard.webservice.druid.client.DruidServiceConfig;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.asynchttpclient.Response;
@@ -17,10 +20,12 @@ import javax.ws.rs.core.Response.Status;
 
 /**
  * Represents the druid web service endpoint for partial data V2.
+ * <p>
+ * When Druid returns data with missing intervals with a non-OK status code, instead of
+ * returning an error, proceed to merge Druid response context, which contains missing intervals, and
+ * response status code into a JSON response.
  */
 public class AsyncDruidWebServiceImplV2 extends AsyncDruidWebServiceImpl {
-
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     /**
      * IOC constructor.
@@ -37,6 +42,15 @@ public class AsyncDruidWebServiceImplV2 extends AsyncDruidWebServiceImpl {
         super(config, mapper, headersToAppend);
     }
 
+    /**
+     * Returns true if the response status code indicates an error.
+     * <p>
+     * 304(NOT_MODIFIED) is OK since this indicates that data is cached.
+     *
+     * @param status  The Status object that contains status code to be checked
+     *
+     * @return true if the response status code indicates an error
+     */
     @Override
     protected boolean hasError(Status status) {
         return status != Status.OK && status != Status.NOT_MODIFIED;
@@ -44,7 +58,11 @@ public class AsyncDruidWebServiceImplV2 extends AsyncDruidWebServiceImpl {
 
     @Override
     protected JsonNode constructJsonResponse(Response response) throws IOException {
-        ObjectNode objectNode = (ObjectNode) OBJECT_MAPPER.readTree(response.getResponseBody());
+        ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
+
+        JsonNode responseNode = new MappingJsonFactory().createParser(response.getResponseBodyAsStream())
+                .readValueAsTree();
+        objectNode.put("response", responseNode);
         objectNode.put("X-Druid-Response-Context", response.getHeader("X-Druid-Response-Context"));
         objectNode.put("status-code", response.getStatusCode());
 
