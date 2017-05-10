@@ -97,9 +97,4 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
     public String getFactTableName() {
         return factTableName;
     }
-
-    @Override
-    public String toString() {
-        return super.toString() + " factTableName: " + getAvailability().getDataSourceNames();
-    }
 }

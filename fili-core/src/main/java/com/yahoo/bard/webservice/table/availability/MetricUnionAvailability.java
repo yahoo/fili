@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import java.util.AbstractMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -134,7 +135,6 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
         return constructSubConstraint(constraint).entrySet().stream()
                 .map(entry -> entry.getKey().getAvailableIntervals(entry.getValue()))
                 .reduce(SimplifiedIntervalList::intersect).orElse(new SimplifiedIntervalList());
-
     }
 
     /**
@@ -189,5 +189,23 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
                 metricNames.stream()
                         .collect(Collectors.joining(", "))
         );
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof MetricUnionAvailability) {
+            MetricUnionAvailability that = (MetricUnionAvailability) obj;
+            return Objects.equals(metricNames, that.metricNames)
+                    && Objects.equals(availabilitiesToMetricNames, that.availabilitiesToMetricNames);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(metricNames, availabilitiesToMetricNames);
     }
 }

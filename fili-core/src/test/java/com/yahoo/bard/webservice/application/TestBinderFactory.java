@@ -127,23 +127,30 @@ public class TestBinderFactory extends AbstractBinderFactory {
      */
     @Override
     protected VolatileIntervalsService getVolatileIntervalsService() {
+        PhysicalTableDictionary physicalTableDictionary = getConfigurationLoader().getPhysicalTableDictionary();
         Map<PhysicalTable, VolatileIntervalsFunction> hourlyMonthlyVolatileIntervals = new LinkedHashMap<>();
-        hourlyMonthlyVolatileIntervals.put(
-                getConfigurationLoader().getPhysicalTableDictionary().get(HOURLY.asName()),
-                () -> new SimplifiedIntervalList(
-                        Collections.singleton(
-                                new Interval(new DateTime(2016, 8, 15, 0, 0), new DateTime(2016, 8, 16, 0, 0))
-                        )
-                )
-        );
-        hourlyMonthlyVolatileIntervals.put(
-                getConfigurationLoader().getPhysicalTableDictionary().get(MONTHLY.asName()),
-                () -> new SimplifiedIntervalList(
-                        Collections.singleton(
-                                new Interval(new DateTime(2016, 8, 1, 0, 0), new DateTime(2016, 9, 1, 0, 0))
-                        )
-                )
-        );
+
+        if (physicalTableDictionary.containsKey(HOURLY.asName())) {
+            hourlyMonthlyVolatileIntervals.put(
+                    getConfigurationLoader().getPhysicalTableDictionary().get(HOURLY.asName()),
+                    () -> new SimplifiedIntervalList(
+                            Collections.singleton(
+                                    new Interval(new DateTime(2016, 8, 15, 0, 0), new DateTime(2016, 8, 16, 0, 0))
+                            )
+                    )
+            );
+        }
+        if (physicalTableDictionary.containsKey(MONTHLY.asName())) {
+            hourlyMonthlyVolatileIntervals.put(
+                    getConfigurationLoader().getPhysicalTableDictionary().get(MONTHLY.asName()),
+                    () -> new SimplifiedIntervalList(
+                            Collections.singleton(
+                                    new Interval(new DateTime(2016, 8, 1, 0, 0), new DateTime(2016, 9, 1, 0, 0))
+                            )
+                    )
+            );
+        }
+
         return new DefaultingVolatileIntervalsService(
                 NoVolatileIntervalsFunction.INSTANCE,
                 hourlyMonthlyVolatileIntervals

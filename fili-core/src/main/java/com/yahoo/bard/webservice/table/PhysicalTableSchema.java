@@ -5,7 +5,9 @@ package com.yahoo.bard.webservice.table;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -35,7 +37,9 @@ public class PhysicalTableSchema extends BaseSchema {
         super(timeGrain, columns);
         this.timeGrain = timeGrain;
 
-        this.logicalToPhysicalColumnNames = Collections.unmodifiableMap(logicalToPhysicalColumnNames);
+        this.logicalToPhysicalColumnNames = Collections.unmodifiableMap(
+                new LinkedHashMap<>(logicalToPhysicalColumnNames)
+        );
         this.physicalToLogicalColumnNames = Collections.unmodifiableMap(
                 this.logicalToPhysicalColumnNames.entrySet().stream().collect(
                         Collectors.groupingBy(
@@ -95,5 +99,30 @@ public class PhysicalTableSchema extends BaseSchema {
      */
     public ZonedTimeGrain getTimeGrain() {
         return timeGrain;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o instanceof PhysicalTableSchema) {
+            PhysicalTableSchema that = (PhysicalTableSchema) o;
+            return super.equals(o)
+                    && Objects.equals(timeGrain, that.timeGrain)
+                    && Objects.equals(logicalToPhysicalColumnNames, that.logicalToPhysicalColumnNames)
+                    && Objects.equals(physicalToLogicalColumnNames, that.physicalToLogicalColumnNames);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), timeGrain, logicalToPhysicalColumnNames, physicalToLogicalColumnNames);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s logicalToPhysicalNameMap: %s", super.toString(), logicalToPhysicalColumnNames);
     }
 }

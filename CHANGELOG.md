@@ -545,6 +545,8 @@ Changes:
 
 ### Deprecated:
 
+- [Deprecated DefaultingDictionary usage in DefaultingVolatileIntervalsService](https://github.com/yahoo/fili/pull/259)
+
 - [`RequestLog::switchTiming` has been deprecated](https://github.com/yahoo/fili/pull/141)
     - `RequestLog::switchTiming` is very context-dependent, and therefore brittle. In particular, adding any additional
       timers inside code called by a timed block may result in the original timer not stopping properly. All usages of
@@ -635,6 +637,13 @@ New Capabilities & Enhancements:
 - Better ability to use custom Druid query types
 
 ### Added:
+
+- [Added Dimension Value implementation for PartitionTableDefinition]
+    * Added `DimensionIdFilter` implementation of  `DataSourceFilter`
+    * Created `DimensionListPartitionTableDefinition` 
+
+- [Added 'hasAnyRows' to SearchProvider interface](https://github.com/yahoo/fili/pull/259)
+    * Has Any Rows allows implementations to optimize queries which only need to identify existence of matches
 
 - [Customize Logging Format in RequestLog](https://github.com/yahoo/fili/pull/81)
 

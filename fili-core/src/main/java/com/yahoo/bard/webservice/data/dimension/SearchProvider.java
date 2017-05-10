@@ -109,6 +109,17 @@ public interface SearchProvider {
     );
 
     /**
+     * Determine if any rows match these filters.
+     *
+     * @param filters  ApiFilters to use for finding matching dimension rows
+     *
+     * @return true if at least one row is returned.
+     */
+    default boolean hasAnyRows(Set<ApiFilter> filters) {
+        return findFilteredDimensionRowsPaged(filters, PaginationParameters.ONE_RESULT).getNumResults() > 0;
+    }
+
+    /**
      * Method to add / update indexes.
      *
      * @param rowId  Unique ID for the dimension row

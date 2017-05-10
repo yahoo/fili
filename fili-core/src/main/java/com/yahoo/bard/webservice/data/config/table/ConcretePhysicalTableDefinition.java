@@ -52,7 +52,6 @@ public class ConcretePhysicalTableDefinition extends PhysicalTableDefinition {
             Set<FieldName> metricNames,
             Set<? extends DimensionConfig> dimensionConfigs,
             Map<String, String> logicalToPhysicalNames
-
     ) {
         super(name, timeGrain, metricNames, dimensionConfigs, logicalToPhysicalNames);
     }

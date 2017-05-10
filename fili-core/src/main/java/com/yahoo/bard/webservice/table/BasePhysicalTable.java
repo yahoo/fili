@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -138,5 +139,34 @@ public abstract class BasePhysicalTable implements PhysicalTable {
     @Deprecated
     protected void setAvailability(Availability availability) {
         this.availability = availability;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof BasePhysicalTable) {
+            BasePhysicalTable that = (BasePhysicalTable) obj;
+            return Objects.equals(name.asName(), that.name.asName())
+                    && Objects.equals(schema, that.schema)
+                    && Objects.equals(availability, that.availability);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name.asName(), schema, availability);
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "Physical table: '%s', schema: '%s', availability: '%s'",
+                name.asName(),
+                schema,
+                availability
+        );
     }
 }

@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.util;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -160,5 +161,20 @@ public class StreamUtils {
                 R castedOperand = (R) operand;
                 return castedOperand;
         };
+    }
+
+    /**
+     * Copy a set, add a value to it and return the new set.
+     *
+     * @param set  The original set being copied.
+     * @param value  The value being appended to the set.
+     * @param <T>  The type of the set
+     *
+     * @return the new set containing the additional value
+     */
+    public static <T> Set<T> append(Set<T> set, T value) {
+        HashSet<T> result = new HashSet<T>(set);
+        result.add(value);
+        return result;
     }
 }

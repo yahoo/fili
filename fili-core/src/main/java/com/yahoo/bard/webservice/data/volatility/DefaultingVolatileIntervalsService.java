@@ -13,15 +13,22 @@ import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * An implementation of VolatileIntervalsService backed by DefaultingDictionary.
+ * An implementation of VolatileIntervalsService.
  */
 public class DefaultingVolatileIntervalsService implements VolatileIntervalsService {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultingVolatileIntervalsService.class);
+
+    /**
+     * The default volatile intervals supply.
+     */
+    private final VolatileIntervalsFunction defaultIntervals;
 
     /**
      * The map of specific functions for physical tables.
@@ -32,7 +39,7 @@ public class DefaultingVolatileIntervalsService implements VolatileIntervalsServ
      * Use the no op interval function with no customized functions.
      */
     public DefaultingVolatileIntervalsService() {
-        this(new DefaultingDictionary<>(NoVolatileIntervalsFunction.INSTANCE));
+        this(NoVolatileIntervalsFunction.INSTANCE, Collections.emptyMap());
     }
 
     /**
@@ -41,14 +48,17 @@ public class DefaultingVolatileIntervalsService implements VolatileIntervalsServ
      * @param defaultIntervalsFunction  The volatile intervals function to apply to all physical tables.
      */
     public DefaultingVolatileIntervalsService(VolatileIntervalsFunction defaultIntervalsFunction) {
-        this(new DefaultingDictionary<>(defaultIntervalsFunction));
+        this(defaultIntervalsFunction, Collections.emptyMap());
     }
 
     /**
      * Use the map of specific functions for physical tables.
      *
      * @param intervalsFunctions  the map of specific functions for physical tables
+     *
+     * @deprecated Simply use maps and default values
      */
+    @Deprecated
     public DefaultingVolatileIntervalsService(
                 DefaultingDictionary<PhysicalTable, VolatileIntervalsFunction> intervalsFunctions
     ) {
@@ -65,7 +75,8 @@ public class DefaultingVolatileIntervalsService implements VolatileIntervalsServ
             VolatileIntervalsFunction defaultIntervalsFunction,
             Map<PhysicalTable, VolatileIntervalsFunction> intervalsFunctions
     ) {
-        this.intervalsFunctions = new DefaultingDictionary<>(defaultIntervalsFunction, intervalsFunctions);
+        this.defaultIntervals = defaultIntervalsFunction;
+        this.intervalsFunctions = Collections.unmodifiableMap(new HashMap<>(intervalsFunctions));
     }
 
     @Override
@@ -76,7 +87,7 @@ public class DefaultingVolatileIntervalsService implements VolatileIntervalsServ
     ) {
         SimplifiedIntervalList simplifiedIntervals = new SimplifiedIntervalList(intervals);
         SimplifiedIntervalList volatileIntervals = IntervalUtils.collectBucketedIntervalsIntersectingIntervalList(
-                intervalsFunctions.get(factSource).getVolatileIntervals(),
+                intervalsFunctions.getOrDefault(factSource, defaultIntervals).getVolatileIntervals(),
                 simplifiedIntervals,
                 granularity
         );

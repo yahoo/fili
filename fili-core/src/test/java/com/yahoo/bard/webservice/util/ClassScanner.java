@@ -355,7 +355,7 @@ public class ClassScanner {
                             return arg;
                         }
                     } catch (InstantiationException e) {
-                        LOG.debug("Instantiation exception : {}", e);
+                        LOG.trace("Instantiation exception : {}", e);
                     }
                 }
             }

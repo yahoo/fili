@@ -13,7 +13,8 @@ import javax.validation.constraints.NotNull;
  * DimensionRow is the model for a row in a Dimension lookup table.
  */
 public class DimensionRow extends LinkedHashMap<DimensionField, String> implements Comparable<DimensionRow> {
-    private String keyvalue;
+
+    private final String keyValue;
 
     /**
      * Build a dimension row with a key field value and a map of field values.
@@ -23,16 +24,25 @@ public class DimensionRow extends LinkedHashMap<DimensionField, String> implemen
      */
     public DimensionRow(@NotNull DimensionField key, Map<DimensionField, String> fieldValueMap) {
         super(fieldValueMap);
-        this.keyvalue = fieldValueMap.get(key);
-        if (keyvalue == null) {
+        this.keyValue = fieldValueMap.get(key);
+        if (keyValue == null) {
             throw new IllegalArgumentException("Missing key " + key);
         }
+    }
+
+    /**
+     * Getter.
+     *
+     * @return The value of the key field for this dimension row
+     */
+    public String getKeyValue() {
+        return keyValue;
     }
 
     @Override
     public int compareTo(DimensionRow that) {
         if (this == that) { return 0; }
-        int c = this.keyvalue.compareTo(that.keyvalue);
+        int c = this.keyValue.compareTo(that.keyValue);
         if (c == 0) {
             for (DimensionField k : this.keySet()) {
                 c = String.valueOf(this.get(k)).compareTo(String.valueOf(that.get(k)));
