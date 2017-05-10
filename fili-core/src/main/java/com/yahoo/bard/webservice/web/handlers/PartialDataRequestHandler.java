@@ -62,7 +62,7 @@ public class PartialDataRequestHandler implements DataRequestHandler {
         MappingResponseProcessor mappingResponse = (MappingResponseProcessor) response;
 
         // Gather the tables from the query
-        Set<ConstrainedTable> physicalTables = druidQuery.getInnermostQuery().getDataSource().getPhysicalTables();;
+        Set<ConstrainedTable> physicalTables = druidQuery.getInnermostQuery().getDataSource().getPhysicalTables();
 
         // Gather the missing intervals
         SimplifiedIntervalList missingIntervals = partialDataHandler.findMissingTimeGrainIntervals(
