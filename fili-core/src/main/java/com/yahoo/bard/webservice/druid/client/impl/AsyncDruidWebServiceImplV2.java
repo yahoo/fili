@@ -21,7 +21,7 @@ import javax.ws.rs.core.Response.Status;
 /**
  * Represents the druid web service endpoint for partial data V2.
  * <p>
- * When Druid returns data with missing intervals with a non-OK status code, instead of
+ * When Druid returns data with missing intervals, instead of
  * returning an error, proceed to merge Druid response context, which contains missing intervals, and
  * response status code into a JSON response.
  */
@@ -62,9 +62,8 @@ public class AsyncDruidWebServiceImplV2 extends AsyncDruidWebServiceImpl {
 
         JsonNode responseNode = new MappingJsonFactory().createParser(response.getResponseBodyAsStream())
                 .readValueAsTree();
-        objectNode.put("response", responseNode);
+        objectNode.put("response", responseNode.toString());
         objectNode.put("X-Druid-Response-Context", response.getHeader("X-Druid-Response-Context"));
-        objectNode.put("status-code", response.getStatusCode());
 
         return objectNode;
     }

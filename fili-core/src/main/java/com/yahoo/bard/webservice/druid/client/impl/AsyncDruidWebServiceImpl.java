@@ -337,7 +337,14 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
     }
 
     /**
-     * Logs request using RequestLog and logs Druid response.
+     * <ol>
+     *     <li>Logs request using RequestLog,</li>
+     *     <li>restores the serialized request log info back into the RequestLog object,</li>
+     *     <li>stops timer that distinguishes this request as part of a druid query or segment metadata request,</li>
+     *     <li>starts response workflow timer,</li>
+     *     <li>decrements counter that keeps track of the outstanding (in flight) requests for the top level query,</li>
+     *     <li>and logs Druid response.</li>
+     * </ol>
      *
      * @param logCtx  The snapshot of the request log of the current thread
      * @param timerName  The name that distinguishes this request as part of a druid query or segment metadata request

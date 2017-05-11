@@ -16,18 +16,17 @@ class AsyncDruidWebServiceImplV2Spec extends Specification {
     def "Make sure X-Druid-Response-Context and status-code are merged into existing JsonNode"() {
         given:
         Response response = Mock(Response)
-        response.getResponseBodyAsStream() >> new ByteArrayInputStream("{\"k1\":\"v1\"}".getBytes(StandardCharsets.UTF_8))
+        response.getResponseBodyAsStream() >> new ByteArrayInputStream('{"k1":"v1"}'.getBytes(StandardCharsets.UTF_8))
         response.getHeader("X-Druid-Response-Context") >>
-                """
-                {
-                    "uncoveredIntervals": [
-                        "2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z",
-                        "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"
-                    ],
-                    "uncoveredIntervalsOverflowed": true
-                }
-                """.replace(" ", "").replace("\n", "")
-        response.getStatusCode() >> 200
+                '''
+                    {
+                        "uncoveredIntervals": [
+                            "2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z",
+                            "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"
+                        ],
+                        "uncoveredIntervalsOverflowed": true
+                    }
+                '''.replace(" ", "").replace("\n", "")
 
         DruidServiceConfig druidServiceConfig = Mock(DruidServiceConfig)
         druidServiceConfig.getTimeout() >> 100
@@ -39,19 +38,18 @@ class AsyncDruidWebServiceImplV2Spec extends Specification {
         )
 
         expect:
-        asyncDruidWebServiceImplV2.constructJsonResponse(response).toString() ==
-                """
+        asyncDruidWebServiceImplV2.constructJsonResponse(response).toString().replaceAll("\\\\", "") ==
+                '''
                     {
-                        "response": {"k1":"v1"},
+                        "response": "{"k1":"v1"}",
                         "X-Druid-Response-Context": "{
-                            \\"uncoveredIntervals\\": [
-                                \\"2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z\\",
-                                \\"2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z\\"
+                            "uncoveredIntervals": [
+                                "2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z",
+                                "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"
                             ],
-                            \\"uncoveredIntervalsOverflowed\\": true
-                        }",
-                        "status-code": 200
+                            "uncoveredIntervalsOverflowed": true
+                        }"
                     }
-                """.replace(" ", "").replace("\n", "")
+                '''.replace(" ", "").replace("\n", "")
     }
 }
