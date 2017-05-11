@@ -36,14 +36,13 @@ public class PartialDataRequestHandler implements DataRequestHandler {
      * Wrap the response processor in a partial data check.
      *
      * @param next The next request handler to invoke
-     * @param partialDataHandler the PartialDataHandler to use
+     * @param partialDataHandler the service to calculate partial data from table availabilities
      */
     public PartialDataRequestHandler(
             DataRequestHandler next,
             PartialDataHandler partialDataHandler
     ) {
         this.next = next;
-        //this.physicalTableDictionary = physicalTableDictionary;
         this.partialDataHandler = partialDataHandler;
     }
 

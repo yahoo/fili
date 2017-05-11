@@ -9,6 +9,11 @@ Current
 -------
 ### Added:
 
+- [Constrained Table Support for Table Serialization](https://github.com/yahoo/fili/pull/262/files)
+    * Add ConstrainedTable which closes over a physical table and an availability, caching all availability merges.
+    * Add PartialDataHandler method to use `ConstrainedTable`
+    * Add SimplifiedIntervalLit.empty() to produce empty SILs
+
 - [Prepare For Partial Data V2](https://github.com/yahoo/fili/pull/264)
     * Add new query context for druid's uncovered interval feature
     * Add a configurable property named "druid_uncovered_interval_limit"
@@ -105,10 +110,18 @@ Current
 
 ### Changed:
 
+- [Constrained Table Support for Table Serialization](https://github.com/yahoo/fili/pull/262/files)
+    * Switched `PartialDataRequestHandler` to use the table from the query rather than the `PhysicalTableDictionary`
+    * `DruidQueryBuilder` uses constrained tables to dynamically pick between Union and Table DataSource implementations.
+    * `PartialDataHandler` has multiple different entrypoints now depending on pre or post constraint conditions.
+    * `getAvailability` moved to a `ConfigTable` interface and all configured Tables to that interface
+    * DataSource implementations bind to `ConstrainedTable` and only ConstrainedTable is used after table selection
+    * `PhysicalTable.getAllAvailableIntervals` explicitly rather than implicitly uses `SimplifiedIntervalList`
+    * Bound and default versions of getAvailableIntervals and getAllAvailableIntervals added to PhysicalTable interface    
+    
 - [Druid filters are now lazy.](https://github.com/yahoo/fili/pull/269)
     - The Druid filter is built when requested, NOT at DatApiRequest construction. This will
         make it easier to write performant `DataApiRequest` mappers.
-
 
 - [Reduce log level of failure to store a result in the asynchronous job store](https://github.com/yahoo/fili/pull/266)
     * Customers who aren't using the asynchronous infrastructure shouldn't be seeing spurious warnings about a failure
@@ -273,6 +286,9 @@ Current
     * Converted to 404 when error was cause by not finding a path element
 
 ### Deprecated:
+
+- [Constrained Table Support for Table Serialization](https://github.com/yahoo/fili/pull/262/files)
+    * Deprecated static empty instance of SimplifiedIntervalList.NO_INTERVALS
 
 - [Support for Lucene 5 indexes](https://github.com/yahoo/fili/pull/265)
     * Added lucene-backward-codecs.jar as a dependency to restore support for indexes built on earlier instances.
