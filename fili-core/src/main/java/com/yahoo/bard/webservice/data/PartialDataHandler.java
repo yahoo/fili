@@ -44,7 +44,7 @@ public class PartialDataHandler {
     ) {
         SimplifiedIntervalList availableIntervals = physicalTables.stream()
                 .map(table -> table.withConstraint(constraint))
-                .map(table -> table.getAvailableIntervals())
+                .map(PhysicalTable::getAvailableIntervals)
                 .reduce(SimplifiedIntervalList::intersect)
                 .orElse(new SimplifiedIntervalList());
 
@@ -68,7 +68,7 @@ public class PartialDataHandler {
     ) {
 
         SimplifiedIntervalList availableIntervals = physicalTables.stream()
-                .map(table -> table.getAvailableIntervals())
+                .map(PhysicalTable::getAvailableIntervals)
                 .reduce(SimplifiedIntervalList::intersect)
                 .orElse(new SimplifiedIntervalList());
         return findMissingTimeGrainIntervals(availableIntervals, requestedIntervals, granularity);

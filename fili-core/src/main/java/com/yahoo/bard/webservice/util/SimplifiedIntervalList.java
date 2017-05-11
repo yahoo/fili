@@ -107,7 +107,7 @@ public class SimplifiedIntervalList extends LinkedList<Interval> {
     /**
      * Static method to provide an empty list.
      *
-     * @return  A new, empty list.
+     * @return a new, empty list.
      */
     public static SimplifiedIntervalList empty() {
         return new SimplifiedIntervalList();

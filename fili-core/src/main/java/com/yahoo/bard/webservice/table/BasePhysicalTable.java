@@ -142,13 +142,6 @@ public abstract class BasePhysicalTable implements ConfigPhysicalTable {
      *
      * @throws IllegalArgumentException If there are columns referenced by the constraint unavailable in the table
      */
-    /**
-     * Ensure that the schema of the constraint is consistent with what the table supports.
-     *
-     * @param constraint  The constraint being tested
-     *
-     * @throws IllegalArgumentException If there are columns referenced by the constraint unavailable in the table
-     */
     private void validateConstraintSchema(DataSourceConstraint constraint) throws IllegalArgumentException {
         Set<String> tableColumnNames = getSchema().getColumnNames();
         // Validate that the requested columns are answerable by the current table

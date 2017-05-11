@@ -167,7 +167,7 @@ public class DataSourceConstraint {
      *
      * @param table  The table whose dimensions and metrics are to be queried
      *
-     * @return  A constraint which should provide no restrictions
+     * @return a constraint which should provide no restrictions
      */
     public static DataSourceConstraint emptyConstraint(PhysicalTable table) {
         return new DataSourceConstraint(

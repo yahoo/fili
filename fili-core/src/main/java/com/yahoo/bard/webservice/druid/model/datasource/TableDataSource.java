@@ -42,7 +42,9 @@ public class TableDataSource extends DataSource {
                         .stream()
                         .findFirst()
                         .orElseThrow(() -> new IllegalArgumentException(
-                                "Non singleton DataSource table passed to TableDataSource constructor."))
+                                "Non singleton DataSource table passed to TableDataSource constructor."
+                                )
+                        )
         );
     }
 
