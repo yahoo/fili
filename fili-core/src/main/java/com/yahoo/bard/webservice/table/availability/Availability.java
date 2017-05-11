@@ -54,7 +54,8 @@ public interface Availability {
      * Fetch a {@link SimplifiedIntervalList} representing the coalesced available intervals on this availability as
      * filtered by the {@link PhysicalDataSourceConstraint}.
      *
-     * @param constraint  <tt>PhysicalDataSourceConstraint</tt> containing {@link Schema} and {@link ApiFilter}s
+     * @param constraint  <tt>PhysicalDataSourceConstraint</tt> containing
+     * {@link com.yahoo.bard.webservice.table.Schema} and {@link com.yahoo.bard.webservice.web.ApiFilter}s
      *
      * @return A <tt>SimplifiedIntervalList</tt> of intervals available
      */
