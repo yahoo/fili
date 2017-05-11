@@ -10,8 +10,8 @@ import com.yahoo.bard.webservice.data.metric.mappers.PartialDataResultSetMapper
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
+import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.table.ConstrainedTable
-import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 import com.yahoo.bard.webservice.web.DataApiRequest
@@ -23,6 +23,8 @@ import org.joda.time.Interval
 
 import spock.lang.Specification
 
+import java.util.stream.Stream
+
 import javax.ws.rs.core.MultivaluedHashMap
 import javax.ws.rs.core.MultivaluedMap
 
@@ -32,7 +34,7 @@ class PartialDataRequestHandlerSpec extends Specification {
 
     DataRequestHandler next = Mock(DataRequestHandler)
     PhysicalTableDictionary physicalTableDictionary = Mock(PhysicalTableDictionary)
-    Set<? extends PhysicalTable> physicalTables = [Mock(ConstrainedTable)] as Set
+    Set<ConcretePhysicalTable> physicalTables = [Mock(ConstrainedTable)] as Set
     PartialDataHandler partialDataHandler = Mock(PartialDataHandler)
 
     RequestContext rc = Mock(RequestContext)
@@ -76,7 +78,7 @@ class PartialDataRequestHandlerSpec extends Specification {
         then:
         success
         1 * partialDataHandler.findMissingTimeGrainIntervals(
-                physicalTables,
+                _ as Stream<ConstrainedTable>,
                 new SimplifiedIntervalList(apiRequest.intervals),
                 apiRequest.granularity
         ) >> intervals
@@ -107,7 +109,7 @@ class PartialDataRequestHandlerSpec extends Specification {
         then:
         success
         1 * partialDataHandler.findMissingTimeGrainIntervals(
-                physicalTables,
+                _ as Stream<ConstrainedTable>,
                 new SimplifiedIntervalList(apiRequest.intervals),
                 apiRequest.granularity
         ) >> nonEmptyIntervals
@@ -151,7 +153,7 @@ class PartialDataRequestHandlerSpec extends Specification {
         then:
         success
         1 * partialDataHandler.findMissingTimeGrainIntervals(
-                physicalTables,
+                _ as Stream<ConstrainedTable>,
                 new SimplifiedIntervalList(apiRequest.intervals),
                 apiRequest.granularity
         ) >> nonEmptyIntervals

@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.inject.Singleton;
 import javax.validation.constraints.NotNull;
@@ -42,32 +43,30 @@ public class PartialDataHandler {
             @NotNull SimplifiedIntervalList requestedIntervals,
             Granularity granularity
     ) {
-        SimplifiedIntervalList availableIntervals = physicalTables.stream()
-                .map(table -> table.withConstraint(constraint))
-                .map(PhysicalTable::getAvailableIntervals)
-                .reduce(SimplifiedIntervalList::intersect)
-                .orElse(new SimplifiedIntervalList());
-
-        return findMissingTimeGrainIntervals(availableIntervals, requestedIntervals, granularity);
+        return findMissingTimeGrainIntervals(
+                physicalTables.stream().map(table -> table.withConstraint(constraint)),
+                requestedIntervals,
+                granularity
+        );
     }
 
 
     /**
      * Find the holes in the passed in intervals at a given granularity.
      *
-     * @param physicalTables  the tables whose column availabilities are checked
+     * @param constrainedTableStream  the stream of tables whose column availabilities are checked
      * @param requestedIntervals  The intervals that may not be fully satisfied
      * @param granularity  The granularity at which to find missing intervals
      *
      * @return subintervals of the requested intervals with incomplete data
      */
     public SimplifiedIntervalList findMissingTimeGrainIntervals(
-            Set<ConstrainedTable> physicalTables,
+            Stream<ConstrainedTable> constrainedTableStream,
             @NotNull SimplifiedIntervalList requestedIntervals,
             Granularity granularity
     ) {
 
-        SimplifiedIntervalList availableIntervals = physicalTables.stream()
+        SimplifiedIntervalList availableIntervals = constrainedTableStream
                 .map(PhysicalTable::getAvailableIntervals)
                 .reduce(SimplifiedIntervalList::intersect)
                 .orElse(new SimplifiedIntervalList());
