@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.datasource;
 
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_DATASOURCE_UNION;
+
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.table.ConstrainedTable;
@@ -44,11 +46,10 @@ public class UnionDataSource extends DataSource {
                         // If this other table contains the apiName, ensure that the physical name mapping is identical
                         if (otherNames.contains(apiName)
                                 && !expectedName.equals(actualName)) {
-                            LOG.error("Union data source had conflicting name mappings for logical dimension " +
-                                    "'{}' with mappings of '{}' and '{}'", apiName, expectedName, actualName);
-                            throw new RuntimeException("Union Data Source had conflicting name mappings for logical "
-                                    + "dimension '" + apiName + "' with mappings of '" + expectedName + "' and "
-                                    + "'" + actualName + "'");
+                            LOG.error(INVALID_DATASOURCE_UNION.logFormat(apiName, expectedName, actualName));
+                            throw new IllegalStateException(
+                                    INVALID_DATASOURCE_UNION.format(apiName, expectedName, actualName)
+                            );
                         }
                     });
                 })

@@ -34,16 +34,16 @@ public class SimplifiedIntervalList extends LinkedList<Interval> {
     public static final SimplifiedIntervalList NO_INTERVALS = new SimplifiedIntervalList();
 
     /**
+     * Function to iterate an iterator if it has a next element, otherwise return null.
+     */
+    protected Function<Iterator<Interval>, Interval> getNextIfAvailable = (it) -> it.hasNext() ? it.next() : null;
+
+    /**
      * Constructor.
      */
     public SimplifiedIntervalList() {
         super();
     }
-
-    /**
-     * Function to iterate an iterator if it has a next element, otherwise return null.
-     */
-    protected Function<Iterator<Interval>, Interval> getNextIfAvailable = (it) -> it.hasNext() ? it.next() : null;
 
     /**
      * Simplify then build a list.
@@ -328,13 +328,13 @@ public class SimplifiedIntervalList extends LinkedList<Interval> {
         Iterator<Interval> theseIntervals = this.iterator();
         Iterator<Interval> thoseIntervals = that.iterator();
         Interval thisCurrent = getNextIfAvailable.apply(theseIntervals);
-        Interval thatCurrent = getNextIfAvailable.apply(thoseIntervals);
-
-        List<Interval> collected = new ArrayList<>();
 
         if (thisCurrent == null) {
             return SimplifiedIntervalList.empty();
         }
+
+        Interval thatCurrent = getNextIfAvailable.apply(thoseIntervals);
+        List<Interval> collected = new ArrayList<>();
 
         while (thisCurrent != null && thatCurrent != null) {
             if (thisCurrent.isBefore(thatCurrent)) {

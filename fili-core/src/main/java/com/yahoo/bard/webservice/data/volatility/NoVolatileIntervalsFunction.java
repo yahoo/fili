@@ -11,7 +11,7 @@ import javax.inject.Singleton;
  * This is the noop implementation of volatility. It should be access via the static instance.
  */
 @Singleton
-public class NoVolatileIntervalsFunction implements VolatileIntervalsFunction {
+public final class NoVolatileIntervalsFunction implements VolatileIntervalsFunction {
 
     /**
      * Create a singleton instance of NoVolatileIntervalsFunction.
@@ -22,7 +22,6 @@ public class NoVolatileIntervalsFunction implements VolatileIntervalsFunction {
      * Make NoVolatileIntervalsFunction a singleton by making the constructor private.
      */
     private NoVolatileIntervalsFunction() {
-        ;
     }
 
     @Override

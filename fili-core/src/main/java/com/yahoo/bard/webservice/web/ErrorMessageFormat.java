@@ -216,6 +216,11 @@ public enum ErrorMessageFormat implements MessageFormatter {
     RESULT_MAPPING_FAILURE(
             "Error occurred while processing response data: %s"
     ),
+    INVALID_DATASOURCE_UNION(
+            "Union data source had conflicting name mappings for logical dimension '%s' with mappings of '%s' and '%s'",
+            "Union Data Source had conflicting name mappings for logical dimension '%s' with mappings of '%s' and '%s'"
+    ),
+
 
     DATA_AVAILABILITY_MISMATCH(
             "Data availability expectation does not match with actual query result obtained from druid for the " +

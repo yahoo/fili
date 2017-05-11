@@ -202,10 +202,12 @@ public class DruidQueryBuilder {
                 intervals
         );
 
+        Filter mergedFilter = filter;
+
         // Override the grain with what's set in the template if it has one set
-        if (template.getTimeGrain() != null) {
-            granularity = template.getTimeGrain().buildZonedTimeGrain(timeZone);
-        }
+        Granularity mergedGranularity = template.getTimeGrain() != null ?
+                template.getTimeGrain().buildZonedTimeGrain(timeZone)
+                : granularity;
 
         DataSource dataSource;
         if (!template.isNested()) {
@@ -218,25 +220,25 @@ public class DruidQueryBuilder {
             GroupByQuery query = buildGroupByQuery(
                     template.getInnerQuery(),
                     table,
-                    granularity,
+                    mergedGranularity,
                     timeZone,
                     groupByDimensions,
-                    filter,
+                    mergedFilter,
                     having,
                     intervals,
                     (LimitSpec) null
             );
             dataSource = new QueryDataSource(query);
             // Filters have been handled by the inner query, are not needed/allowed on the outer query
-            filter = null;
+            mergedFilter = null;
         }
 
         // Filters must be applied at the lowest level as they exclude data from aggregates
         return new GroupByQuery(
                 dataSource,
-                granularity,
+                mergedGranularity,
                 groupByDimensions,
-                filter,
+                mergedFilter,
                 having,
                 template.getAggregations(),
                 template.getPostAggregations(),
@@ -391,7 +393,7 @@ public class DruidQueryBuilder {
      *
      * @return true if the optimization can be done, false if it can't
      */
-    boolean canOptimizeTopN(DataApiRequest apiRequest, TemplateDruidQuery templateDruidQuery) {
+    protected boolean canOptimizeTopN(DataApiRequest apiRequest, TemplateDruidQuery templateDruidQuery) {
         return apiRequest.getDimensions().size() == 1 &&
                 apiRequest.getSorts().size() == 1 &&
                 !templateDruidQuery.isNested() &&
@@ -407,7 +409,7 @@ public class DruidQueryBuilder {
      *
      * @return true if the optimization can be done, false if it can't
      */
-    boolean canOptimizeTimeSeries(DataApiRequest apiRequest, TemplateDruidQuery templateDruidQuery) {
+    protected boolean canOptimizeTimeSeries(DataApiRequest apiRequest, TemplateDruidQuery templateDruidQuery) {
         return apiRequest.getDimensions().isEmpty() &&
                 !templateDruidQuery.isNested() &&
                 apiRequest.getSorts().isEmpty() &&
