@@ -38,7 +38,8 @@ class AsyncDruidWebServiceImplV2Spec extends Specification {
         )
 
         expect:
-        asyncDruidWebServiceImplV2.constructJsonResponse(response).toString().replaceAll("\\\\", "") ==
+        asyncDruidWebServiceImplV2.constructJsonResponse(response).toString()
+                .replaceAll("\\\\", "") ==
                 '''
                     {
                         "response": "[{"k1":"v1"}]",
