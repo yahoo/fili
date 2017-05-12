@@ -288,7 +288,10 @@ Current
 - [Specify the character encoding to support unicode characters](https://github.com/yahoo/fili/pull/221)
     * Default character set used by the back end was mangling Unicode characters.
 
-- [Default the AsyncDruidWebServiceImpl to follow redirects](https://github.com/yahoo/fili/pull/214)
+- [Correct empty-string behavior for druid header supplier class config](https://github.com/yahoo/fili/pull/214)
+    * Empty string would have tried to build a custom supplier. Now it doesn't.
+
+- [Default the AsyncDruidWebServiceImpl to follow redirects](https://github.com/yahoo/fili/pull/271)
     * It defaulted to not following redirects, and now it doesn't
 
 - [Reenable custom query types in TestDruidWebService]()
@@ -301,11 +304,11 @@ Current
     * Ordering of fields on serialization could be inconsistent if intermediate stages used `HashSet` or `HashMap`.
     * Several constructors switched to accept `Iterable` and return `LinkedHashSet` to emphasize importance of ordering/prevent `HashSet` intermediates which disrupt ordering.
 
-
 -[Fix Lookup Dimension Serialization](https://github.com/yahoo/fili/pull/187)
     * Fix a bug where lookup dimension is serialized as dimension spec in both outer and inner query
 
 - Correcting error message logged when no table schema match is found
+
 - Setting readTimeout on DefaultAsyncHttpClientConfig when building AsyncDruidWebServiceImpl
 
 
