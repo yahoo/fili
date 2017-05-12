@@ -42,6 +42,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.ws.rs.core.Response.Status;
@@ -57,6 +58,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
     private final Meter httpErrorMeter;
     private final Meter exceptionMeter;
     private static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry();
+
     public static final String DRUID_TIMER = "DruidProcessing";
     public static final String DRUID_QUERY_TIMER = DRUID_TIMER + "_Q_";
     public static final String DRUID_QUERY_ALL_TIMER = DRUID_QUERY_TIMER + "All";
@@ -64,8 +66,23 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
     public static final String DRUID_WEIGHTED_QUERY_TIMER = DRUID_TIMER + "_W_";
     public static final String DRUID_SEGMENT_METADATA_TIMER = DRUID_TIMER + "_S_0";
 
+    public static final Function<Response, JsonNode> DEFAULT_JSON_NODE_BUILDER_STRATEGY =
+            new Function<Response, JsonNode>() {
+
+        @Override
+        public JsonNode apply(final Response response) {
+            try {
+                return new MappingJsonFactory().createParser(response.getResponseBodyAsStream()).readValueAsTree();
+            } catch (IOException ioe) {
+                throw new IllegalStateException(ioe);
+            }
+        }
+    };
+
     private final Supplier<Map<String, String>> headersToAppend;
     private final DruidServiceConfig serviceConfig;
+
+    private final Function<Response, JsonNode> jsonNodeBuilderStrategy;
 
     /**
      * Friendly non-DI constructor useful for manual tests.
@@ -73,14 +90,38 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
      * @param serviceConfig  Configuration for the Druid Service
      * @param mapper  A shared jackson object mapper resource
      * @deprecated We now require a header supplier parameter.
-     *      Use {@link #AsyncDruidWebServiceImpl(DruidServiceConfig, ObjectMapper, Supplier)}
+     *      Use {@link #AsyncDruidWebServiceImpl(DruidServiceConfig, AsyncHttpClient, ObjectMapper, Supplier, Function)}
      */
     @Deprecated
     public AsyncDruidWebServiceImpl(
             DruidServiceConfig serviceConfig,
             ObjectMapper mapper
     ) {
-        this(serviceConfig, initializeWebClient(serviceConfig.getTimeout()), mapper, HashMap::new);
+        this(
+                serviceConfig,
+                initializeWebClient(serviceConfig.getTimeout()),
+                mapper,
+                HashMap::new,
+                DEFAULT_JSON_NODE_BUILDER_STRATEGY
+        );
+    }
+
+    /**
+     * IOC constructor.
+     *
+     * @param config  the configuration for this druid service
+     * @param asyncHttpClient  the HTTP client
+     * @param mapper  A shared jackson object mapper resource
+     * @deprecated  We now require a header supplier parameter.
+     *      Use {@link #AsyncDruidWebServiceImpl(DruidServiceConfig, AsyncHttpClient, ObjectMapper, Supplier, Function)}
+     */
+    @Deprecated
+    public AsyncDruidWebServiceImpl(
+            DruidServiceConfig config,
+            AsyncHttpClient asyncHttpClient,
+            ObjectMapper mapper
+    ) {
+        this(config, asyncHttpClient, mapper, HashMap::new, DEFAULT_JSON_NODE_BUILDER_STRATEGY);
     }
 
     /**
@@ -95,7 +136,86 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
             ObjectMapper mapper,
             Supplier<Map<String, String>> headersToAppend
     ) {
-        this(serviceConfig, initializeWebClient(serviceConfig.getTimeout()), mapper, headersToAppend);
+        this(
+                serviceConfig,
+                initializeWebClient(serviceConfig.getTimeout()),
+                mapper,
+                headersToAppend,
+                DEFAULT_JSON_NODE_BUILDER_STRATEGY
+        );
+    }
+
+    /**
+     * Friendly non-DI constructor useful for manual tests.
+     *
+     * @param serviceConfig  Configuration for the Druid Service
+     * @param mapper  A shared jackson object mapper resource
+     * @param headersToAppend Supplier for map of headers for Druid requests
+     * @param jsonNodeBuilderStrategy A function to build JSON nodes from the response
+     */
+    public AsyncDruidWebServiceImpl(
+            DruidServiceConfig serviceConfig,
+            ObjectMapper mapper,
+            Supplier<Map<String, String>> headersToAppend,
+            Function<Response, JsonNode> jsonNodeBuilderStrategy
+    ) {
+        this(
+                serviceConfig,
+                initializeWebClient(serviceConfig.getTimeout()),
+                mapper,
+                headersToAppend,
+                jsonNodeBuilderStrategy
+        );
+    }
+    /**
+     * IOC constructor.
+     *
+     * @param config  the configuration for this druid service
+     * @param asyncHttpClient  the HTTP client
+     * @param mapper  A shared jackson object mapper resource
+     * @param headersToAppend Supplier for map of headers for Druid requests
+     */
+    public AsyncDruidWebServiceImpl(
+            DruidServiceConfig config,
+            AsyncHttpClient asyncHttpClient,
+            ObjectMapper mapper,
+            Supplier<Map<String, String>> headersToAppend
+    ) {
+        this(config, asyncHttpClient, mapper, headersToAppend, DEFAULT_JSON_NODE_BUILDER_STRATEGY);
+    }
+
+    /**
+     * IOC constructor.
+     *
+     * @param config  the configuration for this druid service
+     * @param asyncHttpClient  the HTTP client
+     * @param mapper  A shared jackson object mapper resource
+     * @param headersToAppend Supplier for map of headers for Druid requests
+     * @param jsonNodeBuilderStrategy A function to build JSON nodes from the response
+     */
+    public AsyncDruidWebServiceImpl(
+            DruidServiceConfig config,
+            AsyncHttpClient asyncHttpClient,
+            ObjectMapper mapper,
+            Supplier<Map<String, String>> headersToAppend,
+            Function<Response, JsonNode> jsonNodeBuilderStrategy
+    ) {
+        this.serviceConfig = config;
+
+        if (serviceConfig.getUrl() == null) {
+            String msg = DRUID_URL_INVALID.format(config.getNameAndUrl());
+            LOG.error(msg);
+            throw new IllegalStateException(msg);
+        }
+
+        LOG.info("Configured with druid server config: {}", config.toString());
+        this.headersToAppend = headersToAppend;
+        this.webClient = asyncHttpClient;
+        this.writer = mapper.writer();
+        this.httpErrorMeter = REGISTRY.meter("druid.errors.http");
+        this.exceptionMeter = REGISTRY.meter("druid.errors.exceptions");
+
+        this.jsonNodeBuilderStrategy = jsonNodeBuilderStrategy;
     }
 
     /**
@@ -122,53 +242,6 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
         return new DefaultAsyncHttpClient(config);
     }
 
-    /**
-     * IOC constructor.
-     *
-     * @param config  the configuration for this druid service
-     * @param asyncHttpClient  the HTTP client
-     * @param mapper  A shared jackson object mapper resource
-     * @deprecated  We now require a header supplier parameter.
-     *      Use {@link #AsyncDruidWebServiceImpl(DruidServiceConfig, AsyncHttpClient, ObjectMapper, Supplier)}
-     */
-    @Deprecated
-    public AsyncDruidWebServiceImpl(
-            DruidServiceConfig config,
-            AsyncHttpClient asyncHttpClient,
-            ObjectMapper mapper
-    ) {
-        this(config, asyncHttpClient, mapper, HashMap::new);
-    }
-
-    /**
-     * IOC constructor.
-     *
-     * @param config  the configuration for this druid service
-     * @param asyncHttpClient  the HTTP client
-     * @param mapper  A shared jackson object mapper resource
-     * @param headersToAppend Supplier for map of headers for Druid requests
-     */
-    public AsyncDruidWebServiceImpl(
-            DruidServiceConfig config,
-            AsyncHttpClient asyncHttpClient,
-            ObjectMapper mapper,
-            Supplier<Map<String, String>> headersToAppend
-    ) {
-        this.serviceConfig = config;
-
-        if (serviceConfig.getUrl() == null) {
-            String msg = DRUID_URL_INVALID.format(config.getNameAndUrl());
-            LOG.error(msg);
-            throw new IllegalStateException(msg);
-        }
-
-        LOG.info("Configured with druid server config: {}", config.toString());
-        this.headersToAppend = headersToAppend;
-        this.webClient = asyncHttpClient;
-        this.writer = mapper.writer();
-        this.httpErrorMeter = REGISTRY.meter("druid.errors.http");
-        this.exceptionMeter = REGISTRY.meter("druid.errors.exceptions");
-    }
 
     /**
      * Serializes the provided query and invokes a request on the druid broker.
@@ -205,8 +278,8 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
                             markError(status, response, druidQueryId, error);
                         } else {
                             try {
-                                success.invoke(constructJsonResponse(response));
-                            } catch (RuntimeException | IOException e) {
+                                success.invoke(jsonNodeBuilderStrategy.apply(response));
+                            } catch (RuntimeException e) {
                                 failure.invoke(e);
                             }
 
