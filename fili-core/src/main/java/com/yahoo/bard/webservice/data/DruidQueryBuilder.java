@@ -311,9 +311,9 @@ public class DruidQueryBuilder {
         );
 
         // Override the grain with what's set in the template if it has one set
-        if (template.getTimeGrain() != null) {
-            granularity = template.getTimeGrain().buildZonedTimeGrain(timeZone);
-        }
+        Granularity mergeGrain = (template.getTimeGrain() != null) ?
+                template.getTimeGrain().buildZonedTimeGrain(timeZone) :
+                granularity;
 
         LOG.trace("Building a single pass druid topN query");
 
@@ -321,7 +321,7 @@ public class DruidQueryBuilder {
         return new TopNQuery(
                 buildTableDataSource(table),
                 // The check that the set of dimensions has exactly one element is currently done above
-                granularity,
+                mergeGrain,
                 groupByDimension.iterator().next(),
                 filter,
                 template.getAggregations(),

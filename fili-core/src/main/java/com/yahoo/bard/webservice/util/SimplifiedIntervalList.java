@@ -326,12 +326,13 @@ public class SimplifiedIntervalList extends LinkedList<Interval> {
      */
     public SimplifiedIntervalList subtract(SimplifiedIntervalList that) {
         Iterator<Interval> theseIntervals = this.iterator();
-        Iterator<Interval> thoseIntervals = that.iterator();
         Interval thisCurrent = getNextIfAvailable.apply(theseIntervals);
 
         if (thisCurrent == null) {
             return SimplifiedIntervalList.empty();
         }
+
+        Iterator<Interval> thoseIntervals = that.iterator();
 
         Interval thatCurrent = getNextIfAvailable.apply(thoseIntervals);
         List<Interval> collected = new ArrayList<>();
