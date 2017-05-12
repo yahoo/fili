@@ -14,15 +14,11 @@ import com.yahoo.bard.webservice.data.dimension.impl.RegisteredLookupDimension;
 
 import com.codahale.metrics.health.HealthCheckRegistry;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Load dimensions based on the type of the dimension.
  */
 public class TypeAwareDimensionLoader implements DimensionLoader {
 
-    private static final Logger LOG = LoggerFactory.getLogger(TypeAwareDimensionLoader.class);
     private final Iterable<DimensionConfig> configSource;
     private final HealthCheckRegistry healthCheckRegistry;
 

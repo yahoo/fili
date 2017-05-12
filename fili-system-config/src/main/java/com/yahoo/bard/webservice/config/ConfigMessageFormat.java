@@ -58,7 +58,10 @@ public enum ConfigMessageFormat implements MessageFormatter {
     ),
     // These are not an error message, only used for logging
     MODULE_FOUND_MESSAGE(
-        "Module named '%s' in resource '%s"
+            "Module '%s' found in resource '%s'"
+    ),
+    MODULE_DEPENDS_ON_MESSAGE(
+            "Module '%s' depends on modules '%s'"
     ),
 
     RESOURCE_LOAD_MESSAGE(
