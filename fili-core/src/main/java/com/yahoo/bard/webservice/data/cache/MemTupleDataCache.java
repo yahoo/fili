@@ -9,6 +9,7 @@ import net.spy.memcached.MemcachedClient;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
@@ -73,7 +74,7 @@ public class MemTupleDataCache<V extends Serializable>
     protected String hash(String key) {
         try {
             MessageDigest gen = HASH_GENERATOR.get();
-            byte[] keyBytes = key.getBytes("UTF-8");
+            byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
             gen.update(keyBytes, 0, keyBytes.length);
             byte[] binaryhash = gen.digest();
 
