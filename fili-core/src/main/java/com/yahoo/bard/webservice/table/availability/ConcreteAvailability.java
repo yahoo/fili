@@ -7,7 +7,6 @@ import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
-import java.util.Objects;
 import java.util.Set;
 
 import javax.validation.constraints.NotNull;
@@ -49,23 +48,6 @@ public class ConcreteAvailability extends BaseMetadataAvailability {
 
     @Override
     public String toString() {
-        return String.format("ConcreteAvailability for data source: %s", getDataSourceName().asName());
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof ConcreteAvailability) {
-            ConcreteAvailability that = (ConcreteAvailability) obj;
-            return Objects.equals(getDataSourceName().asName(), that.getDataSourceName().asName())
-                    // Since metadata service is mutable, use instance equality to ensure table equality is stable
-                    && getDataSourceMetadataService() == that.getDataSourceMetadataService();
-        }
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        // Leave metadataService out of hash because it is mutable
-        return Objects.hash(getDataSourceName());
+        return "Concrete " + super.toString();
     }
 }

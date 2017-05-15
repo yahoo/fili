@@ -9,6 +9,7 @@ import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.validation.constraints.NotNull;
@@ -57,4 +58,26 @@ public abstract class BaseMetadataAvailability implements Availability {
 
     @Override
     public abstract SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint constraint);
+
+    @Override
+    public String toString() {
+        return String.format("BaseMetadataAvailability for data source = %s", getDataSourceName().asName());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj.getClass().equals(this.getClass()) && obj instanceof BaseMetadataAvailability) {
+            BaseMetadataAvailability that = (BaseMetadataAvailability) obj;
+            return Objects.equals(getDataSourceName().asName(), that.getDataSourceName().asName())
+                    // Since metadata service is mutable, use instance equality to ensure table equality is stable
+                    && getDataSourceMetadataService() == that.getDataSourceMetadataService();
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        // Leave metadataService out of hash because it is mutable
+        return Objects.hash(getDataSourceName());
+    }
 }
