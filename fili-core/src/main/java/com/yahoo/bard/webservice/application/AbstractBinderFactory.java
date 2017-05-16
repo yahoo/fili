@@ -312,7 +312,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 if (SYSTEM_CONFIG.getBooleanProperty(DEPRECATED_PERMISSIVE_AVAILABILITY_FLAG, false)) {
                     LOG.warn(
                             "Permissive column availability feature flag is no longer supported, please use " +
-                                    "PermissiveConcretePhysicalTable to enable permissive column availability.");
+                                    "PermissivePhysicalTable to enable permissive column availability.");
                 }
                 // Call post-binding hook to allow for additional binding
                 afterBinding(this);

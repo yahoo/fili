@@ -16,17 +16,17 @@ import javax.validation.constraints.NotNull;
 /**
  * A sibling of concrete physical table, but with permissive availability.
  * <p>
- * This is different from {@link ConcretePhysicalTable}. {@link PermissiveConcretePhysicalTable} is backed by
+ * This is different from {@link ConcretePhysicalTable}. {@link PermissivePhysicalTable} is backed by
  * {@link PermissiveAvailability}. The different Availability affects how available intervals of the table are
  * calculated and returned.
  * <p>
  * For example see {@link PhysicalTable#getAvailableIntervals()}, {@link PhysicalTable#getAllAvailableIntervals()}, and
  * {@link PhysicalTable#getTableAlignment()}.
  */
-public class PermissiveConcretePhysicalTable extends SingleDataSourcePhysicalTable {
+public class PermissivePhysicalTable extends SingleDataSourcePhysicalTable {
 
     /**
-     * Create a permissive concrete physical table.
+     * Create a permissive physical table.
      *
      * @param name  Name of the physical table as TableName
      * @param timeGrain  time grain of the table
@@ -34,7 +34,7 @@ public class PermissiveConcretePhysicalTable extends SingleDataSourcePhysicalTab
      * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
      * @param metadataService  Data source metadata service containing availability data for the table
      */
-    public PermissiveConcretePhysicalTable(
+    public PermissivePhysicalTable(
             @NotNull TableName name,
             @NotNull ZonedTimeGrain timeGrain,
             @NotNull Set<Column> columns,
@@ -51,7 +51,7 @@ public class PermissiveConcretePhysicalTable extends SingleDataSourcePhysicalTab
     }
 
     /**
-     * Create a permissive concrete physical table.
+     * Create a permissive physical table.
      *
      * @param name  Name of the physical table as TableName
      * @param timeGrain  time grain of the table
@@ -59,7 +59,7 @@ public class PermissiveConcretePhysicalTable extends SingleDataSourcePhysicalTab
      * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
      * @param availability  Availability that serves interval availability for columns
      */
-    public PermissiveConcretePhysicalTable(
+    public PermissivePhysicalTable(
             @NotNull TableName name,
             @NotNull ZonedTimeGrain timeGrain,
             @NotNull Set<Column> columns,
