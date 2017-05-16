@@ -22,8 +22,8 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class PermissiveConcretePhysicalTableSpec extends Specification {
-    @Shared PermissiveConcretePhysicalTable permissiveConcretePhysicalTable
+class PermissivePhysicalTableSpec extends Specification {
+    @Shared PermissivePhysicalTable permissivePhysicalTable
 
     @Shared DimensionColumn disjointIntervalColumn
     @Shared MetricColumn leftAbuttingIntervalColumn, rightAbuttingIntervalColumn
@@ -51,7 +51,7 @@ class PermissiveConcretePhysicalTableSpec extends Specification {
         rightAbuttingInterval = new Interval("2017-02-01/2017-03-01")
         invisibleInterval = new Interval("2016-01-01/2016-02-01")
 
-        permissiveConcretePhysicalTable = new PermissiveConcretePhysicalTable(
+        permissivePhysicalTable = new PermissivePhysicalTable(
                 TableName.of('test table'),
                 DAY.buildZonedTimeGrain(UTC),
                 [disjointIntervalColumn, leftAbuttingIntervalColumn, rightAbuttingIntervalColumn] as Set,
@@ -72,7 +72,7 @@ class PermissiveConcretePhysicalTableSpec extends Specification {
         constraints.getAllColumnNames() >> allColumnNames
 
         expect:
-        permissiveConcretePhysicalTable.getAvailableIntervals(constraints) == new SimplifiedIntervalList(expected)
+        permissivePhysicalTable.getAvailableIntervals(constraints) == new SimplifiedIntervalList(expected)
 
         where:
         allColumnNames                                                | expected
