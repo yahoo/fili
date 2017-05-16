@@ -66,11 +66,14 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
     public static final String DRUID_WEIGHTED_QUERY_TIMER = DRUID_TIMER + "_W_";
     public static final String DRUID_SEGMENT_METADATA_TIMER = DRUID_TIMER + "_S_0";
 
+    /**
+     * The default JSON builder puts only response body in the JSON response.
+     */
     public static final Function<Response, JsonNode> DEFAULT_JSON_NODE_BUILDER_STRATEGY =
             new Function<Response, JsonNode>() {
 
         @Override
-        public JsonNode apply(final Response response) {
+        public JsonNode apply(Response response) {
             try {
                 return new MappingJsonFactory().createParser(response.getResponseBodyAsStream()).readValueAsTree();
             } catch (IOException ioe) {
@@ -126,6 +129,8 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
 
     /**
      * Friendly non-DI constructor useful for manual tests.
+     * <p>
+     * This constructor uses default JSON builder, which only uses response body to build the JSON response.
      *
      * @param serviceConfig  Configuration for the Druid Service
      * @param mapper  A shared jackson object mapper resource
@@ -167,8 +172,11 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
                 jsonNodeBuilderStrategy
         );
     }
+
     /**
      * IOC constructor.
+     * <p>
+     * This constructor uses default JSON builder, which only uses response body to build the JSON response.
      *
      * @param config  the configuration for this druid service
      * @param asyncHttpClient  the HTTP client
@@ -483,17 +491,5 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
                 status.getReasonPhrase(),
                 response.getResponseBody()
         );
-    }
-
-    /**
-     * Extract relevant information from response and wrap them into a JSON node.
-     *
-     * @param response  The response from which the information is to be retrieved.
-     *
-     * @return the relevant information in a JSON node
-     * @throws IOException when there is a JSON parsing error
-     */
-    protected JsonNode constructJsonResponse(Response response) throws IOException {
-        return new MappingJsonFactory().createParser(response.getResponseBodyAsStream()).readValueAsTree();
     }
 }

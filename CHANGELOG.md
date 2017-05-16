@@ -15,8 +15,8 @@ Current
     * Add new response error messages as needed by Partial Data V2
 
 - [Merge Druid Response Header into Druid Response Body Json Node in AsyncDruidWebServiceImplV2](https://github.com/yahoo/fili/pull/267)
-    * Make the use of BinderFactory as an injected behavior. By using JSON node builder strategy, we can customize the
-    content of the JSON response
+    * Add configuration to `AsyncDruidWebServiceImpl` so that we can opt-in configuration of JSON response content.
+    * `AsyncDruidWebServiceImpl` takes a strategy for building the JSON from the entire response.
 
 - [Add MetricUnionCompositeTableDefinition](https://github.com/yahoo/fili/pull/258)
 

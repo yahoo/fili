@@ -27,7 +27,7 @@ public class HeaderNestingJsonBuilderStrategy implements Function<Response, Json
     }
 
     @Override
-    public JsonNode apply(final Response response) {
+    public JsonNode apply(Response response) {
         ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
         objectNode.set("response", baseStrategy.apply(response));
         objectNode.put("X-Druid-Response-Context", response.getHeader("X-Druid-Response-Context"));
