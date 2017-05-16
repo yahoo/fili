@@ -16,9 +16,7 @@ import javax.validation.constraints.NotNull;
 /**
  * An implementation of Physical table that is backed by a single fact table.
  */
-public class ConcretePhysicalTable extends BasePhysicalTable {
-
-    private final DataSourceName dataSourceName;
+public class ConcretePhysicalTable extends SingleDataSourcePhysicalTable {
 
     /**
      * Create a concrete physical table.
@@ -68,7 +66,6 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
                 logicalToPhysicalColumnNames,
                 availability
         );
-        this.dataSourceName = availability.getDataSourceName();
     }
 
     /**
@@ -104,10 +101,6 @@ public class ConcretePhysicalTable extends BasePhysicalTable {
     @Deprecated
     public String getFactTableName() {
         return getDataSourceName().asName();
-    }
-
-    public DataSourceName getDataSourceName() {
-        return dataSourceName;
     }
 
     @Override

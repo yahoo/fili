@@ -121,6 +121,9 @@ Current
 
 ### Changed:
 
+- [Make `PermissiveConcretePhysicalTable` and `ConcretePhysicalTable` extend from a common base](https://github.com/yahoo/fili/pull/263)
+    * Makes the structure match that for composite tables, so they can be reasoned about together.
+
 - [Make `PermissiveConcretePhysicalTable` a sibling, instead of extend from, `ConcretePhysicalTable`](https://github.com/yahoo/fili/pull/263)
     * The main difference is in the accepted availabilities, so make the class structure match that.
 

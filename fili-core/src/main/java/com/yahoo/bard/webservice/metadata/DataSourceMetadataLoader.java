@@ -13,9 +13,9 @@ import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
-import com.yahoo.bard.webservice.table.ConcretePhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
+import com.yahoo.bard.webservice.table.SingleDataSourcePhysicalTable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -115,7 +115,7 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
      * @deprecated  Pass the DataSourceName directly, rather than via the PhysicalTable
      */
     @Deprecated
-    protected void queryDataSourceMetadata(ConcretePhysicalTable table) {
+    protected void queryDataSourceMetadata(SingleDataSourcePhysicalTable table) {
         queryDataSourceMetadata(table.getDataSourceName());
     }
 
@@ -192,7 +192,7 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
      * @deprecated  Pass the DataSourceName directly, rather than via the PhysicalTable
      */
     @Deprecated
-    protected final SuccessCallback buildDataSourceMetadataSuccessCallback(ConcretePhysicalTable table) {
+    protected final SuccessCallback buildDataSourceMetadataSuccessCallback(SingleDataSourcePhysicalTable table) {
         return buildDataSourceMetadataSuccessCallback(table.getDataSourceName());
     }
 
@@ -282,7 +282,7 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
      * @deprecated  Pass the DataSourceName directly, rather than via the PhysicalTable
      */
     @Deprecated
-    protected HttpErrorCallback getErrorCallback(ConcretePhysicalTable table) {
+    protected HttpErrorCallback getErrorCallback(SingleDataSourcePhysicalTable table) {
         return getErrorCallback(table.getDataSourceName());
     }
 
@@ -311,7 +311,7 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
          * @deprecated  Pass the DataSourceName directly, rather than via the PhysicalTable
          */
         @Deprecated
-        TaskHttpErrorCallback(ConcretePhysicalTable table) {
+        TaskHttpErrorCallback(SingleDataSourcePhysicalTable table) {
             this(table.getDataSourceName());
         }
 
