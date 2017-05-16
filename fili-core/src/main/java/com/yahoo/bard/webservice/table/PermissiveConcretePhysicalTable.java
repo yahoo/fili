@@ -23,9 +23,7 @@ import javax.validation.constraints.NotNull;
  * For example see {@link PhysicalTable#getAvailableIntervals()}, {@link PhysicalTable#getAllAvailableIntervals()}, and
  * {@link PhysicalTable#getTableAlignment()}.
  */
-public class PermissiveConcretePhysicalTable extends BasePhysicalTable {
-
-    private final DataSourceName dataSourceName;
+public class PermissiveConcretePhysicalTable extends SingleDataSourcePhysicalTable {
 
     /**
      * Create a permissive concrete physical table.
@@ -75,11 +73,6 @@ public class PermissiveConcretePhysicalTable extends BasePhysicalTable {
                 logicalToPhysicalColumnNames,
                 availability
         );
-        this.dataSourceName = availability.getDataSourceName();
-    }
-
-    public DataSourceName getDataSourceName() {
-        return dataSourceName;
     }
 
     @Override
