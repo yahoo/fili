@@ -12,16 +12,18 @@ import java.util.Set;
 import javax.validation.constraints.NotNull;
 
 /**
- * An availability that provides column and table available interval services for concrete physical table.
+ * An availability that provides column and table available interval services for strict physical tables.
+ * <p>
+ * This availability uses column intersections to determine it's sigular availability.
  */
-public class ConcreteAvailability extends BaseMetadataAvailability {
+public class StrictAvailability extends BaseMetadataAvailability {
     /**
      * Constructor.
      *
      * @param dataSourceName  The name of the data source associated with this Availability
      * @param metadataService  A service containing the datasource segment data
      */
-    public ConcreteAvailability(
+    public StrictAvailability(
             @NotNull DataSourceName dataSourceName,
             @NotNull DataSourceMetadataService metadataService
     ) {

@@ -14,9 +14,9 @@ import java.util.Set;
 import javax.validation.constraints.NotNull;
 
 /**
- * A sibling of concrete physical table, but with permissive availability.
+ * A sibling of strict physical table, but with permissive availability.
  * <p>
- * This is different from {@link ConcretePhysicalTable}. {@link PermissivePhysicalTable} is backed by
+ * This is different from {@link StrictPhysicalTable}. {@link PermissivePhysicalTable} is backed by
  * {@link PermissiveAvailability}. The different Availability affects how available intervals of the table are
  * calculated and returned.
  * <p>

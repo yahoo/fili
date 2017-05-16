@@ -23,7 +23,7 @@ import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.Column
-import com.yahoo.bard.webservice.table.ConcretePhysicalTable
+import com.yahoo.bard.webservice.table.StrictPhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.web.ApiFilter
 import com.yahoo.bard.webservice.web.FilteredThetaSketchMetricsHelper
@@ -63,7 +63,7 @@ class FilteredAggregationSpec extends Specification{
 
         Set<Column> columns = [new DimensionColumn(ageDimension)] as Set
 
-        PhysicalTable physicalTable = new ConcretePhysicalTable(
+        PhysicalTable physicalTable = new StrictPhysicalTable(
                 "NETWORK",
                 DAY.buildZonedTimeGrain(UTC),
                 columns,

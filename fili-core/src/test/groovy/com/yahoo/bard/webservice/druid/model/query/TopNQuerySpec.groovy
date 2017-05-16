@@ -43,8 +43,7 @@ class TopNQuerySpec extends Specification {
     }
 
     TopNQuery defaultQuery(Map vars) {
-
-        vars.dataSource = vars.dataSource ?: new TableDataSource<TopNQuery>(TableTestUtils.buildTable(
+        vars.dataSource = vars.dataSource ?: new TableDataSource(TableTestUtils.buildTable(
                 "table_name",
                 DAY.buildZonedTimeGrain(DateTimeZone.UTC),
                 [] as Set,
@@ -109,9 +108,10 @@ class TopNQuerySpec extends Specification {
     }
 
     def "check dimension serialization"() {
-        LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>()
-        dimensionFields.add(BardDimensionField.ID)
-        dimensionFields.add(BardDimensionField.DESC)
+        LinkedHashSet<DimensionField> dimensionFields = [
+                BardDimensionField.ID,
+                BardDimensionField.DESC
+        ] as LinkedHashSet
 
         Dimension dimension1 = new KeyValueStoreDimension(
                 "apiLocale",
@@ -124,7 +124,7 @@ class TopNQuerySpec extends Specification {
         TopNQuery dq1 = defaultQuery(dimension: dimension1)
         String druidQuery1 = MAPPER.writeValueAsString(dq1)
 
-        String queryString1 = stringQuery(dimension: '{ "dimension":"locale","outputName":"apiLocale","type":"default" }')
+        String queryString1 = stringQuery(dimension: '{"dimension":"locale","outputName":"apiLocale","type":"default"}')
 
         expect:
         GroovyTestUtils.compareJson(druidQuery1, queryString1)

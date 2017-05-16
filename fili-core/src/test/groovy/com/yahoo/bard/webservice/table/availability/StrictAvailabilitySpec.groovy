@@ -13,9 +13,9 @@ import spock.lang.Unroll
 /**
  * Test for concrete availability behavior.
  */
-class ConcreteAvailabilitySpec extends Specification{
+class StrictAvailabilitySpec extends Specification{
 
-    ConcreteAvailability concreteAvailability
+    StrictAvailability strictAvailability
     String columnPhysicalName1, columnPhysicalName2, columnPhysicalName3
     Interval interval1, interval2
 
@@ -27,7 +27,7 @@ class ConcreteAvailabilitySpec extends Specification{
         interval1 = new Interval('2000-01-01/2015-12-31')
         interval2 = new Interval('2010-01-01/2020-12-31')
 
-        concreteAvailability = new ConcreteAvailability(
+        strictAvailability = new StrictAvailability(
                 DataSourceName.of('table'),
                 new TestDataSourceMetadataService([
                         (columnPhysicalName1): [interval1] as Set,
@@ -39,7 +39,7 @@ class ConcreteAvailabilitySpec extends Specification{
 
     def "getAllAvailability returns all availabilities for all column in datasource metadata service"() {
         expect:
-        concreteAvailability.getAllAvailableIntervals() == [
+        strictAvailability.getAllAvailableIntervals() == [
                 (columnPhysicalName1): [interval1],
                 (columnPhysicalName2): [interval2],
                 'hidden_column'      : [interval1],
@@ -52,7 +52,7 @@ class ConcreteAvailabilitySpec extends Specification{
         interval1 = new Interval(firstInterval)
         interval2 = new Interval(secondInterval)
 
-        concreteAvailability = new ConcreteAvailability(
+        strictAvailability = new StrictAvailability(
                 DataSourceName.of('table'),
                 new TestDataSourceMetadataService([
                         (columnPhysicalName1): [interval1] as Set,
@@ -64,7 +64,7 @@ class ConcreteAvailabilitySpec extends Specification{
         dataSourceConstraint.allColumnPhysicalNames >> [columnPhysicalName1, columnPhysicalName2]
 
         expect:
-        concreteAvailability.getAvailableIntervals(dataSourceConstraint) == new SimplifiedIntervalList(
+        strictAvailability.getAvailableIntervals(dataSourceConstraint) == new SimplifiedIntervalList(
                 expected.collect{new Interval(it)} as Set
         )
 
@@ -86,7 +86,7 @@ class ConcreteAvailabilitySpec extends Specification{
         constraint.allColumnPhysicalNames >> ['ignored']
 
         expect:
-        concreteAvailability.getAvailableIntervals(constraint) == new SimplifiedIntervalList()
+        strictAvailability.getAvailableIntervals(constraint) == new SimplifiedIntervalList()
     }
 
     def "getAvailableInterval returns empty interval if given empty column request"() {
@@ -95,6 +95,6 @@ class ConcreteAvailabilitySpec extends Specification{
         constraint.allColumnPhysicalNames >> []
 
         expect:
-        concreteAvailability.getAvailableIntervals(constraint) == new SimplifiedIntervalList()
+        strictAvailability.getAvailableIntervals(constraint) == new SimplifiedIntervalList()
     }
 }

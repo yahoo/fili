@@ -121,6 +121,9 @@ Current
 
 ### Changed:
 
+- [Rename `Concrete` to `Strict` for the respective `PhysicalTable` and `Availability`](https://github.com/yahoo/fili/pull/263)
+    * The main difference is in the availability reduction, so make the class name match that.
+
 - [Make `PermissiveConcretePhysicalTable` and `ConcretePhysicalTable` extend from a common base](https://github.com/yahoo/fili/pull/263)
     * Makes the structure match that for composite tables, so they can be reasoned about together.
 

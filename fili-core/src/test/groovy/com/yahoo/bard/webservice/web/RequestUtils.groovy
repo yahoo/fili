@@ -108,25 +108,21 @@ class RequestUtils {
         )
     }
 
-    static String defaultQueryJson(
-            String dataSourceName = "dataSource",
-            TimeGrain timeGrain = DAY
-    ) {
-        """
-        {
-            "queryType" : "groupBy",
-            "context":{},
-            "dataSource" : {
-              "name" : "${dataSourceName}",
-              "type" : "table"
+    static String defaultQueryJson(String dataSourceName = "dataSource", TimeGrain timeGrain = DAY) {
+        """{
+            "queryType": "groupBy",
+            "context": {},
+            "dataSource": {
+              "name": "$dataSourceName",
+              "type": "table"
             },
-            "dimensions" : [ ],
-            "aggregations" : [ ],
-            "postAggregations" : [ ],
-            "intervals" : [ ],
-            "granularity" : {
-              "type" : "period",
-              "period" : "${timeGrain.getPeriodString()}"
+            "dimensions": [],
+            "aggregations": [],
+            "postAggregations": [],
+            "intervals": [],
+            "granularity": {
+              "type": "period",
+              "period": "$timeGrain.periodString"
             }
         }"""
     }

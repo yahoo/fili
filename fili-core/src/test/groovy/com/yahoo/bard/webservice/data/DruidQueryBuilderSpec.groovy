@@ -31,6 +31,8 @@ import com.yahoo.bard.webservice.druid.model.query.TopNQuery
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.ConstrainedTable
 import com.yahoo.bard.webservice.table.TableTestUtils
+import com.yahoo.bard.webservice.table.StrictPhysicalTable
+import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.resolver.DefaultPhysicalTableResolver
 import com.yahoo.bard.webservice.web.ApiFilter
 import com.yahoo.bard.webservice.web.ApiHaving
@@ -131,7 +133,7 @@ class DruidQueryBuilderSpec extends Specification {
     def "Test recursive buildQueryMethods"() {
         setup:
         Set apiSet = (["abie1234", "abde1129"].collect() { apiFilters.get(it) }) as Set
-        ConstrainedTable tab = TableTestUtils.buildTable(
+        ConstrainedTable table = TableTestUtils.buildTable(
                 "tab1",
                 DAY.buildZonedTimeGrain(UTC),
                 [] as Set,
@@ -147,7 +149,7 @@ class DruidQueryBuilderSpec extends Specification {
         when:
         GroupByQuery dq = builder.buildGroupByQuery(
                 resources.simpleTemplateQuery,
-                tab,
+                table,
                 granularity,
                 UTC,
                 [] as Set,
@@ -160,13 +162,13 @@ class DruidQueryBuilderSpec extends Specification {
         then:
         dq?.filter == filter
         dq.dataSource.type == DefaultDataSourceType.TABLE
-        dq.dataSource.name == tab.name
+        dq.dataSource.name == table.name
         granularity.withZone(UTC)
 
         when:
         GroupByQuery dq1 = builder.buildGroupByQuery(
                 resources.complexTemplateQuery,
-                tab,
+                table,
                 granularity,
                 UTC,
                 [] as Set,
@@ -184,13 +186,13 @@ class DruidQueryBuilderSpec extends Specification {
         GroupByQuery dq2 = dq1.dataSource.query
         dq2.filter == filter
         dq2.dataSource.type == DefaultDataSourceType.TABLE
-        dq2.dataSource.name == tab.name
+        dq2.dataSource.name == table.name
         dq2.granularity == granularity.withZone(UTC)
 
         when:
         TopNQuery topNQuery = builder.buildTopNQuery(
                 resources.simpleTemplateQuery,
-                tab,
+                table,
                 granularity,
                 UTC,
                 dimension,
@@ -204,13 +206,13 @@ class DruidQueryBuilderSpec extends Specification {
         topNQuery != null
         topNQuery.filter == filter
         topNQuery.dataSource.type == DefaultDataSourceType.TABLE
-        topNQuery.dataSource.name == tab.name
+        topNQuery.dataSource.name == table.name
         topNQuery.granularity == granularity.withZone(UTC)
 
         when:
         TimeSeriesQuery timeseriesQuery = builder.buildTimeSeriesQuery(
                 resources.simpleTemplateQuery,
-                tab,
+                table,
                 granularity,
                 UTC,
                 filter,
@@ -221,7 +223,7 @@ class DruidQueryBuilderSpec extends Specification {
         timeseriesQuery != null
         timeseriesQuery.filter == filter
         timeseriesQuery.dataSource.type == DefaultDataSourceType.TABLE
-        timeseriesQuery.dataSource.name == tab.name
+        timeseriesQuery.dataSource.name == table.name
         timeseriesQuery.granularity == granularity.withZone(UTC)
     }
 
@@ -232,7 +234,7 @@ class DruidQueryBuilderSpec extends Specification {
 
         when:
         Set apiSet = (["abie1234", "abde1129"].collect() { apiFilters.get(it) }) as Set
-        ConstrainedTable tab = TableTestUtils.buildTable(
+        ConstrainedTable table = TableTestUtils.buildTable(
                 "tab1",
                 DAY.buildZonedTimeGrain(UTC),
                 [] as Set,
@@ -244,7 +246,7 @@ class DruidQueryBuilderSpec extends Specification {
         TemplateDruidQuery simpleQuery = resources.simpleTemplateWithGrainQuery
         GroupByQuery dq = builder.buildGroupByQuery(
                 simpleQuery,
-                tab,
+                table,
                 granularity,
                 UTC,
                 [] as Set,
@@ -257,14 +259,14 @@ class DruidQueryBuilderSpec extends Specification {
         then:
         dq?.filter == filter
         dq.dataSource.type == DefaultDataSourceType.TABLE
-        dq.dataSource.name == tab.name
+        dq.dataSource.name == table.name
         dq.granularity == simpleQuery.getTimeGrain().buildZonedTimeGrain(UTC)
 
         when:
         TemplateDruidQuery outerQuery = resources.complexTemplateWithInnerGrainQuery
         GroupByQuery dq1 = builder.buildGroupByQuery(
                 outerQuery,
-                tab,
+                table,
                 granularity,
                 UTC,
                 [] as Set,
@@ -280,14 +282,14 @@ class DruidQueryBuilderSpec extends Specification {
         dq1.dataSource.type == DefaultDataSourceType.QUERY
         dq2.filter == filter
         dq2.dataSource.type == DefaultDataSourceType.TABLE
-        dq2.dataSource.name == tab.name
+        dq2.dataSource.name == table.name
         dq2.granularity == simpleQuery.timeGrain.buildZonedTimeGrain(UTC)
 
         when:
         outerQuery = resources.complexTemplateWithDoubleGrainQuery
         dq1 = builder.buildGroupByQuery(
                 resources.complexTemplateWithDoubleGrainQuery,
-                tab,
+                table,
                 granularity,
                 UTC,
                 [] as Set,
@@ -305,7 +307,7 @@ class DruidQueryBuilderSpec extends Specification {
         dq1.dataSource.type == DefaultDataSourceType.QUERY
         dq2.filter == filter
         dq2.dataSource.type == DefaultDataSourceType.TABLE
-        dq2.dataSource.name == tab.name
+        dq2.dataSource.name == table.name
         dq2.granularity == simpleQuery.timeGrain.buildZonedTimeGrain(UTC)
     }
 

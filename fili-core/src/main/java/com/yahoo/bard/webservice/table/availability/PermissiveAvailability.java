@@ -33,7 +33,7 @@ public class PermissiveAvailability extends BaseMetadataAvailability {
      * <p>
      * This is different from its parent's
      * {@link
-     * com.yahoo.bard.webservice.table.availability.ConcreteAvailability#getAvailableIntervals(
+     * StrictAvailability#getAvailableIntervals(
      * PhysicalDataSourceConstraint
      * )};
      * Instead of returning the intersection of all available intervals, this method returns the union of them.

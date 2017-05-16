@@ -21,6 +21,7 @@ import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper
 import com.yahoo.bard.webservice.druid.client.FailureCallback
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType
+import com.yahoo.bard.webservice.druid.model.QueryType
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
@@ -147,7 +148,13 @@ class ResultSetResponseProcessorSpec extends Specification {
         groupByQuery.getAggregations() >> aggregations
         groupByQuery.getPostAggregations() >> postAggs
         groupByQuery.getDataSource() >> new TableDataSource(
-                TableTestUtils.buildTable("table_name", DAY.buildZonedTimeGrain(DateTimeZone.UTC), [] as Set, ["dimension1":"dimension1"], Mock(DataSourceMetadataService))
+                TableTestUtils.buildTable(
+                        "table_name",
+                        DAY.buildZonedTimeGrain(DateTimeZone.UTC),
+                        [] as Set,
+                        ["dimension1": "dimension1"],
+                        Mock(DataSourceMetadataService)
+                )
         )
 
         ResultSetSchema schema = new ResultSetSchema(DAY, Sets.newHashSet(new MetricColumn("lm1")))
@@ -203,10 +210,9 @@ class ResultSetResponseProcessorSpec extends Specification {
         }
 
         1 * druidResponseParser.parse(_, _, _, _) >> {
-            JsonNode json, Schema schema, DefaultQueryType type, DateTimeZone dateTimeZone
-                ->
-                captureSchema = schema;
-                captureJson = json;
+            JsonNode json, Schema schema, DefaultQueryType type, DateTimeZone dateTimeZone ->
+                captureSchema = schema
+                captureJson = json
                 rs
         }
         druidResponseParser.buildSchemaColumns(groupByQuery) >> {
@@ -225,7 +231,6 @@ class ResultSetResponseProcessorSpec extends Specification {
         captureSchema.getColumn(metric2Name, MetricColumn.class).get() == m2
         captureSchema.getColumn("fakeMetric", MetricColumn.class) == Optional.empty()
         actual == rs
-
     }
 
     def "Test processResponse"() {
@@ -264,7 +269,6 @@ class ResultSetResponseProcessorSpec extends Specification {
         then:
         1 * jsonMock.clone()
         2 * resultSetMock.getSchema()
-        1 == 1
     }
 
     def "Test failure callback"() {
@@ -279,7 +283,7 @@ class ResultSetResponseProcessorSpec extends Specification {
         FailureCallback fbc = resultSetResponseProcessor.getFailureCallback()
         Throwable t = new Throwable("message1234")
         Response responseCaptor = null
-        1 * httpResponseChannel.asyncResponse.resume(_) >> { javax.ws.rs.core.Response r -> responseCaptor = r }
+        1 * httpResponseChannel.asyncResponse.resume(_) >> { Response r -> responseCaptor = r }
         when:
         fbc.invoke(t)
         String entity = responseCaptor.entity
@@ -305,7 +309,7 @@ class ResultSetResponseProcessorSpec extends Specification {
         String entity = responseCaptor.entity
 
         then:
-        1 * httpResponseChannel.asyncResponse.resume(_) >> { javax.ws.rs.core.Response r -> responseCaptor = r }
+        1 * httpResponseChannel.asyncResponse.resume(_) >> { Response r -> responseCaptor = r }
         responseCaptor.getStatus() == 499
         entity.contains("myreason")
         entity.contains("body123")
@@ -333,7 +337,7 @@ class ResultSetResponseProcessorSpec extends Specification {
             getQueryType() >> GROUP_BY
         }
         druidResponseParser.parse(_, _, _, _) >> {
-            JsonNode json, Schema schema, DefaultQueryType type, DateTimeZone tz -> new ResultSet(schema, [])
+            JsonNode json, ResultSetSchema schema, QueryType type, DateTimeZone tz -> new ResultSet(schema, [])
         }
         druidResponseParser.buildSchemaColumns(query) >> {
             [new DimensionColumn(dim), new MetricColumn(metric1Name), new MetricColumn(metric2Name)].stream()

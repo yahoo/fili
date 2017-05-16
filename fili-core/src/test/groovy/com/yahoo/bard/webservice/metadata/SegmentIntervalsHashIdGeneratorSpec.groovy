@@ -98,7 +98,8 @@ class SegmentIntervalsHashIdGeneratorSpec extends BaseDataSourceMetadataSpec {
                 intervals: [interval2],
                 dataSource: new TableDataSource(
                         TableTestUtils.buildTable(
-                                tableName, DefaultTimeGrain.DAY.buildZonedTimeGrain(UTC),
+                                tableName,
+                                DefaultTimeGrain.DAY.buildZonedTimeGrain(UTC),
                                 [] as Set,
                                 [:],
                                 Mock(DataSourceMetadataService)

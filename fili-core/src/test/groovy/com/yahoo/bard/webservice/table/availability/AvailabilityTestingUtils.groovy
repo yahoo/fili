@@ -59,7 +59,7 @@ class AvailabilityTestingUtils extends Specification {
 
                     // set new cache
                     table.setAvailability(
-                            new ConcreteAvailability(
+                            new StrictAvailability(
                                     DataSourceName.of(table.name),
                                     new TestDataSourceMetadataService(allIntervals)
                             )
