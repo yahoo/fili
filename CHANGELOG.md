@@ -14,6 +14,10 @@ Current
     * Add a configurable property named "druid_uncovered_interval_limit"
     * Add new response error messages as needed by Partial Data V2
 
+- [Merge Druid Response Header into Druid Response Body Json Node in AsyncDruidWebServiceImplV2](https://github.com/yahoo/fili/pull/267)
+    * Add configuration to `AsyncDruidWebServiceImpl` so that we can opt-in configuration of JSON response content.
+    * `AsyncDruidWebServiceImpl` takes a strategy for building the JSON from the entire response.
+
 - [Add MetricUnionCompositeTableDefinition](https://github.com/yahoo/fili/pull/258)
 
 - [Add partition availability and table](https://github.com/yahoo/fili/pull/244)
