@@ -111,7 +111,7 @@ class GroupByQuerySpec extends Specification {
                 Mock(DataSourceMetadataService)
         )
 
-        vars.dataSource = vars.dataSource ?: new TableDataSource<GroupByQuery>(constrainedTable)
+        vars.dataSource = vars.dataSource ?: new TableDataSource(constrainedTable)
         vars.granularity = vars.granularity ?: DAY
         vars.dimensions = vars.dimensions ?: new ArrayList<Dimension>()
         vars.filter = vars.filter ?: null
@@ -214,7 +214,6 @@ class GroupByQuerySpec extends Specification {
         expect:
         GroovyTestUtils.compareJson(druidQuery1, queryString1)
         GroovyTestUtils.compareJson(druidQuery2, queryString2)
-
     }
 
     def "check filter serialization"() {
@@ -282,7 +281,6 @@ class GroupByQuerySpec extends Specification {
         GroovyTestUtils.compareJson(druidQuery1, queryString1)
         GroovyTestUtils.compareJson(druidQuery2, queryString2)
         GroovyTestUtils.compareJson(druidQuery3, queryString3)
-
     }
 
     def "check aggregation serialization"() {
@@ -328,13 +326,9 @@ class GroupByQuerySpec extends Specification {
         GroovyTestUtils.compareJson(druidQuery1, queryString1)
         GroovyTestUtils.compareJson(druidQuery2, queryString2)
         GroovyTestUtils.compareJson(druidQuery3, queryString3)
-
     }
 
     def "check post aggregation serialization"() {
-        Aggregation aggregation1 = new LongSumAggregation("pageViewsSum", "pageViews")
-        Aggregation aggregation2 = new LongSumAggregation("timeSpentSum", "timeSpent")
-
         List<PostAggregation> postAggregations1 = []
         List<PostAggregation> postAggregations2 = [postAggregation1]
         List<PostAggregation> postAggregations3 = [postAggregation1, postAggregation3]
@@ -525,7 +519,7 @@ class GroupByQuerySpec extends Specification {
 
         GroupByQuery query = defaultQuery(dimensions: dimensions, aggregations: aggregations, postAggregations: postAggregations )
         List<Column> columns = [dimension1, dimension2].collect {new DimensionColumn(it)}
-        columns.addAll([aggregation1, aggregation2, postAggregation3].collect {new MetricColumn(it.getName())})
+        columns.addAll([aggregation1, aggregation2, postAggregation3].collect {new MetricColumn(it.name)})
 
         expect:
         query.buildSchemaColumns().collect(Collectors.toList()) == columns

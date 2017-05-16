@@ -20,8 +20,8 @@ import com.yahoo.bard.webservice.druid.model.datasource.DataSource
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
 import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService
 import com.yahoo.bard.webservice.table.Column
-import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.table.ConstrainedTable
+import com.yahoo.bard.webservice.table.StrictPhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 
 import org.joda.time.DateTime
@@ -35,7 +35,7 @@ import spock.lang.Specification
 class DataSourceMetadataLoaderSpec extends Specification {
     private static final ObjectMappersSuite MAPPERS = new ObjectMappersSuite()
 
-    String tableName = TestDruidTableName.ALL_PETS.asName();
+    String tableName = TestDruidTableName.ALL_PETS.asName()
 
     Interval interval1 = Interval.parse("2015-01-01T00:00:00.000Z/2015-01-02T00:00:00.000Z")
     Interval interval2 = Interval.parse("2015-01-02T00:00:00.000Z/2015-01-03T00:00:00.000Z")
@@ -214,7 +214,7 @@ class DataSourceMetadataLoaderSpec extends Specification {
                 MAPPERS.mapper
         )
         druidWS.jsonResponse = {gappyDataSourceMetadataJson}
-        ConcretePhysicalTable table = Mock(ConcretePhysicalTable)
+        StrictPhysicalTable table = Mock(StrictPhysicalTable)
         table.dataSourceName >> DataSourceName.of("test")
         DataSourceMetadata capture
 
@@ -246,7 +246,7 @@ class DataSourceMetadataLoaderSpec extends Specification {
                 testWs,
                 MAPPERS.mapper
         )
-        ConcretePhysicalTable table = Mock(ConcretePhysicalTable)
+        StrictPhysicalTable table = Mock(StrictPhysicalTable)
         table.dataSourceName >> DataSourceName.of("test")
 
         when: "loader issues a metadata query"

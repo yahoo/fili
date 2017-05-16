@@ -17,7 +17,7 @@ import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService
-import com.yahoo.bard.webservice.table.availability.ConcreteAvailability
+import com.yahoo.bard.webservice.table.availability.StrictAvailability
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 
@@ -27,9 +27,9 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class ConcretePhysicalTableSpec extends Specification {
+class StrictPhysicalTableSpec extends Specification {
 
-    @Shared ConcretePhysicalTable physicalTable
+    @Shared StrictPhysicalTable physicalTable
     @Shared DimensionDictionary dimensionDictionary
 
     @Shared Dimension dimension
@@ -63,7 +63,7 @@ class ConcretePhysicalTableSpec extends Specification {
                 'metric_two'    : (intervalSet3)
         ]
 
-        physicalTable = new ConcretePhysicalTable(
+        physicalTable = new StrictPhysicalTable(
                 TableName.of("test table"),
                 DAY.buildZonedTimeGrain(UTC),
                 [dimensionColumn, metricColumn1, metricColumn2] as Set,
@@ -110,7 +110,7 @@ class ConcretePhysicalTableSpec extends Specification {
         constraints.allColumnNames >> [metricColumn1.name]
 
         when:
-        table = new ConcretePhysicalTable(
+        table = new StrictPhysicalTable(
                 TableName.of(name),
                 YEAR.buildZonedTimeGrain(UTC),
                 [dimensionColumn, metricColumn1] as Set,
@@ -125,7 +125,7 @@ class ConcretePhysicalTableSpec extends Specification {
 
         when:
         table.setAvailability(
-                new ConcreteAvailability(
+                new StrictAvailability(
                         physicalTable.dataSourceName,
                         new TestDataSourceMetadataService(segmentMetadata)
                 )
@@ -152,14 +152,14 @@ class ConcretePhysicalTableSpec extends Specification {
 
     def "test physical to logical mapping is constructed correctly with multiple logical name to one physical name"() {
         setup:
-        PhysicalTable oneDimPhysicalTable = new ConcretePhysicalTable(
+        PhysicalTable oneDimPhysicalTable = new StrictPhysicalTable(
                 TableName.of("test table"),
                 DAY.buildZonedTimeGrain(UTC),
                 [dimensionColumn] as Set,
                 ['dimensionOne': 'dimension_one'],
                 Mock(DataSourceMetadataService)
         )
-        PhysicalTable twoDimPhysicalTable = new ConcretePhysicalTable(
+        PhysicalTable twoDimPhysicalTable = new StrictPhysicalTable(
                 TableName.of("test table"),
                 DAY.buildZonedTimeGrain(UTC),
                 [dimensionColumn] as Set,

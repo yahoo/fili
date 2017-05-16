@@ -15,7 +15,7 @@ import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
-import com.yahoo.bard.webservice.table.ConcretePhysicalTable
+import com.yahoo.bard.webservice.table.StrictPhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.web.DataApiRequest
 
@@ -65,7 +65,7 @@ class SchemaPhysicalTableMatcherSpec extends Specification {
                 ),
         ] as Set
 
-        physicalTable = new ConcretePhysicalTable(
+        physicalTable = new StrictPhysicalTable(
                 "test table",
                 DAY.buildZonedTimeGrain(UTC),
                 dimSet.collect {new DimensionColumn(it)}.toSet(),

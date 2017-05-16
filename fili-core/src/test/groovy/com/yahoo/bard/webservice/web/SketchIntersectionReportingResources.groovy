@@ -36,7 +36,7 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationP
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
 import com.yahoo.bard.webservice.druid.util.SketchFieldConverter
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
-import com.yahoo.bard.webservice.table.ConcretePhysicalTable
+import com.yahoo.bard.webservice.table.StrictPhysicalTable
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.TableGroup
@@ -157,7 +157,7 @@ class SketchIntersectionReportingResources extends Specification {
 
         columns.add(lmc)
 
-        PhysicalTable physicalTable = new ConcretePhysicalTable(
+        PhysicalTable physicalTable = new StrictPhysicalTable(
                 "NETWORK",
                 DAY.buildZonedTimeGrain(UTC),
                 columns,

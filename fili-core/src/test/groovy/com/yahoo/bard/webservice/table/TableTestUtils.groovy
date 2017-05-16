@@ -10,13 +10,13 @@ import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
 class TableTestUtils {
 
     static List buildConcreteAndConstrained(String name, ZonedTimeGrain grain, Set<Column> columns, Map<String, String> nameMap, DataSourceMetadataService service) {
-        ConcretePhysicalTable table = new ConcretePhysicalTable(TableName.of(name), grain, columns, nameMap, service)
+        StrictPhysicalTable table = new StrictPhysicalTable(TableName.of(name), grain, columns, nameMap, service)
         DataSourceConstraint constraint = DataSourceConstraint.unconstrained(table)
         return [table, table.withConstraint(constraint)]
     }
 
     static ConstrainedTable buildTable(String name, ZonedTimeGrain grain, Set<Column> columns, Map<String, String> nameMap, DataSourceMetadataService service) {
-        ConcretePhysicalTable table = new ConcretePhysicalTable(TableName.of(name), grain, columns, nameMap, service)
+        StrictPhysicalTable table = new StrictPhysicalTable(TableName.of(name), grain, columns, nameMap, service)
         DataSourceConstraint constraint = DataSourceConstraint.unconstrained(table)
         return table.withConstraint(constraint)
     }

@@ -37,7 +37,6 @@ class TimeSeriesQuerySpec extends Specification {
     }
 
     TimeSeriesQuery defaultQuery(Map vars) {
-
         vars.dataSource = vars.dataSource ?: new TableDataSource(TableTestUtils.buildTable(
                 "table_name",
                 DAY.buildZonedTimeGrain(DateTimeZone.UTC),
