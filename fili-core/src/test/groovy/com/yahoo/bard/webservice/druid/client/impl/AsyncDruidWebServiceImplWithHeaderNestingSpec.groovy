@@ -44,13 +44,13 @@ class AsyncDruidWebServiceImplWithHeaderNestingSpec extends Specification {
                 '''
                     {
                         "response": [{"k1":"v1"}],
-                        "X-Druid-Response-Context": "{
+                        "X-Druid-Response-Context": {
                             "uncoveredIntervals": [
                                 "2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z",
                                 "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"
                             ],
                             "uncoveredIntervalsOverflowed": true
-                        }"
+                        }
                     }
                 '''.replace(" ", "").replace("\n", "")
     }

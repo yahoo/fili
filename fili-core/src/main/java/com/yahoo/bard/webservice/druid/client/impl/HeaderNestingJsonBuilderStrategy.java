@@ -3,11 +3,13 @@
 package com.yahoo.bard.webservice.druid.client.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.asynchttpclient.Response;
 
+import java.io.IOException;
 import java.util.function.Function;
 
 /**
@@ -30,7 +32,16 @@ public class HeaderNestingJsonBuilderStrategy implements Function<Response, Json
     public JsonNode apply(Response response) {
         ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
         objectNode.set("response", baseStrategy.apply(response));
-        objectNode.put("X-Druid-Response-Context", response.getHeader("X-Druid-Response-Context"));
+        try {
+            objectNode.set(
+                    "X-Druid-Response-Context",
+                    new MappingJsonFactory()
+                            .createParser(response.getHeader("X-Druid-Response-Context"))
+                            .readValueAsTree()
+            );
+        } catch (IOException ioe) {
+            throw new IllegalStateException(ioe);
+        }
         return objectNode;
     }
 }
