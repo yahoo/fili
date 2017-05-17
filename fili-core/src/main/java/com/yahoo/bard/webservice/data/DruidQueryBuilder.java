@@ -32,8 +32,6 @@ import com.yahoo.bard.webservice.table.resolver.PhysicalTableResolver;
 import com.yahoo.bard.webservice.table.resolver.QueryPlanningConstraint;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 
-import com.google.common.collect.Sets;
-
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
 import org.slf4j.Logger;
@@ -119,10 +117,7 @@ public class DruidQueryBuilder {
 
         // Resolve the table from the the group, the combined dimensions in request, and template time grain
         QueryPlanningConstraint constraint = new QueryPlanningConstraint(request, template);
-        ConstrainedTable table = resolver.resolve(
-                group.getPhysicalTables(),
-                constraint
-        ).withConstraint(constraint);
+        ConstrainedTable table = resolver.resolve(group.getPhysicalTables(), constraint).withConstraint(constraint);
 
         return druidTopNMetric != null ?
             buildTopNQuery(
@@ -205,8 +200,8 @@ public class DruidQueryBuilder {
         Filter mergedFilter = filter;
 
         // Override the grain with what's set in the template if it has one set
-        Granularity mergedGranularity = template.getTimeGrain() != null ?
-                template.getTimeGrain().buildZonedTimeGrain(timeZone)
+        Granularity mergedGranularity = template.getTimeGrain() != null
+                ? template.getTimeGrain().buildZonedTimeGrain(timeZone)
                 : granularity;
 
         DataSource dataSource;

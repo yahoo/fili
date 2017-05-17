@@ -112,12 +112,15 @@ Current
 
 - [Constrained Table Support for Table Serialization](https://github.com/yahoo/fili/pull/262/files)
     * Switched `PartialDataRequestHandler` to use the table from the query rather than the `PhysicalTableDictionary`
-    * `DruidQueryBuilder` uses constrained tables to dynamically pick between Union and Table DataSource implementations.
-    * `PartialDataHandler` has multiple different entrypoints now depending on pre or post constraint conditions.
+    * `DruidQueryBuilder` uses constrained tables to dynamically pick between Union and Table DataSource implementations
+    * `PartialDataHandler` has multiple different entrypoints now depending on pre or post constraint conditions
     * `getAvailability` moved to a `ConfigTable` interface and all configured Tables to that interface
     * DataSource implementations bind to `ConstrainedTable` and only ConstrainedTable is used after table selection
     * `PhysicalTable.getAllAvailableIntervals` explicitly rather than implicitly uses `SimplifiedIntervalList`
-    * Bound and default versions of getAvailableIntervals and getAllAvailableIntervals added to PhysicalTable interface    
+    * Bound and default versions of getAvailableIntervals and getAllAvailableIntervals added to PhysicalTable interface
+    * Package-private optimize tests in `DruidQueryBuilder` moved to protected
+    * Immutable `NoVolatileIntervalsFunction` class made final
+    
     
 - [Druid filters are now lazy.](https://github.com/yahoo/fili/pull/269)
     - The Druid filter is built when requested, NOT at DatApiRequest construction. This will
