@@ -216,20 +216,19 @@ public enum ErrorMessageFormat implements MessageFormatter {
     RESULT_MAPPING_FAILURE(
             "Error occurred while processing response data: %s"
     ),
+
     INVALID_DATASOURCE_UNION(
             "Union Data Source had conflicting name mappings for logical dimension '%s' with mappings of '%s' and '%s'"
     ),
-
 
     DATA_AVAILABILITY_MISMATCH(
             "Data availability expectation does not match with actual query result obtained from druid for the " +
                     "following intervals %s where druid does not have data"
     ),
 
-    TOO_MUCH_INTERVAL_MISSING(
-            "More than %s interval missing information received from druid, inspect if query " +
-                    "expects more than %s missing intervals or increase " +
-                    "uncoveredIntervalsLimit configuration value"
+    TOO_MANY_INTERVALS_MISSING(
+            "Query is returning more than the configured limit of '%s' missing intervals. " +
+                    "There may be a problem with your data."
     ),
 
     TOO_MANY_BACKING_DATA_SOURCES("TableDataSource built with too many backing data sources: %s"),

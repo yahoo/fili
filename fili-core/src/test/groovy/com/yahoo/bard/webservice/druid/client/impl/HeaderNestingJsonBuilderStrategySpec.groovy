@@ -12,7 +12,7 @@ import org.asynchttpclient.Response
 import java.nio.charset.StandardCharsets
 import java.util.function.Supplier
 
-class AsyncDruidWebServiceImplWithHeaderNestingSpec extends Specification {
+class HeaderNestingJsonBuilderStrategySpec extends Specification {
 
     def "Make sure X-Druid-Response-Context and status-code are merged into existing JsonNode"() {
         given:
@@ -28,6 +28,7 @@ class AsyncDruidWebServiceImplWithHeaderNestingSpec extends Specification {
                         "uncoveredIntervalsOverflowed": true
                     }
                 '''.replace(" ", "").replace("\n", "")
+        response.getStatusCode() >> 200
 
         DruidServiceConfig druidServiceConfig = Mock(DruidServiceConfig)
         druidServiceConfig.getTimeout() >> 100
@@ -50,7 +51,8 @@ class AsyncDruidWebServiceImplWithHeaderNestingSpec extends Specification {
                                 "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"
                             ],
                             "uncoveredIntervalsOverflowed": true
-                        }
+                        },
+                        "status-code": 200
                     }
                 '''.replace(" ", "").replace("\n", "")
     }

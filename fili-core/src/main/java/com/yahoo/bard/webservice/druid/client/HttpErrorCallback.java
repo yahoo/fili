@@ -14,18 +14,18 @@ public interface HttpErrorCallback {
     /**
      * Invoke the error callback code.
      *
+     * @param statusCode  Http status code of the error response
      * @param reasonPhrase  The reason for the error. Often the status code description.
      * @param responseBody  The body of the error response
-     * @param statusCode  Http status code of the error response
      */
     void invoke(int statusCode, String reasonPhrase, String responseBody);
 
     /**
      * Stop the request timer, start the response timer, and then invoke the error callback code.
      *
+     * @param statusCode  Http status code of the error response
      * @param reasonPhrase  The reason for the error. Often the status code description.
      * @param responseBody  The body of the error response
-     * @param statusCode  Http status code of the error response
      */
     default void dispatch(int statusCode, String reasonPhrase, String responseBody) {
         RequestLog.stopTiming(REQUEST_WORKFLOW_TIMER);
