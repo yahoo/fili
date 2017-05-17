@@ -21,7 +21,7 @@ public class QueryDataSource extends DataSource {
      * @param query  Query that defines the DataSource.
      */
     public QueryDataSource(DruidFactQuery<?> query) {
-        super(DefaultDataSourceType.QUERY, query.getDataSource().getPhysicalTables());
+        super(DefaultDataSourceType.QUERY, query.getDataSource().getPhysicalTable());
 
         this.query = query;
     }

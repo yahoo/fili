@@ -4,17 +4,14 @@ package com.yahoo.bard.webservice.data;
 
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
-import com.yahoo.bard.webservice.table.ConstrainedTable;
-import com.yahoo.bard.webservice.table.PhysicalTable;
-import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
-import com.yahoo.bard.webservice.util.IntervalUtils;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
+import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Set;
-import java.util.stream.Stream;
+import java.util.function.Predicate;
+import java.util.stream.StreamSupport;
 
 import javax.inject.Singleton;
 import javax.validation.constraints.NotNull;
@@ -29,76 +26,26 @@ public class PartialDataHandler {
 
     /**
      * Find the holes in the passed in intervals at a given granularity.
-     *
-     * @param constraint  Constraint containing all the column names the request depends on
-     * @param physicalTables  the tables whose column availabilities are checked
-     * @param requestedIntervals  The intervals that may not be fully satisfied
-     * @param granularity  The granularity at which to find missing intervals
-     *
-     * @return subintervals of the requested intervals with incomplete data
-     */
-    public SimplifiedIntervalList findMissingTimeGrainIntervals(
-            DataSourceConstraint constraint,
-            Set<PhysicalTable> physicalTables,
-            @NotNull SimplifiedIntervalList requestedIntervals,
-            Granularity granularity
-    ) {
-        return findMissingTimeGrainIntervals(
-                physicalTables.stream().map(table -> table.withConstraint(constraint)),
-                requestedIntervals,
-                granularity
-        );
-    }
-
-
-    /**
-     * Find the holes in the passed in intervals at a given granularity.
-     *
-     * @param constrainedTableStream  the stream of tables whose column availabilities are checked
-     * @param requestedIntervals  The intervals that may not be fully satisfied
-     * @param granularity  The granularity at which to find missing intervals
-     *
-     * @return subintervals of the requested intervals with incomplete data
-     */
-    public SimplifiedIntervalList findMissingTimeGrainIntervals(
-            Stream<ConstrainedTable> constrainedTableStream,
-            @NotNull SimplifiedIntervalList requestedIntervals,
-            Granularity granularity
-    ) {
-
-        SimplifiedIntervalList availableIntervals = constrainedTableStream
-                .map(PhysicalTable::getAvailableIntervals)
-                .reduce(SimplifiedIntervalList::intersect)
-                .orElse(new SimplifiedIntervalList());
-        return findMissingTimeGrainIntervals(availableIntervals, requestedIntervals, granularity);
-    }
-
-    /**
-     * Find the holes in the passed in intervals at a given granularity.
      * <pre>
-     * Interval with grain         : |--------|--------|--------|--------|--------|--------|--------|--------|
-     * Dim1 intervals:               |-------------|            |--------------------------------------------|
-     * Dim2 intervals:               |-------------------|  |------------------------| |---------------------|
-     * Metric intervals:             |--------|                       |--------------------------------------|
-     * Missing Intervals:                     |--------|--------|--------|        |--------|
+     * Requested Interval with grain  |--------|--------|--------|--------|--------|--------|--------|--------|
+     * Available intervals            |-------------|            |--------------------| |---------------------|
+     * Missing Intervals:                      |--------|--------|--------|        |--------|
      * </pre>
      * <p>
-     * This method computes the subintervals of the specified intervals for which partial data is
-     * present for a given combination of request metrics and dimensions (pulled from the API request and generated
-     * druid query) at the specified granularity.
+     * Any requested subinterval bucket that is partially unavailable is collected and returned in a simplified form.
      *
      * @param availableIntervals  the intervals available in the tables
      * @param requestedIntervals  The intervals that may not be fully satisfied
      * @param granularity  The granularity at which to find missing intervals
      *
-     * @return subintervals of the requested intervals with incomplete data
+     * @return bucket-rounded subintervals of the requested intervals which have incomplete data
      */
     public SimplifiedIntervalList findMissingTimeGrainIntervals(
             @NotNull SimplifiedIntervalList availableIntervals,
             @NotNull SimplifiedIntervalList requestedIntervals,
             Granularity granularity
     ) {
-        SimplifiedIntervalList missingIntervals = IntervalUtils.collectBucketedIntervalsNotInIntervalList(
+        SimplifiedIntervalList missingIntervals = collectBucketedIntervalsNotInIntervalList(
                 availableIntervals,
                 requestedIntervals,
                 granularity
@@ -109,5 +56,33 @@ public class PartialDataHandler {
         }
         LOG.debug("Missing intervals: {} for grain {}", missingIntervals, granularity);
         return missingIntervals;
+    }
+
+
+    /**
+     * Collect all subintervals from a bucketed collection that are not subintervals of a supply.
+     * <p>
+     * The bucketed list of intervals are split by grain before being tested as subintervals of the supply list.
+     *
+     * @param supplyIntervals  The intervals which bucketed intervals are being tested against
+     * @param bucketedIntervals  The grain bucketed intervals to collect if not in the supply
+     * @param granularity  The grain at which to split the bucketingIntervals
+     *
+     * @return a simplified list of intervals reflecting the intervals in the fromSet which do not appear in the
+     * remove set
+     */
+    protected static SimplifiedIntervalList collectBucketedIntervalsNotInIntervalList(
+            SimplifiedIntervalList supplyIntervals,
+            SimplifiedIntervalList bucketedIntervals,
+            Granularity granularity
+    ) {
+        // Stream the from intervals, split by grain
+        Iterable<Interval> bucketIterable = granularity.intervalsIterable(bucketedIntervals);
+
+        // Not in returns true if any part of the stream interval is not 'covered' by the remove intervals.
+        Predicate<Interval> notIn = new SimplifiedIntervalList.IsSubinterval(supplyIntervals).negate();
+        return StreamSupport.stream(bucketIterable.spliterator(), false)
+                .filter(notIn)
+                .collect(SimplifiedIntervalList.getCollector());
     }
 }

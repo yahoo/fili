@@ -253,7 +253,7 @@ public class DruidQueryBuilder {
         if (table.getDataSourceNames().size() == 1) {
             return new TableDataSource(table, table.getDataSourceNames().stream().findFirst().get());
         } else {
-            return new UnionDataSource(Sets.newHashSet(table));
+            return new UnionDataSource(table);
         }
     }
 

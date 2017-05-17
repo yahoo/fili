@@ -8,7 +8,6 @@ import com.yahoo.bard.webservice.table.ConstrainedTable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -25,7 +24,7 @@ public class TableDataSource extends DataSource {
      * @param tableName  The name of the table's single datasource
      */
     public TableDataSource(ConstrainedTable physicalTable, TableName tableName) {
-        super(DefaultDataSourceType.TABLE, Collections.singleton(physicalTable));
+        super(DefaultDataSourceType.TABLE, physicalTable);
 
         this.name = tableName.asName();
     }
@@ -36,16 +35,7 @@ public class TableDataSource extends DataSource {
      * @param physicalTable  The physical table of the data source
      */
     public TableDataSource(ConstrainedTable physicalTable) {
-        this(
-                physicalTable,
-                physicalTable.getDataSourceNames()
-                        .stream()
-                        .findFirst()
-                        .orElseThrow(() -> new IllegalArgumentException(
-                                "Non singleton DataSource table passed to TableDataSource constructor."
-                                )
-                        )
-        );
+        this(physicalTable, physicalTable.getTableName());
     }
 
     public String getName() {

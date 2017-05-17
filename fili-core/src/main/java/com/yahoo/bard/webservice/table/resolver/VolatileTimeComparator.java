@@ -9,7 +9,6 @@ import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
-import java.util.Collections;
 import java.util.Comparator;
 
 /**
@@ -84,8 +83,7 @@ public class VolatileTimeComparator implements Comparator<PhysicalTable> {
         Granularity apiRequestGranularity = requestConstraint.getRequestGranularity();
         // First, find the volatile intervals that are also partial at the request grain.
         SimplifiedIntervalList volatilePartialRequestIntervals = partialDataHandler.findMissingTimeGrainIntervals(
-                requestConstraint,
-                Collections.singleton(table),
+                table.getAvailableIntervals(requestConstraint),
                 volatileIntervalsService.getVolatileIntervals(apiRequestGranularity, requestIntervals, table),
                 apiRequestGranularity
         );

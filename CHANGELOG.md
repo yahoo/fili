@@ -14,6 +14,9 @@ Current
     * Add PartialDataHandler method to use `ConstrainedTable`
     * Add SimplifiedIntervalLit.empty() to produce empty SILs
 
+- [Moved UnionDataSource to support only single tables](https://github.com/yahoo/fili/pull/262/files)
+    * `DataSource` now supports getDataSource() operation
+
 - [Prepare For Partial Data V2](https://github.com/yahoo/fili/pull/264)
     * Add new query context for druid's uncovered interval feature
     * Add a configurable property named "druid_uncovered_interval_limit"
@@ -120,6 +123,11 @@ Current
     * Bound and default versions of getAvailableIntervals and getAllAvailableIntervals added to PhysicalTable interface
     * Package-private optimize tests in `DruidQueryBuilder` moved to protected
     * Immutable `NoVolatileIntervalsFunction` class made final
+    
+- [Moved UnionDataSource to support only single tables](https://github.com/yahoo/fili/pull/262/files)
+    * `UnionDataSource` now accepts only single tables instead of sets of tables.
+    * `DataSource` now supports getDataSource() operation
+    * `IntervalUtils.collectBucketedIntervalsNotInIntervalList` moved to `PartialDataHandler`
     
     
 - [Druid filters are now lazy.](https://github.com/yahoo/fili/pull/269)
@@ -290,6 +298,9 @@ Current
 
 ### Deprecated:
 
+- [Moved UnionDataSource to support only single tables](https://github.com/yahoo/fili/pull/262/files)
+    * `DataSource` deprecates getDataSources()
+
 - [Constrained Table Support for Table Serialization](https://github.com/yahoo/fili/pull/262/files)
     * Deprecated static empty instance of SimplifiedIntervalList.NO_INTERVALS
 
@@ -353,6 +364,9 @@ Current
 - [Refactor Physical Table Definition and Update Table Loader](https://github.com/yahoo/fili/pull/207)
     * Removed deprecated `PhysicalTableDefinition` constructor that takes an `ZonlessTimeGrain`, use `ZonedTimeGrain` instead
     * Removed `buildPhysicalTable` in `BaseTableLoader`, building table logic is pushed into `PhysicalTableDefinition`
+
+- [Moved UnionDataSource to support only single tables](https://github.com/yahoo/fili/pull/262/files)
+    * `DataSource` no longer accepts Set<Table> constructor
 
 - [CompositePhsyicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
     * Removed deprecated method `findMissingRequestTimeGrainIntervals` from `PartialDataHandler`

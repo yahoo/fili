@@ -132,33 +132,6 @@ public class IntervalUtils {
     }
 
     /**
-     * Collect all subintervals from a bucketed collection that are not subintervals of a supply.
-     * <p>
-     * The bucketed list of intervals are split by grain before being tested as subintervals of the supply list.
-     *
-     * @param supplyIntervals  The intervals which bucketed intervals are being tested against
-     * @param bucketedIntervals  The grain bucketed intervals to collect if not in the supply
-     * @param granularity  The grain at which to split the bucketingIntervals
-     *
-     * @return a simplified list of intervals reflecting the intervals in the fromSet which do not appear in the
-     * remove set
-     */
-    public static SimplifiedIntervalList collectBucketedIntervalsNotInIntervalList(
-            SimplifiedIntervalList supplyIntervals,
-            SimplifiedIntervalList bucketedIntervals,
-            Granularity granularity
-    ) {
-        // Stream the from intervals, split by grain
-        Iterable<Interval> bucketIterable = granularity.intervalsIterable(bucketedIntervals);
-
-        // Not in returns true if any part of the stream interval is not 'covered' by the remove intervals.
-        Predicate<Interval> notIn = new SimplifiedIntervalList.IsSubinterval(supplyIntervals).negate();
-        return StreamSupport.stream(bucketIterable.spliterator(), false)
-                .filter(notIn)
-                .collect(SimplifiedIntervalList.getCollector());
-    }
-
-    /**
      * Collect all subintervals of an interval list of a grain bucketed size which are subintervals of another supply
      * list of intervals.
      *

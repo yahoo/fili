@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -18,18 +19,19 @@ import java.util.stream.Collectors;
  * DataSource base class.
  */
 public abstract class DataSource {
+
     private final DataSourceType type;
-    private final Set<ConstrainedTable> physicalTables;
+    private final ConstrainedTable physicalTable;
 
     /**
      * Constructor.
      *
      * @param type  Type of the data source
-     * @param physicalTables  PhysicalTables pointed to by the DataSource
+     * @param physicalTable  PhysicalTables pointed to by the DataSource
      */
-    public DataSource(DataSourceType type, Set<ConstrainedTable> physicalTables) {
+    public DataSource(DataSourceType type, ConstrainedTable physicalTable) {
         this.type = type;
-        this.physicalTables = Collections.unmodifiableSet(physicalTables);
+        this.physicalTable = physicalTable;
     }
 
     public DataSourceType getType() {
@@ -42,8 +44,19 @@ public abstract class DataSource {
      * @return the set of physical tables for the data source
      */
     @JsonIgnore
+    @Deprecated
     public Set<ConstrainedTable> getPhysicalTables() {
-        return physicalTables;
+        return Collections.singleton(physicalTable);
+    }
+
+    /**
+     * Get the data source physical table.
+     *
+     * @return the set of physical tables for the data source
+     */
+    @JsonIgnore
+    public ConstrainedTable getPhysicalTable() {
+        return physicalTable;
     }
 
     /**
@@ -53,12 +66,12 @@ public abstract class DataSource {
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Set<String> getNames() {
-        return Collections.unmodifiableSet(getPhysicalTables()
+        return Collections.unmodifiableSet((LinkedHashSet) getPhysicalTables()
                 .stream()
                 .map(PhysicalTable::getDataSourceNames)
                 .flatMap(Set::stream)
                 .map(TableName::asName)
-                .collect(Collectors.toSet())
+                .collect(Collectors.toCollection(LinkedHashSet::new))
         );
     }
 

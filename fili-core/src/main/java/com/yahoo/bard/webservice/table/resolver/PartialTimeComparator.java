@@ -7,7 +7,6 @@ import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
-import java.util.Collections;
 import java.util.Comparator;
 
 /**
@@ -42,16 +41,14 @@ public class PartialTimeComparator implements Comparator<PhysicalTable> {
         // choose table with most data available for given columns
         long missingDurationLeft = IntervalUtils.getTotalDuration(
                 partialDataHandler.findMissingTimeGrainIntervals(
-                        requestConstraint,
-                        Collections.singleton(left),
+                        left.getAvailableIntervals(requestConstraint),
                         new SimplifiedIntervalList(requestConstraint.getIntervals()),
                         requestConstraint.getRequestGranularity()
                 )
         );
         long missingDurationRight = IntervalUtils.getTotalDuration(
                 partialDataHandler.findMissingTimeGrainIntervals(
-                        requestConstraint,
-                        Collections.singleton(right),
+                        right.getAvailableIntervals(requestConstraint),
                         new SimplifiedIntervalList(requestConstraint.getIntervals()),
                         requestConstraint.getRequestGranularity()
                 )

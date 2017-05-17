@@ -38,7 +38,7 @@ public abstract class BaseCompositePhysicalTable extends BasePhysicalTable {
             @NotNull TableName name,
             @NotNull ZonedTimeGrain timeGrain,
             @NotNull Set<Column> columns,
-            @NotNull Set<ConfigPhysicalTable> physicalTables,
+            @NotNull Set<? extends PhysicalTable> physicalTables,
             @NotNull Map<String, String> logicalToPhysicalColumnNames,
             @NotNull Availability availability
     ) {
