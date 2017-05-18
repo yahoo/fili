@@ -167,7 +167,7 @@ public class DataSourceConstraint {
     }
 
     /**
-     * Build a constraint which should filter away no part of a given table.
+     * Build a constraint which should not filter away any part of a given table.
      *
      * @param table  The table whose dimensions and metrics are to be queried
      *

@@ -36,7 +36,8 @@ class CardinalityAggregationSpec extends Specification {
     }
 
     def setup() {
-        constrainedTable = TableTestUtils.buildTable("table",
+        constrainedTable = TableTestUtils.buildTable(
+                "table",
                 DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC),
                 [] as Set,
                 ["d1ApiName": "d1DruidName", "d2ApiName": "d2DruidName"],

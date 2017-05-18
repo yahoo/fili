@@ -26,6 +26,6 @@ public final class NoVolatileIntervalsFunction implements VolatileIntervalsFunct
 
     @Override
     public SimplifiedIntervalList getVolatileIntervals() {
-        return SimplifiedIntervalList.empty();
+        return new SimplifiedIntervalList();
     }
 }

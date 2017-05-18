@@ -30,6 +30,11 @@ import javax.validation.constraints.NotNull;
  */
 public class SimplifiedIntervalList extends LinkedList<Interval> {
 
+    /**
+     * A prebuilt empty SimplifiedIntervalList.
+     *
+     * @deprecated This shared instance is vulnerable to being changed globally with side effects, use empty constructor
+     */
     @Deprecated
     public static final SimplifiedIntervalList NO_INTERVALS = new SimplifiedIntervalList();
 
@@ -102,15 +107,6 @@ public class SimplifiedIntervalList extends LinkedList<Interval> {
         return allIntervals
                 .sorted(IntervalStartComparator.INSTANCE::compare)
                 .collect(getCollector());
-    }
-
-    /**
-     * Static method to provide an empty list.
-     *
-     * @return a new, empty list.
-     */
-    public static SimplifiedIntervalList empty() {
-        return new SimplifiedIntervalList();
     }
 
     /**
@@ -329,7 +325,7 @@ public class SimplifiedIntervalList extends LinkedList<Interval> {
         Interval thisCurrent = getNextIfAvailable.apply(theseIntervals);
 
         if (thisCurrent == null) {
-            return SimplifiedIntervalList.empty();
+            return new SimplifiedIntervalList();
         }
 
         Iterator<Interval> thoseIntervals = that.iterator();

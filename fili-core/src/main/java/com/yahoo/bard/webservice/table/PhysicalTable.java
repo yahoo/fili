@@ -35,7 +35,7 @@ public interface PhysicalTable extends Table {
         return getAllAvailableIntervals().values()
                 .stream()
                 .reduce(SimplifiedIntervalList::union)
-                .orElse(SimplifiedIntervalList.empty());
+                .orElse(new SimplifiedIntervalList());
     }
 
     /**
