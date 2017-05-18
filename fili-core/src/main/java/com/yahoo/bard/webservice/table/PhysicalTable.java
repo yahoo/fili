@@ -26,11 +26,12 @@ public interface PhysicalTable extends Table {
     Map<Column, SimplifiedIntervalList> getAllAvailableIntervals();
 
     /**
-     * Return a view of the available intervals for this table given a data source constraint.
+     * Return a view of the available intervals.
      *
-     * @return The intervals that the table can report on, given the constraint
+     * @return The widest set of intervals that the table can report on
      */
     default SimplifiedIntervalList getAvailableIntervals() {
+        // By default union all available columns
         return getAllAvailableIntervals().values()
                 .stream()
                 .reduce(SimplifiedIntervalList::union)
@@ -137,14 +138,14 @@ public interface PhysicalTable extends Table {
     ConstrainedTable withConstraint(DataSourceConstraint constraint);
 
     /**
-     * Filter a map of raw intervals to those included in a physical schema.
+     * Map availabilities in schema-less columns to a {@link Column} keyed availability map for a given table.
      *
      * @param rawIntervals  The map of name to {@link SimplifiedIntervalList}s as the source availability
      * @param schema  The schema describing the columns of this table
      *
      * @return map of column to set of available intervals
      */
-    static Map<Column, SimplifiedIntervalList> getAllAvailableIntervals(
+    static Map<Column, SimplifiedIntervalList> mapToSchemaAvailability(
             Map<String, SimplifiedIntervalList> rawIntervals,
             PhysicalTableSchema schema
     ) {

@@ -5,8 +5,7 @@ package com.yahoo.bard.webservice.table;
 import com.yahoo.bard.webservice.table.availability.Availability;
 
 /**
- * Availability is used only exposed configuration lifecycle of physical tables.
- * This subinterface limits the exposure of availability information.
+ * This interface limits direct access to availability to tables intended for use during the configuration lifecycle.
  */
 public interface ConfigPhysicalTable extends PhysicalTable  {
 

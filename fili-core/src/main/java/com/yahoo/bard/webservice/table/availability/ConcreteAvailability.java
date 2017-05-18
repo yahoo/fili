@@ -51,16 +51,6 @@ public class ConcreteAvailability implements Availability {
     }
 
     @Override
-    public SimplifiedIntervalList getAvailableIntervals() {
-        return null;
-    }
-
-    @Override
-    public Set<TableName> getDataSourceNames(PhysicalDataSourceConstraint constraint) {
-        return dataSourceNames;
-    }
-
-    @Override
     public SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint constraint) {
 
         Set<String> requestColumns = constraint.getAllColumnPhysicalNames();

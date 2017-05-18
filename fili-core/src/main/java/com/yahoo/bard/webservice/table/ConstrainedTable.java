@@ -10,6 +10,7 @@ import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import org.joda.time.DateTime;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -42,12 +43,20 @@ public class ConstrainedTable implements PhysicalTable {
                 table.getSchema()
         );
 
-        availableIntervals = sourceAvailability.getAvailableIntervals(physicalDataSourceConstraint);
-
-        allAvailableIntervals = PhysicalTable.getAllAvailableIntervals(
-                sourceAvailability.getAllAvailableIntervals(), getSchema()
+        availableIntervals = new SimplifiedIntervalList(
+                sourceAvailability.getAvailableIntervals(physicalDataSourceConstraint)
         );
-        dataSourceNames = sourceAvailability.getDataSourceNames(physicalDataSourceConstraint);
+
+        allAvailableIntervals = Collections.unmodifiableMap(
+                PhysicalTable.mapToSchemaAvailability(
+                        sourceAvailability.getAllAvailableIntervals(),
+                        getSchema()
+                )
+        );
+        dataSourceNames = Collections.unmodifiableSet(
+                sourceAvailability.getDataSourceNames(physicalDataSourceConstraint)
+        );
+
     }
 
     @Override
@@ -71,7 +80,7 @@ public class ConstrainedTable implements PhysicalTable {
     }
 
     @Override
-    public String getPhysicalColumnName(final String logicalName) {
+    public String getPhysicalColumnName(String logicalName) {
         return sourceTable.getPhysicalColumnName(logicalName);
     }
 
@@ -90,30 +99,46 @@ public class ConstrainedTable implements PhysicalTable {
         return sourceTable.getTableAlignment();
     }
 
-    @Deprecated
+    /**
+     * Return a view of the available intervals for the original source table given a constraint.
+     *
+     * @param constraint  The constraint which limits available intervals
+     *
+     * @return The intervals that the table can report on
+     */
+
     @Override
     public SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraint) {
-        // WARN HERE
-        if (constraint == this.constraint) {
+        if (constraint.equals(constraint)) {
             return getAvailableIntervals();
         }
         return sourceTable.getAvailableIntervals(constraint);
     }
 
-    @Deprecated
+    /**
+     * Return the {@link TableName} of the dataSources which back the original source table given a constraint.
+     *
+     * @param constraint  A constraint which may narrow the data sources participating.
+     *
+     * @return A set of tablenames for backing dataSources
+     */
     @Override
     public Set<TableName> getDataSourceNames(DataSourceConstraint constraint) {
-        // WARN HERE
-        if (constraint == this.constraint) {
+        if (constraint.equals(constraint)) {
             return dataSourceNames;
         }
         return sourceTable.getDataSourceNames(constraint);
     }
 
-    @Deprecated
+    /**
+     * Create a constrained copy of the source table.
+     *
+     * @param constraint  The dataSourceConstraint which narrows the view of the underlying availability
+     *
+     * @return a constrained table whose availability and serialization are narrowed by this constraint
+     */
     @Override
-    public ConstrainedTable withConstraint(final DataSourceConstraint constraint) {
-        // WARN HERE
+    public ConstrainedTable withConstraint(DataSourceConstraint constraint) {
         return sourceTable.withConstraint(constraint);
     }
 }

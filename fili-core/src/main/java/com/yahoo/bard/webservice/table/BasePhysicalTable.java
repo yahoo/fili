@@ -81,8 +81,9 @@ public abstract class BasePhysicalTable implements ConfigPhysicalTable {
 
     @Override
     public Map<Column, SimplifiedIntervalList> getAllAvailableIntervals() {
-        return PhysicalTable.getAllAvailableIntervals(
-                getAvailability().getAllAvailableIntervals(), getSchema()
+        return PhysicalTable.mapToSchemaAvailability(
+                getAvailability().getAllAvailableIntervals(),
+                getSchema()
         );
     }
 
