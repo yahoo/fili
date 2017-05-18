@@ -111,6 +111,13 @@ class ClassScannerSpec extends Specification {
     @IgnoreIf({ ClassScannerSpec.getClassesDeclaring("equals", Object.class).empty })
     @Unroll
     def "test equals #cls.simpleName"() {
+        setup:
+        try {
+            Class dependencyClass = Class.forName("${cls.name}Spec")
+            dependencyClass.newInstance()."supplyDependencies"().call(classScanner, cls);
+        } catch( Exception ignore ) {
+        }
+
         expect:
         // Create test object with default values
         Object obj1 = classScanner.constructObject( cls, ClassScanner.Args.VALUES )

@@ -10,6 +10,7 @@ import com.yahoo.bard.webservice.web.DataApiRequest;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -20,11 +21,14 @@ import java.util.stream.Stream;
  */
 public class DataSourceConstraint {
 
+    // Direct fields
     private final Set<Dimension> requestDimensions;
     private final Set<Dimension> filterDimensions;
     private final Set<Dimension> metricDimensions;
     private final Set<String> metricNames;
     private final Map<Dimension, Set<ApiFilter>> apiFilters;
+
+    // Calculated fields
     private final Set<Dimension> allDimensions;
     private final Set<String> allDimensionNames;
     private final Set<String> allColumnNames;
@@ -182,5 +186,27 @@ public class DataSourceConstraint {
                 table.getSchema().getColumnNames(),
                 Collections.emptyMap()
         );
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof DataSourceConstraint) {
+            DataSourceConstraint that = (DataSourceConstraint) obj;
+            return Objects.equals(this.requestDimensions, that.requestDimensions)
+                    && Objects.equals(this.filterDimensions, that.filterDimensions)
+                    && Objects.equals(this.metricDimensions, that.metricDimensions)
+                    && Objects.equals(this.metricNames, that.metricNames)
+                    && Objects.equals(this.apiFilters, that.apiFilters);
+        }
+
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(requestDimensions, filterDimensions, metricDimensions, metricNames, apiFilters);
     }
 }
