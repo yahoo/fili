@@ -113,8 +113,11 @@ class ClassScannerSpec extends Specification {
     def "test equals #cls.simpleName"() {
         setup:
         try {
-            Class dependencyClass = Class.forName("${cls.name}Spec")
-            dependencyClass.newInstance()."supplyDependencies"().call(classScanner, cls);
+            // Allow class specs to define well formed dependencies
+            Map<Class, Object> dependencies = Class.forName("${cls.name}Spec").newInstance().supplyDependencies()
+            dependencies.each {
+                classScanner.putInArgumentValueCache(it.key, it.value)
+            }
         } catch( Exception ignore ) {
         }
 
