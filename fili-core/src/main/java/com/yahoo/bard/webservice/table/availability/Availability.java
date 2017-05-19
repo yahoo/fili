@@ -46,7 +46,7 @@ public interface Availability {
      */
     default SimplifiedIntervalList getAvailableIntervals() {
         return getAllAvailableIntervals().values().stream()
-                .reduce(SimplifiedIntervalList::intersect)
+                .reduce(SimplifiedIntervalList::union)
                 .orElse(new SimplifiedIntervalList());
     }
 
