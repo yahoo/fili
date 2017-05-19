@@ -135,7 +135,7 @@ public class DruidDimensionsLoader extends Loader<Boolean> {
 
         this.dataSources = physicalTableDictionary.values().stream()
                 .filter(physicalTable -> physicalTable.getAvailability() instanceof ConcreteAvailability)
-                .map(table -> table.withConstraint(DataSourceConstraint.emptyConstraint(table)))
+                .map(table -> table.withConstraint(DataSourceConstraint.unconstrained(table)))
                 .map(TableDataSource::new)
                 .collect(Collectors.toList());
     }

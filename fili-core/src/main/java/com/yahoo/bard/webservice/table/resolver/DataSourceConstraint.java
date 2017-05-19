@@ -173,7 +173,7 @@ public class DataSourceConstraint {
      *
      * @return a constraint which should provide no restrictions
      */
-    public static DataSourceConstraint emptyConstraint(PhysicalTable table) {
+    public static DataSourceConstraint unconstrained(PhysicalTable table) {
         return new DataSourceConstraint(
                 table.getDimensions(),
                 Collections.emptySet(),
