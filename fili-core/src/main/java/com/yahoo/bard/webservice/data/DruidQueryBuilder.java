@@ -22,18 +22,15 @@ import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery;
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery;
 import com.yahoo.bard.webservice.druid.model.query.TopNQuery;
-import com.yahoo.bard.webservice.table.ConcretePhysicalTable;
+import com.yahoo.bard.webservice.table.ConstrainedTable;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
-import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.bard.webservice.table.TableIdentifier;
 import com.yahoo.bard.webservice.table.resolver.NoMatchFoundException;
 import com.yahoo.bard.webservice.table.resolver.PhysicalTableResolver;
 import com.yahoo.bard.webservice.table.resolver.QueryPlanningConstraint;
 import com.yahoo.bard.webservice.web.DataApiRequest;
-
-import com.google.common.collect.Sets;
 
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
@@ -119,10 +116,8 @@ public class DruidQueryBuilder {
         TableGroup group = logicalTable.getTableGroup();
 
         // Resolve the table from the the group, the combined dimensions in request, and template time grain
-        PhysicalTable table = resolver.resolve(
-                group.getPhysicalTables(),
-                new QueryPlanningConstraint(request, template)
-        );
+        QueryPlanningConstraint constraint = new QueryPlanningConstraint(request, template);
+        ConstrainedTable table = resolver.resolve(group.getPhysicalTables(), constraint).withConstraint(constraint);
 
         return druidTopNMetric != null ?
             buildTopNQuery(
@@ -175,7 +170,7 @@ public class DruidQueryBuilder {
      */
     protected GroupByQuery buildGroupByQuery(
             TemplateDruidQuery template,
-            PhysicalTable table,
+            ConstrainedTable table,
             Granularity granularity,
             DateTimeZone timeZone,
             Set<Dimension> groupByDimensions,
@@ -202,10 +197,12 @@ public class DruidQueryBuilder {
                 intervals
         );
 
+        Filter mergedFilter = filter;
+
         // Override the grain with what's set in the template if it has one set
-        if (template.getTimeGrain() != null) {
-            granularity = template.getTimeGrain().buildZonedTimeGrain(timeZone);
-        }
+        Granularity mergedGranularity = template.getTimeGrain() != null
+                ? template.getTimeGrain().buildZonedTimeGrain(timeZone)
+                : granularity;
 
         DataSource dataSource;
         if (!template.isNested()) {
@@ -218,25 +215,25 @@ public class DruidQueryBuilder {
             GroupByQuery query = buildGroupByQuery(
                     template.getInnerQuery(),
                     table,
-                    granularity,
+                    mergedGranularity,
                     timeZone,
                     groupByDimensions,
-                    filter,
+                    mergedFilter,
                     having,
                     intervals,
                     (LimitSpec) null
             );
             dataSource = new QueryDataSource(query);
             // Filters have been handled by the inner query, are not needed/allowed on the outer query
-            filter = null;
+            mergedFilter = null;
         }
 
         // Filters must be applied at the lowest level as they exclude data from aggregates
         return new GroupByQuery(
                 dataSource,
-                granularity,
+                mergedGranularity,
                 groupByDimensions,
-                filter,
+                mergedFilter,
                 having,
                 template.getAggregations(),
                 template.getPostAggregations(),
@@ -252,11 +249,11 @@ public class DruidQueryBuilder {
      *
      * @return A table datasource for a fact table or a union data source for a fact table view
      */
-    private DataSource buildTableDataSource(PhysicalTable table) {
-        if (table instanceof ConcretePhysicalTable) {
-            return new TableDataSource((ConcretePhysicalTable) table);
+    private DataSource buildTableDataSource(ConstrainedTable table) {
+        if (table.getDataSourceNames().size() == 1) {
+            return new TableDataSource(table);
         } else {
-            return new UnionDataSource(Sets.newHashSet(table));
+            return new UnionDataSource(table);
         }
     }
 
@@ -277,7 +274,7 @@ public class DruidQueryBuilder {
      */
     protected TopNQuery buildTopNQuery(
             TemplateDruidQuery template,
-            PhysicalTable table,
+            ConstrainedTable table,
             Granularity granularity,
             DateTimeZone timeZone,
             Set<Dimension> groupByDimension,
@@ -309,9 +306,9 @@ public class DruidQueryBuilder {
         );
 
         // Override the grain with what's set in the template if it has one set
-        if (template.getTimeGrain() != null) {
-            granularity = template.getTimeGrain().buildZonedTimeGrain(timeZone);
-        }
+        Granularity mergeGrain = (template.getTimeGrain() != null) ?
+                template.getTimeGrain().buildZonedTimeGrain(timeZone) :
+                granularity;
 
         LOG.trace("Building a single pass druid topN query");
 
@@ -319,7 +316,7 @@ public class DruidQueryBuilder {
         return new TopNQuery(
                 buildTableDataSource(table),
                 // The check that the set of dimensions has exactly one element is currently done above
-                granularity,
+                mergeGrain,
                 groupByDimension.iterator().next(),
                 filter,
                 template.getAggregations(),
@@ -344,7 +341,7 @@ public class DruidQueryBuilder {
      */
     protected TimeSeriesQuery buildTimeSeriesQuery(
             TemplateDruidQuery template,
-            PhysicalTable table,
+            ConstrainedTable table,
             Granularity granularity,
             DateTimeZone timeZone,
             Filter filter,
@@ -391,7 +388,7 @@ public class DruidQueryBuilder {
      *
      * @return true if the optimization can be done, false if it can't
      */
-    boolean canOptimizeTopN(DataApiRequest apiRequest, TemplateDruidQuery templateDruidQuery) {
+    protected boolean canOptimizeTopN(DataApiRequest apiRequest, TemplateDruidQuery templateDruidQuery) {
         return apiRequest.getDimensions().size() == 1 &&
                 apiRequest.getSorts().size() == 1 &&
                 !templateDruidQuery.isNested() &&
@@ -407,7 +404,7 @@ public class DruidQueryBuilder {
      *
      * @return true if the optimization can be done, false if it can't
      */
-    boolean canOptimizeTimeSeries(DataApiRequest apiRequest, TemplateDruidQuery templateDruidQuery) {
+    protected boolean canOptimizeTimeSeries(DataApiRequest apiRequest, TemplateDruidQuery templateDruidQuery) {
         return apiRequest.getDimensions().isEmpty() &&
                 !templateDruidQuery.isNested() &&
                 apiRequest.getSorts().isEmpty() &&

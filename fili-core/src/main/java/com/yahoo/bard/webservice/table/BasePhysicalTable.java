@@ -11,15 +11,12 @@ import com.yahoo.bard.webservice.util.IntervalUtils;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import org.joda.time.DateTime;
-import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
@@ -27,7 +24,7 @@ import javax.validation.constraints.NotNull;
 /**
  * Base implementation of physical table that are shared across various types of physical tables.
  */
-public abstract class BasePhysicalTable implements PhysicalTable {
+public abstract class BasePhysicalTable implements ConfigPhysicalTable {
     private static final Logger LOG = LoggerFactory.getLogger(BasePhysicalTable.class);
 
     private final TableName name;
@@ -83,41 +80,22 @@ public abstract class BasePhysicalTable implements PhysicalTable {
     }
 
     @Override
-    public Map<Column, List<Interval>> getAllAvailableIntervals() {
-        Map<String, SimplifiedIntervalList> availableIntervals = getAvailability().getAllAvailableIntervals();
-
-        return getSchema().getColumns().stream()
-                .collect(Collectors.toMap(
-                        Function.identity(),
-                        column -> availableIntervals.getOrDefault(
-                                getSchema().getPhysicalColumnName(column.getName()),
-                                new SimplifiedIntervalList()
-                        )
-                ));
+    public Map<Column, SimplifiedIntervalList> getAllAvailableIntervals() {
+        return mapToSchemaAvailability(
+                getAvailability().getAllAvailableIntervals(),
+                getSchema()
+        );
     }
 
     @Override
     public SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraint) {
-
-        Set<String> tableColumnNames = getSchema().getColumnNames();
-
-        // Validate that the requested columns are answerable by the current table
-        if (!constraint.getAllColumnNames().stream().allMatch(tableColumnNames::contains)) {
-            String message = String.format(
-                    "Received invalid request requesting for columns: %s that is not available in this table: %s",
-                    constraint.getAllColumnNames().stream()
-                            .filter(name -> !tableColumnNames.contains(name))
-                            .collect(Collectors.joining(",")), getName());
-            LOG.error(message);
-            throw new RuntimeException(message);
-        }
-
+        validateConstraintSchema(constraint);
         return getAvailability().getAvailableIntervals(new PhysicalDataSourceConstraint(constraint, getSchema()));
     }
 
     @Override
     public String getPhysicalColumnName(String logicalName) {
-        if (!schema.containsLogicalName(logicalName)) {
+        if (!getSchema().containsLogicalName(logicalName)) {
             LOG.warn(
                     "No mapping found for logical name '{}' to physical name on table '{}'. Will use logical name as " +
                             "physical name. This is unexpected and should not happen for properly configured " +
@@ -126,7 +104,7 @@ public abstract class BasePhysicalTable implements PhysicalTable {
                     getName()
             );
         }
-        return schema.getPhysicalColumnName(logicalName);
+        return getSchema().getPhysicalColumnName(logicalName);
     }
 
     /**
@@ -139,6 +117,46 @@ public abstract class BasePhysicalTable implements PhysicalTable {
     @Deprecated
     protected void setAvailability(Availability availability) {
         this.availability = availability;
+    }
+
+    /**
+     * Create a constrained copy of this table.
+     *
+     * @param constraint  The dataSourceConstraint which narrows the view of the underlying availability
+     *
+     * @return a constrained table whose availability and serialization are narrowed by this constraint
+     */
+    @Override
+    public ConstrainedTable withConstraint(DataSourceConstraint constraint) {
+        validateConstraintSchema(constraint);
+        return new ConstrainedTable(this, new PhysicalDataSourceConstraint(constraint, getSchema()));
+    }
+
+    @Override
+    public Set<TableName> getDataSourceNames() {
+        return getAvailability().getDataSourceNames();
+    }
+
+    /**
+     * Ensure that the schema of the constraint is consistent with what the table supports.
+     *
+     * @param constraint  The constraint being tested
+     *
+     * @throws IllegalArgumentException If there are columns referenced by the constraint unavailable in the table
+     */
+    private void validateConstraintSchema(DataSourceConstraint constraint) throws IllegalArgumentException {
+        Set<String> tableColumnNames = getSchema().getColumnNames();
+        // Validate that the requested columns are answerable by the current table
+        if (!constraint.getAllColumnNames().stream().allMatch(tableColumnNames::contains)) {
+            String message = String.format(
+                    "Received invalid request requesting for columns: %s that is not available in this table: %s",
+                    constraint.getAllColumnNames().stream()
+                            .filter(name -> !tableColumnNames.contains(name))
+                            .collect(Collectors.joining(",")), getName()
+            );
+            LOG.error(message);
+            throw new IllegalArgumentException(message);
+        }
     }
 
     @Override

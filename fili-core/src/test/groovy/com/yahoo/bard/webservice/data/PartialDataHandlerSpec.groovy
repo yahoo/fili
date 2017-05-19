@@ -3,13 +3,19 @@
 package com.yahoo.bard.webservice.data
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
+import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MONTH
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.WEEK
+import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.YEAR
+import static com.yahoo.bard.webservice.util.IntervalUtilsSpec.buildIntervalList
+import static com.yahoo.bard.webservice.util.IntervalUtilsSpec.complementExpectedSets
 import static org.joda.time.DateTimeZone.UTC
 
+import com.yahoo.bard.webservice.data.config.names.TableName
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity
+import com.yahoo.bard.webservice.druid.model.query.Granularity
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService
 import com.yahoo.bard.webservice.table.Column
@@ -17,9 +23,11 @@ import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.table.resolver.QueryPlanningConstraint
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 
+import org.joda.time.DateTimeZone
 import org.joda.time.Interval
 
 import spock.lang.Specification
+import spock.lang.Unroll
 
 /**
  * Tests for the Partial Data Handler
@@ -35,6 +43,17 @@ class PartialDataHandlerSpec extends Specification {
     GroupByQuery groupByQuery = Mock(GroupByQuery.class)
     DimensionDictionary dimensionDictionary
     QueryPlanningConstraint dataSourceConstraint
+
+    static DateTimeZone dateTimeZone
+
+    def setupSpec() {
+        dateTimeZone = DateTimeZone.getDefault()
+        DateTimeZone.setDefault(UTC)
+    }
+
+    def cleanupSpec() {
+        DateTimeZone.setDefault(dateTimeZone)
+    }
 
     def setup() {
         columnNames = ["userDeviceType", "property", "os",  "page_views"] as Set
@@ -65,7 +84,7 @@ class PartialDataHandlerSpec extends Specification {
         ]
 
         table = new ConcretePhysicalTable(
-                "basefact_network",
+                TableName.of("basefact_network"),
                 DAY.buildZonedTimeGrain(UTC),
                 [new Column("userDeviceType"), new Column("property"), new Column("os"), new Column("page_views")] as Set,
                 ["userDeviceType": "user_device_type"],
@@ -81,8 +100,7 @@ class PartialDataHandlerSpec extends Specification {
 
         expect:
         expectedIntervals == partialDataHandler.findMissingTimeGrainIntervals(
-                dataSourceConstraint,
-                [table] as Set,
+                table.getAvailableIntervals(dataSourceConstraint),
                 new SimplifiedIntervalList(dataSourceConstraint.getIntervals()),
                 dataSourceConstraint.getRequestGranularity()
         )
@@ -96,14 +114,79 @@ class PartialDataHandlerSpec extends Specification {
 
         expect:
         requestedIntervals == partialDataHandler.findMissingTimeGrainIntervals(
-                dataSourceConstraint,
-                [table] as Set,
+                table.getAvailableIntervals(dataSourceConstraint),
                 new SimplifiedIntervalList(dataSourceConstraint.getIntervals()),
                 dataSourceConstraint.getRequestGranularity()
         )
     }
 
     SimplifiedIntervalList buildIntervals(List<String> intervals) {
-        intervals.collect({ new Interval(it) }) as SimplifiedIntervalList
+        intervals.collect({ (new Interval(it)) }) as SimplifiedIntervalList
+    }
+
+
+    @Unroll
+    def "Complement of #supply yields #expected with fixed request and grain"() {
+        setup:
+        SimplifiedIntervalList supplyIntervals = buildIntervalList(supply)
+        SimplifiedIntervalList requestedIntervals = buildIntervalList(['2014/2015'])
+        Granularity granularity = MONTH
+        SimplifiedIntervalList expectedIntervals = buildIntervalList(expected)
+
+        expect:
+        PartialDataHandler.collectBucketedIntervalsNotInIntervalList(
+                supplyIntervals,
+                requestedIntervals,
+                granularity
+        ) == expectedIntervals
+
+        where:
+        supply               | expected
+        ["2013-04/2014-04"]  | ["2014-04/2015"]
+        ["2014-04/2014-05"]  | ["2014/2014-04", "2014-05/2015"]
+        ["2012-09/2016-05"]  | []
+        ["2012/2013"]        | ["2014/2015"]
+        ["2020/2023"]        | ["2014/2015"]
+    }
+
+
+    @Unroll
+    def "Collect of #requestedIntervals by #grain yields #expected when fixed supply is removed"() {
+        setup:
+        SimplifiedIntervalList supply = buildIntervalList(['2012-05-04/2017-02-03'])
+        SimplifiedIntervalList expectedIntervals = buildIntervalList(expected)
+        SimplifiedIntervalList requestedIntervals = buildIntervalList(requested)
+        Granularity granularity = grain
+
+        expect:
+        PartialDataHandler.collectBucketedIntervalsNotInIntervalList(
+                supply,
+                requestedIntervals,
+                granularity
+        ) == expectedIntervals
+
+        where:
+        grain | requested                 | expected
+        YEAR  | ["2012/2017"]             | ["2012/2013"]
+        MONTH | ["2012-02/2017"]          | ["2012-02/2012-06"]
+        DAY   | ["2012-02-02/2016-05"]    | ["2012-02-02/2012-05-04"]
+        DAY   | ["2012-06/2016-05"]       | []
+        YEAR  | ["2013/2018"]             | ["2017/2018"]
+        MONTH | ["2013/2017-04"]          | ["2017-02/2017-04"]
+        DAY   | ["2012-02-03/2017-04-04"] | ["2012-02-03/2012-05-04", "2017-02-03/2017-04-04"]
+    }
+
+    @Unroll
+    def "Complement cuts out the correct hole(s) when #comment"() {
+        given:
+        SimplifiedIntervalList from = buildIntervalList(fromAsStrings)
+        SimplifiedIntervalList remove = buildIntervalList(removeAsStrings)
+        SimplifiedIntervalList expected = buildIntervalList(expectedAsStrings)
+
+        expect:
+        PartialDataHandler.collectBucketedIntervalsNotInIntervalList(remove, from, granularity) == expected
+
+        where:
+        [granularity, comment, fromAsStrings, removeAsStrings, expectedAsStrings] << complementExpectedSets()
     }
 }

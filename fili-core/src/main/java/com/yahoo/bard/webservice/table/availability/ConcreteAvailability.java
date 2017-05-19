@@ -67,7 +67,6 @@ public class ConcreteAvailability implements Availability {
                 )).reduce(SimplifiedIntervalList::intersect).orElse(new SimplifiedIntervalList());
     }
 
-
     /**
      * Returns the name of the table and data source associated with this Availability.
      *

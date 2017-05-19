@@ -8,8 +8,8 @@ import com.yahoo.bard.webservice.data.config.names.FieldName;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
+import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.MetricUnionCompositeTable;
-import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 
 import org.slf4j.Logger;
@@ -78,7 +78,7 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
     }
 
     @Override
-    public PhysicalTable build(ResourceDictionaries dictionaries, DataSourceMetadataService metadataService) {
+    public ConfigPhysicalTable build(ResourceDictionaries dictionaries, DataSourceMetadataService metadataService) {
         return new MetricUnionCompositeTable(
                 getName(),
                 getTimeGrain(),
@@ -95,7 +95,7 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
      *
      * @return set of PhysicalTables from the ResourceDictionaries
      */
-    private Set<PhysicalTable> getPhysicalTables(ResourceDictionaries resourceDictionaries) {
+    private Set<ConfigPhysicalTable> getPhysicalTables(ResourceDictionaries resourceDictionaries) {
         PhysicalTableDictionary physicalTableDictionary = resourceDictionaries.getPhysicalDictionary();
         return dependentTableNames.stream()
                 .map(TableName::asName)

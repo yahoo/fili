@@ -11,8 +11,11 @@ import com.yahoo.bard.webservice.web.DataApiRequest;
 import org.joda.time.Interval;
 
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * Constraints used to match and resolve the best table for a given query.
@@ -32,7 +35,10 @@ public class QueryPlanningConstraint extends DataSourceConstraint {
      * @param dataApiRequest Api request containing the constraints information.
      * @param templateDruidQuery Query containing metric constraint information.
      */
-    public QueryPlanningConstraint(DataApiRequest dataApiRequest, TemplateDruidQuery templateDruidQuery) {
+    public QueryPlanningConstraint(
+            @NotNull DataApiRequest dataApiRequest,
+            @NotNull TemplateDruidQuery templateDruidQuery
+    ) {
         super(dataApiRequest, templateDruidQuery);
 
         this.logicalTable = dataApiRequest.getTable();
@@ -66,5 +72,36 @@ public class QueryPlanningConstraint extends DataSourceConstraint {
 
     public Granularity getRequestGranularity() {
         return requestGranularity;
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof QueryPlanningConstraint) {
+            QueryPlanningConstraint that = (QueryPlanningConstraint) obj;
+            return super.equals(that)
+                    && Objects.equals(this.logicalTable, that.logicalTable)
+                    && Objects.equals(this.intervals, that.intervals)
+                    && Objects.equals(this.logicalMetrics, that.logicalMetrics)
+                    && Objects.equals(this.minimumGranularity, that.minimumGranularity)
+                    && Objects.equals(this.requestGranularity, that.requestGranularity)
+                    && Objects.equals(this.logicalMetricNames, that.logicalMetricNames);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+                super.hashCode(),
+                logicalTable,
+                intervals,
+                logicalMetrics,
+                minimumGranularity,
+                requestGranularity,
+                logicalMetricNames
+        );
     }
 }

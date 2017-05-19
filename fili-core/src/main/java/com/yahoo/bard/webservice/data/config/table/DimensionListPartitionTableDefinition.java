@@ -10,8 +10,8 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
+import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.PartitionCompositeTable;
-import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.resolver.DataSourceFilter;
 import com.yahoo.bard.webservice.table.resolver.DimensionIdFilter;
 
@@ -54,8 +54,8 @@ public class DimensionListPartitionTableDefinition extends PhysicalTableDefiniti
     }
 
     @Override
-    public PhysicalTable build(ResourceDictionaries dictionaries, DataSourceMetadataService metadataService) {
-        Map<PhysicalTable, DataSourceFilter> availabilityFilters = tablePartDefinitions.entrySet().stream()
+    public ConfigPhysicalTable build(ResourceDictionaries dictionaries, DataSourceMetadataService metadataService) {
+        Map<ConfigPhysicalTable, DataSourceFilter> availabilityFilters = tablePartDefinitions.entrySet().stream()
                 .collect(Collectors.toMap(
                         entry -> dictionaries.getPhysicalDictionary().get(entry.getKey().asName()),
                         entry -> new DimensionIdFilter(toDimensionValuesMap(

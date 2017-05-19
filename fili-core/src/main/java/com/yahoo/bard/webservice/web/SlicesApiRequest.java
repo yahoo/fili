@@ -12,18 +12,17 @@ import com.yahoo.bard.webservice.metadata.SegmentInfo;
 import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
+import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.web.endpoints.DimensionsServlet;
 import com.yahoo.bard.webservice.web.endpoints.SlicesServlet;
 
 import org.joda.time.DateTime;
-import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -168,7 +167,7 @@ public class SlicesApiRequest extends ApiRequest {
             throw new BadApiRequestException(msg);
         }
 
-        Map<Column, List<Interval>> columnCache = table.getAllAvailableIntervals();
+        Map<Column, SimplifiedIntervalList> columnCache = table.getAllAvailableIntervals();
         Set<Map<String, Object>> dimensionsResult = new LinkedHashSet<>();
         Set<Map<String, Object>> metricsResult = new LinkedHashSet<>();
 

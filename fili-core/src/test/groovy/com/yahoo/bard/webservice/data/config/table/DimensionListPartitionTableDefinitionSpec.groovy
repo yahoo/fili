@@ -10,6 +10,7 @@ import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
+import com.yahoo.bard.webservice.table.ConfigPhysicalTable
 import com.yahoo.bard.webservice.table.PartitionCompositeTable
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTableSchema
@@ -54,12 +55,12 @@ class DimensionListPartitionTableDefinitionSpec extends Specification {
         getTimeGrain() >> DAY_UTC
     }
 
-    PhysicalTable part1 = Mock(PhysicalTable) {
+    PhysicalTable part1 = Mock(ConfigPhysicalTable) {
         getAvailability() >> availability1
         getSchema() >> schema
     }
 
-    PhysicalTable part2 = Mock(PhysicalTable) {
+    PhysicalTable part2 = Mock(ConfigPhysicalTable) {
         getAvailability() >> availability2
         getSchema() >> schema
     }

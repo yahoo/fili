@@ -211,7 +211,7 @@ public class WeightEvaluationQuery extends GroupByQuery {
             case TOP_N:
                 TopNQuery topNQuery = (TopNQuery) innerQuery;
                 GroupByQuery transformed = new GroupByQuery(
-                        new UnionDataSource(topNQuery.getDataSource().getPhysicalTables()),
+                        new UnionDataSource(topNQuery.getDataSource().getPhysicalTable()),
                         topNQuery.getGranularity(),
                         topNQuery.getDimensions(),
                         topNQuery.getFilter(),

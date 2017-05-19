@@ -4,32 +4,33 @@ package com.yahoo.bard.webservice.druid.model.datasource;
 
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
-import com.yahoo.bard.webservice.table.PhysicalTable;
+import com.yahoo.bard.webservice.table.ConstrainedTable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
  * DataSource base class.
  */
 public abstract class DataSource {
+
     private final DataSourceType type;
-    private final Set<PhysicalTable> physicalTables;
+    private final ConstrainedTable physicalTable;
 
     /**
      * Constructor.
      *
      * @param type  Type of the data source
-     * @param physicalTables  PhysicalTables pointed to by the DataSource
+     * @param physicalTable  PhysicalTables pointed to by the DataSource
      */
-    public DataSource(DataSourceType type, Set<PhysicalTable> physicalTables) {
+    public DataSource(DataSourceType type, ConstrainedTable physicalTable) {
         this.type = type;
-        this.physicalTables = Collections.unmodifiableSet(physicalTables);
+        this.physicalTable = physicalTable;
     }
 
     public DataSourceType getType() {
@@ -40,10 +41,24 @@ public abstract class DataSource {
      * Get the data source physical table(s) as a collection.
      *
      * @return the set of physical tables for the data source
+     *
+     * @deprecated DataSources can only have a single table, and any unioning semantics is done at the PhysicalTable
+     * level
      */
     @JsonIgnore
-    public Set<PhysicalTable> getPhysicalTables() {
-        return physicalTables;
+    @Deprecated
+    public Set<ConstrainedTable> getPhysicalTables() {
+        return Collections.singleton(getPhysicalTable());
+    }
+
+    /**
+     * Get the data source physical table.
+     *
+     * @return the set of physical tables for the data source
+     */
+    @JsonIgnore
+    public ConstrainedTable getPhysicalTable() {
+        return physicalTable;
     }
 
     /**
@@ -53,13 +68,9 @@ public abstract class DataSource {
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Set<String> getNames() {
-        return Collections.unmodifiableSet(getPhysicalTables()
-                .stream()
-                .map(PhysicalTable::getAvailability)
-                .map(it -> it.getDataSourceNames().stream())
-                .flatMap(Function.identity())
+        return Collections.unmodifiableSet((LinkedHashSet<String>) getPhysicalTable().getDataSourceNames().stream()
                 .map(TableName::asName)
-                .collect(Collectors.toSet())
+                .collect(Collectors.toCollection(LinkedHashSet::new))
         );
     }
 
@@ -71,5 +82,7 @@ public abstract class DataSource {
      * @return the query that this data source is generated from
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public abstract DruidQuery<?> getQuery();
+    public DruidQuery<?> getQuery() {
+        return null;
+    }
 }

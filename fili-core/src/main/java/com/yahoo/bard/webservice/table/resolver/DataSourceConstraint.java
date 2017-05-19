@@ -4,11 +4,13 @@ package com.yahoo.bard.webservice.table.resolver;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
+import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -19,11 +21,14 @@ import java.util.stream.Stream;
  */
 public class DataSourceConstraint {
 
+    // Direct fields
     private final Set<Dimension> requestDimensions;
     private final Set<Dimension> filterDimensions;
     private final Set<Dimension> metricDimensions;
     private final Set<String> metricNames;
     private final Map<Dimension, Set<ApiFilter>> apiFilters;
+
+    // Calculated fields
     private final Set<Dimension> allDimensions;
     private final Set<String> allDimensionNames;
     private final Set<String> allColumnNames;
@@ -159,5 +164,49 @@ public class DataSourceConstraint {
                 allColumnNames,
                 apiFilters
         );
+    }
+
+    /**
+     * Build a constraint which should not filter away any part of a given table.
+     *
+     * @param table  The table whose dimensions and metrics are to be queried
+     *
+     * @return a constraint which should provide no restrictions
+     */
+    public static DataSourceConstraint unconstrained(PhysicalTable table) {
+        return new DataSourceConstraint(
+                table.getDimensions(),
+                Collections.emptySet(),
+                Collections.emptySet(),
+                table.getSchema().getMetricColumnNames(),
+                table.getDimensions(),
+                table.getDimensions().stream()
+                        .map(Dimension::getApiName)
+                        .collect(Collectors.toSet()),
+                table.getSchema().getColumnNames(),
+                Collections.emptyMap()
+        );
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof DataSourceConstraint) {
+            DataSourceConstraint that = (DataSourceConstraint) obj;
+            return Objects.equals(this.requestDimensions, that.requestDimensions)
+                    && Objects.equals(this.filterDimensions, that.filterDimensions)
+                    && Objects.equals(this.metricDimensions, that.metricDimensions)
+                    && Objects.equals(this.metricNames, that.metricNames)
+                    && Objects.equals(this.apiFilters, that.apiFilters);
+        }
+
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(requestDimensions, filterDimensions, metricDimensions, metricNames, apiFilters);
     }
 }

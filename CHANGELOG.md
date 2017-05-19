@@ -9,6 +9,16 @@ Current
 -------
 ### Added:
 
+- [Constrained Table Support for Table Serialization](https://github.com/yahoo/fili/pull/262/files)
+    * Add ConstrainedTable which closes over a physical table and an availability, caching all availability merges.
+    * Add PartialDataHandler method to use `ConstrainedTable`
+
+- [Testing: ClassScannerSpec now supports 'discoverable' depenencies ](https://github.com/yahoo/fili/pull/262/files)
+    * Creating 'supplyDependencies' method on a class's spec allows definitions of dependencies for dynamic equality testing
+
+- [Moved UnionDataSource to support only single tables](https://github.com/yahoo/fili/pull/262/files)
+    * `DataSource` now supports getDataSource() operation
+
 - [Prepare For Partial Data V2](https://github.com/yahoo/fili/pull/264)
     * Add new query context for druid's uncovered interval feature
     * Add a configurable property named "druid_uncovered_interval_limit"
@@ -105,10 +115,26 @@ Current
 
 ### Changed:
 
+- [Constrained Table Support for Table Serialization](https://github.com/yahoo/fili/pull/262/files)
+    * Switched `PartialDataRequestHandler` to use the table from the query rather than the `PhysicalTableDictionary`
+    * `DruidQueryBuilder` uses constrained tables to dynamically pick between Union and Table DataSource implementations
+    * `PartialDataHandler` has multiple different entrypoints now depending on pre or post constraint conditions
+    * `getAvailability` moved to a `ConfigTable` interface and all configured Tables to that interface
+    * DataSource implementations bind to `ConstrainedTable` and only ConstrainedTable is used after table selection
+    * `PhysicalTable.getAllAvailableIntervals` explicitly rather than implicitly uses `SimplifiedIntervalList`
+    * Bound and default versions of getAvailableIntervals and getAllAvailableIntervals added to PhysicalTable interface
+    * Package-private optimize tests in `DruidQueryBuilder` moved to protected
+    * Immutable `NoVolatileIntervalsFunction` class made final
+    
+- [Moved UnionDataSource to support only single tables](https://github.com/yahoo/fili/pull/262/files)
+    * `UnionDataSource` now accepts only single tables instead of sets of tables.
+    * `DataSource` now supports getDataSource() operation
+    * `IntervalUtils.collectBucketedIntervalsNotInIntervalList` moved to `PartialDataHandler`
+    
+    
 - [Druid filters are now lazy.](https://github.com/yahoo/fili/pull/269)
     - The Druid filter is built when requested, NOT at DatApiRequest construction. This will
         make it easier to write performant `DataApiRequest` mappers.
-
 
 - [Reduce log level of failure to store a result in the asynchronous job store](https://github.com/yahoo/fili/pull/266)
     * Customers who aren't using the asynchronous infrastructure shouldn't be seeing spurious warnings about a failure
@@ -274,6 +300,16 @@ Current
 
 ### Deprecated:
 
+- [Constrained Table Support for Table Serialization](https://github.com/yahoo/fili/pull/262/files)
+    * Deprecated static empty instance of SimplifiedIntervalList.NO_INTERVALS
+    * PartialDataRequestHandler constructor using `PhysicalTableDictionary`
+
+- [Moved UnionDataSource to support only single tables](https://github.com/yahoo/fili/pull/262/files)
+    * `DataSource` deprecates getDataSources()
+
+- [SimplifiedIntervalList::NO_INTERVALS](https://github.com/yahoo/fili/pull/262/files)
+    * This is unsafe since it is modifiable
+
 - [Support for Lucene 5 indexes](https://github.com/yahoo/fili/pull/265)
     * Added lucene-backward-codecs.jar as a dependency to restore support for indexes built on earlier instances.
     * Support for indexes will only remain while the current Lucene generation supports them.  All customers should rebuild indexes on Lucene 6 to avoid later pain.
@@ -334,6 +370,9 @@ Current
 - [Refactor Physical Table Definition and Update Table Loader](https://github.com/yahoo/fili/pull/207)
     * Removed deprecated `PhysicalTableDefinition` constructor that takes an `ZonlessTimeGrain`, use `ZonedTimeGrain` instead
     * Removed `buildPhysicalTable` in `BaseTableLoader`, building table logic is pushed into `PhysicalTableDefinition`
+
+- [Moved UnionDataSource to support only single tables](https://github.com/yahoo/fili/pull/262/files)
+    * `DataSource` no longer accepts Set<Table> constructor
 
 - [CompositePhsyicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
     * Removed deprecated method `findMissingRequestTimeGrainIntervals` from `PartialDataHandler`

@@ -107,10 +107,24 @@ class ClassScannerSpec extends Specification {
      * This method is ignored if no declaring classes will trigger the where block.
      * This is an issue because downstream developers may want to defensively deploy subclasses of this class to
      * ensure that any legitimate class scanner targets are picked up when discovered and appropriate.
+     * <p>
+     * This method also allows for supplying dependencies for the class under test. To do so, the method will call
+     * <tt>Map&lt;Class, Object&gt; supplyDependencies()</tt> on a Spec file for the class under test (eg.
+     * <tt>ClassUnderTestSpec</tt> if such a Spec exists with that method.
      */
     @IgnoreIf({ ClassScannerSpec.getClassesDeclaring("equals", Object.class).empty })
     @Unroll
     def "test equals #cls.simpleName"() {
+        setup:
+        try {
+            // Allow class specs to define well formed dependencies
+            Map<Class, Object> dependencies = Class.forName("${cls.name}Spec").newInstance().supplyDependencies()
+            dependencies.each {
+                classScanner.putInArgumentValueCache(it.key, it.value)
+            }
+        } catch( Exception ignore ) {
+        }
+
         expect:
         // Create test object with default values
         Object obj1 = classScanner.constructObject( cls, ClassScanner.Args.VALUES )

@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table;
 
+import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 
 import com.google.common.collect.Sets;
@@ -41,6 +42,17 @@ public class BaseSchema implements Schema {
      */
     public LinkedHashSet<String> getColumnNames() {
         return getColumns().stream()
+                .map(Column::getName)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    /**
+     * Get the names of the columns returned by getColumns method which are metric columns.
+     *
+     * @return linked hash set of column names in this schema
+     */
+    public LinkedHashSet<String> getMetricColumnNames() {
+        return getColumns(MetricColumn.class).stream()
                 .map(Column::getName)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }

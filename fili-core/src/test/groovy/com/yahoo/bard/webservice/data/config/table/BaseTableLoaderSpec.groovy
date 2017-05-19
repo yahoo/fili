@@ -18,6 +18,7 @@ import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.ConcretePhysicalTable
+import com.yahoo.bard.webservice.table.ConfigPhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTableSchema
 import com.yahoo.bard.webservice.table.TableGroup
@@ -25,8 +26,6 @@ import com.yahoo.bard.webservice.table.TableGroup
 import org.joda.time.DateTimeZone
 
 import spock.lang.Specification
-
-import java.util.stream.Collectors
 
 /**
  * Testing basic table loader functionality.
@@ -67,7 +66,7 @@ class BaseTableLoaderSpec extends Specification {
         }
 
         @Override
-        PhysicalTable build(
+        ConfigPhysicalTable build(
                 ResourceDictionaries dictionaries,
                 DataSourceMetadataService metadataService
         ) {
@@ -101,7 +100,7 @@ class BaseTableLoaderSpec extends Specification {
     PhysicalTableDefinition circularDependentDefinition5
     PhysicalTableDefinition circularDependentDefinition6
 
-    PhysicalTable physicalTable
+    ConfigPhysicalTable physicalTable
     PhysicalTableSchema physicalTableSchema
 
     def setup() {
@@ -121,7 +120,7 @@ class BaseTableLoaderSpec extends Specification {
         physicalTableSchema = Mock(PhysicalTableSchema)
         physicalTableSchema.getColumns(DimensionColumn.class) >> []
 
-        physicalTable = Mock(PhysicalTable)
+        physicalTable = Mock(ConfigPhysicalTable)
         physicalTable.getTableName() >> TableName.of('definition2')
         physicalTable.getSchema() >> physicalTableSchema
 

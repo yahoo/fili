@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.table.availability
 import com.yahoo.bard.webservice.data.config.names.TableName
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.table.Column
-import com.yahoo.bard.webservice.table.PhysicalTable
+import com.yahoo.bard.webservice.table.ConfigPhysicalTable
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
@@ -28,10 +28,10 @@ class MetricUnionAvailabilitySpec extends Specification {
     Column metricColumn1
     Column metricColumn2
 
-    PhysicalTable physicalTable1
-    PhysicalTable physicalTable2
+    ConfigPhysicalTable physicalTable1
+    ConfigPhysicalTable physicalTable2
 
-    Set<PhysicalTable> physicalTables
+    Set<ConfigPhysicalTable> physicalTables
 
     MetricUnionAvailability metricUnionAvailability
 
@@ -48,8 +48,8 @@ class MetricUnionAvailabilitySpec extends Specification {
         metricColumn1 = new MetricColumn(metric1)
         metricColumn2 = new MetricColumn(metric2)
 
-        physicalTable1 = Mock(PhysicalTable)
-        physicalTable2 = Mock(PhysicalTable)
+        physicalTable1 = Mock(ConfigPhysicalTable)
+        physicalTable2 = Mock(ConfigPhysicalTable)
 
         physicalTable1.getAvailability() >> availability1
         physicalTable2.getAvailability() >> availability2
@@ -138,7 +138,7 @@ class MetricUnionAvailabilitySpec extends Specification {
 
         metricUnionAvailability = new MetricUnionAvailability(physicalTables, Collections.emptySet())
 
-        PhysicalTable physicalTable3 = Mock(PhysicalTable)
+        ConfigPhysicalTable physicalTable3 = Mock(ConfigPhysicalTable)
         physicalTable3.getAvailability() >> metricUnionAvailability
         MetricUnionAvailability outerMetricUnionAvailability = new MetricUnionAvailability(
                 [physicalTable3] as Set,

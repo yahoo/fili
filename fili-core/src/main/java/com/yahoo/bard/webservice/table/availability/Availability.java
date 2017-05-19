@@ -17,23 +17,50 @@ public interface Availability {
     /**
      * The names of the data sources backing this availability.
      *
-     * @return A set of names for datasources backing this table
+     * @return A set of names for datasources backing this availability
      */
     Set<TableName> getDataSourceNames();
 
     /**
+     * The names of the data sources backing this availability as filtered by the constraint.
+     *
+     * @param constraint  The constraint to filter data source names.
+     *
+     * @return A set of names for data sources backing this availability
+     */
+    default Set<TableName> getDataSourceNames(PhysicalDataSourceConstraint constraint) {
+        return getDataSourceNames();
+    }
+
+    /**
      * The availability of all columns.
      *
-     * @return The intervals, by column, available.
+     * @return The intervals, by column name, available.
      */
     Map<String, SimplifiedIntervalList> getAllAvailableIntervals();
 
     /**
-     * Fetch a set of intervals given a set of column name in DataSourceConstraint.
+     * Fetch a {@link SimplifiedIntervalList} representing the coalesced available intervals on this availability.
      *
-     * @param constraint  Physical data source constraint containing column's physical name, metrics names, api filters
-     *
-     * @return A simplified list of intervals associated with all column in constraint, empty if column is missing
+     * @return A <tt>SimplifiedIntervalList</tt> of intervals available
      */
-    SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint constraint);
+    default SimplifiedIntervalList getAvailableIntervals() {
+        return getAllAvailableIntervals().values().stream()
+                .reduce(SimplifiedIntervalList::union)
+                .orElse(new SimplifiedIntervalList());
+    }
+
+    /**
+     *
+     * Fetch a {@link SimplifiedIntervalList} representing the coalesced available intervals on this availability as
+     * filtered by the {@link PhysicalDataSourceConstraint}.
+     *
+     * @param constraint  <tt>PhysicalDataSourceConstraint</tt> containing
+     * {@link com.yahoo.bard.webservice.table.Schema} and {@link com.yahoo.bard.webservice.web.ApiFilter}s
+     *
+     * @return A <tt>SimplifiedIntervalList</tt> of intervals available
+     */
+    default SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint constraint) {
+        return getAvailableIntervals();
+    }
 }

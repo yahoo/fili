@@ -28,7 +28,7 @@ class IntervalUtilsSpec extends Specification {
         DateTimeZone.setDefault(DateTimeZone.UTC)
     }
 
-    SimplifiedIntervalList buildIntervalList(Collection<String> intervals) {
+    static SimplifiedIntervalList buildIntervalList(Collection<String> intervals) {
         intervals.collect { new Interval(it) } as SimplifiedIntervalList
     }
 
@@ -160,20 +160,6 @@ class IntervalUtilsSpec extends Specification {
         return results
     }
 
-    @Unroll
-    def "Test that complement cuts out the correct hole(s) #comment"() {
-        given:
-        SimplifiedIntervalList from = buildIntervalList(fromAsStrings)
-        SimplifiedIntervalList remove = buildIntervalList(removeAsStrings)
-        SimplifiedIntervalList expected = buildIntervalList(expectedAsStrings)
-
-        expect:
-        IntervalUtils.collectBucketedIntervalsNotInIntervalList(remove, from, granularity) == expected
-
-        where:
-        [granularity, comment, fromAsStrings, removeAsStrings, expectedAsStrings] << complementExpectedSets()
-    }
-
     static def complementExpectedSets() {
         List results = []
         results.add( [MONTH, "No source interval",
@@ -276,56 +262,6 @@ class IntervalUtilsSpec extends Specification {
         YEAR  | ["2013/2018"]          | ["2013/2018"]
         MONTH | ["2013/2017-03"]       | ["2013/2017-03"]
         DAY   | ["2014-02-02/2017-01"] | ["2014-02-02/2017-01"]
-    }
-
-    @Unroll
-    def "Complement of #supply yields #expected with fixed request and grain"() {
-        setup:
-        SimplifiedIntervalList supplyIntervals = buildIntervalList(supply)
-        SimplifiedIntervalList requestedIntervals = buildIntervalList(['2014/2015'])
-        Granularity granularity = MONTH
-        SimplifiedIntervalList expectedIntervals = buildIntervalList(expected)
-
-        expect:
-        IntervalUtils.collectBucketedIntervalsNotInIntervalList(
-                supplyIntervals,
-                requestedIntervals,
-                granularity
-        ) == expectedIntervals
-
-        where:
-        supply               | expected
-        ["2013-04/2014-04"]  | ["2014-04/2015"]
-        ["2014-04/2014-05"]  | ["2014/2014-04", "2014-05/2015"]
-        ["2012-09/2016-05"]  | []
-        ["2012/2013"]        | ["2014/2015"]
-        ["2020/2023"]        | ["2014/2015"]
-    }
-
-    @Unroll
-    def "Collect of #requestedIntervals by #grain yields #expected when fixed supply is removed"() {
-        setup:
-        SimplifiedIntervalList supply = buildIntervalList(['2012-05-04/2017-02-03'])
-        SimplifiedIntervalList expectedIntervals = buildIntervalList(expected)
-        SimplifiedIntervalList requestedIntervals = buildIntervalList(requested)
-        Granularity granularity = grain
-
-        expect:
-        IntervalUtils.collectBucketedIntervalsNotInIntervalList(
-                supply,
-                requestedIntervals,
-                granularity
-        ) == expectedIntervals
-
-        where:
-        grain | requested                 | expected
-        YEAR  | ["2012/2017"]             | ["2012/2013"]
-        MONTH | ["2012-02/2017"]          | ["2012-02/2012-06"]
-        DAY   | ["2012-02-02/2016-05"]    | ["2012-02-02/2012-05-04"]
-        DAY   | ["2012-06/2016-05"]       | []
-        YEAR  | ["2013/2018"]             | ["2017/2018"]
-        MONTH | ["2013/2017-04"]          | ["2017-02/2017-04"]
-        DAY   | ["2012-02-03/2017-04-04"] | ["2012-02-03/2012-05-04", "2017-02-03/2017-04-04"]
     }
 
     @Unroll

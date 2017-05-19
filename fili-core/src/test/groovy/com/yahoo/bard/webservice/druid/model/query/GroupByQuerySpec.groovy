@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.druid.model.query
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
+import static com.yahoo.bard.webservice.table.TableTestUtils.buildTable
 
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
@@ -28,7 +29,7 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAg
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.Column
-import com.yahoo.bard.webservice.table.ConcretePhysicalTable
+import com.yahoo.bard.webservice.table.ConstrainedTable
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -73,7 +74,6 @@ class GroupByQuerySpec extends Specification {
             [postAggregation1, postAggregation2]
     )
 
-
     def setup() {
         LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>()
         dimensionFields.add(BardDimensionField.ID)
@@ -103,16 +103,15 @@ class GroupByQuerySpec extends Specification {
     }
 
     GroupByQuery defaultQuery(Map vars) {
-
-        vars.dataSource = vars.dataSource ?: new TableDataSource<GroupByQuery>(
-                new ConcretePhysicalTable(
-                        "table_name",
-                        day,
-                        [] as Set,
-                        ["apiLocale": "locale", "apiPlatform": "platform", "apiProduct": "product"],
-                        Mock(DataSourceMetadataService)
-                )
+        ConstrainedTable constrainedTable = buildTable(
+                "table_name",
+                day,
+                [] as Set,
+                ["apiLocale": "locale", "apiPlatform": "platform", "apiProduct": "product"],
+                Mock(DataSourceMetadataService)
         )
+
+        vars.dataSource = vars.dataSource ?: new TableDataSource<GroupByQuery>(constrainedTable)
         vars.granularity = vars.granularity ?: DAY
         vars.dimensions = vars.dimensions ?: new ArrayList<Dimension>()
         vars.filter = vars.filter ?: null
@@ -192,7 +191,7 @@ class GroupByQuerySpec extends Specification {
 
     def "check dataSource serialization"() {
         //non nested query
-        DataSource ds1 = new TableDataSource(new ConcretePhysicalTable("table_name", day, [] as Set, [:], Mock(DataSourceMetadataService)))
+        DataSource ds1 = new TableDataSource(buildTable("table_name", day, [] as Set, [:], Mock(DataSourceMetadataService)))
         GroupByQuery dq1 = defaultQuery(dataSource: ds1)
 
         //nested query
@@ -478,8 +477,12 @@ class GroupByQuerySpec extends Specification {
 
     def "Check innermost query injection"() {
         setup:
-        TableDataSource inner1 = new TableDataSource(new ConcretePhysicalTable("inner1", day, [] as Set, [:], Mock(DataSourceMetadataService)))
-        TableDataSource inner2 = new TableDataSource(new ConcretePhysicalTable("inner2", day, [] as Set, [:], Mock(DataSourceMetadataService)))
+        TableDataSource inner1 = new TableDataSource(
+                buildTable("inner1", day, [] as Set, [:], Mock(DataSourceMetadataService))
+        )
+        TableDataSource inner2 = new TableDataSource(
+                buildTable("inner2", day, [] as Set, [:], Mock(DataSourceMetadataService))
+        )
         GroupByQuery dq1 = defaultQuery(dataSource: inner1)
         DataSource outer1 = new QueryDataSource(dq1)
         GroupByQuery dq2 = defaultQuery(dataSource: outer1)
@@ -500,7 +503,7 @@ class GroupByQuerySpec extends Specification {
         List<Interval> endingIntervals = [Interval.parse("2016/2017")]
 
         and: "A nested query"
-        TableDataSource table = new TableDataSource(new ConcretePhysicalTable("inner1", day, [] as Set, [:], Mock(DataSourceMetadataService)))
+        TableDataSource table = new TableDataSource(buildTable("inner1", day, [] as Set, [:], Mock(DataSourceMetadataService)))
         GroupByQuery inner = defaultQuery(dataSource: table, intervals: startingIntervals)
         GroupByQuery middle = defaultQuery(dataSource: new QueryDataSource<>(inner), intervals: startingIntervals)
         GroupByQuery outer = defaultQuery(dataSource: new QueryDataSource<>(middle), intervals: startingIntervals)

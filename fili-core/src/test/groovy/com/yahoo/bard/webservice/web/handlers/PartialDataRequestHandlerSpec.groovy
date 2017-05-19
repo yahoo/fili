@@ -8,11 +8,12 @@ import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKe
 import com.yahoo.bard.webservice.data.PartialDataHandler
 import com.yahoo.bard.webservice.data.metric.mappers.PartialDataResultSetMapper
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper
+import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
+import com.yahoo.bard.webservice.table.ConstrainedTable
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
-import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 import com.yahoo.bard.webservice.web.DataApiRequest
 import com.yahoo.bard.webservice.web.responseprocessors.MappingResponseProcessor
@@ -32,7 +33,7 @@ class PartialDataRequestHandlerSpec extends Specification {
 
     DataRequestHandler next = Mock(DataRequestHandler)
     PhysicalTableDictionary physicalTableDictionary = Mock(PhysicalTableDictionary)
-    Set<PhysicalTable> physicalTables = [Mock(PhysicalTable)] as Set
+    PhysicalTable physicalTable = Mock(ConstrainedTable)
     PartialDataHandler partialDataHandler = Mock(PartialDataHandler)
 
     RequestContext rc = Mock(RequestContext)
@@ -40,23 +41,25 @@ class PartialDataRequestHandlerSpec extends Specification {
     GroupByQuery groupByQuery = Mock(GroupByQuery)
     DataSource dataSource = Mock(DataSource)
     MappingResponseProcessor response = Mock(MappingResponseProcessor)
+    SimplifiedIntervalList availableIntervals
 
     PartialDataRequestHandler handler = new PartialDataRequestHandler(
             next,
-            physicalTableDictionary,
             partialDataHandler
     )
 
     def setup() {
+        availableIntervals = new SimplifiedIntervalList([new Interval(0, 15), new Interval(30, 1000)])
+        physicalTable.getAvailableIntervals() >> availableIntervals
         apiRequest.getDimensions() >> Collections.emptySet()
         apiRequest.getFilterDimensions() >> Collections.emptySet()
         apiRequest.getFilters() >> Collections.emptyMap()
+        apiRequest.getGranularity() >> DefaultTimeGrain.DAY
         groupByQuery.getMetricDimensions() >> Collections.emptySet()
         groupByQuery.getDependentFieldNames() >> Collections.emptySet()
         groupByQuery.getInnermostQuery() >> groupByQuery
         groupByQuery.getDataSource() >> dataSource
-        physicalTableDictionary.get(_) >> physicalTables[0]
-        dataSource.getNames() >> ["name"]
+        dataSource.getPhysicalTable() >> physicalTable
     }
 
     def cleanup() {
@@ -76,8 +79,7 @@ class PartialDataRequestHandlerSpec extends Specification {
         then:
         success
         1 * partialDataHandler.findMissingTimeGrainIntervals(
-                _ as DataSourceConstraint,
-                physicalTables,
+                availableIntervals,
                 new SimplifiedIntervalList(apiRequest.intervals),
                 apiRequest.granularity
         ) >> intervals
@@ -108,8 +110,7 @@ class PartialDataRequestHandlerSpec extends Specification {
         then:
         success
         1 * partialDataHandler.findMissingTimeGrainIntervals(
-                _ as DataSourceConstraint,
-                physicalTables,
+                availableIntervals,
                 new SimplifiedIntervalList(apiRequest.intervals),
                 apiRequest.granularity
         ) >> nonEmptyIntervals
@@ -153,8 +154,7 @@ class PartialDataRequestHandlerSpec extends Specification {
         then:
         success
         1 * partialDataHandler.findMissingTimeGrainIntervals(
-                _ as DataSourceConstraint,
-                physicalTables,
+                availableIntervals,
                 new SimplifiedIntervalList(apiRequest.intervals),
                 apiRequest.granularity
         ) >> nonEmptyIntervals

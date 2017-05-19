@@ -26,7 +26,7 @@ class MetricUnionCompositeTableDefinitionSpec extends Specification {
                 [] as Set
         )
 
-        PhysicalTable physicalTable = Mock(PhysicalTable)
+        ConfigPhysicalTable physicalTable = Mock(ConfigPhysicalTable)
         ResourceDictionaries resourceDictionaries = Mock(ResourceDictionaries)
         resourceDictionaries.getPhysicalDictionary() >> [(existing.asName()) : physicalTable]
 

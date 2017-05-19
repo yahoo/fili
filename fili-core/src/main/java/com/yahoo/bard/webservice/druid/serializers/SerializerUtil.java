@@ -29,11 +29,7 @@ public class SerializerUtil {
         // Search for physical name
         return mapNearestDruidQuery(
                 gen,
-                druidQuery -> druidQuery.getDataSource()
-                        .getPhysicalTables()
-                        .iterator()
-                        .next()
-                        .getPhysicalColumnName(apiName)
+                druidQuery -> druidQuery.getDataSource().getPhysicalTable().getPhysicalColumnName(apiName)
         );
     }
 

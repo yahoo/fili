@@ -12,7 +12,7 @@ import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.Column;
-import com.yahoo.bard.webservice.table.PhysicalTable;
+import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -98,7 +98,7 @@ public abstract class PhysicalTableDefinition {
      *
      * @return the type of physical table which was built.
      */
-    public abstract PhysicalTable build(
+    public abstract ConfigPhysicalTable build(
             ResourceDictionaries dictionaries,
             DataSourceMetadataService metadataService
     );
