@@ -29,18 +29,18 @@ public class ConstrainedTable implements PhysicalTable {
     /**
      * Constructor.
      *
-     * @param table  The table being constrained
+     * @param sourceTable  The table being constrained
      * @param constraint  The constraint being applied
      */
-    public ConstrainedTable(ConfigPhysicalTable table, DataSourceConstraint constraint) {
+    public ConstrainedTable(ConfigPhysicalTable sourceTable, DataSourceConstraint constraint) {
         this.constraint = constraint;
-        sourceTable = table;
+        this.sourceTable = sourceTable;
 
-        Availability sourceAvailability = table.getAvailability();
+        Availability sourceAvailability = sourceTable.getAvailability();
 
         PhysicalDataSourceConstraint physicalDataSourceConstraint = new PhysicalDataSourceConstraint(
                 constraint,
-                table.getSchema()
+                sourceTable.getSchema()
         );
 
         availableIntervals = new SimplifiedIntervalList(
@@ -56,7 +56,14 @@ public class ConstrainedTable implements PhysicalTable {
         dataSourceNames = Collections.unmodifiableSet(
                 sourceAvailability.getDataSourceNames(physicalDataSourceConstraint)
         );
+    }
 
+    private DataSourceConstraint getConstraint() {
+        return constraint;
+    }
+
+    private PhysicalTable getSourceTable() {
+        return sourceTable;
     }
 
     @Override
@@ -76,27 +83,27 @@ public class ConstrainedTable implements PhysicalTable {
 
     @Override
     public String getName() {
-        return sourceTable.getName();
+        return getSourceTable().getName();
     }
 
     @Override
     public String getPhysicalColumnName(String logicalName) {
-        return sourceTable.getPhysicalColumnName(logicalName);
+        return getSourceTable().getPhysicalColumnName(logicalName);
     }
 
     @Override
     public PhysicalTableSchema getSchema() {
-        return sourceTable.getSchema();
+        return getSourceTable().getSchema();
     }
 
     @Override
     public TableName getTableName() {
-        return sourceTable.getTableName();
+        return getSourceTable().getTableName();
     }
 
     @Override
     public DateTime getTableAlignment() {
-        return sourceTable.getTableAlignment();
+        return getSourceTable().getTableAlignment();
     }
 
     /**
@@ -108,10 +115,10 @@ public class ConstrainedTable implements PhysicalTable {
      */
     @Override
     public SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraint) {
-        if (constraint.equals(constraint)) {
+        if (getConstraint().equals(constraint)) {
             return getAvailableIntervals();
         }
-        return sourceTable.getAvailableIntervals(constraint);
+        return getSourceTable().getAvailableIntervals(constraint);
     }
 
     /**
@@ -123,10 +130,10 @@ public class ConstrainedTable implements PhysicalTable {
      */
     @Override
     public Set<TableName> getDataSourceNames(DataSourceConstraint constraint) {
-        if (constraint.equals(constraint)) {
-            return dataSourceNames;
+        if (getConstraint().equals(constraint)) {
+            return getDataSourceNames();
         }
-        return sourceTable.getDataSourceNames(constraint);
+        return getSourceTable().getDataSourceNames(constraint);
     }
 
     /**
@@ -138,6 +145,6 @@ public class ConstrainedTable implements PhysicalTable {
      */
     @Override
     public ConstrainedTable withConstraint(DataSourceConstraint constraint) {
-        return sourceTable.withConstraint(constraint);
+        return getSourceTable().withConstraint(constraint);
     }
 }
