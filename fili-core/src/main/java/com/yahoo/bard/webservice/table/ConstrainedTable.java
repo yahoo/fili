@@ -106,7 +106,6 @@ public class ConstrainedTable implements PhysicalTable {
      *
      * @return The intervals that the table can report on
      */
-
     @Override
     public SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraint) {
         if (constraint.equals(constraint)) {

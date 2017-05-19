@@ -10,6 +10,7 @@ import static com.yahoo.bard.webservice.util.IntervalUtilsSpec.buildIntervalList
 import static com.yahoo.bard.webservice.util.IntervalUtilsSpec.complementExpectedSets
 import static org.joda.time.DateTimeZone.UTC
 
+import com.yahoo.bard.webservice.data.config.names.TableName
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
@@ -27,6 +28,7 @@ import org.joda.time.Interval
 
 import spock.lang.Specification
 import spock.lang.Unroll
+
 /**
  * Tests for the Partial Data Handler
  */
@@ -42,7 +44,7 @@ class PartialDataHandlerSpec extends Specification {
     DimensionDictionary dimensionDictionary
     QueryPlanningConstraint dataSourceConstraint
 
-    static DateTimeZone dateTimeZone;
+    static DateTimeZone dateTimeZone
 
     def setupSpec() {
         dateTimeZone = DateTimeZone.getDefault()
@@ -82,7 +84,7 @@ class PartialDataHandlerSpec extends Specification {
         ]
 
         table = new ConcretePhysicalTable(
-                "basefact_network",
+                TableName.of("basefact_network"),
                 DAY.buildZonedTimeGrain(UTC),
                 [new Column("userDeviceType"), new Column("property"), new Column("os"), new Column("page_views")] as Set,
                 ["userDeviceType": "user_device_type"],
@@ -174,7 +176,8 @@ class PartialDataHandlerSpec extends Specification {
         DAY   | ["2012-02-03/2017-04-04"] | ["2012-02-03/2012-05-04", "2017-02-03/2017-04-04"]
     }
 
-    def "Test that complement cuts out the correct hole(s)"() {
+    @Unroll
+    def "Complement cuts out the correct hole(s) when #comment"() {
         given:
         SimplifiedIntervalList from = buildIntervalList(fromAsStrings)
         SimplifiedIntervalList remove = buildIntervalList(removeAsStrings)

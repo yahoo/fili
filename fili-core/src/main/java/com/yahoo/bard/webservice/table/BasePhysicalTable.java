@@ -126,6 +126,7 @@ public abstract class BasePhysicalTable implements ConfigPhysicalTable {
      *
      * @return a constrained table whose availability and serialization are narrowed by this constraint
      */
+    @Override
     public ConstrainedTable withConstraint(DataSourceConstraint constraint) {
         validateConstraintSchema(constraint);
         return new ConstrainedTable(this, new PhysicalDataSourceConstraint(constraint, getSchema()));

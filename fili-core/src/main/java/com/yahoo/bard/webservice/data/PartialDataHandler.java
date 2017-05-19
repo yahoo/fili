@@ -34,7 +34,7 @@ public class PartialDataHandler {
      * <p>
      * Any requested subinterval bucket that is partially unavailable is collected and returned in a simplified form.
      *
-     * @param availableIntervals  the intervals available in the tables
+     * @param availableIntervals  The intervals available in the tables
      * @param requestedIntervals  The intervals that may not be fully satisfied
      * @param granularity  The granularity at which to find missing intervals
      *
@@ -51,9 +51,11 @@ public class PartialDataHandler {
                 granularity
         );
 
+        // The missing intervals is the request intervals if any of the requested intervals are missing for ALL grain
         if (granularity instanceof AllGranularity && !missingIntervals.isEmpty()) {
             missingIntervals = requestedIntervals;
         }
+
         LOG.debug("Missing intervals: {} for grain {}", missingIntervals, granularity);
         return missingIntervals;
     }

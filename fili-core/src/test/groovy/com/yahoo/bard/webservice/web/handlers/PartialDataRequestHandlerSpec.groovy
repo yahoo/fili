@@ -43,7 +43,6 @@ class PartialDataRequestHandlerSpec extends Specification {
     MappingResponseProcessor response = Mock(MappingResponseProcessor)
     SimplifiedIntervalList availableIntervals
 
-
     PartialDataRequestHandler handler = new PartialDataRequestHandler(
             next,
             partialDataHandler

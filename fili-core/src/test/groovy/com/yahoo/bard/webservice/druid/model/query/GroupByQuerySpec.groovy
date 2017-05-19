@@ -73,13 +73,6 @@ class GroupByQuerySpec extends Specification {
             ArithmeticPostAggregation.ArithmeticPostAggregationFunction.DIVIDE,
             [postAggregation1, postAggregation2]
     )
-    ConstrainedTable constrainedTable = buildTable(
-            "table_name",
-            day,
-            [] as Set,
-            ["apiLocale": "locale", "apiPlatform": "platform", "apiProduct": "product"],
-            Mock(DataSourceMetadataService)
-    )
 
     def setup() {
         LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>()

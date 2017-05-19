@@ -42,6 +42,9 @@ public abstract class DataSource {
      * Get the data source physical table(s) as a collection.
      *
      * @return the set of physical tables for the data source
+     *
+     * @deprecated DataSources can only have a single table, and any unioning semantics is done at the PhysicalTable
+     * level
      */
     @JsonIgnore
     @Deprecated

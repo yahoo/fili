@@ -32,8 +32,7 @@ public interface PhysicalTable extends Table {
      */
     default SimplifiedIntervalList getAvailableIntervals() {
         // By default union all available columns
-        return getAllAvailableIntervals().values()
-                .stream()
+        return getAllAvailableIntervals().values().stream()
                 .reduce(SimplifiedIntervalList::union)
                 .orElse(new SimplifiedIntervalList());
     }
@@ -43,7 +42,7 @@ public interface PhysicalTable extends Table {
      *
      * @param constraint  The constraint which limits available intervals
      *
-     * @return The intervals that the table can report on
+     * @return The widest set of intervals that the table can report on, given the constraints
      */
     default SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraint) {
         // Default to unconstrained
@@ -74,7 +73,7 @@ public interface PhysicalTable extends Table {
      *
      * @param constraint  A constraint which may narrow the data sources participating.
      *
-     * @return A set of tablenames for backing dataSources
+     * @return A set of tablenames for backing dataSources, given the constraints
      */
     default Set<TableName> getDataSourceNames(DataSourceConstraint constraint) {
         return getDataSourceNames();
@@ -140,8 +139,8 @@ public interface PhysicalTable extends Table {
     /**
      * Map availabilities in schema-less columns to a {@link Column} keyed availability map for a given table.
      *
-     * @param rawIntervals  The map of name to {@link SimplifiedIntervalList}s as the source availability
-     * @param schema  The schema describing the columns of this table
+     * @param rawIntervals  The map of physical name to {@link SimplifiedIntervalList}s as the source availability
+     * @param schema  The schema describing the columns of this table, which includes the logical -> physical mappings
      *
      * @return map of column to set of available intervals
      */
@@ -150,12 +149,14 @@ public interface PhysicalTable extends Table {
             PhysicalTableSchema schema
     ) {
         return schema.getColumns().stream()
-                .collect(Collectors.toMap(
-                        Function.identity(),
-                        column -> rawIntervals.getOrDefault(
-                                schema.getPhysicalColumnName(column.getName()),
-                                new SimplifiedIntervalList()
+                .collect(
+                        Collectors.toMap(
+                                Function.identity(),
+                                column -> rawIntervals.getOrDefault(
+                                        schema.getPhysicalColumnName(column.getName()),
+                                        new SimplifiedIntervalList()
+                                )
                         )
-                ));
+                );
     }
 }

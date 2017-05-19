@@ -17,7 +17,7 @@ public interface Availability {
     /**
      * The names of the data sources backing this availability.
      *
-     * @return A set of names for datasources backing this table
+     * @return A set of names for datasources backing this availability
      */
     Set<TableName> getDataSourceNames();
 
@@ -26,7 +26,7 @@ public interface Availability {
      *
      * @param constraint  The constraint to filter data source names.
      *
-     * @return A set of names for data sources backing this table
+     * @return A set of names for data sources backing this availability
      */
     default Set<TableName> getDataSourceNames(PhysicalDataSourceConstraint constraint) {
         return getDataSourceNames();
@@ -35,7 +35,7 @@ public interface Availability {
     /**
      * The availability of all columns.
      *
-     * @return The intervals, by column, available.
+     * @return The intervals, by column name, available.
      */
     Map<String, SimplifiedIntervalList> getAllAvailableIntervals();
 
@@ -46,7 +46,8 @@ public interface Availability {
      */
     default SimplifiedIntervalList getAvailableIntervals() {
         return getAllAvailableIntervals().values().stream()
-                .reduce(SimplifiedIntervalList::intersect).orElse(new SimplifiedIntervalList());
+                .reduce(SimplifiedIntervalList::intersect)
+                .orElse(new SimplifiedIntervalList());
     }
 
     /**
