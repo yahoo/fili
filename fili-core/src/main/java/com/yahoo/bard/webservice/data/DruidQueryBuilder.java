@@ -251,7 +251,7 @@ public class DruidQueryBuilder {
      */
     private DataSource buildTableDataSource(ConstrainedTable table) {
         if (table.getDataSourceNames().size() == 1) {
-            return new TableDataSource(table, table.getDataSourceNames().stream().findFirst().get());
+            return new TableDataSource(table);
         } else {
             return new UnionDataSource(table);
         }

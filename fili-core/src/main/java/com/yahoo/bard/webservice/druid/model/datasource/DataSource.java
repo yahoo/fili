@@ -82,5 +82,7 @@ public abstract class DataSource {
      * @return the query that this data source is generated from
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public abstract DruidQuery<?> getQuery();
+    public DruidQuery<?> getQuery() {
+        return null;
+    }
 }
