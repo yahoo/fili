@@ -144,7 +144,7 @@ public interface PhysicalTable extends Table {
      *
      * @return map of column to set of available intervals
      */
-    static Map<Column, SimplifiedIntervalList> mapToSchemaAvailability(
+    default Map<Column, SimplifiedIntervalList> mapToSchemaAvailability(
             Map<String, SimplifiedIntervalList> rawIntervals,
             PhysicalTableSchema schema
     ) {

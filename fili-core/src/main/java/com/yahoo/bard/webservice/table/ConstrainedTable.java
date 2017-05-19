@@ -48,7 +48,7 @@ public class ConstrainedTable implements PhysicalTable {
         );
 
         allAvailableIntervals = Collections.unmodifiableMap(
-                PhysicalTable.mapToSchemaAvailability(
+                mapToSchemaAvailability(
                         sourceAvailability.getAllAvailableIntervals(),
                         getSchema()
                 )
