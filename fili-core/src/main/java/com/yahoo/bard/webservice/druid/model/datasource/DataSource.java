@@ -5,7 +5,6 @@ package com.yahoo.bard.webservice.druid.model.datasource;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.table.ConstrainedTable;
-import com.yahoo.bard.webservice.table.PhysicalTable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -49,7 +48,7 @@ public abstract class DataSource {
     @JsonIgnore
     @Deprecated
     public Set<ConstrainedTable> getPhysicalTables() {
-        return Collections.singleton(physicalTable);
+        return Collections.singleton(getPhysicalTable());
     }
 
     /**
@@ -69,10 +68,7 @@ public abstract class DataSource {
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Set<String> getNames() {
-        return Collections.unmodifiableSet((LinkedHashSet) getPhysicalTables()
-                .stream()
-                .map(PhysicalTable::getDataSourceNames)
-                .flatMap(Set::stream)
+        return Collections.unmodifiableSet((LinkedHashSet<String>) getPhysicalTable().getDataSourceNames().stream()
                 .map(TableName::asName)
                 .collect(Collectors.toCollection(LinkedHashSet::new))
         );
