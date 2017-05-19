@@ -160,7 +160,7 @@ class MemcachedCacheSpec extends Specification {
             .request().get(String.class)
 
         then: "should read old result from cache"
-        GroovyTestUtils.compareJson(result, expected)
+        GroovyTestUtils.compareJson(result, '{"rows":[]}')
 
         when: "force cache bypass"
         jtb.nonUiDruidWebService.jsonResponse = {"[]"}

@@ -754,6 +754,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 throw new IllegalStateException(e);
             }
         } else if (BardFeatureFlag.DRUID_CACHE.isOn()) {
+            LOG.warn("Cache V1 has been deprecated and is no longer supported. Cache V2 is the default cache now.");
             try {
                 DataCache<String> cache = new HashDataCache<>(new MemDataCache<HashDataCache.Pair<String, String>>());
                 LOG.info("MemcachedClient started {}", cache);

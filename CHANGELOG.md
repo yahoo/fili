@@ -90,6 +90,13 @@ Removals:
       `CacheV2RequestHandler` and invoke the `DruidPartialDataRequestHandler` if `druid_uncovered_interval_limit` is
       greater than 0
 
+- [Prepare for etag Cache](https://github.com/yahoo/fili/pull/289)
+    * Add etag Cache feature flag
+    * Deprecate Cache v1 components and remove from DruidWorkflow
+    * Log a warning indicating cache V1 has been deprecated
+    * Make `AsyncDruidWebServiceImpl::sendRequest` not blow up when getting a 304 status response if etag cache is on
+    * Add Etag header to JsonNode response
+
 - [Implement DruidPartialDataResponseProcessor](https://github.com/yahoo/fili/pull/275)
     * Add `FullResponseProcessor` interface that extends `ResponseProcessor`
     * Add response status code to JSON response

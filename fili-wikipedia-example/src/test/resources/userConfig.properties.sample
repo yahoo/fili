@@ -6,6 +6,7 @@ bard__dimension_backend = memory
 
 bard__druid_cache_enabled = true
 bard__druid_cache_v2_enabled = true
+bard__druid_etag_cache_enabled = true
 
 bard__druid_coordinator_metadata_enabled = true
 

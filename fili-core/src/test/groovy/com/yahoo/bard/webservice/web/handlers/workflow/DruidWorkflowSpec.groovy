@@ -98,8 +98,7 @@ class DruidWorkflowSpec extends Specification {
 
         when:
         handlers = getHandlerChain(defaultHandler.uiWebServiceHandler.next)
-        boolean isCaching = handlers.find(byClass(CacheRequestHandler)) != null |
-                handlers.find(byClass(CacheV2RequestHandler)) != null
+        boolean isCaching = handlers.find(byClass(CacheV2RequestHandler)) != null
         boolean isCachingV2 = handlers.find(byClass(CacheV2RequestHandler)) != null
 
         then:
@@ -108,8 +107,7 @@ class DruidWorkflowSpec extends Specification {
 
         when:
         handlers = getHandlerChain(defaultHandler.nonUiWebServiceHandler.next)
-        isCaching = handlers.find(byClass(CacheRequestHandler)) != null |
-                handlers.find(byClass(CacheV2RequestHandler)) != null
+        isCaching = handlers.find(byClass(CacheV2RequestHandler)) != null
         isCachingV2 = handlers.find(byClass(CacheV2RequestHandler)) != null
 
         then:
@@ -119,7 +117,7 @@ class DruidWorkflowSpec extends Specification {
         where:
         doCache | doCacheV2
         false   | false
-        true    | false
+        false   | false
         true    | true
     }
 
