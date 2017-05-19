@@ -14,13 +14,16 @@ import java.util.Set;
 import javax.validation.constraints.NotNull;
 
 /**
- * An implementation of concrete physical table with permissive availability.
+ * A sibling of concrete physical table, but with permissive availability.
  * <p>
- * This is different from its parent {@link ConcretePhysicalTable}. {@link PermissiveConcretePhysicalTable} is backed
- * {@link PermissiveAvailability}. The different {@link Availability} affects how available intervals of a table are
+ * This is different from {@link ConcretePhysicalTable}. {@link PermissiveConcretePhysicalTable} is backed by
+ * {@link PermissiveAvailability}. The different Availability affects how available intervals of the table are
  * calculated and returned.
  */
-public class PermissiveConcretePhysicalTable extends ConcretePhysicalTable {
+public class PermissiveConcretePhysicalTable extends BasePhysicalTable {
+
+    private final DataSourceName dataSourceName;
+
     /**
      * Create a permissive concrete physical table.
      *
@@ -28,21 +31,56 @@ public class PermissiveConcretePhysicalTable extends ConcretePhysicalTable {
      * @param timeGrain  time grain of the table
      * @param columns  The columns for this table
      * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
-     * @param dataSourceMetadataService  Data source metadata service containing availability data for the table
+     * @param metadataService  Data source metadata service containing availability data for the table
      */
     public PermissiveConcretePhysicalTable(
             @NotNull TableName name,
             @NotNull ZonedTimeGrain timeGrain,
             @NotNull Set<Column> columns,
             @NotNull Map<String, String> logicalToPhysicalColumnNames,
-            @NotNull DataSourceMetadataService dataSourceMetadataService
+            @NotNull DataSourceMetadataService metadataService
+    ) {
+        this(
+                name,
+                timeGrain,
+                columns,
+                logicalToPhysicalColumnNames,
+                new PermissiveAvailability(DataSourceName.of(name.asName()), metadataService)
+        );
+    }
+
+    /**
+     * Create a permissive concrete physical table.
+     *
+     * @param name  Name of the physical table as TableName
+     * @param timeGrain  time grain of the table
+     * @param columns  The columns for this table
+     * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
+     * @param availability  Availability that serves interval availability for columns
+     */
+    public PermissiveConcretePhysicalTable(
+            @NotNull TableName name,
+            @NotNull ZonedTimeGrain timeGrain,
+            @NotNull Set<Column> columns,
+            @NotNull Map<String, String> logicalToPhysicalColumnNames,
+            @NotNull PermissiveAvailability availability
     ) {
         super(
                 name,
                 timeGrain,
                 columns,
                 logicalToPhysicalColumnNames,
-                new PermissiveAvailability(DataSourceName.of(name.asName()), dataSourceMetadataService)
+                availability
         );
+        this.dataSourceName = availability.getDataSourceName();
+    }
+
+    public DataSourceName getDataSourceName() {
+        return dataSourceName;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + " datasourceName: " + getDataSourceName();
     }
 }

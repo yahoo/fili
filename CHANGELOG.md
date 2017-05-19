@@ -137,6 +137,9 @@ Current
     * `DataSource` now supports getDataSource() operation
     * `IntervalUtils.collectBucketedIntervalsNotInIntervalList` moved to `PartialDataHandler`
     
+- [Make `PermissiveConcretePhysicalTable` a sibling, instead of extend from, `ConcretePhysicalTable`](https://github.com/yahoo/fili/pull/263)
+    * The main difference is in the accepted availabilities, so make the class structure match that.
+
 - [Make `MetricUnionAvailability` take a set of `Availability` instead of `PhysicalTable`](https://github.com/yahoo/fili/pull/263)
     * Since it was just unwrapping anyways, simplifying the dependency and pushing the unwrap up-stream makes sense
 
