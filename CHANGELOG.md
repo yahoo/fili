@@ -12,7 +12,6 @@ Current
 - [Constrained Table Support for Table Serialization](https://github.com/yahoo/fili/pull/262/files)
     * Add ConstrainedTable which closes over a physical table and an availability, caching all availability merges.
     * Add PartialDataHandler method to use `ConstrainedTable`
-    * Add SimplifiedIntervalLit.empty() to produce empty SILs
 
 - [Testing: ClassScannerSpec now supports 'discoverable' depenencies ](https://github.com/yahoo/fili/pull/262/files)
     * Creating 'supplyDependencies' method on a class's spec allows definitions of dependencies for dynamic equality testing
@@ -307,6 +306,9 @@ Current
 
 - [Moved UnionDataSource to support only single tables](https://github.com/yahoo/fili/pull/262/files)
     * `DataSource` deprecates getDataSources()
+
+- [SimplifiedIntervalList::NO_INTERVALS](https://github.com/yahoo/fili/pull/262/files)
+    * This is unsafe since it is modifiable
 
 - [Support for Lucene 5 indexes](https://github.com/yahoo/fili/pull/265)
     * Added lucene-backward-codecs.jar as a dependency to restore support for indexes built on earlier instances.
