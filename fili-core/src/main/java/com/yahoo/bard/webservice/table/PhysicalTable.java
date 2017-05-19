@@ -140,7 +140,7 @@ public interface PhysicalTable extends Table {
      * Map availabilities in schema-less columns to a {@link Column} keyed availability map for a given table.
      *
      * @param rawIntervals  The map of physical name to {@link SimplifiedIntervalList}s as the source availability
-     * @param schema  The schema describing the columns of this table, which includes the logical -> physical mappings
+     * @param schema  The schema describing the columns of this table, which includes the logical -&gt; physical mappings
      *
      * @return map of column to set of available intervals
      */
