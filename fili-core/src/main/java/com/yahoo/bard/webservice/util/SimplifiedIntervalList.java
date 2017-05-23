@@ -31,14 +31,6 @@ import javax.validation.constraints.NotNull;
 public class SimplifiedIntervalList extends LinkedList<Interval> {
 
     /**
-     * A prebuilt empty SimplifiedIntervalList.
-     *
-     * @deprecated This shared instance is vulnerable to being changed globally with side effects, use empty constructor
-     */
-    @Deprecated
-    public static final SimplifiedIntervalList NO_INTERVALS = new SimplifiedIntervalList();
-
-    /**
      * Function to iterate an iterator if it has a next element, otherwise return null.
      */
     protected Function<Iterator<Interval>, Interval> getNextIfAvailable = (it) -> it.hasNext() ? it.next() : null;
