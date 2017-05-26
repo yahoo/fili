@@ -81,7 +81,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
 
         try {
             //calling get so we wait until responses are loaded before returning and processing continues
-            responseFuture.get(60, TimeUnit.SECONDS);
+            responseFuture.get(30, TimeUnit.SECONDS);
         } catch (TimeoutException | InterruptedException | ExecutionException e) {
             LOG.error("Interrupted while waiting for a response from druid", e);
             throw new RuntimeException("Unable to automatically configure correctly, no response from druid.", e);
@@ -200,6 +200,8 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      *
      * @param successCallback  The callback to be done if the query succeeds.
      * @param url  The url to send the query to.
+     *
+     * @return future response for the druid query
      */
     private Future<Response> queryDruid(SuccessCallback successCallback, String url) {
         LOG.debug("Fetching " + url);
