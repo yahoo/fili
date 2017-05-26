@@ -69,7 +69,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      * ["wikiticker"]
      */
     private void loadAllDatasources() {
-        queryDruid(rootNode -> {
+        Future<Response> responseFuture = queryDruid(rootNode -> {
             if (rootNode.isArray()) {
                 rootNode.forEach(jsonNode -> {
                     TableConfig tableConfig = new TableConfig(jsonNode.asText());
@@ -78,6 +78,14 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
                 });
             }
         }, COORDINATOR_TABLES_PATH);
+
+        try {
+            //calling get so we wait until responses are loaded before returning and processing continues
+            responseFuture.get(60, TimeUnit.SECONDS);
+        } catch (TimeoutException | InterruptedException | ExecutionException e) {
+            LOG.error("Interrupted while waiting for a response from druid", e);
+            throw new RuntimeException("Unable to automatically configure correctly, no response from druid.", e);
+        }
     }
 
     /**
@@ -193,9 +201,9 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      * @param successCallback  The callback to be done if the query succeeds.
      * @param url  The url to send the query to.
      */
-    private void queryDruid(SuccessCallback successCallback, String url) {
+    private Future<Response> queryDruid(SuccessCallback successCallback, String url) {
         LOG.debug("Fetching " + url);
-        Future<Response> responseFuture = druidWebService.getJsonObject(
+        return druidWebService.getJsonObject(
                 rootNode -> {
                     LOG.debug("Succesfully fetched " + url);
                     successCallback.invoke(rootNode);
@@ -210,13 +218,5 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
                 },
                 url
         );
-
-        try {
-            //calling get so we wait until responses are loaded before returning and processing continues
-            responseFuture.get(30, TimeUnit.SECONDS);
-        } catch (TimeoutException | InterruptedException | ExecutionException e) {
-            LOG.error("Interrupted while waiting for a response from druid", e);
-            throw new RuntimeException("Unable to automatically configure correctly, no response from druid.", e);
-        }
     }
 }
