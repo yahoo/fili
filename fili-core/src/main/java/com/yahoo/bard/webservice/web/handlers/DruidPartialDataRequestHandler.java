@@ -44,10 +44,25 @@ public class DruidPartialDataRequestHandler implements DataRequestHandler {
         return next.handleRequest(
                 context,
                 request,
-                druidQuery.withContext(
-                        druidQuery.getContext().withUncoveredIntervalsLimit(DRUID_UNCOVERED_INTERVAL_LIMIT)
-                ),
+                addDruidUncoveredIntervalLimitTo(druidQuery),
                 new DruidPartialDataResponseProcessor(response)
+        );
+    }
+
+    /**
+     * Adds {@code druid_uncovered_interval_limit} to QueryContext and make this the new QueryContext of druidQuery and
+     * returns the new druidQuery.
+     *
+     * @param druidQuery the old druidQuery which the {@code druid_uncovered_interval_limit} is to be added to
+     *
+     * @return the new druidQuery with {@code druid_uncovered_interval_limit} in QueryContext
+     */
+    private DruidAggregationQuery addDruidUncoveredIntervalLimitTo(DruidAggregationQuery<?> druidQuery) {
+        DruidAggregationQuery x = druidQuery.withContext(
+                druidQuery.getContext().withUncoveredIntervalsLimit(DRUID_UNCOVERED_INTERVAL_LIMIT)
+        );
+        return druidQuery.withContext(
+                druidQuery.getContext().withUncoveredIntervalsLimit(DRUID_UNCOVERED_INTERVAL_LIMIT)
         );
     }
 }
