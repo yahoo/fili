@@ -127,9 +127,8 @@ public class LayeredFileSystemConfig implements SystemConfig {
             List<String> dependentModules = masterConfiguration.getList(
                     ConfigurationGraph.DEPENDENT_MODULE_KEY,
                     Collections.<String>emptyList()
-            ).stream()
-                    .map(Object::toString)
-                    .collect(Collectors.toList());
+            );
+
 
             // Add module dependencies to the master configuration
             new ModuleLoader(loader).getConfigurations(dependentModules).forEach(

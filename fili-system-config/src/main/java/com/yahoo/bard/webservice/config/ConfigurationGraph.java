@@ -21,7 +21,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -96,10 +95,7 @@ public class ConfigurationGraph {
         }
         moduleConfigurations.put(moduleName, configuration);
 
-        List<String> dependencies = configuration.getList(DEPENDENT_MODULE_KEY, Collections.<String>emptyList())
-                .stream()
-                .map(Object::toString)
-                .collect(Collectors.toList());
+        List<String> dependencies = configuration.getList(DEPENDENT_MODULE_KEY, Collections.<String>emptyList());
 
         // later dependencies have higher precedence.  Store moduleDependencies in precedence order descending
         Collections.reverse(dependencies);
