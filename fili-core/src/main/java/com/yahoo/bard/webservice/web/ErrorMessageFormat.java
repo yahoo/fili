@@ -231,6 +231,20 @@ public enum ErrorMessageFormat implements MessageFormatter {
                     "There may be a problem with your data."
     ),
 
+    CONTEXT_AND_STATUS_MISSING_FROM_RESPONSE("JSON response is missing X-Druid-Response-Context and status code"),
+
+    DRUID_RESPONSE_CONTEXT_MISSING_FROM_RESPONSE("JSON response is missing X-Druid-Response-Context"),
+
+    UNCOVERED_INTERVALS_MISSING_FROM_RESPONSE(
+            "JSON response is missing 'uncoveredIntervals' from X-Druid-Response-Context header"
+    ),
+
+    UNCOVERED_INTERVALS_OVERFLOWED_MISSING_FROM_RESPONSE(
+            "JSON response is missing 'uncoveredIntervalsOverflowed' from X-Druid-Response-Context header"
+    ),
+
+    STATUS_CODE_MISSING_FROM_RESPONSE("JSON response is missing response status code"),
+
     TOO_MANY_BACKING_DATA_SOURCES("TableDataSource built with too many backing data sources: %s"),
     TOO_FEW_BACKING_DATA_SOURCES("TableDataSource built with insufficient backing data sources: %s")
     ;

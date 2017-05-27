@@ -159,30 +159,30 @@ public class DruidPartialDataResponseProcessor implements FullResponseProcessor 
      */
     private void validateJsonResponse(JsonNode json, DruidAggregationQuery<?> query) {
         if (json.getNodeType() == JsonNodeType.ARRAY) {
-            logAndGetErrorCallback("JSON response is missing X-Druid-Response-Context and status code", query);
+            logAndGetErrorCallback(ErrorMessageFormat.CONTEXT_AND_STATUS_MISSING_FROM_RESPONSE.format(), query);
         }
 
         if (!json.has(DruidJsonResponseContentKeys.DRUID_RESPONSE_CONTEXT.getName())) {
-            logAndGetErrorCallback("JSON response is missing X-Druid-Response-Context", query);
+            logAndGetErrorCallback(ErrorMessageFormat.DRUID_RESPONSE_CONTEXT_MISSING_FROM_RESPONSE.format(), query);
             return;
         }
         JsonNode druidResponseContext = json.get(DruidJsonResponseContentKeys.DRUID_RESPONSE_CONTEXT.getName());
         if (!druidResponseContext.has(DruidJsonResponseContentKeys.UNCOVERED_INTERVALS.getName())) {
             logAndGetErrorCallback(
-                    "JSON response is missing 'uncoveredIntervals' from X-Druid-Response-Context header",
+                    ErrorMessageFormat.UNCOVERED_INTERVALS_MISSING_FROM_RESPONSE.format(),
                     query
             );
             return;
         }
         if (!druidResponseContext.has(DruidJsonResponseContentKeys.UNCOVERED_INTERVALS_OVERFLOWED.getName())) {
             logAndGetErrorCallback(
-                    "JSON response is missing 'uncoveredIntervalsOverflowed' from X-Druid-Response-Context header",
+                    ErrorMessageFormat.UNCOVERED_INTERVALS_OVERFLOWED_MISSING_FROM_RESPONSE.format(),
                     query
             );
             return;
         }
         if (!json.has(DruidJsonResponseContentKeys.STATUS_CODE.getName())) {
-            logAndGetErrorCallback("JSON response is missing response status code", query);
+            logAndGetErrorCallback(ErrorMessageFormat.STATUS_CODE_MISSING_FROM_RESPONSE.format(), query);
         }
     }
 

@@ -8,6 +8,7 @@ import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
 import com.yahoo.bard.webservice.druid.model.query.QueryContext
 import com.yahoo.bard.webservice.table.ConstrainedTable
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
+import com.yahoo.bard.webservice.web.ErrorMessageFormat
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -18,9 +19,14 @@ import org.joda.time.Interval
 
 import spock.lang.Specification
 
+import java.util.stream.Collectors
+
 class DruidPartialDataResponseProcessorSpec extends Specification {
     private static final ObjectMapper MAPPER = new ObjectMapper()
             .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
+    private static final int ERROR_STATUS_CODE = 500
+    private static final String REASON_PHRASE = 'The server encountered an unexpected condition which ' +
+            'prevented it from fulfilling the request.'
 
     ResponseProcessor next
     HttpErrorCallback httpErrorCallback
@@ -37,7 +43,7 @@ class DruidPartialDataResponseProcessorSpec extends Specification {
 
     def "getOverlap returns intersection between Druid intervals and Fili intervals in case of #caseDescription"() {
         given:
-        JsonNode json = MAPPER.readTree(jsonInString)
+        JsonNode json = MAPPER.readTree(constructJSON(missingIntervals))
 
         DataSource dataSource = Mock(DataSource)
         ConstrainedTable constrainedTable = Mock(ConstrainedTable)
@@ -54,67 +60,23 @@ class DruidPartialDataResponseProcessorSpec extends Specification {
         )
 
         where:
-        jsonInString | availableIntervals | expected | caseDescription
-        '''
-        {
-            "response": [{"k1":"v1"}],
-            "X-Druid-Response-Context": {
-                "uncoveredIntervals": [
-                    "2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z",
-                    "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"
-                ],
-                "uncoveredIntervalsOverflowed": false
-            },
-            "status-code": 200
-        }
-        ''' |
+        missingIntervals | availableIntervals | expected | caseDescription
+        ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z", "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"] |
+                ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z", "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"] |
+                ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z", "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"] |
+                "completely overlapped"
+        ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z", "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"] |
                 ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z"] |
-                ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z"] | "overlapping"
-        '''
-        {
-            "response": [{"k1":"v1"}],
-            "X-Druid-Response-Context": {
-                "uncoveredIntervals": [
-                    "2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z",
-                    "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"
-                ],
-                "uncoveredIntervalsOverflowed": false
-            },
-            "status-code": 200
-        }
-        ''' |
+                ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z"] | "partially overlapped (Fili's intervals contained inside Druid's)"
+        ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z"] |
+                ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z", "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"] |
+                ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z"] | "partially overlapped (Druid's intervals contained inside Fili's)"
+        ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z","2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"] |
                 ["2019-11-22T00:00:00.000Z/2019-12-18T00:00:00.000Z"] |
                 [] | "no overlapping"
-        '''
-        {
-            "response": [{"k1":"v1"}],
-            "X-Druid-Response-Context": {
-                "uncoveredIntervals": [
-                    "2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z",
-                    "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"
-                ],
-                "uncoveredIntervalsOverflowed": false
-            },
-            "status-code": 200
-        }
-        ''' |
+        ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z","2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"] |
                 [] |
-                [] | "non-overlapping (Fili has no emtpy intervals)"
-        '''
-        {
-            "response": [{"k1":"v1"}],
-            "X-Druid-Response-Context": {
-                "uncoveredIntervals": [
-                    "2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z",
-                    "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"
-                ],
-                "uncoveredIntervalsOverflowed": false
-            },
-            "status-code": 200
-        }
-        ''' |
-                ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z", "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"] |
-                ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z", "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"] | "being equal"
+                [] | "no overlapping (Fili has no emtpy intervals)"
     }
 
     def "checkOverflow recognizes interval overflow correctly"() {
@@ -143,28 +105,21 @@ class DruidPartialDataResponseProcessorSpec extends Specification {
 
         then:
         1 * httpErrorCallback.dispatch(
-                500,
-                'The server encountered an unexpected condition which prevented it from fulfilling the request.',
-                "Query is returning more than the configured limit of '10' missing intervals. " +
-                        "There may be a problem with your data.")
+                ERROR_STATUS_CODE,
+                REASON_PHRASE,
+                ErrorMessageFormat.TOO_MANY_INTERVALS_MISSING.format("10")
+        )
     }
 
     def "processResponse logs and invokes error callback on data availability mismatch"() {
         given:
         JsonNode json = MAPPER.readTree(
-                '''
-                {
-                    "response": [{"k1":"v1"}],
-                    "X-Druid-Response-Context": {
-                        "uncoveredIntervals": [
-                            "2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z",
-                            "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"
-                        ],
-                        "uncoveredIntervalsOverflowed": false
-                    },
-                    "status-code": 200
-                }
-                '''
+                constructJSON(
+                        [
+                                "2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z",
+                                "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"
+                        ]
+                )
         )
 
         DataSource dataSource = Mock(DataSource)
@@ -181,11 +136,9 @@ class DruidPartialDataResponseProcessorSpec extends Specification {
 
         then:
         1 * httpErrorCallback.dispatch(
-                500,
-                'The server encountered an unexpected condition which prevented it from fulfilling the request.',
-                'Data availability expectation does not match with actual query result obtained from druid for the ' +
-                        'following intervals [2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z] where druid ' +
-                        'does not have data'
+                ERROR_STATUS_CODE,
+                REASON_PHRASE,
+                ErrorMessageFormat.DATA_AVAILABILITY_MISMATCH.format("[2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z]")
         )
     }
 
@@ -197,52 +150,56 @@ class DruidPartialDataResponseProcessorSpec extends Specification {
         json.get(DruidJsonResponseContentKeys.DRUID_RESPONSE_CONTEXT.getName()) >> druidResponseContext
 
         when:
+        // Druid returns response in an ArrayNode, which doesn't contain X-Druid-Response-Context or status code
         druidPartialDataResponseProcessor.validateJsonResponse(arrayNode, druidAggregationQuery)
         then:
         1 * httpErrorCallback.dispatch(
-                500,
-                'The server encountered an unexpected condition which prevented it from fulfilling the request.',
-                'JSON response is missing X-Druid-Response-Context and status code'
+                ERROR_STATUS_CODE,
+                REASON_PHRASE,
+                ErrorMessageFormat.CONTEXT_AND_STATUS_MISSING_FROM_RESPONSE.format()
         )
 
-        // missing X-Druid-Response-Context
         when:
+        // Druid response is missing X-Druid-Response-Context
         json.has(DruidJsonResponseContentKeys.DRUID_RESPONSE_CONTEXT.getName()) >> false
         druidPartialDataResponseProcessor.validateJsonResponse(json, druidAggregationQuery)
         then:
         1 * httpErrorCallback.dispatch(
-                500,
-                'The server encountered an unexpected condition which prevented it from fulfilling the request.',
-                'JSON response is missing X-Druid-Response-Context'
+                ERROR_STATUS_CODE,
+                REASON_PHRASE,
+                ErrorMessageFormat.DRUID_RESPONSE_CONTEXT_MISSING_FROM_RESPONSE.format()
         )
 
-        // missing X-Druid-Response-Context.uncoveredIntervals
         when:
+        // Druid response has X-Druid-Response-Context,
+        // but the X-Druid-Response-Context is missing uncoveredIntervals
         json.has(DruidJsonResponseContentKeys.DRUID_RESPONSE_CONTEXT.getName()) >> true
         druidResponseContext.has(DruidJsonResponseContentKeys.UNCOVERED_INTERVALS.getName()) >> false
         druidPartialDataResponseProcessor.validateJsonResponse(json, druidAggregationQuery)
         then:
         1 * httpErrorCallback.dispatch(
-                500,
-                'The server encountered an unexpected condition which prevented it from fulfilling the request.',
-                "JSON response is missing 'uncoveredIntervals' from X-Druid-Response-Context header"
+                ERROR_STATUS_CODE,
+                REASON_PHRASE,
+                ErrorMessageFormat.UNCOVERED_INTERVALS_MISSING_FROM_RESPONSE.format()
         )
 
-        // missing X-Druid-Response-Context.uncoveredIntervalsOverflowed
         when:
+        // Druid response has X-Druid-Response-Context,
+        // but the X-Druid-Response-Context is missing uncoveredIntervalsOverflowed
         json.has(DruidJsonResponseContentKeys.DRUID_RESPONSE_CONTEXT.getName()) >> true
         druidResponseContext.has(DruidJsonResponseContentKeys.UNCOVERED_INTERVALS.getName()) >> true
         druidResponseContext.has(DruidJsonResponseContentKeys.UNCOVERED_INTERVALS_OVERFLOWED.getName()) >> false
         druidPartialDataResponseProcessor.validateJsonResponse(json, druidAggregationQuery)
         then:
         1 * httpErrorCallback.dispatch(
-                500,
-                'The server encountered an unexpected condition which prevented it from fulfilling the request.',
-                "JSON response is missing 'uncoveredIntervalsOverflowed' from X-Druid-Response-Context header"
+                ERROR_STATUS_CODE,
+                REASON_PHRASE,
+                ErrorMessageFormat.UNCOVERED_INTERVALS_OVERFLOWED_MISSING_FROM_RESPONSE.format()
         )
 
-        // missing status code
         when:
+        // Druid response has X-Druid-Response-Context,
+        // but the response is missing status code
         json.has(DruidJsonResponseContentKeys.DRUID_RESPONSE_CONTEXT.getName()) >> true
         druidResponseContext.has(DruidJsonResponseContentKeys.UNCOVERED_INTERVALS.getName()) >> true
         druidResponseContext.has(DruidJsonResponseContentKeys.UNCOVERED_INTERVALS_OVERFLOWED.getName()) >> true
@@ -250,9 +207,34 @@ class DruidPartialDataResponseProcessorSpec extends Specification {
         druidPartialDataResponseProcessor.validateJsonResponse(json, druidAggregationQuery)
         then:
         1 * httpErrorCallback.dispatch(
-                500,
-                'The server encountered an unexpected condition which prevented it from fulfilling the request.',
-                "JSON response is missing response status code"
+                ERROR_STATUS_CODE,
+                REASON_PHRASE,
+                ErrorMessageFormat.STATUS_CODE_MISSING_FROM_RESPONSE.format()
+        )
+    }
+
+    /**
+     * Constructs a JSON response using a template and a list of provided intervals in String representation.
+     *
+     * @param intervals the list of intervals to be used by the template
+     */
+    static String constructJSON(List<String> intervals) {
+        return String.format(
+                '''
+                {
+                    "response": [{"k1":"v1"}],
+                    "X-Druid-Response-Context": {
+                        "uncoveredIntervals": [
+                            %s
+                        ],
+                        "uncoveredIntervalsOverflowed": false
+                    },
+                    "status-code": 200
+                }
+                ''',
+                intervals.stream()
+                        .map{it -> "\"" + it + "\""}
+                        .collect(Collectors.joining(","))
         )
     }
 }
