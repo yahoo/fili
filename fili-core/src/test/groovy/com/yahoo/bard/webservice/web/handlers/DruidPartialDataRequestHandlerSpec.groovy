@@ -40,20 +40,6 @@ class DruidPartialDataRequestHandlerSpec extends Specification {
                 nextHandler
         )
 
-        DruidAggregationQuery druidAggregationQuery = new GroupByQuery(
-                Mock(DataSource),
-                Mock(Granularity),
-                Mock(Collection),
-                Mock(Filter),
-                Mock(Having),
-                Collections.emptyList(),
-                Collections.emptyList(),
-                Mock(Collection),
-                Mock(LimitSpec),
-                queryContext,
-                false
-        )
-
         when:
         druidPartialDataRequestHandler.handleRequest(requestContext, apiRequest, druidQuery, responseProcessor)
 
