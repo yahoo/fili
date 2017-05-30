@@ -90,10 +90,10 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
         // force each individual table to finish loading (i.e. loadTable(t1) and loadTable(t2) have finished)
         fullTableResponses.forEach(future -> {
             try {
-                future.get(30,TimeUnit.SECONDS);
+                future.get(30, TimeUnit.SECONDS);
             } catch (InterruptedException | ExecutionException | TimeoutException e) {
                 LOG.error("Interrupted while building tables", e);
-                throw new RuntimeException("Unable to automatically configure correctly, couldn't fetch table data.", e);
+                throw new RuntimeException("Unable to configure, couldn't fetch table data.", e);
             }
         });
     }
@@ -117,6 +117,8 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      * }
      *
      * @param table The TableConfig to be loaded with queries against druid.
+     *
+     * @return future response for the query loading the table
      */
     private Future<Response> loadTable(TableConfig table) {
         String url = COORDINATOR_TABLES_PATH + table.getName() + "/?full";

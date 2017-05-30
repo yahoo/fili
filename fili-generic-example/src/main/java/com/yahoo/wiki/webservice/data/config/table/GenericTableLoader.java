@@ -32,10 +32,10 @@ import java.util.stream.Collectors;
  * Load the table configuration for any druid setup.
  */
 public class GenericTableLoader extends BaseTableLoader {
-    private Map<String,Set<Granularity>> validGrains = new HashMap<>();
+    private Map<String, Set<Granularity>> validGrains = new HashMap<>();
     // Set up the metrics
-    private Map<String,Set<FieldName>> druidMetricNames = new HashMap<>();
-    private Map<String,Set<ApiMetricName>> apiMetricNames = new HashMap<>();
+    private Map<String, Set<FieldName>> druidMetricNames = new HashMap<>();
+    private Map<String, Set<ApiMetricName>> apiMetricNames = new HashMap<>();
     // Set up the table definitions
     private Map<String, Set<PhysicalTableDefinition>> tableDefinitions = new HashMap<>();
     private final Supplier<List<? extends DataSourceConfiguration>> configLoader;
@@ -65,7 +65,7 @@ public class GenericTableLoader extends BaseTableLoader {
     private void configureTables(GenericDimensionConfigs genericDimensionConfigs) {
         configLoader.get().forEach(dataSourceConfiguration -> {
 
-            druidMetricNames.put( dataSourceConfiguration.getName(),
+            druidMetricNames.put(dataSourceConfiguration.getName(),
                     dataSourceConfiguration.getMetrics()
                     .stream()
                     .map(DruidMetricName::new)
