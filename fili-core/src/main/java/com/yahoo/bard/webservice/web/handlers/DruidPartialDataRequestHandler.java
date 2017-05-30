@@ -21,7 +21,9 @@ public class DruidPartialDataRequestHandler implements DataRequestHandler {
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     private final DataRequestHandler next;
-    private int druidUncoveredIntervalLimit;
+    private final int druidUncoveredIntervalLimit = SYSTEM_CONFIG.getIntProperty(
+            SYSTEM_CONFIG.getPackageVariableName("druid_uncovered_interval_limit"), 0
+    );
 
     /**
      * Constructor.
@@ -30,9 +32,6 @@ public class DruidPartialDataRequestHandler implements DataRequestHandler {
      */
     public DruidPartialDataRequestHandler(@NotNull DataRequestHandler next) {
         this.next = next;
-        this.druidUncoveredIntervalLimit = SYSTEM_CONFIG.getIntProperty(
-                SYSTEM_CONFIG.getPackageVariableName("druid_uncovered_interval_limit"), 0
-        );
     }
 
     @Override
@@ -45,22 +44,10 @@ public class DruidPartialDataRequestHandler implements DataRequestHandler {
         return next.handleRequest(
                 context,
                 request,
-                addDruidUncoveredIntervalLimitTo(druidQuery),
+                druidQuery.withContext(
+                        druidQuery.getContext().withUncoveredIntervalsLimit(druidUncoveredIntervalLimit)
+                ),
                 new DruidPartialDataResponseProcessor(response)
-        );
-    }
-
-    /**
-     * Adds {@code druid_uncovered_interval_limit} to QueryContext and make this the new QueryContext of druidQuery and
-     * returns the new druidQuery.
-     *
-     * @param druidQuery the old druidQuery which the {@code druid_uncovered_interval_limit} is to be added to
-     *
-     * @return the new druidQuery with {@code druid_uncovered_interval_limit} in QueryContext
-     */
-    private DruidAggregationQuery addDruidUncoveredIntervalLimitTo(DruidAggregationQuery<?> druidQuery) {
-        return druidQuery.withContext(
-                druidQuery.getContext().withUncoveredIntervalsLimit(druidUncoveredIntervalLimit)
         );
     }
 }

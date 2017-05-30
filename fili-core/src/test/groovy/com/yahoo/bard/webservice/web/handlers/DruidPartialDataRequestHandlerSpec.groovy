@@ -3,31 +3,43 @@
 package com.yahoo.bard.webservice.web.handlers
 
 import com.yahoo.bard.webservice.config.SystemConfig
-import com.yahoo.bard.webservice.data.dimension.Dimension
-import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
+import com.yahoo.bard.webservice.config.SystemConfigProvider
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource
 import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.model.having.Having
 import com.yahoo.bard.webservice.druid.model.orderby.LimitSpec
-import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
 import com.yahoo.bard.webservice.druid.model.query.Granularity
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.druid.model.query.QueryContext
-
-import org.joda.time.Interval
+import com.yahoo.bard.webservice.web.DataApiRequest
+import com.yahoo.bard.webservice.web.responseprocessors.DruidPartialDataResponseProcessor
+import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor
 
 import spock.lang.Specification
 
 class DruidPartialDataRequestHandlerSpec extends Specification {
+    private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+
     def "New query context is passed to next handler"() {
         given:
-        DruidPartialDataRequestHandler druidPartialDataRequestHandler = new DruidPartialDataRequestHandler(
-                Mock(DataRequestHandler)
-        )
-        druidPartialDataRequestHandler.druidUncoveredIntervalLimit = 10
+        SystemConfig systemConfig = SystemConfigProvider.getInstance()
+        String uncoveredKey = SYSTEM_CONFIG.getPackageVariableName("druid_uncovered_interval_limit")
+        systemConfig.setProperty(uncoveredKey, '10')
 
-        QueryContext queryContext = new QueryContext([:])
+        DataRequestHandler nextHandler = Mock(DataRequestHandler)
+        ResponseProcessor responseProcessor = Mock(ResponseProcessor)
+        RequestContext requestContext = Mock(RequestContext)
+        DruidAggregationQuery druidQuery = Mock(DruidAggregationQuery)
+        QueryContext queryContext = Mock(QueryContext)
+        DataApiRequest apiRequest = Mock(DataApiRequest)
+
+        druidQuery.getContext() >> queryContext
+
+        DruidPartialDataRequestHandler druidPartialDataRequestHandler = new DruidPartialDataRequestHandler(
+                nextHandler
+        )
+
         DruidAggregationQuery druidAggregationQuery = new GroupByQuery(
                 Mock(DataSource),
                 Mock(Granularity),
@@ -42,9 +54,15 @@ class DruidPartialDataRequestHandlerSpec extends Specification {
                 false
         )
 
-        expect:
-        druidPartialDataRequestHandler.addDruidUncoveredIntervalLimitTo(druidAggregationQuery)
-                .getContext()
-                .getUncoveredIntervalsLimit() == 10
+        when:
+        druidPartialDataRequestHandler.handleRequest(requestContext, apiRequest, druidQuery, responseProcessor)
+
+        then:
+        1 * druidQuery.withContext(queryContext) >> druidQuery
+        1 * queryContext.withUncoveredIntervalsLimit(10) >> queryContext
+        1 * nextHandler.handleRequest(requestContext, apiRequest, druidQuery, _ as DruidPartialDataResponseProcessor)
+
+        cleanup:
+        systemConfig.clearProperty(uncoveredKey)
     }
 }
