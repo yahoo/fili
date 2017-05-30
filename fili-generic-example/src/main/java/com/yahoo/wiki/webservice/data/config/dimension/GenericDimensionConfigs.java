@@ -34,6 +34,7 @@ public class GenericDimensionConfigs {
     public GenericDimensionConfigs(Supplier<List<? extends DataSourceConfiguration>> configLoader) {
         dimensionConfigs = configLoader.get().stream()
                 .flatMap(tableName -> tableName.getDimensions().stream())
+                .distinct()
                 .map(dimensionName -> new DefaultKeyValueStoreDimensionConfig(
                         () -> dimensionName,
                         dimensionName,
