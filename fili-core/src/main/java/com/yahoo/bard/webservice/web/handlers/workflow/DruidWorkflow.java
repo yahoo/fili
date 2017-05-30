@@ -48,7 +48,7 @@ import javax.validation.constraints.NotNull;
 public class DruidWorkflow implements RequestWorkflowProvider {
 
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
-    private static final int DRUID_UNCOVERED_INTERVAL_LIMIT = SYSTEM_CONFIG.getIntProperty(
+    private int druidUncoveredIntervalLimit = SYSTEM_CONFIG.getIntProperty(
             SYSTEM_CONFIG.getPackageVariableName("druid_uncovered_interval_limit"),
             0
     );
@@ -108,7 +108,7 @@ public class DruidWorkflow implements RequestWorkflowProvider {
         DataRequestHandler uiHandler = new AsyncWebServiceRequestHandler(uiWebService, mapper);
         DataRequestHandler nonUiHandler = new AsyncWebServiceRequestHandler(nonUiWebService, mapper);
 
-        if (DRUID_UNCOVERED_INTERVAL_LIMIT > 0) {
+        if (druidUncoveredIntervalLimit > 0) {
             uiHandler = new DruidPartialDataRequestHandler(uiHandler);
             nonUiHandler = new DruidPartialDataRequestHandler(nonUiHandler);
         }

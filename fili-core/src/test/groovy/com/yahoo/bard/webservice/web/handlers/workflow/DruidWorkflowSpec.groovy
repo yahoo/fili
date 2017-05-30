@@ -20,6 +20,7 @@ import com.yahoo.bard.webservice.web.handlers.CacheV2RequestHandler
 import com.yahoo.bard.webservice.web.handlers.DataRequestHandler
 import com.yahoo.bard.webservice.web.handlers.DebugRequestHandler
 import com.yahoo.bard.webservice.web.handlers.DefaultWebServiceHandlerSelector
+import com.yahoo.bard.webservice.web.handlers.DruidPartialDataRequestHandler
 import com.yahoo.bard.webservice.web.handlers.SplitQueryRequestHandler
 import com.yahoo.bard.webservice.web.handlers.WebServiceSelectorRequestHandler
 import com.yahoo.bard.webservice.web.handlers.WeightCheckRequestHandler
@@ -192,5 +193,61 @@ class DruidWorkflowSpec extends Specification {
 
     def byClass(Class c) {
         { it->it.class == c}
+    }
+
+    def "Test workflow contains DruidPartialDataRequestHandler when druid_uncovered_interval_limit > 0"() {
+        setup:
+        dw = new DruidWorkflow(
+                dataCache,
+                uiWebService,
+                nonUiWebService,
+                weightUtil,
+                physicalTableDictionary,
+                partialDataHandler,
+                querySigningService,
+                volatileIntervalsService,
+                MAPPER
+        )
+        dw.druidUncoveredIntervalLimit = 10
+        DataRequestHandler workflow = dw.buildWorkflow()
+        List<DataRequestHandler> handlers = getHandlerChain(workflow)
+        WebServiceSelectorRequestHandler select = handlers.find(byClass(WebServiceSelectorRequestHandler))
+        def defaultHandler = select.handlerSelector as DefaultWebServiceHandlerSelector
+
+        when:
+        def handlers1 = getHandlerChain(defaultHandler.uiWebServiceHandler.next)
+        def handlers2 = getHandlerChain(defaultHandler.nonUiWebServiceHandler.next)
+
+        then:
+        handlers1.find(byClass(DruidPartialDataRequestHandler)) != null
+        handlers2.find(byClass(DruidPartialDataRequestHandler)) != null
+    }
+
+    def "Test workflow doesn't contain DruidPartialDataRequestHandler when druid_uncovered_interval_limit <= 0"() {
+        setup:
+        dw = new DruidWorkflow(
+                dataCache,
+                uiWebService,
+                nonUiWebService,
+                weightUtil,
+                physicalTableDictionary,
+                partialDataHandler,
+                querySigningService,
+                volatileIntervalsService,
+                MAPPER
+        )
+        dw.druidUncoveredIntervalLimit = 0
+        DataRequestHandler workflow = dw.buildWorkflow()
+        List<DataRequestHandler> handlers = getHandlerChain(workflow)
+        WebServiceSelectorRequestHandler select = handlers.find(byClass(WebServiceSelectorRequestHandler))
+        def defaultHandler = select.handlerSelector as DefaultWebServiceHandlerSelector
+
+        when:
+        def handlers1 = getHandlerChain(defaultHandler.uiWebServiceHandler.next)
+        def handlers2 = getHandlerChain(defaultHandler.nonUiWebServiceHandler.next)
+
+        then:
+        handlers1.find(byClass(DruidPartialDataRequestHandler)) == null
+        handlers2.find(byClass(DruidPartialDataRequestHandler)) == null
     }
 }

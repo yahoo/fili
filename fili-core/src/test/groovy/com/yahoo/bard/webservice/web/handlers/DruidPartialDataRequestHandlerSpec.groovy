@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.handlers
 
+import com.yahoo.bard.webservice.config.SystemConfig
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource
@@ -24,6 +25,8 @@ class DruidPartialDataRequestHandlerSpec extends Specification {
         DruidPartialDataRequestHandler druidPartialDataRequestHandler = new DruidPartialDataRequestHandler(
                 Mock(DataRequestHandler)
         )
+        druidPartialDataRequestHandler.druidUncoveredIntervalLimit = 10
+
         QueryContext queryContext = new QueryContext([:])
         DruidAggregationQuery druidAggregationQuery = new GroupByQuery(
                 Mock(DataSource),
@@ -42,6 +45,6 @@ class DruidPartialDataRequestHandlerSpec extends Specification {
         expect:
         druidPartialDataRequestHandler.addDruidUncoveredIntervalLimitTo(druidAggregationQuery)
                 .getContext()
-                .getUncoveredIntervalsLimit() == 0
+                .getUncoveredIntervalsLimit() == 10
     }
 }

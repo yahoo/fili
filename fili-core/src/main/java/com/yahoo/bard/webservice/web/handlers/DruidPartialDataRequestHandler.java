@@ -19,11 +19,9 @@ import javax.validation.constraints.NotNull;
 public class DruidPartialDataRequestHandler implements DataRequestHandler {
 
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
-    private static final int DRUID_UNCOVERED_INTERVAL_LIMIT = SYSTEM_CONFIG.getIntProperty(
-            SYSTEM_CONFIG.getPackageVariableName("druid_uncovered_interval_limit"), 0
-    );
 
     private final DataRequestHandler next;
+    private int druidUncoveredIntervalLimit;
 
     /**
      * Constructor.
@@ -32,6 +30,9 @@ public class DruidPartialDataRequestHandler implements DataRequestHandler {
      */
     public DruidPartialDataRequestHandler(@NotNull DataRequestHandler next) {
         this.next = next;
+        this.druidUncoveredIntervalLimit = SYSTEM_CONFIG.getIntProperty(
+                SYSTEM_CONFIG.getPackageVariableName("druid_uncovered_interval_limit"), 0
+        );
     }
 
     @Override
@@ -58,11 +59,8 @@ public class DruidPartialDataRequestHandler implements DataRequestHandler {
      * @return the new druidQuery with {@code druid_uncovered_interval_limit} in QueryContext
      */
     private DruidAggregationQuery addDruidUncoveredIntervalLimitTo(DruidAggregationQuery<?> druidQuery) {
-        DruidAggregationQuery x = druidQuery.withContext(
-                druidQuery.getContext().withUncoveredIntervalsLimit(DRUID_UNCOVERED_INTERVAL_LIMIT)
-        );
         return druidQuery.withContext(
-                druidQuery.getContext().withUncoveredIntervalsLimit(DRUID_UNCOVERED_INTERVAL_LIMIT)
+                druidQuery.getContext().withUncoveredIntervalsLimit(druidUncoveredIntervalLimit)
         );
     }
 }
