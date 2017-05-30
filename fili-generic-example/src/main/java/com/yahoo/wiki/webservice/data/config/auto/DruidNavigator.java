@@ -2,14 +2,12 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.auto;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.util.IntervalUtils;
-
-import com.fasterxml.jackson.databind.JsonNode;
-
 import org.asynchttpclient.Response;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -69,23 +67,35 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      * ["wikiticker"]
      */
     private void loadAllDatasources() {
+        final List<Future<Response>> fullTableResponses = new ArrayList<>();
         Future<Response> responseFuture = queryDruid(rootNode -> {
             if (rootNode.isArray()) {
                 rootNode.forEach(jsonNode -> {
                     TableConfig tableConfig = new TableConfig(jsonNode.asText());
-                    loadTable(tableConfig);
+                    Future<Response> tableResponseFuture = loadTable(tableConfig);
+                    fullTableResponses.add(tableResponseFuture);
                     tableConfigurations.add(tableConfig);
                 });
             }
         }, COORDINATOR_TABLES_PATH);
 
+        // wait until list of table names are loaded before processing continues (i.e. ["t1","t2"])
         try {
-            //calling get so we wait until responses are loaded before returning and processing continues
             responseFuture.get(30, TimeUnit.SECONDS);
         } catch (TimeoutException | InterruptedException | ExecutionException e) {
             LOG.error("Interrupted while waiting for a response from druid", e);
             throw new RuntimeException("Unable to automatically configure correctly, no response from druid.", e);
         }
+
+        // force each individual table to finish loading (i.e. loadTable(t1) and loadTable(t2) have finished)
+        fullTableResponses.forEach(future -> {
+            try {
+                future.get(30,TimeUnit.SECONDS);
+            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                LOG.error("Interrupted while building tables", e);
+                throw new RuntimeException("Unable to automatically configure correctly, couldn't fetch table data.", e);
+            }
+        });
     }
 
     /**
@@ -108,10 +118,10 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      *
      * @param table The TableConfig to be loaded with queries against druid.
      */
-    private void loadTable(TableConfig table) {
+    private Future<Response> loadTable(TableConfig table) {
         String url = COORDINATOR_TABLES_PATH + table.getName() + "/?full";
         String segmentsPath = "segments";
-        queryDruid(rootNode -> {
+        return queryDruid(rootNode -> {
             if (rootNode.get(segmentsPath).size() == 0) {
                 LOG.error("The segments list returned from {} was empty.", url);
                 throw new RuntimeException("Can't configure table without segment data.");
