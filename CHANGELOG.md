@@ -20,11 +20,6 @@ Current
     * Add response status code to JSON response
     * Add `DruidPartialDataResponseProcessor` that checks for any missing data that's not being found
 
-- [Implement DruidPartialDataResponseProcessor](https://github.com/yahoo/fili/pull/275)
-    * Add `FullResponseProcessor` interface that extends `ResponseProcessor`
-    * Add response status code to JSON response
-    * Add `DruidPartialDataResponseProcessor` that checks for any missing data that's not being found
-
 - [Add `DataSourceName` concept, removing responsibility from `TableName`](https://github.com/yahoo/fili/pull/263)
     * `TableName` was serving double-duty, and it was causing problems and confusion. Splitting the concepts fixes it.
 
