@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.client.impl;
 
+import com.yahoo.bard.webservice.web.responseprocessors.DruidJsonResponseContentKeys;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -30,14 +32,21 @@ public class HeaderNestingJsonBuilderStrategy implements Function<Response, Json
 
     @Override
     public JsonNode apply(Response response) {
+        MappingJsonFactory mappingJsonFactory = new MappingJsonFactory();
         ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
-        objectNode.set("response", baseStrategy.apply(response));
+        objectNode.set(DruidJsonResponseContentKeys.RESPONSE.getName(), baseStrategy.apply(response));
         try {
             objectNode.set(
-                    "X-Druid-Response-Context",
-                    new MappingJsonFactory()
-                            .createParser(response.getHeader("X-Druid-Response-Context"))
+                    DruidJsonResponseContentKeys.DRUID_RESPONSE_CONTEXT.getName(),
+                    mappingJsonFactory
+                            .createParser(
+                                    response.getHeader(DruidJsonResponseContentKeys.DRUID_RESPONSE_CONTEXT.getName())
+                            )
                             .readValueAsTree()
+            );
+            objectNode.set(
+                    DruidJsonResponseContentKeys.STATUS_CODE.getName(),
+                    mappingJsonFactory.createParser(String.valueOf(response.getStatusCode())).readValueAsTree()
             );
         } catch (IOException ioe) {
             throw new IllegalStateException(ioe);
