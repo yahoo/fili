@@ -17,6 +17,8 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -24,7 +26,7 @@ import java.util.stream.Collectors;
  * Hold all the dimension configurations for a generic druid configuration.
  */
 public class GenericDimensionConfigs {
-    private final Set<DimensionConfig> dimensionConfigs;
+    private final Map<String, Set<DimensionConfig>> dimensionConfigs;
 
     /**
      * Construct the dimension configurations.
@@ -32,25 +34,29 @@ public class GenericDimensionConfigs {
      * @param configLoader  Supplies DataSourceConfigurations to build the dimensions from.
      */
     public GenericDimensionConfigs(Supplier<List<? extends DataSourceConfiguration>> configLoader) {
-        dimensionConfigs = configLoader.get().stream()
-                .flatMap(tableName -> tableName.getDimensions().stream())
-                .distinct()
-                .map(dimensionName -> new DefaultKeyValueStoreDimensionConfig(
-                        () -> dimensionName,
-                        dimensionName,
-                        "",
-                        dimensionName,
-                        "General",
-                        getDefaultFields(),
-                        getDefaultKeyValueStore(dimensionName),
-                        getDefaultSearchProvider(dimensionName)
-                ))
-                .collect(
-                        Collectors.collectingAndThen(
-                                Collectors.toSet(),
-                                Collections::unmodifiableSet
-                        )
-                );
+        dimensionConfigs = new HashMap<>();
+        configLoader.get()
+                .forEach(dataSourceConfiguration -> {
+                    Set<DimensionConfig> tableDimensionConfigs = dataSourceConfiguration.getDimensions().stream()
+                            .map(dimensionName -> new DefaultKeyValueStoreDimensionConfig(
+                                            () -> dimensionName,
+                                            dimensionName,
+                                            "",
+                                            dimensionName,
+                                            "General",
+                                            getDefaultFields(),
+                                            getDefaultKeyValueStore(dimensionName),
+                                            getDefaultSearchProvider(dimensionName)
+                                    )
+                            ).collect(
+                                    Collectors.collectingAndThen(
+                                            Collectors.toSet(),
+                                            Collections::unmodifiableSet
+                                    ));
+
+                    dimensionConfigs.put(dataSourceConfiguration.getName(), tableDimensionConfigs);
+                });
+        ;
     }
 
     /**
@@ -59,7 +65,21 @@ public class GenericDimensionConfigs {
      * @return set of dimension configurations
      */
     public Set<DimensionConfig> getAllDimensionConfigurations() {
-        return dimensionConfigs;
+        return dimensionConfigs.values().stream()
+                .flatMap(Set::stream)
+                .distinct()
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * Get all the dimension configurations associated with this datasource.
+     *
+     * @param dataSourceConfiguration the datasource configuration's dimensions to load
+     *
+     * @return the dimension configurations for this datasource
+     */
+    public Set<DimensionConfig> getDimensionConfigs(DataSourceConfiguration dataSourceConfiguration) {
+        return dimensionConfigs.getOrDefault(dataSourceConfiguration.getName(), Collections.emptySet());
     }
 
     /**
