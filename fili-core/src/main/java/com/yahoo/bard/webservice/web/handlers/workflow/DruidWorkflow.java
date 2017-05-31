@@ -3,6 +3,8 @@
 package com.yahoo.bard.webservice.web.handlers.workflow;
 
 import com.yahoo.bard.webservice.config.BardFeatureFlag;
+import com.yahoo.bard.webservice.config.SystemConfig;
+import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.PartialDataHandler;
 import com.yahoo.bard.webservice.data.cache.DataCache;
 import com.yahoo.bard.webservice.data.volatility.VolatileIntervalsService;
@@ -14,6 +16,7 @@ import com.yahoo.bard.webservice.web.handlers.CacheRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.CacheV2RequestHandler;
 import com.yahoo.bard.webservice.web.handlers.DataRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.DebugRequestHandler;
+import com.yahoo.bard.webservice.web.handlers.DruidPartialDataRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.PaginationRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.PartialDataRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.SplitQueryRequestHandler;
@@ -44,8 +47,14 @@ import javax.validation.constraints.NotNull;
 @Singleton
 public class DruidWorkflow implements RequestWorkflowProvider {
 
+    private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+
     public static final String RESPONSE_WORKFLOW_TIMER = "ResponseWorkflow";
     public static final String REQUEST_WORKFLOW_TIMER = "RequestWorkflow";
+    private final int druidUncoveredIntervalLimit = SYSTEM_CONFIG.getIntProperty(
+            SYSTEM_CONFIG.getPackageVariableName("druid_uncovered_interval_limit"),
+            0
+    );
 
     protected final @NotNull DataCache<?> dataCache;
     protected final @NotNull DruidWebService uiWebService;
@@ -98,6 +107,12 @@ public class DruidWorkflow implements RequestWorkflowProvider {
         // The final stage of the workflow is to send a request to a druid web service
         DataRequestHandler uiHandler = new AsyncWebServiceRequestHandler(uiWebService, mapper);
         DataRequestHandler nonUiHandler = new AsyncWebServiceRequestHandler(nonUiWebService, mapper);
+
+        // If Druid sends uncoveredIntervals, missing intervals are checked before sending the request
+        if (druidUncoveredIntervalLimit > 0) {
+            uiHandler = new DruidPartialDataRequestHandler(uiHandler);
+            nonUiHandler = new DruidPartialDataRequestHandler(nonUiHandler);
+        }
 
         // If query caching is enabled, the cache is checked before sending the request
         if (BardFeatureFlag.DRUID_CACHE.isOn()) {

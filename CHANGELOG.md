@@ -8,6 +8,12 @@ pull request if there was one.
 Current
 -------
 ### Added:
+- [Implement DruidPartialDataRequestHandler](https://github.com/yahoo/fili/pull/287)
+    * Implement `DruidPartialDataRequestHandler` that injects `druid_uncovered_interval_limit` into Druid query context
+    * Append `DruidPartialDataResponseProcessor` to the current next `ResponseProcessor` chain
+    * Add `DruidPartialDataRequestHandler` to `DruidWorkflow` between `AsyncDruidRequestHandler` and
+    `CacheV2RequestHandler` and invoke the `DruidPartialDataRequestHandler` if `druid_uncovered_interval_limit` is
+    greater than 0
 
 - [Implement DruidPartialDataResponseProcessor](https://github.com/yahoo/fili/pull/275)
     * Add `FullResponseProcessor` interface that extends `ResponseProcessor`

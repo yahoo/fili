@@ -6,6 +6,8 @@ import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_CACHE
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_CACHE_V2
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.QUERY_SPLIT
 
+import com.yahoo.bard.webservice.config.SystemConfig
+import com.yahoo.bard.webservice.config.SystemConfigProvider
 import com.yahoo.bard.webservice.data.PartialDataHandler
 import com.yahoo.bard.webservice.data.cache.DataCache
 import com.yahoo.bard.webservice.data.cache.TupleDataCache
@@ -20,6 +22,7 @@ import com.yahoo.bard.webservice.web.handlers.CacheV2RequestHandler
 import com.yahoo.bard.webservice.web.handlers.DataRequestHandler
 import com.yahoo.bard.webservice.web.handlers.DebugRequestHandler
 import com.yahoo.bard.webservice.web.handlers.DefaultWebServiceHandlerSelector
+import com.yahoo.bard.webservice.web.handlers.DruidPartialDataRequestHandler
 import com.yahoo.bard.webservice.web.handlers.SplitQueryRequestHandler
 import com.yahoo.bard.webservice.web.handlers.WebServiceSelectorRequestHandler
 import com.yahoo.bard.webservice.web.handlers.WeightCheckRequestHandler
@@ -33,6 +36,7 @@ import spock.lang.Specification
 class DruidWorkflowSpec extends Specification {
     private static final ObjectMapper MAPPER = new ObjectMapper()
             .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
+    private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     boolean cacheStatus
     boolean cacheV2Status
@@ -48,10 +52,16 @@ class DruidWorkflowSpec extends Specification {
     QuerySigningService<Long> querySigningService = Mock(SegmentIntervalsHashIdGenerator)
     VolatileIntervalsService volatileIntervalsService = Mock(VolatileIntervalsService)
 
+    SystemConfig systemConfig
+    String uncoveredKey
+
     def setup() {
         cacheStatus = DRUID_CACHE.isOn()
         cacheV2Status = DRUID_CACHE_V2.isOn()
         splittingStatus = QUERY_SPLIT.isOn()
+
+        systemConfig = SystemConfigProvider.getInstance()
+        uncoveredKey = SYSTEM_CONFIG.getPackageVariableName("druid_uncovered_interval_limit")
     }
 
     def cleanup() {
@@ -192,5 +202,69 @@ class DruidWorkflowSpec extends Specification {
 
     def byClass(Class c) {
         { it->it.class == c}
+    }
+
+    def "Test workflow contains DruidPartialDataRequestHandler when druidUncoveredIntervalLimit > 0"() {
+        setup:
+        systemConfig.setProperty(uncoveredKey, '10')
+        dw = new DruidWorkflow(
+                dataCache,
+                uiWebService,
+                nonUiWebService,
+                weightUtil,
+                physicalTableDictionary,
+                partialDataHandler,
+                querySigningService,
+                volatileIntervalsService,
+                MAPPER
+        )
+        DataRequestHandler workflow = dw.buildWorkflow()
+        List<DataRequestHandler> handlers = getHandlerChain(workflow)
+        WebServiceSelectorRequestHandler select = handlers.find(byClass(WebServiceSelectorRequestHandler))
+        def defaultHandler = select.handlerSelector as DefaultWebServiceHandlerSelector
+
+        when:
+        def handlers1 = getHandlerChain(defaultHandler.uiWebServiceHandler.next)
+        def handlers2 = getHandlerChain(defaultHandler.nonUiWebServiceHandler.next)
+
+        then:
+        handlers1.find(byClass(DruidPartialDataRequestHandler)) != null
+        handlers2.find(byClass(DruidPartialDataRequestHandler)) != null
+
+        cleanup:
+        systemConfig.clearProperty(uncoveredKey)
+    }
+
+    def "Test workflow doesn't contain DruidPartialDataRequestHandler when druidUncoveredIntervalLimit <= 0"() {
+        setup:
+        SystemConfig systemConfig = SystemConfigProvider.getInstance()
+        String uncoveredKey = SYSTEM_CONFIG.getPackageVariableName("druid_uncovered_interval_limit")
+        systemConfig.setProperty(uncoveredKey, '0')
+        dw = new DruidWorkflow(
+                dataCache,
+                uiWebService,
+                nonUiWebService,
+                weightUtil,
+                physicalTableDictionary,
+                partialDataHandler,
+                querySigningService,
+                volatileIntervalsService,
+                MAPPER
+        )
+        DataRequestHandler workflow = dw.buildWorkflow()
+        List<DataRequestHandler> handlers = getHandlerChain(workflow)
+        WebServiceSelectorRequestHandler select = handlers.find(byClass(WebServiceSelectorRequestHandler))
+        def defaultHandler = select.handlerSelector as DefaultWebServiceHandlerSelector
+
+        when:
+        def handlers1 = getHandlerChain(defaultHandler.uiWebServiceHandler.next)
+        def handlers2 = getHandlerChain(defaultHandler.nonUiWebServiceHandler.next)
+
+        then:
+        handlers1.find(byClass(DruidPartialDataRequestHandler)) == null
+        handlers2.find(byClass(DruidPartialDataRequestHandler)) == null
+
+        cleanup:
+        systemConfig.clearProperty(uncoveredKey)
     }
 }
