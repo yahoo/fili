@@ -10,6 +10,10 @@ Current
 
 ### Added:
 
+- [Implement EtagCacheResponseProcessor](https://github.com/yahoo/fili/pull/311)
+    * Add `EtagCacheResponseProcessor` that caches the results if appropriate after completing a query according to
+    etag value.
+
 - [Add dimension dictionary to metric loader](https://github.com/yahoo/fili/pull/317)
     * Added a two argument version of `loadMetricDictionary` default method in `MetricLoader` interface that allows dimension
     dependent metrics by providing a dimension dictionary given by `ConfigurationLoader`
