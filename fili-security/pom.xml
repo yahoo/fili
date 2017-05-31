@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2017 Yahoo Inc. -->
+<!-- Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms. -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <prerequisites>
+        <maven>3.0</maven>
+    </prerequisites>
+
+    <parent>
+        <groupId>com.yahoo.fili</groupId>
+        <artifactId>fili-parent-pom</artifactId>
+        <version>0.8-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>fili-security</artifactId>
+    <packaging>jar</packaging>
+    <name>Fili: Security Module</name>
+    <description>Security support module for Fili</description>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <properties>
+        <checkstyle.config.location>../checkstyle-style.xml</checkstyle.config.location>
+        <checkstyle.suppressions.location>../checkstyle-suppressions.xml</checkstyle.suppressions.location>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.yahoo.fili</groupId>
+            <artifactId>fili-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.yahoo.fili</groupId>
+            <artifactId>fili-core</artifactId>
+            <type>test-jar</type>
+        </dependency>
+    </dependencies>
+</project>
