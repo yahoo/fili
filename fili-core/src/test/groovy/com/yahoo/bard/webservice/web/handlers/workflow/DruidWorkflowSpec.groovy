@@ -17,7 +17,6 @@ import com.yahoo.bard.webservice.metadata.QuerySigningService
 import com.yahoo.bard.webservice.metadata.SegmentIntervalsHashIdGenerator
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 import com.yahoo.bard.webservice.web.handlers.AsyncWebServiceRequestHandler
-import com.yahoo.bard.webservice.web.handlers.CacheRequestHandler
 import com.yahoo.bard.webservice.web.handlers.CacheV2RequestHandler
 import com.yahoo.bard.webservice.web.handlers.DataRequestHandler
 import com.yahoo.bard.webservice.web.handlers.DebugRequestHandler
@@ -98,7 +97,7 @@ class DruidWorkflowSpec extends Specification {
 
         when:
         handlers = getHandlerChain(defaultHandler.uiWebServiceHandler.next)
-        boolean isCaching = handlers.find(byClass(CacheV2RequestHandler)) != null
+        boolean isCaching = handlers.find(byClass(CacheV2RequestHandler)) == null
         boolean isCachingV2 = handlers.find(byClass(CacheV2RequestHandler)) != null
 
         then:
@@ -107,7 +106,7 @@ class DruidWorkflowSpec extends Specification {
 
         when:
         handlers = getHandlerChain(defaultHandler.nonUiWebServiceHandler.next)
-        isCaching = handlers.find(byClass(CacheV2RequestHandler)) != null
+        isCaching = handlers.find(byClass(CacheV2RequestHandler)) == null
         isCachingV2 = handlers.find(byClass(CacheV2RequestHandler)) != null
 
         then:
@@ -116,9 +115,9 @@ class DruidWorkflowSpec extends Specification {
 
         where:
         doCache | doCacheV2
-        false   | false
-        false   | false
-        true    | true
+        true   | false
+        true   | false
+        false    | true
     }
 
     def "Test workflow contains standard handlers"() {
