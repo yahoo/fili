@@ -1,4 +1,4 @@
-package com.yahoo.bard.webservice.mock;
+package com.yahoo.bard.webservice.test;
 
 import java.io.Serializable;
 import java.util.HashMap;

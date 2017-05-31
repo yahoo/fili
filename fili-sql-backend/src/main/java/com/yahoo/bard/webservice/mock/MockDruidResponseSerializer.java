@@ -10,14 +10,14 @@ import java.io.IOException;
 /**
  * Created by hinterlong on 5/31/17.
  */
-public class CustomDruidSerializer extends JsonSerializer {
+public class MockDruidResponseSerializer extends JsonSerializer {
 
     @Override
     public void serialize(Object o, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException, JsonProcessingException {
-        DruidMockResponse druidMockResponse = (DruidMockResponse) o;
+        MockDruidResponse mockDruidResponse = (MockDruidResponse) o;
 
         jsonGenerator.writeStartArray();
-        for (DruidMockResponse.TimeStampResult t : druidMockResponse.results) {
+        for (MockDruidResponse.TimeStampResult t : mockDruidResponse.results) {
             jsonGenerator.writeObject(t);
         }
         jsonGenerator.writeEndArray();

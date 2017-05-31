@@ -5,29 +5,23 @@ package com.yahoo.bard.webservice;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.QueryType;
-import com.yahoo.bard.webservice.druid.model.datasource.DataSource;
+import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery;
-import com.yahoo.bard.webservice.mock.DruidMockResponse;
-import org.apache.calcite.avatica.util.Casing;
-import org.apache.calcite.avatica.util.Quoting;
+import com.yahoo.bard.webservice.mock.Mock;
+import com.yahoo.bard.webservice.mock.MockDruidResponse;
+import com.yahoo.bard.webservice.test.Database;
 import org.apache.calcite.plan.RelOptUtil;
-import org.apache.calcite.sql.parser.SqlParser;
-import org.apache.calcite.sql.parser.impl.SqlParserImpl;
-import org.apache.calcite.sql.validate.SqlConformanceEnum;
 import org.apache.calcite.tools.RelBuilder;
 import org.h2.jdbc.JdbcSQLException;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.Collections;
 
 /**
  * Converts druid queries to sql, executes it, and returns a druid like response.
@@ -42,8 +36,8 @@ public class SQLConverter {
 
     }
 
-    public static JsonNode convert(DruidQuery<?> druidQuery) throws Exception {
-        LOG.info("Processing druid query");
+    public static JsonNode convert(DruidAggregationQuery<?> druidQuery) throws Exception {
+        LOG.trace("Processing druid query");
         QueryType queryType = druidQuery.getQueryType();
         if (DefaultQueryType.TIMESERIES.equals(queryType)) {
             TimeSeriesQuery timeSeriesQuery = (TimeSeriesQuery) druidQuery;
@@ -55,30 +49,28 @@ public class SQLConverter {
     }
 
     public static JsonNode convert(TimeSeriesQuery druidQuery) throws Exception {
-        LOG.info("Processing time series query");
+        LOG.trace("Processing time series query");
         String datasource = druidQuery.getDataSource() == null ? null : druidQuery.getDataSource().getPhysicalTable().getName();
         datasource = "wikiticker";
+
+        String generatedSql = "";
+        // todo generate sql for query
+        generatedSql = "select * from " + datasource;
+
         // select * from datasource
         // how does this work with granularity? will this have to be bucketed by granularity here
         // sql aggregations are done with groupBy (do we have to worry about makers?)
 
-        return query(datasource, Database.getDatabase());
+        return query(druidQuery, generatedSql, Database.getDatabase());
     }
 
-    public static JsonNode query(String table, Connection connection) throws Exception {
-        String generatedSql = "";
-        // todo generate sql for query
-        generatedSql = "select * from " + table;
-        if (!validate(generatedSql)) {
-            LOG.warn("Unable to validate sql query \"{}\"", generatedSql);
-            // todo throw exception
-        }
+    public static JsonNode query(DruidQuery<?> druidQuery, String sql, Connection connection) throws Exception {
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(generatedSql);
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
              ResultSet resultSet = preparedStatement.executeQuery()) {
-            return read(connection, resultSet);
+            return read(druidQuery, connection, resultSet);
         } catch (JdbcSQLException e) {
-            LOG.warn("Failed to query database {}", connection.getCatalog());
+            LOG.warn("Failed to query database {} with {}", connection.getCatalog(), sql);
             throw new RuntimeException("Could not finish query", e);
         }
     }
@@ -87,33 +79,21 @@ public class SQLConverter {
      * Reads the result set and converts it into a result that druid
      * would produce.
      *
+     * @param druidQuery the druid query to be made.
      * @param connection the connection to the database.
      * @param resultSet  the result set of the druid query.
      * @return druid-like result from query.
      */
-    private static JsonNode read(Connection connection, ResultSet resultSet) throws Exception {
+    private static JsonNode read(DruidQuery<?> druidQuery, Connection connection, ResultSet resultSet) throws Exception {
         Database.printColTypes(resultSet.getMetaData());
+        MockDruidResponse druidResponse = Mock.mockDruidResponse();
         // todo figure out druid response layout
-        DruidResponse response = new DruidResponse();
-        response.name = "table name";
-        response.type = "time series";
-
-        DruidMockResponse mockResponse = new DruidMockResponse();
-        DruidMockResponse.TimeStampResult t = new DruidMockResponse.TimeStampResult();
-        t.timestamp = DateTime.now();
-        t.result.resultsMap.put("sample_name1", 0d);
-        t.result.resultsMap.put("sample_name2", 1d);
-        mockResponse.results.add(t);
 
         ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.valueToTree(mockResponse);
+        return objectMapper.valueToTree(druidResponse);
     }
 
-    public static boolean validate(String sql) {
-//        SqlValidatorUtil.newValidator(,new SqlV,new JavaTypeFactoryImpl(), SqlConformance.DEFAULT).
-        return false;
-    }
-
+    // testing calcite
     public static RelBuilder buildTimeSeriesQuery(TimeSeriesQuery druidQuery, RelBuilder builder) {
         String name = druidQuery.getDataSource().getPhysicalTable().getTableName().asName();
         System.out.println(RelOptUtil.toString(builder.scan(name).build()));
@@ -157,43 +137,12 @@ public class SQLConverter {
  --------------------------------------------------------------------------------------------------- */
 
     public static void main(String[] args) throws Exception {
-        JsonNode jsonNode = convert(getTimeSeriesQuery());
+        DruidAggregationQuery<?> druidQuery = Mock.timeSeriesQuery("wikiticker_(actually null)");
+        JsonNode jsonNode = convert(druidQuery);
         System.out.println(jsonNode);
         // getSqlParser("select * from PERSON").parseQuery().toSqlString(SqlDialect.DUMMY)
-        // todo figure out how to create a validator object (all queries must be validated before submitting)
+        // todo validate?
     }
 
-    public static SqlParser getSqlParser(String sql) {
-        return SqlParser.create(sql,
-                SqlParser.configBuilder()
-                        .setParserFactory(SqlParserImpl.FACTORY)
-                        .setQuoting(Quoting.BACK_TICK)
-                        .setUnquotedCasing(Casing.UNCHANGED)
-                        .setQuotedCasing(Casing.UNCHANGED)
-                        .setConformance(SqlConformanceEnum.SQL_SERVER_2008)
-                        .build()
-        );
-    }
-
-    public static TimeSeriesQuery getTimeSeriesQuery() {
-        return new TimeSeriesQuery(
-                getDataSource(),
-                DefaultTimeGrain.DAY,
-                null,
-                Collections.emptyList(),
-                Collections.emptyList(),
-                Collections.emptySet()
-
-        );
-    }
-
-    private static DataSource getDataSource() {
-        return null;
-    }
-
-    static class DruidResponse {
-        public String name;
-        public String type;
-    }
 }
 

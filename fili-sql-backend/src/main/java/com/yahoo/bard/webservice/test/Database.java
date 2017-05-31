@@ -1,20 +1,19 @@
-package com.yahoo.bard.webservice;
+package com.yahoo.bard.webservice.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.yahoo.bard.webservice.mock.WikitickerEntry;
+import org.apache.calcite.adapter.jdbc.JdbcSchema;
 import org.apache.commons.io.FileUtils;
 
+import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by hinterlong on 5/30/17.
- */
 public class Database {
     private static final String DATABASE_URL = "jdbc:h2:mem:test";
+    private static final String WIKITICKER_JSON_DATA = "wikiticker-2015-09-12-sampled.json";
 
     public static Connection getDatabase() throws Exception {
         Connection connection = DriverManager.getConnection(DATABASE_URL);
@@ -45,8 +44,12 @@ public class Database {
                 ")"
         );
 
-        String sqlInsert = "INSERT INTO WIKITICKER (ID, COMMENT, COUNTRY_ISO_CODE, ADDED, TIME, IS_NEW, IS_ROBOT, DELETED, METRO_CODE, IS_UNPATROLLED, NAMESPACE, PAGE, COUNTRY_NAME, CITY_NAME, IS_MINOR, USER, DELTA, IS_ANONYMOUS, REGION_ISO_CODE, CHANNEL, REGION_NAME) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sqlInsert = "INSERT INTO WIKITICKER (" +
+                "ID, COMMENT, COUNTRY_ISO_CODE, ADDED, TIME, IS_NEW, IS_ROBOT," +
+                " DELETED, METRO_CODE, IS_UNPATROLLED, NAMESPACE, PAGE, COUNTRY_NAME," +
+                " CITY_NAME, IS_MINOR, USER, DELTA, IS_ANONYMOUS, REGION_ISO_CODE, " +
+                "CHANNEL, REGION_NAME" +
+                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         int i = 0;
         for (WikitickerEntry e : entries) {
@@ -81,9 +84,8 @@ public class Database {
     }
 
     public static List<WikitickerEntry> readJsonFile() throws IOException {
-        String filename = "wikiticker-2015-09-12-sampled.json";
         ClassLoader classLoader = Database.class.getClassLoader();
-        File file = new File(classLoader.getResource(filename).getFile());
+        File file = new File(classLoader.getResource(WIKITICKER_JSON_DATA).getFile());
 
         String json = FileUtils.readFileToString(file);
         List<WikitickerEntry> entries = new ArrayList<>();
@@ -109,6 +111,10 @@ public class Database {
             System.out.printf("%10s[%s-%d]", name, type, jdbcType);
         }
         System.out.println();
+    }
+
+    public static DataSource getDataSource() {
+        return JdbcSchema.dataSource(DATABASE_URL, null, "", "");
     }
 }
 
