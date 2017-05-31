@@ -245,6 +245,8 @@ public enum ErrorMessageFormat implements MessageFormatter {
 
     STATUS_CODE_MISSING_FROM_RESPONSE("JSON response is missing response status code"),
 
+    ETAG_MISSING_FROM_RESPONSE("JSON response is missing response etag"),
+
     TOO_MANY_BACKING_DATA_SOURCES("TableDataSource built with too many backing data sources: %s"),
     TOO_FEW_BACKING_DATA_SOURCES("TableDataSource built with insufficient backing data sources: %s")
     ;
