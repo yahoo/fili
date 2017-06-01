@@ -7,6 +7,11 @@ import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.container.ContainerRequestContext;
 
+/**
+ * An abstract ApiRequest Mapper that allows delegation to a subsequent mapper.
+ *
+ * @param <T> Type of API Request this RequestMapper will work on
+ */
 public abstract class ChainingRequestMapper<T extends ApiRequest> extends RequestMapper<T> {
 
     private final RequestMapper<T> next;
@@ -24,6 +29,7 @@ public abstract class ChainingRequestMapper<T extends ApiRequest> extends Reques
      * Constructor.
      *
      * @param resourceDictionaries  The dictionaries to use for request mapping.
+     * @param next  The next request mapper to process this ApiRequest
      */
     public ChainingRequestMapper(
             @NotNull ResourceDictionaries resourceDictionaries,

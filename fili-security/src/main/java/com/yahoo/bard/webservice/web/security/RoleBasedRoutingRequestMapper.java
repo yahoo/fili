@@ -12,6 +12,11 @@ import java.util.LinkedHashMap;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.SecurityContext;
 
+/**
+ * A RequestMapper that delegates to the first request mapper in a list which the user has a supporting role for.
+ *
+ * @param <T> Type of API Request this RequestMapper will work on
+ */
 public class RoleBasedRoutingRequestMapper<T extends ApiRequest> extends RequestMapper<T> {
 
     LinkedHashMap<String, RequestMapper<T>> prioritizedRoleBasedMappers;
@@ -21,6 +26,8 @@ public class RoleBasedRoutingRequestMapper<T extends ApiRequest> extends Request
      * Constructor.
      *
      * @param resourceDictionaries  The dictionaries to use for request mapping.
+     * @param prioritizedRoleBasedMappers  A map of roles to mappers for each role, with a deterministic entry order.
+     * @param defaultMapper The default mapper to apply if no other roles match. (null means finish mapping)
      */
     public RoleBasedRoutingRequestMapper(
             ResourceDictionaries resourceDictionaries,
@@ -36,13 +43,13 @@ public class RoleBasedRoutingRequestMapper<T extends ApiRequest> extends Request
      * Constructor.
      *
      * @param resourceDictionaries  The dictionaries to use for request mapping.
+     * @param prioritizedRoleBasedMappers  A map of roles to mappers for each role, with a deterministic entry order.
      */
     public RoleBasedRoutingRequestMapper(
             ResourceDictionaries resourceDictionaries,
             LinkedHashMap<String, RequestMapper<T>> prioritizedRoleBasedMappers
     ) {
-        super(resourceDictionaries);
-        this.prioritizedRoleBasedMappers = prioritizedRoleBasedMappers;
+        this(resourceDictionaries, prioritizedRoleBasedMappers, null);
     }
 
     @Override
@@ -50,9 +57,13 @@ public class RoleBasedRoutingRequestMapper<T extends ApiRequest> extends Request
             throws RequestValidationException {
         SecurityContext securityContext = context.getSecurityContext();
         RequestMapper<T> mapper = prioritizedRoleBasedMappers.keySet().stream()
-                .filter(prioritizedRoleBasedMappers::containsKey)
+                .filter(securityContext::isUserInRole)
+                .peek(it -> System.out.println(it))
                 .map(prioritizedRoleBasedMappers::get)
+                .peek(it -> System.out.println(it))
                 .findFirst().orElse(defaultMapper);
-        return (mapper == null) ? request : mapper.apply(request, context);
+        return (mapper == null) ?
+                request :
+                mapper.apply(request, context);
     }
 }

@@ -28,6 +28,10 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
+/**
+ * A request mapper that ensures that a user has at least one relevant role on a dimension and applies access filters
+ * based on roles for that user.
+ */
 public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<DataApiRequest> {
 
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
@@ -38,22 +42,22 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
     public static final String DEFAULT_SECURITY_MESSAGE = "Your security settings do not permit access to this " +
             "resource.  Please contact your user administration for access.";
 
-    private String signupMessage = SYSTEM_CONFIG.getStringProperty(
+    private final String unauthorizedUserMessage = SYSTEM_CONFIG.getStringProperty(
             SYSTEM_CONFIG.getPackageVariableName(SECURITY_SIGNUP_MESSAGE_KEY),
             DEFAULT_SECURITY_MESSAGE
-    ));
-    public final SystemConfig systemConfig = SystemConfigProvider.getInstance();
+    );
 
-
+    private final String unauthorizedHttpMessage;
 
     Dimension dimension;
     Map<String, Set<ApiFilter>> roleApiFilters;
-    String defaultRoleMessage = DIMENSION_MISSING_MANDATORY_ROLE.format(dimension.getApiName());
 
     /**
      * Constructor.
      *
      * @param resourceDictionaries  The dictionaries to use for request mapping.
+     * @param dimension  The dimension whose roles are being matched
+     * @param roleApiFilters  ApiFilters by role for a given dimension
      */
     public RoleDimensionApiFilterRequestMapper(
             ResourceDictionaries resourceDictionaries,
@@ -67,6 +71,9 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
      * Constructor.
      *
      * @param resourceDictionaries  The dictionaries to use for request mapping.
+     * @param dimension  The dimension whose roles are being matched
+     * @param roleApiFilters  ApiFilters by role for a given dimension
+     * @param next  The next request mapper to process this ApiRequest
      */
     public RoleDimensionApiFilterRequestMapper(
             final ResourceDictionaries resourceDictionaries,
@@ -77,6 +84,7 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
         super(resourceDictionaries, next);
         this.dimension = dimension;
         this.roleApiFilters = roleApiFilters;
+        unauthorizedHttpMessage = DIMENSION_MISSING_MANDATORY_ROLE.format(dimension.getApiName());
     }
 
     @Override
@@ -93,8 +101,11 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
         if (securityFilters.size() == 0) {
             String name = securityContext.getUserPrincipal().getName();
             LOG.warn(DIMENSION_MISSING_MANDATORY_ROLE.logFormat(name, dimension.getApiName()));
-            String message = DIMENSION_MISSING_MANDATORY_ROLE.format(dimension.getApiName());
-            throw new RequestValidationException(Response.Status.FORBIDDEN,message, message);
+            throw new RequestValidationException(
+                    Response.Status.FORBIDDEN,
+                    unauthorizedHttpMessage,
+                    unauthorizedUserMessage
+            );
         }
         Map<Dimension, Set<ApiFilter>> mergedFilters = mergeFilters(Stream.of(
                 request.getFilters(),
@@ -103,6 +114,13 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
         return request.withFilters(mergedFilters);
     }
 
+    /**
+     * A convenience method that merges two maps of sets of filters, combining the filters.
+     *
+     * @param filterMaps  A stream of maps of sets of filters to be merged.
+     *
+     * @return A map with all the filters combined
+     */
     public static Map<Dimension, Set<ApiFilter>> mergeFilters(Stream<Map<Dimension, Set<ApiFilter>>> filterMaps) {
         return filterMaps
                 .map(Map::entrySet)
