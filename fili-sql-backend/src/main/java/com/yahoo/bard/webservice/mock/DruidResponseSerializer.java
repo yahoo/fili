@@ -1,3 +1,5 @@
+// Copyright 2016 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.mock;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -10,15 +12,15 @@ import java.io.IOException;
 /**
  * Created by hinterlong on 5/31/17.
  */
-public class MockDruidResponseSerializer extends JsonSerializer {
+public class DruidResponseSerializer extends JsonSerializer {
 
     @Override
     public void serialize(Object o, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException, JsonProcessingException {
-        MockDruidResponse mockDruidResponse = (MockDruidResponse) o;
-
+        DruidResponse druidResponse = (DruidResponse) o;
+        // todo test cases?
         jsonGenerator.writeStartArray();
-        for (MockDruidResponse.TimeStampResult t : mockDruidResponse.results) {
-            jsonGenerator.writeObject(t);
+        for (Object result : druidResponse.results) {
+            jsonGenerator.writeObject(result);
         }
         jsonGenerator.writeEndArray();
     }

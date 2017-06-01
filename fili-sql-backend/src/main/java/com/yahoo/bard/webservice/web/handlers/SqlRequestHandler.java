@@ -11,12 +11,13 @@ import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
  * A handler for queries made against a sql backend.
  */
 public class SqlRequestHandler implements DataRequestHandler {
-    private final @NotNull DataRequestHandler next;
+    private final @NotNull
+    DataRequestHandler next;
 
     /**
      * Constructor.
      *
-     * @param next  Next Handler in the chain
+     * @param next Next Handler in the chain
      */
     public SqlRequestHandler(DataRequestHandler next) {
         this.next = next;
