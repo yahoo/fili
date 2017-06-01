@@ -5,13 +5,16 @@ package com.yahoo.bard.webservice;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.QueryType;
+import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
+import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery;
+import com.yahoo.bard.webservice.mock.DruidResponse;
 import com.yahoo.bard.webservice.mock.Mock;
-import com.yahoo.bard.webservice.mock.MockDruidResponse;
 import com.yahoo.bard.webservice.test.Database;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.tools.RelBuilder;
@@ -22,6 +25,9 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Converts druid queries to sql, executes it, and returns a druid like response.
@@ -50,12 +56,35 @@ public class SQLConverter {
 
     public static JsonNode convert(TimeSeriesQuery druidQuery) throws Exception {
         LOG.trace("Processing time series query");
-        String datasource = druidQuery.getDataSource() == null ? null : druidQuery.getDataSource().getPhysicalTable().getName();
-        datasource = "wikiticker";
-
         String generatedSql = "";
+
+
+        String datasource = druidQuery.getDataSource().getPhysicalTable().getName();
+        // which one is the correct table name
+//        druidQuery.getDataSource().getPhysicalTable().getTableName().asName();
+//        druidQuery.getDataSource().getPhysicalTable().getName();
+
+
+
+
+        // include dependent dimensions in select?
+        Stream<Dimension> dependentDimensions = Stream.concat(
+                druidQuery.getAggregations()
+                        .stream()
+                        .map(Aggregation::getDependentDimensions)
+                        .flatMap(Set::stream),
+                druidQuery.getDimensions().stream()
+        );
+        String dimensions = dependentDimensions.map(Object::toString).collect(Collectors.joining(","));
+
+
         // todo generate sql for query
-        generatedSql = "select * from " + datasource;
+        generatedSql = "select " + dimensions
+                + " from " + datasource
+                // where filters
+                // order by?
+                // group by aggregations
+        ;
 
         // select * from datasource
         // how does this work with granularity? will this have to be bucketed by granularity here
@@ -86,8 +115,8 @@ public class SQLConverter {
      */
     private static JsonNode read(DruidQuery<?> druidQuery, Connection connection, ResultSet resultSet) throws Exception {
         Database.printColTypes(resultSet.getMetaData());
-        MockDruidResponse druidResponse = Mock.mockDruidResponse();
-        // todo figure out druid response layout
+        DruidResponse druidResponse = Mock.druidResponse();
+
 
         ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.valueToTree(druidResponse);
@@ -137,9 +166,12 @@ public class SQLConverter {
  --------------------------------------------------------------------------------------------------- */
 
     public static void main(String[] args) throws Exception {
-        DruidAggregationQuery<?> druidQuery = Mock.timeSeriesQuery("wikiticker_(actually null)");
+        // todo correctly mock timeseriesquery/everything else with it
+        DruidAggregationQuery<?> druidQuery = Mock.timeSeriesQuery("wikiticker_(not working)");
         JsonNode jsonNode = convert(druidQuery);
         System.out.println(jsonNode);
+
+
         // getSqlParser("select * from PERSON").parseQuery().toSqlString(SqlDialect.DUMMY)
         // todo validate?
     }
