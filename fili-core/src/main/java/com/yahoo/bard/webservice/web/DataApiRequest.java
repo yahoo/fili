@@ -1096,7 +1096,7 @@ public class DataApiRequest extends ApiRequest {
             }
             LOG.trace("Generated map of filters: {}", generated);
 
-            return generated;
+            return new LinkedHashMap<>(generated);
         }
     }
 
