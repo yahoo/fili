@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  * Hold all the dimension configurations for a generic druid configuration.
  */
 public class GenericDimensionConfigs {
-    private final Map<String, Set<DimensionConfig>> dimensionConfigs;
+    private final Map<String, Set<DimensionConfig>> dataSourceToDimensionConfigs;
 
     /**
      * Construct the dimension configurations.
@@ -34,7 +34,7 @@ public class GenericDimensionConfigs {
      * @param configLoader  Supplies DataSourceConfigurations to build the dimensions from.
      */
     public GenericDimensionConfigs(Supplier<List<? extends DataSourceConfiguration>> configLoader) {
-        dimensionConfigs = new HashMap<>();
+        dataSourceToDimensionConfigs = new HashMap<>();
         configLoader.get()
                 .forEach(dataSourceConfiguration -> {
                     Set<DimensionConfig> tableDimensionConfigs = dataSourceConfiguration.getDimensions().stream()
@@ -54,9 +54,8 @@ public class GenericDimensionConfigs {
                                             Collections::unmodifiableSet
                                     ));
 
-                    dimensionConfigs.put(dataSourceConfiguration.getName(), tableDimensionConfigs);
+                    dataSourceToDimensionConfigs.put(dataSourceConfiguration.getName(), tableDimensionConfigs);
                 });
-        ;
     }
 
     /**
@@ -65,7 +64,7 @@ public class GenericDimensionConfigs {
      * @return set of dimension configurations
      */
     public Set<DimensionConfig> getAllDimensionConfigurations() {
-        return dimensionConfigs.values().stream()
+        return dataSourceToDimensionConfigs.values().stream()
                 .flatMap(Set::stream)
                 .distinct()
                 .collect(Collectors.toSet());
@@ -79,7 +78,7 @@ public class GenericDimensionConfigs {
      * @return the dimension configurations for this datasource
      */
     public Set<DimensionConfig> getDimensionConfigs(DataSourceConfiguration dataSourceConfiguration) {
-        return dimensionConfigs.getOrDefault(dataSourceConfiguration.getName(), Collections.emptySet());
+        return dataSourceToDimensionConfigs.getOrDefault(dataSourceConfiguration.getName(), Collections.emptySet());
     }
 
     /**

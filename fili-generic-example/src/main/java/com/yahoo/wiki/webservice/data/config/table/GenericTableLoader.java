@@ -32,12 +32,12 @@ import java.util.stream.Collectors;
  * Load the table configuration for any druid setup.
  */
 public class GenericTableLoader extends BaseTableLoader {
-    private final Map<String, Set<Granularity>> validGrains = new HashMap<>();
+    private final Map<String, Set<Granularity>> dataSourceToValidGrains = new HashMap<>();
     // Set up the metrics
-    private final Map<String, Set<FieldName>> druidMetricNames = new HashMap<>();
-    private final Map<String, Set<ApiMetricName>> apiMetricNames = new HashMap<>();
+    private final Map<String, Set<FieldName>> dataSourceToDruidMetricNames = new HashMap<>();
+    private final Map<String, Set<ApiMetricName>> dataSourceToApiMetricNames = new HashMap<>();
     // Set up the table definitions
-    private final Map<String, Set<PhysicalTableDefinition>> tableDefinitions = new HashMap<>();
+    private final Map<String, Set<PhysicalTableDefinition>> dataSourceToTableDefinitions = new HashMap<>();
     private final Supplier<List<? extends DataSourceConfiguration>> configLoader;
 
     /**
@@ -65,14 +65,14 @@ public class GenericTableLoader extends BaseTableLoader {
     private void configureTables(GenericDimensionConfigs genericDimensionConfigs) {
         configLoader.get().forEach(dataSourceConfiguration -> {
 
-            druidMetricNames.put(dataSourceConfiguration.getName(),
+            dataSourceToDruidMetricNames.put(dataSourceConfiguration.getName(),
                     dataSourceConfiguration.getMetrics()
                     .stream()
                     .map(DruidMetricName::new)
                     .collect(Collectors.toSet())
             );
 
-            tableDefinitions.put(dataSourceConfiguration.getName(),
+            dataSourceToTableDefinitions.put(dataSourceConfiguration.getName(),
                     getPhysicalTableDefinitions(
                             dataSourceConfiguration,
                             dataSourceConfiguration.getValidTimeGrain(),
@@ -80,14 +80,14 @@ public class GenericTableLoader extends BaseTableLoader {
                     )
             );
 
-            apiMetricNames.put(dataSourceConfiguration.getName(),
+            dataSourceToApiMetricNames.put(dataSourceConfiguration.getName(),
                     dataSourceConfiguration.getMetrics()
                     .stream()
                     .map(metricName -> new FiliApiMetricName(metricName, dataSourceConfiguration.getValidTimeGrain()))
                     .collect(Collectors.toSet())
             );
 
-            validGrains.put(dataSourceConfiguration.getName(), getGranularities(dataSourceConfiguration));
+            dataSourceToValidGrains.put(dataSourceConfiguration.getName(), getGranularities(dataSourceConfiguration));
         });
 
     }
@@ -129,7 +129,7 @@ public class GenericTableLoader extends BaseTableLoader {
                         new ConcretePhysicalTableDefinition(
                                 dataSourceConfiguration.getTableName(),
                                 zonedTimeGrain,
-                                druidMetricNames.get(dataSourceConfiguration.getName()),
+                                dataSourceToDruidMetricNames.get(dataSourceConfiguration.getName()),
                                 dimsBasefactDruidTable
                         )
                 )
@@ -145,22 +145,22 @@ public class GenericTableLoader extends BaseTableLoader {
     public void loadTableDictionary(ResourceDictionaries dictionaries) {
         configLoader.get()
                 .forEach(table -> {
-                    Set<TableName> currentTableGroupTableNames = tableDefinitions.get(table.getName())
+                    Set<TableName> currentTableGroupTableNames = dataSourceToTableDefinitions.get(table.getName())
                             .stream()
                             .map(PhysicalTableDefinition::getName)
                             .collect(Collectors.toSet());
 
                     TableGroup tableGroup = buildDimensionSpanningTableGroup(
                             currentTableGroupTableNames,
-                            tableDefinitions.get(table.getName()),
+                            dataSourceToTableDefinitions.get(table.getName()),
                             dictionaries,
-                            apiMetricNames.get(table.getName())
+                            dataSourceToApiMetricNames.get(table.getName())
                     );
 
                     loadLogicalTableWithGranularities(
                             table.getTableName().asName(),
                             tableGroup,
-                            validGrains.get(table.getName()),
+                            dataSourceToValidGrains.get(table.getName()),
                             dictionaries
                     );
                 });
