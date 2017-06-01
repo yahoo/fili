@@ -25,7 +25,10 @@ mvn -pl fili-generic-example exec:java
 - Note that if your setup is different you can adjust it by changing the default parameters below
 
     ```bash
-    mvn -pl fili-generic-example exec:java -Dbard__fili_port=9998 -Dbard__druid_coord=http://localhost:8081/druid/coordinator/v1
+    mvn -pl fili-generic-example exec:java -Dbard__fili_port=9998 \
+    -Dbard__druid_coord=http://localhost:8081/druid/coordinator/v1 \
+    -Dbard__non_ui_druid_broker=http://localhost:8082/druid/v2 \
+    -Dbard__ui_druid_broker=http://localhost:8082/druid/v2
     ```
 
 From another window, run a test query against the default druid data.

@@ -25,7 +25,6 @@ class MultipleDatasourceDruidConfigLoaderSpec extends Specification {
             } else if (druidWebService.lastUrl.equals("/datasources/table2/?full")) {
                 return getFullTable(datasources[1], table2_metrics, table2_dimensions)
             }
-            println "No response for " + druidWebService.lastUrl
         }
     }
 
@@ -50,31 +49,30 @@ class MultipleDatasourceDruidConfigLoaderSpec extends Specification {
 
     private static String getFullTable(String name, String[] metrics, String[] dimensions) {
         return """{
-    "name": "${name}",
-    "properties": {},
-    "segments": [
-        {
-            "dataSource": "${name}",
-            "interval": "2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z",
-            "version": "2017-02-27T03:06:09.422Z",
-            "loadSpec": 
-                {
-                    "type": "local",
-                    "path": "2015-09-12T00:00:00.000Z_2015-09-13T00:00:00.000Z/2017-02-27T03:06:09.422Z/0/index.zip"
-                },
-            "dimensions": "${dimensions.join(",")}",
-            "metrics":  "${metrics.join(",")}",
-            "shardSpec": 
-                {
-                    "type": "none"
-                },
-            "binaryVersion": 9,
-            "size": 5537610,
-            "identifier": "${name}_2015-09-12T00:00:00.000Z_2015-09-13T00:00:00.000Z_2017-02-27T03:06:09.422Z"
-        }
-    ]
-}
-
-"""
+                    "name": "${name}",
+                    "properties": {},
+                    "segments": [
+                        {
+                            "dataSource": "${name}",
+                            "interval": "2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z",
+                            "version": "2017-02-27T03:06:09.422Z",
+                            "loadSpec": 
+                                {
+                                    "type": "local",
+                                    "path": "2015-09-12T00:00:00.000Z_2015-09-13T00:00:00.000Z/2017-02-27T03:06:09.422Z/0/index.zip"
+                                },
+                            "dimensions": "${dimensions.join(",")}",
+                            "metrics":  "${metrics.join(",")}",
+                            "shardSpec": 
+                                {
+                                    "type": "none"
+                                },
+                            "binaryVersion": 9,
+                            "size": 5537610,
+                            "identifier": "${name}_2015-09-12T00:00:00.000Z_2015-09-13T00:00:00.000Z_2017-02-27T03:06:09.422Z"
+                        }
+                    ]
+                }
+                """
     }
 }

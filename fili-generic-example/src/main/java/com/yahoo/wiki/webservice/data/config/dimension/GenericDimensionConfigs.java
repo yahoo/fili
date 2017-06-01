@@ -73,7 +73,7 @@ public class GenericDimensionConfigs {
     /**
      * Get all the dimension configurations associated with this datasource.
      *
-     * @param dataSourceConfiguration the datasource configuration's dimensions to load
+     * @param dataSourceConfiguration  The datasource configuration's dimensions to load
      *
      * @return the dimension configurations for this datasource
      */
@@ -84,7 +84,7 @@ public class GenericDimensionConfigs {
     /**
      * Lazily provide a KeyValueStore for this store name.
      *
-     * @param storeName  the name for the key value store
+     * @param storeName  The name for the key value store
      *
      * @return A KeyValueStore instance
      */

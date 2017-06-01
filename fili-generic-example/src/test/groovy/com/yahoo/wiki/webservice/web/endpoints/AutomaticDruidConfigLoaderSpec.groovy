@@ -52,7 +52,6 @@ public class AutomaticDruidConfigLoaderSpec extends Specification {
             } else if (druidWebService.lastUrl == '/datasources/' + datasource + "/?full") {
                 return expectedMetricsAndDimensions
             }
-            println "No response for " + druidWebService.lastUrl
         }
     }
 
