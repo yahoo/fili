@@ -36,7 +36,7 @@ class ConfigurationLoaderSpec extends Specification {
         StaticWikiConfigLoader wikiConfigLoader = new StaticWikiConfigLoader();
         GenericDimensionConfigs genericDimensions = new GenericDimensionConfigs(wikiConfigLoader);
         LinkedHashSet<DimensionConfig> dimensions = genericDimensions.
-                getAllDimensionConfigurations(dataSourceConfiguration.getName());
+                getAllDimensionConfigurations();
         loader = new ConfigurationLoader(
                 new KeyValueStoreDimensionLoader(dimensions),
                 new GenericMetricLoader(wikiConfigLoader),
