@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.AbstractMap;
@@ -76,7 +77,7 @@ public class HashDataCache<T extends Serializable> implements DataCache<T> {
     public String hash(String key) {
         try {
             MessageDigest md = MessageDigest.getInstance(algorithm);
-            byte[] keyBytes = key.getBytes("UTF-8");
+            byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
             md.update(keyBytes, 0, keyBytes.length);
             byte[] binaryhash = md.digest();
             return Base64.encode(binaryhash);

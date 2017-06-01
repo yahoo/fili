@@ -33,9 +33,11 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.LRUQueryCache;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.QueryCachingPolicy;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TimeLimitingCollector;
@@ -76,6 +78,21 @@ public class LuceneSearchProvider implements SearchProvider {
     public static final int LUCENE_SEARCH_TIMEOUT_MS = SYSTEM_CONFIG.getIntProperty(
             SYSTEM_CONFIG.getPackageVariableName("lucene_search_timeout_ms"), 600000
     );
+
+    public static final LRUQueryCache LUCENE_QUERY_CACHE;
+    static {
+        // Lucene 5.3.0 disables query caching.  Create cache for use here.
+        // min of 32MB or 5% of the heap size.  Same default as Lucene 5.4.0.
+        final long maxRamBytesUsed = SYSTEM_CONFIG.getLongProperty(
+            SYSTEM_CONFIG.getPackageVariableName("lucene_cache_size_bytes"),
+            Math.min(1L << 25, Runtime.getRuntime().maxMemory() / 20));
+
+        // default max cached queries based on memory used
+        final int maxCachedQueries = SYSTEM_CONFIG.getIntProperty(
+            SYSTEM_CONFIG.getPackageVariableName("lucene_cache_queries"),
+            (int) Math.max(1000L, Math.min(1000000L, maxRamBytesUsed / 1000)));
+        LUCENE_QUERY_CACHE = new LRUQueryCache(maxCachedQueries, maxRamBytesUsed);
+    }
 
     /**
      * The maximum number of results per page.
@@ -155,6 +172,8 @@ public class LuceneSearchProvider implements SearchProvider {
 
             // Open a new IndexSearcher on a new DirectoryReader
             luceneIndexSearcher = new IndexSearcher(DirectoryReader.open(luceneDirectory));
+            luceneIndexSearcher.setQueryCache(LUCENE_QUERY_CACHE);
+            luceneIndexSearcher.setQueryCachingPolicy(QueryCachingPolicy.ALWAYS_CACHE);
         } catch (IOException reopenException) {
             // If there is no index file, this is expected. On the 1st time through, write an empty index and try again
             if (firstTimeThrough) {
