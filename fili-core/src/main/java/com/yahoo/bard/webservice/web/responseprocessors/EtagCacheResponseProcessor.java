@@ -77,13 +77,8 @@ public class EtagCacheResponseProcessor implements FullResponseProcessor {
     public void processResponse(JsonNode json, DruidAggregationQuery<?> druidQuery, LoggingContext metadata) {
         // make sure JSON response comes with status code
         if (!json.has(DruidJsonResponseContentKeys.STATUS_CODE.getName())) {
-            String message = ErrorMessageFormat.STATUS_CODE_MISSING_FROM_RESPONSE.format();
-            LOG.error(message);
-            getErrorCallback(druidQuery).dispatch(
-                    Status.INTERNAL_SERVER_ERROR.getStatusCode(),
-                    "The server encountered an unexpected condition which prevented it from fulfilling the request.",
-                    message
-            );
+            logAndGetErrorCallback(ErrorMessageFormat.STATUS_CODE_MISSING_FROM_RESPONSE.format(), druidQuery);
+            return;
         }
 
         int statusCode = json.get(DruidJsonResponseContentKeys.STATUS_CODE.getName()).asInt();
@@ -99,14 +94,8 @@ public class EtagCacheResponseProcessor implements FullResponseProcessor {
         } else if (statusCode == Status.OK.getStatusCode()) {
             // make sure JSON response comes with etag
             if (!json.has(DruidJsonResponseContentKeys.ETAG.getName())) {
-                String message = ErrorMessageFormat.ETAG_MISSING_FROM_RESPONSE.format();
-                LOG.error(message);
-                getErrorCallback(druidQuery).dispatch(
-                        Status.INTERNAL_SERVER_ERROR.getStatusCode(),
-                        "The server encountered an unexpected condition which prevented it from fulfilling " +
-                                "the request.",
-                        message
-                );
+                logAndGetErrorCallback(ErrorMessageFormat.ETAG_MISSING_FROM_RESPONSE.format(), druidQuery);
+                return;
             }
 
             try {
@@ -132,5 +121,20 @@ public class EtagCacheResponseProcessor implements FullResponseProcessor {
         } else {
             next.processResponse(json.get(DruidJsonResponseContentKeys.RESPONSE.getName()), druidQuery, metadata);
         }
+    }
+
+    /**
+     * Logs and gets error call back on the response with the provided error message.
+     *
+     * @param message  The error message passed to the logger and the exception
+     * @param query  The query with the schema for processing this response
+     */
+    private void logAndGetErrorCallback(String message, DruidAggregationQuery<?> query) {
+        LOG.error(message);
+        getErrorCallback(query).dispatch(
+                Status.INTERNAL_SERVER_ERROR.getStatusCode(),
+                ErrorMessageFormat.INTERNAL_SERVER_ERROR_REASON_PHRASE.format(),
+                message
+        );
     }
 }
