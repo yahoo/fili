@@ -35,6 +35,7 @@ public class EtagCacheResponseProcessor implements FullResponseProcessor {
     private final ResponseProcessor next;
     private final QuerySigningService<Long> querySigningService;
     private final @NotNull TupleDataCache<String, Long, String> dataCache;
+    private final JsonNode respnoseCache;
 
 
     /**
@@ -56,6 +57,7 @@ public class EtagCacheResponseProcessor implements FullResponseProcessor {
         this.querySigningService = querySigningService;
         this.mapper = mapper;
         this.writer = mapper.writer();
+        this.respnoseCache = null;
     }
 
     @Override
@@ -86,7 +88,11 @@ public class EtagCacheResponseProcessor implements FullResponseProcessor {
             try {
                 ((ObjectNode) json).set(
                         DruidJsonResponseContentKeys.RESPONSE.getName(),
-                        mapper.readTree(dataCache.getDataValue(DruidJsonResponseContentKeys.RESPONSE.getName()))
+                        respnoseCache == null
+                                ? mapper.readTree(
+                                        dataCache.getDataValue(DruidJsonResponseContentKeys.RESPONSE.getName())
+                        )
+                                : respnoseCache
                 );
             } catch (IOException ioe) {
                 throw new IllegalStateException(ioe);
