@@ -15,12 +15,11 @@ In order to set up, this will connect to druid at  [http://localhost:8081/druid/
     ```
 3. Use Maven to install and launch the Fili Generic example:
 
-
-```bash
-cd fili
-mvn install
-mvn -pl fili-generic-example exec:java
-```
+    ```bash
+    cd fili
+    mvn install
+    mvn -pl fili-generic-example exec:java
+    ```
 
 - Note that if your setup is different you can adjust it by changing the default parameters below
 
@@ -39,21 +38,21 @@ Here are some sample queries that you can run to verify your server:
 
 ### Any Server
 
-- List tables:
+- List [tables](http://localhost:9998/v1/tables):
   
       GET http://localhost:9998/v1/tables
 
-- List dimensions:  
+- List [dimensions](http://localhost:9998/v1/dimensions):  
 
       GET http://localhost:9998/v1/dimensions
 
-- List metrics:
+- List [metrics](http://localhost:9998/v1/metrics/):
   
       GET http://localhost:9998/v1/metrics/
 
 ### Specific to Wikipedia data
 
-- If everything is working, the query below
+- If everything is working, the [query below](http://localhost:9998/v1/data/wikiticker/day/?metrics=deleted&dateTime=2015-09-12/PT24H)
     ```bash
     curl "http://localhost:9998/v1/data/wikiticker/day/?metrics=deleted&dateTime=2015-09-12/PT24H" -H "Content-Type: application/json" | python -m json.tool
     ```
@@ -70,7 +69,9 @@ Here are some sample queries that you can run to verify your server:
 - Count of edits by hour for the last 72 hours:  
   
       GET http://localhost:9998/v1/data/wikiticker/day/?metrics=count&dateTime=PT72H/current
-    Note: this will should be something like the response below unless you have streaming data.
+    
+    Note: this will should be something like the response below since the 
+    wikiticker table doesn't have data for the past 72 hours from now.
     ```json
     {
         "rows": [],
@@ -80,7 +81,8 @@ Here are some sample queries that you can run to verify your server:
     }
     ```  
 
-- Show debug info, including the query sent to Druid:  
+- Show [debug info](http://localhost:9998/v1/data/wikiticker/day/?format=debug&metrics=count&dateTime=PT72H/current),
+ including the query sent to Druid:  
 
       GET http://localhost:9998/v1/data/wikiticker/day/?format=debug&metrics=count&dateTime=PT72H/current
 
@@ -93,4 +95,6 @@ Here are some sample queries that you can run to verify your server:
 
 1. In IntelliJ, go to `File -> Open`
 2. Select the `pom.xml` file at the root of the project
-3. Run `GenericMain` which can be found in `fili-generic-example` (e.g. right click and choose run)
+3. Under `src/main/resources/applicationConfig.properties`, change `bard__non_ui_druid_broker`, 
+`bard__ui_druid_broker`, `bard__druid_coord`, and other properties as needed.
+4. Run `GenericMain` which can be found in `fili-generic-example` (e.g. right click and choose run)
