@@ -80,7 +80,7 @@ class EtagCacheResponseProcessorSpec extends Specification {
         json.get(DruidJsonResponseContentKeys.RESPONSE.getName()) == MAPPER.readTree('[{"k1":"v1"}]')
     }
 
-    def "processResponse reports error when status code is OK and etag is missing"() {
+    def "processResponse reports error when status code is OK but etag is missing"() {
         given:
         JsonNode json = MAPPER.readTree(
                 String.format(
