@@ -1,0 +1,35 @@
+1. Implement DatasourceConstraint
+
+2. Availability (Resolver) Interface
+    - method names to resolver
+
+3. DatasourceMetadata
+    - modify existing class for new method interface
+    - modify and use DatasourceMetaDataService
+
+4. Implementation of Availability
+    - Concrete (1,2)
+    - Permissive (1,2)
+
+============================================
+5. Update Concrete Physical Table Class
+
+5.  Integrate Availability into PhysicalTable
+    - update tests during query building
+    - partial data tests
+    - serialization of datasource in query
+
+5. Integrate Constraint into TableResolver
+    - Table selection
+    - Partial data filtering
+    - Cache key code
+
+=============================================
+
+6. Implementation of Availability
+    - MetricUnion (5)
+    - Partition (5)
+
+6. Partition Resolvers
+
+7. Might need to update PhysicalTableLoader & PhysicalTable Definition
