@@ -3,23 +3,41 @@
 package com.yahoo.bard.webservice.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.calcite.adapter.jdbc.JdbcSchema;
 import org.apache.commons.io.FileUtils;
 
-import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+
+import javax.sql.DataSource;
 
 public class Database {
     private static final String DATABASE_URL = "jdbc:h2:mem:test";
     private static final String WIKITICKER_JSON_DATA = "wikiticker-2015-09-12-sampled.json";
+    public static final String THE_SCHEMA = "DEFAULT_SCHEMA";
+    private static Connection connection;
 
     public static Connection getDatabase() throws Exception {
-        Connection connection = DriverManager.getConnection(DATABASE_URL);
+        if (connection == null) {
+            connection = DriverManager.getConnection(DATABASE_URL);
+        } else {
+            return connection;
+        }
+
         Statement s = connection.createStatement();
+        s.execute("create schema `" + THE_SCHEMA + "`;" +
+                "set schema `" + THE_SCHEMA + "`");
         List<WikitickerEntry> entries = readJsonFile();
 
         s.execute("CREATE TABLE WIKITICKER (ID INT PRIMARY KEY," +
@@ -99,24 +117,76 @@ public class Database {
         return entries;
     }
 
-    /**
-     * print basic column info about the result set
-     *
-     * @param rsmd
-     * @throws SQLException
-     */
-    public static void printColTypes(ResultSetMetaData rsmd) throws SQLException {
-        for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-            int jdbcType = rsmd.getColumnType(i);
-            String name = rsmd.getColumnName(i);
-            String type = rsmd.getColumnTypeName(i);
-            System.out.printf("%10s[%s-%d]", name, type, jdbcType);
-        }
-        System.out.println();
+    public static DataSource getDataSource() {
+        return JdbcSchema.dataSource(DATABASE_URL, org.h2.Driver.class.getName(), "", "");
     }
 
-    public static DataSource getDataSource() {
-        return JdbcSchema.dataSource(DATABASE_URL, null, "", "");
+    /**
+     * Converts a {@link ResultSet} to string.
+     * From CalciteAssert
+     * */
+    public static class ResultSetFormatter {
+        final StringBuilder sb = new StringBuilder();
+
+        public ResultSetFormatter resultSet(ResultSet resultSet) throws SQLException {
+            return resultSet(resultSet, -1);
+        }
+
+        public ResultSetFormatter resultSet(ResultSet resultSet, int max)
+                throws SQLException {
+            final ResultSetMetaData metaData = resultSet.getMetaData();
+            int count = 0;
+            while (resultSet.next() && (count < max || max < 0)) {
+                rowToString(resultSet, metaData);
+                sb.append("\n");
+                count++;
+            }
+            return this;
+        }
+
+        /** Converts one row to a string. */
+        ResultSetFormatter rowToString(
+                ResultSet resultSet,
+                ResultSetMetaData metaData
+        ) throws SQLException {
+            int n = metaData.getColumnCount();
+            if (n > 0) {
+                for (int i = 1; ; i++) {
+                    sb.append(metaData.getColumnLabel(i))
+                            .append("=")
+                            .append(adjustValue(resultSet.getString(i)));
+                    if (i == n) {
+                        break;
+                    }
+                    sb.append("; ");
+                }
+            }
+            return this;
+        }
+
+        protected String adjustValue(String string) {
+            return string;
+        }
+
+        public Collection<String> toStringList(
+                ResultSet resultSet,
+                Collection<String> list
+        ) throws SQLException {
+            final ResultSetMetaData metaData = resultSet.getMetaData();
+            while (resultSet.next()) {
+                rowToString(resultSet, metaData);
+                list.add(sb.toString());
+                sb.setLength(0);
+            }
+            return list;
+        }
+
+        /** Flushes the buffer and returns its previous contents. */
+        public String string() {
+            String s = sb.toString();
+            sb.setLength(0);
+            return s;
+        }
     }
 }
 

@@ -3,20 +3,29 @@
 package com.yahoo.bard.webservice;
 
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.QueryType;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
-import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery;
 import com.yahoo.bard.webservice.mock.DruidResponse;
 import com.yahoo.bard.webservice.mock.Mock;
 import com.yahoo.bard.webservice.test.Database;
-import org.apache.calcite.plan.RelOptUtil;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.apache.calcite.adapter.jdbc.JdbcSchema;
+import org.apache.calcite.plan.RelTraitDef;
+import org.apache.calcite.rel.rel2sql.RelToSqlConverter;
+import org.apache.calcite.rex.RexInputRef;
+import org.apache.calcite.schema.SchemaPlus;
+import org.apache.calcite.sql.SqlDialect;
+import org.apache.calcite.sql.parser.SqlParser;
+import org.apache.calcite.tools.Frameworks;
+import org.apache.calcite.tools.Programs;
 import org.apache.calcite.tools.RelBuilder;
 import org.h2.jdbc.JdbcSQLException;
 import org.slf4j.Logger;
@@ -25,9 +34,11 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
+
+import javax.sql.DataSource;
 
 /**
  * Converts druid queries to sql, executes it, and returns a druid like response.
@@ -43,7 +54,7 @@ public class SQLConverter {
     }
 
     public static JsonNode convert(DruidAggregationQuery<?> druidQuery) throws Exception {
-        LOG.trace("Processing druid query");
+        LOG.debug("Processing druid query");
         QueryType queryType = druidQuery.getQueryType();
         if (DefaultQueryType.TIMESERIES.equals(queryType)) {
             TimeSeriesQuery timeSeriesQuery = (TimeSeriesQuery) druidQuery;
@@ -55,46 +66,16 @@ public class SQLConverter {
     }
 
     public static JsonNode convert(TimeSeriesQuery druidQuery) throws Exception {
-        LOG.trace("Processing time series query");
+        LOG.debug("Processing time series query");
         String generatedSql = "";
 
-
-        String datasource = druidQuery.getDataSource().getPhysicalTable().getName();
-        // which one is the correct table name
-//        druidQuery.getDataSource().getPhysicalTable().getTableName().asName();
-//        druidQuery.getDataSource().getPhysicalTable().getName();
-
-
-
-
-        // include dependent dimensions in select?
-        Stream<Dimension> dependentDimensions = Stream.concat(
-                druidQuery.getAggregations()
-                        .stream()
-                        .map(Aggregation::getDependentDimensions)
-                        .flatMap(Set::stream),
-                druidQuery.getDimensions().stream()
-        );
-        String dimensions = dependentDimensions.map(Object::toString).collect(Collectors.joining(","));
-
-
-        // todo generate sql for query
-        generatedSql = "select " + dimensions
-                + " from " + datasource
-                // where filters
-                // order by?
-                // group by aggregations
-        ;
-
-        // select * from datasource
-        // how does this work with granularity? will this have to be bucketed by granularity here
-        // sql aggregations are done with groupBy (do we have to worry about makers?)
+        generatedSql = buildTimeSeriesQuery(druidQuery, builder());
 
         return query(druidQuery, generatedSql, Database.getDatabase());
     }
 
     public static JsonNode query(DruidQuery<?> druidQuery, String sql, Connection connection) throws Exception {
-
+        LOG.debug("Executing {}", sql);
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
              ResultSet resultSet = preparedStatement.executeQuery()) {
             return read(druidQuery, connection, resultSet);
@@ -113,20 +94,58 @@ public class SQLConverter {
      * @param resultSet  the result set of the druid query.
      * @return druid-like result from query.
      */
-    private static JsonNode read(DruidQuery<?> druidQuery, Connection connection, ResultSet resultSet) throws Exception {
-        Database.printColTypes(resultSet.getMetaData());
-        DruidResponse druidResponse = Mock.druidResponse();
+    private static JsonNode read(DruidQuery<?> druidQuery, Connection connection, ResultSet resultSet)
+            throws Exception {
+        LOG.debug("Reading results");
+        Database.ResultSetFormatter rf = new Database.ResultSetFormatter();
+        rf.resultSet(resultSet, 0);
+        System.out.println(rf.string());
 
+        int rows = 0;
+        while (resultSet.next()) {
+            ++rows;
+            // process
+        }
+        LOG.debug("Fetched {} rows.", rows);
+
+
+        LOG.debug("Creating fake druid response. ");
+        DruidResponse druidResponse = Mock.druidResponse();
 
         ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.valueToTree(druidResponse);
     }
 
     // testing calcite
-    public static RelBuilder buildTimeSeriesQuery(TimeSeriesQuery druidQuery, RelBuilder builder) {
+    public static String buildTimeSeriesQuery(TimeSeriesQuery druidQuery, RelBuilder builder) {
         String name = druidQuery.getDataSource().getPhysicalTable().getTableName().asName();
-        System.out.println(RelOptUtil.toString(builder.scan(name).build()));
-        return builder.scan(name);
+        name = druidQuery.getDataSource().getPhysicalTable().getName();
+
+        Stream<Dimension> dependentDimensions = Stream.concat(
+                druidQuery.getAggregations()
+                        .stream()
+                        .map(Aggregation::getDependentDimensions) // include dependent dimensions in select?
+                        .flatMap(Set::stream),
+                druidQuery.getDimensions().stream()
+        );
+
+        builder = builder
+                .scan(name);
+
+        if (dependentDimensions.count() != 0) {
+            builder.project((RexInputRef[]) dependentDimensions.map(Object::toString).map(builder::field).toArray());
+        }
+
+        //are there any custom aggregations or can we just list them all in an enum
+
+        // where filters
+        // order by?
+        // group by aggregations
+
+        // how does this work with granularity? will this have to be bucketed by granularity here
+        // sql aggregations are done with groupBy (do we have to worry about makers?)
+
+        return new RelToSqlConverter(SqlDialect.DUMMY).visitChild(0, builder.build()).asSelect().toString();
     }
 
 /* Example query to druid --------------------------------------------------------------------------
@@ -166,14 +185,33 @@ public class SQLConverter {
  --------------------------------------------------------------------------------------------------- */
 
     public static void main(String[] args) throws Exception {
-        // todo correctly mock timeseriesquery/everything else with it
-        DruidAggregationQuery<?> druidQuery = Mock.timeSeriesQuery("wikiticker_(not working)");
+        Connection c = Database.getDatabase();
+        DruidAggregationQuery<?> druidQuery = Mock.timeSeriesQuery("WIKITICKER");
         JsonNode jsonNode = convert(druidQuery);
         System.out.println(jsonNode);
 
-
         // getSqlParser("select * from PERSON").parseQuery().toSqlString(SqlDialect.DUMMY)
         // todo validate?
+    }
+
+    public static RelBuilder builder() {
+        final SchemaPlus rootSchema = Frameworks.createRootSchema(true);
+        return RelBuilder.create(
+                Frameworks.newConfigBuilder()
+                        .parserConfig(SqlParser.Config.DEFAULT)
+                        .defaultSchema(addSchema(rootSchema)) // i think we need to add the table in here
+                        .traitDefs((List<RelTraitDef>) null)
+                        .programs(Programs.heuristicJoinOrder(Programs.RULE_SET, true, 2))
+                        .build()
+        );
+    }
+
+    public static SchemaPlus addSchema(SchemaPlus rootSchema) {
+        DataSource dataSource = Database.getDataSource();
+        return rootSchema.add(
+                Database.THE_SCHEMA,
+                JdbcSchema.create(rootSchema, null, dataSource, null, Database.THE_SCHEMA)
+        );
     }
 
 }
