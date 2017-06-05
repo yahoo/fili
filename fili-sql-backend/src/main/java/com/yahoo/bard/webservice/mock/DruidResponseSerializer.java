@@ -15,7 +15,8 @@ import java.io.IOException;
 public class DruidResponseSerializer extends JsonSerializer {
 
     @Override
-    public void serialize(Object o, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException, JsonProcessingException {
+    public void serialize(Object o, JsonGenerator jsonGenerator, SerializerProvider serializerProvider)
+            throws IOException, JsonProcessingException {
         DruidResponse druidResponse = (DruidResponse) o;
         // todo test cases?
         jsonGenerator.writeStartArray();

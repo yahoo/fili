@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.test;
 
+import com.yahoo.bard.webservice.TimeUtils;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.calcite.adapter.jdbc.JdbcSchema;
@@ -11,11 +13,13 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -44,7 +48,7 @@ public class Database {
                 "COMMENT VARCHAR(256)," +
                 "COUNTRY_ISO_CODE VARCHAR(256)," +
                 "ADDED INTEGER," +
-                "TIME VARCHAR(256), " +
+                "TIME TIMESTAMP, " +
                 "IS_NEW BOOLEAN," +
                 "IS_ROBOT BOOLEAN," +
                 "DELETED INTEGER," +
@@ -73,12 +77,16 @@ public class Database {
 
         int i = 0;
         for (WikitickerEntry e : entries) {
+
             PreparedStatement preparedStatement = connection.prepareStatement(sqlInsert);
             preparedStatement.setInt(1, i);
             preparedStatement.setString(2, e.getComment());
             preparedStatement.setString(3, e.getCountryIsoCode());
             preparedStatement.setInt(4, e.getAdded());
-            preparedStatement.setString(5, e.getTime());
+            preparedStatement.setTimestamp(
+                    5,
+                    TimeUtils.timestampFromString(e.getTime())
+            );
             preparedStatement.setBoolean(6, e.getIsNew());
             preparedStatement.setBoolean(7, e.getIsRobot());
             preparedStatement.setInt(8, e.getDeleted());
@@ -119,6 +127,35 @@ public class Database {
 
     public static DataSource getDataSource() {
         return JdbcSchema.dataSource(DATABASE_URL, org.h2.Driver.class.getName(), "", "");
+    }
+
+
+    public static String getDateTimeColumn(Connection connection, String tableName) throws SQLException {
+        PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM " + tableName + " LIMIT 1");
+        ResultSet resultSet = preparedStatement.executeQuery();
+        ResultSetMetaData rsmd = resultSet.getMetaData();
+
+        for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+            int jdbcType = rsmd.getColumnType(i);
+            if (jdbcType == JDBCType.DATE.getVendorTypeNumber()) {
+                return rsmd.getColumnName(i);
+            }
+        }
+
+        if (resultSet.next()) {
+            for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+                String s = resultSet.getString(i);
+                String columnName = rsmd.getColumnName(i).toLowerCase();
+                if (columnName.contains("date") || columnName.contains("time")) {
+                    try {
+                        Timestamp time = Timestamp.valueOf(s);
+                        return rsmd.getColumnName(i);
+                    } catch (IllegalArgumentException ignored) {
+                    }
+                }
+            }
+        }
+        throw new IllegalStateException("No DateTime column was found");
     }
 
     /**

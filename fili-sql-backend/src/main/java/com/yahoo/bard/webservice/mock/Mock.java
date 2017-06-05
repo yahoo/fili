@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
+import com.yahoo.bard.webservice.druid.model.aggregation.DoubleSumAggregation;
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource;
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource;
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery;
@@ -18,8 +19,11 @@ import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.Interval;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -49,15 +53,23 @@ public class Mock {
                 dataSource(name),
                 DefaultTimeGrain.DAY,
                 null,
+                Collections.singletonList(new DoubleSumAggregation("ADDED", "ADDED")),
                 Collections.emptyList(),
-                Collections.emptyList(),
-                Collections.emptySet()
+                Arrays.asList(
+                        new Interval(
+                                DateTime.parse("2015-09-12T00:47:00.000Z"),
+                                DateTime.parse("2015-09-12T00:47:25.000Z")
+                        ),
+                        new Interval(DateTime.parse("2015-09-14"), DateTime.parse("3000-01-01"))
+                )
         );
     }
 
     private static DataSource dataSource(String name) {
-        ZonedTimeGrain zonedTimeGrain = new ZonedTimeGrain(DefaultTimeGrain.HOUR, DateTimeZone.UTC);
-        Set<Column> columns = Collections.emptySet();
+        String added = "ADDED";
+
+        ZonedTimeGrain zonedTimeGrain = new ZonedTimeGrain(DefaultTimeGrain.DAY, DateTimeZone.UTC);
+        Set<Column> columns = setOf();
         Map<String, String> logicalToPhysicalColumnNames = Collections.emptyMap();
 
         DataSourceMetadataService metadataService = new DataSourceMetadataService();
@@ -76,16 +88,26 @@ public class Mock {
                                 metadataService
                         ),
                         new DataSourceConstraint(
-                                Collections.emptySet(),
-                                Collections.emptySet(),
-                                Collections.emptySet(),
-                                Collections.emptySet(),
-                                Collections.emptySet(),
-                                Collections.emptySet(),
-                                Collections.emptySet(),
+                                setOf(),
+                                setOf(),
+                                setOf(),
+                                setOf(added),
+                                setOf(),
+                                setOf(),
+                                setOf(added),
                                 Collections.emptyMap()
                         )
                 )
         );
+    }
+
+    /**
+     *
+     * @param e
+     * @param <T>
+     * @return
+     */
+    private static <T> Set<T> setOf(T... e) {
+        return e == null ? Collections.emptySet() : new HashSet<>(Arrays.asList(e));
     }
 }

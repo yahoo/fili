@@ -3,10 +3,8 @@
 package com.yahoo.bard.webservice;
 
 
-import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.QueryType;
-import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery;
@@ -21,8 +19,10 @@ import org.apache.calcite.adapter.jdbc.JdbcSchema;
 import org.apache.calcite.plan.RelTraitDef;
 import org.apache.calcite.rel.rel2sql.RelToSqlConverter;
 import org.apache.calcite.rex.RexInputRef;
+import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.sql.SqlDialect;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.parser.SqlParser;
 import org.apache.calcite.tools.Frameworks;
 import org.apache.calcite.tools.Programs;
@@ -34,17 +34,17 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import javax.sql.DataSource;
+import java.util.stream.Collectors;
 
 /**
  * Converts druid queries to sql, executes it, and returns a druid like response.
  */
 public class SQLConverter {
     private static final Logger LOG = LoggerFactory.getLogger(SQLConverter.class);
+    private static final RelToSqlConverter REL_TO_SQL = new RelToSqlConverter(SqlDialect.DUMMY);
 
     /**
      * No instances.
@@ -67,15 +67,15 @@ public class SQLConverter {
 
     public static JsonNode convert(TimeSeriesQuery druidQuery) throws Exception {
         LOG.debug("Processing time series query");
-        String generatedSql = "";
 
-        generatedSql = buildTimeSeriesQuery(druidQuery, builder());
+        Connection connection = Database.getDatabase();
+        String generatedSql = buildTimeSeriesQuery(connection, druidQuery, builder());
 
-        return query(druidQuery, generatedSql, Database.getDatabase());
+        return query(druidQuery, generatedSql, connection);
     }
 
     public static JsonNode query(DruidQuery<?> druidQuery, String sql, Connection connection) throws Exception {
-        LOG.debug("Executing {}", sql);
+        LOG.debug("Executing \n{}", sql);
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
              ResultSet resultSet = preparedStatement.executeQuery()) {
             return read(druidQuery, connection, resultSet);
@@ -96,10 +96,10 @@ public class SQLConverter {
      */
     private static JsonNode read(DruidQuery<?> druidQuery, Connection connection, ResultSet resultSet)
             throws Exception {
-        LOG.debug("Reading results");
+        // result set cannot be reset after rows have been read, this consumes results by reading them
         Database.ResultSetFormatter rf = new Database.ResultSetFormatter();
         rf.resultSet(resultSet, 0);
-        System.out.println(rf.string());
+        LOG.debug("Reading results \n{}", rf.string());
 
         int rows = 0;
         while (resultSet.next()) {
@@ -108,44 +108,91 @@ public class SQLConverter {
         }
         LOG.debug("Fetched {} rows.", rows);
 
-
-        LOG.debug("Creating fake druid response. ");
-        DruidResponse druidResponse = Mock.druidResponse();
-
         ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.valueToTree(druidResponse);
+        LOG.debug("Original Query\n {}", objectMapper.valueToTree(druidQuery));
+        DruidResponse druidResponse = Mock.druidResponse();
+        JsonNode druidResponseJson = objectMapper.valueToTree(druidResponse);
+        LOG.debug("Fake Druid Response\n {}", druidResponseJson);
+
+        return druidResponseJson;
     }
 
-    // testing calcite
-    public static String buildTimeSeriesQuery(TimeSeriesQuery druidQuery, RelBuilder builder) {
+    public static String buildTimeSeriesQuery(Connection connection, TimeSeriesQuery druidQuery, RelBuilder builder)
+            throws SQLException {
         String name = druidQuery.getDataSource().getPhysicalTable().getTableName().asName();
-        name = druidQuery.getDataSource().getPhysicalTable().getName();
+        String timeCol = Database.getDateTimeColumn(connection, name);
 
-        Stream<Dimension> dependentDimensions = Stream.concat(
-                druidQuery.getAggregations()
-                        .stream()
-                        .map(Aggregation::getDependentDimensions) // include dependent dimensions in select?
-                        .flatMap(Set::stream),
-                druidQuery.getDimensions().stream()
-        );
+        // druidQuery.getAggregations()
+        //        .stream()
+        //        .map(Aggregation::getDependentDimensions) // include dependent dimensions in select?
 
-        builder = builder
-                .scan(name);
+        builder.scan(name);
 
-        if (dependentDimensions.count() != 0) {
-            builder.project((RexInputRef[]) dependentDimensions.map(Object::toString).map(builder::field).toArray());
+        if (druidQuery.getDimensions().size() != 0) {
+            LOG.debug("Adding dimensions.");
+            builder.project((RexInputRef[]) druidQuery.getDimensions()
+                    .stream()
+                    .map(Object::toString)
+                    .map(builder::field)
+                    .toArray());
         }
 
-        //are there any custom aggregations or can we just list them all in an enum
+        List<RexNode> timefilters = druidQuery.getIntervals().stream().map(interval -> {
+            Timestamp start = TimeUtils.timestampFromMillis(interval.getStartMillis());
+            Timestamp end = TimeUtils.timestampFromMillis(interval.getEndMillis());
+
+            return builder.call(
+                    SqlStdOperatorTable.AND,
+                    builder.call(
+                            SqlStdOperatorTable.GREATER_THAN,
+                            builder.field(timeCol),
+                            builder.literal(start.toString())
+                    ),
+                    builder.call(
+                            SqlStdOperatorTable.LESS_THAN,
+                            builder.field(timeCol),
+                            builder.literal(end.toString())
+                    )
+            );
+        }).collect(Collectors.toList());
+
+
+        builder.filter(
+                builder.call(
+                        SqlStdOperatorTable.OR,
+                        timefilters
+                )
+        );
+
+
+        if (druidQuery.getAggregations().size() != 0) { // group by aggregations
+            LOG.debug("Adding aggregations"); //are there any custom aggregations or can we just list them all in an
+            // enum
+            druidQuery.getAggregations().forEach(aggregation -> {
+                builder.aggregate(
+                        builder.groupKey(timeCol.toUpperCase()),
+                        builder.sum(
+                                false,
+                                "ALIAS_" + aggregation.getFieldName(),
+                                builder.field(aggregation.getFieldName())
+                        )
+                );
+            });
+        }
+
+        // ImmutableList<RexNode> fields = builder.fields(); // the parts which are in SELECT
+        builder.sort(builder.field(timeCol)); // order by time
 
         // where filters
-        // order by?
-        // group by aggregations
 
         // how does this work with granularity? will this have to be bucketed by granularity here
         // sql aggregations are done with groupBy (do we have to worry about makers?)
 
-        return new RelToSqlConverter(SqlDialect.DUMMY).visitChild(0, builder.build()).asSelect().toString();
+        return relToSql(builder);
+    }
+
+    private static String relToSql(RelBuilder builder) {
+        return REL_TO_SQL.visitChild(0, builder.build()).asSelect().toString();
     }
 
 /* Example query to druid --------------------------------------------------------------------------
@@ -185,10 +232,8 @@ public class SQLConverter {
  --------------------------------------------------------------------------------------------------- */
 
     public static void main(String[] args) throws Exception {
-        Connection c = Database.getDatabase();
         DruidAggregationQuery<?> druidQuery = Mock.timeSeriesQuery("WIKITICKER");
         JsonNode jsonNode = convert(druidQuery);
-        System.out.println(jsonNode);
 
         // getSqlParser("select * from PERSON").parseQuery().toSqlString(SqlDialect.DUMMY)
         // todo validate?
@@ -199,7 +244,7 @@ public class SQLConverter {
         return RelBuilder.create(
                 Frameworks.newConfigBuilder()
                         .parserConfig(SqlParser.Config.DEFAULT)
-                        .defaultSchema(addSchema(rootSchema)) // i think we need to add the table in here
+                        .defaultSchema(addSchema(rootSchema))
                         .traitDefs((List<RelTraitDef>) null)
                         .programs(Programs.heuristicJoinOrder(Programs.RULE_SET, true, 2))
                         .build()
@@ -207,10 +252,9 @@ public class SQLConverter {
     }
 
     public static SchemaPlus addSchema(SchemaPlus rootSchema) {
-        DataSource dataSource = Database.getDataSource();
         return rootSchema.add(
                 Database.THE_SCHEMA,
-                JdbcSchema.create(rootSchema, null, dataSource, null, Database.THE_SCHEMA)
+                JdbcSchema.create(rootSchema, null, Database.getDataSource(), null, Database.THE_SCHEMA)
         );
     }
 

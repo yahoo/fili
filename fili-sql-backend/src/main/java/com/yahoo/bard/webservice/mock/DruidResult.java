@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.mock;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
