@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.mock;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
