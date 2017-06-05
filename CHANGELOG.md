@@ -7,13 +7,82 @@ pull request if there was one.
 
 Current
 -------
+
 ### Added:
+
+
+
+### Changed:
+
+
+
+### Deprecated:
+
+
+
+### Fixed:
+
+
+
+### Known Issues:
+
+
+
+### Removed:
+
+
+
+v0.8.69 - 2017/06/06
+--------------------
+
+The main changes in this version are changes to the Table and Schema structure, including a major refactoring of
+Physical Table. The concept of Availability was split off from Physical Table, allowing Fili to better reason about
+availability of columns in Data Sources in ways that it couldn't easily do before, like in the case of Unions. As part
+of this refactor, Fili also gains 1st-class support for queries using the Union data source.
+
+<sub>Full description of changes to Tables, Schemas, Physical Tables, Availability, PartialDataHandler, etc. tbd</sub>
+
+This was a long and winding journey this cycle, so the changelog is not nearly as tight as we'd like (hopefully we'll
+come back and consolidate it for this release), but all of the changes are in there. Along the way, we also addressed
+a number of other small concerns. Here are some of the _highlights_ beyond the main changes around Physical Tables:
+
+Fixes:
+- Unicode characters are now properly sent back to Druid
+- Druid client now follows redirects
+
+New Capabilities & Enhancements:
+- Can sort on `dateTime`
+- Can use Druid query response for final verification of response partiality
+- Class Scanner Spec can discover dependencies, making its dynamic equality testing easier to use
+- There's an example application that shows how to slurp configuration from an existing Druid instance
+- Druid queries return a `Future` instead of `void`, allowing for blocking requests if needed (though use sparingly!)
+- Support for extensions defining new Druid query types
+
+Performance upgrades:
+- Lazy DruidFilters
+- Assorted log level reductions
+- Lucene "total results" 50% speedup
+
+Deprecations:
+- `DataSource::getDataSources` no longer makes sense, since `UnionDataSource` only supports 1 table now
+- `BaseTableLoader::loadPhysicalTable`. Use `loadPhysicalTablesWithDependency` instead
+- `LogicalMetricColumn` isn't really a needed concept
+
+Removals:
+- `PartialDataHandler::findMissingRequestTimeGrainIntervals`
+- `permissive_column_availability_enabled` feature flag, since the new `Availability` infrastructure now handles this
+- Lots of things on `PhysicalTable`, since that system was majorly overhauled
+- `SegmentMetadataLoader`, which had been deprecated for a while and relies on no longer supported Druid features
+
+
+### Added:
+
 - [Implement DruidPartialDataRequestHandler](https://github.com/yahoo/fili/pull/287)
     * Implement `DruidPartialDataRequestHandler` that injects `druid_uncovered_interval_limit` into Druid query context
     * Append `DruidPartialDataResponseProcessor` to the current next `ResponseProcessor` chain
     * Add `DruidPartialDataRequestHandler` to `DruidWorkflow` between `AsyncDruidRequestHandler` and
-    `CacheV2RequestHandler` and invoke the `DruidPartialDataRequestHandler` if `druid_uncovered_interval_limit` is
-    greater than 0
+      `CacheV2RequestHandler` and invoke the `DruidPartialDataRequestHandler` if `druid_uncovered_interval_limit` is
+      greater than 0
 
 - [Implement DruidPartialDataResponseProcessor](https://github.com/yahoo/fili/pull/275)
     * Add `FullResponseProcessor` interface that extends `ResponseProcessor`
@@ -26,14 +95,15 @@ Current
 - [Add a `BaseMetadataAvailability` as a parallel to `BaseCompositeAvailability`](https://github.com/yahoo/fili/pull/263)
     * `Concrete` and `PermissiveAvailability` both extend this new base `Availability`
 
-- [Constrained Table Support for Table Serialization](https://github.com/yahoo/fili/pull/262/files)
+- [Constrained Table Support for Table Serialization](https://github.com/yahoo/fili/pull/262)
     * Add ConstrainedTable which closes over a physical table and an availability, caching all availability merges.
     * Add PartialDataHandler method to use `ConstrainedTable`
 
-- [Testing: ClassScannerSpec now supports 'discoverable' depenencies ](https://github.com/yahoo/fili/pull/262/files)
-    * Creating 'supplyDependencies' method on a class's spec allows definitions of dependencies for dynamic equality testing
+- [Testing: ClassScannerSpec now supports 'discoverable' depenencies ](https://github.com/yahoo/fili/pull/262)
+    * Creating `supplyDependencies` method on a class's spec allows definitions of dependencies for dynamic equality
+      testing
 
-- [Moved UnionDataSource to support only single tables](https://github.com/yahoo/fili/pull/262/files)
+- [Moved UnionDataSource to support only single tables](https://github.com/yahoo/fili/pull/262)
     * `DataSource` now supports getDataSource() operation
 
 - [Prepare For Partial Data V2](https://github.com/yahoo/fili/pull/264)
@@ -75,29 +145,34 @@ Current
 
 - [Method for finding coarsest ZonedTimeGrain](https://github.com/yahoo/fili/pull/230)
     * Added utility method for returning coarsest `ZonedTimeGrain` from a collection of `ZonedTimeGrain`s. This is
-    useful to construct composite tables that requires the coarsest `ZonedTimeGrain` among a set of tables.
+      useful to construct composite tables that requires the coarsest `ZonedTimeGrain` among a set of tables.
 
 - [Should also setConnectTimeout when using setReadTimeout](https://github.com/yahoo/fili/pull/231)
     * Setting connectTimeout on DefaultAsyncHttpClientConfig when building AsyncDruidWebServiceImpl
 
 - [CompositePhysicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
-    * Added `ConcretePhysicalTable` and `ConcreteAvailability` to model table in druid datasource and its availabillity in the new table availability structure
-    * Added class variable for `DataSourceMetadataService` and `ConfigurationLoader` into `AbstractBinderFactory` for application to access
-    * Added `loadPhsycialTablesWithDependency` into `BaseTableLoader` to load physical tables with dependencies
+    * Added `ConcretePhysicalTable` and `ConcreteAvailability` to model table in druid datasource and its availability
+      in the new table availability structure
+    * Added class variable for `DataSourceMetadataService` and `ConfigurationLoader` into `AbstractBinderFactory` for
+      application to access
+    * Added `loadPhysicalTablesWithDependency` into `BaseTableLoader` to load physical tables with dependencies
 
 - [PermissiveAvailability and PermissiveConcretePhysicalTable](https://github.com/yahoo/fili/pull/190)
-    * Added `PermissiveConcretePhysicalTable` and `PermissiveAvailability` to model table in druid datasource and its availability in the new table availability structure.
-    `PermissiveConcretePhysicalTable` and `PermissiveAvailability` extends `ConcretePhysicalTable` and `ConcreteAvailability`, respectively.
-    `PermissiveAvailability` differs from `ConcreteAvailability` in the way of returning available intervals: `ConcreteAvailability` returns
-    the available intervals constraint by `DataSourceConstraint` and provides them in intersection. `PermissiveAvailability`, however, returns
-    them without constraint from `DataSourceConstraint` and provides them in union. `PermissiveConcretePhysicalTable` is different from `ConcretePhysicalTable`
-    in that the former is backed by `PermissiveAvailability` while the latter is backed by `ConcreteAvailability`.
+    * Added `PermissiveConcretePhysicalTable` and `PermissiveAvailability` to model table in druid datasource and its
+      availability in the new table availability structure. `PermissiveAvailability` differs from `ConcreteAvailability`
+      in the way of returning available intervals: `ConcreteAvailability` returns the available intervals constraint by
+      `DataSourceConstraint` and provides them in intersection. `PermissiveAvailability`, however, returns them without
+      constraint from `DataSourceConstraint` and provides them in union. `PermissiveConcretePhysicalTable` is different
+      from `ConcretePhysicalTable` in that the former is backed by `PermissiveAvailability` while the latter is backed
+      by `ConcreteAvailability`.
 
 - [Refactor DatasourceMetaDataService to fit composite table needs](https://github.com/yahoo/fili/pull/173)
-    * `DataSourceMetadataService` also stores interval data from segment data as intervals by column name map and provides method `getAvailableIntervalsByTable` to retrieve it
+    * `DataSourceMetadataService` also stores interval data from segment data as intervals by column name map and
+      provides method `getAvailableIntervalsByTable` to retrieve it
 
 - [QueryPlanningConstraint and DataSourceConstraint](https://github.com/yahoo/fili/pull/169)
-    * Added `QueryPlanningConstraint` to replace current interface of Matchers and Resolvers arguments during query planning
+    * Added `QueryPlanningConstraint` to replace current interface of Matchers and Resolvers arguments during query
+      planning
     * Added `DataSourceConstraint` to allow implementation of `PartitionedFactTable`'s availability in the near future
 
 - [Major refactor for availability and schemas and tables](https://github.com/yahoo/fili/pull/165)
@@ -114,8 +189,8 @@ Current
     * `ErrorMessageFormat` for errors during `ResultSetMapper` cycle
 
 - [Added default base class for all dimension types](https://github.com/yahoo/fili/pull/177)
-   * Added base classes `DefaultKeyValueStoreDimensionConfig`, `DefaultLookupDimensionConfig` and `DefaultRegisteredLookupDimensionConfig` 
-     to create default dimensions. 
+   * Added base classes `DefaultKeyValueStoreDimensionConfig`, `DefaultLookupDimensionConfig` and
+     `DefaultRegisteredLookupDimensionConfig` to create default dimensions.
 
 - [dateTime based sort feature for the final ResultSet added](https://github.com/yahoo/fili/pull/178)
    * Now we support dateTime column based sort in ASC or DESC order.
@@ -126,8 +201,9 @@ Current
       sorting direction.
 
 - [Detect unset userPrincipal in Preface log block](https://github.com/yahoo/fili/pull/154)
-    * Logs a warning if no userPrincipal is set on the request (ie. we don't know who the user is), and sets the
-      `user` field in the `Preface` log block to `NO_USER_PRINCIPAL`.
+    * Logs a warning if no userPrincipal is set on the request (ie. we don't know who the user is), and sets the `user`
+      field in the `Preface` log block to `NO_USER_PRINCIPAL`.
+
 - [Support timeouts for lucene search provider](https://github.com/yahoo/fili/pull/183)
 
 ### Changed:
@@ -160,10 +236,10 @@ Current
 - [Clarify name of built-in static `TableName` comparator](https://github.com/yahoo/fili/pull/263)
     * Change to `AS_NAME_COMPARATOR`
 
-- [Constrained Table Support for Table Serialization](https://github.com/yahoo/fili/pull/262/files)
+- [Constrained Table Support for Table Serialization](https://github.com/yahoo/fili/pull/262)
     * Switched `PartialDataRequestHandler` to use the table from the query rather than the `PhysicalTableDictionary`
     * `DruidQueryBuilder` uses constrained tables to dynamically pick between Union and Table DataSource implementations
-    * `PartialDataHandler` has multiple different entrypoints now depending on pre or post constraint conditions
+    * `PartialDataHandler` has multiple different entry points now depending on pre or post constraint conditions
     * `getAvailability` moved to a `ConfigTable` interface and all configured Tables to that interface
     * DataSource implementations bind to `ConstrainedTable` and only ConstrainedTable is used after table selection
     * `PhysicalTable.getAllAvailableIntervals` explicitly rather than implicitly uses `SimplifiedIntervalList`
@@ -171,19 +247,19 @@ Current
     * Package-private optimize tests in `DruidQueryBuilder` moved to protected
     * Immutable `NoVolatileIntervalsFunction` class made final
     
-- [Moved UnionDataSource to support only single tables](https://github.com/yahoo/fili/pull/262/files)
+- [Moved UnionDataSource to support only single tables](https://github.com/yahoo/fili/pull/262)
     * `UnionDataSource` now accepts only single tables instead of sets of tables.
-    * `DataSource` now supports getDataSource() operation
+    * `DataSource` now supports `getDataSource()` operation
     * `IntervalUtils.collectBucketedIntervalsNotInIntervalList` moved to `PartialDataHandler`
 
 - [Druid filters are now lazy](https://github.com/yahoo/fili/pull/269)
-    - The Druid filter is built when requested, NOT at DatApiRequest construction. This will
-        make it easier to write performant `DataApiRequest` mappers.
+    * The Druid filter is built when requested, NOT at DatApiRequest construction. This will make it easier to write
+      performant `DataApiRequest` mappers.
 
 - [Reduce log level of failure to store a result in the asynchronous job store](https://github.com/yahoo/fili/pull/266)
     * Customers who aren't using the asynchronous infrastructure shouldn't be seeing spurious warnings about a failure
-        to execute one step (which is a no-op for them) in a complex system they aren't using. Until we can revisit how
-        we log report asynchronous errors, we reduce the log level to `DEBUG` to reduce noise.
+      to execute one step (which is a no-op for them) in a complex system they aren't using. Until we can revisit how we
+      log report asynchronous errors, we reduce the log level to `DEBUG` to reduce noise.
 
 - [Clean up `BaseDataSourceComponentSpec`](https://github.com/yahoo/fili/pull/263)
     * Drop a log from `error` to `trace` when a response comes back as an error
@@ -194,7 +270,7 @@ Current
 
 - [Update availabilities for PartitionAvailability](https://github.com/yahoo/fili/pull/244)
     * Created `BaseCompositeAvailability` for common features
-    * Refactored `DataSourceMetadataService` methods to use SimplifiedIntervaList to standardize intersections
+    * Refactored `DataSourceMetadataService` methods to use `SimplifiedIntervaList` to standardize intersections
 
 - [Queries to Druid Web Service now return a Future](https://github.com/yahoo/fili/pull/254)
     * Queries now return a `Future<Response>` in addition to having method callbacks.
@@ -202,32 +278,121 @@ Current
 - [Refactor Physical Table Definition and Update Table Loader](https://github.com/yahoo/fili/pull/207)
     * `PhysicalTableDefinition` is now an abstract class, construct using `ConcretePhysicalTableDefinition` instead
     * `PhysicalTableDefinition` now requires a `build` methods to be implemented that builds a physical table
-    * `BaseTableLoader` now constructs physical tables by calling `build` method on `PhysicalTableDefinition`s in `buildPhysicalTablesWithDependency`
-    * `buildDimensionSpanningTableGroup` method in `BaseTableLoader` now uses `loadPhysicalTablesWithDependency` instead of deprecated `loadPhysicalTables`
-    * `buildDimensionSpanningTableGroup` method in `BaseTableLoader` now does not take druid metrics as arguments, instead `PhysicalTableDefinition` does
+    * `BaseTableLoader` now constructs physical tables by calling `PhysicalTableDefinition::build` in
+      `buildPhysicalTablesWithDependency`
+    * `BaseTableLoader::buildDimensionSpanningTableGroup` now uses `loadPhysicalTablesWithDependency` instead of
+      deprecated `loadPhysicalTables`
+    * `BaseTableLoader::buildDimensionSpanningTableGroup` now does not take druid metrics as arguments, instead
+      `PhysicalTableDefinition` does
 
 - [Fix to use physical name instead of logical name to retrieve available interval](https://github.com/yahoo/fili/pull/226)
-    * `getAllAvailbleIntervals` in `ConcreteAvailability` no longer filters out un-configured columns, instead table's `getAllAvailbleIntervals` does
-    * `getAvailbleIntervals` in `Availbality` now takes `PhysicalDataSourceConstraint` instead of `DataSourceConstraint`
+    * `ConcreteAvailability::getAllAvailableIntervals` no longer filters out un-configured columns, instead
+      `Physicaltable::getAllAvailableIntervals` does
+    * `Availability::getAvailableIntervals` now takes `PhysicalDataSourceConstraint` instead of `DataSourceConstraint`
     * `Availability` no longer takes a set of columns on the table, only table needs to know
-    * `getAllAvailbleIntervals` in `Availability` now returns a map of column physical name string to interval list instead of column to interval list
-    * `TestDataSourceMetadataService` now takes map from string to list of intervals instead of column to list of intervals for constructor
+    * `Availability::getAllAvailableIntervals` now returns a map of column physical name string to interval list instead
+      of column to interval list
+    * `TestDataSourceMetadataService` now takes map from string to list of intervals instead of column to list of
+      intervals for constructor
 
 - [Reduced number of queries sent by `LuceneSearchProvider` by 50% in the common case](https://github.com/yahoo/fili/pull/234)
-    * Before, we were using `IndexSearcher::count` to get the total number of documents, which spawned an entire second query
-        (so two Lucene queries rather than one when requesting the first page of results). We now pull that information from
-        metadata generated by query we run to get the actual results.
+    * Before, we were using `IndexSearcher::count` to get the total number of documents, which spawned an entire second
+      query (so two Lucene queries rather than one when requesting the first page of results). We now pull that
+      information from the results of the query directly.
+
+- [Allow GranularityComparator to return static instance](https://github.com/yahoo/fili/pull/225)
+    * Implementation of [PR #193](https://github.com/yahoo/fili/pull/193) suggests an possible improvement on
+      `GranularityComparator`: Put the static instance on the `GranularityComparator` class itself, so that everywhere
+      in the system that wants it could just call `GranularityComparator.getInstance()`
+
+- [Make `TemplateDruidQuery::getMetricField` get the first field instead of any field](https://github.com/yahoo/fili/pull/210)
+    * Previously, order was by luck, now it's by the contract of `findFirst`
+
+- Clean up config loading and add more logs and checks
+    * Use correct logger in `ConfigurationGraph` (was `ConfigResourceLoader`)
+    * Add error / logging messages for module dependency indicator
+    * Tweak loading resources debug log to read better
+    * Tweak module found log to read better
+    * Convert from `Resource::getFilename` to `Resource::getDescription` when reporting errors in the configuration
+      graph. `getDescription` is more informative, usually holding the whole file path, rather than just the terminal
+      segment / file _name_
+
+- [Restore non-default query support in TestDruidWebservice](https://github.com/yahoo/fili/pull/202)
+
+- [Base TableDataSource serialization on ConcretePhysicalTable fact name](https://github.com/yahoo/fili/pull/202)
+
+- [CompositePhsyicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
+    * `TableLoader` now takes an additional constructor argument (`DataSourceMetadataService`) for creating tables
+    * `PartialDataHandler::findMissingRequestTimeGrainIntervals` now takes `DataSourceConstraint`
+    * Renamed `buildTableGroup` method to `buildDimensionSpanningTableGroup`
+ 
+- [Restored flexibility about columns for query from DruidResponseParser](https://github.com/yahoo/fili/pull/198)
+    * Immutable schemas prevented custom query types from changing `ResultSetSchema` columns.
+    * Columns are now sourced from `DruidResponseParser` and default implemented on `DruidAggregationQuery`
+
+- [Refactor DatasourceMetaDataService to fit composite table needs](https://github.com/yahoo/fili/pull/173)
+    * `BasePhysicalTable` now stores table name as the `TableName` instead of `String`
+    * `SegmentInfo` now stores dimension and metrics from segment data for constructing column to available interval map
+
+- [`QueryPlanningConstraint` and `DataSourceConstraint`](https://github.com/yahoo/fili/pull/169)
+    * `QueryPlanningConstraint` replaces current interface of Matchers and Resolvers `DataApiRequest` and
+      `TemplateDruidQuery` arguments during query planning
+    * Modified `findMissingTimeGrainIntervals` method in `PartialDataHandler` to take a set of columns instead of
+      `DataApiRequest` and `DruidAggregationQuery`
+
+- [Major refactor for availability and schemas and tables](https://github.com/yahoo/fili/pull/165)
+    * `Schema` and `Table` became interfaces
+	    * `Table` has-a `Schema`
+	    * `PhysicalTable` extends `Table`, interface only supports read-only operations
+	* `Schema` constructed as immutable, `Column`s no longer bind to `Schema`
+		* Removed `addNew*Column` method
+	* `Schema` implementations now: `BaseSchema`, `PhysicalTableSchema`, `LogicalTableSchema`, `ResultSetSchema`
+    * `DimensionLoader` uses `ConcretePhysicalTable`
+    * `PhysicalTableDefinition` made some fields private, accepts iterables, returns immutable dimensions
+    * `ResultSet` constructor parameter order swapped
+    * `ResultSetMapper` now depends on `ResultSetSchema`
+    * `TableDataSource` constructor arg narrows: `PhysicalTable` -> `ConcreteTable`
+    * `DataApiRequest` constructor arg narrows: `Table` -> `LogicalTable`
+    * `DruidQueryBuilder` now polymorphic on building data sources models from new physical tables
+    * `ApiFilter` schema validation moved to `DataApiRequest`
+    * **Guava version bumped to 21.0**
+
+- [Request IDs now support underscores.](https://github.com/yahoo/fili/pull/176)
+
+- Added support for extensions defining new Query types
+    * `TestDruidWebService` assumes unknown query types behave like `GroupBy`, `TimeSeries`, and `TopN`
+    * `ResultSetResponseProcessor` delegates to `DruidResponseProcessor` to build expected query schema, allowing
+      subclasses to override and extend the schema behavior
+
+- [Add dimension fields to fullView table format](https://github.com/yahoo/fili/pull/155)
+
+- [Make HealthCheckFilter reject message nicer](https://github.com/yahoo/fili/pull/153)
+    * The previous message of `reject <url>` wasn't helpful, useful, nor very nice to users, and the message logged was
+      not very useful either. The message has been made nicer (`Service is unhealthy. At least 1 healthcheck is
+      failing`), and the log has been made better as well.
+
+- [`RequestLog` timings support the try-with-resources block](https://github.com/yahoo/fili/pull/143)
+    * A block of code can now be timed by wrapping the timed block in a try-with-resources block that starts the timer.
+      Note: This won't work when performing timings across threads, or across contexts. Those need to be started and
+      stopped manually.
+
+- [Clean up logging and responses in `DimensionCacheLoaderServlet`](https://github.com/yahoo/fili/pull/163)
+    * Switched a number of `error`-level logs to `debug` level to line up with logging guidance when request failures
+      were result of client error
+    * Reduced some `info`-level logs down to `debug`
+    * Converted to 404 when error was cause by not finding a path element metadata generated by query we run to get the
+      actual results.
 
 - [Update LogBack version 1.1.7 -> 1.2.3](https://github.com/yahoo/fili/pull/235)
     * In web-applications, logback-classic will automatically install a listener which will stop the logging context and
-    release resources when your web-app is reloaded.
-    * Logback-classic now searches for the file logback-test.xml first, logback.groovy second and logback.xml third.
-    In previous versions logback.groovy was looked up first which was non-sensical in presense of logback-test.xml.
-    * AsyncAppender no longer drops events when the current thread has its interrupt flag set.
-    * Critical parts of the code now use COWArrayList, a custom developed allocation-free lock-free thread-safe
-    implementation of the {@link List} interface. It is optimized for cases where iterations over the list vastly
-    outnumber modifications on the list. It is based on CopyOnWriteArrayList but allows allocation-free iterations over
-    the list.
+      release resources when your web-app is reloaded.
+    * Logback-classic now searches for the file `logback-test.xml`, then `logback.groovy`, and then `logback.xml`.
+      In previous versions `logback.groovy` was looked up first which was non-sensical in presence of `logback-test.xml`
+    * `AsyncAppender` no longer drops events when the current thread has its interrupt flag set.
+    * Critical parts of the code now use `COWArrayList`, a custom developed allocation-free lock-free thread-safe
+      implementation of the `List` interface. It is optimized for cases where iterations over the list vastly outnumber
+      modifications on the list. It is based on `CopyOnWriteArrayList` but allows allocation-free iterations over the
+      list.
 
 - [Update Metrics version 3.1.2 -> 3.2.2](https://github.com/yahoo/fili/pull/235)
     * [Added support for disabling reporting of metric attributes.](https://github.com/dropwizard/metrics/pull/1048)
@@ -241,113 +406,25 @@ Current
     * [Add support for the default shared health check registry name](https://github.com/dropwizard/metrics/pull/1095)
 
 - [Update hk2 version 2.5.0-b05 -> 2.5.0-b36](https://github.com/yahoo/fili/pull/235)
-    * [Add class-proxy in the case of a generic factory using a registered contract]
-    (https://github.com/hk2-project/hk2/releases)
+    * [Add class-proxy in the case of a generic factory using a registered contract](https://github.com/hk2-project/hk2/releases)
 
 - [Update SLF4J version 1.7.21 -> 1.7.25](https://github.com/yahoo/fili/pull/235)
     * When running under Java 9, log4j version 1.2.x is unable to correctly parse the "java.version" system property.
-    Assuming an inccorect Java version, it proceeded to disable its MDC functionality. The slf4j-log4j12 module shipping
-    in this release fixes the issue by tweaking MDC internals by reflection, allowing log4j to run under Java 9.
-    * The slf4j-simple module now uses the latest reference to System.out or System.err.
+      Assuming an incorrect Java version, it proceeded to disable its MDC functionality. The slf4j-log4j12 module
+      shipping in this release fixes the issue by tweaking MDC internals by reflection, allowing log4j to run under Java
+      9.
+    * The slf4j-simple module now uses the latest reference to `System.out` or `System.err`.
     * In slf4j-simple module, added a configuration option to enable/disable caching of the System.out/err target.
 
 - [Update Lucene version 5.3.0 -> 6.5.0](https://github.com/yahoo/fili/pull/233)
-    * [Added IndexSearcher#getQueryCache and #getQueryCachingPolicy](https://issues.apache.org/jira/browse/LUCENE-6838)
-    * [org.apache.lucene.search.Filter is now deprecated](http://issues.apache.org/jira/browse/LUCENE-6301).
-    You should use Query objects instead of Filters, and the BooleanClause.Occur.FILTER clause in order to let Lucene
-    know that a Query should be used for filtering but not scoring.
-    * [MatchAllDocsQuery now has a dedicated BulkScorer for better performance when used as a top-level query.]
-    (http://issues.apache.org/jira/browse/LUCENE-6756)
-    * [Added a IndexWriter#getFieldNames() method (experimental) to return all field names as visible from the
-    IndexWriter](http://issues.apache.org/jira/browse/LUCENE-7659). This would be useful for
-    IndexWriter#updateDocValues() calls, to prevent calling with non-existent docValues fields
-
-- [Allow GranularityComparator to return static instance](https://github.com/yahoo/fili/pull/225)
-    * Implementation of [PR #193](https://github.com/yahoo/fili/pull/193) suggests an possible improvement
-    on GranularityComparator: Put the static instance on the GranularityComparator class itself, so that
-    everywhere in the system that wants it could just call `GranularityComparator.getInstance()`
-
-- [Make `TemplateDruidQuery::getMetricField` get the first field instead of any field](https://github.com/yahoo/fili/pull/210)
-    * Previously, order was by luck, now it's by the contract of `findFirst`
-
-- [Clean up config loading and add more logs and checks]()
-    * Use correct logger in `ConfigurationGraph` (was `ConfigResourceLoader`)
-    * Add error / logging messages for
-      - Module dependency indicator
-    * Tweak loading resources debug log to read better
-    * Tweak module found log to read better
-    * Convert from `Resource::getFilename` to `Resource::getDescription` when reporting errors in the configuration
-      graph. `getDescription` is more informative, usually holding the whole file path, rather than just the terminal
-      segment / file _name_
-
-- [Restore non-default query support in TestDruidWebservice](https://github.com/yahoo/fili/pull/202)
-
-- [Base TableDataSource serialization on ConcretePhysicalTable fact name](https://github.com/yahoo/fili/pull/202)
-
-- [CompositePhsyicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
-    * `TableLoader` now takes an additional constructor argument `DataSourceMetadataService` for creating tables     
-    * `findMissingRequestTimeGrainIntervals` method in `PartialDataHandler` now takes `DataSourceConstraint`
-    * Renamed `buildTableGroup` method to `buildDimensionSpanningTableGroup`
- 
-- [Restored flexibility about columns for query from DruidResponseParser](https://github.com/yahoo/fili/pull/198)
-    * Immutable schemas prevented custom query types from changing `ResultSetSchema` columns.
-    * Columns are now sourced from `DruidResponseParser` and default implemented on `DruidAggregationQuery`
-
-- [Refactor DatasourceMetaDataService to fit composite table needs](https://github.com/yahoo/fili/pull/173)
-    * `BasePhysicalTable` now stores table name as the `TableName` instead of `String`
-    * `SegmentInfo` now stores dimension and metrics from segment data for constructing column to available interval map
-
-- [QueryPlanningConstraint and DataSourceConstraint](https://github.com/yahoo/fili/pull/169)
-    * `QueryPlanningConstraint` replaces current interface of Matchers and Resolvers `DataApiRequest` and `TemplateDruidQuery` arguments during query planning
-    * Modified `findMissingTimeGrainIntervals` method in `PartialDataHandler` to take a set of columns instead of `DataApiRequest` and `DruidAggregationQuery`
-
-- [Major refactor for availability and schemas and tables](https://github.com/yahoo/fili/pull/165)
-    * `Schema` and `Table` became interfaces
-	    * `Table` has-a `Schema`
-	    * `PhysicalTable` extends `Table`, interface only supports read only operations
-	* `Schema` constructed as immutable, `Column`s no longer bind to `Schema`
-		* Removed addNew...Column method
-	* `Schema` implementations now: `BaseSchema`, `PhysicalTableSchema`, `LogicalTableSchema`, `ResultSetSchema`
-    * `DimensionLoader` uses `ConcretePhysicalTable`
-
-    * `PhysicalTableDefinition` made some fields private, accepts iterables, returns immutable dimensions
-
-    * `ResultSet` constructor parameter order swapped
-    * `ResultSetMapper` now depends on ResultSetSchema
-
-    * `TableDataSource` constructor arg narrows: PhysicalTable->ConcreteTable
-
-    * `DataApiRequest` constructor arg narrows: Table->LogicalTable
-	
-    * `DruidQueryBuilder` now polymorphic on building data sources models from new physical tables
-
-    * `ApiFilter` schema validation moved to DataApiRequest
-
-    * Guava version bumped to 21.0
-
-- [Request IDS now supports underscores.](https://github.com/yahoo/fili/pull/176)
-
-- Added support for extensions defining new Query types
-    * TestDruidWebService assumes unknown query types behave like GroupBy, TimeSeries, and TopN
-    * ResultSetResponseProcessor delegates to DruidResponseProcessor to build expected query schema, 
-      allowing subclasses to override and extend the schema behavior
-
-- [Add dimension fields to fullView table format](https://github.com/yahoo/fili/pull/155)
-
-- [Make healthcheck filter reject message nicer](https://github.com/yahoo/fili/pull/153)
-    * The previous message of `reject <url>` wasn't helpful, useful, nor very nice to users, and the message logged was
-      not very useful either. The message has been made nicer (`Service is unhealthy. At least 1 healthcheck is
-      failing`), and the log has been made better as well.
-- [`RequestLog` timings support the try-with-resources block](https://github.com/yahoo/fili/pull/143)
-    * A block of code can now be timed by wrapping the timed block in a try-with-resources block that 
-        starts the timer. Note: This won't work when performing timings across threads, or across
-        contexts. Those need to be started and stopped manually.
-
-- [Clean up logging and responses in `DimensionCacheLoaderServlet`](https://github.com/yahoo/fili/pull/163)
-    * Switched a number of `error`-level logs to `debug` level to line up with logging guidance when request failures
-      were result of client error
-    * Reduced some `info`-level logs down to `debug`
-    * Converted to 404 when error was cause by not finding a path element
+    * [Added `IndexSearcher::getQueryCache` and `getQueryCachingPolicy`](https://issues.apache.org/jira/browse/LUCENE-6838)
+    * [`org.apache.lucene.search.Filter` is now deprecated](http://issues.apache.org/jira/browse/LUCENE-6301).
+      You should use `Query` objects instead of Filters, and the `BooleanClause.Occur.FILTER` clause in order to let
+      Lucene know that a `Query` should be used for filtering but not scoring.
+    * [`MatchAllDocsQuery` now has a dedicated `BulkScorer` for better performance when used as a top-level query.](http://issues.apache.org/jira/browse/LUCENE-6756)
+    * [Added a `IndexWriter::getFieldNames` method (experimental) to return all field names as visible from the `IndexWriter`](http://issues.apache.org/jira/browse/LUCENE-7659).
+      This would be useful for `IndexWriter::updateDocValues` calls, to prevent calling with non-existent docValues
+      fields
 
 ### Deprecated:
 
@@ -364,42 +441,41 @@ Current
         - `ConcretePhysicalTable`
 
 - [Deprecate old static `TableName` comparator](https://github.com/yahoo/fili/pull/263)
-    * Change to `AS_NAME_COMPARATOR`, so the old name is deprecated
+    * Changed to `AS_NAME_COMPARATOR` since it's more descriptive
 
-- [Constrained Table Support for Table Serialization](https://github.com/yahoo/fili/pull/262/files)
-    * Deprecated static empty instance of SimplifiedIntervalList.NO_INTERVALS
-    * PartialDataRequestHandler constructor using `PhysicalTableDictionary`
+- [Constrained Table Support for Table Serialization](https://github.com/yahoo/fili/pull/262)
+    * Deprecated static empty instance of `SimplifiedIntervalList.NO_INTERVALS`
+      - It looks like an immutable singleton, but it's mutable and therefore unsafe. Just make new instances of
+        `SimplifiedIntervalList` instead.
+    * `PartialDataRequestHandler` constructor using `PhysicalTableDictionary`
 
-- [Moved UnionDataSource to support only single tables](https://github.com/yahoo/fili/pull/262/files)
-    * `DataSource` deprecates getDataSources()
-
-- [SimplifiedIntervalList::NO_INTERVALS](https://github.com/yahoo/fili/pull/262/files)
-    * This is unsafe since it is modifiable
+- [Moved UnionDataSource to support only single tables](https://github.com/yahoo/fili/pull/262)
+    * `DataSource::getDataSources` no longer makes sense, since `UnionDataSource` only supports 1 table now
 
 - [Support for Lucene 5 indexes](https://github.com/yahoo/fili/pull/265)
-    * Added lucene-backward-codecs.jar as a dependency to restore support for indexes built on earlier instances.
-    * Support for indexes will only remain while the current Lucene generation supports them.  All customers should rebuild indexes on Lucene 6 to avoid later pain.
+    * Added `lucene-backward-codecs.jar` as a dependency to restore support for indexes built on earlier instances.
+    * Support for indexes will only remain while the current Lucene generation supports them.  All Fili users should
+      rebuild indexes on Lucene 6 to avoid later pain.
 
 - [Refactor Physical Table Definition and Update Table Loader](https://github.com/yahoo/fili/pull/207)
-    * Deprecated `loadPhysicalTable` in `BaseTableLoader`, use `loadPhysicalTablesWithDependency` instead
+    * Deprecated `BaseTableLoader::loadPhysicalTable`. Use `loadPhysicalTablesWithDependency` instead.
 
-- [CompositePhsyicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
-    * Deprecated `setAvailability` method on `BasePhysicalTable` to discourage using it for testing, should refine testing strategy to avoid it
+- [`CompositePhysicalTable` Core Components Refactor](https://github.com/yahoo/fili/pull/179)
+    * Deprecated `BasePhysicalTable::setAvailability` to discourage using it for testing
 
 - [`RequestLog::stopMostRecentTimer` has been deprecated](https://github.com/yahoo/fili/pull/143)
-    - This method is a part of the infrastructure to support the recently
-    deprecated `RequestLog::switchTiming`.
+    - This method is a part of the infrastructure to support the recently deprecated `RequestLog::switchTiming`.
 
-- [LogicalMetricColumn doesn't need a 2-arg constructor](https://github.com/yahoo/fili/pull/204)
+- [`LogicalMetricColumn` doesn't need a 2-arg constructor](https://github.com/yahoo/fili/pull/204)
     * It's only used in one place, and there's no real need for it because the other constructor does the same thing
 
-- [DimensionColumn's 2-arg constructor is only used by a deprecated class](https://github.com/yahoo/fili/pull/204)
+- [`DimensionColumn`'s 2-arg constructor is only used by a deprecated class](https://github.com/yahoo/fili/pull/204)
     * When that deprecated class (`LogicalDimensionColumn`) goes away, this constructor will go away as well
 
 ### Fixed:
 
 - [Support for Lucene 5 indexes restored](https://github.com/yahoo/fili/pull/265)
-    * Added lucene-backward-codecs.jar as a dependency to restore support for indexes built on earlier instances.
+    * Added `lucene-backward-codecs.jar` as a dependency to restore support for indexes built on earlier instances.
 
 - [Specify the character encoding to support unicode characters](https://github.com/yahoo/fili/pull/221)
     * Default character set used by the back end was mangling Unicode characters.
@@ -407,60 +483,73 @@ Current
 - [Correct empty-string behavior for druid header supplier class config](https://github.com/yahoo/fili/pull/214)
     * Empty string would have tried to build a custom supplier. Now it doesn't.
 
-- [Default the AsyncDruidWebServiceImpl to follow redirects](https://github.com/yahoo/fili/pull/271)
-    * It defaulted to not following redirects, and now it doesn't
+- [Default the `AsyncDruidWebServiceImpl` to follow redirects](https://github.com/yahoo/fili/pull/271)
+    * It defaulted to not following redirects, and now it doesn't, and will follow redirects appropriately
 
-- [Reenable custom query types in TestDruidWebService]()
+- Reenable custom query types in `TestDruidWebService`
 
-- [Fixed Segment Metadata Loader Unconfigured Dimension Bug](https://github.com/yahoo/fili/pull/197)
-    * Immutable availability was failing when attempting to bind segment dimension columns not configured in dimension dictionary.
+- [Fixed `SegmentMetadataLoader` Unconfigured Dimension Bug](https://github.com/yahoo/fili/pull/197)
+    * Immutable availability was failing when attempting to bind segment dimension columns not configured in the
+      dimension dictionary.
     * Fix to filter irrelevant column names. 
 
 - [Major refactor for availability and schemas and tables](https://github.com/yahoo/fili/pull/165)
     * Ordering of fields on serialization could be inconsistent if intermediate stages used `HashSet` or `HashMap`.
-    * Several constructors switched to accept `Iterable` and return `LinkedHashSet` to emphasize importance of ordering/prevent `HashSet` intermediates which disrupt ordering.
+    * Several constructors switched to accept `Iterable` and return `LinkedHashSet` to emphasize importance of
+      ordering/prevent `HashSet` intermediates which disrupt ordering.
 
--[Fix Lookup Dimension Serialization](https://github.com/yahoo/fili/pull/187)
+- [Fix Lookup Dimension Serialization](https://github.com/yahoo/fili/pull/187)
     * Fix a bug where lookup dimension is serialized as dimension spec in both outer and inner query
 
-- Correcting error message logged when no table schema match is found
+- Correct error message logged when no table schema match is found
 
-- Setting readTimeout on DefaultAsyncHttpClientConfig when building AsyncDruidWebServiceImpl
-
-
-### Known Issues:
-
+- Setting `readTimeout` on `DefaultAsyncHttpClientConfig` when building `AsyncDruidWebServiceImpl`
 
 ### Removed:
 
 - [Refactor Physical Table Definition and Update Table Loader](https://github.com/yahoo/fili/pull/207)
-    * Removed deprecated `PhysicalTableDefinition` constructor that takes an `ZonlessTimeGrain`, use `ZonedTimeGrain` instead
-    * Removed `buildPhysicalTable` in `BaseTableLoader`, building table logic is pushed into `PhysicalTableDefinition`
+    * Removed deprecated `PhysicalTableDefinition` constructor that takes a `ZonlessTimeGrain`. Use `ZonedTimeGrain`
+      instead
+    * Removed `BaseTableLoader::buildPhysicalTable`. Table building logic has been moved to `PhysicalTableDefinition`
 
-- [Moved UnionDataSource to support only single tables](https://github.com/yahoo/fili/pull/262/files)
-    * `DataSource` no longer accepts Set<Table> constructor
+- [Move UnionDataSource to support only single tables](https://github.com/yahoo/fili/pull/262)
+    * `DataSource` no longer accepts `Set<Table>` in a constructor
 
 - [CompositePhsyicalTable Core Components Refactor](https://github.com/yahoo/fili/pull/179)
-    * Removed deprecated method `findMissingRequestTimeGrainIntervals` from `PartialDataHandler`
-    * Removed `permissive_column_availability_enabled` feature flag support and corresponding functionality in `PartialDataHandler`, permissive availability will be a table configuration
-    * Removed `getIntersectSubintervalsForColumns` and `getUnionSubintervalsForColumns` from `PartialDataHandler` since the logic is pushed into `Availability` now
-    * Removed `getIntervalsByColumnName`, `resetColumns` and `hasLogicalMapping` methods in `PhysicalTable` since no longer needed with the availability structure
-    * Removed `getAvailability` method on `PartialDataHandler` since the logic is pushed into `Availability`
-    * Removed `SegmentMetadataLoader` and corresponding tests class which is deprecated in both fili and the corresponding endpoint in druid, use `DataSourceMetadataLoader` instead
-    * Removed `SegmentMetadataLoaderHealthCheck` and `SegmentMetadataLoaderHealthCheckSpec` classes since `SegmentMetadataLoader` is not longer available
+    * Removed deprecated method `PartialDataHandler::findMissingRequestTimeGrainIntervals`
+    * Removed `permissive_column_availability_enabled` feature flag support and corresponding functionality in
+      `PartialDataHandler`. Permissive availability is instead handled via table configuration, and continued usage of
+      the configuration field generates a warning when Fili starts.
+    * Removed `getIntersectSubintervalsForColumns` and `getUnionSubintervalsForColumns` from `PartialDataHandler`.
+      `Availability` now handles these responsibilities.
+    * Removed `getIntervalsByColumnName`, `resetColumns` and `hasLogicalMapping` methods in `PhysicalTable`. These
+      methods were either part of the availability infrastructure, which changed completely, or the responsibilities
+      have moved to `PhysicalTableSchema` (in the case of `hasLogicalMapping`).
+    * Removed `PartialDataHandler::getAvailability`. `Availability` (on the PhysicalTables) has taken it's place.
+    * Removed `SegmentMetadataLoader` because the endpoint this relied on had been deprecated in Druid. Use the
+      `DataSourceMetadataLoader` instead.
+      - Removed `SegmentMetadataLoaderHealthCheck` as well.
 
 - [Major refactor for availability and schemas and tables](https://github.com/yahoo/fili/pull/165)
-    *  Removed `ZonedSchema` (all methods moved to child class ResultSetSchema)
-
+    *  Removed `ZonedSchema` (all methods moved to child class `ResultSetSchema`)
     * `PhysicalTable` no longer supports mutable availability
-	    * Removed addColumn, removeColumn, getWorkingIntervals, resetColumns, commit
-		* resetColumns moved to BasePhysicalTable
-		* Other mutators no longer exist, availability is immutable
-		* getAvailableIntervals removed (availability.getAvailableIntervals replaces)	
+	    - Removed `addColumn`, `removeColumn`, `getWorkingIntervals`, and `commit`
+		- Other mutators no longer exist, availability is immutable
+		- Removed `getAvailableIntervals`. `Availability::getAvailableIntervals` replaces it.
+    * Removed `DruidResponseParser::buildSchema`. That logic has moved to the `ResultSetSchema` constructor.
+    * Removed redundant `buildLogicalTable` methods from `BaseTableLoader`
 
-    * `DruidResponseParser` buildSchema removed, work moved to ResultSetSchema constructor
 
-    * `BaseTableLoader` removed redundant buildLogicalTable methods
+v0.7.37 - 2017/04/04
+--------------------
+
+This patch is to back-port a fix for getting Druid to handle international / UTF character sets correctly. It is
+included in the v0.8.x stable releases.
+
+### Fixed:
+
+- [Specify the character encoding to support unicode characters](https://github.com/yahoo/fili/pull/221)
+    * Default character set used by the back end was mangling Unicode characters.
 
 
 v0.7.36 - 2017/01/30
