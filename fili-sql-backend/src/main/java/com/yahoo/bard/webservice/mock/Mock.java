@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.mock;
 
+import com.yahoo.bard.webservice.data.config.names.DataSourceName;
+import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource;
@@ -13,6 +15,7 @@ import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.table.ConstrainedTable;
 import com.yahoo.bard.webservice.table.StrictPhysicalTable;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
+
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
@@ -49,7 +52,6 @@ public class Mock {
                 Collections.emptyList(),
                 Collections.emptyList(),
                 Collections.emptySet()
-
         );
     }
 
@@ -60,29 +62,30 @@ public class Mock {
 
         DataSourceMetadataService metadataService = new DataSourceMetadataService();
         metadataService.update(
-                () -> name,
+                DataSourceName.of(name),
                 new DataSourceMetadata(name, Collections.emptyMap(), Collections.emptyList())
         );
 
-        return new TableDataSource(new ConstrainedTable(
-                new StrictPhysicalTable(
-                        () -> name,
-                        zonedTimeGrain,
-                        columns,
-                        logicalToPhysicalColumnNames,
-                        metadataService
-                ),
-                new DataSourceConstraint(
-                        Collections.emptySet(),
-                        Collections.emptySet(),
-                        Collections.emptySet(),
-                        Collections.emptySet(),
-                        Collections.emptySet(),
-                        Collections.emptySet(),
-                        Collections.emptySet(),
-                        Collections.emptyMap()
+        return new TableDataSource(
+                new ConstrainedTable(
+                        new StrictPhysicalTable(
+                                TableName.of(name),
+                                zonedTimeGrain,
+                                columns,
+                                logicalToPhysicalColumnNames,
+                                metadataService
+                        ),
+                        new DataSourceConstraint(
+                                Collections.emptySet(),
+                                Collections.emptySet(),
+                                Collections.emptySet(),
+                                Collections.emptySet(),
+                                Collections.emptySet(),
+                                Collections.emptySet(),
+                                Collections.emptySet(),
+                                Collections.emptyMap()
+                        )
                 )
-
-        ));
+        );
     }
 }
