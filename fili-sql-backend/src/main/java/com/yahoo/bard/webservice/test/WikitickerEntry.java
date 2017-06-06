@@ -38,6 +38,7 @@ import java.util.Map;
 })
 public class WikitickerEntry implements Serializable {
 
+    private final static long serialVersionUID = -1031169649797854741L;
     @JsonProperty("time")
     private String time;
     @JsonProperty("channel")
@@ -80,7 +81,6 @@ public class WikitickerEntry implements Serializable {
     private int deleted;
     @JsonIgnore
     private Map<String, String> additionalProperties = new HashMap<>();
-    private final static long serialVersionUID = -1031169649797854741L;
 
     /**
      * No args constructor for use in serialization
