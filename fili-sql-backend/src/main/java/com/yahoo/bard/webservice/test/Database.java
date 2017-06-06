@@ -27,9 +27,9 @@ import java.util.List;
 import javax.sql.DataSource;
 
 public class Database {
+    public static final String THE_SCHEMA = "DEFAULT_SCHEMA";
     private static final String DATABASE_URL = "jdbc:h2:mem:test";
     private static final String WIKITICKER_JSON_DATA = "wikiticker-2015-09-12-sampled.json";
-    public static final String THE_SCHEMA = "DEFAULT_SCHEMA";
     private static Connection connection;
 
     public static Connection getDatabase() throws Exception {
