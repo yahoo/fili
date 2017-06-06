@@ -431,6 +431,9 @@ Removals:
 
 ### Deprecated:
 
+- [Add dimension dictionary to metric loader](https://github.com/yahoo/fili/pull/317)
+    * Deprecated single argument version of `loadMetricDictionary` in `MetricLoader`, favor additional dimension dictionary argument `loadMetricDictionary` instead
+
 - [Remove `PhysicalTable::getTableName` to use `getName` instead](https://github.com/yahoo/fili/pull/263)
     * Having more than 1 method for the same concept (ie. what's the name of this physical table) was confusing and not
       very useful.

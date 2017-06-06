@@ -14,7 +14,10 @@ public interface MetricLoader {
      * Load metrics and populate the metric dictionary.
      *
      * @param metricDictionary  The dictionary that will be loaded with metrics
+     *
+     * @deprecated in favor of loadMetricDictionary(MetricDictionary, DimensionDictionary)
      */
+    @Deprecated
     void loadMetricDictionary(MetricDictionary metricDictionary);
 
     /**
