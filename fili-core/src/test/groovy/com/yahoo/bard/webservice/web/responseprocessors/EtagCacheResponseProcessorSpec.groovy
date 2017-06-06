@@ -2,7 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.responseprocessors
 
-
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR
 import static javax.ws.rs.core.Response.Status.NOT_MODIFIED
 import static javax.ws.rs.core.Response.Status.OK
