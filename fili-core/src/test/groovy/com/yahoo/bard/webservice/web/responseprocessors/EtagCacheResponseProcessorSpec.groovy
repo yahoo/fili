@@ -100,7 +100,7 @@ class EtagCacheResponseProcessorSpec extends Specification {
                             "${DruidJsonResponseContentKeys.ETAG.name}": "someEtag",
                             "${DruidJsonResponseContentKeys.STATUS_CODE.name}": ${OK.statusCode}
                         }
-                        """,
+                """,
         )
 
         when:
