@@ -6,7 +6,6 @@ import com.yahoo.bard.webservice.data.cache.TupleDataCache;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
-import com.yahoo.bard.webservice.metadata.QuerySigningService;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -33,31 +32,30 @@ public class EtagCacheResponseProcessor implements FullResponseProcessor {
     private final ObjectMapper mapper;
     private final ObjectWriter writer;
     private final ResponseProcessor next;
-    private final QuerySigningService<Long> querySigningService;
-    private final @NotNull TupleDataCache<String, Long, String> dataCache;
-    private final JsonNode respnoseCache;
-
+    private final String cacheKey;
+    private final TupleDataCache<String, String, String> dataCache;
+    private JsonNode responseCache;
 
     /**
      * Constructor.
      *
      * @param next  Next ResponseProcessor in the chain
+     * @param cacheKey  Key into which to write a cache entry
      * @param dataCache  The cache into which to write a cache entry
-     * @param querySigningService  Service to use for signing the queries in the cache key with their metadata
      * @param mapper  An object mapper to use for processing Json
      */
     public EtagCacheResponseProcessor(
-            ResponseProcessor next,
-            TupleDataCache<String, Long, String> dataCache,
-            QuerySigningService<Long> querySigningService,
-            ObjectMapper mapper
+            @NotNull ResponseProcessor next,
+            @NotNull String cacheKey,
+            @NotNull TupleDataCache<String, String, String> dataCache,
+            @NotNull ObjectMapper mapper
     ) {
         this.next = next;
+        this.cacheKey = cacheKey;
         this.dataCache = dataCache;
-        this.querySigningService = querySigningService;
         this.mapper = mapper;
         this.writer = mapper.writer();
-        this.respnoseCache = null;
+        this.responseCache = null;
     }
 
     @Override
@@ -84,41 +82,36 @@ public class EtagCacheResponseProcessor implements FullResponseProcessor {
         }
 
         int statusCode = json.get(DruidJsonResponseContentKeys.STATUS_CODE.getName()).asInt();
+        // If response is a NOT_MODIFIED, get response body from cache and inject it into JsonNode of the next
+        // response processor
         if (statusCode == Status.NOT_MODIFIED.getStatusCode()) {
             try {
+                responseCache = (responseCache == null)
+                        ? mapper.readTree(dataCache.getDataValue(cacheKey))
+                        : responseCache;
                 ((ObjectNode) json).set(
                         DruidJsonResponseContentKeys.RESPONSE.getName(),
-                        respnoseCache == null
-                                ? mapper.readTree(
-                                        dataCache.getDataValue(DruidJsonResponseContentKeys.RESPONSE.getName())
-                        )
-                                : respnoseCache
+                        responseCache
                 );
             } catch (IOException ioe) {
                 throw new IllegalStateException(ioe);
             }
-        } else if (statusCode == Status.OK.getStatusCode()) {
+        } else if (statusCode == Status.OK.getStatusCode()) { // If response is a OK, cache it, including etag
             // make sure JSON response comes with etag
             if (!json.has(DruidJsonResponseContentKeys.ETAG.getName())) {
                 logAndGetErrorCallback(ErrorMessageFormat.ETAG_MISSING_FROM_RESPONSE.format(), druidQuery);
-                return;
-            }
-
-            try {
-                dataCache.set(
-                        DruidJsonResponseContentKeys.RESPONSE.getName(),
-                        querySigningService.getSegmentSetId(druidQuery).orElse(null),
-                        writer.writeValueAsString(json.get(DruidJsonResponseContentKeys.RESPONSE.getName()))
-                );
-                dataCache.set(
-                        DruidJsonResponseContentKeys.ETAG.getName(),
-                        querySigningService.getSegmentSetId(druidQuery).orElse(null),
-                        writer.writeValueAsString(json.get(DruidJsonResponseContentKeys.ETAG.getName()))
-                );
-            } catch (JsonProcessingException exception) {
-                String message = "Unable to parse JSON response while caching";
-                LOG.error(message);
-                throw new RuntimeException(message);
+            } else {
+                try {
+                    dataCache.set(
+                            cacheKey,
+                            json.get(DruidJsonResponseContentKeys.ETAG.getName()).asText(),
+                            writer.writeValueAsString(json.get(DruidJsonResponseContentKeys.RESPONSE.getName()))
+                    );
+                } catch (JsonProcessingException exception) {
+                    String message = "Unable to parse JSON response while caching";
+                    LOG.error(message);
+                    throw new RuntimeException(message);
+                }
             }
         }
 

@@ -2,13 +2,14 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.responseprocessors
 
+
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR
 import static javax.ws.rs.core.Response.Status.NOT_MODIFIED
 import static javax.ws.rs.core.Response.Status.OK
 
 import com.yahoo.bard.webservice.data.cache.TupleDataCache
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
-import com.yahoo.bard.webservice.metadata.QuerySigningService
 import com.yahoo.bard.webservice.web.ErrorMessageFormat
 
 import com.fasterxml.jackson.databind.JsonNode
@@ -20,30 +21,27 @@ import spock.lang.Specification
 class EtagCacheResponseProcessorSpec extends Specification {
     private static final ObjectMapper MAPPER = new ObjectMapper()
             .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
-    private static final int INTERNAL_SERVER_ERROR_STATUS_CODE = 500
-
-    ResponseProcessor next
-    TupleDataCache<String, Long, String> dataCache
-    QuerySigningService<Long> querySigningService
-    EtagCacheResponseProcessor etagCacheResponseProcessor
+    private static final int INTERNAL_SERVER_ERROR_STATUS_CODE = INTERNAL_SERVER_ERROR.getStatusCode()
+    private static final String CACHE_KEY = "cacheKey"
 
     HttpErrorCallback httpErrorCallback
     DruidAggregationQuery druidAggregationQuery
+    ResponseProcessor next
+    TupleDataCache<String, String, String> dataCache
+    EtagCacheResponseProcessor etagCacheResponseProcessor
 
     def setup() {
+        druidAggregationQuery = Mock(DruidAggregationQuery)
+        httpErrorCallback = Mock(HttpErrorCallback)
         next = Mock(ResponseProcessor)
+        next.getErrorCallback(druidAggregationQuery) >> httpErrorCallback
         dataCache = Mock(TupleDataCache)
-        querySigningService = Mock(QuerySigningService)
         etagCacheResponseProcessor = new EtagCacheResponseProcessor(
                 next,
+                CACHE_KEY,
                 dataCache,
-                querySigningService,
-                new ObjectMapper()
+                MAPPER
         )
-
-        httpErrorCallback = Mock(HttpErrorCallback)
-        druidAggregationQuery = Mock(DruidAggregationQuery)
-        next.getErrorCallback(druidAggregationQuery) >> httpErrorCallback
     }
 
     def "processResponse reports error when status code is missing"() {
@@ -65,13 +63,9 @@ class EtagCacheResponseProcessorSpec extends Specification {
     def "processResponse reads response from cache when status code is NOT_MODIFIED"() {
         given:
         JsonNode json = MAPPER.readTree(
-                String.format(
-                        '{"%s": %d}',
-                        DruidJsonResponseContentKeys.STATUS_CODE.getName(),
-                        NOT_MODIFIED.getStatusCode()
-                )
+                """{"${DruidJsonResponseContentKeys.STATUS_CODE.name}": $NOT_MODIFIED.statusCode}"""
         )
-        dataCache.getDataValue(DruidJsonResponseContentKeys.RESPONSE.getName()) >> '[{"k1":"v1"}]'
+        dataCache.getDataValue(CACHE_KEY) >> '[{"k1":"v1"}]'
 
         when:
         etagCacheResponseProcessor.processResponse(json, druidAggregationQuery, Mock(LoggingContext))
@@ -80,50 +74,39 @@ class EtagCacheResponseProcessorSpec extends Specification {
         json.get(DruidJsonResponseContentKeys.RESPONSE.getName()) == MAPPER.readTree('[{"k1":"v1"}]')
     }
 
-    def "processResponse reports error when status code is OK but etag is missing"() {
+    def "processResponse reports error when status code is OK but etag is missing and processResponse moves on without caching"() {
         given:
         JsonNode json = MAPPER.readTree(
-                String.format(
-                        '{"%s": %d}',
-                        DruidJsonResponseContentKeys.STATUS_CODE.getName(),
-                        OK.getStatusCode()
-                )
+                """{"${DruidJsonResponseContentKeys.STATUS_CODE.name}": $OK.statusCode}"""
         )
 
         when:
         etagCacheResponseProcessor.processResponse(json, druidAggregationQuery, Mock(LoggingContext))
 
-        then:
         then:
         1 * httpErrorCallback.dispatch(
                 INTERNAL_SERVER_ERROR_STATUS_CODE,
                 ErrorMessageFormat.INTERNAL_SERVER_ERROR_REASON_PHRASE.format(),
                 ErrorMessageFormat.ETAG_MISSING_FROM_RESPONSE.format()
         )
+        1 * next.processResponse(null, druidAggregationQuery, _ as LoggingContext)
     }
 
     def "processResponse caches response and etag on OK response"() {
         given:
-        querySigningService.getSegmentSetId(_ as DruidAggregationQuery) >> Optional.empty()
         JsonNode json = MAPPER.readTree(
-                String.format(
-                        '''
+                """
                         {
-                            "%s": "someEtag",
-                            "%s": %d
+                            "${DruidJsonResponseContentKeys.ETAG.name}": "someEtag",
+                            "${DruidJsonResponseContentKeys.STATUS_CODE.name}": ${OK.statusCode}
                         }
-                        ''',
-                        DruidJsonResponseContentKeys.ETAG.getName(),
-                        DruidJsonResponseContentKeys.STATUS_CODE.getName(),
-                        OK.getStatusCode()
-                )
+                        """,
         )
 
         when:
         etagCacheResponseProcessor.processResponse(json, druidAggregationQuery, Mock(LoggingContext))
 
         then:
-        1 * dataCache.set(DruidJsonResponseContentKeys.RESPONSE.getName(), null, 'null')
-        1 * dataCache.set(DruidJsonResponseContentKeys.ETAG.getName(), null, '"someEtag"')
+        1 * dataCache.set(CACHE_KEY, "someEtag", 'null')
     }
 }
