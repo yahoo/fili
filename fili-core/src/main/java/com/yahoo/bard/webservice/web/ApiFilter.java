@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -170,6 +171,18 @@ public class ApiFilter {
 
     public Set<String> getValues() {
         return this.values;
+    }
+
+    public static ApiFilter merge(ApiFilter one, ApiFilter two) {
+        if (!Objects.equals(one.getDimension(), two.getDimension())
+                && Objects.equals(one.getDimensionField(), two.getDimensionField())
+                && Objects.equals(one.getOperation(),two.getOperation())
+                ) {
+            throw new IllegalArgumentException(String.format("Unmergable ApiFilters  '%s' and '%s'", one, two));
+        }
+        Set<String> values = new HashSet<>(one.getValues());
+        values.addAll(two.getValues());
+        return one.withValues(values);
     }
 
     @Override

@@ -9,18 +9,24 @@ import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.ChainingRequestMapper;
 import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.FilterOperation;
 import com.yahoo.bard.webservice.web.RequestValidationException;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -107,32 +113,38 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
                     unauthorizedUserMessage
             );
         }
-        Map<Dimension, Set<ApiFilter>> mergedFilters = mergeFilters(Stream.of(
-                request.getFilters(),
-                Collections.singletonMap(dimension, securityFilters)
-        ));
+        Stream.concat(request.getFilters().get(dimension).stream(), securityFilters.stream())
+                .collect(Collectors.groupingBy(ApiFilter::getOperation))
+
+
+        Set<ApiFilter> filters = new
         return request.withFilters(mergedFilters);
     }
 
-    /**
-     * A convenience method that merges two maps of sets of filters, combining the filters.
-     *
-     * @param filterMaps  A stream of maps of sets of filters to be merged.
-     *
-     * @return A map with all the filters combined
-     */
-    public static Map<Dimension, Set<ApiFilter>> mergeFilters(Stream<Map<Dimension, Set<ApiFilter>>> filterMaps) {
-        return filterMaps
-                .map(Map::entrySet)
-                .flatMap(Collection::stream)
-                .collect(
-                        Collectors.toMap(
-                                Map.Entry::getKey,
-                                Map.Entry::getValue,
-                                (first, second) -> Stream.of(first, second)
-                                        .flatMap(Collection::stream)
-                                        .collect(Collectors.toSet())
-                        )
-                );
+
+
+    public static Set<ApiFilter> mergeFilters(Stream <ApiFilter> filterStream) {
+
+
+        Function<ApiFilter, Triple<Dimension, DimensionField, FilterOperation>> apiFilterTripleFunction =
+                it -> new ImmutableTriple<>(it.getDimension(), it.getDimensionField(), it.getOperation());
+        Map<Triple<Dimension, DimensionField, FilterOperation>, List<ApiFilter>> grouped = filterStream.collect(
+                Collectors.groupingBy(apiFilterTripleFunction)
+        );
+        Function<List<ApiFilter>, Set<String>> stringReducer =
+                it -> it.stream().map(ApiFilter::getValues)
+                        .flatMap(Set::stream)
+                        .collect(Collectors.toSet());
+
+        grouped.entrySet().stream()
+                .map(it -> new ApiFilter(
+                        it.getKey().getLeft(),
+                        it.getKey().getMiddle(),
+                        it.getKey().getRight(),
+                        stringReducer.apply(it.getValue())
+                ));
+
+        return null;
+
     }
 }
