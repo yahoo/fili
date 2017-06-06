@@ -169,6 +169,7 @@ public class Database {
             return resultSet(resultSet, -1);
         }
 
+        // result set cannot be reset after rows have been read, this consumes results by reading them
         public ResultSetFormatter resultSet(ResultSet resultSet, int max)
                 throws SQLException {
             final ResultSetMetaData metaData = resultSet.getMetaData();

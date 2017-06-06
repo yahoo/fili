@@ -30,8 +30,12 @@ import java.util.Set;
 /**
  * Created by hinterlong on 5/31/17.
  */
-public class Mock {
-    private Mock() {
+public class Simple {
+
+    private static final String METRIC1 = "ADDED";
+    private static final String METRIC2 = "DELETED";
+
+    private Simple() {
 
     }
 
@@ -53,20 +57,21 @@ public class Mock {
                 dataSource(name),
                 DefaultTimeGrain.DAY,
                 null,
-                Collections.singletonList(new DoubleSumAggregation("ADDED", "ADDED")),
+                Arrays.asList(
+                        new DoubleSumAggregation(METRIC1, METRIC1),
+                        new DoubleSumAggregation(METRIC2, METRIC2)
+                ),
                 Collections.emptyList(),
                 Arrays.asList(
                         new Interval(
-                                DateTime.parse("2015-09-12T00:47:00.000Z"),
-                                DateTime.parse("2015-09-12T00:47:25.000Z")
-                        ),
-                        new Interval(DateTime.parse("2015-09-14"), DateTime.parse("3000-01-01"))
+                                DateTime.parse("2015-09-12T00:00:00.000Z"),
+                                DateTime.parse("2015-09-15T00:50:00.000Z")
+                        )
                 )
         );
     }
 
     private static DataSource dataSource(String name) {
-        String added = "ADDED";
 
         ZonedTimeGrain zonedTimeGrain = new ZonedTimeGrain(DefaultTimeGrain.DAY, DateTimeZone.UTC);
         Set<Column> columns = setOf();
@@ -91,10 +96,10 @@ public class Mock {
                                 setOf(),
                                 setOf(),
                                 setOf(),
-                                setOf(added),
+                                setOf(METRIC1, METRIC2),
                                 setOf(),
                                 setOf(),
-                                setOf(added),
+                                setOf(METRIC1, METRIC2),
                                 Collections.emptyMap()
                         )
                 )

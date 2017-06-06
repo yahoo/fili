@@ -3,13 +3,16 @@
 package com.yahoo.bard.webservice;
 
 
+import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.QueryType;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
+import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery;
 import com.yahoo.bard.webservice.mock.DruidResponse;
-import com.yahoo.bard.webservice.mock.Mock;
+import com.yahoo.bard.webservice.mock.Simple;
+import com.yahoo.bard.webservice.mock.TimeseriesResult;
 import com.yahoo.bard.webservice.test.Database;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -21,6 +24,7 @@ import org.apache.calcite.rel.rel2sql.RelToSqlConverter;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.schema.SchemaPlus;
+import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlDialect;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.parser.SqlParser;
@@ -28,14 +32,20 @@ import org.apache.calcite.tools.Frameworks;
 import org.apache.calcite.tools.Programs;
 import org.apache.calcite.tools.RelBuilder;
 import org.h2.jdbc.JdbcSQLException;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,7 +54,7 @@ import java.util.stream.Collectors;
  */
 public class SQLConverter {
     private static final Logger LOG = LoggerFactory.getLogger(SQLConverter.class);
-    private static final RelToSqlConverter REL_TO_SQL = new RelToSqlConverter(SqlDialect.DUMMY);
+    private static RelToSqlConverter relToSql;
 
     /**
      * No instances.
@@ -70,15 +80,17 @@ public class SQLConverter {
 
         Connection connection = Database.getDatabase();
         String generatedSql = buildTimeSeriesQuery(connection, druidQuery, builder());
+        int timeGranularity = getTimeGranularity(druidQuery.getGranularity());
 
-        return query(druidQuery, generatedSql, connection);
+        return query(druidQuery, generatedSql, connection, timeGranularity);
     }
 
-    public static JsonNode query(DruidQuery<?> druidQuery, String sql, Connection connection) throws Exception {
+    public static JsonNode query(DruidQuery<?> druidQuery, String sql, Connection connection, int timeGranularity)
+            throws Exception {
         LOG.debug("Executing \n{}", sql);
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
              ResultSet resultSet = preparedStatement.executeQuery()) {
-            return read(druidQuery, connection, resultSet);
+            return read(druidQuery, connection, resultSet, timeGranularity);
         } catch (JdbcSQLException e) {
             LOG.warn("Failed to query database {} with {}", connection.getCatalog(), sql);
             throw new RuntimeException("Could not finish query", e);
@@ -92,26 +104,80 @@ public class SQLConverter {
      * @param druidQuery the druid query to be made.
      * @param connection the connection to the database.
      * @param resultSet  the result set of the druid query.
+     * @param timeGranularity
      * @return druid-like result from query.
      */
-    private static JsonNode read(DruidQuery<?> druidQuery, Connection connection, ResultSet resultSet)
+    private static JsonNode read(
+            DruidQuery<?> druidQuery,
+            Connection connection,
+            ResultSet resultSet,
+            int timeGranularity
+    )
             throws Exception {
         // result set cannot be reset after rows have been read, this consumes results by reading them
-        Database.ResultSetFormatter rf = new Database.ResultSetFormatter();
-        rf.resultSet(resultSet, 0);
-        LOG.debug("Reading results \n{}", rf.string());
+        // Database.ResultSetFormatter rf = new Database.ResultSetFormatter();
+        // rf.resultSet(resultSet);
+        // LOG.debug("Reading results \n{}", rf.string());
 
         int rows = 0;
+        DruidResponse<TimeseriesResult> timeseriesResultDruidResponse = new DruidResponse<>();
         while (resultSet.next()) {
             ++rows;
-            // process
+            ResultSetMetaData rsmd = resultSet.getMetaData();
+            //read 3 columns and parse as time
+            //create a druidResponse
+            DateTime resultTimeStamp = new DateTime(DateTimeZone.UTC);
+            if (timeGranularity >= 1) {
+                int year = resultSet.getInt(1);
+                resultTimeStamp = resultTimeStamp.withYear(year);
+            }
+            if (timeGranularity >= 2) {
+                int month = resultSet.getInt(2);
+                resultTimeStamp = resultTimeStamp.withMonthOfYear(month);
+            } else {
+                resultTimeStamp = resultTimeStamp.withMonthOfYear(0);
+            }
+            if (timeGranularity >= 3) {
+                int weekOfYear = resultSet.getInt(3);
+                resultTimeStamp = resultTimeStamp.withWeekOfWeekyear(weekOfYear);
+            } else {
+                resultTimeStamp = resultTimeStamp.withWeekOfWeekyear(0);
+            }
+            if (timeGranularity >= 4) {
+                int dayOfYear = resultSet.getInt(4);
+                resultTimeStamp = resultTimeStamp.withDayOfYear(dayOfYear);
+            } else {
+                resultTimeStamp = resultTimeStamp.withDayOfYear(0);
+            }
+            if (timeGranularity >= 5) {
+                int hourOfDay = resultSet.getInt(5);
+                resultTimeStamp = resultTimeStamp.withHourOfDay(hourOfDay);
+            } else {
+                resultTimeStamp = resultTimeStamp.withHourOfDay(0);
+            }
+            if (timeGranularity >= 6) {
+                int minuteOfHour = resultSet.getInt(6);
+                resultTimeStamp = resultTimeStamp.withMinuteOfHour(minuteOfHour);
+            } else {
+                resultTimeStamp = resultTimeStamp.withMinuteOfHour(0);
+            }
+            resultTimeStamp = resultTimeStamp.withSecondOfMinute(0).withMillisOfSecond(0);
+
+            TimeseriesResult result = new TimeseriesResult(resultTimeStamp);
+            for (int i = timeGranularity + 1; i <= rsmd.getColumnCount(); i++) {
+                String columnName = rsmd.getColumnName(i);
+                String val = resultSet.getString(i);
+                result.add(columnName, val);
+            }
+
+            timeseriesResultDruidResponse.results.add(result);
         }
         LOG.debug("Fetched {} rows.", rows);
 
         ObjectMapper objectMapper = new ObjectMapper();
+
         LOG.debug("Original Query\n {}", objectMapper.valueToTree(druidQuery));
-        DruidResponse druidResponse = Mock.druidResponse();
-        JsonNode druidResponseJson = objectMapper.valueToTree(druidResponse);
+        JsonNode druidResponseJson = objectMapper.valueToTree(timeseriesResultDruidResponse);
         LOG.debug("Fake Druid Response\n {}", druidResponseJson);
 
         return druidResponseJson;
@@ -119,25 +185,34 @@ public class SQLConverter {
 
     public static String buildTimeSeriesQuery(Connection connection, TimeSeriesQuery druidQuery, RelBuilder builder)
             throws SQLException {
-        String name = druidQuery.getDataSource().getPhysicalTable().getTableName().asName();
-        String timeCol = Database.getDateTimeColumn(connection, name);
+        initRelToSqlConverter(connection);
 
+        String name = druidQuery.getDataSource().getPhysicalTable().getName();
+        String timeCol = Database.getDateTimeColumn(connection, name).toUpperCase();
+
+        // =============================================================================================
+
+        builder.scan(name); // choose table
+
+        // =============================================================================================
+
+        // select dimensions/metrics?
+        if (druidQuery.getDimensions().size() != 0) {
+            LOG.debug("Adding dimensions { {} }", druidQuery.getDimensions());
+            builder.project(druidQuery.getDimensions()
+                    .stream()
+                    .map(Object::toString)
+                    .map(builder::field)
+                    .toArray(RexInputRef[]::new));
+        }
         // druidQuery.getAggregations()
         //        .stream()
         //        .map(Aggregation::getDependentDimensions) // include dependent dimensions in select?
 
-        builder.scan(name);
+        // =============================================================================================
 
-        if (druidQuery.getDimensions().size() != 0) {
-            LOG.debug("Adding dimensions.");
-            builder.project((RexInputRef[]) druidQuery.getDimensions()
-                    .stream()
-                    .map(Object::toString)
-                    .map(builder::field)
-                    .toArray());
-        }
-
-        List<RexNode> timefilters = druidQuery.getIntervals().stream().map(interval -> {
+        // create filters to only select results within the given intervals
+        List<RexNode> timeFilters = druidQuery.getIntervals().stream().map(interval -> {
             Timestamp start = TimeUtils.timestampFromMillis(interval.getStartMillis());
             Timestamp end = TimeUtils.timestampFromMillis(interval.getEndMillis());
 
@@ -155,88 +230,177 @@ public class SQLConverter {
                     )
             );
         }).collect(Collectors.toList());
-
-
         builder.filter(
                 builder.call(
                         SqlStdOperatorTable.OR,
-                        timefilters
+                        timeFilters
                 )
         );
 
+        // =============================================================================================
 
+        //this makes a group by on all the parts in the sublist
+        List<RexNode> times = Arrays.asList(
+                builder.call(SqlStdOperatorTable.YEAR, builder.field(timeCol)),
+                builder.call(SqlStdOperatorTable.MONTH, builder.field(timeCol)),
+                builder.call(SqlStdOperatorTable.WEEK, builder.field(timeCol)),
+                builder.call(SqlStdOperatorTable.DAYOFYEAR, builder.field(timeCol)),
+                builder.call(SqlStdOperatorTable.HOUR, builder.field(timeCol)),
+                builder.call(SqlStdOperatorTable.MINUTE, builder.field(timeCol))
+        );
+        int timeGranularity = getTimeGranularity(druidQuery.getGranularity());
+
+        //are there any custom aggregations or can we just list them all in an enum
         if (druidQuery.getAggregations().size() != 0) { // group by aggregations
-            LOG.debug("Adding aggregations"); //are there any custom aggregations or can we just list them all in an
-            // enum
-            druidQuery.getAggregations().forEach(aggregation -> {
-                builder.aggregate(
-                        builder.groupKey(timeCol.toUpperCase()),
-                        builder.sum(
-                                false,
-                                "ALIAS_" + aggregation.getFieldName(),
-                                builder.field(aggregation.getFieldName())
-                        )
-                );
-            });
+            LOG.debug("Adding aggregations { {} }", druidQuery.getAggregations());
+
+            List<RelBuilder.AggCall> aggCalls = druidQuery.getAggregations()
+                    .stream()
+                    .map(aggregation -> {
+                        return AggregationType.getAggregation(
+                                AggregationType.fromDruidType(aggregation.getType()),
+                                builder,
+                                aggregation.getFieldName()
+                        );
+                    })
+                    .collect(Collectors.toList());
+
+            builder.aggregate(
+                    builder.groupKey(times.subList(0, timeGranularity)),
+                    // how to do grouping on time with granularity? UDF/SQL/manual in java?
+                    aggCalls
+            );
+
         }
 
-        // ImmutableList<RexNode> fields = builder.fields(); // the parts which are in SELECT
-        builder.sort(builder.field(timeCol)); // order by time
+        // =============================================================================================
 
-        // where filters
+        // add WHERE/filters here
 
-        // how does this work with granularity? will this have to be bucketed by granularity here
-        // sql aggregations are done with groupBy (do we have to worry about makers?)
+        // =============================================================================================
+
+        builder.sort(builder.fields().subList(0, timeGranularity)); // order by same time as grouping
+
+        // =============================================================================================
+
+        // find non overlapping intervals to include in meta part of druids response?
+        // this will have to be implemented later if at all since we don't have information about partial data
+
+
+        // post aggregations
 
         return relToSql(builder);
     }
 
-    private static String relToSql(RelBuilder builder) {
-        return REL_TO_SQL.visitChild(0, builder.build()).asSelect().toString();
+    private static int getTimeGranularity(Granularity granularity) {
+        if (!(granularity instanceof DefaultTimeGrain)) {
+            throw new IllegalStateException("Must be a DefaultTimeGrain");
+        }
+        DefaultTimeGrain timeGrain = (DefaultTimeGrain) granularity;
+        switch (timeGrain) {
+            case MINUTE:
+                return 6;
+            case HOUR:
+                return 5;
+            case DAY:
+                return 4;
+            case WEEK:
+                return 3;
+            case MONTH:
+                return 2;
+            case YEAR:
+                return 1;
+            case QUARTER:
+                throw new IllegalStateException("Quarter timegrain not supported");
+            default:
+                throw new IllegalStateException("Timegrain not known " + timeGrain);
+        }
     }
 
-/* Example query to druid --------------------------------------------------------------------------
-{
-  "queryType": "timeseries",
-  "dataSource": "sample_datasource",
-  "granularity": "day",
-  "descending": "true",
-  "filter": {
-    "type": "and",
-    "fields": [
-      { "type": "selector", "dimension": "sample_dimension1", "value": "sample_value1" },
-      { "type": "or",
-        "fields": [
-          { "type": "selector", "dimension": "sample_dimension2", "value": "sample_value2" },
-          { "type": "selector", "dimension": "sample_dimension3", "value": "sample_value3" }
-        ]
-      }
-    ]
-  },
-  "aggregations": [
-    { "type": "longSum", "name": "sample_name1", "fieldName": "sample_fieldName1" },
-    { "type": "doubleSum", "name": "sample_name2", "fieldName": "sample_fieldName2" }
-  ],
-  "postAggregations": [
-    { "type": "arithmetic",
-      "name": "sample_divide",
-      "fn": "/",
-      "fields": [
-        { "type": "fieldAccess", "name": "postAgg__sample_name1", "fieldName": "sample_name1" },
-        { "type": "fieldAccess", "name": "postAgg__sample_name2", "fieldName": "sample_name2" }
-      ]
+    public enum AggregationType {
+        SUM("sum"),
+        MIN("min"),
+        MAX("max");
+
+        private final String type;
+
+        AggregationType(String type) {
+            this.type = type;
+        }
+
+        public static AggregationType fromDruidType(String type) {
+            for (AggregationType a : values()) {
+                if (type.toLowerCase().contains(a.type)) {
+                    return a;
+                }
+            }
+            throw new InputMismatchException("No corresponding type for " + type);
+        }
+
+        public static RelBuilder.AggCall getAggregation(AggregationType a, RelBuilder builder, String fieldName) {
+            String alias = "ALIAS_";
+            SqlAggFunction aggFunction = null;
+            switch (a) {
+                case SUM:
+                    aggFunction = SqlStdOperatorTable.SUM;
+                    break;
+                case MAX:
+                    aggFunction = SqlStdOperatorTable.MAX;
+                    break;
+                case MIN:
+                    aggFunction = SqlStdOperatorTable.MIN;
+                    break;
+            }
+
+            if (aggFunction != null) {
+                return builder.aggregateCall(aggFunction, false, null, alias + fieldName, builder.field(fieldName));
+            }
+
+            throw new UnsupportedOperationException("No corresponding AggCall for " + a);
+        }
     }
-  ],
-  "intervals": [ "2012-01-01T00:00:00.000/2012-01-03T00:00:00.000" ]
-}
- --------------------------------------------------------------------------------------------------- */
+
+    private static void initRelToSqlConverter(final Connection connection) throws SQLException {
+        if (relToSql == null) {
+            relToSql = new RelToSqlConverter(SqlDialect.create(connection.getMetaData()));
+        }
+    }
+
+    private static String relToSql(RelBuilder builder) {
+        return relToSql.visitChild(0, builder.build()).asSelect().toString();
+    }
+
 
     public static void main(String[] args) throws Exception {
-        DruidAggregationQuery<?> druidQuery = Mock.timeSeriesQuery("WIKITICKER");
+        DruidAggregationQuery<?> druidQuery = Simple.timeSeriesQuery("WIKITICKER");
         JsonNode jsonNode = convert(druidQuery);
-
-        // getSqlParser("select * from PERSON").parseQuery().toSqlString(SqlDialect.DUMMY)
+        //        Connection database = Database.getDatabase();
+        //        test(database);
         // todo validate?
+    }
+
+    private static void test(Connection database) throws SQLException {
+        RelBuilder builder = builder();
+        // how to floor timestamp to hour/day/minute etc not working
+        builder.scan("WIKITICKER");
+        RexNode hour = builder.call(
+                SqlStdOperatorTable.HOUR,
+                builder.field("TIME")
+        );
+        builder.call(
+                SqlStdOperatorTable.TIMESTAMP_ADD,
+                hour,
+                builder.call(
+                        SqlStdOperatorTable.TIMESTAMP_DIFF,
+                        hour,
+                        builder.field("TIME")
+                )
+        );
+
+
+        builder.sort(builder.field(0)); // order by time
+        initRelToSqlConverter(database);
+        relToSql(builder);
     }
 
     public static RelBuilder builder() {
