@@ -10,6 +10,9 @@ Current
 
 ### Added:
 
+- [Add dimension dictionary to metric loader](https://github.com/yahoo/fili/pull/317)
+    * Added a two argument version of `loadMetricDictionary` default method in `MetricLoader` interface that allows dimension
+    dependent metrics by providing a dimension dictionary given by `ConfigurationLoader`
 
 
 ### Changed:
