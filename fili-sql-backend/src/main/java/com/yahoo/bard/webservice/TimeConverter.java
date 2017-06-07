@@ -1,3 +1,5 @@
+// Copyright 2016 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice;
 
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
@@ -22,7 +24,7 @@ import java.util.List;
  */
 public class TimeConverter {
     private static final BiMap<DefaultTimeGrain, Integer> TIMEGRAIN_TO_INDEX = HashBiMap.create(6);
-
+    //todo create specific sets of filters, (Year) (Year, month) (Year, week) (Year, day) (Year, day, hour) (year, day, hour, minute)
     static {
         TIMEGRAIN_TO_INDEX.put(DefaultTimeGrain.YEAR, 1);
         TIMEGRAIN_TO_INDEX.put(DefaultTimeGrain.MONTH, 2);
@@ -45,11 +47,11 @@ public class TimeConverter {
         return TIMEGRAIN_TO_INDEX.get(timeGrain);
     }
 
-    public static List<RexNode> getRexNodes(RelBuilder builder, Granularity granularity, String timeColumnumn) {
-        return getRexNodes(builder, getTimeGranularity(granularity), timeColumnumn);
+    public static List<RexNode> getGroupByForGranularity(RelBuilder builder, Granularity granularity, String timeColumnumn) {
+        return getGroupByForGranularity(builder, getTimeGranularity(granularity), timeColumnumn);
     }
 
-    public static List<RexNode> getRexNodes(RelBuilder builder, int index, String timeColumn) {
+    public static List<RexNode> getGroupByForGranularity(RelBuilder builder, int index, String timeColumn) {
         List<RexNode> times = Arrays.asList(
                 builder.call(SqlStdOperatorTable.YEAR, builder.field(timeColumn)),
                 builder.call(SqlStdOperatorTable.MONTH, builder.field(timeColumn)),
@@ -75,7 +77,7 @@ public class TimeConverter {
             int month = resultSet.getInt(monthIndex);
             resultTimeStamp = resultTimeStamp.withMonthOfYear(month);
         } else {
-            resultTimeStamp = resultTimeStamp.withMonthOfYear(0);
+            resultTimeStamp = resultTimeStamp.withMonthOfYear(1);
         }
 
         Integer weekIndex = TIMEGRAIN_TO_INDEX.get(DefaultTimeGrain.WEEK);
@@ -83,7 +85,7 @@ public class TimeConverter {
             int weekOfYear = resultSet.getInt(weekIndex);
             resultTimeStamp = resultTimeStamp.withWeekOfWeekyear(weekOfYear);
         } else {
-            resultTimeStamp = resultTimeStamp.withWeekOfWeekyear(0);
+            resultTimeStamp = resultTimeStamp.withWeekOfWeekyear(1);
         }
 
         Integer dayIndex = TIMEGRAIN_TO_INDEX.get(DefaultTimeGrain.DAY);
@@ -91,7 +93,7 @@ public class TimeConverter {
             int dayOfYear = resultSet.getInt(dayIndex);
             resultTimeStamp = resultTimeStamp.withDayOfYear(dayOfYear);
         } else {
-            resultTimeStamp = resultTimeStamp.withDayOfYear(0);
+            resultTimeStamp = resultTimeStamp.withDayOfYear(1);
         }
 
         Integer hourIndex = TIMEGRAIN_TO_INDEX.get(DefaultTimeGrain.HOUR);
