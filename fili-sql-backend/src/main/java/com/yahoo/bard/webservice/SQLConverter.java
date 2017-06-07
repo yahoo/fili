@@ -3,12 +3,9 @@
 package com.yahoo.bard.webservice;
 
 
-import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
-import com.yahoo.bard.webservice.druid.model.QueryType;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
-import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery;
 import com.yahoo.bard.webservice.mock.DruidResponse;
 import com.yahoo.bard.webservice.mock.Simple;
@@ -32,7 +29,6 @@ import org.apache.calcite.tools.Programs;
 import org.apache.calcite.tools.RelBuilder;
 import org.h2.jdbc.JdbcSQLException;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +38,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +50,7 @@ import java.util.stream.Collectors;
 public class SQLConverter {
     private static final Logger LOG = LoggerFactory.getLogger(SQLConverter.class);
     private static final String ALIAS = "ALIAS_";
+    private static final ObjectMapper JSON_WRITER = new ObjectMapper();
     private static RelToSqlConverter relToSql;
 
     /**
@@ -66,14 +62,23 @@ public class SQLConverter {
 
     public static JsonNode convert(DruidAggregationQuery<?> druidQuery) throws Exception {
         LOG.debug("Processing druid query");
-        QueryType queryType = druidQuery.getQueryType();
-        if (DefaultQueryType.TIMESERIES.equals(queryType)) {
-            TimeSeriesQuery timeSeriesQuery = (TimeSeriesQuery) druidQuery;
-            return convert(timeSeriesQuery);
+        LOG.debug("Original Query\n {}", JSON_WRITER.valueToTree(druidQuery));
+
+        DefaultQueryType queryType = (DefaultQueryType) druidQuery.getQueryType();
+        JsonNode druidResponse = null;
+        switch (queryType) {
+            case TIMESERIES:
+                TimeSeriesQuery timeSeriesQuery = (TimeSeriesQuery) druidQuery;
+                druidResponse = convert(timeSeriesQuery);
         }
 
-        LOG.warn("Attempted to query unsupported type {}", queryType.toString());
-        throw new RuntimeException("Unsupported query type");
+        if (druidResponse != null) {
+            LOG.debug("Fake Druid Response\n {}", druidResponse);
+            return druidResponse;
+        } else {
+            LOG.warn("Attempted to query unsupported type {}", queryType.toString());
+            throw new UnsupportedOperationException("Unsupported query type");
+        }
     }
 
     public static JsonNode convert(TimeSeriesQuery druidQuery) throws Exception {
@@ -81,7 +86,7 @@ public class SQLConverter {
 
         Connection connection = Database.getDatabase();
         String generatedSql = buildTimeSeriesQuery(connection, druidQuery, builder());
-        int timeGranularity = getTimeGranularity(druidQuery.getGranularity());
+        int timeGranularity = TimeConverter.getTimeGranularity(druidQuery.getGranularity());
 
         return query(druidQuery, generatedSql, connection, timeGranularity);
     }
@@ -135,74 +140,33 @@ public class SQLConverter {
 
 
         int rows = 0;
+        ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
         DruidResponse<TimeseriesResult> timeseriesResultDruidResponse = new DruidResponse<>();
         while (resultSet.next()) {
             ++rows;
-            ResultSetMetaData rsmd = resultSet.getMetaData();
-            //read 3 columns and evaluate as time
-            //create a druidResponse
-            DateTime resultTimeStamp = new DateTime(DateTimeZone.UTC);
-            if (timeGranularity >= 1) {
-                int year = resultSet.getInt(1);
-                resultTimeStamp = resultTimeStamp.withYear(year);
-            }
-            if (timeGranularity >= 2) {
-                int month = resultSet.getInt(2);
-                resultTimeStamp = resultTimeStamp.withMonthOfYear(month);
-            } else {
-                resultTimeStamp = resultTimeStamp.withMonthOfYear(0);
-            }
-            if (timeGranularity >= 3) {
-                int weekOfYear = resultSet.getInt(3);
-                resultTimeStamp = resultTimeStamp.withWeekOfWeekyear(weekOfYear);
-            } else {
-                resultTimeStamp = resultTimeStamp.withWeekOfWeekyear(0);
-            }
-            if (timeGranularity >= 4) {
-                int dayOfYear = resultSet.getInt(4);
-                resultTimeStamp = resultTimeStamp.withDayOfYear(dayOfYear);
-            } else {
-                resultTimeStamp = resultTimeStamp.withDayOfYear(0);
-            }
-            if (timeGranularity >= 5) {
-                int hourOfDay = resultSet.getInt(5);
-                resultTimeStamp = resultTimeStamp.withHourOfDay(hourOfDay);
-            } else {
-                resultTimeStamp = resultTimeStamp.withHourOfDay(0);
-            }
-            if (timeGranularity >= 6) {
-                int minuteOfHour = resultSet.getInt(6);
-                resultTimeStamp = resultTimeStamp.withMinuteOfHour(minuteOfHour);
-            } else {
-                resultTimeStamp = resultTimeStamp.withMinuteOfHour(0);
-            }
-            resultTimeStamp = resultTimeStamp.withSecondOfMinute(0).withMillisOfSecond(0);
 
-            TimeseriesResult result = new TimeseriesResult(resultTimeStamp);
+            DateTime resultTimeStamp = TimeConverter.getDateTime(resultSet, timeGranularity);
+            TimeseriesResult rowResult = new TimeseriesResult(resultTimeStamp);
             Map<String, String> sqlResults = new HashMap<>();
-            for (int i = timeGranularity + 1; i <= rsmd.getColumnCount(); i++) {
-                String columnName = rsmd.getColumnName(i).replace(ALIAS, "");
+
+            for (int i = timeGranularity + 1; i <= resultSetMetaData.getColumnCount(); i++) {
+                String columnName = resultSetMetaData.getColumnName(i).replace(ALIAS, "");
                 String val = resultSet.getString(i);
                 sqlResults.put(columnName, val);
-                result.add(columnName, resultMapper.get(columnName).apply(val));
+                rowResult.add(columnName, resultMapper.get(columnName).apply(val));
             }
 
-            druidQuery.getPostAggregations().forEach(postAggregation -> {
-                Double postAggResult = PostAggregationEvaluator.evaluate(postAggregation, sqlResults);
-                result.add(postAggregation.getName(), postAggResult);
-            });
+            druidQuery.getPostAggregations()
+                    .forEach(postAggregation -> {
+                        Double postAggResult = PostAggregationEvaluator.evaluate(postAggregation, sqlResults);
+                        rowResult.add(postAggregation.getName(), postAggResult);
+                    });
 
-            timeseriesResultDruidResponse.results.add(result);
+            timeseriesResultDruidResponse.results.add(rowResult);
         }
         LOG.debug("Fetched {} rows.", rows);
 
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        LOG.debug("Original Query\n {}", objectMapper.valueToTree(druidQuery));
-        JsonNode druidResponseJson = objectMapper.valueToTree(timeseriesResultDruidResponse);
-        LOG.debug("Fake Druid Response\n {}", druidResponseJson);
-
-        return druidResponseJson;
+        return JSON_WRITER.valueToTree(timeseriesResultDruidResponse);
     }
 
     public static String buildTimeSeriesQuery(Connection connection, TimeSeriesQuery druidQuery, RelBuilder builder)
@@ -219,17 +183,28 @@ public class SQLConverter {
         // =============================================================================================
 
         // select dimensions/metrics? This section might not be needed
-        if (druidQuery.getDimensions().size() != 0) {
-            LOG.debug("Adding dimensions { {} }", druidQuery.getDimensions());
-            builder.project(druidQuery.getDimensions()
-                    .stream()
-                    .map(Object::toString)
-                    .map(builder::field)
-                    .toArray(RexInputRef[]::new));
-        }
-        // druidQuery.getAggregations()
-        //        .stream()
-        //        .map(Aggregation::getDependentDimensions) // include dependent dimensions in select?
+
+        List<RexInputRef> collect = druidQuery.getAggregations()
+                .stream()
+                .map(Aggregation::getFieldName)
+                .map(Object::toString)
+                .map(builder::field)
+                .collect(Collectors.toList());
+        collect.add(builder.field(timeCol));
+
+        collect.addAll(
+                FilterEvaluator.getDimensionNames(druidQuery.getFilter())
+                        .stream()
+                        .map(builder::field)
+                        .collect(Collectors.toList())
+        );
+
+        LOG.debug("Selecting needed dimensions");
+        builder.project(collect);
+
+        // =============================================================================================
+
+        FilterEvaluator.add(builder, druidQuery.getFilter());
 
         // =============================================================================================
 
@@ -261,19 +236,8 @@ public class SQLConverter {
 
         // =============================================================================================
 
-        //this makes a group by on all the parts in the sublist
-        List<RexNode> times = Arrays.asList(
-                builder.call(SqlStdOperatorTable.YEAR, builder.field(timeCol)),
-                builder.call(SqlStdOperatorTable.MONTH, builder.field(timeCol)),
-                builder.call(SqlStdOperatorTable.WEEK, builder.field(timeCol)),
-                builder.call(SqlStdOperatorTable.DAYOFYEAR, builder.field(timeCol)),
-                builder.call(SqlStdOperatorTable.HOUR, builder.field(timeCol)),
-                builder.call(SqlStdOperatorTable.MINUTE, builder.field(timeCol))
-        );
-        int timeGranularity = getTimeGranularity(druidQuery.getGranularity());
-
-        //are there any custom aggregations or can we just list them all in an enum
-        if (druidQuery.getAggregations().size() != 0) { // group by aggregations
+        //are there any custom aggregations or can we just list them all in an enum?
+        if (druidQuery.getAggregations().size() != 0) {
             LOG.debug("Adding aggregations { {} }", druidQuery.getAggregations());
 
             List<RelBuilder.AggCall> aggCalls = druidQuery.getAggregations()
@@ -290,8 +254,8 @@ public class SQLConverter {
 
             builder.aggregate(
                     builder.groupKey(
-                            times.subList(0, timeGranularity)
-                            // todo group by queries have dimensions here
+                            TimeConverter.getRexNodes(builder, druidQuery.getGranularity(), timeCol)
+                            // todo groupBy queries will need dimensions here
                     ),
                     // How to bucket time with granularity? UDF/SQL/manual in java? as of now sql
                     aggCalls
@@ -301,12 +265,9 @@ public class SQLConverter {
 
         // =============================================================================================
 
-        // todo make something like PostAggregationEvaluator for filters
-        // add WHERE/filters here
-
-        // =============================================================================================
-
         // todo check descending
+        //this makes a group by on all the parts in the sublist
+        int timeGranularity = TimeConverter.getTimeGranularity(druidQuery.getGranularity());
         builder.sort(builder.fields().subList(0, timeGranularity)); // order by same time as grouping
 
         // =============================================================================================
@@ -315,31 +276,6 @@ public class SQLConverter {
         // this will have to be implemented later if at all since we don't have information about partial data
 
         return relToSql(builder);
-    }
-
-    private static int getTimeGranularity(Granularity granularity) {
-        if (!(granularity instanceof DefaultTimeGrain)) {
-            throw new IllegalStateException("Must be a DefaultTimeGrain");
-        }
-        DefaultTimeGrain timeGrain = (DefaultTimeGrain) granularity;
-        switch (timeGrain) {
-            case MINUTE:
-                return 6;
-            case HOUR:
-                return 5;
-            case DAY:
-                return 4;
-            case WEEK:
-                return 3;
-            case MONTH:
-                return 2;
-            case YEAR:
-                return 1;
-            case QUARTER:
-                throw new IllegalStateException("Quarter timegrain not supported");
-            default:
-                throw new IllegalStateException("Timegrain not known " + timeGrain);
-        }
     }
 
     private static void initRelToSqlConverter(final Connection connection) throws SQLException {

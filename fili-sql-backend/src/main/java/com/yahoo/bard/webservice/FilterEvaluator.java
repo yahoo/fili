@@ -12,6 +12,8 @@ import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -24,7 +26,7 @@ public class FilterEvaluator {
 
     }
 
-    public void add(RelBuilder builder, Filter filter) {
+    public static void add(RelBuilder builder, Filter filter) {
         if (filter == null) {
             return;
         }
@@ -34,7 +36,7 @@ public class FilterEvaluator {
         );
     }
 
-    private RexNode evaluate(RelBuilder builder, Filter filter) {
+    private static RexNode evaluate(RelBuilder builder, Filter filter) {
         DefaultFilterType defaultFilterType = (DefaultFilterType) filter.getType();
         switch (defaultFilterType) {
             case SELECTOR:
@@ -52,7 +54,7 @@ public class FilterEvaluator {
                 throw new UnsupportedOperationException("Not implemented");
             case SEARCH:
                 SearchFilter searchFilter = (SearchFilter) filter;
-                evaluate(builder, searchFilter);
+                return evaluate(builder, searchFilter);
             case IN:
                 InFilter inFilter = (InFilter) filter;
                 return evaluate(builder, inFilter);
@@ -61,7 +63,7 @@ public class FilterEvaluator {
         throw new UnsupportedOperationException("Can't evaluate filter " + filter);
     }
 
-    private RexNode evaluate(RelBuilder builder, SelectorFilter selectorFilter) {
+    private static RexNode evaluate(RelBuilder builder, SelectorFilter selectorFilter) {
         return builder.call(
                 SqlStdOperatorTable.EQUALS,
                 builder.field(selectorFilter.getDimension().getApiName()),
@@ -69,19 +71,19 @@ public class FilterEvaluator {
         );
     }
 
-    private RexNode evaluate(RelBuilder builder, SearchFilter searchFilter) {
+    private static RexNode evaluate(RelBuilder builder, SearchFilter searchFilter) {
         // todo: not sure for insensitive, what is fragment
         // https://stackoverflow.com/questions/2876789/how-can-i-search-case-insensitive-in-a-column-using-like-wildcard
-        String type = searchFilter.getQuery().keySet().stream().findFirst().get();
-        String value = searchFilter.getQuery().get(type);
+        String typeKey = "type";
+        String valueKey = "value";
 
-        SearchFilter.QueryType queryType = SearchFilter.QueryType.valueOf(type);
+        SearchFilter.QueryType queryType = SearchFilter.QueryType.Contains;
         switch (queryType) {
             case Contains:
                 return builder.call(
                         SqlStdOperatorTable.LIKE,
                         builder.field(searchFilter.getDimension().getApiName()),
-                        builder.literal("%" + value + "%")
+                        builder.literal("%" + searchFilter.getQuery().get(valueKey) + "%")
                 );
             case InsensitiveContains:
             case Fragment:
@@ -90,11 +92,11 @@ public class FilterEvaluator {
         }
     }
 
-    private RexNode evaluate(RelBuilder builder, InFilter inFilter) {
+    private static RexNode evaluate(RelBuilder builder, InFilter inFilter) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
-    private RexNode listEvaluate(RelBuilder builder, ComplexFilter complexFilter, SqlOperator operator) {
+    private static RexNode listEvaluate(RelBuilder builder, ComplexFilter complexFilter, SqlOperator operator) {
         List<RexNode> rexNodes = complexFilter.getFields()
                 .stream()
                 .filter(Objects::nonNull)
@@ -104,5 +106,10 @@ public class FilterEvaluator {
                 operator,
                 rexNodes
         );
+    }
+
+    public static Collection<String> getDimensionNames(Filter filter) {
+        // todo get dimensions from filters
+        return Arrays.asList("COMMENT");
     }
 }

@@ -64,7 +64,7 @@ public class PostAggregationEvaluator {
                 }
                 return prod;
             case MINUS:
-                if (ap.getFields().size() != 2) {
+                if (ap.getFields().size() != 2) { // todo check if this is true
                     throw new IllegalStateException("Can only subtract on two fields");
                 }
                 Double firstAsDoubleSub = evaluate(ap.getFields().get(0), aggregatedValues);
