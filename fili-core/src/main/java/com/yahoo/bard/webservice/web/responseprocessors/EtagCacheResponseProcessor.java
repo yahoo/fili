@@ -109,8 +109,8 @@ public class EtagCacheResponseProcessor implements FullResponseProcessor {
                     );
                 } catch (JsonProcessingException exception) {
                     String message = "Unable to parse JSON response while caching";
-                    LOG.error(message);
-                    throw new RuntimeException(message);
+                    LOG.error(message, exception);
+                    throw new RuntimeException(message, exception);
                 }
             }
         }
