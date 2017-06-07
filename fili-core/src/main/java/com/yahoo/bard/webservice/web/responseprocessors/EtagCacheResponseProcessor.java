@@ -94,7 +94,7 @@ public class EtagCacheResponseProcessor implements FullResponseProcessor {
         } else if (statusCode == Status.OK.getStatusCode()) { // If response is a OK, cache it, including etag
             // make sure JSON response comes with etag
             if (!json.has(DruidJsonResponseContentKeys.ETAG.getName())) {
-                logAndGetErrorCallback(ErrorMessageFormat.ETAG_MISSING_FROM_RESPONSE.format(), druidQuery);
+                LOG.warn(ErrorMessageFormat.ETAG_MISSING_FROM_RESPONSE.format());
             } else {
                 try {
                     dataCache.set(

@@ -15,6 +15,8 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 
+import org.slf4j.Logger
+
 import spock.lang.Specification
 
 class EtagCacheResponseProcessorSpec extends Specification {
@@ -83,11 +85,6 @@ class EtagCacheResponseProcessorSpec extends Specification {
         etagCacheResponseProcessor.processResponse(json, druidAggregationQuery, Mock(LoggingContext))
 
         then:
-        1 * httpErrorCallback.dispatch(
-                INTERNAL_SERVER_ERROR_STATUS_CODE,
-                ErrorMessageFormat.INTERNAL_SERVER_ERROR_REASON_PHRASE.format(),
-                ErrorMessageFormat.ETAG_MISSING_FROM_RESPONSE.format()
-        )
         1 * next.processResponse(null, druidAggregationQuery, _ as LoggingContext)
     }
 
