@@ -12,11 +12,12 @@ import java.util.Map;
  * Created by hinterlong on 6/6/17.
  */
 public class PostAggregationEvaluator {
+
     private PostAggregationEvaluator() {
 
     }
 
-    // todo post aggs have ordering
+    // NOTE: always returns a double
     public static Double evaluate(PostAggregation postAggregation, Map<String, String> aggregatedValues) {
         DefaultPostAggregationType aggregationType = (DefaultPostAggregationType) postAggregation
                 .getType();
@@ -32,21 +33,21 @@ public class PostAggregationEvaluator {
             case CONSTANT:
                 ConstantPostAggregation constantPostAggregation = (ConstantPostAggregation) postAggregation;
                 return evaluate(constantPostAggregation);
-            case SKETCH_ESTIMATE:
-            case SKETCH_SET_OPER:
             case THETA_SKETCH_ESTIMATE:
             case THETA_SKETCH_SET_OP:
+            case SKETCH_ESTIMATE:
+            case SKETCH_SET_OPER:
             default:
                 throw new UnsupportedOperationException("Can't do post aggregation " + postAggregation.getType());
         }
-
     }
 
     private static Double evaluate(
             FieldAccessorPostAggregation fieldAccessorPostAggregation,
             Map<String, String> aggregatedValues
     ) {
-        return Double.valueOf(aggregatedValues.get(fieldAccessorPostAggregation.getFieldName()));
+        String stringNumber = aggregatedValues.get(fieldAccessorPostAggregation.getFieldName());
+        return Double.valueOf(stringNumber);
     }
 
     private static Double evaluate(ArithmeticPostAggregation ap, Map<String, String> aggregatedValues) {

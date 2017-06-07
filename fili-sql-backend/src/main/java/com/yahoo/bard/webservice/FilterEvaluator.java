@@ -1,9 +1,12 @@
 package com.yahoo.bard.webservice;
 
+import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.druid.model.filter.ComplexFilter;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.filter.Filter.DefaultFilterType;
 import com.yahoo.bard.webservice.druid.model.filter.InFilter;
+import com.yahoo.bard.webservice.druid.model.filter.OrFilter;
+import com.yahoo.bard.webservice.druid.model.filter.RegularExpressionFilter;
 import com.yahoo.bard.webservice.druid.model.filter.SearchFilter;
 import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter;
 
@@ -43,7 +46,8 @@ public class FilterEvaluator {
                 SelectorFilter selectorFilter = (SelectorFilter) filter;
                 return evaluate(builder, selectorFilter);
             case REGEX:
-                throw new UnsupportedOperationException("Not implemented");
+                RegularExpressionFilter regexFilter = (RegularExpressionFilter) filter;
+                return evaluate(builder, regexFilter);
             case AND:
                 return listEvaluate(builder, (ComplexFilter) filter, SqlStdOperatorTable.AND);
             case OR:
@@ -51,7 +55,8 @@ public class FilterEvaluator {
             case NOT:
                 return listEvaluate(builder, (ComplexFilter) filter, SqlStdOperatorTable.NOT);
             case EXTRACTION:
-                throw new UnsupportedOperationException("Not implemented");
+                throw new UnsupportedOperationException(
+                        "Not implemented. Also deprecated use selector filter with extraction function");
             case SEARCH:
                 SearchFilter searchFilter = (SearchFilter) filter;
                 return evaluate(builder, searchFilter);
@@ -63,6 +68,15 @@ public class FilterEvaluator {
         throw new UnsupportedOperationException("Can't evaluate filter " + filter);
     }
 
+    private static RexNode evaluate(RelBuilder builder, RegularExpressionFilter regexFilter) {
+        //todo test this
+        return builder.call(
+                SqlStdOperatorTable.LIKE,
+                builder.field(regexFilter.getDimension().getApiName()),
+                builder.literal(regexFilter.getPattern().toString())
+        );
+    }
+
     private static RexNode evaluate(RelBuilder builder, SelectorFilter selectorFilter) {
         return builder.call(
                 SqlStdOperatorTable.EQUALS,
@@ -72,20 +86,33 @@ public class FilterEvaluator {
     }
 
     private static RexNode evaluate(RelBuilder builder, SearchFilter searchFilter) {
-        // todo: not sure for insensitive, what is fragment
-        // https://stackoverflow.com/questions/2876789/how-can-i-search-case-insensitive-in-a-column-using-like-wildcard
+        // todo: fragment takes json array of strings and checks if any are contained? just OR search over them?
+        // http://druid.io/docs/0.9.1.1/querying/filters.html
+        // todo put these in SearchFilter?
         String typeKey = "type";
         String valueKey = "value";
 
-        SearchFilter.QueryType queryType = SearchFilter.QueryType.Contains;
+        String searchType = searchFilter.getQuery().get(typeKey);
+        SearchFilter.QueryType queryType = SearchFilter.QueryType.fromType(searchType);
+
+        String columnName = searchFilter.getDimension().getApiName();
+        String valueToFind = searchFilter.getQuery().get(valueKey);
         switch (queryType) {
             case Contains:
                 return builder.call(
                         SqlStdOperatorTable.LIKE,
-                        builder.field(searchFilter.getDimension().getApiName()),
-                        builder.literal("%" + searchFilter.getQuery().get(valueKey) + "%")
+                        builder.field(columnName),
+                        builder.literal("%" + valueToFind + "%")
                 );
             case InsensitiveContains:
+                return builder.call(
+                        SqlStdOperatorTable.LIKE,
+                        builder.call(
+                                SqlStdOperatorTable.LOWER,
+                                builder.field(columnName)
+                        ),
+                        builder.literal("%" + valueToFind.toLowerCase() + "%")
+                );
             case Fragment:
             default:
                 throw new UnsupportedOperationException("Not implemented");
@@ -93,7 +120,15 @@ public class FilterEvaluator {
     }
 
     private static RexNode evaluate(RelBuilder builder, InFilter inFilter) {
-        throw new UnsupportedOperationException("Not implemented");
+        Dimension dimension = inFilter.getDimension();
+
+        OrFilter orFilterOfSelectors = new OrFilter(
+                inFilter.getValues()
+                        .stream()
+                        .map(value -> new SelectorFilter(dimension, value))
+                        .collect(Collectors.toList())
+        );
+        return evaluate(builder, orFilterOfSelectors);
     }
 
     private static RexNode listEvaluate(RelBuilder builder, ComplexFilter complexFilter, SqlOperator operator) {
@@ -102,6 +137,7 @@ public class FilterEvaluator {
                 .filter(Objects::nonNull)
                 .map(filter -> evaluate(builder, filter))
                 .collect(Collectors.toList());
+
         return builder.call(
                 operator,
                 rexNodes
