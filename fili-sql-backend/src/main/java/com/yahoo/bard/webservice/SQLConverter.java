@@ -27,6 +27,7 @@ import org.apache.calcite.sql.parser.SqlParser;
 import org.apache.calcite.tools.Frameworks;
 import org.apache.calcite.tools.Programs;
 import org.apache.calcite.tools.RelBuilder;
+import org.apache.commons.lang3.tuple.Pair;
 import org.h2.jdbc.JdbcSQLException;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -183,7 +184,10 @@ public class SQLConverter {
 
         // =============================================================================================
 
-        // select dimensions/metrics? This section might not be needed
+        // building filter and getting dimensions
+        List<String> dimensions = FilterEvaluator.getDimensionNames(builder, druidQuery.getFilter());
+
+        // =============================================================================================
 
         List<RexInputRef> selectedColumns = druidQuery.getAggregations()
                 .stream()
@@ -194,7 +198,7 @@ public class SQLConverter {
 
         selectedColumns.add(builder.field(timeCol));
 
-        List<RexInputRef> dimensionsInFilters = FilterEvaluator.getDimensionNames(druidQuery.getFilter())
+        List<RexInputRef> dimensionsInFilters = dimensions
                 .stream()
                 .map(builder::field)
                 .collect(Collectors.toList());
@@ -205,7 +209,8 @@ public class SQLConverter {
 
         // =============================================================================================
 
-        FilterEvaluator.add(builder, druidQuery.getFilter());
+        LOG.debug("Adding filter");
+        FilterEvaluator.addFilter(builder, druidQuery.getFilter());
 
         // =============================================================================================
 

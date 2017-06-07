@@ -69,7 +69,11 @@ public class Simple {
         return new TimeSeriesQuery(
                 dataSource(name),
                 DefaultTimeGrain.MINUTE,
-                null,
+                new SearchFilter(
+                        getDimension(DIMENSION1),
+                        SearchFilter.QueryType.Contains,
+                        ""
+                ),
                 Arrays.asList(
                         new DoubleSumAggregation(METRIC1, METRIC1),
                         new DoubleSumAggregation(METRIC2, METRIC2),
