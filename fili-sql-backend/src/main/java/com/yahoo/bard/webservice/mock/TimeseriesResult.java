@@ -13,17 +13,17 @@ import java.util.Map;
 /**
  * Created by hinterlong on 6/1/17.
  */
-@JsonPropertyOrder({"timestamp", "results"})
+@JsonPropertyOrder({"timestamp", "result"})
 public class TimeseriesResult extends DruidResult {
     @JsonProperty
-    private final Map<String, Object> results = new HashMap<>();
+    private final Map<String, Object> result = new HashMap<>();
 
     public TimeseriesResult(DateTime timestamp) {
         super(timestamp);
     }
 
     public void add(String key, Object value) {
-        results.put(key, value);
+        result.put(key, value);
     }
 
 }

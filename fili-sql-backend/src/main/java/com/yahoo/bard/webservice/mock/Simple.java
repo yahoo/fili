@@ -68,7 +68,7 @@ public class Simple {
     public static TimeSeriesQuery timeSeriesQuery(String name) {
         return new TimeSeriesQuery(
                 dataSource(name),
-                DefaultTimeGrain.MINUTE,
+                DefaultTimeGrain.HOUR,
                 new SearchFilter(
                         getDimension(DIMENSION1),
                         SearchFilter.QueryType.Contains,
@@ -98,16 +98,15 @@ public class Simple {
                                                                 METRIC2
                                                         ))
                                                 )
-                                        ),
-                                        new ConstantPostAggregation(
-                                                "one",
-                                                1
-                                        ),
-                                        new ConstantPostAggregation(
-                                                "negativeOne",
-                                                -1
                                         )
                                 )
+                        ), new ConstantPostAggregation(
+                                "one",
+                                1
+                        ),
+                        new ConstantPostAggregation(
+                                "negativeOne",
+                                -1
                         )
                 ),
                 Arrays.asList(

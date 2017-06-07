@@ -14,18 +14,18 @@ import java.util.List;
 /**
  * Created by hinterlong on 6/1/17.
  */
-@JsonPropertyOrder({"timestamp", "results"})
+@JsonPropertyOrder({"timestamp", "result"})
 public class TopNResult extends DruidResult {
 
     @JsonProperty
     @JsonFormat(shape = JsonFormat.Shape.ARRAY)
-    private final List<Object> results = new ArrayList<>();
+    private final List<Object> result = new ArrayList<>();
 
     public TopNResult(DateTime timestamp) {
         super(timestamp);
     }
 
     public void add(Object value) {
-        results.add(value);
+        result.add(value);
     }
 }
