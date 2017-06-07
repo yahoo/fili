@@ -14,7 +14,9 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
+import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -29,63 +31,81 @@ public class FilterEvaluator {
 
     }
 
-    public static void add(RelBuilder builder, Filter filter) {
-        if (filter == null) {
-            return;
-        }
-
-        builder.filter(
-                evaluate(builder, filter)
-        );
+    public static List<String> getDimensionNames(RelBuilder builder, Filter filter) {
+        Pair<RexNode, List<String>> filterAndDimensions = evaluate(builder, filter);
+        return filterAndDimensions.getRight();
     }
 
-    private static RexNode evaluate(RelBuilder builder, Filter filter) {
+    public static void addFilter(RelBuilder builder, Filter filter) {
+        Pair<RexNode, List<String>> filterAndDimensions = evaluate(builder, filter);
+        if (filter != null) {
+            builder.filter(
+                    filterAndDimensions.getLeft()
+            );
+        }
+    }
+
+    private static Pair<RexNode, List<String>> evaluate(RelBuilder builder, Filter filter) {
+        List<String> dimensions = new ArrayList<>();
+        RexNode rexNode = evaluate(builder, filter, dimensions);
+        return Pair.of(rexNode, dimensions);
+    }
+
+    private static RexNode evaluate(RelBuilder builder, Filter filter, List<String> dimensions) {
+        if (filter == null) {
+            return null;
+        }
+
         DefaultFilterType defaultFilterType = (DefaultFilterType) filter.getType();
         switch (defaultFilterType) {
             case SELECTOR:
                 SelectorFilter selectorFilter = (SelectorFilter) filter;
-                return evaluate(builder, selectorFilter);
+                return evaluate(builder, selectorFilter, dimensions);
             case REGEX:
                 RegularExpressionFilter regexFilter = (RegularExpressionFilter) filter;
-                return evaluate(builder, regexFilter);
+                return evaluate(builder, regexFilter, dimensions);
             case AND:
-                return listEvaluate(builder, (ComplexFilter) filter, SqlStdOperatorTable.AND);
+                return listEvaluate(builder, (ComplexFilter) filter, dimensions, SqlStdOperatorTable.AND);
             case OR:
-                return listEvaluate(builder, (ComplexFilter) filter, SqlStdOperatorTable.OR);
+                return listEvaluate(builder, (ComplexFilter) filter, dimensions, SqlStdOperatorTable.OR);
             case NOT:
-                return listEvaluate(builder, (ComplexFilter) filter, SqlStdOperatorTable.NOT);
+                return listEvaluate(builder, (ComplexFilter) filter, dimensions, SqlStdOperatorTable.NOT);
             case EXTRACTION:
                 throw new UnsupportedOperationException(
                         "Not implemented. Also deprecated use selector filter with extraction function");
             case SEARCH:
                 SearchFilter searchFilter = (SearchFilter) filter;
-                return evaluate(builder, searchFilter);
+                return evaluate(builder, searchFilter, dimensions);
             case IN:
                 InFilter inFilter = (InFilter) filter;
-                return evaluate(builder, inFilter);
+                return evaluate(builder, inFilter, dimensions);
         }
 
         throw new UnsupportedOperationException("Can't evaluate filter " + filter);
     }
 
-    private static RexNode evaluate(RelBuilder builder, RegularExpressionFilter regexFilter) {
+    private static RexNode evaluate(RelBuilder builder, RegularExpressionFilter regexFilter, List<String> dimensions) {
         //todo test this
+        String apiName = regexFilter.getDimension().getApiName();
+        dimensions.add(apiName);
         return builder.call(
                 SqlStdOperatorTable.LIKE,
-                builder.field(regexFilter.getDimension().getApiName()),
+                builder.field(apiName),
                 builder.literal(regexFilter.getPattern().toString())
         );
     }
 
-    private static RexNode evaluate(RelBuilder builder, SelectorFilter selectorFilter) {
+    private static RexNode evaluate(RelBuilder builder, SelectorFilter selectorFilter, List<String> dimensions) {
+        String apiName = selectorFilter.getDimension().getApiName();
+        dimensions.add(apiName);
         return builder.call(
                 SqlStdOperatorTable.EQUALS,
-                builder.field(selectorFilter.getDimension().getApiName()),
+                builder.field(apiName),
                 builder.literal(selectorFilter.getValue())
         );
     }
 
-    private static RexNode evaluate(RelBuilder builder, SearchFilter searchFilter) {
+    private static RexNode evaluate(RelBuilder builder, SearchFilter searchFilter, List<String> dimensions) {
         // todo: fragment takes json array of strings and checks if any are contained? just OR search over them?
         // http://druid.io/docs/0.9.1.1/querying/filters.html
         // todo put these in SearchFilter?
@@ -96,7 +116,9 @@ public class FilterEvaluator {
         SearchFilter.QueryType queryType = SearchFilter.QueryType.fromType(searchType);
 
         String columnName = searchFilter.getDimension().getApiName();
+        dimensions.add(columnName);
         String valueToFind = searchFilter.getQuery().get(valueKey);
+
         switch (queryType) {
             case Contains:
                 return builder.call(
@@ -119,8 +141,9 @@ public class FilterEvaluator {
         }
     }
 
-    private static RexNode evaluate(RelBuilder builder, InFilter inFilter) {
+    private static RexNode evaluate(RelBuilder builder, InFilter inFilter, List<String> dimensions) {
         Dimension dimension = inFilter.getDimension();
+        dimensions.add(dimension.getApiName());
 
         OrFilter orFilterOfSelectors = new OrFilter(
                 inFilter.getValues()
@@ -128,14 +151,19 @@ public class FilterEvaluator {
                         .map(value -> new SelectorFilter(dimension, value))
                         .collect(Collectors.toList())
         );
-        return evaluate(builder, orFilterOfSelectors);
+        return evaluate(builder, orFilterOfSelectors, dimensions);
     }
 
-    private static RexNode listEvaluate(RelBuilder builder, ComplexFilter complexFilter, SqlOperator operator) {
+    private static RexNode listEvaluate(
+            RelBuilder builder,
+            ComplexFilter complexFilter,
+            List<String> dimensions,
+            SqlOperator operator
+    ) {
         List<RexNode> rexNodes = complexFilter.getFields()
                 .stream()
                 .filter(Objects::nonNull)
-                .map(filter -> evaluate(builder, filter))
+                .map(filter -> evaluate(builder, filter, dimensions))
                 .collect(Collectors.toList());
 
         return builder.call(

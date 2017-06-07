@@ -17,7 +17,7 @@ public class PostAggregationEvaluator {
 
     }
 
-    // NOTE: always returns a double
+    // NOTE: always returns a double. this may not be correct
     public static Double evaluate(PostAggregation postAggregation, Map<String, String> aggregatedValues) {
         DefaultPostAggregationType aggregationType = (DefaultPostAggregationType) postAggregation
                 .getType();
