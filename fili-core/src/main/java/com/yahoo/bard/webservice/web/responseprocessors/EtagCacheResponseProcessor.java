@@ -34,7 +34,6 @@ public class EtagCacheResponseProcessor implements FullResponseProcessor {
     private final ResponseProcessor next;
     private final String cacheKey;
     private final TupleDataCache<String, String, String> dataCache;
-    private JsonNode responseCache;
 
     /**
      * Constructor.
@@ -55,7 +54,6 @@ public class EtagCacheResponseProcessor implements FullResponseProcessor {
         this.dataCache = dataCache;
         this.mapper = mapper;
         this.writer = mapper.writer();
-        this.responseCache = null;
     }
 
     @Override
@@ -86,12 +84,9 @@ public class EtagCacheResponseProcessor implements FullResponseProcessor {
         // response processor
         if (statusCode == Status.NOT_MODIFIED.getStatusCode()) {
             try {
-                responseCache = (responseCache == null)
-                        ? mapper.readTree(dataCache.getDataValue(cacheKey))
-                        : responseCache;
                 ((ObjectNode) json).set(
                         DruidJsonResponseContentKeys.RESPONSE.getName(),
-                        responseCache
+                        mapper.readTree(dataCache.getDataValue(cacheKey))
                 );
             } catch (IOException ioe) {
                 throw new IllegalStateException(ioe);
