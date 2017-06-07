@@ -81,7 +81,7 @@ public class SQLConverter {
         }
     }
 
-    public static JsonNode convert(TimeSeriesQuery druidQuery) throws Exception {
+    private static JsonNode convert(TimeSeriesQuery druidQuery) throws Exception {
         LOG.debug("Processing time series query");
 
         Connection connection = Database.getDatabase();
@@ -91,7 +91,7 @@ public class SQLConverter {
         return query(druidQuery, generatedSql, connection, timeGranularity);
     }
 
-    public static JsonNode query(TimeSeriesQuery druidQuery, String sql, Connection connection, int timeGranularity)
+    private static JsonNode query(TimeSeriesQuery druidQuery, String sql, Connection connection, int timeGranularity)
             throws Exception {
         LOG.debug("Executing \n{}", sql);
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -124,6 +124,7 @@ public class SQLConverter {
         // Database.ResultSetFormatter rf = new Database.ResultSetFormatter();
         // rf.resultSet(resultSet);
         // LOG.debug("Reading results \n{}", rf.string());
+
         Map<String, Function<String, Object>> resultMapper = druidQuery.getAggregations()
                 .stream()
                 .collect(Collectors.toMap(Aggregation::getName, aggregation -> {
@@ -169,7 +170,7 @@ public class SQLConverter {
         return JSON_WRITER.valueToTree(timeseriesResultDruidResponse);
     }
 
-    public static String buildTimeSeriesQuery(Connection connection, TimeSeriesQuery druidQuery, RelBuilder builder)
+    private static String buildTimeSeriesQuery(Connection connection, TimeSeriesQuery druidQuery, RelBuilder builder)
             throws SQLException {
         initRelToSqlConverter(connection);
 
@@ -184,23 +185,23 @@ public class SQLConverter {
 
         // select dimensions/metrics? This section might not be needed
 
-        List<RexInputRef> collect = druidQuery.getAggregations()
+        List<RexInputRef> selectedColumns = druidQuery.getAggregations()
                 .stream()
                 .map(Aggregation::getFieldName)
                 .map(Object::toString)
                 .map(builder::field)
                 .collect(Collectors.toList());
-        collect.add(builder.field(timeCol));
 
-        collect.addAll(
-                FilterEvaluator.getDimensionNames(druidQuery.getFilter())
-                        .stream()
-                        .map(builder::field)
-                        .collect(Collectors.toList())
-        );
+        selectedColumns.add(builder.field(timeCol));
+
+        List<RexInputRef> dimensionsInFilters = FilterEvaluator.getDimensionNames(druidQuery.getFilter())
+                .stream()
+                .map(builder::field)
+                .collect(Collectors.toList());
+        selectedColumns.addAll(dimensionsInFilters);
 
         LOG.debug("Selecting needed dimensions");
-        builder.project(collect);
+        builder.project(selectedColumns);
 
         // =============================================================================================
 
@@ -294,7 +295,7 @@ public class SQLConverter {
         JsonNode jsonNode = convert(druidQuery);
     }
 
-    public static RelBuilder builder() {
+    private static RelBuilder builder() {
         final SchemaPlus rootSchema = Frameworks.createRootSchema(true);
         return RelBuilder.create(
                 Frameworks.newConfigBuilder()
@@ -306,7 +307,7 @@ public class SQLConverter {
         );
     }
 
-    public static SchemaPlus addSchema(SchemaPlus rootSchema) {
+    private static SchemaPlus addSchema(SchemaPlus rootSchema) {
         return rootSchema.add(
                 Database.THE_SCHEMA,
                 JdbcSchema.create(rootSchema, null, Database.getDataSource(), null, Database.THE_SCHEMA)

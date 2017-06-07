@@ -42,6 +42,20 @@ public class SearchFilter extends DimensionalFilter {
         QueryType(String type) {
             this.type = type;
         }
+
+        /**
+         * Get the QueryType enum fromType it's search type.
+         * @param type  Type of the query type (for serialization)
+         * @return the enum QueryType
+         */
+        public static QueryType fromType(String type) {
+            for (QueryType queryType : values()) {
+                if (queryType.type.equals(type)) {
+                    return queryType;
+                }
+            }
+            throw new IllegalArgumentException("No query type corresponds to " + type);
+        }
     }
 
     private final Map<String, String> query;
@@ -105,6 +119,6 @@ public class SearchFilter extends DimensionalFilter {
         SearchFilter other = (SearchFilter) obj;
         return
                 super.equals(obj) &&
-                Objects.equals(query, other.query);
+                        Objects.equals(query, other.query);
     }
 }
