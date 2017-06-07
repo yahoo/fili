@@ -15,7 +15,9 @@ import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleSumAggregation;
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource;
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource;
+import com.yahoo.bard.webservice.druid.model.filter.SearchFilter;
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation;
+import com.yahoo.bard.webservice.druid.model.postaggregation.ConstantPostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation;
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadata;
@@ -44,7 +46,7 @@ public class Simple {
     private static final String METRIC1 = "ADDED";
     private static final String METRIC2 = "DELETED";
     private static final String METRIC3 = "DELTA";
-    private static final String DIMENSION1 = "IS_NEW";
+    private static final String DIMENSION1 = "COMMENT";
 
     private Simple() {
 
@@ -67,19 +69,44 @@ public class Simple {
         return new TimeSeriesQuery(
                 dataSource(name),
                 DefaultTimeGrain.MINUTE,
-                null,
+                new SearchFilter(
+                        getDimension(DIMENSION1),
+                        SearchFilter.QueryType.Contains,
+                        ""
+                ),
                 Arrays.asList(
                         new DoubleSumAggregation(METRIC1, METRIC1),
                         new DoubleSumAggregation(METRIC2, METRIC2),
                         new DoubleSumAggregation(METRIC3, METRIC3)
                 ),
                 Arrays.asList(
+                        // badTest = manDelta + one + negativeOne = manDelta ---> manDelta = added + deleted = delta
                         new ArithmeticPostAggregation(
-                                "manDelta",
-                                ArithmeticPostAggregation.ArithmeticPostAggregationFunction.MINUS,
+                                "badTest",
+                                ArithmeticPostAggregation.ArithmeticPostAggregationFunction.PLUS,
                                 Arrays.asList(
-                                        new FieldAccessorPostAggregation(new DoubleSumAggregation(METRIC1, METRIC1)),
-                                        new FieldAccessorPostAggregation(new DoubleSumAggregation(METRIC2, METRIC2))
+                                        new ArithmeticPostAggregation(
+                                                "manDelta",
+                                                ArithmeticPostAggregation.ArithmeticPostAggregationFunction.MINUS,
+                                                Arrays.asList(
+                                                        new FieldAccessorPostAggregation(new DoubleSumAggregation(
+                                                                METRIC1,
+                                                                METRIC1
+                                                        )),
+                                                        new FieldAccessorPostAggregation(new DoubleSumAggregation(
+                                                                METRIC2,
+                                                                METRIC2
+                                                        ))
+                                                )
+                                        ),
+                                        new ConstantPostAggregation(
+                                                "one",
+                                                1
+                                        ),
+                                        new ConstantPostAggregation(
+                                                "negativeOne",
+                                                -1
+                                        )
                                 )
                         )
                 ),
@@ -93,7 +120,6 @@ public class Simple {
     }
 
     private static DataSource dataSource(String name) {
-
         ZonedTimeGrain zonedTimeGrain = new ZonedTimeGrain(DefaultTimeGrain.DAY, DateTimeZone.UTC);
         Set<Column> columns = setOf();
         Map<String, String> logicalToPhysicalColumnNames = Collections.emptyMap();
@@ -115,12 +141,12 @@ public class Simple {
                         ),
                         new DataSourceConstraint(
                                 setOf(), // create dimensions to test grouping those
-                                setOf(),
-                                setOf(),
-                                setOf(METRIC1, METRIC2, METRIC3),
-                                setOf(),
+                                setOf(getDimension(DIMENSION1)),
                                 setOf(),
                                 setOf(METRIC1, METRIC2, METRIC3),
+                                setOf(),
+                                setOf(DIMENSION1),
+                                setOf(METRIC1, METRIC2, METRIC3, DIMENSION1),
                                 Collections.emptyMap()
                         )
                 )
