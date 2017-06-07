@@ -1,3 +1,5 @@
+// Copyright 2016 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice;
 
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation;
@@ -66,14 +68,14 @@ public class PostAggregationEvaluator {
                 return prod;
             case MINUS:
                 if (ap.getFields().size() != 2) { // todo check if this is true
-                    throw new IllegalStateException("Can only subtract on two fields");
+                    throw new IllegalArgumentException("Can only subtract on two fields");
                 }
                 Double firstAsDoubleSub = evaluate(ap.getFields().get(0), aggregatedValues);
                 Double secondAsDoubleSub = evaluate(ap.getFields().get(1), aggregatedValues);
                 return firstAsDoubleSub - secondAsDoubleSub;
             case DIVIDE:
                 if (ap.getFields().size() != 2) {
-                    throw new IllegalStateException("Can only divide on two fields");
+                    throw new IllegalArgumentException("Can only divide on two fields");
                 }
                 Double firstAsDoubleDiv = evaluate(ap.getFields().get(0), aggregatedValues);
                 Double secondAsDoubleDiv = evaluate(ap.getFields().get(1), aggregatedValues);

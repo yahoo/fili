@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.test;
 
+import static com.yahoo.bard.webservice.SQLConverter.THE_SCHEMA;
+
 import com.yahoo.bard.webservice.TimeUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,23 +29,21 @@ import java.util.List;
 import javax.sql.DataSource;
 
 public class Database {
-    public static final String THE_SCHEMA = "DEFAULT_SCHEMA";
     private static final String DATABASE_URL = "jdbc:h2:mem:test";
     private static final String WIKITICKER_JSON_DATA = "wikiticker-2015-09-12-sampled.json";
     private static Connection connection;
 
-    public static Connection getDatabase() throws Exception {
+    public static Connection getDatabase() throws SQLException, IOException {
         if (connection == null) {
             connection = DriverManager.getConnection(DATABASE_URL);
         } else {
             return connection;
         }
 
-        Statement s = connection.createStatement();
-        s.execute("create schema `" + THE_SCHEMA + "`;" +
-                "set schema `" + THE_SCHEMA + "`");
         List<WikitickerEntry> entries = readJsonFile();
 
+        connection.createStatement().execute("CREATE SCHEMA " + THE_SCHEMA + ";" + " SET SCHEMA " + THE_SCHEMA);
+        Statement s = connection.createStatement();
         s.execute("CREATE TABLE WIKITICKER (ID INT PRIMARY KEY," +
                 "COMMENT VARCHAR(256)," +
                 "COUNTRY_ISO_CODE VARCHAR(256)," +
@@ -127,35 +127,6 @@ public class Database {
 
     public static DataSource getDataSource() {
         return JdbcSchema.dataSource(DATABASE_URL, org.h2.Driver.class.getName(), "", "");
-    }
-
-
-    public static String getDateTimeColumn(Connection connection, String tableName) throws SQLException {
-        PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM " + tableName + " LIMIT 1");
-        ResultSet resultSet = preparedStatement.executeQuery();
-        ResultSetMetaData rsmd = resultSet.getMetaData();
-
-        for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-            int jdbcType = rsmd.getColumnType(i);
-            if (jdbcType == JDBCType.DATE.getVendorTypeNumber()) {
-                return rsmd.getColumnName(i);
-            }
-        }
-
-        if (resultSet.next()) {
-            for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-                String s = resultSet.getString(i);
-                String columnName = rsmd.getColumnName(i).toLowerCase();
-                if (columnName.contains("date") || columnName.contains("time")) {
-                    try {
-                        Timestamp time = Timestamp.valueOf(s);
-                        return rsmd.getColumnName(i);
-                    } catch (IllegalArgumentException ignored) {
-                    }
-                }
-            }
-        }
-        throw new IllegalStateException("No DateTime column was found");
     }
 
     /**

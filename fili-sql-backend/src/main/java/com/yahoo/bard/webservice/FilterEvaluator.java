@@ -1,3 +1,5 @@
+// Copyright 2016 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
@@ -9,6 +11,7 @@ import com.yahoo.bard.webservice.druid.model.filter.OrFilter;
 import com.yahoo.bard.webservice.druid.model.filter.RegularExpressionFilter;
 import com.yahoo.bard.webservice.druid.model.filter.SearchFilter;
 import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter;
+import com.yahoo.bard.webservice.util.EnumUtils;
 
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlOperator;
@@ -17,8 +20,6 @@ import org.apache.calcite.tools.RelBuilder;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -37,6 +38,7 @@ public class FilterEvaluator {
     }
 
     public static void addFilter(RelBuilder builder, Filter filter) {
+        // todo look at caller, this may be moved there
         Pair<RexNode, List<String>> filterAndDimensions = evaluate(builder, filter);
         if (filter != null) {
             builder.filter(
@@ -48,6 +50,7 @@ public class FilterEvaluator {
     private static Pair<RexNode, List<String>> evaluate(RelBuilder builder, Filter filter) {
         List<String> dimensions = new ArrayList<>();
         RexNode rexNode = evaluate(builder, filter, dimensions);
+        dimensions = dimensions.stream().distinct().collect(Collectors.toList());
         return Pair.of(rexNode, dimensions);
     }
 
@@ -113,7 +116,7 @@ public class FilterEvaluator {
         String valueKey = "value";
 
         String searchType = searchFilter.getQuery().get(typeKey);
-        SearchFilter.QueryType queryType = SearchFilter.QueryType.fromType(searchType);
+        SearchFilter.QueryType queryType = fromType(searchType);
 
         String columnName = searchFilter.getDimension().getApiName();
         dimensions.add(columnName);
@@ -172,8 +175,18 @@ public class FilterEvaluator {
         );
     }
 
-    public static Collection<String> getDimensionNames(Filter filter) {
-        // todo get dimensions from filters
-        return Arrays.asList("COMMENT");
+    /**
+     * Get the QueryType enum fromType it's search type.
+     * @param type  Type of the query type (for serialization)
+     * @return the enum QueryType
+     */
+    public static SearchFilter.QueryType fromType(String type) {
+        // todo this belongs in SearchFilter
+        for (SearchFilter.QueryType queryType : SearchFilter.QueryType.values()) {
+            if (queryType.toString().equalsIgnoreCase(EnumUtils.camelCase(type))) {
+                return queryType;
+            }
+        }
+        throw new IllegalArgumentException("No query type corresponds to " + type);
     }
 }
