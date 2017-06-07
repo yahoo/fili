@@ -3,6 +3,10 @@
 package com.yahoo.bard.webservice;
 
 
+import com.yahoo.bard.webservice.data.DruidResponseParser;
+import com.yahoo.bard.webservice.data.ResultSetSchema;
+import com.yahoo.bard.webservice.data.metric.MetricColumn;
+import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
@@ -10,6 +14,7 @@ import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery;
 import com.yahoo.bard.webservice.mock.DruidResponse;
 import com.yahoo.bard.webservice.mock.Simple;
 import com.yahoo.bard.webservice.mock.TimeseriesResult;
+import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.test.Database;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -27,9 +32,9 @@ import org.apache.calcite.sql.parser.SqlParser;
 import org.apache.calcite.tools.Frameworks;
 import org.apache.calcite.tools.Programs;
 import org.apache.calcite.tools.RelBuilder;
-import org.apache.commons.lang3.tuple.Pair;
 import org.h2.jdbc.JdbcSQLException;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,11 +44,13 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Converts druid queries to sql, executes it, and returns a druid like response.
@@ -192,7 +199,6 @@ public class SQLConverter {
         List<RexInputRef> selectedColumns = druidQuery.getAggregations()
                 .stream()
                 .map(Aggregation::getFieldName)
-                .map(Object::toString)
                 .map(builder::field)
                 .collect(Collectors.toList());
 
@@ -296,8 +302,25 @@ public class SQLConverter {
 
 
     public static void main(String[] args) throws Exception {
-        DruidAggregationQuery<?> druidQuery = Simple.timeSeriesQuery("WIKITICKER");
+        Connection c = Database.getDatabase();
+        String tableName = "WIKITICKER";
+        DruidAggregationQuery<?> druidQuery = Simple.timeSeriesQuery(tableName);
         JsonNode jsonNode = convert(druidQuery);
+
+        DruidResponseParser druidResponseParser = new DruidResponseParser();
+        // todo manually enter dimension and metric columns into resultSetSchema
+        List<Column> columns = new ArrayList<>();
+        Stream.of("ADDED", "DELETED", "DELTA")
+                .map(MetricColumn::new)
+                .forEach(columns::add);
+        ResultSetSchema resultSetSchema = new ResultSetSchema(DefaultTimeGrain.DAY, columns);
+        com.yahoo.bard.webservice.data.ResultSet parse = druidResponseParser.parse(
+                jsonNode,
+                resultSetSchema,
+                DefaultQueryType.TIMESERIES,
+                DateTimeZone.UTC
+        );
+        parse.forEach(System.out::println);
     }
 
     private static RelBuilder builder() {
