@@ -63,7 +63,8 @@ public class ConfigurationLoader {
      */
     public void load() {
         dimensionLoader.loadDimensionDictionary(dictionaries.getDimensionDictionary());
-        metricLoader.loadMetricDictionary(dictionaries.getMetricDictionary());
+        // metric loader might dependent on dimension dictionary, so load dimension first
+        metricLoader.loadMetricDictionary(dictionaries.getMetricDictionary(), dictionaries.getDimensionDictionary());
         tableLoader.loadTableDictionary(dictionaries);
 
         LOG.info("Initialized ConfigurationLoader");
