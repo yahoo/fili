@@ -3,7 +3,6 @@
 package com.yahoo.bard.webservice.druid.response;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
@@ -16,11 +15,11 @@ public class DruidResponseSerializer extends JsonSerializer {
 
     @Override
     public void serialize(Object o, JsonGenerator jsonGenerator, SerializerProvider serializerProvider)
-            throws IOException, JsonProcessingException {
+            throws IOException {
         DruidResponse druidResponse = (DruidResponse) o;
         // todo test cases?
         jsonGenerator.writeStartArray();
-        for (Object result : druidResponse.results) {
+        for (Object result : druidResponse.getResults()) {
             jsonGenerator.writeObject(result);
         }
         jsonGenerator.writeEndArray();

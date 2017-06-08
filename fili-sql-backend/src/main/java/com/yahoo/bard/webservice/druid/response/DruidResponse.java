@@ -14,9 +14,17 @@ import java.util.List;
 public class DruidResponse<E extends DruidResult> {
     /**
      * todo figure out druid response layout
-     * TimeBoundary  -> TimeseriesResult
+     * TimeBoundary  -> TimeseriesResult?
      */
 
-    public final List<E> results = new ArrayList<>();
+    private final List<E> results = new ArrayList<>();
+
+    public void add(E e) {
+        results.add(e);
+    }
+
+    public List<E> getResults() {
+        return results;
+    }
 
 }
