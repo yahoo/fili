@@ -7,8 +7,8 @@ import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery;
-import com.yahoo.bard.webservice.mock.DruidResponse;
-import com.yahoo.bard.webservice.mock.TimeseriesResult;
+import com.yahoo.bard.webservice.druid.response.DruidResponse;
+import com.yahoo.bard.webservice.druid.response.TimeseriesResult;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -96,19 +96,16 @@ public class SQLConverter implements SqlBackedClient {
 
     private JsonNode convert(TimeSeriesQuery druidQuery) throws IOException, SQLException {
         LOG.debug("Processing time series query");
-
         String generatedSql = buildTimeSeriesQuery(connection, druidQuery);
-        int timeGranularity = TimeConverter.getTimeGranularity(druidQuery.getGranularity());
-
-        return query(druidQuery, generatedSql, timeGranularity);
+        return query(druidQuery, generatedSql);
     }
 
-    private JsonNode query(TimeSeriesQuery druidQuery, String sql, int timeGranularity)
+    private JsonNode query(TimeSeriesQuery druidQuery, String sql)
             throws SQLException {
         LOG.debug("Executing \n{}", sql);
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
              ResultSet resultSet = preparedStatement.executeQuery()) {
-            return read(druidQuery, resultSet, timeGranularity);
+            return read(druidQuery, resultSet);
         } catch (JdbcSQLException e) {
             LOG.warn("Failed to query database {} with {}", connection.getCatalog(), sql);
             throw new RuntimeException("Could not finish query", e);
@@ -126,8 +123,7 @@ public class SQLConverter implements SqlBackedClient {
      */
     private JsonNode read(
             TimeSeriesQuery druidQuery,
-            ResultSet resultSet,
-            int timeGranularity
+            ResultSet resultSet
     )
             throws SQLException {
 
@@ -152,11 +148,12 @@ public class SQLConverter implements SqlBackedClient {
         while (resultSet.next()) {
             ++rows;
 
-            DateTime resultTimeStamp = TimeConverter.getDateTime(resultSet, timeGranularity);
+            DateTime resultTimeStamp = TimeConverter.parseDateTime(resultSet, druidQuery.getGranularity());
             TimeseriesResult rowResult = new TimeseriesResult(resultTimeStamp);
             Map<String, String> sqlResults = new HashMap<>();
 
-            for (int i = timeGranularity + 1; i <= resultSetMetaData.getColumnCount(); i++) {
+            int lastTimeIndex = TimeConverter.getDatePartFunctions(druidQuery.getGranularity()).size();
+            for (int i = lastTimeIndex + 1; i <= resultSetMetaData.getColumnCount(); i++) {
                 String columnName = resultSetMetaData.getColumnName(i).replace(ALIAS, "");
                 String val = resultSet.getString(i);
                 sqlResults.put(columnName, val);
@@ -219,8 +216,8 @@ public class SQLConverter implements SqlBackedClient {
 
         // create filters to only select results within the given intervals
         List<RexNode> timeFilters = druidQuery.getIntervals().stream().map(interval -> {
-            Timestamp start = TimeUtils.timestampFromMillis(interval.getStartMillis());
-            Timestamp end = TimeUtils.timestampFromMillis(interval.getEndMillis());
+            Timestamp start = TimestampUtils.timestampFromMillis(interval.getStartMillis());
+            Timestamp end = TimestampUtils.timestampFromMillis(interval.getEndMillis());
 
             return builder.call(
                     SqlStdOperatorTable.AND,
@@ -269,7 +266,7 @@ public class SQLConverter implements SqlBackedClient {
 
             builder.aggregate(
                     builder.groupKey(
-                            TimeConverter.getGroupByForGranularity(builder, druidQuery.getGranularity(), timeCol)
+                            TimeConverter.buildGroupBy(builder, druidQuery.getGranularity(), timeCol)
                             // todo groupBy queries will need dimensions here
                     ),
                     druidAggregations
@@ -281,7 +278,7 @@ public class SQLConverter implements SqlBackedClient {
         // todo check descending
         //this makes a group by on all the parts from the time sublist
         // somewhat bad, todo look into getting rexnode references and using them down here
-        int timeGranularity = TimeConverter.getTimeGranularity(druidQuery.getGranularity());
+        int timeGranularity = TimeConverter.getDatePartFunctions(druidQuery.getGranularity()).size();
         builder.sort(builder.fields().subList(0, timeGranularity)); // order by same time as grouping
 
         // =============================================================================================
