@@ -4,6 +4,9 @@ package com.yahoo.bard.webservice.data.config.metric;
 
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
+import com.yahoo.bard.webservice.druid.serializers.DimensionToNameSerializer;
+
+import org.slf4j.LoggerFactory;
 
 /**
  * Defines the core interactions for loading metrics into a metric dictionary.
@@ -18,7 +21,12 @@ public interface MetricLoader {
      * @deprecated in favor of loadMetricDictionary(MetricDictionary, DimensionDictionary)
      */
     @Deprecated
-    void loadMetricDictionary(MetricDictionary metricDictionary);
+    default void loadMetricDictionary(MetricDictionary metricDictionary) {
+        String message = "The method loadMetricDictionary(MetricDictionary, DimensionDictionary) must be implemented " +
+                "for MetricLoader";
+        LoggerFactory.getLogger(DimensionToNameSerializer.class).error(message);
+        throw new RuntimeException(message);
+    }
 
     /**
      * Load metrics and populate the metric dictionary with dimension dictionary for dimension dependent metrics.
