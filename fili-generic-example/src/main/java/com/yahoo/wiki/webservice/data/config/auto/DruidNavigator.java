@@ -2,12 +2,14 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.auto;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.util.IntervalUtils;
+
+import com.fasterxml.jackson.databind.JsonNode;
+
 import org.asynchttpclient.Response;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -67,7 +69,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      * ["wikiticker"]
      */
     private void loadAllDatasources() {
-        final List<Future<Response>> fullTableResponses = new ArrayList<>();
+        List<Future<Response>> fullTableResponses = new ArrayList<>();
         Future<Response> responseFuture = queryDruid(rootNode -> {
             if (rootNode.isArray()) {
                 rootNode.forEach(jsonNode -> {

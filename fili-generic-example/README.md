@@ -94,7 +94,12 @@ Here are some sample queries that you can run to verify your server:
 ## Importing and Running in IntelliJ
 
 1. In IntelliJ, go to `File -> Open`
+
 2. Select the `pom.xml` file at the root of the project
+    
+    **NOTE:** if you're running this locally and haven't changed any settings (like the Wikipedia example) 
+    you can **skip step 3**.
 3. Under `src/main/resources/applicationConfig.properties`, change `bard__non_ui_druid_broker`, 
-`bard__ui_druid_broker`, `bard__druid_coord`, and other properties as needed.
+`bard__ui_druid_broker`, `bard__druid_coord`, and other properties.
+    
 4. Run `GenericMain` which can be found in `fili-generic-example` (e.g. right click and choose run)
