@@ -4,7 +4,7 @@ package com.yahoo.bard.webservice.test;
 
 import static com.yahoo.bard.webservice.SQLConverter.THE_SCHEMA;
 
-import com.yahoo.bard.webservice.TimeUtils;
+import com.yahoo.bard.webservice.TimestampUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -15,15 +15,10 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.JDBCType;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -85,7 +80,7 @@ public class Database {
             preparedStatement.setInt(4, e.getAdded());
             preparedStatement.setTimestamp(
                     5,
-                    TimeUtils.timestampFromString(e.getTime())
+                    TimestampUtils.timestampFromString(e.getTime())
             );
             preparedStatement.setBoolean(6, e.getIsNew());
             preparedStatement.setBoolean(7, e.getIsRobot());
@@ -127,75 +122,6 @@ public class Database {
 
     public static DataSource getDataSource() {
         return JdbcSchema.dataSource(DATABASE_URL, org.h2.Driver.class.getName(), "", "");
-    }
-
-    /**
-     * Converts a {@link ResultSet} to string.
-     * From CalciteAssert
-     * */
-    public static class ResultSetFormatter {
-        final StringBuilder sb = new StringBuilder();
-
-        public ResultSetFormatter resultSet(ResultSet resultSet) throws SQLException {
-            return resultSet(resultSet, -1);
-        }
-
-        // result set cannot be reset after rows have been read, this consumes results by reading them
-        public ResultSetFormatter resultSet(ResultSet resultSet, int max)
-                throws SQLException {
-            ResultSetMetaData metaData = resultSet.getMetaData();
-            int count = 0;
-            while (resultSet.next() && (count < max || max < 0)) {
-                rowToString(resultSet, metaData);
-                sb.append("\n");
-                count++;
-            }
-            return this;
-        }
-
-        /** Converts one row to a string. */
-        ResultSetFormatter rowToString(
-                ResultSet resultSet,
-                ResultSetMetaData metaData
-        ) throws SQLException {
-            int n = metaData.getColumnCount();
-            if (n > 0) {
-                for (int i = 1; ; i++) {
-                    sb.append(metaData.getColumnLabel(i))
-                            .append("=")
-                            .append(adjustValue(resultSet.getString(i)));
-                    if (i == n) {
-                        break;
-                    }
-                    sb.append("; ");
-                }
-            }
-            return this;
-        }
-
-        protected String adjustValue(String string) {
-            return string;
-        }
-
-        public Collection<String> toStringList(
-                ResultSet resultSet,
-                Collection<String> list
-        ) throws SQLException {
-            final ResultSetMetaData metaData = resultSet.getMetaData();
-            while (resultSet.next()) {
-                rowToString(resultSet, metaData);
-                list.add(sb.toString());
-                sb.setLength(0);
-            }
-            return list;
-        }
-
-        /** Flushes the buffer and returns its previous contents. */
-        public String string() {
-            String s = sb.toString();
-            sb.setLength(0);
-            return s;
-        }
     }
 }
 

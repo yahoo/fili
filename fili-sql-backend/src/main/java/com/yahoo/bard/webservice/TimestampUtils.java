@@ -11,8 +11,8 @@ import java.util.TimeZone;
 /**
  * Created by hinterlong on 6/5/17.
  */
-public class TimeUtils {
-    private TimeUtils() {
+public class TimestampUtils {
+    private TimestampUtils() {
 
     }
 
@@ -25,6 +25,7 @@ public class TimeUtils {
     }
 
     public static Timestamp timestampFromMillis(long millis) {
+        // removes the current offset while creating timestamp because the time would get pushed back
         return new Timestamp(millis - TimeZone.getDefault().getOffset(new Date().getTime()));
     }
 }
