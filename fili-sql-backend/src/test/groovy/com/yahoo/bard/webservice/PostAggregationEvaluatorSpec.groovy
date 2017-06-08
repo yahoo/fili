@@ -6,7 +6,6 @@ import static com.yahoo.bard.webservice.helper.PostAggregator.*
 import static com.yahoo.bard.webservice.helper.Aggregator.*
 import static com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation.ArithmeticPostAggregationFunction.*
 
-
 import com.yahoo.bard.webservice.druid.model.postaggregation.SketchEstimatePostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchEstimatePostAggregation
@@ -27,7 +26,7 @@ class PostAggregationEvaluatorSpec extends Specification {
         fieldToValue.put(FIVE, "5")
     }
 
-    def "EvaluatePostAggregation"() {
+    def "Evaluate Post Aggregations "() {
         expect:
         Double result = PostAggregationEvaluator.evaluate(postAgg, fieldToValue)
         result == value
@@ -44,7 +43,7 @@ class PostAggregationEvaluatorSpec extends Specification {
         arithmetic(DIVIDE, field(sum(ONE)), constant(0)) | 0
     }
 
-    def "Expect fail"() {
+    def "Test unsupoorted post aggregations and bad inputs"() {
         when:
             Double result = PostAggregationEvaluator.evaluate(postAgg, fieldToValue)
 
@@ -52,12 +51,12 @@ class PostAggregationEvaluatorSpec extends Specification {
             thrown thrownException
 
         where:
-        postAgg                                                   | thrownException
-        arithmetic(DIVIDE, constant(1), constant(1), constant(1))    | IllegalArgumentException
-        arithmetic(MINUS, constant(1), constant(1), constant(1))     | IllegalArgumentException
-        new ThetaSketchEstimatePostAggregation("", null)           | UnsupportedOperationException
-        new ThetaSketchSetOperationPostAggregation("", null, null) | UnsupportedOperationException
-        new SketchSetOperationPostAggregation("", null, null)      | UnsupportedOperationException
-        new SketchEstimatePostAggregation("", null)                | UnsupportedOperationException
+        postAgg                                                                  | thrownException
+        arithmetic(DIVIDE, constant(1), constant(1), constant(1)) | IllegalArgumentException
+        arithmetic(MINUS, constant(1), constant(1), constant(1))                 | IllegalArgumentException
+        new ThetaSketchEstimatePostAggregation("", null)                         | UnsupportedOperationException
+        new ThetaSketchSetOperationPostAggregation("", null, null)               | UnsupportedOperationException
+        new SketchSetOperationPostAggregation("", null, null)                    | UnsupportedOperationException
+        new SketchEstimatePostAggregation("", null)                              | UnsupportedOperationException
     }
 }

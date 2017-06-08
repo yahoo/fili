@@ -23,11 +23,4 @@ class Aggregator {
     public static DoubleMinAggregation min(String name) {
         return new DoubleMinAggregation(name, name)
     }
-
-    public static ConstantPostAggregation constant(double d) {
-        return new ConstantPostAggregation(
-                "constantOf_" + d,
-                d
-        )
-    }
 }

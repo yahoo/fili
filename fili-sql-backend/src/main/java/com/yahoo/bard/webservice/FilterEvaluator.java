@@ -33,18 +33,11 @@ public class FilterEvaluator {
     }
 
     public static List<String> getDimensionNames(RelBuilder builder, Filter filter) {
-        Pair<RexNode, List<String>> filterAndDimensions = evaluate(builder, filter);
-        return filterAndDimensions.getRight();
+        return evaluate(builder, filter).getRight();
     }
 
-    public static void addFilter(RelBuilder builder, Filter filter) {
-        // todo look at caller, this may be moved there
-        Pair<RexNode, List<String>> filterAndDimensions = evaluate(builder, filter);
-        if (filter != null) {
-            builder.filter(
-                    filterAndDimensions.getLeft()
-            );
-        }
+    public static RexNode getfilterAsRexNode(RelBuilder builder, Filter filter) {
+        return evaluate(builder, filter).getLeft();
     }
 
     private static Pair<RexNode, List<String>> evaluate(RelBuilder builder, Filter filter) {
@@ -130,6 +123,7 @@ public class FilterEvaluator {
                         builder.literal("%" + valueToFind + "%")
                 );
             case InsensitiveContains:
+                // todo maybe look at SqlCollation
                 return builder.call(
                         SqlStdOperatorTable.LIKE,
                         builder.call(

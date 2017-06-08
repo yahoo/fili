@@ -2,6 +2,7 @@ package com.yahoo.bard.webservice.helper;
 
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation;
+import com.yahoo.bard.webservice.druid.model.postaggregation.ConstantPostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 
@@ -26,6 +27,13 @@ public class PostAggregator {
     public static FieldAccessorPostAggregation field(Aggregation aggregation) {
         return new FieldAccessorPostAggregation(
                 aggregation
+        );
+    }
+
+    public static ConstantPostAggregation constant(double d) {
+        return new ConstantPostAggregation(
+                "constantOf_" + d,
+                d
         );
     }
 }
