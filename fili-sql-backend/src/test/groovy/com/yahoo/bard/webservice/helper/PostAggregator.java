@@ -12,7 +12,7 @@ import java.util.Arrays;
  */
 public class PostAggregator {
 
-    static ArithmeticPostAggregation arithmetic(
+    public static ArithmeticPostAggregation arithmetic(
             ArithmeticPostAggregation.ArithmeticPostAggregationFunction fn,
             PostAggregation... postAggregation
     ) {
@@ -23,7 +23,7 @@ public class PostAggregator {
         );
     }
 
-    static FieldAccessorPostAggregation field(Aggregation aggregation) {
+    public static FieldAccessorPostAggregation field(Aggregation aggregation) {
         return new FieldAccessorPostAggregation(
                 aggregation
         );

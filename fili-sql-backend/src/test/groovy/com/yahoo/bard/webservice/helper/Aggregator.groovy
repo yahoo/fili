@@ -12,15 +12,15 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.ConstantPostAggrega
  */
 class Aggregator {
 
-    static DoubleSumAggregation sum(String name) {
+    public static DoubleSumAggregation sum(String name) {
         return new DoubleSumAggregation(name, name)
     }
 
-    static DoubleMaxAggregation max(String name) {
+    public static DoubleMaxAggregation max(String name) {
         return new DoubleMaxAggregation(name, name)
     }
 
-    static DoubleMinAggregation min(String name) {
+    public static DoubleMinAggregation min(String name) {
         return new DoubleMinAggregation(name, name)
     }
 

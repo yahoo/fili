@@ -37,6 +37,7 @@ public class Database {
 
         List<WikitickerEntry> entries = readJsonFile();
 
+        // todo try to move this out or see if we don't need a schema
         connection.createStatement().execute("CREATE SCHEMA " + THE_SCHEMA + ";" + " SET SCHEMA " + THE_SCHEMA);
         Statement s = connection.createStatement();
         s.execute("CREATE TABLE WIKITICKER (ID INT PRIMARY KEY," +
@@ -107,8 +108,7 @@ public class Database {
     }
 
     public static List<WikitickerEntry> readJsonFile() throws IOException {
-        ClassLoader classLoader = Database.class.getClassLoader();
-        File file = new File(classLoader.getResource(WIKITICKER_JSON_DATA).getFile());
+        File file = new File(Database.class.getClassLoader().getResource(WIKITICKER_JSON_DATA).getFile());
 
         String json = FileUtils.readFileToString(file);
         List<WikitickerEntry> entries = new ArrayList<>();

@@ -13,8 +13,7 @@ import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter
  * Created by hinterlong on 6/7/17.
  */
 class Filters {
-    // todo is this the appropriate place for helpers
-    static SearchFilter search(String dimension) {
+    public static SearchFilter search(String dimension) {
         return new SearchFilter(
                 SimpleDruidQueryBuilder.getDimension(dimension),
                 SearchFilter.QueryType.Contains,
@@ -22,7 +21,7 @@ class Filters {
         )
     }
 
-    static SearchFilter search(String dimension, String search) {
+    public static SearchFilter search(String dimension, String search) {
         return new SearchFilter(
                 SimpleDruidQueryBuilder.getDimension(dimension),
                 SearchFilter.QueryType.Contains,
@@ -30,22 +29,22 @@ class Filters {
         )
     }
 
-    static SelectorFilter select(String dimension, String search) {
+    public static SelectorFilter select(String dimension, String search) {
         return new SelectorFilter(
                 SimpleDruidQueryBuilder.getDimension(dimension),
                 search
         )
     }
 
-    static NotFilter not(Filter filter) {
+    public static NotFilter not(Filter filter) {
         return new NotFilter(filter)
     }
 
-    static AndFilter and(Filter... filter) {
+    public static AndFilter and(Filter... filter) {
         return new AndFilter(filter as List<Filter>)
     }
 
-    static OrFilter or(Filter... filter) {
+    public static OrFilter or(Filter... filter) {
         return new OrFilter(filter as List<Filter>)
     }
 }

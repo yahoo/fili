@@ -51,27 +51,27 @@ public class DatabaseHelper {
      * From CalciteAssert
      * */
     public static class ResultSetFormatter {
-        final StringBuilder sb = new StringBuilder();
 
-        public ResultSetFormatter resultSet(ResultSet resultSet) throws SQLException {
-            return resultSet(resultSet, -1);
+        public static StringBuilder format(ResultSet resultSet) throws SQLException {
+            return format(resultSet, -1);
         }
 
         // result set cannot be reset after rows have been read, this consumes results by reading them
-        public ResultSetFormatter resultSet(ResultSet resultSet, int max)
+        public static StringBuilder format(ResultSet resultSet, int max)
                 throws SQLException {
+            StringBuilder sb = new StringBuilder();
             ResultSetMetaData metaData = resultSet.getMetaData();
             int count = 0;
             while (resultSet.next() && (count < max || max < 0)) {
-                rowToString(resultSet, metaData);
-                sb.append("\n");
+                rowToString(sb, resultSet, metaData).append("\n");
                 count++;
             }
-            return this;
+            return sb;
         }
 
         /** Converts one row to a string. */
-        ResultSetFormatter rowToString(
+        private static StringBuilder rowToString(
+                StringBuilder sb,
                 ResultSet resultSet,
                 ResultSetMetaData metaData
         ) throws SQLException {
@@ -80,38 +80,14 @@ public class DatabaseHelper {
                 for (int i = 1; ; i++) {
                     sb.append(metaData.getColumnLabel(i))
                             .append("=")
-                            .append(adjustValue(resultSet.getString(i)));
+                            .append(resultSet.getString(i));
                     if (i == n) {
                         break;
                     }
                     sb.append("; ");
                 }
             }
-            return this;
-        }
-
-        protected String adjustValue(String string) {
-            return string;
-        }
-
-        public Collection<String> toStringList(
-                ResultSet resultSet,
-                Collection<String> list
-        ) throws SQLException {
-            final ResultSetMetaData metaData = resultSet.getMetaData();
-            while (resultSet.next()) {
-                rowToString(resultSet, metaData);
-                list.add(sb.toString());
-                sb.setLength(0);
-            }
-            return list;
-        }
-
-        /** Flushes the buffer and returns its previous contents. */
-        public String string() {
-            String s = sb.toString();
-            sb.setLength(0);
-            return s;
+            return sb;
         }
     }
 }

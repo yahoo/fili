@@ -12,13 +12,14 @@ import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
+import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleSumAggregation
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
 import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation
-import com.yahoo.bard.webservice.druid.model.postaggregation.ConstantPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation
+import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery
 import com.yahoo.bard.webservice.metadata.DataSourceMetadata
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
@@ -28,64 +29,49 @@ import com.yahoo.bard.webservice.table.StrictPhysicalTable
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
 import com.yahoo.bard.webservice.util.Utils
 
-import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.joda.time.Interval
+
+import java.util.stream.Collectors
 
 /**
  * Created by hinterlong on 6/7/17.
  */
 class SimpleDruidQueryBuilder {
-
-    private static final String METRIC1 = "ADDED";
-    private static final String METRIC2 = "DELETED";
-    private static final String METRIC3 = "DELTA";
-    private static final String DIMENSION1 = "COMMENT";
+    public static final String WIKITICKER = "WIKITICKER"
+    public static final String IS_ROBOT = "IS_ROBOT"
+    public static final String COMMENT = "COMMENT"
+    public static final String ADDED = "ADDED";
+    public static final String DELETED = "DELETED";
+    public static final String DELTA = "DELTA";
+    public static final String START = "2015-09-12T00:00:00.000Z"
+    public static final String END = "2015-09-13T00:00:00.000Z"
 
     private Simple() {
     }
 
-    public static TimeSeriesQuery timeSeriesQuery(String name, Filter filter = null, DefaultTimeGrain timeGrain) {
+
+    public static TimeSeriesQuery timeSeriesQuery(
+            String name,
+            Filter filter,
+            DefaultTimeGrain timeGrain,
+            List<String> metrics,
+            List<String> dimensions,
+            List<Aggregation> aggregations,
+            List<PostAggregation> postAggs,
+            List<Interval> intervals
+    ) {
         return new TimeSeriesQuery(
-                dataSource(name),
+                dataSource(name, metrics, dimensions),
                 timeGrain,
                 filter,
-                Arrays.asList(
-                        new DoubleSumAggregation(METRIC1, METRIC1),
-                        new DoubleSumAggregation(METRIC2, METRIC2),
-                        new DoubleSumAggregation(METRIC3, METRIC3)
-                ),
-                Arrays.asList(
-                        // badTest = manDelta + one + negativeOne = manDelta ---> manDelta = added + deleted = delta
-                        new ArithmeticPostAggregation(
-                                "badTest",
-                                ArithmeticPostAggregation.ArithmeticPostAggregationFunction.PLUS,
-                                Arrays.asList(
-                                        new FieldAccessorPostAggregation(
-                                                new DoubleSumAggregation(
-                                                        METRIC1,
-                                                        METRIC1
-                                                )
-                                        ),
-                                        new FieldAccessorPostAggregation(
-                                                new DoubleSumAggregation(
-                                                        METRIC2,
-                                                        METRIC2
-                                                )
-                                        )
-                                )
-                        )
-                ),
-                Arrays.asList(
-                        new Interval(
-                                DateTime.parse("2015-09-12T00:00:00.000Z"),
-                                DateTime.parse("2015-09-15T00:50:00.000Z")
-                        )
-                )
+                aggregations,
+                postAggs,
+                intervals
         );
     }
 
-    public static DataSource dataSource(String name) {
+    public static DataSource dataSource(String name, List<String> metrics, List<String> dimensions) {
         ZonedTimeGrain zonedTimeGrain = new ZonedTimeGrain(DefaultTimeGrain.DAY, DateTimeZone.UTC);
         Set<Column> columns = setOf();
         Map<String, String> logicalToPhysicalColumnNames = Collections.emptyMap();
@@ -96,6 +82,8 @@ class SimpleDruidQueryBuilder {
                 new DataSourceMetadata(name, Collections.emptyMap(), Collections.emptyList())
         );
 
+        Collection<String> metricsAndDimensions = new ArrayList<>(metrics);
+        metricsAndDimensions.addAll(dimensions);
         return new TableDataSource(
                 new ConstrainedTable(
                         new StrictPhysicalTable(
@@ -107,16 +95,22 @@ class SimpleDruidQueryBuilder {
                         ),
                         new DataSourceConstraint(
                                 setOf(), // create dimensions to test grouping those
-                                setOf(getDimension(DIMENSION1)),
+                                setOf(getDimensions(dimensions)),
                                 setOf(),
-                                setOf(METRIC1, METRIC2, METRIC3),
+                                setOf(metrics),
                                 setOf(),
-                                setOf(DIMENSION1),
-                                setOf(METRIC1, METRIC2, METRIC3, DIMENSION1),
+                                setOf(dimensions),
+                                setOf(metricsAndDimensions),
                                 Collections.emptyMap()
                         )
                 )
         );
+    }
+
+    public static List<Dimension> getDimensions(List<String> dimensions) {
+        return Arrays.asList(dimensions).stream()
+                .map { getDimension(it as String) }
+                .collect(Collectors.toList());
     }
 
     public static Dimension getDimension(String dimension) {
@@ -138,4 +132,29 @@ class SimpleDruidQueryBuilder {
         return e == null ? Collections.emptySet() : new HashSet<>(Arrays.asList(e));
     }
 
+    public static <T> Set<T> setOf(List<T> e) {
+        return new HashSet<T>(e);
+    }
+
+    public static Object o() {
+        // badTest = manDelta + one + negativeOne = manDelta ---> manDelta = added + deleted = delta
+        return new ArithmeticPostAggregation(
+                "badTest",
+                ArithmeticPostAggregation.ArithmeticPostAggregationFunction.PLUS,
+                Arrays.asList(
+                        new FieldAccessorPostAggregation(
+                                new DoubleSumAggregation(
+                                        ADDED,
+                                        ADDED
+                                )
+                        ),
+                        new FieldAccessorPostAggregation(
+                                new DoubleSumAggregation(
+                                        DELETED,
+                                        DELETED
+                                )
+                        )
+                )
+        )
+    }
 }

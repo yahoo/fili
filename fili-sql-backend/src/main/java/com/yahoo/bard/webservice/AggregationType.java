@@ -28,7 +28,7 @@ public enum AggregationType {
                 return a;
             }
         }
-        throw new InputMismatchException("No corresponding type for " + type);
+        throw new IllegalArgumentException("No corresponding type for " + type);
     }
 
     public static RelBuilder.AggCall getAggregation(
@@ -52,8 +52,8 @@ public enum AggregationType {
 
         if (aggFunction != null) {
             return builder.aggregateCall(aggFunction, false, null, alias + fieldName, builder.field(fieldName));
+        } else {
+            throw new UnsupportedOperationException("No corresponding AggCall for " + a);
         }
-
-        throw new UnsupportedOperationException("No corresponding AggCall for " + a);
     }
 }
