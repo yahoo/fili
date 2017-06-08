@@ -55,7 +55,7 @@ import javax.sql.DataSource;
 public class SQLConverter implements SqlBackedClient {
     private static final Logger LOG = LoggerFactory.getLogger(SQLConverter.class);
     public static final String THE_SCHEMA = "DEFAULT_SCHEMA";
-    private static final String ALIAS = "ALIAS_";
+    private static final String ALIAS = "__";
     private static final ObjectMapper JSON_WRITER = new ObjectMapper();
     private final RelBuilder builder;
     private final RelToSqlConverter relToSql;
@@ -100,8 +100,7 @@ public class SQLConverter implements SqlBackedClient {
         return query(druidQuery, generatedSql);
     }
 
-    private JsonNode query(TimeSeriesQuery druidQuery, String sql)
-            throws SQLException {
+    private JsonNode query(TimeSeriesQuery druidQuery, String sql) throws SQLException {
         LOG.debug("Executing \n{}", sql);
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
              ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -118,14 +117,10 @@ public class SQLConverter implements SqlBackedClient {
      *
      * @param druidQuery the druid query to be made.
      * @param resultSet  the result set of the druid query.
-     * @param timeGranularity
+     *
      * @return druid-like result from query.
      */
-    private JsonNode read(
-            TimeSeriesQuery druidQuery,
-            ResultSet resultSet
-    )
-            throws SQLException {
+    private JsonNode read(TimeSeriesQuery druidQuery, ResultSet resultSet) throws SQLException {
 
         Map<String, Function<String, Object>> resultMapper = druidQuery.getAggregations()
                 .stream()
@@ -173,8 +168,7 @@ public class SQLConverter implements SqlBackedClient {
         return JSON_WRITER.valueToTree(timeseriesResultDruidResponse);
     }
 
-    private String buildTimeSeriesQuery(Connection connection, TimeSeriesQuery druidQuery)
-            throws SQLException {
+    private String buildTimeSeriesQuery(Connection connection, TimeSeriesQuery druidQuery) throws SQLException {
         String name = druidQuery.getDataSource().getPhysicalTable().getName();
         String timeCol = DatabaseHelper.getDateTimeColumn(connection, name).toUpperCase();
 
@@ -184,10 +178,8 @@ public class SQLConverter implements SqlBackedClient {
 
         // =============================================================================================
 
-        // building filter and getting dimensions
+        // find dimensions which are needed in filters
         List<String> dimensions = FilterEvaluator.getDimensionNames(builder, druidQuery.getFilter());
-
-        // =============================================================================================
 
         List<RexInputRef> selectedColumns = druidQuery.getAggregations()
                 .stream()
@@ -204,7 +196,7 @@ public class SQLConverter implements SqlBackedClient {
         selectedColumns.addAll(dimensionsInFilters);
 
         LOG.debug("Selecting needed dimensions");
-        builder.project(selectedColumns);
+        builder.project(selectedColumns); // select all columns needed for filters and aggregations
 
         // =============================================================================================
 
@@ -248,7 +240,6 @@ public class SQLConverter implements SqlBackedClient {
 
         // =============================================================================================
 
-        //are there any custom aggregations or can we just list them all in an enum?
         if (druidQuery.getAggregations().size() != 0) {
             LOG.debug("Adding aggregations { {} }", druidQuery.getAggregations());
 
@@ -275,7 +266,7 @@ public class SQLConverter implements SqlBackedClient {
 
         // =============================================================================================
 
-        // todo check descending
+        // todo check for sorting from druidQuery
         //this makes a group by on all the parts from the time sublist
         // somewhat bad, todo look into getting rexnode references and using them down here
         int timeGranularity = TimeConverter.getDatePartFunctions(druidQuery.getGranularity()).size();
@@ -283,7 +274,7 @@ public class SQLConverter implements SqlBackedClient {
 
         // =============================================================================================
 
-        // NOTE: does not include missing interval meta information
+        // NOTE: does not include missing interval or meta information
         // this will have to be implemented later if at all since we don't know about partial data
 
         return relToSql(builder);

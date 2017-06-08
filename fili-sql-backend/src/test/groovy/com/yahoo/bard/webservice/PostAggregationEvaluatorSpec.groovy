@@ -45,8 +45,6 @@ class PostAggregationEvaluatorSpec extends Specification {
     }
 
     def "Expect fail"() {
-        setup:
-
         when:
             Double result = PostAggregationEvaluator.evaluate(postAgg, fieldToValue)
 
