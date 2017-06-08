@@ -9,44 +9,44 @@ import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Optional;
+
 /**
  * Caching config analyzer.
  */
-public class CachingMode {
-    private static final Logger LOG = LoggerFactory.getLogger(CachingMode.class);
+public abstract class CacheMode {
+    private static final Logger LOG = LoggerFactory.getLogger(CacheMode.class);
 
     private static final boolean CACHE_V1 = BardFeatureFlag.DRUID_CACHE.isOn();
     private static final boolean CACHE_V2 = BardFeatureFlag.DRUID_CACHE_V2.isOn();
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
-    private static final int DRUID_UNCOVERED_INTERVAL_LIMIT = SYSTEM_CONFIG.getIntProperty(
-            SYSTEM_CONFIG.getPackageVariableName("druid_uncovered_interval_limit"),
-            0
+    private static final String QUERY_RESPONSE_CACHING_STRATEGY = SYSTEM_CONFIG.getStringProperty(
+            SYSTEM_CONFIG.getPackageVariableName("query_response_caching_strategy"),
+            "None"
     );
-    private static final String NO_CACHING = "No caching";
-    private static final String TTL_CACHING = "TTL caching only";
-    private static final String LOCAL_SIGNATURE_CACHING = "Local signature caching only";
-    private static final String ETAG_CACHING = "Etag caching only";
+    private static final String NO_CACHE = "None";
+    private static final String TTL_CACHE = "TtlOnly";
+    private static final String LOCAL_SIGNATURE_CACHE = "LocalSignature";
+    private static final String ETAG_CACHE = "ETag";
 
     /**
      * Returns the caching mode in String.
      *
      * @return the caching mode in String
      */
-    public static String getCachingMode() {
-        if (!CACHE_V1 && !CACHE_V2 && DRUID_UNCOVERED_INTERVAL_LIMIT <= 0) {
-            return NO_CACHING;
-        } else if (CACHE_V1 && !CACHE_V2 && DRUID_UNCOVERED_INTERVAL_LIMIT <= 0) {
-            return TTL_CACHING;
-        } else if (!CACHE_V1 && CACHE_V2 && DRUID_UNCOVERED_INTERVAL_LIMIT <= 0) {
-            return LOCAL_SIGNATURE_CACHING;
-        } else if (!CACHE_V1 && !CACHE_V2 && DRUID_UNCOVERED_INTERVAL_LIMIT > 0) {
-            return ETAG_CACHING;
-        } else if ((CACHE_V1 || CACHE_V2) && DRUID_UNCOVERED_INTERVAL_LIMIT > 0) {
+    public static Optional<String> getCacheMode() {
+        if (CACHE_V1 && !CACHE_V2 && QUERY_RESPONSE_CACHING_STRATEGY.equals(NO_CACHE)) {
+            return Optional.of(TTL_CACHE);
+        } else if (!CACHE_V1 && CACHE_V2 && QUERY_RESPONSE_CACHING_STRATEGY.equals(NO_CACHE)) {
+            return Optional.of(LOCAL_SIGNATURE_CACHE);
+        } else if (!CACHE_V1 && !CACHE_V2) {
+            return QUERY_RESPONSE_CACHING_STRATEGY.equals(NO_CACHE)
+                    ? Optional.empty()
+                    : Optional.of(QUERY_RESPONSE_CACHING_STRATEGY);
+        } else {
             String message = "Etag caching cannot coexist with TTL or local signature caching";
             LOG.error(message);
             throw new RuntimeException(message);
-        } else {
-            return ETAG_CACHING;
         }
     }
 
@@ -57,20 +57,19 @@ public class CachingMode {
         /**
          * No caching is configured.
          */
-        NONE(NO_CACHING),
+        NONE(NO_CACHE),
         /**
          * Use only TTL caching.
          */
-        TTL_ONLY(TTL_CACHING),
-
+        TTL_ONLY(TTL_CACHE),
         /**
          * Use only local signature caching.
          */
-        LOCAL_SIGNATURE(LOCAL_SIGNATURE_CACHING),
+        LOCAL_SIGNATURE(LOCAL_SIGNATURE_CACHE),
         /**
          * Use only etag caching.
          */
-        ETAG(ETAG_CACHING);
+        ETAG(ETAG_CACHE);
 
         private final String mode;
 

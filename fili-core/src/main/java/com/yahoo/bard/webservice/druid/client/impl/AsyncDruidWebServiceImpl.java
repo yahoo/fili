@@ -7,8 +7,6 @@ import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.REQU
 import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.RESPONSE_WORKFLOW_TIMER;
 
 import com.yahoo.bard.webservice.application.MetricRegistryFactory;
-import com.yahoo.bard.webservice.config.SystemConfig;
-import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.druid.client.DruidServiceConfig;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
@@ -20,6 +18,7 @@ import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.DruidResponse;
 import com.yahoo.bard.webservice.util.FailedFuture;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
+import com.yahoo.bard.webservice.web.handlers.workflow.CacheMode;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
@@ -55,11 +54,6 @@ import javax.ws.rs.core.Response.Status;
 public class AsyncDruidWebServiceImpl implements DruidWebService {
     private static final Logger LOG = LoggerFactory.getLogger(AsyncDruidWebServiceImpl.class);
     private static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry();
-    private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
-    private static final boolean DRUID_ETAG_CACHE_ENABLED = SYSTEM_CONFIG.getBooleanProperty(
-            SYSTEM_CONFIG.getPackageVariableName("druid_etag_cache_enabled"),
-            true
-    );
 
     private final AsyncHttpClient webClient;
     private final ObjectWriter writer;
@@ -466,7 +460,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
     /**
      * Return true if response status code indicates an error.
      * <p>
-     * If etag cache is enabled, i.e. DRUID_ETAG_CACHE_ENABLED is set to true, no error on 200 OK and 304 NOT-MODIFIED.
+     * If etag cache is enabled, no error on 200 OK and 304 NOT-MODIFIED.
      * Otherwise, no error only on 200 OK.
      *
      * @param status  The Status object that contains status code to be checked
@@ -474,7 +468,8 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
      * @return true if the status code indicates an error
      */
     protected boolean hasError(Status status) {
-        return DRUID_ETAG_CACHE_ENABLED
+        return CacheMode.getCacheMode().isPresent() &&
+                CacheMode.getCacheMode().get().equals(CacheMode.Mode.ETAG.getMode())
                 ? status != Status.OK && status != Status.NOT_MODIFIED
                 : status != Status.OK;
     }

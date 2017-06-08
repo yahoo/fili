@@ -89,6 +89,7 @@ import com.yahoo.bard.webservice.web.NoOpRequestMapper;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.SlicesApiRequest;
 import com.yahoo.bard.webservice.web.TablesApiRequest;
+import com.yahoo.bard.webservice.web.handlers.workflow.CacheMode;
 import com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow;
 import com.yahoo.bard.webservice.web.handlers.workflow.RequestWorkflowProvider;
 import com.yahoo.bard.webservice.web.util.QueryWeightUtil;
@@ -767,6 +768,15 @@ public abstract class AbstractBinderFactory implements BinderFactory {
             // not used, but Jersey required a binding
             return new StubDataCache<>();
         }
+    }
+
+    /**
+     * Returns the caching mode in String.
+     *
+     * @return the caching mode in String
+     */
+    protected static String getCacheMode() {
+        return CacheMode.getCacheMode().orElse(CacheMode.Mode.NONE.getMode());
     }
 
     /**

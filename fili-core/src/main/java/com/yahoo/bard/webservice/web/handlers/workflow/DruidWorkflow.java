@@ -108,7 +108,6 @@ public class DruidWorkflow implements RequestWorkflowProvider {
         DataRequestHandler uiHandler = new AsyncWebServiceRequestHandler(uiWebService, mapper);
         DataRequestHandler nonUiHandler = new AsyncWebServiceRequestHandler(nonUiWebService, mapper);
 
-        String cachingMode = CachingMode.getCachingMode();
         // If Druid sends uncoveredIntervals, missing intervals are checked before sending the request
         if (druidUncoveredIntervalLimit > 0) {
             uiHandler = new DruidPartialDataRequestHandler(uiHandler);
