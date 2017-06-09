@@ -12,19 +12,30 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by hinterlong on 6/1/17.
+ * Row of results in a TopNQuery.
+ * todo: use and test
  */
 @JsonPropertyOrder({"timestamp", "result"})
-public class TopNResult extends DruidResult {
+public class TopNResultRow extends DruidResultRow {
 
     @JsonProperty
     @JsonFormat(shape = JsonFormat.Shape.ARRAY)
     private final List<Object> result = new ArrayList<>();
 
-    public TopNResult(DateTime timestamp) {
+    /**
+     * Creates a row with the given timestamp.
+     *
+     * @param timestamp  The timestamp to set the result for.
+     */
+    public TopNResultRow(DateTime timestamp) {
         super(timestamp);
     }
 
+    /**
+     * Adds an object to the list of results.
+     *
+     * @param value  The result to add.
+     */
     public void add(Object value) {
         result.add(value);
     }

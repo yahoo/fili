@@ -18,6 +18,7 @@ public interface SqlBackedClient {
      * to what druid would respond with.
      *
      * @param druidQuery  The query to be executed.
+     *
      * @return a json result replicating druid's responses.
      */
     Future<JsonNode> executeQuery(DruidQuery<?> druidQuery);

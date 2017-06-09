@@ -11,19 +11,29 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by hinterlong on 6/1/17.
+ * Row of results in a {@link com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery}.
  */
 @JsonPropertyOrder({"timestamp", "result"})
-public class TimeseriesResult extends DruidResult {
+public class TimeseriesResultRow extends DruidResultRow {
     @JsonProperty
     private final Map<String, Object> result = new HashMap<>();
 
-    public TimeseriesResult(DateTime timestamp) {
+    /**
+     * Creates a row with the given timestamp.
+     *
+     * @param timestamp  The timestamp to set the result for.
+     */
+    public TimeseriesResultRow(DateTime timestamp) {
         super(timestamp);
     }
 
+    /**
+     * Adds a json key/value pair to the row.
+     *
+     * @param key  The key to be added.
+     * @param value  The value of the key.
+     */
     public void add(String key, Object value) {
         result.put(key, value);
     }
-
 }

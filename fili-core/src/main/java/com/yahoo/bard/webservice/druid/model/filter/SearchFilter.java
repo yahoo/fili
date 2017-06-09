@@ -119,6 +119,6 @@ public class SearchFilter extends DimensionalFilter {
         SearchFilter other = (SearchFilter) obj;
         return
                 super.equals(obj) &&
-                        Objects.equals(query, other.query);
+                Objects.equals(query, other.query);
     }
 }
