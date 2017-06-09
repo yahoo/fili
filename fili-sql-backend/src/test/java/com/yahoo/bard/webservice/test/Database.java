@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.test;
 
-import static com.yahoo.bard.webservice.SQLConverter.THE_SCHEMA;
+import static com.yahoo.bard.webservice.SqlConverter.THE_SCHEMA;
 
 import com.yahoo.bard.webservice.TimestampUtils;
 
@@ -23,11 +23,22 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+/**
+ * Simple, in-memory database with the example wikiticker data loaded.
+ */
 public class Database {
     private static final String DATABASE_URL = "jdbc:h2:mem:test";
     private static final String WIKITICKER_JSON_DATA = "wikiticker-2015-09-12-sampled.json";
     private static Connection connection;
 
+    /**
+     * Gets an in memory database with the {@link WikitickerEntry} from the example data.
+     *
+     * @return the connection to the database.
+     *
+     * @throws SQLException if can't create database correctly.
+     * @throws IOException if can't read example data file.
+     */
     public static Connection getDatabase() throws SQLException, IOException {
         if (connection == null) {
             connection = DriverManager.getConnection(DATABASE_URL);
@@ -107,6 +118,13 @@ public class Database {
         return connection;
     }
 
+    /**
+     * Reads the json file of example data as List of {@link WikitickerEntry}.
+     *
+     * @return a list of entries.
+     *
+     * @throws IOException if can't read file.
+     */
     public static List<WikitickerEntry> readJsonFile() throws IOException {
         File file = new File(Database.class.getClassLoader().getResource(WIKITICKER_JSON_DATA).getFile());
 
@@ -120,8 +138,12 @@ public class Database {
         return entries;
     }
 
+    /**
+     * Gets a {@link DataSource} of for the wikiticker database.
+     *
+     * @return the datasource.
+     */
     public static DataSource getDataSource() {
         return JdbcSchema.dataSource(DATABASE_URL, org.h2.Driver.class.getName(), "", "");
     }
 }
-

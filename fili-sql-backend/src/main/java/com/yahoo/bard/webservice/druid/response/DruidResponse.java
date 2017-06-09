@@ -8,23 +8,34 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by hinterlong on 5/31/17.
+ * A response which serializes to an equivalent DruidResponse.
+ *
+ * @param <Row>  The type of {@link DruidResultRow} to make responses for.
  */
 @JsonSerialize(using = DruidResponseSerializer.class)
-public class DruidResponse<E extends DruidResult> {
-    /**
-     * todo figure out druid response layout
-     * TimeBoundary  -> TimeseriesResult?
+public class DruidResponse<Row extends DruidResultRow> {
+    /*
+      todo figure out druid response layout
+      TimeBoundary  same as  TimeseriesResultRow?
      */
 
-    private final List<E> results = new ArrayList<>();
+    private final List<Row> results = new ArrayList<>();
 
-    public void add(E e) {
-        results.add(e);
+    /**
+     * Adds a row to the list of results.
+     *
+     * @param row  The row to be added.
+     */
+    public void add(Row row) {
+        results.add(row);
     }
 
-    public List<E> getResults() {
+    /**
+     * Gets the list of results for this response.
+     *
+     * @return the results.
+     */
+    public List<Row> getResults() {
         return results;
     }
-
 }

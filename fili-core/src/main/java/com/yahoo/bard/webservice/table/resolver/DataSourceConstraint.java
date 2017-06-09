@@ -71,7 +71,7 @@ public class DataSourceConstraint {
      * @param allColumnNames  Set of all column names
      * @param apiFilters  Map of dimension to its set of API filters
      */
-    public DataSourceConstraint(
+    protected DataSourceConstraint(
             Set<Dimension> requestDimensions,
             Set<Dimension> filterDimensions,
             Set<Dimension> metricDimensions,

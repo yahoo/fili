@@ -9,13 +9,18 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
 /**
- * Created by hinterlong on 6/1/17.
+ * A row of results in a Druid Response.
  */
-public class DruidResult {
+public abstract class DruidResultRow {
     @JsonIgnore
     public final DateTime timestamp;
 
-    public DruidResult(DateTime timestamp) {
+    /**
+     * Creates a DruidResultRow at the given timestamp.
+     *
+     * @param timestamp  The timestamp to be included in serialization of a response.
+     */
+    public DruidResultRow(DateTime timestamp) {
         this.timestamp = timestamp;
     }
 

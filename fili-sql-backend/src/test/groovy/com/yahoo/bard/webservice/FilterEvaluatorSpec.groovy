@@ -31,7 +31,7 @@ class FilterEvaluatorSpec extends Specification {
     @Unroll
     def "GetDimensionNames"() {
         setup:
-        RelBuilder builder = SQLConverter.builder(CONNECTION, Database.getDataSource())
+        RelBuilder builder = SqlConverter.builder(CONNECTION, Database.getDataSource())
         builder.scan(TABLE_NAME)
         def rexNodes = dimensions.stream()
                 .map { builder.field(it) }

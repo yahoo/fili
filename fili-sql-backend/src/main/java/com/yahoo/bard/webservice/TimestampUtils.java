@@ -9,23 +9,47 @@ import java.util.Date;
 import java.util.TimeZone;
 
 /**
- * Created by hinterlong on 6/5/17.
+ * Utility function for creating timestamps.
  */
 public class TimestampUtils {
+    /**
+     * Private constructor - all methods static.
+     */
     private TimestampUtils() {
 
     }
 
-    public static Timestamp timestampFromString(String e) {
-        return timestampFromDateTime(DateTime.parse(e));
+    /**
+     * Parses a timestamp from a String.
+     *
+     * @param time  The time to be parsed.
+     *
+     * @return the timeStamp created from this time.
+     */
+    public static Timestamp timestampFromString(String time) {
+        return timestampFromDateTime(DateTime.parse(time));
     }
 
+    /**
+     * Creates a timestamp from a DateTime.
+     *
+     * @param dateTime  The dateTime to create the timestamp at.
+     *
+     * @return the timestamp created from this dateTime.
+     */
     public static Timestamp timestampFromDateTime(DateTime dateTime) {
         return timestampFromMillis(dateTime.getMillis());
     }
 
+    /**
+     * Creates a timestamp from milliseconds since epoch.
+     * NOTE: removes the current timezone offset while creating timestamp.
+     *
+     * @param millis  The milliseconds of the time to make the timestamp at.
+     *
+     * @return the timestamp created from this time.
+     */
     public static Timestamp timestampFromMillis(long millis) {
-        // removes the current offset while creating timestamp because the time would get pushed back
         return new Timestamp(millis - TimeZone.getDefault().getOffset(new Date().getTime()));
     }
 }

@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import java.io.IOException;
 
 /**
- * Created by hinterlong on 5/31/17.
+ * Serializes {@link DruidResponse} into a json equivalent to Druid's actual responses.
  */
 public class DruidResponseSerializer extends JsonSerializer {
 
@@ -17,7 +17,6 @@ public class DruidResponseSerializer extends JsonSerializer {
     public void serialize(Object o, JsonGenerator jsonGenerator, SerializerProvider serializerProvider)
             throws IOException {
         DruidResponse druidResponse = (DruidResponse) o;
-        // todo test cases?
         jsonGenerator.writeStartArray();
         for (Object result : druidResponse.getResults()) {
             jsonGenerator.writeObject(result);

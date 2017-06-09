@@ -12,8 +12,7 @@ import com.sun.istack.internal.NotNull;
  * A handler for queries made against a sql backend.
  */
 public class SqlRequestHandler implements DataRequestHandler {
-    private final @NotNull
-    DataRequestHandler next;
+    private final @NotNull DataRequestHandler next;
 
     /**
      * Constructor.

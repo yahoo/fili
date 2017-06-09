@@ -11,15 +11,27 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation.Def
 import java.util.Map;
 
 /**
- * Created by hinterlong on 6/6/17.
+ * Evaluates post aggregations.
  */
 public class PostAggregationEvaluator {
 
+    /**
+     * Private constructor - all methods static.
+     */
     private PostAggregationEvaluator() {
 
     }
 
-    // NOTE: always returns a double. this may not be correct
+    /**
+     * Top level evaluation of a postAggregation.
+     * NOTE: does not support any sketch operations.
+     * TODO: always returns a double. this may not be correct
+     *
+     * @param postAggregation  The post aggregation to evaluate.
+     * @param aggregatedValues  A map from fieldNames of aggregated values to their actual value.
+     *
+     * @return the number calculated from the postAggregation.
+     */
     public static Double evaluate(PostAggregation postAggregation, Map<String, String> aggregatedValues) {
         DefaultPostAggregationType aggregationType = (DefaultPostAggregationType) postAggregation
                 .getType();
@@ -44,6 +56,15 @@ public class PostAggregationEvaluator {
         }
     }
 
+    /**
+     * Evaluates a fieldAccessorPostAggregation by parsing the value from the aggregatedValues map.
+     *
+     * @param fieldAccessorPostAggregation  Determines which fields value will be accessed. The field must be in the
+     * map.
+     * @param aggregatedValues  A map from fieldNames of aggregated values to their actual value.
+     *
+     * @return the number parsed from the field.
+     */
     private static Double evaluate(
             FieldAccessorPostAggregation fieldAccessorPostAggregation,
             Map<String, String> aggregatedValues
@@ -52,33 +73,44 @@ public class PostAggregationEvaluator {
         return Double.valueOf(stringNumber);
     }
 
-    private static Double evaluate(ArithmeticPostAggregation ap, Map<String, String> aggregatedValues) {
-        switch (ap.getFn()) {
+    /**
+     * Evaluates an arithmeticPostAggregation by performing it's operation over other postAggregations.
+     *
+     * @param arithmeticPostAggregation  The post aggregation which performs an operation over other post aggregations.
+     * @param aggregatedValues  A map from fieldNames of aggregated values to their actual value.
+     *
+     * @return the number calculated from it's operation.
+     */
+    private static Double evaluate(
+            ArithmeticPostAggregation arithmeticPostAggregation,
+            Map<String, String> aggregatedValues
+    ) {
+        switch (arithmeticPostAggregation.getFn()) {
             case PLUS:
                 Double sum = 0D;
-                for (PostAggregation postAgg : ap.getFields()) {
+                for (PostAggregation postAgg : arithmeticPostAggregation.getFields()) {
                     sum += evaluate(postAgg, aggregatedValues);
                 }
                 return sum;
             case MULTIPLY:
                 Double prod = 1D;
-                for (PostAggregation postAgg : ap.getFields()) {
+                for (PostAggregation postAgg : arithmeticPostAggregation.getFields()) {
                     prod *= evaluate(postAgg, aggregatedValues);
                 }
                 return prod;
             case MINUS:
-                if (ap.getFields().size() != 2) { // todo check if this is true
+                if (arithmeticPostAggregation.getFields().size() != 2) { // todo check if this is true
                     throw new IllegalArgumentException("Can only subtract on two fields");
                 }
-                Double firstAsDoubleSub = evaluate(ap.getFields().get(0), aggregatedValues);
-                Double secondAsDoubleSub = evaluate(ap.getFields().get(1), aggregatedValues);
+                Double firstAsDoubleSub = evaluate(arithmeticPostAggregation.getFields().get(0), aggregatedValues);
+                Double secondAsDoubleSub = evaluate(arithmeticPostAggregation.getFields().get(1), aggregatedValues);
                 return firstAsDoubleSub - secondAsDoubleSub;
             case DIVIDE:
-                if (ap.getFields().size() != 2) {
+                if (arithmeticPostAggregation.getFields().size() != 2) {
                     throw new IllegalArgumentException("Can only divide on two fields");
                 }
-                Double firstAsDoubleDiv = evaluate(ap.getFields().get(0), aggregatedValues);
-                Double secondAsDoubleDiv = evaluate(ap.getFields().get(1), aggregatedValues);
+                Double firstAsDoubleDiv = evaluate(arithmeticPostAggregation.getFields().get(0), aggregatedValues);
+                Double secondAsDoubleDiv = evaluate(arithmeticPostAggregation.getFields().get(1), aggregatedValues);
                 if (secondAsDoubleDiv == 0) {
                     // if divisor is zero then result is zero
                     // as per druid's http://druid.io/docs/latest/querying/post-aggregations.html
@@ -86,11 +118,17 @@ public class PostAggregationEvaluator {
                 }
                 return firstAsDoubleDiv / secondAsDoubleDiv;
         }
-        throw new UnsupportedOperationException("Can't do post aggregation " + ap);
+        throw new UnsupportedOperationException("Can't do post aggregation " + arithmeticPostAggregation);
     }
 
+    /**
+     * Evaluates a constantPostAggregation by reading it's value.
+     *
+     * @param constantPostAggregation  Contains a constant which will be read.
+     *
+     * @return the constant value for this postAggregation.
+     */
     private static double evaluate(ConstantPostAggregation constantPostAggregation) {
         return constantPostAggregation.getValue();
     }
-
 }

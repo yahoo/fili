@@ -21,25 +21,56 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 /**
- * Created by hinterlong on 6/6/17.
+ * Evaluates filters to find all the dimensions used in them and
+ * to build a {@link RexNode} with an equivalent sql filter.
  */
 public class FilterEvaluator {
+    /**
+     * Private constructor - all methods static.
+     */
     private FilterEvaluator() {
 
     }
 
+    /**
+     * Finds all the dimension names used in the filter.
+     *
+     * @param builder  The RelBuilder used with Calcite to make queries.
+     * @param filter  The filter to be evaluated.
+     *
+     * @return a list of all the dimension names.
+     */
     public static List<String> getDimensionNames(RelBuilder builder, Filter filter) {
         return evaluate(builder, filter).getRight();
     }
 
-    public static RexNode getfilterAsRexNode(RelBuilder builder, Filter filter) {
+    /**
+     * Builds a {@link RexNode} with an equivalent sql filter as the one given.
+     *
+     * @param builder  The RelBuilder used with Calcite to make queries.
+     * @param filter  The filter to be evaluated.
+     *
+     * @return the rexNode containing the filter information.
+     */
+    public static RexNode getFilterAsRexNode(RelBuilder builder, Filter filter) {
         return evaluate(builder, filter).getLeft();
     }
 
+    /**
+     * Evaluates and builds a filter and finds all the dimension names used in all filters.
+     * NOTE: this is doing two things at once, but the interface given only lets you do one at a time.
+     * This is because dimension names needed to build the RexNode aren't known beforehand.
+     * This forces the flow to be [getDimensionNames] -> [buider.project] -> [builer.getFilterAsRexNode]
+     *
+     * @param builder  The RelBuilder used with Calcite to make queries.
+     * @param filter  The filter to be evaluated.
+     *
+     * @return both the filter and the list of dimensions used in the filter.
+     */
     private static Pair<RexNode, List<String>> evaluate(RelBuilder builder, Filter filter) {
         List<String> dimensions = new ArrayList<>();
         RexNode rexNode = evaluate(builder, filter, dimensions);
@@ -47,6 +78,15 @@ public class FilterEvaluator {
         return Pair.of(rexNode, dimensions);
     }
 
+    /**
+     * Top level evaluate call which finds the specialized evaluation for a given filter.
+     *
+     * @param builder  The RelBuilder used with Calcite to make queries.
+     * @param filter  The filter to be evaluated.
+     * @param dimensions  The list of dimensions already found.
+     *
+     * @return a RexNode containing an equivalent filter to the one given.
+     */
     private static RexNode evaluate(RelBuilder builder, Filter filter, List<String> dimensions) {
         if (filter == null) {
             return null;
@@ -80,6 +120,15 @@ public class FilterEvaluator {
         throw new UnsupportedOperationException("Can't evaluate filter " + filter);
     }
 
+    /**
+     * Evaluates a regular expression filter.
+     *
+     * @param builder  The RelBuilder used with Calcite to make queries.
+     * @param regexFilter  A regexFilter to be evaluated.
+     * @param dimensions  The list of dimensions already found.
+     *
+     * @return a RexNode containing an equivalent filter to the one given.
+     */
     private static RexNode evaluate(RelBuilder builder, RegularExpressionFilter regexFilter, List<String> dimensions) {
         //todo test this
         String apiName = regexFilter.getDimension().getApiName();
@@ -91,6 +140,15 @@ public class FilterEvaluator {
         );
     }
 
+    /**
+     * Evaluates a Selector filter.
+     *
+     * @param builder  The RelBuilder used with Calcite to make queries.
+     * @param selectorFilter  A selectorFilter to be evaluated.
+     * @param dimensions  The list of dimensions already found.
+     *
+     * @return a RexNode containing an equivalent filter to the one given.
+     */
     private static RexNode evaluate(RelBuilder builder, SelectorFilter selectorFilter, List<String> dimensions) {
         String apiName = selectorFilter.getDimension().getApiName();
         dimensions.add(apiName);
@@ -101,15 +159,22 @@ public class FilterEvaluator {
         );
     }
 
+    /**
+     * Evaluates a SearchFilter filter. Currently doesn't support Fragment mode.
+     *
+     * @param builder  The RelBuilder used with Calcite to make queries.
+     * @param searchFilter  A searchFilter to be evaluated.
+     * @param dimensions  The list of dimensions already found.
+     *
+     * @return a RexNode containing an equivalent filter to the one given.
+     */
     private static RexNode evaluate(RelBuilder builder, SearchFilter searchFilter, List<String> dimensions) {
-        // todo: fragment takes json array of strings and checks if any are contained? just OR search over them?
-        // http://druid.io/docs/0.9.1.1/querying/filters.html
         // todo put these in SearchFilter?
         String typeKey = "type";
         String valueKey = "value";
 
         String searchType = searchFilter.getQuery().get(typeKey);
-        SearchFilter.QueryType queryType = fromType(searchType);
+        SearchFilter.QueryType queryType = SearchFilter.QueryType.fromType(searchType);
 
         String columnName = searchFilter.getDimension().getApiName();
         dimensions.add(columnName);
@@ -130,14 +195,25 @@ public class FilterEvaluator {
                                 SqlStdOperatorTable.LOWER,
                                 builder.field(columnName)
                         ),
-                        builder.literal("%" + valueToFind.toLowerCase() + "%")
+                        builder.literal("%" + valueToFind.toLowerCase(Locale.ENGLISH) + "%")
                 );
             case Fragment:
+                // todo: fragment takes json array of strings and checks if any are contained? just OR search over them?
+                // http://druid.io/docs/0.9.1.1/querying/filters.html
             default:
                 throw new UnsupportedOperationException("Not implemented");
         }
     }
 
+    /**
+     * Evaluates an Infilter filter.
+     *
+     * @param builder  The RelBuilder used with Calcite to make queries.
+     * @param inFilter  An inFilter to be evaluated.
+     * @param dimensions  The list of dimensions already found.
+     *
+     * @return a RexNode containing an equivalent filter to the one given.
+     */
     private static RexNode evaluate(RelBuilder builder, InFilter inFilter, List<String> dimensions) {
         Dimension dimension = inFilter.getDimension();
         dimensions.add(dimension.getApiName());
@@ -151,6 +227,16 @@ public class FilterEvaluator {
         return evaluate(builder, orFilterOfSelectors, dimensions);
     }
 
+    /**
+     * Evaluates a complex filter by performing a {@link SqlOperator} over a list of dimensions.
+     *
+     * @param builder  The RelBuilder used with Calcite to make queries.
+     * @param complexFilter  A complexFilter to be evaluated.
+     * @param dimensions  The list of dimensions already found.
+     * @param operator  The sql operator to be applied to a complexFilter's fields.
+     *
+     * @return a RexNode containing an equivalent filter to the one given.
+     */
     private static RexNode listEvaluate(
             RelBuilder builder,
             ComplexFilter complexFilter,
@@ -159,7 +245,6 @@ public class FilterEvaluator {
     ) {
         List<RexNode> rexNodes = complexFilter.getFields()
                 .stream()
-                .filter(Objects::nonNull)
                 .map(filter -> evaluate(builder, filter, dimensions))
                 .collect(Collectors.toList());
 
@@ -167,20 +252,5 @@ public class FilterEvaluator {
                 operator,
                 rexNodes
         );
-    }
-
-    /**
-     * Get the QueryType enum fromType it's search type.
-     * @param type  Type of the query type (for serialization)
-     * @return the enum QueryType
-     */
-    public static SearchFilter.QueryType fromType(String type) {
-        // todo this belongs in SearchFilter
-        for (SearchFilter.QueryType queryType : SearchFilter.QueryType.values()) {
-            if (queryType.toString().equalsIgnoreCase(EnumUtils.camelCase(type))) {
-                return queryType;
-            }
-        }
-        throw new IllegalArgumentException("No query type corresponds to " + type);
     }
 }

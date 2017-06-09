@@ -13,6 +13,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+//CHECKSTYLE:OFF
+//This is all generated code for a wikiticker entry
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
         "time",
@@ -366,3 +368,4 @@ public class WikitickerEntry implements Serializable {
     }
 
 }
+//CHECKSTYLE:ON
