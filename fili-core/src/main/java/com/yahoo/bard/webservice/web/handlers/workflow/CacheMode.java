@@ -38,7 +38,9 @@ public final class CacheMode {
     public static Optional<Mode> getCacheMode() {
         // if either cache v1 or v2 is set, use old caching logic
         if (!CACHE_V1.isEmpty() || !CACHE_V2.isEmpty()) {
-            LOG.warn("Cache V2(Local Signature) is deprecated, consider etag cache as new caching strategy.");
+            LOG.warn(
+                    "Cache V1(TTL) and V2(Local Signature) are deprecated, consider etag cache as new caching strategy."
+            );
             if (CACHE_V1.isEmpty()) {
                 return Optional.of(Mode.LOCAL_SIGNATURE);
             } else if (CACHE_V2.isEmpty()) {
