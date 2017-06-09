@@ -14,7 +14,7 @@ import java.util.Optional;
 /**
  * Caching config analyzer.
  */
-public abstract class CacheMode {
+public final class CacheMode {
     private static final Logger LOG = LoggerFactory.getLogger(CacheMode.class);
 
     private static final boolean CACHE_V1 = BardFeatureFlag.DRUID_CACHE.isOn();
@@ -24,30 +24,29 @@ public abstract class CacheMode {
             SYSTEM_CONFIG.getPackageVariableName("query_response_caching_strategy"),
             "None"
     );
-    private static final String NO_CACHE = "None";
-    private static final String TTL_CACHE = "TtlOnly";
-    private static final String LOCAL_SIGNATURE_CACHE = "LocalSignature";
-    private static final String ETAG_CACHE = "ETag";
 
     /**
      * Returns the caching mode in String.
      *
      * @return the caching mode in String
      */
-    public static Optional<String> getCacheMode() {
-        if (CACHE_V1 && !CACHE_V2 && QUERY_RESPONSE_CACHING_STRATEGY.equals(NO_CACHE)) {
-            return Optional.of(TTL_CACHE);
-        } else if (!CACHE_V1 && CACHE_V2 && QUERY_RESPONSE_CACHING_STRATEGY.equals(NO_CACHE)) {
-            return Optional.of(LOCAL_SIGNATURE_CACHE);
-        } else if (!CACHE_V1 && !CACHE_V2) {
-            return QUERY_RESPONSE_CACHING_STRATEGY.equals(NO_CACHE)
+    public static Optional<Mode> getCacheMode() {
+        // no etag cache, either TTL or local signature
+        if (QUERY_RESPONSE_CACHING_STRATEGY.equals(Mode.NONE.getMode())) {
+            if (CACHE_V1 && !CACHE_V2) {
+                return Optional.of(Mode.TTL_ONLY);
+            } else {
+                return Optional.of(Mode.LOCAL_SIGNATURE);
+            }
+        } else if (!CACHE_V1 && !CACHE_V2) { // TTL and local signature is not set
+            return QUERY_RESPONSE_CACHING_STRATEGY.equals(Mode.NONE.getMode())
                     ? Optional.empty()
-                    : Optional.of(QUERY_RESPONSE_CACHING_STRATEGY);
-        } else {
-            String message = "Etag caching cannot coexist with TTL or local signature caching";
-            LOG.error(message);
-            throw new RuntimeException(message);
+                    : Optional.of(Mode.ETAG);
         }
+
+        String message = "Etag caching cannot coexist with TTL or local signature caching";
+        LOG.error(message);
+        throw new RuntimeException(message);
     }
 
     /**
@@ -57,19 +56,19 @@ public abstract class CacheMode {
         /**
          * No caching is configured.
          */
-        NONE(NO_CACHE),
+        NONE("None"),
         /**
          * Use only TTL caching.
          */
-        TTL_ONLY(TTL_CACHE),
+        TTL_ONLY("TtlOnly"),
         /**
          * Use only local signature caching.
          */
-        LOCAL_SIGNATURE(LOCAL_SIGNATURE_CACHE),
+        LOCAL_SIGNATURE("LocalSignature"),
         /**
          * Use only etag caching.
          */
-        ETAG(ETAG_CACHE);
+        ETAG("ETag");
 
         private final String mode;
 
