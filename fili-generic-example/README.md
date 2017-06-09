@@ -1,9 +1,15 @@
 Fili Generic Loader Application
 ==================================
 
-This application will automatically configure fili to work with **any** instance of Druid and show the basic metrics and dimensions. This lets you test what it's like using Fili without putting any effort into setting it up.
+This application will automatically configure fili to work with **any** instance
+ of Druid and show the basic metrics and dimensions. This lets you test what it's
+  like using Fili without putting any effort into setting it up.
 
-In order to set up, this will connect to druid at  [http://localhost:8081/druid/coordinator/v1](http://localhost:8081/druid/coordinator/v1). If your set up is different, you'll have to change the `bard__druid_coord` url in `applicationConfig.properties`.
+In order to set up, this will connect to druid at  [http://localhost:8081/druid/coordinator/v1](http://localhost:8081/druid/coordinator/v1).
+ If your set up is different, you'll have to change the `bard__druid_coord`,
+  `bard__non_ui_druid_broker`, `bard__ui_druid_broker` url in `applicationConfig.properties`.
+  
+Note that this was last tested using [version 0.9.1](https://github.com/yahoo/fili/tree/0.9.1)
 
 ## Setup and Launching
 
