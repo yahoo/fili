@@ -2,7 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.handlers.workflow;
 
-import com.yahoo.bard.webservice.config.BardFeatureFlag;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 
@@ -17,9 +16,15 @@ import java.util.Optional;
 public final class CacheMode {
     private static final Logger LOG = LoggerFactory.getLogger(CacheMode.class);
 
-    private static final boolean CACHE_V1 = BardFeatureFlag.DRUID_CACHE.isOn();
-    private static final boolean CACHE_V2 = BardFeatureFlag.DRUID_CACHE_V2.isOn();
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+    private static final String CACHE_V1 = SYSTEM_CONFIG.getStringProperty(
+            SYSTEM_CONFIG.getPackageVariableName("druid_cache_enabled"),
+            ""
+    );
+    private static final String CACHE_V2 = SYSTEM_CONFIG.getStringProperty(
+            SYSTEM_CONFIG.getPackageVariableName("druid_cache_v2_enabled"),
+            ""
+    );
     private static final String QUERY_RESPONSE_CACHING_STRATEGY = SYSTEM_CONFIG.getStringProperty(
             SYSTEM_CONFIG.getPackageVariableName("query_response_caching_strategy"),
             "None"
@@ -31,22 +36,30 @@ public final class CacheMode {
      * @return the caching mode in String
      */
     public static Optional<Mode> getCacheMode() {
-        // no etag cache, either TTL or local signature
-        if (QUERY_RESPONSE_CACHING_STRATEGY.equals(Mode.NONE.getMode())) {
-            if (CACHE_V1 && !CACHE_V2) {
+        // if either cache v1 or v2 is set, use old caching logic
+        if (!CACHE_V1.isEmpty() || !CACHE_V2.isEmpty()) {
+            LOG.warn("Cache V2(Local Signature) is deprecated, consider etag cache as new caching strategy.");
+            if (CACHE_V1.isEmpty()) {
+                return Optional.of(Mode.LOCAL_SIGNATURE);
+            } else if (CACHE_V2.isEmpty()) {
+                return Optional.of(Mode.TTL_ONLY);
+            } else if (CACHE_V1.equalsIgnoreCase("true") && CACHE_V2.equalsIgnoreCase("true")) {
+                return Optional.of(Mode.LOCAL_SIGNATURE);
+            } else if (CACHE_V1.equalsIgnoreCase("true") &&
+                    CACHE_V2.equalsIgnoreCase("false")) {
                 return Optional.of(Mode.TTL_ONLY);
             } else {
-                return Optional.of(Mode.LOCAL_SIGNATURE);
+                return Optional.of(Mode.NONE);
             }
-        } else if (!CACHE_V1 && !CACHE_V2) { // TTL and local signature is not set
-            return QUERY_RESPONSE_CACHING_STRATEGY.equals(Mode.NONE.getMode())
-                    ? Optional.empty()
-                    : Optional.of(Mode.ETAG);
+        } else if (QUERY_RESPONSE_CACHING_STRATEGY.equalsIgnoreCase("TtlOnly")) {
+            return Optional.of(Mode.TTL_ONLY);
+        } else if (QUERY_RESPONSE_CACHING_STRATEGY.equalsIgnoreCase("LocalSignature")) {
+            return Optional.of(Mode.LOCAL_SIGNATURE);
+        } else if (QUERY_RESPONSE_CACHING_STRATEGY.equalsIgnoreCase("ETag")) {
+            return Optional.of(Mode.ETAG);
+        } else {
+            return Optional.empty();
         }
-
-        String message = "Etag caching cannot coexist with TTL or local signature caching";
-        LOG.error(message);
-        throw new RuntimeException(message);
     }
 
     /**
@@ -54,7 +67,7 @@ public final class CacheMode {
      */
     public enum Mode {
         /**
-         * No caching is configured.
+         * No caching.
          */
         NONE("None"),
         /**

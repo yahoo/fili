@@ -8,7 +8,6 @@ import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_CACHE_V2
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.table.availability.AvailabilityTestingUtils
 import com.yahoo.bard.webservice.util.GroovyTestUtils
-import com.yahoo.bard.webservice.web.endpoints.BaseDataServletComponentSpec
 import com.yahoo.bard.webservice.web.endpoints.DataServlet
 
 import org.joda.time.Interval

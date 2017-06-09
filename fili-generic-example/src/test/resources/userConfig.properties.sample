@@ -6,7 +6,13 @@ bard__dimension_backend = memory
 
 bard__druid_cache_enabled = true
 bard__druid_cache_v2_enabled = true
-bard__query_response_caching_strategy = None
+
+# Caching strategy, which is one of the following
+# 1. ETag
+# 2. LocalSignature (cache V2)
+# 3. TtlOnly (cache V1)
+# 4. None (no caching)
+bard__query_response_caching_strategy = LocalSignature
 
 bard__druid_coordinator_metadata_enabled = true
 
