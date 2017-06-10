@@ -45,19 +45,19 @@ public final class CacheMode {
                 return Optional.of(Mode.LOCAL_SIGNATURE);
             } else if (CACHE_V2.isEmpty()) {
                 return Optional.of(Mode.TTL_ONLY);
-            } else if (CACHE_V1.equalsIgnoreCase("true") && CACHE_V2.equalsIgnoreCase("true")) {
+            } else if ("true".equalsIgnoreCase(CACHE_V1) && "true".equalsIgnoreCase(CACHE_V2)) {
                 return Optional.of(Mode.LOCAL_SIGNATURE);
-            } else if (CACHE_V1.equalsIgnoreCase("true") &&
-                    CACHE_V2.equalsIgnoreCase("false")) {
+            } else if ("true".equalsIgnoreCase(CACHE_V1) &&
+                    "false".equalsIgnoreCase(CACHE_V2)) {
                 return Optional.of(Mode.TTL_ONLY);
             } else {
                 return Optional.of(Mode.NONE);
             }
-        } else if (QUERY_RESPONSE_CACHING_STRATEGY.equalsIgnoreCase("TtlOnly")) {
+        } else if ("TtlOnly".equalsIgnoreCase(QUERY_RESPONSE_CACHING_STRATEGY)) {
             return Optional.of(Mode.TTL_ONLY);
-        } else if (QUERY_RESPONSE_CACHING_STRATEGY.equalsIgnoreCase("LocalSignature")) {
+        } else if ("LocalSignature".equalsIgnoreCase(QUERY_RESPONSE_CACHING_STRATEGY)) {
             return Optional.of(Mode.LOCAL_SIGNATURE);
-        } else if (QUERY_RESPONSE_CACHING_STRATEGY.equalsIgnoreCase("ETag")) {
+        } else if ("ETag".equalsIgnoreCase(QUERY_RESPONSE_CACHING_STRATEGY)) {
             return Optional.of(Mode.ETAG);
         } else {
             return Optional.empty();
