@@ -17,7 +17,8 @@ Current
 
 ### Changed:
 
-
+- [Convert null avro record value to empty string](https://github.com/yahoo/fili/pull/395)
+    * Make `AvroDimensionRowParser` convert null record value into empty string to avoid NPE
 
 ### Deprecated:
 
