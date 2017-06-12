@@ -13,9 +13,6 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchSetOpera
 
 import spock.lang.Specification
 
-/**
- * Created by hinterlong on 6/7/17.
- */
 class PostAggregationEvaluatorSpec extends Specification {
     private static final Map<String, String> fieldToValue = new HashMap<>()
     private static final String ONE = "one"

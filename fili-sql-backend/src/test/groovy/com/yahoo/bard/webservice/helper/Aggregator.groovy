@@ -6,9 +6,6 @@ import com.yahoo.bard.webservice.druid.model.aggregation.DoubleMaxAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleMinAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleSumAggregation
 
-/**
- * Created by hinterlong on 6/7/17.
- */
 class Aggregator {
 
     public static DoubleSumAggregation sum(String name) {

@@ -22,9 +22,6 @@ import spock.lang.Unroll
 import java.sql.Connection
 import java.util.stream.Collectors
 
-/**
- * Created by hinterlong on 6/7/17.
- */
 class FilterEvaluatorSpec extends Specification {
     private final Connection CONNECTION = Database.getDatabase()
 

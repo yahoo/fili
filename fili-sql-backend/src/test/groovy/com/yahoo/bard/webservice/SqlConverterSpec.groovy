@@ -56,9 +56,6 @@ import spock.lang.Unroll
 
 import java.util.stream.Stream
 
-/**
- * Created by hinterlong on 6/7/17.
- */
 class SqlConverterSpec extends Specification {
     private static final SqlBackedClient sqlBackedClient = new SqlConverter(
             Database.getDatabase(),
@@ -87,6 +84,19 @@ class SqlConverterSpec extends Specification {
         )
     }
 
+    private static TimeSeriesQuery getBasicTimeseriesQuery(DefaultTimeGrain timeGrain) {
+        return SimpleDruidQueryBuilder.timeSeriesQuery(
+                WIKITICKER,
+                null,
+                timeGrain,
+                asList(ADDED),
+                asList(),
+                asList(sum(ADDED)),
+                asList(),
+                asList(interval(START, END))
+        );
+    }
+
     private static TimeSeriesQuery getTimeSeriesQuery(DefaultTimeGrain timeGrain, Filter filter) {
         return SimpleDruidQueryBuilder.timeSeriesQuery(
                 WIKITICKER,
@@ -100,7 +110,12 @@ class SqlConverterSpec extends Specification {
         );
     }
 
-    private static GroupByQuery getGroupByQuery(DefaultTimeGrain timeGrain, Filter filter, Having having, List<String> dimensions) {
+    private static GroupByQuery getGroupByQuery(
+            DefaultTimeGrain timeGrain,
+            Filter filter,
+            Having having,
+            List<String> dimensions
+    ) {
         return SimpleDruidQueryBuilder.groupByQuery(
                 WIKITICKER,
                 filter,
@@ -142,6 +157,26 @@ class SqlConverterSpec extends Specification {
     }
 
     @Unroll
+    def "ExecuteQuery for #timeGrain with basic timeseries"() {
+        expect:
+        DruidQuery druidQuery = getBasicTimeseriesQuery(timeGrain)
+        JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery).get();
+        ResultSet parse = parse(timeGrain, jsonNode, DefaultQueryType.TIMESERIES)
+
+        parse.size() == size
+
+        where: "we have"
+        timeGrain | size
+        MINUTE    | 1394
+        HOUR      | 24
+        DAY       | 1
+        WEEK      | 1
+        MONTH     | 1
+        YEAR      | 1
+
+    }
+
+    @Unroll
     def "Test response output and parsing for #timeGrain"() {
         setup:
         DruidQuery druidQuery = getTimeSeriesQuery(timeGrain, filter)
@@ -172,12 +207,12 @@ class SqlConverterSpec extends Specification {
         parse.size() == size
 
         where: "we have"
-        timeGrain | dims | filter | having | size
-        HOUR      | asList(IS_NEW, IS_ROBOT) | null | and(gt(ADDED, 1), lt(ADDED, 1))  | 0
-        HOUR      | asList(IS_NEW, IS_ROBOT) | null | equals(ADDED, 0)  | 0
-        HOUR      | asList(IS_NEW, IS_ROBOT) | search(COMMENT, "added project") | equals(ADDED, 36)  | 1
-        HOUR      | asList() | null | gt(ADDED, 400000)  | 12
-        HOUR      | asList() | null | null  | 24
+        timeGrain | dims                     | filter                           | having                          | size
+        HOUR      | asList(IS_NEW, IS_ROBOT) | null                             | and(gt(ADDED, 1), lt(ADDED, 1)) | 0
+        HOUR      | asList(IS_NEW, IS_ROBOT) | null                             | equals(ADDED, 0)                | 0
+        HOUR      | asList(IS_NEW, IS_ROBOT) | search(COMMENT, "added project") | equals(ADDED, 36)               | 1
+        HOUR      | asList()                 | null                             | gt(ADDED, 400000)               | 12
+        HOUR      | asList()                 | null                             | null                            | 24
 
     }
 }
