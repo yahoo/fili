@@ -17,9 +17,11 @@ import com.yahoo.bard.webservice.druid.model.aggregation.DoubleSumAggregation
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
 import com.yahoo.bard.webservice.druid.model.filter.Filter
+import com.yahoo.bard.webservice.druid.model.having.Having
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
+import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery
 import com.yahoo.bard.webservice.metadata.DataSourceMetadata
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
@@ -39,11 +41,14 @@ import java.util.stream.Collectors
  */
 class SimpleDruidQueryBuilder {
     public static final String WIKITICKER = "WIKITICKER"
+    public static final String IS_NEW = "IS_NEW"
     public static final String IS_ROBOT = "IS_ROBOT"
     public static final String COMMENT = "COMMENT"
     public static final String ADDED = "ADDED";
     public static final String DELETED = "DELETED";
     public static final String DELTA = "DELTA";
+    public static final String ID = "ID"
+    public static final String METRO_CODE = "METRO_CODE"
     public static final String START = "2015-09-12T00:00:00.000Z"
     public static final String END = "2015-09-13T00:00:00.000Z"
 
@@ -69,6 +74,31 @@ class SimpleDruidQueryBuilder {
                 postAggs,
                 intervals
         );
+    }
+
+    public static GroupByQuery groupByQuery(
+            String name,
+            Filter filter,
+            Having having,
+            List<Dimension> groupByDimensions,
+            DefaultTimeGrain timeGrain,
+            List<String> metrics,
+            List<String> dimensions,
+            List<Aggregation> aggregations,
+            List<PostAggregation> postAggs,
+            List<Interval> intervals
+    ) {
+        return new GroupByQuery(
+                dataSource(name, metrics, dimensions),
+                timeGrain,
+                groupByDimensions,
+                filter,
+                having,
+                aggregations,
+                postAggs,
+                intervals,
+                null //todo what goes here
+        )
     }
 
     public static DataSource dataSource(String name, List<String> metrics, List<String> dimensions) {
@@ -107,8 +137,12 @@ class SimpleDruidQueryBuilder {
         );
     }
 
+    public static List<Dimension> getDimensions(String... dimensions) {
+        return getDimensions(Arrays.asList(dimensions))
+    }
+
     public static List<Dimension> getDimensions(List<String> dimensions) {
-        return Arrays.asList(dimensions).stream()
+        return dimensions.stream()
                 .map { getDimension(it as String) }
                 .collect(Collectors.toList());
     }

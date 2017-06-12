@@ -5,7 +5,6 @@ package com.yahoo.bard.webservice.helper
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleMaxAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleMinAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleSumAggregation
-import com.yahoo.bard.webservice.druid.model.postaggregation.ConstantPostAggregation
 
 /**
  * Created by hinterlong on 6/7/17.

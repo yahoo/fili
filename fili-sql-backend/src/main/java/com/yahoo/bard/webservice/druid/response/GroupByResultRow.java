@@ -15,13 +15,13 @@ import java.util.Map;
  * A row of results in a GroupByQuery.
  * todo: use and test
  */
-@JsonPropertyOrder({"version", "timestamp", "events"})
+@JsonPropertyOrder({"version", "timestamp", "event"})
 public class GroupByResultRow extends DruidResultRow {
     @JsonIgnore
     public final Version version;
 
     @JsonProperty
-    private final Map<String, Object> events = new HashMap<>();
+    private final Map<String, Object> event = new HashMap<>();
 
     /**
      * Creates a row with the given timestamp.
@@ -34,14 +34,9 @@ public class GroupByResultRow extends DruidResultRow {
         this.version = version;
     }
 
-    /**
-     * Adds a json key/value pair to the row.
-     *
-     * @param key  The key to be added.
-     * @param value  The value of the key.
-     */
+    @Override
     public void add(String key, Object value) {
-        events.put(key, value);
+        event.put(key, value);
     }
 
     /**

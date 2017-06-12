@@ -9,24 +9,22 @@ import java.util.List;
 
 /**
  * A response which serializes to an equivalent DruidResponse.
- *
- * @param <Row>  The type of {@link DruidResultRow} to make responses for.
  */
 @JsonSerialize(using = DruidResponseSerializer.class)
-public class DruidResponse<Row extends DruidResultRow> {
+public class DruidResponse {
     /*
       todo figure out druid response layout
       TimeBoundary  same as  TimeseriesResultRow?
      */
 
-    private final List<Row> results = new ArrayList<>();
+    private final List<DruidResultRow> results = new ArrayList<>();
 
     /**
      * Adds a row to the list of results.
      *
      * @param row  The row to be added.
      */
-    public void add(Row row) {
+    public void add(DruidResultRow row) {
         results.add(row);
     }
 
@@ -35,7 +33,7 @@ public class DruidResponse<Row extends DruidResultRow> {
      *
      * @return the results.
      */
-    public List<Row> getResults() {
+    public List<DruidResultRow> getResults() {
         return results;
     }
 }

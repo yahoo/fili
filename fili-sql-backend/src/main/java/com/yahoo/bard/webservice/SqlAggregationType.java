@@ -54,14 +54,14 @@ public enum SqlAggregationType {
      *
      * @param aggregation  The druid aggregation.
      * @param builder  The RelBuilder used with calcite to build queries.
-     * @param alias  A function which creates an alias given the field name.
+     * @param aliasMaker  A function which creates an alias given the field name.
      *
      * @return the AggCal built from the aggregation type.
      */
     public static RelBuilder.AggCall getAggregation(
             Aggregation aggregation,
             RelBuilder builder,
-            Function<String, String> alias
+            Function<String, String> aliasMaker
     ) {
         SqlAggFunction aggFunction = null;
         SqlAggregationType type = SqlAggregationType.fromDruidType(aggregation.getType());
@@ -79,7 +79,13 @@ public enum SqlAggregationType {
 
         String fieldName = aggregation.getFieldName();
         if (aggFunction != null) {
-            return builder.aggregateCall(aggFunction, false, null, alias.apply(fieldName), builder.field(fieldName));
+            return builder.aggregateCall(
+                    aggFunction,
+                    false,
+                    null,
+                    aliasMaker.apply(fieldName),
+                    builder.field(fieldName)
+            );
         } else {
             throw new UnsupportedOperationException("No corresponding AggCall for " + type);
         }

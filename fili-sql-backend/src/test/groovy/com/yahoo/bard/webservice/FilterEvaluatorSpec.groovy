@@ -4,6 +4,11 @@ import static com.yahoo.bard.webservice.helper.Filters.and
 import static com.yahoo.bard.webservice.helper.Filters.not
 import static com.yahoo.bard.webservice.helper.Filters.or
 import static com.yahoo.bard.webservice.helper.Filters.search
+import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.ID
+import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.IS_NEW
+import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.IS_ROBOT
+import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.METRO_CODE
+import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.WIKITICKER
 
 import com.yahoo.bard.webservice.test.Database
 
@@ -21,18 +26,13 @@ import java.util.stream.Collectors
  * Created by hinterlong on 6/7/17.
  */
 class FilterEvaluatorSpec extends Specification {
-    private static final String DIM1 = "ID";
-    private static final String DIM2 = "IS_NEW";
-    private static final String DIM3 = "IS_ROBOT";
-    private static final String DIM4 = "METRO_CODE"
     private final Connection CONNECTION = Database.getDatabase()
-    private static final String TABLE_NAME = "WIKITICKER"
 
     @Unroll
     def "GetDimensionNames"() {
         setup:
         RelBuilder builder = SqlConverter.builder(CONNECTION, Database.getDataSource())
-        builder.scan(TABLE_NAME)
+        builder.scan(WIKITICKER)
         def rexNodes = dimensions.stream()
                 .map { builder.field(it) }
                 .collect(Collectors.toList())
@@ -48,30 +48,26 @@ class FilterEvaluatorSpec extends Specification {
         sql == "SELECT " + dimensions.stream().
                 map { "`" + it + "`" }.
                 collect(Collectors.joining(", ")) + "\n" +
-                "FROM `DEFAULT_SCHEMA`.`${TABLE_NAME}`"
+                "FROM `DEFAULT_SCHEMA`.`${WIKITICKER}`"
 
         where: "we have"
-        filter                                            | dimensions
-        search(DIM1)                                      | [DIM1] as List<String>
-        or(search(DIM1), search(DIM1))                    | [DIM1] as List<String>
-        not(not(not(search(DIM1))))                       | [DIM1] as List<String>
-        and(search(DIM1), or(search(DIM2), search(DIM3))) | [DIM1, DIM2, DIM3] as List<String>
+        filter                                                | dimensions
+        search(ID)                                            | [ID] as List<String>
+        or(search(ID), search(ID))                            | [ID] as List<String>
+        not(not(not(search(ID))))                             | [ID] as List<String>
+        and(search(ID), or(search(IS_NEW), search(IS_ROBOT))) | [ID, IS_NEW, IS_ROBOT] as List<String>
         and(
-                search(DIM1),
-                search(DIM2),
-                or(search(DIM3), search(DIM4))
-        )                                                 | [DIM1, DIM2, DIM3, DIM4] as
+                search(ID),
+                search(IS_NEW),
+                or(search(IS_ROBOT), search(METRO_CODE))
+        )                                                     | [ID, IS_NEW, IS_ROBOT, METRO_CODE] as
                 List<String>
         not(
                 and(
-                        search(DIM1),
-                        search(DIM2),
-                        or(search(DIM3), search(DIM4))
+                        search(ID),
+                        search(IS_NEW),
+                        or(search(IS_ROBOT), search(METRO_CODE))
                 )
-        )                                                 | [DIM1, DIM2, DIM3, DIM4] as List<String>
-    }
-
-    def "AddFilter"() {
-        //todo maybe refactor this one
+        )                                                     | [ID, IS_NEW, IS_ROBOT, METRO_CODE] as List<String>
     }
 }

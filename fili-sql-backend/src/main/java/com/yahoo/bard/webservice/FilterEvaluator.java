@@ -11,7 +11,6 @@ import com.yahoo.bard.webservice.druid.model.filter.OrFilter;
 import com.yahoo.bard.webservice.druid.model.filter.RegularExpressionFilter;
 import com.yahoo.bard.webservice.druid.model.filter.SearchFilter;
 import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter;
-import com.yahoo.bard.webservice.util.EnumUtils;
 
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlOperator;

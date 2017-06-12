@@ -31,6 +31,11 @@ public class TopNResultRow extends DruidResultRow {
         super(timestamp);
     }
 
+    @Override
+    public void add(final String key, final Object value) {
+
+    }
+
     /**
      * Adds an object to the list of results.
      *

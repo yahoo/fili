@@ -11,16 +11,19 @@ import static org.apache.calcite.sql.fun.SqlStdOperatorTable.WEEK;
 import static org.apache.calcite.sql.fun.SqlStdOperatorTable.YEAR;
 
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
+import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.fun.SqlDatePartFunction;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -96,6 +99,8 @@ public class TimeConverter {
      * statements on time, it will parse out a {@link DateTime} for one row which
      * represents the beginning of the interval it was grouped on.
      *
+     *
+     * @param startPosition the last column before the date fields.
      * @param resultSet  The results returned by Sql needed to read the time columns.
      * @param granularity  The granularity which was used when calling
      * {@link #buildGroupBy(RelBuilder, Granularity, String)}
@@ -104,21 +109,24 @@ public class TimeConverter {
      *
      * @throws SQLException if the results can't be read.
      */
-    public static DateTime parseDateTime(ResultSet resultSet, Granularity granularity) throws SQLException {
+    public static DateTime parseDateTime(int startPosition, ResultSet resultSet, Granularity granularity)
+            throws SQLException {
         DefaultTimeGrain timeGrain = (DefaultTimeGrain) granularity;
         DateTime resultTimeStamp = new DateTime(DateTimeZone.UTC);
 
-        resultTimeStamp = resultTimeStamp.withMonthOfYear(1);
-        resultTimeStamp = resultTimeStamp.withWeekOfWeekyear(1);
-        resultTimeStamp = resultTimeStamp.withDayOfYear(1);
-        resultTimeStamp = resultTimeStamp.withHourOfDay(0);
-        resultTimeStamp = resultTimeStamp.withMinuteOfHour(0);
-        resultTimeStamp = resultTimeStamp.withSecondOfMinute(0).withMillisOfSecond(0);
+        resultTimeStamp = resultTimeStamp.withMonthOfYear(1)
+                .withWeekOfWeekyear(1)
+                .withDayOfYear(1)
+                .withHourOfDay(0)
+                .withMinuteOfHour(0)
+                .withSecondOfMinute(0)
+                .withMillisOfSecond(0);
 
         List<SqlDatePartFunction> times = TIMEGRAIN_TO_GROUPBY.get(timeGrain);
-        for (int i = 1; i <= times.size(); i++) {
+        int timesPosition = 0;
+        for (int i = startPosition + 1; i <= times.size() + startPosition; i++, timesPosition++) {
             int value = resultSet.getInt(i);
-            SqlDatePartFunction fn = times.get(i - 1);
+            SqlDatePartFunction fn = times.get(timesPosition);
             resultTimeStamp = setDateTime(value, fn, resultTimeStamp);
         }
 
@@ -150,6 +158,50 @@ public class TimeConverter {
             return dateTime.withMinuteOfHour(value);
         } else {
             throw new IllegalArgumentException("Can't parse SqlDatePartFunction");
+        }
+    }
+
+    /**
+     * Builds the time filters to only select rows that occur within the intervals of the query.
+     * NOTE: you must have one interval to select on.
+     *
+     * @param builder  The RelBuilder used for building queries.
+     * @param druidQuery  The query to get intervals from.
+     * @param nameOfTimestampColumn  The name of the timestamp column in the database.
+     *
+     * @return the RexNode for filtering to only the given intervals.
+     */
+    public static RexNode buildTimeFilters(
+            RelBuilder builder,
+            DruidAggregationQuery<?> druidQuery,
+            String nameOfTimestampColumn
+    ) {
+        // create filters to only select results within the given intervals
+        List<RexNode> timeFilters = druidQuery.getIntervals().stream().map(interval -> {
+            Timestamp start = TimestampUtils.timestampFromMillis(interval.getStartMillis());
+            Timestamp end = TimestampUtils.timestampFromMillis(interval.getEndMillis());
+
+            return builder.call(
+                    SqlStdOperatorTable.AND,
+                    builder.call(
+                            SqlStdOperatorTable.GREATER_THAN,
+                            builder.field(nameOfTimestampColumn),
+                            builder.literal(start.toString())
+                    ),
+                    builder.call(
+                            SqlStdOperatorTable.LESS_THAN,
+                            builder.field(nameOfTimestampColumn),
+                            builder.literal(end.toString())
+                    )
+            );
+        }).collect(Collectors.toList());
+
+        if (timeFilters.size() > 1) {
+            return builder.call(SqlStdOperatorTable.OR, timeFilters);
+        } else if (timeFilters.size() == 1) {
+            return timeFilters.get(0);
+        } else {
+            throw new IllegalStateException("Must have at least 1 time filter");
         }
     }
 }
