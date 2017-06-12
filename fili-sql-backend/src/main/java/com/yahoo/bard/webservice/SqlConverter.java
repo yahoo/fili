@@ -13,11 +13,11 @@ import com.yahoo.bard.webservice.druid.response.DruidResponse;
 import com.yahoo.bard.webservice.druid.response.DruidResultRow;
 import com.yahoo.bard.webservice.druid.response.GroupByResultRow;
 import com.yahoo.bard.webservice.druid.response.TimeseriesResultRow;
+import com.yahoo.bard.webservice.util.CompletedFuture;
 import com.yahoo.bard.webservice.util.FailedFuture;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.xml.internal.ws.util.CompletedFuture;
 
 import org.apache.calcite.adapter.jdbc.JdbcSchema;
 import org.apache.calcite.plan.RelTraitDef;
@@ -40,7 +40,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -58,8 +57,8 @@ import javax.sql.DataSource;
 public class SqlConverter implements SqlBackedClient {
     public static final String THE_SCHEMA = "DEFAULT_SCHEMA";
     private static final Logger LOG = LoggerFactory.getLogger(SqlConverter.class);
-    private static final String ALIAS = "__";
-    private static final AliasMaker ALIAS_MAKER = new AliasMaker(ALIAS);
+    private static final String PREPENDED_ALIAS = "__";
+    private static final AliasMaker ALIAS_MAKER = new AliasMaker(PREPENDED_ALIAS);
     private static final ObjectMapper JSON_WRITER = new ObjectMapper();
     private final RelBuilder builder;
     private final RelToSqlConverter relToSql;
@@ -72,7 +71,7 @@ public class SqlConverter implements SqlBackedClient {
      * @param connection  The connection to the database.
      * @param dataSource  The dataSource for the jdbc schema.
      *
-     * @throws SQLException if can't read from database.
+     * @throws SQLException if can't readSqlResultSet from database.
      */
     public SqlConverter(Connection connection, DataSource dataSource) throws SQLException {
         this.connection = connection;
@@ -88,7 +87,7 @@ public class SqlConverter implements SqlBackedClient {
      *
      * @return the relbuilder from Calcite.
      *
-     * @throws SQLException if can't read from database.
+     * @throws SQLException if can't readSqlResultSet from database.
      */
     private static RelBuilder builder(Connection connection, DataSource dataSource) throws SQLException {
         // todo create schema here or find a way to not have to use it
@@ -147,7 +146,7 @@ public class SqlConverter implements SqlBackedClient {
      * the results and return a jsonNode in the format of a druid response.
      *
      * @param connection  The connection to the database.
-     * @param druidQuery  The timeseries query to build and process.
+     * @param druidQuery  The druid query to build and process.
      *
      * @return a druid-like response to the query.
      */
@@ -155,7 +154,7 @@ public class SqlConverter implements SqlBackedClient {
         String sqlQuery = "";
         Throwable throwable = null;
         try {
-            sqlQuery = buildTimeSeriesQuery(connection, druidQuery);
+            sqlQuery = buildSqlQuery(connection, druidQuery);
         } catch (SQLException e) {
             throwable = new RuntimeException("Couldn't generate sql", e);
         }
@@ -164,7 +163,7 @@ public class SqlConverter implements SqlBackedClient {
             LOG.debug("Executing \n{}", sqlQuery);
             try (PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
                  ResultSet resultSet = preparedStatement.executeQuery()) {
-                return read(druidQuery, resultSet);
+                return readSqlResultSet(druidQuery, resultSet);
             } catch (SQLException e) {
                 LOG.warn(
                         "Failed to query table {} with {}",
@@ -187,10 +186,10 @@ public class SqlConverter implements SqlBackedClient {
      *
      * @return druid-like result from query.
      *
-     * @throws SQLException if results can't be read.
+     * @throws SQLException if results can't be readSqlResultSet.
      */
-    private JsonNode read(DruidAggregationQuery<?> druidQuery, ResultSet resultSet) throws SQLException {
-        Map<String, Function<String, Object>> resultMapper = getAggregationTypeMapper(druidQuery);
+    private JsonNode readSqlResultSet(DruidAggregationQuery<?> druidQuery, ResultSet resultSet) throws SQLException {
+        Map<String, Function<String, Object>> resultTypeMapper = getAggregationTypeMapper(druidQuery);
 
         int rows = 0;
         ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
@@ -213,15 +212,15 @@ public class SqlConverter implements SqlBackedClient {
                 String columnName = ALIAS_MAKER.unApply(resultSetMetaData.getColumnName(i));
                 String val = resultSet.getString(i);
                 sqlResults.put(columnName, val);
-                rowResult.add(columnName, resultMapper.getOrDefault(columnName, String::toString).apply(val));
+                rowResult.add(columnName, resultTypeMapper.getOrDefault(columnName, String::toString).apply(val));
             }
 
             int lastTimeIndex = TimeConverter.getNumberOfGroupByFunctions(druidQuery.getGranularity());
             for (int i = groupByCount + lastTimeIndex + 1; i <= resultSetMetaData.getColumnCount(); i++) {
-                String columnName = resultSetMetaData.getColumnName(i).replace(ALIAS, "");
+                String columnName = resultSetMetaData.getColumnName(i).replace(PREPENDED_ALIAS, "");
                 String val = resultSet.getString(i);
                 sqlResults.put(columnName, val);
-                rowResult.add(columnName, resultMapper.get(columnName).apply(val));
+                rowResult.add(columnName, resultTypeMapper.get(columnName).apply(val));
             }
 
             druidQuery.getPostAggregations()
@@ -238,7 +237,7 @@ public class SqlConverter implements SqlBackedClient {
     }
 
     /**
-     * Builds the timeseries query as sql and returns it as a string.
+     * Builds the druid query as sql and returns it as a string.
      *
      * @param connection  The connection to the database.
      * @param druidQuery  The query to convert to sql.
@@ -247,25 +246,26 @@ public class SqlConverter implements SqlBackedClient {
      *
      * @throws SQLException if can't connect to database.
      */
-    private String buildTimeSeriesQuery(Connection connection, DruidAggregationQuery<?> druidQuery)
+    private String buildSqlQuery(Connection connection, DruidAggregationQuery<?> druidQuery)
             throws SQLException {
         String sqlTableName = druidQuery.getDataSource().getPhysicalTable().getName();
         String nameOfTimestampColumn = DatabaseHelper.getDateTimeColumn(connection, sqlTableName);
 
-        LOG.debug("Selecting SQL Table {}", sqlTableName);
+        LOG.debug("Selecting SQL Table '{}'", sqlTableName);
         builder.scan(sqlTableName);
 
         LOG.debug("Selecting all columns of dimensions for filters and aggregations");
-        List<RexInputRef> selectedColumns = getSelectedColumns(druidQuery, nameOfTimestampColumn);
-        builder.project(selectedColumns);
+        List<RexInputRef> columnsToSelect = getColumnsToSelect(druidQuery, nameOfTimestampColumn);
+        builder.project(columnsToSelect);
 
         LOG.debug("Adding filters");
-        List<RexNode> allFilters = getAllFilters(druidQuery, nameOfTimestampColumn);
+        List<RexNode> allFilters = getAllWhereFilters(druidQuery, nameOfTimestampColumn);
         builder.filter(allFilters);
 
-        LOG.debug("Adding aggregations { {} }", druidQuery.getAggregations());
-        List<RexNode> groupColumns = addAggregationsAndGroupBy(druidQuery, nameOfTimestampColumn);
+        LOG.debug("Adding aggregations { {} } and having filters", druidQuery.getAggregations());
+        List<RexNode> groupColumns = addGroupByAggregationsAndHavingClauses(druidQuery, nameOfTimestampColumn);
 
+        LOG.debug("Adding sorts to output");
         // todo check for sorting from druidQuery
         // this is somewhat bad, todo look into getting rexnode references and using them down here
         builder.sort(builder.fields().subList(0, groupColumns.size()));
@@ -284,7 +284,7 @@ public class SqlConverter implements SqlBackedClient {
      *
      * @return the list of RexNodes that should be filtered on.
      */
-    private List<RexNode> getAllFilters(DruidAggregationQuery<?> druidQuery, String nameOfTimestampColumn) {
+    private List<RexNode> getAllWhereFilters(DruidAggregationQuery<?> druidQuery, String nameOfTimestampColumn) {
         List<RexNode> filters = new ArrayList<>();
         RexNode timeFilter = TimeConverter.buildTimeFilters(builder, druidQuery, nameOfTimestampColumn);
         filters.add(timeFilter);
@@ -306,25 +306,23 @@ public class SqlConverter implements SqlBackedClient {
      *
      * @return the list of fields which need to be selected by the builder.
      */
-    private List<RexInputRef> getSelectedColumns(
+    private List<RexInputRef> getColumnsToSelect(
             DruidAggregationQuery<?> druidQuery,
             String nameOfTimestampColumn
     ) {
         Stream<String> timeColumn = Stream.of(nameOfTimestampColumn);
 
-        // find dimensions which are needed in filters
         Stream<String> filterDimensions = FilterEvaluator.getDimensionNames(builder, druidQuery.getFilter()).stream();
 
         Stream<String> groupByDimensions = druidQuery.getDimensions()
                 .stream()
                 .map(Dimension::getApiName);
 
-        // find dimensions which are needed in aggregations
         Stream<String> aggregationDimensions = druidQuery.getAggregations()
                 .stream()
                 .map(Aggregation::getFieldName);
 
-        // take timestamp column, filter dimensions, and aggregation dimensions
+        // select the timestamp column, groupByDimensions, filter dimensions, and aggregation dimensions
         return Stream.of(timeColumn, groupByDimensions, filterDimensions, aggregationDimensions)
                 .flatMap(Function.identity())
                 .map(builder::field)
@@ -340,45 +338,42 @@ public class SqlConverter implements SqlBackedClient {
      *
      * @return the list of fields which are being grouped by.
      */
-    private List<RexNode> addAggregationsAndGroupBy(DruidAggregationQuery<?> druidQuery, String nameOfTimestampColumn) {
-        if (druidQuery.getAggregations().size() != 0) {
-            List<RelBuilder.AggCall> druidAggregations = druidQuery.getAggregations()
-                    .stream()
-                    .map(aggregation -> SqlAggregationType.getAggregation(aggregation, builder, ALIAS_MAKER))
-                    .collect(Collectors.toList());
+    private List<RexNode> addGroupByAggregationsAndHavingClauses(
+            DruidAggregationQuery<?> druidQuery,
+            String nameOfTimestampColumn
+    ) {
+        List<RelBuilder.AggCall> druidAggregations = druidQuery.getAggregations()
+                .stream()
+                .map(aggregation -> SqlAggregationType.getAggregation(aggregation, builder, ALIAS_MAKER))
+                .collect(Collectors.toList());
 
-            Stream<RexNode> timeFilters = TimeConverter.buildGroupBy(
-                    builder,
-                    druidQuery.getGranularity(),
-                    nameOfTimestampColumn
-            ).stream();
+        Stream<RexNode> timeFilters = TimeConverter.buildGroupBy(
+                builder,
+                druidQuery.getGranularity(),
+                nameOfTimestampColumn
+        ).stream();
 
-            Stream<RexNode> dimensionFilters = druidQuery.getDimensions().stream()
-                    .map(Dimension::getApiName)
-                    .map(builder::field);
+        Stream<RexNode> dimensionFilters = druidQuery.getDimensions().stream()
+                .map(Dimension::getApiName)
+                .map(builder::field);
 
-            List<RexNode> allGroupBys = Stream.of(dimensionFilters, timeFilters)
-                    .flatMap(Function.identity())
-                    .collect(Collectors.toList());
+        List<RexNode> allGroupBys = Stream.concat(dimensionFilters, timeFilters).collect(Collectors.toList());
 
-            builder.aggregate(
-                    builder.groupKey(
-                            allGroupBys
-                    ),
-                    druidAggregations
-            );
+        builder.aggregate(
+                builder.groupKey(
+                        allGroupBys
+                ),
+                druidAggregations
+        );
 
-            if (druidQuery instanceof GroupByQuery) {
-                GroupByQuery groupByQuery = (GroupByQuery) druidQuery;
-                Having having = groupByQuery.getHaving();
-                if (having != null) {
-                    builder.filter(HavingEvaluator.evaluate(builder, having, ALIAS_MAKER));
-                }
+        if (druidQuery.getQueryType().equals(DefaultQueryType.GROUP_BY)) {
+            Having having = ((GroupByQuery) druidQuery).getHaving();
+            if (having != null) {
+                builder.filter(HavingEvaluator.evaluate(builder, having, ALIAS_MAKER));
             }
-
-            return allGroupBys;
         }
-        return Collections.emptyList();
+
+        return allGroupBys;
     }
 
     /**

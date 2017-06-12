@@ -11,7 +11,6 @@ import com.yahoo.bard.webservice.web.responseprocessors.LoggingContext;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.sun.istack.internal.NotNull;
 
 import org.apache.calcite.adapter.jdbc.JdbcSchema;
 import org.apache.http.HttpStatus;
@@ -23,6 +22,8 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * A handler for queries made against a sql backend.

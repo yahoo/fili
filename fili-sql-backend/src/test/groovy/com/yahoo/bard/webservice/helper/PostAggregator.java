@@ -8,9 +8,6 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 
 import java.util.Arrays;
 
-/**
- * Created by hinterlong on 6/7/17.
- */
 public class PostAggregator {
 
     public static ArithmeticPostAggregation arithmetic(

@@ -6,9 +6,6 @@ import com.yahoo.bard.webservice.druid.model.having.NotHaving
 import com.yahoo.bard.webservice.druid.model.having.NumericHaving
 import com.yahoo.bard.webservice.druid.model.having.OrHaving
 
-/**
- * Created by hinterlong on 6/12/17.
- */
 public class Havings {
     public static AndHaving and(Having... havings) {
         return new AndHaving(Arrays.asList(havings))

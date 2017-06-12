@@ -9,9 +9,6 @@ import com.yahoo.bard.webservice.druid.model.filter.OrFilter
 import com.yahoo.bard.webservice.druid.model.filter.SearchFilter
 import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter
 
-/**
- * Created by hinterlong on 6/7/17.
- */
 class Filters {
     public static SearchFilter search(String dimension) {
         return new SearchFilter(

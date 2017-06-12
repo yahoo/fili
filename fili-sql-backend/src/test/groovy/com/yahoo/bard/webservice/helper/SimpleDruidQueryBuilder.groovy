@@ -36,9 +36,6 @@ import org.joda.time.Interval
 
 import java.util.stream.Collectors
 
-/**
- * Created by hinterlong on 6/7/17.
- */
 class SimpleDruidQueryBuilder {
     public static final String WIKITICKER = "WIKITICKER"
     public static final String IS_NEW = "IS_NEW"
