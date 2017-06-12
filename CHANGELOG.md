@@ -91,11 +91,13 @@ Removals:
       greater than 0
 
 - [Prepare for etag Cache](https://github.com/yahoo/fili/pull/289)
-    * Add etag Cache feature flag
-    * Deprecate Cache v1 components and remove from DruidWorkflow
-    * Log a warning indicating cache V1 has been deprecated
+    * Deprecate Cache V1 and V2 and log warning wherever they are used in codebase
+    * Add config param `query_response_caching_strategy` that allows any one of the TTL cache, local signature cache, or
+      etag cache to be used as caching strategy
+    * Add 'CacheMode' that represent the caching strategy
+    * Add 'DefaultCacheMode' that represents all available caching strategies
     * Make `AsyncDruidWebServiceImpl::sendRequest` not blow up when getting a 304 status response if etag cache is on
-    * Add Etag header to JsonNode response
+    * Add etag header to response JSON if etag cache is set to be used
 
 - [Implement DruidPartialDataResponseProcessor](https://github.com/yahoo/fili/pull/275)
     * Add `FullResponseProcessor` interface that extends `ResponseProcessor`
