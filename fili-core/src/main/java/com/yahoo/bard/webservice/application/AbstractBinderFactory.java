@@ -89,7 +89,6 @@ import com.yahoo.bard.webservice.web.NoOpRequestMapper;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.SlicesApiRequest;
 import com.yahoo.bard.webservice.web.TablesApiRequest;
-import com.yahoo.bard.webservice.web.handlers.workflow.CacheMode;
 import com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow;
 import com.yahoo.bard.webservice.web.handlers.workflow.RequestWorkflowProvider;
 import com.yahoo.bard.webservice.web.util.QueryWeightUtil;
@@ -746,6 +745,9 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      */
     protected DataCache<?> buildCache() {
         if (BardFeatureFlag.DRUID_CACHE_V2.isOn()) {
+            LOG.warn("Cache V2 feature flag is deprecated, " +
+                    "use the new configuration parameter to set desired caching strategy"
+            );
             try {
                 MemTupleDataCache<String> cache = new MemTupleDataCache<>();
                 LOG.info("MemcachedClient Version 2 started {}", cache);
@@ -755,7 +757,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 throw new IllegalStateException(e);
             }
         } else if (BardFeatureFlag.DRUID_CACHE.isOn()) {
-            LOG.warn("Cache V1 feature flag is deprecated," +
+            LOG.warn("Cache V1 feature flag is deprecated, " +
                     "use the new configuration parameter to set desired caching strategy"
             );
             try {
@@ -770,15 +772,6 @@ public abstract class AbstractBinderFactory implements BinderFactory {
             // not used, but Jersey required a binding
             return new StubDataCache<>();
         }
-    }
-
-    /**
-     * Returns the caching mode in String.
-     *
-     * @return the caching mode in String
-     */
-    protected static CacheMode.Mode getCacheMode() {
-        return CacheMode.getCacheMode().orElse(CacheMode.Mode.NONE);
     }
 
     /**

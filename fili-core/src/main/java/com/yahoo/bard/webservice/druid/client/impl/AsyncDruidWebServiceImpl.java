@@ -18,7 +18,7 @@ import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.DruidResponse;
 import com.yahoo.bard.webservice.util.FailedFuture;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
-import com.yahoo.bard.webservice.web.handlers.workflow.CacheMode;
+import com.yahoo.bard.webservice.web.handlers.workflow.DefaultCacheMode;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
@@ -468,8 +468,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
      * @return true if the status code indicates an error
      */
     protected boolean hasError(Status status) {
-        return CacheMode.getCacheMode().isPresent() &&
-                CacheMode.getCacheMode().get().equals(CacheMode.Mode.ETAG.getMode())
+        return DefaultCacheMode.ETAG.isSet().orElse(Boolean.FALSE)
                 ? status != Status.OK && status != Status.NOT_MODIFIED
                 : status != Status.OK;
     }
