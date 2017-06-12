@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -109,14 +110,14 @@ public class AvroDimensionRowParser {
 
             // Generates a set of dimension Rows after retrieving the appropriate fields
             return StreamSupport.stream(dataFileReader.spliterator(), false)
-                    .map(genericRecord -> dimension.getDimensionFields().stream().collect(
-                             Collectors.toMap(
-                                 DimensionField::getName,
-                                 dimensionField -> genericRecord.get(
-                                     dimensionFieldNameMapper.convert(dimension, dimensionField)
-                                 ).toString()
-                             )
-                         )
+                    .map(genericRecord -> dimension.getDimensionFields().stream()
+                            .collect(
+                                 Collectors.toMap(
+                                     DimensionField::getName,
+                                     dimensionField -> resolveRecordValue(
+                                             genericRecord, dimensionFieldNameMapper.convert(dimension, dimensionField))
+                                 )
+                            )
                     )
                     .map(dimension::parseDimensionRow)
                     .collect(Collectors.toSet());
@@ -140,5 +141,18 @@ public class AvroDimensionRowParser {
                 new Pair<>(dimension, dimensionField),
                 key -> dimensionFieldNameMapper.convert(key.getKey(), key.getValue())
         );
+    }
+
+    /**
+     * Retrieve the given field in the generic record, replace null value record with string "null".
+     *
+     * @param genericRecord  One of the record in the given avro file
+     * @param dimensionFieldName  Name of the dimension field used to retrieve the value from the record
+     *
+     * @return string representing the record value
+     */
+    private String resolveRecordValue(GenericRecord genericRecord, String dimensionFieldName) {
+        Object result = genericRecord.get(dimensionFieldName);
+        return Objects.isNull(result) ? "null" : result.toString();
     }
 }
