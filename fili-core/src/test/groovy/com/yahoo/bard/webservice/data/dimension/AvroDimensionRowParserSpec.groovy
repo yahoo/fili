@@ -51,6 +51,6 @@ class AvroDimensionRowParserSpec extends Specification {
         }
 
         expect:
-        avroDimensionRowParser.resolveRecordValue(genericRecord, "random") == "null"
+        avroDimensionRowParser.resolveRecordValue(genericRecord, "random") == ""
     }
 }

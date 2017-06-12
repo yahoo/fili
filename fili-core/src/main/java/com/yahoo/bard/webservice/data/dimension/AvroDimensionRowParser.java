@@ -153,6 +153,6 @@ public class AvroDimensionRowParser {
      */
     private String resolveRecordValue(GenericRecord genericRecord, String dimensionFieldName) {
         Object result = genericRecord.get(dimensionFieldName);
-        return Objects.isNull(result) ? "null" : result.toString();
+        return Objects.isNull(result) ? "" : result.toString();
     }
 }
