@@ -5,13 +5,16 @@ package com.yahoo.bard.webservice.data.dimension
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
+
+import org.apache.avro.generic.GenericRecord
+
 import spock.lang.Specification
 
 
 class AvroDimensionRowParserSpec extends Specification {
-    def LinkedHashSet<DimensionField> dimensionFields
-    def KeyValueStoreDimension dimension
-    def AvroDimensionRowParser avroDimensionRowParser
+    LinkedHashSet<DimensionField> dimensionFields
+    KeyValueStoreDimension dimension
+    AvroDimensionRowParser avroDimensionRowParser
 
     def setup() {
         dimensionFields = [BardDimensionField.ID, BardDimensionField.DESC]
@@ -39,5 +42,15 @@ class AvroDimensionRowParserSpec extends Specification {
         then:
         IllegalArgumentException exception = thrown(IllegalArgumentException)
         exception.message == "The AVRO schema file does not contain all the configured dimension fields"
+    }
+
+    def "Null value will be replaced with null string by the avro parser"() {
+        given:
+        GenericRecord genericRecord = Mock() {
+            get(_) >> null
+        }
+
+        expect:
+        avroDimensionRowParser.resolveRecordValue(genericRecord, "random") == ""
     }
 }
