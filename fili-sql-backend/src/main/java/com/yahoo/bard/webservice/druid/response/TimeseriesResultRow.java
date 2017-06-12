@@ -27,12 +27,7 @@ public class TimeseriesResultRow extends DruidResultRow {
         super(timestamp);
     }
 
-    /**
-     * Adds a json key/value pair to the row.
-     *
-     * @param key  The key to be added.
-     * @param value  The value of the key.
-     */
+    @Override
     public void add(String key, Object value) {
         result.put(key, value);
     }

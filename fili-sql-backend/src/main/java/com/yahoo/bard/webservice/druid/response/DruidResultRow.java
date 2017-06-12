@@ -28,4 +28,12 @@ public abstract class DruidResultRow {
     public String getTimestamp() {
         return timestamp.toDateTime(DateTimeZone.UTC).toString();
     }
+
+    /**
+     * Adds a json key/value pair to the row.
+     *
+     * @param key  The key to be added.
+     * @param value  The value of the key.
+     */
+    public abstract void add(String key, Object value);
 }
