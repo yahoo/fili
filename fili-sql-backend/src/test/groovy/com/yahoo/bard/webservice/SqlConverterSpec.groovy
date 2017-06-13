@@ -209,6 +209,8 @@ class SqlConverterSpec extends Specification {
         where: "we have"
         timeGrain | dims                     | filter                           | having                          | size
         HOUR      | asList(IS_NEW, IS_ROBOT) | null                             | and(gt(ADDED, 1), lt(ADDED, 1)) | 0
+        HOUR      | asList(IS_ROBOT)         | null                             | null                            | 24*2
+        DAY       | asList(IS_NEW, IS_ROBOT) | null                             | null                            | 4
         HOUR      | asList(IS_NEW, IS_ROBOT) | null                             | equals(ADDED, 0)                | 0
         HOUR      | asList(IS_NEW, IS_ROBOT) | search(COMMENT, "added project") | equals(ADDED, 36)               | 1
         HOUR      | asList()                 | null                             | gt(ADDED, 400000)               | 12

@@ -40,7 +40,7 @@ class PostAggregationEvaluatorSpec extends Specification {
         arithmetic(DIVIDE, field(sum(ONE)), constant(0)) | 0
     }
 
-    def "Test unsupoorted post aggregations and bad inputs"() {
+    def "Test unsupported post aggregations and bad inputs"() {
         when:
             Double result = PostAggregationEvaluator.evaluate(postAgg, fieldToValue)
 
