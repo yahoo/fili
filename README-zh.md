@@ -166,10 +166,10 @@ Gradle:
     }
 
 最新发布版本:
-[[![img](//bintray.com/yahoo/maven/fili/_latestVersion][[[https:/api.bintray.com/packages/yahoo/maven/fili/images/download.svg)]]]]
+[![img](https://api.bintray.com/packages/yahoo/maven/fili/images/download.svg)](https://bintray.com/yahoo/maven/fili/_latestVersion)
 
 最新稳定版本:
-[[![img](//bintray.com/yahoo/maven/fili/0.7.36][[[https:/img.shields.io/badge/Stable-0.7.36-blue.svg)]]]]
+[![img](https://img.shields.io/badge/Stable-0.7.36-blue.svg)](https://bintray.com/yahoo/maven/fili/0.7.36)
 
 ## 扩展<a id="扩展" name="扩展"></a>
 
