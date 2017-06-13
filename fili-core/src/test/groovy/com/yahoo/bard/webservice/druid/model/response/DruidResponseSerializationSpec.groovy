@@ -12,7 +12,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 class DruidResponseSerializationSpec extends Specification {
-    static DateTime DATE_TIME = DateTime.parse("2017-06-13");
+    static DateTime DATE_TIME = DateTime.parse("2017-06-13T00:00:00.000Z");
     static ObjectMapper objectMapper = new ObjectMapper();
     static key1 = "key1"
     static key2 = "key2"
@@ -32,12 +32,10 @@ class DruidResponseSerializationSpec extends Specification {
 
         where:
         keys               | values          | serialized
-        asList(key1)       | asList("value") | """[{"timestamp":"2017-06-13T05:00:00.000Z",
-"result":{"key1":"value"}}]"""
-        asList(key1)       | asList(1)       | """[{"timestamp":"2017-06-13T05:00:00.000Z","result":{"key1":1}}]"""
-        asList(key1)       | asList(1.0D)    | """[{"timestamp":"2017-06-13T05:00:00.000Z","result":{"key1":1.0}}]"""
-        asList(key1, key2) | asList(1, 2)    | """[{"timestamp":"2017-06-13T05:00:00.000Z","result":{"key1":1,
-"key2":2}}]"""
+        asList(key1)       | asList("value") | """[{"timestamp":"2017-06-13T00:00:00.000Z","result":{"key1":"value"}}]"""
+        asList(key1)       | asList(1)       | """[{"timestamp":"2017-06-13T00:00:00.000Z","result":{"key1":1}}]"""
+        asList(key1)       | asList(1.0D)    | """[{"timestamp":"2017-06-13T00:00:00.000Z","result":{"key1":1.0}}]"""
+        asList(key1, key2) | asList(1, 2)    | """[{"timestamp":"2017-06-13T00:00:00.000Z","result":{"key1":1,"key2":2}}]"""
     }
 
     @Unroll
@@ -55,9 +53,9 @@ class DruidResponseSerializationSpec extends Specification {
 
         where:
         keys               | values          | version | serialized
-        asList(key1)       | asList("value") | V1      | """[{"version":"v1","timestamp":"2017-06-13T05:00:00.000Z","event":{"key1":"value"}}]"""
-        asList(key1)       | asList(1)       | V1      | """[{"version":"v1","timestamp":"2017-06-13T05:00:00.000Z","event":{"key1":1}}]"""
-        asList(key1)       | asList(1.0D)    | V2      | """[{"version":"v2","timestamp":"2017-06-13T05:00:00.000Z","event":{"key1":1.0}}]"""
-        asList(key1, key2) | asList(1, 2)    | V1      | """[{"version":"v1","timestamp":"2017-06-13T05:00:00.000Z","event":{"key1":1,"key2":2}}]"""
+        asList(key1)       | asList("value") | V1      | """[{"version":"v1","timestamp":"2017-06-13T00:00:00.000Z","event":{"key1":"value"}}]"""
+        asList(key1)       | asList(1)       | V1      | """[{"version":"v1","timestamp":"2017-06-13T00:00:00.000Z","event":{"key1":1}}]"""
+        asList(key1)       | asList(1.0D)    | V2      | """[{"version":"v2","timestamp":"2017-06-13T00:00:00.000Z","event":{"key1":1.0}}]"""
+        asList(key1, key2) | asList(1, 2)    | V1      | """[{"version":"v1","timestamp":"2017-06-13T00:00:00.000Z","event":{"key1":1,"key2":2}}]"""
     }
 }
