@@ -7,7 +7,7 @@ package com.yahoo.bard.webservice.config;
  */
 public interface FeatureFlag {
 
-    static SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+    SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     /**
      * Returns the name of a specific flag included in a class that implements this interface.
@@ -39,7 +39,11 @@ public interface FeatureFlag {
      * @return true if the feature flag has been configured.
      */
     default boolean isSet() {
-        return SYSTEM_CONFIG.getStringProperty(SYSTEM_CONFIG.getPackageVariableName(getName())) == null;
+        try {
+            return SYSTEM_CONFIG.getStringProperty(SYSTEM_CONFIG.getPackageVariableName(getName())) == null;
+        } catch (SystemConfigException exception) {
+            return false;
+        }
     }
 
     /**

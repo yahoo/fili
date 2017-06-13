@@ -7,6 +7,7 @@ import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.REQU
 import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.RESPONSE_WORKFLOW_TIMER;
 
 import com.yahoo.bard.webservice.application.MetricRegistryFactory;
+import com.yahoo.bard.webservice.config.CacheFeatureFlag;
 import com.yahoo.bard.webservice.druid.client.DruidServiceConfig;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
@@ -18,7 +19,6 @@ import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.DruidResponse;
 import com.yahoo.bard.webservice.util.FailedFuture;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
-import com.yahoo.bard.webservice.web.handlers.workflow.DefaultCacheMode;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
@@ -468,7 +468,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
      * @return true if the status code indicates an error
      */
     protected boolean hasError(Status status) {
-        return DefaultCacheMode.ETAG.isSet().orElse(Boolean.FALSE)
+        return CacheFeatureFlag.ETAG.isOn()
                 ? status != Status.OK && status != Status.NOT_MODIFIED
                 : status != Status.OK;
     }
