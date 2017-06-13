@@ -30,14 +30,14 @@ Fili具备灵活的数据库存储和访问，搭配Fili的web服务在不影响
 
 除此之外，Fili还提供其他功能，部分如下：
 
-| 功能                                              | 操作                                                        |
-|---------------------------------------------------+-------------------------------------------------------------|
-| 高级 metric 定义                                  | 访问速率控制                                                |
-| Performance slice routing                         | Query weight checks                                         |
-| Dimension joins (both annotation and filtering)   | [[file:monitoring-and-operations.md][Rich usage metrics]]   |
-| Partial interval protection                       | Health checks                                               |
-| Volatile data handling                            | 缓存                                                        |
-| 模块化架构                                        | 
+| 功能                                            | 操作                             |
+|-------------------------------------------------+----------------------------------|
+| 高级 metric 定义                                | 访问速率控制                     |
+| 高性能 slice routing                            | 查询权重检查 Query weight checks |
+| Dimension joins (both annotation and filtering) | [[file:monitoring-and-operations.md][Rich usage metrics]]               |
+| 部分区间保护 Partial interval protection        | 健康检查                             |
+| 易变数据处理Volatile data handling                    | 缓存                             |
+| 模块化架构                                      |                                  |
 
 ** 社区
 [[https://gitter.im/yahoo/fili][file:https://img.shields.io/gitter/room/yahoo/fili.svg]]

@@ -73,8 +73,8 @@ Fili具备灵活的数据库存储和访问，搭配Fili的web服务在不影响
 
 
 <tr>
-<td class="left">Performance slice routing</td>
-<td class="left">Query weight checks</td>
+<td class="left">高性能 slice routing</td>
+<td class="left">查询权重检查 Query weight checks</td>
 </tr>
 
 
@@ -85,19 +85,20 @@ Fili具备灵活的数据库存储和访问，搭配Fili的web服务在不影响
 
 
 <tr>
-<td class="left">Partial interval protection</td>
-<td class="left">Health checks</td>
+<td class="left">部分区间保护 Partial interval protection</td>
+<td class="left">健康检查</td>
 </tr>
 
 
 <tr>
-<td class="left">Volatile data handling</td>
+<td class="left">易变数据处理Volatile data handling</td>
 <td class="left">缓存</td>
 </tr>
 
 
 <tr>
 <td class="left">模块化架构</td>
+<td class="left">&#xa0;</td>
 </tr>
 </tbody>
 </table>
