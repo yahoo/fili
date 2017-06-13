@@ -98,6 +98,7 @@ Removals:
     * Add 'DefaultCacheMode' that represents all available caching strategies
     * Make `AsyncDruidWebServiceImpl::sendRequest` not blow up when getting a 304 status response if etag cache is on
     * Add etag header to response JSON if etag cache is set to be used
+    * Add `FeatureFlag::isSet` to expose whether feature flags have been explicitly configured 
 
 - [Implement DruidPartialDataResponseProcessor](https://github.com/yahoo/fili/pull/275)
     * Add `FullResponseProcessor` interface that extends `ResponseProcessor`
