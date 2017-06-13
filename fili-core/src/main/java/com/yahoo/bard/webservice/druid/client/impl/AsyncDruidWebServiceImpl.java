@@ -17,6 +17,7 @@ import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.druid.model.query.WeightEvaluationQuery;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.DruidResponse;
+import com.yahoo.bard.webservice.util.CompletedFuture;
 import com.yahoo.bard.webservice.util.FailedFuture;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
 
@@ -318,7 +319,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
             }
             LOG.error("druid {} http request failed: ", serviceConfig.getNameAndUrl(), t);
             failure.invoke(t);
-            return new FailedFuture<>(t);
+            return new CompletedFuture<>(null, t);
         }
     }
 
