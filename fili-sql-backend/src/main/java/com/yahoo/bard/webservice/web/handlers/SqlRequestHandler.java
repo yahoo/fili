@@ -2,8 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.handlers;
 
-import com.yahoo.bard.webservice.SqlBackedClient;
-import com.yahoo.bard.webservice.SqlConverter;
+import com.yahoo.bard.webservice.sql.SqlBackedClient;
+import com.yahoo.bard.webservice.sql.SqlConverter;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.web.DataApiRequest;

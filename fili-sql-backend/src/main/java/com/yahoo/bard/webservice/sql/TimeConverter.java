@@ -1,6 +1,6 @@
 // Copyright 2016 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice;
+package com.yahoo.bard.webservice.sql;
 
 import static java.util.Arrays.asList;
 import static org.apache.calcite.sql.fun.SqlStdOperatorTable.DAYOFYEAR;
@@ -10,6 +10,7 @@ import static org.apache.calcite.sql.fun.SqlStdOperatorTable.MONTH;
 import static org.apache.calcite.sql.fun.SqlStdOperatorTable.WEEK;
 import static org.apache.calcite.sql.fun.SqlStdOperatorTable.YEAR;
 
+import com.yahoo.bard.webservice.TimestampUtils;
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;

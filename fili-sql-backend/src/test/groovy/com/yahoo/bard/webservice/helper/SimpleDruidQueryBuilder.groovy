@@ -40,6 +40,8 @@ class SimpleDruidQueryBuilder {
     public static final String WIKITICKER = "WIKITICKER"
     public static final String IS_NEW = "IS_NEW"
     public static final String IS_ROBOT = "IS_ROBOT"
+    public static final String PAGE = "PAGE"
+    public static final String USER = "USER"
     public static final String COMMENT = "COMMENT"
     public static final String ADDED = "ADDED";
     public static final String DELETED = "DELETED";

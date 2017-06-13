@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.test;
 
-import static com.yahoo.bard.webservice.SqlConverter.THE_SCHEMA;
+import static com.yahoo.bard.webservice.sql.SqlConverter.THE_SCHEMA;
 
 import com.yahoo.bard.webservice.TimestampUtils;
 

@@ -1,6 +1,6 @@
 // Copyright 2016 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice
+package com.yahoo.bard.webservice.sql
 
 import static com.yahoo.bard.webservice.helper.PostAggregator.*
 import static com.yahoo.bard.webservice.helper.Aggregator.*
@@ -10,6 +10,7 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.SketchEstimatePostA
 import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchEstimatePostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchSetOperationPostAggregation
+import com.yahoo.bard.webservice.sql.PostAggregationEvaluator
 
 import spock.lang.Specification
 

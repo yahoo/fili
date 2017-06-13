@@ -1,4 +1,4 @@
-package com.yahoo.bard.webservice
+package com.yahoo.bard.webservice.sql
 
 import static com.yahoo.bard.webservice.helper.Aggregator.max
 import static com.yahoo.bard.webservice.helper.Aggregator.min
@@ -9,15 +9,22 @@ import static com.yahoo.bard.webservice.helper.Havings.lt
 import static com.yahoo.bard.webservice.helper.Havings.or
 import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.ADDED
 import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.DELETED
+import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.IS_ROBOT
 import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.WIKITICKER
 import static java.util.Arrays.asList
 
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
+import com.yahoo.bard.webservice.sql.AliasMaker
+import com.yahoo.bard.webservice.sql.HavingEvaluator
+import com.yahoo.bard.webservice.sql.SqlAggregationType
+import com.yahoo.bard.webservice.sql.SqlConverter
+import com.yahoo.bard.webservice.sql.TimeConverter
 import com.yahoo.bard.webservice.test.Database
 
 import org.apache.calcite.rel.rel2sql.RelToSqlConverter
 import org.apache.calcite.rex.RexNode
 import org.apache.calcite.sql.SqlDialect
+import org.apache.calcite.sql.fun.SqlStdOperatorTable
 import org.apache.calcite.tools.RelBuilder
 
 import spock.lang.Specification

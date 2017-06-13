@@ -1,6 +1,6 @@
 // Copyright 2016 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice;
+package com.yahoo.bard.webservice.sql;
 
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
@@ -71,7 +71,7 @@ public class SqlConverter implements SqlBackedClient {
      * @param connection  The connection to the database.
      * @param dataSource  The dataSource for the jdbc schema.
      *
-     * @throws SQLException if can't readSqlResultSet from database.
+     * @throws SQLException if can't read from database.
      */
     public SqlConverter(Connection connection, DataSource dataSource) throws SQLException {
         this.connection = connection;
@@ -212,7 +212,10 @@ public class SqlConverter implements SqlBackedClient {
                 String columnName = ALIAS_MAKER.unApply(resultSetMetaData.getColumnName(i));
                 String val = resultSet.getString(i);
                 sqlResults.put(columnName, val);
-                rowResult.add(columnName, resultTypeMapper.getOrDefault(columnName, String::toString).apply(val));
+                rowResult.add(
+                        columnName,
+                        resultTypeMapper.getOrDefault(columnName, String::toString).apply(val)
+                );
             }
 
             int lastTimeIndex = TimeConverter.getNumberOfGroupByFunctions(druidQuery.getGranularity());
