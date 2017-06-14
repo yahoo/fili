@@ -14,6 +14,9 @@ import java.util.List;
 public class DruidResponse {
     private final List<DruidResultRow> results;
 
+    /**
+     * Construct a Druid Response which will store rows of results.
+     */
     public DruidResponse() {
         results = new ArrayList<>();
     }
