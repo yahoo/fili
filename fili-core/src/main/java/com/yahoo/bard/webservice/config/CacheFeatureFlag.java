@@ -69,6 +69,5 @@ public enum CacheFeatureFlag implements FeatureFlag {
     public void setOn(Boolean newValue) {
         LOG.warn("com.yahoo.bard.webservice.config.CacheFeatureFlag#setOn(Boolean) does not apply in " +
                 "com.yahoo.bard.webservice.config.CacheFeatureFlag");
-        return;
     }
 }
