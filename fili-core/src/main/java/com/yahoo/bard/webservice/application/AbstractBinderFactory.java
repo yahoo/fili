@@ -763,9 +763,11 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      * @return the instance of local signature cache
      */
     private DataCache<?> buildLocalSignatureCache() {
-        LOG.warn("Cache V2 feature flag is deprecated, " +
-                "use the new configuration parameter to set desired caching strategy"
-        );
+        if (BardFeatureFlag.DRUID_CACHE_V2.isSet()) {
+            LOG.warn("Cache V2 feature flag is deprecated, " +
+                    "use the new configuration parameter to set desired caching strategy"
+            );
+        }
         try {
             MemTupleDataCache<String> cache = new MemTupleDataCache<>();
             LOG.info("MemcachedClient Version 2 started {}", cache);
@@ -782,9 +784,11 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      * @return the instance of TTL cache
      */
     private DataCache<?> buildTtlCache() {
-        LOG.warn("Cache V1 feature flag is deprecated, " +
-                "use the new configuration parameter to set desired caching strategy"
-        );
+        if (BardFeatureFlag.DRUID_CACHE.isSet()) {
+            LOG.warn("Cache V1 feature flag is deprecated, " +
+                    "use the new configuration parameter to set desired caching strategy"
+            );
+        }
         try {
             DataCache<String> cache = new HashDataCache<>(new MemDataCache<HashDataCache.Pair<String, String>>());
             LOG.info("MemcachedClient started {}", cache);
