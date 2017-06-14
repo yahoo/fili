@@ -1,4 +1,4 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.filter;
 
@@ -44,8 +44,10 @@ public class SearchFilter extends DimensionalFilter {
         }
 
         /**
-         * Get the QueryType enum fromType it's search type.
-         * @param type  Type of the query type (for serialization)
+         * Get the QueryType enum from it's search type.
+         *
+         * @param type  The type of query (i.e. "insensitive_contains")
+         *
          * @return the enum QueryType
          */
         public static QueryType fromType(String type) {
