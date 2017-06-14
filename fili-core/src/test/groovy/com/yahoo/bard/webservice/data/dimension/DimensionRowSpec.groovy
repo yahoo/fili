@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.dimension
 
+import com.fasterxml.jackson.databind.ObjectMapper
+
 import spock.lang.Specification
 
 class DimensionRowSpec extends Specification {
@@ -12,18 +14,25 @@ class DimensionRowSpec extends Specification {
     String nonKeyFieldName = "nonKeyFieldName"
     DimensionField keyField = Mock(DimensionField)
     DimensionField nonKeyField = Mock(DimensionField)
+    DimensionRow testRow
 
     def setup() {
         keyField.name >> keyFieldFieldName
         nonKeyField.name >> nonKeyFieldName
+        testRow = new DimensionRow(keyField, [(keyField): keyValue, (nonKeyField): nonKeyValue])
     }
 
     def "healthy initialization returns correct state"() {
-        setup:
-        DimensionRow testRow = new DimensionRow(keyField, [(keyField): keyValue, (nonKeyField): nonKeyValue])
-
         expect:
         testRow.getKeyValue() == keyValue
         testRow.getRowMap() == [(nonKeyFieldName): nonKeyValue, (keyFieldFieldName): keyValue]
+    }
+
+    def "json serialization into the correct format we expect"() {
+        setup:
+        ObjectMapper objectMapper = new ObjectMapper()
+
+        expect:
+        objectMapper.writeValueAsString(testRow) == '{"nonKeyFieldName":"nonKey","keyFieldName":"key"}'
     }
 }

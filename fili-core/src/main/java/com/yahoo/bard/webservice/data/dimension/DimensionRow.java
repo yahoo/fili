@@ -4,6 +4,8 @@ package com.yahoo.bard.webservice.data.dimension;
 
 import com.yahoo.bard.webservice.util.StreamUtils;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -12,6 +14,7 @@ import javax.validation.constraints.NotNull;
 /**
  * DimensionRow is the model for a row in a Dimension lookup table.
  */
+@JsonSerialize(using = DimensionRowSerializer.class)
 public class DimensionRow extends LinkedHashMap<DimensionField, String> implements Comparable<DimensionRow> {
 
     private final String keyValue;
