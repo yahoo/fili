@@ -1,4 +1,4 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.response;
 
@@ -12,7 +12,11 @@ import java.util.List;
  */
 @JsonSerialize(using = DruidResponseSerializer.class)
 public class DruidResponse {
-    private final List<DruidResultRow> results = new ArrayList<>();
+    private final List<DruidResultRow> results;
+
+    public DruidResponse() {
+        results = new ArrayList<>();
+    }
 
     /**
      * Adds a row to the list of results.

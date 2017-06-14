@@ -1,4 +1,4 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.response;
 
@@ -13,15 +13,14 @@ import java.util.Map;
 
 /**
  * A row of results in a GroupByQuery.
- * todo: use and test
  */
 @JsonPropertyOrder({"version", "timestamp", "event"})
 public class GroupByResultRow extends DruidResultRow {
     @JsonIgnore
-    public final Version version;
+    private final String version;
 
     @JsonProperty
-    private final Map<String, Object> event = new HashMap<>();
+    private final Map<String, Object> event;
 
     /**
      * Creates a row with the given timestamp.
@@ -31,7 +30,8 @@ public class GroupByResultRow extends DruidResultRow {
      */
     public GroupByResultRow(DateTime timestamp, Version version) {
         super(timestamp);
-        this.version = version;
+        this.version = version.name;
+        event = new HashMap<>();
     }
 
     @Override
@@ -46,7 +46,7 @@ public class GroupByResultRow extends DruidResultRow {
      */
     @JsonProperty
     public String getVersion() {
-        return version.toString();
+        return version;
     }
 
     /**

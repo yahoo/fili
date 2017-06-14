@@ -1,4 +1,4 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.response;
 
@@ -13,7 +13,7 @@ import org.joda.time.DateTimeZone;
  */
 public abstract class DruidResultRow {
     @JsonIgnore
-    public final DateTime timestamp;
+    private final String timestamp;
 
     /**
      * Creates a DruidResultRow at the given timestamp.
@@ -21,12 +21,12 @@ public abstract class DruidResultRow {
      * @param timestamp  The timestamp to be included in serialization of a response.
      */
     public DruidResultRow(DateTime timestamp) {
-        this.timestamp = timestamp;
+        this.timestamp = timestamp.toDateTime(DateTimeZone.UTC).toString();
     }
 
     @JsonProperty
     public String getTimestamp() {
-        return timestamp.toDateTime(DateTimeZone.UTC).toString();
+        return timestamp;
     }
 
     /**
