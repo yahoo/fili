@@ -745,25 +745,15 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      * @return The cache instance
      */
     protected DataCache<?> buildCache() {
-        if (CacheFeatureFlag.TTL.isOn() || CacheFeatureFlag.LOCAL_SIGNATURE.isOn()) { // old caching strategy
-            if (CacheFeatureFlag.LOCAL_SIGNATURE.isOn()) {
-                return buildLocalSignatureCache();
-            } else if (CacheFeatureFlag.TTL.isOn()) {
-                return buildTtlCache();
-            } else {
-                // not used, but Jersey required a binding
-                return new StubDataCache<>();
-            }
-        } else { // new caching strategy
-            if (CacheFeatureFlag.TTL.isOn()) {
-                return buildTtlCache();
-            } else if (CacheFeatureFlag.LOCAL_SIGNATURE.isOn()) {
-                return buildLocalSignatureCache();
-            } else if (CacheFeatureFlag.ETAG.isOn()) {
-                return buildETagCahe();
-            } else {
-                return new StubDataCache<>();
-            }
+        if (CacheFeatureFlag.LOCAL_SIGNATURE.isOn()) {
+            return buildLocalSignatureCache();
+        } else if (CacheFeatureFlag.TTL.isOn()) {
+            return buildTtlCache();
+        } else if (CacheFeatureFlag.ETAG.isOn()) {
+            return buildETagCahe();
+        } else {
+            // not used, but Jersey required a binding
+            return new StubDataCache<>();
         }
     }
 

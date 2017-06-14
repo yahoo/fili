@@ -2,6 +2,9 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Binds a caching strategy to a system configuration name.
  */
@@ -23,6 +26,7 @@ public enum CacheFeatureFlag implements FeatureFlag {
      */
     ETAG("query_response_caching_strategy", "ETag");
 
+    private static final Logger LOG = LoggerFactory.getLogger(CacheFeatureFlag.class);
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
     private static final String QUERY_RESPONSE_CACHING_STRAGEGY = SYSTEM_CONFIG.getStringProperty(
             SYSTEM_CONFIG.getPackageVariableName("query_response_caching_strategy"),
@@ -50,9 +54,12 @@ public enum CacheFeatureFlag implements FeatureFlag {
 
     @Override
     public boolean isOn() {
-        // TODO: Remove this if conditional after cache V1 & V2 are removed
+        // TODO: Remove this if conditional after cache V1 & V2 configuration flags are removed
         if (BardFeatureFlag.DRUID_CACHE.isSet() || BardFeatureFlag.DRUID_CACHE_V2.isSet()) {
-            return (this.value.equals("Ttl") && !BardFeatureFlag.DRUID_CACHE_V2.isOn())
+            return (this.value.equals("Ttl")
+                    && !BardFeatureFlag.DRUID_CACHE_V2.isOn()
+                    && !BardFeatureFlag.DRUID_CACHE.isOn()
+            )
                     || (this.value.equals("LocalSignature") && BardFeatureFlag.DRUID_CACHE_V2.isOn());
         }
         return QUERY_RESPONSE_CACHING_STRAGEGY.equalsIgnoreCase(value);
@@ -60,6 +67,8 @@ public enum CacheFeatureFlag implements FeatureFlag {
 
     @Override
     public void setOn(Boolean newValue) {
+        LOG.warn("com.yahoo.bard.webservice.config.CacheFeatureFlag#setOn(Boolean) does not apply in " +
+                "com.yahoo.bard.webservice.config.CacheFeatureFlag");
         return;
     }
 }
