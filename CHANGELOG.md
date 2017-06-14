@@ -11,7 +11,7 @@ Current
 ### Added:
 
 - [Add custom dimension row serializer](https://github.com/yahoo/fili/pull/399)
-    * Add custom dimension row serializer so that dimension row serialize into dimension row cache correctly
+    * Add custom dimension row serializer so that each dimension row serializes into dimension row cache correctly
 
 - [Fili-security module](https://github.com/yahoo/fili/pull/405)
     * Added security module for fili data security filters

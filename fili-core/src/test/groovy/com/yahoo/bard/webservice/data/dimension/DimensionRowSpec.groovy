@@ -31,8 +31,10 @@ class DimensionRowSpec extends Specification {
     def "json serialization into the correct format we expect"() {
         setup:
         ObjectMapper objectMapper = new ObjectMapper()
+        String result = objectMapper.writeValueAsString(testRow)
 
         expect:
-        objectMapper.writeValueAsString(testRow) == '{"nonKeyFieldName":"nonKey","keyFieldName":"key"}'
+        result.contains('"nonKeyFieldName":"nonKey"')
+        result.contains('"keyFieldName":"key"')
     }
 }
