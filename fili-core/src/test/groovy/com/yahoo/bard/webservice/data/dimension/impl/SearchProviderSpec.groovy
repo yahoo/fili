@@ -526,6 +526,31 @@ abstract class SearchProviderSpec<T extends SearchProvider> extends Specificatio
         resultsPage.numResults == 3
     }
 
+    def "An empty string filter value should return all results"() {
+        setup: "Given a filter that will match every row"
+        /* Expected rows, not necessarily in this order:
+                name: "owl", description: "this is an owl"
+                name: "hawk", description: "this is a raptor"
+                name: "eagle", description: "this is a raptor"
+                name: "kumquat", description: "this is not an animal"
+        */
+        Set<ApiFilter> filters = [
+                buildFilter("animal|desc-startswith[this]"),
+                buildFilter("animal|desc-contains[\"\"]")
+        ]
+        and: "We get the second page, where each page has two rows (so both pages should have two results)"
+        PaginationParameters parameters = new PaginationParameters(2, 2)
+
+        when: "We query the search provider"
+        Pagination<DimensionRow> resultsPage = searchProvider.findFilteredDimensionRowsPaged(filters, parameters)
+
+        then: "We get only the last page of results (which has two)"
+        resultsPage.getPageOfData().size() == 2
+
+        and: "The pagination metadata includes the correct number of total results"
+        resultsPage.numResults == 4
+    }
+
     /**
      * Checks that this search provider's indices have been cleared.
      *
