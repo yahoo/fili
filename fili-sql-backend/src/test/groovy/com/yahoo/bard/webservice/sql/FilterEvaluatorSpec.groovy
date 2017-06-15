@@ -10,8 +10,6 @@ import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.IS_ROBOT
 import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.METRO_CODE
 import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.WIKITICKER
 
-import com.yahoo.bard.webservice.sql.FilterEvaluator
-import com.yahoo.bard.webservice.sql.SqlConverter
 import com.yahoo.bard.webservice.test.Database
 
 import org.apache.calcite.rel.rel2sql.RelToSqlConverter

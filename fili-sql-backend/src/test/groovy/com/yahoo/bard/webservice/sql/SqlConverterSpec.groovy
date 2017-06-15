@@ -23,6 +23,7 @@ import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.COMMENT
 import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.DELETED
 import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.DELTA
 import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.END
+import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.ID
 import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.IS_NEW
 import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.IS_ROBOT
 import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.PAGE
@@ -65,7 +66,8 @@ class SqlConverterSpec extends Specification {
     )
     private static final String TRUE = "TRUE"
     private static final String FALSE = "FALSE"
-    private static final String ADDED_PROJECT = "added project"
+    private static final String FIRST_COMMENT = "added project"
+    private static final String UNIQUE_COMMENT = "took out (then), added quotation marks"
     //this is the first result in the database
 
     static ResultSet parse(DefaultTimeGrain timeGrain, JsonNode jsonNode, DefaultQueryType queryType) {
@@ -146,9 +148,9 @@ class SqlConverterSpec extends Specification {
         where: "we have"
         timeGrain | filter                                              | size
         MINUTE    | null                                                | 1394
-        MINUTE    | search(COMMENT, ADDED_PROJECT)                      | 1
-        MINUTE    | select(COMMENT, ADDED_PROJECT)                      | 1
-        MINUTE    | not(select(COMMENT, ADDED_PROJECT))                 | 1393
+        MINUTE    | search(COMMENT, FIRST_COMMENT)                      | 1
+        MINUTE    | select(COMMENT, FIRST_COMMENT)                      | 1
+        MINUTE    | not(select(COMMENT, FIRST_COMMENT))                 | 1393
         MINUTE    | or(select(IS_ROBOT, TRUE), select(IS_ROBOT, FALSE)) | 1394
         HOUR      | null                                                | 24
         DAY       | null                                                | 1
@@ -189,13 +191,13 @@ class SqlConverterSpec extends Specification {
         jsonNode.toString() == response
 
         where: "we have"
-        timeGrain | filter | response
-        HOUR      | search(COMMENT, ADDED_PROJECT)   | """[{"timestamp":"2015-09-12T00:00:00.000Z","result":{"ADDED":36.0,"DELTA":36.0,"DELETED":0.0}}]"""
-        HOUR      | search(COMMENT, "took out (then), added quotation marks")   | """[{"timestamp":"2015-09-12T01:00:00.000Z","result":{"ADDED":0.0,"DELTA":-5.0,"DELETED":5.0}}]"""
-        DAY       | null   | """[{"timestamp":"2015-09-12T00:00:00.000Z","result":{"ADDED":9385573.0,"DELTA":8991275.0,"DELETED":394298.0}}]"""
-        WEEK      | null   | """[{"timestamp":"2015-09-10T00:00:00.000Z","result":{"ADDED":9385573.0,"DELTA":8991275.0,"DELETED":394298.0}}]"""
-        MONTH     | null   | """[{"timestamp":"2015-09-01T00:00:00.000Z","result":{"ADDED":9385573.0,"DELTA":8991275.0,"DELETED":394298.0}}]"""
-        YEAR      | null   | """[{"timestamp":"2015-01-01T00:00:00.000Z","result":{"ADDED":9385573.0,"DELTA":8991275.0,"DELETED":394298.0}}]"""
+        timeGrain | filter                         | response
+        HOUR      | search(COMMENT, FIRST_COMMENT) | """[{"timestamp":"2015-09-12T00:00:00.000Z","result":{"ADDED":36.0,"DELTA":36.0,"DELETED":0.0}}]"""
+        HOUR      | search(ID, UNIQUE_COMMENT)     | """[{"timestamp":"2015-09-12T01:00:00.000Z","result":{"ADDED":0.0,"DELTA":-5.0,"DELETED":5.0}}]"""
+        DAY       | null                           | """[{"timestamp":"2015-09-12T00:00:00.000Z","result":{"ADDED":9385573.0,"DELTA":8991275.0,"DELETED":394298.0}}]"""
+        WEEK      | null                           | """[{"timestamp":"2015-09-10T00:00:00.000Z","result":{"ADDED":9385573.0,"DELTA":8991275.0,"DELETED":394298.0}}]"""
+        MONTH     | null                           | """[{"timestamp":"2015-09-01T00:00:00.000Z","result":{"ADDED":9385573.0,"DELTA":8991275.0,"DELETED":394298.0}}]"""
+        YEAR      | null                           | """[{"timestamp":"2015-01-01T00:00:00.000Z","result":{"ADDED":9385573.0,"DELTA":8991275.0,"DELETED":394298.0}}]"""
     }
 
     @Unroll
@@ -214,7 +216,7 @@ class SqlConverterSpec extends Specification {
         HOUR      | asList(IS_ROBOT)         | null                           | null                            | 24 * 2
         DAY       | asList(IS_NEW, IS_ROBOT) | null                           | null                            | 4
         HOUR      | asList(IS_NEW, IS_ROBOT) | null                           | equals(ADDED, 0)                | 0
-        HOUR      | asList(IS_NEW, IS_ROBOT) | search(COMMENT, ADDED_PROJECT) | equals(ADDED, 36)               | 1
+        HOUR      | asList(IS_NEW, IS_ROBOT) | search(COMMENT, FIRST_COMMENT) | equals(ADDED, 36)               | 1
         HOUR      | asList()                 | null                           | gt(ADDED, 400000)               | 12
         HOUR      | asList()                 | null                           | null                            | 24
         DAY       | asList(PAGE, USER)       | null                           | null                            | 36565
