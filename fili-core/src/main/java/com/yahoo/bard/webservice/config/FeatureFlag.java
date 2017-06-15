@@ -7,8 +7,6 @@ package com.yahoo.bard.webservice.config;
  */
 public interface FeatureFlag {
 
-    SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
-
     /**
      * Returns the name of a specific flag included in a class that implements this interface.
      * When it is implemented by an Enum class then the method {@code name} that is available in the Enum implicitly
@@ -39,8 +37,9 @@ public interface FeatureFlag {
      * @return true if the feature flag has been configured.
      */
     default boolean isSet() {
+        SystemConfig systemConfig = SystemConfigProvider.getInstance();
         try {
-            return SYSTEM_CONFIG.getStringProperty(SYSTEM_CONFIG.getPackageVariableName(getName())) == null;
+            return systemConfig.getStringProperty(systemConfig.getPackageVariableName(getName())) != null;
         } catch (SystemConfigException exception) {
             return false;
         }

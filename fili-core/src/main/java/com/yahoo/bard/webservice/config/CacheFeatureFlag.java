@@ -49,16 +49,23 @@ public enum CacheFeatureFlag implements FeatureFlag {
 
     @Override
     public String getName() {
-        return propertyName;
+        return value;
     }
 
     @Override
     public boolean isOn() {
         // TODO: Remove this if conditional after cache V1 & V2 configuration flags are removed
         if (BardFeatureFlag.DRUID_CACHE.isSet() || BardFeatureFlag.DRUID_CACHE_V2.isSet()) {
+            // no cache
+            if (this.value.equals("NoCache")
+                    && !BardFeatureFlag.DRUID_CACHE.isOn()
+                    && !BardFeatureFlag.DRUID_CACHE_V2.isOn()) {
+                return true;
+            }
+
             return (this.value.equals("Ttl")
                     && !BardFeatureFlag.DRUID_CACHE_V2.isOn()
-                    && !BardFeatureFlag.DRUID_CACHE.isOn()
+                    && BardFeatureFlag.DRUID_CACHE.isOn()
             )
                     || (this.value.equals("LocalSignature") && BardFeatureFlag.DRUID_CACHE_V2.isOn());
         }
@@ -67,7 +74,6 @@ public enum CacheFeatureFlag implements FeatureFlag {
 
     @Override
     public void setOn(Boolean newValue) {
-        LOG.warn("com.yahoo.bard.webservice.config.CacheFeatureFlag#setOn(Boolean) does not apply in " +
-                "com.yahoo.bard.webservice.config.CacheFeatureFlag");
+        LOG.warn("setOn(Boolean) method does not apply in CacheFeatureFlag");
     }
 }
