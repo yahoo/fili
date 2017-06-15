@@ -3,16 +3,16 @@ Fili
 
 [![Download](https://api.bintray.com/packages/yahoo/maven/fili/images/download.svg)](https://bintray.com/yahoo/maven/fili/_latestVersion) [![Gitter](https://img.shields.io/gitter/room/yahoo/fili.svg?maxAge=2592000)](https://gitter.im/yahoo/fili) [![Travis](https://img.shields.io/travis/yahoo/fili/master.svg?maxAge=2592000)](https://travis-ci.org/yahoo/fili/builds/) [![Codacy grade](https://img.shields.io/codacy/grade/91fa6c38f25d4ea0ae3569ee70a33e38.svg?maxAge=21600)](https://www.codacy.com/app/Fili/fili/dashboard) [![Users Google Group](https://img.shields.io/badge/google_group-users-blue.svg?maxAge=2592000)](https://groups.google.com/forum/#!forum/fili-users) [![Developers Google Group](https://img.shields.io/badge/google_group-developers-blue.svg?maxAge=2592000)](https://groups.google.com/forum/#!forum/fili-developers)
 
-Fili是用来搭建和维护RESTful web服务的Java框架，主要应用于时间数据的访问和分析。Fili的[访问API](docs/end-user-api.md)基于HTTP GET，十分简洁，易于使用，大大简化了[metic和dimension定义](docs/end-user-api.md)，数据存储，以及访问查询优化。Fili是一个适用于大数据，高拓展性的框架，目前完全支持[Druid](http://druid.io)数据库，Fili有很强的扩展性，可以兼容其他任何数据库。
+Fili是用来搭建和维护RESTful web服务的Java框架，主要应用于时间数据的访问和分析。Fili的[访问API](docs/end-user-api-zh.md)基于HTTP GET，十分简洁，易于使用，大大简化了[metic和dimension定义](docs/end-user-api-zh.md)，数据存储，以及访问查询优化。Fili是一个适用于大数据，高拓展性的框架，目前完全支持[Druid](http://druid.io)数据库，Fili有很强的扩展性，可以兼容其他任何数据库。
 
 Fili的数据访问、分析包括以下几个核心概念：
 
-- [Metrics](docs/end-user-api.md#metrics)
-- [Dimensions](docs/end-user-api.md#dimensions)
-- [列表](docs/end-user-api.md#tables)
-- 时间 ([时间单位](docs/end-user-api.md#time-grain) 和 [时间段](docs/end-user-api.md#interval))
+- [Metrics](docs/end-user-api-zh.md#metrics)
+- [Dimensions](docs/end-user-api-zh.md#dimensions)
+- [列表](docs/end-user-api-zh.md#tables)
+- 时间 ([时间单位](docs/end-user-api-zh.md#time-grain) 和 [时间段](docs/end-user-api-zh.md#interval))
 
-Fili为了简化终端用户操作，不提供Views, Partitions, 和metric formulas等底层操作。Fili[风格极简的API](docs/end-user-api.md)让用户轻松从数据中发掘商业价值，Fili会去负责如何挖掘。
+Fili为了简化终端用户操作，不提供Views, Partitions, 和metric formulas等底层操作。Fili[风格极简的API](docs/end-user-api-zh.md)让用户轻松从数据中发掘商业价值，Fili会去负责如何挖掘。
 
 Fili具备灵活的数据库存储和访问，搭配Fili的web服务在不影响用户层的情况下可以顺利转移数据，优化访问，切换数据库。
 

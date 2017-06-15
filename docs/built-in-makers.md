@@ -1,6 +1,8 @@
 Built In Makers
 ===============
 
+*Read this in other languages: [中文](../translations/zh/built-in-makers-zh.md).*
+
 The following is a list of metric makers that are built-in to Fili. See [Configuring Metrics][configuring metrics] for
 details on metric makers.
 
