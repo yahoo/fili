@@ -34,6 +34,7 @@ class DruidResponseSerializerSpec extends Specification {
 
         where:
         keys               | values          | serialized
+        asList(key1)       | asList("")      | """[{"timestamp":"2017-06-13T00:00:00.000Z","result":{"key1":""}}]"""
         asList(key1)       | asList("value") | """[{"timestamp":"2017-06-13T00:00:00.000Z","result":{"key1":"value"}}]"""
         asList(key1)       | asList(1)       | """[{"timestamp":"2017-06-13T00:00:00.000Z","result":{"key1":1}}]"""
         asList(key1)       | asList(1.0D)    | """[{"timestamp":"2017-06-13T00:00:00.000Z","result":{"key1":1.0}}]"""
@@ -55,6 +56,7 @@ class DruidResponseSerializerSpec extends Specification {
 
         where:
         keys               | values          | version | serialized
+        asList(key1)       | asList("")      | V1      | """[{"version":"v1","timestamp":"2017-06-13T00:00:00.000Z","event":{"key1":""}}]"""
         asList(key1)       | asList("value") | V1      | """[{"version":"v1","timestamp":"2017-06-13T00:00:00.000Z","event":{"key1":"value"}}]"""
         asList(key1)       | asList(1)       | V1      | """[{"version":"v1","timestamp":"2017-06-13T00:00:00.000Z","event":{"key1":1}}]"""
         asList(key1)       | asList(1.0D)    | V2      | """[{"version":"v2","timestamp":"2017-06-13T00:00:00.000Z","event":{"key1":1.0}}]"""
@@ -76,6 +78,7 @@ class DruidResponseSerializerSpec extends Specification {
 
         where:
         keys               | values          | serialized
+        asList(key1)       | asList("")      | """[{"timestamp":"2017-06-13T00:00:00.000Z","event":{"key1":""}}]"""
         asList(key1)       | asList("value") | """[{"timestamp":"2017-06-13T00:00:00.000Z","event":{"key1":"value"}}]"""
         asList(key1)       | asList(1)       | """[{"timestamp":"2017-06-13T00:00:00.000Z","event":{"key1":1}}]"""
         asList(key1)       | asList(1.0D)    | """[{"timestamp":"2017-06-13T00:00:00.000Z","event":{"key1":1.0}}]"""
