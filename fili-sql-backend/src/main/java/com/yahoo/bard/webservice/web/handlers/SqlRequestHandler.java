@@ -56,8 +56,7 @@ public class SqlRequestHandler implements DataRequestHandler {
         String user = "";
         String pass = "";
         try {
-            Connection connection = DriverManager.getConnection(dbUrl, user, pass);
-            sqlBackedClient = new SqlConverter(connection, JdbcSchema.dataSource(dbUrl, driver, user, pass));
+            sqlBackedClient = new SqlConverter(JdbcSchema.dataSource(dbUrl, driver, user, pass));
         } catch (SQLException e) {
             LOG.error("Failed to set up sql backed client", e);
         }

@@ -23,7 +23,6 @@ import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.COMMENT
 import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.DELETED
 import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.DELTA
 import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.END
-import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.ID
 import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.IS_NEW
 import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.IS_ROBOT
 import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.PAGE
@@ -57,13 +56,12 @@ import org.joda.time.DateTimeZone
 import spock.lang.Specification
 import spock.lang.Unroll
 
+import java.sql.Connection
 import java.util.stream.Stream
 
 class SqlConverterSpec extends Specification {
-    private static final SqlBackedClient sqlBackedClient = new SqlConverter(
-            Database.getDatabase(),
-            Database.getDataSource()
-    )
+    private static final Connection CONNECTION = Database.initializeDatabase();
+    private static final SqlBackedClient sqlBackedClient = new SqlConverter(Database.getDataSource())
     private static final String TRUE = "TRUE"
     private static final String FALSE = "FALSE"
     private static final String FIRST_COMMENT = "added project"
@@ -191,13 +189,13 @@ class SqlConverterSpec extends Specification {
         jsonNode.toString() == response
 
         where: "we have"
-        timeGrain | filter                         | response
-        HOUR      | search(COMMENT, FIRST_COMMENT) | """[{"timestamp":"2015-09-12T00:00:00.000Z","result":{"ADDED":36.0,"DELTA":36.0,"DELETED":0.0}}]"""
-        HOUR      | search(ID, UNIQUE_COMMENT)     | """[{"timestamp":"2015-09-12T01:00:00.000Z","result":{"ADDED":0.0,"DELTA":-5.0,"DELETED":5.0}}]"""
-        DAY       | null                           | """[{"timestamp":"2015-09-12T00:00:00.000Z","result":{"ADDED":9385573.0,"DELTA":8991275.0,"DELETED":394298.0}}]"""
-        WEEK      | null                           | """[{"timestamp":"2015-09-10T00:00:00.000Z","result":{"ADDED":9385573.0,"DELTA":8991275.0,"DELETED":394298.0}}]"""
-        MONTH     | null                           | """[{"timestamp":"2015-09-01T00:00:00.000Z","result":{"ADDED":9385573.0,"DELTA":8991275.0,"DELETED":394298.0}}]"""
-        YEAR      | null                           | """[{"timestamp":"2015-01-01T00:00:00.000Z","result":{"ADDED":9385573.0,"DELTA":8991275.0,"DELETED":394298.0}}]"""
+        timeGrain | filter                          | response
+        HOUR      | select(COMMENT, FIRST_COMMENT)  | """[{"timestamp":"2015-09-12T00:00:00.000Z","result":{"ADDED":36.0,"DELTA":36.0,"DELETED":0.0}}]"""
+        HOUR      | select(COMMENT, UNIQUE_COMMENT) | """[{"timestamp":"2015-09-12T01:00:00.000Z","result":{"ADDED":0.0,"DELTA":-5.0,"DELETED":5.0}}]"""
+        DAY       | null                            | """[{"timestamp":"2015-09-12T00:00:00.000Z","result":{"ADDED":9385573.0,"DELTA":8991275.0,"DELETED":394298.0}}]"""
+        WEEK      | null                            | """[{"timestamp":"2015-09-10T00:00:00.000Z","result":{"ADDED":9385573.0,"DELTA":8991275.0,"DELETED":394298.0}}]"""
+        MONTH     | null                            | """[{"timestamp":"2015-09-01T00:00:00.000Z","result":{"ADDED":9385573.0,"DELTA":8991275.0,"DELETED":394298.0}}]"""
+        YEAR      | null                            | """[{"timestamp":"2015-01-01T00:00:00.000Z","result":{"ADDED":9385573.0,"DELTA":8991275.0,"DELETED":394298.0}}]"""
     }
 
     @Unroll

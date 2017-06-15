@@ -29,11 +29,12 @@ import java.util.stream.Collectors
 class HavingsEvaluatorSpec extends Specification {
     private static final int ONE = 1
     private static final int TWO = 2
-    private static final Connection CONNECTION = Database.getDatabase()
+    private static final Connection CONNECTION = Database.initializeDatabase()
     private static final AliasMaker ALIAS_MAKER = new AliasMaker("__");
 
     private static RelBuilder getBuilder() {
-        RelBuilder builder = SqlConverter.builder(Database.getDataSource(), SqlConverter.DEFAULT_SCHEMA)
+        Connection connection = Database.initializeDatabase();
+        RelBuilder builder = SqlConverter.getBuilder(Database.getDataSource(), SqlConverter.DEFAULT_SCHEMA)
         builder.scan(WIKITICKER);
         return builder
     }

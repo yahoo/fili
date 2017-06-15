@@ -70,28 +70,26 @@ public class SqlConverter implements SqlBackedClient {
      * The default schema is "PUBLIC" (i.e. you haven't called "create schema"
      * and "set schema")
      *
-     * @param connection  The connection to the database.
      * @param dataSource  The dataSource for the jdbc schema.
      *
      * @throws SQLException if can't read from database.
      */
-    public SqlConverter(Connection connection, DataSource dataSource) throws SQLException {
-        this(connection, dataSource, DEFAULT_SCHEMA);
+    public SqlConverter(DataSource dataSource) throws SQLException {
+        this(dataSource, DEFAULT_SCHEMA);
     }
 
     /**
      * Creates a sql converter using the given database and datasource.
      *
-     * @param connection  The connection to the database.
      * @param dataSource  The dataSource for the jdbc schema.
      * @param schemaName  The name of the schema used for the database.
      *
      * @throws SQLException if can't read from database.
      */
-    public SqlConverter(Connection connection, DataSource dataSource, String schemaName) throws SQLException {
-        this.connection = connection;
+    public SqlConverter(DataSource dataSource, String schemaName) throws SQLException {
+        connection = dataSource.getConnection();
         relToSql = new RelToSqlConverter(SqlDialect.create(connection.getMetaData()));
-        builder = builder(dataSource, schemaName);
+        builder = getBuilder(dataSource, schemaName);
     }
 
     /**
@@ -104,7 +102,7 @@ public class SqlConverter implements SqlBackedClient {
      *
      * @throws SQLException if can't readSqlResultSet from database.
      */
-    private static RelBuilder builder(DataSource dataSource, String schemaName) throws SQLException {
+    private static RelBuilder getBuilder(DataSource dataSource, String schemaName) throws SQLException {
         SchemaPlus rootSchema = Frameworks.createRootSchema(true);
         return RelBuilder.create(
                 Frameworks.newConfigBuilder()

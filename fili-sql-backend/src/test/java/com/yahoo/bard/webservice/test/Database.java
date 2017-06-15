@@ -37,7 +37,7 @@ public class Database {
      * @throws SQLException if can't create database correctly.
      * @throws IOException if can't read example data file.
      */
-    public static Connection getDatabase() throws SQLException, IOException {
+    public static Connection initializeDatabase() throws SQLException, IOException {
         if (connection == null) {
             connection = DriverManager.getConnection(DATABASE_URL);
         } else {

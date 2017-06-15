@@ -23,12 +23,12 @@ import java.sql.Connection
 import java.util.stream.Collectors
 
 class FilterEvaluatorSpec extends Specification {
-    private final Connection CONNECTION = Database.getDatabase()
+    private final Connection CONNECTION = Database.initializeDatabase()
 
     @Unroll
     def "GetDimensionNames"() {
         setup:
-        RelBuilder builder = SqlConverter.builder(Database.getDataSource(), SqlConverter.DEFAULT_SCHEMA)
+        RelBuilder builder = SqlConverter.getBuilder(Database.getDataSource(), SqlConverter.DEFAULT_SCHEMA)
         builder.scan(WIKITICKER)
         def rexNodes = dimensions.stream()
                 .map { builder.field(it) }
