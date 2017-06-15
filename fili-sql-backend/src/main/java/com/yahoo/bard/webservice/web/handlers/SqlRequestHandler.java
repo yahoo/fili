@@ -53,8 +53,8 @@ public class SqlRequestHandler implements DataRequestHandler {
         // todo add settings for configuring a sql backed client
         String dbUrl = "jdbc:h2:mem:test";
         String driver = "org.h2.Driver";
-        String user = null;
-        String pass = null;
+        String user = "";
+        String pass = "";
         try {
             Connection connection = DriverManager.getConnection(dbUrl, user, pass);
             sqlBackedClient = new SqlConverter(connection, JdbcSchema.dataSource(dbUrl, driver, user, pass));

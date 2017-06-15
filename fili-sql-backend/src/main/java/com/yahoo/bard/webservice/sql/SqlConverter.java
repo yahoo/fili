@@ -267,7 +267,8 @@ public class SqlConverter implements SqlBackedClient {
     private String buildSqlQuery(Connection connection, DruidAggregationQuery<?> druidQuery)
             throws SQLException {
         String sqlTableName = druidQuery.getDataSource().getPhysicalTable().getName();
-        String nameOfTimestampColumn = DatabaseHelper.getDateTimeColumn(connection, sqlTableName);
+        // todo we could store the name of the timestamp column
+        String nameOfTimestampColumn = DatabaseHelper.getTimestampColumn(connection, sqlTableName);
 
         LOG.debug("Selecting SQL Table '{}'", sqlTableName);
         builder.scan(sqlTableName);

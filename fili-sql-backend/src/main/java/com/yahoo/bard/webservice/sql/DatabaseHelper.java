@@ -29,18 +29,33 @@ public class DatabaseHelper {
      *
      * @throws SQLException if failed while reading database.
      */
-    public static String getDateTimeColumn(Connection connection, String tableName) throws SQLException {
+    public static String getTimestampColumn(Connection connection, String tableName) throws SQLException {
+        // todo probably use prepared statement. Pass in schema as well
         PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM " + tableName + " LIMIT 1");
         ResultSet resultSet = preparedStatement.executeQuery();
-        ResultSetMetaData rsmd = resultSet.getMetaData();
+        ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
         // todo as of now I've only tested this with timestamp
-        for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-            int jdbcType = rsmd.getColumnType(i);
+        for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++) {
+            int jdbcType = resultSetMetaData.getColumnType(i);
             if (jdbcType == JDBCType.TIMESTAMP.getVendorTypeNumber()) {
-                return rsmd.getColumnName(i);
+                return resultSetMetaData.getColumnName(i);
             }
         }
         throw new IllegalStateException("No TIMESTAMP column was found");
+    }
+
+    /**
+     * Reads all the results in a {@link ResultSet} with name and value of columns.
+     * NOTE: result set may not be able to be reset to beginning after rows have been read.
+     *
+     * @param resultSet  The resultSet to read from.
+     *
+     * @return a {@link StringBuilder} containing all the information read from the columns.
+     *
+     * @throws SQLException if failed while reading results.
+     */
+    public static StringBuilder format(ResultSet resultSet) throws SQLException {
+        return ResultSetFormatter.format(resultSet, -1);
     }
 
     /**
@@ -48,20 +63,6 @@ public class DatabaseHelper {
      * From CalciteAssert
      * */
     public static class ResultSetFormatter {
-
-        /**
-         * Reads all the results in a {@link ResultSet} with name and value of columns.
-         * NOTE: result set may not be able to be reset to beginning after rows have been read.
-         *
-         * @param resultSet  The resultSet to read from.
-         *
-         * @return a {@link StringBuilder} containing all the information read from the columns.
-         *
-         * @throws SQLException if failed while reading results.
-         */
-        public static StringBuilder format(ResultSet resultSet) throws SQLException {
-            return format(resultSet, -1);
-        }
 
         /**
          * Reads a number of the results in a {@link ResultSet} with name and value of columns.
