@@ -2,8 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.test;
 
-import static com.yahoo.bard.webservice.sql.SqlConverter.THE_SCHEMA;
-
 import com.yahoo.bard.webservice.TimestampUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,8 +46,6 @@ public class Database {
 
         List<WikitickerEntry> entries = readJsonFile();
 
-        // todo try to move this out or see if we don't need a schema
-        connection.createStatement().execute("CREATE SCHEMA " + THE_SCHEMA + ";" + " SET SCHEMA " + THE_SCHEMA);
         Statement s = connection.createStatement();
         s.execute("CREATE TABLE WIKITICKER (ID INT PRIMARY KEY," +
                 "COMMENT VARCHAR(256)," +

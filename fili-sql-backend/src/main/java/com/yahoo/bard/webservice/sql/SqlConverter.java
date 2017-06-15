@@ -55,7 +55,7 @@ import javax.sql.DataSource;
  * Converts druid queries to sql, executes it, and returns a druid like response.
  */
 public class SqlConverter implements SqlBackedClient {
-    public static final String THE_SCHEMA = "DEFAULT_SCHEMA";
+    public static final String DEFAULT_SCHEMA = "PUBLIC";
     private static final Logger LOG = LoggerFactory.getLogger(SqlConverter.class);
     private static final String PREPENDED_ALIAS = "__";
     private static final AliasMaker ALIAS_MAKER = new AliasMaker(PREPENDED_ALIAS);
@@ -64,9 +64,11 @@ public class SqlConverter implements SqlBackedClient {
     private final RelToSqlConverter relToSql;
     private final Connection connection;
 
+
     /**
      * Creates a sql converter using the given database and datasource.
-     * NOTE: as of right now the table must be using a schema called "DEFAULT_SCHEMA"
+     * The default schema is "PUBLIC" (i.e. you haven't called "create schema"
+     * and "set schema")
      *
      * @param connection  The connection to the database.
      * @param dataSource  The dataSource for the jdbc schema.
@@ -74,28 +76,40 @@ public class SqlConverter implements SqlBackedClient {
      * @throws SQLException if can't read from database.
      */
     public SqlConverter(Connection connection, DataSource dataSource) throws SQLException {
-        this.connection = connection;
-        relToSql = new RelToSqlConverter(SqlDialect.create(connection.getMetaData()));
-        builder = builder(connection, dataSource);
+        this(connection, dataSource, DEFAULT_SCHEMA);
     }
 
     /**
-     * Creates a {@link RelBuilder} with a root scema of {@link #THE_SCHEMA}.
+     * Creates a sql converter using the given database and datasource.
      *
      * @param connection  The connection to the database.
      * @param dataSource  The dataSource for the jdbc schema.
+     * @param schemaName  The name of the schema used for the database.
+     *
+     * @throws SQLException if can't read from database.
+     */
+    public SqlConverter(Connection connection, DataSource dataSource, String schemaName) throws SQLException {
+        this.connection = connection;
+        relToSql = new RelToSqlConverter(SqlDialect.create(connection.getMetaData()));
+        builder = builder(dataSource, schemaName);
+    }
+
+    /**
+     * Creates a {@link RelBuilder} with a root scema of {@link #DEFAULT_SCHEMA}.
+     *
+     * @param dataSource  The dataSource for the jdbc schema.
+     * @param schemaName  The name of the schema used for the database.
      *
      * @return the relbuilder from Calcite.
      *
      * @throws SQLException if can't readSqlResultSet from database.
      */
-    private static RelBuilder builder(Connection connection, DataSource dataSource) throws SQLException {
-        // todo create schema here or find a way to not have to use it
+    private static RelBuilder builder(DataSource dataSource, String schemaName) throws SQLException {
         SchemaPlus rootSchema = Frameworks.createRootSchema(true);
         return RelBuilder.create(
                 Frameworks.newConfigBuilder()
                         .parserConfig(SqlParser.Config.DEFAULT)
-                        .defaultSchema(addSchema(rootSchema, dataSource))
+                        .defaultSchema(addSchema(rootSchema, dataSource, schemaName))
                         .traitDefs((List<RelTraitDef>) null)
                         .programs(Programs.heuristicJoinOrder(Programs.RULE_SET, true, 2))
                         .build()
@@ -103,16 +117,17 @@ public class SqlConverter implements SqlBackedClient {
     }
 
     /**
-     * Adds the {@link #THE_SCHEMA} to the rootSchema.
+     * Adds the schema name to the rootSchema.
      *
      * @param rootSchema  The calcite schema for the database.
      * @param dataSource  The dataSource for the jdbc schema.
+     * @param schemaName  The name of the schema used for the database.
      *
      * @return the schema.
      */
-    private static SchemaPlus addSchema(SchemaPlus rootSchema, DataSource dataSource) {
+    private static SchemaPlus addSchema(SchemaPlus rootSchema, DataSource dataSource, String schemaName) {
         return rootSchema.add(
-                THE_SCHEMA,
+                schemaName,
                 JdbcSchema.create(rootSchema, null, dataSource, null, null)
         );
     }

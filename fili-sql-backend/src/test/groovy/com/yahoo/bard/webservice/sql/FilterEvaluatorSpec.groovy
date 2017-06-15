@@ -30,7 +30,7 @@ class FilterEvaluatorSpec extends Specification {
     @Unroll
     def "GetDimensionNames"() {
         setup:
-        RelBuilder builder = SqlConverter.builder(CONNECTION, Database.getDataSource())
+        RelBuilder builder = SqlConverter.builder(Database.getDataSource(), SqlConverter.DEFAULT_SCHEMA)
         builder.scan(WIKITICKER)
         def rexNodes = dimensions.stream()
                 .map { builder.field(it) }
@@ -47,7 +47,7 @@ class FilterEvaluatorSpec extends Specification {
         sql == "SELECT " + dimensions.stream().
                 map { "`" + it + "`" }.
                 collect(Collectors.joining(", ")) + "\n" +
-                "FROM `DEFAULT_SCHEMA`.`${WIKITICKER}`"
+                "FROM `${SqlConverter.DEFAULT_SCHEMA}`.`${WIKITICKER}`"
 
         where: "we have"
         filter                                                | dimensions

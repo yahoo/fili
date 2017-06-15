@@ -40,7 +40,7 @@ class HavingsEvaluatorSpec extends Specification {
     private static final AliasMaker ALIAS_MAKER = new AliasMaker("__");
 
     private static RelBuilder getBuilder() {
-        RelBuilder builder = SqlConverter.builder(CONNECTION, Database.getDataSource())
+        RelBuilder builder = SqlConverter.builder(Database.getDataSource(), SqlConverter.DEFAULT_SCHEMA)
         builder.scan(WIKITICKER);
         return builder
     }
