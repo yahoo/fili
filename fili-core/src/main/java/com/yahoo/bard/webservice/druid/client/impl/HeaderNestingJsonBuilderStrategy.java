@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.client.impl;
 
+import com.yahoo.bard.webservice.config.CacheFeatureFlag;
 import com.yahoo.bard.webservice.web.responseprocessors.DruidJsonResponseContentKeys;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -48,6 +49,16 @@ public class HeaderNestingJsonBuilderStrategy implements Function<Response, Json
                     DruidJsonResponseContentKeys.STATUS_CODE.getName(),
                     mappingJsonFactory.createParser(String.valueOf(response.getStatusCode())).readValueAsTree()
             );
+            if (CacheFeatureFlag.ETAG.isOn()) {
+                objectNode.set(
+                        DruidJsonResponseContentKeys.ETAG.getName(),
+                        mappingJsonFactory
+                                .createParser(
+                                        response.getHeader(DruidJsonResponseContentKeys.ETAG.getName())
+                                )
+                                .readValueAsTree()
+                );
+            }
         } catch (IOException ioe) {
             throw new IllegalStateException(ioe);
         }

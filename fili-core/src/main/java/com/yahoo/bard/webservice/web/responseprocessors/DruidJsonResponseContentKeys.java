@@ -10,7 +10,8 @@ public enum DruidJsonResponseContentKeys {
     UNCOVERED_INTERVALS("uncoveredIntervals"),
     UNCOVERED_INTERVALS_OVERFLOWED("uncoveredIntervalsOverflowed"),
     STATUS_CODE("status-code"),
-    RESPONSE("response")
+    RESPONSE("response"),
+    ETAG("If-None-Match")
     ;
 
     private final String name;

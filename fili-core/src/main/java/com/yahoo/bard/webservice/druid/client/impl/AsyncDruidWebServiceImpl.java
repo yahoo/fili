@@ -7,6 +7,7 @@ import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.REQU
 import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.RESPONSE_WORKFLOW_TIMER;
 
 import com.yahoo.bard.webservice.application.MetricRegistryFactory;
+import com.yahoo.bard.webservice.config.CacheFeatureFlag;
 import com.yahoo.bard.webservice.druid.client.DruidServiceConfig;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
@@ -52,12 +53,12 @@ import javax.ws.rs.core.Response.Status;
  */
 public class AsyncDruidWebServiceImpl implements DruidWebService {
     private static final Logger LOG = LoggerFactory.getLogger(AsyncDruidWebServiceImpl.class);
+    private static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry();
 
     private final AsyncHttpClient webClient;
     private final ObjectWriter writer;
     private final Meter httpErrorMeter;
     private final Meter exceptionMeter;
-    private static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry();
 
     public static final String DRUID_TIMER = "DruidProcessing";
     public static final String DRUID_QUERY_TIMER = DRUID_TIMER + "_Q_";
@@ -458,13 +459,18 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
 
     /**
      * Return true if response status code indicates an error.
+     * <p>
+     * If etag cache is enabled, no error on 200 OK and 304 NOT-MODIFIED.
+     * Otherwise, no error only on 200 OK.
      *
      * @param status  The Status object that contains status code to be checked
      *
      * @return true if the status code indicates an error
      */
     protected boolean hasError(Status status) {
-        return status != Status.OK;
+        return CacheFeatureFlag.ETAG.isOn()
+                ? status != Status.OK && status != Status.NOT_MODIFIED
+                : status != Status.OK;
     }
 
     /**

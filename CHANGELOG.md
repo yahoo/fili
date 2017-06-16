@@ -90,6 +90,16 @@ Removals:
       `CacheV2RequestHandler` and invoke the `DruidPartialDataRequestHandler` if `druid_uncovered_interval_limit` is
       greater than 0
 
+- [Prepare for etag Cache](https://github.com/yahoo/fili/pull/289)
+    * Deprecate Cache V1 and V2 and log warning wherever they are used in codebase
+    * Add config param `query_response_caching_strategy` that allows any one of the TTL cache, local signature cache, or
+      etag cache to be used as caching strategy
+    * Add 'CacheMode' that represent the caching strategy
+    * Add 'DefaultCacheMode' that represents all available caching strategies
+    * Make `AsyncDruidWebServiceImpl::sendRequest` not blow up when getting a 304 status response if etag cache is on
+    * Add etag header to response JSON if etag cache is set to be used
+    * Add `FeatureFlag::isSet` to expose whether feature flags have been explicitly configured
+
 - [Implement DruidPartialDataResponseProcessor](https://github.com/yahoo/fili/pull/275)
     * Add `FullResponseProcessor` interface that extends `ResponseProcessor`
     * Add response status code to JSON response
@@ -213,6 +223,9 @@ Removals:
 - [Support timeouts for lucene search provider](https://github.com/yahoo/fili/pull/183)
 
 ### Changed:
+
+- [Prepare for etag Cache](https://github.com/yahoo/fili/pull/289)
+    * Made isOn dynamic on BardFeatureFlag
 
 - [Rename `Concrete` to `Strict` for the respective `PhysicalTable` and `Availability`](https://github.com/yahoo/fili/pull/263)
     * The main difference is in the availability reduction, so make the class name match that.

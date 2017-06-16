@@ -6,6 +6,7 @@ package com.yahoo.bard.webservice.config;
  * Feature flags bind an object to a system configuration name.
  */
 public interface FeatureFlag {
+
     /**
      * Returns the name of a specific flag included in a class that implements this interface.
      * When it is implemented by an Enum class then the method {@code name} that is available in the Enum implicitly
@@ -28,6 +29,21 @@ public interface FeatureFlag {
      * @return The status of the feature flag.
      */
     boolean isOn();
+
+
+    /**
+     * Returns whether the feature flag has been configured.
+     *
+     * @return true if the feature flag has been configured.
+     */
+    default boolean isSet() {
+        SystemConfig systemConfig = SystemConfigProvider.getInstance();
+        try {
+            return systemConfig.getStringProperty(systemConfig.getPackageVariableName(getName())) != null;
+        } catch (SystemConfigException exception) {
+            return false;
+        }
+    }
 
     /**
      * Sets the status of the feature flag.
