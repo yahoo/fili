@@ -173,10 +173,18 @@ public class ApiFilter {
         return this.values;
     }
 
-    public static ApiFilter merge(ApiFilter one, ApiFilter two) {
+    /**
+     * Take two Api filters which differ only by value sets and union their value sets.
+     *
+     * @param one  The first ApiFilter
+     * @param two  The second ApiFilter
+     *
+     * @return an ApiFilter with the union of values
+     */
+    public static ApiFilter union(ApiFilter one, ApiFilter two) {
         if (!Objects.equals(one.getDimension(), two.getDimension())
                 && Objects.equals(one.getDimensionField(), two.getDimensionField())
-                && Objects.equals(one.getOperation(),two.getOperation())
+                && Objects.equals(one.getOperation(), two.getOperation())
                 ) {
             throw new IllegalArgumentException(String.format("Unmergable ApiFilters  '%s' and '%s'", one, two));
         }

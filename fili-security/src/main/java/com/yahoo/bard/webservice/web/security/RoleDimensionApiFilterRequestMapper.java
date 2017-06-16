@@ -10,23 +10,23 @@ import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
+import com.yahoo.bard.webservice.util.StreamUtils;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.ChainingRequestMapper;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.FilterOperation;
 import com.yahoo.bard.webservice.web.RequestValidationException;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
+import java.util.AbstractMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -48,7 +48,7 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
     public static final String DEFAULT_SECURITY_MESSAGE = "Your security settings do not permit access to this " +
             "resource.  Please contact your user administration for access.";
 
-    private final String unauthorizedUserMessage = SYSTEM_CONFIG.getStringProperty(
+    private final static String UNAUTHORIZED_USER_MESSAGE = SYSTEM_CONFIG.getStringProperty(
             SYSTEM_CONFIG.getPackageVariableName(SECURITY_SIGNUP_MESSAGE_KEY),
             DEFAULT_SECURITY_MESSAGE
     );
@@ -68,7 +68,7 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
     public RoleDimensionApiFilterRequestMapper(
             ResourceDictionaries resourceDictionaries,
             Dimension dimension,
-            Map<String,  Set<ApiFilter>> roleApiFilters
+            Map<String, Set<ApiFilter>> roleApiFilters
     ) {
         this(resourceDictionaries, dimension, roleApiFilters, null);
     }
@@ -84,7 +84,7 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
     public RoleDimensionApiFilterRequestMapper(
             final ResourceDictionaries resourceDictionaries,
             Dimension dimension,
-            Map<String,  Set<ApiFilter>> roleApiFilters,
+            Map<String, Set<ApiFilter>> roleApiFilters,
             ChainingRequestMapper<DataApiRequest> next
     ) {
         super(resourceDictionaries, next);
@@ -98,53 +98,64 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
             throws RequestValidationException {
         SecurityContext securityContext = context.getSecurityContext();
 
-        Set<ApiFilter> securityFilters = roleApiFilters.keySet().stream()
-                .filter(securityContext::isUserInRole)
-                .map(roleApiFilters::get)
-                .flatMap(Set::stream)
-                .collect(Collectors.toSet());
+        Set<ApiFilter> mergedSecurityFilters = unionMergeFilterValues(
+                roleApiFilters.keySet().stream()
+                        .filter(securityContext::isUserInRole)
+                        .map(roleApiFilters::get)
+                        .flatMap(Set::stream)
+        );
 
-        if (securityFilters.size() == 0) {
+        if (mergedSecurityFilters.size() == 0) {
             String name = securityContext.getUserPrincipal().getName();
             LOG.warn(DIMENSION_MISSING_MANDATORY_ROLE.logFormat(name, dimension.getApiName()));
             throw new RequestValidationException(
                     Response.Status.FORBIDDEN,
                     unauthorizedHttpMessage,
-                    unauthorizedUserMessage
+                    UNAUTHORIZED_USER_MESSAGE
             );
         }
-        Stream.concat(request.getFilters().get(dimension).stream(), securityFilters.stream())
-                .collect(Collectors.groupingBy(ApiFilter::getOperation))
+        Function<Map.Entry<Dimension, Set<ApiFilter>>, Set<ApiFilter>> substituteFilters = entry ->
+                entry.getKey().equals(dimension) ?
+                        StreamUtils.setMerge(entry.getValue(), mergedSecurityFilters)
+                        : entry.getValue();
 
+        Map<Dimension, Set<ApiFilter>> newMap =  request.getFilters().entrySet().stream()
+                .map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(), substituteFilters.apply(entry)))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        Set<ApiFilter> filters = new
-        return request.withFilters(mergedFilters);
+        return request.withFilters(newMap);
     }
 
+    /**
+     * For a set of ApiFilters collect by dimension, field and operation, and union their value sets.
+     *
+     * @param filterStream  Stream of ApiFilters whose values are to be unioned
+     *
+     * @return A set of filters with the same operations but values unioned
+     */
+    public static Set<ApiFilter> unionMergeFilterValues(Stream<ApiFilter> filterStream) {
 
+        Function<ApiFilter, Triple<Dimension, DimensionField, FilterOperation>> filterGroupingIdentity = filter ->
+            new ImmutableTriple<>(filter.getDimension(), filter.getDimensionField(), filter.getOperation());
 
-    public static Set<ApiFilter> mergeFilters(Stream <ApiFilter> filterStream) {
+        Map<Triple<Dimension, DimensionField, FilterOperation>, Set<String>> filterMap =
+                filterStream.collect(Collectors.groupingBy(
+                        filterGroupingIdentity::apply,
+                        Collectors.mapping(
+                                ApiFilter::getValues,
+                                Collectors.reducing(Collections.emptySet(), StreamUtils::setMerge)
+                        )
+                ));
 
-
-        Function<ApiFilter, Triple<Dimension, DimensionField, FilterOperation>> apiFilterTripleFunction =
-                it -> new ImmutableTriple<>(it.getDimension(), it.getDimensionField(), it.getOperation());
-        Map<Triple<Dimension, DimensionField, FilterOperation>, List<ApiFilter>> grouped = filterStream.collect(
-                Collectors.groupingBy(apiFilterTripleFunction)
-        );
-        Function<List<ApiFilter>, Set<String>> stringReducer =
-                it -> it.stream().map(ApiFilter::getValues)
-                        .flatMap(Set::stream)
-                        .collect(Collectors.toSet());
-
-        grouped.entrySet().stream()
+        Set<ApiFilter> filters = filterMap.entrySet().stream()
                 .map(it -> new ApiFilter(
                         it.getKey().getLeft(),
                         it.getKey().getMiddle(),
                         it.getKey().getRight(),
-                        stringReducer.apply(it.getValue())
-                ));
+                        it.getValue()
+                ))
+                .collect(Collectors.toSet());
 
-        return null;
-
+        return filters;
     }
 }

@@ -177,4 +177,18 @@ public class StreamUtils {
         result.add(value);
         return result;
     }
+
+    /**
+     * Merge two sets without modifying either.
+     * This method implements {@link BinaryOperator} for use in stream reductions.
+     *
+     * @param a  One input set
+     * @param b  Another input set
+     * @param <T>  The type of the underlying sets
+     *
+     * @return  A new set containing the values of the original sets
+     */
+    public static <T> Set<T> setMerge(Set<T> a, Set<T> b) {
+        return Stream.concat(a.stream(), b.stream()).collect(Collectors.toSet());
+    }
 }
