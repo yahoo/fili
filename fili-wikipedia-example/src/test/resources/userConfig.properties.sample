@@ -8,7 +8,7 @@ bard__dimension_backend = memory
 # 1. ETagOnly
 # 2. LocalSignatureOnly (cache V2)
 # 3. TtlOnly (cache V1)
-# 4. None (no caching)
+# 4. NoCache
 bard__query_response_caching_strategy = LocalSignature
 
 bard__druid_coordinator_metadata_enabled = true
