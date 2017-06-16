@@ -35,6 +35,7 @@ import org.apache.calcite.sql.parser.SqlParser;
 import org.apache.calcite.tools.Frameworks;
 import org.apache.calcite.tools.Programs;
 import org.apache.calcite.tools.RelBuilder;
+import org.apache.commons.collections4.iterators.IteratorChain;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -204,7 +205,7 @@ public class SqlConverter implements SqlBackedClient {
      */
     private JsonNode readSqlResultSet(DruidAggregationQuery<?> druidQuery, ResultSet resultSet) throws SQLException {
         Map<String, Function<String, Object>> resultTypeMapper = getAggregationTypeMapper(druidQuery);
-        System.out.println(DatabaseHelper.format(resultSet));
+        // System.out.println(DatabaseHelper.format(resultSet));
         int rows = 0;
         ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
         DruidResponse druidResponse = new DruidResponse();
@@ -307,11 +308,10 @@ public class SqlConverter implements SqlBackedClient {
     private String finishTopN(TopNQuery topNQuery, String nameOfTimestampColumn) {
         RelNode topLevel = builder.build();
         builder.clear();
-        List<RelNode> partiallyBuiltBucketedQueries = new ArrayList<>();
+        List<RelNode> timeBucketedQueries = new ArrayList<>();
 
         IntervalUtils.getSlicedIntervals(topNQuery.getIntervals(), topNQuery.getGranularity())
                 .keySet()
-                .stream()
                 .forEach(interval -> {
                     List<RexNode> filters = new ArrayList<>();
                     RexNode druidQueryFilter = FilterEvaluator.getFilterAsRexNode(builder, topNQuery.getFilter());
@@ -320,62 +320,58 @@ public class SqlConverter implements SqlBackedClient {
                     }
 
                     builder.push(topLevel);
-                    filters.add(TimeConverter.buildTimeFilters(builder, Collections.singleton(interval), nameOfTimestampColumn));
+                    filters.add(TimeConverter.buildTimeFilters(
+                            builder,
+                            Collections.singleton(interval),
+                            nameOfTimestampColumn
+                    ));
                     builder.filter(filters);
-                    partiallyBuiltBucketedQueries.add(builder.build());
+                    timeBucketedQueries.add(builder.build());
                     builder.clear();
                 });
-        List<RelNode> builtBucketedQueries = new ArrayList<>();
-        for (RelNode bucket : partiallyBuiltBucketedQueries) {
+
+        List<RelNode> finishedQueries = new ArrayList<>();
+        for (RelNode bucket : timeBucketedQueries) {
             builder.push(bucket);
 
+            Stream<RexNode> timeFilters = TimeConverter.buildGroupBy(
+                    builder,
+                    topNQuery.getGranularity(),
+                    nameOfTimestampColumn
+            ).stream();
+            Stream<RexNode> dimensionFilters = topNQuery.getDimensions().stream()
+                    .map(Dimension::getApiName)
+                    .map(builder::field);
+            List<RexNode> allGroupBys = Stream.concat(dimensionFilters, timeFilters).collect(Collectors.toList());
 
-            int threshold = (int) topNQuery.getThreshold();
-
-//            List<RexNode> nodes = TimeConverter.buildGroupBy(
-//                    builder,
-//                    topNQuery.getGranularity(),
-//                    nameOfTimestampColumn
-//            );
-//            nodes.addAll(
-//                    topNQuery.getAggregations()
-//                            .stream()
-//                    .map(Aggregation::getFieldName)
-//                    .map(builder::field)
-//                    .collect(Collectors.toList())
-//            );
-//            builder.project(nodes);
-
-            builder.aggregate(builder.groupKey(),
+            builder.aggregate(
+                    builder.groupKey(allGroupBys),
                     topNQuery.getAggregations()
                             .stream()
                             .map(aggregation -> SqlAggregationType.getAggregation(aggregation, builder, ALIAS_MAKER))
                             .collect(Collectors.toList())
-                    );
-
-
-            List<RexNode> field = new ArrayList<>();
-            field.add(builder.field(ALIAS_MAKER.apply(topNQuery.getMetric().getMetric().toString())));
-            field.addAll(TimeConverter.buildGroupBy(
-                    builder,
-                    topNQuery.getGranularity(),
-                    nameOfTimestampColumn
-            ));
-            builder.sortLimit(0, threshold,
-                    field
             );
 
-            builtBucketedQueries.add(builder.build());
+
+            builder.sortLimit(0, (int) topNQuery.getThreshold(),
+                    builder.desc(builder.field(ALIAS_MAKER.apply(topNQuery.getMetric().getMetric().toString())))
+            );
+
+            finishedQueries.add(builder.build());
             builder.clear();
         }
-        builder.pushAll(builtBucketedQueries);
-        builder.union(true, builtBucketedQueries.size());
+        List<String> bucketedSqlQueries = finishedQueries.stream()
+                .map(relNode -> {
+                    builder.push(relNode);
+                    String sql = relToSql(builder);
+                    builder.clear();
+                    return "(" + sql + ")";
+                }).collect(Collectors.toList());
 
+        return bucketedSqlQueries.stream().collect(Collectors.joining("\nUNION ALL\n"));
 
-
-        builder.sort(builder.fields().subList(0, TimeConverter.getNumberOfGroupByFunctions(topNQuery.getGranularity())));
-
-        return relToSql(builder);
+        // builder.pushAll(finishedQueries);
+        // builder.union(true, finishedQueries.size());
     }
 
     /**

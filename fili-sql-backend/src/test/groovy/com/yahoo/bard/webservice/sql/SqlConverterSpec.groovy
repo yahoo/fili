@@ -52,7 +52,6 @@ import com.yahoo.bard.webservice.test.Database
 
 import com.fasterxml.jackson.databind.JsonNode
 
-import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 
 import spock.lang.Specification
@@ -151,10 +150,10 @@ class SqlConverterSpec extends Specification {
                 getDimension(dimension),
                 timeGrain,
                 asList(ADDED),
-                asList(COMMENT),
+                asList(dimension),
                 asList(sum(ADDED)),
                 asList(),
-                asList(interval(START, "2015-09-12T02:00:00.000Z"))
+                asList(interval(START, END))
         );
     }
 
@@ -247,18 +246,20 @@ class SqlConverterSpec extends Specification {
 
     @Unroll
     def "Test handling of topN queries"() {
-        //todo this is working for the first bucket
         setup:
         DruidQuery druidQuery = getTopNQuery(timeGrain, filter, metric, dimension, threshold)
         JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery).get();
 
         expect:
         ResultSet parse = parse(timeGrain, jsonNode, DefaultQueryType.GROUP_BY)
-        parse.size() == size
+        parse.size() <= size
 
         where: "we have"
         timeGrain | filter | metric | dimension | threshold | size
+        DAY       | null   | ADDED  | PAGE      | 1         | 1
         DAY       | null   | ADDED  | PAGE      | 10        | 10
+        HOUR      | null   | ADDED  | PAGE      | 1         | 24
         HOUR      | null   | ADDED  | USER      | 10        | 24 * 10
+        MINUTE    | null   | ADDED  | USER      | 10        | 24 * 60 * 10
     }
 }
