@@ -8,40 +8,31 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import org.joda.time.DateTime;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Row of results in a TopNQuery.
+ * Row of events in a TopNQuery.
  * todo: use and test
  */
-@JsonPropertyOrder({"timestamp", "result"})
+@JsonPropertyOrder({"timestamp", "event"})
 public class TopNResultRow extends DruidResultRow {
 
     @JsonProperty
     @JsonFormat(shape = JsonFormat.Shape.ARRAY)
-    private final List<Object> result = new ArrayList<>();
+    private final Map<String, Object> event = new HashMap<>();
 
     /**
      * Creates a row with the given timestamp.
      *
-     * @param timestamp  The timestamp to set the result for.
+     * @param timestamp  The timestamp to set the event for.
      */
     public TopNResultRow(DateTime timestamp) {
         super(timestamp);
     }
 
     @Override
-    public void add(final String key, final Object value) {
-
-    }
-
-    /**
-     * Adds an object to the list of results.
-     *
-     * @param value  The result to add.
-     */
-    public void add(Object value) {
-        result.add(value);
+    public void add(String key, Object value) {
+        event.put(key, value);
     }
 }

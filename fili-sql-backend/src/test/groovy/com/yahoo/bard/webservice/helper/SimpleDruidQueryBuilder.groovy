@@ -18,11 +18,13 @@ import com.yahoo.bard.webservice.druid.model.datasource.DataSource
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
 import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.model.having.Having
+import com.yahoo.bard.webservice.druid.model.orderby.TopNMetric
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery
+import com.yahoo.bard.webservice.druid.model.query.TopNQuery
 import com.yahoo.bard.webservice.metadata.DataSourceMetadata
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.Column
@@ -97,6 +99,32 @@ class SimpleDruidQueryBuilder {
                 postAggs,
                 intervals,
                 null //todo what goes here
+        )
+    }
+
+    public static TopNQuery topNQuery(
+            String name,
+            Filter filter,
+            int threshold,
+            String orderByMetric,
+            Dimension groupByDimension,
+            DefaultTimeGrain timeGrain,
+            List<String> metrics,
+            List<String> dimensions,
+            List<Aggregation> aggregations,
+            List<PostAggregation> postAggs,
+            List<Interval> intervals
+    ) {
+        return new TopNQuery(
+                dataSource(name, metrics, dimensions),
+                timeGrain,
+                groupByDimension,
+                filter,
+                aggregations,
+                postAggs,
+                intervals,
+                threshold,
+                new TopNMetric(orderByMetric)
         )
     }
 

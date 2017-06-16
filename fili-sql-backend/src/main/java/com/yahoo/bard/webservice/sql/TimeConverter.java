@@ -21,10 +21,12 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.Interval;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -167,18 +169,18 @@ public class TimeConverter {
      * NOTE: you must have one interval to select on.
      *
      * @param builder  The RelBuilder used for building queries.
-     * @param druidQuery  The query to get intervals from.
+     * @param intervals  The intervals to select from.
      * @param nameOfTimestampColumn  The name of the timestamp column in the database.
      *
      * @return the RexNode for filtering to only the given intervals.
      */
     public static RexNode buildTimeFilters(
             RelBuilder builder,
-            DruidAggregationQuery<?> druidQuery,
+            Collection<Interval> intervals,
             String nameOfTimestampColumn
     ) {
         // create filters to only select results within the given intervals
-        List<RexNode> timeFilters = druidQuery.getIntervals().stream().map(interval -> {
+        List<RexNode> timeFilters = intervals.stream().map(interval -> {
             Timestamp start = TimestampUtils.timestampFromMillis(interval.getStartMillis());
             Timestamp end = TimestampUtils.timestampFromMillis(interval.getEndMillis());
 
