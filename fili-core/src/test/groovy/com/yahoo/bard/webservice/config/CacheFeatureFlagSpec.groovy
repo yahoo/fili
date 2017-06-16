@@ -34,7 +34,7 @@ class CacheFeatureFlagSpec extends Specification {
         where:
         ttlIsOn | localSignatureIsOn | NoCacheOn | ttlOn  | localSignatureOn  | eTagOn
         true    | false              | false     | true   | false             | false
-        false   | true               | false     | false  | true              | false
+        false   | true               | true      | false  | false              | false
         true    | true               | false     | false  | true              | false
         false   | false              | true      | false  | false             | false
     }
