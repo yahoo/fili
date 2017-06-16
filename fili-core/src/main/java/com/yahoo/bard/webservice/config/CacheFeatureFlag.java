@@ -12,19 +12,19 @@ public enum CacheFeatureFlag implements FeatureFlag {
     /**
      * No cache.
      */
-    NONE("query_response_caching_strategy", "NoCache"),
+    NONE("NoCache"),
     /**
      * Use only TTL cache.
      */
-    TTL("query_response_caching_strategy", "Ttl"),
+    TTL("Ttl"),
     /**
      * Use only local signature cache.
      */
-    LOCAL_SIGNATURE("query_response_caching_strategy", "LocalSignature"),
+    LOCAL_SIGNATURE("LocalSignature"),
     /**
      * Use only etag cache.
      */
-    ETAG("query_response_caching_strategy", "ETag");
+    ETAG("ETag");
 
     private static final Logger LOG = LoggerFactory.getLogger(CacheFeatureFlag.class);
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
@@ -33,17 +33,14 @@ public enum CacheFeatureFlag implements FeatureFlag {
             "None"
     );
 
-    private final String propertyName;
     private final String value;
 
     /**
      * Constructor.
      *
-     * @param propertyName  Name of the SystemConfig property to use for the feature flag.
      * @param value  Value configured for the propertyName
      */
-    CacheFeatureFlag(final String propertyName, final String value) {
-        this.propertyName = propertyName;
+    CacheFeatureFlag(final String value) {
         this.value = value;
     }
 
@@ -57,9 +54,7 @@ public enum CacheFeatureFlag implements FeatureFlag {
         // TODO: Remove this if conditional after cache V1 & V2 configuration flags are removed
         if (BardFeatureFlag.DRUID_CACHE.isSet() || BardFeatureFlag.DRUID_CACHE_V2.isSet()) {
             // no cache
-            if (this.value.equals("NoCache")
-                    && !BardFeatureFlag.DRUID_CACHE.isOn()
-                    && !BardFeatureFlag.DRUID_CACHE_V2.isOn()) {
+            if (this.value.equals("NoCache") && !BardFeatureFlag.DRUID_CACHE.isOn()) {
                 return true;
             }
 
@@ -67,7 +62,9 @@ public enum CacheFeatureFlag implements FeatureFlag {
                     && !BardFeatureFlag.DRUID_CACHE_V2.isOn()
                     && BardFeatureFlag.DRUID_CACHE.isOn()
             )
-                    || (this.value.equals("LocalSignature") && BardFeatureFlag.DRUID_CACHE_V2.isOn());
+                    || (this.value.equals("LocalSignature")
+                    && BardFeatureFlag.DRUID_CACHE.isOn()
+                    && BardFeatureFlag.DRUID_CACHE_V2.isOn());
         }
         return QUERY_RESPONSE_CACHING_STRAGEGY.equalsIgnoreCase(value);
     }
