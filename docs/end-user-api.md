@@ -168,12 +168,6 @@ components of this URL.
 
 - **https\://** - The Fili API is only available over a secure connection, so _HTTPS is required_. _HTTP queries
     will not work_.
-
-This [basic query](https://sampleapp.fili.org/v1/data/network/week?metrics=pageViews,dayAvgTimeSpent&dateTime=2014-09-01/2014-09-08)
-gives us network-level page views and daily average time spent data for one week. Let's break down the different 
-components of this URL.
-
-- **https\://** - .
 - **sampleapp.fili.org** - This is where the Fili API lives.
 - **v1** - The version of the API.
 - **data** - This is the resource we are querying, and is the base for all data reports.
