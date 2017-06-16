@@ -165,29 +165,23 @@ public class SqlConverter implements SqlBackedClient {
      */
     private JsonNode executeAndProcessQuery(Connection connection, DruidAggregationQuery druidQuery) {
         String sqlQuery = "";
-        Throwable throwable = null;
         try {
             sqlQuery = buildSqlQuery(connection, druidQuery);
         } catch (SQLException e) {
-            throwable = new RuntimeException("Couldn't generate sql", e);
+            throw new RuntimeException("Couldn't generate sql", e);
         }
 
-        if (!sqlQuery.isEmpty()) {
-            LOG.debug("Executing \n{}", sqlQuery);
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
-                 ResultSet resultSet = preparedStatement.executeQuery()) {
-                return readSqlResultSet(druidQuery, resultSet);
-            } catch (SQLException e) {
-                LOG.warn(
-                        "Failed to query table {} with {}",
-                        druidQuery.getDataSource().getPhysicalTable().getName(),
-                        sqlQuery
-                );
-                throwable = e;
-            }
+        LOG.debug("Executing \n{}", sqlQuery);
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            return readSqlResultSet(druidQuery, resultSet);
+        } catch (SQLException e) {
+            LOG.warn(
+                    "Failed to query table {}",
+                    druidQuery.getDataSource().getPhysicalTable().getName()
+            );
+            throw new RuntimeException("Could not finish query", e);
         }
-
-        throw new RuntimeException("Could not finish query", throwable);
     }
 
     /**
@@ -233,7 +227,7 @@ public class SqlConverter implements SqlBackedClient {
 
             int lastTimeIndex = TimeConverter.getNumberOfGroupByFunctions(druidQuery.getGranularity());
             for (int i = groupByCount + lastTimeIndex + 1; i <= resultSetMetaData.getColumnCount(); i++) {
-                String columnName = resultSetMetaData.getColumnName(i).replace(PREPENDED_ALIAS, "");
+                String columnName = ALIAS_MAKER.unApply(resultSetMetaData.getColumnName(i));
                 String val = resultSet.getString(i);
                 sqlResults.put(columnName, val);
                 rowResult.add(columnName, resultTypeMapper.get(columnName).apply(val));
@@ -364,17 +358,7 @@ public class SqlConverter implements SqlBackedClient {
                 .map(aggregation -> SqlAggregationType.getAggregation(aggregation, builder, ALIAS_MAKER))
                 .collect(Collectors.toList());
 
-        Stream<RexNode> timeFilters = TimeConverter.buildGroupBy(
-                builder,
-                druidQuery.getGranularity(),
-                nameOfTimestampColumn
-        ).stream();
-
-        Stream<RexNode> dimensionFilters = druidQuery.getDimensions().stream()
-                .map(Dimension::getApiName)
-                .map(builder::field);
-
-        List<RexNode> allGroupBys = Stream.concat(dimensionFilters, timeFilters).collect(Collectors.toList());
+        List<RexNode> allGroupBys = getAllGroupByColumns(druidQuery, nameOfTimestampColumn);
 
         builder.aggregate(
                 builder.groupKey(
@@ -391,6 +375,31 @@ public class SqlConverter implements SqlBackedClient {
         }
 
         return allGroupBys;
+    }
+
+    /**
+     * Collects all the time columns and dimensions to be grouped on.
+     *
+     * @param druidQuery  The query to find grouping columns from.
+     * @param nameOfTimestampColumn  The name of the timestamp column in the database.
+     *
+     * @return all columns which should be grouped on.
+     */
+    private List<RexNode> getAllGroupByColumns(
+            DruidAggregationQuery<?> druidQuery,
+            String nameOfTimestampColumn
+    ) {
+        Stream<RexNode> timeFilters = TimeConverter.buildGroupBy(
+                builder,
+                druidQuery.getGranularity(),
+                nameOfTimestampColumn
+        ).stream();
+
+        Stream<RexNode> dimensionFilters = druidQuery.getDimensions().stream()
+                .map(Dimension::getApiName)
+                .map(builder::field);
+
+        return Stream.concat(dimensionFilters, timeFilters).collect(Collectors.toList());
     }
 
     /**
