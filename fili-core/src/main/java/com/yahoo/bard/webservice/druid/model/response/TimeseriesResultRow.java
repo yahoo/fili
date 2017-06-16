@@ -29,7 +29,12 @@ public class TimeseriesResultRow extends DruidResultRow {
     }
 
     @Override
-    public void add(String key, Object value) {
+    public void add(String key, String value) {
+        result.put(key, value);
+    }
+
+    @Override
+    public void add(String key, Number value) {
         result.put(key, value);
     }
 }

@@ -33,7 +33,12 @@ public class TopNResultRow extends DruidResultRow {
     }
 
     @Override
-    public void add(String key, Object value) {
+    public void add(String key, String value) {
+        event.put(key, value);
+    }
+
+    @Override
+    public void add(String key, Number value) {
         event.put(key, value);
     }
 }

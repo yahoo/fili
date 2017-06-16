@@ -13,7 +13,7 @@ import org.joda.time.DateTimeZone;
  */
 public abstract class DruidResultRow {
     @JsonIgnore
-    private final String timestamp;
+    private final DateTime timestamp;
 
     /**
      * Creates a DruidResultRow at the given timestamp.
@@ -21,12 +21,12 @@ public abstract class DruidResultRow {
      * @param timestamp  The timestamp to be included in serialization of a response.
      */
     public DruidResultRow(DateTime timestamp) {
-        this.timestamp = timestamp.toDateTime(DateTimeZone.UTC).toString();
+        this.timestamp = timestamp;
     }
 
     @JsonProperty
     public String getTimestamp() {
-        return timestamp;
+        return timestamp.toDateTime(DateTimeZone.UTC).toString();
     }
 
     /**
@@ -35,5 +35,13 @@ public abstract class DruidResultRow {
      * @param key  The key to be added.
      * @param value  The value of the key.
      */
-    public abstract void add(String key, Object value);
+    public abstract void add(String key, String value);
+
+    /**
+     * Adds a json key/value pair to the row.
+     *
+     * @param key  The key to be added.
+     * @param value  The value of the key.
+     */
+    public abstract void add(String key, Number value);
 }

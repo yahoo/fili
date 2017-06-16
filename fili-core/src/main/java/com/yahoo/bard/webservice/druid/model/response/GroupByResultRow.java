@@ -35,7 +35,12 @@ public class GroupByResultRow extends DruidResultRow {
     }
 
     @Override
-    public void add(String key, Object value) {
+    public void add(String key, String value) {
+        event.put(key, value);
+    }
+
+    @Override
+    public void add(String key, Number value) {
         event.put(key, value);
     }
 
@@ -56,7 +61,7 @@ public class GroupByResultRow extends DruidResultRow {
         V1("v1"),
         V2("v2");
 
-        private String name;
+        private final String name;
 
         /**
          * Creates the version with a name.

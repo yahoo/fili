@@ -9,7 +9,8 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import java.io.IOException;
 
 /**
- * Serializes a {@link DruidResponse} into the same format as Druid's responses.
+ * Serializes a {@link com.yahoo.bard.webservice.druid.model.response.DruidResponse} into the
+ * same format as Druid's responses.
  */
 public class DruidResponseSerializer extends JsonSerializer<DruidResponse> {
 
@@ -20,8 +21,8 @@ public class DruidResponseSerializer extends JsonSerializer<DruidResponse> {
             SerializerProvider serializerProvider
     ) throws IOException {
         jsonGenerator.writeStartArray();
-        for (Object result : druidResponse.getResults()) {
-            jsonGenerator.writeObject(result);
+        for (DruidResultRow resultRow : druidResponse.getResults()) {
+            jsonGenerator.writeObject(resultRow);
         }
         jsonGenerator.writeEndArray();
     }
