@@ -23,7 +23,7 @@ import java.util.function.Consumer
  */
 public class ResourceConfigSpec extends Specification {
 
-    private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+    private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance()
     private static final String BINDER_KEY = SYSTEM_CONFIG.getPackageVariableName("resource_binder")
 
     // A mock representing the binder produced by the BinderFactory

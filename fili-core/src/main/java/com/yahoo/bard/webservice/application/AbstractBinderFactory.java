@@ -28,6 +28,7 @@ import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore;
 import com.yahoo.bard.webservice.async.workflows.AsynchronousWorkflowsBuilder;
 import com.yahoo.bard.webservice.async.workflows.DefaultAsynchronousWorkflowsBuilder;
 import com.yahoo.bard.webservice.config.BardFeatureFlag;
+import com.yahoo.bard.webservice.config.CacheFeatureFlag;
 import com.yahoo.bard.webservice.config.FeatureFlag;
 import com.yahoo.bard.webservice.config.FeatureFlagRegistry;
 import com.yahoo.bard.webservice.config.SystemConfig;
@@ -744,28 +745,67 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      * @return The cache instance
      */
     protected DataCache<?> buildCache() {
-        if (BardFeatureFlag.DRUID_CACHE_V2.isOn()) {
-            try {
-                MemTupleDataCache<String> cache = new MemTupleDataCache<>();
-                LOG.info("MemcachedClient Version 2 started {}", cache);
-                return cache;
-            } catch (IOException e) {
-                LOG.error("MemcachedClient Version 2 failed to start {}", e);
-                throw new IllegalStateException(e);
-            }
-        } else if (BardFeatureFlag.DRUID_CACHE.isOn()) {
-            try {
-                DataCache<String> cache = new HashDataCache<>(new MemDataCache<HashDataCache.Pair<String, String>>());
-                LOG.info("MemcachedClient started {}", cache);
-                return cache;
-            } catch (IOException e) {
-                LOG.error("MemcachedClient failed to start {}", e);
-                throw new IllegalStateException(e);
-            }
+        if (CacheFeatureFlag.LOCAL_SIGNATURE.isOn()) {
+            return buildLocalSignatureCache();
+        } else if (CacheFeatureFlag.TTL.isOn()) {
+            return buildTtlCache();
+        } else if (CacheFeatureFlag.ETAG.isOn()) {
+            return buildETagCahe();
         } else {
             // not used, but Jersey required a binding
             return new StubDataCache<>();
         }
+    }
+
+    /**
+     * Builds and returns an instance of local signature cache.
+     *
+     * @return the instance of local signature cache
+     */
+    private DataCache<?> buildLocalSignatureCache() {
+        if (BardFeatureFlag.DRUID_CACHE_V2.isSet()) {
+            LOG.warn("Cache V2 feature flag is deprecated, " +
+                    "use the new configuration parameter to set desired caching strategy"
+            );
+        }
+        try {
+            MemTupleDataCache<String> cache = new MemTupleDataCache<>();
+            LOG.info("MemcachedClient Version 2 started {}", cache);
+            return cache;
+        } catch (IOException e) {
+            LOG.error("MemcachedClient Version 2 failed to start {}", e);
+            throw new IllegalStateException(e);
+        }
+    }
+
+    /**
+     * Builds and returns an instance of TTL cache.
+     *
+     * @return the instance of TTL cache
+     */
+    private DataCache<?> buildTtlCache() {
+        if (BardFeatureFlag.DRUID_CACHE.isSet()) {
+            LOG.warn("Cache V1 feature flag is deprecated, " +
+                    "use the new configuration parameter to set desired caching strategy"
+            );
+        }
+        try {
+            DataCache<String> cache = new HashDataCache<>(new MemDataCache<HashDataCache.Pair<String, String>>());
+            LOG.info("MemcachedClient started {}", cache);
+            return cache;
+        } catch (IOException e) {
+            LOG.error("MemcachedClient failed to start {}", e);
+            throw new IllegalStateException(e);
+        }
+    }
+
+    /**
+     * Builds and returns an instance of eTag cache.
+     *
+     * @return the instance of eTag cache
+     */
+    private DataCache<?> buildETagCahe() {
+        return buildTtlCache();
     }
 
     /**
