@@ -2,10 +2,10 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.dimension.impl
 
-import static com.yahoo.bard.webservice.data.dimension.BardDimensionField.ID
 import static com.yahoo.bard.webservice.data.dimension.BardDimensionField.DESC
 import static com.yahoo.bard.webservice.data.dimension.BardDimensionField.FIELD1
 import static com.yahoo.bard.webservice.data.dimension.BardDimensionField.FIELD2
+import static com.yahoo.bard.webservice.data.dimension.BardDimensionField.ID
 import static com.yahoo.bard.webservice.data.dimension.BardDimensionField.makeDimensionRow
 
 import com.yahoo.bard.webservice.data.dimension.Dimension
@@ -24,6 +24,9 @@ import com.yahoo.bard.webservice.web.util.PaginationParameters
 import org.joda.time.DateTime
 
 import spock.lang.Specification
+
+
+import java.util.stream.Collectors;
 
 /**
  * Specification of behavior that all SearchProviders should share.
@@ -536,19 +539,22 @@ abstract class SearchProviderSpec<T extends SearchProvider> extends Specificatio
         */
         Set<ApiFilter> filters = [
                 buildFilter("animal|desc-startswith[this]"),
-                buildFilter("animal|desc-contains[\"\"]")
+                buildFilter('animal|desc-contains[""]')
         ]
-        and: "We get the second page, where each page has two rows (so both pages should have two results)"
-        PaginationParameters parameters = new PaginationParameters(2, 2)
+        Set<String> expectedOutcomes = ["owl", "hawk", "eagle", "kumquat"]
+        and: "We get the second page, where each page has two rows"
+        PaginationParameters parameters = new PaginationParameters(4, 1)
 
         when: "We query the search provider"
         Pagination<DimensionRow> resultsPage = searchProvider.findFilteredDimensionRowsPaged(filters, parameters)
 
-        then: "We get only the last page of results (which has two)"
-        resultsPage.getPageOfData().size() == 2
+        then: "We get only one page of results"
+        resultsPage.getPageOfData().size() == 4
 
-        and: "The pagination metadata includes the correct number of total results"
+        and: "We get only {'owl', 'hawk', 'eagle', 'kumquat'}"
         resultsPage.numResults == 4
+        Set<String> actualOutcomes = resultsPage.pageOfData.stream().map { it.getKeyValue() }.collect(Collectors.toSet())
+        actualOutcomes.equals(expectedOutcomes)
     }
 
     /**
