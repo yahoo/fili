@@ -18,8 +18,9 @@ public enum BardFeatureFlag implements FeatureFlag {
     DRUID_DIMENSIONS_LOADER("druid_dimensions_loader_enabled"),
     CASE_SENSITIVE_KEYS("case_sensitive_keys_enabled");
 
+    static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+
     private final String propertyName;
-    private Boolean on;
 
     /**
      * Constructor.
@@ -27,9 +28,7 @@ public enum BardFeatureFlag implements FeatureFlag {
      * @param propertyName  Name of the SystemConfig property to use for the feature flag.
      */
     BardFeatureFlag(String propertyName) {
-        SystemConfig systemConfig = SystemConfigProvider.getInstance();
         this.propertyName = propertyName;
-        this.on = systemConfig.getBooleanProperty(systemConfig.getPackageVariableName(propertyName), false);
     }
 
     @Override
@@ -39,11 +38,11 @@ public enum BardFeatureFlag implements FeatureFlag {
 
     @Override
     public boolean isOn() {
-        return on;
+        return SYSTEM_CONFIG.getBooleanProperty(SYSTEM_CONFIG.getPackageVariableName(propertyName), false);
     }
 
     @Override
     public void setOn(Boolean newValue) {
-        on = newValue;
+        SYSTEM_CONFIG.setProperty(SYSTEM_CONFIG.getPackageVariableName(propertyName), newValue.toString());
     }
 }

@@ -28,7 +28,7 @@ public enum CacheFeatureFlag implements FeatureFlag {
 
     private static final Logger LOG = LoggerFactory.getLogger(CacheFeatureFlag.class);
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
-    private static final String QUERY_RESPONSE_CACHING_STRAGEGY = SYSTEM_CONFIG.getStringProperty(
+    private static final String QUERY_RESPONSE_CACHING_STRATEGY = SYSTEM_CONFIG.getStringProperty(
             SYSTEM_CONFIG.getPackageVariableName("query_response_caching_strategy"),
             "None"
     );
@@ -54,8 +54,8 @@ public enum CacheFeatureFlag implements FeatureFlag {
         // TODO: Remove this if conditional after cache V1 & V2 configuration flags are removed
         if (BardFeatureFlag.DRUID_CACHE.isSet() || BardFeatureFlag.DRUID_CACHE_V2.isSet()) {
             // no cache
-            if (this.value.equals("NoCache") && !BardFeatureFlag.DRUID_CACHE.isOn()) {
-                return true;
+            if (this.value.equals("NoCache")) {
+                return ! BardFeatureFlag.DRUID_CACHE.isOn();
             }
 
             return (this.value.equals("Ttl")
@@ -66,7 +66,7 @@ public enum CacheFeatureFlag implements FeatureFlag {
                     && BardFeatureFlag.DRUID_CACHE.isOn()
                     && BardFeatureFlag.DRUID_CACHE_V2.isOn());
         }
-        return QUERY_RESPONSE_CACHING_STRAGEGY.equalsIgnoreCase(value);
+        return QUERY_RESPONSE_CACHING_STRATEGY.equalsIgnoreCase(value);
     }
 
     @Override

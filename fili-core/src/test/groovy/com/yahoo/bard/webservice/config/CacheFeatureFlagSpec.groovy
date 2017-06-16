@@ -2,7 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.config
 
-import spock.lang.Ignore
+import static com.yahoo.bard.webservice.config.CacheFeatureFlag.*
+
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -19,23 +20,28 @@ class CacheFeatureFlagSpec extends Specification {
     }
 
     @Unroll
-    @Ignore
-    def "When TTL or local signature cache is set, old caching strategy is applied"() {
+    def "When DruidCache is #ttlIsOn and DruidCacheV2 is #localSignatureIsOn then expect #expected"() {
         setup:
+        def badValues = [NONE, TTL, LOCAL_SIGNATURE, ETAG]
+        badValues.remove(expected)
         SYSTEM_CONFIG.setProperty(TTL_CACHE_CONFIG_KEY, String.valueOf(ttlIsOn))
         SYSTEM_CONFIG.setProperty(LOCAL_SIGNATURE_CACHE_CONFIG_KEY, String.valueOf(localSignatureIsOn))
 
         expect:
-        CacheFeatureFlag.NONE.isOn() == NoCacheOn
-        CacheFeatureFlag.TTL.isOn() == ttlOn
-        CacheFeatureFlag.LOCAL_SIGNATURE.isOn() == localSignatureOn
-        CacheFeatureFlag.ETAG.isOn() == eTagOn
+        expected.isOn()
+        badValues.each {
+            assert ! it.isOn()
+        }
+
+        cleanup:
+        SYSTEM_CONFIG.clearProperty(TTL_CACHE_CONFIG_KEY)
+        SYSTEM_CONFIG.clearProperty(LOCAL_SIGNATURE_CACHE_CONFIG_KEY)
 
         where:
-        ttlIsOn | localSignatureIsOn | NoCacheOn | ttlOn  | localSignatureOn  | eTagOn
-        true    | false              | false     | true   | false             | false
-        false   | true               | true      | false  | false              | false
-        true    | true               | false     | false  | true              | false
-        false   | false              | true      | false  | false             | false
+        ttlIsOn | localSignatureIsOn | NoCacheOn | expected
+        true    | false              | false     | TTL
+        false   | true               | false     | NONE
+        true    | true               | false     | LOCAL_SIGNATURE
+        false   | false              | true      | NONE
     }
 }
