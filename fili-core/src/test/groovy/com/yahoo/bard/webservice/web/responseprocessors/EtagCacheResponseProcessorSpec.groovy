@@ -15,8 +15,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 
-import org.slf4j.Logger
-
 import spock.lang.Specification
 
 class EtagCacheResponseProcessorSpec extends Specification {
@@ -88,7 +86,7 @@ class EtagCacheResponseProcessorSpec extends Specification {
         1 * next.processResponse(null, druidAggregationQuery, _ as LoggingContext)
     }
 
-    def "processResponse caches response and etag on OK response"() {
+    def "processResponse caches response, including etag, on OK response"() {
         given:
         JsonNode json = MAPPER.readTree(
                 """

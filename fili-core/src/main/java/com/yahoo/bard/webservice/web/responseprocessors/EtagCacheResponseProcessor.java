@@ -2,6 +2,10 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.responseprocessors;
 
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static javax.ws.rs.core.Response.Status.NOT_MODIFIED;
+import static javax.ws.rs.core.Response.Status.OK;
+
 import com.yahoo.bard.webservice.data.cache.TupleDataCache;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
@@ -20,7 +24,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.core.Response.Status;
 
 /**
  * A response processor which caches the results if appropriate after completing a query according to etag value.
@@ -82,16 +85,17 @@ public class EtagCacheResponseProcessor implements FullResponseProcessor {
         int statusCode = json.get(DruidJsonResponseContentKeys.STATUS_CODE.getName()).asInt();
         // If response is a NOT_MODIFIED, get response body from cache and inject it into JsonNode of the next
         // response processor
-        if (statusCode == Status.NOT_MODIFIED.getStatusCode()) {
+        if (statusCode == NOT_MODIFIED.getStatusCode()) {
             try {
                 ((ObjectNode) json).set(
                         DruidJsonResponseContentKeys.RESPONSE.getName(),
                         mapper.readTree(dataCache.getDataValue(cacheKey))
                 );
             } catch (IOException ioe) {
-                throw new IllegalStateException(ioe);
+                logAndGetErrorCallback(ioe.getLocalizedMessage(), druidQuery);
+                return;
             }
-        } else if (statusCode == Status.OK.getStatusCode()) { // If response is a OK, cache it, including etag
+        } else if (statusCode == OK.getStatusCode()) { // If response is a OK, cache it, including etag
             // make sure JSON response comes with etag
             if (!json.has(DruidJsonResponseContentKeys.ETAG.getName())) {
                 LOG.warn(ErrorMessageFormat.ETAG_MISSING_FROM_RESPONSE.format());
@@ -103,9 +107,8 @@ public class EtagCacheResponseProcessor implements FullResponseProcessor {
                             writer.writeValueAsString(json.get(DruidJsonResponseContentKeys.RESPONSE.getName()))
                     );
                 } catch (JsonProcessingException exception) {
-                    String message = "Unable to parse JSON response while caching";
-                    LOG.error(message, exception);
-                    throw new RuntimeException(message, exception);
+                    logAndGetErrorCallback("Unable to parse JSON response while caching", druidQuery);
+                    return;
                 }
             }
         }
@@ -126,7 +129,7 @@ public class EtagCacheResponseProcessor implements FullResponseProcessor {
     private void logAndGetErrorCallback(String message, DruidAggregationQuery<?> query) {
         LOG.error(message);
         getErrorCallback(query).dispatch(
-                Status.INTERNAL_SERVER_ERROR.getStatusCode(),
+                INTERNAL_SERVER_ERROR.getStatusCode(),
                 ErrorMessageFormat.INTERNAL_SERVER_ERROR_REASON_PHRASE.format(),
                 message
         );
