@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.table.resolver;
 
 import com.yahoo.bard.webservice.application.MetricRegistryFactory;
+import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 
@@ -54,7 +55,7 @@ public abstract class BasePhysicalTableResolver implements PhysicalTableResolver
      * @throws NoMatchFoundException if any of the filters reduce the filter set to empty
      */
     public Set<PhysicalTable> filter(
-            Collection<PhysicalTable> candidateTables,
+            Collection<ConfigPhysicalTable> candidateTables,
             QueryPlanningConstraint requestConstraint
     ) throws NoMatchFoundException {
         return filter(candidateTables, getMatchers(requestConstraint));
@@ -71,10 +72,10 @@ public abstract class BasePhysicalTableResolver implements PhysicalTableResolver
      * @throws NoMatchFoundException if no tables match the filter
      */
     public Set<PhysicalTable> filter(
-            Collection<PhysicalTable> candidateTables,
+            Collection<ConfigPhysicalTable> candidateTables,
             List<PhysicalTableMatcher> matchers
     ) throws NoMatchFoundException {
-        Collection<PhysicalTable> currentMatches = candidateTables;
+        Collection<ConfigPhysicalTable> currentMatches = candidateTables;
         for (PhysicalTableMatcher matcher : matchers) {
             currentMatches = matcher.matchNotEmpty(currentMatches.stream());
         }
@@ -83,7 +84,7 @@ public abstract class BasePhysicalTableResolver implements PhysicalTableResolver
 
     @Override
     public PhysicalTable resolve(
-            Collection<PhysicalTable> candidateTables,
+            Collection<ConfigPhysicalTable> candidateTables,
             QueryPlanningConstraint requestConstraint
     ) throws NoMatchFoundException {
 

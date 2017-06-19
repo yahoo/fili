@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.resolver;
 
+import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 
 import java.util.LinkedHashSet;
@@ -39,8 +40,8 @@ public interface PhysicalTableMatcher extends Predicate<PhysicalTable> {
      * @return Any tables which match the criteria from {@link #test(PhysicalTable)}
      * @throws NoMatchFoundException if no tables in the stream match
      */
-    default Set<PhysicalTable> matchNotEmpty(Stream<PhysicalTable> tables) throws NoMatchFoundException {
-        Set<PhysicalTable> result = tables
+    default Set<ConfigPhysicalTable> matchNotEmpty(Stream<ConfigPhysicalTable> tables) throws NoMatchFoundException {
+        Set<ConfigPhysicalTable> result = tables
                 .filter(this)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         if (result.isEmpty()) {
