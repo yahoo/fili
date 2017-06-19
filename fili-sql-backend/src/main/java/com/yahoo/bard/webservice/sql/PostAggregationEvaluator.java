@@ -8,7 +8,7 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAg
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation.DefaultPostAggregationType;
 
-import java.util.Map;
+import java.util.function.Function;
 
 /**
  * Evaluates post aggregations.
@@ -32,7 +32,7 @@ public class PostAggregationEvaluator {
      *
      * @return the number calculated from the postAggregation.
      */
-    public static Double evaluate(PostAggregation postAggregation, Map<String, String> aggregatedValues) {
+    public static Double evaluate(PostAggregation postAggregation, Function<String, String> aggregatedValues) {
         DefaultPostAggregationType aggregationType = (DefaultPostAggregationType) postAggregation
                 .getType();
 
@@ -67,9 +67,9 @@ public class PostAggregationEvaluator {
      */
     private static Double evaluate(
             FieldAccessorPostAggregation fieldAccessorPostAggregation,
-            Map<String, String> aggregatedValues
+            Function<String, String> aggregatedValues
     ) {
-        String stringNumber = aggregatedValues.get(fieldAccessorPostAggregation.getFieldName());
+        String stringNumber = aggregatedValues.apply(fieldAccessorPostAggregation.getFieldName());
         return Double.valueOf(stringNumber);
     }
 
@@ -83,7 +83,7 @@ public class PostAggregationEvaluator {
      */
     private static Double evaluate(
             ArithmeticPostAggregation arithmeticPostAggregation,
-            Map<String, String> aggregatedValues
+            Function<String, String> aggregatedValues
     ) {
         switch (arithmeticPostAggregation.getFn()) {
             case PLUS:

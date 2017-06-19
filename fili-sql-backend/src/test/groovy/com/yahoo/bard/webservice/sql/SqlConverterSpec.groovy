@@ -182,7 +182,7 @@ class SqlConverterSpec extends Specification {
     }
 
     @Unroll
-    def "ExecuteQuery for #timeGrain with basic timeseries"() {
+    def "Test timeseries on /#timeGrain/"() {
         expect:
         DruidQuery druidQuery = getBasicTimeseriesQuery(timeGrain)
         JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery).get();
@@ -202,7 +202,7 @@ class SqlConverterSpec extends Specification {
     }
 
     @Unroll
-    def "Test response output and parsing for #timeGrain"() {
+    def "Test timeseries on /#timeGrain/ with #filter"() {
         setup:
         DruidQuery druidQuery = getTimeSeriesQuery(timeGrain, filter)
         JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery).get();
@@ -222,7 +222,7 @@ class SqlConverterSpec extends Specification {
     }
 
     @Unroll
-    def "Test handling of groupBy queries"() {
+    def "Test groupBy on /#timeGrain/#dims/"() {
         setup:
         DruidQuery druidQuery = getGroupByQuery(timeGrain, filter, having, dims)
         JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery).get();
@@ -245,7 +245,7 @@ class SqlConverterSpec extends Specification {
     }
 
     @Unroll
-    def "Test handling of topN queries"() {
+    def "Test topN on /#timeGrain/#dimension/?metrics=#metric&topN=#threshold"() {
         setup:
         DruidQuery druidQuery = getTopNQuery(timeGrain, filter, metric, dimension, threshold)
         JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery).get();

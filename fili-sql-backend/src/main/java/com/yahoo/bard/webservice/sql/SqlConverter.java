@@ -20,6 +20,8 @@ import com.yahoo.bard.webservice.util.IntervalUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 
 import org.apache.calcite.adapter.jdbc.JdbcSchema;
 import org.apache.calcite.plan.RelTraitDef;
@@ -34,6 +36,7 @@ import org.apache.calcite.tools.Frameworks;
 import org.apache.calcite.tools.Programs;
 import org.apache.calcite.tools.RelBuilder;
 import org.joda.time.DateTime;
+import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +46,8 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -180,7 +184,7 @@ public class SqlConverter implements SqlBackedClient {
             throw new RuntimeException("Couldn't generate sql", e);
         }
 
-        LOG.trace("Executing \n{}", sqlQuery);
+        LOG.debug("Executing \n{}", sqlQuery);
         try (PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
              ResultSet resultSet = preparedStatement.executeQuery()) {
             return readSqlResultSet(druidQuery, resultSet);
@@ -207,52 +211,73 @@ public class SqlConverter implements SqlBackedClient {
     private JsonNode readSqlResultSet(DruidAggregationQuery<?> druidQuery, ResultSet resultSet) throws SQLException {
         Map<String, Function<String, Object>> resultTypeMapper = getAggregationTypeMapper(druidQuery);
         // DatabaseHelper.print(resultSet);
-        int rows = 0;
         ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-        DruidResponse druidResponse = new DruidResponse();
+        int columnCount = resultSetMetaData.getColumnCount();
+
+        BiMap<Integer, String> columnNames = HashBiMap.create(columnCount);
+        List<List<String>> sqlResults = new ArrayList<>();
+        for (int i = 1; i <= columnCount; i++) {
+            String columnName = ALIAS_MAKER.unApply(resultSetMetaData.getColumnName(i));
+            columnNames.put(i, columnName);
+        }
+
+        int rows = 0;
         while (resultSet.next()) { // todo this is different for other queries
+            sqlResults.add(new ArrayList<>());
+            for (int i = 1; i <= columnCount; i++) {
+                String val = resultSet.getString(i);
+                sqlResults.get(rows).add(val);
+            }
             ++rows;
-
-            int groupByCount = druidQuery.getDimensions().size();
-
-            DateTime timestamp = TimeConverter.parseDateTime(groupByCount, resultSet, druidQuery.getGranularity());
-            Map<String, String> sqlResults = new HashMap<>();
-            DruidResultRow rowResult;
-            if (druidQuery.getQueryType().equals(DefaultQueryType.GROUP_BY)) {
-                rowResult = new GroupByResultRow(timestamp, GroupByResultRow.Version.V1);
-            } else if (druidQuery.getQueryType().equals(DefaultQueryType.TOP_N)) {
-                rowResult = new TopNResultRow(timestamp);
-            } else {
-                rowResult = new TimeseriesResultRow(timestamp);
-            }
-
-            for (int i = 1; i <= groupByCount; i++) {
-                String columnName = ALIAS_MAKER.unApply(resultSetMetaData.getColumnName(i));
-                String val = resultSet.getString(i);
-                sqlResults.put(columnName, val);
-                rowResult.add(
-                        columnName,
-                        resultTypeMapper.getOrDefault(columnName, String::toString).apply(val)
-                );
-            }
-
-            int lastTimeIndex = TimeConverter.getNumberOfGroupByFunctions(druidQuery.getGranularity());
-            for (int i = groupByCount + lastTimeIndex + 1; i <= resultSetMetaData.getColumnCount(); i++) {
-                String columnName = ALIAS_MAKER.unApply(resultSetMetaData.getColumnName(i));
-                String val = resultSet.getString(i);
-                sqlResults.put(columnName, val);
-                rowResult.add(columnName, resultTypeMapper.get(columnName).apply(val));
-            }
-
-            druidQuery.getPostAggregations()
-                    .forEach(postAggregation -> {
-                        Double postAggResult = PostAggregationEvaluator.evaluate(postAggregation, sqlResults);
-                        rowResult.add(postAggregation.getName(), postAggResult);
-                    });
-
-            druidResponse.add(rowResult);
         }
         LOG.debug("Fetched {} rows.", rows);
+
+        DruidResponse druidResponse = new DruidResponse();
+        int groupByCount = druidQuery.getDimensions().size();
+        sqlResults.stream()
+                .map(row -> {
+                    DateTime timestamp = TimeConverter.parseDateTime(
+                            groupByCount,
+                            row,
+                            druidQuery.getGranularity()
+                    );
+
+                    DruidResultRow rowResult;
+                    if (druidQuery.getQueryType().equals(DefaultQueryType.GROUP_BY)) {
+                        rowResult = new GroupByResultRow(timestamp, GroupByResultRow.Version.V1);
+                    } else if (druidQuery.getQueryType().equals(DefaultQueryType.TOP_N)) {
+                        rowResult = new TopNResultRow(timestamp);
+                    } else {
+                        rowResult = new TimeseriesResultRow(timestamp);
+                    }
+
+                    for (int i = 0; i < groupByCount; i++) {
+                        Object result = resultTypeMapper
+                                .getOrDefault(columnNames.get(i + 1), String::toString)
+                                .apply(row.get(i));
+                        rowResult.add(columnNames.get(i + 1), result);
+                    }
+
+                    int lastTimeIndex = TimeConverter.getNumberOfGroupByFunctions(druidQuery.getGranularity());
+                    for (int i = groupByCount + lastTimeIndex; i < columnCount; i++) {
+                        Object result = resultTypeMapper
+                                .getOrDefault(columnNames.get(i + 1), String::toString)
+                                .apply(row.get(i));
+                        rowResult.add(columnNames.get(i + 1), result);
+                    }
+
+                    druidQuery.getPostAggregations()
+                            .forEach(postAggregation -> {
+                                Double postAggResult = PostAggregationEvaluator.evaluate(
+                                        postAggregation,
+                                        (s) -> row.get(columnNames.inverse().get(s))
+                                );
+                                rowResult.add(postAggregation.getName(), postAggResult);
+                            });
+
+                    return rowResult;
+                })
+                .forEach(druidResponse::add);
 
         return JSON_WRITER.valueToTree(druidResponse);
     }
@@ -272,6 +297,9 @@ public class SqlConverter implements SqlBackedClient {
         String sqlTableName = druidQuery.getDataSource().getPhysicalTable().getName();
         // todo we could store the name of the timestamp column
         String nameOfTimestampColumn = DatabaseHelper.getTimestampColumn(connection, sqlTableName);
+        if (druidQuery.getQueryType().equals(DefaultQueryType.TOP_N)) {
+            return finishTopN((TopNQuery) druidQuery, nameOfTimestampColumn, sqlTableName);
+        }
 
         LOG.debug("Selecting SQL Table '{}'", sqlTableName);
         builder.scan(sqlTableName);
@@ -280,12 +308,8 @@ public class SqlConverter implements SqlBackedClient {
         List<RexInputRef> columnsToSelect = getColumnsToSelect(druidQuery, nameOfTimestampColumn);
         builder.project(columnsToSelect);
 
-        if (druidQuery.getQueryType().equals(DefaultQueryType.TOP_N)) {
-            return finishTopN((TopNQuery) druidQuery, nameOfTimestampColumn);
-        }
-
         LOG.debug("Adding filters");
-        List<RexNode> allFilters = getAllWhereFilters(druidQuery, nameOfTimestampColumn);
+        List<RexNode> allFilters = getAllWhereFilters(druidQuery, nameOfTimestampColumn, druidQuery.getIntervals());
         builder.filter(allFilters);
 
         LOG.debug("Adding aggregations and having filters");
@@ -306,19 +330,31 @@ public class SqlConverter implements SqlBackedClient {
         return relToSql(builder);
     }
 
-    private String finishTopN(TopNQuery topNQuery, String nameOfTimestampColumn) {
+    /**
+     * Finishes the processing of a TopNQuery after a table and columns have been selected.
+     *
+     * @param topNQuery  The query to finish processing.
+     * @param nameOfTimestampColumn  The name of the timestamp column in the database.
+     *
+     * @param sqlTableName
+     * @return the sql to execute
+     */
+    private String finishTopN(TopNQuery topNQuery, String nameOfTimestampColumn, String sqlTableName) {
+        builder.scan(sqlTableName);
+        List<RexInputRef> columnsToSelect = getColumnsToSelect(topNQuery, nameOfTimestampColumn);
+        builder.project(columnsToSelect);
+
         RelNode rootRelNode = builder.build();
         return IntervalUtils.getSlicedIntervals(topNQuery.getIntervals(), topNQuery.getGranularity())
                 .keySet()
                 .stream()
                 .map(interval -> {
                     builder.push(rootRelNode);
-                    List<RexNode> filters = getAllWhereFilters(topNQuery, nameOfTimestampColumn);
+                    List<RexNode> filters = getAllWhereFilters(topNQuery, nameOfTimestampColumn,
+                            Collections.singletonList(interval)
+                    );
                     builder.filter(filters);
-                    return builder.build();
-                })
-                .map(bucket -> {
-                    builder.push(bucket);
+
                     addGroupByAggregationsAndHavingClauses(topNQuery, nameOfTimestampColumn);
                     builder.sortLimit(
                             0,
@@ -326,10 +362,6 @@ public class SqlConverter implements SqlBackedClient {
                             builder.desc(builder.field(ALIAS_MAKER.apply(topNQuery.getMetric().getMetric().toString())))
                             // todo this should be asc/desc based on the query
                     );
-                    return builder.build();
-                })
-                .map(relNode -> {
-                    builder.push(relNode);
                     String sql = relToSql(builder);
                     return "(" + sql + ")";
                 })
@@ -346,15 +378,20 @@ public class SqlConverter implements SqlBackedClient {
      *
      * @param druidQuery  The query from which to find filter all the filters for.
      * @param nameOfTimestampColumn  The name of the timestamp column in the database.
+     * @param intervals  The intervals to select events from.
      *
      * @return the list of RexNodes that should be filtered on.
      */
-    private List<RexNode> getAllWhereFilters(DruidAggregationQuery<?> druidQuery, String nameOfTimestampColumn) {
-        List<RexNode> filters = new ArrayList<>();
-        RexNode timeFilter = TimeConverter.buildTimeFilters(builder, druidQuery.getIntervals(), nameOfTimestampColumn);
-        filters.add(timeFilter);
-
+    private List<RexNode> getAllWhereFilters(
+            DruidAggregationQuery<?> druidQuery,
+            String nameOfTimestampColumn,
+            Collection<Interval> intervals
+    ) {
+        RexNode timeFilter = TimeConverter.buildTimeFilters(builder, intervals, nameOfTimestampColumn);
         RexNode druidQueryFilter = FilterEvaluator.getFilterAsRexNode(builder, druidQuery.getFilter());
+
+        List<RexNode> filters = new ArrayList<>();
+        filters.add(timeFilter);
         if (druidQueryFilter != null) {
             filters.add(druidQueryFilter);
         }
@@ -418,7 +455,6 @@ public class SqlConverter implements SqlBackedClient {
             String nameOfTimestampColumn
     ) {
         List<RelBuilder.AggCall> druidAggregations = getAllQueryAggregations(druidQuery);
-
         List<RexNode> allGroupBys = getAllGroupByColumns(druidQuery, nameOfTimestampColumn);
 
         builder.aggregate(
@@ -494,23 +530,20 @@ public class SqlConverter implements SqlBackedClient {
      *
      * @return the map from aggregation name to {@link Double::parseDouble} {@link Long::parseLong}.
      */
-    private Map<String, Function<String, Object>> getAggregationTypeMapper(
+    private static Map<String, Function<String, Object>> getAggregationTypeMapper(
             DruidAggregationQuery<?> druidQuery
     ) {
         //todo maybe "true"/"false" -> boolean
         return druidQuery.getAggregations()
                 .stream()
                 .collect(Collectors.toMap(Aggregation::getName, aggregation -> {
-                    Function<String, Object> typeMapper;
                     String aggType = aggregation.getType().toLowerCase(Locale.ENGLISH);
                     if (aggType.contains("long")) {
-                        typeMapper = Long::parseLong;
+                        return Long::parseLong;
                     } else if (aggType.contains("double")) {
-                        typeMapper = Double::parseDouble;
-                    } else {
-                        typeMapper = String::toString;
+                        return Double::parseDouble;
                     }
-                    return typeMapper;
+                    return String::toString;
                 }));
     }
 

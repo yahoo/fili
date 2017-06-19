@@ -23,7 +23,6 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.HashMap;
@@ -36,25 +35,16 @@ import java.util.stream.Collectors;
  * {@link SqlDatePartFunction} to create groupBy statements on intervals of time.
  */
 public class TimeConverter {
-    private static final Map<DefaultTimeGrain, List<SqlDatePartFunction>> TIMEGRAIN_TO_GROUPBY = new HashMap<>();
-
-    /*
-      This mapping shows what information we need to group for each granularity
-      Year   -> (Year)
-      Month  -> (Year, Month)
-      Week   -> (Year, Week)
-      Day    -> (Year, Day)
-      Hour   -> (Year, Day, Hour)
-      Minute -> (Year, Day, Hour, Minute)
-     */
-    static {
-        TIMEGRAIN_TO_GROUPBY.put(DefaultTimeGrain.YEAR, asList(YEAR));
-        TIMEGRAIN_TO_GROUPBY.put(DefaultTimeGrain.MONTH, asList(YEAR, MONTH));
-        TIMEGRAIN_TO_GROUPBY.put(DefaultTimeGrain.WEEK, asList(YEAR, WEEK));
-        TIMEGRAIN_TO_GROUPBY.put(DefaultTimeGrain.DAY, asList(YEAR, DAYOFYEAR));
-        TIMEGRAIN_TO_GROUPBY.put(DefaultTimeGrain.HOUR, asList(YEAR, DAYOFYEAR, HOUR));
-        TIMEGRAIN_TO_GROUPBY.put(DefaultTimeGrain.MINUTE, asList(YEAR, DAYOFYEAR, HOUR, MINUTE));
-    }
+    // This mapping shows what information we need to group for each granularity
+    private static final Map<DefaultTimeGrain, List<SqlDatePartFunction>> TIMEGRAIN_TO_GROUPBY = new
+            HashMap<DefaultTimeGrain, List<SqlDatePartFunction>>() {{
+                put(DefaultTimeGrain.YEAR, asList(YEAR));
+                put(DefaultTimeGrain.MONTH, asList(YEAR, MONTH));
+                put(DefaultTimeGrain.WEEK, asList(YEAR, WEEK));
+                put(DefaultTimeGrain.DAY, asList(YEAR, DAYOFYEAR));
+                put(DefaultTimeGrain.HOUR, asList(YEAR, DAYOFYEAR, HOUR));
+                put(DefaultTimeGrain.MINUTE, asList(YEAR, DAYOFYEAR, HOUR, MINUTE));
+    }};
 
     /**
      * Private constructor - all methods static.
@@ -103,31 +93,20 @@ public class TimeConverter {
      *
      *
      * @param startPosition the last column before the date fields.
-     * @param resultSet  The results returned by Sql needed to read the time columns.
+     * @param row  The results returned by Sql needed to read the time columns.
      * @param granularity  The granularity which was used when calling
      * {@link #buildGroupBy(RelBuilder, Granularity, String)}
      *
      * @return the datetime for the start of the interval.
-     *
-     * @throws SQLException if the results can't be read.
      */
-    public static DateTime parseDateTime(int startPosition, ResultSet resultSet, Granularity granularity)
-            throws SQLException {
+    public static DateTime parseDateTime(int startPosition, List<String> row, Granularity granularity) {
         DefaultTimeGrain timeGrain = (DefaultTimeGrain) granularity;
-        DateTime resultTimeStamp = new DateTime(DateTimeZone.UTC);
-
-        resultTimeStamp = resultTimeStamp.withMonthOfYear(1)
-                .withWeekOfWeekyear(1)
-                .withDayOfYear(1)
-                .withHourOfDay(0)
-                .withMinuteOfHour(0)
-                .withSecondOfMinute(0)
-                .withMillisOfSecond(0);
+        DateTime resultTimeStamp = new DateTime(0, DateTimeZone.UTC);
 
         List<SqlDatePartFunction> times = TIMEGRAIN_TO_GROUPBY.get(timeGrain);
         int timesPosition = 0;
-        for (int i = startPosition + 1; i <= times.size() + startPosition; i++, timesPosition++) {
-            int value = resultSet.getInt(i);
+        for (int i = startPosition; i < times.size() + startPosition; i++, timesPosition++) {
+            int value = Integer.parseInt(row.get(i));
             SqlDatePartFunction fn = times.get(timesPosition);
             resultTimeStamp = setDateTime(value, fn, resultTimeStamp);
         }
