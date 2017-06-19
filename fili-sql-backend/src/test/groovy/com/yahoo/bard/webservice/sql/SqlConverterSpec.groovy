@@ -241,7 +241,7 @@ class SqlConverterSpec extends Specification {
         HOUR      | asList()                 | null                           | gt(ADDED, 400000)               | 12
         HOUR      | asList()                 | null                           | null                            | 24
         DAY       | asList(PAGE, USER)       | null                           | null                            | 36565
-        DAY       | asList(PAGE)             | null                           | null                            | 1
+        DAY       | asList()                 | null                           | null                            | 1
     }
 
     @Unroll
