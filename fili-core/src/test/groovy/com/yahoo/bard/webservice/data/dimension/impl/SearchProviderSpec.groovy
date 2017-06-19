@@ -553,8 +553,7 @@ abstract class SearchProviderSpec<T extends SearchProvider> extends Specificatio
 
         and: "We get only {'owl', 'hawk', 'eagle', 'kumquat'}"
         resultsPage.numResults == 4
-        Set<String> actualOutcomes = resultsPage.pageOfData.stream().map { it.getKeyValue() }.collect(Collectors.toSet())
-        actualOutcomes.equals(expectedOutcomes)
+        expectedOutcomes == resultsPage.pageOfData.collect{ it.getKeyValue() } as Set
     }
 
     /**
