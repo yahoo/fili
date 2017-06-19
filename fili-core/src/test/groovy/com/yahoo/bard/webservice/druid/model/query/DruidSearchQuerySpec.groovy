@@ -84,14 +84,14 @@ class DruidSearchQuerySpec extends Specification {
         vars.queryType = vars.queryType ?: "search"
         vars.dataSource = vars.dataSource ?: '{"type":"table","name":"table_name"}'
         vars.granularity = vars.granularity ?: '{"type":"period","period":"P1D"}'
-        vars.filter = vars.filter ? ((' "filter": ').replaceAll(/\s/, "") + vars.filter + ',') : ""
+        vars.filter = vars.filter ? /"filter": $vars.filter,/ : ""
         vars.context = vars.context ?
-                (('{"queryId":"dummy100",').replaceAll(/\s/, "") + vars.context + '}') :
-                '{"queryId":"dummy100"}'
+                /{"queryId":"dummy100",$vars.context}/ :
+                /{"queryId": "dummy100"}/
         vars.intervals = vars.intervals ?: "[]"
         vars.searchDimensions = vars.searchDimensions ?: "[]"
         vars.query = vars.query ?: ""
-        vars.sort = vars.sort ? ((' "sort": "').replaceAll(/\s/, "") + vars.sort + '",') : ""
+        vars.sort = vars.sort ? /"sort":"$vars.sort",/ : ""
         vars.limit = vars.limit ?: 50000
 
         ("""{
@@ -154,23 +154,23 @@ class DruidSearchQuerySpec extends Specification {
         )
 
         Map vars = [:]
-        vars['query'] = (
-             """{
+        vars['query'] = """
+                {
                     "type": "fragment",
                     "values": [
                         "a",
                         "b"
                     ]
-                }"""
-        ).replaceAll(/\s/, "")
+                }
+        """
 
-        vars['filter'] = (
-             """{
+        vars['filter'] = """
+                {
                     "dimension": "a",
                     "type": "selector",
                     "value": "23"
-                }"""
-        ).replaceAll(/\s/, "")
+                }
+        """
 
         vars['intervals'] = """["1969-12-31T18:00:00.000-06:00/1969-12-31T18:01:00.000-06:00"]"""
         vars['searchDimensions'] = """["a", "b"]"""
