@@ -12,7 +12,6 @@ import static org.apache.calcite.sql.fun.SqlStdOperatorTable.YEAR;
 
 import com.yahoo.bard.webservice.TimestampUtils;
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
-import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 
 import org.apache.calcite.rex.RexNode;
@@ -180,24 +179,26 @@ public class TimeConverter {
             String nameOfTimestampColumn
     ) {
         // create filters to only select results within the given intervals
-        List<RexNode> timeFilters = intervals.stream().map(interval -> {
-            Timestamp start = TimestampUtils.timestampFromMillis(interval.getStartMillis());
-            Timestamp end = TimestampUtils.timestampFromMillis(interval.getEndMillis());
+        List<RexNode> timeFilters = intervals.stream()
+                .map(interval -> {
+                    Timestamp start = TimestampUtils.timestampFromMillis(interval.getStartMillis());
+                    Timestamp end = TimestampUtils.timestampFromMillis(interval.getEndMillis());
 
-            return builder.call(
-                    SqlStdOperatorTable.AND,
-                    builder.call(
-                            SqlStdOperatorTable.GREATER_THAN,
-                            builder.field(nameOfTimestampColumn),
-                            builder.literal(start.toString())
-                    ),
-                    builder.call(
-                            SqlStdOperatorTable.LESS_THAN,
-                            builder.field(nameOfTimestampColumn),
-                            builder.literal(end.toString())
-                    )
-            );
-        }).collect(Collectors.toList());
+                    return builder.call(
+                            SqlStdOperatorTable.AND,
+                            builder.call(
+                                    SqlStdOperatorTable.GREATER_THAN,
+                                    builder.field(nameOfTimestampColumn),
+                                    builder.literal(start.toString())
+                            ),
+                            builder.call(
+                                    SqlStdOperatorTable.LESS_THAN,
+                                    builder.field(nameOfTimestampColumn),
+                                    builder.literal(end.toString())
+                            )
+                    );
+                })
+                .collect(Collectors.toList());
 
         if (timeFilters.size() > 1) {
             return builder.call(SqlStdOperatorTable.OR, timeFilters);

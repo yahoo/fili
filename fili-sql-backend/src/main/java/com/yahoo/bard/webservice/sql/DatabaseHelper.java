@@ -54,8 +54,8 @@ public class DatabaseHelper {
      *
      * @throws SQLException if failed while reading results.
      */
-    public static StringBuilder format(ResultSet resultSet) throws SQLException {
-        return ResultSetFormatter.format(resultSet, -1);
+    public static void print(ResultSet resultSet) throws SQLException {
+        System.out.println(ResultSetFormatter.format(resultSet, -1));
     }
 
     /**
