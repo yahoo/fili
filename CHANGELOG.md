@@ -21,6 +21,9 @@ Current
 
 ### Changed:
 
+- [Fix a bug where table loader uses nested compute if absent](https://github.com/yahoo/fili/pull/407)
+    * Nesting `computeIfAbsent` on maps can cause a lot of issues in the map internals that causes weird behavior, nesting structure is now removed
+
 - [Convert null avro record value to empty string](https://github.com/yahoo/fili/pull/395)
     * Make `AvroDimensionRowParser` convert null record value into empty string to avoid NPE
 

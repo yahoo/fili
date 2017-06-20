@@ -97,17 +97,12 @@ public abstract class BaseTableLoader implements TableLoader {
         // Get the physical table from physical table dictionary, if not exist, build it and put it in dictionary
         LinkedHashSet<PhysicalTable> physicalTables = currentTableGroupTableNames.stream()
                 .map(TableName::asName)
-                .map(
-                        tableName -> physicalTableDictionary.computeIfAbsent(
-                                tableName,
-                                tableNameKey -> buildPhysicalTableWithDependency(
-                                        tableNameKey,
+                .map(tableName -> buildPhysicalTableWithDependency(
+                                        tableName,
                                         availableTableDefinitions,
                                         dictionaries
-                                )
                         )
                 ).collect(Collectors.toCollection(LinkedHashSet::new));
-
 
         // Derive the dimensions by taking the union of all the physical dimensions
         Set<Dimension> dimensions = physicalTables.stream()
@@ -211,14 +206,31 @@ public abstract class BaseTableLoader implements TableLoader {
 
         // If dependent table not in physical table dictionary, try to recursively build it and put it in the dictionary
         currentTableDefinition.getDependentTableNames()
-                .forEach(tableName -> physicalTableDictionary.computeIfAbsent(
-                        tableName.asName(),
-                        name -> buildPhysicalTableWithDependency(name, availableTableDefinitions, dictionaries)
-                ));
+                .forEach(
+                        tableName -> {
+                            if (!physicalTableDictionary.containsKey(tableName)) {
+                                physicalTableDictionary.put(
+                                        tableName.asName(),
+                                        buildPhysicalTableWithDependency(
+                                                tableName.asName(),
+                                                availableTableDefinitions,
+                                                dictionaries
+                                        )
+                                );
+                            }
+                        }
+                );
 
         LOG.debug("Table Loader Building Physical Table {}");
+
         // Build the current physical table using physical table dictionary to resolve dependency
-        return currentTableDefinition.build(dictionaries, getDataSourceMetadataService());
+        ConfigPhysicalTable currentTableBuilt = currentTableDefinition.build(
+                dictionaries,
+                getDataSourceMetadataService()
+        );
+        physicalTableDictionary.put(currentTableName, currentTableBuilt);
+
+        return currentTableBuilt;
     }
 
     /**
