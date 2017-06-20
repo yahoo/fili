@@ -62,8 +62,7 @@ public class TimeConverter {
      * @return the number of functions used to groupBy the given granularity.
      */
     public static int getNumberOfGroupByFunctions(Granularity granularity) {
-        DefaultTimeGrain timeGrain = (DefaultTimeGrain) granularity;
-        return TIMEGRAIN_TO_GROUPBY.get(timeGrain).size();
+        return TIMEGRAIN_TO_GROUPBY.get(granularity).size();
     }
 
     /**
@@ -80,8 +79,7 @@ public class TimeConverter {
             Granularity granularity,
             String timeColumn
     ) {
-        DefaultTimeGrain timeGrain = (DefaultTimeGrain) granularity;
-        return TIMEGRAIN_TO_GROUPBY.get(timeGrain)
+        return TIMEGRAIN_TO_GROUPBY.get(granularity)
                 .stream()
                 .map(sqlDatePartFunction -> builder.call(sqlDatePartFunction, builder.field(timeColumn)));
     }
@@ -92,22 +90,21 @@ public class TimeConverter {
      * represents the beginning of the interval it was grouped on.
      *
      *
-     * @param startPosition the last column before the date fields.
+     * @param offset the last column before the date fields.
      * @param row  The results returned by Sql needed to read the time columns.
      * @param granularity  The granularity which was used when calling
      * {@link #buildGroupBy(RelBuilder, Granularity, String)}
      *
      * @return the datetime for the start of the interval.
      */
-    public static DateTime parseDateTime(int startPosition, List<String> row, Granularity granularity) {
+    public static DateTime parseDateTime(int offset, String[] row, Granularity granularity) {
         DefaultTimeGrain timeGrain = (DefaultTimeGrain) granularity;
         DateTime resultTimeStamp = new DateTime(0, DateTimeZone.UTC);
 
         List<SqlDatePartFunction> times = TIMEGRAIN_TO_GROUPBY.get(timeGrain);
-        int timesPosition = 0;
-        for (int i = startPosition; i < times.size() + startPosition; i++, timesPosition++) {
-            int value = Integer.parseInt(row.get(i));
-            SqlDatePartFunction fn = times.get(timesPosition);
+        for (int i = 0; i < times.size(); i++) {
+            int value = Integer.parseInt(row[offset + i]);
+            SqlDatePartFunction fn = times.get(i);
             resultTimeStamp = setDateTime(value, fn, resultTimeStamp);
         }
 
@@ -148,14 +145,14 @@ public class TimeConverter {
      *
      * @param builder  The RelBuilder used for building queries.
      * @param intervals  The intervals to select from.
-     * @param nameOfTimestampColumn  The name of the timestamp column in the database.
+     * @param timestampColumn  The name of the timestamp column in the database.
      *
      * @return the RexNode for filtering to only the given intervals.
      */
     public static RexNode buildTimeFilters(
             RelBuilder builder,
             Collection<Interval> intervals,
-            String nameOfTimestampColumn
+            String timestampColumn
     ) {
         // create filters to only select results within the given intervals
         List<RexNode> timeFilters = intervals.stream()
@@ -163,28 +160,21 @@ public class TimeConverter {
                     Timestamp start = TimestampUtils.timestampFromMillis(interval.getStartMillis());
                     Timestamp end = TimestampUtils.timestampFromMillis(interval.getEndMillis());
 
-                    return builder.call(
-                            SqlStdOperatorTable.AND,
+                    return builder.and(
                             builder.call(
                                     SqlStdOperatorTable.GREATER_THAN,
-                                    builder.field(nameOfTimestampColumn),
+                                    builder.field(timestampColumn),
                                     builder.literal(start.toString())
                             ),
                             builder.call(
                                     SqlStdOperatorTable.LESS_THAN,
-                                    builder.field(nameOfTimestampColumn),
+                                    builder.field(timestampColumn),
                                     builder.literal(end.toString())
                             )
                     );
                 })
                 .collect(Collectors.toList());
 
-        if (timeFilters.size() > 1) {
-            return builder.call(SqlStdOperatorTable.OR, timeFilters);
-        } else if (timeFilters.size() == 1) {
-            return timeFilters.get(0);
-        } else {
-            throw new IllegalStateException("Must have at least 1 time filter");
-        }
+        return builder.or(timeFilters);
     }
 }

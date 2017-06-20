@@ -39,9 +39,9 @@ import com.yahoo.bard.webservice.data.ResultSetSchema
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
-import com.yahoo.bard.webservice.druid.model.DefaultQueryType
 import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.model.having.Having
+import com.yahoo.bard.webservice.druid.model.query.AbstractDruidAggregationQuery
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery
@@ -58,7 +58,6 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 import java.sql.Connection
-import java.util.stream.Stream
 
 class SqlConverterSpec extends Specification {
     private static final Connection CONNECTION = Database.initializeDatabase();
@@ -68,23 +67,18 @@ class SqlConverterSpec extends Specification {
     private static final String FIRST_COMMENT = "added project"
     //this is the first result in the database
     private static final String UNIQUE_COMMENT = "took out (then), added quotation marks"
+    private static final DruidResponseParser RESPONSE_PARSER = new DruidResponseParser();
 
-    static ResultSet parse(DefaultTimeGrain timeGrain, JsonNode jsonNode, DefaultQueryType queryType) {
-        DruidResponseParser druidResponseParser = new DruidResponseParser()
-
+    static ResultSet parse(JsonNode jsonNode, AbstractDruidAggregationQuery<?> druidQuery) {
         List<Column> columns = new ArrayList<>()
-        Stream.of(ADDED, DELETED, DELTA)
-                .map { new MetricColumn(it) }
-                .forEach { columns.add(it) }
-        Stream.of(COMMENT)
-                .map { new DimensionColumn(getDimension(it)) }
-                .forEach { columns.add(it) }
+        druidQuery.dataSource.physicalTable.constraint.metricNames.forEach { columns.add(new MetricColumn(it)) }
+        druidQuery.dataSource.physicalTable.constraint.allDimensionNames.forEach { columns.add(new DimensionColumn(getDimension(it))) }
 
-        ResultSetSchema resultSetSchema = new ResultSetSchema(timeGrain, columns)
-        return druidResponseParser.parse(
+        ResultSetSchema resultSetSchema = new ResultSetSchema(druidQuery.granularity, columns)
+        return RESPONSE_PARSER.parse(
                 jsonNode,
                 resultSetSchema,
-                queryType,
+                druidQuery.getQueryType(),
                 DateTimeZone.UTC
         )
     }
@@ -162,7 +156,7 @@ class SqlConverterSpec extends Specification {
         expect:
         DruidQuery druidQuery = getTimeSeriesQuery(timeGrain, filter)
         JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery).get();
-        ResultSet parse = parse(timeGrain, jsonNode, DefaultQueryType.TIMESERIES)
+        ResultSet parse = parse(jsonNode, druidQuery)
 
         parse.size() == size
 
@@ -186,7 +180,7 @@ class SqlConverterSpec extends Specification {
         expect:
         DruidQuery druidQuery = getBasicTimeseriesQuery(timeGrain)
         JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery).get();
-        ResultSet parse = parse(timeGrain, jsonNode, DefaultQueryType.TIMESERIES)
+        ResultSet parse = parse(jsonNode, druidQuery)
 
         parse.size() == size
 
@@ -208,7 +202,7 @@ class SqlConverterSpec extends Specification {
         JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery).get();
 
         expect:
-        parse(timeGrain, jsonNode, DefaultQueryType.TIMESERIES)
+        parse(jsonNode, druidQuery)
         jsonNode.toString() == response
 
         where: "we have"
@@ -228,7 +222,7 @@ class SqlConverterSpec extends Specification {
         JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery).get();
 
         expect:
-        ResultSet parse = parse(timeGrain, jsonNode, DefaultQueryType.GROUP_BY)
+        ResultSet parse = parse(jsonNode, druidQuery)
         parse.size() == size
 
         where: "we have"
@@ -251,7 +245,7 @@ class SqlConverterSpec extends Specification {
         JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery).get();
 
         expect:
-        ResultSet parse = parse(timeGrain, jsonNode, DefaultQueryType.GROUP_BY)
+        ResultSet parse = parse(jsonNode, druidQuery)
         parse.size() <= size
 
         where: "we have"
