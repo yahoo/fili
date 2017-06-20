@@ -197,7 +197,7 @@ class SimpleDruidQueryBuilder {
         return new HashSet<T>(e);
     }
 
-    public static Object o() {
+    public static ArithmeticPostAggregation arithmeticPA() {
         // badTest = manDelta + one + negativeOne = manDelta ---> manDelta = added + deleted = delta
         return new ArithmeticPostAggregation(
                 "badTest",

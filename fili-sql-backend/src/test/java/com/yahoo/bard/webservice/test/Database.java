@@ -139,7 +139,8 @@ public class Database {
      *
      * @return the datasource.
      */
-    public static DataSource getDataSource() {
+    public static DataSource getDataSource() throws IOException, SQLException {
+        initializeDatabase();
         return JdbcSchema.dataSource(DATABASE_URL, org.h2.Driver.class.getName(), "", "");
     }
 }

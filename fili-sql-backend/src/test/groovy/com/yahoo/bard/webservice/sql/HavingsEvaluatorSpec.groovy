@@ -33,8 +33,7 @@ class HavingsEvaluatorSpec extends Specification {
     private static final AliasMaker ALIAS_MAKER = new AliasMaker("__");
 
     private static RelBuilder getBuilder() {
-        Connection connection = Database.initializeDatabase();
-        RelBuilder builder = SqlConverter.getBuilder(Database.getDataSource(), SqlConverter.DEFAULT_SCHEMA)
+        RelBuilder builder = CalciteHelper.getBuilder(Database.getDataSource())
         builder.scan(WIKITICKER);
         return builder
     }
@@ -52,7 +51,7 @@ class HavingsEvaluatorSpec extends Specification {
                 ),
                 aggregationCalls
         )
-        RexNode havingFilter = HavingEvaluator.evaluate(builder, having, ALIAS_MAKER)
+        RexNode havingFilter = HavingEvaluator.buildFilter(builder, having, ALIAS_MAKER).get()
         builder.filter(havingFilter)
 
         expect:

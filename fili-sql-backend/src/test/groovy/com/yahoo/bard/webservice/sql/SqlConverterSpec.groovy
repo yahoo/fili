@@ -57,10 +57,7 @@ import org.joda.time.DateTimeZone
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import java.sql.Connection
-
 class SqlConverterSpec extends Specification {
-    private static final Connection CONNECTION = Database.initializeDatabase();
     private static final SqlBackedClient sqlBackedClient = new SqlConverter(Database.getDataSource())
     private static final String TRUE = "TRUE"
     private static final String FALSE = "FALSE"
