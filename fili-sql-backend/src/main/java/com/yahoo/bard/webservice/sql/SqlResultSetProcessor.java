@@ -22,7 +22,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * Process the results from a DruidQuery to a sql backend
+ * Process the results from a DruidQuery to a sql backend.
  */
 public class SqlResultSetProcessor {
     private final DruidAggregationQuery<?> druidQuery;

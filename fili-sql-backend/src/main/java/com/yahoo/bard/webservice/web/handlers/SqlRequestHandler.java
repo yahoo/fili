@@ -3,6 +3,8 @@
 package com.yahoo.bard.webservice.web.handlers;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.druid.client.FailureCallback;
+import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.sql.SqlBackedClient;
@@ -11,19 +13,12 @@ import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.responseprocessors.LoggingContext;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import org.apache.calcite.adapter.jdbc.JdbcSchema;
-import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 import javax.validation.constraints.NotNull;
 
@@ -74,22 +69,19 @@ public class SqlRequestHandler implements DataRequestHandler {
                 .stream()
                 .filter(dimension -> dimension.getApiName().equals("sql"))
                 .findFirst();
+        
         if (sqlBackedClient != null && sqlDimension.isPresent()) {
-            try {
-                Dimension sqlFlag = sqlDimension.get();
-                druidQuery.getDimensions().remove(sqlFlag);
+            SuccessCallback success = rootNode -> response.processResponse(
+                    rootNode,
+                    druidQuery,
+                    new LoggingContext(RequestLog.copy())
+            );
 
-                Future<JsonNode> futureResponse = sqlBackedClient.executeQuery(druidQuery);
-                response.processResponse(futureResponse.get(), druidQuery, new LoggingContext(RequestLog.copy()));
-                return true;
-            } catch (InterruptedException | ExecutionException e) {
-                LOG.error("Failed to get response from sql backed client.", e);
-                response.getErrorCallback(druidQuery)
-                        .dispatch(HttpStatus.SC_INTERNAL_SERVER_ERROR, request.getFormat().name(), "FAILED");
-            } catch (UnsupportedOperationException e) {
-                response.getErrorCallback(druidQuery)
-                        .dispatch(HttpStatus.SC_NOT_IMPLEMENTED, request.getFormat().name(), "UNSUPPORTED");
-            }
+            FailureCallback failure = response.getFailureCallback(druidQuery);
+
+            Dimension sqlFlag = sqlDimension.get();
+            druidQuery.getDimensions().remove(sqlFlag);
+            sqlBackedClient.executeQuery(druidQuery, success, failure);
         }
         return next.handleRequest(context, request, druidQuery, response);
     }

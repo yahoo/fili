@@ -4,10 +4,13 @@ package com.yahoo.bard.webservice.sql;
 
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.druid.client.FailureCallback;
+import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.having.Having;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
+import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery;
 import com.yahoo.bard.webservice.druid.model.query.TopNQuery;
 import com.yahoo.bard.webservice.druid.response.DruidResponse;
@@ -87,7 +90,11 @@ public class SqlConverter implements SqlBackedClient {
     }
 
     @Override
-    public Future<JsonNode> executeQuery(DruidAggregationQuery<?> druidQuery) {
+    public Future<JsonNode> executeQuery(
+            DruidQuery<?> druidQuery,
+            SuccessCallback successCallback,
+            FailureCallback failureCallback
+    ) {
         DefaultQueryType queryType = (DefaultQueryType) druidQuery.getQueryType();
         LOG.debug("Processing {} query\n {}", queryType, JSON_WRITER.valueToTree(druidQuery));
 
@@ -96,16 +103,28 @@ public class SqlConverter implements SqlBackedClient {
                 case TOP_N:
                 case GROUP_BY:
                 case TIMESERIES:
-                    //.thenAccept(successCallback::invoke);
-                    return CompletableFuture.supplyAsync(() -> executeAndProcessQuery(druidQuery));
+                    CompletableFuture<JsonNode> responseFuture = CompletableFuture.supplyAsync(() ->
+                            executeAndProcessQuery((DruidAggregationQuery) druidQuery)
+                    );
+                    if (successCallback != null) {
+                        responseFuture.thenAccept(jsonNode -> {
+                            if (jsonNode != null) {
+                                successCallback.invoke(jsonNode);
+                            }
+                        });
+
+                    }
+                    return responseFuture;
                 default:
                     String message = "Unable to process " + queryType.toString();
-                    LOG.warn(message);
-                    return new CompletedFuture<>(null, new UnsupportedOperationException(message));
+                    throw new UnsupportedOperationException(message);
             }
 
         } catch (RuntimeException e) {
             LOG.warn("Failed while querying ", e);
+            if (failureCallback != null) {
+                failureCallback.dispatch(e);
+            }
             return new CompletedFuture<>(null, e);
         }
     }
@@ -116,9 +135,12 @@ public class SqlConverter implements SqlBackedClient {
      *
      * @param druidQuery  The druid query to build and process.
      *
+     * @param failureCallback
      * @return a druid-like response to the query.
      */
-    private JsonNode executeAndProcessQuery(DruidAggregationQuery druidQuery) {
+    private JsonNode executeAndProcessQuery(
+            DruidAggregationQuery druidQuery
+    ) {
         String sqlQuery;
         try (Connection connection = calciteHelper.getConnection()) {
             sqlQuery = buildSqlQuery(connection, druidQuery);

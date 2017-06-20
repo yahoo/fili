@@ -77,8 +77,8 @@ public enum SqlAggregationType {
                 break;
         }
 
-        String fieldName = aggregation.getFieldName();
         if (aggFunction != null) {
+            String fieldName = aggregation.getFieldName();
             return builder.aggregateCall(
                     aggFunction,
                     false,

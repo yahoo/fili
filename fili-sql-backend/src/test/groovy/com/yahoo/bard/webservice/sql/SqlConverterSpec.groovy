@@ -152,7 +152,7 @@ class SqlConverterSpec extends Specification {
     def "ExecuteQuery for #timeGrain want #size filter on #filter"() {
         expect:
         DruidQuery druidQuery = getTimeSeriesQuery(timeGrain, filter)
-        JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery).get();
+        JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery, null, null).get();
         ResultSet parse = parse(jsonNode, druidQuery)
 
         parse.size() == size
@@ -176,7 +176,7 @@ class SqlConverterSpec extends Specification {
     def "Test timeseries on /#timeGrain/"() {
         expect:
         DruidQuery druidQuery = getBasicTimeseriesQuery(timeGrain)
-        JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery).get();
+        JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery, null, null).get();
         ResultSet parse = parse(jsonNode, druidQuery)
 
         parse.size() == size
@@ -196,7 +196,7 @@ class SqlConverterSpec extends Specification {
     def "Test timeseries on /#timeGrain/ with #filter"() {
         setup:
         DruidQuery druidQuery = getTimeSeriesQuery(timeGrain, filter)
-        JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery).get();
+        JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery, null, null).get();
 
         expect:
         parse(jsonNode, druidQuery)
@@ -216,7 +216,7 @@ class SqlConverterSpec extends Specification {
     def "Test groupBy on /#timeGrain/#dims/"() {
         setup:
         DruidQuery druidQuery = getGroupByQuery(timeGrain, filter, having, dims)
-        JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery).get();
+        JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery, null, null).get();
 
         expect:
         ResultSet parse = parse(jsonNode, druidQuery)
@@ -239,7 +239,7 @@ class SqlConverterSpec extends Specification {
     def "Test topN on /#timeGrain/#dimension/?metrics=#metric&topN=#threshold"() {
         setup:
         DruidQuery druidQuery = getTopNQuery(timeGrain, filter, metric, dimension, threshold)
-        JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery).get();
+        JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery, null, null).get();
 
         expect:
         ResultSet parse = parse(jsonNode, druidQuery)
