@@ -15,6 +15,8 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 
+import org.slf4j.Logger
+
 import spock.lang.Specification
 
 class EtagCacheResponseProcessorSpec extends Specification {
@@ -73,7 +75,7 @@ class EtagCacheResponseProcessorSpec extends Specification {
         json.get(DruidJsonResponseContentKeys.RESPONSE.getName()) == MAPPER.readTree('[{"k1":"v1"}]')
     }
 
-    def "processResponse reports error when status code is OK but etag is missing and processResponse moves on without caching"() {
+    def "When status code is OK but etag is missing, processResponse moves on without caching"() {
         given:
         JsonNode json = MAPPER.readTree(
                 """{"${DruidJsonResponseContentKeys.STATUS_CODE.name}": $OK.statusCode}"""
