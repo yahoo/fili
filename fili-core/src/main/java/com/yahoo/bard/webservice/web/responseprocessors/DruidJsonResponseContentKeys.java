@@ -11,7 +11,9 @@ public enum DruidJsonResponseContentKeys {
     UNCOVERED_INTERVALS_OVERFLOWED("uncoveredIntervalsOverflowed"),
     STATUS_CODE("status-code"),
     RESPONSE("response"),
-    ETAG("Etag")
+    ETAG("Etag"),
+    REQUEST_ETAG("If-None-Match"),
+    NON_EXISTING_ETAG_VALUE("non-existing-etag")
     ;
 
     private final String name;

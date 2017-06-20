@@ -10,6 +10,10 @@ Current
 
 ### Added:
 
+- [Implement EtagCacheRequestHandler](https://github.com/yahoo/fili/pull/312)
+    * Add `EtagCacheRequestHandler` that checks the cache for a matching eTag
+    * Add `EtagCacheRequestHandler` to `DruidWorkflow`
+
 - [Implement EtagCacheResponseProcessor](https://github.com/yahoo/fili/pull/311)
     * Add `EtagCacheResponseProcessor` that caches the results if appropriate after completing a query according to
     etag value.

@@ -16,7 +16,6 @@ import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.responseprocessors.DruidJsonResponseContentKeys;
 import com.yahoo.bard.webservice.web.responseprocessors.EtagCacheResponseProcessor;
-import com.yahoo.bard.webservice.web.responseprocessors.LoggingContext;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 
 import com.codahale.metrics.Meter;
@@ -28,29 +27,25 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.Objects;
-
 import javax.validation.constraints.NotNull;
 
 /**
- * Request handler to check the cache for a matching eTag and either return the cached result or send the next
- * handler.
+ * Request handler to check the cache for a matching eTag.
  * <p>
- * It also wraps the response processor so that valid, non-partial JSON responses are cached
+ * If a query is cached, the etag of the query is retrieved from the cache and is injected into query request header
+ * <p>
+ * Etag-based cache mechanism relies entirely on Druid's etags to determine a cache hit or miss.
  */
 public class EtagCacheRequestHandler extends BaseDataRequestHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(EtagCacheRequestHandler.class);
     private static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry();
-    public static final Meter CACHE_HITS = REGISTRY.meter("queries.meter.cache.hits");
-    public static final Meter CACHE_POTENTIAL_HITS = REGISTRY.meter("queries.meter.cache.potential_hits");
-    public static final Meter CACHE_MISSES = REGISTRY.meter("queries.meter.cache.misses");
-    public static final Meter CACHE_REQUESTS = REGISTRY.meter("queries.meter.cache.total");
+    private static final Meter CACHE_MISSES = REGISTRY.meter("queries.meter.cache.misses");
+    private static final Meter CACHE_REQUESTS = REGISTRY.meter("queries.meter.cache.total");
 
-    protected final @NotNull DataRequestHandler next;
-    protected final @NotNull TupleDataCache<String, Long, String> dataCache;
-    protected final @NotNull QuerySigningService<Long> querySigningService;
+    protected final DataRequestHandler next;
+    protected final TupleDataCache<String, String, String> dataCache;
+    protected final QuerySigningService<Long> querySigningService;
 
     /**
      * Build a Cache request handler.
@@ -60,85 +55,58 @@ public class EtagCacheRequestHandler extends BaseDataRequestHandler {
      * @param querySigningService  The service to generate query signatures
      * @param mapper  The mapper for all JSON processing
      */
-    @SuppressWarnings("unchecked")
     public EtagCacheRequestHandler(
-            DataRequestHandler next,
+            @NotNull DataRequestHandler next,
             @NotNull DataCache<?> dataCache,
-            QuerySigningService<?> querySigningService,
-            ObjectMapper mapper
+            @NotNull QuerySigningService<?> querySigningService,
+            @NotNull ObjectMapper mapper
     ) {
         super(mapper);
         this.next = next;
-        this.dataCache = (TupleDataCache<String, Long, String>) dataCache;
+        this.dataCache = (TupleDataCache<String, String, String>) dataCache;
         this.querySigningService = (QuerySigningService<Long>) querySigningService;
     }
 
     @Override
     public boolean handleRequest(
-            final RequestContext context,
-            final DataApiRequest request,
-            final DruidAggregationQuery<?> druidQuery,
-            final ResponseProcessor response
+            RequestContext context,
+            DataApiRequest request,
+            DruidAggregationQuery<?> druidQuery,
+            ResponseProcessor response
     ) {
         ResponseProcessor nextResponse = response;
 
         String cacheKey = null;
         try {
-            cacheKey = getKey(druidQuery);
-
             if (context.isReadCache()) {
-                final TupleDataCache.DataEntry<String, Long, String> cacheEntry = dataCache.get(cacheKey);
+                cacheKey = getKey(druidQuery);
+                final TupleDataCache.DataEntry<String, String , String> cacheEntry = dataCache.get(cacheKey);
                 CACHE_REQUESTS.mark(1);
 
-                if (cacheEntry != null) {
-                    context
-                            .getHeaders()
-                            .putSingle(
-                                    DruidJsonResponseContentKeys.ETAG.getName(),
-                                    mapper
-                                            .readTree(cacheEntry.getValue())
-                                            .get(DruidJsonResponseContentKeys.ETAG.getName())
-                                            .asText()
-                            );
-                    // Make sure that if the optional return value is empty, the statement always evaluates to false
-                    // Metadata type needs to be int.
-                    if (
-                            querySigningService.getSegmentSetId(druidQuery)
-                                    .map(id -> Objects.equals(cacheEntry.getMeta(), id))
-                                    .orElse(false)
-                            ) {
-                        try {
-                            if (context.getNumberOfOutgoing().decrementAndGet() == 0) {
-                                RequestLog.record(new BardQueryInfo(druidQuery.getQueryType().toJson(), true));
-                                RequestLog.stopTiming(REQUEST_WORKFLOW_TIMER);
-                            }
-
-                            if (context.getNumberOfIncoming().decrementAndGet() == 0) {
-                                RequestLog.startTiming(RESPONSE_WORKFLOW_TIMER);
-                            }
-
-                            CACHE_HITS.mark(1);
-                            RequestLog logCtx = RequestLog.dump();
-                            nextResponse.processResponse(
-                                    mapper.readTree(cacheEntry.getValue()),
-                                    druidQuery,
-                                    new LoggingContext(logCtx)
+                String eTagInRequest = DruidJsonResponseContentKeys.REQUEST_ETAG.getName();
+                if (cacheEntry != null) { // Current query is in data cache
+                    // Insert "If-None-Match" header into RequestContext; the value is etag of the corresponding cache
+                    context.getHeaders().putSingle(
+                            eTagInRequest,
+                            mapper.readTree(cacheEntry.getValue()).get(DruidJsonResponseContentKeys.ETAG.getName())
+                                    .asText()
                             );
 
-                            return true;
-
-                        } catch (IOException e) {
-                            LOG.warn("Error processing cached value: ", e);
-                        }
-                    } else {
-                        context
-                                .getHeaders()
-                                .putSingle(DruidJsonResponseContentKeys.ETAG.getName(), "non-existing-etag");
-                        LOG.debug("Cache entry present but invalid for query with id: {}", RequestLog.getId());
-                        CACHE_POTENTIAL_HITS.mark(1);
-                        CACHE_MISSES.mark(1);
+                    if (context.getNumberOfOutgoing().decrementAndGet() == 0) {
+                        RequestLog.record(new BardQueryInfo(druidQuery.getQueryType().toJson(), true));
+                        RequestLog.stopTiming(REQUEST_WORKFLOW_TIMER);
                     }
-                } else {
+
+                    if (context.getNumberOfIncoming().decrementAndGet() == 0) {
+                        RequestLog.startTiming(RESPONSE_WORKFLOW_TIMER);
+                    }
+                } else { // Current query is not in data cache
+                    // Insert "If-None-Match" header into RequestContext; the value a random pre-defined string
+                    context.getHeaders().putSingle(
+                            eTagInRequest,
+                            DruidJsonResponseContentKeys.NON_EXISTING_ETAG_VALUE.getName()
+                    );
+
                     CACHE_MISSES.mark(1);
                 }
             }
@@ -146,11 +114,10 @@ public class EtagCacheRequestHandler extends BaseDataRequestHandler {
             LOG.warn("Cache key cannot be built: ", e);
         }
 
-        // Cached value either doesn't exist or is invalid
         nextResponse = new EtagCacheResponseProcessor(
                 response,
+                cacheKey,
                 dataCache,
-                querySigningService,
                 mapper
         );
 
@@ -166,7 +133,7 @@ public class EtagCacheRequestHandler extends BaseDataRequestHandler {
      * @return The cache key as a String.
      * @throws JsonProcessingException if the druid query cannot be serialized to JSON
      */
-    protected String getKey(DruidAggregationQuery<?> druidQuery) throws JsonProcessingException {
+    private String getKey(DruidAggregationQuery<?> druidQuery) throws JsonProcessingException {
         JsonNode root = mapper.valueToTree(druidQuery);
         Utils.omitField(root, "context", mapper);
         return writer.writeValueAsString(root);
