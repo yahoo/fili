@@ -48,7 +48,7 @@ class HavingsEvaluatorSpec extends Specification {
         }.collect(Collectors.toList()).toArray() as RelBuilder.AggCall[]
         builder.aggregate(
                 builder.groupKey(
-                        TimeConverter.buildGroupBy(builder, DefaultTimeGrain.DAY, "TIME")
+                        TimeConverter.buildGroupBy(builder, DefaultTimeGrain.DAY, "TIME").collect(Collectors.toList())
                 ),
                 aggregationCalls
         )
@@ -74,16 +74,14 @@ class HavingsEvaluatorSpec extends Specification {
     def "Test bad inputs for having filters"() {
         setup:
         RelBuilder builder = getBuilder()
-        RelBuilder.AggCall[] aggregationCalls = aggregations.stream().map {
-            return SqlAggregationType.getAggregation(it, builder, ALIAS_MAKER)
-        }.collect(Collectors.toList()).toArray() as RelBuilder.AggCall[]
+        RelBuilder.AggCall[] aggregationCalls = aggregations.collect { SqlAggregationType.getAggregation(it, builder, ALIAS_MAKER) } as RelBuilder.AggCall[]
         builder.aggregate(
                 builder.groupKey(
-                        TimeConverter.buildGroupBy(builder, DefaultTimeGrain.DAY, "TIME")
+                        TimeConverter.buildGroupBy(builder, DefaultTimeGrain.DAY, "TIME").collect(Collectors.toList())
                 ),
                 aggregationCalls
         )
-        RexNode havingFilter = HavingEvaluator.evaluate(builder, having, ALIAS_MAKER)
+        RexNode havingFilter = HavingEvaluator.buildFilter(builder, having, ALIAS_MAKER).get()
         builder.filter(havingFilter)
 
         expect:

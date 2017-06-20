@@ -30,7 +30,7 @@ class PostAggregationEvaluatorSpec extends Specification {
 
     def "Evaluate Post Aggregations "() {
         expect:
-        Double result = PostAggregationEvaluator.evaluate(postAgg, fieldToValue)
+        Double result = PostAggregationEvaluator.evaluate(postAgg, {it -> fieldToValue.get(it)})
         result == value
 
         where: "given"
@@ -47,7 +47,7 @@ class PostAggregationEvaluatorSpec extends Specification {
 
     def "Test unsupported post aggregations and bad inputs"() {
         when:
-        Double result = PostAggregationEvaluator.evaluate(postAgg, fieldToValue)
+        Double result = PostAggregationEvaluator.evaluate(postAgg, {it -> fieldToValue.get(it)})
 
         then:
         thrown thrownException

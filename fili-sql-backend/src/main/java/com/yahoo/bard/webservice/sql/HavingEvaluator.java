@@ -14,6 +14,7 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -29,6 +30,14 @@ public class HavingEvaluator {
 
     }
 
+    public static Optional<RexNode> buildFilter(
+            RelBuilder builder,
+            Having having,
+            Function<String, String> aliasMaker
+    ) {
+        return Optional.ofNullable(evaluate(builder, having, aliasMaker));
+    }
+
     /**
      * Creates a having filter which will filter aggregated dimensions.
      *
@@ -38,7 +47,10 @@ public class HavingEvaluator {
      *
      * @return the equivalent RexNode to be used in a sql query.
      */
-    public static RexNode evaluate(RelBuilder builder, Having having, Function<String, String> aliasMaker) {
+    private static RexNode evaluate(RelBuilder builder, Having having, Function<String, String> aliasMaker) {
+        if (having == null) {
+            return null;
+        }
         Having.DefaultHavingType havingType = (Having.DefaultHavingType) having.getType();
 
         switch (havingType) {

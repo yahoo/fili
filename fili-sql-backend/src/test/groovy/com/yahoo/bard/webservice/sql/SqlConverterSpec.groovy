@@ -66,8 +66,8 @@ class SqlConverterSpec extends Specification {
     private static final String TRUE = "TRUE"
     private static final String FALSE = "FALSE"
     private static final String FIRST_COMMENT = "added project"
-    private static final String UNIQUE_COMMENT = "took out (then), added quotation marks"
     //this is the first result in the database
+    private static final String UNIQUE_COMMENT = "took out (then), added quotation marks"
 
     static ResultSet parse(DefaultTimeGrain timeGrain, JsonNode jsonNode, DefaultQueryType queryType) {
         DruidResponseParser druidResponseParser = new DruidResponseParser()

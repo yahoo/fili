@@ -21,6 +21,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -55,7 +56,7 @@ public class FilterEvaluator {
      *
      * @return the rexNode containing the filter information.
      */
-    public static RexNode getFilterAsRexNode(RelBuilder builder, Filter filter) {
+    public static Optional<RexNode> getFilterAsRexNode(RelBuilder builder, Filter filter) {
         return evaluate(builder, filter).getLeft();
     }
 
@@ -70,9 +71,9 @@ public class FilterEvaluator {
      *
      * @return both the filter and the list of dimensions used in the filter.
      */
-    private static Pair<RexNode, List<String>> evaluate(RelBuilder builder, Filter filter) {
+    private static Pair<Optional<RexNode>, List<String>> evaluate(RelBuilder builder, Filter filter) {
         List<String> dimensions = new ArrayList<>();
-        RexNode rexNode = evaluate(builder, filter, dimensions);
+        Optional<RexNode> rexNode = Optional.ofNullable(evaluate(builder, filter, dimensions));
         dimensions = dimensions.stream().distinct().collect(Collectors.toList());
         return Pair.of(rexNode, dimensions);
     }

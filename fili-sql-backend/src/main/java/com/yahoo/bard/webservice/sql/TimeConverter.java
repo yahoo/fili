@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Handles converting between a {@link DefaultTimeGrain} and a list of
@@ -44,7 +45,7 @@ public class TimeConverter {
                 put(DefaultTimeGrain.DAY, asList(YEAR, DAYOFYEAR));
                 put(DefaultTimeGrain.HOUR, asList(YEAR, DAYOFYEAR, HOUR));
                 put(DefaultTimeGrain.MINUTE, asList(YEAR, DAYOFYEAR, HOUR, MINUTE));
-    }};
+            }};
 
     /**
      * Private constructor - all methods static.
@@ -74,7 +75,7 @@ public class TimeConverter {
      *
      * @return the list of {@link RexNode} needed in the groupBy.
      */
-    public static List<RexNode> buildGroupBy(
+    public static Stream<RexNode> buildGroupBy(
             RelBuilder builder,
             Granularity granularity,
             String timeColumn
@@ -82,8 +83,7 @@ public class TimeConverter {
         DefaultTimeGrain timeGrain = (DefaultTimeGrain) granularity;
         return TIMEGRAIN_TO_GROUPBY.get(timeGrain)
                 .stream()
-                .map(sqlDatePartFunction -> builder.call(sqlDatePartFunction, builder.field(timeColumn)))
-                .collect(Collectors.toList());
+                .map(sqlDatePartFunction -> builder.call(sqlDatePartFunction, builder.field(timeColumn)));
     }
 
     /**
