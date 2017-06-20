@@ -8,10 +8,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * A row of results in a Druid Response.
  */
 public abstract class DruidResultRow {
+    @JsonIgnore
+    protected final Map<String, Object> results;
     @JsonIgnore
     private final DateTime timestamp;
 
@@ -20,8 +25,9 @@ public abstract class DruidResultRow {
      *
      * @param timestamp  The timestamp to be included in serialization of a response.
      */
-    public DruidResultRow(DateTime timestamp) {
+    DruidResultRow(DateTime timestamp) {
         this.timestamp = timestamp;
+        results = new HashMap<>();
     }
 
     @JsonProperty
@@ -35,13 +41,14 @@ public abstract class DruidResultRow {
      * @param key  The key to be added.
      * @param value  The value of the key.
      */
-    public abstract void add(String key, String value);
+    public void add(String key, Object value) {
+        results.put(key, value);
+    }
 
     /**
-     * Adds a json key/value pair to the row.
+     * Gets the stored results for this result row.
      *
-     * @param key  The key to be added.
-     * @param value  The value of the key.
+     * @return the stored results.
      */
-    public abstract void add(String key, Number value);
+    public abstract Map<String, Object> getResults();
 }

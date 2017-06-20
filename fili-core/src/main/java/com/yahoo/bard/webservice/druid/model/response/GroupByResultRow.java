@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import org.joda.time.DateTime;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -19,29 +18,21 @@ public class GroupByResultRow extends DruidResultRow {
     @JsonIgnore
     private final String version;
 
-    @JsonProperty
-    private final Map<String, Object> event;
-
     /**
      * Creates a row with the given timestamp.
      *
      * @param timestamp  The timestamp to set the result for.
      * @param version  The version of GroupByResult.
      */
-    public GroupByResultRow(DateTime timestamp, Version version) {
+    GroupByResultRow(DateTime timestamp, Version version) {
         super(timestamp);
         this.version = version.name;
-        event = new HashMap<>();
     }
 
     @Override
-    public void add(String key, String value) {
-        event.put(key, value);
-    }
-
-    @Override
-    public void add(String key, Number value) {
-        event.put(key, value);
+    @JsonProperty(value = "event")
+    public Map<String, Object> getResults() {
+        return results;
     }
 
     /**

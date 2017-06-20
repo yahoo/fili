@@ -17,7 +17,7 @@ public class DruidResponse {
     /**
      * Construct a Druid Response which will store rows of results.
      */
-    public DruidResponse() {
+    DruidResponse() {
         results = new ArrayList<>();
     }
 

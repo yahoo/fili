@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import org.joda.time.DateTime;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -15,26 +14,19 @@ import java.util.Map;
  */
 @JsonPropertyOrder({"timestamp", "result"})
 public class TimeseriesResultRow extends DruidResultRow {
-    @JsonProperty
-    private final Map<String, Object> result;
 
     /**
      * Creates a row with the given timestamp.
      *
      * @param timestamp  The timestamp to set the result for.
      */
-    public TimeseriesResultRow(DateTime timestamp) {
+    TimeseriesResultRow(DateTime timestamp) {
         super(timestamp);
-        result = new HashMap<>();
     }
 
     @Override
-    public void add(String key, String value) {
-        result.put(key, value);
-    }
-
-    @Override
-    public void add(String key, Number value) {
-        result.put(key, value);
+    @JsonProperty(value = "result")
+    public Map<String, Object> getResults() {
+        return results;
     }
 }
