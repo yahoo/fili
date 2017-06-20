@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class TableGroup {
 
     private final LinkedHashSet<Dimension> dimensions;
-    private final LinkedHashSet<ConfigPhysicalTable> tables;
+    private final LinkedHashSet<PhysicalTable> tables;
     private final Set<ApiMetricName> apiMetricNames;
 
     /**
@@ -30,7 +30,7 @@ public class TableGroup {
      * @param dimensions  The dimensions for a LogicalTable
      */
     public TableGroup(
-            LinkedHashSet<ConfigPhysicalTable> tables,
+            LinkedHashSet<PhysicalTable> tables,
             Set<ApiMetricName> apiMetricNames,
             Set<Dimension> dimensions
     ) {
@@ -54,7 +54,7 @@ public class TableGroup {
      * only surface a subset of the dimensions on its PhysicalTable
      */
     @Deprecated
-    public TableGroup(LinkedHashSet<ConfigPhysicalTable> tables, Set<ApiMetricName> apiMetricNames) {
+    public TableGroup(LinkedHashSet<PhysicalTable> tables, Set<ApiMetricName> apiMetricNames) {
         this(
                 tables,
                 apiMetricNames,
@@ -70,7 +70,7 @@ public class TableGroup {
      *
      * @return physicalTableSchema
      */
-    public Set<ConfigPhysicalTable> getPhysicalTables() {
+    public Set<PhysicalTable> getPhysicalTables() {
         return this.tables;
     }
 
