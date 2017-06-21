@@ -46,9 +46,9 @@ public class SearchFilter extends DimensionalFilter {
         /**
          * Get the QueryType enum from it's search type.
          *
-         * @param type  The type of query (i.e. "insensitive_contains")
+         * @param type  The type of query (i.e. "insensitive_contains").
          *
-         * @return the enum QueryType
+         * @return the enum QueryType.
          */
         public static QueryType fromType(String type) {
             for (QueryType queryType : values()) {
@@ -56,7 +56,7 @@ public class SearchFilter extends DimensionalFilter {
                     return queryType;
                 }
             }
-            throw new IllegalArgumentException("No query type corresponds to " + type);
+            return null;
         }
     }
 
@@ -94,18 +94,26 @@ public class SearchFilter extends DimensionalFilter {
         return query;
     }
 
+    private String getQueryType() {
+        return query.get("type");
+    }
+
+    private String getQueryValue() {
+        return query.get("value");
+    }
+
     @Override
     public SearchFilter withDimension(Dimension dimension) {
-        return new SearchFilter(dimension, query.get("type"), query.get("value"));
+        return new SearchFilter(dimension, getQueryType(), getQueryValue());
     }
 
     // CHECKSTYLE:OFF
     public SearchFilter withQueryType(QueryType queryType) {
-        return new SearchFilter(getDimension(), queryType.type, query.get("value"));
+        return new SearchFilter(getDimension(), queryType.type, getQueryValue());
     }
 
     public SearchFilter withValue(String value) {
-        return new SearchFilter(getDimension(), query.get("type"), value);
+        return new SearchFilter(getDimension(), getQueryType(), value);
     }
     // CHECKSTYLE:ON
 

@@ -13,20 +13,40 @@ import java.util.concurrent.TimeUnit;
  * @param <E>  The type to be returned by this future
  */
 public class CompletedFuture<E> implements Future<E> {
-    private final E item;
-    private final Throwable throwable;
+    private Either<E, Throwable> result;
 
     /**
-     * Creates a completed future with an item to return or
-     * if a nonnull throwable is passed it it will throw an
-     * execution exception.
+     * Creates a completed {@link Future} which will either return an item or throw
+     * an {@link ExecutionException} with the throwable.
+     *
+     * @param result  Either a result to return a throwable to be included in the {@link ExecutionException}.
+     */
+    private CompletedFuture(Either<E, Throwable> result) {
+        this.result = result;
+    }
+
+    /**
+     * Creates a completed {@link Future} which will return this item.
      *
      * @param item  The item to return when called.
-     * @param throwable  A non null throwable if an exception should be thrown.
+     * @param <E>  The type to be returned by this future.
+     *
+     * @return a completed {@link Future} which will successfully return an item.
      */
-    public CompletedFuture(E item, Throwable throwable) {
-        this.item = item;
-        this.throwable = throwable;
+    public static <E> CompletedFuture<E> returning(E item) {
+        return new CompletedFuture<>(Either.left(item));
+    }
+
+    /**
+     * Creates a completed {@link Future} which will throw an {@link ExecutionException}.
+     *
+     * @param throwable  A throwable to be included in the {@link ExecutionException}.
+     * @param <E>  The type to be returned by this future.
+     *
+     * @return a completed {@link Future} which will fail and throw an exception.
+     */
+    public static <E> CompletedFuture<E> throwing(Throwable throwable) {
+        return new CompletedFuture<>(Either.right(throwable));
     }
 
     @Override
@@ -46,11 +66,10 @@ public class CompletedFuture<E> implements Future<E> {
 
     @Override
     public E get() throws ExecutionException {
-        if (this.throwable != null) {
-            throw new ExecutionException(throwable);
-        } else {
-            return item;
+        if (result.isRight()) {
+            throw new ExecutionException(result.getRight());
         }
+        return result.getLeft();
     }
 
     @Override

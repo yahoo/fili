@@ -116,7 +116,7 @@ public class TestDruidWebService implements DruidWebService {
         // Invoke failure callback if we have a throwable to give it
         if (throwable != null) {
             failure.invoke(throwable);
-            return new CompletedFuture<>(null, throwable);
+            return CompletedFuture.throwing(throwable);
         }
 
         if (lastQuery.getQueryType() instanceof DefaultQueryType) {
@@ -155,7 +155,7 @@ public class TestDruidWebService implements DruidWebService {
             }
         } catch (IOException e) {
             failure.invoke(e);
-            return new CompletedFuture<>(null, e);
+            return CompletedFuture.throwing(e);
         }
 
         return ConcurrentUtils.constantFuture(null);
@@ -234,7 +234,7 @@ public class TestDruidWebService implements DruidWebService {
         // Invoke failure callback if we have a throwable to give it
         if (throwable != null) {
             failure.invoke(throwable);
-            return new CompletedFuture<>(null, throwable);
+            return CompletedFuture.throwing(throwable);
         }
 
          try {
@@ -245,7 +245,7 @@ public class TestDruidWebService implements DruidWebService {
             }
         } catch (IOException e) {
             failure.invoke(e);
-             return new CompletedFuture<>(null, throwable);
+             return CompletedFuture.throwing(throwable);
         }
 
         return ConcurrentUtils.constantFuture(null);
