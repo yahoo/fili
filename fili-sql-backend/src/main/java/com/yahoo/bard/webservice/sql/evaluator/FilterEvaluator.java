@@ -1,12 +1,13 @@
 // Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.sql;
+package com.yahoo.bard.webservice.sql.evaluator;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.druid.model.filter.AndFilter;
 import com.yahoo.bard.webservice.druid.model.filter.ComplexFilter;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
-import com.yahoo.bard.webservice.druid.model.filter.Filter.DefaultFilterType;
 import com.yahoo.bard.webservice.druid.model.filter.InFilter;
+import com.yahoo.bard.webservice.druid.model.filter.NotFilter;
 import com.yahoo.bard.webservice.druid.model.filter.OrFilter;
 import com.yahoo.bard.webservice.druid.model.filter.RegularExpressionFilter;
 import com.yahoo.bard.webservice.druid.model.filter.SearchFilter;
@@ -16,6 +17,8 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
+import org.apache.calcite.util.ReflectUtil;
+import org.apache.calcite.util.ReflectiveVisitor;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
@@ -28,7 +31,7 @@ import java.util.stream.Collectors;
  * Evaluates filters to find all the dimensions used in them and
  * to build a {@link RexNode} with an equivalent sql filter.
  */
-public class FilterEvaluator {
+public class FilterEvaluator implements ReflectiveVisitor {
     /**
      * Private constructor - all methods static.
      */
@@ -91,33 +94,14 @@ public class FilterEvaluator {
         if (filter == null) {
             return null;
         }
-
-        DefaultFilterType defaultFilterType = (DefaultFilterType) filter.getType();
-        switch (defaultFilterType) {
-            case SELECTOR:
-                SelectorFilter selectorFilter = (SelectorFilter) filter;
-                return evaluate(builder, selectorFilter, dimensions);
-            case REGEX:
-                RegularExpressionFilter regexFilter = (RegularExpressionFilter) filter;
-                return evaluate(builder, regexFilter, dimensions);
-            case AND:
-                return listEvaluate(builder, (ComplexFilter) filter, dimensions, SqlStdOperatorTable.AND);
-            case OR:
-                return listEvaluate(builder, (ComplexFilter) filter, dimensions, SqlStdOperatorTable.OR);
-            case NOT:
-                return listEvaluate(builder, (ComplexFilter) filter, dimensions, SqlStdOperatorTable.NOT);
-            case EXTRACTION:
-                throw new UnsupportedOperationException(
-                        "Not implemented. Also deprecated use selector filter with extraction function");
-            case SEARCH:
-                SearchFilter searchFilter = (SearchFilter) filter;
-                return evaluate(builder, searchFilter, dimensions);
-            case IN:
-                InFilter inFilter = (InFilter) filter;
-                return evaluate(builder, inFilter, dimensions);
-        }
-
-        throw new UnsupportedOperationException("Can't evaluate filter " + filter);
+        return DispatchUtils.dispatch(
+                FilterEvaluator.class,
+                "evaluate",
+                new Class[] {RelBuilder.class, filter.getClass(), List.class},
+                builder,
+                filter,
+                dimensions
+        );
     }
 
     /**
@@ -188,7 +172,7 @@ public class FilterEvaluator {
                         builder.literal("%" + valueToFind + "%")
                 );
             case InsensitiveContains:
-                // todo maybe look at SqlCollation
+                // todo maybe look at SqlCollation, does this make the text to check against lower as well?
                 return builder.call(
                         SqlStdOperatorTable.LIKE,
                         builder.call(
@@ -225,6 +209,18 @@ public class FilterEvaluator {
                         .collect(Collectors.toList())
         );
         return evaluate(builder, orFilterOfSelectors, dimensions);
+    }
+
+    private static RexNode evaluate(RelBuilder builder, OrFilter orFilter, List<String> dimensions) {
+        return listEvaluate(builder, orFilter, dimensions, SqlStdOperatorTable.OR);
+    }
+
+    private static RexNode evaluate(RelBuilder builder, AndFilter andFilter, List<String> dimensions) {
+        return listEvaluate(builder, andFilter, dimensions, SqlStdOperatorTable.AND);
+    }
+
+    private static RexNode evaluate(RelBuilder builder, NotFilter notFilter, List<String> dimensions) {
+        return listEvaluate(builder, notFilter, dimensions, SqlStdOperatorTable.NOT);
     }
 
     /**

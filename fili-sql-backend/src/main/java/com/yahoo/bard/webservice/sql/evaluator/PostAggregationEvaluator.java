@@ -1,12 +1,11 @@
 // Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.sql;
+package com.yahoo.bard.webservice.sql.evaluator;
 
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.ConstantPostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
-import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation.DefaultPostAggregationType;
 
 import java.util.function.Function;
 
@@ -33,27 +32,16 @@ public class PostAggregationEvaluator {
      * @return the number calculated from the postAggregation.
      */
     public static Double evaluate(PostAggregation postAggregation, Function<String, String> aggregatedValues) {
-        DefaultPostAggregationType aggregationType = (DefaultPostAggregationType) postAggregation
-                .getType();
-
-        switch (aggregationType) {
-            case ARITHMETIC:
-                ArithmeticPostAggregation arithmeticPostAggregation = (ArithmeticPostAggregation) postAggregation;
-                return evaluate(arithmeticPostAggregation, aggregatedValues);
-            case FIELD_ACCESS:
-                FieldAccessorPostAggregation fieldAccessorPostAggregation = (FieldAccessorPostAggregation)
-                        postAggregation;
-                return evaluate(fieldAccessorPostAggregation, aggregatedValues);
-            case CONSTANT:
-                ConstantPostAggregation constantPostAggregation = (ConstantPostAggregation) postAggregation;
-                return evaluate(constantPostAggregation);
-            case THETA_SKETCH_ESTIMATE:
-            case THETA_SKETCH_SET_OP:
-            case SKETCH_ESTIMATE:
-            case SKETCH_SET_OPER:
-            default:
-                throw new UnsupportedOperationException("Can't do post aggregation " + postAggregation.getType());
+        if (postAggregation == null) {
+            return null;
         }
+        return DispatchUtils.dispatch(
+                PostAggregationEvaluator.class,
+                "evaluate",
+                new Class[] {postAggregation.getClass(), Function.class},
+                postAggregation,
+                aggregatedValues
+        );
     }
 
     /**
@@ -128,7 +116,10 @@ public class PostAggregationEvaluator {
      *
      * @return the constant value for this postAggregation.
      */
-    private static double evaluate(ConstantPostAggregation constantPostAggregation) {
+    private static double evaluate(
+            ConstantPostAggregation constantPostAggregation,
+            Function<String, String> aggregatedValues
+    ) {
         return constantPostAggregation.getValue();
     }
 }

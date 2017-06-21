@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.test;
 
-import com.yahoo.bard.webservice.TimestampUtils;
+import com.yahoo.bard.webservice.sql.helper.TimestampUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

@@ -34,8 +34,7 @@ public class AliasMaker implements Function<String, String> {
     public String unApply(String input) {
         if (input.startsWith(preprend)) {
             return input.replace(preprend, "");
-        } else {
-            return input;
         }
+        return input;
     }
 }

@@ -3,8 +3,12 @@
 package com.yahoo.bard.webservice.sql;
 
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
+import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
+import com.yahoo.bard.webservice.sql.evaluator.PostAggregationEvaluator;
+import com.yahoo.bard.webservice.sql.helper.TimeConverter;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
@@ -14,7 +18,6 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -26,7 +29,7 @@ import java.util.stream.Collectors;
  */
 public class SqlResultSetProcessor {
     private final DruidAggregationQuery<?> druidQuery;
-    private final BiMap<Integer, String> columnNames;
+    private final BiMap<Integer, String> columnToColumnName;
     private final List<String[]> sqlResults;
     private final ObjectMapper objectMapper;
     private final int columnCount;
@@ -34,17 +37,17 @@ public class SqlResultSetProcessor {
 
     public SqlResultSetProcessor(
             DruidAggregationQuery<?> druidQuery,
-            BiMap<Integer, String> columnNames,
+            BiMap<Integer, String> columnToColumnName,
             List<String[]> sqlResults,
             ObjectMapper objectMapper
     ) {
         this.druidQuery = druidQuery;
-        this.columnNames = columnNames;
+        this.columnToColumnName = columnToColumnName;
         this.sqlResults = sqlResults;
         this.objectMapper = objectMapper;
 
         this.groupByCount = druidQuery.getDimensions().size();
-        this.columnCount = columnNames.size();
+        this.columnCount = columnToColumnName.size();
     }
 
     public JsonNode process() {
@@ -67,7 +70,7 @@ public class SqlResultSetProcessor {
 
     private DateTime processRow(
             Map<String, Function<String, Number>> resultTypeMapper,
-            TokenBuffer jsonWriter,
+            JsonGenerator jsonWriter,
             String[] row
     ) throws IOException {
         DateTime timestamp = TimeConverter.parseDateTime(groupByCount, row, druidQuery.getGranularity());
@@ -81,29 +84,29 @@ public class SqlResultSetProcessor {
             if (groupByCount <= i && i < groupByCount + lastTimeIndex) {
                 continue;
             }
-            if (resultTypeMapper.containsKey(columnNames.get(i))) {
+            String columnName = columnToColumnName.get(i);
+            if (resultTypeMapper.containsKey(columnName)) {
                 Number result = resultTypeMapper
-                        .get(columnNames.get(i))
+                        .get(columnName)
                         .apply(row[i]);
-                // todo detect long vs double
-                jsonWriter.writeNumberField(columnNames.get(i), (double) result);
+                if (result instanceof Long) {
+                    jsonWriter.writeNumberField(columnName, (long) result);
+                } else {
+                    jsonWriter.writeNumberField(columnName, (double) result);
+                }
             } else {
-                jsonWriter.writeStringField(columnNames.get(i), row[i]);
+                jsonWriter.writeStringField(columnName, row[i]);
             }
 
         }
 
-        druidQuery.getPostAggregations()
-                .forEach(postAggregation -> {
-                    Double postAggResult = PostAggregationEvaluator.evaluate(
-                            postAggregation,
-                            (s) -> row[columnNames.inverse().get(s)]
-                    );
-                    try {
-                        jsonWriter.writeNumberField(postAggregation.getName(), postAggResult);
-                    } catch (IOException e) {
-                    }
-                });
+        for (PostAggregation postAggregation : druidQuery.getPostAggregations()) {
+            Double postAggResult = PostAggregationEvaluator.evaluate(
+                    postAggregation,
+                    (String columnName) -> row[columnToColumnName.inverse().get(columnName)]
+            );
+            jsonWriter.writeNumberField(postAggregation.getName(), postAggResult);
+        }
 
         jsonWriter.writeEndObject();
         jsonWriter.writeEndObject();

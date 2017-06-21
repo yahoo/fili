@@ -1,6 +1,6 @@
 // Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.sql
+package com.yahoo.bard.webservice.sql.evaluator
 
 import static com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation.ArithmeticPostAggregationFunction.DIVIDE
 import static com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation.ArithmeticPostAggregationFunction.MINUS
@@ -17,6 +17,7 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchEstimate
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchSetOperationPostAggregation
 
 import spock.lang.Specification
+import spock.lang.Unroll
 
 class PostAggregationEvaluatorSpec extends Specification {
     private static final Map<String, String> fieldToValue = new HashMap<>()
@@ -28,9 +29,10 @@ class PostAggregationEvaluatorSpec extends Specification {
         fieldToValue.put(FIVE, "5")
     }
 
+    @Unroll
     def "Evaluate Post Aggregations "() {
         expect:
-        Double result = PostAggregationEvaluator.evaluate(postAgg, {it -> fieldToValue.get(it)})
+        Double result = PostAggregationEvaluator.evaluate(postAgg, { it -> fieldToValue.get(it) })
         result == value
 
         where: "given"
@@ -45,9 +47,10 @@ class PostAggregationEvaluatorSpec extends Specification {
         arithmetic(DIVIDE, field(sum(ONE)), constant(0))             | 0
     }
 
+    @Unroll
     def "Test unsupported post aggregations and bad inputs"() {
         when:
-        Double result = PostAggregationEvaluator.evaluate(postAgg, {it -> fieldToValue.get(it)})
+        Double result = PostAggregationEvaluator.evaluate(postAgg, { it -> fieldToValue.get(it) })
 
         then:
         thrown thrownException

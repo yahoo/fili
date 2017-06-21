@@ -13,6 +13,12 @@ import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery;
 import com.yahoo.bard.webservice.druid.model.query.TopNQuery;
+import com.yahoo.bard.webservice.sql.evaluator.FilterEvaluator;
+import com.yahoo.bard.webservice.sql.evaluator.HavingEvaluator;
+import com.yahoo.bard.webservice.sql.helper.CalciteHelper;
+import com.yahoo.bard.webservice.sql.helper.DatabaseHelper;
+import com.yahoo.bard.webservice.sql.helper.SqlAggregationType;
+import com.yahoo.bard.webservice.sql.helper.TimeConverter;
 import com.yahoo.bard.webservice.util.CompletedFuture;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 
@@ -134,7 +140,7 @@ public class SqlConverter implements SqlBackedClient {
      * @return a druid-like response to the query.
      */
     private JsonNode executeAndProcessQuery(
-            DruidAggregationQuery druidQuery
+            DruidAggregationQuery<?> druidQuery
     ) {
         String sqlQuery;
         try (Connection connection = calciteHelper.getConnection()) {
@@ -144,10 +150,10 @@ public class SqlConverter implements SqlBackedClient {
         }
 
         LOG.debug("Executing \n{}", sqlQuery);
-        SqlResultSetProcessor sqlResultSetProcessor;
+        SqlResultSetProcessor resultSetProcessor;
         try (PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
              ResultSet resultSet = preparedStatement.executeQuery()) {
-            sqlResultSetProcessor = readSqlResultSet(druidQuery, resultSet);
+            resultSetProcessor = readSqlResultSet(druidQuery, resultSet);
         } catch (SQLException e) {
             LOG.warn(
                     "Failed to query table {}",
@@ -156,7 +162,7 @@ public class SqlConverter implements SqlBackedClient {
             throw new RuntimeException("Could not finish query", e);
         }
 
-        JsonNode jsonNode = sqlResultSetProcessor.process();
+        JsonNode jsonNode = resultSetProcessor.process();
         LOG.debug("Created response: {}", jsonNode);
         return jsonNode;
     }
@@ -185,7 +191,7 @@ public class SqlConverter implements SqlBackedClient {
         }
 
         int rows = 0;
-        while (resultSet.next()) { // todo this is different for other queries
+        while (resultSet.next()) {
             String[] row = new String[columnCount];
             for (int i = 1; i <= columnCount; i++) {
                 row[i - 1] = resultSet.getString(i);
@@ -363,7 +369,7 @@ public class SqlConverter implements SqlBackedClient {
     }
 
     private static Collection<RexNode> getHavingFilter(
-            final RelBuilder builder,
+            RelBuilder builder,
             DruidAggregationQuery<?> druidQuery
     ) {
         RexNode filter = null;

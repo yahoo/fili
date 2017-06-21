@@ -1,6 +1,6 @@
 // Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.sql;
+package com.yahoo.bard.webservice.sql.helper;
 
 import org.apache.calcite.adapter.jdbc.JdbcSchema;
 import org.apache.calcite.plan.RelTraitDef;
@@ -27,14 +27,6 @@ public class CalciteHelper {
     private final String username;
     private final String password;
     private final String schemaName;
-
-    public CalciteHelper(DataSource dataSource) {
-        this(dataSource, null, null, DEFAULT_SCHEMA);
-    }
-
-    public CalciteHelper(DataSource dataSource, String schemaName) {
-        this(dataSource, null, null, schemaName);
-    }
 
     public CalciteHelper(DataSource dataSource, String username, String password, String schemaName) {
         this.dataSource = dataSource;

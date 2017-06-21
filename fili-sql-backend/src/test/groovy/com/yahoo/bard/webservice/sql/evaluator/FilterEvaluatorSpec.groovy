@@ -1,6 +1,6 @@
 // Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.sql
+package com.yahoo.bard.webservice.sql.evaluator
 
 import static com.yahoo.bard.webservice.helper.Filters.and
 import static com.yahoo.bard.webservice.helper.Filters.not
@@ -12,6 +12,7 @@ import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.IS_ROBOT
 import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.METRO_CODE
 import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.WIKITICKER
 
+import com.yahoo.bard.webservice.sql.helper.CalciteHelper
 import com.yahoo.bard.webservice.test.Database
 
 import org.apache.calcite.rel.rel2sql.RelToSqlConverter

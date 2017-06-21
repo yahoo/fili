@@ -1,6 +1,6 @@
 // Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.sql
+package com.yahoo.bard.webservice.sql.evaluator
 
 import static com.yahoo.bard.webservice.helper.Aggregator.max
 import static com.yahoo.bard.webservice.helper.Aggregator.min
@@ -15,6 +15,10 @@ import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.WIKITICKE
 import static java.util.Arrays.asList
 
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
+import com.yahoo.bard.webservice.sql.AliasMaker
+import com.yahoo.bard.webservice.sql.helper.CalciteHelper
+import com.yahoo.bard.webservice.sql.helper.SqlAggregationType
+import com.yahoo.bard.webservice.sql.helper.TimeConverter
 import com.yahoo.bard.webservice.test.Database
 
 import org.apache.calcite.rel.rel2sql.RelToSqlConverter
@@ -61,7 +65,7 @@ class HavingsEvaluatorSpec extends Specification {
                 asSelect().
                 toString();
         sql.contains(expectedHavingSql)
-
+        // todo use and
         where: "we have"
         having                                   | aggregations                     | expectedHavingSql
         gt(ADDED, ONE)                           | asList(sum(ADDED))               | "HAVING SUM(`ADDED`) > 1"
@@ -94,5 +98,6 @@ class HavingsEvaluatorSpec extends Specification {
         where: "queries have 2 or more aggregations on one metric - can't tell which should be used in having filter"
         having                                 | aggregations                       | expectedHavingSql
         or(lt(DELETED, ONE), gt(DELETED, TWO)) | asList(max(DELETED), min(DELETED)) | "HAVING MAX(`DELETED`) < 1 OR MAX(`DELETED`) > 2"
+        // todo this should actually fail while evaluating
     }
 }

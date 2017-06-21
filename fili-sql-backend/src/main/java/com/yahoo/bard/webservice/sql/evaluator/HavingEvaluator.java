@@ -1,14 +1,15 @@
 // Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.sql;
+package com.yahoo.bard.webservice.sql.evaluator;
 
+import com.yahoo.bard.webservice.druid.model.having.AndHaving;
 import com.yahoo.bard.webservice.druid.model.having.Having;
 import com.yahoo.bard.webservice.druid.model.having.MultiClauseHaving;
 import com.yahoo.bard.webservice.druid.model.having.NotHaving;
 import com.yahoo.bard.webservice.druid.model.having.NumericHaving;
+import com.yahoo.bard.webservice.druid.model.having.OrHaving;
 
 import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.sql.SqlBinaryOperator;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
@@ -51,25 +52,14 @@ public class HavingEvaluator {
         if (having == null) {
             return null;
         }
-        Having.DefaultHavingType havingType = (Having.DefaultHavingType) having.getType();
-
-        switch (havingType) {
-            case AND:
-                return listEvaluate(builder, (MultiClauseHaving) having, SqlStdOperatorTable.AND, aliasMaker);
-            case OR:
-                return listEvaluate(builder, (MultiClauseHaving) having, SqlStdOperatorTable.OR, aliasMaker);
-            case NOT:
-                NotHaving notHaving = (NotHaving) having;
-                return evaluate(builder, notHaving, aliasMaker);
-            case EQUAL_TO:
-                return numericEvaluate(builder, (NumericHaving) having, SqlStdOperatorTable.EQUALS, aliasMaker);
-            case LESS_THAN:
-                return numericEvaluate(builder, (NumericHaving) having, SqlStdOperatorTable.LESS_THAN, aliasMaker);
-            case GREATER_THAN:
-                return numericEvaluate(builder, (NumericHaving) having, SqlStdOperatorTable.GREATER_THAN, aliasMaker);
-        }
-
-        throw new UnsupportedOperationException("Can't evaluate having " + having);
+        return DispatchUtils.dispatch(
+                HavingEvaluator.class,
+                "evaluate",
+                new Class[] {RelBuilder.class, having.getClass(), Function.class},
+                builder,
+                having,
+                aliasMaker
+        );
     }
 
     /**
@@ -93,23 +83,42 @@ public class HavingEvaluator {
      *
      * @param builder  The RelBuilder used with Calcite to make queries.
      * @param having  The NumericHaving filter to be evaluated.
-     * @param operator  The operator to be performed between the field and value.
      * @param aliasMaker  A function to get the aliased aggregation's name from the metric name.
      *
      * @return the equivalent RexNode to be used in a sql query.
      */
-    private static RexNode numericEvaluate(
+    private static RexNode evaluate(
             RelBuilder builder,
             NumericHaving having,
-            SqlBinaryOperator operator,
             Function<String, String> aliasMaker
     ) {
+        Having.DefaultHavingType havingType = (Having.DefaultHavingType) having.getType();
+        SqlOperator operator = null;
+        switch (havingType) {
+            case EQUAL_TO:
+                operator = SqlStdOperatorTable.EQUALS;
+                break;
+            case LESS_THAN:
+                operator = SqlStdOperatorTable.LESS_THAN;
+                break;
+            case GREATER_THAN:
+                operator = SqlStdOperatorTable.GREATER_THAN;
+                break;
+        }
         return builder.call(
                 operator,
                 builder.field(aliasMaker.apply(having.getAggregation())),
                 builder.literal(having.getValue())
         );
+    }
 
+
+    private static RexNode evaluate(RelBuilder builder, OrHaving orHaving, Function<String, String> aliasMaker) {
+        return listEvaluate(builder, orHaving, SqlStdOperatorTable.OR, aliasMaker);
+    }
+
+    private static RexNode evaluate(RelBuilder builder, AndHaving andHaving, Function<String, String> aliasMaker) {
+        return listEvaluate(builder, andHaving, SqlStdOperatorTable.AND, aliasMaker);
     }
 
     /**
