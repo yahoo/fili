@@ -39,6 +39,7 @@ import com.yahoo.bard.webservice.data.ResultSetSchema
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
+import com.yahoo.bard.webservice.druid.model.DefaultQueryType
 import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.model.having.Having
 import com.yahoo.bard.webservice.druid.model.query.AbstractDruidAggregationQuery
@@ -66,7 +67,7 @@ class SqlConverterSpec extends Specification {
     private static final String UNIQUE_COMMENT = "took out (then), added quotation marks"
     private static final DruidResponseParser RESPONSE_PARSER = new DruidResponseParser();
 
-    static ResultSet parse(JsonNode jsonNode, AbstractDruidAggregationQuery<?> druidQuery) {
+    ResultSet parse(JsonNode jsonNode, AbstractDruidAggregationQuery<?> druidQuery) {
         List<Column> columns = new ArrayList<>()
         druidQuery.dataSource.physicalTable.constraint.metricNames.forEach { columns.add(new MetricColumn(it)) }
         druidQuery.dataSource.physicalTable.constraint.allDimensionNames.forEach { columns.add(new DimensionColumn(getDimension(it))) }
@@ -75,7 +76,7 @@ class SqlConverterSpec extends Specification {
         return RESPONSE_PARSER.parse(
                 jsonNode,
                 resultSetSchema,
-                druidQuery.getQueryType(),
+                DefaultQueryType.GROUP_BY,
                 DateTimeZone.UTC
         )
     }
@@ -174,11 +175,12 @@ class SqlConverterSpec extends Specification {
 
     @Unroll
     def "Test timeseries on /#timeGrain/"() {
-        expect:
+        setup:
         DruidQuery druidQuery = getBasicTimeseriesQuery(timeGrain)
         JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery, null, null).get();
         ResultSet parse = parse(jsonNode, druidQuery)
 
+        expect:
         parse.size() == size
 
         where: "we have"
@@ -204,12 +206,12 @@ class SqlConverterSpec extends Specification {
 
         where: "we have"
         timeGrain | filter                          | response
-        HOUR      | select(COMMENT, FIRST_COMMENT)  | """[{"timestamp":"2015-09-12T00:00:00.000Z","result":{"ADDED":36.0,"DELTA":36.0,"DELETED":0.0}}]"""
-        HOUR      | select(COMMENT, UNIQUE_COMMENT) | """[{"timestamp":"2015-09-12T01:00:00.000Z","result":{"ADDED":0.0,"DELTA":-5.0,"DELETED":5.0}}]"""
-        DAY       | null                            | """[{"timestamp":"2015-09-12T00:00:00.000Z","result":{"ADDED":9385573.0,"DELTA":8991275.0,"DELETED":394298.0}}]"""
-        WEEK      | null                            | """[{"timestamp":"2015-09-10T00:00:00.000Z","result":{"ADDED":9385573.0,"DELTA":8991275.0,"DELETED":394298.0}}]"""
-        MONTH     | null                            | """[{"timestamp":"2015-09-01T00:00:00.000Z","result":{"ADDED":9385573.0,"DELTA":8991275.0,"DELETED":394298.0}}]"""
-        YEAR      | null                            | """[{"timestamp":"2015-01-01T00:00:00.000Z","result":{"ADDED":9385573.0,"DELTA":8991275.0,"DELETED":394298.0}}]"""
+        HOUR      | select(COMMENT, FIRST_COMMENT)  | """[{"version":"v1","timestamp":"2015-09-12T00:00:00.000Z","event":{"ADDED":36.0,"DELETED":0.0,"DELTA":36.0}}]"""
+        HOUR      | select(COMMENT, UNIQUE_COMMENT) | """[{"version":"v1","timestamp":"2015-09-12T01:00:00.000Z","event":{"ADDED":0.0,"DELETED":5.0,"DELTA":-5.0}}]"""
+        DAY       | null                            | """[{"version":"v1","timestamp":"2015-09-12T00:00:00.000Z","event":{"ADDED":9385573.0,"DELETED":394298.0,"DELTA":8991275.0}}]"""
+        WEEK      | null                            | """[{"version":"v1","timestamp":"2015-09-10T00:00:00.000Z","event":{"ADDED":9385573.0,"DELETED":394298.0,"DELTA":8991275.0}}]"""
+        MONTH     | null                            | """[{"version":"v1","timestamp":"2015-09-01T00:00:00.000Z","event":{"ADDED":9385573.0,"DELETED":394298.0,"DELTA":8991275.0}}]"""
+        YEAR      | null                            | """[{"version":"v1","timestamp":"2015-01-01T00:00:00.000Z","event":{"ADDED":9385573.0,"DELETED":394298.0,"DELTA":8991275.0}}]"""
     }
 
     @Unroll

@@ -2,19 +2,19 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.sql;
 
-import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
-import com.yahoo.bard.webservice.druid.response.DruidResponse;
-import com.yahoo.bard.webservice.druid.response.DruidResultRow;
-import com.yahoo.bard.webservice.druid.response.GroupByResultRow;
-import com.yahoo.bard.webservice.druid.response.TimeseriesResultRow;
-import com.yahoo.bard.webservice.druid.response.TopNResultRow;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.util.TokenBuffer;
 import com.google.common.collect.BiMap;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -28,66 +28,87 @@ public class SqlResultSetProcessor {
     private final DruidAggregationQuery<?> druidQuery;
     private final BiMap<Integer, String> columnNames;
     private final List<String[]> sqlResults;
+    private final ObjectMapper objectMapper;
+    private final int columnCount;
+    private final int groupByCount;
 
     public SqlResultSetProcessor(
             DruidAggregationQuery<?> druidQuery,
             BiMap<Integer, String> columnNames,
-            List<String[]> sqlResults
+            List<String[]> sqlResults,
+            ObjectMapper objectMapper
     ) {
         this.druidQuery = druidQuery;
         this.columnNames = columnNames;
         this.sqlResults = sqlResults;
+        this.objectMapper = objectMapper;
+
+        this.groupByCount = druidQuery.getDimensions().size();
+        this.columnCount = columnNames.size();
     }
 
-    public DruidResponse process() {
-        Map<String, Function<String, Object>> resultTypeMapper = getAggregationTypeMapper(druidQuery);
-        int columnCount = columnNames.size();
-        int groupByCount = druidQuery.getDimensions().size();
+    public JsonNode process() {
+        Map<String, Function<String, Number>> resultTypeMapper = getAggregationTypeMapper(druidQuery);
 
-        DruidResponse druidResponse = new DruidResponse();
-        sqlResults.stream()
-                .map(row -> {
-                    DateTime timestamp = TimeConverter.parseDateTime(groupByCount, row, druidQuery.getGranularity());
+        try (TokenBuffer jsonWriter = new TokenBuffer(objectMapper, true)) {
 
-                    DruidResultRow rowResult = getDruidResultRow(timestamp);
+            jsonWriter.writeStartArray();
+            for (String[] row : sqlResults) {
+                processRow(resultTypeMapper, jsonWriter, row);
+            }
+            jsonWriter.writeEndArray();
 
-                    int lastTimeIndex = TimeConverter.getNumberOfGroupByFunctions(druidQuery.getGranularity());
-                    for (int i = 0; i < columnCount; i++) {
-                        if (groupByCount <= i && i < groupByCount + lastTimeIndex) {
-                            continue;
-                        }
-                        Object result = resultTypeMapper
-                                .getOrDefault(columnNames.get(i), String::toString)
-                                .apply(row[i]);
-                        rowResult.add(columnNames.get(i), result);
-                    }
-
-                    druidQuery.getPostAggregations()
-                            .forEach(postAggregation -> {
-                                Double postAggResult = PostAggregationEvaluator.evaluate(
-                                        postAggregation,
-                                        (s) -> row[columnNames.inverse().get(s)]
-                                );
-                                rowResult.add(postAggregation.getName(), postAggResult);
-                            });
-
-                    return rowResult;
-                })
-                .forEach(druidResponse::add);
-
-        return druidResponse;
-    }
-
-    private DruidResultRow getDruidResultRow(DateTime timestamp) {
-        DruidResultRow rowResult;
-        if (druidQuery.getQueryType().equals(DefaultQueryType.GROUP_BY)) {
-            rowResult = new GroupByResultRow(timestamp, GroupByResultRow.Version.V1);
-        } else if (druidQuery.getQueryType().equals(DefaultQueryType.TOP_N)) {
-            rowResult = new TopNResultRow(timestamp);
-        } else {
-            rowResult = new TimeseriesResultRow(timestamp);
+            return jsonWriter.asParser().readValueAsTree();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to write json.", e);
         }
-        return rowResult;
+
+    }
+
+    private DateTime processRow(
+            Map<String, Function<String, Number>> resultTypeMapper,
+            TokenBuffer jsonWriter,
+            String[] row
+    ) throws IOException {
+        DateTime timestamp = TimeConverter.parseDateTime(groupByCount, row, druidQuery.getGranularity());
+        jsonWriter.writeStartObject();
+        jsonWriter.writeStringField("version", "v1");
+        jsonWriter.writeStringField("timestamp", timestamp.toDateTime(DateTimeZone.UTC).toString());
+        jsonWriter.writeObjectFieldStart("event");
+
+        int lastTimeIndex = TimeConverter.getNumberOfGroupByFunctions(druidQuery.getGranularity());
+        for (int i = 0; i < columnCount; i++) {
+            if (groupByCount <= i && i < groupByCount + lastTimeIndex) {
+                continue;
+            }
+            if (resultTypeMapper.containsKey(columnNames.get(i))) {
+                Number result = resultTypeMapper
+                        .get(columnNames.get(i))
+                        .apply(row[i]);
+                // todo detect long vs double
+                jsonWriter.writeNumberField(columnNames.get(i), (double) result);
+            } else {
+                jsonWriter.writeStringField(columnNames.get(i), row[i]);
+            }
+
+        }
+
+        druidQuery.getPostAggregations()
+                .forEach(postAggregation -> {
+                    Double postAggResult = PostAggregationEvaluator.evaluate(
+                            postAggregation,
+                            (s) -> row[columnNames.inverse().get(s)]
+                    );
+                    try {
+                        jsonWriter.writeNumberField(postAggregation.getName(), postAggResult);
+                    } catch (IOException e) {
+                    }
+                });
+
+        jsonWriter.writeEndObject();
+        jsonWriter.writeEndObject();
+
+        return timestamp;
     }
 
     /**
@@ -99,7 +120,7 @@ public class SqlResultSetProcessor {
      *
      * @return the map from aggregation name to {@link Double::parseDouble} {@link Long::parseLong}.
      */
-    private static Map<String, Function<String, Object>> getAggregationTypeMapper(
+    private static Map<String, Function<String, Number>> getAggregationTypeMapper(
             DruidAggregationQuery<?> druidQuery
     ) {
         //todo maybe "true"/"false" -> boolean
@@ -112,7 +133,7 @@ public class SqlResultSetProcessor {
                     } else if (aggType.contains("double")) {
                         return Double::parseDouble;
                     }
-                    return String::toString;
+                    return null;
                 }));
     }
 }

@@ -13,7 +13,6 @@ import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery;
 import com.yahoo.bard.webservice.druid.model.query.TopNQuery;
-import com.yahoo.bard.webservice.druid.response.DruidResponse;
 import com.yahoo.bard.webservice.util.CompletedFuture;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 
@@ -106,14 +105,11 @@ public class SqlConverter implements SqlBackedClient {
                     CompletableFuture<JsonNode> responseFuture = CompletableFuture.supplyAsync(() ->
                             executeAndProcessQuery((DruidAggregationQuery) druidQuery)
                     );
-                    if (successCallback != null) {
-                        responseFuture.thenAccept(jsonNode -> {
-                            if (jsonNode != null) {
-                                successCallback.invoke(jsonNode);
-                            }
-                        });
-
-                    }
+                    responseFuture.thenAccept(jsonNode -> {
+                        if (jsonNode != null && successCallback != null) {
+                            successCallback.invoke(jsonNode);
+                        }
+                    });
                     return responseFuture;
                 default:
                     String message = "Unable to process " + queryType.toString();
@@ -135,7 +131,6 @@ public class SqlConverter implements SqlBackedClient {
      *
      * @param druidQuery  The druid query to build and process.
      *
-     * @param failureCallback
      * @return a druid-like response to the query.
      */
     private JsonNode executeAndProcessQuery(
@@ -161,8 +156,9 @@ public class SqlConverter implements SqlBackedClient {
             throw new RuntimeException("Could not finish query", e);
         }
 
-        DruidResponse druidResponse = sqlResultSetProcessor.process();
-        return JSON_WRITER.valueToTree(druidResponse);
+        JsonNode jsonNode = sqlResultSetProcessor.process();
+        LOG.debug("Created response: {}", jsonNode);
+        return jsonNode;
     }
 
     /**
@@ -199,7 +195,7 @@ public class SqlConverter implements SqlBackedClient {
         }
         LOG.debug("Fetched {} rows.", rows);
 
-        return new SqlResultSetProcessor(druidQuery, columnNames, sqlResults);
+        return new SqlResultSetProcessor(druidQuery, columnNames, sqlResults, JSON_WRITER);
     }
 
     /**
