@@ -23,7 +23,7 @@ public interface MetricLoader {
     @Deprecated
     default void loadMetricDictionary(MetricDictionary metricDictionary) {
         String message = "The method loadMetricDictionary(MetricDictionary, DimensionDictionary) must be implemented " +
-                "for MetricLoader";
+                "for MetricLoader.class";
         LoggerFactory.getLogger(DimensionToNameSerializer.class).error(message);
         throw new RuntimeException(message);
     }

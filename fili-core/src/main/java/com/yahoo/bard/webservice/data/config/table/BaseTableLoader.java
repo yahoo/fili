@@ -209,13 +209,11 @@ public abstract class BaseTableLoader implements TableLoader {
                 .forEach(
                         tableName -> {
                             if (!physicalTableDictionary.containsKey(tableName)) {
-                                physicalTableDictionary.put(
+                                buildPhysicalTableWithDependency(
                                         tableName.asName(),
-                                        buildPhysicalTableWithDependency(
-                                                tableName.asName(),
-                                                availableTableDefinitions,
-                                                dictionaries
-                                        )
+                                        availableTableDefinitions,
+                                        dictionaries
+
                                 );
                             }
                         }
