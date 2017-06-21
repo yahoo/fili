@@ -2,78 +2,46 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.util;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CompletableFuture;
 
 /**
- * A future response which has already been completed and will return
- * as soon as it is called.
+ * A utility class to create futures which have already been completed
+ * and will return as soon as it is called.
  *
- * @param <E>  The type to be returned by this future
  */
-public class CompletedFuture<E> implements Future<E> {
-    private Either<E, Throwable> result;
+public class CompletedFuture {
 
     /**
-     * Creates a completed {@link Future} which will either return an item or throw
-     * an {@link ExecutionException} with the throwable.
-     *
-     * @param result  Either a result to return a throwable to be included in the {@link ExecutionException}.
+     * Private constructor - all methods static.
      */
-    private CompletedFuture(Either<E, Throwable> result) {
-        this.result = result;
+    private CompletedFuture() {
+
     }
 
     /**
-     * Creates a completed {@link Future} which will return this item.
+     * Creates a completed {@link java.util.concurrent.Future} which will return this item.
      *
      * @param item  The item to return when called.
      * @param <E>  The type to be returned by this future.
      *
-     * @return a completed {@link Future} which will successfully return an item.
+     * @return a completed {@link CompletableFuture} which will successfully return an item.
      */
-    public static <E> CompletedFuture<E> returning(E item) {
-        return new CompletedFuture<>(Either.left(item));
+    public static <E> CompletableFuture<E> returning(E item) {
+        return CompletableFuture.completedFuture(item);
     }
 
     /**
-     * Creates a completed {@link Future} which will throw an {@link ExecutionException}.
+     * Creates a completed {@link java.util.concurrent.Future} which will throw an
+     * {@link java.util.concurrent.ExecutionException}.
      *
-     * @param throwable  A throwable to be included in the {@link ExecutionException}.
+     * @param throwable  A throwable to be included in the {@link java.util.concurrent.ExecutionException}.
      * @param <E>  The type to be returned by this future.
      *
-     * @return a completed {@link Future} which will fail and throw an exception.
+     * @return a completed {@link CompletableFuture} which will fail and throw an exception.
      */
-    public static <E> CompletedFuture<E> throwing(Throwable throwable) {
-        return new CompletedFuture<>(Either.right(throwable));
-    }
-
-    @Override
-    public boolean cancel(boolean mayInterruptIfRunning) {
-        return false;
-    }
-
-    @Override
-    public boolean isCancelled() {
-        return false;
-    }
-
-    @Override
-    public boolean isDone() {
-        return true;
-    }
-
-    @Override
-    public E get() throws ExecutionException {
-        if (result.isRight()) {
-            throw new ExecutionException(result.getRight());
-        }
-        return result.getLeft();
-    }
-
-    @Override
-    public E get(long timeout, TimeUnit unit) throws ExecutionException {
-        return get();
+    public static <E> CompletableFuture<E> throwing(Throwable throwable) {
+        CompletableFuture<E> completedFuture = CompletableFuture.supplyAsync(() -> null);
+        completedFuture.completeExceptionally(throwable);
+        return completedFuture;
     }
 }
