@@ -21,6 +21,7 @@
         <module>fili</module>
         <module>fili-wikipedia-example</module>
         <module>fili-generic-example</module>
+        <module>fili-sql-backend</module>
     </modules>
 
     <organization>
