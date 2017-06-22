@@ -28,6 +28,28 @@ public class Database {
     private static final String DATABASE_URL = "jdbc:h2:mem:test";
     private static final String WIKITICKER_JSON_DATA = "wikiticker-2015-09-12-sampled.json";
     private static Connection connection;
+    public static final String TIME = "TIME";
+    public static final String COUNTRY_ISO_CODE = "countryIsoCode";
+    public static final String IS_UNPATROLLED = "isUnpatrolled";
+    public static final String NAMESPACE = "namespace";
+    public static final String COUNTRY_NAME = "countryName";
+    public static final String CITY_NAME = "cityName";
+    public static final String IS_MINOR = "isMinor";
+    public static final String IS_ANONYMOUS = "isAnonymous";
+    public static final String REGION_ISO_CODE = "regionIsoCode";
+    public static final String CHANNEL = "channel";
+    public static final String REGION_NAME = "regionName";
+    public static final String WIKITICKER = "wikiticker";
+    public static final String IS_NEW = "isNew";
+    public static final String IS_ROBOT = "isRobot";
+    public static final String PAGE = "page";
+    public static final String USER = "user";
+    public static final String COMMENT = "comment";
+    public static final String ADDED = "added";
+    public static final String DELETED = "deleted";
+    public static final String DELTA = "delta";
+    public static final String ID = "ID";
+    public static final String METRO_CODE = "metroCode";
 
     /**
      * Gets an in memory database with the {@link WikitickerEntry} from the example data.
@@ -47,36 +69,35 @@ public class Database {
         List<WikitickerEntry> entries = readJsonFile();
 
         Statement s = connection.createStatement();
-        s.execute("CREATE TABLE WIKITICKER (ID INT PRIMARY KEY," +
-                "COMMENT VARCHAR(256)," +
-                "COUNTRY_ISO_CODE VARCHAR(256)," +
-                "ADDED INTEGER," +
-                "TIME TIMESTAMP, " +
-                "IS_NEW BOOLEAN," +
-                "IS_ROBOT BOOLEAN," +
-                "DELETED INTEGER," +
-                "METRO_CODE VARCHAR(256)," +
-                "IS_UNPATROLLED BOOLEAN," +
-                "NAMESPACE VARCHAR(256)," +
-                "PAGE VARCHAR(256)," +
-                "COUNTRY_NAME VARCHAR(256)," +
-                "CITY_NAME VARCHAR(256)," +
-                "IS_MINOR BOOLEAN," +
-                "USER VARCHAR(256)," +
-                "DELTA INTEGER," +
-                "IS_ANONYMOUS BOOLEAN," +
-                "REGION_ISO_CODE VARCHAR(256)," +
-                "CHANNEL VARCHAR(256)," +
-                "REGION_NAME VARCHAR(256)," +
+        s.execute("CREATE TABLE \"" + WIKITICKER + "\" (\"" + ID + "\" INT PRIMARY KEY, \"" +
+                COMMENT + "\" VARCHAR(256), \"" +
+                COUNTRY_ISO_CODE + "\" VARCHAR(256), \"" +
+                ADDED + "\" INTEGER,\"" +
+                TIME + "\" TIMESTAMP, \"" +
+                IS_NEW + "\" BOOLEAN, \"" +
+                IS_ROBOT + "\" BOOLEAN, \"" +
+                DELETED + "\" INTEGER, \"" +
+                METRO_CODE + "\" VARCHAR(256), \"" +
+                IS_UNPATROLLED + "\" BOOLEAN, \"" +
+                NAMESPACE + "\" VARCHAR(256), \"" +
+                PAGE + "\" VARCHAR(256), \"" +
+                COUNTRY_NAME + "\" VARCHAR(256), \"" +
+                CITY_NAME + "\" VARCHAR(256), \"" +
+                IS_MINOR + "\" BOOLEAN, \"" +
+                USER + "\" VARCHAR(256), \"" +
+                DELTA + "\" INTEGER, \"" +
+                IS_ANONYMOUS + "\" BOOLEAN, \"" +
+                REGION_ISO_CODE + "\" VARCHAR(256), \"" +
+                CHANNEL + "\" VARCHAR(256), \"" +
+                REGION_NAME + "\" VARCHAR(256), " +
                 ")"
         );
 
-        String sqlInsert = "INSERT INTO WIKITICKER (" +
-                "ID, COMMENT, COUNTRY_ISO_CODE, ADDED, TIME, IS_NEW, IS_ROBOT," +
-                " DELETED, METRO_CODE, IS_UNPATROLLED, NAMESPACE, PAGE, COUNTRY_NAME," +
-                " CITY_NAME, IS_MINOR, USER, DELTA, IS_ANONYMOUS, REGION_ISO_CODE, " +
-                "CHANNEL, REGION_NAME" +
-                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sqlInsert = "INSERT INTO \"" + WIKITICKER + "\" (\"" + ID + "\", \"" + COMMENT + "\", \"" + COUNTRY_ISO_CODE + "\", \""
+                + ADDED + "\", \"" + TIME + "\", \"" + IS_NEW + "\", \"" + IS_ROBOT + "\", \"" + DELETED + "\", \"" + METRO_CODE + "\", \"" +
+                IS_UNPATROLLED + "\", \"" + NAMESPACE + "\", \"" + PAGE + "\", \"" + COUNTRY_NAME + "\", \"" + CITY_NAME + "\", \"" +
+                IS_MINOR + "\", \"" + USER + "\", \"" + DELTA + "\", \"" + IS_ANONYMOUS + "\", \"" + REGION_ISO_CODE + "\", \"" + CHANNEL
+                + "\", \"" + REGION_NAME + "\") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         int i = 0;
         for (WikitickerEntry e : entries) {

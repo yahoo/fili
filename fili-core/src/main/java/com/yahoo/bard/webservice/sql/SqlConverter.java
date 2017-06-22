@@ -30,6 +30,8 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.rel2sql.RelToSqlConverter;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.sql.SqlSelect;
+import org.apache.calcite.sql.pretty.SqlPrettyWriter;
 import org.apache.calcite.tools.RelBuilder;
 import org.joda.time.Interval;
 import org.slf4j.Logger;
@@ -62,6 +64,7 @@ public class SqlConverter implements SqlBackedClient {
     private static final ObjectMapper JSON_WRITER = new ObjectMapper();
     private final CalciteHelper calciteHelper;
     private final RelToSqlConverter relToSql;
+    private final SqlPrettyWriter sqlWriter;
     private final Connection connection;
 
 
@@ -91,6 +94,7 @@ public class SqlConverter implements SqlBackedClient {
         calciteHelper = new CalciteHelper(dataSource, username, password, schemaName);
         connection = calciteHelper.getConnection();
         relToSql = calciteHelper.getNewRelToSqlConverter();
+        sqlWriter = calciteHelper.getNewSqlWriter();
     }
 
     @Override
@@ -217,7 +221,7 @@ public class SqlConverter implements SqlBackedClient {
     private String buildSqlQuery(Connection connection, DruidAggregationQuery<?> druidQuery)
             throws SQLException {
         String sqlTableName = druidQuery.getDataSource().getPhysicalTable().getName();
-        String timestampColumn = DatabaseHelper.getTimestampColumn(connection, sqlTableName);
+        String timestampColumn = DatabaseHelper.getTimestampColumn(connection, calciteHelper.escape(sqlTableName));
 
         RelBuilder builder = calciteHelper.getNewRelBuilder();
         LOG.debug("Querying Table '{}'", sqlTableName);
@@ -431,6 +435,8 @@ public class SqlConverter implements SqlBackedClient {
      * @return the sql string built by the RelBuilder.
      */
     private String writeSql(RelBuilder builder) {
-        return relToSql.visitChild(0, builder.build()).asSelect().toString();
+        sqlWriter.reset();
+        SqlSelect select = relToSql.visitChild(0, builder.build()).asSelect();
+        return sqlWriter.format(select);
     }
 }

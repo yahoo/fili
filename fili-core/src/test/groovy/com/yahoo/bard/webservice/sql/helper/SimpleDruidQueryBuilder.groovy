@@ -2,6 +2,9 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.sql.helper
 
+import static com.yahoo.bard.webservice.sql.database.Database.ADDED
+import static com.yahoo.bard.webservice.sql.database.Database.DELETED
+
 import com.yahoo.bard.webservice.data.config.dimension.DefaultDimensionField
 import com.yahoo.bard.webservice.data.config.dimension.DefaultKeyValueStoreDimensionConfig
 import com.yahoo.bard.webservice.data.config.names.DataSourceName
@@ -39,17 +42,6 @@ import org.joda.time.Interval
 import java.util.stream.Collectors
 
 class SimpleDruidQueryBuilder {
-    public static final String WIKITICKER = "WIKITICKER"
-    public static final String IS_NEW = "IS_NEW"
-    public static final String IS_ROBOT = "IS_ROBOT"
-    public static final String PAGE = "PAGE"
-    public static final String USER = "USER"
-    public static final String COMMENT = "COMMENT"
-    public static final String ADDED = "ADDED";
-    public static final String DELETED = "DELETED";
-    public static final String DELTA = "DELTA";
-    public static final String ID = "ID"
-    public static final String METRO_CODE = "METRO_CODE"
     public static final String START = "2015-09-12T00:00:00.000Z"
     public static final String END = "2015-09-13T00:00:00.000Z"
 
