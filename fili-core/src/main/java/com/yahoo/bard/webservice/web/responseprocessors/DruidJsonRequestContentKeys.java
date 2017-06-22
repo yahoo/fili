@@ -5,13 +5,9 @@ package com.yahoo.bard.webservice.web.responseprocessors;
 /**
  * Enumerates the list of keys expected to be found in the FullResponseProcessor.
  */
-public enum DruidJsonResponseContentKeys {
-    DRUID_RESPONSE_CONTEXT("X-Druid-Response-Context"),
-    UNCOVERED_INTERVALS("uncoveredIntervals"),
-    UNCOVERED_INTERVALS_OVERFLOWED("uncoveredIntervalsOverflowed"),
-    STATUS_CODE("status-code"),
-    RESPONSE("response"),
-    ETAG("Etag")
+public enum DruidJsonRequestContentKeys {
+    ETAG("If-None-Match"),
+    NON_EXISTING_ETAG_VALUE("non-existing-etag")
     ;
 
     private final String name;
@@ -21,7 +17,7 @@ public enum DruidJsonResponseContentKeys {
      *
      * @param name  Name of the context key
      */
-    DruidJsonResponseContentKeys(String name) {
+    DruidJsonRequestContentKeys(String name) {
         this.name = name;
     }
 

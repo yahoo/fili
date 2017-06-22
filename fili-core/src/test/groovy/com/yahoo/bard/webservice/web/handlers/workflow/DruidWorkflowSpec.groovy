@@ -38,6 +38,8 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 
 import spock.lang.Specification
 
+import javax.management.StringValueExp
+
 class DruidWorkflowSpec extends Specification {
     private static final ObjectMapper MAPPER = new ObjectMapper()
             .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
@@ -63,7 +65,6 @@ class DruidWorkflowSpec extends Specification {
 
     def setup() {
         splittingStatus = QUERY_SPLIT.isOn()
-
         systemConfig = SystemConfigProvider.getInstance()
         uncoveredKey = SYSTEM_CONFIG.getPackageVariableName("druid_uncovered_interval_limit")
     }

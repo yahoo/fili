@@ -6,14 +6,13 @@ import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.REQU
 import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.RESPONSE_WORKFLOW_TIMER;
 
 import com.yahoo.bard.webservice.application.MetricRegistryFactory;
-import com.yahoo.bard.webservice.data.cache.DataCache;
 import com.yahoo.bard.webservice.data.cache.TupleDataCache;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
-import com.yahoo.bard.webservice.metadata.QuerySigningService;
 import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.responseprocessors.DruidJsonRequestContentKeys;
 import com.yahoo.bard.webservice.web.responseprocessors.DruidJsonResponseContentKeys;
 import com.yahoo.bard.webservice.web.responseprocessors.EtagCacheResponseProcessor;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
@@ -45,26 +44,22 @@ public class EtagCacheRequestHandler extends BaseDataRequestHandler {
 
     protected final DataRequestHandler next;
     protected final TupleDataCache<String, String, String> dataCache;
-    protected final QuerySigningService<Long> querySigningService;
 
     /**
      * Build a Cache request handler.
      *
      * @param next  The next handler in the chain
      * @param dataCache  The cache instance
-     * @param querySigningService  The service to generate query signatures
      * @param mapper  The mapper for all JSON processing
      */
     public EtagCacheRequestHandler(
             @NotNull DataRequestHandler next,
-            @NotNull DataCache<?> dataCache,
-            @NotNull QuerySigningService<?> querySigningService,
+            @NotNull TupleDataCache<String, String, String> dataCache,
             @NotNull ObjectMapper mapper
     ) {
         super(mapper);
         this.next = next;
-        this.dataCache = (TupleDataCache<String, String, String>) dataCache;
-        this.querySigningService = (QuerySigningService<Long>) querySigningService;
+        this.dataCache = dataCache;
     }
 
     @Override
@@ -83,7 +78,7 @@ public class EtagCacheRequestHandler extends BaseDataRequestHandler {
                 final TupleDataCache.DataEntry<String, String , String> cacheEntry = dataCache.get(cacheKey);
                 CACHE_REQUESTS.mark(1);
 
-                String eTagInRequest = DruidJsonResponseContentKeys.REQUEST_ETAG.getName();
+                String eTagInRequest = DruidJsonRequestContentKeys.ETAG.getName();
                 if (cacheEntry != null) { // Current query is in data cache
                     // Insert "If-None-Match" header into RequestContext; the value is etag of the corresponding cache
                     context.getHeaders().putSingle(
@@ -104,22 +99,22 @@ public class EtagCacheRequestHandler extends BaseDataRequestHandler {
                     // Insert "If-None-Match" header into RequestContext; the value a random pre-defined string
                     context.getHeaders().putSingle(
                             eTagInRequest,
-                            DruidJsonResponseContentKeys.NON_EXISTING_ETAG_VALUE.getName()
+                            DruidJsonRequestContentKeys.NON_EXISTING_ETAG_VALUE.getName()
                     );
 
                     CACHE_MISSES.mark(1);
                 }
             }
+
+            nextResponse = new EtagCacheResponseProcessor(
+                    response,
+                    cacheKey,
+                    dataCache,
+                    mapper
+            );
         } catch (Exception e) {
             LOG.warn("Cache key cannot be built: ", e);
         }
-
-        nextResponse = new EtagCacheResponseProcessor(
-                response,
-                cacheKey,
-                dataCache,
-                mapper
-        );
 
         return next.handleRequest(context, request, druidQuery, nextResponse);
     }

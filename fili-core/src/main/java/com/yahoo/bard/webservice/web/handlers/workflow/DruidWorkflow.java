@@ -8,6 +8,7 @@ import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.PartialDataHandler;
 import com.yahoo.bard.webservice.data.cache.DataCache;
+import com.yahoo.bard.webservice.data.cache.TupleDataCache;
 import com.yahoo.bard.webservice.data.volatility.VolatileIntervalsService;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
@@ -124,8 +125,16 @@ public class DruidWorkflow implements RequestWorkflowProvider {
             uiHandler = new CacheV2RequestHandler(uiHandler, dataCache, querySigningService, mapper);
             nonUiHandler = new CacheV2RequestHandler(nonUiHandler, dataCache, querySigningService, mapper);
         } else if (CacheFeatureFlag.ETAG.isOn()) {
-            uiHandler = new EtagCacheRequestHandler(uiHandler, dataCache, querySigningService, mapper);
-            nonUiHandler = new EtagCacheRequestHandler(uiHandler, dataCache, querySigningService, mapper);
+            uiHandler = new EtagCacheRequestHandler(
+                    uiHandler,
+                    (TupleDataCache<String, String, String>) dataCache,
+                    mapper
+            );
+            nonUiHandler = new EtagCacheRequestHandler(
+                    uiHandler,
+                    (TupleDataCache<String, String, String>) dataCache,
+                    mapper
+            );
         }
 
         if (BardFeatureFlag.QUERY_SPLIT.isOn()) {

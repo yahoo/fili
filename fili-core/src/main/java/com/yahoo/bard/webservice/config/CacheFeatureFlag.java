@@ -65,7 +65,7 @@ public enum CacheFeatureFlag implements FeatureFlag {
         return value.equalsIgnoreCase(
                 SYSTEM_CONFIG.getStringProperty(
                         SYSTEM_CONFIG.getPackageVariableName("query_response_caching_strategy"),
-                        "None"
+                        "NoCache"
                 )
         );
     }
