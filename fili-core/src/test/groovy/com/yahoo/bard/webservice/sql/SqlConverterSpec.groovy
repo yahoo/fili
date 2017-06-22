@@ -8,29 +8,30 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MINUTE
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MONTH
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.WEEK
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.YEAR
-import static com.yahoo.bard.webservice.helper.Aggregator.sum
-import static com.yahoo.bard.webservice.helper.Filters.not
-import static com.yahoo.bard.webservice.helper.Filters.or
-import static com.yahoo.bard.webservice.helper.Filters.search
-import static com.yahoo.bard.webservice.helper.Filters.select
-import static com.yahoo.bard.webservice.helper.Havings.and
-import static com.yahoo.bard.webservice.helper.Havings.equals
-import static com.yahoo.bard.webservice.helper.Havings.gt
-import static com.yahoo.bard.webservice.helper.Havings.lt
-import static com.yahoo.bard.webservice.helper.Intervals.interval
-import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.ADDED
-import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.COMMENT
-import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.DELETED
-import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.DELTA
-import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.END
-import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.IS_NEW
-import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.IS_ROBOT
-import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.PAGE
-import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.START
-import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.USER
-import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.WIKITICKER
-import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.getDimension
-import static com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder.getDimensions
+import static com.yahoo.bard.webservice.sql.helper.Aggregator.sum
+import static com.yahoo.bard.webservice.sql.helper.Filters.not
+import static com.yahoo.bard.webservice.sql.helper.Filters.or
+import static com.yahoo.bard.webservice.sql.helper.Filters.search
+import static com.yahoo.bard.webservice.sql.helper.Filters.select
+import static com.yahoo.bard.webservice.sql.helper.Havings.and
+import static com.yahoo.bard.webservice.sql.helper.Havings.equals
+import static com.yahoo.bard.webservice.sql.helper.Havings.gt
+import static com.yahoo.bard.webservice.sql.helper.Havings.lt
+import static com.yahoo.bard.webservice.sql.helper.Intervals.interval
+import static com.yahoo.bard.webservice.sql.helper.SimpleDruidQueryBuilder.*
+import static com.yahoo.bard.webservice.sql.helper.SimpleDruidQueryBuilder.ADDED
+import static com.yahoo.bard.webservice.sql.helper.SimpleDruidQueryBuilder.COMMENT
+import static com.yahoo.bard.webservice.sql.helper.SimpleDruidQueryBuilder.DELETED
+import static com.yahoo.bard.webservice.sql.helper.SimpleDruidQueryBuilder.DELTA
+import static com.yahoo.bard.webservice.sql.helper.SimpleDruidQueryBuilder.END
+import static com.yahoo.bard.webservice.sql.helper.SimpleDruidQueryBuilder.IS_NEW
+import static com.yahoo.bard.webservice.sql.helper.SimpleDruidQueryBuilder.IS_ROBOT
+import static com.yahoo.bard.webservice.sql.helper.SimpleDruidQueryBuilder.PAGE
+import static com.yahoo.bard.webservice.sql.helper.SimpleDruidQueryBuilder.START
+import static com.yahoo.bard.webservice.sql.helper.SimpleDruidQueryBuilder.USER
+import static com.yahoo.bard.webservice.sql.helper.SimpleDruidQueryBuilder.WIKITICKER
+import static com.yahoo.bard.webservice.sql.helper.SimpleDruidQueryBuilder.getDimension
+import static com.yahoo.bard.webservice.sql.helper.SimpleDruidQueryBuilder.getDimensions
 import static java.util.Arrays.asList
 
 import com.yahoo.bard.webservice.data.DruidResponseParser
@@ -47,9 +48,11 @@ import com.yahoo.bard.webservice.druid.model.query.DruidQuery
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery
 import com.yahoo.bard.webservice.druid.model.query.TopNQuery
-import com.yahoo.bard.webservice.helper.SimpleDruidQueryBuilder
+import com.yahoo.bard.webservice.sql.helper.Aggregator
+import com.yahoo.bard.webservice.sql.helper.Intervals
+import com.yahoo.bard.webservice.sql.helper.SimpleDruidQueryBuilder
 import com.yahoo.bard.webservice.table.Column
-import com.yahoo.bard.webservice.test.Database
+import com.yahoo.bard.webservice.sql.database.Database
 
 import com.fasterxml.jackson.databind.JsonNode
 
@@ -82,7 +85,7 @@ class SqlConverterSpec extends Specification {
     }
 
     private static TimeSeriesQuery getBasicTimeseriesQuery(DefaultTimeGrain timeGrain) {
-        return SimpleDruidQueryBuilder.timeSeriesQuery(
+        return timeSeriesQuery(
                 WIKITICKER,
                 null,
                 timeGrain,
@@ -95,7 +98,7 @@ class SqlConverterSpec extends Specification {
     }
 
     private static TimeSeriesQuery getTimeSeriesQuery(DefaultTimeGrain timeGrain, Filter filter) {
-        return SimpleDruidQueryBuilder.timeSeriesQuery(
+        return timeSeriesQuery(
                 WIKITICKER,
                 filter,
                 timeGrain,
@@ -113,7 +116,7 @@ class SqlConverterSpec extends Specification {
             Having having,
             List<String> dimensions
     ) {
-        return SimpleDruidQueryBuilder.groupByQuery(
+        return groupByQuery(
                 WIKITICKER,
                 filter,
                 having,
@@ -134,7 +137,7 @@ class SqlConverterSpec extends Specification {
             String dimension,
             int threshold
     ) {
-        return SimpleDruidQueryBuilder.topNQuery(
+        return topNQuery(
                 WIKITICKER,
                 filter,
                 threshold,
@@ -206,12 +209,12 @@ class SqlConverterSpec extends Specification {
 
         where: "we have"
         timeGrain | filter                          | response
-        HOUR      | select(COMMENT, FIRST_COMMENT)  | """[{"version":"v1","timestamp":"2015-09-12T00:00:00.000Z","event":{"ADDED":36.0,"DELETED":0.0,"DELTA":36.0}}]"""
-        HOUR      | select(COMMENT, UNIQUE_COMMENT) | """[{"version":"v1","timestamp":"2015-09-12T01:00:00.000Z","event":{"ADDED":0.0,"DELETED":5.0,"DELTA":-5.0}}]"""
-        DAY       | null                            | """[{"version":"v1","timestamp":"2015-09-12T00:00:00.000Z","event":{"ADDED":9385573.0,"DELETED":394298.0,"DELTA":8991275.0}}]"""
-        WEEK      | null                            | """[{"version":"v1","timestamp":"2015-09-10T00:00:00.000Z","event":{"ADDED":9385573.0,"DELETED":394298.0,"DELTA":8991275.0}}]"""
-        MONTH     | null                            | """[{"version":"v1","timestamp":"2015-09-01T00:00:00.000Z","event":{"ADDED":9385573.0,"DELETED":394298.0,"DELTA":8991275.0}}]"""
-        YEAR      | null                            | """[{"version":"v1","timestamp":"2015-01-01T00:00:00.000Z","event":{"ADDED":9385573.0,"DELETED":394298.0,"DELTA":8991275.0}}]"""
+        HOUR      | select(COMMENT, FIRST_COMMENT)  | """[{"timestamp":"2015-09-12T00:00:00.000Z","event":{"ADDED":36.0,"DELETED":0.0,"DELTA":36.0}}]"""
+        HOUR      | select(COMMENT, UNIQUE_COMMENT) | """[{"timestamp":"2015-09-12T01:00:00.000Z","event":{"ADDED":0.0,"DELETED":5.0,"DELTA":-5.0}}]"""
+        DAY       | null                            | """[{"timestamp":"2015-09-12T00:00:00.000Z","event":{"ADDED":9385573.0,"DELETED":394298.0,"DELTA":8991275.0}}]"""
+        WEEK      | null                            | """[{"timestamp":"2015-09-10T00:00:00.000Z","event":{"ADDED":9385573.0,"DELETED":394298.0,"DELTA":8991275.0}}]"""
+        MONTH     | null                            | """[{"timestamp":"2015-09-01T00:00:00.000Z","event":{"ADDED":9385573.0,"DELETED":394298.0,"DELTA":8991275.0}}]"""
+        YEAR      | null                            | """[{"timestamp":"2015-01-01T00:00:00.000Z","event":{"ADDED":9385573.0,"DELETED":394298.0,"DELTA":8991275.0}}]"""
     }
 
     @Unroll

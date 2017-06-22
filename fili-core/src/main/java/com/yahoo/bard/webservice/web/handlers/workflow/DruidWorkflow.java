@@ -24,6 +24,7 @@ import com.yahoo.bard.webservice.web.handlers.PaginationRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.PartialDataRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.SplitQueryRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.DateTimeSortRequestHandler;
+import com.yahoo.bard.webservice.web.handlers.SqlRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.TopNMapperRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.VolatileDataRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.WebServiceSelectorRequestHandler;
@@ -173,6 +174,8 @@ public class DruidWorkflow implements RequestWorkflowProvider {
                 physicalTableDictionary,
                 volatileIntervalsService
         );
+
+        handler = new SqlRequestHandler(handler);
 
         return handler;
     }

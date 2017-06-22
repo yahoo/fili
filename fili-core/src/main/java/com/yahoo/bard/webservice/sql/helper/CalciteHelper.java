@@ -25,8 +25,9 @@ import javax.sql.DataSource;
 public class CalciteHelper {
     public static final String DEFAULT_SCHEMA = "PUBLIC";
     private final DataSource dataSource;
+    private final String username;
+    private final String password;
     private final String schemaName;
-    private final SqlDialect dialect;
 
     /**
      * Initialize the helper with a datasource and it's schema.
@@ -36,11 +37,11 @@ public class CalciteHelper {
      *
      * @throws SQLException if failed while making a connection to the database.
      */
-    public CalciteHelper(DataSource dataSource, String schemaName)
-            throws SQLException {
+    public CalciteHelper(DataSource dataSource, String username, String password, String schemaName) {
         this.dataSource = dataSource;
+        this.username = username;
+        this.password = password;
         this.schemaName = schemaName;
-        dialect = SqlDialect.create(getConnection().getMetaData());
     }
 
     /**
@@ -64,18 +65,15 @@ public class CalciteHelper {
      * @throws SQLException if can't create a connection.
      */
     public Connection getConnection() throws SQLException {
-        return dataSource.getConnection();
+        if (username == null || password == null) {
+            return dataSource.getConnection();
+        } else {
+            return dataSource.getConnection(username, password);
+        }
     }
 
-    /**
-     * Creates a {@link RelToSqlConverter} which allows a {@link org.apache.calcite.rel.RelNode} to
-     * be converted into a sql query.
-     *
-     * @return the relnode to sql converter.
-     *
-     */
-    public RelToSqlConverter getNewRelToSqlConverter() {
-        return new RelToSqlConverter(dialect);
+    public RelToSqlConverter getNewRelToSqlConverter() throws SQLException {
+        return new RelToSqlConverter(SqlDialect.create(getConnection().getMetaData()));
     }
 
     /**
