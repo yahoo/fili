@@ -103,33 +103,34 @@ public class SqlConverter implements SqlBackedClient {
         DefaultQueryType queryType = (DefaultQueryType) druidQuery.getQueryType();
         LOG.debug("Processing {} query\n {}", queryType, JSON_WRITER.valueToTree(druidQuery));
 
-        try {
-            switch (queryType) {
-                case TOP_N:
-                case GROUP_BY:
-                case TIMESERIES:
-                    CompletableFuture<JsonNode> responseFuture = CompletableFuture.supplyAsync(() ->
-                            executeAndProcessQuery((DruidAggregationQuery) druidQuery)
-                    );
-                    responseFuture.thenAccept(jsonNode -> {
-                        if (jsonNode != null && successCallback != null) {
-                            successCallback.invoke(jsonNode);
+        switch (queryType) {
+            case TOP_N:
+            case GROUP_BY:
+            case TIMESERIES:
+                CompletableFuture<JsonNode> responseFuture = CompletableFuture.supplyAsync(() -> {
+                            try {
+                                return executeAndProcessQuery((DruidAggregationQuery) druidQuery);
+                            } catch (RuntimeException e) {
+                                LOG.warn("Failed while querying ", e);
+                                if (failureCallback != null) {
+                                    failureCallback.dispatch(e);
+                                }
+                            }
+                            return null;
                         }
-                    });
-                    return responseFuture;
-                default:
-                    String message = "Unable to process " + queryType.toString();
-                    throw new UnsupportedOperationException(message);
-            }
-
-        } catch (RuntimeException e) {
-            LOG.warn("Failed while querying ", e);
-            if (failureCallback != null) {
-                failureCallback.dispatch(e);
-            }
-            return new CompletedFuture<>(null, e);
+                );
+                responseFuture.thenAccept(jsonNode -> {
+                    if (jsonNode != null && successCallback != null) {
+                        successCallback.invoke(jsonNode);
+                    }
+                });
+                return responseFuture;
+            default:
+                String message = "Unable to process " + queryType.toString();
+                throw new UnsupportedOperationException(message);
         }
     }
+
 
     /**
      * Builds sql for a druid query, execute it against the database, process

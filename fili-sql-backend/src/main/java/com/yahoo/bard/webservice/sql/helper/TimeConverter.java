@@ -11,6 +11,7 @@ import static org.apache.calcite.sql.fun.SqlStdOperatorTable.WEEK;
 import static org.apache.calcite.sql.fun.SqlStdOperatorTable.YEAR;
 
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
+import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 
 import org.apache.calcite.rex.RexNode;
@@ -61,7 +62,8 @@ public class TimeConverter {
      * @return the number of functions used to groupBy the given granularity.
      */
     public static int getNumberOfGroupByFunctions(Granularity granularity) {
-        return TIMEGRAIN_TO_GROUPBY.get(granularity).size();
+        DefaultTimeGrain timeGrain = getDefaultTimeGrain(granularity);
+        return TIMEGRAIN_TO_GROUPBY.get(timeGrain).size();
     }
 
     /**
@@ -78,7 +80,8 @@ public class TimeConverter {
             Granularity granularity,
             String timeColumn
     ) {
-        return TIMEGRAIN_TO_GROUPBY.get(granularity)
+        DefaultTimeGrain timeGrain = getDefaultTimeGrain(granularity);
+        return TIMEGRAIN_TO_GROUPBY.get(timeGrain)
                 .stream()
                 .map(sqlDatePartFunction -> builder.call(sqlDatePartFunction, builder.field(timeColumn)));
     }
@@ -97,7 +100,7 @@ public class TimeConverter {
      * @return the datetime for the start of the interval.
      */
     public static DateTime parseDateTime(int offset, String[] row, Granularity granularity) {
-        DefaultTimeGrain timeGrain = (DefaultTimeGrain) granularity;
+        DefaultTimeGrain timeGrain = getDefaultTimeGrain(granularity);
         DateTime resultTimeStamp = new DateTime(0, DateTimeZone.UTC);
 
         List<SqlDatePartFunction> times = TIMEGRAIN_TO_GROUPBY.get(timeGrain);
@@ -108,6 +111,12 @@ public class TimeConverter {
         }
 
         return resultTimeStamp;
+    }
+
+    private static DefaultTimeGrain getDefaultTimeGrain(Granularity granularity) {
+        TimeGrain timeGrain = (TimeGrain) granularity;
+        DefaultTimeGrain defaultTimeGrain = DefaultTimeGrain.valueOf(timeGrain.getName().toUpperCase());
+        return defaultTimeGrain;
     }
 
     /**

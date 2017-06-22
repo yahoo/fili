@@ -75,7 +75,6 @@ public class SqlResultSetProcessor {
     ) throws IOException {
         DateTime timestamp = TimeConverter.parseDateTime(groupByCount, row, druidQuery.getGranularity());
         jsonWriter.writeStartObject();
-        jsonWriter.writeStringField("version", "v1");
         jsonWriter.writeStringField("timestamp", timestamp.toDateTime(DateTimeZone.UTC).toString());
         jsonWriter.writeObjectFieldStart("event");
 

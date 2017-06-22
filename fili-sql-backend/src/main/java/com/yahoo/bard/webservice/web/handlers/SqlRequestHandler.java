@@ -7,6 +7,7 @@ import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.sql.SqlAggregationQuery;
 import com.yahoo.bard.webservice.sql.SqlBackedClient;
 import com.yahoo.bard.webservice.sql.SqlConverter;
 import com.yahoo.bard.webservice.web.DataApiRequest;
@@ -17,6 +18,7 @@ import org.apache.calcite.adapter.jdbc.JdbcSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Optional;
 
@@ -28,7 +30,7 @@ import javax.validation.constraints.NotNull;
 public class SqlRequestHandler implements DataRequestHandler {
     private static final Logger LOG = LoggerFactory.getLogger(SqlRequestHandler.class);
     private final @NotNull DataRequestHandler next;
-    private SqlBackedClient sqlBackedClient;
+    private SqlBackedClient sqlConverter;
 
     /**
      * Constructor.
@@ -51,9 +53,10 @@ public class SqlRequestHandler implements DataRequestHandler {
         String user = "";
         String pass = "";
         try {
-            sqlBackedClient = new SqlConverter(JdbcSchema.dataSource(dbUrl, driver, user, pass));
+            //Database.initializeDatabase();
+            sqlConverter = new SqlConverter(JdbcSchema.dataSource(dbUrl, driver, user, pass));
         } catch (SQLException e) {
-            LOG.error("Failed to set up sql backed client", e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -65,24 +68,16 @@ public class SqlRequestHandler implements DataRequestHandler {
             ResponseProcessor response
     ) {
         //todo check if sql query
-        Optional<Dimension> sqlDimension = request.getDimensions()
-                .stream()
-                .filter(dimension -> dimension.getApiName().equals("sql"))
-                .findFirst();
-        
-        if (sqlBackedClient != null && sqlDimension.isPresent()) {
-            SuccessCallback success = rootNode -> response.processResponse(
-                    rootNode,
-                    druidQuery,
-                    new LoggingContext(RequestLog.copy())
-            );
+        SuccessCallback success = rootNode -> response.processResponse(
+                rootNode,
+                new SqlAggregationQuery(druidQuery),
+                new LoggingContext(RequestLog.copy())
+        );
 
-            FailureCallback failure = response.getFailureCallback(druidQuery);
+        FailureCallback failure = response.getFailureCallback(druidQuery);
 
-            Dimension sqlFlag = sqlDimension.get();
-            druidQuery.getDimensions().remove(sqlFlag);
-            sqlBackedClient.executeQuery(druidQuery, success, failure);
-        }
-        return next.handleRequest(context, request, druidQuery, response);
+        sqlConverter.executeQuery(druidQuery, success, failure);
+
+        return true;
     }
 }
