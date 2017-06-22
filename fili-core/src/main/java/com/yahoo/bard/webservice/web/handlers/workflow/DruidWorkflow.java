@@ -175,7 +175,7 @@ public class DruidWorkflow implements RequestWorkflowProvider {
                 volatileIntervalsService
         );
 
-        handler = new SqlRequestHandler(handler);
+        handler = new SqlRequestHandler(handler, mapper);
 
         return handler;
     }

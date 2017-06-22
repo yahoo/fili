@@ -11,8 +11,11 @@ import com.yahoo.bard.webservice.sql.SqlBackedClient;
 import com.yahoo.bard.webservice.sql.SqlConverter;
 import com.yahoo.bard.webservice.sql.database.Database;
 import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.responseprocessors.LoggingContext;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.calcite.adapter.jdbc.JdbcSchema;
 import org.slf4j.Logger;
@@ -35,17 +38,19 @@ public class SqlRequestHandler implements DataRequestHandler {
      * Constructor.
      *
      * @param next Next Handler in the chain
+     * @param mapper
      */
-    public SqlRequestHandler(DataRequestHandler next) {
+    public SqlRequestHandler(DataRequestHandler next, ObjectMapper mapper) {
         this.next = next;
-        initializeSqlBackend();
+        initializeSqlBackend(mapper);
     }
 
     /**
      * Initializes the connection to the sql backend and prepares
      * the {@link SqlBackedClient} for converting queries.
+     * @param mapper
      */
-    private void initializeSqlBackend() {
+    private void initializeSqlBackend(ObjectMapper mapper) {
         // todo add settings for configuring a sql backed client
         String dbUrl = "jdbc:h2:mem:test";
         String driver = "org.h2.Driver";
@@ -53,7 +58,7 @@ public class SqlRequestHandler implements DataRequestHandler {
         String pass = "";
         try {
             Database.initializeDatabase();
-            sqlConverter = new SqlConverter(JdbcSchema.dataSource(dbUrl, driver, user, pass));
+            sqlConverter = new SqlConverter(JdbcSchema.dataSource(dbUrl, driver, user, pass), mapper);
         } catch (SQLException | IOException e) {
             throw new RuntimeException(e);
         }
@@ -67,16 +72,21 @@ public class SqlRequestHandler implements DataRequestHandler {
             ResponseProcessor response
     ) {
         //todo check if sql query
-        SuccessCallback success = rootNode -> response.processResponse(
-                rootNode,
-                new SqlAggregationQuery(druidQuery),
-                new LoggingContext(RequestLog.copy())
-        );
+        request.getFilter();
+        if (request.getFormat().equals(ResponseFormatType.SQL)) {
+            LOG.info("Intercepting for sql backend");
+            SuccessCallback success = rootNode -> response.processResponse(
+                    rootNode,
+                    new SqlAggregationQuery(druidQuery),
+                    new LoggingContext(RequestLog.copy())
+            );
+            FailureCallback failure = response.getFailureCallback(druidQuery);
 
-        FailureCallback failure = response.getFailureCallback(druidQuery);
+            sqlConverter.executeQuery(druidQuery, success, failure);
 
-        sqlConverter.executeQuery(druidQuery, success, failure);
+            return true;
+        }
 
-        return true;
+        return next.handleRequest(context, request, druidQuery, response);
     }
 }

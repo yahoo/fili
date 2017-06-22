@@ -54,6 +54,7 @@ import com.yahoo.bard.webservice.sql.database.Database
 import com.yahoo.bard.webservice.table.Column
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
 
 import org.joda.time.DateTimeZone
 
@@ -61,7 +62,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 class SqlConverterSpec extends Specification {
-    private static final SqlBackedClient sqlBackedClient = new SqlConverter(Database.getDataSource())
+    private static final SqlBackedClient sqlBackedClient = new SqlConverter(Database.getDataSource(), new ObjectMapper())
     private static final String TRUE = "TRUE"
     private static final String FALSE = "FALSE"
     private static final String FIRST_COMMENT = "added project"

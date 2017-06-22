@@ -61,7 +61,7 @@ public class SqlConverter implements SqlBackedClient {
     private static final Logger LOG = LoggerFactory.getLogger(SqlConverter.class);
     private static final String PREPENDED_ALIAS = "__";
     private static final AliasMaker ALIAS_MAKER = new AliasMaker(PREPENDED_ALIAS);
-    private static final ObjectMapper JSON_WRITER = new ObjectMapper();
+    private final ObjectMapper jsonWriter;
     private final CalciteHelper calciteHelper;
     private final RelToSqlConverter relToSql;
     private final SqlPrettyWriter sqlWriter;
@@ -77,8 +77,8 @@ public class SqlConverter implements SqlBackedClient {
      *
      * @throws SQLException if can't read from database.
      */
-    public SqlConverter(DataSource dataSource) throws SQLException {
-        this(dataSource, null, null, CalciteHelper.DEFAULT_SCHEMA);
+    public SqlConverter(DataSource dataSource, ObjectMapper objectMapper) throws SQLException {
+        this(dataSource, objectMapper, null, null, CalciteHelper.DEFAULT_SCHEMA);
     }
 
     /**
@@ -89,12 +89,13 @@ public class SqlConverter implements SqlBackedClient {
      *
      * @throws SQLException if can't read from database.
      */
-    public SqlConverter(DataSource dataSource, String username, String password, String schemaName)
+    public SqlConverter(DataSource dataSource, ObjectMapper objectMapper, String username, String password, String schemaName)
             throws SQLException {
         calciteHelper = new CalciteHelper(dataSource, username, password, schemaName);
         connection = calciteHelper.getConnection();
         relToSql = calciteHelper.getNewRelToSqlConverter();
         sqlWriter = calciteHelper.getNewSqlWriter();
+        jsonWriter = objectMapper;
     }
 
     @Override
@@ -104,7 +105,7 @@ public class SqlConverter implements SqlBackedClient {
             FailureCallback failureCallback
     ) {
         DefaultQueryType queryType = (DefaultQueryType) druidQuery.getQueryType();
-        LOG.debug("Processing {} query\n {}", queryType, JSON_WRITER.valueToTree(druidQuery));
+        LOG.debug("Processing {} query\n {}", queryType, jsonWriter.valueToTree(druidQuery));
 
         switch (queryType) {
             case TOP_N:
@@ -205,7 +206,7 @@ public class SqlConverter implements SqlBackedClient {
         }
         LOG.debug("Fetched {} rows.", rows);
 
-        return new SqlResultSetProcessor(druidQuery, columnNames, sqlResults, JSON_WRITER);
+        return new SqlResultSetProcessor(druidQuery, columnNames, sqlResults, jsonWriter);
     }
 
     /**

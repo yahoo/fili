@@ -8,6 +8,7 @@ import java.util.Locale;
  * Response format type.
  */
 public enum ResponseFormatType {
+    SQL,
     JSON,
     CSV,
     DEBUG,
