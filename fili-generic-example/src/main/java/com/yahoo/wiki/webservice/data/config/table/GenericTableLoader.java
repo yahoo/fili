@@ -5,6 +5,7 @@ package com.yahoo.wiki.webservice.data.config.table;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
+import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.data.config.names.FieldName;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.config.table.BaseTableLoader;
@@ -15,6 +16,7 @@ import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.data.time.ZonelessTimeGrain;
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
+import com.yahoo.bard.webservice.metadata.DataSourceMetadata;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration;
@@ -25,9 +27,10 @@ import com.yahoo.wiki.webservice.data.config.metric.FiliApiMetricName;
 import org.joda.time.DateTimeZone;
 
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -38,12 +41,12 @@ import javax.validation.constraints.NotNull;
  * Load the table configuration for any druid setup.
  */
 public class GenericTableLoader extends BaseTableLoader {
-    private Set<Granularity> validGrains = new HashSet<>();
+    private final Map<String, Set<Granularity>> dataSourceToValidGrains = new HashMap<>();
     // Set up the metrics
-    private Set<FieldName> druidMetricNames = new HashSet<>();
-    private Set<ApiMetricName> apiMetricNames = new HashSet<>();
+    private final Map<String, Set<FieldName>> dataSourceToDruidMetricNames = new HashMap<>();
+    private final Map<String, Set<ApiMetricName>> dataSourceToApiMetricNames = new HashMap<>();
     // Set up the table definitions
-    private Set<PhysicalTableDefinition> tableDefinitions = new HashSet<>();
+    private final Map<String, Set<PhysicalTableDefinition>> dataSourceToTableDefinitions = new HashMap<>();
     private final Supplier<List<? extends DataSourceConfiguration>> configLoader;
 
     /**
@@ -60,34 +63,59 @@ public class GenericTableLoader extends BaseTableLoader {
     ) {
         super(metadataService);
         this.configLoader = configLoader;
-        configureTables(genericDimensionConfigs);
+        configureTables(genericDimensionConfigs, metadataService);
     }
 
     /**
      * Set up the tables for this table loader.
      *
      * @param genericDimensionConfigs  The dimensions to load into test tables.
+     * @param metadataService  The metadata service to plays the datasources in.
      */
-    private void configureTables(GenericDimensionConfigs genericDimensionConfigs) {
+    private void configureTables(
+            GenericDimensionConfigs genericDimensionConfigs,
+            DataSourceMetadataService metadataService
+    ) {
         configLoader.get().forEach(dataSourceConfiguration -> {
 
-            druidMetricNames = dataSourceConfiguration.getMetrics()
-                    .stream()
-                    .map(DruidMetricName::new)
-                    .collect(Collectors.toSet());
-
-            tableDefinitions = getPhysicalTableDefinitions(
-                    dataSourceConfiguration,
-                    dataSourceConfiguration.getValidTimeGrain(),
-                    genericDimensionConfigs.getAllDimensionConfigurations()
+            metadataService.update(
+                    DataSourceName.of(dataSourceConfiguration.getName()),
+                    new DataSourceMetadata(
+                            dataSourceConfiguration.getName(),
+                            Collections.emptyMap(),
+                            Collections.emptyList()
+                    )
             );
 
-            apiMetricNames = dataSourceConfiguration.getMetrics()
-                    .stream()
-                    .map(metricName -> new FiliApiMetricName(metricName, dataSourceConfiguration.getValidTimeGrain()))
-                    .collect(Collectors.toSet());
+            dataSourceToDruidMetricNames.put(
+                    dataSourceConfiguration.getName(),
+                    dataSourceConfiguration.getMetrics()
+                            .stream()
+                            .map(DruidMetricName::new)
+                            .collect(Collectors.toSet())
+            );
 
-            validGrains = getGranularities(dataSourceConfiguration);
+            dataSourceToTableDefinitions.put(
+                    dataSourceConfiguration.getName(),
+                    getPhysicalTableDefinitions(
+                            dataSourceConfiguration,
+                            dataSourceConfiguration.getValidTimeGrain(),
+                            genericDimensionConfigs.getDimensionConfigs(dataSourceConfiguration)
+                    )
+            );
+
+            dataSourceToApiMetricNames.put(
+                    dataSourceConfiguration.getName(),
+                    dataSourceConfiguration.getMetrics()
+                            .stream()
+                            .map(metricName -> new FiliApiMetricName(
+                                    metricName,
+                                    dataSourceConfiguration.getValidTimeGrain()
+                            ))
+                            .collect(Collectors.toSet())
+            );
+
+            dataSourceToValidGrains.put(dataSourceConfiguration.getName(), getGranularities(dataSourceConfiguration));
         });
 
     }
@@ -129,7 +157,7 @@ public class GenericTableLoader extends BaseTableLoader {
                         new ConcretePhysicalTableDefinition(
                                 dataSourceConfiguration.getTableName(),
                                 zonedTimeGrain,
-                                druidMetricNames,
+                                dataSourceToDruidMetricNames.get(dataSourceConfiguration.getName()),
                                 dimsBasefactDruidTable
                         )
                 )
@@ -145,19 +173,22 @@ public class GenericTableLoader extends BaseTableLoader {
     public void loadTableDictionary(ResourceDictionaries dictionaries) {
         configLoader.get()
                 .forEach(table -> {
-                    Set<TableName> currentTableGroupTableNames = tableDefinitions.stream()
+                    Set<TableName> currentTableGroupTableNames = dataSourceToTableDefinitions.get(table.getName())
+                            .stream()
                             .map(PhysicalTableDefinition::getName)
                             .collect(Collectors.toSet());
+
                     TableGroup tableGroup = buildDimensionSpanningTableGroup(
                             currentTableGroupTableNames,
-                            tableDefinitions,
+                            dataSourceToTableDefinitions.get(table.getName()),
                             dictionaries,
-                            apiMetricNames
+                            dataSourceToApiMetricNames.get(table.getName())
                     );
+
                     loadLogicalTableWithGranularities(
                             table.getTableName().asName(),
                             tableGroup,
-                            validGrains,
+                            dataSourceToValidGrains.get(table.getName()),
                             dictionaries
                     );
                 });

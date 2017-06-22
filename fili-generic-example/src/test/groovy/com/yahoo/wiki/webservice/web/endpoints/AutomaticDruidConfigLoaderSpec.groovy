@@ -5,7 +5,6 @@ import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService
 import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration
 import com.yahoo.wiki.webservice.data.config.auto.DruidNavigator
 import com.yahoo.wiki.webservice.data.config.auto.TableConfig
-
 import spock.lang.Specification
 
 public class AutomaticDruidConfigLoaderSpec extends Specification {
@@ -53,7 +52,6 @@ public class AutomaticDruidConfigLoaderSpec extends Specification {
             } else if (druidWebService.lastUrl == '/datasources/' + datasource + "/?full") {
                 return expectedMetricsAndDimensions
             }
-            return "Unexpected URL"
         }
     }
 

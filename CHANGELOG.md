@@ -500,6 +500,10 @@ Removals:
 
 ### Fixed:
 
+- [Fix the generic example for loading multiple tables](https://github.com/yahoo/fili/pull/309)
+    * Loading multiple tables caused it to hang and eventually time out.
+    * Also fixed issue causing all tables to show the same set of dimensions.
+
 - [Support for Lucene 5 indexes restored](https://github.com/yahoo/fili/pull/265)
     * Added `lucene-backward-codecs.jar` as a dependency to restore support for indexes built on earlier instances.
 

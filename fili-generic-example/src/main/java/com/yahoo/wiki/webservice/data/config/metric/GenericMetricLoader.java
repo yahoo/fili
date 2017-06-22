@@ -40,7 +40,7 @@ public class GenericMetricLoader implements MetricLoader {
     }
 
     /**
-     * (Re)Initialize the metric makers with the given metric dictionary.
+     * Initialize the metric makers with the given metric dictionary.
      *
      * @param metricDictionary  Metric dictionary to use for generating the metric makers.
      */
