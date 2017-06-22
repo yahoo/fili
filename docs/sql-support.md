@@ -3,17 +3,18 @@ Fili has initial support for using a sql database as the backend instead of drui
 note that there are some restrictions since Fili is optimized for Druid.
 
 ## Setup
-- Set your database schema
-    - `bard_database_schema = public` 
-        
-        NOTE: this is fine unless you did `create schema "name"; set schema "name";`
-        (i.e. `SELECT * FROM "SCHEM_NAME"."TABLE_NAME";`)
-    
 - Set your database url
-    - `bard__database_url = jdbc:h2:mem:dbName`
+    - `bard__database_url = jdbc:h2:mem:test`
     
 - Set your database driver (TODO make sure to include maven repo if needed)
     - `bard_database_driver = org.h2.Driver`
+    
+- Set your database schema (default is PUBLIC)
+    - `bard_database_schema =` 
+        
+        NOTE: this is fine unless you did `create schema "name"; set schema "name";`
+        (i.e. `SELECT * FROM "SCHEM_NAME"."TABLE_NAME";`)
+        
 - Set your username/password
     - `bard__database_username = `
     - `bard__database_password = `

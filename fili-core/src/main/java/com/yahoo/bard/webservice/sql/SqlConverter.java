@@ -26,11 +26,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
+import org.apache.calcite.adapter.jdbc.JdbcSchema;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.rel2sql.RelToSqlConverter;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlSelect;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.pretty.SqlPrettyWriter;
 import org.apache.calcite.tools.RelBuilder;
 import org.joda.time.Interval;
@@ -65,7 +67,6 @@ public class SqlConverter implements SqlBackedClient {
     private final CalciteHelper calciteHelper;
     private final RelToSqlConverter relToSql;
     private final SqlPrettyWriter sqlWriter;
-    private final Connection connection;
 
 
     /**
@@ -78,21 +79,31 @@ public class SqlConverter implements SqlBackedClient {
      * @throws SQLException if can't read from database.
      */
     public SqlConverter(DataSource dataSource, ObjectMapper objectMapper) throws SQLException {
-        this(dataSource, objectMapper, null, null, CalciteHelper.DEFAULT_SCHEMA);
+        calciteHelper = new CalciteHelper(dataSource, CalciteHelper.DEFAULT_SCHEMA);
+        relToSql = calciteHelper.getNewRelToSqlConverter();
+        sqlWriter = calciteHelper.getNewSqlWriter();
+        jsonWriter = objectMapper;
     }
 
     /**
      * Creates a sql converter using the given database and datasource.
      *
-     * @param dataSource  The dataSource for the jdbc schema.
      * @param schemaName  The name of the schema used for the database.
      *
      * @throws SQLException if can't read from database.
      */
-    public SqlConverter(DataSource dataSource, ObjectMapper objectMapper, String username, String password, String schemaName)
+    public SqlConverter(
+            ObjectMapper objectMapper,
+            String url,
+            String driver,
+            String username,
+            String password,
+            String schemaName
+    )
             throws SQLException {
-        calciteHelper = new CalciteHelper(dataSource, username, password, schemaName);
-        connection = calciteHelper.getConnection();
+        DataSource dataSource = JdbcSchema.dataSource(url, driver, username, password);
+
+        calciteHelper = new CalciteHelper(dataSource, schemaName);
         relToSql = calciteHelper.getNewRelToSqlConverter();
         sqlWriter = calciteHelper.getNewSqlWriter();
         jsonWriter = objectMapper;
@@ -156,7 +167,8 @@ public class SqlConverter implements SqlBackedClient {
 
         LOG.debug("Executing \n{}", sqlQuery);
         SqlResultSetProcessor resultSetProcessor;
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
+        try (Connection connection = calciteHelper.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
              ResultSet resultSet = preparedStatement.executeQuery()) {
             resultSetProcessor = readSqlResultSet(druidQuery, resultSet);
         } catch (SQLException e) {
@@ -222,7 +234,10 @@ public class SqlConverter implements SqlBackedClient {
     private String buildSqlQuery(Connection connection, DruidAggregationQuery<?> druidQuery)
             throws SQLException {
         String sqlTableName = druidQuery.getDataSource().getPhysicalTable().getName();
-        String timestampColumn = DatabaseHelper.getTimestampColumn(connection, calciteHelper.escape(sqlTableName));
+        String timestampColumn = DatabaseHelper.getTimestampColumn(
+                connection,
+                calciteHelper.escapeTableName(sqlTableName)
+        );
 
         RelBuilder builder = calciteHelper.getNewRelBuilder();
         LOG.debug("Querying Table '{}'", sqlTableName);
@@ -244,7 +259,7 @@ public class SqlConverter implements SqlBackedClient {
                                     )
                             )
                             .aggregate(
-                                    builder.groupKey(
+                                    localBuilder.groupKey(
                                             getAllGroupByColumns(localBuilder, druidQuery, timestampColumn)
                                     ),
                                     getAllQueryAggregations(localBuilder, druidQuery)
@@ -283,10 +298,17 @@ public class SqlConverter implements SqlBackedClient {
 
     private static Collection<RexNode> getSort(RelBuilder builder, DruidAggregationQuery<?> druidQuery) {
         // todo this should be asc/desc based on the query
+        // druid does NULLS FIRST. SEE below
+        // http://localhost:9998/v1/data/wikiticker/day/metroCode/cityName/?metrics=added&dateTime=2015-09-12/2015-09-13&format=sql
+        // http://localhost:9998/v1/data/wikiticker/day/metroCode/cityName/?metrics=added&dateTime=2015-09-12/2015-09-13
         if (druidQuery.getQueryType().equals(DefaultQueryType.TOP_N)) {
             TopNQuery topNQuery = (TopNQuery) druidQuery;
+
             return Collections.singletonList(
-                    builder.desc(builder.field(ALIAS_MAKER.apply(topNQuery.getMetric().getMetric().toString())))
+                    builder.call(
+                            SqlStdOperatorTable.NULLS_FIRST,
+                            builder.desc(builder.field(ALIAS_MAKER.apply(topNQuery.getMetric().getMetric().toString())))
+                    )
             );
         } else {
             List<RexNode> sorts = new ArrayList<>();
@@ -294,7 +316,9 @@ public class SqlConverter implements SqlBackedClient {
                     .size() + TimeConverter.getNumberOfGroupByFunctions(druidQuery.getGranularity());
             sorts.addAll(builder.fields().subList(druidQuery.getDimensions().size(), groupBys));
             sorts.addAll(builder.fields().subList(0, druidQuery.getDimensions().size()));
-            return sorts;
+            return sorts.stream()
+                    .map(sort -> builder.call(SqlStdOperatorTable.NULLS_FIRST, sort))
+                    .collect(Collectors.toList());
         }
     }
 
