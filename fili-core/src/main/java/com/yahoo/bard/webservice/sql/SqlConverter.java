@@ -9,6 +9,8 @@ import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.having.Having;
+import com.yahoo.bard.webservice.druid.model.orderby.LimitSpec;
+import com.yahoo.bard.webservice.druid.model.orderby.SortDirection;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery;
@@ -19,6 +21,7 @@ import com.yahoo.bard.webservice.sql.helper.CalciteHelper;
 import com.yahoo.bard.webservice.sql.helper.DatabaseHelper;
 import com.yahoo.bard.webservice.sql.helper.SqlAggregationType;
 import com.yahoo.bard.webservice.sql.helper.TimeConverter;
+import com.yahoo.bard.webservice.util.CompletedFuture;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -49,6 +52,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
@@ -67,7 +71,6 @@ public class SqlConverter implements SqlBackedClient {
     private final CalciteHelper calciteHelper;
     private final RelToSqlConverter relToSql;
     private final SqlPrettyWriter sqlWriter;
-
 
     /**
      * Creates a sql converter using the given database and datasource.
@@ -99,8 +102,7 @@ public class SqlConverter implements SqlBackedClient {
             String username,
             String password,
             String schemaName
-    )
-            throws SQLException {
+    ) throws SQLException {
         DataSource dataSource = JdbcSchema.dataSource(url, driver, username, password);
 
         calciteHelper = new CalciteHelper(dataSource, schemaName);
@@ -142,8 +144,9 @@ public class SqlConverter implements SqlBackedClient {
                 return responseFuture;
             default:
                 String message = "Unable to process " + queryType.toString();
-                throw new UnsupportedOperationException(message);
+                failureCallback.invoke(new UnsupportedOperationException(message));
         }
+        return new CompletedFuture<>(null, null);
     }
 
 
@@ -207,16 +210,14 @@ public class SqlConverter implements SqlBackedClient {
             columnNames.put(i - 1, columnName);
         }
 
-        int rows = 0;
         while (resultSet.next()) {
             String[] row = new String[columnCount];
             for (int i = 1; i <= columnCount; i++) {
                 row[i - 1] = resultSet.getString(i);
             }
             sqlResults.add(row);
-            ++rows;
         }
-        LOG.debug("Fetched {} rows.", rows);
+        LOG.debug("Fetched {} rows.", sqlResults.size());
 
         return new SqlResultSetProcessor(druidQuery, columnNames, sqlResults, jsonWriter);
     }
@@ -314,6 +315,22 @@ public class SqlConverter implements SqlBackedClient {
             List<RexNode> sorts = new ArrayList<>();
             int groupBys = druidQuery.getDimensions()
                     .size() + TimeConverter.getNumberOfGroupByFunctions(druidQuery.getGranularity());
+            if (druidQuery.getQueryType().equals(DefaultQueryType.GROUP_BY)) {
+                GroupByQuery groupByQuery = (GroupByQuery) druidQuery;
+                LimitSpec limitSpec = groupByQuery.getLimitSpec();
+                if (limitSpec != null) {
+                    limitSpec.getColumns()
+                            .stream()
+                            .map(orderByColumn -> {
+                                RexNode sort = builder.field(ALIAS_MAKER.apply(orderByColumn.getDimension()));
+                                if (orderByColumn.getDirection().equals(SortDirection.DESC)) {
+                                    sort = builder.desc(sort);
+                                }
+                                return builder.call(SqlStdOperatorTable.NULLS_FIRST, sort);
+                            })
+                            .forEach(sorts::add);
+                }
+            }
             sorts.addAll(builder.fields().subList(druidQuery.getDimensions().size(), groupBys));
             sorts.addAll(builder.fields().subList(0, druidQuery.getDimensions().size()));
             return sorts.stream()
@@ -323,10 +340,16 @@ public class SqlConverter implements SqlBackedClient {
     }
 
     private static int getThreshold(DruidAggregationQuery<?> druidQuery) {
+        int noLimit = -1;
         if (druidQuery.getQueryType().equals(DefaultQueryType.TOP_N)) {
             return (int) ((TopNQuery) druidQuery).getThreshold();
+        } else if (druidQuery.getQueryType().equals(DefaultQueryType.GROUP_BY)) {
+            LimitSpec limitSpec = ((GroupByQuery) druidQuery).getLimitSpec();
+            if (limitSpec != null && limitSpec.getLimit().isPresent()) {
+                return limitSpec.getLimit().getAsInt();
+            }
         }
-        return -1;
+        return noLimit;
     }
 
     /**

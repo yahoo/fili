@@ -57,7 +57,15 @@ public class SqlResultSetProcessor {
 
             jsonWriter.writeStartArray();
             for (String[] row : sqlResults) {
+                jsonWriter.writeStartObject();
+                DateTime timestamp = TimeConverter.parseDateTime(groupByCount, row, druidQuery.getGranularity());
+                jsonWriter.writeStringField("timestamp", timestamp.toDateTime(DateTimeZone.UTC).toString());
+                jsonWriter.writeObjectFieldStart("event");
+
                 processRow(resultTypeMapper, jsonWriter, row);
+
+                jsonWriter.writeEndObject();
+                jsonWriter.writeEndObject();
             }
             jsonWriter.writeEndArray();
 
@@ -68,16 +76,11 @@ public class SqlResultSetProcessor {
 
     }
 
-    private DateTime processRow(
+    private void processRow(
             Map<String, Function<String, Number>> resultTypeMapper,
             JsonGenerator jsonWriter,
             String[] row
     ) throws IOException {
-        DateTime timestamp = TimeConverter.parseDateTime(groupByCount, row, druidQuery.getGranularity());
-        jsonWriter.writeStartObject();
-        jsonWriter.writeStringField("timestamp", timestamp.toDateTime(DateTimeZone.UTC).toString());
-        jsonWriter.writeObjectFieldStart("event");
-
         int lastTimeIndex = TimeConverter.getNumberOfGroupByFunctions(druidQuery.getGranularity());
         for (int i = 0; i < columnCount; i++) {
             if (groupByCount <= i && i < groupByCount + lastTimeIndex) {
@@ -106,11 +109,6 @@ public class SqlResultSetProcessor {
             );
             jsonWriter.writeNumberField(postAggregation.getName(), postAggResult);
         }
-
-        jsonWriter.writeEndObject();
-        jsonWriter.writeEndObject();
-
-        return timestamp;
     }
 
     /**
