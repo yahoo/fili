@@ -1,14 +1,12 @@
 // Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.sql.helper;
+package com.yahoo.bard.webservice.sql.helper
 
-import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
-import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation;
-import com.yahoo.bard.webservice.druid.model.postaggregation.ConstantPostAggregation;
-import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation;
-import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
-
-import java.util.Arrays;
+import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
+import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation
+import com.yahoo.bard.webservice.druid.model.postaggregation.ConstantPostAggregation
+import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation
+import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
 
 public class PostAggregator {
 

@@ -9,8 +9,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.calcite.adapter.jdbc.JdbcSchema;
 import org.apache.commons.io.FileUtils;
 
-import java.io.File;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -18,6 +21,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
@@ -93,10 +97,14 @@ public class Database {
                 ")"
         );
 
-        String sqlInsert = "INSERT INTO \"" + WIKITICKER + "\" (\"" + ID + "\", \"" + COMMENT + "\", \"" + COUNTRY_ISO_CODE + "\", \""
-                + ADDED + "\", \"" + TIME + "\", \"" + IS_NEW + "\", \"" + IS_ROBOT + "\", \"" + DELETED + "\", \"" + METRO_CODE + "\", \"" +
-                IS_UNPATROLLED + "\", \"" + NAMESPACE + "\", \"" + PAGE + "\", \"" + COUNTRY_NAME + "\", \"" + CITY_NAME + "\", \"" +
-                IS_MINOR + "\", \"" + USER + "\", \"" + DELTA + "\", \"" + IS_ANONYMOUS + "\", \"" + REGION_ISO_CODE + "\", \"" + CHANNEL
+        String sqlInsert = "INSERT INTO \"" + WIKITICKER + "\" (\"" + ID + "\", \"" + COMMENT + "\", \"" +
+                COUNTRY_ISO_CODE + "\", \""
+                + ADDED + "\", \"" + TIME + "\", \"" + IS_NEW + "\", \"" + IS_ROBOT + "\", \"" + DELETED + "\", \"" +
+                METRO_CODE + "\", \"" +
+                IS_UNPATROLLED + "\", \"" + NAMESPACE + "\", \"" + PAGE + "\", \"" + COUNTRY_NAME + "\", \"" +
+                CITY_NAME + "\", \"" +
+                IS_MINOR + "\", \"" + USER + "\", \"" + DELTA + "\", \"" + IS_ANONYMOUS + "\", \"" + REGION_ISO_CODE
+                + "\", \"" + CHANNEL
                 + "\", \"" + REGION_NAME + "\") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         int i = 0;
@@ -143,15 +151,20 @@ public class Database {
      * @throws IOException if can't read file.
      */
     public static List<WikitickerEntry> readJsonFile() throws IOException {
-        File file = new File(Database.class.getClassLoader().getResource(WIKITICKER_JSON_DATA).getFile());
-
-        String json = FileUtils.readFileToString(file);
         List<WikitickerEntry> entries = new ArrayList<>();
-        ObjectMapper objectMapper = new ObjectMapper();
-        for (String line : json.split(System.lineSeparator())) {
-            WikitickerEntry entry = objectMapper.readValue(line, WikitickerEntry.class);
-            entries.add(entry);
+        try (InputStream wikiData = Database.class.getClassLoader().getResourceAsStream(WIKITICKER_JSON_DATA)) {
+            List<String> wikiDataLines =
+                    new BufferedReader(new InputStreamReader(
+                            wikiData,
+                            StandardCharsets.UTF_8
+                    )).lines().collect(Collectors.toList());
+            ObjectMapper objectMapper = new ObjectMapper();
+            for (String line : wikiDataLines) {
+                WikitickerEntry entry = objectMapper.readValue(line, WikitickerEntry.class);
+                entries.add(entry);
+            }
         }
+
         return entries;
     }
 
