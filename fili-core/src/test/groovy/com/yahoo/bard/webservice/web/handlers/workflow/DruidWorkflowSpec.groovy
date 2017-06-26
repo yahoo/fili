@@ -63,7 +63,12 @@ class DruidWorkflowSpec extends Specification {
     SystemConfig systemConfig
     String uncoveredKey
 
+    String queryResponseCachingStrategy
+
     def setup() {
+        // store config value
+        queryResponseCachingStrategy = SYSTEM_CONFIG.getStringProperty(ETAG_CACHE_CONFIG_KEY, "NoCache")
+
         splittingStatus = QUERY_SPLIT.isOn()
         systemConfig = SystemConfigProvider.getInstance()
         uncoveredKey = SYSTEM_CONFIG.getPackageVariableName("druid_uncovered_interval_limit")
@@ -74,6 +79,9 @@ class DruidWorkflowSpec extends Specification {
         SYSTEM_CONFIG.clearProperty(LOCAL_SIGNATURE_CACHE_CONFIG_KEY)
         SYSTEM_CONFIG.clearProperty(ETAG_CACHE_CONFIG_KEY)
         QUERY_SPLIT.setOn(splittingStatus)
+
+        // restore config value
+        SYSTEM_CONFIG.setProperty(ETAG_CACHE_CONFIG_KEY, queryResponseCachingStrategy)
     }
 
     def "Test workflow config controls workflow stages"() {
