@@ -32,6 +32,7 @@ import com.yahoo.bard.webservice.metadata.DataSourceMetadata
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.ConstrainedTable
+import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 import com.yahoo.bard.webservice.table.StrictPhysicalTable
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
 import com.yahoo.bard.webservice.util.Utils
@@ -120,7 +121,8 @@ class SimpleDruidQueryBuilder {
         )
     }
 
-    public static DataSource dataSource(String name, List<String> metrics, List<String> dimensions) {
+    public static TableDataSource dataSource(String name, List<String> metrics, List<String> dimensions) {
+
         ZonedTimeGrain zonedTimeGrain = new ZonedTimeGrain(DefaultTimeGrain.DAY, DateTimeZone.UTC);
         Set<Column> columns = setOf();
         Map<String, String> logicalToPhysicalColumnNames = Collections.emptyMap();
@@ -133,15 +135,17 @@ class SimpleDruidQueryBuilder {
 
         Collection<String> metricsAndDimensions = new ArrayList<>(metrics);
         metricsAndDimensions.addAll(dimensions);
+        def strictPhysicalTable = new StrictPhysicalTable(
+                TableName.of(name),
+                zonedTimeGrain,
+                columns,
+                logicalToPhysicalColumnNames,
+                metadataService
+        )
+
         return new TableDataSource(
                 new ConstrainedTable(
-                        new StrictPhysicalTable(
-                                TableName.of(name),
-                                zonedTimeGrain,
-                                columns,
-                                logicalToPhysicalColumnNames,
-                                metadataService
-                        ),
+                        strictPhysicalTable,
                         new DataSourceConstraint(
                                 setOf(), // create dimensions to test grouping those
                                 setOf(getDimensions(dimensions)),
@@ -172,7 +176,7 @@ class SimpleDruidQueryBuilder {
                         { dimension },
                         dimension,
                         "",
-                        dimension,
+                        "longName_" + dimension,
                         "General",
                         Utils.asLinkedHashSet(DefaultDimensionField.ID),
                         MapStoreManager.getInstance(dimension),

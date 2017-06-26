@@ -332,7 +332,7 @@ public class SqlConverter implements SqlBackedClient {
                 sorts.add(builder.field(ALIAS_MAKER.apply(metricName)));
             } else {
                 String metricName = topNMetricValue.toString();
-                sorts.add(builder.desc(builder.field(ALIAS_MAKER.apply(metricName))));
+                sorts.add(builder.desc(builder.field(ALIAS_MAKER.unApply(metricName))));
             }
             sorts.add(builder.field(topNQuery.getDimension().getApiName()));
         } else {
@@ -346,7 +346,7 @@ public class SqlConverter implements SqlBackedClient {
                     limitSpec.getColumns()
                             .stream()
                             .map(orderByColumn -> {
-                                RexNode sort = builder.field(ALIAS_MAKER.apply(orderByColumn.getDimension()));
+                                RexNode sort = builder.field(ALIAS_MAKER.unApply(orderByColumn.getDimension()));
                                 if (orderByColumn.getDirection().equals(SortDirection.DESC)) {
                                     sort = builder.desc(sort);
                                 }

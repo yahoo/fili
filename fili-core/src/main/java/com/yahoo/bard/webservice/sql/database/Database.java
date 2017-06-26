@@ -7,7 +7,6 @@ import com.yahoo.bard.webservice.sql.helper.TimestampUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.calcite.adapter.jdbc.JdbcSchema;
-import org.apache.commons.io.FileUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;

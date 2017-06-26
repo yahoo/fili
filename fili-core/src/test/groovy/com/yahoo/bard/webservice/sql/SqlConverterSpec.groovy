@@ -52,6 +52,7 @@ import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery
 import com.yahoo.bard.webservice.druid.model.query.TopNQuery
 import com.yahoo.bard.webservice.sql.database.Database
 import com.yahoo.bard.webservice.table.Column
+import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -72,8 +73,9 @@ class SqlConverterSpec extends Specification {
 
     ResultSet parse(JsonNode jsonNode, AbstractDruidAggregationQuery<?> druidQuery) {
         List<Column> columns = new ArrayList<>()
-        druidQuery.dataSource.physicalTable.constraint.metricNames.forEach { columns.add(new MetricColumn(it)) }
-        druidQuery.dataSource.physicalTable.constraint.allDimensionNames.forEach { columns.add(new DimensionColumn(getDimension(it))) }
+        def constraint = druidQuery.dataSource.physicalTable.constraint
+        constraint.metricNames.forEach { columns.add(new MetricColumn(it)) }
+        constraint.allDimensionNames.forEach { columns.add(new DimensionColumn(getDimension(it))) }
 
         ResultSetSchema resultSetSchema = new ResultSetSchema(druidQuery.granularity, columns)
         return RESPONSE_PARSER.parse(
@@ -156,7 +158,7 @@ class SqlConverterSpec extends Specification {
     def "ExecuteQuery for #timeGrain want #size filter on #filter"() {
         expect:
         DruidQuery druidQuery = getTimeSeriesQuery(timeGrain, filter)
-        JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery, request, null, null).get();
+        JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery, null, null).get();
         ResultSet parse = parse(jsonNode, druidQuery)
 
         parse.size() == size
@@ -180,7 +182,7 @@ class SqlConverterSpec extends Specification {
     def "Test timeseries on /#timeGrain/"() {
         setup:
         DruidQuery druidQuery = getBasicTimeseriesQuery(timeGrain)
-        JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery, request, null, null).get();
+        JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery, null, null).get();
         ResultSet parse = parse(jsonNode, druidQuery)
 
         expect:
@@ -201,7 +203,7 @@ class SqlConverterSpec extends Specification {
     def "Test timeseries on /#timeGrain/ with #filter"() {
         setup:
         DruidQuery druidQuery = getTimeSeriesQuery(timeGrain, filter)
-        JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery, request, null, null).get();
+        JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery, null, null).get();
 
         expect:
         parse(jsonNode, druidQuery)
@@ -221,7 +223,7 @@ class SqlConverterSpec extends Specification {
     def "Test groupBy on /#timeGrain/#dims/"() {
         setup:
         DruidQuery druidQuery = getGroupByQuery(timeGrain, filter, having, dims)
-        JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery, request, null, null).get();
+        JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery, null, null).get();
 
         expect:
         ResultSet parse = parse(jsonNode, druidQuery)
@@ -244,7 +246,7 @@ class SqlConverterSpec extends Specification {
     def "Test topN on /#timeGrain/#dimension/?metrics=#metric&topN=#threshold"() {
         setup:
         DruidQuery druidQuery = getTopNQuery(timeGrain, filter, metric, dimension, threshold)
-        JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery, request, null, null).get();
+        JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery, null, null).get();
 
         expect:
         ResultSet parse = parse(jsonNode, druidQuery)

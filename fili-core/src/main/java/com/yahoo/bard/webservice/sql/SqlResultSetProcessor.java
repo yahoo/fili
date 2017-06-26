@@ -91,11 +91,8 @@ public class SqlResultSetProcessor {
                 Number result = resultTypeMapper
                         .get(columnName)
                         .apply(row[i]);
-                if (result instanceof Long) {
-                    jsonWriter.writeNumberField(columnName, (long) result);
-                } else {
-                    jsonWriter.writeNumberField(columnName, (double) result);
-                }
+
+                writeNumberField(jsonWriter, columnName, result);
             } else {
                 jsonWriter.writeStringField(columnName, row[i]);
             }
@@ -103,11 +100,19 @@ public class SqlResultSetProcessor {
         }
 
         for (PostAggregation postAggregation : druidQuery.getPostAggregations()) {
-            Double postAggResult = PostAggregationEvaluator.evaluate(
+            Number postAggResult = PostAggregationEvaluator.calculate(
                     postAggregation,
                     (String columnName) -> row[columnToColumnName.inverse().get(columnName)]
             );
-            jsonWriter.writeNumberField(postAggregation.getName(), postAggResult);
+            writeNumberField(jsonWriter, postAggregation.getName(), postAggResult);
+        }
+    }
+
+    private void writeNumberField(JsonGenerator jsonWriter, String name, Number number) throws IOException {
+        if (number instanceof Double) {
+            jsonWriter.writeNumberField(name, (Double) number);
+        } else if (number instanceof Long) {
+            jsonWriter.writeNumberField(name, (Long) number);
         }
     }
 
