@@ -29,6 +29,7 @@ import static com.yahoo.bard.webservice.sql.helper.Havings.lt
 import static com.yahoo.bard.webservice.sql.helper.Intervals.interval
 import static com.yahoo.bard.webservice.sql.helper.SimpleDruidQueryBuilder.END
 import static com.yahoo.bard.webservice.sql.helper.SimpleDruidQueryBuilder.START
+import static com.yahoo.bard.webservice.sql.helper.SimpleDruidQueryBuilder.getDictionary
 import static com.yahoo.bard.webservice.sql.helper.SimpleDruidQueryBuilder.getDimension
 import static com.yahoo.bard.webservice.sql.helper.SimpleDruidQueryBuilder.getDimensions
 import static com.yahoo.bard.webservice.sql.helper.SimpleDruidQueryBuilder.groupByQuery
@@ -52,7 +53,6 @@ import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery
 import com.yahoo.bard.webservice.druid.model.query.TopNQuery
 import com.yahoo.bard.webservice.sql.database.Database
 import com.yahoo.bard.webservice.table.Column
-import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -63,13 +63,13 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 class SqlConverterSpec extends Specification {
-    private static final SqlBackedClient sqlBackedClient = new SqlConverter(Database.getDataSource(), new ObjectMapper())
+    private static SqlBackedClient sqlBackedClient = new SqlConverter(getDictionary(), Database.getDataSource(), new ObjectMapper())
     private static final String TRUE = "TRUE"
     private static final String FALSE = "FALSE"
     private static final String FIRST_COMMENT = "added project"
     //this is the first result in the database
     private static final String UNIQUE_COMMENT = "took out (then), added quotation marks"
-    private static final DruidResponseParser RESPONSE_PARSER = new DruidResponseParser();
+    private static final DruidResponseParser RESPONSE_PARSER = new DruidResponseParser()
 
     ResultSet parse(JsonNode jsonNode, AbstractDruidAggregationQuery<?> druidQuery) {
         List<Column> columns = new ArrayList<>()

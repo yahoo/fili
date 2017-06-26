@@ -11,11 +11,7 @@ import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter
 
 class Filters {
     public static SearchFilter search(String dimension) {
-        return new SearchFilter(
-                SimpleDruidQueryBuilder.getDimension(dimension),
-                SearchFilter.QueryType.Contains,
-                ""
-        )
+        return search(dimension, "")
     }
 
     public static SearchFilter search(String dimension, String search) {

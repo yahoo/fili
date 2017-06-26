@@ -34,17 +34,20 @@ public class SqlResultSetProcessor {
     private final ObjectMapper objectMapper;
     private final int columnCount;
     private final int groupByCount;
+    private final AliasMaker aliasMaker;
 
     public SqlResultSetProcessor(
             DruidAggregationQuery<?> druidQuery,
             BiMap<Integer, String> columnToColumnName,
             List<String[]> sqlResults,
-            ObjectMapper objectMapper
+            ObjectMapper objectMapper,
+            AliasMaker aliasMaker
     ) {
         this.druidQuery = druidQuery;
         this.columnToColumnName = columnToColumnName;
         this.sqlResults = sqlResults;
         this.objectMapper = objectMapper;
+        this.aliasMaker = aliasMaker;
 
         this.groupByCount = druidQuery.getDimensions().size();
         this.columnCount = columnToColumnName.size();
@@ -86,7 +89,7 @@ public class SqlResultSetProcessor {
             if (groupByCount <= i && i < groupByCount + lastTimeIndex) {
                 continue;
             }
-            String columnName = columnToColumnName.get(i);
+            String columnName = aliasMaker.unApply(columnToColumnName.get(i));
             if (resultTypeMapper.containsKey(columnName)) {
                 Number result = resultTypeMapper
                         .get(columnName)
@@ -104,11 +107,11 @@ public class SqlResultSetProcessor {
                     postAggregation,
                     (String columnName) -> row[columnToColumnName.inverse().get(columnName)]
             );
-            writeNumberField(jsonWriter, postAggregation.getName(), postAggResult);
+            writeNumberField(jsonWriter, aliasMaker.unApply(postAggregation.getName()), postAggResult);
         }
     }
 
-    private void writeNumberField(JsonGenerator jsonWriter, String name, Number number) throws IOException {
+    private static void writeNumberField(JsonGenerator jsonWriter, String name, Number number) throws IOException {
         if (number instanceof Double) {
             jsonWriter.writeNumberField(name, (Double) number);
         } else if (number instanceof Long) {

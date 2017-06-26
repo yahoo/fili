@@ -4,7 +4,6 @@ package com.yahoo.bard.webservice.web.handlers;
 
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
-import com.yahoo.bard.webservice.data.metric.mappers.PaginationMapper;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
@@ -14,6 +13,7 @@ import com.yahoo.bard.webservice.sql.SqlBackedClient;
 import com.yahoo.bard.webservice.sql.SqlConverter;
 import com.yahoo.bard.webservice.sql.database.Database;
 import com.yahoo.bard.webservice.sql.helper.CalciteHelper;
+import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.responseprocessors.LoggingContext;
@@ -49,17 +49,25 @@ public class SqlRequestHandler implements DataRequestHandler {
      * @param next Next Handler in the chain
      * @param mapper
      */
-    public SqlRequestHandler(DataRequestHandler next, ObjectMapper mapper) {
+    public SqlRequestHandler(
+            DataRequestHandler next,
+            ObjectMapper mapper,
+            PhysicalTableDictionary physicalTableDictionary
+    ) {
         this.next = next;
-        initializeSqlBackend(mapper);
+        initializeSqlBackend(mapper, physicalTableDictionary);
     }
 
     /**
      * Initializes the connection to the sql backend and prepares
      * the {@link SqlBackedClient} for converting queries.
      * @param mapper
+     * @param physicalTableDictionary
      */
-    private void initializeSqlBackend(ObjectMapper mapper) {
+    private void initializeSqlBackend(
+            ObjectMapper mapper,
+            PhysicalTableDictionary physicalTableDictionary
+    ) {
         String dbUrl = SYSTEM_CONFIG.getStringProperty(DATABASE_URL);
         String driver = SYSTEM_CONFIG.getStringProperty(DATABASE_DRIVER);
         String schema = SYSTEM_CONFIG.getStringProperty(DATABASE_SCHEMA);
@@ -70,9 +78,9 @@ public class SqlRequestHandler implements DataRequestHandler {
         String pass = SYSTEM_CONFIG.getStringProperty(DATABASE_PASSWORD);
         try {
             Database.initializeDatabase();
-            sqlConverter = new SqlConverter(mapper, dbUrl, driver, user, pass, schema);
+            sqlConverter = new SqlConverter(physicalTableDictionary, mapper, dbUrl, driver, user, pass, schema);
         } catch (SQLException | IOException e) {
-            throw new RuntimeException(e);
+            LOG.warn("Failed to initialize Sql backend", e);
         }
     }
 
@@ -84,7 +92,7 @@ public class SqlRequestHandler implements DataRequestHandler {
             ResponseProcessor response
     ) {
         //todo better check for sql query
-        if (request.getFormat().equals(ResponseFormatType.SQL)) {
+        if (sqlConverter != null && request.getFormat().equals(ResponseFormatType.SQL)) {
             LOG.info("Intercepting for sql backend");
             SuccessCallback success = rootNode -> response.processResponse(
                     rootNode,

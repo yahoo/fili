@@ -3,7 +3,26 @@
 package com.yahoo.bard.webservice.sql.helper
 
 import static com.yahoo.bard.webservice.sql.database.Database.ADDED
+import static com.yahoo.bard.webservice.sql.database.Database.CHANNEL
+import static com.yahoo.bard.webservice.sql.database.Database.CITY_NAME
+import static com.yahoo.bard.webservice.sql.database.Database.COMMENT
+import static com.yahoo.bard.webservice.sql.database.Database.COUNTRY_ISO_CODE
+import static com.yahoo.bard.webservice.sql.database.Database.COUNTRY_NAME
 import static com.yahoo.bard.webservice.sql.database.Database.DELETED
+import static com.yahoo.bard.webservice.sql.database.Database.DELTA
+import static com.yahoo.bard.webservice.sql.database.Database.IS_ANONYMOUS
+import static com.yahoo.bard.webservice.sql.database.Database.IS_MINOR
+import static com.yahoo.bard.webservice.sql.database.Database.IS_NEW
+import static com.yahoo.bard.webservice.sql.database.Database.IS_ROBOT
+import static com.yahoo.bard.webservice.sql.database.Database.IS_UNPATROLLED
+import static com.yahoo.bard.webservice.sql.database.Database.METRO_CODE
+import static com.yahoo.bard.webservice.sql.database.Database.NAMESPACE
+import static com.yahoo.bard.webservice.sql.database.Database.PAGE
+import static com.yahoo.bard.webservice.sql.database.Database.REGION_ISO_CODE
+import static com.yahoo.bard.webservice.sql.database.Database.REGION_NAME
+import static com.yahoo.bard.webservice.sql.database.Database.USER
+import static com.yahoo.bard.webservice.sql.database.Database.WIKITICKER
+import static java.util.Arrays.asList
 
 import com.yahoo.bard.webservice.data.config.dimension.DefaultDimensionField
 import com.yahoo.bard.webservice.data.config.dimension.DefaultKeyValueStoreDimensionConfig
@@ -17,7 +36,6 @@ import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleSumAggregation
-import com.yahoo.bard.webservice.druid.model.datasource.DataSource
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
 import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.model.having.Having
@@ -31,6 +49,7 @@ import com.yahoo.bard.webservice.druid.model.query.TopNQuery
 import com.yahoo.bard.webservice.metadata.DataSourceMetadata
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.Column
+import com.yahoo.bard.webservice.table.ConfigPhysicalTable
 import com.yahoo.bard.webservice.table.ConstrainedTable
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 import com.yahoo.bard.webservice.table.StrictPhysicalTable
@@ -49,6 +68,21 @@ class SimpleDruidQueryBuilder {
     private Simple() {
     }
 
+    public static PhysicalTableDictionary getDictionary() {
+        def dataSource = dataSource(
+                WIKITICKER,
+                asList(ADDED, DELETED, DELTA),
+                asList(
+                        COUNTRY_ISO_CODE, IS_NEW, IS_ROBOT, PAGE,
+                        USER, COMMENT, IS_UNPATROLLED, NAMESPACE,
+                        COUNTRY_NAME, CITY_NAME, IS_MINOR, IS_ANONYMOUS,
+                        REGION_ISO_CODE, CHANNEL, REGION_NAME, METRO_CODE
+                )
+        )
+        PhysicalTableDictionary physicalTableDictionary = new PhysicalTableDictionary()
+        physicalTableDictionary.put(WIKITICKER, dataSource.getPhysicalTable().sourceTable as ConfigPhysicalTable)
+        return physicalTableDictionary
+    }
 
     public static TimeSeriesQuery timeSeriesQuery(
             String name,

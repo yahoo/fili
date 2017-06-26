@@ -22,6 +22,7 @@ import com.yahoo.bard.webservice.sql.helper.CalciteHelper;
 import com.yahoo.bard.webservice.sql.helper.DatabaseHelper;
 import com.yahoo.bard.webservice.sql.helper.SqlAggregationType;
 import com.yahoo.bard.webservice.sql.helper.TimeConverter;
+import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 import com.yahoo.bard.webservice.util.CompletedFuture;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 import com.yahoo.bard.webservice.web.DataApiRequest;
@@ -67,9 +68,9 @@ import javax.sql.DataSource;
  */
 public class SqlConverter implements SqlBackedClient {
     private static final Logger LOG = LoggerFactory.getLogger(SqlConverter.class);
-    private static final AliasMaker ALIAS_MAKER = new AliasMaker("__");
     private final ObjectMapper jsonWriter;
     private final CalciteHelper calciteHelper;
+    private final PhysicalTableDictionary physicalTableDictionary;
 
     /**
      * Creates a sql converter using the given database and datasource.
@@ -80,19 +81,26 @@ public class SqlConverter implements SqlBackedClient {
      *
      * @throws SQLException if can't read from database.
      */
-    public SqlConverter(DataSource dataSource, ObjectMapper objectMapper) throws SQLException {
+    public SqlConverter(
+            PhysicalTableDictionary physicalTableDictionary,
+            DataSource dataSource,
+            ObjectMapper objectMapper
+    ) throws SQLException {
         calciteHelper = new CalciteHelper(dataSource, CalciteHelper.DEFAULT_SCHEMA);
         jsonWriter = objectMapper;
+        this.physicalTableDictionary = physicalTableDictionary;
     }
 
     /**
      * Creates a sql converter using the given database and datasource.
      *
+     * @param physicalTableDictionary
      * @param schemaName  The name of the schema used for the database.
      *
      * @throws SQLException if can't read from database.
      */
     public SqlConverter(
+            PhysicalTableDictionary physicalTableDictionary,
             ObjectMapper objectMapper,
             String url,
             String driver,
@@ -104,6 +112,7 @@ public class SqlConverter implements SqlBackedClient {
 
         calciteHelper = new CalciteHelper(dataSource, schemaName);
         jsonWriter = objectMapper;
+        this.physicalTableDictionary = physicalTableDictionary;
     }
 
     @Override
@@ -157,14 +166,17 @@ public class SqlConverter implements SqlBackedClient {
             DruidAggregationQuery<?> druidQuery
     ) {
         String sqlQuery;
+
+        AliasMaker aliasMaker = new AliasMaker(physicalTableDictionary.get(getTableName(druidQuery)).getSchema());
+
         try (Connection connection = calciteHelper.getConnection()) {
-            sqlQuery = buildSqlQuery(connection, druidQuery);
+            sqlQuery = buildSqlQuery(connection, druidQuery, aliasMaker);
             LOG.info("Executing \n{}", sqlQuery);
 
             SqlResultSetProcessor resultSetProcessor;
             try (PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
                  ResultSet resultSet = preparedStatement.executeQuery()) {
-                resultSetProcessor = readSqlResultSet(druidQuery, resultSet);
+                resultSetProcessor = readSqlResultSet(druidQuery, resultSet, aliasMaker);
             } catch (SQLException e) {
                 LOG.warn(
                         "Failed to query table {}",
@@ -190,11 +202,16 @@ public class SqlConverter implements SqlBackedClient {
      * @param druidQuery the druid query to be made.
      * @param resultSet  the result set of the druid query.
      *
+     * @param aliasMaker
      * @return druid-like result from query.
      *
      * @throws SQLException if results can't be readSqlResultSet.
      */
-    private SqlResultSetProcessor readSqlResultSet(DruidAggregationQuery<?> druidQuery, ResultSet resultSet)
+    private SqlResultSetProcessor readSqlResultSet(
+            DruidAggregationQuery<?> druidQuery,
+            ResultSet resultSet,
+            final AliasMaker aliasMaker
+    )
             throws SQLException {
         ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
         int columnCount = resultSetMetaData.getColumnCount();
@@ -202,7 +219,7 @@ public class SqlConverter implements SqlBackedClient {
         BiMap<Integer, String> columnNames = HashBiMap.create(columnCount);
         List<String[]> sqlResults = new ArrayList<>();
         for (int i = 1; i <= columnCount; i++) {
-            String columnName = ALIAS_MAKER.unApply(resultSetMetaData.getColumnName(i));
+            String columnName = aliasMaker.unApply(resultSetMetaData.getColumnName(i));
             columnNames.put(i - 1, columnName);
         }
 
@@ -215,7 +232,7 @@ public class SqlConverter implements SqlBackedClient {
         }
         LOG.debug("Fetched {} rows.", sqlResults.size());
 
-        return new SqlResultSetProcessor(druidQuery, columnNames, sqlResults, jsonWriter);
+        return new SqlResultSetProcessor(druidQuery, columnNames, sqlResults, jsonWriter, aliasMaker);
     }
 
     /**
@@ -230,7 +247,8 @@ public class SqlConverter implements SqlBackedClient {
      */
     private String buildSqlQuery(
             Connection connection,
-            DruidAggregationQuery<?> druidQuery
+            DruidAggregationQuery<?> druidQuery,
+            AliasMaker aliasMaker
     )
             throws SQLException {
         String sqlTableName = druidQuery.getDataSource().getPhysicalTable().getName();
@@ -265,15 +283,15 @@ public class SqlConverter implements SqlBackedClient {
                                     localBuilder.groupKey(
                                             getAllGroupByColumns(localBuilder, druidQuery, timestampColumn)
                                     ),
-                                    getAllQueryAggregations(localBuilder, druidQuery)
+                                    getAllQueryAggregations(localBuilder, druidQuery, aliasMaker)
                             )
                             .filter(
-                                    getHavingFilter(localBuilder, druidQuery)
+                                    getHavingFilter(localBuilder, druidQuery, aliasMaker)
                             )
                             .sortLimit(
                                     -1,
                                     getThreshold(druidQuery),
-                                    getSort(localBuilder, druidQuery)
+                                    getSort(localBuilder, druidQuery, aliasMaker)
                             );
                     String sql = writeSql(sqlWriter, relToSql, localBuilder);
                     return "(" + sql + ")";
@@ -286,6 +304,10 @@ public class SqlConverter implements SqlBackedClient {
 
         // NOTE: does not include missing interval or meta information
         // this will have to be implemented later if at all since we don't know about partial data
+    }
+
+    private static String getTableName(DruidAggregationQuery<?> druidQuery) {
+        return druidQuery.getDataSource().getPhysicalTable().getName();
     }
 
     private int getFetchSize(final DataApiRequest request) {
@@ -318,7 +340,11 @@ public class SqlConverter implements SqlBackedClient {
         }
     }
 
-    private static Collection<RexNode> getSort(RelBuilder builder, DruidAggregationQuery<?> druidQuery) {
+    private static Collection<RexNode> getSort(
+            RelBuilder builder,
+            DruidAggregationQuery<?> druidQuery,
+            final AliasMaker aliasMaker
+    ) {
         // todo this should be asc/desc based on the query
         // druid does NULLS FIRST
         List<RexNode> sorts = new ArrayList<>();
@@ -329,10 +355,10 @@ public class SqlConverter implements SqlBackedClient {
             if (topNMetricValue instanceof TopNMetric) { //todo this is ugly but the it's the interface we're given
                 TopNMetric inner = ((TopNMetric) topNMetricValue);
                 String metricName = inner.getMetric().toString();
-                sorts.add(builder.field(ALIAS_MAKER.apply(metricName)));
+                sorts.add(builder.field(aliasMaker.apply(metricName)));
             } else {
                 String metricName = topNMetricValue.toString();
-                sorts.add(builder.desc(builder.field(ALIAS_MAKER.unApply(metricName))));
+                sorts.add(builder.desc(builder.field(aliasMaker.unApply(metricName))));
             }
             sorts.add(builder.field(topNQuery.getDimension().getApiName()));
         } else {
@@ -346,7 +372,7 @@ public class SqlConverter implements SqlBackedClient {
                     limitSpec.getColumns()
                             .stream()
                             .map(orderByColumn -> {
-                                RexNode sort = builder.field(ALIAS_MAKER.unApply(orderByColumn.getDimension()));
+                                RexNode sort = builder.field(aliasMaker.unApply(orderByColumn.getDimension()));
                                 if (orderByColumn.getDirection().equals(SortDirection.DESC)) {
                                     sort = builder.desc(sort);
                                 }
@@ -447,12 +473,13 @@ public class SqlConverter implements SqlBackedClient {
 
     private static Collection<RexNode> getHavingFilter(
             RelBuilder builder,
-            DruidAggregationQuery<?> druidQuery
+            DruidAggregationQuery<?> druidQuery,
+            AliasMaker aliasMaker
     ) {
         RexNode filter = null;
         if (druidQuery.getQueryType().equals(DefaultQueryType.GROUP_BY)) {
             Having having = ((GroupByQuery) druidQuery).getHaving();
-            filter = HavingEvaluator.buildFilter(builder, having, ALIAS_MAKER).orElse(null);
+            filter = HavingEvaluator.buildFilter(builder, having, aliasMaker).orElse(null);
         }
         return Collections.singletonList(filter);
     }
@@ -466,11 +493,12 @@ public class SqlConverter implements SqlBackedClient {
      */
     private static List<RelBuilder.AggCall> getAllQueryAggregations(
             RelBuilder builder,
-            DruidAggregationQuery<?> druidQuery
+            DruidAggregationQuery<?> druidQuery,
+            AliasMaker aliasMaker
     ) {
         return druidQuery.getAggregations()
                 .stream()
-                .map(aggregation -> SqlAggregationType.getAggregation(aggregation, builder, ALIAS_MAKER))
+                .map(aggregation -> SqlAggregationType.getAggregation(aggregation, builder, aliasMaker))
                 .collect(Collectors.toList());
     }
 
