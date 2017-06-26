@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.web.handlers;
 
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
+import com.yahoo.bard.webservice.data.metric.mappers.PaginationMapper;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
@@ -33,6 +34,12 @@ import javax.validation.constraints.NotNull;
  */
 public class SqlRequestHandler implements DataRequestHandler {
     private static final Logger LOG = LoggerFactory.getLogger(SqlRequestHandler.class);
+    public static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+    public static final String DATABASE_PASSWORD = SYSTEM_CONFIG.getPackageVariableName("database_password");
+    public static final String DATABASE_USERNAME = SYSTEM_CONFIG.getPackageVariableName("database_username");
+    public static final String DATABASE_SCHEMA = SYSTEM_CONFIG.getPackageVariableName("database_schema");
+    public static final String DATABASE_DRIVER = SYSTEM_CONFIG.getPackageVariableName("database_driver");
+    public static final String DATABASE_URL = SYSTEM_CONFIG.getPackageVariableName("database_url");
     private final @NotNull DataRequestHandler next;
     private SqlBackedClient sqlConverter;
 
@@ -53,15 +60,14 @@ public class SqlRequestHandler implements DataRequestHandler {
      * @param mapper
      */
     private void initializeSqlBackend(ObjectMapper mapper) {
-        SystemConfig systemConfig = SystemConfigProvider.getInstance();
-        String dbUrl = systemConfig.getStringProperty(systemConfig.getPackageVariableName("database_url"));
-        String driver = systemConfig.getStringProperty(systemConfig.getPackageVariableName("database_driver"));
-        String schema = systemConfig.getStringProperty(systemConfig.getPackageVariableName("database_schema"));
+        String dbUrl = SYSTEM_CONFIG.getStringProperty(DATABASE_URL);
+        String driver = SYSTEM_CONFIG.getStringProperty(DATABASE_DRIVER);
+        String schema = SYSTEM_CONFIG.getStringProperty(DATABASE_SCHEMA);
         if (schema.isEmpty()) {
             schema = CalciteHelper.DEFAULT_SCHEMA;
         }
-        String user = systemConfig.getStringProperty(systemConfig.getPackageVariableName("database_username"));
-        String pass = systemConfig.getStringProperty(systemConfig.getPackageVariableName("database_password"));
+        String user = SYSTEM_CONFIG.getStringProperty(DATABASE_USERNAME);
+        String pass = SYSTEM_CONFIG.getStringProperty(DATABASE_PASSWORD);
         try {
             Database.initializeDatabase();
             sqlConverter = new SqlConverter(mapper, dbUrl, driver, user, pass, schema);
@@ -78,7 +84,6 @@ public class SqlRequestHandler implements DataRequestHandler {
             ResponseProcessor response
     ) {
         //todo better check for sql query
-        request.getFilter();
         if (request.getFormat().equals(ResponseFormatType.SQL)) {
             LOG.info("Intercepting for sql backend");
             SuccessCallback success = rootNode -> response.processResponse(

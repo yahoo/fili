@@ -11,6 +11,7 @@ import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.having.Having;
 import com.yahoo.bard.webservice.druid.model.orderby.LimitSpec;
 import com.yahoo.bard.webservice.druid.model.orderby.SortDirection;
+import com.yahoo.bard.webservice.druid.model.orderby.TopNMetric;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery;
@@ -23,6 +24,8 @@ import com.yahoo.bard.webservice.sql.helper.SqlAggregationType;
 import com.yahoo.bard.webservice.sql.helper.TimeConverter;
 import com.yahoo.bard.webservice.util.CompletedFuture;
 import com.yahoo.bard.webservice.util.IntervalUtils;
+import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -52,7 +55,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
@@ -65,12 +67,9 @@ import javax.sql.DataSource;
  */
 public class SqlConverter implements SqlBackedClient {
     private static final Logger LOG = LoggerFactory.getLogger(SqlConverter.class);
-    private static final String PREPENDED_ALIAS = "__";
-    private static final AliasMaker ALIAS_MAKER = new AliasMaker(PREPENDED_ALIAS);
+    private static final AliasMaker ALIAS_MAKER = new AliasMaker("__");
     private final ObjectMapper jsonWriter;
     private final CalciteHelper calciteHelper;
-    private final RelToSqlConverter relToSql;
-    private final SqlPrettyWriter sqlWriter;
 
     /**
      * Creates a sql converter using the given database and datasource.
@@ -83,8 +82,6 @@ public class SqlConverter implements SqlBackedClient {
      */
     public SqlConverter(DataSource dataSource, ObjectMapper objectMapper) throws SQLException {
         calciteHelper = new CalciteHelper(dataSource, CalciteHelper.DEFAULT_SCHEMA);
-        relToSql = calciteHelper.getNewRelToSqlConverter();
-        sqlWriter = calciteHelper.getNewSqlWriter();
         jsonWriter = objectMapper;
     }
 
@@ -106,8 +103,6 @@ public class SqlConverter implements SqlBackedClient {
         DataSource dataSource = JdbcSchema.dataSource(url, driver, username, password);
 
         calciteHelper = new CalciteHelper(dataSource, schemaName);
-        relToSql = calciteHelper.getNewRelToSqlConverter();
-        sqlWriter = calciteHelper.getNewSqlWriter();
         jsonWriter = objectMapper;
     }
 
@@ -164,27 +159,28 @@ public class SqlConverter implements SqlBackedClient {
         String sqlQuery;
         try (Connection connection = calciteHelper.getConnection()) {
             sqlQuery = buildSqlQuery(connection, druidQuery);
+            LOG.info("Executing \n{}", sqlQuery);
+
+            SqlResultSetProcessor resultSetProcessor;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
+                 ResultSet resultSet = preparedStatement.executeQuery()) {
+                resultSetProcessor = readSqlResultSet(druidQuery, resultSet);
+            } catch (SQLException e) {
+                LOG.warn(
+                        "Failed to query table {}",
+                        druidQuery.getDataSource().getPhysicalTable().getName()
+                );
+                throw new RuntimeException("Could not finish query", e);
+            }
+
+            JsonNode jsonNode = resultSetProcessor.process();
+            LOG.debug("Created response: {}", jsonNode);
+            return jsonNode;
         } catch (SQLException e) {
             throw new RuntimeException("Couldn't generate sql", e);
         }
 
-        LOG.debug("Executing \n{}", sqlQuery);
-        SqlResultSetProcessor resultSetProcessor;
-        try (Connection connection = calciteHelper.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            resultSetProcessor = readSqlResultSet(druidQuery, resultSet);
-        } catch (SQLException e) {
-            LOG.warn(
-                    "Failed to query table {}",
-                    druidQuery.getDataSource().getPhysicalTable().getName()
-            );
-            throw new RuntimeException("Could not finish query", e);
-        }
 
-        JsonNode jsonNode = resultSetProcessor.process();
-        LOG.debug("Created response: {}", jsonNode);
-        return jsonNode;
     }
 
     /**
@@ -232,7 +228,10 @@ public class SqlConverter implements SqlBackedClient {
      *
      * @throws SQLException if can't connect to database.
      */
-    private String buildSqlQuery(Connection connection, DruidAggregationQuery<?> druidQuery)
+    private String buildSqlQuery(
+            Connection connection,
+            DruidAggregationQuery<?> druidQuery
+    )
             throws SQLException {
         String sqlTableName = druidQuery.getDataSource().getPhysicalTable().getName();
         String timestampColumn = DatabaseHelper.getTimestampColumn(
@@ -247,9 +246,12 @@ public class SqlConverter implements SqlBackedClient {
                         getColumnsToSelect(builder, druidQuery, timestampColumn)
                 );
         RelNode rootRelNode = builder.build();
+        RelToSqlConverter relToSql = calciteHelper.getNewRelToSqlConverter();
+        SqlPrettyWriter sqlWriter = calciteHelper.getNewSqlWriter();
         return getIntervals(druidQuery)
                 .map(interval -> {
                     RelBuilder localBuilder = calciteHelper.getNewRelBuilder();
+
                     localBuilder.push(rootRelNode)
                             .filter(
                                     getAllWhereFilters(
@@ -273,7 +275,7 @@ public class SqlConverter implements SqlBackedClient {
                                     getThreshold(druidQuery),
                                     getSort(localBuilder, druidQuery)
                             );
-                    String sql = writeSql(localBuilder);
+                    String sql = writeSql(sqlWriter, relToSql, localBuilder);
                     return "(" + sql + ")";
                 })
                 .collect(Collectors.joining("\nUNION ALL\n"));
@@ -284,6 +286,25 @@ public class SqlConverter implements SqlBackedClient {
 
         // NOTE: does not include missing interval or meta information
         // this will have to be implemented later if at all since we don't know about partial data
+    }
+
+    private int getFetchSize(final DataApiRequest request) {
+        Optional<PaginationParameters> paginationParameters = request.getPaginationParameters();
+        if (paginationParameters.isPresent()) {
+            PaginationParameters parameters = paginationParameters.get();
+            return parameters.getPerPage();
+        }
+        return -1;
+    }
+
+    private int getOffset(DataApiRequest dataApiRequest) {
+        Optional<PaginationParameters> paginationParameters = dataApiRequest.getPaginationParameters();
+        if (paginationParameters.isPresent()) {
+            PaginationParameters parameters = paginationParameters.get();
+            return (parameters.getPage() - 1) * parameters.getPerPage();
+        }
+        //offset = page*perPage
+        return -1;
     }
 
     private static Stream<List<Interval>> getIntervals(DruidAggregationQuery<?> druidQuery) {
@@ -299,20 +320,23 @@ public class SqlConverter implements SqlBackedClient {
 
     private static Collection<RexNode> getSort(RelBuilder builder, DruidAggregationQuery<?> druidQuery) {
         // todo this should be asc/desc based on the query
-        // druid does NULLS FIRST. SEE below
-        // http://localhost:9998/v1/data/wikiticker/day/metroCode/cityName/?metrics=added&dateTime=2015-09-12/2015-09-13&format=sql
-        // http://localhost:9998/v1/data/wikiticker/day/metroCode/cityName/?metrics=added&dateTime=2015-09-12/2015-09-13
+        // druid does NULLS FIRST
+        List<RexNode> sorts = new ArrayList<>();
         if (druidQuery.getQueryType().equals(DefaultQueryType.TOP_N)) {
             TopNQuery topNQuery = (TopNQuery) druidQuery;
+            Object topNMetricValue = topNQuery.getMetric().getMetric();
 
-            return Collections.singletonList(
-                    builder.call(
-                            SqlStdOperatorTable.NULLS_FIRST,
-                            builder.desc(builder.field(ALIAS_MAKER.apply(topNQuery.getMetric().getMetric().toString())))
-                    )
-            );
+            if (topNMetricValue instanceof TopNMetric) { //todo this is ugly but the it's the interface we're given
+                TopNMetric inner = ((TopNMetric) topNMetricValue);
+                String metricName = inner.getMetric().toString();
+                sorts.add(builder.field(ALIAS_MAKER.apply(metricName)));
+            } else {
+                String metricName = topNMetricValue.toString();
+                sorts.add(builder.desc(builder.field(ALIAS_MAKER.apply(metricName))));
+            }
+            sorts.add(builder.field(topNQuery.getDimension().getApiName()));
         } else {
-            List<RexNode> sorts = new ArrayList<>();
+
             int groupBys = druidQuery.getDimensions()
                     .size() + TimeConverter.getNumberOfGroupByFunctions(druidQuery.getGranularity());
             if (druidQuery.getQueryType().equals(DefaultQueryType.GROUP_BY)) {
@@ -326,17 +350,18 @@ public class SqlConverter implements SqlBackedClient {
                                 if (orderByColumn.getDirection().equals(SortDirection.DESC)) {
                                     sort = builder.desc(sort);
                                 }
-                                return builder.call(SqlStdOperatorTable.NULLS_FIRST, sort);
+                                return sort;
                             })
                             .forEach(sorts::add);
                 }
             }
             sorts.addAll(builder.fields().subList(druidQuery.getDimensions().size(), groupBys));
             sorts.addAll(builder.fields().subList(0, druidQuery.getDimensions().size()));
-            return sorts.stream()
-                    .map(sort -> builder.call(SqlStdOperatorTable.NULLS_FIRST, sort))
-                    .collect(Collectors.toList());
         }
+
+        return sorts.stream()
+                .map(sort -> builder.call(SqlStdOperatorTable.NULLS_FIRST, sort))
+                .collect(Collectors.toList());
     }
 
     private static int getThreshold(DruidAggregationQuery<?> druidQuery) {
@@ -478,11 +503,17 @@ public class SqlConverter implements SqlBackedClient {
     /**
      * Converts a RelBuilder into a sql string.
      *
-     * @param builder  The RelBuilder created with Calcite.
      *
-     * @return the sql string built by the RelBuilder.
+     * @param sqlWriter
+     * @param relToSql
+     *@param builder  The RelBuilder created with Calcite.
+     *  @return the sql string built by the RelBuilder.
      */
-    private String writeSql(RelBuilder builder) {
+    private String writeSql(
+            final SqlPrettyWriter sqlWriter,
+            final RelToSqlConverter relToSql,
+            RelBuilder builder
+    ) {
         sqlWriter.reset();
         SqlSelect select = relToSql.visitChild(0, builder.build()).asSelect();
         return sqlWriter.format(select);

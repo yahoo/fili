@@ -27,6 +27,8 @@ note that there are some restrictions since Fili is optimized for Druid.
 
 ## Limitations
 - Character sets. Basically don't try to query unicode characters unless your database supports them.
+- MYSQL databases are **much** slower than druid at doing TopN queries.
+ *Do not make TopN queries over large amounts of time with small buckets.* (For example, don't ask for the TopN from every hour over an entire year.) 
 
 ### Supported queries
 * timeseries

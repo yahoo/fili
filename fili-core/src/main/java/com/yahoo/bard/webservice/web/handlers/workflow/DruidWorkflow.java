@@ -158,6 +158,8 @@ public class DruidWorkflow implements RequestWorkflowProvider {
                 mapper
          );
 
+        handler = new SqlRequestHandler(handler, mapper);
+
         //The PaginationRequestHandler adds a mapper to the mapper chain that strips the result set down to just the
         //page desired. That mapper should be one of the last mappers to execute, so the handler that adds the mapper
         //to the chain needs to be one of the first handlers to execute.
@@ -174,8 +176,6 @@ public class DruidWorkflow implements RequestWorkflowProvider {
                 physicalTableDictionary,
                 volatileIntervalsService
         );
-
-        handler = new SqlRequestHandler(handler, mapper);
 
         return handler;
     }
