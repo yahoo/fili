@@ -4,7 +4,6 @@ package com.yahoo.bard.webservice.data.config.metric;
 
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
-import com.yahoo.bard.webservice.druid.serializers.DimensionToNameSerializer;
 
 import org.slf4j.LoggerFactory;
 
@@ -22,10 +21,9 @@ public interface MetricLoader {
      */
     @Deprecated
     default void loadMetricDictionary(MetricDictionary metricDictionary) {
-        String message = "The method loadMetricDictionary(MetricDictionary, DimensionDictionary) must be implemented " +
-                "for MetricLoader.class";
-        LoggerFactory.getLogger(DimensionToNameSerializer.class).error(message);
-        throw new RuntimeException(message);
+        String message = "The method loadMetricDictionary(MetricDictionary, DimensionDictionary) should be used " +
+                "instead";
+        LoggerFactory.getLogger(MetricLoader.class).warn(message);
     }
 
     /**
