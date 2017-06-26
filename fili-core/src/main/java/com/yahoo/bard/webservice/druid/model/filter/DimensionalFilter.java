@@ -4,10 +4,16 @@ package com.yahoo.bard.webservice.druid.model.filter;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.druid.serializers.DimensionToNameSerializer;
+import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Objects;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * Filter for matching a dimension.
@@ -16,6 +22,7 @@ import java.util.Objects;
  */
 public abstract class DimensionalFilter<T extends DimensionalFilter<? super T>> extends Filter {
 
+    private static final Logger LOG = LoggerFactory.getLogger(DimensionalFilter.class);
     private final Dimension dimension;
 
     /**
@@ -24,8 +31,15 @@ public abstract class DimensionalFilter<T extends DimensionalFilter<? super T>> 
      * @param dimension  Dimension to filter
      * @param type Type of the filter
      */
-    protected DimensionalFilter(Dimension dimension, FilterType type) {
+    protected DimensionalFilter(@NotNull Dimension dimension, FilterType type) {
         super(type);
+
+        if (Objects.isNull(dimension)) {
+            String message = ErrorMessageFormat.FILTER_DIMENSION_UNDEFINED.format(dimension);
+            LOG.error(message);
+            throw new IllegalArgumentException(message);
+        }
+
         this.dimension = dimension;
     }
 
