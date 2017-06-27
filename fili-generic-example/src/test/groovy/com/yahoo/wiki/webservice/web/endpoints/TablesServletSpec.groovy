@@ -91,6 +91,7 @@ class TablesServletSpec extends Specification {
 
         List<String> metricNames = "count, added, delta, deleted, user_unique".split(',').collect { it.trim() }
         String expectedResponse = """{
+                                        "Available Intervals":[],
                                         "name":"$tableName",
                                         "longName":"$tableName",
                                         "granularity":"hour",
@@ -99,30 +100,30 @@ class TablesServletSpec extends Specification {
                                         "description": "$tableName",
                                         "dimensions": [
                                             ${
-            dimensionNames.collect {
-                """{
-                                                    "category": "General",
-                                                    "name": "$it",
-                                                    "longName": "$it",
-                                                    "cardinality": 0,
-                                                    "uri": "http://localhost:9998/dimensions/$it"
-                                                    }"""
-            }
-            .join(',')
-        }
+                                                dimensionNames.collect {
+                                                    """{
+                                                        "category": "General",
+                                                        "name": "$it",
+                                                        "longName": "$it",
+                                                        "cardinality": 0,
+                                                        "uri": "http://localhost:9998/dimensions/$it"
+                                                    }""" 
+                                                }
+                                                .join(',')
+                                            }
                                         ],
                                         "metrics": [
                                             ${
-            metricNames.collect {
-                """{
+                                                metricNames.collect {
+                                                    """{
                                                         "category": "General",
                                                         "name": "$it",
                                                         "longName": "$it",
                                                         "uri": "http://localhost:9998/metrics/$it"
-                                                    }"""
-            }
-            .join(',')
-        }
+                                                    }""" 
+                                                }
+                                                .join(',')
+                                            }
                                         ]
                                     }"""
 

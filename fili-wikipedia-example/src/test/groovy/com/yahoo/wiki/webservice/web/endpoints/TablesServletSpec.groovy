@@ -106,6 +106,7 @@ class TablesServletSpec extends Specification {
 
         List<String> metricNames = "count, added, delta, deleted".split(',').collect{ it.trim()}
         String expectedResponse = """{
+                                        "Available Intervals":[],
                                         "name":"$tableName",
                                         "longName":"$tableName",
                                         "granularity":"hour",
