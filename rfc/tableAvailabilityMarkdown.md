@@ -106,3 +106,15 @@ Add `availability` as a list of serialized intervals to the default table format
       ]
     }
 ```
+
+## Implementation
+
+### 1st Milestone - Table-wide Availability
+In `getLogicalTableFullView`, take the TablesApiRequest to calculate the availability for the logical table (calculate
+directly on logical table(union the availability for the logical table) without taking the TablesApiRequest into account)
+
+### 2nd Milestone - Have Tables Endpoint Support (but not use) Additional Query Parameters
+Make the availability consider the TablesApiRequest by passing it into the `getLogicalTableFullView` method
+
+### 3rd Milestone - Filter Using Dimensions, Metrics, and Filters
+Have TablesApiRequest accept metrics and dimensions from the API request
