@@ -304,9 +304,9 @@ public class DruidResponseParser {
     private Object getNodeValue(JsonNode node) {
         return node.isNumber() ? node.decimalValue() :
                 node.isTextual() ? node.textValue() :
-                        node.isBoolean() ? node.booleanValue() :
-                                node.isNull() ? null :
-                                        node;
+                node.isBoolean() ? node.booleanValue() :
+                node.isNull() ? null :
+                node;
     }
 
     /**

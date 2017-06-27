@@ -167,7 +167,8 @@ public class SqlConverter implements SqlBackedClient {
     ) {
         String sqlQuery;
 
-        AliasMaker aliasMaker = new AliasMaker(physicalTableDictionary.get(getTableName(druidQuery)).getSchema());
+        ApiToFieldMapper aliasMaker = new ApiToFieldMapper(physicalTableDictionary.get(getTableName(druidQuery))
+                .getSchema());
 
         try (Connection connection = calciteHelper.getConnection()) {
             sqlQuery = buildSqlQuery(connection, druidQuery, aliasMaker);
@@ -210,7 +211,7 @@ public class SqlConverter implements SqlBackedClient {
     private SqlResultSetProcessor readSqlResultSet(
             DruidAggregationQuery<?> druidQuery,
             ResultSet resultSet,
-            final AliasMaker aliasMaker
+            final ApiToFieldMapper aliasMaker
     )
             throws SQLException {
         ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
@@ -248,7 +249,7 @@ public class SqlConverter implements SqlBackedClient {
     private String buildSqlQuery(
             Connection connection,
             DruidAggregationQuery<?> druidQuery,
-            AliasMaker aliasMaker
+            ApiToFieldMapper aliasMaker
     )
             throws SQLException {
         String sqlTableName = druidQuery.getDataSource().getPhysicalTable().getName();
@@ -343,7 +344,7 @@ public class SqlConverter implements SqlBackedClient {
     private static Collection<RexNode> getSort(
             RelBuilder builder,
             DruidAggregationQuery<?> druidQuery,
-            final AliasMaker aliasMaker
+            final ApiToFieldMapper aliasMaker
     ) {
         // todo this should be asc/desc based on the query
         // druid does NULLS FIRST
@@ -474,7 +475,7 @@ public class SqlConverter implements SqlBackedClient {
     private static Collection<RexNode> getHavingFilter(
             RelBuilder builder,
             DruidAggregationQuery<?> druidQuery,
-            AliasMaker aliasMaker
+            ApiToFieldMapper aliasMaker
     ) {
         RexNode filter = null;
         if (druidQuery.getQueryType().equals(DefaultQueryType.GROUP_BY)) {
@@ -494,11 +495,11 @@ public class SqlConverter implements SqlBackedClient {
     private static List<RelBuilder.AggCall> getAllQueryAggregations(
             RelBuilder builder,
             DruidAggregationQuery<?> druidQuery,
-            AliasMaker aliasMaker
+            ApiToFieldMapper aliasMaker
     ) {
         return druidQuery.getAggregations()
                 .stream()
-                .map(aggregation -> SqlAggregationType.getAggregation(aggregation, builder, aliasMaker))
+                .map(aggregation -> SqlAggregationType.getAggregation(aggregation, builder))
                 .collect(Collectors.toList());
     }
 

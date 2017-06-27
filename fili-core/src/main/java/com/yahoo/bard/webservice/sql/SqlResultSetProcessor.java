@@ -34,14 +34,14 @@ public class SqlResultSetProcessor {
     private final ObjectMapper objectMapper;
     private final int columnCount;
     private final int groupByCount;
-    private final AliasMaker aliasMaker;
+    private final ApiToFieldMapper aliasMaker;
 
     public SqlResultSetProcessor(
             DruidAggregationQuery<?> druidQuery,
             BiMap<Integer, String> columnToColumnName,
             List<String[]> sqlResults,
             ObjectMapper objectMapper,
-            AliasMaker aliasMaker
+            ApiToFieldMapper aliasMaker
     ) {
         this.druidQuery = druidQuery;
         this.columnToColumnName = columnToColumnName;

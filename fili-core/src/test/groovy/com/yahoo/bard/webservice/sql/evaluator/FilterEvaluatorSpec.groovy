@@ -2,15 +2,15 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.sql.evaluator
 
+import static com.yahoo.bard.webservice.sql.builders.Filters.and
+import static com.yahoo.bard.webservice.sql.builders.Filters.not
+import static com.yahoo.bard.webservice.sql.builders.Filters.or
+import static com.yahoo.bard.webservice.sql.builders.Filters.search
 import static com.yahoo.bard.webservice.sql.database.Database.ID
 import static com.yahoo.bard.webservice.sql.database.Database.IS_NEW
-import static com.yahoo.bard.webservice.sql.database.Database.METRO_CODE
 import static com.yahoo.bard.webservice.sql.database.Database.IS_ROBOT
+import static com.yahoo.bard.webservice.sql.database.Database.METRO_CODE
 import static com.yahoo.bard.webservice.sql.database.Database.WIKITICKER
-import static com.yahoo.bard.webservice.sql.helper.Filters.and
-import static com.yahoo.bard.webservice.sql.helper.Filters.not
-import static com.yahoo.bard.webservice.sql.helper.Filters.or
-import static com.yahoo.bard.webservice.sql.helper.Filters.search
 
 import com.yahoo.bard.webservice.sql.database.Database
 import com.yahoo.bard.webservice.sql.helper.CalciteHelper

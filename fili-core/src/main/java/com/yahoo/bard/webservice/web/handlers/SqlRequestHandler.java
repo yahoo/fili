@@ -11,7 +11,6 @@ import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.sql.SqlAggregationQuery;
 import com.yahoo.bard.webservice.sql.SqlBackedClient;
 import com.yahoo.bard.webservice.sql.SqlConverter;
-import com.yahoo.bard.webservice.sql.database.Database;
 import com.yahoo.bard.webservice.sql.helper.CalciteHelper;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 import com.yahoo.bard.webservice.web.DataApiRequest;
@@ -24,7 +23,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.sql.SQLException;
 
 import javax.validation.constraints.NotNull;
@@ -77,9 +75,8 @@ public class SqlRequestHandler implements DataRequestHandler {
         String user = SYSTEM_CONFIG.getStringProperty(DATABASE_USERNAME);
         String pass = SYSTEM_CONFIG.getStringProperty(DATABASE_PASSWORD);
         try {
-            Database.initializeDatabase();
             sqlConverter = new SqlConverter(physicalTableDictionary, mapper, dbUrl, driver, user, pass, schema);
-        } catch (SQLException | IOException e) {
+        } catch (SQLException e) {
             LOG.warn("Failed to initialize Sql backend", e);
         }
     }
