@@ -26,7 +26,7 @@ import java.sql.Connection
 import java.util.stream.Collectors
 
 class FilterEvaluatorSpec extends Specification {
-    private final Connection CONNECTION = Database.initializeDatabase()
+    static Connection CONNECTION = Database.initializeDatabase()
 
     @Unroll
     def "GetDimensionNames expecting #dimensions"() {

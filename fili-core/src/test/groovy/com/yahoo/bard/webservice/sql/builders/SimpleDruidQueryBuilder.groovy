@@ -69,6 +69,10 @@ class SimpleDruidQueryBuilder {
     }
 
     public static PhysicalTableDictionary getDictionary() {
+        return getDictionary("", "")
+    }
+
+    public static PhysicalTableDictionary getDictionary(String apiPrepend, String fieldPrepend) {
         def dataSource = dataSource(
                 WIKITICKER,
                 asList(ADDED, DELETED, DELTA),
@@ -77,7 +81,9 @@ class SimpleDruidQueryBuilder {
                         USER, COMMENT, IS_UNPATROLLED, NAMESPACE,
                         COUNTRY_NAME, CITY_NAME, IS_MINOR, IS_ANONYMOUS,
                         REGION_ISO_CODE, CHANNEL, REGION_NAME, METRO_CODE
-                )
+                ),
+                apiPrepend,
+                fieldPrepend
         )
         PhysicalTableDictionary physicalTableDictionary = new PhysicalTableDictionary()
         physicalTableDictionary.put(WIKITICKER, dataSource.getPhysicalTable().sourceTable as ConfigPhysicalTable)
@@ -156,16 +162,26 @@ class SimpleDruidQueryBuilder {
     }
 
     public static TableDataSource dataSource(String name, List<String> metrics, List<String> dimensions) {
+        return dataSource(name, metrics, dimensions, "", "")
+    }
+
+
+    public static TableDataSource dataSource(String name, List<String> metrics, List<String> dimensions, String apiPrepend, String fieldPrepend) {
 
         ZonedTimeGrain zonedTimeGrain = new ZonedTimeGrain(DefaultTimeGrain.DAY, DateTimeZone.UTC);
         Set<Column> columns = setOf();
-        Map<String, String> logicalToPhysicalColumnNames = Collections.emptyMap();
+        Map<String, String> logicalToPhysicalColumnNames = new HashMap<>()
+        metrics.forEach { logicalToPhysicalColumnNames.put(apiPrepend + it, fieldPrepend + it) }
+        dimensions.forEach { logicalToPhysicalColumnNames.put(apiPrepend + it, fieldPrepend + it) }
 
         DataSourceMetadataService metadataService = new DataSourceMetadataService();
         metadataService.update(
                 DataSourceName.of(name),
                 new DataSourceMetadata(name, Collections.emptyMap(), Collections.emptyList())
         );
+
+        dimensions = dimensions.collect { apiPrepend + it }
+        metrics = metrics.collect { apiPrepend + it }
 
         Collection<String> metricsAndDimensions = new ArrayList<>(metrics);
         metricsAndDimensions.addAll(dimensions);
@@ -182,10 +198,10 @@ class SimpleDruidQueryBuilder {
                         strictPhysicalTable,
                         new DataSourceConstraint(
                                 setOf(), // create dimensions to test grouping those
-                                setOf(getDimensions(dimensions)),
+                                setOf(),
                                 setOf(),
                                 setOf(metrics),
-                                setOf(),
+                                setOf(getDimensions(dimensions)),
                                 setOf(dimensions),
                                 setOf(metricsAndDimensions),
                                 Collections.emptyMap()

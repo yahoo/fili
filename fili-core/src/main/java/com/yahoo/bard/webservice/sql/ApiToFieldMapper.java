@@ -9,15 +9,15 @@ import java.util.function.Function;
 /**
  * Maps between logical and physical column names given a table schema.
  */
-public class AliasMaker implements Function<String, String> {
+public class ApiToFieldMapper implements Function<String, String> {
     private final PhysicalTableSchema physicalTableSchema;
 
     /**
-     * Construct the alias maker with a given string.
+     * Construct the alias maker with the given schema.
      *
      * @param physicalTableSchema  The physical table schema which maps between logical and physical column names.
      */
-    public AliasMaker(PhysicalTableSchema physicalTableSchema) {
+    public ApiToFieldMapper(PhysicalTableSchema physicalTableSchema) {
         this.physicalTableSchema = physicalTableSchema;
     }
 

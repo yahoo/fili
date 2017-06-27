@@ -16,7 +16,7 @@ import static com.yahoo.bard.webservice.sql.builders.Havings.or
 import static java.util.Arrays.asList
 
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
-import com.yahoo.bard.webservice.sql.AliasMaker
+import com.yahoo.bard.webservice.sql.ApiToFieldMapper
 import com.yahoo.bard.webservice.sql.database.Database
 import com.yahoo.bard.webservice.sql.helper.CalciteHelper
 import com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder
@@ -35,10 +35,10 @@ import java.sql.Connection
 import java.util.stream.Collectors
 
 class HavingsEvaluatorSpec extends Specification {
-    private static final int ONE = 1
-    private static final int TWO = 2
-    private static final Connection CONNECTION = Database.initializeDatabase()
-    private static final AliasMaker ALIAS_MAKER = new AliasMaker(SimpleDruidQueryBuilder.getDictionary().get(WIKITICKER).schema);
+    static int ONE = 1
+    static int TWO = 2
+    static Connection CONNECTION = Database.initializeDatabase()
+    static ApiToFieldMapper ALIAS_MAKER = new ApiToFieldMapper(SimpleDruidQueryBuilder.getDictionary().get(WIKITICKER).schema);
 
     private static RelBuilder getBuilder() {
         RelBuilder builder = CalciteHelper.getBuilder(Database.getDataSource())
