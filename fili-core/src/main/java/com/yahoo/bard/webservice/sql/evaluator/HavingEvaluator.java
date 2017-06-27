@@ -8,7 +8,7 @@ import com.yahoo.bard.webservice.druid.model.having.MultiClauseHaving;
 import com.yahoo.bard.webservice.druid.model.having.NotHaving;
 import com.yahoo.bard.webservice.druid.model.having.NumericHaving;
 import com.yahoo.bard.webservice.druid.model.having.OrHaving;
-import com.yahoo.bard.webservice.sql.AliasMaker;
+import com.yahoo.bard.webservice.sql.ApiToFieldMapper;
 
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlOperator;
@@ -37,16 +37,16 @@ public class HavingEvaluator {
      *
      * @param builder  The RelBuilder used with Calcite to make queries.
      * @param having  The having filter being evaluated.
-     * @param aliasMaker  A function to get the aliased aggregation's name from the metric name.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
      *
      * @return the equivalent {@link RexNode} to be used in a sql query.
      */
     public static Optional<RexNode> buildFilter(
             RelBuilder builder,
             Having having,
-            AliasMaker aliasMaker
+            ApiToFieldMapper apiToFieldMapper
     ) {
-        return Optional.ofNullable(evaluate(builder, having, aliasMaker));
+        return Optional.ofNullable(evaluate(builder, having, apiToFieldMapper));
     }
 
     /**
@@ -55,21 +55,21 @@ public class HavingEvaluator {
      *
      * @param builder  The RelBuilder used with Calcite to make queries.
      * @param having  The having filter being evaluated.
-     * @param aliasMaker  A function to get the aliased aggregation's name from the metric name.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
      *
      * @return the equivalent {@link RexNode} to be used in a sql query.
      */
-    private static RexNode evaluate(RelBuilder builder, Having having, AliasMaker aliasMaker) {
+    private static RexNode evaluate(RelBuilder builder, Having having, ApiToFieldMapper apiToFieldMapper) {
         if (having == null) {
             return null;
         }
         return DispatchUtils.dispatch(
                 HavingEvaluator.class,
                 "evaluate",
-                new Class[] {RelBuilder.class, having.getClass(), AliasMaker.class},
+                new Class[] {RelBuilder.class, having.getClass(), ApiToFieldMapper.class},
                 builder,
                 having,
-                aliasMaker
+                apiToFieldMapper
         );
     }
 
@@ -78,14 +78,14 @@ public class HavingEvaluator {
      *
      * @param builder  The RelBuilder used with Calcite to make queries.
      * @param having  The NumericHaving filter to be evaluated.
-     * @param aliasMaker  A function to get the aliased aggregation's name from the metric name.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
      *
      * @return the equivalent {@link RexNode} to be used in a sql query.
      */
     private static RexNode evaluate(
             RelBuilder builder,
             NumericHaving having,
-            AliasMaker aliasMaker
+            ApiToFieldMapper apiToFieldMapper
     ) {
         Having.DefaultHavingType havingType = (Having.DefaultHavingType) having.getType();
         SqlOperator operator = null;
@@ -102,7 +102,7 @@ public class HavingEvaluator {
         }
         return builder.call(
                 operator,
-                builder.field(aliasMaker.apply(having.getAggregation())),
+                builder.field(apiToFieldMapper.apply(having.getAggregation())),
                 builder.literal(having.getValue())
         );
     }
@@ -112,14 +112,14 @@ public class HavingEvaluator {
      *
      * @param builder  The RelBuilder used with Calcite to make queries.
      * @param notHaving  The not having filter to be converted to be evaluated.
-     * @param aliasMaker  A function to get the aliased aggregation's name from the metric name.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
      *
      * @return the equivalent {@link RexNode} to be used in a sql query.
      */
-    private static RexNode evaluate(RelBuilder builder, NotHaving notHaving, AliasMaker aliasMaker) {
+    private static RexNode evaluate(RelBuilder builder, NotHaving notHaving, ApiToFieldMapper apiToFieldMapper) {
         return builder.call(
                 SqlStdOperatorTable.NOT,
-                evaluate(builder, notHaving.getHaving(), aliasMaker)
+                evaluate(builder, notHaving.getHaving(), apiToFieldMapper)
         );
     }
 
@@ -128,12 +128,12 @@ public class HavingEvaluator {
      *
      * @param builder  The RelBuilder used with Calcite to make queries.
      * @param orHaving  The OrHaving to be evaluated.
-     * @param aliasMaker  A function to get the aliased aggregation's name from the metric name.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
      *
      * @return the equivalent {@link RexNode} to be used which ORs over the inner havings.
      */
-    private static RexNode evaluate(RelBuilder builder, OrHaving orHaving, AliasMaker aliasMaker) {
-        return listEvaluate(builder, orHaving, SqlStdOperatorTable.OR, aliasMaker);
+    private static RexNode evaluate(RelBuilder builder, OrHaving orHaving, ApiToFieldMapper apiToFieldMapper) {
+        return listEvaluate(builder, orHaving, SqlStdOperatorTable.OR, apiToFieldMapper);
     }
 
     /**
@@ -141,12 +141,12 @@ public class HavingEvaluator {
      *
      * @param builder  The RelBuilder used with Calcite to make queries.
      * @param andHaving  The AndHaving to be evaluated.
-     * @param aliasMaker  A function to get the aliased aggregation's name from the metric name.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
      *
      * @return the equivalent {@link RexNode} to be used which ANDs over the inner havings.
      */
-    private static RexNode evaluate(RelBuilder builder, AndHaving andHaving, AliasMaker aliasMaker) {
-        return listEvaluate(builder, andHaving, SqlStdOperatorTable.AND, aliasMaker);
+    private static RexNode evaluate(RelBuilder builder, AndHaving andHaving, ApiToFieldMapper apiToFieldMapper) {
+        return listEvaluate(builder, andHaving, SqlStdOperatorTable.AND, apiToFieldMapper);
     }
 
     /**
@@ -155,7 +155,7 @@ public class HavingEvaluator {
      * @param builder  The RelBuilder used with Calcite to make queries.
      * @param multiClauseHaving  The MultiClauseHaving filter to be evaluated.
      * @param operator  The operator to be performed over the inner clauses of this having filter.
-     * @param aliasMaker  A function to get the aliased aggregation's name from the metric name.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
      *
      * @return the equivalent {@link RexNode} to be used in a sql query.
      */
@@ -163,11 +163,11 @@ public class HavingEvaluator {
             RelBuilder builder,
             MultiClauseHaving multiClauseHaving,
             SqlOperator operator,
-            AliasMaker aliasMaker
+            ApiToFieldMapper apiToFieldMapper
     ) {
         List<RexNode> rexNodes = multiClauseHaving.getHavings()
                 .stream()
-                .map(having -> evaluate(builder, having, aliasMaker))
+                .map(having -> evaluate(builder, having, apiToFieldMapper))
                 .collect(Collectors.toList());
 
         return builder.call(

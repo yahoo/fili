@@ -20,9 +20,9 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 class PostAggregationEvaluatorSpec extends Specification {
-    private static final Map<String, String> fieldToValue = new HashMap<>()
-    private static final String ONE = "one"
-    private static final String FIVE = "five"
+    static Map<String, String> fieldToValue = new HashMap<>()
+    static String ONE = "one"
+    static String FIVE = "five"
 
     void setup() {
         fieldToValue.put(ONE, "1")
