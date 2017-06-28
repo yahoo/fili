@@ -49,11 +49,10 @@ public class SqlRequestHandler implements DataRequestHandler {
      */
     public SqlRequestHandler(
             DataRequestHandler next,
-            ObjectMapper mapper,
-            PhysicalTableDictionary physicalTableDictionary
+            ObjectMapper mapper
     ) {
         this.next = next;
-        initializeSqlBackend(mapper, physicalTableDictionary);
+        initializeSqlBackend(mapper);
     }
 
     /**
@@ -63,8 +62,7 @@ public class SqlRequestHandler implements DataRequestHandler {
      * @param physicalTableDictionary
      */
     private void initializeSqlBackend(
-            ObjectMapper mapper,
-            PhysicalTableDictionary physicalTableDictionary
+            ObjectMapper mapper
     ) {
         String dbUrl = SYSTEM_CONFIG.getStringProperty(DATABASE_URL);
         String driver = SYSTEM_CONFIG.getStringProperty(DATABASE_DRIVER);
@@ -75,7 +73,7 @@ public class SqlRequestHandler implements DataRequestHandler {
         String user = SYSTEM_CONFIG.getStringProperty(DATABASE_USERNAME);
         String pass = SYSTEM_CONFIG.getStringProperty(DATABASE_PASSWORD);
         try {
-            sqlConverter = new SqlConverter(physicalTableDictionary, mapper, dbUrl, driver, user, pass, schema);
+            sqlConverter = new SqlConverter(mapper, dbUrl, driver, user, pass, schema);
         } catch (SQLException e) {
             LOG.warn("Failed to initialize Sql backend", e);
         }

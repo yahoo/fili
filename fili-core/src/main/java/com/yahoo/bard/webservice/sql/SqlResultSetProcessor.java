@@ -34,20 +34,17 @@ public class SqlResultSetProcessor {
     private final ObjectMapper objectMapper;
     private final int columnCount;
     private final int groupByCount;
-    private final ApiToFieldMapper aliasMaker;
 
     public SqlResultSetProcessor(
             DruidAggregationQuery<?> druidQuery,
             BiMap<Integer, String> columnToColumnName,
             List<String[]> sqlResults,
-            ObjectMapper objectMapper,
-            ApiToFieldMapper aliasMaker
+            ObjectMapper objectMapper
     ) {
         this.druidQuery = druidQuery;
         this.columnToColumnName = columnToColumnName;
         this.sqlResults = sqlResults;
         this.objectMapper = objectMapper;
-        this.aliasMaker = aliasMaker;
 
         this.groupByCount = druidQuery.getDimensions().size();
         this.columnCount = columnToColumnName.size();
@@ -89,7 +86,7 @@ public class SqlResultSetProcessor {
             if (groupByCount <= i && i < groupByCount + lastTimeIndex) {
                 continue;
             }
-            String columnName = aliasMaker.unApply(columnToColumnName.get(i));
+            String columnName = columnToColumnName.get(i);
             if (resultTypeMapper.containsKey(columnName)) {
                 Number result = resultTypeMapper
                         .get(columnName)
@@ -99,7 +96,6 @@ public class SqlResultSetProcessor {
             } else {
                 jsonWriter.writeStringField(columnName, row[i]);
             }
-
         }
 
         for (PostAggregation postAggregation : druidQuery.getPostAggregations()) {
@@ -107,7 +103,7 @@ public class SqlResultSetProcessor {
                     postAggregation,
                     (String columnName) -> row[columnToColumnName.inverse().get(columnName)]
             );
-            writeNumberField(jsonWriter, aliasMaker.unApply(postAggregation.getName()), postAggResult);
+            writeNumberField(jsonWriter, postAggregation.getName(), postAggResult);
         }
     }
 

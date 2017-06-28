@@ -22,7 +22,6 @@ import com.yahoo.bard.webservice.sql.helper.CalciteHelper;
 import com.yahoo.bard.webservice.sql.helper.DatabaseHelper;
 import com.yahoo.bard.webservice.sql.helper.SqlAggregationType;
 import com.yahoo.bard.webservice.sql.helper.TimeConverter;
-import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 import com.yahoo.bard.webservice.util.CompletedFuture;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 import com.yahoo.bard.webservice.web.DataApiRequest;
@@ -70,7 +69,6 @@ public class SqlConverter implements SqlBackedClient {
     private static final Logger LOG = LoggerFactory.getLogger(SqlConverter.class);
     private final ObjectMapper jsonWriter;
     private final CalciteHelper calciteHelper;
-    private final PhysicalTableDictionary physicalTableDictionary;
 
     /**
      * Creates a sql converter using the given database and datasource.
@@ -82,25 +80,21 @@ public class SqlConverter implements SqlBackedClient {
      * @throws SQLException if can't read from database.
      */
     public SqlConverter(
-            PhysicalTableDictionary physicalTableDictionary,
             DataSource dataSource,
             ObjectMapper objectMapper
     ) throws SQLException {
         calciteHelper = new CalciteHelper(dataSource, CalciteHelper.DEFAULT_SCHEMA);
         jsonWriter = objectMapper;
-        this.physicalTableDictionary = physicalTableDictionary;
     }
 
     /**
      * Creates a sql converter using the given database and datasource.
      *
-     * @param physicalTableDictionary
      * @param schemaName  The name of the schema used for the database.
      *
      * @throws SQLException if can't read from database.
      */
     public SqlConverter(
-            PhysicalTableDictionary physicalTableDictionary,
             ObjectMapper objectMapper,
             String url,
             String driver,
@@ -112,7 +106,6 @@ public class SqlConverter implements SqlBackedClient {
 
         calciteHelper = new CalciteHelper(dataSource, schemaName);
         jsonWriter = objectMapper;
-        this.physicalTableDictionary = physicalTableDictionary;
     }
 
     @Override
@@ -167,8 +160,7 @@ public class SqlConverter implements SqlBackedClient {
     ) {
         String sqlQuery;
 
-        ApiToFieldMapper aliasMaker = new ApiToFieldMapper(physicalTableDictionary.get(getTableName(druidQuery))
-                .getSchema());
+        ApiToFieldMapper aliasMaker = new ApiToFieldMapper(druidQuery.getDataSource().getPhysicalTable().getSchema());
 
         try (Connection connection = calciteHelper.getConnection()) {
             sqlQuery = buildSqlQuery(connection, druidQuery, aliasMaker);
@@ -233,7 +225,7 @@ public class SqlConverter implements SqlBackedClient {
         }
         LOG.debug("Fetched {} rows.", sqlResults.size());
 
-        return new SqlResultSetProcessor(druidQuery, columnNames, sqlResults, jsonWriter, aliasMaker);
+        return new SqlResultSetProcessor(druidQuery, columnNames, sqlResults, jsonWriter);
     }
 
     /**
@@ -262,7 +254,7 @@ public class SqlConverter implements SqlBackedClient {
         LOG.debug("Querying Table '{}'", sqlTableName);
         builder.scan(sqlTableName)
                 .project(
-                        getColumnsToSelect(builder, druidQuery, timestampColumn)
+                        getColumnsToSelect(builder, druidQuery, timestampColumn, aliasMaker)
                 );
         RelNode rootRelNode = builder.build();
         RelToSqlConverter relToSql = calciteHelper.getNewRelToSqlConverter();
@@ -436,22 +428,26 @@ public class SqlConverter implements SqlBackedClient {
      * @param druidQuery  The query from which to find filter and aggregation dimensions.
      * @param timestampColumn  The name of the timestamp column in the database.
      *
+     * @param aliasMaker
      * @return the list of fields which need to be selected by the builder.
      */
     private static List<RexInputRef> getColumnsToSelect(
             RelBuilder builder,
             DruidAggregationQuery<?> druidQuery,
-            String timestampColumn
+            String timestampColumn,
+            final ApiToFieldMapper aliasMaker
     ) {
-        Stream<String> filterDimensions = FilterEvaluator.getDimensionNames(builder, druidQuery.getFilter()).stream();
+        Stream<String> filterDimensions = FilterEvaluator.getDimensionNames(builder, druidQuery.getFilter()).stream()
+                .map(aliasMaker);
 
         Stream<String> groupByDimensions = druidQuery.getDimensions()
                 .stream()
-                .map(Dimension::getApiName);
+                .map(Dimension::getApiName)
+                .map(aliasMaker);
 
         Stream<String> aggregationDimensions = druidQuery.getAggregations()
                 .stream()
-                .map(Aggregation::getFieldName);
+                .map(Aggregation::getFieldName); //todo is this fine?
 
         return Stream
                 .concat(

@@ -63,7 +63,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 class SqlConverterSpec extends Specification {
-    private static SqlBackedClient sqlBackedClient = new SqlConverter(getDictionary(), Database.getDataSource(), new ObjectMapper())
+    private static SqlBackedClient sqlBackedClient = new SqlConverter(Database.getDataSource(), new ObjectMapper())
     private static final String TRUE = "TRUE"
     private static final String FALSE = "FALSE"
     private static final String FIRST_COMMENT = "added project"
