@@ -371,12 +371,6 @@
                 <artifactId>jackson-dataformat-csv</artifactId>
                 <version>${version.jackson}</version>
             </dependency>
-            <dependency>
-                <!--TODO: switch back to jackson parser-->
-                <groupId>org.json</groupId>
-                <artifactId>json</artifactId>
-                <version>20160810</version>
-            </dependency>
 
             <!-- Redis -->
             <dependency>
