@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -135,6 +136,9 @@ public class ApiFilter {
             }
             String operationName = matcher.group(3);
             try {
+                if ("contains".equalsIgnoreCase(operationName)) {
+                    operationName = operationName.toLowerCase(Locale.ENGLISH);
+                }
                 this.operation = FilterOperation.valueOf(operationName);
             } catch (IllegalArgumentException ignored) {
                 LOG.debug(FILTER_OPERATOR_INVALID.logFormat(operationName));

@@ -10,6 +10,9 @@ Current
 
 ### Added:
 
+- [Add case-insensitive "contains" filter](https://github.com/yahoo/fili/issues/376)
+    * Make a case-insensitive "contains" filter will be useful to some users.
+
 - [Implement EtagCacheResponseProcessor](https://github.com/yahoo/fili/pull/311)
     * Add `EtagCacheResponseProcessor` that caches the results if appropriate after completing a query according to
     etag value.
