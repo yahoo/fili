@@ -16,7 +16,7 @@ public enum WikiApiDimensionConfigInfo implements DimensionName {
     PAGE("Page is a document that is suitable for World Wide Web and web browsers", "wiki page"),
     USER("User is a person who generally use or own wiki services", "wiki user"),
     IS_UNPATROLLED("Unpatrolled are class of pages that are not been patrolled", "wiki isUnpatrolled"),
-    IS_NEW("New Page is the first page that is created in wiki ", "wiki newPage"),
+    IS_NEW("New Page is the first page that is created in wiki ", "wiki isNew"),
     IS_ROBOT("Robot is an tool that carries out repetitive and mundane tasks", "wiki isRobot"),
     IS_ANONYMOUS("Anonymous are individual or entity whose identity is unknown", "wiki isAnonymous"),
     IS_MINOR("Minor is a person who is legally considered a minor", "wiki isMinor"),
@@ -25,8 +25,7 @@ public enum WikiApiDimensionConfigInfo implements DimensionName {
     COUNTRY_NAME("Name of the Country to which the wiki page belongs", "wiki countryName"),
     REGION_NAME("Name of the Region to which the wiki page belongs", "wiki regionName"),
     METRO_CODE("Metro Code to which the wiki page belongs", "wiki metroCode"),
-    CITY_NAME("Name of the City to which the wiki page belongs", "wiki cityName")
-    ;
+    CITY_NAME("Name of the City to which the wiki page belongs", "wiki cityName");
 
     private final String camelName;
     private final String description;

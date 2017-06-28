@@ -101,8 +101,8 @@ class TablesServletSpec extends Specification {
     @Unroll
     def "Querying for table #tableName at granularity #granularity returns that table's information"() {
         setup:
-        List<String> dimensionNames = ("page, language, user, unpatrolled, newPage, robot, anonymous, namespace, " +
-                "continent, country, region, city").split(',').collect { it.trim()}
+        List<String> dimensionNames = ("comment, countryIsoCode, regionIsoCode, page, user, isUnpatrolled, isNew, isRobot, isAnonymous," +
+                " isMinor, namespace, channel, countryName, regionName, metroCode, cityName").split(',').collect { it.trim()}
 
         List<String> metricNames = "count, added, delta, deleted".split(',').collect{ it.trim()}
         String expectedResponse = """{
