@@ -42,7 +42,6 @@ import com.yahoo.bard.webservice.data.cache.HashDataCache;
 import com.yahoo.bard.webservice.data.cache.MemDataCache;
 import com.yahoo.bard.webservice.data.cache.MemTupleDataCache;
 import com.yahoo.bard.webservice.data.cache.StubDataCache;
-import com.yahoo.bard.webservice.data.cache.etag.EtagDataCache;
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
@@ -770,7 +769,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
             );
         }
         try {
-            MemTupleDataCache<String> cache = new MemTupleDataCache<>();
+            MemTupleDataCache<Long, String> cache = new MemTupleDataCache<>();
             LOG.info("MemcachedClient Version 2 started {}", cache);
             return cache;
         } catch (IOException e) {
@@ -807,7 +806,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      */
     private DataCache<?> buildETagCahe() {
         try {
-            EtagDataCache<String> cache = new EtagDataCache<>();
+            MemTupleDataCache<String, String> cache = new MemTupleDataCache<>();
             LOG.info("MemcachedClient Version 2 started {}", cache);
             return cache;
         } catch (IOException e) {
