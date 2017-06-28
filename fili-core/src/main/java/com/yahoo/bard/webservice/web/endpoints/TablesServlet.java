@@ -386,7 +386,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                 MetricsServlet.getLogicalMetricListSummaryView(logicalTable.getLogicalMetrics(), uriInfo)
         );
         resultRow.put(
-                "Available Intervals",
+                "availableIntervals",
                 logicalTable.getTableGroup().getPhysicalTables().stream()
                         .map(PhysicalTable::getAllAvailableIntervals)
                         .map(Map::entrySet)

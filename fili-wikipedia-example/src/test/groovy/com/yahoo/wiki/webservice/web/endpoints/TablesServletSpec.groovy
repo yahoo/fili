@@ -16,16 +16,16 @@ import spock.lang.Unroll
 
 @Timeout(30)    // Fail test if hangs
 class TablesServletSpec extends Specification {
-    JerseyTestBinder jtb
+    JerseyTestBinder jerseyTestBinder
 
     def setup() {
         // Create the test web container to test the resources
-        jtb = new WikiJerseyTestBinder(TablesServlet.class)
+        jerseyTestBinder = new WikiJerseyTestBinder(TablesServlet.class)
     }
 
     def cleanup() {
         // Release the test web container
-        jtb.tearDown()
+        jerseyTestBinder.tearDown()
     }
 
     def "print the details of all the tables in the Druid instance"() {
@@ -106,7 +106,7 @@ class TablesServletSpec extends Specification {
 
         List<String> metricNames = "count, added, delta, deleted".split(',').collect{ it.trim()}
         String expectedResponse = """{
-                                        "Available Intervals":[],
+                                        "availableIntervals":[],
                                         "name":"$tableName",
                                         "longName":"$tableName",
                                         "granularity":"hour",
@@ -155,7 +155,7 @@ class TablesServletSpec extends Specification {
 
     String makeRequest(String target) {
         // Set target of call
-        def httpCall = jtb.getHarness().target(target)
+        def httpCall = jerseyTestBinder.getHarness().target(target)
 
         // Make the call
         httpCall.request().get(String.class)
