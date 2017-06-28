@@ -21,7 +21,7 @@ public class MetricParser {
     private static final Logger LOG = LoggerFactory.getLogger(MetricParser.class);
 
     /**
-     * This function converts the string of metrics extracted from the url into JSONArray.
+     * This function converts the string of metrics extracted from the url into ArrayNode.
      *
      * @param metricString  An Api metric string eg:
      * <pre>{@code metricString = metric1(AND(dim1|id-in[a,b],dim2|id-in[c,d])),metric2 }</pre>
@@ -62,13 +62,12 @@ public class MetricParser {
     }
 
     /**
-     * Returns a String that is formatted to a JSON string.
+     * Add the name and filter of a metric to an ObjectNode.
+     * For eg: {"filter":{"AND":"property|id-in:[14,125],country|id-in:[US,IN]},"name":"foo"}
      *
+     * @param metricNode  the object node to fill with the name and filter on a metric
      * @param metricName  the name of the metric
      * @param metricFilter  the filter associated with the metric. Could be empty or have a value
-     *
-     * @return A String in JSON format for a given metric and filter.
-     * For eg: "filter":{"AND":"property|id-in:[14,125],country|id-in:[US,IN]},"name":"foo"
      */
     private static void addJsonFilter(ObjectNode metricNode, String metricName, String metricFilter) {
         metricNode.put("name", metricName);
