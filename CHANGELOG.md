@@ -10,7 +10,7 @@ Current
 
 ### Added:
 
-- [Add case-insensitive "contains" filter](https://github.com/yahoo/fili/issues/376)
+- [Add case-insensitive "contains" filter](https://github.com/yahoo/fili/pull/418)
     * Make a case-insensitive "contains" filter will be useful to some users.
 
 - [Implement EtagCacheResponseProcessor](https://github.com/yahoo/fili/pull/311)
