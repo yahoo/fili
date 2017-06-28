@@ -113,6 +113,11 @@ public class EtagCacheResponseProcessor implements FullResponseProcessor {
             }
         }
 
+        ((ObjectNode) json).put(
+                DruidJsonResponseContentKeys.CACHED_RESPONSE.getName(),
+                statusCode == NOT_MODIFIED.getStatusCode()
+        );
+
         if (next instanceof FullResponseProcessor) {
             next.processResponse(json, druidQuery, metadata);
         } else {

@@ -56,6 +56,9 @@ Current
 
 ### Changed:
 
+- [Include ETags on responses](https://github.com/yahoo/fili/pull/417)
+    * Modify FullResponse JSON Objects to contain a flag showing whether a response is new or fetched from cache.
+
 - [Fix wrong default druid url and broken getInnerMostQuery](https://github.com/yahoo/fili/pull/528)
     * Comment out the wrong default druid broker url in module config that break old url config compatibility, add check for validate url in `DruidClientConfigHelper `
     * Fix broken `getInnermostQuery` method in `DruidQuery`
