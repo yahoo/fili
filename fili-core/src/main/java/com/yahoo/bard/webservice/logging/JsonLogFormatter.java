@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
+
 import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +28,7 @@ public class JsonLogFormatter implements LogFormatter {
         objectMapper = new ObjectMapper();
         objectMapper.registerModule((new JodaModule()).addSerializer(Interval.class, new ToStringSerializer()));
         objectMapper.registerModule(new Jdk8Module().configureAbsentsAsNulls(false));
+        objectMapper.registerModule(new AfterburnerModule());
     }
 
     @Override
