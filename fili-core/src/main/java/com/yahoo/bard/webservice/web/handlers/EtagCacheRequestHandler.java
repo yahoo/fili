@@ -39,6 +39,7 @@ public class EtagCacheRequestHandler extends BaseDataRequestHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(EtagCacheRequestHandler.class);
     private static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry();
+    private static final Meter CACHE_HITS = REGISTRY.meter("queries.meter.cache.hits");
     private static final Meter CACHE_MISSES = REGISTRY.meter("queries.meter.cache.misses");
     private static final Meter CACHE_REQUESTS = REGISTRY.meter("queries.meter.cache.total");
 
@@ -71,8 +72,8 @@ public class EtagCacheRequestHandler extends BaseDataRequestHandler {
     ) {
         ResponseProcessor nextResponse = response;
 
-        String cacheKey = null;
         try {
+            String cacheKey = null;
             if (context.isReadCache()) {
                 cacheKey = getKey(druidQuery);
                 final TupleDataCache.DataEntry<String, String , String> cacheEntry = dataCache.get(cacheKey);
@@ -83,7 +84,8 @@ public class EtagCacheRequestHandler extends BaseDataRequestHandler {
                     // Insert "If-None-Match" header into RequestContext; the value is etag of the corresponding cache
                     context.getHeaders().putSingle(
                             eTagInRequest,
-                            mapper.readTree(cacheEntry.getValue()).get(DruidJsonResponseContentKeys.ETAG.getName())
+                            mapper.readTree(cacheEntry.getValue())
+                                    .get(DruidJsonResponseContentKeys.ETAG.getName())
                                     .asText()
                             );
 
@@ -95,6 +97,8 @@ public class EtagCacheRequestHandler extends BaseDataRequestHandler {
                     if (context.getNumberOfIncoming().decrementAndGet() == 0) {
                         RequestLog.startTiming(RESPONSE_WORKFLOW_TIMER);
                     }
+
+                    CACHE_HITS.mark(1);
                 } else { // Current query is not in data cache
                     // Insert "If-None-Match" header into RequestContext; the value a random pre-defined string
                     context.getHeaders().putSingle(
