@@ -3,10 +3,12 @@
 package com.yahoo.bard.webservice.web.handlers.workflow;
 
 import com.yahoo.bard.webservice.config.BardFeatureFlag;
+import com.yahoo.bard.webservice.config.CacheFeatureFlag;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.PartialDataHandler;
 import com.yahoo.bard.webservice.data.cache.DataCache;
+import com.yahoo.bard.webservice.data.cache.TupleDataCache;
 import com.yahoo.bard.webservice.data.volatility.VolatileIntervalsService;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
@@ -17,6 +19,7 @@ import com.yahoo.bard.webservice.web.handlers.CacheV2RequestHandler;
 import com.yahoo.bard.webservice.web.handlers.DataRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.DebugRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.DruidPartialDataRequestHandler;
+import com.yahoo.bard.webservice.web.handlers.EtagCacheRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.PaginationRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.PartialDataRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.SplitQueryRequestHandler;
@@ -115,14 +118,23 @@ public class DruidWorkflow implements RequestWorkflowProvider {
         }
 
         // If query caching is enabled, the cache is checked before sending the request
-        if (BardFeatureFlag.DRUID_CACHE.isOn()) {
-            if (BardFeatureFlag.DRUID_CACHE_V2.isOn()) {
-                uiHandler = new CacheV2RequestHandler(uiHandler, dataCache, querySigningService, mapper);
-                nonUiHandler = new CacheV2RequestHandler(nonUiHandler, dataCache, querySigningService, mapper);
-            } else {
-                uiHandler = new CacheRequestHandler(uiHandler, dataCache, mapper);
-                nonUiHandler = new CacheRequestHandler(nonUiHandler, dataCache, mapper);
-            }
+        if (CacheFeatureFlag.TTL.isOn()) {
+            uiHandler = new CacheRequestHandler(uiHandler, dataCache, mapper);
+            nonUiHandler = new CacheRequestHandler(nonUiHandler, dataCache, mapper);
+        } else if (CacheFeatureFlag.LOCAL_SIGNATURE.isOn()) {
+            uiHandler = new CacheV2RequestHandler(uiHandler, dataCache, querySigningService, mapper);
+            nonUiHandler = new CacheV2RequestHandler(nonUiHandler, dataCache, querySigningService, mapper);
+        } else if (CacheFeatureFlag.ETAG.isOn()) {
+            uiHandler = new EtagCacheRequestHandler(
+                    uiHandler,
+                    (TupleDataCache<String, String, String>) dataCache,
+                    mapper
+            );
+            nonUiHandler = new EtagCacheRequestHandler(
+                    uiHandler,
+                    (TupleDataCache<String, String, String>) dataCache,
+                    mapper
+            );
         }
 
         if (BardFeatureFlag.QUERY_SPLIT.isOn()) {
