@@ -6,8 +6,8 @@ import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
 import com.yahoo.bard.webservice.data.metric.MetricColumn
-import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
+import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 
 import org.joda.time.Interval
 
@@ -22,6 +22,28 @@ import java.util.stream.Stream
  */
 class AvailabilityTestingUtils extends Specification {
 
+    static class TestAvailability implements Availability {
+        final Set<DataSourceName> sourceDataSourceNames
+        final Map<String, Set<Interval>> intervals
+
+        TestAvailability(Set<DataSourceName> sourceDataSourceNames, Map<String, Set<Interval>> intervals) {
+            this.sourceDataSourceNames = sourceDataSourceNames
+            this.intervals = intervals
+        }
+
+        @Override
+        Set<DataSourceName> getDataSourceNames() {
+            return sourceDataSourceNames
+        }
+
+        @Override
+        Map<String, SimplifiedIntervalList> getAllAvailableIntervals() {
+            intervals.entrySet().collectEntries {
+                [(it.key): new SimplifiedIntervalList(it.value)]
+            }
+        }
+    }
+
     /**
      * Make the specified physical tables believe they have data available for the specified interval.
      *
@@ -30,7 +52,7 @@ class AvailabilityTestingUtils extends Specification {
      * @param namesOfTablesToPopulate The names of the physical tables whose availability should include the specified
      * interval, if empty then every table is made available for the specified interval, defaults to empty
      */
-    static def populatePhysicalTableCacheIntervals(
+    static populatePhysicalTableCacheIntervals(
             JerseyTestBinder jtb,
             Interval interval,
             Set<String> namesOfTablesToPopulate = [] as Set
@@ -57,12 +79,9 @@ class AvailabilityTestingUtils extends Specification {
                             metricIntervals.entrySet().stream()
                     ).collect(Collectors.toMap({ it.key }, { it.value }))
 
-                    // set new cache
+                    // set new available interval cache
                     table.setAvailability(
-                            new StrictAvailability(
-                                    DataSourceName.of(table.name),
-                                    new TestDataSourceMetadataService(allIntervals)
-                            )
+                            new TestAvailability(table.getAvailability().getDataSourceNames(), allIntervals)
                     )
                 }
     }
