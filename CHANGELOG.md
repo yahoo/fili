@@ -40,6 +40,9 @@ Current
 
 ### Fixed:
 
+- [Fix availability testing utils to be compatible with composite tables](https://github.com/yahoo/fili/pull/419)
+    * Fix availability testing utils `populatePhysicalTableCacheIntervals` to assign a `TestAvailability` that will serialize correctly instead of always `StrictAvailability`
+    * Fix internal representation of `VolatileIntervalsFunction` in `DefaultingVolatileIntervalsService` from `Map<PhysicalTable, VolatileIntervalsFunction>` to `Map<String, VolatileIntervalsFunction>`
 
 
 ### Known Issues:
