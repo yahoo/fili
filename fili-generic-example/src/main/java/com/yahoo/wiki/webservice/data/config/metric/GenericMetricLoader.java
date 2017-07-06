@@ -4,7 +4,6 @@ package com.yahoo.wiki.webservice.data.config.metric;
 
 import com.yahoo.bard.webservice.data.config.metric.MetricInstance;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
-import com.yahoo.bard.webservice.data.config.metric.makers.DoubleSumMaker;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration;
 
@@ -50,6 +49,19 @@ public class GenericMetricLoader implements MetricLoader {
                 });
 
         LOG.debug("About to load direct aggregation metrics. Metric dictionary keys: {}", metricDictionary.keySet());
+        metrics.sort((firstMetric, secondMetric) -> {
+                    if (firstMetric.getDependencyMetricNames().contains(secondMetric.getMetricName())) {
+                        return 1;
+                    } else if (secondMetric.getDependencyMetricNames().contains(firstMetric.getMetricName())) {
+                        return -1;
+                    } else {
+                        return Integer.compare(
+                                firstMetric.getDependencyMetricNames().size(),
+                                secondMetric.getDependencyMetricNames().size()
+                        );
+                    }
+                }
+        );
         addToMetricDictionary(metricDictionary, metrics);
     }
 

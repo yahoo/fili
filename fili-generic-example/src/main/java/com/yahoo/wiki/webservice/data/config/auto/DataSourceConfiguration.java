@@ -58,8 +58,9 @@ public interface DataSourceConfiguration {
         return getMetrics().stream()
                 .map(metric -> new MetricConfig(
                         metric,
-                        metric,
+                        Collections.singletonList(metric),
                         Collections.singletonList(timeGrain),
+                        Collections.emptyList(),
                         MetricConfig.MetricMakerType.DOUBLE_SUM
                 ))
                 .collect(Collectors.toSet());

@@ -18,6 +18,7 @@ import org.joda.time.DateTimeZone;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -114,7 +115,7 @@ public class FileTableConfigLoader implements Supplier<List<? extends DataSource
         };
     }
 
-    private List<TimeGrain> parseTimeGrains(JsonNode timeGrainsArray) {
+    private static List<TimeGrain> parseTimeGrains(JsonNode timeGrainsArray) {
         List<TimeGrain> allValidTimeGrains = new ArrayList<>();
         timeGrainsArray.forEach(timeGrainNode -> {
             TimeGrain validTimeGrain = DefaultTimeGrain.valueOf(timeGrainNode.asText());
@@ -123,14 +124,20 @@ public class FileTableConfigLoader implements Supplier<List<? extends DataSource
         return allValidTimeGrains;
     }
 
-    private Set<MetricConfig> parseMetricConfigs(JsonNode metrics, List<TimeGrain> tableTimeGrains) {
+    private static Set<MetricConfig> parseMetricConfigs(JsonNode metrics, List<TimeGrain> tableTimeGrains) {
         Set<MetricConfig> metricConfigs = new HashSet<>();
 
         metrics.forEach(metricConfig -> {
             String apiMetricName = metricConfig.get("apiMetricName").asText();
-            String physicalMetricName = metricConfig.has("physicalMetricName") ?
-                    metricConfig.get("physicalMetricName").asText()
-                    : apiMetricName;
+
+            List<String> depenentMetricNames;
+            if (metricConfig.has("dependentMetrics")) {
+                depenentMetricNames = parseStringArray(metricConfig, "dependentMetrics");
+            } else {
+                depenentMetricNames = Collections.singletonList(apiMetricName);
+            }
+            List<String> paramsList = parseStringArray(metricConfig, "params");
+
             String aggregationType = metricConfig.get("type").asText();
             List<TimeGrain> metricTimeGrains = metricConfig.has("timeGrains") ?
                     parseTimeGrains(metricConfig.get("timeGrains"))
@@ -139,8 +146,9 @@ public class FileTableConfigLoader implements Supplier<List<? extends DataSource
             metricConfigs.add(
                     new MetricConfig(
                             apiMetricName,
-                            physicalMetricName,
+                            depenentMetricNames,
                             metricTimeGrains,
+                            paramsList,
                             aggregationType
                     )
             );
@@ -149,7 +157,20 @@ public class FileTableConfigLoader implements Supplier<List<? extends DataSource
         return metricConfigs;
     }
 
-    private Set<DimensionConfig> parseDimensionConfigs(JsonNode dimensions) {
+    private static List<String> parseStringArray(JsonNode array, String field) {
+        List<String> paramsList = new ArrayList<>();
+        if (array.has(field)) {
+            array.get(field).forEach(jsonNode -> {
+                String value = jsonNode.asText().trim();
+                if (!value.isEmpty()) {
+                    paramsList.add(value);
+                }
+            });
+        }
+        return paramsList;
+    }
+
+    private static Set<DimensionConfig> parseDimensionConfigs(JsonNode dimensions) {
         Set<DimensionConfig> dimensionConfigs = new HashSet<>();
 
         dimensions.forEach(dimensionConfig -> {

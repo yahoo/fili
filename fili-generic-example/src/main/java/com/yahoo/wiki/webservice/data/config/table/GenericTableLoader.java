@@ -82,14 +82,14 @@ public class GenericTableLoader extends BaseTableLoader {
             metadataService.update(
                     DataSourceName.of(dataSourceConfiguration.getApiTableName()), //NOTE IMPORTANT FIX
                     new DataSourceMetadata(
-                            dataSourceConfiguration.getPhysicalTableName(),
+                            dataSourceConfiguration.getApiTableName(),
                             Collections.emptyMap(),
                             Collections.emptyList()
                     )
             );
 
             dataSourceToDruidMetricNames.put(
-                    dataSourceConfiguration.getPhysicalTableName(),
+                    dataSourceConfiguration.getApiTableName(),
                     dataSourceConfiguration.getMetricConfigs()
                             .stream()
                             .map(MetricConfig::getDruidMetricName)
@@ -97,7 +97,7 @@ public class GenericTableLoader extends BaseTableLoader {
             );
 
             dataSourceToTableDefinitions.put(
-                    dataSourceConfiguration.getPhysicalTableName(),
+                    dataSourceConfiguration.getApiTableName(),
                     getPhysicalTableDefinitions(
                             dataSourceConfiguration,
                             dataSourceConfiguration.getZonedTimeGrain()
@@ -105,7 +105,7 @@ public class GenericTableLoader extends BaseTableLoader {
             );
 
             dataSourceToApiMetricNames.put(
-                    dataSourceConfiguration.getPhysicalTableName(),
+                    dataSourceConfiguration.getApiTableName(),
                     dataSourceConfiguration.getMetricConfigs()
                             .stream()
                             .map(MetricConfig::getFiliApiMetricName)
@@ -113,7 +113,7 @@ public class GenericTableLoader extends BaseTableLoader {
             );
 
             dataSourceToValidGrains.put(
-                    dataSourceConfiguration.getPhysicalTableName(),
+                    dataSourceConfiguration.getApiTableName(),
                     dataSourceConfiguration.getGranularities()
             );
         });
@@ -136,7 +136,7 @@ public class GenericTableLoader extends BaseTableLoader {
                 new ConcretePhysicalTableDefinition(
                         dataSourceConfiguration.getTableName(),
                         timeGrain,
-                        dataSourceToDruidMetricNames.get(dataSourceConfiguration.getPhysicalTableName()),
+                        dataSourceToDruidMetricNames.get(dataSourceConfiguration.getApiTableName()),
                         dataSourceConfiguration.getDimensionConfigs()
                 )
         );
@@ -152,22 +152,22 @@ public class GenericTableLoader extends BaseTableLoader {
         configLoader.get()
                 .forEach(table -> {
                     Set<TableName> currentTableGroupTableNames = dataSourceToTableDefinitions
-                            .get(table.getPhysicalTableName())
+                            .get(table.getApiTableName())
                             .stream()
                             .map(PhysicalTableDefinition::getName)
                             .collect(Collectors.toSet());
 
                     TableGroup tableGroup = buildDimensionSpanningTableGroup(
                             currentTableGroupTableNames,
-                            dataSourceToTableDefinitions.get(table.getPhysicalTableName()),
+                            dataSourceToTableDefinitions.get(table.getApiTableName()),
                             dictionaries,
-                            dataSourceToApiMetricNames.get(table.getPhysicalTableName())
+                            dataSourceToApiMetricNames.get(table.getApiTableName())
                     );
 
                     loadLogicalTableWithGranularities(
                             table.getTableName().asName(),
                             tableGroup,
-                            dataSourceToValidGrains.get(table.getPhysicalTableName()),
+                            dataSourceToValidGrains.get(table.getApiTableName()),
                             dictionaries
                     );
                 });

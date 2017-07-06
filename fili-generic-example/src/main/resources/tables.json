@@ -3,7 +3,7 @@
     {
       "apiTableName": "wikiticker",
       "zonedTimeGrain": {
-        "timeGrain": "DAY",
+        "timeGrain": "HOUR",
         "timeZone": "UTC"
       },
       "timeGrains": [
@@ -13,7 +13,29 @@
       "metrics": [
         {
           "apiMetricName": "added",
-          "type": "doubleSum"
+          "type": "longSum"
+        },
+        {
+          "apiMetricName": "deleted",
+          "type": "longSum"
+        },
+        {
+          "apiMetricName": "delta",
+          "type": "longSum"
+        },
+        {
+          "apiMetricName": "customDelta",
+          "type": "arithmetic",
+          "dependentMetrics": [
+            "added",
+            "deleted"
+          ],
+          "params": [ "-" ]
+        },
+        {
+          "apiMetricName": "count",
+          "type": "count",
+          "dependentMetrics": []
         }
       ],
       "dimensions": [

@@ -122,5 +122,14 @@ public class ArithmeticPostAggregation extends PostAggregation implements WithFi
         public String getDruidName() {
             return druidName;
         }
+
+        public static ArithmeticPostAggregationFunction fromDruidName(String druidName) {
+            for (ArithmeticPostAggregationFunction fn : values()) {
+                if (fn.druidName.equals(druidName)) {
+                    return fn;
+                }
+            }
+            return null;
+        }
     }
 }
