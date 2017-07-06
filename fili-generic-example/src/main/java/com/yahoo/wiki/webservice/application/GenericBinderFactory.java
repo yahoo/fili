@@ -32,7 +32,6 @@ public class GenericBinderFactory extends AbstractBinderFactory {
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
     private static final String TABLE_CONFIG = SYSTEM_CONFIG.getPackageVariableName("table_config");
     private final Supplier<List<? extends DataSourceConfiguration>> configLoader;
-    private final GenericDimensionConfigs genericDimensionConfigs;
 
     /**
      * Constructs a GenericBinderFactory using the MetadataDruidWebService
@@ -50,17 +49,16 @@ public class GenericBinderFactory extends AbstractBinderFactory {
                 throw new RuntimeException("Couldn't load configuration file " + tableConfigFile, e);
             }
         }
-        genericDimensionConfigs = new GenericDimensionConfigs(configLoader);
     }
 
     @Override
     protected Set<DimensionConfig> getDimensionConfigurations() {
-        return genericDimensionConfigs.getAllDimensionConfigurations();
+        return new GenericDimensionConfigs(configLoader).getAllDimensionConfigurations();
     }
 
     @Override
     protected TableLoader getTableLoader() {
-        return new GenericTableLoader(configLoader, genericDimensionConfigs, getDataSourceMetadataService());
+        return new GenericTableLoader(configLoader, getDataSourceMetadataService());
     }
 
     @Override

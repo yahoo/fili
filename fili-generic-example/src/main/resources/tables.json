@@ -2,6 +2,7 @@
   "tables": [
     {
       "apiTableName": "wikiticker",
+      "physicalTableName": "wikiticker",
       "zonedTimeGrain": {
         "timeGrain": "HOUR",
         "timeZone": "UTC"
@@ -13,6 +14,7 @@
       "metrics": [
         {
           "apiMetricName": "added",
+          "dependentMetrics": [ "added" ],
           "type": "longSum"
         },
         {
@@ -21,26 +23,31 @@
         },
         {
           "apiMetricName": "delta",
-          "type": "longSum"
+          "type": "doubleSum",
+          "timeGrains": [
+            "DAY"
+          ]
         },
         {
-          "apiMetricName": "customDelta",
+          "apiMetricName": "manualDelta",
           "type": "arithmetic",
           "dependentMetrics": [
             "added",
             "deleted"
           ],
           "params": [ "-" ]
-        },
-        {
-          "apiMetricName": "count",
-          "type": "count",
-          "dependentMetrics": []
         }
       ],
       "dimensions": [
         {
-          "apiDimensionName": "metroCode"
+          "apiDimensionName": "metroCode",
+          "physicalDimensionName": "metroCode",
+          "description": "the metroCode for the edit made",
+          "longName": "wiki metroCode",
+          "category": "General"
+        },
+        {
+          "apiDimensionName": "isRobot"
         }
       ]
     }

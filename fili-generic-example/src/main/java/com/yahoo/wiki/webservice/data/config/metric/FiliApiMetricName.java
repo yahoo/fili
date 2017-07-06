@@ -19,12 +19,8 @@ public class FiliApiMetricName implements ApiMetricName {
      * Constructs a FiliApiMetricName.
      *
      * @param apiName  The apiName of the metric.
-     * @param timeGrain  A valid timegrain for this metric.
+     * @param timeGrains  A list of valid timegrains for this metric.
      */
-    public FiliApiMetricName(String apiName, TimeGrain timeGrain) {
-        this(apiName, Collections.singletonList(timeGrain));
-    }
-
     public FiliApiMetricName(String apiName, List<TimeGrain> timeGrains) {
         this.apiName = apiName;
         this.timeGrains = timeGrains;

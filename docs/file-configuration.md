@@ -49,8 +49,9 @@ The json format is:
 | field                  | required | description           
 |------------------------|----------|-----------------------
 | `"apiMetricName"`      | yes      |  The unique name of the metric for fili.
-| `"physicalMetricName"` | no       | The physical name for the metric in the backend (i.e. Druid). By default assumed to be the same as `"apiMetricName"`.
-| `"type"`               | yes      | The type of aggregation to be performed {`longMin`, `longMax`, `longSum`, `doubleMin`, `doubleMax`, `doubleSum`}.
+| `"dependentMetrics"`   | depends  | The physical name for the metric in the backend (i.e. Druid). By default assumed to be `"apiMetricName"`. Required for `arithmetic` type.
+| `"type"`               | yes      | The type of aggregation to be performed {`longMin`, `longMax`, `longSum`, `doubleMin`, `doubleMax`, `doubleSum`, `arithmetic`, `aggregationAverage`, `count`, `rowNum`}.
+| `"params"`             | depends  | For `arithmetic`, should be one of {`"+"`,`"-"`,`"*"`,`"/"`,}. For `aggregationAverage`, should be a single time grain.
 | `"timeGrains"`         | no       | If you would like to override the timegrains for this metrics. For example, a metric could only be valid for a `["DAY"]` grain while the table supports both `["HOUR", "DAY"]`.
 
 #### Dimensions Schema
@@ -72,68 +73,64 @@ Let's say we want to set up a table called `wikipedia` (as in the Wikipedia Exam
 1. We want to refer to the table as `wikipedia` in fili and use `wikiticker` table from Druid.
 
     ```json
-    {
-      "apiTableName": "wikipedia",
-      "physicalTableName": "wikiticker",
-       ...
-    }
+    "apiTableName": "wikipedia",
+    "physicalTableName": "wikiticker",
     ```
 
 2. Let's make this table valid over `HOUR` and `DAY` timegrains. The `"zonedTimeGrain/timeGrain"` should be the
   smaller of the timegrains.
  
     ```json
-    {
-       ...
-        "zonedTimeGrain": {
-          "timeGrain": "HOUR",
-          "timeZone": "UTC"
-        },
-        "timeGrains": [
-          "HOUR",
-          "DAY"
-        ],
-       ...
-    }
+    "zonedTimeGrain": {
+      "timeGrain": "HOUR",
+      "timeZone": "UTC"
+    },
+    "timeGrains": [
+      "HOUR",
+      "DAY"
+    ]
     ```
 3. Let's add some metrics. We'll make `added` be a `doubleSum` and `deleted` be a `longSum`. We'll also give them a 
-more descriptive api name
+more descriptive api name. We'll also manually calculate the delta for each edit as `manualDelta` and compare it to `delta` from Druid.
 
     *Note: There is no need to have different api and physical names unless you have another metric with the same name.*
 
     ```json
-    {
-      ...
-      "metrics" : [
-        {
-          "apiMetricName": "charactersAdded",
-          "physicalMetricName": "added",
-          "type": "doubleSum"
-        },
-        {
-          "apiMetricName": "charactersDeleted",
-          "physicalMetricName": "deleted",
-          "type": "longSum"
-        }
-      ],
-      ...
-    }
+    "metrics": [
+      {
+        "apiMetricName": "charactersAdded",
+        "dependentMetrics": [ "added" ],
+        "type": "doubleSum"
+      },
+      {
+        "apiMetricName": "charactersDeleted",
+        "dependentMetrics": [ "deleted" ],
+        "type": "longSum"
+      },
+      {
+        "apiMetricName": "delta",
+        "type": "doubleSum"
+      },
+      {
+        "apiMetricName": "manualDelta",
+        "dependentMetrics": [ "charactersAdded", "charactersDeleted" ],
+        "type": "arithmetic",
+        "params": [ "-" ]
+      }
+    ]
     ```
 
 4. Let's add some dimensions. We'll add `language`.
 
     ```json
-    {
-      ...
-      "dimensions": [
-        {
+    "dimensions": [
+      {
         "apiDimensionName": "language",
         "description": "The lanuage used to write the page.",
         "longName": "wiki page language",
         "category": "External"
-        }
-      ]
-    }
+      }
+    ]
     ```
     
 5. Putting it all together we have
@@ -155,13 +152,23 @@ more descriptive api name
           "metrics": [
             {
               "apiMetricName": "charactersAdded",
-              "physicalMetricName": "added",
+              "dependentMetrics": [ "added" ],
               "type": "doubleSum"
             },
             {
               "apiMetricName": "charactersDeleted",
-              "physicalMetricName": "deleted",
+              "dependentMetrics": [ "deleted" ],
               "type": "longSum"
+            },
+            {
+              "apiMetricName": "delta",
+                 "type": "doubleSum"
+            },
+            {
+              "apiMetricName": "manualDelta",
+              "dependentMetrics": [ "charactersAdded", "charactersDeleted" ],
+              "type": "arithmetic",
+              "params": [ "-" ]
             }
           ],
           "dimensions": [

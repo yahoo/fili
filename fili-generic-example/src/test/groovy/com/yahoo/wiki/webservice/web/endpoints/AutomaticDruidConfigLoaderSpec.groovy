@@ -4,7 +4,7 @@ import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService
 import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration
 import com.yahoo.wiki.webservice.data.config.auto.DruidNavigator
-import com.yahoo.wiki.webservice.data.config.auto.TableConfig
+import com.yahoo.wiki.webservice.data.config.auto.BasicDataSourceConfiguration
 import spock.lang.Specification
 
 public class AutomaticDruidConfigLoaderSpec extends Specification {
@@ -79,10 +79,10 @@ public class AutomaticDruidConfigLoaderSpec extends Specification {
 
     def "get metric names from druid"() {
         setup:
-        TableConfig wikiticker
+        BasicDataSourceConfiguration wikiticker
 
         when: "We send a request"
-        wikiticker = new TableConfig("$datasource")
+        wikiticker = new BasicDataSourceConfiguration("$datasource")
         druidNavigator.loadTable(wikiticker)
 
         then: "what we expect"

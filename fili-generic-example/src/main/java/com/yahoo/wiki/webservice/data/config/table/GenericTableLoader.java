@@ -54,33 +54,29 @@ public class GenericTableLoader extends BaseTableLoader {
      * Constructor.
      *
      * @param configLoader  Gives a list of {@link DataSourceConfiguration} to build tables from.
-     * @param genericDimensionConfigs  Reference to the already constructed dimensions.
      * @param metadataService  Service containing the segment data for constructing tables.
      */
     public GenericTableLoader(
             @NotNull Supplier<List<? extends DataSourceConfiguration>> configLoader,
-            @NotNull GenericDimensionConfigs genericDimensionConfigs,
             DataSourceMetadataService metadataService
     ) {
         super(metadataService);
         this.configLoader = configLoader;
-        configureTables(genericDimensionConfigs, metadataService);
+        configureTables(metadataService);
     }
 
     /**
      * Set up the tables for this table loader.
      *
-     * @param genericDimensionConfigs  The dimensions to load into test tables.
      * @param metadataService  The metadata service to plays the datasources in.
      */
     private void configureTables(
-            GenericDimensionConfigs genericDimensionConfigs,
             DataSourceMetadataService metadataService
     ) {
         configLoader.get().forEach(dataSourceConfiguration -> {
 
             metadataService.update(
-                    DataSourceName.of(dataSourceConfiguration.getApiTableName()), //NOTE IMPORTANT FIX
+                    DataSourceName.of(dataSourceConfiguration.getApiTableName()),
                     new DataSourceMetadata(
                             dataSourceConfiguration.getApiTableName(),
                             Collections.emptyMap(),

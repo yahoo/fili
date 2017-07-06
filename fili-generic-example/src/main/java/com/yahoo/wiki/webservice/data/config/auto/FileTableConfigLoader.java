@@ -27,8 +27,36 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
+ * Parses a json schema of which allows for file based configuration of tables.
  *
- *
+ * Here is the basic layout for a table schema.
+ * {
+ *     "apiTableName": "wikipedia",
+ *     "physicalTableName": "wikiticker",
+ *     "zonedTimeGrain": {
+ *          "timeGrain": "DAY",
+ *           "timeZone": "UTC"
+ *     },
+ *     "timeGrains": [
+ *          "HOUR",
+ *          "DAY"
+ *     ],
+ *     "metrics": [
+ *          {
+ *               "apiMetricName": "charactersAdded",
+ *               "physicalMetricName": "added",
+ *               "type": "doubleSum",
+ *               "timeGrains": [ "DAY" ]
+ *          }
+ *     ],
+ *     "dimensions": {
+ *         "apiDimensionName": "wikiMetroCode",
+ *         "physicalDimensionName": "metroCode",
+ *         "description": "the metroCode for this edit",
+ *         "longName": "wiki metroCode",
+ *         "category": "General"
+ *     }
+ * }
  */
 public class FileTableConfigLoader implements Supplier<List<? extends DataSourceConfiguration>> {
     private final List<DataSourceConfiguration> datasources;
