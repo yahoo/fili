@@ -11,10 +11,15 @@
         "HOUR",
         "DAY"
       ],
+      "category": "General",
+      "description": "The wiki table",
+      "longName": "wikipedia table",
       "metrics": [
         {
           "apiMetricName": "added",
-          "dependentMetrics": [ "added" ],
+          "dependentMetrics": [
+            "added"
+          ],
           "type": "longSum"
         },
         {
@@ -35,7 +40,9 @@
             "added",
             "deleted"
           ],
-          "params": [ "-" ]
+          "params": [
+            "-"
+          ]
         }
       ],
       "dimensions": [

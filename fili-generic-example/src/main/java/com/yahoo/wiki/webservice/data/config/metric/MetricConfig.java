@@ -1,4 +1,4 @@
-package com.yahoo.wiki.webservice.data.config.auto;
+package com.yahoo.wiki.webservice.data.config.metric;
 
 import com.yahoo.bard.webservice.data.config.metric.MetricInstance;
 import com.yahoo.bard.webservice.data.config.metric.makers.AggregationAverageMaker;
@@ -99,18 +99,14 @@ public class MetricConfig {
         DOUBLE_MIN((metricDictionary, params) -> new DoubleMinMaker(metricDictionary)),
         DOUBLE_MAX((metricDictionary, params) -> new DoubleMaxMaker(metricDictionary)),
         DOUBLE_SUM((metricDictionary, params) -> new DoubleSumMaker(metricDictionary)),
-        ARITHMETIC((metricDictionary, params) -> {
-            return new ArithmeticMaker(
-                    metricDictionary,
-                    ArithmeticPostAggregation.ArithmeticPostAggregationFunction.fromDruidName(params.get(0))
-            );
-        }),
-        AGGREGATION_AVERAGE((metricDictionary, params) -> {
-            return new AggregationAverageMaker(
-                    metricDictionary,
-                    DefaultTimeGrain.valueOf(params.get(0))
-            );
-        }),
+        ARITHMETIC((metricDictionary, params) -> new ArithmeticMaker(
+                metricDictionary,
+                ArithmeticPostAggregation.ArithmeticPostAggregationFunction.fromDruidName(params.get(0))
+        )),
+        AGGREGATION_AVERAGE((metricDictionary, params) -> new AggregationAverageMaker(
+                metricDictionary,
+                DefaultTimeGrain.valueOf(params.get(0))
+        )),
         COUNT((metricDictionary, params) -> new CountMaker(metricDictionary)),
         ROW_NUM((metricDictionary, params) -> new RowNumMaker(metricDictionary));
 

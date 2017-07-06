@@ -26,10 +26,12 @@ public class GenericDimensionConfigs {
         allDimensionConfigs = configLoader.get().stream()
                 .map(DataSourceConfiguration::getDimensionConfigs)
                 .flatMap(Set::stream)
-                .collect(Collectors.collectingAndThen(
-                        Collectors.toSet(),
-                        Collections::unmodifiableSet
-                ));
+                .collect(
+                        Collectors.collectingAndThen(
+                                Collectors.toSet(),
+                                Collections::unmodifiableSet
+                        )
+                );
     }
 
     /**

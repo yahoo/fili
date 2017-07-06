@@ -2,17 +2,21 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.auto;
 
+import static com.yahoo.bard.webservice.table.LogicalTable.DEFAULT_CATEGORY;
+
 import com.yahoo.bard.webservice.data.config.dimension.DefaultDimensionField;
 import com.yahoo.bard.webservice.data.config.dimension.DefaultKeyValueStoreDimensionConfig;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager;
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager;
+import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.util.Utils;
+import com.yahoo.wiki.webservice.data.config.metric.MetricConfig;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -37,13 +41,25 @@ public interface DataSourceConfiguration {
 
     String getApiTableName();
 
+    default String getCategory() {
+        return DEFAULT_CATEGORY;
+    }
+
+    default String getLongName() {
+        return getApiTableName();
+    }
+
+    default String getDescription() {
+        return getApiTableName();
+    }
+
     /**
      * Gets the name of the datasource to be used as a {@link TableName} in fili.
      *
      * @return the {@link TableName} for this datasource.
      */
     default TableName getTableName() {
-        return this::getApiTableName;
+        return TableName.of(getApiTableName());
     }
 
     /**
@@ -78,9 +94,9 @@ public interface DataSourceConfiguration {
                 .map(dimensionName -> new DefaultKeyValueStoreDimensionConfig(
                                 () -> dimensionName,
                                 dimensionName,
-                                "",
                                 dimensionName,
-                                "General",
+                                dimensionName,
+                                LogicalMetric.DEFAULT_CATEGORY,
                                 Utils.asLinkedHashSet(DefaultDimensionField.ID),
                                 MapStoreManager.getInstance(dimensionName),
                                 ScanSearchProviderManager.getInstance(dimensionName)

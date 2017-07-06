@@ -6,30 +6,24 @@ import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.data.config.names.FieldName;
-import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.config.table.BaseTableLoader;
 import com.yahoo.bard.webservice.data.config.table.ConcretePhysicalTableDefinition;
 import com.yahoo.bard.webservice.data.config.table.PhysicalTableDefinition;
-import com.yahoo.bard.webservice.data.time.TimeGrain;
+import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
-import com.yahoo.bard.webservice.data.time.ZonelessTimeGrain;
-import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadata;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
+import com.yahoo.bard.webservice.table.LogicalTable;
+import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.table.TableGroup;
+import com.yahoo.bard.webservice.table.TableIdentifier;
 import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration;
-import com.yahoo.wiki.webservice.data.config.auto.MetricConfig;
-import com.yahoo.wiki.webservice.data.config.dimension.GenericDimensionConfigs;
-import com.yahoo.wiki.webservice.data.config.metric.DruidMetricName;
-import com.yahoo.wiki.webservice.data.config.metric.FiliApiMetricName;
-
-import org.joda.time.DateTimeZone;
+import com.yahoo.wiki.webservice.data.config.metric.MetricConfig;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -145,27 +139,35 @@ public class GenericTableLoader extends BaseTableLoader {
      */
     @Override
     public void loadTableDictionary(ResourceDictionaries dictionaries) {
+        LogicalTableDictionary logicalDictionary = dictionaries.getLogicalDictionary();
+        MetricDictionary metricDictionary = dictionaries.getMetricDictionary();
+
         configLoader.get()
-                .forEach(table -> {
-                    Set<TableName> currentTableGroupTableNames = dataSourceToTableDefinitions
-                            .get(table.getApiTableName())
-                            .stream()
-                            .map(PhysicalTableDefinition::getName)
-                            .collect(Collectors.toSet());
-
+                .forEach(dataSourceConfiguration -> {
                     TableGroup tableGroup = buildDimensionSpanningTableGroup(
-                            currentTableGroupTableNames,
-                            dataSourceToTableDefinitions.get(table.getApiTableName()),
+                            Collections.singleton(dataSourceConfiguration.getTableName()),
+                            dataSourceToTableDefinitions.get(dataSourceConfiguration.getApiTableName()),
                             dictionaries,
-                            dataSourceToApiMetricNames.get(table.getApiTableName())
+                            dataSourceToApiMetricNames.get(dataSourceConfiguration.getApiTableName())
                     );
 
-                    loadLogicalTableWithGranularities(
-                            table.getTableName().asName(),
-                            tableGroup,
-                            dataSourceToValidGrains.get(table.getApiTableName()),
-                            dictionaries
-                    );
+                    // For every legal grain
+                    dataSourceToValidGrains.get(dataSourceConfiguration.getApiTableName())
+                            .stream()
+                            .map(grain -> new LogicalTable(
+                                    dataSourceConfiguration.getTableName().asName(),
+                                    dataSourceConfiguration.getCategory(),
+                                    dataSourceConfiguration.getLongName(),
+                                    grain,
+                                    LogicalTable.DEFAULT_RETENTION,
+                                    dataSourceConfiguration.getDescription(),
+                                    tableGroup,
+                                    metricDictionary
+                            ))
+                            .forEach(logicalTable -> logicalDictionary.put(
+                                    new TableIdentifier(logicalTable),
+                                    logicalTable
+                            ));
                 });
     }
 }
