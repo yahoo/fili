@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.data.config.dimension;
 
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
+import com.yahoo.bard.webservice.util.EnumUtils;
 
 /**
  * DimensionField enum.
@@ -20,7 +21,7 @@ public enum DefaultDimensionField implements DimensionField {
      */
     DefaultDimensionField(String description) {
         this.description = description;
-        this.camelName = name();
+        this.camelName = EnumUtils.camelCase(name());
     }
 
     @Override
