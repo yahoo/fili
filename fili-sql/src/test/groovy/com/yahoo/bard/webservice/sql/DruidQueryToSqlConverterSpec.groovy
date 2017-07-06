@@ -20,8 +20,6 @@ import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.get
 
 import com.yahoo.bard.webservice.database.Database
 import com.yahoo.bard.webservice.druid.model.orderby.LimitSpec
-import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn
-import com.yahoo.bard.webservice.druid.model.orderby.SortDirection
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery
 import com.yahoo.bard.webservice.druid.model.query.Granularity
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
