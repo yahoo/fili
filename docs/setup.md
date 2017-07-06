@@ -9,7 +9,7 @@ Table of Contents
 
 - [Prerequisites](#prerequisites)
 - [High Level Steps](#high-level-steps)
-- [Fili Integration Application](#bard-integration-application)
+- [Fili Wikipedia Example](#fili-wikipedia-example)
 - [Configure Metadata](#configure-metadata)
 - [Configuration Files](#configuration-files)
 - [Scripts](#scripts)
@@ -36,7 +36,7 @@ High Level Steps
 
 The following is a bird's eye view of the steps you must take to stand up a Fili instance.
 
-- [Clone the bard wikipedia example into a separate project](#fili-wikipedia-example).
+- [Clone the fili wikipedia example into a separate project](#fili-wikipedia-example).
 
 - [Modify the dimension, metric, physical table and logical table information to fit the needs of your 
 application.](#configure-metadata)
@@ -50,7 +50,7 @@ application.](#configure-metadata)
 Fili Wikipedia Example
 ----------------------------
 
-The [Fili wikipedia example][bard-wikipedia-example] is where you will leverage the Fili library. Here is where
+The [Fili wikipedia example][fili-wikipedia-example] is where you will leverage the Fili library. Here is where
 you will configure your application-specific metrics, dimensions, and tables.
 
 Configure Metadata
@@ -226,9 +226,9 @@ set up your dimension loader. You can get more details about the problem at the 
 If the dimensions are not being loaded, then see the [Dimension Loading](#dimension-loading) for more details on how
 to set up the dimension loader (or [configure all of your dimensions to be non-loaded](#non-loaded-dimensions)).
 
-[applicationConfig]: https://github.com/yahoo/fili/blob/master/fili-wikipedia-example/src/main/resources/applicationConfig.properties
+[applicationConfig]: ../fili-wikipedia-example/src/main/resources/applicationConfig.properties
 
-[fili-wikipedia-example]: https://github.com/yahoo/fili/tree/master/fili-wikipedia-example
+[fili-wikipedia-example]: ../fili-wikipedia-example
 [binderDocumentation]: https://github.com/yahoo/fili/issues/11
 
 [configuringDimensionsDocumentation]: https://github.com/yahoo/fili/issues/12
@@ -244,8 +244,8 @@ to set up the dimension loader (or [configure all of your dimensions to be non-l
 
 [mdbm]: http://yahoo.github.io/mdbm/
 
-[noOpSearchProvider]: ../src/main/java/com/yahoo/bard/webservice/data/dimension/impl/NoOpSearchProvider.java
+[noOpSearchProvider]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/dimension/impl/NoOpSearchProvider.java
 
-[pomXml]: https://github.com/yahoo/fili/blob/master/fili-core/pom.xml
+[pomXml]: ../fili-core/pom.xml
 
 [redis]: http://redis.io/
