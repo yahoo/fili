@@ -5,22 +5,29 @@ package com.yahoo.wiki.webservice.data.config.metric;
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Holds a metric name which is stored in fili.
  */
 public class FiliApiMetricName implements ApiMetricName {
     private final String apiName;
-    private final TimeGrain timeGrain;
+    private final List<TimeGrain> timeGrains;
 
     /**
      * Constructs a FiliApiMetricName.
      *
-     * @param name  The name of the metric.
+     * @param apiName  The apiName of the metric.
      * @param timeGrain  A valid timegrain for this metric.
      */
-    public FiliApiMetricName(String name, TimeGrain timeGrain) {
-        this.apiName = name;
-        this.timeGrain = timeGrain;
+    public FiliApiMetricName(String apiName, TimeGrain timeGrain) {
+        this(apiName, Collections.singletonList(timeGrain));
+    }
+
+    public FiliApiMetricName(String apiName, List<TimeGrain> timeGrains) {
+        this.apiName = apiName;
+        this.timeGrains = timeGrains;
     }
 
     @Override
@@ -35,7 +42,7 @@ public class FiliApiMetricName implements ApiMetricName {
 
     @Override
     public boolean isValidFor(TimeGrain grain) {
-        return grain.satisfiedBy(timeGrain);
+        return timeGrains.stream().anyMatch(grain::satisfiedBy);
     }
 
     @Override

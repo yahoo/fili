@@ -1,0 +1,26 @@
+{
+  "tables": [
+    {
+      "apiTableName": "wikiticker",
+      "zonedTimeGrain": {
+        "timeGrain": "DAY",
+        "timeZone": "UTC"
+      },
+      "timeGrains": [
+        "HOUR",
+        "DAY"
+      ],
+      "metrics": [
+        {
+          "apiMetricName": "added",
+          "type": "doubleSum"
+        }
+      ],
+      "dimensions": [
+        {
+          "apiDimensionName": "metroCode"
+        }
+      ]
+    }
+  ]
+}

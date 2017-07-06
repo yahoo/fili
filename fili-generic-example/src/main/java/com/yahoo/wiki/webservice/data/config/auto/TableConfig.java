@@ -2,8 +2,11 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.auto;
 
-import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
+import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
+import com.yahoo.bard.webservice.data.time.ZonelessTimeGrain;
+
+import org.joda.time.DateTimeZone;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -62,18 +65,13 @@ public class TableConfig implements DataSourceConfiguration {
      * @return the name of the table.
      */
     @Override
-    public String getName() {
+    public String getPhysicalTableName() {
         return tableName;
     }
 
-    /**
-     * Gets the {@link TableName} of the current datasource.
-     *
-     * @return the TableName for the TableConfig.
-     */
     @Override
-    public TableName getTableName() {
-        return this::getName;
+    public String getApiTableName() {
+        return getPhysicalTableName();
     }
 
     /**
@@ -96,13 +94,17 @@ public class TableConfig implements DataSourceConfiguration {
         return Collections.unmodifiableList(dimensions);
     }
 
-    /**
-     * Gets the valid TimeGrains for the datasource.
-     *
-     * @return the valid TimeGrains stored in the TableConfig.
-     */
     @Override
-    public TimeGrain getValidTimeGrain() {
-        return timeGrain;
+    public ZonedTimeGrain getZonedTimeGrain() {
+        return new ZonedTimeGrain(
+                (ZonelessTimeGrain) timeGrain,
+                DateTimeZone.UTC
+        );
     }
+
+    @Override
+    public List<TimeGrain> getValidTimeGrains() {
+        return Collections.singletonList(timeGrain);
+    }
+
 }

@@ -61,21 +61,21 @@ class SingleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServle
               "rows" : [
                   {
                     "dateTime" : "2014-06-02 00:00:00.000",
-                    "${WikiApiDimensionName.PAGE.asName()}|ID" : "Foo",
+                    "${WikiApiDimensionName.PAGE.asName()}|id" : "Foo",
                     "${WikiApiMetricName.COUNT.asName()}" : 10,
                     "${WikiApiMetricName.ADDED.asName()}" : 10,
                     "${WikiApiMetricName.DELTA.asName()}" : 20
                   },
                   {
                     "dateTime" : "2014-06-02 00:00:00.000",
-                    "${WikiApiDimensionName.PAGE.asName()}|ID" : "Bar",
+                    "${WikiApiDimensionName.PAGE.asName()}|id" : "Bar",
                     "${WikiApiMetricName.COUNT.asName()}" : 11,
                     "${WikiApiMetricName.ADDED.asName()}" : 11,
                     "${WikiApiMetricName.DELTA.asName()}" : 22
                   },
                   {
                     "dateTime" : "2014-06-02 00:00:00.000",
-                    "${WikiApiDimensionName.PAGE.asName()}|ID" : "Baz",
+                    "${WikiApiDimensionName.PAGE.asName()}|id" : "Baz",
                     "${WikiApiMetricName.COUNT.asName()}" : 12,
                     "${WikiApiMetricName.ADDED.asName()}" : 12,
                     "${WikiApiMetricName.DELTA.asName()}" : 24

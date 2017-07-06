@@ -123,7 +123,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      * @return future response for the query loading the table
      */
     private Future<Response> loadTable(TableConfig table) {
-        String url = COORDINATOR_TABLES_PATH + table.getName() + "/?full";
+        String url = COORDINATOR_TABLES_PATH + table.getPhysicalTableName() + "/?full";
         String segmentsPath = "segments";
         return queryDruid(rootNode -> {
             if (rootNode.get(segmentsPath).size() == 0) {
@@ -134,7 +134,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
             loadMetrics(table, segments);
             loadDimensions(table, segments);
             loadTimeGrains(table, segments);
-            LOG.debug("Loaded table " + table.getName());
+            LOG.debug("Loaded table " + table.getPhysicalTableName());
         }, url);
     }
 

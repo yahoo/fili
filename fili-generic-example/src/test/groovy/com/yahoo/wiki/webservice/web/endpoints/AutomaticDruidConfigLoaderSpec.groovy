@@ -63,7 +63,7 @@ public class AutomaticDruidConfigLoaderSpec extends Specification {
         druidWebService.lastUrl == '/datasources/' + datasource + '/?full'
         List<String> returnedTableNames = new ArrayList<>()
         for (DataSourceConfiguration druidConfig : returnedTables) {
-            returnedTableNames.add(druidConfig.getName())
+            returnedTableNames.add(druidConfig.getPhysicalTableName())
         }
         returnedTableNames.contains("wikiticker")
     }
@@ -74,7 +74,7 @@ public class AutomaticDruidConfigLoaderSpec extends Specification {
 
         then: "what we expect"
         druidWebService.lastUrl == '/datasources/' + datasource + '/?full'
-        returnedTables.get(0).getValidTimeGrain() == DefaultTimeGrain.DAY
+        returnedTables.get(0).getValidTimeGrains().get(0) == DefaultTimeGrain.DAY
     }
 
     def "get metric names from druid"() {
