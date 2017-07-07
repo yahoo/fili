@@ -32,6 +32,7 @@ class FilterEvaluatorSpec extends Specification {
     def "GetDimensionNames expecting #dimensions"() {
         setup:
         RelBuilder builder = CalciteHelper.getBuilder(Database.getDataSource())
+        FilterEvaluator filterEvaluator = new FilterEvaluator(builder)
         builder.scan(WIKITICKER)
         def rexNodes = dimensions.stream()
                 .map { builder.field(it) }
@@ -39,7 +40,7 @@ class FilterEvaluatorSpec extends Specification {
 
         expect:
         builder.project(rexNodes)
-        List<String> foundDimensions = FilterEvaluator.getDimensionNames(builder, filter)
+        List<String> foundDimensions = filterEvaluator.getDimensionNames(filter)
         dimensions.stream().forEach { foundDimensions.contains(it) }
         foundDimensions.stream().forEach { dimensions.contains(it) }
         String sql = new RelToSqlConverter(SqlDialect.create(CONNECTION.getMetaData())).visitChild(0, builder.build()).

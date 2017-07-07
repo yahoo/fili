@@ -16,10 +16,7 @@ class DatabaseHelperTest extends Specification {
     static CalciteHelper calciteHelper = new CalciteHelper(Database.getDataSource(), CalciteHelper.DEFAULT_SCHEMA)
 
     def "GetTimestampColumn from table"() {
-        setup:
-        String tableWithSchema = calciteHelper.escapeTableName(WIKITICKER)
-
         expect:
-        TIME == DatabaseHelper.getTimestampColumn(connection, tableWithSchema)
+        TIME == DatabaseHelper.getTimestampColumn(connection, calciteHelper.getSchemaName(), WIKITICKER)
     }
 }

@@ -21,6 +21,7 @@ import com.yahoo.bard.webservice.sql.database.Database
 import com.yahoo.bard.webservice.sql.helper.CalciteHelper
 import com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder
 import com.yahoo.bard.webservice.sql.helper.SqlAggregationType
+import com.yahoo.bard.webservice.sql.helper.SqlTimeConverter
 import com.yahoo.bard.webservice.sql.helper.TimeConverter
 
 import org.apache.calcite.rel.rel2sql.RelToSqlConverter
@@ -38,7 +39,8 @@ class HavingsEvaluatorSpec extends Specification {
     static int ONE = 1
     static int TWO = 2
     static Connection CONNECTION = Database.initializeDatabase()
-    static ApiToFieldMapper ALIAS_MAKER = new ApiToFieldMapper(SimpleDruidQueryBuilder.getDictionary().get(WIKITICKER).schema);
+    static ApiToFieldMapper ALIAS_MAKER = new ApiToFieldMapper(SimpleDruidQueryBuilder.getDictionary().get(WIKITICKER).schema)
+    static SqlTimeConverter sqlTimeConverter = new TimeConverter()
 
     private static RelBuilder getBuilder() {
         RelBuilder builder = CalciteHelper.getBuilder(Database.getDataSource())
@@ -55,7 +57,7 @@ class HavingsEvaluatorSpec extends Specification {
         }.collect(Collectors.toList()).toArray() as RelBuilder.AggCall[]
         builder.aggregate(
                 builder.groupKey(
-                        TimeConverter.buildGroupBy(builder, DefaultTimeGrain.DAY, "TIME").collect(Collectors.toList())
+                        sqlTimeConverter.buildGroupBy(builder, DefaultTimeGrain.DAY, "TIME").collect(Collectors.toList())
                 ),
                 aggregationCalls
         )
@@ -84,7 +86,7 @@ class HavingsEvaluatorSpec extends Specification {
         RelBuilder.AggCall[] aggregationCalls = aggregations.collect { SqlAggregationType.getAggregation(it, builder) } as RelBuilder.AggCall[]
         builder.aggregate(
                 builder.groupKey(
-                        TimeConverter.buildGroupBy(builder, DefaultTimeGrain.DAY, "TIME").collect(Collectors.toList())
+                        sqlTimeConverter.buildGroupBy(builder, DefaultTimeGrain.DAY, "TIME").collect(Collectors.toList())
                 ),
                 aggregationCalls
         )

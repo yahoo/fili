@@ -63,14 +63,7 @@ public class HavingEvaluator {
         if (having == null) {
             return null;
         }
-        return DispatchUtils.dispatch(
-                HavingEvaluator.class,
-                "evaluate",
-                new Class[] {RelBuilder.class, having.getClass(), ApiToFieldMapper.class},
-                builder,
-                having,
-                apiToFieldMapper
-        );
+        return null;
     }
 
     /**
