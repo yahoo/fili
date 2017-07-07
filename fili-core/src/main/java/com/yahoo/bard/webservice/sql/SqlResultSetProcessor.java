@@ -2,11 +2,12 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.sql;
 
+import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.sql.evaluator.PostAggregationEvaluator;
-import com.yahoo.bard.webservice.sql.helper.TimeConverter;
+import com.yahoo.bard.webservice.sql.helper.SqlTimeConverter;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -34,17 +35,20 @@ public class SqlResultSetProcessor {
     private final ObjectMapper objectMapper;
     private final int columnCount;
     private final int groupByCount;
+    private final SqlTimeConverter sqlTimeConverter;
 
     public SqlResultSetProcessor(
             DruidAggregationQuery<?> druidQuery,
             BiMap<Integer, String> columnToColumnName,
             List<String[]> sqlResults,
-            ObjectMapper objectMapper
+            ObjectMapper objectMapper,
+            SqlTimeConverter sqlTimeConverter
     ) {
         this.druidQuery = druidQuery;
         this.columnToColumnName = columnToColumnName;
         this.sqlResults = sqlResults;
         this.objectMapper = objectMapper;
+        this.sqlTimeConverter = sqlTimeConverter;
 
         this.groupByCount = druidQuery.getDimensions().size();
         this.columnCount = columnToColumnName.size();
@@ -58,7 +62,11 @@ public class SqlResultSetProcessor {
             jsonWriter.writeStartArray();
             for (String[] row : sqlResults) {
                 jsonWriter.writeStartObject();
-                DateTime timestamp = TimeConverter.parseDateTime(groupByCount, row, druidQuery.getGranularity());
+                DateTime timestamp = sqlTimeConverter.getIntervalStart(
+                        groupByCount,
+                        row,
+                        (TimeGrain) druidQuery.getGranularity()
+                );
                 jsonWriter.writeStringField("timestamp", timestamp.toDateTime(DateTimeZone.UTC).toString());
                 jsonWriter.writeObjectFieldStart("event");
 
@@ -81,7 +89,7 @@ public class SqlResultSetProcessor {
             JsonGenerator jsonWriter,
             String[] row
     ) throws IOException {
-        int lastTimeIndex = TimeConverter.getNumberOfGroupByFunctions(druidQuery.getGranularity());
+        int lastTimeIndex = sqlTimeConverter.getNumberOfGroupByFunctions((TimeGrain) druidQuery.getGranularity());
         for (int i = 0; i < columnCount; i++) {
             if (groupByCount <= i && i < groupByCount + lastTimeIndex) {
                 continue;
