@@ -8,6 +8,7 @@ import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.data.config.names.FieldName;
 import com.yahoo.bard.webservice.data.config.table.BaseTableLoader;
 import com.yahoo.bard.webservice.data.config.table.ConcretePhysicalTableDefinition;
+import com.yahoo.bard.webservice.data.config.table.PermissivePhysicalTableDefinition;
 import com.yahoo.bard.webservice.data.config.table.PhysicalTableDefinition;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
@@ -122,14 +123,27 @@ public class GenericTableLoader extends BaseTableLoader {
             DataSourceConfiguration dataSourceConfiguration,
             ZonedTimeGrain timeGrain
     ) {
-        return Utils.asLinkedHashSet(
-                new ConcretePhysicalTableDefinition(
+        PhysicalTableDefinition physicalTableDefinition = null;
+
+        switch (dataSourceConfiguration.getPhysicalTableType()) {
+            case CONCRETE:
+                physicalTableDefinition = new ConcretePhysicalTableDefinition(
                         dataSourceConfiguration.getTableName(),
                         timeGrain,
                         dataSourceToDruidMetricNames.get(dataSourceConfiguration.getApiTableName()),
                         dataSourceConfiguration.getDimensionConfigs()
-                )
-        );
+                );
+                break;
+            case PERMISSIVE:
+                physicalTableDefinition = new PermissivePhysicalTableDefinition(
+                        dataSourceConfiguration.getTableName(),
+                        timeGrain,
+                        dataSourceToDruidMetricNames.get(dataSourceConfiguration.getApiTableName()),
+                        dataSourceConfiguration.getDimensionConfigs()
+                );
+                break;
+        }
+        return Utils.asLinkedHashSet(physicalTableDefinition);
     }
 
     /**

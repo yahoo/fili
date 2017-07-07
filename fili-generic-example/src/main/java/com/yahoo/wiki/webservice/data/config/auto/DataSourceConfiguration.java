@@ -17,6 +17,7 @@ import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.wiki.webservice.data.config.metric.MetricConfig;
+import com.yahoo.wiki.webservice.data.config.table.PhysicalTableType;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -51,6 +52,10 @@ public interface DataSourceConfiguration {
 
     default String getDescription() {
         return getApiTableName();
+    }
+
+    default PhysicalTableType getPhysicalTableType() {
+        return PhysicalTableType.CONCRETE;
     }
 
     /**

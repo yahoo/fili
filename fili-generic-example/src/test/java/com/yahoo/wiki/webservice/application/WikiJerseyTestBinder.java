@@ -56,6 +56,6 @@ public class WikiJerseyTestBinder extends JerseyTestBinder {
 
     @Override
     public TableLoader getTableLoader() {
-        return new GenericTableLoader(configLoader, genericDimensionConfigs, new DataSourceMetadataService());
+        return new GenericTableLoader(configLoader, new DataSourceMetadataService());
     }
 }

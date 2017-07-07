@@ -40,12 +40,13 @@ The json format is:
 | `"apiTableName"`      | yes      | The unique name of the table for fili.
 | `"physicalTableName"` | no       | The physical name for the table in the backend (i.e. Druid). By default assumed to be the same as `"apiTableName"`.
 | `"zonedTimeGrain"`    | yes      | The minimum valid timegrain for this table along with it's timezone.
-|  `"timeGrains"`       | yes      | An array of valid timegrains {`MINUTE`, `HOUR`, `DAY`, `WEEK`, `MONTH`, `QUARTER`, `YEAR`}.
+|  `"timeGrains"`       | yes      | An array of valid timegrains {`"MINUTE"`, `"HOUR"`, `"DAY"`, `"WEEK"`, `"MONTH"`, `"QUARTER"`, `"YEAR`"}.
+| `"type"`              | no       | The type of table to build {`"concrete"`,`"permissive"`}. Default is `"concrete"`.
 | `"category"`          | no       | The category for the logical table.
 | `"longName"`          | no       | The longer, more descriptive name for the logical table.
 | `"description"`       | no       | The description for the logical table.
-| `"metrics"`           | yes      | metrics to load
-| `"dimensions"`        | yes      | dimensions to load
+| `"metrics"`           | yes      | An array of metric configurations to load.
+| `"dimensions"`        | yes      | An array of dimension configurations to load.
 
 
 #### Metrics Schema
@@ -54,8 +55,8 @@ The json format is:
 |------------------------|----------|-----------------------
 | `"apiMetricName"`      | yes      | The unique name of the metric for fili.
 | `"dependentMetrics"`   | depends  | The physical name for the metric in the backend (i.e. Druid). By default assumed to be `"apiMetricName"`. Required for `arithmetic` type.
-| `"type"`               | yes      | The type of aggregation to be performed {`longMin`, `longMax`, `longSum`, `doubleMin`, `doubleMax`, `doubleSum`, `arithmetic`, `aggregationAverage`, `count`, `rowNum`}.
-| `"params"`             | depends  | For `arithmetic`, should be one of {`"+"`,`"-"`,`"*"`,`"/"`,}. For `aggregationAverage`, should be a single time grain.
+| `"type"`               | yes      | The type of aggregation to be performed {`"longMin"`, `"longMax"`, `"longSum"`, `"doubleMin"`, `"doubleMax"`, `"doubleSum"`, `"arithmetic"`, `"aggregationAverage"`, `"count"`, `"rowNum"`}.
+| `"params"`             | depends  | For `"arithmetic"`, should be one of {`"+"`,`"-"`,`"*"`,`"/"`,}. For `aggregationAverage`, should be a single time grain.
 | `"timeGrains"`         | no       | If you would like to override the timegrains for this metrics. For example, a metric could only be valid for a `["DAY"]` grain while the table supports both `["HOUR", "DAY"]`.
 
 

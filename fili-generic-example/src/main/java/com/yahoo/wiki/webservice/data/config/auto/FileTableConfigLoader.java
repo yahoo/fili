@@ -13,6 +13,7 @@ import com.yahoo.bard.webservice.data.time.ZonelessTimeGrain;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.wiki.webservice.data.config.metric.MetricConfig;
+import com.yahoo.wiki.webservice.data.config.table.PhysicalTableType;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -107,7 +108,9 @@ public class FileTableConfigLoader implements Supplier<List<? extends DataSource
         );
         ZonedTimeGrain zonedTimeGrain = new ZonedTimeGrain((ZonelessTimeGrain) timeGrain, timeZone);
 
-        //todo add table type
+        PhysicalTableType physicalTableType = table.has("type") ?
+                PhysicalTableType.fromType(table.get("type").asText())
+                : PhysicalTableType.CONCRETE;
 
         List<TimeGrain> allValidTimeGrains = parseTimeGrains(table.get("timeGrains"));
 
@@ -138,6 +141,11 @@ public class FileTableConfigLoader implements Supplier<List<? extends DataSource
             @Override
             public String getApiTableName() {
                 return apiTableName;
+            }
+
+            @Override
+            public PhysicalTableType getPhysicalTableType() {
+                return physicalTableType;
             }
 
             @Override

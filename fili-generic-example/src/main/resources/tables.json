@@ -11,6 +11,7 @@
         "HOUR",
         "DAY"
       ],
+      "type": "concrete",
       "category": "General",
       "description": "The wiki table",
       "longName": "wikipedia table",
