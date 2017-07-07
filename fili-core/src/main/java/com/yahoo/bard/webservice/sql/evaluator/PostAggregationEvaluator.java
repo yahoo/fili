@@ -52,13 +52,7 @@ public class PostAggregationEvaluator {
         if (postAggregation == null) {
             return null;
         }
-        return DispatchUtils.dispatch(
-                PostAggregationEvaluator.class,
-                "evaluate",
-                new Class[] {postAggregation.getClass(), Function.class},
-                postAggregation,
-                aggregatedValues
-        );
+        return null;
     }
 
     /**

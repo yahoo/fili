@@ -4,7 +4,6 @@ package com.yahoo.bard.webservice.sql.evaluator;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 
 /**
  * Utility class for dynamically dispatching calls.
@@ -21,27 +20,20 @@ public class DispatchUtils {
      * Calls the given method in the caller's class with
      * the given parameter types and provided parameters.
      *
-     * @param caller  The class the method is located in.
-     * @param methodName  The name of the method to call.
-     * @param parameterClasses  The classes of the parameters for the method being invoked.
-     * @param parameters  The objects to be passed in as the parameters to the method.
-     * @param <E>  The return type of the method.
-     *
      * @return the evaluated value.
      */
-    public static <E> E dispatch(Class caller, String methodName, Class[] parameterClasses, Object... parameters) {
+    public static <T, R> R dispatch(Evaluator<T, R> evaluator, T parameter) {
+        Class<?> caller = evaluator.getClass();
         try {
-            Method toInvoke = caller.getDeclaredMethod(methodName, parameterClasses);
+            Method toInvoke = caller.getDeclaredMethod("evaluate", Object.class);
             toInvoke.setAccessible(true);
-            return (E) toInvoke.invoke(null, parameters);
+            return (R) toInvoke.invoke(evaluator, parameter.getClass());
         } catch (NoSuchMethodException | IllegalAccessException e) {
             throw new UnsupportedOperationException(
-                    "Can't " + caller.getSimpleName() + "." + methodName + Arrays.toString(parameters),
-                    e
-            );
+                    "Can't " + caller.getSimpleName() + ".evaluate(" + parameter + ")", e);
         } catch (InvocationTargetException e) {
             throw new UnsupportedOperationException(
-                    "Can't " + caller.getSimpleName() + "." + methodName + Arrays.toString(parameters) + " because " +
+                    "Can't " + caller.getSimpleName() + ".evaluate" + parameter + " because " +
                             e.getTargetException().getMessage(),
                     e.getTargetException()
             );

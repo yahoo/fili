@@ -51,9 +51,9 @@ public class CalciteHelper {
     public RelBuilder getNewRelBuilder() {
         try {
             return getBuilder(dataSource, schemaName);
-        } catch (SQLException ignored) {
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to build RelBuilder", e);
         }
-        return null;
     }
 
     /**
@@ -144,13 +144,11 @@ public class CalciteHelper {
     }
 
     /**
-     * Gets the name of a table with it's schema (i.e. table to "schema"."table").
+     * Gets the name of the schema that the calcite was configured with.
      *
-     * @param sqlTableName  The name of the table to escape.
-     *
-     * @return the escaped schema/table
+     * @return the schema name (i.e. {@link #DEFAULT_SCHEMA})
      */
-    public String escapeTableName(String sqlTableName) {
-        return dialect.quoteIdentifier(schemaName) + "." + dialect.quoteIdentifier(sqlTableName);
+    public String getSchemaName() {
+        return schemaName;
     }
 }
