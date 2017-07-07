@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
+
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
 
@@ -9,7 +11,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 class MetricParserSpec extends Specification {
-    ObjectMapper mapper = new ObjectMapper()
+    ObjectMapper mapper = new ObjectMappersSuite().mapper
     ArrayNode expectedJsonObj1
     ArrayNode expectedJsonObj2
     ArrayNode expectedJsonObj3
@@ -56,7 +58,7 @@ class MetricParserSpec extends Specification {
     @Unroll
     def "Create map using encodeMetricFilters, filter #filter returns values #filteredMetrics"() {
         setup:
-        Map<String,String> metricMap = [:]
+        Map<String, String> metricMap = [:]
         MetricParser.encodeMetricFilters(filter, metricMap)
 
         expect:
