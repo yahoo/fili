@@ -6,10 +6,6 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggre
 import com.yahoo.bard.webservice.druid.model.postaggregation.ConstantPostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
-import com.yahoo.bard.webservice.druid.model.postaggregation.SketchEstimatePostAggregation;
-import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationPostAggregation;
-import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchEstimatePostAggregation;
-import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchSetOperationPostAggregation;
 
 import org.apache.calcite.util.ReflectUtil;
 import org.apache.calcite.util.ReflectiveVisitor;
@@ -25,8 +21,7 @@ public class PostAggregationEvaluator implements ReflectiveVisitor {
     private Function<String, String> aggregatedValues; //todo maybe not needed
 
     /**
-     * Constructor
-     *
+     * Constructor.
      */
     public PostAggregationEvaluator() {
         dispatcher = ReflectUtil.createMethodDispatcher(
@@ -44,6 +39,8 @@ public class PostAggregationEvaluator implements ReflectiveVisitor {
      * @param aggregatedValues  A map from fieldNames of aggregated values to their actual value.
      *
      * @return the number calculated from the postAggregation.
+     *
+     * @throws UnsupportedOperationException for PostAggregations which couldn't be processed.
      */
     public Number calculate(PostAggregation postAggregation, Function<String, String> aggregatedValues) {
         this.aggregatedValues = aggregatedValues;
@@ -61,7 +58,9 @@ public class PostAggregationEvaluator implements ReflectiveVisitor {
      *
      * @param postAggregation  The post aggregation to evaluate.
      *
-     * @return the number calculated from the postAggregation.
+     * @return only throws exception.
+     *
+     * @throws UnsupportedOperationException for PostAggregations which couldn't be processed.
      */
     public Double evaluate(PostAggregation postAggregation) {
         throw new UnsupportedOperationException("can't process " + postAggregation);
@@ -71,7 +70,7 @@ public class PostAggregationEvaluator implements ReflectiveVisitor {
      * Evaluates a fieldAccessorPostAggregation by parsing the value from the aggregatedValues map.
      *
      * @param fieldAccessorPostAggregation  Determines which fields value will be accessed. The field must be in the
-     * map.
+     * {@link #aggregatedValues} which will parse the value returned as a double.
      *
      * @return the number parsed from the field.
      */

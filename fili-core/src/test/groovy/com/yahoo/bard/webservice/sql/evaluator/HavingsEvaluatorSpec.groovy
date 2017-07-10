@@ -22,7 +22,6 @@ import com.yahoo.bard.webservice.sql.aggregation.DruidSqlTypeConverter
 import com.yahoo.bard.webservice.sql.database.Database
 import com.yahoo.bard.webservice.sql.helper.CalciteHelper
 import com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder
-import com.yahoo.bard.webservice.sql.aggregation.DefaultSqlAggregationType
 import com.yahoo.bard.webservice.sql.helper.SqlTimeConverter
 import com.yahoo.bard.webservice.sql.helper.TimeConverter
 
@@ -65,7 +64,7 @@ class HavingsEvaluatorSpec extends Specification {
                 ),
                 aggregationCalls
         )
-        RexNode havingFilter = havingEvaluator.buildFilter(builder, having, ALIAS_MAKER).get()
+        RexNode havingFilter = havingEvaluator.evaluateHaving(builder, having, ALIAS_MAKER)
         builder.filter(havingFilter)
 
         expect:
@@ -94,13 +93,13 @@ class HavingsEvaluatorSpec extends Specification {
                 ),
                 aggregationCalls
         )
-        RexNode havingFilter = havingEvaluator.buildFilter(builder, having, ALIAS_MAKER).get()
+        RexNode havingFilter = havingEvaluator.evaluateHaving(builder, having, ALIAS_MAKER)
         builder.filter(havingFilter)
 
         expect:
         String sql = new RelToSqlConverter(SqlDialect.create(CONNECTION.getMetaData())).visitChild(0, builder.build()).
                 asSelect().
-                toString();
+                toString()
         sql.contains(expectedHavingSql)
 
         where: "queries have 2 or more aggregations on one metric - can't tell which should be used in having filter"

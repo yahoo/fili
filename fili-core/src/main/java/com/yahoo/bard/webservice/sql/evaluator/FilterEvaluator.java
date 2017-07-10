@@ -19,12 +19,10 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ReflectUtil;
 import org.apache.calcite.util.ReflectiveVisitor;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -37,8 +35,7 @@ public class FilterEvaluator implements ReflectiveVisitor {
     private final ReflectUtil.MethodDispatcher<RexNode> dispatcher;
 
     /**
-     * Constructor
-     *
+     * Constructor.
      */
     public FilterEvaluator() {
         dimensions = new ArrayList<>();
@@ -53,35 +50,44 @@ public class FilterEvaluator implements ReflectiveVisitor {
     /**
      * Finds all the dimension names used in the filter.
      *
+     * @param builder  The RelBuilder used to build queries with Calcite.
      * @param filter  The filter to be evaluated.
      *
      * @return a list of all the dimension names.
+     *
+     * @throws UnsupportedOperationException for filters which couldn't be evaluated.
      */
     public List<String> getDimensionNames(RelBuilder builder, Filter filter) {
         // todo could use DataApiRequest instead and simplify this class
-        Optional<RexNode> rexNode = evaluateFilter(builder, filter);
+        RexNode rexNode = evaluateFilter(builder, filter);
         return dimensions.stream().distinct().collect(Collectors.toList());
     }
 
     /**
      * Evaluates and builds a filter and finds all the dimension names used in all filters.
      *
+     * @param builder  The RelBuilder used to build queries with Calcite.
      * @param filter  The filter to be evaluated.
      *
      * @return a RexNode containing an equivalent filter to the one given.
+     *
+     * @throws UnsupportedOperationException for filters which couldn't be evaluated.
      */
-    private Optional<RexNode> evaluateFilter(RelBuilder builder, Filter filter) {
+    private RexNode evaluateFilter(RelBuilder builder, Filter filter) {
         this.builder = builder;
         dimensions.clear();
-        return Optional.ofNullable(dispatcher.invoke(filter));
+        return dispatcher.invoke(filter);
     }
 
     /**
-     * Top level evaluate call which finds the specialized evaluation for a given filter.
+     * Top level evaluate call meant to capture {@link Filter} which could not be mapped
+     * to a specific "evaluate" method.
      *
      * @param filter  The filter to be evaluated.
      *
-     * @return a RexNode containing an equivalent filter to the one given.
+     * @return only throws exception.
+     *
+     * @throws UnsupportedOperationException for filters which couldn't be evaluated.
      */
     public RexNode evaluate(Filter filter) {
         throw new UnsupportedOperationException("Can't Process " + filter);
