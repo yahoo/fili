@@ -32,17 +32,15 @@ import java.util.stream.Collectors;
  * to build a {@link RexNode} with an equivalent sql filter.
  */
 public class FilterEvaluator implements ReflectiveVisitor {
-    private final RelBuilder builder;
+    private RelBuilder builder;
     private final List<String> dimensions;
     private final ReflectUtil.MethodDispatcher<RexNode> dispatcher;
 
     /**
      * Constructor
      *
-     * @param builder  The RelBuilder used with Calcite to make queries.
      */
-    public FilterEvaluator(RelBuilder builder) {
-        this.builder = builder;
+    public FilterEvaluator() {
         dimensions = new ArrayList<>();
         dispatcher = ReflectUtil.createMethodDispatcher(
                 RexNode.class,
@@ -59,40 +57,23 @@ public class FilterEvaluator implements ReflectiveVisitor {
      *
      * @return a list of all the dimension names.
      */
-    public List<String> getDimensionNames(Filter filter) {
+    public List<String> getDimensionNames(RelBuilder builder, Filter filter) {
         // todo could use DataApiRequest instead and simplify this class
-        return evaluateFilter(filter).getRight()
-                .stream()
-                .distinct()
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Builds a {@link RexNode} with an equivalent sql filter as the one given.
-     *
-     * @param filter  The filter to be evaluated.
-     *
-     * @return the rexNode containing the filter information.
-     */
-    public Optional<RexNode> getFilterAsRexNode(Filter filter) {
-        return evaluateFilter(filter).getLeft();
+        Optional<RexNode> rexNode = evaluateFilter(builder, filter);
+        return dimensions.stream().distinct().collect(Collectors.toList());
     }
 
     /**
      * Evaluates and builds a filter and finds all the dimension names used in all filters.
-     * NOTE: this is doing two things at once, but the interface given only lets you do one at a time.
-     * This is because dimension names needed to build the RexNode aren't known beforehand.
-     * This forces the flow to be [getDimensionNames] to [buider.project] to [getFilterAsRexNode] to [builder.filter]
      *
      * @param filter  The filter to be evaluated.
      *
-     * @return both the filter and the list of dimensions used in the filter.
+     * @return a RexNode containing an equivalent filter to the one given.
      */
-    private Pair<Optional<RexNode>, List<String>> evaluateFilter(Filter filter) {
+    private Optional<RexNode> evaluateFilter(RelBuilder builder, Filter filter) {
+        this.builder = builder;
         dimensions.clear();
-        Optional<RexNode> rexNode = Optional.ofNullable(evaluate(filter));
-        List<String> collect = dimensions.stream().distinct().collect(Collectors.toList());
-        return Pair.of(rexNode, collect);
+        return Optional.ofNullable(dispatcher.invoke(filter));
     }
 
     /**
@@ -102,11 +83,8 @@ public class FilterEvaluator implements ReflectiveVisitor {
      *
      * @return a RexNode containing an equivalent filter to the one given.
      */
-    private RexNode evaluate(Filter filter) {
-        if (filter == null) {
-            return null;
-        }
-        return dispatcher.invoke(filter);
+    public RexNode evaluate(Filter filter) {
+        throw new UnsupportedOperationException("Can't Process " + filter);
     }
 
     /**
@@ -205,7 +183,7 @@ public class FilterEvaluator implements ReflectiveVisitor {
                         .map(value -> new SelectorFilter(dimension, value))
                         .collect(Collectors.toList())
         );
-        return evaluate(orFilterOfSelectors);
+        return dispatcher.invoke(orFilterOfSelectors);
     }
 
     /**
@@ -249,13 +227,13 @@ public class FilterEvaluator implements ReflectiveVisitor {
      *
      * @return a RexNode containing an equivalent filter to the one given.
      */
-    public RexNode listEvaluate(
+    private RexNode listEvaluate(
             ComplexFilter complexFilter,
             SqlOperator operator
     ) {
         List<RexNode> rexNodes = complexFilter.getFields()
                 .stream()
-                .map(this::evaluate)
+                .map(dispatcher::invoke)
                 .collect(Collectors.toList());
 
         return builder.call(
