@@ -6,6 +6,13 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggre
 import com.yahoo.bard.webservice.druid.model.postaggregation.ConstantPostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
+import com.yahoo.bard.webservice.druid.model.postaggregation.SketchEstimatePostAggregation;
+import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationPostAggregation;
+import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchEstimatePostAggregation;
+import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchSetOperationPostAggregation;
+
+import org.apache.calcite.util.ReflectUtil;
+import org.apache.calcite.util.ReflectiveVisitor;
 
 import java.util.function.Function;
 
@@ -13,13 +20,21 @@ import java.util.function.Function;
  * Evaluates post aggregations.
  * For more info see: io.druid.query.aggregation.post.ArithmeticPostAggregator.
  */
-public class PostAggregationEvaluator {
+public class PostAggregationEvaluator implements ReflectiveVisitor {
+    private final ReflectUtil.MethodDispatcher<Double> dispatcher;
+    private Function<String, String> aggregatedValues; //todo maybe not needed
 
     /**
-     * Private constructor - all methods static.
+     * Constructor
+     *
      */
-    private PostAggregationEvaluator() {
-
+    public PostAggregationEvaluator() {
+        dispatcher = ReflectUtil.createMethodDispatcher(
+                Double.class,
+                this,
+                "evaluate",
+                PostAggregation.class
+        );
     }
 
     /**
@@ -30,8 +45,9 @@ public class PostAggregationEvaluator {
      *
      * @return the number calculated from the postAggregation.
      */
-    public static Number calculate(PostAggregation postAggregation, Function<String, String> aggregatedValues) {
-        Double doubleValue = evaluate(postAggregation, aggregatedValues);
+    public Number calculate(PostAggregation postAggregation, Function<String, String> aggregatedValues) {
+        this.aggregatedValues = aggregatedValues;
+        Double doubleValue = dispatcher.invoke(postAggregation);
         if (postAggregation.isFloatingPoint()) {
             return doubleValue;
         } else {
@@ -44,15 +60,11 @@ public class PostAggregationEvaluator {
      * and returns the value.
      *
      * @param postAggregation  The post aggregation to evaluate.
-     * @param aggregatedValues  A map from fieldNames of aggregated values to their actual value.
      *
      * @return the number calculated from the postAggregation.
      */
-    private static Double evaluate(PostAggregation postAggregation, Function<String, String> aggregatedValues) {
-        if (postAggregation == null) {
-            return null;
-        }
-        return null;
+    public Double evaluate(PostAggregation postAggregation) {
+        throw new UnsupportedOperationException("can't process " + postAggregation);
     }
 
     /**
@@ -60,14 +72,10 @@ public class PostAggregationEvaluator {
      *
      * @param fieldAccessorPostAggregation  Determines which fields value will be accessed. The field must be in the
      * map.
-     * @param aggregatedValues  A map from fieldNames of aggregated values to their actual value.
      *
      * @return the number parsed from the field.
      */
-    private static Double evaluate(
-            FieldAccessorPostAggregation fieldAccessorPostAggregation,
-            Function<String, String> aggregatedValues
-    ) {
+    public Double evaluate(FieldAccessorPostAggregation fieldAccessorPostAggregation) {
         String stringNumber = aggregatedValues.apply(fieldAccessorPostAggregation.getFieldName());
         return Double.valueOf(stringNumber);
     }
@@ -76,40 +84,36 @@ public class PostAggregationEvaluator {
      * Evaluates an arithmeticPostAggregation by performing it's operation over other postAggregations.
      *
      * @param arithmeticPostAggregation  The post aggregation which performs an operation over other post aggregations.
-     * @param aggregatedValues  A map from fieldNames of aggregated values to their actual value.
      *
      * @return the number calculated from it's operation.
      */
-    private static Double evaluate(
-            ArithmeticPostAggregation arithmeticPostAggregation,
-            Function<String, String> aggregatedValues
-    ) {
+    public Double evaluate(ArithmeticPostAggregation arithmeticPostAggregation) {
         switch (arithmeticPostAggregation.getFn()) {
             case PLUS:
                 Double sum = 0D;
                 for (PostAggregation postAgg : arithmeticPostAggregation.getFields()) {
-                    sum += evaluate(postAgg, aggregatedValues);
+                    sum += dispatcher.invoke(postAgg);
                 }
                 return sum;
             case MULTIPLY:
                 Double prod = 1D;
                 for (PostAggregation postAgg : arithmeticPostAggregation.getFields()) {
-                    prod *= evaluate(postAgg, aggregatedValues);
+                    prod *= dispatcher.invoke(postAgg);
                 }
                 return prod;
             case MINUS:
-                Double sub = evaluate(arithmeticPostAggregation.getFields().get(0), aggregatedValues);
+                Double sub = dispatcher.invoke(arithmeticPostAggregation.getFields().get(0));
                 for (int i = 1; i < arithmeticPostAggregation.getFields().size(); i++) {
                     PostAggregation postAgg = arithmeticPostAggregation.getFields().get(i);
-                    sub -= evaluate(postAgg, aggregatedValues);
+                    sub -= dispatcher.invoke(postAgg);
                 }
                 return sub;
             case DIVIDE:
                 if (arithmeticPostAggregation.getFields().size() != 2) {
                     throw new IllegalArgumentException("Can only divide on two fields");
                 }
-                Double divLhs = evaluate(arithmeticPostAggregation.getFields().get(0), aggregatedValues);
-                Double divRhs = evaluate(arithmeticPostAggregation.getFields().get(1), aggregatedValues);
+                Double divLhs = dispatcher.invoke(arithmeticPostAggregation.getFields().get(0));
+                Double divRhs = dispatcher.invoke(arithmeticPostAggregation.getFields().get(1));
                 // if divisor is zero then result is zero
                 // from druid docs http://druid.io/docs/latest/querying/post-aggregations.html
                 return divRhs == 0.0 ? 0 : divLhs / divRhs;
@@ -121,14 +125,10 @@ public class PostAggregationEvaluator {
      * Evaluates a constantPostAggregation by reading it's value.
      *
      * @param constantPostAggregation  Contains a constant which will be read.
-     * @param aggregatedValues  A map from fieldNames of aggregated values to their actual value.
      *
      * @return the constant value for this postAggregation.
      */
-    private static double evaluate(
-            ConstantPostAggregation constantPostAggregation,
-            Function<String, String> aggregatedValues
-    ) {
+    public Double evaluate(ConstantPostAggregation constantPostAggregation) {
         return constantPostAggregation.getValue();
     }
 }

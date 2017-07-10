@@ -23,6 +23,7 @@ class PostAggregationEvaluatorSpec extends Specification {
     static Map<String, String> fieldToValue = new HashMap<>()
     static String ONE = "one"
     static String FIVE = "five"
+    static PostAggregationEvaluator postAggregationEvaluator = new PostAggregationEvaluator()
 
     void setup() {
         fieldToValue.put(ONE, "1")
@@ -32,7 +33,7 @@ class PostAggregationEvaluatorSpec extends Specification {
     @Unroll
     def "Evaluate Post Aggregations expecting #value"() {
         expect:
-        Number result = PostAggregationEvaluator.calculate(postAgg, { it -> fieldToValue.get(it) })
+        Number result = postAggregationEvaluator.calculate(postAgg, { it -> fieldToValue.get(it) })
         result == value
 
         where: "given"
@@ -51,17 +52,17 @@ class PostAggregationEvaluatorSpec extends Specification {
     @Unroll
     def "Test #thrownException post aggregations and bad inputs"() {
         when:
-        Number result = PostAggregationEvaluator.calculate(postAgg, { it -> fieldToValue.get(it) })
+        Number result = postAggregationEvaluator.calculate(postAgg, { it -> fieldToValue.get(it) })
 
         then:
         thrown thrownException
 
         where:
         postAgg                                                    | thrownException
-        arithmetic(DIVIDE, constant(1), constant(1), constant(1))  | UnsupportedOperationException
-        new ThetaSketchEstimatePostAggregation("", null)           | UnsupportedOperationException
-        new ThetaSketchSetOperationPostAggregation("", null, null) | UnsupportedOperationException
-        new SketchSetOperationPostAggregation("", null, null)      | UnsupportedOperationException
-        new SketchEstimatePostAggregation("", null)                | UnsupportedOperationException
+        arithmetic(DIVIDE, constant(1), constant(1), constant(1))  | RuntimeException
+        new ThetaSketchEstimatePostAggregation("", null)           | RuntimeException
+        new ThetaSketchSetOperationPostAggregation("", null, null) | RuntimeException
+        new SketchSetOperationPostAggregation("", null, null)      | RuntimeException
+        new SketchEstimatePostAggregation("", null)                | RuntimeException
     }
 }
