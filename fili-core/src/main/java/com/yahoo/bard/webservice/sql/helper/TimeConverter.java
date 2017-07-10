@@ -12,24 +12,19 @@ import static org.apache.calcite.sql.fun.SqlStdOperatorTable.YEAR;
 
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
-import com.yahoo.bard.webservice.druid.model.query.Granularity;
 
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.fun.SqlDatePartFunction;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
 
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Handles converting between a {@link DefaultTimeGrain} and a list of
@@ -48,22 +43,6 @@ public class TimeConverter implements SqlTimeConverter {
                     put(DefaultTimeGrain.MINUTE, asList(YEAR, DAYOFYEAR, HOUR, MINUTE));
                 }
             };
-
-    @Override
-    public int getNumberOfGroupByFunctions(TimeGrain timeGrain) {
-        return TIMEGRAIN_TO_GROUPBY.get(timeGrain).size();
-    }
-
-    @Override
-    public Stream<RexNode> buildGroupBy(
-            RelBuilder builder,
-            TimeGrain timeGrain,
-            String timeColumn
-    ) {
-        return TIMEGRAIN_TO_GROUPBY.get(timeGrain)
-                .stream()
-                .map(sqlDatePartFunction -> builder.call(sqlDatePartFunction, builder.field(timeColumn)));
-    }
 
     @Override
     public List<SqlDatePartFunction> timeGrainToDatePartFunctions(TimeGrain timeGrain) {
@@ -89,8 +68,8 @@ public class TimeConverter implements SqlTimeConverter {
         // create filters to only select results within the given intervals
         List<RexNode> timeFilters = intervals.stream()
                 .map(interval -> {
-                    Timestamp start = TimestampUtils.timestampFromMillis(interval.getStartMillis());
-                    Timestamp end = TimestampUtils.timestampFromMillis(interval.getEndMillis());
+                    Timestamp start = TimestampUtils.timestampFromDateTime(interval.getStart());
+                    Timestamp end = TimestampUtils.timestampFromDateTime(interval.getEnd());
 
                     return builder.and(
                             builder.call(

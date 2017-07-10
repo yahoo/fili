@@ -17,9 +17,7 @@ import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ReflectUtil;
 import org.apache.calcite.util.ReflectiveVisitor;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -32,8 +30,7 @@ public class HavingEvaluator implements ReflectiveVisitor {
     private ApiToFieldMapper apiToFieldMapper; //todo maybe not needed
 
     /**
-     * Constructor
-     *
+     * Constructor.
      */
     public HavingEvaluator() {
         dispatcher = ReflectUtil.createMethodDispatcher(
@@ -45,32 +42,35 @@ public class HavingEvaluator implements ReflectiveVisitor {
     }
 
     /**
-     * Creates an {@link Optional} which contains the given {@link Having}
-     * as a {@link RexNode} or an empty value.
+     * Creates an {@link RexNode} which contains the given {@link Having}.
      *
      * @param builder  The RelBuilder used with Calcite to make queries.
      * @param having  The having filter being evaluated.
      * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
      *
      * @return the equivalent {@link RexNode} to be used in a sql query.
+     *
+     * @throws UnsupportedOperationException for havings which couldn't be evaluated.
      */
-    public Optional<RexNode> buildFilter(
+    public RexNode evaluateHaving(
             RelBuilder builder,
             Having having,
             ApiToFieldMapper apiToFieldMapper
     ) {
         this.builder = builder;
         this.apiToFieldMapper = apiToFieldMapper;
-        return Optional.ofNullable(dispatcher.invoke(having));
+        return dispatcher.invoke(having);
     }
 
     /**
-     * Top level evaluate function which will call the correct "evaluate" method
-     * based on the having type.
+     * Top level evaluate function meant to capture {@link Having} which could not be mapped
+     * to a specific "evaluate" method.
      *
      * @param having  The having filter being evaluated.
      *
-     * @return the equivalent {@link RexNode} to be used in a sql query.
+     * @return only throws exception.
+     *
+     * @throws UnsupportedOperationException for havings which couldn't be evaluated.
      */
     public RexNode evaluate(Having having) {
         throw new UnsupportedOperationException("Can't Process " + having);

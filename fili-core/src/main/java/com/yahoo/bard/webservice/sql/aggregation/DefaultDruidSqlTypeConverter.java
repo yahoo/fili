@@ -1,13 +1,18 @@
+// Copyright 2017 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.sql.aggregation;
 
 import java.util.Locale;
 import java.util.Optional;
 
 /**
- * Created by hinterlong on 7/10/17.
+ * The default implementation of sql aggregations based on druid aggregations.
  */
 public class DefaultDruidSqlTypeConverter implements DruidSqlTypeConverter {
 
+    /**
+     * Constructor.
+     */
     public DefaultDruidSqlTypeConverter() {
 
     }

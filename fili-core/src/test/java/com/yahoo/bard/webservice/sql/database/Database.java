@@ -116,7 +116,7 @@ public class Database {
             preparedStatement.setInt(4, e.getAdded());
             preparedStatement.setTimestamp(
                     5,
-                    TimestampUtils.timestampFromString(e.getTime())
+                TimestampUtils.timestampFromString(e.getTime())
             );
             preparedStatement.setBoolean(6, e.getIsNew());
             preparedStatement.setBoolean(7, e.getIsRobot());

@@ -5,8 +5,6 @@ package com.yahoo.bard.webservice.sql.helper;
 import org.joda.time.DateTime;
 
 import java.sql.Timestamp;
-import java.util.Date;
-import java.util.TimeZone;
 
 /**
  * Utility function for creating timestamps.
@@ -38,18 +36,6 @@ public class TimestampUtils {
      * @return the timestamp created from this dateTime.
      */
     public static Timestamp timestampFromDateTime(DateTime dateTime) {
-        return timestampFromMillis(dateTime.getMillis());
-    }
-
-    /**
-     * Creates a timestamp from milliseconds since epoch.
-     * NOTE: removes the current timezone offset while creating timestamp.
-     *
-     * @param millis  The milliseconds of the time to make the timestamp at.
-     *
-     * @return the timestamp created from this time.
-     */
-    public static Timestamp timestampFromMillis(long millis) {
-        return new Timestamp(millis - TimeZone.getDefault().getOffset(new Date().getTime()));
+        return Timestamp.valueOf(dateTime.toString("yyyy-MM-dd HH:mm:ss"));
     }
 }

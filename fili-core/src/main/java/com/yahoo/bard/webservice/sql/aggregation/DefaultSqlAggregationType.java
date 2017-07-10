@@ -8,9 +8,6 @@ import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
 
-import java.util.Locale;
-import java.util.Optional;
-
 /**
  * All the aggregation types supported for use with a sql backend.
  */
@@ -28,7 +25,7 @@ public enum DefaultSqlAggregationType implements SqlAggregationType {
      * druid aggregation types, i.e. {"longSum", "doubleMin"}.
      *
      * @param type  The keyword to find in a druid type.
-     * @param sqlAggFunction
+     * @param sqlAggFunction  The aggregation function that should be performed.
      */
     DefaultSqlAggregationType(String type, SqlAggFunction sqlAggFunction) {
         this.type = type;
