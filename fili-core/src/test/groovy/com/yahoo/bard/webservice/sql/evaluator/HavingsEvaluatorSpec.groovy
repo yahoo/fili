@@ -82,6 +82,14 @@ class HavingsEvaluatorSpec extends Specification {
 
     }
 
+    def "Test null input"() {
+        setup:
+        RelBuilder builder = getBuilder()
+
+        expect:
+        havingEvaluator.evaluateHaving(builder, null, null) == null
+    }
+
     @Unroll
     def "Test bad inputs for having filters on #expectedHavingSql"() {
         setup:
