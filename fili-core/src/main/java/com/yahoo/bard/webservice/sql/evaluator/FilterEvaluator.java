@@ -73,7 +73,10 @@ public class FilterEvaluator implements ReflectiveVisitor {
      *
      * @throws UnsupportedOperationException for filters which couldn't be evaluated.
      */
-    private RexNode evaluateFilter(RelBuilder builder, Filter filter) {
+    public RexNode evaluateFilter(RelBuilder builder, Filter filter) {
+        if (filter == null) {
+            return null;
+        }
         this.builder = builder;
         dimensions.clear();
         return dispatcher.invoke(filter);

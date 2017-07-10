@@ -6,6 +6,7 @@ import static org.apache.calcite.sql.fun.SqlStdOperatorTable.DAYOFYEAR;
 import static org.apache.calcite.sql.fun.SqlStdOperatorTable.HOUR;
 import static org.apache.calcite.sql.fun.SqlStdOperatorTable.MINUTE;
 import static org.apache.calcite.sql.fun.SqlStdOperatorTable.MONTH;
+import static org.apache.calcite.sql.fun.SqlStdOperatorTable.SECOND;
 import static org.apache.calcite.sql.fun.SqlStdOperatorTable.WEEK;
 import static org.apache.calcite.sql.fun.SqlStdOperatorTable.YEAR;
 
@@ -112,18 +113,20 @@ public interface SqlTimeConverter {
      * @return the dateTime with a modified value corresponding to the sqlDatePartFn.
      */
     default DateTime setDateTime(int value, SqlDatePartFunction sqlDatePartFn, DateTime dateTime) {
-        if (sqlDatePartFn.equals(YEAR)) {
+        if (YEAR.equals(sqlDatePartFn)) {
             return dateTime.withYear(value);
-        } else if (sqlDatePartFn.equals(MONTH)) {
+        } else if (MONTH.equals(sqlDatePartFn)) {
             return dateTime.withMonthOfYear(value);
-        } else if (sqlDatePartFn.equals(WEEK)) {
+        } else if (WEEK.equals(sqlDatePartFn)) {
             return dateTime.withWeekOfWeekyear(value);
-        } else if (sqlDatePartFn.equals(DAYOFYEAR)) {
+        } else if (DAYOFYEAR.equals(sqlDatePartFn)) {
             return dateTime.withDayOfYear(value);
-        } else if (sqlDatePartFn.equals(HOUR)) {
+        } else if (HOUR.equals(sqlDatePartFn)) {
             return dateTime.withHourOfDay(value);
-        } else if (sqlDatePartFn.equals(MINUTE)) {
+        } else if (MINUTE.equals(sqlDatePartFn)) {
             return dateTime.withMinuteOfHour(value);
+        } else if (SECOND.equals(sqlDatePartFn)) {
+            return dateTime.withSecondOfMinute(value);
         }
         throw new IllegalArgumentException("Can't set value " + value + " for " + sqlDatePartFn);
     }
