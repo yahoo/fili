@@ -17,17 +17,17 @@ import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery;
 import com.yahoo.bard.webservice.druid.model.query.TopNQuery;
+import com.yahoo.bard.webservice.sql.aggregation.DefaultDruidSqlTypeConverter;
+import com.yahoo.bard.webservice.sql.aggregation.DruidSqlTypeConverter;
+import com.yahoo.bard.webservice.sql.aggregation.SqlAggregationType;
 import com.yahoo.bard.webservice.sql.evaluator.FilterEvaluator;
 import com.yahoo.bard.webservice.sql.evaluator.HavingEvaluator;
 import com.yahoo.bard.webservice.sql.helper.CalciteHelper;
 import com.yahoo.bard.webservice.sql.helper.DatabaseHelper;
-import com.yahoo.bard.webservice.sql.helper.SqlAggregationType;
 import com.yahoo.bard.webservice.sql.helper.SqlTimeConverter;
 import com.yahoo.bard.webservice.sql.helper.TimeConverter;
 import com.yahoo.bard.webservice.util.CompletedFuture;
 import com.yahoo.bard.webservice.util.IntervalUtils;
-import com.yahoo.bard.webservice.web.DataApiRequest;
-import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -396,11 +396,11 @@ public class SqlConverter implements SqlBackedClient {
             Collection<Interval> intervals
     ) {
         RexNode timeFilter = sqlTimeConverter.buildTimeFilters(builder, intervals, timestampColumn);
-        FilterEvaluator filterEvaluator = new FilterEvaluator(builder);
-        Optional<RexNode> druidQueryFilter = filterEvaluator.getFilterAsRexNode(druidQuery.getFilter());
 
-        if (druidQueryFilter.isPresent()) {
-            return builder.and(timeFilter, druidQueryFilter.get());
+        if (druidQuery.getFilter() != null) {
+            FilterEvaluator filterEvaluator = new FilterEvaluator();
+            RexNode druidQueryFilter = filterEvaluator.evaluateFilter(builder, druidQuery.getFilter());
+            return builder.and(timeFilter, druidQueryFilter);
         } else {
             return timeFilter;
         }
@@ -422,9 +422,9 @@ public class SqlConverter implements SqlBackedClient {
             String timestampColumn,
             final ApiToFieldMapper aliasMaker
     ) {
-        FilterEvaluator filterEvaluator = new FilterEvaluator(builder);
+        FilterEvaluator filterEvaluator = new FilterEvaluator();
 
-        Stream<String> filterDimensions = filterEvaluator.getDimensionNames(druidQuery.getFilter()).stream()
+        Stream<String> filterDimensions = filterEvaluator.getDimensionNames(builder, druidQuery.getFilter()).stream()
                 .map(aliasMaker);
 
         Stream<String> groupByDimensions = druidQuery.getDimensions()
@@ -463,7 +463,11 @@ public class SqlConverter implements SqlBackedClient {
         RexNode filter = null;
         if (druidQuery.getQueryType().equals(DefaultQueryType.GROUP_BY)) {
             Having having = ((GroupByQuery) druidQuery).getHaving();
-            filter = HavingEvaluator.buildFilter(builder, having, aliasMaker).orElse(null);
+
+            if (having != null) {
+                HavingEvaluator havingEvaluator = new HavingEvaluator();
+                filter = havingEvaluator.evaluateHaving(builder, having, aliasMaker);
+            }
         }
         return Collections.singletonList(filter);
     }
@@ -480,9 +484,13 @@ public class SqlConverter implements SqlBackedClient {
             DruidAggregationQuery<?> druidQuery,
             ApiToFieldMapper aliasMaker
     ) {
+        DruidSqlTypeConverter druidSqlTypeConverter = new DefaultDruidSqlTypeConverter();
         return druidQuery.getAggregations()
                 .stream()
-                .map(aggregation -> SqlAggregationType.getAggregation(aggregation, builder))
+                .map(aggregation -> {
+                    SqlAggregationType sqlAggregationType = druidSqlTypeConverter.fromDruidType(aggregation).get();
+                    return sqlAggregationType.getAggregation(builder, aggregation);
+                })
                 .collect(Collectors.toList());
     }
 

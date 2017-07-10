@@ -60,6 +60,7 @@ public class HavingEvaluator implements ReflectiveVisitor {
         if (having == null) {
             return null;
         }
+
         this.builder = builder;
         this.apiToFieldMapper = apiToFieldMapper;
         return dispatcher.invoke(having);

@@ -77,6 +77,7 @@ public class FilterEvaluator implements ReflectiveVisitor {
         if (filter == null) {
             return null;
         }
+
         this.builder = builder;
         dimensions.clear();
         return dispatcher.invoke(filter);

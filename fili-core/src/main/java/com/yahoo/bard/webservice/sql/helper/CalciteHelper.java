@@ -25,8 +25,6 @@ import javax.sql.DataSource;
 public class CalciteHelper {
     public static final String DEFAULT_SCHEMA = "PUBLIC";
     private final DataSource dataSource;
-    private final String username;
-    private final String password;
     private final String schemaName;
 
     /**
@@ -37,10 +35,8 @@ public class CalciteHelper {
      *
      * @throws SQLException if failed while making a connection to the database.
      */
-    public CalciteHelper(DataSource dataSource, String username, String password, String schemaName) {
+    public CalciteHelper(DataSource dataSource, String schemaName) {
         this.dataSource = dataSource;
-        this.username = username;
-        this.password = password;
         this.schemaName = schemaName;
     }
 
@@ -65,15 +61,14 @@ public class CalciteHelper {
      * @throws SQLException if can't create a connection.
      */
     public Connection getConnection() throws SQLException {
-        if (username == null || password == null) {
-            return dataSource.getConnection();
-        } else {
-            return dataSource.getConnection(username, password);
-        }
+        return dataSource.getConnection();
     }
 
     public RelToSqlConverter getNewRelToSqlConverter() throws SQLException {
-        return new RelToSqlConverter(SqlDialect.create(getConnection().getMetaData()));
+        Connection connection = getConnection();
+        RelToSqlConverter relToSqlConverter = new RelToSqlConverter(SqlDialect.create(connection.getMetaData()));
+        connection.close();
+        return relToSqlConverter;
     }
 
     /**
@@ -137,8 +132,11 @@ public class CalciteHelper {
         //        );
     }
 
-    public SqlPrettyWriter getNewSqlWriter() {
-        return new SqlPrettyWriter(dialect);
+    public SqlPrettyWriter getNewSqlWriter() throws SQLException {
+        Connection connection = getConnection();
+        SqlPrettyWriter sqlPrettyWriter = new SqlPrettyWriter(SqlDialect.create(connection.getMetaData()));
+        connection.close();
+        return sqlPrettyWriter;
     }
 
     /**

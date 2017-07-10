@@ -106,8 +106,9 @@ public class SqlResultSetProcessor {
             }
         }
 
+        PostAggregationEvaluator postAggregationEvaluator = new PostAggregationEvaluator();
         for (PostAggregation postAggregation : druidQuery.getPostAggregations()) {
-            Number postAggResult = PostAggregationEvaluator.calculate(
+            Number postAggResult = postAggregationEvaluator.calculate(
                     postAggregation,
                     (String columnName) -> row[columnToColumnName.inverse().get(columnName)]
             );
