@@ -25,6 +25,8 @@ Current
 
 
 ### Changed:
+- [Change id field in DefaultDimensionField to lower case for Navi compatibility.](https://github.com/yahoo/fili/pull/423)
+    * Navi's default setting only recongizes lower case 'id' key name.
 
 - [Fix a bug where table loader uses nested compute if absent](https://github.com/yahoo/fili/pull/407)
     * Nesting `computeIfAbsent` on maps can cause a lot of issues in the map internals that causes weird behavior, nesting structure is now removed
