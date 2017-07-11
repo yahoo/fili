@@ -13,6 +13,8 @@ import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.TableRequest;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
+import com.yahoo.bard.webservice.table.PhysicalTable;
+import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.RequestValidationException;
 import com.yahoo.bard.webservice.web.TableFullViewProcessor;
@@ -367,7 +369,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
      *
      * @return Full view of the logical table
      */
-    public static Map<String, Object> getLogicalTableFullView(LogicalTable logicalTable, UriInfo uriInfo) {
+    protected static Map<String, Object> getLogicalTableFullView(LogicalTable logicalTable, UriInfo uriInfo) {
         Map<String, Object> resultRow = new LinkedHashMap<>();
         resultRow.put("category", logicalTable.getCategory());
         resultRow.put("name", logicalTable.getName());
@@ -382,6 +384,15 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
         resultRow.put(
                 "metrics",
                 MetricsServlet.getLogicalMetricListSummaryView(logicalTable.getLogicalMetrics(), uriInfo)
+        );
+        resultRow.put(
+                "availableIntervals",
+                logicalTable.getTableGroup().getPhysicalTables().stream()
+                        .map(PhysicalTable::getAllAvailableIntervals)
+                        .map(Map::entrySet)
+                        .flatMap(Set::stream)
+                        .map(Map.Entry::getValue)
+                        .reduce(new SimplifiedIntervalList(), SimplifiedIntervalList::union)
         );
         return resultRow;
     }

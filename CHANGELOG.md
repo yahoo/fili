@@ -10,6 +10,10 @@ Current
 
 ### Added:
 
+- [Add Table-wide Availability](https://github.com/yahoo/fili/pull/414)
+    * Add `availableIntervals` field to tables endpoint by union the availability for the logical table without taking
+    the TablesApiRequest into account.
+
 - [Implement EtagCacheRequestHandler](https://github.com/yahoo/fili/pull/312)
     * Add `EtagCacheRequestHandler` that checks the cache for a matching eTag
     * Add `EtagCacheRequestHandler` to `DruidWorkflow`
