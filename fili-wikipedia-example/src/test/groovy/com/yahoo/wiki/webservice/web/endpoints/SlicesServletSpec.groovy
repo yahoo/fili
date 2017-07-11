@@ -111,8 +111,8 @@ class SlicesServletSpec extends Specification {
         where:
         sliceName = WIKITICKER.asName().toLowerCase()
         granularity = "hour"
-        dimensionNames = ("page, language, user, unpatrolled, newPage, robot, anonymous, namespace, continent, " +
-                                  "country, region, city").split(',').collect { it.trim()}
+        dimensionNames = ("comment, countryIsoCode, regionIsoCode, page, user, isUnpatrolled, isNew, isRobot, isAnonymous," +
+                " isMinor, namespace, channel, countryName, regionName, metroCode, cityName").split(',').collect { it.trim()}
         metricNames = "count, added, delta, deleted".split(',').collect {it.trim()}
     }
 

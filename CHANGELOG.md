@@ -29,6 +29,7 @@ Current
 
 
 ### Changed:
+
 - [Change id field in DefaultDimensionField to lower case for Navi compatibility.](https://github.com/yahoo/fili/pull/423)
     * Navi's default setting only recongizes lower case 'id' key name.
 
@@ -49,6 +50,9 @@ Current
 - [Fix availability testing utils to be compatible with composite tables](https://github.com/yahoo/fili/pull/419)
     * Fix availability testing utils `populatePhysicalTableCacheIntervals` to assign a `TestAvailability` that will serialize correctly instead of always `StrictAvailability`
     * Fix internal representation of `VolatileIntervalsFunction` in `DefaultingVolatileIntervalsService` from `Map<PhysicalTable, VolatileIntervalsFunction>` to `Map<String, VolatileIntervalsFunction>`
+
+- [Fix metric and dimension names for wikipedia-example](https://github.com/yahoo/fili/pull/415)
+    * The metrics and dimensions configured in the `fili-wikipedia-example` were different from those in Druid and as a result the queries sent to Druid were incorrect
 
 
 ### Known Issues:
