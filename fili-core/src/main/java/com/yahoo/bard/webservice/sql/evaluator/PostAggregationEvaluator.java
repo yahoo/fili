@@ -108,14 +108,18 @@ public class PostAggregationEvaluator implements ReflectiveVisitor {
                 }
                 return sub;
             case DIVIDE:
-                if (arithmeticPostAggregation.getFields().size() != 2) {
-                    throw new IllegalArgumentException("Can only divide on two fields");
+                Double div = dispatcher.invoke(arithmeticPostAggregation.getFields().get(0));
+                for (int i = 1; i < arithmeticPostAggregation.getFields().size(); i++) {
+                    PostAggregation postAgg = arithmeticPostAggregation.getFields().get(i);
+                    Double result = dispatcher.invoke(postAgg);
+                    // if divisor is zero then result is zero
+                    // from druid docs http://druid.io/docs/latest/querying/post-aggregations.html
+                    if (result == 0.0D) {
+                        return 0.0D;
+                    }
+                    div /= result;
                 }
-                Double divLhs = dispatcher.invoke(arithmeticPostAggregation.getFields().get(0));
-                Double divRhs = dispatcher.invoke(arithmeticPostAggregation.getFields().get(1));
-                // if divisor is zero then result is zero
-                // from druid docs http://druid.io/docs/latest/querying/post-aggregations.html
-                return divRhs == 0.0 ? 0 : divLhs / divRhs;
+                return div;
         }
         throw new UnsupportedOperationException("Can't do post aggregation " + arithmeticPostAggregation);
     }

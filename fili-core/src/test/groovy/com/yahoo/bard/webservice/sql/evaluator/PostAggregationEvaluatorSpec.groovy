@@ -47,6 +47,8 @@ class PostAggregationEvaluatorSpec extends Specification {
         arithmetic(MULTIPLY, field(sum(ONE)), field(sum(FIVE)))      | 5
         arithmetic(DIVIDE, field(sum(ONE)), field(sum(FIVE)))        | 1 / 5
         arithmetic(DIVIDE, field(sum(ONE)), constant(0))             | 0
+        arithmetic(DIVIDE, constant(1), constant(1), constant(2))    | 1 / 2 // = ((1/1)/2)
+        arithmetic(DIVIDE, field(sum(ONE)), constant(1), constant(0))    | 0 // = ((1/1)/0)
     }
 
     @Unroll
@@ -59,7 +61,6 @@ class PostAggregationEvaluatorSpec extends Specification {
 
         where:
         postAgg                                                    | thrownException
-        arithmetic(DIVIDE, constant(1), constant(1), constant(1))  | RuntimeException
         new ThetaSketchEstimatePostAggregation("", null)           | RuntimeException
         new ThetaSketchSetOperationPostAggregation("", null, null) | RuntimeException
         new SketchSetOperationPostAggregation("", null, null)      | RuntimeException
