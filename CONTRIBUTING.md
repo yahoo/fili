@@ -40,6 +40,10 @@ with rules that _should_ catch most of the common style issues. The full details
 found in our [checkstyle config](checkstyle-style.xml), but the [Google Java style guide](https://google.github.io/styleguide/javaguide.html) 
 covers most of it, and is very close to our style.
 
+### Credit
+
+Special thanks given to Groovy's JsonSlurper which served as a base for one of Fili's [sorting functionalities](https://github.com/yahoo/fili/blob/master/fili-core/src/test/java/com/yahoo/bard/webservice/util/JsonSlurper.java)
+
 
 Design and Architecture
 -----------------------
