@@ -36,8 +36,8 @@ public class WikiJerseyTestBinder extends JerseyTestBinder {
     /**
      * Constructor.
      *
-     * @param doStart  whether or not to start the application
-     * @param resourceClasses Resource classes to load into the application.
+     * @param doStart  Whether or not to start the application
+     * @param resourceClasses  Resource classes to load into the application.
      */
     public WikiJerseyTestBinder(boolean doStart, java.lang.Class<?>... resourceClasses) {
         super(doStart, resourceClasses);
