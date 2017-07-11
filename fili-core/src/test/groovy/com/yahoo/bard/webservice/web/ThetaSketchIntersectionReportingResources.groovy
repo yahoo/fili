@@ -55,9 +55,9 @@ class ThetaSketchIntersectionReportingResources extends Specification {
     public DimensionDictionary dimensionDict
     public MetricDictionary metricDict
     public LogicalTable table
+    public JsonNode filterObj
     public PostAggregation fooPostAggregation
     public Filter filter
-    public JsonNode filterObj
     public Set<FilteredAggregation> fooNoBarFilteredAggregationSet
     public Set<FilteredAggregation> fooRegFoosFilteredAggregationSet
     public ThetaSketchSetOperationPostAggregation fooNoBarPostAggregationInterim
