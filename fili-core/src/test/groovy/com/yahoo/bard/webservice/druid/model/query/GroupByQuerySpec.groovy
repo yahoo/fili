@@ -211,7 +211,7 @@ class GroupByQuerySpec extends Specification {
         String dataSrc = """
             {
                 "type":"query",
-                "query":""" + queryString1 + """
+                "query":$queryString1
             }
         """
 
