@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 /**
- * Created by kevin on 3/7/2017.
+ * Static configuration for Wikipedia.
  */
 public class StaticWikiConfigLoader implements Supplier<List<? extends DataSourceConfiguration>> {
 

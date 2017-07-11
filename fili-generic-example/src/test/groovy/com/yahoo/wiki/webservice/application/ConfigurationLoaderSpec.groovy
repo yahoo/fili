@@ -33,16 +33,16 @@ class ConfigurationLoaderSpec extends Specification {
     @Shared PhysicalTableDictionary physicalTableDictionary
 
     def setupSpec() {
-        StaticWikiConfigLoader wikiConfigLoader = new StaticWikiConfigLoader();
-        GenericDimensionConfigs genericDimensions = new GenericDimensionConfigs(wikiConfigLoader);
+        StaticWikiConfigLoader wikiConfigLoader = new StaticWikiConfigLoader()
+        GenericDimensionConfigs genericDimensions = new GenericDimensionConfigs(wikiConfigLoader)
         LinkedHashSet<DimensionConfig> dimensions = genericDimensions.
-                getAllDimensionConfigurations();
+                getAllDimensionConfigurations()
         loader = new ConfigurationLoader(
                 new KeyValueStoreDimensionLoader(dimensions),
                 new GenericMetricLoader(wikiConfigLoader),
                 new GenericTableLoader(wikiConfigLoader, genericDimensions, new DataSourceMetadataService())
         )
-        loader.load();
+        loader.load()
 
         dimensionDictionary = loader.getDimensionDictionary()
         metricDictionary = loader.getMetricDictionary()
