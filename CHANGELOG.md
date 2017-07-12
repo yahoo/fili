@@ -103,6 +103,8 @@ Current
 - [Fix metric and dimension names for wikipedia-example](https://github.com/yahoo/fili/pull/415)
     * The metrics and dimensions configured in the `fili-wikipedia-example` were different from those in Druid and as a result the queries sent to Druid were incorrect
 
+- [Log stack trace at error on unexpected DimensionServlet failures]()
+    * DimensionServlet was using debug to log unexpected exceptions and not printing the stack trace
 
 ### Known Issues:
 
