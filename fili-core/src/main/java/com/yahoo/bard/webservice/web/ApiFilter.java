@@ -17,12 +17,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
 
@@ -182,15 +183,14 @@ public class ApiFilter {
      * @return an ApiFilter with the union of values
      */
     public static ApiFilter union(ApiFilter one, ApiFilter two) {
-        if (!Objects.equals(one.getDimension(), two.getDimension())
+        if (Objects.equals(one.getDimension(), two.getDimension())
                 && Objects.equals(one.getDimensionField(), two.getDimensionField())
                 && Objects.equals(one.getOperation(), two.getOperation())
                 ) {
-            throw new IllegalArgumentException(String.format("Unmergable ApiFilters  '%s' and '%s'", one, two));
+            Set values = Stream.concat(one.getValues().stream(), two.getValues().stream()).collect(Collectors.toSet());
+            return one.withValues(values);
         }
-        Set<String> values = new HashSet<>(one.getValues());
-        values.addAll(two.getValues());
-        return one.withValues(values);
+        throw new IllegalArgumentException(String.format("Unmergable ApiFilters  '%s' and '%s'", one, two));
     }
 
     @Override

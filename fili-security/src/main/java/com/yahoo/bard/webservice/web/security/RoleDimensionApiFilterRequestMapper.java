@@ -22,7 +22,6 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -37,6 +36,8 @@ import javax.ws.rs.core.SecurityContext;
 /**
  * A request mapper that ensures that a user has at least one relevant role on a dimension and applies access filters
  * based on roles for that user.
+ * This mapper is intended to route based on user-category style roles such as routing super-user access to a
+ * different mapping chain.
  */
 public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<DataApiRequest> {
 
@@ -55,8 +56,8 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
 
     private final String unauthorizedHttpMessage;
 
-    Dimension dimension;
-    Map<String, Set<ApiFilter>> roleApiFilters;
+    private Dimension dimension;
+    private Map<String, Set<ApiFilter>> roleApiFilters;
 
     /**
      * Constructor.
@@ -94,7 +95,7 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
     }
 
     @Override
-    public DataApiRequest internalApply(DataApiRequest request, ContainerRequestContext context)
+    protected DataApiRequest internalApply(DataApiRequest request, ContainerRequestContext context)
             throws RequestValidationException {
         SecurityContext securityContext = context.getSecurityContext();
 
@@ -105,7 +106,7 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
                         .flatMap(Set::stream)
         );
 
-        if (mergedSecurityFilters.size() == 0) {
+        if (mergedSecurityFilters.isEmpty()) {
             String name = securityContext.getUserPrincipal().getName();
             LOG.warn(DIMENSION_MISSING_MANDATORY_ROLE.logFormat(name, dimension.getApiName()));
             throw new RequestValidationException(
@@ -114,16 +115,28 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
                     UNAUTHORIZED_USER_MESSAGE
             );
         }
-        Function<Map.Entry<Dimension, Set<ApiFilter>>, Set<ApiFilter>> substituteFilters = entry ->
-                entry.getKey().equals(dimension) ?
-                        StreamUtils.setMerge(entry.getValue(), mergedSecurityFilters)
-                        : entry.getValue();
 
         Map<Dimension, Set<ApiFilter>> newMap =  request.getFilters().entrySet().stream()
-                .map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(), substituteFilters.apply(entry)))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                .collect(Collectors.toMap(Map.Entry::getKey, it -> substituteFilters(mergedSecurityFilters, it)));
 
         return request.withFilters(newMap);
+    }
+
+    /**
+     * If a filter map entry matches on dimension, return the values with the set merged.
+     *
+     * @param mergedSecurityFilters  The security filters being conditionally merged
+     * @param dimensionFilters The dimension filters being iterated across
+     *
+     * @return either the original filter entry or one with security filters merged in
+     */
+    public Set<ApiFilter> substituteFilters(
+            Set<ApiFilter> mergedSecurityFilters,
+            Map.Entry<Dimension, Set<ApiFilter>> dimensionFilters
+    ) {
+        return dimensionFilters.getKey().equals(dimension) ?
+                StreamUtils.setMerge(dimensionFilters.getValue(), mergedSecurityFilters)
+                : dimensionFilters.getValue();
     }
 
     /**
@@ -147,7 +160,7 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
                         )
                 ));
 
-        Set<ApiFilter> filters = filterMap.entrySet().stream()
+        return filterMap.entrySet().stream()
                 .map(it -> new ApiFilter(
                         it.getKey().getLeft(),
                         it.getKey().getMiddle(),
@@ -155,7 +168,5 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
                         it.getValue()
                 ))
                 .collect(Collectors.toSet());
-
-        return filters;
     }
 }

@@ -19,8 +19,8 @@ import javax.ws.rs.core.SecurityContext;
  */
 public class RoleBasedRoutingRequestMapper<T extends ApiRequest> extends RequestMapper<T> {
 
-    LinkedHashMap<String, RequestMapper<T>> prioritizedRoleBasedMappers;
-    RequestMapper<T> defaultMapper;
+    private final LinkedHashMap<String, RequestMapper<T>> prioritizedRoleBasedMappers;
+    private final RequestMapper<T> defaultMapper;
 
     /**
      * Constructor.
@@ -58,9 +58,7 @@ public class RoleBasedRoutingRequestMapper<T extends ApiRequest> extends Request
         SecurityContext securityContext = context.getSecurityContext();
         RequestMapper<T> mapper = prioritizedRoleBasedMappers.keySet().stream()
                 .filter(securityContext::isUserInRole)
-                .peek(it -> System.out.println(it))
                 .map(prioritizedRoleBasedMappers::get)
-                .peek(it -> System.out.println(it))
                 .findFirst().orElse(defaultMapper);
         return (mapper == null) ?
                 request :

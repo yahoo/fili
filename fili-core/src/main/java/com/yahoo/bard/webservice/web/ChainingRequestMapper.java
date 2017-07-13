@@ -71,5 +71,5 @@ public abstract class ChainingRequestMapper<T extends ApiRequest> extends Reques
      * @throws RequestValidationException with the HTTP status and user-facing error msg to abort with
      * if the request is not valid
      */
-    public abstract T internalApply(T request, ContainerRequestContext context) throws RequestValidationException;
+    protected abstract T internalApply(T request, ContainerRequestContext context) throws RequestValidationException;
 }
