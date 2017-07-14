@@ -9,6 +9,7 @@ Current
 -------
 
 ### Added:
+- [Added dockerfile and updated README](https://github.com/yahoo/fili/pull/429)
 
 - [Add Uptime Status Metric](https://github.com/yahoo/fili/pull/518)
     * Add a metric to show how long Fili has been running 
