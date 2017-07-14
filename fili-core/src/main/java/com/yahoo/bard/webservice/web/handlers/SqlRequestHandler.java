@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.web.handlers;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
+import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.logging.RequestLog;
@@ -20,10 +21,12 @@ import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.asynchttpclient.BoundRequestBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.validation.constraints.NotNull;
 
@@ -79,6 +82,16 @@ public class SqlRequestHandler implements DataRequestHandler {
         }
     }
 
+    /**
+     * todo {@link com.yahoo.bard.webservice.druid.client.impl.AsyncDruidWebServiceImpl#sendRequest(SuccessCallback, HttpErrorCallback, FailureCallback, BoundRequestBuilder, String, AtomicLong)}
+     * save requestlog context
+     * @param context  The context for the Request
+     * @param request  The Api Request Object
+     * @param druidQuery  The druid query
+     * @param response  The Async response
+     *
+     * @return
+     */
     @Override
     public boolean handleRequest(
             RequestContext context,
@@ -89,11 +102,14 @@ public class SqlRequestHandler implements DataRequestHandler {
         //todo better check for sql query
         if (sqlConverter != null && request.getFormat().equals(ResponseFormatType.SQL)) {
             LOG.info("Intercepting for sql backend");
-            SuccessCallback success = rootNode -> response.processResponse(
-                    rootNode,
-                    new SqlAggregationQuery(druidQuery),
-                    new LoggingContext(RequestLog.copy())
-            );
+            LoggingContext copy = new LoggingContext(RequestLog.copy());
+            SuccessCallback success = rootNode -> {
+                response.processResponse(
+                        rootNode,
+                        new SqlAggregationQuery(druidQuery),
+                        copy
+                );
+            };
             FailureCallback failure = response.getFailureCallback(druidQuery);
 
             sqlConverter.executeQuery(druidQuery, success, failure);
