@@ -5,7 +5,6 @@ package com.yahoo.bard.webservice.sql;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
-import com.yahoo.bard.webservice.web.DataApiRequest;
 
 import com.fasterxml.jackson.databind.JsonNode;
 

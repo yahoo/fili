@@ -92,10 +92,6 @@ public interface SqlTimeConverter {
     default DateTime getIntervalStart(int offset, String[] row, TimeGrain timeGrain) {
         DateTime resultTimeStamp = new DateTime(0, DateTimeZone.UTC);
 
-        // offset = 1
-        // timeGrainToDatePartFunctions(...): YEAR, MONTH, DAY
-        // String[]: "false", "2015", "01", "01", "25", "true"
-
         List<SqlDatePartFunction> times = timeGrainToDatePartFunctions(timeGrain);
         for (int i = 0; i < times.size(); i++) {
             int value = Integer.parseInt(row[offset + i]);

@@ -1,3 +1,5 @@
+// Copyright 2017 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.sql;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
@@ -20,13 +22,18 @@ import org.joda.time.Interval;
 import java.util.Collection;
 
 /**
- * Created by hinterlong on 6/22/17.
+ * Wrapper around an {@link DruidAggregationQuery} which always reports
+ * itself as a {@link DefaultQueryType#GROUP_BY}.
  */
 public class SqlAggregationQuery extends AbstractDruidAggregationQuery<SqlAggregationQuery> {
 
+    /**
+     * Wraps a query as a GroupBy Query.
+     *
+     * @param query  The query to wrap.
+     */
     public SqlAggregationQuery(DruidAggregationQuery<?> query) {
-        super(
-                DefaultQueryType.GROUP_BY,
+        this(
                 query.getDataSource(),
                 query.getGranularity(),
                 query.getDimensions(),
@@ -39,6 +46,20 @@ public class SqlAggregationQuery extends AbstractDruidAggregationQuery<SqlAggreg
         );
     }
 
+    /**
+     * Constructor.
+     *
+     * @param dataSource  The datasource
+     * @param granularity  The granularity
+     * @param dimensions  The dimensions
+     * @param filter  The filter
+     * @param aggregations  The aggregations
+     * @param postAggregations  The post-aggregations
+     * @param intervals  The intervals
+     * @param context  The context
+     * @param doFork  true to fork a new context and bump up the query id, or false to create an exact copy of the
+     * context.
+     */
     private SqlAggregationQuery(
             DataSource dataSource,
             Granularity granularity,

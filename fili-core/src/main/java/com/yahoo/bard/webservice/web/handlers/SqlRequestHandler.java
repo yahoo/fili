@@ -5,15 +5,13 @@ package com.yahoo.bard.webservice.web.handlers;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
-import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.sql.DefaultSqlBackedClient;
 import com.yahoo.bard.webservice.sql.SqlAggregationQuery;
 import com.yahoo.bard.webservice.sql.SqlBackedClient;
-import com.yahoo.bard.webservice.sql.SqlConverter;
 import com.yahoo.bard.webservice.sql.helper.CalciteHelper;
-import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.responseprocessors.LoggingContext;
@@ -21,12 +19,10 @@ import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.asynchttpclient.BoundRequestBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
-import java.util.concurrent.atomic.AtomicLong;
 
 import javax.validation.constraints.NotNull;
 
@@ -48,12 +44,9 @@ public class SqlRequestHandler implements DataRequestHandler {
      * Constructor.
      *
      * @param next Next Handler in the chain
-     * @param mapper
+     * @param mapper  The mapper for all JSON processing
      */
-    public SqlRequestHandler(
-            DataRequestHandler next,
-            ObjectMapper mapper
-    ) {
+    public SqlRequestHandler(DataRequestHandler next, ObjectMapper mapper) {
         this.next = next;
         initializeSqlBackend(mapper);
     }
@@ -61,12 +54,10 @@ public class SqlRequestHandler implements DataRequestHandler {
     /**
      * Initializes the connection to the sql backend and prepares
      * the {@link SqlBackedClient} for converting queries.
-     * @param mapper
-     * @param physicalTableDictionary
+     *
+     * @param mapper  The mapper for all JSON processing.
      */
-    private void initializeSqlBackend(
-            ObjectMapper mapper
-    ) {
+    private void initializeSqlBackend(ObjectMapper mapper) {
         String dbUrl = SYSTEM_CONFIG.getStringProperty(DATABASE_URL);
         String driver = SYSTEM_CONFIG.getStringProperty(DATABASE_DRIVER);
         String schema = SYSTEM_CONFIG.getStringProperty(DATABASE_SCHEMA);
@@ -76,21 +67,21 @@ public class SqlRequestHandler implements DataRequestHandler {
         String user = SYSTEM_CONFIG.getStringProperty(DATABASE_USERNAME);
         String pass = SYSTEM_CONFIG.getStringProperty(DATABASE_PASSWORD);
         try {
-            sqlConverter = new SqlConverter(mapper, dbUrl, driver, user, pass, schema);
+            sqlConverter = new DefaultSqlBackedClient(dbUrl, driver, user, pass, schema, mapper);
         } catch (SQLException e) {
             LOG.warn("Failed to initialize Sql backend", e);
         }
     }
 
     /**
-     * todo {@link com.yahoo.bard.webservice.druid.client.impl.AsyncDruidWebServiceImpl#sendRequest(SuccessCallback, HttpErrorCallback, FailureCallback, BoundRequestBuilder, String, AtomicLong)}
-     * save requestlog context
-     * @param context  The context for the Request
-     * @param request  The Api Request Object
-     * @param druidQuery  The druid query
-     * @param response  The Async response
+     * Handles a request by detecting if it's a sql backed table and sending to a sql backend.
      *
-     * @return
+     * @param context  The context for the Request.
+     * @param request  The Api Request Object.
+     * @param druidQuery  The druid query.
+     * @param response  The Async response.
+     *
+     * @return true if request was handled.
      */
     @Override
     public boolean handleRequest(
@@ -99,6 +90,11 @@ public class SqlRequestHandler implements DataRequestHandler {
             DruidAggregationQuery<?> druidQuery,
             ResponseProcessor response
     ) {
+        /*
+        todo:
+            AsyncDruidWebServiceImpl#sendRequest(...)}
+            save requestlog context
+         */
         //todo better check for sql query
         if (sqlConverter != null && request.getFormat().equals(ResponseFormatType.SQL)) {
             LOG.info("Intercepting for sql backend");

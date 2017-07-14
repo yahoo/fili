@@ -14,11 +14,18 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
 import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -29,31 +36,49 @@ import java.util.stream.Collectors;
  * Process the results from a DruidQuery to a sql backend.
  */
 public class SqlResultSetProcessor {
+    private static final Logger LOG = LoggerFactory.getLogger(SqlResultSetProcessor.class);
     private final DruidAggregationQuery<?> druidQuery;
-    private final BiMap<Integer, String> columnToColumnName;
-    private final List<String[]> sqlResults;
+    private BiMap<Integer, String> columnToColumnName;
+    private List<String[]> sqlResults;
     private final ObjectMapper objectMapper;
-    private final int columnCount;
     private final int groupByCount;
     private final SqlTimeConverter sqlTimeConverter;
 
+    /**
+     * Builds something to process a set of sql results and return them as the
+     * same format as a GroupBy query to Druid.
+     *
+     * @param druidQuery  The original query that was converted to a sql query.
+     * @param resultSet  The results returned by the sql backend.
+     * @param apiToFieldMapper  The mapping from api to physical name.
+     * @param objectMapper  The mapper for all JSON processing.
+     * @param sqlTimeConverter  The time converter used with making the query.
+     *
+     * @throws SQLException if can't read results from database.
+     */
     public SqlResultSetProcessor(
             DruidAggregationQuery<?> druidQuery,
-            BiMap<Integer, String> columnToColumnName,
-            List<String[]> sqlResults,
+            ResultSet resultSet,
+            ApiToFieldMapper apiToFieldMapper,
             ObjectMapper objectMapper,
             SqlTimeConverter sqlTimeConverter
-    ) {
+    ) throws SQLException {
         this.druidQuery = druidQuery;
-        this.columnToColumnName = columnToColumnName;
-        this.sqlResults = sqlResults;
         this.objectMapper = objectMapper;
         this.sqlTimeConverter = sqlTimeConverter;
 
         this.groupByCount = druidQuery.getDimensions().size();
-        this.columnCount = columnToColumnName.size();
+
+        readSqlResultSet(resultSet, apiToFieldMapper);
+
     }
 
+    /**
+     * Processes the results from the sql {@link ResultSet} and writes them out as
+     * the json format returned for a {@link com.yahoo.bard.webservice.druid.model.query.GroupByQuery}.
+     *
+     * @return the equivalent json.
+     */
     public JsonNode process() {
         Map<String, Function<String, Number>> resultTypeMapper = getAggregationTypeMapper(druidQuery);
 
@@ -67,6 +92,7 @@ public class SqlResultSetProcessor {
                         row,
                         (TimeGrain) druidQuery.getGranularity()
                 );
+                // todo probably shouldn't be UTC here
                 jsonWriter.writeStringField("timestamp", timestamp.toDateTime(DateTimeZone.UTC).toString());
                 jsonWriter.writeObjectFieldStart("event");
 
@@ -84,12 +110,23 @@ public class SqlResultSetProcessor {
 
     }
 
-    private void processRow(
+    /**
+     * Processes a single row of results from the result set.
+     *
+     * @param resultTypeMapper  The mapping from an aggregation to a function which corrects it's type.
+     * @param jsonWriter  The generator for writing the json results.
+     * @param row  The result row.
+     *
+     * @throws IOException if failed while writing json.
+     */
+    protected void processRow(
             Map<String, Function<String, Number>> resultTypeMapper,
             JsonGenerator jsonWriter,
             String[] row
     ) throws IOException {
         int lastTimeIndex = sqlTimeConverter.getNumberOfGroupByFunctions((TimeGrain) druidQuery.getGranularity());
+        int columnCount = columnToColumnName.size();
+
         for (int i = 0; i < columnCount; i++) {
             if (groupByCount <= i && i < groupByCount + lastTimeIndex) {
                 continue;
@@ -116,7 +153,50 @@ public class SqlResultSetProcessor {
         }
     }
 
-    private static void writeNumberField(JsonGenerator jsonWriter, String name, Number number) throws IOException {
+    /**
+     * Reads the result set and converts it into a result that druid
+     * would produce.
+     *
+     * @param resultSet  The result set of the druid query.
+     * @param aliasMaker  The mapping from api to physical name.
+     *
+     * @throws SQLException if results can't be read.
+     */
+    protected void readSqlResultSet(ResultSet resultSet, ApiToFieldMapper aliasMaker) throws SQLException {
+        ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+        int resultSetColumnCount = resultSetMetaData.getColumnCount();
+
+        BiMap<Integer, String> columnNames = HashBiMap.create(resultSetColumnCount);
+        List<String[]> sqlResultRows = new ArrayList<>();
+
+        for (int i = 1; i <= resultSetColumnCount; i++) {
+            String columnName = aliasMaker.unApply(resultSetMetaData.getColumnName(i));
+            columnNames.put(i - 1, columnName);
+        }
+
+        while (resultSet.next()) {
+            String[] row = new String[resultSetColumnCount];
+            for (int i = 1; i <= resultSetColumnCount; i++) {
+                row[i - 1] = resultSet.getString(i);
+            }
+            sqlResultRows.add(row);
+        }
+        LOG.debug("Fetched {} rows.", sqlResultRows.size());
+
+        this.columnToColumnName = columnNames;
+        this.sqlResults = sqlResultRows;
+    }
+
+    /**
+     * Writes a {@link Number} as either a {@link Double} or {@link Long} in json.
+     *
+     * @param jsonWriter  The writer used to build json.
+     * @param name  The name of the field to write with json.
+     * @param number  The Number value of the field to write with json.
+     *
+     * @throws IOException if results can't be written.
+     */
+    protected static void writeNumberField(JsonGenerator jsonWriter, String name, Number number) throws IOException {
         if (number instanceof Double) {
             jsonWriter.writeNumberField(name, (Double) number);
         } else if (number instanceof Long) {
@@ -131,22 +211,27 @@ public class SqlResultSetProcessor {
      *
      * @param druidQuery  The query to make a mapper for.
      *
-     * @return the map from aggregation name to {@link Double::parseDouble} {@link Long::parseLong}.
+     * @return the map from aggregation name to {@link Double#parseDouble} {@link Long#parseLong}.
      */
-    private static Map<String, Function<String, Number>> getAggregationTypeMapper(
+    protected static Map<String, Function<String, Number>> getAggregationTypeMapper(
             DruidAggregationQuery<?> druidQuery
     ) {
         //todo maybe "true"/"false" -> boolean
         return druidQuery.getAggregations()
                 .stream()
-                .collect(Collectors.toMap(Aggregation::getName, aggregation -> {
-                    String aggType = aggregation.getType().toLowerCase(Locale.ENGLISH);
-                    if (aggType.contains("long")) {
-                        return Long::parseLong;
-                    } else if (aggType.contains("double")) {
-                        return Double::parseDouble;
-                    }
-                    return null;
-                }));
+                .collect(
+                        Collectors.toMap(
+                                Aggregation::getName,
+                                aggregation -> {
+                                    String aggType = aggregation.getType().toLowerCase(Locale.ENGLISH);
+                                    if (aggType.contains("long")) {
+                                        return Long::parseLong;
+                                    } else if (aggType.contains("double")) {
+                                        return Double::parseDouble;
+                                    }
+                                    return null;
+                                }
+                        )
+                );
     }
 }

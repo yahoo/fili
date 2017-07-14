@@ -17,13 +17,13 @@ import static java.util.Arrays.asList
 
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.sql.ApiToFieldMapper
-import com.yahoo.bard.webservice.sql.aggregation.DefaultDruidSqlTypeConverter
-import com.yahoo.bard.webservice.sql.aggregation.DruidSqlTypeConverter
+import com.yahoo.bard.webservice.sql.aggregation.DefaultDruidSqlAggregationConverter
+import com.yahoo.bard.webservice.sql.aggregation.DruidSqlAggregationConverter
 import com.yahoo.bard.webservice.sql.database.Database
 import com.yahoo.bard.webservice.sql.helper.CalciteHelper
 import com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder
 import com.yahoo.bard.webservice.sql.helper.SqlTimeConverter
-import com.yahoo.bard.webservice.sql.helper.TimeConverter
+import com.yahoo.bard.webservice.sql.helper.DefaultSqlTimeConverter
 
 import org.apache.calcite.rel.rel2sql.RelToSqlConverter
 import org.apache.calcite.rex.RexNode
@@ -41,9 +41,9 @@ class HavingsEvaluatorSpec extends Specification {
     static int TWO = 2
     static Connection CONNECTION = Database.initializeDatabase()
     static ApiToFieldMapper ALIAS_MAKER = new ApiToFieldMapper(SimpleDruidQueryBuilder.getDictionary().get(WIKITICKER).schema)
-    static SqlTimeConverter sqlTimeConverter = new TimeConverter()
+    static SqlTimeConverter sqlTimeConverter = new DefaultSqlTimeConverter()
     static HavingEvaluator havingEvaluator = new HavingEvaluator()
-    static DruidSqlTypeConverter druidSqlTypeConverter = new DefaultDruidSqlTypeConverter()
+    static DruidSqlAggregationConverter druidSqlTypeConverter = new DefaultDruidSqlAggregationConverter()
 
     private static RelBuilder getBuilder() {
         RelBuilder builder = CalciteHelper.getBuilder(Database.getDataSource())
@@ -56,7 +56,7 @@ class HavingsEvaluatorSpec extends Specification {
         setup:
         RelBuilder builder = getBuilder()
         RelBuilder.AggCall[] aggregationCalls = aggregations.stream().map {
-            return druidSqlTypeConverter.fromDruidType(it).get().getAggregation(builder, it)
+            return druidSqlTypeConverter.fromDruidType(it).get().build(builder)
         }.collect(Collectors.toList()).toArray() as RelBuilder.AggCall[]
         builder.aggregate(
                 builder.groupKey(
@@ -94,7 +94,7 @@ class HavingsEvaluatorSpec extends Specification {
     def "Test bad inputs for having filters on #expectedHavingSql"() {
         setup:
         RelBuilder builder = getBuilder()
-        RelBuilder.AggCall[] aggregationCalls = aggregations.collect { druidSqlTypeConverter.fromDruidType(it).get().getAggregation(builder, it) } as RelBuilder.AggCall[]
+        RelBuilder.AggCall[] aggregationCalls = aggregations.collect { druidSqlTypeConverter.fromDruidType(it).get().build(builder) } as RelBuilder.AggCall[]
         builder.aggregate(
                 builder.groupKey(
                         sqlTimeConverter.buildGroupBy(builder, DefaultTimeGrain.DAY, "TIME").collect(Collectors.toList())

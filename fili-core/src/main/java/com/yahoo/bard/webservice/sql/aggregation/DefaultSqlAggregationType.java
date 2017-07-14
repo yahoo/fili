@@ -11,7 +11,7 @@ import org.apache.calcite.tools.RelBuilder;
 /**
  * All the aggregation types supported for use with a sql backend.
  */
-public enum DefaultSqlAggregationType implements SqlAggregationType {
+public enum DefaultSqlAggregationType {
     SUM("sum", SqlStdOperatorTable.SUM),
     MIN("min", SqlStdOperatorTable.MIN),
     MAX("max", SqlStdOperatorTable.MAX);
@@ -36,21 +36,28 @@ public enum DefaultSqlAggregationType implements SqlAggregationType {
      * Builds an aggregate call using the {@link SqlAggFunction} corresponding
      * to the aggregation type.
      *
-     * @param builder  The RelBuilder used with calcite to build queries.
      * @param aggregation  The druid aggregation.
      *
      * @return the AggCal built from the aggregation type.
      */
-    public RelBuilder.AggCall getAggregation(
-            RelBuilder builder,
-            Aggregation aggregation
-    ) {
-        return builder.aggregateCall(
-                sqlAggFunction,
-                false,
-                null,
-                aggregation.getName(),
-                builder.field(aggregation.getFieldName())
-        );
+    public SqlAggregationBuilder with(Aggregation aggregation) {
+        return new SqlAggregationBuilder() {
+            @Override
+            public RelBuilder.AggCall build(RelBuilder builder) {
+                return builder.aggregateCall(
+                        sqlAggFunction,
+                        false,
+                        null,
+                        aggregation.getName(),
+                        builder.field(aggregation.getFieldName())
+                );
+            }
+
+            @Override
+            public Aggregation getAggregation() {
+                return aggregation;
+            }
+        };
+
     }
 }

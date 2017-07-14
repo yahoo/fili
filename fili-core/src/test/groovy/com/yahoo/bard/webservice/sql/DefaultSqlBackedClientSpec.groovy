@@ -20,7 +20,6 @@ import static com.yahoo.bard.webservice.sql.builders.Havings.lt
 import static com.yahoo.bard.webservice.sql.builders.Intervals.interval
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.END
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.START
-import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.getDictionary
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.getDimension
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.getDimensions
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.groupByQuery
@@ -62,8 +61,8 @@ import org.joda.time.DateTimeZone
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class SqlConverterSpec extends Specification {
-    private static SqlBackedClient sqlBackedClient = new SqlConverter(Database.getDataSource(), new ObjectMapper())
+class DefaultSqlBackedClientSpec extends Specification {
+    private static SqlBackedClient sqlBackedClient = new DefaultSqlBackedClient(Database.getDataSource(), new ObjectMapper())
     private static final String TRUE = "TRUE"
     private static final String FALSE = "FALSE"
     private static final String FIRST_COMMENT = "added project"

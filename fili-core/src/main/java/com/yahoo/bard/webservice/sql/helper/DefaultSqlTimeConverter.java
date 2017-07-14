@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
  * Handles converting between a {@link DefaultTimeGrain} and a list of
  * {@link SqlDatePartFunction} to create groupBy statements on intervals of time.
  */
-public class TimeConverter implements SqlTimeConverter {
+public class DefaultSqlTimeConverter implements SqlTimeConverter {
     // This mapping shows what information we need to group for each granularity
     private static final Map<TimeGrain, List<SqlDatePartFunction>> TIMEGRAIN_TO_GROUPBY = new
             HashMap<TimeGrain, List<SqlDatePartFunction>>() {

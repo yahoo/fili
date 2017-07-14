@@ -26,6 +26,7 @@ public class CalciteHelper {
     public static final String DEFAULT_SCHEMA = "PUBLIC";
     private final DataSource dataSource;
     private final String schemaName;
+    private final SqlDialect dialect;
 
     /**
      * Initialize the helper with a datasource and it's schema.
@@ -35,9 +36,13 @@ public class CalciteHelper {
      *
      * @throws SQLException if failed while making a connection to the database.
      */
-    public CalciteHelper(DataSource dataSource, String schemaName) {
+    public CalciteHelper(DataSource dataSource, String schemaName) throws SQLException {
         this.dataSource = dataSource;
         this.schemaName = schemaName;
+
+        Connection connection = getConnection();
+        this.dialect = SqlDialect.create(connection.getMetaData());
+        connection.close();
     }
 
     /**
@@ -64,11 +69,24 @@ public class CalciteHelper {
         return dataSource.getConnection();
     }
 
-    public RelToSqlConverter getNewRelToSqlConverter() throws SQLException {
-        Connection connection = getConnection();
-        RelToSqlConverter relToSqlConverter = new RelToSqlConverter(SqlDialect.create(connection.getMetaData()));
-        connection.close();
-        return relToSqlConverter;
+    /**
+     * Creates a new {@link RelToSqlConverter} using the dialect from
+     * the datasource this was constructed with.
+     *
+     * @return a new converter.
+     */
+    public RelToSqlConverter getNewRelToSqlConverter() {
+        return new RelToSqlConverter(dialect);
+    }
+
+    /**
+     * Creates a new {@link SqlPrettyWriter} using the dialect from the
+     * datasource this was constructed with.
+     *
+     * @return a new Sql writer
+     */
+    public SqlPrettyWriter getNewSqlWriter() {
+        return new SqlPrettyWriter(dialect);
     }
 
     /**
@@ -130,13 +148,6 @@ public class CalciteHelper {
         // null))
         //                )
         //        );
-    }
-
-    public SqlPrettyWriter getNewSqlWriter() throws SQLException {
-        Connection connection = getConnection();
-        SqlPrettyWriter sqlPrettyWriter = new SqlPrettyWriter(SqlDialect.create(connection.getMetaData()));
-        connection.close();
-        return sqlPrettyWriter;
     }
 
     /**

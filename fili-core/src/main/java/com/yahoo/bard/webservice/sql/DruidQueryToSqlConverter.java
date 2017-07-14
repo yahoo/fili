@@ -2,11 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.sql;
 
-
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
-import com.yahoo.bard.webservice.druid.client.FailureCallback;
-import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.having.Having;
@@ -17,24 +14,16 @@ import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery;
 import com.yahoo.bard.webservice.druid.model.query.TopNQuery;
-import com.yahoo.bard.webservice.sql.aggregation.DefaultDruidSqlTypeConverter;
-import com.yahoo.bard.webservice.sql.aggregation.DruidSqlTypeConverter;
-import com.yahoo.bard.webservice.sql.aggregation.SqlAggregationType;
+import com.yahoo.bard.webservice.sql.aggregation.DefaultDruidSqlAggregationConverter;
+import com.yahoo.bard.webservice.sql.aggregation.DruidSqlAggregationConverter;
 import com.yahoo.bard.webservice.sql.evaluator.FilterEvaluator;
 import com.yahoo.bard.webservice.sql.evaluator.HavingEvaluator;
 import com.yahoo.bard.webservice.sql.helper.CalciteHelper;
 import com.yahoo.bard.webservice.sql.helper.DatabaseHelper;
+import com.yahoo.bard.webservice.sql.helper.DefaultSqlTimeConverter;
 import com.yahoo.bard.webservice.sql.helper.SqlTimeConverter;
-import com.yahoo.bard.webservice.sql.helper.TimeConverter;
-import com.yahoo.bard.webservice.util.CompletedFuture;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-
-import org.apache.calcite.adapter.jdbc.JdbcSchema;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.rel2sql.RelToSqlConverter;
 import org.apache.calcite.rex.RexInputRef;
@@ -48,189 +37,75 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.sql.DataSource;
-
 /**
- * Converts druid queries to sql, executes it, and returns a druid like response.
+ * Default implementation of converting a {@link DruidQuery} into a sql query.
  */
-public class SqlConverter implements SqlBackedClient {
-    private static final Logger LOG = LoggerFactory.getLogger(SqlConverter.class);
-    private final ObjectMapper jsonWriter;
+public class DruidQueryToSqlConverter {
+    private static final Logger LOG = LoggerFactory.getLogger(DruidQueryToSqlConverter.class);
     private final CalciteHelper calciteHelper;
     private final SqlTimeConverter sqlTimeConverter;
+    private final DruidSqlAggregationConverter druidSqlAggregationConverter;
+    private static final int NONE = -1;
 
     /**
-     * Creates a sql converter using the given database and datasource.
-     * The default schema is "PUBLIC" (i.e. you haven't called "create schema"
-     * and "set schema")
+     * Constructs the default converter.
      *
-     * @param dataSource  The dataSource for the jdbc schema.
-     *
-     * @throws SQLException if can't read from database.
+     * @param calciteHelper  The calcite helper for this database.
      */
-    public SqlConverter(
-            DataSource dataSource,
-            ObjectMapper objectMapper
-    ) throws SQLException {
-        calciteHelper = new CalciteHelper(dataSource, CalciteHelper.DEFAULT_SCHEMA);
-        jsonWriter = objectMapper;
-        sqlTimeConverter = new TimeConverter();
+    public DruidQueryToSqlConverter(CalciteHelper calciteHelper) {
+        this.calciteHelper = calciteHelper;
+        this.sqlTimeConverter = buildSqlTimeConverter();
+        this.druidSqlAggregationConverter = buildDruidSqlTypeConverter();
     }
 
     /**
-     * Creates a sql converter using the given database and datasource.
+     * Builds a time converter to designating how to translate between druid and sql
+     * time information.
      *
-     * @param schemaName  The name of the schema used for the database.
-     *
-     * @throws SQLException if can't read from database.
+     * @return a new time converter.
      */
-    public SqlConverter(
-            ObjectMapper objectMapper,
-            String url,
-            String driver,
-            String username,
-            String password,
-            String schemaName
-    ) throws SQLException {
-        DataSource dataSource = JdbcSchema.dataSource(url, driver, username, password);
-
-        calciteHelper = new CalciteHelper(dataSource, schemaName);
-        jsonWriter = objectMapper;
-        sqlTimeConverter = new TimeConverter();
+    protected SqlTimeConverter buildSqlTimeConverter() {
+        return new DefaultSqlTimeConverter();
     }
 
-    @Override
-    public Future<JsonNode> executeQuery(
-            DruidQuery<?> druidQuery,
-            SuccessCallback successCallback,
-            FailureCallback failureCallback
-    ) {
+    /**
+     * Builds a converter between druid and sql aggregations.
+     *
+     * @return a new druid to sql aggregation converter.
+     */
+    protected DruidSqlAggregationConverter buildDruidSqlTypeConverter() {
+        return new DefaultDruidSqlAggregationConverter();
+    }
+
+    /**
+     * Determines whether or not a query is able to be processed using
+     * the Sql backend.
+     *
+     * @param druidQuery  The query to check if is able to be processed.
+     *
+     * @return true if a valid query, else false.
+     */
+    protected boolean isValidQuery(DruidQuery<?> druidQuery) {
         DefaultQueryType queryType = (DefaultQueryType) druidQuery.getQueryType();
-        LOG.debug("Processing {} query\n {}", queryType, jsonWriter.valueToTree(druidQuery));
+        LOG.debug("Processing {} query\n {}", queryType, druidQuery);
 
         switch (queryType) {
             case TOP_N:
             case GROUP_BY:
             case TIMESERIES:
-                CompletableFuture<JsonNode> responseFuture = CompletableFuture.supplyAsync(() -> {
-                            try {
-                                return executeAndProcessQuery((DruidAggregationQuery) druidQuery);
-                            } catch (RuntimeException e) {
-                                LOG.warn("Failed while querying ", e);
-                                if (failureCallback != null) {
-                                    failureCallback.dispatch(e);
-                                }
-                            }
-                            return null;
-                        }
-                );
-                responseFuture.thenAccept(jsonNode -> {
-                    if (jsonNode != null && successCallback != null) {
-                        successCallback.invoke(jsonNode);
-                    }
-                });
-                return responseFuture;
-            default:
-                String message = "Unable to process " + queryType.toString();
-                failureCallback.invoke(new UnsupportedOperationException(message));
-        }
-        return new CompletedFuture<>(null, null);
-    }
-
-
-    /**
-     * Builds sql for a druid query, execute it against the database, process
-     * the results and return a jsonNode in the format of a druid response.
-     *
-     * @param druidQuery  The druid query to build and process.
-     *
-     * @return a druid-like response to the query.
-     */
-    private JsonNode executeAndProcessQuery(
-            DruidAggregationQuery<?> druidQuery
-    ) {
-        String sqlQuery;
-
-        ApiToFieldMapper aliasMaker = new ApiToFieldMapper(druidQuery.getDataSource().getPhysicalTable().getSchema());
-
-        try (Connection connection = calciteHelper.getConnection()) {
-            sqlQuery = buildSqlQuery(connection, druidQuery, aliasMaker);
-            LOG.info("Executing \n{}", sqlQuery);
-
-            SqlResultSetProcessor resultSetProcessor;
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
-                 ResultSet resultSet = preparedStatement.executeQuery()) {
-                resultSetProcessor = readSqlResultSet(druidQuery, resultSet, aliasMaker);
-            } catch (SQLException e) {
-                LOG.warn(
-                        "Failed to query table {}",
-                        druidQuery.getDataSource().getPhysicalTable().getName()
-                );
-                throw new RuntimeException("Could not finish query", e);
-            }
-
-            JsonNode jsonNode = resultSetProcessor.process();
-            LOG.debug("Created response: {}", jsonNode);
-            return jsonNode;
-        } catch (SQLException e) {
-            throw new RuntimeException("Couldn't generate sql", e);
+                return true;
         }
 
-
-    }
-
-    /**
-     * Reads the result set and converts it into a result that druid
-     * would produce.
-     *
-     * @param druidQuery the druid query to be made.
-     * @param resultSet  the result set of the druid query.
-     *
-     * @param aliasMaker
-     * @return druid-like result from query.
-     *
-     * @throws SQLException if results can't be readSqlResultSet.
-     */
-    private SqlResultSetProcessor readSqlResultSet(
-            DruidAggregationQuery<?> druidQuery,
-            ResultSet resultSet,
-            final ApiToFieldMapper aliasMaker
-    )
-            throws SQLException {
-        ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-        int columnCount = resultSetMetaData.getColumnCount();
-
-        BiMap<Integer, String> columnNames = HashBiMap.create(columnCount);
-        List<String[]> sqlResults = new ArrayList<>();
-        for (int i = 1; i <= columnCount; i++) {
-            String columnName = aliasMaker.unApply(resultSetMetaData.getColumnName(i));
-            columnNames.put(i - 1, columnName);
-        }
-
-        while (resultSet.next()) {
-            String[] row = new String[columnCount];
-            for (int i = 1; i <= columnCount; i++) {
-                row[i - 1] = resultSet.getString(i);
-            }
-            sqlResults.add(row);
-        }
-        LOG.debug("Fetched {} rows.", sqlResults.size());
-
-        return new SqlResultSetProcessor(druidQuery, columnNames, sqlResults, jsonWriter, sqlTimeConverter);
+        return false;
     }
 
     /**
@@ -238,17 +113,17 @@ public class SqlConverter implements SqlBackedClient {
      *
      * @param connection  The connection to the database.
      * @param druidQuery  The query to convert to sql.
+     * @param apiToFieldMapper  The mapping between api and physical names for the query.
      *
      * @return the sql equivalent of the query.
      *
      * @throws SQLException if can't connect to database.
      */
-    private String buildSqlQuery(
+    public String buildSqlQuery(
             Connection connection,
             DruidAggregationQuery<?> druidQuery,
-            ApiToFieldMapper aliasMaker
-    )
-            throws SQLException {
+            ApiToFieldMapper apiToFieldMapper
+    ) throws SQLException {
         String sqlTableName = druidQuery.getDataSource().getPhysicalTable().getName();
         String timestampColumn = DatabaseHelper.getTimestampColumn(
                 connection,
@@ -261,7 +136,7 @@ public class SqlConverter implements SqlBackedClient {
         RelBuilder builder = calciteHelper.getNewRelBuilder();
         builder.scan(sqlTableName)
                 .project(
-                        getColumnsToSelect(builder, druidQuery, timestampColumn, aliasMaker)
+                        getColumnsToSelect(builder, druidQuery, timestampColumn, apiToFieldMapper)
                 );
         RelNode rootRelNode = builder.build();
         RelToSqlConverter relToSql = calciteHelper.getNewRelToSqlConverter();
@@ -283,15 +158,15 @@ public class SqlConverter implements SqlBackedClient {
                                     localBuilder.groupKey(
                                             getAllGroupByColumns(localBuilder, druidQuery, timestampColumn)
                                     ),
-                                    getAllQueryAggregations(localBuilder, druidQuery, aliasMaker)
+                                    getAllQueryAggregations(localBuilder, druidQuery, apiToFieldMapper)
                             )
                             .filter(
-                                    getHavingFilter(localBuilder, druidQuery, aliasMaker)
+                                    getHavingFilter(localBuilder, druidQuery, apiToFieldMapper)
                             )
                             .sortLimit(
-                                    -1,
+                                    NONE,
                                     getThreshold(druidQuery),
-                                    getSort(localBuilder, druidQuery, aliasMaker)
+                                    getSort(localBuilder, druidQuery, apiToFieldMapper)
                             );
                     String sql = writeSql(sqlWriter, relToSql, localBuilder);
                     return "(" + sql + ")";
@@ -306,30 +181,47 @@ public class SqlConverter implements SqlBackedClient {
         // this will have to be implemented later if at all since we don't know about partial data
     }
 
-    private static Stream<List<Interval>> getIntervals(DruidAggregationQuery<?> druidQuery) {
+    /**
+     * Gets a stream of a list of intervals to query over. TopN queries are a stream of single item lists
+     * because the sort/limiting has to be done on each seperately. Other queries are a single item stream of
+     * a list of intervals.
+     *
+     * @param druidQuery  The query to find the intervals from.
+     *
+     * @return the collection of interval groups to query over.
+     */
+    protected static Stream<List<Interval>> getIntervals(DruidAggregationQuery<?> druidQuery) {
         if (druidQuery.getQueryType().equals(DefaultQueryType.TOP_N)) {
             return IntervalUtils.getSlicedIntervals(druidQuery.getIntervals(), druidQuery.getGranularity())
                     .keySet()
                     .stream()
                     .map(Collections::singletonList);
         } else {
-            return Collections.singletonList(druidQuery.getIntervals()).stream();
+            return Stream.of(druidQuery.getIntervals());
         }
     }
 
-    private Collection<RexNode> getSort(
+    /**
+     * Finds the sorting for a druid query.
+     *
+     * @param builder  The RelBuilder created with Calcite.
+     * @param druidQuery  The query to find the sorting from.
+     * @param aliasMaker  The mapping from api to physical names.
+     *
+     * @return a collection of rexnodes to apply sorts in calcite.
+     */
+    protected Collection<RexNode> getSort(
             RelBuilder builder,
             DruidAggregationQuery<?> druidQuery,
-            final ApiToFieldMapper aliasMaker
+            ApiToFieldMapper aliasMaker
     ) {
-        // todo this should be asc/desc based on the query
         // druid does NULLS FIRST
         List<RexNode> sorts = new ArrayList<>();
         if (druidQuery.getQueryType().equals(DefaultQueryType.TOP_N)) {
             TopNQuery topNQuery = (TopNQuery) druidQuery;
             Object topNMetricValue = topNQuery.getMetric().getMetric();
 
-            if (topNMetricValue instanceof TopNMetric) { //todo this is ugly but the it's the interface we're given
+            if (topNMetricValue instanceof TopNMetric) { //todo this is ugly but we don't have enough information
                 TopNMetric inner = ((TopNMetric) topNMetricValue);
                 String metricName = inner.getMetric().toString();
                 sorts.add(builder.field(aliasMaker.apply(metricName)));
@@ -367,8 +259,14 @@ public class SqlConverter implements SqlBackedClient {
                 .collect(Collectors.toList());
     }
 
-    private int getThreshold(DruidAggregationQuery<?> druidQuery) {
-        int noLimit = -1;
+    /**
+     * Finds the limit/threshold of results to return from the query.
+     *
+     * @param druidQuery  The query to find the threshold for.
+     *
+     * @return the threshold or {@link #NONE}.
+     */
+    protected int getThreshold(DruidAggregationQuery<?> druidQuery) {
         if (druidQuery.getQueryType().equals(DefaultQueryType.TOP_N)) {
             return (int) ((TopNQuery) druidQuery).getThreshold();
         } else if (druidQuery.getQueryType().equals(DefaultQueryType.GROUP_BY)) {
@@ -377,19 +275,20 @@ public class SqlConverter implements SqlBackedClient {
                 return limitSpec.getLimit().getAsInt();
             }
         }
-        return noLimit;
+        return NONE;
     }
 
     /**
      * Returns the RexNode used to filter the druidQuery.
      *
+     * @param builder  The RelBuilder created with Calcite.
      * @param druidQuery  The query from which to find filter all the filters for.
      * @param timestampColumn  The name of the timestamp column in the database.
      * @param intervals  The intervals to select events from.
      *
      * @return the combined RexNodes that should be filtered on.
      */
-    private RexNode getAllWhereFilters(
+    protected RexNode getAllWhereFilters(
             RelBuilder builder,
             DruidAggregationQuery<?> druidQuery,
             String timestampColumn,
@@ -401,26 +300,27 @@ public class SqlConverter implements SqlBackedClient {
             FilterEvaluator filterEvaluator = new FilterEvaluator();
             RexNode druidQueryFilter = filterEvaluator.evaluateFilter(builder, druidQuery.getFilter());
             return builder.and(timeFilter, druidQueryFilter);
-        } else {
-            return timeFilter;
         }
+
+        return timeFilter;
     }
 
     /**
      * Finds all the dimensions from filters, aggregations, and the time column
      * which need to be selected for the sql query.
      *
+     * @param builder  The RelBuilder created with Calcite.
      * @param druidQuery  The query from which to find filter and aggregation dimensions.
      * @param timestampColumn  The name of the timestamp column in the database.
+     * @param aliasMaker  The mapping from api to physical names.
      *
-     * @param aliasMaker
      * @return the list of fields which need to be selected by the builder.
      */
-    private List<RexInputRef> getColumnsToSelect(
+    protected List<RexInputRef> getColumnsToSelect(
             RelBuilder builder,
             DruidAggregationQuery<?> druidQuery,
             String timestampColumn,
-            final ApiToFieldMapper aliasMaker
+            ApiToFieldMapper aliasMaker
     ) {
         FilterEvaluator filterEvaluator = new FilterEvaluator();
 
@@ -430,7 +330,7 @@ public class SqlConverter implements SqlBackedClient {
         Stream<String> groupByDimensions = druidQuery.getDimensions()
                 .stream()
                 .map(Dimension::getApiName)
-                .map(aliasMaker);
+                .map(aliasMaker); //todo is this fine?
 
         Stream<String> aggregationDimensions = druidQuery.getAggregations()
                 .stream()
@@ -446,16 +346,15 @@ public class SqlConverter implements SqlBackedClient {
     }
 
     /**
-     * Creates the aggregations, i.e. (SUM,MIN,MAX) in sql from the druidQuery's aggregations
-     * and then groups by the time columns corresponding to the granularity.
+     * Gets the collection of having filters to be applied from the druid query.
      *
-     * @return the list of fields which are being grouped by.
+     * @param builder  The RelBuilder created with Calcite.
+     * @param druidQuery  The query to find the having filter from.
+     * @param aliasMaker  The mapping from api to physical name.
+     *
+     * @return the collection of equivalent filters for calcite.
      */
-    private void addGroupByAggregationsAndHavingClauses() {
-
-    }
-
-    private Collection<RexNode> getHavingFilter(
+    protected Collection<RexNode> getHavingFilter(
             RelBuilder builder,
             DruidAggregationQuery<?> druidQuery,
             ApiToFieldMapper aliasMaker
@@ -469,40 +368,43 @@ public class SqlConverter implements SqlBackedClient {
                 filter = havingEvaluator.evaluateHaving(builder, having, aliasMaker);
             }
         }
+
         return Collections.singletonList(filter);
     }
 
     /**
      * Find all druid aggregations and convert them to {@link org.apache.calcite.tools.RelBuilder.AggCall}.
      *
+     * @param builder  The RelBuilder created with Calcite.
      * @param druidQuery  The druid query to get the aggregations of.
+     * @param aliasMaker  The mapping from api to physical name.
      *
      * @return the list of aggregations.
      */
-    private List<RelBuilder.AggCall> getAllQueryAggregations(
+    protected List<RelBuilder.AggCall> getAllQueryAggregations(
             RelBuilder builder,
             DruidAggregationQuery<?> druidQuery,
             ApiToFieldMapper aliasMaker
     ) {
-        DruidSqlTypeConverter druidSqlTypeConverter = new DefaultDruidSqlTypeConverter();
         return druidQuery.getAggregations()
                 .stream()
-                .map(aggregation -> {
-                    SqlAggregationType sqlAggregationType = druidSqlTypeConverter.fromDruidType(aggregation).get();
-                    return sqlAggregationType.getAggregation(builder, aggregation);
-                })
+                .map(druidSqlAggregationConverter::fromDruidType)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(sqlAggregationBuilder -> sqlAggregationBuilder.build(builder))
                 .collect(Collectors.toList());
     }
 
     /**
      * Collects all the time columns and dimensions to be grouped on.
      *
+     * @param builder  The RelBuilder created with Calcite.
      * @param druidQuery  The query to find grouping columns from.
      * @param timestampColumn  The name of the timestamp column in the database.
      *
      * @return all columns which should be grouped on.
      */
-    private List<RexNode> getAllGroupByColumns(
+    protected List<RexNode> getAllGroupByColumns(
             RelBuilder builder,
             DruidAggregationQuery<?> druidQuery,
             String timestampColumn
@@ -523,19 +425,19 @@ public class SqlConverter implements SqlBackedClient {
     /**
      * Converts a RelBuilder into a sql string.
      *
+     * @param sqlWriter  The writer to be used when translating the {@link RelNode} to sql.
+     * @param relToSql  The converter from {@link RelNode} to {@link org.apache.calcite.sql.SqlNode}.
+     * @param builder  The RelBuilder created with Calcite.
      *
-     * @param sqlWriter
-     * @param relToSql
-     *@param builder  The RelBuilder created with Calcite.
-     *  @return the sql string built by the RelBuilder.
+     * @return the sql string built by the RelBuilder.
      */
-    private String writeSql(
-            final SqlPrettyWriter sqlWriter,
-            final RelToSqlConverter relToSql,
-            RelBuilder builder
-    ) {
+    protected String writeSql(SqlPrettyWriter sqlWriter, RelToSqlConverter relToSql, RelBuilder builder) {
         sqlWriter.reset();
         SqlSelect select = relToSql.visitChild(0, builder.build()).asSelect();
         return sqlWriter.format(select);
+    }
+
+    public SqlTimeConverter getTimeConverter() {
+        return sqlTimeConverter;
     }
 }
