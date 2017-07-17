@@ -134,10 +134,7 @@ public class DruidQueryToSqlConverter {
         LOG.info("Using timestamp column of '{}' for table {}", timestampColumn, sqlTableName);
 
         RelBuilder builder = calciteHelper.getNewRelBuilder();
-        builder.scan(sqlTableName)
-                .project(
-                        getColumnsToSelect(builder, druidQuery, timestampColumn, apiToFieldMapper)
-                );
+        builder.scan(sqlTableName);
         RelNode rootRelNode = builder.build();
         RelToSqlConverter relToSql = calciteHelper.getNewRelToSqlConverter();
         SqlPrettyWriter sqlWriter = calciteHelper.getNewSqlWriter();
@@ -302,46 +299,6 @@ public class DruidQueryToSqlConverter {
         }
 
         return timeFilter;
-    }
-
-    /**
-     * Finds all the dimensions from filters, aggregations, and the time column
-     * which need to be selected for the sql query.
-     *
-     * @param builder  The RelBuilder created with Calcite.
-     * @param druidQuery  The query from which to find filter and aggregation dimensions.
-     * @param timestampColumn  The name of the timestamp column in the database.
-     * @param aliasMaker  The mapping from api to physical names.
-     *
-     * @return the list of fields which need to be selected by the builder.
-     */
-    protected List<RexInputRef> getColumnsToSelect(
-            RelBuilder builder,
-            DruidAggregationQuery<?> druidQuery,
-            String timestampColumn,
-            ApiToFieldMapper aliasMaker
-    ) {
-        FilterEvaluator filterEvaluator = new FilterEvaluator();
-
-        Stream<String> filterDimensions = filterEvaluator.getDimensionNames(builder, druidQuery.getFilter()).stream()
-                .map(aliasMaker);
-
-        Stream<String> groupByDimensions = druidQuery.getDimensions()
-                .stream()
-                .map(Dimension::getApiName)
-                .map(aliasMaker); //todo is this fine?
-
-        Stream<String> aggregationDimensions = druidQuery.getAggregations()
-                .stream()
-                .map(Aggregation::getFieldName); //todo is this fine?
-
-        return Stream
-                .concat(
-                        Stream.concat(Stream.of(timestampColumn), aggregationDimensions),
-                        Stream.concat(filterDimensions, groupByDimensions)
-                )
-                .map(builder::field)
-                .collect(Collectors.toList());
     }
 
     /**
