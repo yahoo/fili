@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.security
 
+import com.yahoo.bard.webservice.config.SystemConfigProvider
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries
 import com.yahoo.bard.webservice.web.ApiRequest
 import com.yahoo.bard.webservice.web.RequestMapper
@@ -42,6 +43,8 @@ class RoleBasedRoutingRequestMapperSpec extends Specification {
     @Unroll
     def "Test delegation for roles #roles"() {
         setup:
+        System.out.println(SystemConfigProvider.getInstance().getPackageVariableName("default_per_page"))
+
         ApiRequest apiRequest = Mock(ApiRequest)
         setupRoles(roles)
         RequestMapper delegate = prioritizedRoleBasedMappers[nextMapper]
