@@ -119,7 +119,7 @@ public class DruidQueryToSqlConverter {
      *
      * @throws SQLException if can't connect to database.
      */
-    public String buildSqlQuery(
+    public List<String> buildSqlQuery(
             Connection connection,
             DruidAggregationQuery<?> druidQuery,
             ApiToFieldMapper apiToFieldMapper
@@ -168,10 +168,9 @@ public class DruidQueryToSqlConverter {
                                     getThreshold(druidQuery),
                                     getSort(localBuilder, druidQuery, apiToFieldMapper)
                             );
-                    String sql = writeSql(sqlWriter, relToSql, localBuilder);
-                    return "(" + sql + ")";
+                    return writeSql(sqlWriter, relToSql, localBuilder);
                 })
-                .collect(Collectors.joining("\nUNION ALL\n"));
+                .collect(Collectors.toList());
 
         // calcite unions aren't working correctly (syntax error)
         // builder.pushAll(finishedQueries);

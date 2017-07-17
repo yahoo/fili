@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 public class SqlResultSetProcessor {
     private static final Logger LOG = LoggerFactory.getLogger(SqlResultSetProcessor.class);
     private final DruidAggregationQuery<?> druidQuery;
+    private final ApiToFieldMapper apiToFieldMapper;
     private BiMap<Integer, String> columnToColumnName;
     private List<String[]> sqlResults;
     private final ObjectMapper objectMapper;
@@ -49,7 +50,6 @@ public class SqlResultSetProcessor {
      * same format as a GroupBy query to Druid.
      *
      * @param druidQuery  The original query that was converted to a sql query.
-     * @param resultSet  The results returned by the sql backend.
      * @param apiToFieldMapper  The mapping from api to physical name.
      * @param objectMapper  The mapper for all JSON processing.
      * @param sqlTimeConverter  The time converter used with making the query.
@@ -58,19 +58,19 @@ public class SqlResultSetProcessor {
      */
     public SqlResultSetProcessor(
             DruidAggregationQuery<?> druidQuery,
-            ResultSet resultSet,
             ApiToFieldMapper apiToFieldMapper,
             ObjectMapper objectMapper,
             SqlTimeConverter sqlTimeConverter
     ) throws SQLException {
         this.druidQuery = druidQuery;
+        this.apiToFieldMapper = apiToFieldMapper;
         this.objectMapper = objectMapper;
         this.sqlTimeConverter = sqlTimeConverter;
 
+        this.sqlResults = new ArrayList<>();
+        this.columnToColumnName = HashBiMap.create();
+
         this.groupByCount = druidQuery.getDimensions().size();
-
-        readSqlResultSet(resultSet, apiToFieldMapper);
-
     }
 
     /**
@@ -158,20 +158,25 @@ public class SqlResultSetProcessor {
      * would produce.
      *
      * @param resultSet  The result set of the druid query.
-     * @param aliasMaker  The mapping from api to physical name.
      *
      * @throws SQLException if results can't be read.
      */
-    protected void readSqlResultSet(ResultSet resultSet, ApiToFieldMapper aliasMaker) throws SQLException {
+    public void addResultSet(ResultSet resultSet) throws SQLException {
         ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
         int resultSetColumnCount = resultSetMetaData.getColumnCount();
 
-        BiMap<Integer, String> columnNames = HashBiMap.create(resultSetColumnCount);
-        List<String[]> sqlResultRows = new ArrayList<>();
+        if (resultSetColumnCount != columnToColumnName.size() && columnToColumnName.size() != 0) {
+            String msg = "Attempting to add ResultSet with " + resultSetColumnCount + " columns, but it should have "
+                    + columnToColumnName.size() + " columns";
+            LOG.warn(msg);
+            throw new RuntimeException(msg);
+        }
 
-        for (int i = 1; i <= resultSetColumnCount; i++) {
-            String columnName = aliasMaker.unApply(resultSetMetaData.getColumnName(i));
-            columnNames.put(i - 1, columnName);
+        if (columnToColumnName.size() == 0) {
+            for (int i = 1; i <= resultSetColumnCount; i++) {
+                String columnName = apiToFieldMapper.unApply(resultSetMetaData.getColumnName(i));
+                columnToColumnName.put(i - 1, columnName);
+            }
         }
 
         while (resultSet.next()) {
@@ -179,12 +184,8 @@ public class SqlResultSetProcessor {
             for (int i = 1; i <= resultSetColumnCount; i++) {
                 row[i - 1] = resultSet.getString(i);
             }
-            sqlResultRows.add(row);
+            sqlResults.add(row);
         }
-        LOG.debug("Fetched {} rows.", sqlResultRows.size());
-
-        this.columnToColumnName = columnNames;
-        this.sqlResults = sqlResultRows;
     }
 
     /**

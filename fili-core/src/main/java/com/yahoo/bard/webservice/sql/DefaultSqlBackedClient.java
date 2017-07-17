@@ -20,6 +20,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
@@ -118,24 +119,24 @@ public class DefaultSqlBackedClient implements SqlBackedClient {
         ApiToFieldMapper aliasMaker = new ApiToFieldMapper(druidQuery.getDataSource().getPhysicalTable().getSchema());
 
         try (Connection connection = calciteHelper.getConnection()) {
-            String sqlQuery = druidQueryToSqlConverter.buildSqlQuery(connection, druidQuery, aliasMaker);
-            LOG.info("Executing \n{}", sqlQuery);
+            List<String> sqlQueries = druidQueryToSqlConverter.buildSqlQuery(connection, druidQuery, aliasMaker);
+            LOG.info("Executing \n{}", sqlQueries);
 
-            SqlResultSetProcessor resultSetProcessor;
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
-                 ResultSet resultSet = preparedStatement.executeQuery()) {
+            SqlResultSetProcessor resultSetProcessor = new SqlResultSetProcessor(
+                    druidQuery,
+                    aliasMaker,
+                    jsonWriter,
+                    druidQueryToSqlConverter.getTimeConverter()
+            );
+            for (String sqlQuery : sqlQueries) {
+                try (PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
+                     ResultSet resultSet = preparedStatement.executeQuery()) {
+                    resultSetProcessor.addResultSet(resultSet);
 
-                resultSetProcessor = new SqlResultSetProcessor(
-                        druidQuery,
-                        resultSet,
-                        aliasMaker,
-                        jsonWriter,
-                        druidQueryToSqlConverter.getTimeConverter()
-                );
-
-            } catch (SQLException e) {
-                LOG.warn("Failed to read SQL ResultSet for query {}", druidQuery);
-                throw new RuntimeException("Could not finish query", e);
+                } catch (SQLException e) {
+                    LOG.warn("Failed to read SQL ResultSet for query {}", druidQuery);
+                    throw new RuntimeException("Could not finish query", e);
+                }
             }
 
             JsonNode jsonNode = resultSetProcessor.process();
