@@ -13,15 +13,6 @@ Note that this was last tested using [version 0.9.1](https://github.com/yahoo/fi
 
 ## Setup and Launching
 
-### Docker
-There is a Fili Dockerfile which is available on Dockerhub. To start playing around with Fili, you can download and open Docker. Then
-run the command
-```bash
-docker run --name fili-generic-example -i --rm -p 3001:8081 -p 3000:8082 fili:1.0
-```
-Once you run this command, please wait a few minutes for Druid and Fili to spin up.
-
-### Manual
 1. Have a [Druid](http://druid.io/docs/latest/tutorials/quickstart.html) cluster running on your Unix based machine.
    
 2. Clone this repository to your computer.
@@ -67,34 +58,23 @@ Here are some sample queries that you can run to verify your server:
 
 ### Specific to Wikipedia data
 
-- If everything is working, the [query below](http://localhost:9998/v1/data/wikipedia/day/?metrics=deleted&dateTime=2015-09-12/PT24H)
+- If everything is working, the [query below](http://localhost:9998/v1/data/wikiticker/day/?metrics=deleted&dateTime=2015-09-12/PT24H)
     ```bash
-    curl "http://localhost:9998/v1/data/wikipedia/day/?metrics=deleted&dateTime=2013-08-01/PT24H" -H "Content-Type: application/json" | python -m json.tool
+    curl "http://localhost:9998/v1/data/wikiticker/day/?metrics=deleted&dateTime=2015-09-12/PT24H" -H "Content-Type: application/json" | python -m json.tool
     ```
      should show something like:
     ```
     {
         "rows": [{
-            "dateTime": "2013-08-01 00:00:00.000",
-            "deleted": -39917308
+            "dateTime": "2015-09-12 00:00:00.000",
+            "deleted": 394298.0
         }]
-    }
-    ```
-
-If you see this message while running Docker it means that Druid isn't ready yet:
-
-    ```json
-    {
-        "rows": [],
-        "meta": {
-            "missingIntervals": ["2013-08-01 00:00:00.000/2013-08-02 00:00:00.000"]
-        }
     }
     ```
 
 - Count of edits by hour for the last 72 hours:
 
-      GET http://localhost:9998/v1/data/wikipedia/day/?metrics=count&dateTime=PT72H/current
+      GET http://localhost:9998/v1/data/wikiticker/day/?metrics=count&dateTime=PT72H/current
 
     Note: this will should be something like the response below since the
     wikipedia table doesn't have data for the past 72 hours from now.
@@ -107,10 +87,10 @@ If you see this message while running Docker it means that Druid isn't ready yet
     }
     ```  
 
-- Show [debug info](http://localhost:9998/v1/data/wikipedia/day/?format=debug&metrics=count&dateTime=PT72H/current),
+- Show [debug info](http://localhost:9998/v1/data/wikiticker/day/?format=debug&metrics=count&dateTime=PT72H/current),
  including the query sent to Druid:  
 
-      GET http://localhost:9998/v1/data/wikipedia/day/?format=debug&metrics=count&dateTime=PT72H/current
+      GET http://localhost:9998/v1/data/wikiticker/day/?format=debug&metrics=count&dateTime=PT72H/current
 
 ## Notable Restrictions
 
