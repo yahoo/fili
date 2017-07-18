@@ -69,16 +69,16 @@ Here are some sample queries that you can run to verify your server:
 
 There is a [Docker image](https://hub.docker.com/r/mpardesh/fili/) for Fili which can be found on 
 Dockerhub. If you would like to experiment with Fili without having to download its dependencies, you can 
-[download](https://www.docker.com/) and start Docker. Then run these commands: 
+[install](https://www.docker.com/community-edition) and start Docker. Then run these commands: 
     ```
     docker pull mpardesh/fili 
     ```
 
     ```
-    docker run --name fili-generic-example -i --rm -p 3001:8081 -p 3000:8082 fili:1.0
+    docker run --name fili-generic-example -i --rm -p 3001:8081 -p 3000:8082 mpardesh/fili:1.0
     ```
 
-This will start a container. Please wait a few minutes for Druid to ingest the data. 
+This will start a container. Please wait a few minutes for Druid to get ready. 
 
 Once Druid is ready, you can start querying! Here is a 
 [sample query](http://localhost:9998/v1/data/wikipedia/day/?metrics=deleted&dateTime=2013-08-01/PT24H)
