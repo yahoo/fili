@@ -30,6 +30,10 @@ Current
 
 ### Changed:
 
+- [Finish renaming from Bard to Fili](https://github.com/yahoo/fili/pull/433)
+   Bard was the old name, but we never fully switched to Fili, and you can see that in some of the docs, the packages,
+   configuration, etc. We should finish the transition.
+
 - [Change id field in DefaultDimensionField to lower case for Navi compatibility.](https://github.com/yahoo/fili/pull/423)
     * Navi's default setting only recongizes lower case 'id' key name.
 
