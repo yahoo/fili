@@ -2,11 +2,11 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.auto;
 
-import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
-import com.yahoo.bard.webservice.data.time.TimeGrain;
-import com.yahoo.bard.webservice.druid.client.DruidWebService;
-import com.yahoo.bard.webservice.druid.client.SuccessCallback;
-import com.yahoo.bard.webservice.util.IntervalUtils;
+import com.yahoo.fili.webservice.data.time.DefaultTimeGrain;
+import com.yahoo.fili.webservice.data.time.TimeGrain;
+import com.yahoo.fili.webservice.druid.client.DruidWebService;
+import com.yahoo.fili.webservice.druid.client.SuccessCallback;
+import com.yahoo.fili.webservice.util.IntervalUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 

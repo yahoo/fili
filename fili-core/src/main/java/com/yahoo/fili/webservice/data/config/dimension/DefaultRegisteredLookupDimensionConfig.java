@@ -1,0 +1,105 @@
+// Copyright 2017 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
+package com.yahoo.fili.webservice.data.config.dimension;
+
+import com.yahoo.fili.webservice.data.config.names.DimensionName;
+import com.yahoo.fili.webservice.data.dimension.DimensionField;
+import com.yahoo.fili.webservice.data.dimension.KeyValueStore;
+import com.yahoo.fili.webservice.data.dimension.SearchProvider;
+
+import javax.validation.constraints.NotNull;
+import java.util.LinkedHashSet;
+import java.util.List;
+
+/**
+ * A Default Registered Lookup Dimension holds all of the information needed to construct a Registered Lookup Dimension.
+ */
+public class DefaultRegisteredLookupDimensionConfig extends DefaultKeyValueStoreDimensionConfig
+    implements RegisteredLookupDimensionConfig {
+  private final List<String> lookups;
+
+  /**
+   * Construct a RegisteredLookupDefaultDimensionConfig instance from dimension name , dimension fields and
+   * default dimension fields.
+   *
+   * @param apiName  The API Name is the external, end-user-facing name for the dimension.
+   * @param physicalName  The internal, physical name for the dimension.
+   * @param description  A description of the dimension and its meaning.
+   * @param longName  The Long Name is the external, end-user-facing long  name for the dimension.
+   * @param category  The Category is the external, end-user-facing category for the dimension.
+   * @param fields  The set of fields for this dimension.
+   * @param defaultDimensionFields  The default set of fields for this dimension to be shown in the response.
+   * @param keyValueStore  The key value store holding dimension row data.
+   * @param searchProvider  The search provider for field value lookups on this dimension.
+   * @param lookups  A list of lookups used to configure the Lookup dimension.
+   */
+  public DefaultRegisteredLookupDimensionConfig(
+      @NotNull DimensionName apiName,
+      String physicalName,
+      String description,
+      String longName,
+      String category,
+      @NotNull LinkedHashSet<DimensionField> fields,
+      @NotNull LinkedHashSet<DimensionField> defaultDimensionFields,
+      @NotNull KeyValueStore keyValueStore,
+      @NotNull SearchProvider searchProvider,
+      @NotNull List<String> lookups
+  ) {
+    super (
+        apiName,
+        physicalName,
+        description,
+        longName,
+        category,
+        fields,
+        defaultDimensionFields,
+        keyValueStore,
+        searchProvider
+    );
+    this.lookups = lookups;
+  }
+
+  /**
+   * Construct a RegisteredLookupDefaultDimensionConfig instance from Dimension Name ,
+   * and only using default dimension fields.
+   *
+   * @param apiName  The API Name is the external, end-user-facing name for the dimension.
+   * @param physicalName  The internal, physical name for the dimension.
+   * @param description  A description of the dimension and its meaning.
+   * @param longName  The Long Name is the external, end-user-facing long  name for the dimension.
+   * @param category  The Category is the external, end-user-facing category for the dimension.
+   * @param fields The set of fields for this dimension, this set of field will also be used for the default fields.
+   * @param keyValueStore  The key value store holding dimension row data.
+   * @param searchProvider  The search provider for field value lookups on this dimension.
+   * @param lookups  A list of lookups used to configure the Lookup dimension.
+   */
+  public DefaultRegisteredLookupDimensionConfig(
+      @NotNull DimensionName apiName,
+      String physicalName,
+      String description,
+      String longName,
+      String category,
+      @NotNull LinkedHashSet<DimensionField> fields,
+      @NotNull KeyValueStore keyValueStore,
+      @NotNull  SearchProvider searchProvider,
+      @NotNull List<String> lookups
+  ) {
+    this (
+        apiName,
+        physicalName,
+        description,
+        longName,
+        category,
+        fields,
+        fields,
+        keyValueStore,
+        searchProvider,
+        lookups
+    );
+  }
+
+  @Override
+  public List<String> getLookups() {
+    return lookups;
+  }
+}

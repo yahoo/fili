@@ -1,0 +1,195 @@
+// Copyright 2016 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
+package com.yahoo.fili.webservice.web
+
+import static com.yahoo.fili.webservice.data.time.DefaultTimeGrain.DAY
+import static com.yahoo.fili.webservice.util.SimplifiedIntervalList.NO_INTERVALS
+
+import com.yahoo.fili.webservice.application.ObjectMappersSuite
+import com.yahoo.fili.webservice.data.Result
+import com.yahoo.fili.webservice.data.ResultSet
+import com.yahoo.fili.webservice.data.ResultSetSchema
+import com.yahoo.fili.webservice.data.dimension.Dimension
+import com.yahoo.fili.webservice.data.dimension.DimensionColumn
+import com.yahoo.fili.webservice.data.dimension.DimensionField
+import com.yahoo.fili.webservice.data.dimension.DimensionRow
+import com.yahoo.fili.webservice.data.dimension.FiliDimensionField
+import com.yahoo.fili.webservice.data.dimension.MapStoreManager
+import com.yahoo.fili.webservice.data.dimension.impl.KeyValueStoreDimension
+import com.yahoo.fili.webservice.data.dimension.impl.ScanSearchProviderManager
+import com.yahoo.fili.webservice.data.metric.MetricColumn
+import com.yahoo.fili.webservice.util.GroovyTestUtils
+import com.yahoo.fili.webservice.util.Pagination
+import com.yahoo.fili.webservice.util.SimplifiedIntervalList
+
+import org.joda.time.DateTime
+import org.joda.time.DateTimeZone
+
+import spock.lang.Specification
+
+class UIJsonResponseSpec extends Specification {
+    private static final ObjectMappersSuite MAPPERS = new ObjectMappersSuite()
+
+    ResultSetSchema newSchema
+    Map<DimensionColumn, DimensionRow> dimensionRows
+    Map<MetricColumn, BigDecimal> metricValues
+    DateTime timeStamp
+    LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> defaultDimensionFieldsToShow
+    SimplifiedIntervalList volatileIntervals = []
+
+
+    def setup() {
+        // Default JodaTime zone to UTC
+        DateTimeZone.setDefault(DateTimeZone.UTC)
+
+        // Build a default timestamp
+        timeStamp = new DateTime(10000)
+
+
+        LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>()
+        dimensionFields.add(FiliDimensionField.ID)
+        dimensionFields.add(FiliDimensionField.DESC)
+
+        // Add a dimension and some metrics to the schema
+        Dimension newDimension = new KeyValueStoreDimension(
+                "gender",
+                "gender-description",
+                dimensionFields,
+                MapStoreManager.getInstance("gender"),
+                ScanSearchProviderManager.getInstance("gender"),
+                [] as Set
+        )
+        newDimension.setLastUpdated(timeStamp)
+        DimensionColumn dimensionColumn = new DimensionColumn(newDimension)
+        MetricColumn metricColumn1 = new MetricColumn("metricColumn1Name")
+        MetricColumn metricColumn2 = new MetricColumn("metricColumn2Name")
+
+        // Build a default dimension row
+        DimensionRow dimensionRow = FiliDimensionField.makeDimensionRow(
+                newDimension,
+                "gender-one-id",
+                "gender-one-desc"
+        )
+        dimensionRows = [(dimensionColumn): dimensionRow]
+
+        // Build some default dimension values
+        metricValues = [
+                (metricColumn1): 1234567.1234,
+                (metricColumn2): 1234567.1234
+        ]
+
+        defaultDimensionFieldsToShow = [
+                (newDimension): dimensionFields
+        ]
+
+        // Build a default schema
+        newSchema = new ResultSetSchema(DAY, [dimensionColumn, metricColumn1, metricColumn2] as Set)
+
+    }
+
+    def "Get single row response"() {
+
+        given: "A Result Set with one row"
+        Result r1 = new Result(dimensionRows, metricValues, timeStamp)
+        ResultSet resultSet = new ResultSet(newSchema, [r1])
+
+        and: "An API Request"
+        LinkedHashSet<String> apiMetricColumnNames = getApiMetricColumnNames()
+
+
+        and: "An expected json serialization"
+        String expectedJSON = """{
+            "rows":[{
+                        "metricColumn1Name":1234567.1234,
+                        "dateTime":"1970-01-01 00:00:10.000",
+                        "gender|desc":"gender-one-desc",
+                        "metricColumn2Name":1234567.1234,
+                        "gender|id":"gender-one-id"
+            }]
+        }"""
+
+        when: "get and serialize a JsonResponse"
+        Response jro = new Response(
+                resultSet,
+                apiMetricColumnNames,
+                defaultDimensionFieldsToShow,
+                ResponseFormatType.JSON,
+                NO_INTERVALS,
+                volatileIntervals,
+                [:],
+                (Pagination) null,
+                MAPPERS
+        )
+
+        ByteArrayOutputStream os = new ByteArrayOutputStream()
+        jro.write(os)
+
+        String responseJSON = os.toString()
+
+        then: "The serialized JsonResponse matches what we expect"
+        GroovyTestUtils.compareJson(responseJSON, expectedJSON)
+    }
+
+    def "Get multiple rows response"() {
+
+        given: "A Result Set with multiple rows"
+        Result r1 = new Result(dimensionRows, metricValues, timeStamp)
+        ResultSet resultSet = new ResultSet(newSchema, [r1, r1, r1])
+
+        and: "An API Request"
+        DataApiRequest apiRequest = Mock(DataApiRequest)
+        LinkedHashSet<String> apiMetricColumnNames = getApiMetricColumnNames()
+
+        apiRequest.getDimensionFields() >> defaultDimensionFieldsToShow
+
+        and: "An expected json serialization"
+        String expectedJSON = """{
+            "rows":[
+                {
+                    "metricColumn1Name":1234567.1234,
+                    "dateTime":"1970-01-01 00:00:10.000",
+                    "gender|desc":"gender-one-desc",
+                    "metricColumn2Name":1234567.1234,
+                    "gender|id":"gender-one-id"
+                },
+                {
+                    "metricColumn1Name":1234567.1234,
+                    "dateTime":"1970-01-01 00:00:10.000",
+                    "gender|desc":"gender-one-desc",
+                    "metricColumn2Name":1234567.1234,
+                    "gender|id":"gender-one-id"
+                },
+                {
+                    "metricColumn1Name":1234567.1234,
+                    "dateTime":"1970-01-01 00:00:10.000",
+                    "gender|desc":"gender-one-desc",
+                    "metricColumn2Name":1234567.1234,
+                    "gender|id":"gender-one-id"
+                }
+            ]
+        }"""
+
+        when: "We get and serialize a JsonResponse for it"
+        Response jro = new Response(
+                resultSet,
+                apiMetricColumnNames,
+                defaultDimensionFieldsToShow,
+                ResponseFormatType.JSON,
+                NO_INTERVALS,
+                volatileIntervals,
+                [:],
+                (Pagination) null,
+                MAPPERS
+        )
+        ByteArrayOutputStream os = new ByteArrayOutputStream()
+        jro.write(os)
+
+        String responseJSON = os.toString()
+        then: "The serialized JsonResponse matches what we expect"
+        GroovyTestUtils.compareJson(responseJSON, expectedJSON)
+    }
+
+    Set<String> getApiMetricColumnNames() {
+        return newSchema.getColumns(MetricColumn).collect {it.name}
+    }
+}

@@ -4,10 +4,10 @@ package com.yahoo.wiki.webservice.web.endpoints
 
 import static com.yahoo.wiki.webservice.data.config.names.WikiLogicalTableName.WIKIPEDIA
 
-import com.yahoo.bard.webservice.application.JerseyTestBinder
-import com.yahoo.bard.webservice.util.GroovyTestUtils
-import com.yahoo.bard.webservice.util.JsonSortStrategy
-import com.yahoo.bard.webservice.web.endpoints.TablesServlet
+import com.yahoo.fili.webservice.application.JerseyTestBinder
+import com.yahoo.fili.webservice.util.GroovyTestUtils
+import com.yahoo.fili.webservice.util.JsonSortStrategy
+import com.yahoo.fili.webservice.web.endpoints.TablesServlet
 import com.yahoo.wiki.webservice.application.WikiJerseyTestBinder
 
 import spock.lang.Specification

@@ -2,10 +2,10 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.application;
 
-import com.yahoo.bard.webservice.application.AbstractBinderFactory;
-import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
-import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
-import com.yahoo.bard.webservice.data.config.table.TableLoader;
+import com.yahoo.fili.webservice.application.AbstractBinderFactory;
+import com.yahoo.fili.webservice.data.config.dimension.DimensionConfig;
+import com.yahoo.fili.webservice.data.config.metric.MetricLoader;
+import com.yahoo.fili.webservice.data.config.table.TableLoader;
 import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensions;
 import com.yahoo.wiki.webservice.data.config.metric.WikiMetricLoader;
 import com.yahoo.wiki.webservice.data.config.table.WikiTableLoader;

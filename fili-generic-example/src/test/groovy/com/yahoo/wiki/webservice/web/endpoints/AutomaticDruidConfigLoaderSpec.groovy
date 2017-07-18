@@ -1,7 +1,7 @@
 package com.yahoo.wiki.webservice.web.endpoints
 
-import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
-import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService
+import com.yahoo.fili.webservice.data.time.DefaultTimeGrain
+import com.yahoo.fili.webservice.models.druid.client.impl.TestDruidWebService
 import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration
 import com.yahoo.wiki.webservice.data.config.auto.DruidNavigator
 import com.yahoo.wiki.webservice.data.config.auto.TableConfig

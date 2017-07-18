@@ -2,15 +2,15 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.dimension;
 
-import com.yahoo.bard.webservice.data.config.dimension.DefaultDimensionField;
-import com.yahoo.bard.webservice.data.config.dimension.DefaultKeyValueStoreDimensionConfig;
-import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
-import com.yahoo.bard.webservice.data.dimension.DimensionField;
-import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
-import com.yahoo.bard.webservice.data.dimension.MapStoreManager;
-import com.yahoo.bard.webservice.data.dimension.SearchProvider;
-import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager;
-import com.yahoo.bard.webservice.util.Utils;
+import com.yahoo.fili.webservice.data.config.dimension.DefaultDimensionField;
+import com.yahoo.fili.webservice.data.config.dimension.DefaultKeyValueStoreDimensionConfig;
+import com.yahoo.fili.webservice.data.config.dimension.DimensionConfig;
+import com.yahoo.fili.webservice.data.dimension.DimensionField;
+import com.yahoo.fili.webservice.data.dimension.KeyValueStore;
+import com.yahoo.fili.webservice.data.dimension.MapStoreManager;
+import com.yahoo.fili.webservice.data.dimension.SearchProvider;
+import com.yahoo.fili.webservice.data.dimension.impl.ScanSearchProviderManager;
+import com.yahoo.fili.webservice.util.Utils;
 import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration;
 
 import java.util.Collections;

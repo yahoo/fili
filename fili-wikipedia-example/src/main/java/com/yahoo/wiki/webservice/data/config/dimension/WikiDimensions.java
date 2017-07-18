@@ -2,17 +2,17 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.dimension;
 
-import com.yahoo.bard.webservice.config.SystemConfig;
-import com.yahoo.bard.webservice.config.SystemConfigProvider;
-import com.yahoo.bard.webservice.data.config.dimension.DefaultKeyValueStoreDimensionConfig;
-import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
-import com.yahoo.bard.webservice.data.dimension.DimensionField;
-import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
-import com.yahoo.bard.webservice.data.dimension.MapStoreManager;
-import com.yahoo.bard.webservice.data.dimension.SearchProvider;
-import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager;
-import com.yahoo.bard.webservice.util.StreamUtils;
-import com.yahoo.bard.webservice.util.Utils;
+import com.yahoo.fili.webservice.config.SystemConfig;
+import com.yahoo.fili.webservice.config.SystemConfigProvider;
+import com.yahoo.fili.webservice.data.config.dimension.DefaultKeyValueStoreDimensionConfig;
+import com.yahoo.fili.webservice.data.config.dimension.DimensionConfig;
+import com.yahoo.fili.webservice.data.dimension.DimensionField;
+import com.yahoo.fili.webservice.data.dimension.KeyValueStore;
+import com.yahoo.fili.webservice.data.dimension.MapStoreManager;
+import com.yahoo.fili.webservice.data.dimension.SearchProvider;
+import com.yahoo.fili.webservice.data.dimension.impl.ScanSearchProviderManager;
+import com.yahoo.fili.webservice.util.StreamUtils;
+import com.yahoo.fili.webservice.util.Utils;
 import com.yahoo.wiki.webservice.data.config.names.WikiApiDimensionConfigInfo;
 
 import java.util.Arrays;
@@ -24,7 +24,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * Hold all the dimension configurations for the sample Bard instance.
+ * Hold all the dimension configurations for the sample Fili instance.
  */
 public class WikiDimensions {
 

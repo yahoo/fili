@@ -121,7 +121,7 @@ The most recent stable version is: [![Stable](https://img.shields.io/badge/Stabl
 Extending
 ---------
 
-Fili's easy to extend! It has a bunch of hooks already ([`AbstractBinderFactory`](https://github.com/yahoo/fili/blob/master/fili-core/src/main/java/com/yahoo/bard/webservice/application/AbstractBinderFactory.java))! 
+Fili's easy to extend! It has a bunch of hooks already ([`AbstractBinderFactory`](https://github.com/yahoo/fili/blob/master/fili-core/src/main/java/com/yahoo/fili/webservice/application/AbstractBinderFactory.java))!
 There's a module system for config and modules depending on other modules! There's lots more to say here, but the time
 the time, look at the time!
 

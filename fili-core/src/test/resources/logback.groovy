@@ -10,5 +10,5 @@ appender("STDOUT", ConsoleAppender) {
 }
 
 // Loggers
-logger("com.yahoo.bard", DEBUG)
+logger("com.yahoo.fili", DEBUG)
 root(INFO, ["STDOUT"])

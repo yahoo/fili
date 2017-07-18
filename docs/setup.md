@@ -9,7 +9,7 @@ Table of Contents
 
 - [Prerequisites](#prerequisites)
 - [High Level Steps](#high-level-steps)
-- [Fili Integration Application](#bard-integration-application)
+- [Fili Integration Application](#fili-integration-application)
 - [Configure Metadata](#configure-metadata)
 - [Configuration Files](#configuration-files)
 - [Scripts](#scripts)
@@ -36,7 +36,7 @@ High Level Steps
 
 The following is a bird's eye view of the steps you must take to stand up a Fili instance.
 
-- [Clone the bard wikipedia example into a separate project](#fili-wikipedia-example).
+- [Clone the fili wikipedia example into a separate project](#fili-wikipedia-example).
 
 - [Modify the dimension, metric, physical table and logical table information to fit the needs of your 
 application.](#configure-metadata)
@@ -50,7 +50,7 @@ application.](#configure-metadata)
 Fili Wikipedia Example
 ----------------------------
 
-The [Fili wikipedia example][bard-wikipedia-example] is where you will leverage the Fili library. Here is where
+The [Fili wikipedia example][fili-wikipedia-example] is where you will leverage the Fili library. Here is where
 you will configure your application-specific metrics, dimensions, and tables.
 
 Configure Metadata
@@ -72,19 +72,19 @@ Configuration Files
 Next, several configuration files and scripts need to be tweaked:
 
 * In [applicationConfig.properties][applicationConfig] the following properties need to be set:
-    - `bard__resource_binder = binder.factory.class.path`
-    - `bard__dimension_backend = mdbm` (`redis` if you wish to use Redis for your dimension metadata, `memory` if
+    - `fili__resource_binder = binder.factory.class.path`
+    - `fili__dimension_backend = mdbm` (`redis` if you wish to use Redis for your dimension metadata, `memory` if
     you wish to use an in-memory map)
-        - (Optional: MDBM) `bard__mdbm_location = dir/to/mdbm` - Note that Fili assumes this directory contains a
+        - (Optional: MDBM) `fili__mdbm_location = dir/to/mdbm` - Note that Fili assumes this directory contains a
         `dimensionCache` folder.
-    - `bard__non_ui_broker = http://url/to/druid/broker`
-    - `bard__ui_broker = http://url/to/druid/broker`
-    - `bard__druid_coord = http://url/to/druid/coordinator`
+    - `fili__non_ui_broker = http://url/to/druid/broker`
+    - `fili__ui_broker = http://url/to/druid/broker`
+    - `fili__druid_coord = http://url/to/druid/coordinator`
     
 * [pom.xml][pomXml] -  Find the `fili.version` tag, and update that to point to the desired version of Fili, rather
    than a snapshot. 
 
-Note that both `bard__non_ui_broker` and `bard__ui_broker` are set to the same broker URL. These parameters are 
+Note that both `fili__non_ui_broker` and `fili__ui_broker` are set to the same broker URL. These parameters are 
 artifacts of the project Fili was spun out of. Eventually, these two settings will be generalized into something useful
 for other projects. For now, you can safely treat them as if they were the same.
 
@@ -244,7 +244,7 @@ to set up the dimension loader (or [configure all of your dimensions to be non-l
 
 [mdbm]: http://yahoo.github.io/mdbm/
 
-[noOpSearchProvider]: ../src/main/java/com/yahoo/bard/webservice/data/dimension/impl/NoOpSearchProvider.java
+[noOpSearchProvider]: ../src/main/java/com/yahoo/fili/webservice/data/dimension/impl/NoOpSearchProvider.java
 
 [pomXml]: https://github.com/yahoo/fili/blob/master/fili-core/pom.xml
 

@@ -3,7 +3,7 @@
 
 <!-- This configuration file was written by the eclipse-cs plugin configuration 
     editor -->
-<!-- Checkstyle-Configuration: Bard Project Description: none -->
+<!-- Checkstyle-Configuration: Fili Project Description: none -->
 <module name="Checker">
 
     <property name="severity" value="warning" />

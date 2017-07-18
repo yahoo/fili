@@ -2,11 +2,11 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.web.endpoints
 
-import com.yahoo.bard.webservice.application.JerseyTestBinder
-import com.yahoo.bard.webservice.data.dimension.BardDimensionField
-import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
-import com.yahoo.bard.webservice.web.endpoints.BaseDataServletComponentSpec
-import com.yahoo.bard.webservice.web.endpoints.DataServlet
+import com.yahoo.fili.webservice.application.JerseyTestBinder
+import com.yahoo.fili.webservice.data.dimension.DimensionDictionary
+import com.yahoo.fili.webservice.data.dimension.FiliDimensionField
+import com.yahoo.fili.webservice.web.endpoints.BaseDataServletComponentSpec
+import com.yahoo.fili.webservice.web.endpoints.DataServlet
 import com.yahoo.wiki.webservice.application.WikiJerseyTestBinder
 import com.yahoo.wiki.webservice.data.config.names.WikiApiDimensionName
 import com.yahoo.wiki.webservice.data.config.names.WikiApiMetricName
@@ -19,9 +19,9 @@ class SingleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServle
     def setup() {
         DimensionDictionary dimensionStore = jtb.configurationLoader.dimensionDictionary
         dimensionStore.findByApiName(WikiApiDimensionName.PAGE.asName()).with {
-            addDimensionRow(BardDimensionField.makeDimensionRow(it, "Foo"))
-            addDimensionRow(BardDimensionField.makeDimensionRow(it, "Bar"))
-            addDimensionRow(BardDimensionField.makeDimensionRow(it, "Baz"))
+            addDimensionRow(FiliDimensionField.makeDimensionRow(it, "Foo"))
+            addDimensionRow(FiliDimensionField.makeDimensionRow(it, "Bar"))
+            addDimensionRow(FiliDimensionField.makeDimensionRow(it, "Baz"))
         }
     }
 
