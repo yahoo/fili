@@ -1,0 +1,240 @@
+// Copyright 2017 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
+package com.yahoo.fili.webservice.web.responseprocessors
+
+import com.yahoo.fili.webservice.druid.client.HttpErrorCallback
+import com.yahoo.fili.webservice.druid.model.datasource.DataSource
+import com.yahoo.fili.webservice.druid.model.query.DruidAggregationQuery
+import com.yahoo.fili.webservice.druid.model.query.QueryContext
+import com.yahoo.fili.webservice.table.ConstrainedTable
+import com.yahoo.fili.webservice.util.SimplifiedIntervalList
+import com.yahoo.fili.webservice.web.ErrorMessageFormat
+
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ArrayNode
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
+
+import org.joda.time.Interval
+
+import spock.lang.Specification
+
+import java.util.stream.Collectors
+
+class DruidPartialDataResponseProcessorSpec extends Specification {
+    private static final ObjectMapper MAPPER = new ObjectMapper()
+            .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
+    private static final int ERROR_STATUS_CODE = 500
+    private static final String REASON_PHRASE = 'The server encountered an unexpected condition which ' +
+            'prevented it from fulfilling the request.'
+
+    ResponseProcessor next
+    HttpErrorCallback httpErrorCallback
+    DruidAggregationQuery druidAggregationQuery
+    DruidPartialDataResponseProcessor druidPartialDataResponseProcessor
+
+    def setup() {
+        next = Mock(ResponseProcessor)
+        httpErrorCallback = Mock(HttpErrorCallback)
+        druidAggregationQuery = Mock(DruidAggregationQuery)
+        next.getErrorCallback(druidAggregationQuery) >> httpErrorCallback
+        druidPartialDataResponseProcessor = new DruidPartialDataResponseProcessor(next)
+    }
+
+    def "getOverlap returns intersection between Druid intervals and Fili intervals in case of #caseDescription"() {
+        given:
+        JsonNode json = MAPPER.readTree(constructJSON(missingIntervals))
+
+        DataSource dataSource = Mock(DataSource)
+        ConstrainedTable constrainedTable = Mock(ConstrainedTable)
+
+        constrainedTable.getAvailableIntervals() >> new SimplifiedIntervalList(
+                availableIntervals.collect{it -> new Interval(it)}
+        )
+        dataSource.getPhysicalTable() >> constrainedTable
+        druidAggregationQuery.getDataSource() >> dataSource
+
+        expect:
+        druidPartialDataResponseProcessor.getOverlap(json, druidAggregationQuery) == new SimplifiedIntervalList(
+                expected.collect{it -> new Interval(it)}
+        )
+
+        where:
+        missingIntervals | availableIntervals | expected | caseDescription
+        ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z", "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"] |
+                ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z", "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"] |
+                ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z", "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"] |
+                "completely overlapped"
+        ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z", "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"] |
+                ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z"] |
+                ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z"] | "partially overlapped (Fili's intervals contained inside Druid's)"
+        ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z"] |
+                ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z", "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"] |
+                ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z"] | "partially overlapped (Druid's intervals contained inside Fili's)"
+        ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z","2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"] |
+                ["2019-11-22T00:00:00.000Z/2019-12-18T00:00:00.000Z"] |
+                [] | "no overlapping"
+        ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z","2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"] |
+                [] |
+                [] | "no overlapping (Fili has no emtpy intervals)"
+    }
+
+    def "checkOverflow recognizes interval overflow correctly"() {
+        given:
+        QueryContext queryContext = Mock(QueryContext)
+        queryContext.getUncoveredIntervalsLimit() >> 10
+        druidAggregationQuery.getContext() >> queryContext
+        JsonNode json = MAPPER.readTree(
+                '''
+                {
+                    "response": [{"k1":"v1"}],
+                    "X-Druid-Response-Context": {
+                        "uncoveredIntervals": [
+                            "2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z",
+                            "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"
+                        ],
+                        "uncoveredIntervalsOverflowed": true
+                    },
+                    "status-code": 200
+                }
+                '''
+        )
+
+        when:
+        druidPartialDataResponseProcessor.checkOverflow(json, druidAggregationQuery)
+
+        then:
+        1 * httpErrorCallback.dispatch(
+                ERROR_STATUS_CODE,
+                REASON_PHRASE,
+                ErrorMessageFormat.TOO_MANY_INTERVALS_MISSING.format("10")
+        )
+    }
+
+    def "processResponse logs and invokes error callback on data availability mismatch"() {
+        given:
+        JsonNode json = MAPPER.readTree(
+                constructJSON(
+                        [
+                                "2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z",
+                                "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"
+                        ]
+                )
+        )
+
+        DataSource dataSource = Mock(DataSource)
+        ConstrainedTable constrainedTable = Mock(ConstrainedTable)
+
+        constrainedTable.getAvailableIntervals() >> new SimplifiedIntervalList(
+                [new Interval("2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z")]
+        )
+        dataSource.getPhysicalTable() >> constrainedTable
+        druidAggregationQuery.getDataSource() >> dataSource
+
+        when:
+        druidPartialDataResponseProcessor.processResponse(json, druidAggregationQuery, Mock(LoggingContext))
+
+        then:
+        1 * httpErrorCallback.dispatch(
+                ERROR_STATUS_CODE,
+                REASON_PHRASE,
+                ErrorMessageFormat.DATA_AVAILABILITY_MISMATCH.format("[2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z]")
+        )
+    }
+
+    def "validateJsonResponse recognizes missing component"() {
+        given:
+        ArrayNode arrayNode = MAPPER.createArrayNode()
+        JsonNode druidResponseContext = Mock(JsonNode)
+        JsonNode json = Mock(JsonNode)
+        json.get(DruidJsonResponseContentKeys.DRUID_RESPONSE_CONTEXT.getName()) >> druidResponseContext
+
+        when:
+        // Druid returns response in an ArrayNode, which doesn't contain X-Druid-Response-Context or status code
+        druidPartialDataResponseProcessor.validateJsonResponse(arrayNode, druidAggregationQuery)
+        then:
+        1 * httpErrorCallback.dispatch(
+                ERROR_STATUS_CODE,
+                REASON_PHRASE,
+                ErrorMessageFormat.CONTEXT_AND_STATUS_MISSING_FROM_RESPONSE.format()
+        )
+
+        when:
+        // Druid response is missing X-Druid-Response-Context
+        json.has(DruidJsonResponseContentKeys.DRUID_RESPONSE_CONTEXT.getName()) >> false
+        druidPartialDataResponseProcessor.validateJsonResponse(json, druidAggregationQuery)
+        then:
+        1 * httpErrorCallback.dispatch(
+                ERROR_STATUS_CODE,
+                REASON_PHRASE,
+                ErrorMessageFormat.DRUID_RESPONSE_CONTEXT_MISSING_FROM_RESPONSE.format()
+        )
+
+        when:
+        // Druid response has X-Druid-Response-Context,
+        // but the X-Druid-Response-Context is missing uncoveredIntervals
+        json.has(DruidJsonResponseContentKeys.DRUID_RESPONSE_CONTEXT.getName()) >> true
+        druidResponseContext.has(DruidJsonResponseContentKeys.UNCOVERED_INTERVALS.getName()) >> false
+        druidPartialDataResponseProcessor.validateJsonResponse(json, druidAggregationQuery)
+        then:
+        1 * httpErrorCallback.dispatch(
+                ERROR_STATUS_CODE,
+                REASON_PHRASE,
+                ErrorMessageFormat.UNCOVERED_INTERVALS_MISSING_FROM_RESPONSE.format()
+        )
+
+        when:
+        // Druid response has X-Druid-Response-Context,
+        // but the X-Druid-Response-Context is missing uncoveredIntervalsOverflowed
+        json.has(DruidJsonResponseContentKeys.DRUID_RESPONSE_CONTEXT.getName()) >> true
+        druidResponseContext.has(DruidJsonResponseContentKeys.UNCOVERED_INTERVALS.getName()) >> true
+        druidResponseContext.has(DruidJsonResponseContentKeys.UNCOVERED_INTERVALS_OVERFLOWED.getName()) >> false
+        druidPartialDataResponseProcessor.validateJsonResponse(json, druidAggregationQuery)
+        then:
+        1 * httpErrorCallback.dispatch(
+                ERROR_STATUS_CODE,
+                REASON_PHRASE,
+                ErrorMessageFormat.UNCOVERED_INTERVALS_OVERFLOWED_MISSING_FROM_RESPONSE.format()
+        )
+
+        when:
+        // Druid response has X-Druid-Response-Context,
+        // but the response is missing status code
+        json.has(DruidJsonResponseContentKeys.DRUID_RESPONSE_CONTEXT.getName()) >> true
+        druidResponseContext.has(DruidJsonResponseContentKeys.UNCOVERED_INTERVALS.getName()) >> true
+        druidResponseContext.has(DruidJsonResponseContentKeys.UNCOVERED_INTERVALS_OVERFLOWED.getName()) >> true
+        json.has(DruidJsonResponseContentKeys.STATUS_CODE.getName()) >> false
+        druidPartialDataResponseProcessor.validateJsonResponse(json, druidAggregationQuery)
+        then:
+        1 * httpErrorCallback.dispatch(
+                ERROR_STATUS_CODE,
+                REASON_PHRASE,
+                ErrorMessageFormat.STATUS_CODE_MISSING_FROM_RESPONSE.format()
+        )
+    }
+
+    /**
+     * Constructs a JSON response using a template and a list of provided intervals in String representation.
+     *
+     * @param intervals the list of intervals to be used by the template
+     */
+    static String constructJSON(List<String> intervals) {
+        return String.format(
+                '''
+                {
+                    "response": [{"k1":"v1"}],
+                    "X-Druid-Response-Context": {
+                        "uncoveredIntervals": [
+                            %s
+                        ],
+                        "uncoveredIntervalsOverflowed": false
+                    },
+                    "status-code": 200
+                }
+                ''',
+                intervals.stream()
+                        .map{it -> "\"" + it + "\""}
+                        .collect(Collectors.joining(","))
+        )
+    }
+}

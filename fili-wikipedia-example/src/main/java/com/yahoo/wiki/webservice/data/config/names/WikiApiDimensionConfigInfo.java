@@ -2,9 +2,9 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.names;
 
-import com.yahoo.bard.webservice.data.config.names.DimensionName;
-import com.yahoo.bard.webservice.data.dimension.Dimension;
-import com.yahoo.bard.webservice.util.EnumUtils;
+import com.yahoo.fili.webservice.data.config.names.DimensionName;
+import com.yahoo.fili.webservice.data.dimension.Dimension;
+import com.yahoo.fili.webservice.util.EnumUtils;
 
 /**
  * Hold all the Wikipedia API dimension names.

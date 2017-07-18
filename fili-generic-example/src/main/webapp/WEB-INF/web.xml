@@ -3,10 +3,10 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
     <listener>
-        <listener-class>com.yahoo.bard.webservice.application.MetricServletContextListener</listener-class>
+        <listener-class>com.yahoo.fili.webservice.application.MetricServletContextListener</listener-class>
     </listener>
     <listener>
-        <listener-class>com.yahoo.bard.webservice.application.HealthCheckServletContextListener</listener-class>
+        <listener-class>com.yahoo.fili.webservice.application.HealthCheckServletContextListener</listener-class>
     </listener>
 
     <servlet>
@@ -14,11 +14,11 @@
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
         <init-param>
             <param-name>jersey.config.server.provider.packages</param-name>
-            <param-value>com.yahoo.bard.webservice.web.endpoints</param-value>
+            <param-value>com.yahoo.fili.webservice.web.endpoints</param-value>
         </init-param>
         <init-param>
             <param-name>javax.ws.rs.Application</param-name>
-            <param-value>com.yahoo.bard.webservice.application.ResourceConfig</param-value>
+            <param-value>com.yahoo.fili.webservice.application.ResourceConfig</param-value>
         </init-param>
         <load-on-startup>1</load-on-startup>
         <async-supported>true</async-supported>

@@ -30,6 +30,10 @@ Current
 
 ### Changed:
 
+- [Finish renaming from Bard to Fili](https://github.com/yahoo/fili/pull/433)
+   Bard was the old name, but we never fully switched to Fili, and you can see that in some of the docs, the packages,
+   configuration, etc. We should finish the transition.
+
 - [Change id field in DefaultDimensionField to lower case for Navi compatibility.](https://github.com/yahoo/fili/pull/423)
     * Navi's default setting only recongizes lower case 'id' key name.
 
@@ -250,7 +254,7 @@ Removals:
 ### Changed:
 
 - [Prepare for etag Cache](https://github.com/yahoo/fili/pull/289)
-    * Made isOn dynamic on BardFeatureFlag
+    * Made isOn dynamic on FiliFeatureFlag
 
 - [Rename `Concrete` to `Strict` for the respective `PhysicalTable` and `Availability`](https://github.com/yahoo/fili/pull/263)
     * The main difference is in the availability reduction, so make the class name match that.
@@ -632,7 +636,7 @@ Changes:
 
 - [Ability to prevent caching of Druid responses larger than the maximum size supported by the cache](https://github.com/yahoo/fili/pull/93)
     * Supported for both Cache v1 and V2
-    * Controlled with `bard__druid_max_response_length_to_cache` setting
+    * Controlled with `fili__druid_max_response_length_to_cache` setting
     * Default value is `MAX_LONG`, so no cache prevention will happen by default
 
 - [Log a warning if `SegmentMetadataLoader` tries to load empty segment metadata](https://github.com/yahoo/fili/pull/113)
@@ -984,7 +988,7 @@ New Capabilities & Enhancements:
     - Case insensitive row and column keys will be deprecated going forward.
     - ***Because this is a breaking change, the fix has been wrapped in a feature flag. For now, this defaults to the
         existing broken behavior, but this will change in a future version, and eventually the fix will be permanent.***
-        - The feature flag for this is `bard__case_sensitive_keys_enabled`
+        - The feature flag for this is `fili__case_sensitive_keys_enabled`
 
 - [All constructors of `ResponseException` that do not take an `ObjectWriter`](https://github.com/yahoo/fili/pull/70)
     * An `ObjectWriter` is required in order to ensure that the exception correctly serializes its associated Druid query

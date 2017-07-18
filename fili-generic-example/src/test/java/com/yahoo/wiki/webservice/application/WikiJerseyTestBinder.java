@@ -2,11 +2,11 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.application;
 
-import com.yahoo.bard.webservice.application.JerseyTestBinder;
-import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
-import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
-import com.yahoo.bard.webservice.data.config.table.TableLoader;
-import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
+import com.yahoo.fili.webservice.application.JerseyTestBinder;
+import com.yahoo.fili.webservice.data.config.dimension.DimensionConfig;
+import com.yahoo.fili.webservice.data.config.metric.MetricLoader;
+import com.yahoo.fili.webservice.data.config.table.TableLoader;
+import com.yahoo.fili.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration;
 import com.yahoo.wiki.webservice.data.config.auto.StaticWikiConfigLoader;
 import com.yahoo.wiki.webservice.data.config.dimension.GenericDimensionConfigs;

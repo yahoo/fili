@@ -6,8 +6,8 @@ This application will automatically configure fili to work with **any** instance
   like using Fili without putting any effort into setting it up.
 
 In order to set up, this will connect to druid at  [http://localhost:8081/druid/coordinator/v1](http://localhost:8081/druid/coordinator/v1).
- If your set up is different, you'll have to change the `bard__druid_coord`,
-  `bard__non_ui_druid_broker`, `bard__ui_druid_broker` url in `applicationConfig.properties`.
+ If your set up is different, you'll have to change the `fili__druid_coord`,
+  `fili__non_ui_druid_broker`, `fili__ui_druid_broker` url in `applicationConfig.properties`.
   
 Note that this was last tested using [version 0.9.1](https://github.com/yahoo/fili/tree/0.9.1)
 
@@ -30,10 +30,10 @@ Note that this was last tested using [version 0.9.1](https://github.com/yahoo/fi
 - Note that if your setup is different you can adjust it by changing the default parameters below
 
     ```bash
-    mvn -pl fili-generic-example exec:java -Dbard__fili_port=9998 \
-    -Dbard__druid_coord=http://localhost:8081/druid/coordinator/v1 \
-    -Dbard__non_ui_druid_broker=http://localhost:8082/druid/v2 \
-    -Dbard__ui_druid_broker=http://localhost:8082/druid/v2
+    mvn -pl fili-generic-example exec:java -Dfili__fili_port=9998 \
+    -Dfili__druid_coord=http://localhost:8081/druid/coordinator/v1 \
+    -Dfili__non_ui_druid_broker=http://localhost:8082/druid/v2 \
+    -Dfili__ui_druid_broker=http://localhost:8082/druid/v2
     ```
 
 From another window, run a test query against the default druid data.
@@ -105,7 +105,7 @@ Here are some sample queries that you can run to verify your server:
     
     **NOTE:** if you're running this locally and haven't changed any settings (like the Wikipedia example) 
     you can **skip step 3**.
-3. Under `src/main/resources/applicationConfig.properties`, change `bard__non_ui_druid_broker`, 
-`bard__ui_druid_broker`, `bard__druid_coord`, and other properties.
+3. Under `src/main/resources/applicationConfig.properties`, change `fili__non_ui_druid_broker`, 
+`fili__ui_druid_broker`, `fili__druid_coord`, and other properties.
     
 4. Run `GenericMain` which can be found in `fili-generic-example` (e.g. right click and choose run)

@@ -2,9 +2,9 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.application;
 
-import com.yahoo.bard.webservice.application.HealthCheckServletContextListener;
-import com.yahoo.bard.webservice.application.MetricServletContextListener;
-import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
+import com.yahoo.fili.webservice.application.HealthCheckServletContextListener;
+import com.yahoo.fili.webservice.application.MetricServletContextListener;
+import com.yahoo.fili.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensions;
 
 import com.codahale.metrics.servlet.InstrumentedFilter;
@@ -33,7 +33,7 @@ import java.util.concurrent.ExecutionException;
 import javax.servlet.DispatcherType;
 
 /**
- * Launch Bard in Embedded Jetty.
+ * Launch Fili in Embedded Jetty.
  */
 public class WikiMain {
     private static final Logger LOG = LoggerFactory.getLogger(WikiMain.class);
@@ -112,10 +112,10 @@ public class WikiMain {
         servletHolder.setInitOrder(1);
         servletHolder.setInitParameter(
                 "javax.ws.rs.Application",
-                "com.yahoo.bard.webservice.application.ResourceConfig");
+                "com.yahoo.fili.webservice.application.ResourceConfig");
         servletHolder.setInitParameter(
                 "jersey.config.server.provider.packages",
-                "com.yahoo.bard.webservice.web.endpoints");
+                "com.yahoo.fili.webservice.web.endpoints");
 
         servletContextHandler.addServlet(AdminServlet.class, "/*");
 

@@ -2,8 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.dimension;
 
-import com.yahoo.bard.webservice.data.dimension.DimensionField;
-import com.yahoo.bard.webservice.util.EnumUtils;
+import com.yahoo.fili.webservice.data.dimension.DimensionField;
+import com.yahoo.fili.webservice.util.EnumUtils;
 
 /**
  * DimensionField enum.

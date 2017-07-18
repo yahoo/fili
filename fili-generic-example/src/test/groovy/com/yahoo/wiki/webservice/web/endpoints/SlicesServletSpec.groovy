@@ -4,11 +4,11 @@ package com.yahoo.wiki.webservice.web.endpoints
 
 import static com.yahoo.wiki.webservice.data.config.names.WikiDruidTableName.WIKITICKER
 
-import com.yahoo.bard.webservice.application.JerseyTestBinder
-import com.yahoo.bard.webservice.table.availability.AvailabilityTestingUtils
-import com.yahoo.bard.webservice.util.JsonSlurper
-import com.yahoo.bard.webservice.util.JsonSortStrategy
-import com.yahoo.bard.webservice.web.endpoints.SlicesServlet
+import com.yahoo.fili.webservice.application.JerseyTestBinder
+import com.yahoo.fili.webservice.table.availability.AvailabilityTestingUtils
+import com.yahoo.fili.webservice.util.JsonSlurper
+import com.yahoo.fili.webservice.util.JsonSortStrategy
+import com.yahoo.fili.webservice.web.endpoints.SlicesServlet
 import com.yahoo.wiki.webservice.application.WikiJerseyTestBinder
 
 import org.joda.time.Interval

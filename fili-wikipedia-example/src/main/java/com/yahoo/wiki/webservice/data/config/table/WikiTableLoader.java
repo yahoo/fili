@@ -2,21 +2,21 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.table;
 
-import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY;
-import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR;
+import static com.yahoo.fili.webservice.data.time.DefaultTimeGrain.DAY;
+import static com.yahoo.fili.webservice.data.time.DefaultTimeGrain.HOUR;
 
-import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
-import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
-import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
-import com.yahoo.bard.webservice.data.config.names.FieldName;
-import com.yahoo.bard.webservice.data.config.table.BaseTableLoader;
-import com.yahoo.bard.webservice.data.config.table.ConcretePhysicalTableDefinition;
-import com.yahoo.bard.webservice.data.config.table.PhysicalTableDefinition;
-import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
-import com.yahoo.bard.webservice.druid.model.query.Granularity;
-import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
-import com.yahoo.bard.webservice.table.TableGroup;
-import com.yahoo.bard.webservice.util.Utils;
+import com.yahoo.fili.webservice.data.config.ResourceDictionaries;
+import com.yahoo.fili.webservice.data.config.dimension.DimensionConfig;
+import com.yahoo.fili.webservice.data.config.names.ApiMetricName;
+import com.yahoo.fili.webservice.data.config.names.FieldName;
+import com.yahoo.fili.webservice.data.config.table.BaseTableLoader;
+import com.yahoo.fili.webservice.data.config.table.ConcretePhysicalTableDefinition;
+import com.yahoo.fili.webservice.data.config.table.PhysicalTableDefinition;
+import com.yahoo.fili.webservice.druid.model.query.AllGranularity;
+import com.yahoo.fili.webservice.druid.model.query.Granularity;
+import com.yahoo.fili.webservice.metadata.DataSourceMetadataService;
+import com.yahoo.fili.webservice.table.TableGroup;
+import com.yahoo.fili.webservice.util.Utils;
 import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensions;
 import com.yahoo.wiki.webservice.data.config.names.WikiApiDimensionConfigInfo;
 import com.yahoo.wiki.webservice.data.config.names.WikiApiMetricName;

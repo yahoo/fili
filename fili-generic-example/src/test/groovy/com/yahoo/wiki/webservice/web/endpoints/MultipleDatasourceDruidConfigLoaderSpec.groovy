@@ -1,7 +1,7 @@
 package com.yahoo.wiki.webservice.web.endpoints
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService
+import com.yahoo.fili.webservice.models.druid.client.impl.TestDruidWebService
 import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration
 import com.yahoo.wiki.webservice.data.config.auto.DruidNavigator
 import spock.lang.Specification

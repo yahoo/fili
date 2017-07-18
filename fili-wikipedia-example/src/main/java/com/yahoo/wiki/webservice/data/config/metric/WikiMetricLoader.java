@@ -2,11 +2,11 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.metric;
 
-import com.yahoo.bard.webservice.data.config.metric.MetricInstance;
-import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
-import com.yahoo.bard.webservice.data.config.metric.makers.CountMaker;
-import com.yahoo.bard.webservice.data.config.metric.makers.DoubleSumMaker;
-import com.yahoo.bard.webservice.data.metric.MetricDictionary;
+import com.yahoo.fili.webservice.data.config.metric.MetricInstance;
+import com.yahoo.fili.webservice.data.config.metric.MetricLoader;
+import com.yahoo.fili.webservice.data.config.metric.makers.CountMaker;
+import com.yahoo.fili.webservice.data.config.metric.makers.DoubleSumMaker;
+import com.yahoo.fili.webservice.data.metric.MetricDictionary;
 import com.yahoo.wiki.webservice.data.config.names.WikiApiMetricName;
 import com.yahoo.wiki.webservice.data.config.names.WikiDruidMetricName;
 

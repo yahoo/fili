@@ -2,19 +2,19 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.application
 
-import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
-import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR
+import static com.yahoo.fili.webservice.data.time.DefaultTimeGrain.DAY
+import static com.yahoo.fili.webservice.data.time.DefaultTimeGrain.HOUR
 import static com.yahoo.wiki.webservice.data.config.names.WikiDruidTableName.WIKITICKER
 
-import com.yahoo.bard.webservice.data.config.ConfigurationLoader
-import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig
-import com.yahoo.bard.webservice.data.config.dimension.KeyValueStoreDimensionLoader
-import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
-import com.yahoo.bard.webservice.data.metric.MetricDictionary
-import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
-import com.yahoo.bard.webservice.table.LogicalTableDictionary
-import com.yahoo.bard.webservice.table.PhysicalTableDictionary
-import com.yahoo.bard.webservice.table.TableIdentifier
+import com.yahoo.fili.webservice.data.config.ConfigurationLoader
+import com.yahoo.fili.webservice.data.config.dimension.DimensionConfig
+import com.yahoo.fili.webservice.data.config.dimension.KeyValueStoreDimensionLoader
+import com.yahoo.fili.webservice.data.dimension.DimensionDictionary
+import com.yahoo.fili.webservice.data.metric.MetricDictionary
+import com.yahoo.fili.webservice.metadata.DataSourceMetadataService
+import com.yahoo.fili.webservice.table.LogicalTableDictionary
+import com.yahoo.fili.webservice.table.PhysicalTableDictionary
+import com.yahoo.fili.webservice.table.TableIdentifier
 import com.yahoo.wiki.webservice.data.config.auto.StaticWikiConfigLoader
 import com.yahoo.wiki.webservice.data.config.dimension.GenericDimensionConfigs
 import com.yahoo.wiki.webservice.data.config.metric.GenericMetricLoader
