@@ -45,9 +45,6 @@ class RoleDimensionApiFilterRequestMapperSpec extends Specification {
     Map<Dimension, Set<ApiFilter>> requestFilters = [(filterDimension)   : ([requestFilterInDimension] as Set),
                                                      (nonFilterDimension): ([requestFilterNotInDimension] as Set)]
 
-    Set<ApiFilter> matchingDimensionFilters
-    Set<ApiFilter> nonMatchingDimensionFilters
-
     Set<ApiFilter> securitySetRoleA = [security1, security2] as Set
     Set<ApiFilter> securitySetRoleB = [security3] as Set
 
@@ -111,15 +108,14 @@ class RoleDimensionApiFilterRequestMapperSpec extends Specification {
 
     def "validateSecurityFilters throws exception on empty security filters"() {
         setup:
-        1 * userPrincipal.getName() >> "TestUser"
-        1 * securityContext.getUserPrincipal() >> userPrincipal
         filterDimension.getApiName() >> "TestApiName"
 
         when:
-        mapper.validateSecurityFilters(securityContext, [] as Set)
+        mapper.validateSecurityFilters(userPrincipal, [] as Set)
 
         then:
         thrown(RequestValidationException)
+        1 * userPrincipal.getName() >> "TestUser"
     }
 
     @Unroll

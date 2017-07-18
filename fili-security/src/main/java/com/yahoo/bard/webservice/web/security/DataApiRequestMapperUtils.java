@@ -11,8 +11,18 @@ import java.util.function.BiFunction;
 
 import javax.ws.rs.container.ContainerRequestContext;
 
+/**
+ * A set of methods for generating utility mappers for ApiRequestMapping chains.
+ */
 public class DataApiRequestMapperUtils {
 
+    /**
+     * Create a request mapper that always returns an unmodified request.
+     *
+     * @param resourceDictionaries  The dictionaries used for mapping the request.
+     *
+     * @return  The request passed in, unmodified.
+     */
     public static RequestMapper identityMapper(ResourceDictionaries resourceDictionaries) {
         return new RequestMapper(resourceDictionaries) {
             @Override
@@ -28,7 +38,7 @@ public class DataApiRequestMapperUtils {
      * This can be used to 'cap' a filter path such as a {@link RoleBasedRoutingRequestMapper} where the 'default'
      * should only be hit exceptionally.
      *
-     * @param resourceDictionaries  The dictionaries used for mapping request.
+     * @param resourceDictionaries  The dictionaries used for mapping the request.
      * @param exceptionSource  A function to create a request validation exception.
      *
      * @return  A request mapper that will always fail on a validation exception.

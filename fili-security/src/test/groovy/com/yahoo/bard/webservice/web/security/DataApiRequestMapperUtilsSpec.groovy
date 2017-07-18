@@ -31,21 +31,6 @@ class DataApiRequestMapperUtilsSpec extends Specification {
         mapper.apply(request, containerRequestContext) == request
     }
 
-
-    def "Error mapper returns an error"() {
-        given: "A mapper expecting an exception"
-        RuntimeException expected = Mock(RuntimeException)
-        RequestMapper mapper = DataApiRequestMapperUtils.errorMapper(dictionaries, expected)
-
-        when:
-        mapper.apply(request, containerRequestContext)
-
-        then:
-        0 * _
-        Exception actual = thrown(RuntimeException)
-        actual == expected
-    }
-
     def "Validation exception mapper returns a built exception"() {
         given: "A mapper expecting an exception"
         RequestValidationException expected = new RequestValidationException(Response.Status.OK, "Test", "Test")

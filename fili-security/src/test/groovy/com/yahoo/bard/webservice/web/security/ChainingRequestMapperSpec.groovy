@@ -26,11 +26,11 @@ class ChainingRequestMapperSpec extends Specification {
         ChainingRequestMapper instance = new ChainingRequestMapper(resourceDictionaries, nextMapper) {
             ApiRequest internalApply(final ApiRequest request, final ContainerRequestContext context)
                     throws RequestValidationException {
-                return mockRequest.clone()
+                return (ApiRequest) mockRequest.clone()
             }
         }
 
         expect:
-        instance.apply(mockRequest, containerRequestContext) == mockRequest
+        mockRequest == instance.apply(mockRequest, containerRequestContext)
     }
 }

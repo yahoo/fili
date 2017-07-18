@@ -10,13 +10,14 @@ Current
 
 ### Added:
 
+- [Fili-security module](https://github.com/yahoo/fili/pull/405)
+    * Added security module for fili data security filters
+    * Created `ChainingRequestMapper`, and a set of mappers for gatekeeping on security roles and whitelisting dimension filters. 
+
 - [Add Table-wide Availability](https://github.com/yahoo/fili/pull/414)
     * Add `availableIntervals` field to tables endpoint by union the availability for the logical table without taking
     the TablesApiRequest into account.
 
-- [Fili-security module](https://github.com/yahoo/fili/pull/405)
-    * Added security module for fili data security filters
-    * Extended Api 
 
 - [Implement EtagCacheRequestHandler](https://github.com/yahoo/fili/pull/312)
     * Add `EtagCacheRequestHandler` that checks the cache for a matching eTag
