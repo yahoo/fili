@@ -49,13 +49,17 @@ class DataApiRequestMapperUtilsSpec extends Specification {
     def "Validation exception mapper returns a built exception"() {
         given: "A mapper expecting an exception"
         RequestValidationException expected = new RequestValidationException(Response.Status.OK, "Test", "Test")
+
         BiFunction<ApiRequest, ContainerRequestContext, RequestValidationException> exceptionBuilder = new
-                BiFunction<ApiRequest>() {
-            @Override
-            Object apply(ApiRequest request, ContainerRequestContext context) {
-                return expected
-            }
-        }
+                BiFunction<ApiRequest, ContainerRequestContext, RequestValidationException>() {
+                    @Override
+                    RequestValidationException apply(
+                            final ApiRequest apiRequest,
+                            final ContainerRequestContext containerRequestContext
+                    ) {
+                        return expected
+                    }
+                }
 
         RequestMapper mapper = DataApiRequestMapperUtils.validationExceptionMapper(dictionaries, exceptionBuilder)
         exceptionBuilder.apply(containerRequestContext) >> expected

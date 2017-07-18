@@ -24,28 +24,6 @@ public class DataApiRequestMapperUtils {
     };
 
     /**
-     * Create a requestMapper that always throws a RuntimeException.
-     *
-     * This can be used to 'cap' a filter path such as a {@link RoleBasedRoutingRequestMapper} where the 'default'
-     * should only be hit exceptionally.
-     *
-     * @param resourceDictionaries  The dictionaries used for mapping request.
-     * @param exception  Yhr
-     *
-     * @return  A request mapper that will always fail on a validation exception.
-     */
-
-    public static RequestMapper errorMapper(ResourceDictionaries resourceDictionaries, RuntimeException exception) {
-        return new RequestMapper(resourceDictionaries) {
-            @Override
-            public ApiRequest apply(final ApiRequest request, final ContainerRequestContext context)
-                    throws RequestValidationException {
-                throw exception;
-            };
-        };
-    };
-
-    /**
      * Create a requestMapper that always throws a validation exception based on the request.
      * This can be used to 'cap' a filter path such as a {@link RoleBasedRoutingRequestMapper} where the 'default'
      * should only be hit exceptionally.
