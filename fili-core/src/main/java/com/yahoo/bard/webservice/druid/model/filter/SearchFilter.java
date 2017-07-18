@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Filter for a search.
@@ -46,17 +47,17 @@ public class SearchFilter extends DimensionalFilter {
         /**
          * Get the QueryType enum from it's search type.
          *
-         * @param type  The type of query (i.e. "insensitive_contains").
+         * @param type  The type of query (i.e. "insensitive_contains")
          *
-         * @return the enum QueryType.
+         * @return the enum QueryType if found otherwise empty.
          */
-        public static QueryType fromType(String type) {
+        public static Optional<QueryType> fromType(String type) {
             for (QueryType queryType : values()) {
                 if (queryType.type.equals(type)) {
-                    return queryType;
+                    return Optional.of(queryType);
                 }
             }
-            return null;
+            return Optional.empty();
         }
     }
 

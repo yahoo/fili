@@ -15,14 +15,14 @@ public class CompletedFuture {
      * Private constructor - all methods static.
      */
     private CompletedFuture() {
-
+        //Intentionally left blank.
     }
 
     /**
      * Creates a completed {@link java.util.concurrent.Future} which will return this item.
      *
-     * @param item  The item to return when called.
-     * @param <E>  The type to be returned by this future.
+     * @param item  The item to return when called
+     * @param <E>  The type to be returned by this future
      *
      * @return a completed {@link CompletableFuture} which will successfully return an item.
      */
@@ -34,10 +34,10 @@ public class CompletedFuture {
      * Creates a completed {@link java.util.concurrent.Future} which will throw an
      * {@link java.util.concurrent.ExecutionException}.
      *
-     * @param throwable  A throwable to be included in the {@link java.util.concurrent.ExecutionException}.
-     * @param <E>  The type to be returned by this future.
+     * @param throwable  A throwable to be included in the {@link java.util.concurrent.ExecutionException}
+     * @param <E>  The type to be returned by this future
      *
-     * @return a completed {@link CompletableFuture} which will fail and throw an exception.
+     * @return a completed {@link CompletableFuture} which will fail and throw an exception
      */
     public static <E> CompletableFuture<E> throwing(Throwable throwable) {
         CompletableFuture<E> completedFuture = CompletableFuture.supplyAsync(() -> null);
