@@ -12,9 +12,9 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.util.StreamUtils;
 import com.yahoo.bard.webservice.web.ApiFilter;
-import com.yahoo.bard.webservice.web.ChainingRequestMapper;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.FilterOperation;
+import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.RequestValidationException;
 
 import org.apache.commons.lang3.tuple.ImmutableTriple;
@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -65,28 +66,13 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
      * @param resourceDictionaries  The dictionaries to use for request mapping.
      * @param dimension  The dimension whose roles are being matched
      * @param roleApiFilters  ApiFilters by role for a given dimension
-     */
-    public RoleDimensionApiFilterRequestMapper(
-            ResourceDictionaries resourceDictionaries,
-            Dimension dimension,
-            Map<String, Set<ApiFilter>> roleApiFilters
-    ) {
-        this(resourceDictionaries, dimension, roleApiFilters, null);
-    }
-
-    /**
-     * Constructor.
-     *
-     * @param resourceDictionaries  The dictionaries to use for request mapping.
-     * @param dimension  The dimension whose roles are being matched
-     * @param roleApiFilters  ApiFilters by role for a given dimension
      * @param next  The next request mapper to process this ApiRequest
      */
     public RoleDimensionApiFilterRequestMapper(
             final ResourceDictionaries resourceDictionaries,
             Dimension dimension,
             Map<String, Set<ApiFilter>> roleApiFilters,
-            ChainingRequestMapper<DataApiRequest> next
+            RequestMapper<DataApiRequest> next
     ) {
         super(resourceDictionaries, next);
         this.dimension = dimension;
@@ -99,13 +85,36 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
             throws RequestValidationException {
         SecurityContext securityContext = context.getSecurityContext();
 
-        Set<ApiFilter> mergedSecurityFilters = unionMergeFilterValues(
-                roleApiFilters.keySet().stream()
-                        .filter(securityContext::isUserInRole)
-                        .map(roleApiFilters::get)
-                        .flatMap(Set::stream)
-        );
+        Set<ApiFilter> securityFilters = buildSecurityFilters(securityContext);
 
+        validateSecurityFilters(securityContext, securityFilters);
+
+        Map<Dimension, Set<ApiFilter>> revisedFilters = mergeSecurityFilters(request.getFilters(), securityFilters);
+
+        return request.withFilters(revisedFilters);
+    }
+
+    protected Map<Dimension, Set<ApiFilter>> mergeSecurityFilters(
+            Map<Dimension, Set<ApiFilter>> requestFilters,
+            Set<ApiFilter> securityFilters
+    ) {
+        Map<Dimension, Set<ApiFilter>> revisedFilters = new LinkedHashMap<>(requestFilters);
+        Set<ApiFilter> requestDimensionFilters = revisedFilters.getOrDefault(
+                dimension,
+                Collections.emptySet()
+        );
+        // Merge the request filters (if any) with the security filters for this dimension
+        revisedFilters.put(
+                dimension,
+                unionMergeFilterValues(Stream.concat(requestDimensionFilters.stream(), securityFilters.stream()))
+        );
+        return revisedFilters;
+    }
+
+    protected void validateSecurityFilters(
+            final SecurityContext securityContext,
+            final Set<ApiFilter> mergedSecurityFilters
+    ) throws RequestValidationException {
         if (mergedSecurityFilters.isEmpty()) {
             String name = securityContext.getUserPrincipal().getName();
             LOG.warn(DIMENSION_MISSING_MANDATORY_ROLE.logFormat(name, dimension.getApiName()));
@@ -115,28 +124,15 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
                     UNAUTHORIZED_USER_MESSAGE
             );
         }
-
-        Map<Dimension, Set<ApiFilter>> newMap =  request.getFilters().entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, it -> substituteFilters(mergedSecurityFilters, it)));
-
-        return request.withFilters(newMap);
     }
 
-    /**
-     * If a filter map entry matches on dimension, return the values with the set merged.
-     *
-     * @param mergedSecurityFilters  The security filters being conditionally merged
-     * @param dimensionFilters The dimension filters being iterated across
-     *
-     * @return either the original filter entry or one with security filters merged in
-     */
-    public Set<ApiFilter> substituteFilters(
-            Set<ApiFilter> mergedSecurityFilters,
-            Map.Entry<Dimension, Set<ApiFilter>> dimensionFilters
-    ) {
-        return dimensionFilters.getKey().equals(dimension) ?
-                StreamUtils.setMerge(dimensionFilters.getValue(), mergedSecurityFilters)
-                : dimensionFilters.getValue();
+    protected Set<ApiFilter> buildSecurityFilters(final SecurityContext securityContext) {
+        return unionMergeFilterValues(
+                    roleApiFilters.keySet().stream()
+                            .filter(securityContext::isUserInRole)
+                            .map(roleApiFilters::get)
+                            .flatMap(Set::stream)
+            );
     }
 
     /**
@@ -146,7 +142,7 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
      *
      * @return A set of filters with the same operations but values unioned
      */
-    public static Set<ApiFilter> unionMergeFilterValues(Stream<ApiFilter> filterStream) {
+    protected static Set<ApiFilter> unionMergeFilterValues(Stream<ApiFilter> filterStream) {
 
         Function<ApiFilter, Triple<Dimension, DimensionField, FilterOperation>> filterGroupingIdentity = filter ->
             new ImmutableTriple<>(filter.getDimension(), filter.getDimensionField(), filter.getOperation());

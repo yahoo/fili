@@ -1,8 +1,11 @@
 // Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.web
+package com.yahoo.bard.webservice.web.security
 
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries
+import com.yahoo.bard.webservice.web.ApiRequest
+import com.yahoo.bard.webservice.web.RequestMapper
+import com.yahoo.bard.webservice.web.RequestValidationException
 
 import spock.lang.Specification
 

@@ -9,6 +9,7 @@ import com.yahoo.bard.webservice.web.RequestValidationException;
 
 import java.util.LinkedHashMap;
 
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.SecurityContext;
 
@@ -27,41 +28,28 @@ public class RoleBasedRoutingRequestMapper<T extends ApiRequest> extends Request
      *
      * @param resourceDictionaries  The dictionaries to use for request mapping.
      * @param prioritizedRoleBasedMappers  A map of roles to mappers for each role, with a deterministic entry order.
-     * @param defaultMapper The default mapper to apply if no other roles match. (null means finish mapping)
+     * @param defaultMapper The default mapper to apply if no other roles match. (should not be null to avoid default
+     * access by all)
      */
     public RoleBasedRoutingRequestMapper(
             ResourceDictionaries resourceDictionaries,
             LinkedHashMap<String, RequestMapper<T>> prioritizedRoleBasedMappers,
-            RequestMapper<T> defaultMapper
+            @NotNull RequestMapper<T> defaultMapper
     ) {
         super(resourceDictionaries);
         this.prioritizedRoleBasedMappers = prioritizedRoleBasedMappers;
         this.defaultMapper = defaultMapper;
     }
 
-    /**
-     * Constructor.
-     *
-     * @param resourceDictionaries  The dictionaries to use for request mapping.
-     * @param prioritizedRoleBasedMappers  A map of roles to mappers for each role, with a deterministic entry order.
-     */
-    public RoleBasedRoutingRequestMapper(
-            ResourceDictionaries resourceDictionaries,
-            LinkedHashMap<String, RequestMapper<T>> prioritizedRoleBasedMappers
-    ) {
-        this(resourceDictionaries, prioritizedRoleBasedMappers, null);
-    }
 
     @Override
     public T apply(T request, ContainerRequestContext context)
             throws RequestValidationException {
         SecurityContext securityContext = context.getSecurityContext();
-        RequestMapper<T> mapper = prioritizedRoleBasedMappers.keySet().stream()
+        return prioritizedRoleBasedMappers.keySet().stream()
                 .filter(securityContext::isUserInRole)
                 .map(prioritizedRoleBasedMappers::get)
-                .findFirst().orElse(defaultMapper);
-        return (mapper == null) ?
-                request :
-                mapper.apply(request, context);
+                .findFirst().orElse(defaultMapper)
+                .apply(request, context);
     }
 }

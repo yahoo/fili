@@ -1,8 +1,11 @@
 // Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.web;
+package com.yahoo.bard.webservice.web.security;
 
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
+import com.yahoo.bard.webservice.web.ApiRequest;
+import com.yahoo.bard.webservice.web.RequestMapper;
+import com.yahoo.bard.webservice.web.RequestValidationException;
 
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -22,7 +25,7 @@ public abstract class ChainingRequestMapper<T extends ApiRequest> extends Reques
      * @param resourceDictionaries  The dictionaries to use for request mapping.
      */
     public ChainingRequestMapper(@NotNull ResourceDictionaries resourceDictionaries) {
-        this(resourceDictionaries, null);
+        this(resourceDictionaries, DataApiRequestMapperUtils.identityMapper(resourceDictionaries));
     }
 
     /**
@@ -33,7 +36,7 @@ public abstract class ChainingRequestMapper<T extends ApiRequest> extends Reques
      */
     public ChainingRequestMapper(
             @NotNull ResourceDictionaries resourceDictionaries,
-            RequestMapper<T> next
+            @NotNull RequestMapper<T> next
     ) {
         super(resourceDictionaries);
         this.next = next;
@@ -45,7 +48,7 @@ public abstract class ChainingRequestMapper<T extends ApiRequest> extends Reques
      * This should throw an exception if the given/converted request is not valid.
      *
      * @param request  the apiRequest to rewrite
-     * @param context  the ContainerRequestContext
+     * @param context  the ContainerRequestContext containing user and request information
      *
      * @return a reference to an apiRequest, either the original one or a rewritten one
      *
@@ -53,9 +56,7 @@ public abstract class ChainingRequestMapper<T extends ApiRequest> extends Reques
      * if the request is not valid
      */
     public final T apply(T request, ContainerRequestContext context) throws RequestValidationException {
-        return next == null ?
-                internalApply(request, context)
-                : next.apply(internalApply(request, context), context);
+        return next.apply(internalApply(request, context), context);
     }
 
     /**
@@ -64,7 +65,7 @@ public abstract class ChainingRequestMapper<T extends ApiRequest> extends Reques
      * This should throw an exception if the given/converted request is not valid.
      *
      * @param request  the apiRequest to rewrite
-     * @param context  the ContainerRequestContext
+     * @param context  the ContainerRequestContext containing user and request information
      *
      * @return a reference to an apiRequest, either the original one or a rewritten one
      *
