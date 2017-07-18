@@ -65,6 +65,56 @@ Here are some sample queries that you can run to verify your server:
 
       GET http://localhost:9998/v1/data/wikipedia/hour/?format=debug&metrics=count&dateTime=PT72H/current
 
+## Running Fili with Docker
+
+There is a [Docker image](https://hub.docker.com/r/mpardesh/fili/) for Fili which can be found on 
+Dockerhub. If you would like to experiment with Fili without having to download its dependencies, you can 
+[download](https://www.docker.com/) and start Docker. Then run these commands: 
+    ```
+    docker pull mpardesh/fili 
+    ```
+
+    ```
+    docker run --name fili-generic-example -i --rm -p 3001:8081 -p 3000:8082 fili:1.0
+    ```
+
+This will start a container. Please wait a few minutes for Druid to ingest the data. 
+
+Once Druid is ready, you can start querying! Here is a 
+[sample query](http://localhost:9998/v1/data/wikipedia/day/?metrics=deleted&dateTime=2013-08-01/PT24H)
+to get started:
+    ```
+    http://localhost:9998/v1/data/wikipedia/day/?metrics=deleted&dateTime=2013-08-01/PT24H
+    ```
+
+If Druid isn't ready yet, you will see this message:
+    ```
+    {
+        "rows": [],
+        "meta": {
+            "missingIntervals": ["2013-08-01 00:00:00.000/2013-08-02 00:00:00.000"]
+        }
+    }
+    ```
+
+If the query is successful, you should see this:
+    ```
+    {
+        "rows": [{
+            "dateTime": "2013-08-01 00:00:00.000",
+            "deleted": -39917308
+        }]
+    }
+    ```
+
+To stop the container, run 
+    ```
+    docker stop
+    ```
+in a different terminal tab. 
+
+Note: the data used with Docker is from a different day than the data used with Druid quickstart. 
+
 ## Importing and Running in IntelliJ
 
 1. In IntelliJ, go to `File -> Open`
