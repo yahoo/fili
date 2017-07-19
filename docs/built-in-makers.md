@@ -69,25 +69,25 @@ query. The inner query adds a constant field with a value of 1 to each result ro
 `longSum` on said constant.</sub>
 
 
-[aggregationAverageMaker]: ../src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/AggregationAverageMaker.java
+[aggregationAverageMaker]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/AggregationAverageMaker.java
 [aggregationAverageMaker-docs]: https://github.com/yahoo/fili/issues/10
-[arithmeticMaker]: ../src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/ArithmeticMaker.java
+[arithmeticMaker]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/ArithmeticMaker.java
 
 [configuring metrics]: configuring-metrics.md
-[constantMaker]: ../src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/ConstantMaker.java
-[countMaker]: ../src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/CountMaker.java
+[constantMaker]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/ConstantMaker.java
+[countMaker]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/CountMaker.java
 
-[doubleMaxMaker]: ../src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/DoubleMaxMaker.java
-[doubleMinMaker]: ../src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/DoubleMinMaker.java
-[doubleSumMaker]: ../src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/DoubleSumMaker.java
+[doubleMaxMaker]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/DoubleMaxMaker.java
+[doubleMinMaker]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/DoubleMinMaker.java
+[doubleSumMaker]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/DoubleSumMaker.java
 [druid aggregations]: http://druid.io/docs/0.8.1/querying/aggregations.html
 [druid post-aggregations]: http://druid.io/docs/0.8.1/querying/post-aggregations.html
 [druid sketch module]: https://github.com/DataSketches/sketches-core
 
-[longMaxMaker]: ../src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/LongMaxMaker.java
-[longMinMaker]: ../src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/LongMinMaker.java
-[longSumMaker]: ../src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/LongSumMaker.java
+[longMaxMaker]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/LongMaxMaker.java
+[longMinMaker]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/LongMinMaker.java
+[longSumMaker]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/LongSumMaker.java
 
-[sketchCountMaker]: ../src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/SketchCountMaker.java
-[sketchSetOperationMaker]: ../src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/SketchSetOperationMaker.java
+[sketchCountMaker]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/SketchCountMaker.java
+[sketchSetOperationMaker]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/SketchSetOperationMaker.java
 [sketch module]: https://github.com/druid-io/druid/pull/1991/files
