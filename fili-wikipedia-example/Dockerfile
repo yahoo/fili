@@ -4,7 +4,7 @@ LABEL maintainer="https://groups.google.com/forum/#!forum/fili-developers"
 # fili github information
 ENV GITHUB_OWNER=yahoo BRANCH=master
 
-RUN apt-get update && apt-get install -y --no-install-recommends git
+RUN apt-get update && apt-get install -y --no-install-recommends git curl
 
 RUN wget -q -O - http://archive.apache.org/dist/maven/maven-3/3.2.5/binaries/apache-maven-3.2.5-bin.tar.gz | tar -xzf - -C /usr/local \
       && ln -s /usr/local/apache-maven-3.2.5 /usr/local/apache-maven \
