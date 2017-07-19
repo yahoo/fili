@@ -64,6 +64,9 @@ Current
 - [Remove dependency on org.json](https://github.com/yahoo/fili/pull/416)
     * Replace uses of org.json with the jackson equivalent
 
+- [Remove NO_INTERVALS from SimplifiedIntervalList](https://github.com/yahoo/fili/pull/290)
+    * This shared instance was vulnerable to being changed globally. All calls to this have been replaced with the empty constructor
+
 
 v0.8.69 - 2017/06/06
 --------------------
