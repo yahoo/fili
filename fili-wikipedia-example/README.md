@@ -72,8 +72,8 @@ Dockerhub. If you would like to experiment with Fili without having to download 
 [install](https://www.docker.com/community-edition) and start Docker. Then run these commands: 
 
     
-    docker pull mpardesh/fili 
-    docker run --name fili-wikipedia-example -i --rm -p 3001:8081 -p 3000:8082 mpardesh/fili:1.0
+    docker pull mpardesh/fili:1.0  
+    docker run --name fili-wikipedia-example -i --rm -p 3001:8081 -p 3000:8082 -p 9998:9998 mpardesh/fili:1.0
     
 
 This will start a container. Please wait a few minutes for Druid to get ready. 
@@ -104,7 +104,7 @@ If the query is successful, you should see this:
     
 To stop the container, run 
 
-    docker stop
+    docker stop fili-wikipedia-example
     
 in a different terminal tab. 
 
