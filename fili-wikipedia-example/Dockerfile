@@ -2,7 +2,7 @@ FROM druidio/example-cluster:latest
 LABEL maintainer="https://groups.google.com/forum/#!forum/fili-developers"
 
 # fili github information
-ENV GITHUB_OWNER=yahoo BRANCH=master
+ENV GITHUB_OWNER=yahoo BRANCH=fili
 
 RUN apt-get update && apt-get install -y --no-install-recommends git
 
@@ -28,4 +28,3 @@ EXPOSE 9998
 
 RUN chmod +x /usr/local/fili/fili-wikipedia-example/entrypoint.sh
 ENTRYPOINT ["/usr/local/fili/fili-wikipedia-example/entrypoint.sh"] 
-
