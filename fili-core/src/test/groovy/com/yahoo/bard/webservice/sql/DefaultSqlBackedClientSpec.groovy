@@ -66,7 +66,7 @@ class DefaultSqlBackedClientSpec extends Specification {
     private static final String TRUE = "TRUE"
     private static final String FALSE = "FALSE"
     private static final String FIRST_COMMENT = "added project"
-    //this is the first result in the database
+    // FIRST_COMMENT is the first result in the database
     private static final String UNIQUE_COMMENT = "took out (then), added quotation marks"
     private static final DruidResponseParser RESPONSE_PARSER = new DruidResponseParser()
 

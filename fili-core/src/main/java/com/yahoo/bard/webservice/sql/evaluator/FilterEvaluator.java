@@ -20,7 +20,6 @@ import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ReflectUtil;
 import org.apache.calcite.util.ReflectiveVisitor;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -31,36 +30,18 @@ import java.util.stream.Collectors;
  */
 public class FilterEvaluator implements ReflectiveVisitor {
     private RelBuilder builder;
-    private final List<String> dimensions;
     private final ReflectUtil.MethodDispatcher<RexNode> dispatcher;
 
     /**
      * Constructor.
      */
     public FilterEvaluator() {
-        dimensions = new ArrayList<>();
         dispatcher = ReflectUtil.createMethodDispatcher(
                 RexNode.class,
                 this,
                 "evaluate",
                 Filter.class
         );
-    }
-
-    /**
-     * Finds all the dimension names used in the filter.
-     *
-     * @param builder  The RelBuilder used to build queries with Calcite.
-     * @param filter  The filter to be evaluated.
-     *
-     * @return a list of all the dimension names.
-     *
-     * @throws UnsupportedOperationException for filters which couldn't be evaluated.
-     */
-    public List<String> getDimensionNames(RelBuilder builder, Filter filter) {
-        // todo could use DataApiRequest instead and simplify this class
-        RexNode rexNode = evaluateFilter(builder, filter);
-        return dimensions.stream().distinct().collect(Collectors.toList());
     }
 
     /**
@@ -79,7 +60,6 @@ public class FilterEvaluator implements ReflectiveVisitor {
         }
 
         this.builder = builder;
-        dimensions.clear();
         return dispatcher.invoke(filter);
     }
 
@@ -107,7 +87,6 @@ public class FilterEvaluator implements ReflectiveVisitor {
     public RexNode evaluate(RegularExpressionFilter regexFilter) {
         // todo test this
         String apiName = regexFilter.getDimension().getApiName();
-        dimensions.add(apiName);
         return builder.call(
                 SqlStdOperatorTable.LIKE,
                 builder.field(apiName),
@@ -124,7 +103,6 @@ public class FilterEvaluator implements ReflectiveVisitor {
      */
     public RexNode evaluate(SelectorFilter selectorFilter) {
         String apiName = selectorFilter.getDimension().getApiName();
-        dimensions.add(apiName);
         return builder.call(
                 SqlStdOperatorTable.EQUALS,
                 builder.field(apiName),
@@ -148,7 +126,6 @@ public class FilterEvaluator implements ReflectiveVisitor {
         SearchFilter.QueryType queryType = SearchFilter.QueryType.fromType(searchType);
 
         String columnName = searchFilter.getDimension().getApiName();
-        dimensions.add(columnName);
         String valueToFind = searchFilter.getQuery().get(valueKey);
 
         switch (queryType) {
@@ -185,7 +162,6 @@ public class FilterEvaluator implements ReflectiveVisitor {
      */
     public RexNode evaluate(InFilter inFilter) {
         Dimension dimension = inFilter.getDimension();
-        dimensions.add(dimension.getApiName());
 
         OrFilter orFilterOfSelectors = new OrFilter(
                 inFilter.getValues()
