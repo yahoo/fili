@@ -8,11 +8,9 @@ import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.having.Having;
 import com.yahoo.bard.webservice.druid.model.orderby.LimitSpec;
 import com.yahoo.bard.webservice.druid.model.orderby.SortDirection;
-import com.yahoo.bard.webservice.druid.model.orderby.TopNMetric;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery;
-import com.yahoo.bard.webservice.druid.model.query.TopNQuery;
 import com.yahoo.bard.webservice.sql.aggregation.DefaultDruidSqlAggregationConverter;
 import com.yahoo.bard.webservice.sql.aggregation.DruidSqlAggregationConverter;
 import com.yahoo.bard.webservice.sql.evaluator.FilterEvaluator;
@@ -21,16 +19,13 @@ import com.yahoo.bard.webservice.sql.helper.CalciteHelper;
 import com.yahoo.bard.webservice.sql.helper.DatabaseHelper;
 import com.yahoo.bard.webservice.sql.helper.DefaultSqlTimeConverter;
 import com.yahoo.bard.webservice.sql.helper.SqlTimeConverter;
-import com.yahoo.bard.webservice.util.IntervalUtils;
 
-import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.rel2sql.RelToSqlConverter;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlSelect;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.pretty.SqlPrettyWriter;
 import org.apache.calcite.tools.RelBuilder;
-import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +47,6 @@ public class DruidQueryToSqlConverter {
     private final CalciteHelper calciteHelper;
     private final SqlTimeConverter sqlTimeConverter;
     private final DruidSqlAggregationConverter druidSqlAggregationConverter;
-    private static final int NONE = -1;
 
     /**
      * Constructs the default converter.
@@ -97,9 +91,8 @@ public class DruidQueryToSqlConverter {
         LOG.debug("Processing {} query\n {}", queryType, druidQuery);
 
         switch (queryType) {
-            case TOP_N:
-            case GROUP_BY:
             case TIMESERIES:
+            case GROUP_BY:
                 return true;
         }
 
@@ -117,7 +110,7 @@ public class DruidQueryToSqlConverter {
      *
      * @throws SQLException if can't connect to database.
      */
-    public List<String> buildSqlQuery(
+    public String buildSqlQuery(
             Connection connection,
             DruidAggregationQuery<?> druidQuery,
             ApiToFieldMapper apiToFieldMapper
@@ -132,67 +125,30 @@ public class DruidQueryToSqlConverter {
         LOG.info("Using timestamp column of '{}' for table {}", timestampColumn, sqlTableName);
 
         RelBuilder builder = calciteHelper.getNewRelBuilder();
-        builder.scan(sqlTableName);
-        RelNode rootRelNode = builder.build();
+        builder.scan(sqlTableName)
+                .filter(
+                        getAllWhereFilters(
+                                builder,
+                                druidQuery,
+                                timestampColumn
+                        )
+                )
+                .aggregate(
+                        builder.groupKey(
+                                getAllGroupByColumns(builder, druidQuery, timestampColumn)
+                        ),
+                        getAllQueryAggregations(builder, druidQuery, apiToFieldMapper)
+                )
+                .filter(
+                        getHavingFilter(builder, druidQuery, apiToFieldMapper)
+                )
+                .sort(
+                        getSort(builder, druidQuery, apiToFieldMapper)
+                );
         RelToSqlConverter relToSql = calciteHelper.getNewRelToSqlConverter();
         SqlPrettyWriter sqlWriter = calciteHelper.getNewSqlWriter();
-        return getIntervals(druidQuery)
-                .map(interval -> {
-                    RelBuilder localBuilder = calciteHelper.getNewRelBuilder();
 
-                    localBuilder.push(rootRelNode)
-                            .filter(
-                                    getAllWhereFilters(
-                                            localBuilder,
-                                            druidQuery,
-                                            timestampColumn,
-                                            interval
-                                    )
-                            )
-                            .aggregate(
-                                    localBuilder.groupKey(
-                                            getAllGroupByColumns(localBuilder, druidQuery, timestampColumn)
-                                    ),
-                                    getAllQueryAggregations(localBuilder, druidQuery, apiToFieldMapper)
-                            )
-                            .filter(
-                                    getHavingFilter(localBuilder, druidQuery, apiToFieldMapper)
-                            )
-                            .sortLimit(
-                                    NONE,
-                                    getThreshold(druidQuery),
-                                    getSort(localBuilder, druidQuery, apiToFieldMapper)
-                            );
-                    return writeSql(sqlWriter, relToSql, localBuilder);
-                })
-                .collect(Collectors.toList());
-
-        // calcite unions aren't working correctly (syntax error)
-        // builder.pushAll(finishedQueries);
-        // builder.union(true, finishedQueries.size());
-
-        // NOTE: does not include missing interval or meta information
-        // this will have to be implemented later if at all since we don't know about partial data
-    }
-
-    /**
-     * Gets a stream of a list of intervals to query over. TopN queries are a stream of single item lists
-     * because the sort/limiting has to be done on each seperately. Other queries are a single item stream of
-     * a list of intervals.
-     *
-     * @param druidQuery  The query to find the intervals from.
-     *
-     * @return the collection of interval groups to query over.
-     */
-    protected static Stream<List<Interval>> getIntervals(DruidAggregationQuery<?> druidQuery) {
-        if (druidQuery.getQueryType().equals(DefaultQueryType.TOP_N)) {
-            return IntervalUtils.getSlicedIntervals(druidQuery.getIntervals(), druidQuery.getGranularity())
-                    .keySet()
-                    .stream()
-                    .map(Collections::singletonList);
-        } else {
-            return Stream.of(druidQuery.getIntervals());
-        }
+        return writeSql(sqlWriter, relToSql, builder);
     }
 
     /**
@@ -211,65 +167,31 @@ public class DruidQueryToSqlConverter {
     ) {
         // druid does NULLS FIRST
         List<RexNode> sorts = new ArrayList<>();
-        if (druidQuery.getQueryType().equals(DefaultQueryType.TOP_N)) {
-            TopNQuery topNQuery = (TopNQuery) druidQuery;
-            Object topNMetricValue = topNQuery.getMetric().getMetric();
+        int groupBys = druidQuery.getDimensions().size() +
+                sqlTimeConverter.getNumberOfGroupByFunctions((TimeGrain) druidQuery.getGranularity());
 
-            if (topNMetricValue instanceof TopNMetric) { //todo this is ugly but we don't have enough information
-                TopNMetric inner = ((TopNMetric) topNMetricValue);
-                String metricName = inner.getMetric().toString();
-                sorts.add(builder.field(aliasMaker.apply(metricName)));
-            } else {
-                String metricName = topNMetricValue.toString();
-                sorts.add(builder.desc(builder.field(aliasMaker.unApply(metricName))));
+        if (druidQuery.getQueryType().equals(DefaultQueryType.GROUP_BY)) {
+            GroupByQuery groupByQuery = (GroupByQuery) druidQuery;
+            LimitSpec limitSpec = groupByQuery.getLimitSpec();
+            if (limitSpec != null) {
+                limitSpec.getColumns()
+                        .stream()
+                        .map(orderByColumn -> {
+                            RexNode sort = builder.field(aliasMaker.unApply(orderByColumn.getDimension()));
+                            if (orderByColumn.getDirection().equals(SortDirection.DESC)) {
+                                sort = builder.desc(sort);
+                            }
+                            return sort;
+                        })
+                        .forEach(sorts::add);
             }
-            sorts.add(builder.field(topNQuery.getDimension().getApiName()));
-        } else {
-
-            int groupBys = druidQuery.getDimensions()
-                    .size() + sqlTimeConverter.getNumberOfGroupByFunctions((TimeGrain) druidQuery.getGranularity());
-            if (druidQuery.getQueryType().equals(DefaultQueryType.GROUP_BY)) {
-                GroupByQuery groupByQuery = (GroupByQuery) druidQuery;
-                LimitSpec limitSpec = groupByQuery.getLimitSpec();
-                if (limitSpec != null) {
-                    limitSpec.getColumns()
-                            .stream()
-                            .map(orderByColumn -> {
-                                RexNode sort = builder.field(aliasMaker.unApply(orderByColumn.getDimension()));
-                                if (orderByColumn.getDirection().equals(SortDirection.DESC)) {
-                                    sort = builder.desc(sort);
-                                }
-                                return sort;
-                            })
-                            .forEach(sorts::add);
-                }
-            }
-            sorts.addAll(builder.fields().subList(druidQuery.getDimensions().size(), groupBys));
-            sorts.addAll(builder.fields().subList(0, druidQuery.getDimensions().size()));
         }
+        sorts.addAll(builder.fields().subList(druidQuery.getDimensions().size(), groupBys));
+        sorts.addAll(builder.fields().subList(0, druidQuery.getDimensions().size()));
 
         return sorts.stream()
                 .map(sort -> builder.call(SqlStdOperatorTable.NULLS_FIRST, sort))
                 .collect(Collectors.toList());
-    }
-
-    /**
-     * Finds the limit/threshold of results to return from the query.
-     *
-     * @param druidQuery  The query to find the threshold for.
-     *
-     * @return the threshold or {@link #NONE}.
-     */
-    protected int getThreshold(DruidAggregationQuery<?> druidQuery) {
-        if (druidQuery.getQueryType().equals(DefaultQueryType.TOP_N)) {
-            return (int) ((TopNQuery) druidQuery).getThreshold();
-        } else if (druidQuery.getQueryType().equals(DefaultQueryType.GROUP_BY)) {
-            LimitSpec limitSpec = ((GroupByQuery) druidQuery).getLimitSpec();
-            if (limitSpec != null && limitSpec.getLimit().isPresent()) {
-                return limitSpec.getLimit().getAsInt();
-            }
-        }
-        return NONE;
     }
 
     /**
@@ -278,17 +200,19 @@ public class DruidQueryToSqlConverter {
      * @param builder  The RelBuilder created with Calcite.
      * @param druidQuery  The query from which to find filter all the filters for.
      * @param timestampColumn  The name of the timestamp column in the database.
-     * @param intervals  The intervals to select events from.
      *
      * @return the combined RexNodes that should be filtered on.
      */
     protected RexNode getAllWhereFilters(
             RelBuilder builder,
             DruidAggregationQuery<?> druidQuery,
-            String timestampColumn,
-            Collection<Interval> intervals
+            String timestampColumn
     ) {
-        RexNode timeFilter = sqlTimeConverter.buildTimeFilters(builder, intervals, timestampColumn);
+        RexNode timeFilter = sqlTimeConverter.buildTimeFilters(
+                builder,
+                druidQuery.getIntervals(),
+                timestampColumn
+        );
 
         if (druidQuery.getFilter() != null) {
             FilterEvaluator filterEvaluator = new FilterEvaluator();
@@ -379,8 +303,9 @@ public class DruidQueryToSqlConverter {
     /**
      * Converts a RelBuilder into a sql string.
      *
-     * @param sqlWriter  The writer to be used when translating the {@link RelNode} to sql.
-     * @param relToSql  The converter from {@link RelNode} to {@link org.apache.calcite.sql.SqlNode}.
+     * @param sqlWriter  The writer to be used when translating the {@link org.apache.calcite.rel.RelNode} to sql.
+     * @param relToSql  The converter from {@link org.apache.calcite.rel.RelNode} to
+     * {@link org.apache.calcite.sql.SqlNode}.
      * @param builder  The RelBuilder created with Calcite.
      *
      * @return the sql string built by the RelBuilder.

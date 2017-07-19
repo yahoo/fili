@@ -111,6 +111,20 @@ class DefaultSqlBackedClientSpec extends Specification {
         );
     }
 
+    private static TimeSeriesQuery getTimeSeriesQueryMultipleIntervals(DefaultTimeGrain timeGrain, Filter filter) {
+        return timeSeriesQuery(
+                WIKITICKER,
+                filter,
+                timeGrain,
+                asList(ADDED, DELETED, DELTA),
+                asList(COMMENT),
+                asList(sum(ADDED), sum(DELETED), sum(DELTA)),
+                asList(),
+                asList(interval("2015-09-12T00:00:00.000Z", "2015-09-12T12:00:00.000Z"), interval("2015-09-12T12:00:00.000Z", "2015-09-13T00:00:00.000Z"))
+        );
+    }
+
+
     private static GroupByQuery getGroupByQuery(
             DefaultTimeGrain timeGrain,
             Filter filter,
@@ -131,36 +145,20 @@ class DefaultSqlBackedClientSpec extends Specification {
         );
     }
 
-    private static TopNQuery getTopNQuery(
-            DefaultTimeGrain timeGrain,
-            Filter filter,
-            String orderMetric,
-            String dimension,
-            int threshold
-    ) {
-        return topNQuery(
-                WIKITICKER,
-                filter,
-                threshold,
-                orderMetric,
-                getDimension(dimension),
-                timeGrain,
-                asList(ADDED),
-                asList(dimension),
-                asList(sum(ADDED)),
-                asList(),
-                asList(interval(START, END))
-        );
-    }
-
     @Unroll
     def "ExecuteQuery for #timeGrain want #size filter on #filter"() {
-        expect:
-        DruidQuery druidQuery = getTimeSeriesQuery(timeGrain, filter)
-        JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery, null, null).get();
-        ResultSet parse = parse(jsonNode, druidQuery)
+        setup:
+        DruidQuery druidQueryMultipleIntervals = getTimeSeriesQuery(timeGrain, filter)
+        JsonNode jsonNodeMultipleIntervals = sqlBackedClient.executeQuery(druidQueryMultipleIntervals, null, null).get();
+        ResultSet parseMultipleIntervals = parse(jsonNodeMultipleIntervals, druidQueryMultipleIntervals)
 
-        parse.size() == size
+        DruidQuery druidQueryOneInterval = getTimeSeriesQuery(timeGrain, filter)
+        JsonNode jsonNodeOneInterval = sqlBackedClient.executeQuery(druidQueryOneInterval, null, null).get();
+        ResultSet parseOneInterval = parse(jsonNodeOneInterval, druidQueryOneInterval)
+
+        expect:
+        parseOneInterval.size() == size
+        parseMultipleIntervals.size() == size
 
         where: "we have"
         timeGrain | filter                                              | size
@@ -239,24 +237,5 @@ class DefaultSqlBackedClientSpec extends Specification {
         HOUR      | asList()                 | null                           | null                            | 24
         DAY       | asList(PAGE, USER)       | null                           | null                            | 36565
         DAY       | asList()                 | null                           | null                            | 1
-    }
-
-    @Unroll
-    def "Test topN on /#timeGrain/#dimension/?metrics=#metric&topN=#threshold"() {
-        setup:
-        DruidQuery druidQuery = getTopNQuery(timeGrain, filter, metric, dimension, threshold)
-        JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery, null, null).get();
-
-        expect:
-        ResultSet parse = parse(jsonNode, druidQuery)
-        parse.size() <= size
-
-        where: "we have"
-        timeGrain | filter | metric | dimension | threshold | size
-        DAY       | null   | ADDED  | PAGE      | 1         | 1
-        DAY       | null   | ADDED  | PAGE      | 10        | 10
-        HOUR      | null   | ADDED  | PAGE      | 1         | 24
-        HOUR      | null   | ADDED  | USER      | 10        | 24 * 10
-        MINUTE    | null   | ADDED  | USER      | 10        | 24 * 60 * 10
     }
 }

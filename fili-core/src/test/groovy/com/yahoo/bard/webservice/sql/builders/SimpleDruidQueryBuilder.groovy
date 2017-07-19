@@ -135,32 +135,6 @@ class SimpleDruidQueryBuilder {
         )
     }
 
-    public static TopNQuery topNQuery(
-            String name,
-            Filter filter,
-            int threshold,
-            String orderByMetric,
-            Dimension groupByDimension,
-            DefaultTimeGrain timeGrain,
-            List<String> metrics,
-            List<String> dimensions,
-            List<Aggregation> aggregations,
-            List<PostAggregation> postAggs,
-            List<Interval> intervals
-    ) {
-        return new TopNQuery(
-                dataSource(name, metrics, dimensions),
-                timeGrain,
-                groupByDimension,
-                filter,
-                aggregations,
-                postAggs,
-                intervals,
-                threshold,
-                new TopNMetric(orderByMetric)
-        )
-    }
-
     public static TableDataSource dataSource(String name, List<String> metrics, List<String> dimensions) {
         return dataSource(name, metrics, dimensions, "", "")
     }

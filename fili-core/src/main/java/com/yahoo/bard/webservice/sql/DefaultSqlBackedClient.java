@@ -20,7 +20,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
@@ -119,8 +118,8 @@ public class DefaultSqlBackedClient implements SqlBackedClient {
         ApiToFieldMapper aliasMaker = new ApiToFieldMapper(druidQuery.getDataSource().getPhysicalTable().getSchema());
 
         try (Connection connection = calciteHelper.getConnection()) {
-            List<String> sqlQueries = druidQueryToSqlConverter.buildSqlQuery(connection, druidQuery, aliasMaker);
-            LOG.info("Executing \n{}", sqlQueries);
+            String sqlQuery = druidQueryToSqlConverter.buildSqlQuery(connection, druidQuery, aliasMaker);
+            LOG.info("Executing \n{}", sqlQuery);
 
             SqlResultSetProcessor resultSetProcessor = new SqlResultSetProcessor(
                     druidQuery,
@@ -128,15 +127,14 @@ public class DefaultSqlBackedClient implements SqlBackedClient {
                     jsonWriter,
                     druidQueryToSqlConverter.getTimeConverter()
             );
-            for (String sqlQuery : sqlQueries) {
-                try (PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
-                     ResultSet resultSet = preparedStatement.executeQuery()) {
-                    resultSetProcessor.addResultSet(resultSet);
 
-                } catch (SQLException e) {
-                    LOG.warn("Failed to read SQL ResultSet for query {}", druidQuery);
-                    throw new RuntimeException("Could not finish query", e);
-                }
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
+                 ResultSet resultSet = preparedStatement.executeQuery()) {
+                resultSetProcessor.addResultSet(resultSet);
+
+            } catch (SQLException e) {
+                LOG.warn("Failed to read SQL ResultSet for query {}", druidQuery);
+                throw new RuntimeException("Could not finish query", e);
             }
 
             JsonNode jsonNode = resultSetProcessor.process();
