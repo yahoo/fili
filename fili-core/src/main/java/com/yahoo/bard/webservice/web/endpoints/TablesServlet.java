@@ -234,7 +234,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                 apiRequest = (TablesApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
-            Map<String, Object> result = getLogicalTableFullView(apiRequest.getTable(), uriInfo);
+            Map<String, Object> result = getLogicalTableFullView(apiRequest, uriInfo);
             String output = objectMappers.getMapper().writeValueAsString(result);
             LOG.debug("Tables Endpoint Response: {}", output);
             RequestLog.stopTiming(this);
@@ -368,7 +368,12 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
      * @param uriInfo  UriInfo of the request
      *
      * @return Full view of the logical table
+     *
+     * @deprecated Inorder to display constrained data availability in table resource, this method needs to accept a
+     * {@link com.yahoo.bard.webservice.web.TablesApiRequest} as a parameter. Use
+     * {@link #getLogicalTableFullView(TablesApiRequest, UriInfo)} instead.
      */
+    @Deprecated
     protected static Map<String, Object> getLogicalTableFullView(LogicalTable logicalTable, UriInfo uriInfo) {
         Map<String, Object> resultRow = new LinkedHashMap<>();
         resultRow.put("category", logicalTable.getCategory());
@@ -395,6 +400,18 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                         .reduce(new SimplifiedIntervalList(), SimplifiedIntervalList::union)
         );
         return resultRow;
+    }
+
+    /**
+     * Get the full view of the logical table.
+     *
+     * @param apiRequest  Logical table to get the view of
+     * @param uriInfo  UriInfo of the request
+     *
+     * @return Full view of the logical table
+     */
+    protected static Map<String, Object> getLogicalTableFullView(TablesApiRequest apiRequest, UriInfo uriInfo) {
+        return getLogicalTableFullView(apiRequest.getTable(), uriInfo);
     }
 
     /**
