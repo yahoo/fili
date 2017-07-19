@@ -42,8 +42,9 @@ import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.TableGroup
 
-import org.json.JSONArray
-import org.json.JSONObject
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ArrayNode
 
 import spock.lang.Specification
 
@@ -54,9 +55,9 @@ class ThetaSketchIntersectionReportingResources extends Specification {
     public DimensionDictionary dimensionDict
     public MetricDictionary metricDict
     public LogicalTable table
-    public JSONObject filterObj
     public PostAggregation fooPostAggregation
     public Filter filter
+    public JsonNode filterObj
     public Set<FilteredAggregation> fooNoBarFilteredAggregationSet
     public Set<FilteredAggregation> fooRegFoosFilteredAggregationSet
     public ThetaSketchSetOperationPostAggregation fooNoBarPostAggregationInterim
@@ -66,8 +67,11 @@ class ThetaSketchIntersectionReportingResources extends Specification {
     public TemplateDruidQuery dayAvgFoosTdq
     public Dimension propertyDim
     public Dimension countryDim
+    public ObjectMapper mapper
 
     ThetaSketchIntersectionReportingResources init() {
+        mapper = new ObjectMapper()
+
         LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>()
         dimensionFields.add(BardDimensionField.ID)
         dimensionFields.add(BardDimensionField.DESC)
@@ -167,9 +171,9 @@ class ThetaSketchIntersectionReportingResources extends Specification {
 
         table = new LogicalTable("NETWORK", DAY, tableGroup, metricDict)
 
-        JSONArray metricJsonObjArray = new JSONArray("[{\"filter\":{\"AND\":\"country|id-in[US,IN],property|id-in[114,125]\"},\"name\":\"foo\"},{\"filter\":{},\"name\":\"pageviews\"}]")
-        JSONObject jsonobject = metricJsonObjArray.getJSONObject(0)
-        filterObj = jsonobject.getJSONObject("filter")
+        ArrayNode metricJsonObjArray = mapper.readTree("[{\"filter\":{\"AND\":\"country|id-in[US,IN],property|id-in[114,125]\"},\"name\":\"foo\"},{\"filter\":{},\"name\":\"pageviews\"}]")
+        JsonNode jsonobject = metricJsonObjArray.get(0)
+        filterObj = jsonobject.get("filter")
 
         fooPostAggregation = foos.make().templateDruidQuery.getPostAggregations().first()
 

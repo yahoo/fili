@@ -25,8 +25,9 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationP
 import com.yahoo.bard.webservice.druid.model.postaggregation.WithFields;
 import com.yahoo.bard.webservice.table.LogicalTable;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,12 +51,12 @@ public class FilteredSketchMetricsHelper implements MetricsFilterSetBuilder {
     private static final String ALPHANUMERIC_REGEX = "[^a-zA-Z0-9]";
 
     @Override
-    public void validateDuplicateMetrics(JSONArray metricsJsonArray) {
+    public void validateDuplicateMetrics(ArrayNode metricsJsonArray) {
         Set<String> metricsList = new HashSet<>();
         List<String> duplicateMetrics = new ArrayList<>();
 
-        for (int i = 0; i < metricsJsonArray.length(); i++) {
-            String metricName = metricsJsonArray.getJSONObject(i).getString("name");
+        for (int i = 0; i < metricsJsonArray.size(); i++) {
+            String metricName = metricsJsonArray.get(i).get("name").asText();
             boolean status = metricsList.add(metricName);
             if (!status) {
                 duplicateMetrics.add(metricName);
@@ -70,7 +71,7 @@ public class FilteredSketchMetricsHelper implements MetricsFilterSetBuilder {
     @Override
     public LogicalMetric getFilteredLogicalMetric(
             LogicalMetric logicalMetric,
-            JSONObject metricFilterObject,
+            JsonNode metricFilterObject,
             DimensionDictionary dimensionDictionary,
             LogicalTable table,
             DataApiRequest apiRequest
@@ -88,7 +89,7 @@ public class FilteredSketchMetricsHelper implements MetricsFilterSetBuilder {
                     apiRequest
             );
 
-            String filterSuffix = "-" + metricFilterObject.get("AND").toString().replaceAll(ALPHANUMERIC_REGEX, "");
+            String filterSuffix = "-" + metricFilterObject.get("AND").asText().replaceAll(ALPHANUMERIC_REGEX, "");
 
             //innerPostAggToOuterAggMap stores the mapping of old postAgg to new postAgg name. In filtering of metrics,
             //the name of postAggs(all postAggs other than CONSTANT type) in the nested query is appended with a filter
@@ -239,7 +240,7 @@ public class FilteredSketchMetricsHelper implements MetricsFilterSetBuilder {
     @Override
     public TemplateDruidQuery updateTemplateDruidQuery(
             TemplateDruidQuery query,
-            JSONObject metricFilterObject,
+            JsonNode metricFilterObject,
             DimensionDictionary dimensionDictionary,
             LogicalTable table,
             DataApiRequest apiRequest
@@ -414,14 +415,14 @@ public class FilteredSketchMetricsHelper implements MetricsFilterSetBuilder {
 
     @Override
     public Set<FilteredAggregation> getFilteredAggregation(
-            JSONObject filter,
+            JsonNode filter,
             Aggregation aggregation,
             DimensionDictionary dimensionDictionary,
             LogicalTable table,
             DataApiRequest apiRequest
     ) throws DimensionRowNotFoundException {
         //Converting json filter string to a plain filter string to prepare the Filter out of it
-        String filterString = filter.get("AND").toString().replace("],", "]],");
+        String filterString = filter.get("AND").asText().replace("],", "]],");
         String[] filterList = filterString.split("],");
         Set<FilteredAggregation> filteredAggregationSet = new HashSet<>();
         Map<String, Filter> filterHashMap = new HashMap<>();

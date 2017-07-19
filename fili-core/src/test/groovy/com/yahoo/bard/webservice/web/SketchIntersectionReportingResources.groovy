@@ -41,8 +41,9 @@ import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.TableGroup
 
-import org.json.JSONArray
-import org.json.JSONObject
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ArrayNode
 
 import spock.lang.Specification
 /**
@@ -56,7 +57,7 @@ class SketchIntersectionReportingResources extends Specification {
     public DimensionDictionary dimensionDict
     public MetricDictionary metricDict
     public LogicalTable table
-    public JSONObject filterObj
+    public JsonNode filterObj
     public PostAggregation fooPostAggregation;
     public Filter filter;
     public Set<FilteredAggregation> fooNoBarFilteredAggregationSet
@@ -68,8 +69,11 @@ class SketchIntersectionReportingResources extends Specification {
     public TemplateDruidQuery dayAvgFoosTdq
     public Dimension propertyDim
     public Dimension countryDim
+    public ObjectMapper mapper
 
     SketchIntersectionReportingResources init() {
+        mapper = new ObjectMapper()
+
         LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>()
         dimensionFields.add(BardDimensionField.ID)
         dimensionFields.add(BardDimensionField.DESC)
@@ -168,9 +172,9 @@ class SketchIntersectionReportingResources extends Specification {
         TableGroup tableGroup = new TableGroup([physicalTable] as LinkedHashSet, metrics, physicalTable.dimensions)
         table = new LogicalTable("NETWORK", DAY, tableGroup, metricDict)
 
-        JSONArray metricJsonObjArray = new JSONArray("[{\"filter\":{\"AND\":\"country|id-in[US,IN],property|id-in[114,125]\"},\"name\":\"foo\"},{\"filter\":{},\"name\":\"pageviews\"}]")
-        JSONObject jsonobject = metricJsonObjArray.getJSONObject(0)
-        filterObj = jsonobject.getJSONObject("filter")
+        ArrayNode metricJsonObjArray = mapper.readTree("[{\"filter\":{\"AND\":\"country|id-in[US,IN],property|id-in[114,125]\"},\"name\":\"foo\"},{\"filter\":{},\"name\":\"pageviews\"}]")
+        JsonNode jsonobject = metricJsonObjArray.get(0)
+        filterObj = jsonobject.get("filter")
 
         fooPostAggregation = foos.make().templateDruidQuery.getPostAggregations().first()
 

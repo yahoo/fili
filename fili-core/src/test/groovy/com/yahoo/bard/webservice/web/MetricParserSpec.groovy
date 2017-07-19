@@ -2,26 +2,29 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web
 
-import org.json.JSONArray
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
+
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ArrayNode
 
 import spock.lang.Specification
 import spock.lang.Unroll
 
 class MetricParserSpec extends Specification {
-
-    JSONArray expectedJsonObj1
-    JSONArray expectedJsonObj2
-    JSONArray expectedJsonObj3
+    ObjectMapper mapper = new ObjectMappersSuite().mapper
+    ArrayNode expectedJsonObj1
+    ArrayNode expectedJsonObj2
+    ArrayNode expectedJsonObj3
 
     def setup() {
-        expectedJsonObj1 = new JSONArray("[{\"filter\":{\"AND\":\"app3|id-in[mobile,tablet],app2|id-in[abc,xyz]\"},\"name\":\"foo\"},{\"filter\":{},\"name\":\"pageviews\"}]")
-        expectedJsonObj2 = new JSONArray("[{\"name\":\"pageviews\",\"filter\":{}},{\"name\":\"foo\",\"filter\":{}}]")
-        expectedJsonObj3 = new JSONArray("[{\"filter\":{\"AND\":\"app3|id-in[mobile,tablet],app2|id-in[abc,xyz]\"},\"name\":\"foo\"},{\"filter\":{\"AND\":\"app3|id-in[mobile,tablet],app2|id-in[abc,xyz]\"},\"name\":\"xcookie\"}]")
+        expectedJsonObj1 = mapper.readTree("[{\"filter\":{\"AND\":\"app3|id-in[mobile,tablet],app2|id-in[abc,xyz]\"},\"name\":\"foo\"},{\"filter\":{},\"name\":\"pageviews\"}]");
+        expectedJsonObj2 = mapper.readTree("[{\"name\":\"pageviews\",\"filter\":{}},{\"name\":\"foo\",\"filter\":{}}]")
+        expectedJsonObj3 = mapper.readTree("[{\"filter\":{\"AND\":\"app3|id-in[mobile,tablet],app2|id-in[abc,xyz]\"},\"name\":\"foo\"},{\"filter\":{\"AND\":\"app3|id-in[mobile,tablet],app2|id-in[abc,xyz]\"},\"name\":\"xcookie\"}]")
     }
 
     def "Test for wrong format of the metric filter with misaligned brackets"() {
         when:
-        MetricParser.generateMetricFilterJsonArray("foo(AND(app3|id-in[mobile,tablet]app2|id-in[abc,xyz])").similar(expectedJsonObj1)
+        MetricParser.generateMetricFilterJsonArray("foo(AND(app3|id-in[mobile,tablet]app2|id-in[abc,xyz])").equals(expectedJsonObj1)
 
         then:
         String expectedMessage = "Metrics parameter values are invalid. The string is: foo(AND(app3|id-in[mobile,tablet]app2|id-in[abc,xyz])"
@@ -31,17 +34,17 @@ class MetricParserSpec extends Specification {
 
     def "Validate the json Array Object when metric string is a combination of filtered and non-filtered metrics"() {
         expect:
-        MetricParser.generateMetricFilterJsonArray("foo(AND(app3|id-in[mobile,tablet],app2|id-in[abc,xyz])),pageviews").similar(expectedJsonObj1)
+        MetricParser.generateMetricFilterJsonArray("foo(AND(app3|id-in[mobile,tablet],app2|id-in[abc,xyz])),pageviews").equals(expectedJsonObj1)
     }
 
     def "Validate the json Array Object when metric string contains only non-filtered metrics"() {
         expect:
-        MetricParser.generateMetricFilterJsonArray("pageviews,foo").similar(expectedJsonObj2)
+        MetricParser.generateMetricFilterJsonArray("pageviews,foo").equals(expectedJsonObj2)
     }
 
     def "Validate the json Array Object when metric string contains only filtered metrics"() {
         expect:
-        MetricParser.generateMetricFilterJsonArray("foo(AND(app3|id-in[mobile,tablet],app2|id-in[abc,xyz])),xcookie(AND(app3|id-in[mobile,tablet],app2|id-in[abc,xyz]))").similar(expectedJsonObj3)
+        MetricParser.generateMetricFilterJsonArray("foo(AND(app3|id-in[mobile,tablet],app2|id-in[abc,xyz])),xcookie(AND(app3|id-in[mobile,tablet],app2|id-in[abc,xyz]))").equals(expectedJsonObj3)
     }
 
     def "Test for isBracketsBalanced validation"() {
@@ -55,7 +58,7 @@ class MetricParserSpec extends Specification {
     @Unroll
     def "Create map using encodeMetricFilters, filter #filter returns values #filteredMetrics"() {
         setup:
-        Map<String,String> metricMap = [:]
+        Map<String, String> metricMap = [:]
         MetricParser.encodeMetricFilters(filter, metricMap)
 
         expect:
