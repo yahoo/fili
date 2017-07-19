@@ -3,7 +3,6 @@
 package com.yahoo.bard.webservice.web
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
-import static com.yahoo.bard.webservice.util.SimplifiedIntervalList.NO_INTERVALS
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.data.Result
@@ -114,7 +113,7 @@ class UIJsonResponseSpec extends Specification {
                 apiMetricColumnNames,
                 defaultDimensionFieldsToShow,
                 ResponseFormatType.JSON,
-                NO_INTERVALS,
+                new SimplifiedIntervalList(),
                 volatileIntervals,
                 [:],
                 (Pagination) null,
@@ -175,7 +174,7 @@ class UIJsonResponseSpec extends Specification {
                 apiMetricColumnNames,
                 defaultDimensionFieldsToShow,
                 ResponseFormatType.JSON,
-                NO_INTERVALS,
+                new SimplifiedIntervalList(),
                 volatileIntervals,
                 [:],
                 (Pagination) null,
