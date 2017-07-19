@@ -61,6 +61,8 @@ Current
 
 ### Removed:
 
+- [Remove dependency on org.json](https://github.com/yahoo/fili/pull/416)
+    * Replace uses of org.json with the jackson equivalent
 
 
 v0.8.69 - 2017/06/06

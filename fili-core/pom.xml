@@ -133,11 +133,6 @@
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-csv</artifactId>
         </dependency>
-        <dependency>
-            <!--TODO: switch back to jackson parser-->
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-        </dependency>
 
         <!-- Redis -->
         <dependency>

@@ -14,8 +14,8 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationPostAggFunction;
 import com.yahoo.bard.webservice.table.LogicalTable;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 
 import java.util.Collection;
 import java.util.List;
@@ -38,7 +38,7 @@ public interface MetricsFilterSetBuilder {
      * @throws  BadApiRequestException Invalid metric query if the metric query has
      * duplicate metrics
      */
-    void validateDuplicateMetrics(JSONArray metricsJsonArray) throws BadApiRequestException;
+    void validateDuplicateMetrics(ArrayNode metricsJsonArray) throws BadApiRequestException;
 
     /**
      * Provides filter wrapped logical metric for the given logical metric.
@@ -56,7 +56,7 @@ public interface MetricsFilterSetBuilder {
      */
     LogicalMetric getFilteredLogicalMetric(
             LogicalMetric logicalMetric,
-            JSONObject metricFilterObject,
+            JsonNode metricFilterObject,
             DimensionDictionary dimensionDictionary,
             LogicalTable table,
             DataApiRequest apiRequest
@@ -125,7 +125,7 @@ public interface MetricsFilterSetBuilder {
      */
     TemplateDruidQuery updateTemplateDruidQuery(
             TemplateDruidQuery query,
-            JSONObject metricFilterObject,
+            JsonNode metricFilterObject,
             DimensionDictionary dimensionDictionary,
             LogicalTable table,
             DataApiRequest apiRequest
@@ -177,7 +177,7 @@ public interface MetricsFilterSetBuilder {
      * filter is not found.
      */
     Set<FilteredAggregation> getFilteredAggregation(
-            JSONObject filter,
+            JsonNode filter,
             Aggregation aggregation,
             DimensionDictionary dimensionDictionary,
             LogicalTable table,

@@ -57,15 +57,15 @@ import com.yahoo.bard.webservice.util.StreamUtils;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
 import org.joda.time.Interval;
 import org.joda.time.Period;
 import org.joda.time.format.DateTimeFormatter;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -802,7 +802,7 @@ public class DataApiRequest extends ApiRequest {
             //If INTERSECTION_REPORTING_ENABLED flag is true, convert the aggregators into FilteredAggregators and
             //replace old PostAggs with  new postAggs in order to generate a new Filtered Logical Metric
             if (BardFeatureFlag.INTERSECTION_REPORTING.isOn()) {
-                JSONArray metricsJsonArray;
+                ArrayNode metricsJsonArray;
                 try {
                     //For a given metricString, returns an array of json objects contains metric name and associated
                     // filters
@@ -811,22 +811,18 @@ public class DataApiRequest extends ApiRequest {
                 } catch (IllegalArgumentException e) {
                     LOG.debug(INCORRECT_METRIC_FILTER_FORMAT.logFormat(e.getMessage()));
                     throw new BadApiRequestException(INCORRECT_METRIC_FILTER_FORMAT.format(apiMetricQuery));
-                } catch (JSONException e) {
-                    // This needs to stay here due to a bytecode issue where Java 8 flags JSONException as invalid
-                    LOG.debug(INCORRECT_METRIC_FILTER_FORMAT.logFormat(e.getMessage()));
-                    throw new BadApiRequestException(INCORRECT_METRIC_FILTER_FORMAT.format(apiMetricQuery));
                 }
                 //check for the duplicate occurrence of metrics in an API
                 FieldConverterSupplier.metricsFilterSetBuilder.validateDuplicateMetrics(metricsJsonArray);
-                for (int i = 0; i < metricsJsonArray.length(); i++) {
-                    JSONObject jsonObject;
+                for (int i = 0; i < metricsJsonArray.size(); i++) {
+                    JsonNode jsonObject;
                     try {
-                        jsonObject = metricsJsonArray.getJSONObject(i);
-                    } catch (JSONException e) {
+                        jsonObject = metricsJsonArray.get(i);
+                    } catch (IndexOutOfBoundsException e) {
                         LOG.debug(INCORRECT_METRIC_FILTER_FORMAT.logFormat(e.getMessage()));
                         throw new BadApiRequestException(INCORRECT_METRIC_FILTER_FORMAT.format(apiMetricQuery));
                     }
-                    String metricName = jsonObject.getString("name");
+                    String metricName = jsonObject.get("name").asText();
                     LogicalMetric logicalMetric = metricDictionary.get(metricName);
 
                     // If metric dictionary returns a null, it means the requested metric is not found.
@@ -834,10 +830,10 @@ public class DataApiRequest extends ApiRequest {
                         invalidMetricNames.add(metricName);
                     } else {
                         //metricFilterObject contains all the filters for a given metric
-                        JSONObject metricFilterObject = jsonObject.getJSONObject("filter");
+                        JsonNode metricFilterObject = jsonObject.get("filter");
 
                         //Currently supporting AND operation for metric filters.
-                        if (!metricFilterObject.isNull("AND")) {
+                        if (metricFilterObject.has("AND") && !metricFilterObject.get("AND").isNull()) {
 
                             //We currently do not support ratio metrics
                             if (logicalMetric.getCategory().equals(RATIO_METRIC_CATEGORY)) {
@@ -868,10 +864,10 @@ public class DataApiRequest extends ApiRequest {
                             }
 
                             //If metric filter isn't empty or it has anything other then 'AND' then throw an exception
-                        } else if (!(metricFilterObject.toString().equals("{}"))) {
-                            LOG.debug(INVALID_METRIC_FILTER_CONDITION.logFormat(metricFilterObject.keySet()));
+                        } else if (!metricFilterObject.asText().isEmpty()) {
+                            LOG.debug(INVALID_METRIC_FILTER_CONDITION.logFormat(metricFilterObject.asText()));
                             throw new BadApiRequestException(
-                                    INVALID_METRIC_FILTER_CONDITION.format(metricFilterObject.keySet())
+                                    INVALID_METRIC_FILTER_CONDITION.format(metricFilterObject.asText())
                             );
                         }
                         generated.add(logicalMetric);
