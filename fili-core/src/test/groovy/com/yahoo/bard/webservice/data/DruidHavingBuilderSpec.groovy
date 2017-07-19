@@ -66,6 +66,23 @@ public class DruidHavingBuilderSpec extends Specification {
                                                     ]
                                                   }
                                                 }"""
+        resources.m3 | "metric3-bet[0,5]" | """{
+                                                  "type": "and",
+                                                  "havingSpecs": [
+                                                    { "aggregation": "metric3", "type": "greaterThan", "value": 0 },
+                                                    { "aggregation": "metric3", "type": "lessThan", "value": 5 }                                                                                                                                                        
+                                                  ]
+                                                }"""
+        resources.m3 | "metric3-nbet[10,50]" | """{
+                                                  "type": "not",
+                                                  "havingSpec": {
+                                                    "type": "and",
+                                                    "havingSpecs": [
+                                                      { "aggregation": "metric3", "type": "greaterThan", "value": 10 },
+                                                      { "aggregation": "metric3", "type": "lessThan", "value": 50 }                                                                                                                                                        
+                                                    ]
+                                                  }  
+                                                }"""
     }
 
     def "Test build multi-metric havings"() {

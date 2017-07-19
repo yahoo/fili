@@ -14,6 +14,7 @@ import com.yahoo.bard.webservice.web.HavingOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,8 +29,7 @@ public class DruidHavingBuilder {
     /**
      * Build a having model that ANDs together having queries for each of the metrics.
      *
-     * @param metricMap  A map of logical metric to the set of havings for that metric
-     *
+     * @param metricMap A map of logical metric to the set of havings for that metric
      * @return The having clause to appear in the Druid query. Returns null if the metricMap is empty or null.
      */
     public static Having buildHavings(Map<LogicalMetric, Set<ApiHaving>> metricMap) {
@@ -51,8 +51,7 @@ public class DruidHavingBuilder {
      * Build a Having for all the having queries for a single metric, ANDing them together.
      *
      * @param metric  Metric for the having query
-     * @param havings  All having queries belonging to that metric
-     *
+     * @param havings All having queries belonging to that metric
      * @return A druid query having object representing the having clause on a given metric
      */
     public static Having buildMetricHaving(LogicalMetric metric, Set<ApiHaving> havings) {
@@ -68,15 +67,34 @@ public class DruidHavingBuilder {
     /**
      * Create a list of NumericHavings for the values specified and OR them together.
      *
-     * @param metric  The metric that the operation applied to.
-     * @param having  The ApiHaving object
-     *
+     * @param metric The metric that the operation applied to.
+     * @param having The ApiHaving object
      * @return A single having representing the API Filter
      */
     public static Having buildHaving(LogicalMetric metric, ApiHaving having) {
         LOG.trace("Building having using metric: {} and API Having: {}", metric, having);
 
         HavingOperation operation = having.getOperation();
+
+        Set<Double> values = having.getValues();
+        if (operation.equals(HavingOperation.between)) {
+            double firstValue = values.stream().min(Double::compareTo).get();
+            double secondValue = values.stream().max(Double::compareTo).get();
+            List<Having> havings = new ArrayList<>();
+            havings.add(new NumericHaving(Having.DefaultHavingType.GREATER_THAN, metric.getName(), firstValue));
+            havings.add(new NumericHaving(Having.DefaultHavingType.LESS_THAN, metric.getName(), secondValue));
+            return new AndHaving(havings);
+        }
+        else if (operation.equals(HavingOperation.notBetween)) {
+            double firstValue = values.stream().min(Double::compareTo).get();
+            double secondValue = values.stream().max(Double::compareTo).get();
+            List<Having> havings = new ArrayList<>();
+            havings.add(new NumericHaving(Having.DefaultHavingType.GREATER_THAN, metric.getName(), firstValue));
+            havings.add(new NumericHaving(Having.DefaultHavingType.LESS_THAN, metric.getName(), secondValue));
+            AndHaving andHaving = new AndHaving(havings);
+            return new NotHaving(andHaving);
+        }
+
         List<Having> havings = having.getValues().stream()
                 .map(value -> new NumericHaving(operation.getType(), metric.getName(), value))
                 .collect(Collectors.toList());
