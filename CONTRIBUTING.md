@@ -24,7 +24,7 @@ Once you have Maven installed, to build and run the tests:
 ```bash
 $ git clone git@github.com:yahoo/fili.git
 $ cd fili/
-$ mvn test
+$ mvn clean test
 ```
 
 ### Testing & Code Style
