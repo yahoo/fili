@@ -26,7 +26,6 @@ RUN mvn -U -B install -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.sk
 
 EXPOSE 9998
 
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"] 
+RUN chmod +x /usr/local/fili/fili-wikipedia-example/entrypoint.sh
+ENTRYPOINT ["/usr/local/fili/fili-wikipedia-example/entrypoint.sh"] 
 
