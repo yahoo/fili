@@ -84,10 +84,10 @@ public class DruidHavingBuilder {
         List<Having> havings = new ArrayList<>();
         AndHaving andHaving = null;
         if (operation.equals(HavingOperation.between) || operation.equals(HavingOperation.notBetween)) {
-            final int SIZE = 2;
-            if (values.size() != SIZE) {
+            final int parameterSIZE = 2;
+            if (values.size() != parameterSIZE) {
                 throw new UnsupportedOperationException(HAVING_CUSTOM_OPERATOR_TOO_FEW_PARAMETERS.format
-                        (operation.name(), operation.name(), SIZE));
+                        (operation.name(), operation.name(), parameterSIZE));
             }
             else {
                 double firstValue = values.get(0);
