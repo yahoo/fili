@@ -38,7 +38,7 @@ class ApiHavingSpec extends Specification {
         then:
         having.metric?.name == metric
         having.operation == HavingOperation.fromString(op)
-        having.values == expected as Set
+        having.values == expected as List
 
         where:
         metric    | op               | values                | expected
