@@ -217,7 +217,7 @@ public class TestBinderFactory extends AbstractBinderFactory {
     }
 
     @Override
-    protected DruidWebService buildUiDruidWebService(ObjectMapper mapper) {
+    protected DruidWebService buildDruidWebService(ObjectMapper mapper) {
         return state.uiWebService;
     }
 

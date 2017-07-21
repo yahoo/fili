@@ -31,6 +31,10 @@ public class DruidClientConfigHelper {
     private static final String NON_UI_DRUID_PRIORITY_KEY =
             SYSTEM_CONFIG.getPackageVariableName("non_ui_druid_priority");
 
+
+    private static final String DRUID_PRIORITY_KEY =
+            SYSTEM_CONFIG.getPackageVariableName("druid_priority");
+
     /**
      * The url for the broker vip which serves low latency queries.
      */
@@ -42,6 +46,9 @@ public class DruidClientConfigHelper {
      */
     private static final String NON_UI_DRUID_BROKER_URL_KEY =
             SYSTEM_CONFIG.getPackageVariableName("non_ui_druid_broker");
+
+    private static final String DRUID_BROKER_URL_KEY =
+            SYSTEM_CONFIG.getPackageVariableName("druid_broker");
 
     /**
      * The url for the coordinator vip which serves low latency queries.
@@ -61,6 +68,9 @@ public class DruidClientConfigHelper {
     private static final String NON_UI_DRUID_REQUEST_TIMEOUT_KEY =
             SYSTEM_CONFIG.getPackageVariableName("non_ui_druid_request_timeout");
 
+    private static final String DRUID_REQUEST_TIMEOUT_KEY =
+            SYSTEM_CONFIG.getPackageVariableName("druid_request_timeout");
+
     /**
      * The default timeout for queries.
      */
@@ -74,7 +84,7 @@ public class DruidClientConfigHelper {
     public static Integer getDruidUiPriority() {
         String priority = SYSTEM_CONFIG.getStringProperty(UI_DRUID_PRIORITY_KEY, null);
         if (priority == null || "".equals(priority)) {
-            return null;
+            return getDruidNonUiPriority();
         }
         return Integer.parseInt(priority);
     }
@@ -87,7 +97,15 @@ public class DruidClientConfigHelper {
     public static Integer getDruidNonUiPriority() {
         String priority = SYSTEM_CONFIG.getStringProperty(NON_UI_DRUID_PRIORITY_KEY, null);
         if (priority == null || "".equals(priority)) {
-            return null;
+            return getDruidPriority();
+        }
+        return Integer.parseInt(priority);
+    }
+
+    public static Integer getDruidPriority() {
+        String priority = SYSTEM_CONFIG.getStringProperty(DRUID_PRIORITY_KEY, null);
+        if (priority == null || "".equals(priority)) {
+            return getDruidUiPriority();
         }
         return Integer.parseInt(priority);
     }
@@ -98,7 +116,12 @@ public class DruidClientConfigHelper {
      * @return druid UI URL
      */
     public static String getDruidUiUrl() {
-        return SYSTEM_CONFIG.getStringProperty(UI_DRUID_BROKER_URL_KEY, null);
+        String url =  SYSTEM_CONFIG.getStringProperty(UI_DRUID_BROKER_URL_KEY, null);
+        if (url == null) {
+            LOG.warn("ui_druid_broker not set, using non_ui_druid_broker instead");
+            return getDruidNonUiUrl();
+        }
+        return url;
     }
 
     /**
@@ -107,7 +130,26 @@ public class DruidClientConfigHelper {
      * @return druid non-UI URL
      */
     public static String getDruidNonUiUrl() {
-        return SYSTEM_CONFIG.getStringProperty(NON_UI_DRUID_BROKER_URL_KEY, null);
+        String url = SYSTEM_CONFIG.getStringProperty(NON_UI_DRUID_BROKER_URL_KEY, null);
+        if (url == null) {
+            LOG.warn("non_ui_druid_broker not set, using druid_broker instead");
+            return getDruidUrl();
+        }
+        return url;
+    }
+
+    /**
+     * Fetches the druid URL.
+     *
+     * @return druid URL
+     */
+    public static String getDruidUrl() {
+        String url = SYSTEM_CONFIG.getStringProperty(DRUID_BROKER_URL_KEY, null);
+        if (url == null) {
+            LOG.warn("druid_broker not set, using ui_druid_broker instead");
+            return getDruidUiUrl();
+        }
+        return url;
     }
 
     /**
@@ -125,7 +167,11 @@ public class DruidClientConfigHelper {
      * @return druid UI request timeout
      */
     public static Integer getDruidUiTimeout() {
-        return fetchDruidResponseTimeOut(UI_DRUID_REQUEST_TIMEOUT_KEY);
+        Integer time = fetchDruidResponseTimeOut(UI_DRUID_REQUEST_TIMEOUT_KEY);
+        if (time == null) {
+            return fetchDruidResponseTimeOut(NON_UI_DRUID_BROKER_URL_KEY);
+        }
+        return time;
     }
 
     /**
@@ -134,7 +180,24 @@ public class DruidClientConfigHelper {
      * @return druid non-UI request timeout
      */
     public static Integer getDruidNonUiTimeout() {
-        return fetchDruidResponseTimeOut(NON_UI_DRUID_REQUEST_TIMEOUT_KEY);
+        Integer time = fetchDruidResponseTimeOut(NON_UI_DRUID_REQUEST_TIMEOUT_KEY);
+        if (time == null) {
+            return fetchDruidResponseTimeOut(DRUID_REQUEST_TIMEOUT_KEY);
+        }
+        return time;
+    }
+
+    /**
+     * Fetches the druid non-UI request timeout.
+     *
+     * @return druid non-UI request timeout
+     */
+    public static Integer getDruidTimeout() {
+        Integer time = fetchDruidResponseTimeOut(DRUID_REQUEST_TIMEOUT_KEY);
+        if (time == null) {
+            return fetchDruidResponseTimeOut(UI_DRUID_REQUEST_TIMEOUT_KEY);
+        }
+        return time;
     }
 
     /**
@@ -153,6 +216,10 @@ public class DruidClientConfigHelper {
      */
     public static DruidServiceConfig getNonUiServiceConfig() {
         return new DruidServiceConfig("Broker", getDruidNonUiUrl(), getDruidNonUiTimeout(), getDruidNonUiPriority());
+    }
+
+    public static DruidServiceConfig getServiceConfig() {
+        return new DruidServiceConfig("Broker", getDruidUrl(), getDruidTimeout(), getDruidPriority());
     }
 
     /**

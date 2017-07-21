@@ -24,25 +24,19 @@ public class WebServiceSelectorRequestHandler extends BaseDataRequestHandler {
     /**
      * Constructor.
      *
-     * @param uiWebService  UI Web Service
-     * @param nonUiWebService  Non-UI Web Service
-     * @param uiWebserviceNext  Handler for the UI path
-     * @param nonUiWebserviceNext  Handler for the non-UI path
+     * @param webService  UI Web Service
+     * @param webserviceNext  Handler for the UI path
      * @param mapper  Mapper to use when processing JSON
      */
     public WebServiceSelectorRequestHandler(
-            DruidWebService uiWebService,
-            DruidWebService nonUiWebService,
-            DataRequestHandler uiWebserviceNext,
-            DataRequestHandler nonUiWebserviceNext,
+            DruidWebService webService,
+            DataRequestHandler webserviceNext,
             ObjectMapper mapper
     ) {
         this(
                 new DefaultWebServiceHandlerSelector(
-                        uiWebService,
-                        nonUiWebService,
-                        uiWebserviceNext,
-                        nonUiWebserviceNext
+                        webService,
+                        webserviceNext
                 ),
                 mapper
         );

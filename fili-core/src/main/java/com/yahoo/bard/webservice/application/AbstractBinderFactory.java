@@ -218,13 +218,9 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 bind(FeatureFlagRegistry.class).to(FeatureFlagRegistry.class);
 
                 // Bard currently expects there to be one web service optimized for low latency queries
-                DruidWebService uiDruidWebService = buildUiDruidWebService(getMappers().getMapper());
+                DruidWebService druidWebService = buildDruidWebService(getMappers().getMapper());
 
-                // As well as one for open ended, potentially long running queries
-                DruidWebService nonUiDruidWebService = buildNonUiDruidWebService(getMappers().getMapper());
-
-                bind(uiDruidWebService).named("uiDruidWebService").to(DruidWebService.class);
-                bind(nonUiDruidWebService).named("nonUiDruidWebService").to(DruidWebService.class);
+                bind(druidWebService).named("druidWebService").to(DruidWebService.class);
 
                 // A separate web service for metadata
                 DruidWebService metadataDruidWebService = null;
@@ -318,8 +314,8 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 bind(buildResponseWriter(getMappers())).to(ResponseWriter.class);
 
                 if (DRUID_DIMENSIONS_LOADER.isOn()) {
-                    DimensionValueLoadTask dimensionLoader = buildDruidDimensionsLoader(
-                            nonUiDruidWebService,
+                    DruidDimensionsLoader druidDimensionsLoader = buildDruidDimensionsLoader(
+                            druidWebService,
                             loader.getPhysicalTableDictionary(),
                             loader.getDimensionDictionary()
                     );
@@ -1081,8 +1077,8 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      *
      * @return A DruidWebService
      */
-    protected DruidWebService buildUiDruidWebService(ObjectMapper mapper) {
-        return buildDruidWebService(DruidClientConfigHelper.getUiServiceConfig(), mapper);
+    protected DruidWebService buildDruidWebService(ObjectMapper mapper) {
+        return buildDruidWebService(DruidClientConfigHelper.getServiceConfig(), mapper);
     }
 
     /**
