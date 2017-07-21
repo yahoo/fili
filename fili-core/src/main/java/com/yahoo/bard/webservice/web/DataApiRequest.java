@@ -2,23 +2,13 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web;
 
-import static com.yahoo.bard.webservice.util.DateTimeFormatterFactory.FULLY_OPTIONAL_DATETIME_FORMATTER;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DATE_TIME_SORT_VALUE_INVALID;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSIONS_NOT_IN_TABLE;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSIONS_UNDEFINED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSION_FIELDS_UNDEFINED;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_DIMENSION_NOT_IN_TABLE;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.HAVING_METRICS_NOT_IN_QUERY_FORMAT;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INCORRECT_METRIC_FILTER_FORMAT;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTEGER_INVALID;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTERVAL_INVALID;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTERVAL_MISSING;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTERVAL_ZERO_LENGTH;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_INTERVAL_GRANULARITY;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_METRIC_FILTER_CONDITION;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_TIME_ZONE;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_MISSING;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_NOT_IN_TABLE;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_UNDEFINED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.NON_AGGREGATABLE_INVALID;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_DIRECTION_INVALID;
@@ -26,7 +16,6 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_METRICS_NOT_
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_METRICS_NOT_SORTABLE_FORMAT;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_METRICS_UNDEFINED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_UNDEFINED;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TIME_ALIGNMENT;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TOP_N_UNSORTED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.UNSUPPORTED_FILTERED_METRIC_CATEGORY;
 
@@ -46,7 +35,6 @@ import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.having.Having;
 import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn;
 import com.yahoo.bard.webservice.druid.model.orderby.SortDirection;
-import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier;
 import com.yahoo.bard.webservice.logging.RequestLog;
@@ -62,9 +50,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.joda.time.Duration;
 import org.joda.time.Interval;
-import org.joda.time.Period;
 import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,7 +58,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -228,7 +213,6 @@ public class DataApiRequest extends ApiRequest {
         this.filters = generateFilters(filters, table, dimensionDictionary);
         validateRequestDimensions(this.filters.keySet(), this.table);
 
-
         // Zero or more having queries may be referenced
         this.havings = generateHavings(havings, this.logicalMetrics,  metricDictionary);
 
@@ -373,39 +357,6 @@ public class DataApiRequest extends ApiRequest {
     }
 
     /**
-     * Get the timezone for the request.
-     *
-     * @param timeZoneId  String of the TimeZone ID
-     * @param systemTimeZone  TimeZone of the system to use if there is no timeZoneId
-     *
-     * @return the request's TimeZone
-     */
-    private DateTimeZone generateTimeZone(String timeZoneId, DateTimeZone systemTimeZone) {
-        try (TimedPhase timer = RequestLog.startTiming("generatingTimeZone")) {
-            if (timeZoneId == null) {
-                return systemTimeZone;
-            }
-            try {
-                return DateTimeZone.forID(timeZoneId);
-            } catch (IllegalArgumentException ignored) {
-                LOG.debug(INVALID_TIME_ZONE.logFormat(timeZoneId));
-                throw new BadApiRequestException(INVALID_TIME_ZONE.format(timeZoneId));
-            }
-        }
-    }
-
-    /**
-     * Get the DateTimeFormatter shifted to the given time zone.
-     *
-     * @param timeZone  TimeZone to shift the default formatter to
-     *
-     * @return the timezone-shifted formatter
-     */
-    public DateTimeFormatter generateDateTimeFormatter(DateTimeZone timeZone) {
-        return FULLY_OPTIONAL_DATETIME_FORMATTER.withZone(timeZone);
-    }
-
-    /**
      * No argument constructor, meant to be used only for testing.
      */
     @ForTesting
@@ -489,105 +440,6 @@ public class DataApiRequest extends ApiRequest {
         this.timeZone = timeZone;
         this.filterBuilder = filterBuilder;
         this.dateTimeSort = dateTimeSort;
-    }
-
-    /**
-     * Get datetime from the given input text based on granularity.
-     *
-     * @param now  current datetime to compute the floored date based on granularity
-     * @param granularity  granularity to truncate the given date to.
-     * @param dateText  start/end date text which could be actual date or macros
-     * @param timeFormatter  a time zone adjusted date time formatter
-     *
-     * @return joda datetime of the given start/end date text or macros
-     *
-     * @throws BadApiRequestException if the granularity is "all" and a macro is used
-     */
-    public static DateTime getAsDateTime(
-            DateTime now,
-            Granularity granularity,
-            String dateText,
-            DateTimeFormatter timeFormatter
-    ) throws BadApiRequestException {
-        //If granularity is all and dateText is macro, then throw an exception
-        TimeMacros macro = TimeMacros.forName(dateText);
-        if (macro != null) {
-            if (granularity instanceof AllGranularity) {
-                LOG.debug(INVALID_INTERVAL_GRANULARITY.logFormat(macro, dateText));
-                throw new BadApiRequestException(INVALID_INTERVAL_GRANULARITY.format(macro, dateText));
-            }
-            return macro.getDateTime(now, (TimeGrain) granularity);
-        }
-        return DateTime.parse(dateText, timeFormatter);
-    }
-
-    /**
-     * Throw an exception if any of the intervals are not accepted by this granularity.
-     *
-     * @param granularity  The granularity whose alignment is being tested.
-     * @param intervals  The intervals being tested.
-     *
-     * @throws BadApiRequestException if the granularity does not align to the intervals
-     */
-    private static void validateTimeAlignment(
-            Granularity granularity,
-            Set<Interval> intervals
-    ) throws BadApiRequestException {
-        if (! granularity.accepts(intervals)) {
-            String alignmentDescription = granularity.getAlignmentDescription();
-            LOG.debug(TIME_ALIGNMENT.logFormat(intervals, granularity, alignmentDescription));
-            throw new BadApiRequestException(TIME_ALIGNMENT.format(intervals, granularity, alignmentDescription));
-        }
-    }
-
-    /**
-     * Extracts the list of dimension names from the url dimension path segments and generates a set of dimension
-     * objects based on it.
-     *
-     * @param apiDimensions  Dimension path segments from the URL.
-     * @param dimensionDictionary  Dimension dictionary contains the map of valid dimension names and dimension objects.
-     *
-     * @return Set of dimension objects.
-     * @throws BadApiRequestException if an invalid dimension is requested.
-     */
-    protected LinkedHashSet<Dimension> generateDimensions(
-            List<PathSegment> apiDimensions,
-            DimensionDictionary dimensionDictionary
-    ) throws BadApiRequestException {
-        try (TimedPhase timer = RequestLog.startTiming("GeneratingDimensions")) {
-            // Dimensions are optional hence check if dimensions are requested.
-            if (apiDimensions == null || apiDimensions.isEmpty()) {
-                return new LinkedHashSet<>();
-            }
-
-            // set of dimension names (strings)
-            List<String> dimApiNames = apiDimensions.stream()
-                    .map(PathSegment::getPath)
-                    .filter(s -> !s.isEmpty())
-                    .collect(Collectors.toList());
-
-            // set of dimension objects
-            LinkedHashSet<Dimension> generated = new LinkedHashSet<>();
-            List<String> invalidDimensions = new ArrayList<>();
-            for (String dimApiName : dimApiNames) {
-                Dimension dimension = dimensionDictionary.findByApiName(dimApiName);
-
-                // If dimension dictionary returns a null, it means the requested dimension is not found.
-                if (dimension == null) {
-                    invalidDimensions.add(dimApiName);
-                } else {
-                    generated.add(dimension);
-                }
-            }
-
-            if (!invalidDimensions.isEmpty()) {
-                LOG.debug(DIMENSIONS_UNDEFINED.logFormat(invalidDimensions.toString()));
-                throw new BadApiRequestException(DIMENSIONS_UNDEFINED.format(invalidDimensions.toString()));
-            }
-
-            LOG.trace("Generated set of dimension: {}", generated);
-            return generated;
-        }
     }
 
     /**
@@ -690,29 +542,6 @@ public class DataApiRequest extends ApiRequest {
             ));
         }
         return dimensionFields;
-    }
-
-    /**
-     * Ensure all request dimensions are part of the logical table.
-     *
-     * @param requestDimensions  The dimensions being requested
-     * @param table  The logical table being checked
-     *
-     * @throws BadApiRequestException if any of the dimensions do not match the logical table
-     */
-    protected void validateRequestDimensions(Set<Dimension> requestDimensions, LogicalTable table)
-            throws BadApiRequestException {
-        // Requested dimensions must lie in the logical table
-        requestDimensions = new HashSet<>(requestDimensions);
-        requestDimensions.removeAll(table.getDimensions());
-
-        if (!requestDimensions.isEmpty()) {
-            List<String> dimensionNames = requestDimensions.stream()
-                    .map(Dimension::getApiName)
-                    .collect(Collectors.toList());
-            LOG.debug(DIMENSIONS_NOT_IN_TABLE.logFormat(dimensionNames, table.getName()));
-            throw new BadApiRequestException(DIMENSIONS_NOT_IN_TABLE.format(dimensionNames, table.getName()));
-        }
     }
 
     /**
@@ -899,36 +728,6 @@ public class DataApiRequest extends ApiRequest {
     }
 
     /**
-     * Validate that all metrics are part of the logical table.
-     *
-     * @param logicalMetrics  The set of metrics being validated
-     * @param table  The logical table for the request
-     *
-     * @throws BadApiRequestException if the requested metrics are not in the logical table
-     */
-    protected void validateMetrics(Set<LogicalMetric> logicalMetrics, LogicalTable table)
-            throws BadApiRequestException {
-        //get metric names from the logical table
-        Set<String> validMetricNames = table.getLogicalMetrics().stream()
-                .map(LogicalMetric::getName)
-                .collect(Collectors.toSet());
-
-        //get metric names from logicalMetrics and remove all the valid metrics
-        Set<String> invalidMetricNames = logicalMetrics.stream()
-                .map(LogicalMetric::getName)
-                .filter(it -> !validMetricNames.contains(it))
-                .collect(Collectors.toSet());
-
-        //requested metrics names are not present in the logical table metric names set
-        if (!invalidMetricNames.isEmpty()) {
-            LOG.debug(METRICS_NOT_IN_TABLE.logFormat(invalidMetricNames, table.getName()));
-            throw new BadApiRequestException(
-                    METRICS_NOT_IN_TABLE.format(invalidMetricNames, table.getName())
-            );
-        }
-    }
-
-    /**
      * Generate current date based on granularity.
      *
      * @param dateTime  The current moment as a DateTime
@@ -938,166 +737,6 @@ public class DataApiRequest extends ApiRequest {
      */
     protected DateTime getCurrentDate(DateTime dateTime, TimeGrain timeGrain) {
         return timeGrain.roundFloor(dateTime);
-    }
-
-    /**
-     * Extracts the set of intervals from the api request.
-     *
-     * @param apiIntervalQuery  API string containing the intervals in ISO 8601 format, values separated by ','.
-     * @param granularity  The granularity to generate the date based on period or macros.
-     * @param dateTimeFormatter  The formatter to parse date time interval segments
-     *
-     * @return Set of jodatime interval objects.
-     * @throws BadApiRequestException if the requested interval is not found.
-     */
-    protected static Set<Interval> generateIntervals(
-            String apiIntervalQuery,
-            Granularity granularity,
-            DateTimeFormatter dateTimeFormatter
-    ) throws BadApiRequestException {
-        try (TimedPhase timer = RequestLog.startTiming("GeneratingIntervals")) {
-            Set<Interval> generated = new LinkedHashSet<>();
-            if (apiIntervalQuery == null || apiIntervalQuery.equals("")) {
-                LOG.debug(INTERVAL_MISSING.logFormat());
-                throw new BadApiRequestException(INTERVAL_MISSING.format());
-            }
-            List<String> apiIntervals = Arrays.asList(apiIntervalQuery.split(","));
-            // Split each interval string into the start and stop instances, parse them, and add the interval to the
-            // list
-
-            for (String apiInterval : apiIntervals) {
-                String[] split = apiInterval.split("/");
-
-                // Check for both a start and a stop
-                if (split.length != 2) {
-                    String message = "Start and End dates are required.";
-                    LOG.debug(INTERVAL_INVALID.logFormat(apiIntervalQuery, message));
-                    throw new BadApiRequestException(INTERVAL_INVALID.format(apiIntervalQuery, message));
-                }
-
-                try {
-                    String start = split[0].toUpperCase(Locale.ENGLISH);
-                    String end = split[1].toUpperCase(Locale.ENGLISH);
-                    //If start & end intervals are period then marking as invalid interval.
-                    //Becacuse either one should be macro or actual date to generate an interval
-                    if (start.startsWith("P") && end.startsWith("P")) {
-                        LOG.debug(INTERVAL_INVALID.logFormat(start));
-                        throw new BadApiRequestException(INTERVAL_INVALID.format(apiInterval));
-                    }
-
-                    Interval interval;
-                    DateTime now = new DateTime();
-                    //If start interval is period, then create new interval with computed end date
-                    //possible end interval could be next,current, date
-                    if (start.startsWith("P")) {
-                        interval = new Interval(
-                                Period.parse(start),
-                                getAsDateTime(now, granularity, split[1], dateTimeFormatter)
-                        );
-                        //If end string is period, then create an interval with the computed start date
-                        //Possible start & end string could be a macro or an ISO 8601 DateTime
-                    } else if (end.startsWith("P")) {
-                        interval = new Interval(
-                                getAsDateTime(now, granularity, split[0], dateTimeFormatter),
-                                Period.parse(end)
-                        );
-                    } else {
-                        //start and end interval could be either macros or actual datetime
-                        interval = new Interval(
-                                getAsDateTime(now, granularity, split[0], dateTimeFormatter),
-                                getAsDateTime(now, granularity, split[1], dateTimeFormatter)
-                        );
-                    }
-
-                    // Zero length intervals are invalid
-                    if (interval.toDuration().equals(Duration.ZERO)) {
-                        LOG.debug(INTERVAL_ZERO_LENGTH.logFormat(apiInterval));
-                        throw new BadApiRequestException(INTERVAL_ZERO_LENGTH.format(apiInterval));
-                    }
-                    generated.add(interval);
-                } catch (IllegalArgumentException iae) {
-                    // Handle poor JodaTime message (special case)
-                    String internalMessage = iae.getMessage().equals("The end instant must be greater the start") ?
-                            "The end instant must be greater than the start instant" :
-                            iae.getMessage();
-                    LOG.debug(INTERVAL_INVALID.logFormat(apiIntervalQuery, internalMessage), iae);
-                    throw new BadApiRequestException(INTERVAL_INVALID.format(apiIntervalQuery, internalMessage), iae);
-                }
-            }
-            return generated;
-        }
-    }
-
-    /**
-     * Generates filter objects on the based on the filter query in the api request.
-     *
-     * @param filterQuery  Expects a URL filter query String in the format:
-     * (dimension name).(fieldname)-(operation):[?(value or comma separated values)]?
-     * @param table  The logical table for the data request
-     * @param dimensionDictionary  DimensionDictionary
-     *
-     * @return Set of filter objects.
-     * @throws BadApiRequestException if the filter query string does not match required syntax, or the filter
-     * contains a 'startsWith' or 'contains' operation while the BardFeatureFlag.DATA_STARTS_WITH_CONTAINS_ENABLED is
-     * off.
-     */
-    protected Map<Dimension, Set<ApiFilter>> generateFilters(
-            String filterQuery,
-            LogicalTable table,
-            DimensionDictionary dimensionDictionary
-    ) throws BadApiRequestException {
-        try (TimedPhase timer = RequestLog.startTiming("GeneratingFilters")) {
-            LOG.trace("Dimension Dictionary: {}", dimensionDictionary);
-            // Set of filter objects
-            Map<Dimension, Set<ApiFilter>> generated = new LinkedHashMap<>();
-
-            // Filters are optional hence check if filters are requested.
-            if (filterQuery == null || "".equals(filterQuery)) {
-                return generated;
-            }
-
-            // split on '],' to get list of filters
-            List<String> apiFilters = Arrays.asList(filterQuery.split(COMMA_AFTER_BRACKET_PATTERN));
-            for (String apiFilter : apiFilters) {
-                ApiFilter newFilter;
-                try {
-                    newFilter = new ApiFilter(apiFilter, dimensionDictionary);
-
-                    // If there is a logical table and the filter is not part of it, throw exception.
-                    if (! table.getDimensions().contains(newFilter.getDimension())) {
-                        String filterDimensionName = newFilter.getDimension().getApiName();
-                        LOG.debug(FILTER_DIMENSION_NOT_IN_TABLE.logFormat(filterDimensionName, table));
-                        throw new BadFilterException(
-                                FILTER_DIMENSION_NOT_IN_TABLE.format(filterDimensionName, table.getName())
-                        );
-                    }
-
-                } catch (BadFilterException filterException) {
-                    throw new BadApiRequestException(filterException.getMessage(), filterException);
-                }
-
-                if (!BardFeatureFlag.DATA_FILTER_SUBSTRING_OPERATIONS.isOn()) {
-                    FilterOperation filterOperation = newFilter.getOperation();
-                    if (filterOperation.equals(FilterOperation.startswith)
-                            || filterOperation.equals(FilterOperation.contains)
-                            ) {
-                        throw new BadApiRequestException(
-                                ErrorMessageFormat.FILTER_SUBSTRING_OPERATIONS_DISABLED.format()
-                        );
-
-                    }
-                }
-                Dimension dim = newFilter.getDimension();
-                if (!generated.containsKey(dim)) {
-                    generated.put(dim, new LinkedHashSet<>());
-                }
-                Set<ApiFilter> filterSet = generated.get(dim);
-                filterSet.add(newFilter);
-            }
-            LOG.trace("Generated map of filters: {}", generated);
-
-            return generated;
-        }
     }
 
     /**

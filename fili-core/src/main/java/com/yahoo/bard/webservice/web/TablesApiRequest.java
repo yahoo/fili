@@ -3,23 +3,38 @@
 package com.yahoo.bard.webservice.web;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.EMPTY_DICTIONARY;
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_UNDEFINED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_GRANULARITY_MISMATCH;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_UNDEFINED;
 
+import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
+import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
+import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.TimedPhase;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.table.TableIdentifier;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 
+import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
+import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.UriInfo;
 
 /**
@@ -32,6 +47,10 @@ public class TablesApiRequest extends ApiRequest {
     private final Set<LogicalTable> tables;
     private final LogicalTable table;
     private final Granularity granularity;
+    private final Set<Dimension> dimensions;
+    private final Set<LogicalMetric> metrics;
+    private final Set<Interval> intervals;
+    private final Map<Dimension, Set<ApiFilter>> filters;
 
     /**
      * Parses the API request URL and generates the Api Request object.
@@ -76,12 +95,127 @@ public class TablesApiRequest extends ApiRequest {
             this.granularity = null;
         }
 
+        dimensions = Collections.emptySet();
+        metrics = Collections.emptySet();
+        intervals = Collections.emptySet();
+        filters = Collections.emptyMap();
+
         LOG.debug(
-                "Api request: Tables: {},\nGranularity: {},\nFormat: {}\nPagination: {}",
+                "Api request: Tables: {},\nGranularity: {},\nFormat: {}\nPagination: {}" +
+                        "\nDimensions: {}\nMetrics: {}\nIntervals: {}\nFilters: {}",
                 this.tables,
                 this.granularity,
                 this.format,
-                this.paginationParameters
+                this.paginationParameters,
+                this.dimensions,
+                this.metrics,
+                this.intervals,
+                this.filters
+        );
+    }
+
+    /**
+     * Parses the API request URL and generates the API Request object with specified query constraints, i.e.
+     * dimensions, metrics, date time intervals, and filters.
+     *
+     * @param tableName  Logical table corresponding to the table name specified in the URL
+     * @param granularity  Requested time granularity
+     * @param format  Response data format JSON or CSV. Default is JSON.
+     * @param perPage  Number of rows to display per page of results. It must represent a positive integer or an empty
+     * string if it's not specified
+     * @param page  Desired page of results. It must represent a positive integer or an empty
+     * string if it's not specified
+     * @param uriInfo  The URI of the request
+     * @param bardConfigResources  The configuration resources used to build this API request
+     * @param dimensions  Grouping dimensions / Dimension constraint
+     * @param metrics  Metrics constraint
+     * @param intervals  Data / Time constraint
+     * @param filters  Filter constraint
+     * @param timeZoneId  A joda time zone id
+     *
+     * @throws BadApiRequestException on
+     * <ol>
+     *     <li>invalid table</li>
+     *     <li>invalid pagination parameters</li>
+     * </ol>
+     */
+    public TablesApiRequest(
+            String tableName,
+            String granularity,
+            String format,
+            @NotNull String perPage,
+            @NotNull String page,
+            UriInfo uriInfo,
+            BardConfigResources bardConfigResources,
+            List<PathSegment> dimensions,
+            String metrics,
+            String intervals,
+            String filters,
+            String timeZoneId
+    ) throws BadApiRequestException {
+        super(format, perPage, page, uriInfo);
+
+        this.tables = generateTables(tableName, bardConfigResources.getLogicalTableDictionary());
+
+        if (tableName != null && granularity != null) {
+            this.granularity = generateGranularity(granularity, bardConfigResources.getGranularityParser());
+            this.table = generateTable(tableName, this.granularity, bardConfigResources.getLogicalTableDictionary());
+        } else {
+            this.table = null;
+            this.granularity = null;
+        }
+
+        // parse dimensions
+        DimensionDictionary dimensionDictionary = bardConfigResources.getDimensionDictionary();
+        this.dimensions = generateDimensions(dimensions, dimensionDictionary);
+        validateRequestDimensions(this.dimensions, this.table);
+
+        // parse metrics
+        this.metrics = generateLogicalMetrics(
+                metrics,
+                bardConfigResources.getMetricDictionary().getScope(Collections.singletonList(tableName))
+        );
+        validateMetrics(this.metrics, this.table);
+
+        // parse interval
+        this.intervals = generateIntervals(
+                intervals,
+                this.granularity,
+                generateDateTimeFormatter(
+                        generateTimeZone(
+                                timeZoneId,
+                                bardConfigResources.getSystemTimeZone()
+                        )
+                )
+        );
+        validateTimeAlignment(this.granularity, this.intervals);
+
+        // parse filters
+        this.filters = generateFilters(filters, table, dimensionDictionary);
+        validateRequestDimensions(this.filters.keySet(), this.table);
+
+        LOG.debug(
+                "Api request: Tables: {},\nGranularity: {},\nFormat: {}\nPagination: {}" +
+                        "\nDimensions: {}\nMetrics: {}\nIntervals: {}\nFilters: {}",
+                this.tables,
+                this.granularity,
+                this.format,
+                this.paginationParameters,
+                this.dimensions.stream()
+                        .map(Dimension::getApiName)
+                        .collect(Collectors.toList()),
+                this.metrics.stream()
+                        .map(LogicalMetric::getName)
+                        .collect(Collectors.toList()),
+                this.intervals,
+                this.filters.entrySet().stream()
+                        .collect(
+                                Collectors.toMap(
+                                        entry -> entry.getKey().getApiName(),
+                                        Function.identity()
+
+                                )
+                        )
         );
     }
 
@@ -94,6 +228,10 @@ public class TablesApiRequest extends ApiRequest {
         this.tables = null;
         this.table = null;
         this.granularity = null;
+        this.dimensions = null;
+        this.metrics = null;
+        this.intervals = null;
+        this.filters = null;
     }
 
     /**
@@ -154,6 +292,50 @@ public class TablesApiRequest extends ApiRequest {
 
         LOG.trace("Generated logical table: {} with granularity {}", generated, granularity);
         return generated;
+    }
+
+    /**
+     * Extracts the list of metrics from the url metric query string and generates a set of LogicalMetrics.
+     *
+     * @param apiMetricQuery  URL query string containing the metrics separated by ','.
+     * @param metricDictionary  Metric dictionary contains the map of valid metric names and logical metric objects.
+     *
+     * @return Set of metric objects.
+     * @throws BadApiRequestException if the metric dictionary returns a null or if the apiMetricQuery is invalid.
+     */
+    protected LinkedHashSet<LogicalMetric> generateLogicalMetrics(
+            String apiMetricQuery,
+            MetricDictionary metricDictionary
+    ) throws BadApiRequestException {
+        try (TimedPhase timer = RequestLog.startTiming("GeneratingLogicalMetrics")) {
+            LOG.trace("Metric dictionary: {}", metricDictionary);
+
+            if (apiMetricQuery == null || "".equals(apiMetricQuery)) {
+                return new LinkedHashSet<>();
+            }
+            // set of logical metric objects
+            LinkedHashSet<LogicalMetric> generated = new LinkedHashSet<>();
+            List<String> invalidMetricNames = new ArrayList<>();
+
+            List<String> metricApiQuery = Arrays.asList(apiMetricQuery.split(","));
+            for (String metricName : metricApiQuery) {
+                LogicalMetric logicalMetric = metricDictionary.get(metricName);
+
+                // If metric dictionary returns a null, it means the requested metric is not found.
+                if (logicalMetric == null) {
+                    invalidMetricNames.add(metricName);
+                } else {
+                    generated.add(logicalMetric);
+                }
+            }
+
+            if (!invalidMetricNames.isEmpty()) {
+                LOG.debug(METRICS_UNDEFINED.logFormat(invalidMetricNames.toString()));
+                throw new BadApiRequestException(METRICS_UNDEFINED.format(invalidMetricNames.toString()));
+            }
+            LOG.trace("Generated set of logical metric: {}", generated);
+            return generated;
+        }
     }
 
     public Set<LogicalTable> getTables() {

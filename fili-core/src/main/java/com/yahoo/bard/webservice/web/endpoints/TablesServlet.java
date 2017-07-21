@@ -369,7 +369,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
      *
      * @return Full view of the logical table
      *
-     * @deprecated Inorder to display constrained data availability in table resource, this method needs to accept a
+     * @deprecated In order to display constrained data availability in table resource, this method needs to accept a
      * {@link com.yahoo.bard.webservice.web.TablesApiRequest} as a parameter. Use
      * {@link #getLogicalTableFullView(TablesApiRequest, UriInfo)} instead.
      */
