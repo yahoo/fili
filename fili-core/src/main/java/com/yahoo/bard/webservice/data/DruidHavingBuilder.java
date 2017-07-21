@@ -30,11 +30,13 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.HAVING_CUSTOM_OPE
  */
 public class DruidHavingBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(DruidHavingBuilder.class);
-
+    private static final int SIZE = 2;
+    
     /**
      * Build a having model that ANDs together having queries for each of the metrics.
      *
      * @param metricMap  A map of logical metric to the set of havings for that metric
+     *
      * @return The having clause to appear in the Druid query. Returns null if the metricMap is empty or null.
      */
     public static Having buildHavings(Map<LogicalMetric, Set<ApiHaving>> metricMap) {
@@ -57,6 +59,7 @@ public class DruidHavingBuilder {
      *
      * @param metric  Metric for the having query
      * @param havings  All having queries belonging to that metric
+     *
      * @return A druid query having object representing the having clause on a given metric
      */
     public static Having buildMetricHaving(LogicalMetric metric, Set<ApiHaving> havings) {
@@ -74,6 +77,7 @@ public class DruidHavingBuilder {
      *
      * @param metric  The metric that the operation applied to.
      * @param having  The ApiHaving object
+     *
      * @return A single having representing the API Filter
      */
     public static Having buildHaving(LogicalMetric metric, ApiHaving having) {
@@ -81,38 +85,34 @@ public class DruidHavingBuilder {
 
         HavingOperation operation = having.getOperation();
         List<Double> values = having.getValues();
-        List<Having> havings = new ArrayList<>();
-        AndHaving andHaving = null;
+
+        Having newHaving;
         if (operation.equals(HavingOperation.between) || operation.equals(HavingOperation.notBetween)) {
-            int size = 2;
-            if (values.size() != size) {
+            if (values.size() != SIZE) {
                 throw new UnsupportedOperationException(HAVING_CUSTOM_OPERATOR_TOO_FEW_PARAMETERS.format
-                        (operation.name(), operation.name(), size));
+                        (operation.name(), operation.name(), SIZE, values.size()));
             }
-            else {
-                double firstValue = values.get(0);
-                double secondValue = values.get(1);
-                if (secondValue < firstValue) {
-                    throw new IllegalArgumentException(HAVING_CUSTOM_OPERATOR_IMPROPER_RANGE.format(operation.name()));
-                }
-                else {
-                    List<Having> orHavings = new ArrayList<>();
-                    orHavings.add(new NumericHaving(Having.DefaultHavingType.GREATER_THAN, metric.getName(),
-                            firstValue));
-                    orHavings.add(new NumericHaving(Having.DefaultHavingType.EQUAL_TO, metric.getName(), firstValue));
-                    OrHaving orHavingLower = new OrHaving(orHavings);
-                    orHavings = new ArrayList<>();
-                    orHavings.add(new NumericHaving(Having.DefaultHavingType.LESS_THAN, metric.getName(), secondValue));
-                    orHavings.add(new NumericHaving(Having.DefaultHavingType.EQUAL_TO, metric.getName(), secondValue));
-                    OrHaving orHavingUpper = new OrHaving(orHavings);
-                    andHaving = new AndHaving(Arrays.asList(orHavingLower, orHavingUpper));
-                }
+            double firstValue = values.get(0);
+            double secondValue = values.get(1);
+            if (secondValue < firstValue) {
+                throw new IllegalArgumentException(HAVING_CUSTOM_OPERATOR_IMPROPER_RANGE.format(operation.name()));
             }
+            List<Having> orHavings = new ArrayList<>();
+            orHavings.add(new NumericHaving(Having.DefaultHavingType.GREATER_THAN, metric.getName(),
+                    firstValue));
+            orHavings.add(new NumericHaving(Having.DefaultHavingType.EQUAL_TO, metric.getName(), firstValue));
+            OrHaving orHavingLower = new OrHaving(orHavings);
+            orHavings = new ArrayList<>();
+            orHavings.add(new NumericHaving(Having.DefaultHavingType.LESS_THAN, metric.getName(), secondValue));
+            orHavings.add(new NumericHaving(Having.DefaultHavingType.EQUAL_TO, metric.getName(), secondValue));
+            OrHaving orHavingUpper = new OrHaving(orHavings);
+            newHaving = new AndHaving(Arrays.asList(orHavingLower, orHavingUpper));
         }
         else {
-            havings = having.getValues().stream()
+            List<Having> havings = having.getValues().stream()
                     .map(value -> new NumericHaving(operation.getType(), metric.getName(), value))
                     .collect(Collectors.toList());
+            newHaving = havings.size() == 1 ? havings.get(0) : new OrHaving(havings);
         }
 
         // Negate the outer having to preserve expected semantics of negated queries.
@@ -130,17 +130,6 @@ public class DruidHavingBuilder {
         //     !(metric1 > 2 || metric1 > 4 || metric1 > 8)
         // . In both cases, the second method is correct.
 
-        Having newHaving;
-        if (operation.equals(HavingOperation.between)) {
-            newHaving = andHaving;
-        }
-        else if (operation.equals(HavingOperation.notBetween)) {
-            newHaving = new NotHaving(andHaving);
-        }
-        else {
-            newHaving = havings.size() == 1 ? havings.get(0) : new OrHaving(havings);
-            newHaving = operation.isNegated() ? new NotHaving(newHaving) : newHaving;
-        }
-        return newHaving;
+        return operation.isNegated() ? new NotHaving(newHaving) : newHaving;
     }
 }
