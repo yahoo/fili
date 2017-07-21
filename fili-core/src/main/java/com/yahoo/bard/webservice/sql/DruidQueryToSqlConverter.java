@@ -170,6 +170,7 @@ public class DruidQueryToSqlConverter {
         int groupBys = druidQuery.getDimensions().size() +
                 sqlTimeConverter.getNumberOfGroupByFunctions((TimeGrain) druidQuery.getGranularity());
 
+        List<RexNode> metricSorts = new ArrayList<>();
         if (druidQuery.getQueryType().equals(DefaultQueryType.GROUP_BY)) {
             GroupByQuery groupByQuery = (GroupByQuery) druidQuery;
             LimitSpec limitSpec = groupByQuery.getLimitSpec();
@@ -183,11 +184,15 @@ public class DruidQueryToSqlConverter {
                             }
                             return sort;
                         })
-                        .forEach(sorts::add);
+                        .forEach(metricSorts::add);
             }
         }
-        sorts.addAll(builder.fields().subList(druidQuery.getDimensions().size(), groupBys));
+        int metricsOffset = metricSorts.size();
+
+        //todo test order by
+        sorts.addAll(builder.fields().subList(druidQuery.getDimensions().size() + metricsOffset, groupBys));
         sorts.addAll(builder.fields().subList(0, druidQuery.getDimensions().size()));
+        sorts.addAll(metricSorts);
 
         return sorts.stream()
                 .map(sort -> builder.call(SqlStdOperatorTable.NULLS_FIRST, sort))
