@@ -31,7 +31,6 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.HAVING_CUSTOM_OPE
 public class DruidHavingBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(DruidHavingBuilder.class);
     private static final int SIZE = 2;
-    
     /**
      * Build a having model that ANDs together having queries for each of the metrics.
      *
