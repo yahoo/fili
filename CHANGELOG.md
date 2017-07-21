@@ -13,6 +13,8 @@ Current
 - [Add Uptime Status Metric](https://github.com/yahoo/fili/pull/518)
     * Add a metric to show how long Fili has been running 
 
+- [Add `druid_broker` config parameter to replace `ui_druid_broker` and `non_ui_druid_broker`](https://github.com/yahoo/fili/pull/489)
+    
 - [Have Tables Endpoint Support (but not use) Additional Query Parameters](https://github.com/yahoo/fili/pull/437)
     * Make the availability consider the TablesApiRequest by passing it into the getLogicalTableFullView method
     * Move auxiliary methods from `DataApiRequest` to `ApiRequest` in order to make them sharable between
@@ -93,6 +95,8 @@ Current
 
 - [Rename filter variables and methods in DataApiRequest](https://github.com/yahoo/fili/pull/507)
     * Deprecated `getFilters` in favor of `getApiFilters` and `getFilter` in favor of `getDruidFilter`
+
+- [Deprecate `ui_druid_broker` and `non_ui_druid_broker` and added `druid_broker`](https://github.com/yahoo/fili/pull/489)
 
 - [Add dimension dictionary to metric loader](https://github.com/yahoo/fili/pull/317)
     * Deprecated single argument version of `loadMetricDictionary` in `MetricLoader`, favor additional dimension dictionary argument `loadMetricDictionary` instead

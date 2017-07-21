@@ -42,7 +42,7 @@ class PartialDataServletSpec extends Specification {
 
     def setup() {
         jtb = new JerseyTestBinder(DataServlet.class)
-        jtb.nonUiDruidWebService.jsonResponse = {response}
+        jtb.druidWebService.jsonResponse = {response}
 
         Interval interval = new Interval("2014-05-01/2014-06-01")
         AvailabilityTestingUtils.populatePhysicalTableCacheIntervals(jtb, interval)
