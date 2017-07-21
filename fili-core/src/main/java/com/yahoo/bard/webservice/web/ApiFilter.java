@@ -22,6 +22,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
 
@@ -170,6 +172,25 @@ public class ApiFilter {
 
     public Set<String> getValues() {
         return this.values;
+    }
+
+    /**
+     * Take two Api filters which differ only by value sets and union their value sets.
+     *
+     * @param one  The first ApiFilter
+     * @param two  The second ApiFilter
+     *
+     * @return an ApiFilter with the union of values
+     */
+    public static ApiFilter union(ApiFilter one, ApiFilter two) {
+        if (Objects.equals(one.getDimension(), two.getDimension())
+                && Objects.equals(one.getDimensionField(), two.getDimensionField())
+                && Objects.equals(one.getOperation(), two.getOperation())
+                ) {
+            Set values = Stream.concat(one.getValues().stream(), two.getValues().stream()).collect(Collectors.toSet());
+            return one.withValues(values);
+        }
+        throw new IllegalArgumentException(String.format("Unmergable ApiFilters  '%s' and '%s'", one, two));
     }
 
     @Override
