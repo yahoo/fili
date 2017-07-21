@@ -18,6 +18,7 @@
         <module>fili-system-config</module>
         <module>fili-core</module>
         <module>fili-navi</module>
+        <module>fili-security</module>
         <module>fili</module>
         <module>fili-wikipedia-example</module>
         <module>fili-generic-example</module>
