@@ -17,13 +17,13 @@ import com.yahoo.bard.webservice.web.handlers.AsyncWebServiceRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.CacheRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.CacheV2RequestHandler;
 import com.yahoo.bard.webservice.web.handlers.DataRequestHandler;
+import com.yahoo.bard.webservice.web.handlers.DateTimeSortRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.DebugRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.DruidPartialDataRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.EtagCacheRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.PaginationRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.PartialDataRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.SplitQueryRequestHandler;
-import com.yahoo.bard.webservice.web.handlers.DateTimeSortRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.SqlRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.TopNMapperRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.VolatileDataRequestHandler;
@@ -34,7 +34,6 @@ import com.yahoo.bard.webservice.web.util.QueryWeightUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.validation.constraints.NotNull;
 
@@ -61,8 +60,7 @@ public class SqlWorkflow implements RequestWorkflowProvider {
     );
 
     protected final @NotNull DataCache<?> dataCache;
-    protected final @NotNull DruidWebService uiWebService;
-    protected final @NotNull DruidWebService nonUiWebService;
+    protected final @NotNull DruidWebService webService;
     protected final @NotNull QueryWeightUtil weightUtil;
     protected final @NotNull PhysicalTableDictionary physicalTableDictionary;
     protected final @NotNull PartialDataHandler partialDataHandler;
@@ -74,8 +72,7 @@ public class SqlWorkflow implements RequestWorkflowProvider {
      * Constructor.
      *
      * @param dataCache  Response cache to use for caching Druid responses
-     * @param uiWebService  Web Service to use for UI-path queries
-     * @param nonUiWebService  WebService to use for Non-UI-Path queries
+     * @param webService  Web Service
      * @param weightUtil  Utility for dealing with the weight check step
      * @param physicalTableDictionary  Collection of all physical tables
      * @param partialDataHandler  Handler for dealing with the partial data step
@@ -86,8 +83,7 @@ public class SqlWorkflow implements RequestWorkflowProvider {
     @Inject
     public SqlWorkflow(
             @NotNull DataCache<?> dataCache,
-            @Named("uiDruidWebService") DruidWebService uiWebService,
-            @Named("nonUiDruidWebService") DruidWebService nonUiWebService,
+            DruidWebService webService,
             QueryWeightUtil weightUtil,
             PhysicalTableDictionary physicalTableDictionary,
             PartialDataHandler partialDataHandler,
@@ -96,8 +92,7 @@ public class SqlWorkflow implements RequestWorkflowProvider {
             ObjectMapper mapper
     ) {
         this.dataCache = dataCache;
-        this.uiWebService = uiWebService;
-        this.nonUiWebService = nonUiWebService;
+        this.webService = webService;
         this.weightUtil = weightUtil;
         this.physicalTableDictionary = physicalTableDictionary;
         this.partialDataHandler = partialDataHandler;
@@ -109,52 +104,39 @@ public class SqlWorkflow implements RequestWorkflowProvider {
     @Override
     public DataRequestHandler buildWorkflow() {
         // The final stage of the workflow is to send a request to a druid web service
-        DataRequestHandler uiHandler = new AsyncWebServiceRequestHandler(uiWebService, mapper);
-        DataRequestHandler nonUiHandler = new AsyncWebServiceRequestHandler(nonUiWebService, mapper);
+        DataRequestHandler handler = new AsyncWebServiceRequestHandler(webService, mapper);
 
         // If Druid sends uncoveredIntervals, missing intervals are checked before sending the request
         if (druidUncoveredIntervalLimit > 0) {
-            uiHandler = new DruidPartialDataRequestHandler(uiHandler);
-            nonUiHandler = new DruidPartialDataRequestHandler(nonUiHandler);
+            handler = new DruidPartialDataRequestHandler(handler);
         }
 
         // If query caching is enabled, the cache is checked before sending the request
         if (CacheFeatureFlag.TTL.isOn()) {
-            uiHandler = new CacheRequestHandler(uiHandler, dataCache, mapper);
-            nonUiHandler = new CacheRequestHandler(nonUiHandler, dataCache, mapper);
+            handler = new CacheRequestHandler(handler, dataCache, mapper);
         } else if (CacheFeatureFlag.LOCAL_SIGNATURE.isOn()) {
-            uiHandler = new CacheV2RequestHandler(uiHandler, dataCache, querySigningService, mapper);
-            nonUiHandler = new CacheV2RequestHandler(nonUiHandler, dataCache, querySigningService, mapper);
+            handler = new CacheV2RequestHandler(handler, dataCache, querySigningService, mapper);
         } else if (CacheFeatureFlag.ETAG.isOn()) {
-            uiHandler = new EtagCacheRequestHandler(
-                    uiHandler,
-                    (TupleDataCache<String, String, String>) dataCache,
-                    mapper
-            );
-            nonUiHandler = new EtagCacheRequestHandler(
-                    uiHandler,
+            handler = new EtagCacheRequestHandler(
+                    handler,
                     (TupleDataCache<String, String, String>) dataCache,
                     mapper
             );
         }
 
         if (BardFeatureFlag.QUERY_SPLIT.isOn()) {
-            uiHandler = new SplitQueryRequestHandler(uiHandler);
-            nonUiHandler = new SplitQueryRequestHandler(nonUiHandler);
+            handler = new SplitQueryRequestHandler(handler);
         }
 
         // Requests sent to the NonUI we service are checked to see if they are too heavy to process
-        nonUiHandler = new WeightCheckRequestHandler(nonUiHandler, nonUiWebService, weightUtil, mapper);
+        handler = new WeightCheckRequestHandler(handler, webService, weightUtil, mapper);
 
-        uiHandler = new DebugRequestHandler(uiHandler, mapper);
-        nonUiHandler = new DebugRequestHandler(nonUiHandler, mapper);
+        handler = new DebugRequestHandler(handler, mapper);
 
         // Requests should be processed by UI or NonUI web services, select one
-        DataRequestHandler handler = new WebServiceSelectorRequestHandler(
-                uiWebService,
-                nonUiWebService,
-                uiHandler,
-                nonUiHandler,
+        handler = new WebServiceSelectorRequestHandler(
+                webService,
+                handler,
                 mapper
         );
 

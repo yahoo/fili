@@ -177,7 +177,7 @@ public class AbstractBinderFactorySpec extends Specification {
 
         then:
         binder != null
-        3 * dc.bind({ it.advertisedContracts.contains("com.yahoo.bard.webservice.druid.client.DruidWebService") }, _)
+        2 * dc.bind({ it.advertisedContracts.contains("com.yahoo.bard.webservice.druid.client.DruidWebService") }, _)
         1 * dc.bind({ it.implementation.contains(PhysicalTableDictionary.canonicalName) }, _)
         1 * dc.bind({ it.implementation.contains(LogicalTableDictionary.canonicalName) }, _)
         1 * dc.bind({ it.implementation.contains(MetricDictionary.canonicalName) }, _)
