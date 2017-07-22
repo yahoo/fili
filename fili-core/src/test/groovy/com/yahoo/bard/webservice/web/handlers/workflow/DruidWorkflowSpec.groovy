@@ -2,13 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.handlers.workflow
 
-import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_CACHE
-import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_CACHE_V2
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.QUERY_SPLIT
-import static com.yahoo.bard.webservice.config.CacheFeatureFlag.ETAG
-import static com.yahoo.bard.webservice.config.CacheFeatureFlag.LOCAL_SIGNATURE
-import static com.yahoo.bard.webservice.config.CacheFeatureFlag.NONE
-import static com.yahoo.bard.webservice.config.CacheFeatureFlag.TTL
 
 import com.yahoo.bard.webservice.config.SystemConfig
 import com.yahoo.bard.webservice.config.SystemConfigProvider
@@ -38,8 +32,6 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 
 import spock.lang.Specification
 
-import javax.management.StringValueExp
-
 class DruidWorkflowSpec extends Specification {
     private static final ObjectMapper MAPPER = new ObjectMapper()
             .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
@@ -47,6 +39,7 @@ class DruidWorkflowSpec extends Specification {
     private static final String TTL_CACHE_CONFIG_KEY = SYSTEM_CONFIG.getPackageVariableName("druid_cache_enabled")
     private static final String LOCAL_SIGNATURE_CACHE_CONFIG_KEY = SYSTEM_CONFIG.getPackageVariableName("druid_cache_v2_enabled")
     private static final String ETAG_CACHE_CONFIG_KEY = SYSTEM_CONFIG.getPackageVariableName("query_response_caching_strategy")
+    private static final String UNCOVERED_INTERVAL_LIMIT_KEY = SYSTEM_CONFIG.getPackageVariableName("druid_uncovered_interval_limit")
 
     boolean splittingStatus
 
@@ -60,9 +53,6 @@ class DruidWorkflowSpec extends Specification {
     QuerySigningService<Long> querySigningService = Mock(SegmentIntervalsHashIdGenerator)
     VolatileIntervalsService volatileIntervalsService = Mock(VolatileIntervalsService)
 
-    SystemConfig systemConfig
-    String uncoveredKey
-
     String queryResponseCachingStrategy
 
     def setup() {
@@ -70,8 +60,6 @@ class DruidWorkflowSpec extends Specification {
         queryResponseCachingStrategy = SYSTEM_CONFIG.getStringProperty(ETAG_CACHE_CONFIG_KEY, "NoCache")
 
         splittingStatus = QUERY_SPLIT.isOn()
-        systemConfig = SystemConfigProvider.getInstance()
-        uncoveredKey = SYSTEM_CONFIG.getPackageVariableName("druid_uncovered_interval_limit")
     }
 
     def cleanup() {
@@ -275,7 +263,7 @@ class DruidWorkflowSpec extends Specification {
 
     def "Test workflow contains DruidPartialDataRequestHandler when druidUncoveredIntervalLimit > 0"() {
         setup:
-        systemConfig.setProperty(uncoveredKey, '10')
+        SYSTEM_CONFIG.setProperty(UNCOVERED_INTERVAL_LIMIT_KEY, '10')
         dw = new DruidWorkflow(
                 dataCache,
                 uiWebService,
@@ -301,14 +289,12 @@ class DruidWorkflowSpec extends Specification {
         handlers2.find(byClass(DruidPartialDataRequestHandler)) != null
 
         cleanup:
-        systemConfig.clearProperty(uncoveredKey)
+        SYSTEM_CONFIG.clearProperty(UNCOVERED_INTERVAL_LIMIT_KEY)
     }
 
     def "Test workflow doesn't contain DruidPartialDataRequestHandler when druidUncoveredIntervalLimit <= 0"() {
         setup:
-        SystemConfig systemConfig = SystemConfigProvider.getInstance()
-        String uncoveredKey = SYSTEM_CONFIG.getPackageVariableName("druid_uncovered_interval_limit")
-        systemConfig.setProperty(uncoveredKey, '0')
+        SYSTEM_CONFIG.setProperty(UNCOVERED_INTERVAL_LIMIT_KEY, '0')
         dw = new DruidWorkflow(
                 dataCache,
                 uiWebService,
@@ -334,6 +320,6 @@ class DruidWorkflowSpec extends Specification {
         handlers2.find(byClass(DruidPartialDataRequestHandler)) == null
 
         cleanup:
-        systemConfig.clearProperty(uncoveredKey)
+        SYSTEM_CONFIG.clearProperty(UNCOVERED_INTERVAL_LIMIT_KEY)
     }
 }
