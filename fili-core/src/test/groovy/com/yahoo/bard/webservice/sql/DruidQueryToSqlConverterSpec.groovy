@@ -79,7 +79,7 @@ class DruidQueryToSqlConverterSpec extends Specification {
 
         where:
         grain    | dims               | metrics                | metricDirections  | expectedOutput
-        DAY      | asList(METRO_CODE) | asList(ADDED)          | asList(DESC)      | 'ORDER BY YEAR("TIME"), DAYOFYEAR("TIME"), "metroCode", SUM("added") DESC NULLS FIRST'
+        DAY      | asList(METRO_CODE) | asList(ADDED)          | asList(DESC)      | 'ORDER BY YEAR("TIME"), DAYOFYEAR("TIME"), SUM("added") DESC NULLS FIRST, "metroCode"'
         DAY      | asList()           | asList(ADDED, DELETED) | asList(DESC, ASC) | 'ORDER BY YEAR("TIME"), DAYOFYEAR("TIME"), SUM("added") DESC NULLS FIRST, SUM("deleted")'
         YEAR     | asList(METRO_CODE) | asList()               | asList()          | 'ORDER BY YEAR("TIME"), "metroCode"'
         MONTH    | asList()           | asList()               | asList()          | 'ORDER BY YEAR("TIME"), MONTH("TIME")'

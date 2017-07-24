@@ -134,9 +134,9 @@ public class DruidQueryToSqlConverter {
                 )
                 .aggregate(
                         builder.groupKey(
-                                getAllGroupByColumns(builder, druidQuery, timestampColumn)
+                                getAllGroupByColumns(builder, druidQuery, apiToFieldMapper, timestampColumn)
                         ),
-                        getAllQueryAggregations(builder, druidQuery, apiToFieldMapper)
+                        getAllQueryAggregations(builder, druidQuery)
                 )
                 .filter(
                         getHavingFilter(builder, druidQuery, apiToFieldMapper)
@@ -193,8 +193,8 @@ public class DruidQueryToSqlConverter {
             sorts.add(builder.field(timestampColumn));
         }
         sorts.addAll(builder.fields().subList(druidQuery.getDimensions().size(), groupBys));
-        sorts.addAll(builder.fields().subList(0, druidQuery.getDimensions().size()));
         sorts.addAll(metricSorts);
+        sorts.addAll(builder.fields().subList(0, druidQuery.getDimensions().size()));
 
         return sorts.stream()
                 .map(sort -> builder.call(SqlStdOperatorTable.NULLS_FIRST, sort))
@@ -262,14 +262,12 @@ public class DruidQueryToSqlConverter {
      *
      * @param builder  The RelBuilder created with Calcite.
      * @param druidQuery  The druid query to get the aggregations of.
-     * @param aliasMaker  The mapping from api to physical name.
      *
      * @return the list of aggregations.
      */
     protected List<RelBuilder.AggCall> getAllQueryAggregations(
             RelBuilder builder,
-            DruidAggregationQuery<?> druidQuery,
-            ApiToFieldMapper aliasMaker
+            DruidAggregationQuery<?> druidQuery
     ) {
         return druidQuery.getAggregations()
                 .stream()
@@ -285,6 +283,7 @@ public class DruidQueryToSqlConverter {
      *
      * @param builder  The RelBuilder created with Calcite.
      * @param druidQuery  The query to find grouping columns from.
+     * @param aliasMaker  The mapping from api to physical name.
      * @param timestampColumn  The name of the timestamp column in the database.
      *
      * @return all columns which should be grouped on.
@@ -292,6 +291,7 @@ public class DruidQueryToSqlConverter {
     protected List<RexNode> getAllGroupByColumns(
             RelBuilder builder,
             DruidAggregationQuery<?> druidQuery,
+            ApiToFieldMapper aliasMaker,
             String timestampColumn
     ) {
         Stream<RexNode> timeFilters = sqlTimeConverter.buildGroupBy(
@@ -302,6 +302,7 @@ public class DruidQueryToSqlConverter {
 
         Stream<RexNode> dimensionFilters = druidQuery.getDimensions().stream()
                 .map(Dimension::getApiName)
+                .map(aliasMaker)
                 .map(builder::field);
 
         return Stream.concat(timeFilters, dimensionFilters).collect(Collectors.toList());

@@ -11,6 +11,7 @@ import static org.apache.calcite.sql.fun.SqlStdOperatorTable.WEEK;
 import static org.apache.calcite.sql.fun.SqlStdOperatorTable.YEAR;
 
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
+import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 
@@ -49,6 +50,10 @@ public class DefaultSqlTimeConverter implements SqlTimeConverter {
 
     @Override
     public List<SqlDatePartFunction> timeGrainToDatePartFunctions(Granularity granularity) {
+        if (granularity instanceof ZonedTimeGrain) {
+            ZonedTimeGrain defaultTimeGrain = (ZonedTimeGrain) granularity;
+            return TIMEGRAIN_TO_GROUPBY.get(defaultTimeGrain.getBaseTimeGrain());
+        }
         return TIMEGRAIN_TO_GROUPBY.get(granularity);
     }
 

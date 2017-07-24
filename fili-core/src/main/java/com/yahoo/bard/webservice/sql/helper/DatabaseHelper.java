@@ -42,6 +42,6 @@ public class DatabaseHelper {
                 return columnInformation.getString(COLUMN_NAME);
             }
         }
-        throw new IllegalStateException("No TIMESTAMP column was found");
+        throw new IllegalStateException("No TIMESTAMP column was found for table " + table + " with schema " + schema);
     }
 }
