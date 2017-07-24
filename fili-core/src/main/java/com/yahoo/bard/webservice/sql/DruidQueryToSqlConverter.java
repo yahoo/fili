@@ -160,7 +160,7 @@ public class DruidQueryToSqlConverter {
      *
      * @return a collection of rexnodes to apply sorts in calcite.
      */
-    protected Collection<RexNode> getSort(
+    protected List<RexNode> getSort(
             RelBuilder builder,
             DruidAggregationQuery<?> druidQuery,
             ApiToFieldMapper aliasMaker,
@@ -188,13 +188,12 @@ public class DruidQueryToSqlConverter {
                         .forEach(metricSorts::add);
             }
         }
-        int metricsOffset = metricSorts.size();
 
         //todo test order by
         if (timePartFunctions == 0) {
             sorts.add(builder.field(timestampColumn));
         }
-        sorts.addAll(builder.fields().subList(druidQuery.getDimensions().size() + metricsOffset, groupBys));
+        sorts.addAll(builder.fields().subList(druidQuery.getDimensions().size(), groupBys));
         sorts.addAll(builder.fields().subList(0, druidQuery.getDimensions().size()));
         sorts.addAll(metricSorts);
 

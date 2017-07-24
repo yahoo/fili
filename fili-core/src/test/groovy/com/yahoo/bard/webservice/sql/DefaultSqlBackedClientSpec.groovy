@@ -141,7 +141,8 @@ class DefaultSqlBackedClientSpec extends Specification {
                 asList(COMMENT),
                 asList(sum(ADDED), sum(DELETED)),
                 asList(),
-                asList(interval(START, END))
+                asList(interval(START, END)),
+                null
         );
     }
 

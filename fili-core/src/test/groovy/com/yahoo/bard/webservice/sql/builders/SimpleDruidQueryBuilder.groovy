@@ -39,6 +39,7 @@ import com.yahoo.bard.webservice.druid.model.aggregation.DoubleSumAggregation
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
 import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.model.having.Having
+import com.yahoo.bard.webservice.druid.model.orderby.LimitSpec
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
@@ -119,7 +120,8 @@ class SimpleDruidQueryBuilder {
             List<String> dimensions,
             List<Aggregation> aggregations,
             List<PostAggregation> postAggs,
-            List<Interval> intervals
+            List<Interval> intervals,
+            LimitSpec limitSpec
     ) {
         return new GroupByQuery(
                 dataSource(name, metrics, dimensions),
@@ -130,7 +132,7 @@ class SimpleDruidQueryBuilder {
                 aggregations,
                 postAggs,
                 intervals,
-                null //todo what goes here
+                limitSpec
         )
     }
 
