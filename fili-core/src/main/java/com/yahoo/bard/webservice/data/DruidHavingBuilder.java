@@ -23,7 +23,7 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.HAVING_CUSTOM_OPERATOR_IMPROPER_RANGE;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.HAVING_CUSTOM_OPERATOR_TOO_FEW_PARAMETERS;
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.HAVING_CUSTOM_OPERATOR_WRONG_NUMBER_OF_PARAMETERS;
 
 /**
  * Class to hold static methods to build druid query model objects from ApiHaving.
@@ -88,7 +88,7 @@ public class DruidHavingBuilder {
         Having newHaving;
         if (operation.equals(HavingOperation.between) || operation.equals(HavingOperation.notBetween)) {
             if (values.size() != SIZE) {
-                throw new UnsupportedOperationException(HAVING_CUSTOM_OPERATOR_TOO_FEW_PARAMETERS.format
+                throw new UnsupportedOperationException(HAVING_CUSTOM_OPERATOR_WRONG_NUMBER_OF_PARAMETERS.format
                         (operation.name(), operation.name(), SIZE, values.size()));
             }
             double firstValue = values.get(0);

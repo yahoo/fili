@@ -253,7 +253,7 @@ public enum ErrorMessageFormat implements MessageFormatter {
 
     TOO_MANY_BACKING_DATA_SOURCES("TableDataSource built with too many backing data sources: %s"),
     TOO_FEW_BACKING_DATA_SOURCES("TableDataSource built with insufficient backing data sources: %s"),
-    HAVING_CUSTOM_OPERATOR_TOO_FEW_PARAMETERS("Wrong number of parameters provided for %s operator. " +
+    HAVING_CUSTOM_OPERATOR_WRONG_NUMBER_OF_PARAMETERS("Wrong number of parameters provided for %s operator. " +
                                               "%s operator needs %d parameters but found %d"),
     HAVING_CUSTOM_OPERATOR_IMPROPER_RANGE("Upper range cannot be less than the lower range for %s operator.")
     ;
