@@ -3,7 +3,6 @@
 package com.yahoo.bard.webservice.sql;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
-import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.having.Having;
 import com.yahoo.bard.webservice.druid.model.orderby.LimitSpec;
@@ -143,7 +142,7 @@ public class DruidQueryToSqlConverter {
                         getHavingFilter(builder, druidQuery, apiToFieldMapper)
                 )
                 .sort(
-                        getSort(builder, druidQuery, apiToFieldMapper)
+                        getSort(builder, druidQuery, apiToFieldMapper, timestampColumn)
                 );
         RelToSqlConverter relToSql = calciteHelper.getNewRelToSqlConverter();
         SqlPrettyWriter sqlWriter = calciteHelper.getNewSqlWriter();
@@ -157,18 +156,20 @@ public class DruidQueryToSqlConverter {
      * @param builder  The RelBuilder created with Calcite.
      * @param druidQuery  The query to find the sorting from.
      * @param aliasMaker  The mapping from api to physical names.
+     * @param timestampColumn  The name of the timestamp column in the database.
      *
      * @return a collection of rexnodes to apply sorts in calcite.
      */
     protected Collection<RexNode> getSort(
             RelBuilder builder,
             DruidAggregationQuery<?> druidQuery,
-            ApiToFieldMapper aliasMaker
+            ApiToFieldMapper aliasMaker,
+            String timestampColumn
     ) {
         // druid does NULLS FIRST
         List<RexNode> sorts = new ArrayList<>();
-        int groupBys = druidQuery.getDimensions().size() +
-                sqlTimeConverter.getNumberOfGroupByFunctions((TimeGrain) druidQuery.getGranularity());
+        int timePartFunctions = sqlTimeConverter.getNumberOfGroupByFunctions(druidQuery.getGranularity());
+        int groupBys = druidQuery.getDimensions().size() + timePartFunctions;
 
         List<RexNode> metricSorts = new ArrayList<>();
         if (druidQuery.getQueryType().equals(DefaultQueryType.GROUP_BY)) {
@@ -190,6 +191,9 @@ public class DruidQueryToSqlConverter {
         int metricsOffset = metricSorts.size();
 
         //todo test order by
+        if (timePartFunctions == 0) {
+            sorts.add(builder.field(timestampColumn));
+        }
         sorts.addAll(builder.fields().subList(druidQuery.getDimensions().size() + metricsOffset, groupBys));
         sorts.addAll(builder.fields().subList(0, druidQuery.getDimensions().size()));
         sorts.addAll(metricSorts);
@@ -294,7 +298,7 @@ public class DruidQueryToSqlConverter {
     ) {
         Stream<RexNode> timeFilters = sqlTimeConverter.buildGroupBy(
                 builder,
-                (TimeGrain) druidQuery.getGranularity(),
+                druidQuery.getGranularity(),
                 timestampColumn
         );
 

@@ -2,7 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.sql;
 
-import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
@@ -90,9 +89,9 @@ public class SqlResultSetProcessor {
                 DateTime timestamp = sqlTimeConverter.getIntervalStart(
                         groupByCount,
                         row,
-                        (TimeGrain) druidQuery.getGranularity()
+                        druidQuery.getGranularity()
                 );
-                // todo probably shouldn't be UTC here
+                // todo shouldn't be UTC here
                 jsonWriter.writeStringField("timestamp", timestamp.toDateTime(DateTimeZone.UTC).toString());
                 jsonWriter.writeObjectFieldStart("event");
 
@@ -124,7 +123,7 @@ public class SqlResultSetProcessor {
             JsonGenerator jsonWriter,
             String[] row
     ) throws IOException {
-        int lastTimeIndex = sqlTimeConverter.getNumberOfGroupByFunctions((TimeGrain) druidQuery.getGranularity());
+        int lastTimeIndex = sqlTimeConverter.getNumberOfGroupByFunctions(druidQuery.getGranularity());
         int columnCount = columnToColumnName.size();
 
         for (int i = 0; i < columnCount; i++) {

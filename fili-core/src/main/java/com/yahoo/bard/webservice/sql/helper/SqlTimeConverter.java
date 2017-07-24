@@ -10,7 +10,7 @@ import static org.apache.calcite.sql.fun.SqlStdOperatorTable.SECOND;
 import static org.apache.calcite.sql.fun.SqlStdOperatorTable.WEEK;
 import static org.apache.calcite.sql.fun.SqlStdOperatorTable.YEAR;
 
-import com.yahoo.bard.webservice.data.time.TimeGrain;
+import com.yahoo.bard.webservice.druid.model.query.Granularity;
 
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.fun.SqlDatePartFunction;
@@ -19,6 +19,7 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
 
+import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
@@ -31,13 +32,13 @@ public interface SqlTimeConverter {
 
     /**
      * Gets a list of {@link SqlDatePartFunction} to be performed on a timestamp
-     * which can be used to group by the given {@link TimeGrain}.
+     * which can be used to group by the given {@link Granularity}.
      *
-     * @param timeGrain  The timegrain to map to a list of {@link SqlDatePartFunction}.
+     * @param granularity  The granularity to map to a list of {@link SqlDatePartFunction}.
      *
      * @return the list of sql functions.
      */
-    List<SqlDatePartFunction> timeGrainToDatePartFunctions(TimeGrain timeGrain);
+    List<SqlDatePartFunction> timeGrainToDatePartFunctions(Granularity granularity);
 
     /**
      * Builds the time filters to only select rows that occur within the intervals of the query.
@@ -52,47 +53,58 @@ public interface SqlTimeConverter {
     RexNode buildTimeFilters(RelBuilder builder, Collection<Interval> intervals, String timestampColumn);
 
     /**
-     * Gets the number of {@link SqlDatePartFunction} used for the given {@link TimeGrain}.
+     * Gets the number of {@link SqlDatePartFunction} used for the given {@link Granularity}.
      *
-     * @param timeGrain  The timegrain to find groupBy functions for.
+     * @param granularity  The timegrain to find groupBy functions for.
      *
-     * @return the number of functions used to groupBy the given timeGrain.
+     * @return the number of functions used to groupBy the given granularity.
      */
-    default int getNumberOfGroupByFunctions(TimeGrain timeGrain) {
-        return timeGrainToDatePartFunctions(timeGrain).size();
+    default int getNumberOfGroupByFunctions(Granularity granularity) {
+        return timeGrainToDatePartFunctions(granularity).size();
     }
 
     /**
-     * Builds a list of {@link RexNode} which will effectively groupBy the given {@link TimeGrain}.
+     * Builds a list of {@link RexNode} which will effectively groupBy the given {@link Granularity}.
      *
      * @param builder  The RelBuilder used with calcite to build queries.
-     * @param timeGrain  The timeGrain to build the groupBy for.
+     * @param granularity  The granularity to build the groupBy for.
      * @param timeColumn  The name of the timestamp column.
      *
      * @return the list of {@link RexNode} needed in the groupBy.
      */
-    default Stream<RexNode> buildGroupBy(RelBuilder builder, TimeGrain timeGrain, String timeColumn) {
-        return timeGrainToDatePartFunctions(timeGrain)
+    default Stream<RexNode> buildGroupBy(RelBuilder builder, Granularity granularity, String timeColumn) {
+        List<SqlDatePartFunction> sqlDatePartFunctions = timeGrainToDatePartFunctions(granularity);
+        if (sqlDatePartFunctions.isEmpty()) {
+            return Stream.of(builder.field(timeColumn));
+        }
+
+        return sqlDatePartFunctions
                 .stream()
                 .map(sqlDatePartFunction -> builder.call(sqlDatePartFunction, builder.field(timeColumn)));
     }
 
     /**
      * Given an array of strings (a row from a {@link java.sql.ResultSet}) and the
-     * {@link TimeGrain} used to make groupBy statements on time, it will parse out a {@link DateTime}
+     * {@link Granularity} used to make groupBy statements on time, it will parse out a {@link DateTime}
      * for the row which represents the beginning of the interval it was grouped on.
      *
      * @param offset the last column before the date fields.
      * @param row  The results returned by Sql needed to read the time columns.
-     * @param timeGrain  The timeGrain which was used when calling
-     * {@link #buildGroupBy(RelBuilder, TimeGrain, String)}.
+     * @param granularity  The granularity which was used when calling
+     * {@link #buildGroupBy(RelBuilder, Granularity, String)}.
      *
      * @return the datetime for the start of the interval.
      */
-    default DateTime getIntervalStart(int offset, String[] row, TimeGrain timeGrain) {
+    default DateTime getIntervalStart(int offset, String[] row, Granularity granularity) {
+        List<SqlDatePartFunction> times = timeGrainToDatePartFunctions(granularity);
+
+        if (times.isEmpty()) {
+            Timestamp timestamp = Timestamp.valueOf(row[offset]);
+            return new DateTime(timestamp.getTime());
+        }
+
         DateTime resultTimeStamp = new DateTime(0, DateTimeZone.UTC);
 
-        List<SqlDatePartFunction> times = timeGrainToDatePartFunctions(timeGrain);
         for (int i = 0; i < times.size(); i++) {
             int value = Integer.parseInt(row[offset + i]);
             SqlDatePartFunction fn = times.get(i);

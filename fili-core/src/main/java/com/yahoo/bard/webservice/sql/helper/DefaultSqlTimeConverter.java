@@ -11,7 +11,8 @@ import static org.apache.calcite.sql.fun.SqlStdOperatorTable.WEEK;
 import static org.apache.calcite.sql.fun.SqlStdOperatorTable.YEAR;
 
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
-import com.yahoo.bard.webservice.data.time.TimeGrain;
+import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
+import com.yahoo.bard.webservice.druid.model.query.Granularity;
 
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.fun.SqlDatePartFunction;
@@ -21,6 +22,7 @@ import org.joda.time.Interval;
 
 import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,9 +34,10 @@ import java.util.stream.Collectors;
  */
 public class DefaultSqlTimeConverter implements SqlTimeConverter {
     // This mapping shows what information we need to group for each granularity
-    private static final Map<TimeGrain, List<SqlDatePartFunction>> TIMEGRAIN_TO_GROUPBY = new
-            HashMap<TimeGrain, List<SqlDatePartFunction>>() {
+    private static final Map<Granularity, List<SqlDatePartFunction>> TIMEGRAIN_TO_GROUPBY = new
+            HashMap<Granularity, List<SqlDatePartFunction>>() {
                 {
+                    put(AllGranularity.INSTANCE, Collections.emptyList());
                     put(DefaultTimeGrain.YEAR, asList(YEAR));
                     put(DefaultTimeGrain.MONTH, asList(YEAR, MONTH));
                     put(DefaultTimeGrain.WEEK, asList(YEAR, WEEK));
@@ -45,8 +48,8 @@ public class DefaultSqlTimeConverter implements SqlTimeConverter {
             };
 
     @Override
-    public List<SqlDatePartFunction> timeGrainToDatePartFunctions(TimeGrain timeGrain) {
-        return TIMEGRAIN_TO_GROUPBY.get(timeGrain);
+    public List<SqlDatePartFunction> timeGrainToDatePartFunctions(Granularity granularity) {
+        return TIMEGRAIN_TO_GROUPBY.get(granularity);
     }
 
     /**

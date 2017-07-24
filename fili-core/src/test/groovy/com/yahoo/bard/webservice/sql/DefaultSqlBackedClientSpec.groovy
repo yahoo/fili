@@ -8,6 +8,7 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MINUTE
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MONTH
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.WEEK
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.YEAR
+import static com.yahoo.bard.webservice.druid.model.query.AllGranularity.INSTANCE
 import static com.yahoo.bard.webservice.sql.builders.Aggregator.sum
 import static com.yahoo.bard.webservice.sql.builders.Filters.not
 import static com.yahoo.bard.webservice.sql.builders.Filters.or
@@ -24,7 +25,6 @@ import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.get
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.getDimensions
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.groupByQuery
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.timeSeriesQuery
-import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.topNQuery
 import static com.yahoo.bard.webservice.sql.database.Database.ADDED
 import static com.yahoo.bard.webservice.sql.database.Database.COMMENT
 import static com.yahoo.bard.webservice.sql.database.Database.DELETED
@@ -47,9 +47,9 @@ import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.model.having.Having
 import com.yahoo.bard.webservice.druid.model.query.AbstractDruidAggregationQuery
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery
+import com.yahoo.bard.webservice.druid.model.query.Granularity
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery
-import com.yahoo.bard.webservice.druid.model.query.TopNQuery
 import com.yahoo.bard.webservice.sql.database.Database
 import com.yahoo.bard.webservice.table.Column
 
@@ -126,7 +126,7 @@ class DefaultSqlBackedClientSpec extends Specification {
 
 
     private static GroupByQuery getGroupByQuery(
-            DefaultTimeGrain timeGrain,
+            Granularity timeGrain,
             Filter filter,
             Having having,
             List<String> dimensions
@@ -228,6 +228,7 @@ class DefaultSqlBackedClientSpec extends Specification {
 
         where: "we have"
         timeGrain | dims                     | filter                         | having                          | size
+        INSTANCE  | asList()                 | null                           | null                            | 39244
         HOUR      | asList(IS_NEW, IS_ROBOT) | null                           | and(gt(ADDED, 1), lt(ADDED, 1)) | 0
         HOUR      | asList(IS_ROBOT)         | null                           | null                            | 24 * 2
         DAY       | asList(IS_NEW, IS_ROBOT) | null                           | null                            | 4

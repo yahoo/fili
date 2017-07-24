@@ -39,13 +39,12 @@ import com.yahoo.bard.webservice.druid.model.aggregation.DoubleSumAggregation
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
 import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.model.having.Having
-import com.yahoo.bard.webservice.druid.model.orderby.TopNMetric
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
+import com.yahoo.bard.webservice.druid.model.query.Granularity
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery
-import com.yahoo.bard.webservice.druid.model.query.TopNQuery
 import com.yahoo.bard.webservice.metadata.DataSourceMetadata
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.Column
@@ -93,7 +92,7 @@ class SimpleDruidQueryBuilder {
     public static TimeSeriesQuery timeSeriesQuery(
             String name,
             Filter filter,
-            DefaultTimeGrain timeGrain,
+            Granularity timeGrain,
             List<String> metrics,
             List<String> dimensions,
             List<Aggregation> aggregations,
@@ -115,7 +114,7 @@ class SimpleDruidQueryBuilder {
             Filter filter,
             Having having,
             List<Dimension> groupByDimensions,
-            DefaultTimeGrain timeGrain,
+            Granularity timeGrain,
             List<String> metrics,
             List<String> dimensions,
             List<Aggregation> aggregations,

@@ -36,6 +36,6 @@ public class TimestampUtils {
      * @return the timestamp created from this dateTime.
      */
     public static Timestamp timestampFromDateTime(DateTime dateTime) {
-        return Timestamp.valueOf(dateTime.toString("yyyy-MM-dd HH:mm:ss"));
+        return Timestamp.valueOf(dateTime.toString("yyyy-MM-dd HH:mm:ss.S"));
     }
 }
