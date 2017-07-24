@@ -16,16 +16,16 @@ import spock.lang.Unroll
 
 @Timeout(30)    // Fail test if hangs
 class TablesServletSpec extends Specification {
-    JerseyTestBinder jtb
+    JerseyTestBinder jerseyTestBinder
 
     def setup() {
         // Create the test web container to test the resources
-        jtb = new WikiJerseyTestBinder(TablesServlet.class)
+        jerseyTestBinder = new WikiJerseyTestBinder(TablesServlet.class)
     }
 
     def cleanup() {
         // Release the test web container
-        jtb.tearDown()
+        jerseyTestBinder.tearDown()
     }
 
     def "print the details of all the tables in the Druid instance"() {
@@ -101,11 +101,12 @@ class TablesServletSpec extends Specification {
     @Unroll
     def "Querying for table #tableName at granularity #granularity returns that table's information"() {
         setup:
-        List<String> dimensionNames = ("page, language, user, unpatrolled, newPage, robot, anonymous, namespace, " +
-                "continent, country, region, city").split(',').collect { it.trim()}
+        List<String> dimensionNames = ("comment, countryIsoCode, regionIsoCode, page, user, isUnpatrolled, isNew, isRobot, isAnonymous," +
+                " isMinor, namespace, channel, countryName, regionName, metroCode, cityName").split(',').collect { it.trim()}
 
         List<String> metricNames = "count, added, delta, deleted".split(',').collect{ it.trim()}
         String expectedResponse = """{
+                                        "availableIntervals":[],
                                         "name":"$tableName",
                                         "longName":"$tableName",
                                         "granularity":"hour",
@@ -154,7 +155,7 @@ class TablesServletSpec extends Specification {
 
     String makeRequest(String target) {
         // Set target of call
-        def httpCall = jtb.getHarness().target(target)
+        def httpCall = jerseyTestBinder.getHarness().target(target)
 
         // Make the call
         httpCall.request().get(String.class)

@@ -3,11 +3,14 @@
 package com.yahoo.wiki.webservice.web.endpoints
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
+import com.yahoo.bard.webservice.table.availability.AvailabilityTestingUtils
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.util.JsonSortStrategy
 import com.yahoo.bard.webservice.web.endpoints.TablesServlet
 import com.yahoo.wiki.webservice.application.WikiJerseyTestBinder
 import com.yahoo.wiki.webservice.data.config.names.WikiDruidTableName
+
+import org.joda.time.Interval
 
 import spock.lang.Specification
 import spock.lang.Timeout
@@ -16,16 +19,21 @@ import spock.lang.Unroll
 @Timeout(30)
 // Fail test if hangs
 class TablesServletSpec extends Specification {
-    JerseyTestBinder jtb
+    JerseyTestBinder jerseyTestBinder
 
     def setup() {
         // Create the test web container to test the resources
-        jtb = new WikiJerseyTestBinder(TablesServlet.class)
+        jerseyTestBinder = new WikiJerseyTestBinder(TablesServlet.class)
+        AvailabilityTestingUtils.populatePhysicalTableCacheIntervals(
+                jerseyTestBinder,
+                new Interval("2018-01-01/2018-02-01"),
+                [WikiDruidTableName.WIKITICKER.asName()] as Set
+        )
     }
 
     def cleanup() {
         // Release the test web container
-        jtb.tearDown()
+        jerseyTestBinder.tearDown()
     }
 
     def "print the details of all the tables in the Druid instance"() {
@@ -91,6 +99,7 @@ class TablesServletSpec extends Specification {
 
         List<String> metricNames = "count, added, delta, deleted, user_unique".split(',').collect { it.trim() }
         String expectedResponse = """{
+                                        "availableIntervals":["2018-01-01T00:00:00.000Z/2018-02-01T00:00:00.000Z"],
                                         "name":"$tableName",
                                         "longName":"$tableName",
                                         "granularity":"hour",
@@ -99,30 +108,30 @@ class TablesServletSpec extends Specification {
                                         "description": "$tableName",
                                         "dimensions": [
                                             ${
-            dimensionNames.collect {
-                """{
-                                                    "category": "General",
-                                                    "name": "$it",
-                                                    "longName": "$it",
-                                                    "cardinality": 0,
-                                                    "uri": "http://localhost:9998/dimensions/$it"
-                                                    }"""
-            }
-            .join(',')
-        }
+                                                dimensionNames.collect {
+                                                    """{
+                                                        "category": "General",
+                                                        "name": "$it",
+                                                        "longName": "$it",
+                                                        "cardinality": 0,
+                                                        "uri": "http://localhost:9998/dimensions/$it"
+                                                    }""" 
+                                                }
+                                                .join(',')
+                                            }
                                         ],
                                         "metrics": [
                                             ${
-            metricNames.collect {
-                """{
+                                                metricNames.collect {
+                                                    """{
                                                         "category": "General",
                                                         "name": "$it",
                                                         "longName": "$it",
                                                         "uri": "http://localhost:9998/metrics/$it"
-                                                    }"""
-            }
-            .join(',')
-        }
+                                                    }""" 
+                                                }
+                                                .join(',')
+                                            }
                                         ]
                                     }"""
 
@@ -133,15 +142,15 @@ class TablesServletSpec extends Specification {
         GroovyTestUtils.compareJson(result, expectedResponse, JsonSortStrategy.SORT_BOTH)
 
         where:
-        tableName = WikiDruidTableName.WIKITICKER.asName();
+        tableName = WikiDruidTableName.WIKITICKER.asName()
         granularity = "hour"
     }
 
     String makeRequest(String target) {
-        // Set target of call
-        def httpCall = jtb.getHarness().target(target)
-
-        // Make the call
-        httpCall.request().get(String.class)
+        jerseyTestBinder
+                .getHarness()
+                .target(target)
+                .request()
+                .get(String.class)
     }
 }

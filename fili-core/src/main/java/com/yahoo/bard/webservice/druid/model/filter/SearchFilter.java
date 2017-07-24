@@ -42,6 +42,23 @@ public class SearchFilter extends DimensionalFilter {
         QueryType(String type) {
             this.type = type;
         }
+
+        /**
+         * Get the QueryType enum from it's search type.
+         *  todo rebase and cleanup when pr396 gets merged
+         *
+         * @param type  The type of query (i.e. "insensitive_contains").
+         *
+         * @return the enum QueryType.
+         */
+        public static QueryType fromType(String type) {
+            for (QueryType queryType : values()) {
+                if (queryType.type.equals(type)) {
+                    return queryType;
+                }
+            }
+            return null;
+        }
     }
 
     private final Map<String, String> query;

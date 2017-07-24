@@ -4,7 +4,6 @@ package com.yahoo.bard.webservice.web
 
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.PARTIAL_DATA
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
-import static com.yahoo.bard.webservice.util.SimplifiedIntervalList.NO_INTERVALS
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.config.SystemConfig
@@ -118,7 +117,7 @@ class ResponseSpec extends Specification {
     Pagination pagination
     Map<MetricColumn, Object> metricColumnsMap
     Set<MetricColumn> defaultRequestedMetrics
-    SimplifiedIntervalList volatileIntervals = NO_INTERVALS;
+    SimplifiedIntervalList volatileIntervals = new SimplifiedIntervalList();
 
     GString defaultJsonFormat = """{
                                     "rows" : [ {
@@ -187,7 +186,7 @@ class ResponseSpec extends Specification {
         response = new Response(
                 buildTestResultSet(metricColumnsMap, defaultRequestedMetrics),
                 apiRequest,
-                NO_INTERVALS,
+                new SimplifiedIntervalList(),
                 volatileIntervals,
                 [:],
                 (Pagination) null,
@@ -285,7 +284,7 @@ class ResponseSpec extends Specification {
         resultSet = new ResultSet(schema, [result1, result2])
 
         //response without pagination
-        response = new Response(resultSet, apiRequest, NO_INTERVALS, volatileIntervals,  [:], (Pagination) null, MAPPERS)
+        response = new Response(resultSet, apiRequest, new SimplifiedIntervalList(), volatileIntervals,  [:], (Pagination) null, MAPPERS)
 
         pagination = Stub(Pagination) {
             getFirstPage() >> 1
@@ -308,7 +307,7 @@ class ResponseSpec extends Specification {
         Response paginatedResponse = new Response(
                 resultSet,
                 apiRequest,
-                NO_INTERVALS,
+                new SimplifiedIntervalList(),
                 volatileIntervals,
                 bodyLinks,
                 pagination,
@@ -359,8 +358,8 @@ class ResponseSpec extends Specification {
         Response complexResponse = new Response(
                 resultSetWithComplexMetrics,
                 apiRequest,
-                NO_INTERVALS,
-                NO_INTERVALS,
+                new SimplifiedIntervalList(),
+                new SimplifiedIntervalList(),
                 [:],
                 (Pagination) null,
                 MAPPERS
@@ -393,7 +392,7 @@ class ResponseSpec extends Specification {
                         }
                     }"""
 
-        response = new Response(resultSet, apiRequest, NO_INTERVALS, volatileIntervals, bodyLinks, pagination, MAPPERS)
+        response = new Response(resultSet, apiRequest, new SimplifiedIntervalList(), volatileIntervals, bodyLinks, pagination, MAPPERS)
 
         String expectedJson = withMetaObject(defaultJsonApiFormat, metaBlock)
 
@@ -504,7 +503,7 @@ class ResponseSpec extends Specification {
         Response response = new Response(
                 resultSet,
                 apiRequest1,
-                NO_INTERVALS,
+                new SimplifiedIntervalList(),
                 volatileIntervals,
                 [:],
                 (Pagination) null,
@@ -611,7 +610,7 @@ class ResponseSpec extends Specification {
         response = new Response(
                 buildTestResultSet(metricColumnsMap, defaultRequestedMetrics),
                 apiRequest,
-                NO_INTERVALS,
+                new SimplifiedIntervalList(),
                 volatileIntervals,
                 [:],
                 (Pagination) null,

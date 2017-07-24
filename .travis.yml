@@ -30,6 +30,7 @@ before_script:
 
 script:
 - travis/deploy.bash
+- ssh-agent -k || true
 
 after_success:
 - echo "Success."

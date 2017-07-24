@@ -769,7 +769,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
             );
         }
         try {
-            MemTupleDataCache<String> cache = new MemTupleDataCache<>();
+            MemTupleDataCache<Long, String> cache = new MemTupleDataCache<>();
             LOG.info("MemcachedClient Version 2 started {}", cache);
             return cache;
         } catch (IOException e) {
@@ -805,7 +805,14 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      * @return the instance of eTag cache
      */
     private DataCache<?> buildETagCahe() {
-        return buildTtlCache();
+        try {
+            MemTupleDataCache<String, String> cache = new MemTupleDataCache<>();
+            LOG.info("MemcachedClient Version 2 started {}", cache);
+            return cache;
+        } catch (IOException e) {
+            LOG.error("MemcachedClient Version 2 failed to start {}", e);
+            throw new IllegalStateException(e);
+        }
     }
 
     /**
