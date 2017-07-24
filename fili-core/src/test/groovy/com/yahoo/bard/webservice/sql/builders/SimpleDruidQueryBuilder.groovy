@@ -48,6 +48,7 @@ import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery
 import com.yahoo.bard.webservice.metadata.DataSourceMetadata
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
+import com.yahoo.bard.webservice.sql.ApiToFieldMapper
 import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable
 import com.yahoo.bard.webservice.table.ConstrainedTable
@@ -65,7 +66,8 @@ class SimpleDruidQueryBuilder {
     public static final String START = "2015-09-12T00:00:00.000Z"
     public static final String END = "2015-09-13T00:00:00.000Z"
 
-    private Simple() {
+    public static ApiToFieldMapper getApiToFieldMapper() {
+        return new ApiToFieldMapper(getDictionary().get(WIKITICKER).schema)
     }
 
     public static PhysicalTableDictionary getDictionary() {
@@ -186,7 +188,7 @@ class SimpleDruidQueryBuilder {
     }
 
     public static List<Dimension> getDimensions(String... dimensions) {
-        return getDimensions(Arrays.asList(dimensions))
+        return getDimensions(asList(dimensions))
     }
 
     public static List<Dimension> getDimensions(List<String> dimensions) {
@@ -211,7 +213,7 @@ class SimpleDruidQueryBuilder {
     }
 
     public static <T> Set<T> setOf(T... e) {
-        return e == null ? Collections.emptySet() : new HashSet<>(Arrays.asList(e));
+        return e == null ? Collections.emptySet() : new HashSet<>(asList(e));
     }
 
     public static <T> Set<T> setOf(List<T> e) {
@@ -223,7 +225,7 @@ class SimpleDruidQueryBuilder {
         return new ArithmeticPostAggregation(
                 "badTest",
                 ArithmeticPostAggregation.ArithmeticPostAggregationFunction.PLUS,
-                Arrays.asList(
+                asList(
                         new FieldAccessorPostAggregation(
                                 new DoubleSumAggregation(
                                         ADDED,

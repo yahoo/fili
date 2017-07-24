@@ -10,7 +10,6 @@ import static com.yahoo.bard.webservice.sql.builders.Aggregator.sum
 import static com.yahoo.bard.webservice.sql.builders.Intervals.interval
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.END
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.START
-import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.getDictionary
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.getDimensions
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.groupByQuery
 import static com.yahoo.bard.webservice.sql.database.Database.ADDED
@@ -26,6 +25,7 @@ import com.yahoo.bard.webservice.druid.model.orderby.SortDirection
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery
 import com.yahoo.bard.webservice.druid.model.query.Granularity
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
+import com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder
 import com.yahoo.bard.webservice.sql.database.Database
 import com.yahoo.bard.webservice.sql.helper.CalciteHelper
 
@@ -33,10 +33,9 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 class DruidQueryToSqlConverterSpec extends Specification {
-    CalciteHelper calciteHelper = new CalciteHelper(Database.getDataSource(), CalciteHelper.DEFAULT_SCHEMA)
-    DruidQueryToSqlConverter druidQueryToSqlConverter = new DruidQueryToSqlConverter(calciteHelper)
-    def schema = getDictionary("", "").get(WIKITICKER).getSchema()
-    def apiToFieldMapper = new ApiToFieldMapper(schema)
+    static CalciteHelper calciteHelper = new CalciteHelper(Database.getDataSource(), CalciteHelper.DEFAULT_SCHEMA)
+    static DruidQueryToSqlConverter druidQueryToSqlConverter = new DruidQueryToSqlConverter(calciteHelper)
+    static ApiToFieldMapper apiToFieldMapper = SimpleDruidQueryBuilder.getApiToFieldMapper()
 
     private static GroupByQuery getGroupByQuery(
             Granularity timeGrain,

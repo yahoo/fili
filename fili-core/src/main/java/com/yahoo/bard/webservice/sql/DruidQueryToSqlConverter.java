@@ -189,7 +189,6 @@ public class DruidQueryToSqlConverter {
             }
         }
 
-        //todo test order by
         if (timePartFunctions == 0) {
             sorts.add(builder.field(timestampColumn));
         }

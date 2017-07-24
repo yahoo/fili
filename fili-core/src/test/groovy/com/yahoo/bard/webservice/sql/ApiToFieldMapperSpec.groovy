@@ -5,17 +5,17 @@ package com.yahoo.bard.webservice.sql
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.getDictionary
 import static com.yahoo.bard.webservice.sql.database.Database.WIKITICKER
 
+import com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder
+
 import spock.lang.Specification
 
 class ApiToFieldMapperSpec extends Specification {
-    static ApiToFieldMapper aliasMaker
+    static ApiToFieldMapper aliasMaker = SimpleDruidQueryBuilder.getApiToFieldMapper();
     static List<String> allColumns
 
     def setup() {
         def schema = getDictionary("api_", "field_").get(WIKITICKER).getSchema()
         allColumns = schema.columnNames as List
-
-        aliasMaker = new ApiToFieldMapper(schema)
     }
 
     def "Apply"() {
