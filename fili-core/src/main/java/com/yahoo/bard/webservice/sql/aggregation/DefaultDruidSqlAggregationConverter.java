@@ -15,8 +15,6 @@ import java.util.Optional;
  * The default implementation of sql aggregations based on druid aggregations.
  */
 public class DefaultDruidSqlAggregationConverter implements DruidSqlAggregationConverter {
-    private static final Logger LOG = LoggerFactory.getLogger(DefaultDruidSqlAggregationConverter.class);
-
     /**
      * Constructor.
      */
@@ -27,15 +25,9 @@ public class DefaultDruidSqlAggregationConverter implements DruidSqlAggregationC
     @Override
     public Optional<SqlAggregationBuilder> fromDruidType(Aggregation aggregation) {
         String aggregationType = aggregation.getType().toLowerCase(Locale.ENGLISH);
-        Optional<SqlAggregationBuilder> sqlAggregationBuilder = Arrays.stream(DefaultSqlAggregationType.values())
+        return Arrays.stream(DefaultSqlAggregationType.values())
                 .filter(sqlAggregationType -> aggregationType.contains(sqlAggregationType.type))
                 .map(sqlAggregationType -> sqlAggregationType.with(aggregation))
                 .findFirst();
-
-        if (!sqlAggregationBuilder.isPresent()) {
-            LOG.warn("No Sql Aggregation matches {}", aggregationType);
-        }
-
-        return sqlAggregationBuilder;
     }
 }

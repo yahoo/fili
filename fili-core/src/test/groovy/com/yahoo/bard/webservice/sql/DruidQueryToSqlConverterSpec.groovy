@@ -75,7 +75,7 @@ class DruidQueryToSqlConverterSpec extends Specification {
         def sql = druidQueryToSqlConverter.buildSqlQuery(calciteHelper.getConnection(), query, apiToFieldMapper)
 
         expect:
-        sql.contains(expectedOutput)
+        sql.endsWith(expectedOutput)
 
         where:
         grain    | dims               | metrics                | metricDirections  | expectedOutput

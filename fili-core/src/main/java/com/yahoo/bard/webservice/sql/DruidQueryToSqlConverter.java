@@ -121,7 +121,7 @@ public class DruidQueryToSqlConverter {
                 sqlTableName
         );
 
-        LOG.info("Using timestamp column of '{}' for table {}", timestampColumn, sqlTableName);
+        LOG.debug("Using timestamp column of '{}' for table {}", timestampColumn, sqlTableName);
 
         RelBuilder builder = calciteHelper.getNewRelBuilder();
         builder.scan(sqlTableName)
@@ -272,7 +272,12 @@ public class DruidQueryToSqlConverter {
         return druidQuery.getAggregations()
                 .stream()
                 .map(druidSqlAggregationConverter::fromDruidType)
-                .filter(Optional::isPresent)
+                .filter(sqlAggregationBuilder -> {
+                    if (!sqlAggregationBuilder.isPresent()) {
+                       LOG.warn("Couldn't build sql aggregation with {}", sqlAggregationBuilder);
+                    }
+                    return sqlAggregationBuilder.isPresent();
+                })
                 .map(Optional::get)
                 .map(sqlAggregationBuilder -> sqlAggregationBuilder.build(builder))
                 .collect(Collectors.toList());

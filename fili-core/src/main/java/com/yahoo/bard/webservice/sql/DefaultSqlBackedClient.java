@@ -84,7 +84,6 @@ public class DefaultSqlBackedClient implements SqlBackedClient {
             SuccessCallback successCallback,
             FailureCallback failureCallback
     ) {
-        // todo requestlog context stuff
         final RequestLog logCtx = RequestLog.dump();
         return CompletableFuture.supplyAsync(() -> {
                     try {
@@ -123,7 +122,7 @@ public class DefaultSqlBackedClient implements SqlBackedClient {
 
         try (Connection connection = calciteHelper.getConnection()) {
             String sqlQuery = druidQueryToSqlConverter.buildSqlQuery(connection, druidQuery, aliasMaker);
-            LOG.info("Executing \n{}", sqlQuery);
+            LOG.debug("Executing \n{}", sqlQuery);
 
             SqlResultSetProcessor resultSetProcessor = new SqlResultSetProcessor(
                     druidQuery,
@@ -142,7 +141,7 @@ public class DefaultSqlBackedClient implements SqlBackedClient {
             }
 
             JsonNode jsonNode = resultSetProcessor.process();
-            LOG.debug("Created response: {}", jsonNode);
+            LOG.trace("Created response: {}", jsonNode);
             return jsonNode;
 
         } catch (SQLException e) {

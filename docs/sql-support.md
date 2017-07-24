@@ -6,32 +6,33 @@ note that there are some restrictions since Fili is optimized for Druid.
 - Set your database url
     - `bard__database_url = jdbc:h2:mem:test`
     
-- Set your database driver (TODO make sure to include maven repo if needed)
-    - `bard_database_driver = org.h2.Driver`
+- Set your database driver
+    - `bard__database_driver = org.h2.Driver`
     
-- Set your database schema (default is PUBLIC)
-    - `bard_database_schema =` 
+- Set your database schema (default is `PUBLIC`)
+    - `bard__database_schema =` 
         
-        NOTE: this is fine unless you did `create schema "name"; set schema "name";`
+        NOTE: this is probably fine unless you did `create schema "name"; set schema "name";`
         (i.e. `SELECT * FROM "SCHEM_NAME"."TABLE_NAME";`)
         
 - Set your username/password
     - `bard__database_username = `
     - `bard__database_password = `
+    
+You'll also want to make sure you don't load any SQL backed dimensions using `DruidDimensionsLoader`.
 
 ## Todo
 - Implement lookback/nested queries/any other queries
-- Add a proper signal for queries to be sent to sql instead of druid
 
 ## Limitations
 - Character sets. Basically don't try to query unicode characters unless your database supports them.
-- MYSQL databases are **much** slower than druid at doing TopN queries.
+- MySQL databases are **much slower** than druid at doing TopN queries.
  *Do **NOT** make TopN queries over large amounts of time with small buckets.* (For example, don't ask for the TopN from every hour over an entire year.) 
 
 ### Supported queries
 * timeseries
 * groupBy
-* topN
+* topN (Requires: `bard__top_n_enabled=false` to be set)
 
 ### Notable Restrictions
 
