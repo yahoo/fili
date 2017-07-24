@@ -16,7 +16,6 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,10 +88,10 @@ public class SqlResultSetProcessor {
                 DateTime timestamp = sqlTimeConverter.getIntervalStart(
                         groupByCount,
                         row,
-                        druidQuery.getGranularity()
+                        druidQuery
                 );
-                // todo shouldn't be UTC here
-                jsonWriter.writeStringField("timestamp", timestamp.toDateTime(DateTimeZone.UTC).toString());
+
+                jsonWriter.writeStringField("timestamp", timestamp.toString());
                 jsonWriter.writeObjectFieldStart("event");
 
                 processRow(resultTypeMapper, jsonWriter, row);

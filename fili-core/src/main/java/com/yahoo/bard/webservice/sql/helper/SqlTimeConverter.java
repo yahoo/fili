@@ -10,6 +10,7 @@ import static org.apache.calcite.sql.fun.SqlStdOperatorTable.SECOND;
 import static org.apache.calcite.sql.fun.SqlStdOperatorTable.WEEK;
 import static org.apache.calcite.sql.fun.SqlStdOperatorTable.YEAR;
 
+import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 
 import org.apache.calcite.rex.RexNode;
@@ -20,8 +21,11 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
 
 import java.sql.Timestamp;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 /**
@@ -90,20 +94,27 @@ public interface SqlTimeConverter {
      *
      * @param offset the last column before the date fields.
      * @param row  The results returned by Sql needed to read the time columns.
-     * @param granularity  The granularity which was used when calling
+     * @param druidQuery  The original druid query which was made using calling
      * {@link #buildGroupBy(RelBuilder, Granularity, String)}.
      *
      * @return the datetime for the start of the interval.
      */
-    default DateTime getIntervalStart(int offset, String[] row, Granularity granularity) {
-        List<SqlDatePartFunction> times = timeGrainToDatePartFunctions(granularity);
+    default DateTime getIntervalStart(int offset, String[] row, DruidAggregationQuery<?> druidQuery) {
+        List<SqlDatePartFunction> times = timeGrainToDatePartFunctions(druidQuery.getGranularity());
+
+        DateTimeZone timeZone = druidQuery.getDataSource()
+                .getPhysicalTable()
+                .getSchema()
+                .getTimeGrain()
+                .getTimeZone();
 
         if (times.isEmpty()) {
             Timestamp timestamp = Timestamp.valueOf(row[offset]);
-            return new DateTime(timestamp.getTime());
+            ZonedDateTime zonedDateTime = timestamp.toLocalDateTime().atZone(ZoneId.of(timeZone.getID()));
+            return new DateTime(TimeUnit.SECONDS.toMillis(zonedDateTime.toEpochSecond()), timeZone);
         }
 
-        DateTime resultTimeStamp = new DateTime(0, DateTimeZone.UTC);
+        DateTime resultTimeStamp = new DateTime(0, timeZone);
 
         for (int i = 0; i < times.size(); i++) {
             int value = Integer.parseInt(row[offset + i]);
