@@ -24,6 +24,8 @@ import java.util.Optional;
  *
  */
 public class SearchFilter extends DimensionalFilter {
+    private static final String QUERY_TYPE = "type";
+    private static final String QUERY_VALUE = "value";
 
     /**
      * Query type for the search.
@@ -47,7 +49,7 @@ public class SearchFilter extends DimensionalFilter {
         /**
          * Get the QueryType enum from it's search type.
          *
-         * @param type  The type of query (i.e. "insensitive_contains")
+         * @param type  The type of query.
          *
          * @return the enum QueryType if found otherwise empty.
          */
@@ -85,8 +87,8 @@ public class SearchFilter extends DimensionalFilter {
         super(dimension, DefaultFilterType.SEARCH);
         this.query = Collections.unmodifiableMap(new LinkedHashMap<String, String>() {
             {
-                put("type", type);
-                put("value", value);
+                put(QUERY_TYPE, type);
+                put(QUERY_VALUE, value);
             }
         });
     }
@@ -96,11 +98,11 @@ public class SearchFilter extends DimensionalFilter {
     }
 
     private String getQueryType() {
-        return query.get("type");
+        return query.get(QUERY_TYPE);
     }
 
     private String getQueryValue() {
-        return query.get("value");
+        return query.get(QUERY_VALUE);
     }
 
     @Override
