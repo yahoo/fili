@@ -22,15 +22,15 @@ import java.util.Arrays;
 
 import java.util.stream.Collectors;
 
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.HAVING_CUSTOM_OPERATOR_IMPROPER_RANGE;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.HAVING_CUSTOM_OPERATOR_WRONG_NUMBER_OF_PARAMETERS;
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.HAVING_OPERATOR_IMPROPER_RANGE;
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.HAVING_OPERATOR_WRONG_NUMBER_OF_PARAMETERS;
 
 /**
  * Class to hold static methods to build druid query model objects from ApiHaving.
  */
 public class DruidHavingBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(DruidHavingBuilder.class);
-    private static final int SIZE = 2;
+    private static final int HAVING_PARAM_LENGTH = 2;
     /**
      * Build a having model that ANDs together having queries for each of the metrics.
      *
@@ -87,23 +87,23 @@ public class DruidHavingBuilder {
 
         Having newHaving;
         if (operation.equals(HavingOperation.between) || operation.equals(HavingOperation.notBetween)) {
-            if (values.size() != SIZE) {
-                throw new UnsupportedOperationException(HAVING_CUSTOM_OPERATOR_WRONG_NUMBER_OF_PARAMETERS.format
-                        (operation.name(), operation.name(), SIZE, values.size()));
+            if (values.size() != HAVING_PARAM_LENGTH) {
+                throw new UnsupportedOperationException(HAVING_OPERATOR_WRONG_NUMBER_OF_PARAMETERS.format
+                        (operation.name(), operation.name(), HAVING_PARAM_LENGTH, values.size()));
             }
-            double firstValue = values.get(0);
-            double secondValue = values.get(1);
-            if (secondValue < firstValue) {
-                throw new IllegalArgumentException(HAVING_CUSTOM_OPERATOR_IMPROPER_RANGE.format(operation.name()));
+            double lowerValue = values.get(0);
+            double upperValue = values.get(1);
+            if (upperValue < lowerValue) {
+                throw new IllegalArgumentException(HAVING_OPERATOR_IMPROPER_RANGE.format(operation.name()));
             }
             List<Having> orHavings = new ArrayList<>();
             orHavings.add(new NumericHaving(Having.DefaultHavingType.GREATER_THAN, metric.getName(),
-                    firstValue));
-            orHavings.add(new NumericHaving(Having.DefaultHavingType.EQUAL_TO, metric.getName(), firstValue));
+                    lowerValue));
+            orHavings.add(new NumericHaving(Having.DefaultHavingType.EQUAL_TO, metric.getName(), lowerValue));
             OrHaving orHavingLower = new OrHaving(orHavings);
             orHavings = new ArrayList<>();
-            orHavings.add(new NumericHaving(Having.DefaultHavingType.LESS_THAN, metric.getName(), secondValue));
-            orHavings.add(new NumericHaving(Having.DefaultHavingType.EQUAL_TO, metric.getName(), secondValue));
+            orHavings.add(new NumericHaving(Having.DefaultHavingType.LESS_THAN, metric.getName(), upperValue));
+            orHavings.add(new NumericHaving(Having.DefaultHavingType.EQUAL_TO, metric.getName(), upperValue));
             OrHaving orHavingUpper = new OrHaving(orHavings);
             newHaving = new AndHaving(Arrays.asList(orHavingLower, orHavingUpper));
         }
