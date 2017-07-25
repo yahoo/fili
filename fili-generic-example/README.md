@@ -77,7 +77,7 @@ Here are some sample queries that you can run to verify your server:
       GET http://localhost:9998/v1/data/wikiticker/day/?metrics=count&dateTime=PT72H/current
 
     Note: this will should be something like the response below since the
-    wikipedia table doesn't have data for the past 72 hours from now.
+    wikiticker table doesn't have data for the past 72 hours from now.
     ```json
     {
         "rows": [],
