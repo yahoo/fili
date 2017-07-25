@@ -2,9 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.sql.evaluator
 
-import static com.yahoo.bard.webservice.sql.database.Database.ADDED
-import static com.yahoo.bard.webservice.sql.database.Database.DELETED
-import static com.yahoo.bard.webservice.sql.database.Database.WIKITICKER
 import static com.yahoo.bard.webservice.sql.builders.Aggregator.max
 import static com.yahoo.bard.webservice.sql.builders.Aggregator.min
 import static com.yahoo.bard.webservice.sql.builders.Aggregator.sum
@@ -13,17 +10,20 @@ import static com.yahoo.bard.webservice.sql.builders.Havings.equals
 import static com.yahoo.bard.webservice.sql.builders.Havings.gt
 import static com.yahoo.bard.webservice.sql.builders.Havings.lt
 import static com.yahoo.bard.webservice.sql.builders.Havings.or
+import static com.yahoo.bard.webservice.sql.database.Database.ADDED
+import static com.yahoo.bard.webservice.sql.database.Database.DELETED
+import static com.yahoo.bard.webservice.sql.database.Database.WIKITICKER
 import static java.util.Arrays.asList
 
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.sql.ApiToFieldMapper
 import com.yahoo.bard.webservice.sql.aggregation.DefaultDruidSqlAggregationConverter
 import com.yahoo.bard.webservice.sql.aggregation.DruidSqlAggregationConverter
+import com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder
 import com.yahoo.bard.webservice.sql.database.Database
 import com.yahoo.bard.webservice.sql.helper.CalciteHelper
-import com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder
-import com.yahoo.bard.webservice.sql.helper.SqlTimeConverter
 import com.yahoo.bard.webservice.sql.helper.DefaultSqlTimeConverter
+import com.yahoo.bard.webservice.sql.helper.SqlTimeConverter
 
 import org.apache.calcite.rel.rel2sql.RelToSqlConverter
 import org.apache.calcite.rex.RexNode
@@ -54,9 +54,10 @@ class HavingsEvaluatorSpec extends Specification {
     @Unroll
     def "GetDimensionNames on #expectedHavingSql"() {
         setup:
+        ApiToFieldMapper apiToFieldMapper = SimpleDruidQueryBuilder.getApiToFieldMapper()
         RelBuilder builder = getBuilder()
         RelBuilder.AggCall[] aggregationCalls = aggregations.stream().map {
-            return druidSqlTypeConverter.fromDruidType(it).get().build(builder)
+            return druidSqlTypeConverter.fromDruidType(it, apiToFieldMapper).get().build(builder)
         }.collect(Collectors.toList()).toArray() as RelBuilder.AggCall[]
         builder.aggregate(
                 builder.groupKey(
@@ -93,8 +94,9 @@ class HavingsEvaluatorSpec extends Specification {
     @Unroll
     def "Test bad inputs for having filters on #expectedHavingSql"() {
         setup:
+        ApiToFieldMapper apiToFieldMapper = SimpleDruidQueryBuilder.getApiToFieldMapper()
         RelBuilder builder = getBuilder()
-        RelBuilder.AggCall[] aggregationCalls = aggregations.collect { druidSqlTypeConverter.fromDruidType(it).get().build(builder) } as RelBuilder.AggCall[]
+        RelBuilder.AggCall[] aggregationCalls = aggregations.collect { druidSqlTypeConverter.fromDruidType(it, apiToFieldMapper).get().build(builder) } as RelBuilder.AggCall[]
         builder.aggregate(
                 builder.groupKey(
                         sqlTimeConverter.buildGroupBy(builder, DefaultTimeGrain.DAY, "TIME").collect(Collectors.toList())

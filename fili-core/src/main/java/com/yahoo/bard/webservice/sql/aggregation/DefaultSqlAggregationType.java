@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.sql.aggregation;
 
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
+import com.yahoo.bard.webservice.sql.ApiToFieldMapper;
 
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
@@ -37,10 +38,11 @@ public enum DefaultSqlAggregationType {
      * to the aggregation type.
      *
      * @param aggregation  The druid aggregation.
+     * @param apiToFieldMapper  The mapping between api and physical names for the query.
      *
      * @return the AggCal built from the aggregation type.
      */
-    public SqlAggregationBuilder with(Aggregation aggregation) {
+    public SqlAggregationBuilder with(Aggregation aggregation, ApiToFieldMapper apiToFieldMapper) {
         return new SqlAggregationBuilder() {
             @Override
             public RelBuilder.AggCall build(RelBuilder builder) {
@@ -49,7 +51,7 @@ public enum DefaultSqlAggregationType {
                         false,
                         null,
                         aggregation.getName(),
-                        builder.field(aggregation.getFieldName())
+                        builder.field(apiToFieldMapper.apply(aggregation.getFieldName()))
                 );
             }
 

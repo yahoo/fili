@@ -71,12 +71,23 @@ class SimpleDruidQueryBuilder {
         return new ApiToFieldMapper(getDictionary().get(WIKITICKER).schema)
     }
 
+    public static ApiToFieldMapper getApiToFieldMapper(String apiPrepend, String fieldPrepend) {
+        return new ApiToFieldMapper(getDictionary(apiPrepend, fieldPrepend).get(WIKITICKER).schema)
+    }
+
     public static PhysicalTableDictionary getDictionary() {
         return getDictionary("", "")
     }
 
     public static PhysicalTableDictionary getDictionary(String apiPrepend, String fieldPrepend) {
-        def dataSource = dataSource(
+        def dataSource = getWikitickerDatasource(apiPrepend, fieldPrepend)
+        PhysicalTableDictionary physicalTableDictionary = new PhysicalTableDictionary()
+        physicalTableDictionary.put(WIKITICKER, dataSource.getPhysicalTable().sourceTable as ConfigPhysicalTable)
+        return physicalTableDictionary
+    }
+
+    public static TableDataSource getWikitickerDatasource(String apiPrepend, String fieldPrepend) {
+        return dataSource(
                 WIKITICKER,
                 DefaultTimeGrain.DAY,
                 DateTimeZone.UTC,
@@ -90,9 +101,6 @@ class SimpleDruidQueryBuilder {
                 apiPrepend,
                 fieldPrepend
         )
-        PhysicalTableDictionary physicalTableDictionary = new PhysicalTableDictionary()
-        physicalTableDictionary.put(WIKITICKER, dataSource.getPhysicalTable().sourceTable as ConfigPhysicalTable)
-        return physicalTableDictionary
     }
 
     public static TimeSeriesQuery timeSeriesQuery(
@@ -170,8 +178,9 @@ class SimpleDruidQueryBuilder {
         dimensions = dimensions.collect { apiPrepend + it }
         metrics = metrics.collect { apiPrepend + it }
 
-        Collection<String> metricsAndDimensions = new ArrayList<>(metrics);
-        metricsAndDimensions.addAll(dimensions);
+        Set<String> metricsAndDimensions = new HashSet<>()
+        metrics.forEach{ metricsAndDimensions.add(apiPrepend + it) }
+        dimensions.forEach{ metricsAndDimensions.add(apiPrepend + it) }
         def strictPhysicalTable = new StrictPhysicalTable(
                 TableName.of(name),
                 zonedTimeGrain,
@@ -184,13 +193,13 @@ class SimpleDruidQueryBuilder {
                 new ConstrainedTable(
                         strictPhysicalTable,
                         new DataSourceConstraint(
-                                setOf(), // create dimensions to test grouping those
+                                setOf(),
                                 setOf(),
                                 setOf(),
                                 setOf(metrics),
                                 setOf(getDimensions(dimensions)),
                                 setOf(dimensions),
-                                setOf(metricsAndDimensions),
+                                metricsAndDimensions,
                                 Collections.emptyMap()
                         )
                 )

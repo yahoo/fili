@@ -11,12 +11,10 @@ import static com.yahoo.bard.webservice.sql.builders.Intervals.interval
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.END
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.START
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.getDimensions
-import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.groupByQuery
+import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.getWikitickerDatasource
 import static com.yahoo.bard.webservice.sql.database.Database.ADDED
-import static com.yahoo.bard.webservice.sql.database.Database.COMMENT
 import static com.yahoo.bard.webservice.sql.database.Database.DELETED
 import static com.yahoo.bard.webservice.sql.database.Database.METRO_CODE
-import static com.yahoo.bard.webservice.sql.database.Database.WIKITICKER
 import static java.util.Arrays.asList
 
 import com.yahoo.bard.webservice.druid.model.orderby.LimitSpec
@@ -35,22 +33,20 @@ import spock.lang.Unroll
 class DruidQueryToSqlConverterSpec extends Specification {
     static CalciteHelper calciteHelper = new CalciteHelper(Database.getDataSource(), CalciteHelper.DEFAULT_SCHEMA)
     static DruidQueryToSqlConverter druidQueryToSqlConverter = new DruidQueryToSqlConverter(calciteHelper)
-    static ApiToFieldMapper apiToFieldMapper = SimpleDruidQueryBuilder.getApiToFieldMapper()
+    static ApiToFieldMapper apiToFieldMapper = SimpleDruidQueryBuilder.getApiToFieldMapper("api_", "")
 
     private static GroupByQuery getGroupByQuery(
             Granularity timeGrain,
             List<String> dimensions,
             LimitSpec limitSpec
     ) {
-        return groupByQuery(
-                WIKITICKER,
-                null,
-                null,
-                getDimensions(dimensions),
+        return new GroupByQuery(
+                getWikitickerDatasource("api_", ""),
                 timeGrain,
-                asList(ADDED, DELETED),
-                asList(COMMENT),
-                asList(sum(ADDED), sum(DELETED)),
+                getDimensions(dimensions.collect{ "api_" + it }),
+                null,
+                null,
+                asList(sum("api_" + ADDED), sum("api_" + DELETED)),
                 asList(),
                 asList(interval(START, END)),
                 limitSpec

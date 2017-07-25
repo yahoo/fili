@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.sql.aggregation;
 
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
+import com.yahoo.bard.webservice.sql.ApiToFieldMapper;
 
 import java.util.Optional;
 
@@ -17,8 +18,9 @@ public interface DruidSqlAggregationConverter {
      *
      * @param aggregation  The druid aggregation, i.e.
      * {@link com.yahoo.bard.webservice.druid.model.aggregation.LongSumAggregation}.
+     * @param apiToFieldMapper  the mapping from api name to field name of the aggregation.
      *
-     * @return the supported sql aggregation type.
+     *  @return the supported sql aggregation type.
      */
-    Optional<SqlAggregationBuilder> fromDruidType(Aggregation aggregation);
+    Optional<SqlAggregationBuilder> fromDruidType(Aggregation aggregation, ApiToFieldMapper apiToFieldMapper);
 }

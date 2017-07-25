@@ -136,7 +136,7 @@ public class DruidQueryToSqlConverter {
                         builder.groupKey(
                                 getAllGroupByColumns(builder, druidQuery, apiToFieldMapper, timestampColumn)
                         ),
-                        getAllQueryAggregations(builder, druidQuery)
+                        getAllQueryAggregations(builder, druidQuery, apiToFieldMapper)
                 )
                 .filter(
                         getHavingFilter(builder, druidQuery, apiToFieldMapper)
@@ -155,7 +155,7 @@ public class DruidQueryToSqlConverter {
      *
      * @param builder  The RelBuilder created with Calcite.
      * @param druidQuery  The query to find the sorting from.
-     * @param aliasMaker  The mapping from api to physical names.
+     * @param apiToFieldMapper  The mapping from api to physical names.
      * @param timestampColumn  The name of the timestamp column in the database.
      *
      * @return a collection of rexnodes to apply sorts in calcite.
@@ -163,7 +163,7 @@ public class DruidQueryToSqlConverter {
     protected List<RexNode> getSort(
             RelBuilder builder,
             DruidAggregationQuery<?> druidQuery,
-            ApiToFieldMapper aliasMaker,
+            ApiToFieldMapper apiToFieldMapper,
             String timestampColumn
     ) {
         // druid does NULLS FIRST
@@ -179,7 +179,7 @@ public class DruidQueryToSqlConverter {
                 limitSpec.getColumns()
                         .stream()
                         .map(orderByColumn -> {
-                            RexNode sort = builder.field(aliasMaker.unApply(orderByColumn.getDimension()));
+                            RexNode sort = builder.field(apiToFieldMapper.unApply(orderByColumn.getDimension()));
                             if (orderByColumn.getDirection().equals(SortDirection.DESC)) {
                                 sort = builder.desc(sort);
                             }
@@ -235,14 +235,14 @@ public class DruidQueryToSqlConverter {
      *
      * @param builder  The RelBuilder created with Calcite.
      * @param druidQuery  The query to find the having filter from.
-     * @param aliasMaker  The mapping from api to physical name.
+     * @param apiToFieldMapper  The mapping from api to physical name.
      *
      * @return the collection of equivalent filters for calcite.
      */
     protected Collection<RexNode> getHavingFilter(
             RelBuilder builder,
             DruidAggregationQuery<?> druidQuery,
-            ApiToFieldMapper aliasMaker
+            ApiToFieldMapper apiToFieldMapper
     ) {
         RexNode filter = null;
         if (druidQuery.getQueryType().equals(DefaultQueryType.GROUP_BY)) {
@@ -250,7 +250,7 @@ public class DruidQueryToSqlConverter {
 
             if (having != null) {
                 HavingEvaluator havingEvaluator = new HavingEvaluator();
-                filter = havingEvaluator.evaluateHaving(builder, having, aliasMaker);
+                filter = havingEvaluator.evaluateHaving(builder, having, apiToFieldMapper);
             }
         }
 
@@ -262,16 +262,18 @@ public class DruidQueryToSqlConverter {
      *
      * @param builder  The RelBuilder created with Calcite.
      * @param druidQuery  The druid query to get the aggregations of.
+     * @param apiToFieldMapper  The mapping from api to physical name.
      *
      * @return the list of aggregations.
      */
     protected List<RelBuilder.AggCall> getAllQueryAggregations(
             RelBuilder builder,
-            DruidAggregationQuery<?> druidQuery
+            DruidAggregationQuery<?> druidQuery,
+            ApiToFieldMapper apiToFieldMapper
     ) {
         return druidQuery.getAggregations()
                 .stream()
-                .map(druidSqlAggregationConverter::fromDruidType)
+                .map(aggregation -> druidSqlAggregationConverter.fromDruidType(aggregation, apiToFieldMapper))
                 .filter(sqlAggregationBuilder -> {
                     if (!sqlAggregationBuilder.isPresent()) {
                         String msg = "Couldn't build sql aggregation with " + sqlAggregationBuilder;
@@ -290,7 +292,7 @@ public class DruidQueryToSqlConverter {
      *
      * @param builder  The RelBuilder created with Calcite.
      * @param druidQuery  The query to find grouping columns from.
-     * @param aliasMaker  The mapping from api to physical name.
+     * @param apiToFieldMapper  The mapping from api to physical name.
      * @param timestampColumn  The name of the timestamp column in the database.
      *
      * @return all columns which should be grouped on.
@@ -298,7 +300,7 @@ public class DruidQueryToSqlConverter {
     protected List<RexNode> getAllGroupByColumns(
             RelBuilder builder,
             DruidAggregationQuery<?> druidQuery,
-            ApiToFieldMapper aliasMaker,
+            ApiToFieldMapper apiToFieldMapper,
             String timestampColumn
     ) {
         Stream<RexNode> timeFilters = sqlTimeConverter.buildGroupBy(
@@ -309,7 +311,7 @@ public class DruidQueryToSqlConverter {
 
         Stream<RexNode> dimensionFilters = druidQuery.getDimensions().stream()
                 .map(Dimension::getApiName)
-                .map(aliasMaker)
+                .map(apiToFieldMapper)
                 .map(builder::field);
 
         return Stream.concat(timeFilters, dimensionFilters).collect(Collectors.toList());

@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.sql.aggregation;
 
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
+import com.yahoo.bard.webservice.sql.ApiToFieldMapper;
 
 import java.util.Arrays;
 import java.util.Locale;
@@ -20,11 +21,11 @@ public class DefaultDruidSqlAggregationConverter implements DruidSqlAggregationC
     }
 
     @Override
-    public Optional<SqlAggregationBuilder> fromDruidType(Aggregation aggregation) {
+    public Optional<SqlAggregationBuilder> fromDruidType(Aggregation aggregation, ApiToFieldMapper apiToFieldMapper) {
         String aggregationType = aggregation.getType().toLowerCase(Locale.ENGLISH);
         return Arrays.stream(DefaultSqlAggregationType.values())
                 .filter(sqlAggregationType -> aggregationType.contains(sqlAggregationType.type))
-                .map(sqlAggregationType -> sqlAggregationType.with(aggregation))
+                .map(sqlAggregationType -> sqlAggregationType.with(aggregation, apiToFieldMapper))
                 .findFirst();
     }
 }
