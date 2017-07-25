@@ -12,6 +12,8 @@ Current
 
 - [Have Tables Endpoint Support (but not use) Additional Query Parameters](https://github.com/yahoo/fili/pull/437)
     * Make the availability consider the TablesApiRequest by passing it into the getLogicalTableFullView method
+    * Move auxiliary methods from `DataApiRequest` to `ApiRequest` in order to make them sharable between
+    `DataApiRequest` and `TableApiRequest`.
 
 - [Fili-security module](https://github.com/yahoo/fili/pull/405)
     * Added security module for fili data security filters
