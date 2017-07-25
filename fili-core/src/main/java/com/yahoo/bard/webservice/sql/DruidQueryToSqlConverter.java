@@ -217,7 +217,7 @@ public class DruidQueryToSqlConverter {
     ) {
         RexNode timeFilter = sqlTimeConverter.buildTimeFilters(
                 builder,
-                druidQuery.getIntervals(),
+                druidQuery,
                 timestampColumn
         );
 
@@ -274,9 +274,11 @@ public class DruidQueryToSqlConverter {
                 .map(druidSqlAggregationConverter::fromDruidType)
                 .filter(sqlAggregationBuilder -> {
                     if (!sqlAggregationBuilder.isPresent()) {
-                       LOG.warn("Couldn't build sql aggregation with {}", sqlAggregationBuilder);
+                        String msg = "Couldn't build sql aggregation with " + sqlAggregationBuilder;
+                        LOG.warn(msg);
+                        throw new RuntimeException(msg);
                     }
-                    return sqlAggregationBuilder.isPresent();
+                    return true;
                 })
                 .map(Optional::get)
                 .map(sqlAggregationBuilder -> sqlAggregationBuilder.build(builder))

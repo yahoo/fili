@@ -18,12 +18,11 @@ import org.apache.calcite.sql.fun.SqlDatePartFunction;
 import org.apache.calcite.tools.RelBuilder;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.joda.time.Interval;
+import org.joda.time.MutableDateTime;
 
 import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -49,12 +48,12 @@ public interface SqlTimeConverter {
      * NOTE: you must have one interval to select on.
      *
      * @param builder  The RelBuilder used for building queries.
-     * @param intervals  The intervals to select from.
+     * @param druidQuery  The druid query to build filters over.
      * @param timestampColumn  The name of the timestamp column in the database.
      *
      * @return the RexNode for filtering to only the given intervals.
      */
-    RexNode buildTimeFilters(RelBuilder builder, Collection<Interval> intervals, String timestampColumn);
+    RexNode buildTimeFilters(RelBuilder builder, DruidAggregationQuery<?> druidQuery, String timestampColumn);
 
     /**
      * Gets the number of {@link SqlDatePartFunction} used for the given {@link Granularity}.
@@ -102,11 +101,7 @@ public interface SqlTimeConverter {
     default DateTime getIntervalStart(int offset, String[] row, DruidAggregationQuery<?> druidQuery) {
         List<SqlDatePartFunction> times = timeGrainToDatePartFunctions(druidQuery.getGranularity());
 
-        DateTimeZone timeZone = druidQuery.getDataSource()
-                .getPhysicalTable()
-                .getSchema()
-                .getTimeGrain()
-                .getTimeZone();
+        DateTimeZone timeZone = getTimeZone(druidQuery);
 
         if (times.isEmpty()) {
             Timestamp timestamp = Timestamp.valueOf(row[offset]);
@@ -114,15 +109,30 @@ public interface SqlTimeConverter {
             return new DateTime(TimeUnit.SECONDS.toMillis(zonedDateTime.toEpochSecond()), timeZone);
         }
 
-        DateTime resultTimeStamp = new DateTime(0, timeZone);
+        MutableDateTime mutableDateTime = new MutableDateTime(0, 1, 1, 0, 0, 0, 0, timeZone);
 
         for (int i = 0; i < times.size(); i++) {
             int value = Integer.parseInt(row[offset + i]);
             SqlDatePartFunction fn = times.get(i);
-            resultTimeStamp = setDateTime(value, fn, resultTimeStamp);
+            setDateTime(value, fn, mutableDateTime);
         }
 
-        return resultTimeStamp;
+        return mutableDateTime.toDateTime();
+    }
+
+    /**
+     * Gets the timezone of the backing table for the given druid query.
+     *
+     * @param druidQuery  The druid query to find the timezone for
+     *
+     * @return the {@link DateTimeZone} of the physical table for this query.
+     */
+    default DateTimeZone getTimeZone(DruidAggregationQuery<?> druidQuery) {
+        return druidQuery.getDataSource()
+                .getPhysicalTable()
+                .getSchema()
+                .getTimeGrain()
+                .getTimeZone();
     }
 
     /**
@@ -132,25 +142,25 @@ public interface SqlTimeConverter {
      * @param value  The value to be set for the dateTime with the sqlDatePartFn
      * @param sqlDatePartFn  The function used to extract part of a date with sql.
      * @param dateTime  The original dateTime to create a copy of.
-     *
-     * @return the dateTime with a modified value corresponding to the sqlDatePartFn.
      */
-    default DateTime setDateTime(int value, SqlDatePartFunction sqlDatePartFn, DateTime dateTime) {
+    default void setDateTime(int value, SqlDatePartFunction sqlDatePartFn, MutableDateTime dateTime) {
         if (YEAR.equals(sqlDatePartFn)) {
-            return dateTime.withYear(value);
+            dateTime.setYear(value);
         } else if (MONTH.equals(sqlDatePartFn)) {
-            return dateTime.withMonthOfYear(value);
+            dateTime.setMonthOfYear(value);
         } else if (WEEK.equals(sqlDatePartFn)) {
-            return dateTime.withWeekOfWeekyear(value);
+            dateTime.setWeekOfWeekyear(value);
+            dateTime.setDayOfWeek(1);
         } else if (DAYOFYEAR.equals(sqlDatePartFn)) {
-            return dateTime.withDayOfYear(value);
+            dateTime.setDayOfYear(value);
         } else if (HOUR.equals(sqlDatePartFn)) {
-            return dateTime.withHourOfDay(value);
+            dateTime.setHourOfDay(value);
         } else if (MINUTE.equals(sqlDatePartFn)) {
-            return dateTime.withMinuteOfHour(value);
+            dateTime.setMinuteOfHour(value);
         } else if (SECOND.equals(sqlDatePartFn)) {
-            return dateTime.withSecondOfMinute(value);
+            dateTime.setSecondOfMinute(value);
+        } else {
+            throw new IllegalArgumentException("Can't set value " + value + " for " + sqlDatePartFn);
         }
-        throw new IllegalArgumentException("Can't set value " + value + " for " + sqlDatePartFn);
     }
 }

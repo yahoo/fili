@@ -13,16 +13,16 @@ import static org.apache.calcite.sql.fun.SqlStdOperatorTable.YEAR;
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
+import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.fun.SqlDatePartFunction;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
-import org.joda.time.Interval;
+import org.joda.time.DateTimeZone;
 
 import java.sql.Timestamp;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -57,27 +57,20 @@ public class DefaultSqlTimeConverter implements SqlTimeConverter {
         return TIMEGRAIN_TO_GROUPBY.get(granularity);
     }
 
-    /**
-     * Builds the time filters to only select rows that occur within the intervals of the query.
-     * NOTE: you must have one interval to select on.
-     *
-     * @param builder  The RelBuilder used for building queries.
-     * @param intervals  The intervals to select from.
-     * @param timestampColumn  The name of the timestamp column in the database.
-     *
-     * @return the RexNode for filtering to only the given intervals.
-     */
     @Override
     public RexNode buildTimeFilters(
             RelBuilder builder,
-            Collection<Interval> intervals,
+            DruidAggregationQuery<?> druidQuery,
             String timestampColumn
     ) {
         // create filters to only select results within the given intervals
-        List<RexNode> timeFilters = intervals.stream()
+        List<RexNode> timeFilters = druidQuery.getIntervals().stream()
                 .map(interval -> {
-                    Timestamp start = TimestampUtils.timestampFromDateTime(interval.getStart());
-                    Timestamp end = TimestampUtils.timestampFromDateTime(interval.getEnd());
+
+                    DateTimeZone timeZone = getTimeZone(druidQuery);
+
+                    Timestamp start = TimestampUtils.timestampFromDateTime(interval.getStart().toDateTime(timeZone));
+                    Timestamp end = TimestampUtils.timestampFromDateTime(interval.getEnd().toDateTime(timeZone));
 
                     return builder.and(
                             builder.call(

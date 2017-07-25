@@ -21,6 +21,7 @@ import static com.yahoo.bard.webservice.sql.builders.Havings.lt
 import static com.yahoo.bard.webservice.sql.builders.Intervals.interval
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.END
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.START
+import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.dataSource
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.getDimension
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.getDimensions
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.groupByQuery
@@ -56,6 +57,7 @@ import com.yahoo.bard.webservice.table.Column
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 
+import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 
 import spock.lang.Specification
@@ -81,7 +83,7 @@ class DefaultSqlBackedClientSpec extends Specification {
                 jsonNode,
                 resultSetSchema,
                 DefaultQueryType.GROUP_BY,
-                DateTimeZone.UTC
+                druidQuery.dataSource.physicalTable.schema.timeGrain.timeZone
         )
     }
 
@@ -120,7 +122,7 @@ class DefaultSqlBackedClientSpec extends Specification {
                 asList(COMMENT),
                 asList(sum(ADDED), sum(DELETED), sum(DELTA)),
                 asList(),
-                asList(interval("2015-09-12T00:00:00.000Z", "2015-09-12T12:00:00.000Z"), interval("2015-09-12T12:00:00.000Z", "2015-09-13T00:00:00.000Z"))
+                asList(interval(START, "2015-09-12T12:00:00.000Z"), interval("2015-09-12T12:00:00.000Z", END))
         );
     }
 
@@ -149,7 +151,7 @@ class DefaultSqlBackedClientSpec extends Specification {
     @Unroll
     def "ExecuteQuery for #timeGrain want #size filter on #filter"() {
         setup:
-        DruidQuery druidQueryMultipleIntervals = getTimeSeriesQuery(timeGrain, filter)
+        DruidQuery druidQueryMultipleIntervals = getTimeSeriesQueryMultipleIntervals(timeGrain, filter)
         JsonNode jsonNodeMultipleIntervals = sqlBackedClient.executeQuery(druidQueryMultipleIntervals, null, null).get();
         ResultSet parseMultipleIntervals = parse(jsonNodeMultipleIntervals, druidQueryMultipleIntervals)
 
@@ -173,28 +175,41 @@ class DefaultSqlBackedClientSpec extends Specification {
         WEEK      | null                                                | 1
         MONTH     | null                                                | 1
         YEAR      | null                                                | 1
-
     }
 
     @Unroll
-    def "Test timeseries on /#timeGrain/"() {
+    def "Test timeseries query on #timeGrain for #timeZone"() {
         setup:
-        DruidQuery druidQuery = getBasicTimeseriesQuery(timeGrain)
-        JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery, null, null).get();
-        ResultSet parse = parse(jsonNode, druidQuery)
+        def timeZoneId = DateTimeZone.forID(timeZone)
+        // shift the start and end dates by the offset from utc time
+        def start = new DateTime(START).plusMillis(-timeZoneId.getOffset(new DateTime(DateTimeZone.UTC))).toString()
+        def end = new DateTime(END).plusMillis(-timeZoneId.getOffset(new DateTime(DateTimeZone.UTC))).toString()
+
+        TimeSeriesQuery timeSeriesQuery = new TimeSeriesQuery(
+                dataSource(WIKITICKER, DAY, timeZoneId, asList(ADDED), asList(), "", ""),
+                timeGrain,
+                null,
+                asList(sum(ADDED)),
+                Collections.emptyList(),
+                asList(interval(start, end))
+        )
+        JsonNode jsonNode = sqlBackedClient.executeQuery(timeSeriesQuery, null, null).get();
+        ResultSet parse = parse(jsonNode, timeSeriesQuery)
 
         expect:
         parse.size() == size
+        parse.get(0).getTimeStamp().toDateTime(timeZoneId).toString().contains(parsedResultText)
+        jsonNode.get(0).toString().contains(druidResultText)
 
-        where: "we have"
-        timeGrain | size
-        MINUTE    | 1394
-        HOUR      | 24
-        DAY       | 1
-        WEEK      | 1
-        MONTH     | 1
-        YEAR      | 1
-
+        where:
+        timeZone          | timeGrain | size | parsedResultText          | druidResultText
+        "America/Chicago" | MINUTE    | 1394 | "2015-09-12T00:46:00.000" | "2015-09-12T05:46:00.000Z"
+        "America/Chicago" | HOUR      | 24   | "2015-09-12T00:00:00.000" | "2015-09-12T05:00:00.000Z"
+        "America/Chicago" | DAY       | 1    | "2015-09-12T00:00:00.000" | "2015-09-12T05:00:00.000Z"
+        "America/Chicago" | WEEK      | 1    | "2015-09-07T00:00:00.000" | "2015-09-07T05:00:00.000Z"
+        "America/Chicago" | MONTH     | 1    | "2015-09-01T00:00:00.000" | "2015-09-01T05:00:00.000Z"
+        "America/Chicago" | YEAR      | 1    | "2015-01-01T00:00:00.000" | "2015-01-01T06:00:00.000Z"
+        "UTC"             | YEAR      | 1    | "2015-01-01T00:00:00.000" | "2015-01-01T00:00:00.000Z"
     }
 
     @Unroll
@@ -212,7 +227,7 @@ class DefaultSqlBackedClientSpec extends Specification {
         HOUR      | select(COMMENT, FIRST_COMMENT)  | """[{"timestamp":"2015-09-12T00:00:00.000Z","event":{"${ADDED}":36.0,"${DELETED}":0.0,"${DELTA}":36.0}}]"""
         HOUR      | select(COMMENT, UNIQUE_COMMENT) | """[{"timestamp":"2015-09-12T01:00:00.000Z","event":{"${ADDED}":0.0,"${DELETED}":5.0,"${DELTA}":-5.0}}]"""
         DAY       | null                            | """[{"timestamp":"2015-09-12T00:00:00.000Z","event":{"${ADDED}":9385573.0,"${DELETED}":394298.0,"${DELTA}":8991275.0}}]"""
-        WEEK      | null                            | """[{"timestamp":"2015-09-10T00:00:00.000Z","event":{"${ADDED}":9385573.0,"${DELETED}":394298.0,"${DELTA}":8991275.0}}]"""
+        WEEK      | null                            | """[{"timestamp":"2015-09-07T00:00:00.000Z","event":{"${ADDED}":9385573.0,"${DELETED}":394298.0,"${DELTA}":8991275.0}}]"""
         MONTH     | null                            | """[{"timestamp":"2015-09-01T00:00:00.000Z","event":{"${ADDED}":9385573.0,"${DELETED}":394298.0,"${DELTA}":8991275.0}}]"""
         YEAR      | null                            | """[{"timestamp":"2015-01-01T00:00:00.000Z","event":{"${ADDED}":9385573.0,"${DELETED}":394298.0,"${DELTA}":8991275.0}}]"""
     }

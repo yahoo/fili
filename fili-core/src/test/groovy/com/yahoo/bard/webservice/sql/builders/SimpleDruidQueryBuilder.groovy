@@ -34,6 +34,7 @@ import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
+import com.yahoo.bard.webservice.data.time.ZonelessTimeGrain
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleSumAggregation
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
@@ -77,6 +78,8 @@ class SimpleDruidQueryBuilder {
     public static PhysicalTableDictionary getDictionary(String apiPrepend, String fieldPrepend) {
         def dataSource = dataSource(
                 WIKITICKER,
+                DefaultTimeGrain.DAY,
+                DateTimeZone.UTC,
                 asList(ADDED, DELETED, DELTA),
                 asList(
                         COUNTRY_ISO_CODE, IS_NEW, IS_ROBOT, PAGE,
@@ -139,13 +142,20 @@ class SimpleDruidQueryBuilder {
     }
 
     public static TableDataSource dataSource(String name, List<String> metrics, List<String> dimensions) {
-        return dataSource(name, metrics, dimensions, "", "")
+        return dataSource(name, DefaultTimeGrain.DAY, DateTimeZone.UTC, metrics, dimensions, "", "")
     }
 
 
-    public static TableDataSource dataSource(String name, List<String> metrics, List<String> dimensions, String apiPrepend, String fieldPrepend) {
-
-        ZonedTimeGrain zonedTimeGrain = new ZonedTimeGrain(DefaultTimeGrain.DAY, DateTimeZone.UTC);
+    public static TableDataSource dataSource(
+            String name,
+            ZonelessTimeGrain zonelessTimeGrain,
+            DateTimeZone dateTimeZone,
+            List<String> metrics,
+            List<String> dimensions,
+            String apiPrepend,
+            String fieldPrepend
+    ) {
+        ZonedTimeGrain zonedTimeGrain = new ZonedTimeGrain(zonelessTimeGrain, dateTimeZone);
         Set<Column> columns = setOf();
         Map<String, String> logicalToPhysicalColumnNames = new HashMap<>()
         metrics.forEach { logicalToPhysicalColumnNames.put(apiPrepend + it, fieldPrepend + it) }

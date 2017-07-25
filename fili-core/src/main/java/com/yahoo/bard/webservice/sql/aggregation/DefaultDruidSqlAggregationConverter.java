@@ -4,9 +4,6 @@ package com.yahoo.bard.webservice.sql.aggregation;
 
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Optional;
