@@ -30,7 +30,7 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.HAVING_OPERATOR_W
  */
 public class DruidHavingBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(DruidHavingBuilder.class);
-    private static final int HAVING_PARAM_LENGTH = 2;
+    private static final int HAVING_RANGE_PARAM_LENGTH = 2;
     /**
      * Build a having model that ANDs together having queries for each of the metrics.
      *
@@ -87,9 +87,9 @@ public class DruidHavingBuilder {
 
         Having newHaving;
         if (operation.equals(HavingOperation.between) || operation.equals(HavingOperation.notBetween)) {
-            if (values.size() != HAVING_PARAM_LENGTH) {
+            if (values.size() != HAVING_RANGE_PARAM_LENGTH) {
                 throw new UnsupportedOperationException(HAVING_OPERATOR_WRONG_NUMBER_OF_PARAMETERS.format
-                        (operation.name(), operation.name(), HAVING_PARAM_LENGTH, values.size()));
+                        (operation.name(), operation.name(), HAVING_RANGE_PARAM_LENGTH, values.size()));
             }
             double lowerValue = values.get(0);
             double upperValue = values.get(1);
