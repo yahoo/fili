@@ -34,7 +34,7 @@ public class GenericBinderFactory extends AbstractBinderFactory {
      */
     public GenericBinderFactory() {
         DruidWebService druidWebService = buildMetadataDruidWebService(getMappers().getMapper());
-        configLoader = new DruidNavigator(druidWebService);
+        configLoader = new DruidNavigator(druidWebService, getMapper());
         genericDimensionConfigs = new GenericDimensionConfigs(configLoader);
     }
 
