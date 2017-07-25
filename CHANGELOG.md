@@ -9,6 +9,7 @@ Current
 -------
 
 ### Added:
+
 - [Add dockerfile and update README](https://github.com/yahoo/fili/pull/429)
     * Make a Dockerfile for the Wikipedia example 
 

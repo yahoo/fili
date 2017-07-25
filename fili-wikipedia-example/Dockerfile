@@ -14,10 +14,8 @@ RUN wget -q -O - http://archive.apache.org/dist/maven/maven-3/3.2.5/binaries/apa
 RUN mkdir -p /usr/local/fili
 
 # update in case of new commits
-ADD https://api.github.com/repos/$GITHUB_OWNER/fili/git/refs/heads/$BRANCH \
-fili-branch.json
-RUN git clone -q --branch ${BRANCH} --depth 1 \
-https://github.com/$GITHUB_OWNER/fili.git /usr/local/fili
+ADD https://api.github.com/repos/$GITHUB_OWNER/fili/git/refs/heads/$BRANCH fili-branch.json
+RUN git clone -q --branch ${BRANCH} --depth 1 https://github.com/$GITHUB_OWNER/fili.git /usr/local/fili
 
 WORKDIR /usr/local/fili
 
