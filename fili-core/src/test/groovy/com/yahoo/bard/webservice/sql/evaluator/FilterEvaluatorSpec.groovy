@@ -6,12 +6,13 @@ import static com.yahoo.bard.webservice.sql.builders.Filters.and
 import static com.yahoo.bard.webservice.sql.builders.Filters.not
 import static com.yahoo.bard.webservice.sql.builders.Filters.or
 import static com.yahoo.bard.webservice.sql.builders.Filters.search
-import static com.yahoo.bard.webservice.sql.database.Database.ID
 import static com.yahoo.bard.webservice.sql.database.Database.IS_NEW
 import static com.yahoo.bard.webservice.sql.database.Database.IS_ROBOT
 import static com.yahoo.bard.webservice.sql.database.Database.METRO_CODE
 import static com.yahoo.bard.webservice.sql.database.Database.WIKITICKER
 
+import com.yahoo.bard.webservice.sql.ApiToFieldMapper
+import com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder
 import com.yahoo.bard.webservice.sql.database.Database
 import com.yahoo.bard.webservice.sql.helper.CalciteHelper
 
@@ -23,50 +24,45 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 import java.sql.Connection
-import java.util.stream.Collectors
 
 class FilterEvaluatorSpec extends Specification {
     static Connection CONNECTION = Database.initializeDatabase()
     static FilterEvaluator filterEvaluator = new FilterEvaluator()
+    static final String API = "api_"
 
     @Unroll
-    def "GetDimensionNames expecting #dimensions"() {
+    def "GetDimensionNames expecting #filterString"() {
         setup:
+        ApiToFieldMapper apiToFieldMapper = SimpleDruidQueryBuilder.getApiToFieldMapper(API, "")
         RelBuilder builder = CalciteHelper.getBuilder(Database.getDataSource())
         builder.scan(WIKITICKER)
-        def rexNodes = dimensions.stream()
-                .map { builder.field(it) }
-                .collect(Collectors.toList())
+        def rexnode = filterEvaluator.evaluateFilter(builder, filter, apiToFieldMapper)
+        builder.filter(rexnode)
 
         expect:
-        builder.project(rexNodes)
         String sql = new RelToSqlConverter(SqlDialect.create(CONNECTION.getMetaData())).visitChild(0, builder.build()).
                 asSelect().
-                toString();
-        sql == "SELECT " + dimensions.stream().
-                map { "`" + it + "`" }.
-                collect(Collectors.joining(", ")) + "\n" +
-                "FROM `${CalciteHelper.DEFAULT_SCHEMA}`.`${WIKITICKER}`"
+                toString()
+        sql.endsWith(filterString)
 
         where: "we have"
-        filter                                                | dimensions
-        search(ID)                                            | [ID] as List<String>
-        or(search(ID), search(ID))                            | [ID] as List<String>
-        not(not(not(search(ID))))                             | [ID] as List<String>
-        and(search(ID), or(search(IS_NEW), search(IS_ROBOT))) | [ID, IS_NEW, IS_ROBOT] as List<String>
+        filter                                                                        | filterString
+        search(API + IS_ROBOT)                                                        | "WHERE `isRobot` LIKE '%%'"
+        or(search(API + IS_ROBOT), search(API + IS_ROBOT))                            | "WHERE `isRobot` LIKE '%%'"
+        not(not(not(search(API + IS_ROBOT))))                                         | "WHERE NOT `isRobot` LIKE '%%'"
+        and(search(API + IS_ROBOT), or(search(API + IS_NEW), search(API + IS_ROBOT))) | "WHERE `isRobot` LIKE '%%' AND (`isNew` LIKE '%%' OR `isRobot` LIKE '%%')"
         and(
-                search(ID),
-                search(IS_NEW),
-                or(search(IS_ROBOT), search(METRO_CODE))
-        )                                                     | [ID, IS_NEW, IS_ROBOT, METRO_CODE] as
-                List<String>
+                search(API + IS_ROBOT),
+                search(API + IS_NEW, "the"),
+                or(search(API + IS_ROBOT), search(API + METRO_CODE))
+        )                                                                             | "WHERE `isRobot` LIKE '%%' AND `isNew` LIKE '%the%' AND (`isRobot` LIKE '%%' OR `metroCode` LIKE '%%')"
         not(
                 and(
-                        search(ID),
-                        search(IS_NEW),
-                        or(search(IS_ROBOT), search(METRO_CODE))
+                        search(API + IS_ROBOT),
+                        search(API + IS_NEW),
+                        or(search(API + IS_ROBOT), search(API + METRO_CODE))
                 )
-        )                                                     | [ID, IS_NEW, IS_ROBOT, METRO_CODE] as List<String>
+        )                                                                             | "WHERE NOT `isRobot` LIKE '%%' OR NOT `isNew` LIKE '%%' OR NOT `isRobot` LIKE '%%' AND NOT `metroCode` LIKE '%%'"
     }
 
     def "Test null input"() {
@@ -74,6 +70,6 @@ class FilterEvaluatorSpec extends Specification {
         RelBuilder builder = CalciteHelper.getBuilder(Database.getDataSource())
 
         expect:
-        filterEvaluator.evaluateFilter(builder, null) == null
+        filterEvaluator.evaluateFilter(builder, null, null) == null
     }
 }

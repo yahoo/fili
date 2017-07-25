@@ -18,7 +18,7 @@ import java.util.function.Function;
  */
 public class PostAggregationEvaluator implements ReflectiveVisitor {
     private final ReflectUtil.MethodDispatcher<Double> dispatcher;
-    private Function<String, String> aggregatedValues; //todo maybe not needed
+    private Function<String, String> aggregatedValues;
 
     /**
      * Constructor.

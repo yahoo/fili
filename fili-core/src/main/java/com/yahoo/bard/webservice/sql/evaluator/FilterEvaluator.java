@@ -12,6 +12,7 @@ import com.yahoo.bard.webservice.druid.model.filter.OrFilter;
 import com.yahoo.bard.webservice.druid.model.filter.RegularExpressionFilter;
 import com.yahoo.bard.webservice.druid.model.filter.SearchFilter;
 import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter;
+import com.yahoo.bard.webservice.sql.ApiToFieldMapper;
 
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlOperator;
@@ -31,6 +32,7 @@ import java.util.stream.Collectors;
 public class FilterEvaluator implements ReflectiveVisitor {
     private RelBuilder builder;
     private final ReflectUtil.MethodDispatcher<RexNode> dispatcher;
+    private ApiToFieldMapper apiToFieldMapper;
 
     /**
      * Constructor.
@@ -49,17 +51,19 @@ public class FilterEvaluator implements ReflectiveVisitor {
      *
      * @param builder  The RelBuilder used to build queries with Calcite.
      * @param filter  The filter to be evaluated.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
      *
      * @return a RexNode containing an equivalent filter to the one given.
      *
      * @throws UnsupportedOperationException for filters which couldn't be evaluated.
      */
-    public RexNode evaluateFilter(RelBuilder builder, Filter filter) {
+    public RexNode evaluateFilter(RelBuilder builder, Filter filter, ApiToFieldMapper apiToFieldMapper) {
         if (filter == null) {
             return null;
         }
 
         this.builder = builder;
+        this.apiToFieldMapper = apiToFieldMapper;
         return dispatcher.invoke(filter);
     }
 
@@ -89,7 +93,7 @@ public class FilterEvaluator implements ReflectiveVisitor {
         String apiName = regexFilter.getDimension().getApiName();
         return builder.call(
                 SqlStdOperatorTable.LIKE,
-                builder.field(apiName),
+                builder.field(apiToFieldMapper.apply(apiName)),
                 builder.literal(regexFilter.getPattern().toString())
         );
     }
@@ -105,7 +109,7 @@ public class FilterEvaluator implements ReflectiveVisitor {
         String apiName = selectorFilter.getDimension().getApiName();
         return builder.call(
                 SqlStdOperatorTable.EQUALS,
-                builder.field(apiName),
+                builder.field(apiToFieldMapper.apply(apiName)),
                 builder.literal(selectorFilter.getValue())
         );
     }
@@ -132,7 +136,7 @@ public class FilterEvaluator implements ReflectiveVisitor {
             case Contains:
                 return builder.call(
                         SqlStdOperatorTable.LIKE,
-                        builder.field(columnName),
+                        builder.field(apiToFieldMapper.apply(columnName)),
                         builder.literal("%" + valueToFind + "%")
                 );
             case InsensitiveContains:
@@ -141,7 +145,7 @@ public class FilterEvaluator implements ReflectiveVisitor {
                         SqlStdOperatorTable.LIKE,
                         builder.call(
                                 SqlStdOperatorTable.LOWER,
-                                builder.field(columnName)
+                                builder.field(apiToFieldMapper.apply(columnName))
                         ),
                         builder.literal("%" + valueToFind.toLowerCase(Locale.ENGLISH) + "%")
                 );

@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 public class HavingEvaluator implements ReflectiveVisitor {
     private RelBuilder builder;
     private final ReflectUtil.MethodDispatcher<RexNode> dispatcher;
-    private ApiToFieldMapper apiToFieldMapper; //todo maybe not needed
+    private ApiToFieldMapper apiToFieldMapper;
 
     /**
      * Constructor.

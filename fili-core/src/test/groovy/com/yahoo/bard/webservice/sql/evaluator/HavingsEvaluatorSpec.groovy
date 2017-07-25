@@ -44,6 +44,7 @@ class HavingsEvaluatorSpec extends Specification {
     static SqlTimeConverter sqlTimeConverter = new DefaultSqlTimeConverter()
     static HavingEvaluator havingEvaluator = new HavingEvaluator()
     static DruidSqlAggregationConverter druidSqlTypeConverter = new DefaultDruidSqlAggregationConverter()
+    static final String API = "api_"
 
     private static RelBuilder getBuilder() {
         RelBuilder builder = CalciteHelper.getBuilder(Database.getDataSource())
@@ -54,7 +55,7 @@ class HavingsEvaluatorSpec extends Specification {
     @Unroll
     def "GetDimensionNames on #expectedHavingSql"() {
         setup:
-        ApiToFieldMapper apiToFieldMapper = SimpleDruidQueryBuilder.getApiToFieldMapper()
+        ApiToFieldMapper apiToFieldMapper = SimpleDruidQueryBuilder.getApiToFieldMapper(API, "")
         RelBuilder builder = getBuilder()
         RelBuilder.AggCall[] aggregationCalls = aggregations.stream().map {
             return druidSqlTypeConverter.fromDruidType(it, apiToFieldMapper).get().build(builder)
@@ -74,12 +75,12 @@ class HavingsEvaluatorSpec extends Specification {
                 toString();
         sql.contains(expectedHavingSql)
         where: "we have"
-        having                                    | aggregations                     | expectedHavingSql
-        gt(ADDED, ONE)                            | asList(sum(ADDED))               | "HAVING SUM(`${ADDED}`) > 1"
-        lt(DELETED, ONE)                          | asList(sum(DELETED))             | "HAVING SUM(`${DELETED}`) < 1"
-        equals(DELETED, ONE)                      | asList(sum(DELETED), sum(ADDED)) | "HAVING SUM(`${DELETED}`) = 1"
-        or(equals(DELETED, ONE), lt(ADDED, TWO))  | asList(max(DELETED), min(ADDED)) | "HAVING MAX(`${DELETED}`) = 1 OR MIN(`${ADDED}`) < 2"
-        and(equals(DELETED, ONE), lt(ADDED, TWO)) | asList(max(DELETED), min(ADDED)) | "HAVING MAX(`${DELETED}`) = 1 AND MIN(`${ADDED}`) < 2"
+        having                                                | aggregations                                 | expectedHavingSql
+        gt(API + ADDED, ONE)                                  | asList(sum(API + ADDED))                     | "HAVING SUM(`${ADDED}`) > 1"
+        lt(API + DELETED, ONE)                                | asList(sum(API + DELETED))                   | "HAVING SUM(`${DELETED}`) < 1"
+        equals(API + DELETED, ONE)                            | asList(sum(API + DELETED), sum(API + ADDED)) | "HAVING SUM(`${DELETED}`) = 1"
+        or(equals(API + DELETED, ONE), lt(API + ADDED, TWO))  | asList(max(API + DELETED), min(API + ADDED)) | "HAVING MAX(`${DELETED}`) = 1 OR MIN(`${ADDED}`) < 2"
+        and(equals(API + DELETED, ONE), lt(API + ADDED, TWO)) | asList(max(API + DELETED), min(API + ADDED)) | "HAVING MAX(`${DELETED}`) = 1 AND MIN(`${ADDED}`) < 2"
 
     }
 
@@ -94,7 +95,7 @@ class HavingsEvaluatorSpec extends Specification {
     @Unroll
     def "Test bad inputs for having filters on #expectedHavingSql"() {
         setup:
-        ApiToFieldMapper apiToFieldMapper = SimpleDruidQueryBuilder.getApiToFieldMapper()
+        ApiToFieldMapper apiToFieldMapper = SimpleDruidQueryBuilder.getApiToFieldMapper(API, "")
         RelBuilder builder = getBuilder()
         RelBuilder.AggCall[] aggregationCalls = aggregations.collect { druidSqlTypeConverter.fromDruidType(it, apiToFieldMapper).get().build(builder) } as RelBuilder.AggCall[]
         builder.aggregate(
@@ -113,7 +114,7 @@ class HavingsEvaluatorSpec extends Specification {
         sql.contains(expectedHavingSql)
 
         where: "queries have 2 or more aggregations on one metric - can't tell which should be used in having filter"
-        having                                 | aggregations                       | expectedHavingSql
-        or(lt(DELETED, ONE), gt(DELETED, TWO)) | asList(max(DELETED), min(DELETED)) | "HAVING MAX(`${DELETED}`) < 1 OR MAX(`${DELETED}`) > 2"
+        having                                             | aggregations                                   | expectedHavingSql
+        or(lt(API + DELETED, ONE), gt(API + DELETED, TWO)) | asList(max(API + DELETED), min(API + DELETED)) | "HAVING MAX(`${DELETED}`) < 1 OR MAX(`${DELETED}`) > 2"
     }
 }

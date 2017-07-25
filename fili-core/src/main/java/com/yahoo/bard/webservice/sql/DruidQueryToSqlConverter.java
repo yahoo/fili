@@ -129,6 +129,7 @@ public class DruidQueryToSqlConverter {
                         getAllWhereFilters(
                                 builder,
                                 druidQuery,
+                                apiToFieldMapper,
                                 timestampColumn
                         )
                 )
@@ -206,6 +207,7 @@ public class DruidQueryToSqlConverter {
      *
      * @param builder  The RelBuilder created with Calcite.
      * @param druidQuery  The query from which to find filter all the filters for.
+     * @param apiToFieldMapper  The mapping from api to physical names.
      * @param timestampColumn  The name of the timestamp column in the database.
      *
      * @return the combined RexNodes that should be filtered on.
@@ -213,6 +215,7 @@ public class DruidQueryToSqlConverter {
     protected RexNode getAllWhereFilters(
             RelBuilder builder,
             DruidAggregationQuery<?> druidQuery,
+            ApiToFieldMapper apiToFieldMapper,
             String timestampColumn
     ) {
         RexNode timeFilter = sqlTimeConverter.buildTimeFilters(
@@ -223,7 +226,11 @@ public class DruidQueryToSqlConverter {
 
         if (druidQuery.getFilter() != null) {
             FilterEvaluator filterEvaluator = new FilterEvaluator();
-            RexNode druidQueryFilter = filterEvaluator.evaluateFilter(builder, druidQuery.getFilter());
+            RexNode druidQueryFilter = filterEvaluator.evaluateFilter(
+                    builder,
+                    druidQuery.getFilter(),
+                    apiToFieldMapper
+            );
             return builder.and(timeFilter, druidQueryFilter);
         }
 
