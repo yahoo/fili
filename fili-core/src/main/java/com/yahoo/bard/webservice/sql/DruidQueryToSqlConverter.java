@@ -50,6 +50,10 @@ public class DruidQueryToSqlConverter {
     /**
      * Constructs the default converter.
      *
+     * TODO could make an interface with {@link #isValidQuery(DruidQuery)} and
+     * {@link #buildSqlQuery(Connection, DruidAggregationQuery, ApiToFieldMapper)}. Maybe make it a generic
+     * more generic like "convertQuery"
+     *
      * @param calciteHelper  The calcite helper for this database.
      */
     public DruidQueryToSqlConverter(CalciteHelper calciteHelper) {
@@ -126,17 +130,10 @@ public class DruidQueryToSqlConverter {
         RelBuilder builder = calciteHelper.getNewRelBuilder();
         builder.scan(sqlTableName)
                 .filter(
-                        getAllWhereFilters(
-                                builder,
-                                druidQuery,
-                                apiToFieldMapper,
-                                timestampColumn
-                        )
+                        getAllWhereFilters(builder, druidQuery, apiToFieldMapper, timestampColumn)
                 )
                 .aggregate(
-                        builder.groupKey(
-                                getAllGroupByColumns(builder, druidQuery, apiToFieldMapper, timestampColumn)
-                        ),
+                        builder.groupKey(getAllGroupByColumns(builder, druidQuery, apiToFieldMapper, timestampColumn)),
                         getAllQueryAggregations(builder, druidQuery, apiToFieldMapper)
                 )
                 .filter(
@@ -284,7 +281,7 @@ public class DruidQueryToSqlConverter {
                 .filter(sqlAggregationBuilder -> {
                     if (!sqlAggregationBuilder.isPresent()) {
                         String msg = "Couldn't build sql aggregation with " + sqlAggregationBuilder;
-                        LOG.warn(msg);
+                        LOG.debug(msg);
                         throw new RuntimeException(msg);
                     }
                     return true;

@@ -5,6 +5,9 @@ package com.yahoo.bard.webservice.sql.builders
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleMaxAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleMinAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleSumAggregation
+import com.yahoo.bard.webservice.druid.model.aggregation.LongMaxAggregation
+import com.yahoo.bard.webservice.druid.model.aggregation.LongMinAggregation
+import com.yahoo.bard.webservice.druid.model.aggregation.LongSumAggregation
 
 class Aggregator {
 
@@ -18,5 +21,17 @@ class Aggregator {
 
     public static DoubleMinAggregation min(String name) {
         return new DoubleMinAggregation(name, name)
+    }
+
+    public static LongSumAggregation longSum(String name) {
+        return new LongSumAggregation(name, name)
+    }
+
+    public static LongMaxAggregation longMax(String name) {
+        return new LongMaxAggregation(name, name)
+    }
+
+    public static LongMinAggregation longMin(String name) {
+        return new LongMinAggregation(name, name)
     }
 }

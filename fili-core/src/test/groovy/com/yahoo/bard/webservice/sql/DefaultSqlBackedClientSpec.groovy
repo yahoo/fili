@@ -9,6 +9,11 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MONTH
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.WEEK
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.YEAR
 import static com.yahoo.bard.webservice.druid.model.query.AllGranularity.INSTANCE
+import static com.yahoo.bard.webservice.sql.builders.Aggregator.longMax
+import static com.yahoo.bard.webservice.sql.builders.Aggregator.longMin
+import static com.yahoo.bard.webservice.sql.builders.Aggregator.longSum
+import static com.yahoo.bard.webservice.sql.builders.Aggregator.max
+import static com.yahoo.bard.webservice.sql.builders.Aggregator.min
 import static com.yahoo.bard.webservice.sql.builders.Aggregator.sum
 import static com.yahoo.bard.webservice.sql.builders.Filters.not
 import static com.yahoo.bard.webservice.sql.builders.Filters.or
@@ -44,6 +49,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionColumn
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType
+import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.model.having.Having
 import com.yahoo.bard.webservice.druid.model.query.AbstractDruidAggregationQuery
@@ -62,6 +68,8 @@ import org.joda.time.DateTimeZone
 
 import spock.lang.Specification
 import spock.lang.Unroll
+
+import java.util.function.Function
 
 class DefaultSqlBackedClientSpec extends Specification {
     private static SqlBackedClient sqlBackedClient = new DefaultSqlBackedClient(Database.getDataSource(), new ObjectMapper())
@@ -97,20 +105,24 @@ class DefaultSqlBackedClientSpec extends Specification {
                 asList(sum(ADDED)),
                 asList(),
                 asList(interval(START, END))
-        );
+        )
     }
 
     private static TimeSeriesQuery getTimeSeriesQuery(DefaultTimeGrain timeGrain, Filter filter) {
+        return getTimeSeriesQueryCustomAggregation(timeGrain, filter, { s -> sum(s) })
+    }
+
+    private static TimeSeriesQuery getTimeSeriesQueryCustomAggregation(DefaultTimeGrain timeGrain, Filter filter, Function<String, Aggregation> aggregation) {
         return timeSeriesQuery(
                 WIKITICKER,
                 filter,
                 timeGrain,
                 asList(ADDED, DELETED, DELTA),
                 asList(COMMENT),
-                asList(sum(ADDED), sum(DELETED), sum(DELTA)),
+                asList(aggregation.apply(ADDED), aggregation.apply(DELETED), aggregation.apply(DELTA)),
                 asList(),
                 asList(interval(START, END))
-        );
+        )
     }
 
     private static TimeSeriesQuery getTimeSeriesQueryMultipleIntervals(DefaultTimeGrain timeGrain, Filter filter) {
@@ -123,7 +135,7 @@ class DefaultSqlBackedClientSpec extends Specification {
                 asList(sum(ADDED), sum(DELETED), sum(DELTA)),
                 asList(),
                 asList(interval(START, "2015-09-12T12:00:00.000Z"), interval("2015-09-12T12:00:00.000Z", END))
-        );
+        )
     }
 
 
@@ -145,7 +157,7 @@ class DefaultSqlBackedClientSpec extends Specification {
                 asList(),
                 asList(interval(START, END)),
                 null
-        );
+        )
     }
 
     @Unroll
@@ -230,6 +242,45 @@ class DefaultSqlBackedClientSpec extends Specification {
         WEEK      | null                            | """[{"timestamp":"2015-09-07T00:00:00.000Z","event":{"${ADDED}":9385573.0,"${DELETED}":394298.0,"${DELTA}":8991275.0}}]"""
         MONTH     | null                            | """[{"timestamp":"2015-09-01T00:00:00.000Z","event":{"${ADDED}":9385573.0,"${DELETED}":394298.0,"${DELTA}":8991275.0}}]"""
         YEAR      | null                            | """[{"timestamp":"2015-01-01T00:00:00.000Z","event":{"${ADDED}":9385573.0,"${DELETED}":394298.0,"${DELTA}":8991275.0}}]"""
+    }
+
+    @Unroll
+    def "Test doubles/longs serialize correctly on /#timeGrain/ with custom aggregation"() {
+        setup:
+        DruidQuery druidQuery = getTimeSeriesQueryCustomAggregation(timeGrain, null, aggregation)
+        JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery, null, null).get();
+
+        expect:
+        parse(jsonNode, druidQuery)
+        jsonNode.toString() == response
+
+        where: "we have"
+        timeGrain | aggregation         | response
+        DAY       | { s -> sum(s) }     | """[{"timestamp":"2015-09-12T00:00:00.000Z","event":{"${ADDED}":9385573.0,"${DELETED}":394298.0,"${DELTA}":8991275.0}}]"""
+        WEEK      | { s -> sum(s) }     | """[{"timestamp":"2015-09-07T00:00:00.000Z","event":{"${ADDED}":9385573.0,"${DELETED}":394298.0,"${DELTA}":8991275.0}}]"""
+        MONTH     | { s -> sum(s) }     | """[{"timestamp":"2015-09-01T00:00:00.000Z","event":{"${ADDED}":9385573.0,"${DELETED}":394298.0,"${DELTA}":8991275.0}}]"""
+        YEAR      | { s -> sum(s) }     | """[{"timestamp":"2015-01-01T00:00:00.000Z","event":{"${ADDED}":9385573.0,"${DELETED}":394298.0,"${DELTA}":8991275.0}}]"""
+        DAY       | { s -> min(s) }     | """[{"timestamp":"2015-09-12T00:00:00.000Z","event":{"${ADDED}":0.0,"${DELETED}":0.0,"${DELTA}":-500.0}}]"""
+        WEEK      | { s -> min(s) }     | """[{"timestamp":"2015-09-07T00:00:00.000Z","event":{"${ADDED}":0.0,"${DELETED}":0.0,"${DELTA}":-500.0}}]"""
+        MONTH     | { s -> min(s) }     | """[{"timestamp":"2015-09-01T00:00:00.000Z","event":{"${ADDED}":0.0,"${DELETED}":0.0,"${DELTA}":-500.0}}]"""
+        YEAR      | { s -> min(s) }     | """[{"timestamp":"2015-01-01T00:00:00.000Z","event":{"${ADDED}":0.0,"${DELETED}":0.0,"${DELTA}":-500.0}}]"""
+        DAY       | { s -> max(s) }     | """[{"timestamp":"2015-09-12T00:00:00.000Z","event":{"${ADDED}":199818.0,"${DELETED}":500.0,"${DELTA}":199818.0}}]"""
+        WEEK      | { s -> max(s) }     | """[{"timestamp":"2015-09-07T00:00:00.000Z","event":{"${ADDED}":199818.0,"${DELETED}":500.0,"${DELTA}":199818.0}}]"""
+        MONTH     | { s -> max(s) }     | """[{"timestamp":"2015-09-01T00:00:00.000Z","event":{"${ADDED}":199818.0,"${DELETED}":500.0,"${DELTA}":199818.0}}]"""
+        YEAR      | { s -> max(s) }     | """[{"timestamp":"2015-01-01T00:00:00.000Z","event":{"${ADDED}":199818.0,"${DELETED}":500.0,"${DELTA}":199818.0}}]"""
+        DAY       | { s -> longSum(s) } | """[{"timestamp":"2015-09-12T00:00:00.000Z","event":{"${ADDED}":9385573,"${DELETED}":394298,"${DELTA}":8991275}}]"""
+        WEEK      | { s -> longSum(s) } | """[{"timestamp":"2015-09-07T00:00:00.000Z","event":{"${ADDED}":9385573,"${DELETED}":394298,"${DELTA}":8991275}}]"""
+        MONTH     | { s -> longSum(s) } | """[{"timestamp":"2015-09-01T00:00:00.000Z","event":{"${ADDED}":9385573,"${DELETED}":394298,"${DELTA}":8991275}}]"""
+        YEAR      | { s -> longSum(s) } | """[{"timestamp":"2015-01-01T00:00:00.000Z","event":{"${ADDED}":9385573,"${DELETED}":394298,"${DELTA}":8991275}}]"""
+        DAY       | { s -> longMin(s) } | """[{"timestamp":"2015-09-12T00:00:00.000Z","event":{"${ADDED}":0,"${DELETED}":0,"${DELTA}":-500}}]"""
+        WEEK      | { s -> longMin(s) } | """[{"timestamp":"2015-09-07T00:00:00.000Z","event":{"${ADDED}":0,"${DELETED}":0,"${DELTA}":-500}}]"""
+        MONTH     | { s -> longMin(s) } | """[{"timestamp":"2015-09-01T00:00:00.000Z","event":{"${ADDED}":0,"${DELETED}":0,"${DELTA}":-500}}]"""
+        YEAR      | { s -> longMin(s) } | """[{"timestamp":"2015-01-01T00:00:00.000Z","event":{"${ADDED}":0,"${DELETED}":0,"${DELTA}":-500}}]"""
+        DAY       | { s -> longMax(s) } | """[{"timestamp":"2015-09-12T00:00:00.000Z","event":{"${ADDED}":199818,"${DELETED}":500,"${DELTA}":199818}}]"""
+        WEEK      | { s -> longMax(s) } | """[{"timestamp":"2015-09-07T00:00:00.000Z","event":{"${ADDED}":199818,"${DELETED}":500,"${DELTA}":199818}}]"""
+        MONTH     | { s -> longMax(s) } | """[{"timestamp":"2015-09-01T00:00:00.000Z","event":{"${ADDED}":199818,"${DELETED}":500,"${DELTA}":199818}}]"""
+        YEAR      | { s -> longMax(s) } | """[{"timestamp":"2015-01-01T00:00:00.000Z","event":{"${ADDED}":199818,"${DELETED}":500,"${DELTA}":199818}}]"""
+
     }
 
     @Unroll
