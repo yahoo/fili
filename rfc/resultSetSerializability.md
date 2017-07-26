@@ -18,15 +18,14 @@ Allow customers to define their own response writer that grants them
 complete control over how a `ResultSet` is serialized to the user.
 
 Customers will be able to do this by defining a custom implementation of a
-SAM interface called `ResponseWriter`, and a custom implementation of an
-interface `ResponseWriterSelector` that selects a `ResponseWriter` based
-on the request, and injecting the selector via the `BinderFactory`.
+SAM interface called `ResponseWriter`, and injecting the selector via the
+`BinderFactory`.
 
 ## Implementation ##
 
 1. Define an interface `ResponseWriter` with a single method:
     ```java
-        void write(ResponseData responseData, Outputstream os);
+        void write(DataApiRequest request, ResponseData responseData, Outputstream os);
     ```
     This method takes in a data object containing all the information
     (including the `ResultSet`) needed to write the Fili response, and writes
@@ -44,11 +43,25 @@ on the request, and injecting the selector via the `BinderFactory`.
         ResponseWriter select(DataApiRequest request);
     ```
     This object is responsible for choosing a `ResponseWriter` to use based on
-    the `DataApiRequest`.
+    the `DataApiRequest`. It will be used as part of the default
+    implementation of `ResponseWriter`.
 
-4. Write an implementation of `ResponseWriterSelector` that chooses and
+4. Write a default implementation of `ResponseWriterSelector` that chooses and
     delegates to one of the classes defined in 4b based on the `ResponseType`
     in `DataApiRequest`.
+
+5. Define a default implementation of `ResponseWriter`, `FiliResponseWriter`
+    that uses a
+    `ResponseWriterSelector`. This class will also include a method
+    ```java
+        void addResponseType(ResponseType type, ResponseWriter writer);
+    ```
+    That allows users to add an additional mapping from a response type to the
+    writer. Then, if a customer so desires, they can build a
+    `FiliResponseWriter`, and invoke `addResponseType` to register a writer
+    with the desired type instead of implementing a
+    `ResponseWriter` from scratch that handles every type if they don't need
+    to.
 
 5. Make `HttpResponseMaker` injectable. The `HttpResponseMaker` does not have
 any response-specific state, so there is no reason not to make it injectable.
