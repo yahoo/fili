@@ -106,7 +106,7 @@ class HttpResponseMakerSpec extends Specification {
         PreResponse preResponse = new PreResponse(resultSet, responseContext)
 
         when:
-        Response actual = httpResponseMaker.buildResponse(preResponse, apiRequest.format, apiRequest.uriInfo)
+        Response actual = httpResponseMaker.buildResponse(preResponse, apiRequest)
 
         then:
         actual.getStatus() == 200
@@ -121,7 +121,7 @@ class HttpResponseMakerSpec extends Specification {
         PreResponse preResponse = new PreResponse(resultSet, responseContext)
 
         when: "The Response is built"
-        Response actual = httpResponseMaker.buildResponse(preResponse, apiRequest.format, apiRequest.uriInfo)
+        Response actual = httpResponseMaker.buildResponse(preResponse, apiRequest)
 
         then: "The header is set correctly"
         actual.getHeaderString(HttpHeaders.CONTENT_TYPE) == "text/csv; charset=utf-8"
@@ -135,7 +135,7 @@ class HttpResponseMakerSpec extends Specification {
 
         when:
         Response.ResponseBuilder responseBuilder
-        responseBuilder = httpResponseMaker.createResponseBuilder(resultSet, responseContext, apiRequest.format, apiRequest.uriInfo)
+        responseBuilder = httpResponseMaker.createResponseBuilder(resultSet, responseContext, apiRequest)
 
         then:
         responseBuilder != null
