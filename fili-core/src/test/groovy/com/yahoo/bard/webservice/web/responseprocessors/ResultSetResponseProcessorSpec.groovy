@@ -33,11 +33,12 @@ import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.Schema
 import com.yahoo.bard.webservice.table.TableTestUtils
 import com.yahoo.bard.webservice.web.DataApiRequest
+import com.yahoo.bard.webservice.web.JsonResponseWriter
 import com.yahoo.bard.webservice.web.ResponseFormatType
+import com.yahoo.bard.webservice.web.ResponseWriter
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.google.common.collect.Sets
 
 import org.joda.time.DateTimeZone
@@ -59,6 +60,7 @@ class ResultSetResponseProcessorSpec extends Specification {
     private static final ObjectMapper MAPPER = MAPPERS.getMapper()
 
     HttpResponseMaker httpResponseMaker
+    ResponseWriter responseWriter
     GroupByQuery groupByQuery
     DataApiRequest apiRequest
     HttpResponseChannel httpResponseChannel
@@ -90,8 +92,9 @@ class ResultSetResponseProcessorSpec extends Specification {
         uriInfo = Mock(UriInfo)
         pathSegment = Mock(PathSegment)
         paramMap = Mock(MultivaluedMap)
+        responseWriter = new JsonResponseWriter(MAPPERS)
 
-        httpResponseMaker =  new HttpResponseMaker(MAPPERS, Mock(DimensionDictionary))
+        httpResponseMaker =  new HttpResponseMaker(MAPPERS, Mock(DimensionDictionary), responseWriter)
         httpResponseChannel = new HttpResponseChannel(asyncResponse, apiRequest, httpResponseMaker);
         responseEmitter = PublishSubject.create()
         responseEmitter.subscribe(httpResponseChannel)

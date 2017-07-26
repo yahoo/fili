@@ -275,7 +275,7 @@
     <module name="RegexpHeader">
         <property name="severity" value="error" />
         <property name="header"
-            value="// Copyright 20[0-1][0-9] Yahoo Inc.\n// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms\.\n" />
+            value="// Copyright 20[0-1][0-9] (Yahoo|Oath) Inc.\n// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms\.\n" />
         <property name="fileExtensions" value="java,groovy" />
         <metadata name="net.sf.eclipsecs.core.comment" 
             value="Checks that the file starts with a yahoo copyright block." />

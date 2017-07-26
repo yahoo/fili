@@ -80,15 +80,21 @@ import com.yahoo.bard.webservice.table.resolver.DefaultPhysicalTableResolver;
 import com.yahoo.bard.webservice.table.resolver.PhysicalTableResolver;
 import com.yahoo.bard.webservice.util.DefaultingDictionary;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
+import com.yahoo.bard.webservice.web.CsvResponseWriter;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.DimensionApiRequestMapper;
 import com.yahoo.bard.webservice.web.DimensionsApiRequest;
+import com.yahoo.bard.webservice.web.FiliResponseWriter;
+import com.yahoo.bard.webservice.web.FiliResponseWriterSelector;
 import com.yahoo.bard.webservice.web.FilteredSketchMetricsHelper;
 import com.yahoo.bard.webservice.web.JobsApiRequest;
+import com.yahoo.bard.webservice.web.JsonApiResponseWriter;
+import com.yahoo.bard.webservice.web.JsonResponseWriter;
 import com.yahoo.bard.webservice.web.MetricsApiRequest;
 import com.yahoo.bard.webservice.web.MetricsFilterSetBuilder;
 import com.yahoo.bard.webservice.web.NoOpRequestMapper;
 import com.yahoo.bard.webservice.web.RequestMapper;
+import com.yahoo.bard.webservice.web.ResponseWriter;
 import com.yahoo.bard.webservice.web.SlicesApiRequest;
 import com.yahoo.bard.webservice.web.TablesApiRequest;
 import com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow;
@@ -304,6 +310,8 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 bind(getClock()).to(Clock.class);
 
                 bind(getHttpResponseMaker()).to(HttpResponseMaker.class);
+
+                bind(buildResponseWriter(getMappers())).to(ResponseWriter.class);
 
                 if (DRUID_DIMENSIONS_LOADER.isOn()) {
                     DruidDimensionsLoader druidDimensionsLoader = buildDruidDimensionsLoader(
@@ -916,6 +924,23 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      */
     protected Class<? extends HttpResponseMaker> getHttpResponseMaker() {
         return HttpResponseMaker.class;
+    }
+
+    /**
+     * Builder for ResponseWriter, a serializer allowing customized response from Fili.
+     *
+     * @param mappers Shared instance of {@link com.fasterxml.jackson.databind.ObjectMapper}
+     *
+     * @return FiliResponseWriter
+     */
+    protected ResponseWriter buildResponseWriter(ObjectMappersSuite mappers) {
+        return new FiliResponseWriter(
+                new FiliResponseWriterSelector(
+                        new CsvResponseWriter(mappers),
+                        new JsonResponseWriter(mappers),
+                        new JsonApiResponseWriter(mappers)
+                )
+        );
     }
 
     /**

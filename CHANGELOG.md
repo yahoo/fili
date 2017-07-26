@@ -17,7 +17,7 @@ Current
 
 - [Fili-security module](https://github.com/yahoo/fili/pull/405)
     * Added security module for fili data security filters
-    * Created `ChainingRequestMapper`, and a set of mappers for gatekeeping on security roles and whitelisting dimension filters.
+    * Created `ChainingRequestMapper`, and a set of mappers for gatekeeping on security roles and whitelisting dimension filters. 
 
 - [Add Table-wide Availability](https://github.com/yahoo/fili/pull/414)
     * Add `availableIntervals` field to tables endpoint by union the availability for the logical table without taking
@@ -39,6 +39,12 @@ Current
 
 
 ### Changed:
+
+- [Refactor Response class and implement new serialization logics](https://github.com/yahoo/fili/pull/455)
+    * Define interface `ResponseWriter` and its default implementation
+    * Refactor `Response` class, splitting into `ResponseData` and three implementations of `ResponseWriter`
+    * Define interface `ResponseWriterSelector` and its default implementation.
+    * Hook up the new serialization logic with `HttpResponseMaker` to replace the old one
 
 - [LuceneSearchProvide needs to handle nulls](https://github.com/yahoo/fili/issues/487)
     * Lucene search provider cannot handle null load values.  Treat all null values as empty string.
