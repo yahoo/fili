@@ -73,15 +73,24 @@ class DruidDimensionsLoaderSpec extends Specification {
 
     def "The DimensionLoader constructor successfully extracts the dimensions from a dimension dictionary"() {
         expect: "A list of singleton dimension lists that need to be loaded from Druid"
-        loader.dimensions == LOADED_DIMENSIONS.collect {[dimensionDictionary.findByApiName(it)]}
+        loader.dimensions.collect { Collections.singletonList(it) } == LOADED_DIMENSIONS.collect { [dimensionDictionary.findByApiName(it)] }
     }
 
     def "When run, the DruidDimensionLoader sends the correct number of Druid queries"() {
         given: "A list of resolved dimensions that should be loaded by the loader"
-        List<Dimension> dimensions = LOADED_DIMENSIONS.collect {dimensionDictionary.findByApiName(it)}
+        List<Dimension> dimensions = LOADED_DIMENSIONS.collect { dimensionDictionary.findByApiName(it) }
 
         and: "The number of expected queries to Druid"
-        int numDruidQueries = dimensions.size() * jtb.configurationLoader.physicalTableDictionary.size()
+        // Queries are only sent to a table if the table actually has the dimension
+        def listOfAllDimensionSets = jtb.configurationLoader.physicalTableDictionary.values().collect { it.dimensions }
+        int numDruidQueries = 0
+        for (Set<Dimension> dimensionSet : listOfAllDimensionSets) {
+            for (Dimension dimension : dimensions) {
+                if (dimensionSet.contains(dimension)) {
+                    numDruidQueries += 1;
+                }
+            }
+        }
 
         when:
         loader.run()

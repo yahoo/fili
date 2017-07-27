@@ -18,11 +18,8 @@ import com.yahoo.bard.webservice.druid.model.query.DruidSearchQuery;
 import com.yahoo.bard.webservice.druid.model.query.RegexSearchQuerySpec;
 import com.yahoo.bard.webservice.druid.model.query.SearchQuerySpec;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
-import com.yahoo.bard.webservice.table.StrictPhysicalTable;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
-
-import com.fasterxml.jackson.databind.JsonNode;
 
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
@@ -70,7 +67,7 @@ public class DruidDimensionsLoader extends Loader<Boolean> {
 
     private final DruidWebService druidWebService;
     private final AtomicReference<DateTime> lastRunTimestamp;
-    private final List<List<Dimension>> dimensions;
+    private final List<Dimension> dimensions;
     private final List<DataSource> dataSources;
 
     /**
@@ -130,11 +127,9 @@ public class DruidDimensionsLoader extends Loader<Boolean> {
         // time if `dimensions` were a flat list instead of a list of singleton lists.
         this.dimensions = dimensionsToLoad.stream()
                 .map(dimensionDictionary::findByApiName)
-                .map(Collections::singletonList)
                 .collect(Collectors.toList());
 
         this.dataSources = physicalTableDictionary.values().stream()
-                .filter(physicalTable -> physicalTable instanceof StrictPhysicalTable)
                 .map(table -> table.withConstraint(DataSourceConstraint.unconstrained(table)))
                 .map(TableDataSource::new)
                 .collect(Collectors.toList());
@@ -154,25 +149,49 @@ public class DruidDimensionsLoader extends Loader<Boolean> {
      *
      * @param dimension The dimension to search
      */
-    protected void queryDruidDim(List<Dimension> dimension) {
-        // Success callback will update the dimension cache
-        SuccessCallback success = buildDruidDimensionsSuccessCallback(dimension.get(0));
+    protected void queryDruidDim(Dimension dimension) {
+        dataSources.stream()
+                .filter(dataSource -> dimensionExistsInDataSource(dimension, dataSource))
+                .forEach(dataSource -> {
+                    DruidSearchQuery druidSearchQuery = new DruidSearchQuery(
+                            dataSource,
+                            AllGranularity.INSTANCE,
+                            null,
+                            INTERVALS,
+                            Collections.singletonList(dimension),
+                            SEARCH_QUERY_SPEC,
+                            null,
+                            ROW_LIMIT
+                    );
 
-        for (DataSource dataSource : dataSources) {
-            DruidSearchQuery druidSearchQuery = new DruidSearchQuery(
-                    dataSource,
-                    AllGranularity.INSTANCE,
-                    null,
-                    INTERVALS,
-                    dimension,
-                    SEARCH_QUERY_SPEC,
-                    null,
-                    ROW_LIMIT
-            );
+                    // Success callback will update the dimension cache
+                    SuccessCallback success = buildDruidDimensionsSuccessCallback(dimension);
 
-            RequestContext requestContext = new RequestContext(null, false);
-            druidWebService.postDruidQuery(requestContext, success, errorCallback, failureCallback, druidSearchQuery);
-        }
+                    RequestContext requestContext = new RequestContext(null, false);
+                    druidWebService.postDruidQuery(
+                            requestContext,
+                            success,
+                            errorCallback,
+                            failureCallback,
+                            druidSearchQuery
+                    );
+                });
+
+    }
+
+    /**
+     * Checks if a {@link Dimension} exists in a {@link DataSource}.
+     *
+     * @param dimension  The dimension to look for in the datasource.
+     * @param dataSource  The datasource to look through for the dimension.
+     *
+     * @return true if the dimension was found.
+     */
+    private boolean dimensionExistsInDataSource(Dimension dimension, DataSource dataSource) {
+        return dataSource.getPhysicalTable()
+                .getDimensions()
+                .stream()
+                .anyMatch(dimension::equals);
     }
 
     /**
@@ -183,22 +202,19 @@ public class DruidDimensionsLoader extends Loader<Boolean> {
      * @return the callback
      */
     private SuccessCallback buildDruidDimensionsSuccessCallback(Dimension dimension) {
-        return new SuccessCallback() {
-            @Override
-            public void invoke(JsonNode rootNode) {
-                for (JsonNode intervalNode : rootNode) {
-                    for (JsonNode dim : intervalNode.get("result")) {
-                        String value = dim.get("value").asText();
-                        if (dimension.findDimensionRowByKeyValue(value) == null) {
-                            DimensionRow dimRow = dimension.createEmptyDimensionRow(value);
-                            dimension.addDimensionRow(dimRow);
-                        }
+        return rootNode -> {
+            rootNode.forEach(intervalNode -> {
+                intervalNode.get("result").forEach(dim -> {
+                    String value = dim.get("value").asText();
+                    if (dimension.findDimensionRowByKeyValue(value) == null) {
+                        DimensionRow dimRow = dimension.createEmptyDimensionRow(value);
+                        dimension.addDimensionRow(dimRow);
                     }
-                }
+                });
+            });
 
-                // Tell the dimension it's been updated
-                dimension.setLastUpdated(DateTime.now());
-            }
+            // Tell the dimension it's been updated
+            dimension.setLastUpdated(DateTime.now());
         };
     }
 
