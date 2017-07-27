@@ -14,6 +14,7 @@ import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.get
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.getWikitickerDatasource
 import static com.yahoo.bard.webservice.sql.database.Database.ADDED
 import static com.yahoo.bard.webservice.sql.database.Database.DELETED
+import static com.yahoo.bard.webservice.sql.database.Database.IS_ROBOT
 import static com.yahoo.bard.webservice.sql.database.Database.METRO_CODE
 import static java.util.Arrays.asList
 
@@ -43,7 +44,7 @@ class DruidQueryToSqlConverterSpec extends Specification {
         return new GroupByQuery(
                 getWikitickerDatasource("api_", ""),
                 timeGrain,
-                getDimensions(dimensions.collect{ "api_" + it }),
+                getDimensions(dimensions.collect { "api_" + it }),
                 null,
                 null,
                 asList(sum("api_" + ADDED), sum("api_" + DELETED)),
@@ -65,7 +66,7 @@ class DruidQueryToSqlConverterSpec extends Specification {
     }
 
     @Unroll
-    def "test sorting on #metrics by #metricDirections"() {
+    def "test sorting on #dims with #metrics by #metricDirections"() {
         setup:
         DruidQuery query = getGroupByQuery(grain, dims, getSort(metrics, metricDirections))
         def sql = druidQueryToSqlConverter.buildSqlQuery(calciteHelper.getConnection(), query, apiToFieldMapper)
@@ -74,11 +75,12 @@ class DruidQueryToSqlConverterSpec extends Specification {
         sql.endsWith(expectedOutput)
 
         where:
-        grain    | dims               | metrics                | metricDirections  | expectedOutput
-        DAY      | asList(METRO_CODE) | asList(ADDED)          | asList(DESC)      | 'ORDER BY YEAR("TIME"), DAYOFYEAR("TIME"), SUM("added") DESC NULLS FIRST, "metroCode"'
-        DAY      | asList()           | asList(ADDED, DELETED) | asList(DESC, ASC) | 'ORDER BY YEAR("TIME"), DAYOFYEAR("TIME"), SUM("added") DESC NULLS FIRST, SUM("deleted")'
-        YEAR     | asList(METRO_CODE) | asList()               | asList()          | 'ORDER BY YEAR("TIME"), "metroCode"'
-        MONTH    | asList()           | asList()               | asList()          | 'ORDER BY YEAR("TIME"), MONTH("TIME")'
-        INSTANCE | asList()           | asList()               | asList()          | 'ORDER BY "TIME"'
+        grain    | dims                         | metrics                | metricDirections  | expectedOutput
+        DAY      | asList(METRO_CODE)           | asList(ADDED)          | asList(DESC)      | 'ORDER BY YEAR("TIME"), DAYOFYEAR("TIME"), SUM("added") DESC NULLS FIRST, "metroCode"'
+        DAY      | asList(METRO_CODE, IS_ROBOT) | asList(ADDED)          | asList(DESC)      | 'ORDER BY YEAR("TIME"), DAYOFYEAR("TIME"), SUM("added") DESC NULLS FIRST, "metroCode", "isRobot"'
+        DAY      | asList()                     | asList(ADDED, DELETED) | asList(DESC, ASC) | 'ORDER BY YEAR("TIME"), DAYOFYEAR("TIME"), SUM("added") DESC NULLS FIRST, SUM("deleted")'
+        YEAR     | asList(METRO_CODE)           | asList()               | asList()          | 'ORDER BY YEAR("TIME"), "metroCode"'
+        MONTH    | asList()                     | asList()               | asList()          | 'ORDER BY YEAR("TIME"), MONTH("TIME")'
+        INSTANCE | asList()                     | asList()               | asList()          | 'ORDER BY "TIME"'
     }
 }

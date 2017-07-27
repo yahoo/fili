@@ -36,7 +36,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Default implementation of converting a {@link DruidQuery} into a sql query.
@@ -192,10 +191,31 @@ public class DruidQueryToSqlConverter {
         }
         sorts.addAll(builder.fields().subList(druidQuery.getDimensions().size(), groupBys));
         sorts.addAll(metricSorts);
-        sorts.addAll(builder.fields().subList(0, druidQuery.getDimensions().size()));
+        sorts.addAll(getDimensionFields(builder, druidQuery, apiToFieldMapper));
 
         return sorts.stream()
                 .map(sort -> builder.call(SqlStdOperatorTable.NULLS_FIRST, sort))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Gets all the dimensions from a druid query as fields for calcite.
+     *
+     * @param builder  The RelBuilder created with Calcite.
+     * @param druidQuery  The query to find the having filter from.
+     * @param apiToFieldMapper  The mapping from api to physical name.
+     *
+     * @return the list of dimensions as {@link RexNode} for Calcite's builder.
+     */
+    private List<RexNode> getDimensionFields(
+            RelBuilder builder,
+            DruidAggregationQuery<?> druidQuery,
+            ApiToFieldMapper apiToFieldMapper
+    ) {
+        return druidQuery.getDimensions().stream()
+                .map(Dimension::getApiName)
+                .map(apiToFieldMapper)
+                .map(builder::field)
                 .collect(Collectors.toList());
     }
 
@@ -307,18 +327,18 @@ public class DruidQueryToSqlConverter {
             ApiToFieldMapper apiToFieldMapper,
             String timestampColumn
     ) {
-        Stream<RexNode> timeFilters = sqlTimeConverter.buildGroupBy(
+        List<RexNode> timeFilters = sqlTimeConverter.buildGroupBy(
                 builder,
                 druidQuery.getGranularity(),
                 timestampColumn
-        );
+        ).collect(Collectors.toList());
 
-        Stream<RexNode> dimensionFilters = druidQuery.getDimensions().stream()
-                .map(Dimension::getApiName)
-                .map(apiToFieldMapper)
-                .map(builder::field);
+        List<RexNode> dimensionFields = getDimensionFields(builder, druidQuery, apiToFieldMapper);
 
-        return Stream.concat(timeFilters, dimensionFilters).collect(Collectors.toList());
+        List<RexNode> allGroupBys = new ArrayList<>();
+        allGroupBys.addAll(timeFilters);
+        allGroupBys.addAll(dimensionFields);
+        return allGroupBys;
     }
 
     /**
