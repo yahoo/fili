@@ -85,10 +85,10 @@ class TopNQuerySpec extends Specification {
         vars.dimension = vars.dimension ?: ""
         vars.threshold = vars.threshold ?: 5
         vars.granularity = vars.granularity ?: '{"type":"period","period":"P1D"}'
-        vars.filter = vars.filter ? ((' "filter": ').replaceAll(/\s/, "") + vars.filter + ',') : ""
+        vars.filter = vars.filter ? /"filter": $vars.filter,/ : ""
         vars.context = vars.context ?
-                (('{"queryId":"dummy100",').replaceAll(/\s/, "") + vars.context + '}') :
-                '{"queryId":"dummy100"}'
+                /{"queryId":"dummy100",$vars.context}/ :
+                /{"queryId": "dummy100"}/
         vars.aggregations = vars.aggregations ?: "[]"
         vars.postAggregations = vars.postAggregations ?: "[]"
         vars.intervals = vars.intervals ?: "[]"

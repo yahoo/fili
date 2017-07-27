@@ -72,13 +72,15 @@ class LookbackQuerySpec extends Specification {
                 [postAggregation1, postAggregation2]
         )]
         timeSeriesQuery = timeSeriesQuerySpec.defaultQuery(aggregations: [pageViews])
-        String agg1 = ("""[
-                            {
-                                "type":"longSum",
-                                "name":"pageViewsSum",
-                                "fieldName":"pageViews"
-                            }
-                        ]""").replaceAll(/\s/, "")
+        String agg1 = """
+                [
+                    {
+                        "type":"longSum",
+                        "name":"pageViewsSum",
+                        "fieldName":"pageViews"
+                    }
+                ]
+        """
         timeseriesExpectedString = timeSeriesQuerySpec.stringQuery([aggregations: agg1])
         GroupByQuerySpec groupByQuerySpec = new GroupByQuerySpec()
         groupByQuery = groupByQuerySpec.defaultQuery([:])
@@ -145,20 +147,24 @@ class LookbackQuerySpec extends Specification {
     def stringQuery(Map vars) {
         vars.queryType = vars.queryType ?: "lookback"
         vars.granularity = vars.granularity ?: DAY
-        vars.context = vars.context ? (('{"queryId":"dummy100",').replaceAll(/\s/, "") + vars.context + '}') : '{"queryId":"dummy100"}'
+        vars.context = vars.context ?
+                /{"queryId":"dummy100",$vars.context}/ :
+                /{"queryId": "dummy100"}/
         vars.postAggregations = vars.postAggregations ?: "[]"
         vars.lookbackOffsets = vars.lookbackOffsets ?: [""" "P-1D" """]
         String lookback = /"lookbackPrefixes": $vars.lookbackPrefixes,/
         vars.lookbackPrefixes = vars.lookbackPrefixes != null ? lookback : ""
 
-        ("""{
+        """
+            {
                 "queryType":"$vars.queryType",
                 "dataSource":$vars.dataSource,
                 "context":$vars.context,
                 $vars.lookbackPrefixes
                 "postAggregations":$vars.postAggregations,
                 "lookbackOffsets":$vars.lookbackOffsets
-            }""").replaceAll(/\s/, "")
+            }
+        """
     }
 
     def "check Lookback query with Timeseries datasource serialization"() {
@@ -170,37 +176,39 @@ class LookbackQuerySpec extends Specification {
 
         String actualString = MAPPER.writeValueAsString(dq1)
 
-        String dataSrc = ("""{
-                                "type":"query",
-                                "query": $timeseriesExpectedString
-                            }""").replaceAll(/\s/, "")
+        String dataSrc = (
+                """
+                {
+                    "type":"query",
+                    "query": $timeseriesExpectedString
+                }
+                """
+        )
 
-        String postAgg = ("""[
+        String postAgg = """
+                [
+                    {
+                        "name":"postAggAdd",
+                        "fields":
+                            [
                                 {
-                                    "name":"postAggAdd",
-                                    "fields":
-                                        [
-                                            {
-                                                "fieldName":"pageViewsSum",
-                                                "type":"fieldAccess"
-                                            },
-                                            {
-                                                "fieldName":"lookback_pageViewsSum",
-                                                "type":"fieldAccess"
-                                            }
-                                        ],
-                                    "type":"arithmetic",
-                                    "fn":"+"
+                                    "fieldName":"pageViewsSum",
+                                    "type":"fieldAccess"
+                                },
+                                {
+                                    "fieldName":"lookback_pageViewsSum",
+                                    "type":"fieldAccess"
                                 }
-                            ]""").replaceAll(/\s/, "")
+                            ],
+                        "type":"arithmetic",
+                        "fn":"+"
+                    }
+                ]
+        """
 
-        String lookbackOffsets = ("""
-                                ["P-1D", "P-1W"]
-                                """).replaceAll(/\s/, "")
+        String lookbackOffsets = '["P-1D", "P-1W"]'
 
-        String lookbackPrefixes = ("""
-                                ["lookback_days_", "lookback_weeks_"]
-                                """).replaceAll(/\s/, "")
+        String lookbackPrefixes = '["lookback_days_", "lookback_weeks_"]'
 
         String expectedString = stringQuery(
                 dataSource: dataSrc,
@@ -217,10 +225,12 @@ class LookbackQuerySpec extends Specification {
         LookbackQuery dq1 = defaultQuery(dataSource: new QueryDataSource<>(groupByQuery))
         String actualString = MAPPER.writeValueAsString(dq1)
 
-        String dataSrc = ("""{
-                                "type":"query",
-                                "query": $groupByExpectedString
-                            }""").replaceAll(/\s/, "")
+        String dataSrc = """
+                {
+                    "type":"query",
+                    "query": $groupByExpectedString
+                }
+        """
 
         String expectedString = stringQuery(dataSource: dataSrc)
 
