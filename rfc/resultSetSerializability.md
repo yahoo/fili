@@ -25,7 +25,7 @@ SAM interface called `ResponseWriter`, and injecting the selector via the
 
 1. Define an interface `ResponseWriter` with a single method:
     ```java
-        void write(DataApiRequest request, ResponseData responseData, Outputstream os);
+        void write(ApiRequest request, ResponseData responseData, Outputstream os);
     ```
     This method takes in a data object containing all the information
     (including the `ResultSet`) needed to write the Fili response, and writes
@@ -40,15 +40,15 @@ SAM interface called `ResponseWriter`, and injecting the selector via the
 
 3. Define an interface `ResponseWriterSelector` with a single method:
     ```java
-        ResponseWriter select(DataApiRequest request);
+        ResponseWriter select(ApiRequest request);
     ```
     This object is responsible for choosing a `ResponseWriter` to use based on
-    the `DataApiRequest`. It will be used as part of the default
+    the `ApiRequest`. It will be used as part of the default
     implementation of `ResponseWriter`.
 
 4. Write a default implementation of `ResponseWriterSelector` that chooses and
     delegates to one of the classes defined in 4b based on the `ResponseType`
-    in `DataApiRequest`.
+    in `ApiRequest`.
 
 5. Define a default implementation of `ResponseWriter`, `FiliResponseWriter`
     that uses a
