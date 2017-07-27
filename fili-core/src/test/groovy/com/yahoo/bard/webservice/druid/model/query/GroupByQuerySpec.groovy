@@ -145,23 +145,27 @@ class GroupByQuerySpec extends Specification {
         vars.dataSource = vars.dataSource ?: '{"type":"table","name":"table_name"}'
         vars.granularity = vars.granularity ?: '{"type":"period","period":"P1D"}'
         vars.dimensions = vars.dimensions ?: "[]"
-        vars.filter = vars.filter ? ((' "filter": ').replaceAll(/\s/, "") + vars.filter + ',') : ""
-        vars.context = vars.context ? (('{"queryId":"dummy100",').replaceAll(/\s/, "") + vars.context + '}') : '{"queryId":"dummy100"}'
+        vars.filter = vars.filter ? /"filter": $vars.filter,/ : ""
+        vars.context = vars.context ?
+                /{"queryId":"dummy100",$vars.context}/ :
+                /{"queryId": "dummy100"}/
         vars.aggregations = vars.aggregations ?: "[]"
         vars.postAggregations = vars.postAggregations ?: "[]"
         vars.intervals = vars.intervals ?: "[]"
 
-        ("""{
-                "queryType":"$vars.queryType",
-                "dataSource":$vars.dataSource,
-                "granularity":$vars.granularity,
-                "dimensions":$vars.dimensions,
-                $vars.filter
-                "aggregations":$vars.aggregations,
-                "postAggregations":$vars.postAggregations,
-                "intervals":$vars.intervals,
-                "context":$vars.context
-            }""").replaceAll(/\s/, "")
+        """
+        {
+            "queryType":"$vars.queryType",
+            "dataSource":$vars.dataSource,
+            "granularity":$vars.granularity,
+            "dimensions":$vars.dimensions,
+            $vars.filter
+            "aggregations":$vars.aggregations,
+            "postAggregations":$vars.postAggregations,
+            "intervals":$vars.intervals,
+            "context":$vars.context
+        }
+        """
     }
 
     def "check dimensions serialization"() {
@@ -204,10 +208,12 @@ class GroupByQuerySpec extends Specification {
         //expected result
         String queryString1 = stringQuery(default: true)
 
-        String dataSrc = ("""{
-                                "type":"query",
-                                "query":""" + queryString1 + """
-                            }""").replaceAll(/\s/, "")
+        String dataSrc = """
+            {
+                "type":"query",
+                "query":$queryString1
+            }
+        """
 
         String queryString2 = stringQuery(dataSource: dataSrc)
 
@@ -234,43 +240,47 @@ class GroupByQuerySpec extends Specification {
         String druidQuery2 = MAPPER.writeValueAsString(dq2)
         String druidQuery3 = MAPPER.writeValueAsString(dq3)
 
-        String filtr1 = ("""{
-                                "type":"selector",
-                                "dimension":"locale",
-                                "value":"US"
-                            }""").replaceAll(/\s/, "")
+        String filtr1 = """
+                {
+                    "type":"selector",
+                    "dimension":"locale",
+                    "value":"US"
+                }
+        """
 
-        String filtr2 = ("""{
-                                "type":"and",
+        String filtr2 = """
+                {
+                    "type":"and",
+                    "fields":
+                        [
+                            {
+                                "type":"or",
                                 "fields":
                                     [
-                                        {
-                                            "type":"or",
-                                            "fields":
-                                                [
-                                                    {
-                                                        "type":"selector",
-                                                        "dimension":"locale",
-                                                        "value":"US"
-                                                    },
-                                                    {
-                                                        "type":"not",
-                                                        "field":
-                                                            {
-                                                                "type":"selector",
-                                                                "dimension":"locale",
-                                                                "value":"US"
-                                                            }
-                                                    }
-                                                ]
-                                        },
                                         {
                                             "type":"selector",
                                             "dimension":"locale",
                                             "value":"US"
+                                        },
+                                        {
+                                            "type":"not",
+                                            "field":
+                                                {
+                                                    "type":"selector",
+                                                    "dimension":"locale",
+                                                    "value":"US"
+                                                }
                                         }
                                     ]
-                            }""").replaceAll(/\s/, "")
+                            },
+                            {
+                                "type":"selector",
+                                "dimension":"locale",
+                                "value":"US"
+                            }
+                        ]
+                }
+        """
 
         //expected result
         String queryString1 = stringQuery(default: true)
@@ -296,26 +306,30 @@ class GroupByQuerySpec extends Specification {
         String druidQuery2 = MAPPER.writeValueAsString(dq2)
         String druidQuery3 = MAPPER.writeValueAsString(dq3)
 
-        String agg1 = ("""[
-                            {
-                                "type":"longSum",
-                                "name":"pageViewsSum",
-                                "fieldName":"pageViews"
-                            }
-                        ]""").replaceAll(/\s/, "")
+        String agg1 = """
+            [
+                {
+                    "type":"longSum",
+                    "name":"pageViewsSum",
+                    "fieldName":"pageViews"
+                }
+            ]
+        """
 
-        String agg2 = ("""[
-                            {
-                                "type":"longSum",
-                                "name":"pageViewsSum",
-                                "fieldName":"pageViews"
-                            },
-                            {
-                                "type":"longSum",
-                                "name":"timeSpentSum",
-                                "fieldName":"timeSpent"
-                            }
-                        ]""").replaceAll(/\s/, "")
+        String agg2 = """
+            [
+                {
+                    "type":"longSum",
+                    "name":"pageViewsSum",
+                    "fieldName":"pageViews"
+                },
+                {
+                    "type":"longSum",
+                    "name":"timeSpentSum",
+                    "fieldName":"timeSpent"
+                }
+            ]
+        """
 
         //expected result
         String queryString1 = stringQuery(default: true)
@@ -341,35 +355,39 @@ class GroupByQuerySpec extends Specification {
         String druidQuery2 = MAPPER.writeValueAsString(dq2)
         String druidQuery3 = MAPPER.writeValueAsString(dq3)
 
-        String postAgg1 = ("""[
-                            {
-                                "fieldName":"pageViewsSum",
-                                "type":"fieldAccess"
-                            }
-                        ]""").replaceAll(/\s/, "")
+        String postAgg1 = """
+                [
+                    {
+                        "fieldName":"pageViewsSum",
+                        "type":"fieldAccess"
+                    }
+                ]
+        """
 
-        String postAgg2 = ("""[
+        String postAgg2 = """
+                [
+                    {
+                        "fieldName":"pageViewsSum",
+                        "type":"fieldAccess"
+                    },
+                    {
+                        "name":"postAggDiv",
+                        "fields":
+                            [
                                 {
                                     "fieldName":"pageViewsSum",
                                     "type":"fieldAccess"
                                 },
                                 {
-                                    "name":"postAggDiv",
-                                    "fields":
-                                        [
-                                            {
-                                                "fieldName":"pageViewsSum",
-                                                "type":"fieldAccess"
-                                            },
-                                            {
-                                                "fieldName":"timeSpentSum",
-                                                "type":"fieldAccess"
-                                            }
-                                        ],
-                                    "type":"arithmetic",
-                                    "fn":"/"
+                                    "fieldName":"timeSpentSum",
+                                    "type":"fieldAccess"
                                 }
-                            ]""").replaceAll(/\s/, "")
+                            ],
+                        "type":"arithmetic",
+                        "fn":"/"
+                    }
+                ]
+        """
 
         //expected result
         String queryString1 = stringQuery(default: true)
@@ -406,7 +424,7 @@ class GroupByQuerySpec extends Specification {
                                     "2011-07-03T19:00:00.000-05:00/2011-07-05T19:00:00.000-05:00",
                                     "2011-07-07T19:00:00.000-05:00/2011-07-09T19:00:00.000-05:00"
                               ]"""
-        ).replaceAll(/\s/, "")
+        )
 
         expect:
         GroovyTestUtils.compareJson(druidQuery1, queryString1)
@@ -436,22 +454,14 @@ class GroupByQuerySpec extends Specification {
         String druidQuery4 = MAPPER.writeValueAsString(dq4)
         String druidQuery5 = MAPPER.writeValueAsString(dq5)
 
-        def contextString1 = """
-                                "timeout": 5
-                        """.replaceAll(/\s/, "")
+        def contextString1 = '"timeout": 5'
 
 
-        def contextString2 = """
-                                "populateCache": true, "bySegment": false
-                           """.replaceAll(/\s/, "")
+        def contextString2 = '"populateCache": true, "bySegment": false'
 
-        def contextString3 = """
-                                "timeout": 5, "populateCache": true
-                           """.replaceAll(/\s/, "")
+        def contextString3 = '"timeout": 5, "populateCache": true'
 
-        def contextString4 = """
-                                "timeout": 5, "populateCache": true, "bySegment": false
-                           """.replaceAll(/\s/, "")
+        def contextString4 = '"timeout": 5, "populateCache": true, "bySegment": false'
 
 
         String queryString0 = stringQuery(default: true)

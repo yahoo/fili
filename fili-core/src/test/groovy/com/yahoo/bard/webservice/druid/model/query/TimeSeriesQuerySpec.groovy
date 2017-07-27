@@ -72,23 +72,27 @@ class TimeSeriesQuerySpec extends Specification {
         vars.queryType = vars.queryType ?: "timeseries"
         vars.dataSource = vars.dataSource ?: '{"type":"table","name":"table_name"}'
         vars.granularity = vars.granularity ?: '{"type":"period","period":"P1D"}'
-        vars.filter = vars.filter ? ((' "filter": ').replaceAll(/\s/, "") + vars.filter + ',') : ""
-        vars.context = vars.context ? (('{"queryId":"dummy100",').replaceAll(/\s/, "") + vars.context + '}') : '{"queryId":"dummy100"}'
+        vars.filter = vars.filter ? /"filter": $vars.filter,/ : ""
+        vars.context = vars.context ?
+                /{"queryId":"dummy100",$vars.context}/ :
+                /{"queryId": "dummy100"}/
         vars.aggregations = vars.aggregations ?: "[]"
         vars.postAggregations = vars.postAggregations ?: "[]"
         vars.intervals = vars.intervals ?: "[]"
 
 
-        ("""{
-                "queryType":"$vars.queryType",
-                "dataSource":$vars.dataSource,
-                "granularity": $vars.granularity,
-                $vars.filter
-                "context":$vars.context,
-                "aggregations":$vars.aggregations,
-                "postAggregations":$vars.postAggregations,
-                "intervals":$vars.intervals
-            }""").replaceAll(/\s/, "")
+        """
+        {
+            "queryType":"$vars.queryType",
+            "dataSource":$vars.dataSource,
+            "granularity": $vars.granularity,
+            $vars.filter
+            "context":$vars.context,
+            "aggregations":$vars.aggregations,
+            "postAggregations":$vars.postAggregations,
+            "intervals":$vars.intervals
+        }
+        """
     }
 
     def "check query serialization"() {
