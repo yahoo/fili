@@ -40,11 +40,11 @@ import com.yahoo.bard.webservice.logging.blocks.DruidFilterInfo;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.resolver.NoMatchFoundException;
 import com.yahoo.bard.webservice.util.Either;
+import com.yahoo.bard.webservice.web.ApiRequest;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.PreResponse;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.RequestValidationException;
-import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.handlers.DataRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
 import com.yahoo.bard.webservice.web.handlers.RequestHandlerUtils;
@@ -56,9 +56,11 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
+
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import rx.Observable;
 import rx.observables.ConnectableObservable;
 import rx.subjects.PublishSubject;
@@ -68,6 +70,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -113,6 +116,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
 
     private final ObjectWriter writer;
     private final ObjectMappersSuite objectMappers;
+    private final HttpResponseMaker httpResponseMaker;
 
     // Default JodaTime zone to UTC
     private final DateTimeZone systemTimeZone = DateTimeZone.forID(SYSTEM_CONFIG.getStringProperty(
@@ -135,7 +139,8 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
      * @param jobPayloadBuilder  The factory for building a view of the JobRow that is sent to the user
      * @param jobRowBuilder  The JobRows factory
      * @param asynchronousWorkflowsBuilder  The factory for building the asynchronous workflow
-     * @param preResponseStoredNotifications  The broadcast channel responsible for notifying other Bard prcesses
+     * @param preResponseStoredNotifications  The broadcast channel responsible for notifying other Bard processes
+     * @param httpResponseMaker  The factory for building HTTP responses
      * that a query has been completed and its results stored in the
      * {@link com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore}
      */
@@ -153,7 +158,8 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             JobPayloadBuilder jobPayloadBuilder,
             JobRowBuilder jobRowBuilder,
             AsynchronousWorkflowsBuilder asynchronousWorkflowsBuilder,
-            BroadcastChannel<String> preResponseStoredNotifications
+            BroadcastChannel<String> preResponseStoredNotifications,
+            HttpResponseMaker httpResponseMaker
     ) {
         this.resourceDictionaries = resourceDictionaries;
         this.druidQueryBuilder = druidQueryBuilder;
@@ -169,6 +175,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
         this.jobRowBuilder = jobRowBuilder;
         this.asynchronousWorkflowsBuilder = asynchronousWorkflowsBuilder;
         this.preResponseStoredNotifications = preResponseStoredNotifications;
+        this.httpResponseMaker = httpResponseMaker;
 
         LOG.trace(
                 "Initialized with ResourceDictionaries: {} \n\n" +
@@ -392,18 +399,10 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
                 context = new RequestContext(containerRequestContext, readCache);
             }
 
-            //An instance to prepare the Response with different set of arguments
-            HttpResponseMaker httpResponseMaker = new HttpResponseMaker(
-                    objectMappers,
-                    resourceDictionaries.getDimensionDictionary()
-            );
-
             Subject<PreResponse, PreResponse> queryResultsEmitter = PublishSubject.create();
 
             setupAsynchronousWorkflows(
-                    apiRequest.getAsyncAfter(),
-                    apiRequest.getFormat(),
-                    uriInfo,
+                    apiRequest,
                     queryResultsEmitter,
                     containerRequestContext,
                     asyncResponse,
@@ -447,23 +446,21 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
     /**
      * Builds the asynchronous workflows, and subscribes the appropriate channels to the appropriate workflows.
      *
-     * @param asyncAfter  How long the user is willing to wait for a synchronous request
-     * @param responseFormat  The requested format for the response
-     * @param uriInfo  The URI of the request
+     * @param apiRequest  DataApiRequest object with all the associated info in it
      * @param queryResultsEmitter  The observable that will eventually emit the results of the query
      * @param containerRequestContext  The context for the request
      * @param asyncResponse  The channel over which user responses will be sent
      * @param  httpResponseMaker  The factory for building HTTP responses
      */
     private void setupAsynchronousWorkflows(
-            long asyncAfter,
-            ResponseFormatType responseFormat,
-            UriInfo uriInfo,
+            ApiRequest apiRequest,
             Observable<PreResponse> queryResultsEmitter,
             ContainerRequestContext containerRequestContext,
             AsyncResponse asyncResponse,
             HttpResponseMaker httpResponseMaker
     ) {
+        UriInfo uriInfo = apiRequest.getUriInfo();
+        long asyncAfter = apiRequest.getAsyncAfter();
         JobRow jobMetadata = jobRowBuilder.buildJobRow(uriInfo, containerRequestContext);
 
         // We need to decide when a query is synchronous, and when it should stop being synchronous and become
@@ -501,9 +498,8 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
         asynchronousWorkflows.getSynchronousPayload().subscribe(
                 new HttpResponseChannel(
                         asyncResponse,
-                        httpResponseMaker,
-                        responseFormat,
-                        uriInfo
+                        apiRequest,
+                        httpResponseMaker
                 )
         );
 

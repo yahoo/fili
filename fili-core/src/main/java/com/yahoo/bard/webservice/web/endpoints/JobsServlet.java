@@ -17,7 +17,6 @@ import com.yahoo.bard.webservice.data.HttpResponseChannel;
 import com.yahoo.bard.webservice.data.HttpResponseMaker;
 import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.ResultSet;
-import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.JobRequest;
 import com.yahoo.bard.webservice.util.AllPagesPagination;
@@ -90,19 +89,18 @@ public class JobsServlet extends EndpointServlet {
     private final JobPayloadBuilder jobPayloadBuilder;
     private final PreResponseStore preResponseStore;
     private final BroadcastChannel<String> broadcastChannel;
-    private final DimensionDictionary dimensionDictionary;
     private final ObjectWriter writer;
+    private final HttpResponseMaker httpResponseMaker;
 
     /**
      * Constructor.
-     *
      * @param objectMappers  JSON tools
      * @param apiJobStore  The ApiJobStore containing job metadata
      * @param jobPayloadBuilder  The JobRowMapper to be used to map JobRow to the Job returned via the api
      * @param preResponseStore  The Data store that stores all the PreResponses
      * @param broadcastChannel  Channel to notify other Bard processes (i.e. long pollers)
-     * @param dimensionDictionary  The dimension dictionary from which to look up dimensions by name
      * @param requestMapper  Mapper for changing the API request
+     * @param httpResponseMaker  The factory for building HTTP responses
      */
     @Inject
     public JobsServlet(
@@ -111,8 +109,8 @@ public class JobsServlet extends EndpointServlet {
             JobPayloadBuilder jobPayloadBuilder,
             PreResponseStore preResponseStore,
             BroadcastChannel<String> broadcastChannel,
-            DimensionDictionary dimensionDictionary,
-            @Named(JobsApiRequest.REQUEST_MAPPER_NAMESPACE)RequestMapper requestMapper
+            @Named(JobsApiRequest.REQUEST_MAPPER_NAMESPACE)RequestMapper requestMapper,
+            HttpResponseMaker httpResponseMaker
     ) {
         super(objectMappers);
         this.requestMapper = requestMapper;
@@ -120,8 +118,8 @@ public class JobsServlet extends EndpointServlet {
         this.jobPayloadBuilder = jobPayloadBuilder;
         this.preResponseStore = preResponseStore;
         this.broadcastChannel = broadcastChannel;
-        this.dimensionDictionary = dimensionDictionary;
         this.writer = objectMappers.getMapper().writer();
+        this.httpResponseMaker = httpResponseMaker;
     }
 
     /**
@@ -452,7 +450,6 @@ public class JobsServlet extends EndpointServlet {
             AsyncResponse asyncResponse,
             ApiRequest apiRequest
     ) {
-        HttpResponseMaker httpResponseMaker = new HttpResponseMaker(objectMappers, dimensionDictionary);
 
         preResponseObservable
                 .flatMap(preResponse -> handlePreResponseWithError(
@@ -463,9 +460,8 @@ public class JobsServlet extends EndpointServlet {
                 .subscribe(
                         new HttpResponseChannel(
                                 asyncResponse,
-                                httpResponseMaker,
-                                apiRequest.getFormat(),
-                                apiRequest.getUriInfo()
+                                apiRequest,
+                                httpResponseMaker
                         )
                 );
     }

@@ -35,6 +35,11 @@ Current
 
 ### Changed:
 
+- [Make HttpResponseMaker injectable and change functions signature related to custom response creation](https://github.com/yahoo/fili/pull/447)
+    * Make `HttpResponseMaker` injectable. `DataServlet` and `JobsServlet` takes `HttpResponseMaker` as input parameter now
+    * Add `ApiRequest` to `BuildResponse`, `HttpReponseChannel` and `createResponseBuilder` to enable passing information needed by customizable serialization
+    * Remove duplicate parameter such as `UriInfo` that can be derived from `ApiRequest`
+
 - [Change id field in DefaultDimensionField to lower case for Navi compatibility.](https://github.com/yahoo/fili/pull/423)
     * Navi's default setting only recongizes lower case 'id' key name.
 

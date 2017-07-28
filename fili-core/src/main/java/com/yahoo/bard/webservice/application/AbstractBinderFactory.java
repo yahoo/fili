@@ -35,6 +35,7 @@ import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.DruidQueryBuilder;
 import com.yahoo.bard.webservice.data.DruidResponseParser;
+import com.yahoo.bard.webservice.data.HttpResponseMaker;
 import com.yahoo.bard.webservice.data.PartialDataHandler;
 import com.yahoo.bard.webservice.data.PreResponseDeserializer;
 import com.yahoo.bard.webservice.data.cache.DataCache;
@@ -301,6 +302,8 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 bind(getAsynchronousProcessBuilder()).to(AsynchronousWorkflowsBuilder.class);
 
                 bind(getClock()).to(Clock.class);
+
+                bind(getHttpResponseMaker()).to(HttpResponseMaker.class);
 
                 if (DRUID_DIMENSIONS_LOADER.isOn()) {
                     DruidDimensionsLoader druidDimensionsLoader = buildDruidDimensionsLoader(
@@ -904,6 +907,15 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      */
     protected JobPayloadBuilder buildJobPayloadBuilder() {
         return new DefaultJobPayloadBuilder();
+    }
+
+    /**
+     * Initializes the factory that builds HttpResponseMaker.
+     *
+     * @return an instance of the {@link HttpResponseMaker}
+     */
+    protected Class<? extends HttpResponseMaker> getHttpResponseMaker() {
+        return HttpResponseMaker.class;
     }
 
     /**
