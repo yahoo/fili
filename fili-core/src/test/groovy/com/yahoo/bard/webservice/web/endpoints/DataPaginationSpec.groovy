@@ -324,7 +324,7 @@ class DataPaginationSpec extends BaseDataServletComponentSpec {
      * @return A String representation of a link to the desired page
      */
     String buildPageLink(int perPage, int page){
-        "http://localhost:9998/$target?metrics=height&dateTime=2014-09-01%2F2014-09-13&perPage=$perPage&page=$page"
+        "http://localhost:${jtb.getHarness().getPort()}/$target?metrics=height&dateTime=2014-09-01%2F2014-09-13&perPage=$perPage&page=$page"
     }
 
     /**

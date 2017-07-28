@@ -84,7 +84,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/other"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/other"
                     }
                   ],
                   "longName": "All",
@@ -93,7 +93,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
-                      "uri": "http://localhost:9998/metrics/limbs"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     }
                   ],
                   "name": "all",
@@ -116,7 +116,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/other"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/other"
                     }
                   ],
                   "longName": "Day",
@@ -125,7 +125,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
-                      "uri": "http://localhost:9998/metrics/limbs"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     }
                   ],
                   "name": "day",
@@ -148,7 +148,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/other"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/other"
                     }
                   ],
                   "longName": "Hour",
@@ -157,7 +157,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
-                      "uri": "http://localhost:9998/metrics/limbs"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     }
                   ],
                   "name": "hour",
@@ -180,7 +180,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/other"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/other"
                     }
                   ],
                   "longName": "Month",
@@ -189,7 +189,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
-                      "uri": "http://localhost:9998/metrics/limbs"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     }
                   ],
                   "name": "month",
@@ -212,7 +212,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/other"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/other"
                     }
                   ],
                   "longName": "Week",
@@ -221,7 +221,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
-                      "uri": "http://localhost:9998/metrics/limbs"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     }
                   ],
                   "name": "week",
@@ -252,7 +252,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/other"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/other"
                     }
                   ],
                   "longName": "All",
@@ -261,13 +261,13 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "dayAvgLimbs",
                       "name": "dayAvgLimbs",
-                      "uri": "http://localhost:9998/metrics/dayAvgLimbs"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgLimbs"
                     },
                     {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
-                      "uri": "http://localhost:9998/metrics/limbs"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     }
                   ],
                   "name": "all",
@@ -290,7 +290,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/other"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/other"
                     }
                   ],
                   "longName": "Day",
@@ -299,13 +299,13 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "dayAvgLimbs",
                       "name": "dayAvgLimbs",
-                      "uri": "http://localhost:9998/metrics/dayAvgLimbs"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgLimbs"
                     },
                     {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
-                      "uri": "http://localhost:9998/metrics/limbs"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     }
                   ],
                   "name": "day",
@@ -328,7 +328,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/other"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/other"
                     }
                   ],
                   "longName": "Hour",
@@ -337,7 +337,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
-                      "uri": "http://localhost:9998/metrics/limbs"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     }
                   ],
                   "name": "hour",
@@ -360,7 +360,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/other"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/other"
                     }
                   ],
                   "longName": "Month",
@@ -369,13 +369,13 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "dayAvgLimbs",
                       "name": "dayAvgLimbs",
-                      "uri": "http://localhost:9998/metrics/dayAvgLimbs"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgLimbs"
                     },
                     {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
-                      "uri": "http://localhost:9998/metrics/limbs"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     }
                   ],
                   "name": "month",
@@ -398,7 +398,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/other"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/other"
                     }
                   ],
                   "longName": "Week",
@@ -407,13 +407,13 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "dayAvgLimbs",
                       "name": "dayAvgLimbs",
-                      "uri": "http://localhost:9998/metrics/dayAvgLimbs"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgLimbs"
                     },
                     {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
-                      "uri": "http://localhost:9998/metrics/limbs"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     }
                   ],
                   "name": "week",
@@ -444,7 +444,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/other"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/other"
                     }
                   ],
                   "longName": "All",
@@ -453,13 +453,13 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "dayAvgLimbs",
                       "name": "dayAvgLimbs",
-                      "uri": "http://localhost:9998/metrics/dayAvgLimbs"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgLimbs"
                     },
                     {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
-                      "uri": "http://localhost:9998/metrics/limbs"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     }
                   ],
                   "name": "all",
@@ -482,7 +482,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/other"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/other"
                     }
                   ],
                   "longName": "Day",
@@ -491,13 +491,13 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "dayAvgLimbs",
                       "name": "dayAvgLimbs",
-                      "uri": "http://localhost:9998/metrics/dayAvgLimbs"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgLimbs"
                     },
                     {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
-                      "uri": "http://localhost:9998/metrics/limbs"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     }
                   ],
                   "name": "day",
@@ -520,7 +520,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/other"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/other"
                     }
                   ],
                   "longName": "Month",
@@ -529,13 +529,13 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "dayAvgLimbs",
                       "name": "dayAvgLimbs",
-                      "uri": "http://localhost:9998/metrics/dayAvgLimbs"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgLimbs"
                     },
                     {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
-                      "uri": "http://localhost:9998/metrics/limbs"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     }
                   ],
                   "name": "month",
@@ -558,7 +558,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/other"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/other"
                     }
                   ],
                   "longName": "Week",
@@ -567,13 +567,13 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "dayAvgLimbs",
                       "name": "dayAvgLimbs",
-                      "uri": "http://localhost:9998/metrics/dayAvgLimbs"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgLimbs"
                     },
                     {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
-                      "uri": "http://localhost:9998/metrics/limbs"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     }
                   ],
                   "name": "week",
@@ -604,7 +604,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/breed"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/breed"
                     },
                     {
                       "cardinality": 0,
@@ -620,7 +620,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/sex"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/sex"
                     },
                     {
                       "cardinality": 0,
@@ -636,7 +636,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/species"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/species"
                     }
                   ],
                   "longName": "All",
@@ -645,19 +645,19 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "dayAvgLimbs",
                       "name": "dayAvgLimbs",
-                      "uri": "http://localhost:9998/metrics/dayAvgLimbs"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgLimbs"
                     },
                     {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
-                      "uri": "http://localhost:9998/metrics/limbs"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     },
                     {
                       "category": "General",
                       "longName": "rowNum",
                       "name": "rowNum",
-                      "uri": "http://localhost:9998/metrics/rowNum"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/rowNum"
                     }
                   ],
                   "name": "all",
@@ -680,7 +680,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/breed"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/breed"
                     },
                     {
                       "cardinality": 0,
@@ -696,7 +696,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/sex"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/sex"
                     },
                     {
                       "cardinality": 0,
@@ -712,7 +712,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/species"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/species"
                     }
                   ],
                   "longName": "Day",
@@ -721,19 +721,19 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "dayAvgLimbs",
                       "name": "dayAvgLimbs",
-                      "uri": "http://localhost:9998/metrics/dayAvgLimbs"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgLimbs"
                     },
                     {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
-                      "uri": "http://localhost:9998/metrics/limbs"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     },
                     {
                       "category": "General",
                       "longName": "rowNum",
                       "name": "rowNum",
-                      "uri": "http://localhost:9998/metrics/rowNum"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/rowNum"
                     }
                   ],
                   "name": "day",
@@ -756,7 +756,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/breed"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/breed"
                     },
                     {
                       "cardinality": 0,
@@ -772,7 +772,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/sex"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/sex"
                     },
                     {
                       "cardinality": 0,
@@ -788,7 +788,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/species"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/species"
                     }
                   ],
                   "longName": "Month",
@@ -797,19 +797,19 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "dayAvgLimbs",
                       "name": "dayAvgLimbs",
-                      "uri": "http://localhost:9998/metrics/dayAvgLimbs"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgLimbs"
                     },
                     {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
-                      "uri": "http://localhost:9998/metrics/limbs"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     },
                     {
                       "category": "General",
                       "longName": "rowNum",
                       "name": "rowNum",
-                      "uri": "http://localhost:9998/metrics/rowNum"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/rowNum"
                     }
                   ],
                   "name": "month",
@@ -832,7 +832,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/breed"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/breed"
                     },
                     {
                       "cardinality": 0,
@@ -848,7 +848,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/sex"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/sex"
                     },
                     {
                       "cardinality": 0,
@@ -864,7 +864,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/species"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/species"
                     }
                   ],
                   "longName": "Week",
@@ -873,19 +873,19 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "dayAvgLimbs",
                       "name": "dayAvgLimbs",
-                      "uri": "http://localhost:9998/metrics/dayAvgLimbs"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgLimbs"
                     },
                     {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
-                      "uri": "http://localhost:9998/metrics/limbs"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     },
                     {
                       "category": "General",
                       "longName": "rowNum",
                       "name": "rowNum",
-                      "uri": "http://localhost:9998/metrics/rowNum"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/rowNum"
                     }
                   ],
                   "name": "week",
@@ -925,7 +925,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"redPigment"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/color"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/color"
                     },
                     {
                       "cardinality": 0,
@@ -941,7 +941,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/model"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/model"
                     },
                     {
                       "cardinality": 0,
@@ -957,7 +957,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/shape"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/shape"
                     },
                     {
                       "cardinality": 0,
@@ -973,7 +973,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/size"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/size"
                     },
                     {
                       "cardinality": 100000,
@@ -989,7 +989,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/other"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/other"
                     }
                   ],
                   "longName": "All",
@@ -998,85 +998,85 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "area",
                       "name": "area",
-                      "uri": "http://localhost:9998/metrics/area"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/area"
                     },
                     {
                       "category": "General",
                       "longName": "booleanMetric",
                       "name": "booleanMetric",
-                      "uri": "http://localhost:9998/metrics/booleanMetric"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/booleanMetric"
                     },
                     {
                       "category": "General",
                       "longName": "dayAvgOtherUsers",
                       "name": "dayAvgOtherUsers",
-                      "uri": "http://localhost:9998/metrics/dayAvgOtherUsers"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgOtherUsers"
                     },
                     {
                       "category": "General",
                       "longName": "dayAvgUsers",
                       "name": "dayAvgUsers",
-                      "uri": "http://localhost:9998/metrics/dayAvgUsers"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgUsers"
                     },
                     {
                       "category": "General",
                       "longName": "depth",
                       "name": "depth",
-                      "uri": "http://localhost:9998/metrics/depth"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/depth"
                     },
                     {
                       "category": "General",
                       "longName": "height",
                       "name": "height",
-                      "uri": "http://localhost:9998/metrics/height"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/height"
                     },
                     {
                       "category": "General",
                       "longName": "jsonNodeMetric",
                       "name": "jsonNodeMetric",
-                      "uri": "http://localhost:9998/metrics/jsonNodeMetric"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/jsonNodeMetric"
                     },
                     {
                       "category": "General",
                       "longName": "nullMetric",
                       "name": "nullMetric",
-                      "uri": "http://localhost:9998/metrics/nullMetric"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/nullMetric"
                     },
                     {
                       "category": "General",
                       "longName": "otherUsers",
                       "name": "otherUsers",
-                      "uri": "http://localhost:9998/metrics/otherUsers"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/otherUsers"
                     },
                     {
                       "category": "General",
                       "longName": "rowNum",
                       "name": "rowNum",
-                      "uri": "http://localhost:9998/metrics/rowNum"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/rowNum"
                     },
                     {
                       "category": "General",
                       "longName": "stringMetric",
                       "name": "stringMetric",
-                      "uri": "http://localhost:9998/metrics/stringMetric"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/stringMetric"
                     },
                     {
                       "category": "General",
                       "longName": "users",
                       "name": "users",
-                      "uri": "http://localhost:9998/metrics/users"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/users"
                     },
                     {
                       "category": "General",
                       "longName": "volume",
                       "name": "volume",
-                      "uri": "http://localhost:9998/metrics/volume"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/volume"
                     },
                     {
                       "category": "General",
                       "longName": "width",
                       "name": "width",
-                      "uri": "http://localhost:9998/metrics/width"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/width"
                     }
                   ],
                   "name": "all",
@@ -1108,7 +1108,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"redPigment"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/color"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/color"
                     },
                     {
                       "cardinality": 0,
@@ -1124,7 +1124,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/model"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/model"
                     },
                     {
                       "cardinality": 0,
@@ -1140,7 +1140,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/shape"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/shape"
                     },
                     {
                       "cardinality": 0,
@@ -1156,7 +1156,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/size"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/size"
                     },
                     {
                       "cardinality": 100000,
@@ -1172,7 +1172,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/other"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/other"
                     }
                   ],
                   "longName": "Day",
@@ -1181,73 +1181,73 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "area",
                       "name": "area",
-                      "uri": "http://localhost:9998/metrics/area"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/area"
                     },
                     {
                       "category": "General",
                       "longName": "booleanMetric",
                       "name": "booleanMetric",
-                      "uri": "http://localhost:9998/metrics/booleanMetric"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/booleanMetric"
                     },
                     {
                       "category": "General",
                       "longName": "depth",
                       "name": "depth",
-                      "uri": "http://localhost:9998/metrics/depth"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/depth"
                     },
                     {
                       "category": "General",
                       "longName": "height",
                       "name": "height",
-                      "uri": "http://localhost:9998/metrics/height"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/height"
                     },
                     {
                       "category": "General",
                       "longName": "jsonNodeMetric",
                       "name": "jsonNodeMetric",
-                      "uri": "http://localhost:9998/metrics/jsonNodeMetric"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/jsonNodeMetric"
                     },
                     {
                       "category": "General",
                       "longName": "nullMetric",
                       "name": "nullMetric",
-                      "uri": "http://localhost:9998/metrics/nullMetric"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/nullMetric"
                     },
                     {
                       "category": "General",
                       "longName": "otherUsers",
                       "name": "otherUsers",
-                      "uri": "http://localhost:9998/metrics/otherUsers"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/otherUsers"
                     },
                     {
                       "category": "General",
                       "longName": "rowNum",
                       "name": "rowNum",
-                      "uri": "http://localhost:9998/metrics/rowNum"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/rowNum"
                     },
                     {
                       "category": "General",
                       "longName": "stringMetric",
                       "name": "stringMetric",
-                      "uri": "http://localhost:9998/metrics/stringMetric"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/stringMetric"
                     },
                     {
                       "category": "General",
                       "longName": "users",
                       "name": "users",
-                      "uri": "http://localhost:9998/metrics/users"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/users"
                     },
                     {
                       "category": "General",
                       "longName": "volume",
                       "name": "volume",
-                      "uri": "http://localhost:9998/metrics/volume"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/volume"
                     },
                     {
                       "category": "General",
                       "longName": "width",
                       "name": "width",
-                      "uri": "http://localhost:9998/metrics/width"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/width"
                     }
                   ],
                   "name": "day",
@@ -1279,7 +1279,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"redPigment"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/color"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/color"
                     },
                     {
                       "cardinality": 0,
@@ -1295,7 +1295,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/model"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/model"
                     },
                     {
                       "cardinality": 0,
@@ -1311,7 +1311,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/shape"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/shape"
                     },
                     {
                       "cardinality": 0,
@@ -1327,7 +1327,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/size"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/size"
                     },
                     {
                       "cardinality": 100000,
@@ -1343,7 +1343,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/other"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/other"
                     }
                   ],
                   "longName": "Month",
@@ -1352,85 +1352,85 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "area",
                       "name": "area",
-                      "uri": "http://localhost:9998/metrics/area"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/area"
                     },
                     {
                       "category": "General",
                       "longName": "booleanMetric",
                       "name": "booleanMetric",
-                      "uri": "http://localhost:9998/metrics/booleanMetric"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/booleanMetric"
                     },
                     {
                       "category": "General",
                       "longName": "dayAvgOtherUsers",
                       "name": "dayAvgOtherUsers",
-                      "uri": "http://localhost:9998/metrics/dayAvgOtherUsers"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgOtherUsers"
                     },
                     {
                       "category": "General",
                       "longName": "dayAvgUsers",
                       "name": "dayAvgUsers",
-                      "uri": "http://localhost:9998/metrics/dayAvgUsers"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgUsers"
                     },
                     {
                       "category": "General",
                       "longName": "depth",
                       "name": "depth",
-                      "uri": "http://localhost:9998/metrics/depth"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/depth"
                     },
                     {
                       "category": "General",
                       "longName": "height",
                       "name": "height",
-                      "uri": "http://localhost:9998/metrics/height"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/height"
                     },
                     {
                       "category": "General",
                       "longName": "jsonNodeMetric",
                       "name": "jsonNodeMetric",
-                      "uri": "http://localhost:9998/metrics/jsonNodeMetric"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/jsonNodeMetric"
                     },
                     {
                       "category": "General",
                       "longName": "nullMetric",
                       "name": "nullMetric",
-                      "uri": "http://localhost:9998/metrics/nullMetric"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/nullMetric"
                     },
                     {
                       "category": "General",
                       "longName": "otherUsers",
                       "name": "otherUsers",
-                      "uri": "http://localhost:9998/metrics/otherUsers"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/otherUsers"
                     },
                     {
                       "category": "General",
                       "longName": "rowNum",
                       "name": "rowNum",
-                      "uri": "http://localhost:9998/metrics/rowNum"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/rowNum"
                     },
                     {
                       "category": "General",
                       "longName": "stringMetric",
                       "name": "stringMetric",
-                      "uri": "http://localhost:9998/metrics/stringMetric"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/stringMetric"
                     },
                     {
                       "category": "General",
                       "longName": "users",
                       "name": "users",
-                      "uri": "http://localhost:9998/metrics/users"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/users"
                     },
                     {
                       "category": "General",
                       "longName": "volume",
                       "name": "volume",
-                      "uri": "http://localhost:9998/metrics/volume"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/volume"
                     },
                     {
                       "category": "General",
                       "longName": "width",
                       "name": "width",
-                      "uri": "http://localhost:9998/metrics/width"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/width"
                     }
                   ],
                   "name": "month",
@@ -1462,7 +1462,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"redPigment"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/color"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/color"
                     },
                     {
                       "cardinality": 0,
@@ -1478,7 +1478,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/model"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/model"
                     },
                     {
                       "cardinality": 0,
@@ -1494,7 +1494,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/shape"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/shape"
                     },
                     {
                       "cardinality": 0,
@@ -1510,7 +1510,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/size"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/size"
                     },
                     {
                       "cardinality": 100000,
@@ -1526,7 +1526,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                           "name":"id"
                         }
                       ],
-                      "uri": "http://localhost:9998/dimensions/other"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/other"
                     }
                   ],
                   "longName": "Week",
@@ -1535,85 +1535,85 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "area",
                       "name": "area",
-                      "uri": "http://localhost:9998/metrics/area"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/area"
                     },
                     {
                       "category": "General",
                       "longName": "booleanMetric",
                       "name": "booleanMetric",
-                      "uri": "http://localhost:9998/metrics/booleanMetric"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/booleanMetric"
                     },
                     {
                       "category": "General",
                       "longName": "dayAvgOtherUsers",
                       "name": "dayAvgOtherUsers",
-                      "uri": "http://localhost:9998/metrics/dayAvgOtherUsers"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgOtherUsers"
                     },
                     {
                       "category": "General",
                       "longName": "dayAvgUsers",
                       "name": "dayAvgUsers",
-                      "uri": "http://localhost:9998/metrics/dayAvgUsers"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgUsers"
                     },
                     {
                       "category": "General",
                       "longName": "depth",
                       "name": "depth",
-                      "uri": "http://localhost:9998/metrics/depth"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/depth"
                     },
                     {
                       "category": "General",
                       "longName": "height",
                       "name": "height",
-                      "uri": "http://localhost:9998/metrics/height"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/height"
                     },
                     {
                       "category": "General",
                       "longName": "jsonNodeMetric",
                       "name": "jsonNodeMetric",
-                      "uri": "http://localhost:9998/metrics/jsonNodeMetric"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/jsonNodeMetric"
                     },
                     {
                       "category": "General",
                       "longName": "nullMetric",
                       "name": "nullMetric",
-                      "uri": "http://localhost:9998/metrics/nullMetric"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/nullMetric"
                     },
                     {
                       "category": "General",
                       "longName": "otherUsers",
                       "name": "otherUsers",
-                      "uri": "http://localhost:9998/metrics/otherUsers"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/otherUsers"
                     },
                     {
                       "category": "General",
                       "longName": "rowNum",
                       "name": "rowNum",
-                      "uri": "http://localhost:9998/metrics/rowNum"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/rowNum"
                     },
                     {
                       "category": "General",
                       "longName": "stringMetric",
                       "name": "stringMetric",
-                      "uri": "http://localhost:9998/metrics/stringMetric"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/stringMetric"
                     },
                     {
                       "category": "General",
                       "longName": "users",
                       "name": "users",
-                      "uri": "http://localhost:9998/metrics/users"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/users"
                     },
                     {
                       "category": "General",
                       "longName": "volume",
                       "name": "volume",
-                      "uri": "http://localhost:9998/metrics/volume"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/volume"
                     },
                     {
                       "category": "General",
                       "longName": "width",
                       "name": "width",
-                      "uri": "http://localhost:9998/metrics/width"
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/width"
                     }
                   ],
                   "name": "week",
