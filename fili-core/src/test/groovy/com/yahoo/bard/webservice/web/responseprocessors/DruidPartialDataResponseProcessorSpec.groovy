@@ -16,7 +16,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 
 import org.joda.time.Interval
-
+import spock.lang.Shared
 import spock.lang.Specification
 
 import java.util.stream.Collectors
@@ -125,9 +125,10 @@ class DruidPartialDataResponseProcessorSpec extends Specification {
         DataSource dataSource = Mock(DataSource)
         ConstrainedTable constrainedTable = Mock(ConstrainedTable)
 
-        constrainedTable.getAvailableIntervals() >> new SimplifiedIntervalList(
-                [new Interval("2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z")]
-        )
+        Interval interval = new Interval("2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z")
+
+        constrainedTable.getAvailableIntervals() >> new SimplifiedIntervalList([interval])
+
         dataSource.getPhysicalTable() >> constrainedTable
         druidAggregationQuery.getDataSource() >> dataSource
 
@@ -138,7 +139,7 @@ class DruidPartialDataResponseProcessorSpec extends Specification {
         1 * httpErrorCallback.dispatch(
                 ERROR_STATUS_CODE,
                 REASON_PHRASE,
-                ErrorMessageFormat.DATA_AVAILABILITY_MISMATCH.format("[2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z]")
+                ErrorMessageFormat.DATA_AVAILABILITY_MISMATCH.format([interval])
         )
     }
 
