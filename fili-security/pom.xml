@@ -46,9 +46,5 @@
             <groupId>com.yahoo.fili</groupId>
             <artifactId>fili-core</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.yahoo.fili</groupId>
-            <artifactId>fili-core</artifactId>
-        </dependency>
     </dependencies>
 </project>
