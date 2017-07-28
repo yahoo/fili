@@ -112,7 +112,7 @@ public class DruidDimensionsLoader extends Loader<Boolean> {
                 SYSTEM_CONFIG.getLongProperty(DRUID_DIM_LOADER_TIMER_DELAY_KEY, 0),
                 SYSTEM_CONFIG.getLongProperty(
                         DRUID_DIM_LOADER_TIMER_DURATION_KEY,
-                        TimeUnit.MILLISECONDS.toMillis(60000)
+                        TimeUnit.MINUTES.toMillis(1)
                 )
         );
 
@@ -123,8 +123,6 @@ public class DruidDimensionsLoader extends Loader<Boolean> {
 
         lastRunTimestamp = new AtomicReference<>();
 
-        // A DruidSearchQuery requires a list of dimensions, which we would have to explicitly create at serialization
-        // time if `dimensions` were a flat list instead of a list of singleton lists.
         this.dimensions = dimensionsToLoad.stream()
                 .map(dimensionDictionary::findByApiName)
                 .collect(Collectors.toList());
@@ -153,6 +151,7 @@ public class DruidDimensionsLoader extends Loader<Boolean> {
         dataSources.stream()
                 .filter(dataSource -> dimensionExistsInDataSource(dimension, dataSource))
                 .forEach(dataSource -> {
+                    // A DruidSearchQuery requires a collection of dimensions so they are wrapped in a singleton list.
                     DruidSearchQuery druidSearchQuery = new DruidSearchQuery(
                             dataSource,
                             AllGranularity.INSTANCE,
