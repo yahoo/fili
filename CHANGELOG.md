@@ -49,6 +49,9 @@ Current
 - [Convert null avro record value to empty string](https://github.com/yahoo/fili/pull/395)
     * Make `AvroDimensionRowParser` convert null record value into empty string to avoid NPE
 
+- [FailedFuture is replaced by CompletedFuture](https://github.com/yahoo/fili/pull/396)
+    * CompletedFuture allows values to be returned when calling `.get` on a future instead of just throwing an exception
+
 ### Deprecated:
 
 - [Add dimension dictionary to metric loader](https://github.com/yahoo/fili/pull/317)
