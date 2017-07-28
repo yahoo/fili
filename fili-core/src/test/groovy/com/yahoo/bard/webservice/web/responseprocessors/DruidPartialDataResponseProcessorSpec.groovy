@@ -16,7 +16,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 
 import org.joda.time.Interval
-import spock.lang.Shared
+
 import spock.lang.Specification
 
 import java.util.stream.Collectors
@@ -27,6 +27,8 @@ class DruidPartialDataResponseProcessorSpec extends Specification {
     private static final int ERROR_STATUS_CODE = 500
     private static final String REASON_PHRASE = 'The server encountered an unexpected condition which ' +
             'prevented it from fulfilling the request.'
+    private static final String FIRST_INTERVAL = "2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z"
+    private static final String SECOND_INTERVAL = "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"
 
     ResponseProcessor next
     HttpErrorCallback httpErrorCallback
@@ -61,22 +63,15 @@ class DruidPartialDataResponseProcessorSpec extends Specification {
 
         where:
         missingIntervals | availableIntervals | expected | caseDescription
-        ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z", "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"] |
-                ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z", "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"] |
-                ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z", "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"] |
+        [FIRST_INTERVAL, SECOND_INTERVAL] | [FIRST_INTERVAL, SECOND_INTERVAL] | [FIRST_INTERVAL, SECOND_INTERVAL] |
                 "completely overlapped"
-        ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z", "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"] |
-                ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z"] |
-                ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z"] | "partially overlapped (Fili's intervals contained inside Druid's)"
-        ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z"] |
-                ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z", "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"] |
-                ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z"] | "partially overlapped (Druid's intervals contained inside Fili's)"
-        ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z","2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"] |
-                ["2019-11-22T00:00:00.000Z/2019-12-18T00:00:00.000Z"] |
-                [] | "no overlapping"
-        ["2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z","2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"] |
-                [] |
-                [] | "no overlapping (Fili has no emtpy intervals)"
+        [FIRST_INTERVAL, SECOND_INTERVAL] | [FIRST_INTERVAL] | [FIRST_INTERVAL] |
+                "partially overlapped (Fili's intervals contained inside Druid's)"
+        [FIRST_INTERVAL] | [FIRST_INTERVAL, SECOND_INTERVAL] | [FIRST_INTERVAL] |
+                "partially overlapped (Druid's intervals contained inside Fili's)"
+        [FIRST_INTERVAL, SECOND_INTERVAL] | ["2019-11-22T00:00:00.000Z/2019-12-18T00:00:00.000Z"] | [] |
+                "no overlapping"
+        [FIRST_INTERVAL, SECOND_INTERVAL] | [] | [] | "no overlapping (Fili has no emtpy intervals)"
     }
 
     def "checkOverflow recognizes interval overflow correctly"() {
@@ -115,17 +110,14 @@ class DruidPartialDataResponseProcessorSpec extends Specification {
         given:
         JsonNode json = MAPPER.readTree(
                 constructJSON(
-                        [
-                                "2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z",
-                                "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"
-                        ]
+                        [FIRST_INTERVAL, SECOND_INTERVAL]
                 )
         )
 
         DataSource dataSource = Mock(DataSource)
         ConstrainedTable constrainedTable = Mock(ConstrainedTable)
 
-        Interval interval = new Interval("2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z")
+        Interval interval = new Interval(FIRST_INTERVAL)
 
         constrainedTable.getAvailableIntervals() >> new SimplifiedIntervalList([interval])
 
