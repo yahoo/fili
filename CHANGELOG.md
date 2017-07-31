@@ -65,6 +65,9 @@ Current
 
 ### Changed:
 
+- [Preface Logblock lazily fetches username for serialization](https://github.com/yahoo/fili/pull/465)
+    * Allows the RequestLog to wait until serializing the Preface so that the username of the client can be properly set.
+
 - [Include ETags on responses](https://github.com/yahoo/fili/pull/417)
     * Modify FullResponse JSON Objects to contain a flag showing whether a response is new or fetched from cache.
 
