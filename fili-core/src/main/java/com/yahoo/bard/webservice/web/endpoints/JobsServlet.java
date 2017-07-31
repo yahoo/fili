@@ -146,6 +146,7 @@ public class JobsServlet extends EndpointServlet {
             @Context ContainerRequestContext containerRequestContext,
             @Suspended AsyncResponse asyncResponse
     ) {
+        Optional<Response> errorResponse = Optional.empty();
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new JobRequest("all"));
@@ -190,14 +191,17 @@ public class JobsServlet extends EndpointServlet {
                     );
         } catch (RequestValidationException e) {
             LOG.debug(e.getMessage(), e);
-            RequestLog.stopTiming(this);
-            asyncResponse.resume(RequestHandlerUtils.makeErrorResponse(e.getStatus(), e, writer));
+            errorResponse = Optional.of(RequestHandlerUtils.makeErrorResponse(e.getStatus(), e, writer));
         } catch (Error | Exception e) {
             String msg = String.format("Exception processing request: %s", e.getMessage());
             LOG.info(msg, e);
-            RequestLog.stopTiming(this);
-            asyncResponse.resume(Response.status(INTERNAL_SERVER_ERROR).entity(e.getMessage()).build());
+            errorResponse = Optional.of(Response.status(INTERNAL_SERVER_ERROR).entity(e.getMessage()).build());
         }
+
+        errorResponse.ifPresent(response -> {
+            RequestLog.stopTiming(this);
+            asyncResponse.resume(response);
+        });
     }
 
     /**
@@ -217,6 +221,7 @@ public class JobsServlet extends EndpointServlet {
             @Context ContainerRequestContext containerRequestContext,
             @Suspended AsyncResponse asyncResponse
     ) {
+        Optional<Response> errorResponse = Optional.empty();
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new JobRequest(ticket));
@@ -239,13 +244,15 @@ public class JobsServlet extends EndpointServlet {
 
         } catch (RequestValidationException e) {
             LOG.debug(e.getMessage(), e);
-            RequestLog.stopTiming(this);
-            asyncResponse.resume(RequestHandlerUtils.makeErrorResponse(e.getStatus(), e, writer));
+            errorResponse = Optional.of(RequestHandlerUtils.makeErrorResponse(e.getStatus(), e, writer));
         } catch (IOException | IllegalStateException e) {
             LOG.debug("Bad request exception : {}", e);
+            errorResponse = Optional.of(RequestHandlerUtils.makeErrorResponse(BAD_REQUEST, e, writer));
+        } finally {
             RequestLog.stopTiming(this);
-            asyncResponse.resume(RequestHandlerUtils.makeErrorResponse(BAD_REQUEST, e, writer));
         }
+
+        errorResponse.ifPresent(asyncResponse::resume);
     }
 
     /**
@@ -274,6 +281,7 @@ public class JobsServlet extends EndpointServlet {
             @Context ContainerRequestContext containerRequestContext,
             @Suspended AsyncResponse asyncResponse
     ) {
+        Optional<Response> errorResponse = Optional.empty();
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new JobRequest(ticket));
@@ -311,13 +319,15 @@ public class JobsServlet extends EndpointServlet {
 
         } catch (RequestValidationException e) {
             LOG.debug(e.getMessage(), e);
-            RequestLog.stopTiming(this);
-            asyncResponse.resume(RequestHandlerUtils.makeErrorResponse(e.getStatus(), e, writer));
+            errorResponse = Optional.of(RequestHandlerUtils.makeErrorResponse(e.getStatus(), e, writer));
         } catch (Error | Exception e) {
             LOG.debug("Exception processing request", e);
+            errorResponse = Optional.of(Response.status(INTERNAL_SERVER_ERROR).entity(e.getMessage()).build());
+        } finally {
             RequestLog.stopTiming(this);
-            asyncResponse.resume(Response.status(INTERNAL_SERVER_ERROR).entity(e.getMessage()).build());
         }
+
+        errorResponse.ifPresent(asyncResponse::resume);
     }
 
     /**

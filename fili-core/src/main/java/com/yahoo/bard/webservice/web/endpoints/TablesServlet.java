@@ -35,6 +35,7 @@ import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -152,6 +153,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             @Context UriInfo uriInfo,
             @Context final ContainerRequestContext containerRequestContext
     ) {
+        Supplier<Response> responseSender;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new TableRequest(tableName != null ? tableName : "all", "all"));
@@ -181,18 +183,19 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                     null
             );
             LOG.debug("Tables Endpoint Response: {}", response.getEntity());
-            RequestLog.stopTiming(this);
-            return response;
+            responseSender = () -> response;
         } catch (RequestValidationException e) {
             LOG.debug(e.getMessage(), e);
-            RequestLog.stopTiming(this);
-            return Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
+            responseSender = () -> Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
         } catch (Error | Exception e) {
             String msg = String.format("Exception processing request: %s", e.getMessage());
             LOG.info(msg, e);
+            responseSender = () -> Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
+        } finally {
             RequestLog.stopTiming(this);
-            return Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
         }
+
+        return responseSender.get();
     }
 
     /**
@@ -216,6 +219,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             @Context UriInfo uriInfo,
             @Context final ContainerRequestContext containerRequestContext
     ) {
+        Supplier<Response> responseSender;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new TableRequest(tableName, grain));
@@ -237,23 +241,23 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             Map<String, Object> result = getLogicalTableFullView(apiRequest, uriInfo);
             String output = objectMappers.getMapper().writeValueAsString(result);
             LOG.debug("Tables Endpoint Response: {}", output);
-            RequestLog.stopTiming(this);
-            return Response.status(Response.Status.OK).entity(output).build();
+            responseSender = () ->  Response.status(Response.Status.OK).entity(output).build();
         } catch (RequestValidationException e) {
             LOG.debug(e.getMessage(), e);
-            RequestLog.stopTiming(this);
-            return Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
+            responseSender = () ->   Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
         } catch (JsonProcessingException e) {
             String msg = String.format("Internal server error. JsonProcessingException : %s", e.getMessage());
             LOG.error(msg, e);
-            RequestLog.stopTiming(this);
-            return Response.status(INTERNAL_SERVER_ERROR).entity(msg).build();
+            responseSender = () -> Response.status(INTERNAL_SERVER_ERROR).entity(msg).build();
         } catch (Error | Exception e) {
             String msg = String.format("Exception processing request: %s", e.getMessage());
             LOG.info(msg, e);
+            responseSender = () -> Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
+        } finally {
             RequestLog.stopTiming(this);
-            return Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
         }
+
+        return responseSender.get();
     }
 
     /**
@@ -273,6 +277,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             @Context UriInfo uriInfo,
             @Context final ContainerRequestContext containerRequestContext
     ) {
+        Supplier<Response> responseSender;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new TableRequest("all", "all"));
@@ -299,14 +304,16 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             Response response = formatResponse(tablesApiRequest, paginatedResult, "tables", null);
 
             LOG.debug("Tables Endpoint Response: {}", response.getEntity());
-            RequestLog.stopTiming(this);
-            return response;
+            responseSender = () -> response;
         } catch (Error | Exception e) {
             String msg = String.format("Exception processing request: %s", e.getMessage());
             LOG.info(msg, e);
+            responseSender = () -> Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
+        } finally {
             RequestLog.stopTiming(this);
-            return Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
         }
+
+        return responseSender.get();
     }
 
     /**
