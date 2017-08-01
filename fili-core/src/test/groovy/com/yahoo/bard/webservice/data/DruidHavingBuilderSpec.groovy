@@ -2,14 +2,13 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.druid.model.having.Having
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.web.ApiHaving
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
-import com.fasterxml.jackson.datatype.joda.JodaModule
 
 import spock.lang.Shared
 import spock.lang.Specification
@@ -19,9 +18,7 @@ public class DruidHavingBuilderSpec extends Specification {
 
     @Shared QueryBuildingTestingResources resources
 
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-            .registerModule(new JodaModule())
-            .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
+    private static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
 
     def setupSpec() {
         resources = new QueryBuildingTestingResources()

@@ -1,6 +1,7 @@
 package com.yahoo.bard.webservice.async
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService
 import com.yahoo.bard.webservice.table.availability.AvailabilityTestingUtils
 import com.yahoo.bard.webservice.web.endpoints.BaseDataServletComponentSpec
@@ -8,7 +9,6 @@ import com.yahoo.bard.webservice.web.endpoints.DataServlet
 import com.yahoo.bard.webservice.web.endpoints.JobsServlet
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 
 import org.joda.time.Interval
 
@@ -42,8 +42,7 @@ import javax.ws.rs.core.Response
 @Timeout(30)
 abstract class AsyncFunctionalSpec extends Specification {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-            .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
+    private static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
 
     JerseyTestBinder jtb
 

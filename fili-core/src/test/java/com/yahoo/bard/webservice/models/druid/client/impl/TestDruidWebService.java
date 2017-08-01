@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.models.druid.client.impl;
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite;
 import com.yahoo.bard.webservice.druid.client.DruidServiceConfig;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
@@ -17,7 +18,6 @@ import com.yahoo.bard.webservice.web.handlers.RequestContext;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
 import org.apache.commons.lang3.concurrent.ConcurrentUtils;
 import org.asynchttpclient.Response;
@@ -40,9 +40,8 @@ public class TestDruidWebService implements DruidWebService {
 
     public static String DEFAULT_NAME = "unnamed";
 
-    private static ObjectMapper mapper = new ObjectMapper().registerModule(
-            new Jdk8Module().configureAbsentsAsNulls(false)
-    );
+    private static ObjectMapper mapper = new ObjectMappersSuite().getMapper();
+
     private static ObjectWriter writer = mapper.writer();
 
     public Producer<String> jsonResponse = () -> "[]";

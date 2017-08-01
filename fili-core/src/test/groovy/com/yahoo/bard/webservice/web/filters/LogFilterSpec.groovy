@@ -3,12 +3,12 @@
 package com.yahoo.bard.webservice.web.filters
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.logging.TestLogAppender
 import com.yahoo.bard.webservice.web.LoggingTestUtils
 import com.yahoo.bard.webservice.web.endpoints.TestFilterServlet
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 
 import spock.lang.Shared
 import spock.lang.Specification
@@ -23,8 +23,7 @@ import javax.ws.rs.core.Response
 @Timeout(30)
 // Fail test if hangs
 class LogFilterSpec extends Specification {
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-            .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
+    private static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
 
     @Shared
     TestLogAppender logAppender

@@ -26,9 +26,7 @@ import spock.lang.Specification
 
 class DruidDimensionsLoaderSpec extends Specification {
 
-    static final ObjectMapper MAPPER = new ObjectMapper()
-            .registerModule(new JodaModule())
-            .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
+    static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
 
     static final List<String> LOADED_DIMENSIONS = [
             TestApiDimensionName.SHAPE,

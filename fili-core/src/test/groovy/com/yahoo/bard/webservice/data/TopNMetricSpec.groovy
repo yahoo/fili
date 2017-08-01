@@ -1,21 +1,21 @@
 // Copyright 2016 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data
+
 import static com.yahoo.bard.webservice.druid.model.orderby.TopNMetric.TopNMetricType.ALPHA_NUMERIC
 import static com.yahoo.bard.webservice.druid.model.orderby.TopNMetric.TopNMetricType.LEXICOGRAPHIC
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.druid.model.orderby.SortDirection
 import com.yahoo.bard.webservice.druid.model.orderby.TopNMetric
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 
 import spock.lang.Specification
 
 class TopNMetricSpec extends Specification {
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-            .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
+    private static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
 
     def "Check json serialization"() {
         expect:

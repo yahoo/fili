@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.util.JsonSortStrategy
 
@@ -13,7 +14,7 @@ import spock.lang.Specification
  */
 class ResultSetSerializationProxySpec extends Specification {
 
-    private static final ObjectMapper objectMapper = new ObjectMapper()
+    private static final ObjectMapper objectMapper = new ObjectMappersSuite().getMapper()
     SerializationResources resources
     ResultSetSerializationProxy serializeResultSet
 

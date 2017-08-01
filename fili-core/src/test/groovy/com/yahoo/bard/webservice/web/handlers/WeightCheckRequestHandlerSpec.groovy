@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.web.handlers
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.druid.client.DruidWebService
 import com.yahoo.bard.webservice.druid.client.FailureCallback
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback
@@ -22,13 +23,11 @@ import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.ObjectWriter
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 
 import spock.lang.Specification
 
 class WeightCheckRequestHandlerSpec extends Specification {
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-            .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
+    private static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
 
     DataRequestHandler next
     DruidWebService webService
@@ -202,7 +201,7 @@ class WeightCheckRequestHandlerSpec extends Specification {
                 next,
                 webService,
                 queryWeightUtil,
-                new ObjectMapper().registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
+                mapper
         )
         int expectedCount = 200
         int limit = 100
@@ -235,7 +234,7 @@ class WeightCheckRequestHandlerSpec extends Specification {
                 next,
                 webService,
                 queryWeightUtil,
-                new ObjectMapper()
+                mapper
         )
         int expectedCount = 200
         int limit = 100

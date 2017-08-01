@@ -5,9 +5,10 @@ package com.yahoo.bard.webservice.logging
 import static spock.util.matcher.HamcrestMatchers.closeTo
 import static spock.util.matcher.HamcrestSupport.expect
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
+
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 
 import ch.qos.logback.classic.spi.ILoggingEvent
 import spock.lang.Ignore
@@ -21,8 +22,7 @@ import spock.lang.Unroll
  */
 @Timeout(30)    // Fail test if hangs
 class TimingSpec extends Specification {
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-            .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
+    private static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
 
     @Shared
     String pkgString = "com.yahoo.bard.webservice.logging.blocks."

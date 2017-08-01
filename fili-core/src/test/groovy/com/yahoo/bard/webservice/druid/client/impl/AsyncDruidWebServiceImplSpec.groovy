@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.client.impl
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.druid.client.DruidClientConfigHelper
 import com.yahoo.bard.webservice.druid.model.query.QueryContext
 import com.yahoo.bard.webservice.druid.model.query.WeightEvaluationQuery
@@ -14,6 +15,8 @@ import spock.lang.Specification
 import java.util.function.Supplier
 
 class AsyncDruidWebServiceImplSpec extends Specification {
+    private static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
+
     def "Ensure that headersToAppend are added to request when calling postDruidQuery"() {
         setup:
         WeightEvaluationQuery weightEvaluationQuery = Mock(WeightEvaluationQuery)
@@ -30,7 +33,7 @@ class AsyncDruidWebServiceImplSpec extends Specification {
 
         AsyncDruidWebServiceImplWrapper webServiceImplWrapper = new AsyncDruidWebServiceImplWrapper(
                 DruidClientConfigHelper.getNonUiServiceConfig(),
-                new ObjectMapper(),
+                MAPPER,
                 supplier
         )
 
@@ -55,7 +58,7 @@ class AsyncDruidWebServiceImplSpec extends Specification {
 
         AsyncDruidWebServiceImplWrapper webServiceImplWrapper = new AsyncDruidWebServiceImplWrapper(
                 DruidClientConfigHelper.getNonUiServiceConfig(),
-                new ObjectMapper(),
+                MAPPER,
                 supplier
         )
 

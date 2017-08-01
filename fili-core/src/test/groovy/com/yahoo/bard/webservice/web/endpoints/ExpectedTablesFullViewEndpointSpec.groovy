@@ -2,12 +2,12 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.endpoints
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.logging.TestLogAppender
 import com.yahoo.bard.webservice.web.LoggingTestUtils
 import com.yahoo.bard.webservice.web.filters.BardLoggingFilter
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 
 import spock.lang.Shared
 import spock.lang.Timeout
@@ -18,8 +18,7 @@ import spock.lang.Timeout
 @Timeout(30)    // Fail test if hangs
 class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-            .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
+    private static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
 
     @Shared
     TestLogAppender logAppender

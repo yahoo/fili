@@ -4,20 +4,21 @@ package com.yahoo.bard.webservice.util
 
 import static com.yahoo.bard.webservice.util.JsonSortStrategy.SORT_MAPS
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
+
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 
 import groovy.json.JsonException
 import groovy.util.logging.Slf4j
 import spock.lang.Specification
+
 /**
  * Abstract to not run as a test suite, but sub-classes Specification so power assert works correctly
  */
 @Slf4j(value = "LOG")
 abstract class GroovyTestUtils extends Specification {
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-            .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
+    private static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
 
     private static final JsonSlurper JSON_PARSER = new JsonSlurper()
 

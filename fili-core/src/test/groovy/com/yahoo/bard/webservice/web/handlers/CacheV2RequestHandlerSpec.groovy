@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.handlers
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.data.cache.MemTupleDataCache
 import com.yahoo.bard.webservice.data.cache.TupleDataCache
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
@@ -19,7 +20,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.ObjectWriter
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 
 import spock.lang.Specification
 
@@ -46,7 +46,7 @@ class CacheV2RequestHandlerSpec extends Specification {
     RequestContext requestContext
     QuerySigningService<Long> querySigningService
 
-    ObjectMapper mapper = new ObjectMapper().registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
+    ObjectMapper mapper = new ObjectMappersSuite().getMapper()
 
     def setup() {
         querySigningService = Mock(SegmentIntervalsHashIdGenerator)
