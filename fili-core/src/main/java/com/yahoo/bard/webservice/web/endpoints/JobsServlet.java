@@ -109,7 +109,7 @@ public class JobsServlet extends EndpointServlet {
             JobPayloadBuilder jobPayloadBuilder,
             PreResponseStore preResponseStore,
             BroadcastChannel<String> broadcastChannel,
-            @Named(JobsApiRequest.REQUEST_MAPPER_NAMESPACE)RequestMapper requestMapper,
+            @Named(JobsApiRequest.REQUEST_MAPPER_NAMESPACE) RequestMapper requestMapper,
             HttpResponseMaker httpResponseMaker
     ) {
         super(objectMappers);
@@ -151,7 +151,7 @@ public class JobsServlet extends EndpointServlet {
             RequestLog.startTiming(this);
             RequestLog.record(new JobRequest("all"));
 
-            JobsApiRequest apiRequest = new JobsApiRequest (
+            JobsApiRequest apiRequest = new JobsApiRequest(
                     format,
                     null, //asyncAfter is null so it behaves like a synchronous request
                     perPage,
@@ -218,7 +218,7 @@ public class JobsServlet extends EndpointServlet {
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new JobRequest(ticket));
-            JobsApiRequest apiRequest = new JobsApiRequest (
+            JobsApiRequest apiRequest = new JobsApiRequest(
                     ResponseFormatType.JSON.toString(),
                     null,
                     "",
@@ -279,7 +279,7 @@ public class JobsServlet extends EndpointServlet {
             RequestLog.startTiming(this);
             RequestLog.record(new JobRequest(ticket));
 
-            JobsApiRequest apiRequest = new JobsApiRequest (
+            JobsApiRequest apiRequest = new JobsApiRequest(
                     format,
                     asyncAfter,
                     perPage,
@@ -442,7 +442,7 @@ public class JobsServlet extends EndpointServlet {
                             }
                         }
                 )
-                 //map the jsonResponse String to a Response
+                //map the jsonResponse String to a Response
                 .map(this::getResponse)
                 .onErrorReturn(this::getErrorResponse);
     }
@@ -534,7 +534,8 @@ public class JobsServlet extends EndpointServlet {
                 .map(pair -> Utils.withRight(pair, pair.getRight().getAsInt()))
                 .map(pair -> Utils.withRight(
                         pair,
-                        uriInfo.getRequestUriBuilder().replaceQueryParam("page", pair.getRight()))
+                        uriInfo.getRequestUriBuilder().replaceQueryParam("page", pair.getRight())
+                        )
                 )
                 .map(pair -> Utils.withRight(pair, pair.getRight().build()))
                 .collect(StreamUtils.toLinkedMap(Pair::getLeft, Pair::getRight));
