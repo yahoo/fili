@@ -146,7 +146,7 @@ public class JobsServlet extends EndpointServlet {
             @Context ContainerRequestContext containerRequestContext,
             @Suspended AsyncResponse asyncResponse
     ) {
-        Optional<Response> errorResponse = Optional.empty();
+        Observable<Response> observableResponse;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new JobRequest("all"));
@@ -178,30 +178,23 @@ public class JobsServlet extends EndpointServlet {
                                     )
                     );
 
-            apiRequest.getJobViews().toList()
+            observableResponse = apiRequest.getJobViews().toList()
                     .map(jobs -> jobsApiRequest.getPage(paginationFactory.apply(jobs)))
                     .map(result -> formatResponse(jobsApiRequest, result, "jobs", null))
                     .defaultIfEmpty(getResponse("{}"))
-                    .onErrorReturn(this::getErrorResponse)
-                    .subscribe(
-                            response -> {
-                                RequestLog.stopTiming(this);
-                                asyncResponse.resume(response);
-                            }
-                    );
+                    .onErrorReturn(this::getErrorResponse);
         } catch (RequestValidationException e) {
             LOG.debug(e.getMessage(), e);
-            errorResponse = Optional.of(RequestHandlerUtils.makeErrorResponse(e.getStatus(), e, writer));
+            observableResponse = Observable.just(RequestHandlerUtils.makeErrorResponse(e.getStatus(), e, writer));
         } catch (Error | Exception e) {
             String msg = String.format("Exception processing request: %s", e.getMessage());
             LOG.info(msg, e);
-            errorResponse = Optional.of(Response.status(INTERNAL_SERVER_ERROR).entity(e.getMessage()).build());
+            observableResponse = Observable.just(Response.status(INTERNAL_SERVER_ERROR).entity(e.getMessage()).build());
+        } finally {
+            RequestLog.stopTiming(this);
         }
 
-        errorResponse.ifPresent(response -> {
-            RequestLog.stopTiming(this);
-            asyncResponse.resume(response);
-        });
+        observableResponse.subscribe(asyncResponse::resume);
     }
 
     /**
@@ -221,7 +214,7 @@ public class JobsServlet extends EndpointServlet {
             @Context ContainerRequestContext containerRequestContext,
             @Suspended AsyncResponse asyncResponse
     ) {
-        Optional<Response> errorResponse = Optional.empty();
+        Observable<Response> observableResponse;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new JobRequest(ticket));
@@ -240,19 +233,19 @@ public class JobsServlet extends EndpointServlet {
                 apiRequest = (JobsApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
-            handleJobResponse(ticket, apiRequest, asyncResponse);
+            observableResponse = handleJobResponse(ticket, apiRequest);
 
         } catch (RequestValidationException e) {
             LOG.debug(e.getMessage(), e);
-            errorResponse = Optional.of(RequestHandlerUtils.makeErrorResponse(e.getStatus(), e, writer));
+            observableResponse = Observable.just(RequestHandlerUtils.makeErrorResponse(e.getStatus(), e, writer));
         } catch (IOException | IllegalStateException e) {
             LOG.debug("Bad request exception : {}", e);
-            errorResponse = Optional.of(RequestHandlerUtils.makeErrorResponse(BAD_REQUEST, e, writer));
+            observableResponse = Observable.just(RequestHandlerUtils.makeErrorResponse(BAD_REQUEST, e, writer));
         } finally {
             RequestLog.stopTiming(this);
         }
 
-        errorResponse.ifPresent(asyncResponse::resume);
+        observableResponse.subscribe(asyncResponse::resume);
     }
 
     /**
@@ -281,7 +274,7 @@ public class JobsServlet extends EndpointServlet {
             @Context ContainerRequestContext containerRequestContext,
             @Suspended AsyncResponse asyncResponse
     ) {
-        Optional<Response> errorResponse = Optional.empty();
+        Observable<Response> observableResponse;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new JobRequest(ticket));
@@ -307,27 +300,30 @@ public class JobsServlet extends EndpointServlet {
 
             Observable<PreResponse> preResponseObservable = getResults(ticket, apiRequest.getAsyncAfter());
 
-            preResponseObservable.isEmpty().subscribe(
-                    isEmptyResult -> handlePreResponse(
-                            ticket,
-                            jobsApiRequest,
-                            asyncResponse,
-                            preResponseObservable,
-                            isEmptyResult
+            observableResponse = preResponseObservable.isEmpty()
+                    .map(
+                            isEmptyResult -> handlePreResponse(
+                                    ticket,
+                                    jobsApiRequest,
+                                    asyncResponse,
+                                    preResponseObservable,
+                                    isEmptyResult
+                            )
                     )
-            );
+                    .toBlocking()
+                    .single();
 
         } catch (RequestValidationException e) {
             LOG.debug(e.getMessage(), e);
-            errorResponse = Optional.of(RequestHandlerUtils.makeErrorResponse(e.getStatus(), e, writer));
+            observableResponse = Observable.just(RequestHandlerUtils.makeErrorResponse(e.getStatus(), e, writer));
         } catch (Error | Exception e) {
             LOG.debug("Exception processing request", e);
-            errorResponse = Optional.of(Response.status(INTERNAL_SERVER_ERROR).entity(e.getMessage()).build());
+            observableResponse = Observable.just(Response.status(INTERNAL_SERVER_ERROR).entity(e.getMessage()).build());
         } finally {
             RequestLog.stopTiming(this);
         }
 
-        errorResponse.ifPresent(asyncResponse::resume);
+        observableResponse.subscribe(asyncResponse::resume);
     }
 
     /**
@@ -339,8 +335,10 @@ public class JobsServlet extends EndpointServlet {
      * @param asyncResponse  Parameter specifying for how long the request should be asyncAfter
      * @param preResponseObservable  An Observable wrapping a PreResponse or an empty observable
      * @param isEmpty  A boolean that indicates if the PreResponse is empty
+     *
+     * @return an observable response to be consumed.
      */
-    protected void handlePreResponse(
+    protected Observable<Response> handlePreResponse(
             String ticket,
             JobsApiRequest apiRequest,
             AsyncResponse asyncResponse,
@@ -349,11 +347,12 @@ public class JobsServlet extends EndpointServlet {
     ) {
         if (isEmpty) {
             //If we did not get the PreResponse before the sync timeout, send the job payload back to the user.
-            handleJobResponse(ticket, apiRequest, asyncResponse);
-        } else {
-            //We got a PreResponse from the PreResponseStore. Send the query result back to the user.
-            handleResultsResponse(preResponseObservable, asyncResponse, apiRequest);
+            return handleJobResponse(ticket, apiRequest);
         }
+
+        //We got a PreResponse from the PreResponseStore. Send the query result back to the user.
+        handleResultsResponse(preResponseObservable, asyncResponse, apiRequest);
+        return Observable.empty();
     }
 
     /**
@@ -427,10 +426,11 @@ public class JobsServlet extends EndpointServlet {
      *
      * @param ticket  The ticket that can uniquely identify a Job
      * @param apiRequest  JobsApiRequest object with all the associated info in it
-     * @param asyncResponse  An async response that we can use to respond asynchronously
+     *
+     * @return an observable response to be consumed.
      */
-    protected void handleJobResponse(String ticket, JobsApiRequest apiRequest, AsyncResponse asyncResponse) {
-        apiRequest.getJobViewObservable(ticket)
+    protected Observable<Response> handleJobResponse(String ticket, JobsApiRequest apiRequest) {
+        return apiRequest.getJobViewObservable(ticket)
                 //map the job to Json String
                 .map(
                         job -> {
@@ -444,8 +444,7 @@ public class JobsServlet extends EndpointServlet {
                 )
                  //map the jsonResponse String to a Response
                 .map(this::getResponse)
-                .onErrorReturn(this::getErrorResponse)
-                .subscribe(asyncResponse::resume);
+                .onErrorReturn(this::getErrorResponse);
     }
 
     /**
@@ -553,7 +552,6 @@ public class JobsServlet extends EndpointServlet {
      */
     protected Response getResponse(String jsonResponse) {
         LOG.trace("Jobs endpoint Response: {}", jsonResponse);
-        RequestLog.stopTiming(this);
         return Response.status(OK).entity(jsonResponse).build();
     }
 
@@ -568,12 +566,10 @@ public class JobsServlet extends EndpointServlet {
         //In case the given ticket does not exist in the ApiJobStore
         if (throwable instanceof JobNotFoundException) {
             LOG.debug(throwable.getMessage());
-            RequestLog.stopTiming(this);
             return Response.status(NOT_FOUND).entity(throwable.getMessage()).build();
         }
 
         LOG.error(throwable.getMessage());
-        RequestLog.stopTiming(this);
         //In case the job cannot be retrieved from the ApiJobStore or if it cannot be mapped to a Job
         return Response.status(INTERNAL_SERVER_ERROR).entity(throwable.getMessage()).build();
     }
