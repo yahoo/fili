@@ -19,12 +19,13 @@ import javax.inject.Singleton;
 /**
  * Memcached client implementation of TupleDataCache.
  *
+ * @param <T>  The meta data type of the cache.
  * @param <V>  The raw data type of the cache.
  */
 @Singleton
-public class MemTupleDataCache<V extends Serializable>
-        extends MemDataCache<TupleDataCache.DataEntry<String, Long, V>>
-        implements TupleDataCache<String, Long, V> {
+public class MemTupleDataCache<T extends Serializable, V extends Serializable>
+        extends MemDataCache<TupleDataCache.DataEntry<String, T, V>>
+        implements TupleDataCache<String, T, V> {
 
     private static final Logger LOG = LoggerFactory.getLogger(MemTupleDataCache.class);
     private static final String DEFAULT_HASH_ALGORITHM = "SHA-512";
@@ -88,7 +89,7 @@ public class MemTupleDataCache<V extends Serializable>
 
     @Override
     public V getDataValue(String key) {
-        TupleDataCache.DataEntry<String, Long, V> result = get(key);
+        TupleDataCache.DataEntry<String, T, V> result = get(key);
 
         if (result == null) {
             return null;
@@ -107,25 +108,26 @@ public class MemTupleDataCache<V extends Serializable>
     }
 
     @Override
-    public TupleDataCache.DataEntry<String, Long, V> get(String key) {
+    public TupleDataCache.DataEntry<String, T, V> get(String key) {
         return super.get(hash(key));
     }
 
     @Override
-    public boolean set(String key, Long meta, V value) {
+    public boolean set(String key, T meta, V value) {
         return set(hash(key), new DataEntry<>(key, meta, value));
     }
 
     /**
      * Memcached implementation of the data cache entry of the tuple data cache.
      *
+     * @param <T>  The meta data type of the cache.
      * @param <V>  The raw data type of the cache.
      */
-    public static class DataEntry<V extends Serializable>
-            implements TupleDataCache.DataEntry<String, Long, V>, Serializable {
+    public static class DataEntry<T extends Serializable, V extends Serializable>
+            implements TupleDataCache.DataEntry<String, T, V>, Serializable {
         private static final long serialVersionUID = 1630228312720546277L;
         private final String key;
-        private final Long checkSum;
+        private final T meta;
         private final V value;
 
         /**
@@ -135,9 +137,9 @@ public class MemTupleDataCache<V extends Serializable>
          * @param meta  The metadata associated with this data cache entry.
          * @param value  The raw data associated with this data cache entry.
          */
-        public DataEntry(String key, Long meta, V value) {
+        public DataEntry(String key, T meta, V value) {
             this.key = key;
-            this.checkSum = meta;
+            this.meta = meta;
             this.value = value;
         }
 
@@ -147,8 +149,8 @@ public class MemTupleDataCache<V extends Serializable>
         }
 
         @Override
-        public Long getMeta() {
-            return checkSum;
+        public T getMeta() {
+            return meta;
         }
 
         @Override

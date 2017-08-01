@@ -25,7 +25,7 @@ import java.util.function.Supplier
 public class PartialDataResultSetMapperSpec extends Specification {
 
     PhysicalTableDictionary physicalTableDictionary = Mock(PhysicalTableDictionary)
-    SimplifiedIntervalList intervals = SimplifiedIntervalList.NO_INTERVALS
+    SimplifiedIntervalList intervals = new SimplifiedIntervalList()
     ResultSetSchema schema = Mock(ResultSetSchema)
     Result result = Mock(Result)
     PartialDataHandler handler = new PartialDataHandler()
@@ -165,7 +165,7 @@ public class PartialDataResultSetMapperSpec extends Specification {
 
     PartialDataResultSetMapper buildMapper(
             SimplifiedIntervalList intervals,
-            Supplier<SimplifiedIntervalList> provider = { -> SimplifiedIntervalList.NO_INTERVALS }
+            Supplier<SimplifiedIntervalList> provider = { -> new SimplifiedIntervalList() }
     ) {
         return new PartialDataResultSetMapper(intervals, provider)
     }

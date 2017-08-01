@@ -24,7 +24,7 @@ Once you have Maven installed, to build and run the tests:
 ```bash
 $ git clone git@github.com:yahoo/fili.git
 $ cd fili/
-$ mvn test
+$ mvn clean test
 ```
 
 ### Testing & Code Style
@@ -39,6 +39,10 @@ and has fewer bugs. To help keep the quality bar high, we have an automated styl
 with rules that _should_ catch most of the common style issues. The full details of what the checker looks for can be 
 found in our [checkstyle config](checkstyle-style.xml), but the [Google Java style guide](https://google.github.io/styleguide/javaguide.html) 
 covers most of it, and is very close to our style.
+
+### Credit
+
+Special thanks given to Groovy's JsonSlurper which served as a base for one of Fili's [sorting functionalities](https://github.com/yahoo/fili/blob/master/fili-core/src/test/java/com/yahoo/bard/webservice/util/JsonSlurper.java)
 
 
 Design and Architecture

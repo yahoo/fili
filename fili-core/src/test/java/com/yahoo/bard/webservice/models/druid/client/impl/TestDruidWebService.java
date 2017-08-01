@@ -10,7 +10,7 @@ import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.druid.model.query.WeightEvaluationQuery;
-import com.yahoo.bard.webservice.util.FailedFuture;
+import com.yahoo.bard.webservice.util.CompletedFuture;
 import com.yahoo.bard.webservice.util.JsonSlurper;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
 
@@ -90,7 +90,7 @@ public class TestDruidWebService implements DruidWebService {
     /**
      * If TestDruidWebService#throwable is set, invokes the failure callback.  Otherwise invokes success or failure
      * dependent on whether TestDruidWebService#statusCode equals 200.
-     * Note that since this doesn't send requests to druid all the responses will be null or {@link FailedFuture}.
+     * Note that since this doesn't send requests to druid all the responses will be null or {@link CompletedFuture}.
      */
     @Override
     @SuppressWarnings("checkstyle:cyclomaticcomplexity")
@@ -116,7 +116,7 @@ public class TestDruidWebService implements DruidWebService {
         // Invoke failure callback if we have a throwable to give it
         if (throwable != null) {
             failure.invoke(throwable);
-            return new FailedFuture<>(throwable);
+            return CompletedFuture.throwing(throwable);
         }
 
         if (lastQuery.getQueryType() instanceof DefaultQueryType) {
@@ -155,7 +155,7 @@ public class TestDruidWebService implements DruidWebService {
             }
         } catch (IOException e) {
             failure.invoke(e);
-            return new FailedFuture<>(e);
+            return CompletedFuture.throwing(e);
         }
 
         return ConcurrentUtils.constantFuture(null);
@@ -234,7 +234,7 @@ public class TestDruidWebService implements DruidWebService {
         // Invoke failure callback if we have a throwable to give it
         if (throwable != null) {
             failure.invoke(throwable);
-            return new FailedFuture<>(throwable);
+            return CompletedFuture.throwing(throwable);
         }
 
          try {
@@ -245,7 +245,7 @@ public class TestDruidWebService implements DruidWebService {
             }
         } catch (IOException e) {
             failure.invoke(e);
-             return new FailedFuture<>(e);
+             return CompletedFuture.throwing(throwable);
         }
 
         return ConcurrentUtils.constantFuture(null);

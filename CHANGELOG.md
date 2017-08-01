@@ -10,6 +10,20 @@ Current
 
 ### Added:
 
+- [Fili-security module](https://github.com/yahoo/fili/pull/405)
+    * Added security module for fili data security filters
+    * Created `ChainingRequestMapper`, and a set of mappers for gatekeeping on security roles and whitelisting dimension filters. 
+
+- [Add Table-wide Availability](https://github.com/yahoo/fili/pull/414)
+    * Add `availableIntervals` field to tables endpoint by union the availability for the logical table without taking
+    the TablesApiRequest into account.
+
+
+- [Implement EtagCacheRequestHandler](https://github.com/yahoo/fili/pull/312)
+    * Add `EtagCacheRequestHandler` that checks the cache for a matching eTag
+    * Add `EtagCacheRequestHandler` to `DruidWorkflow`
+    * Make `MemTupleDataCache` take parametrized meta data type
+
 - [Implement EtagCacheResponseProcessor](https://github.com/yahoo/fili/pull/311)
     * Add `EtagCacheResponseProcessor` that caches the results if appropriate after completing a query according to
     etag value.
@@ -21,11 +35,25 @@ Current
 
 ### Changed:
 
+- [Change id field in DefaultDimensionField to lower case for Navi compatibility.](https://github.com/yahoo/fili/pull/423)
+    * Navi's default setting only recongizes lower case 'id' key name.
+
+- [Make HttpResponseMaker injectable and change functions signature related to custom response creation](https://github.com/yahoo/fili/pull/447)
+    * Make `HttpResponseMaker` injectable. `DataServlet` and `JobsServlet` takes `HttpResponseMaker` as input parameter now
+    * Add `ApiRequest` to `BuildResponse`, `HttpReponseChannel` and `createResponseBuilder` to enable passing information needed by customizable serialization
+    * Remove duplicate parameter such as `UriInfo` that can be derived from `ApiRequest`
+
+- [Change id field in DefaultDimensionField to lower case for Navi compatibility.](https://github.com/yahoo/fili/pull/423)
+    * Navi's default setting only recongizes lower case 'id' key name.
+
 - [Fix a bug where table loader uses nested compute if absent](https://github.com/yahoo/fili/pull/407)
     * Nesting `computeIfAbsent` on maps can cause a lot of issues in the map internals that causes weird behavior, nesting structure is now removed
 
 - [Convert null avro record value to empty string](https://github.com/yahoo/fili/pull/395)
     * Make `AvroDimensionRowParser` convert null record value into empty string to avoid NPE
+
+- [FailedFuture is replaced by CompletedFuture](https://github.com/yahoo/fili/pull/396)
+    * CompletedFuture allows values to be returned when calling `.get` on a future instead of just throwing an exception
 
 ### Deprecated:
 
@@ -35,6 +63,14 @@ Current
 
 ### Fixed:
 
+- [Fix deploy branch issue where substrings of whitelisted branches could be released](https://github.com/yahoo/fili/issues/453)
+
+- [Fix availability testing utils to be compatible with composite tables](https://github.com/yahoo/fili/pull/419)
+    * Fix availability testing utils `populatePhysicalTableCacheIntervals` to assign a `TestAvailability` that will serialize correctly instead of always `StrictAvailability`
+    * Fix internal representation of `VolatileIntervalsFunction` in `DefaultingVolatileIntervalsService` from `Map<PhysicalTable, VolatileIntervalsFunction>` to `Map<String, VolatileIntervalsFunction>`
+
+- [Fix metric and dimension names for wikipedia-example](https://github.com/yahoo/fili/pull/415)
+    * The metrics and dimensions configured in the `fili-wikipedia-example` were different from those in Druid and as a result the queries sent to Druid were incorrect
 
 
 ### Known Issues:
@@ -43,6 +79,11 @@ Current
 
 ### Removed:
 
+- [Remove dependency on org.json](https://github.com/yahoo/fili/pull/416)
+    * Replace uses of org.json with the jackson equivalent
+
+- [Remove NO_INTERVALS from SimplifiedIntervalList](https://github.com/yahoo/fili/pull/290)
+    * This shared instance was vulnerable to being changed globally. All calls to this have been replaced with the empty constructor
 
 
 v0.8.69 - 2017/06/06

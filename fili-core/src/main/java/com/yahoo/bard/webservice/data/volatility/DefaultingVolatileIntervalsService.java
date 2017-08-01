@@ -14,9 +14,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * An implementation of VolatileIntervalsService.
@@ -33,7 +33,7 @@ public class DefaultingVolatileIntervalsService implements VolatileIntervalsServ
     /**
      * The map of specific functions for physical tables.
      */
-    private final Map<PhysicalTable, VolatileIntervalsFunction> intervalsFunctions;
+    private final Map<String, VolatileIntervalsFunction> intervalsFunctions;
 
     /**
      * Use the no op interval function with no customized functions.
@@ -76,7 +76,10 @@ public class DefaultingVolatileIntervalsService implements VolatileIntervalsServ
             Map<PhysicalTable, VolatileIntervalsFunction> intervalsFunctions
     ) {
         this.defaultIntervals = defaultIntervalsFunction;
-        this.intervalsFunctions = Collections.unmodifiableMap(new HashMap<>(intervalsFunctions));
+        this.intervalsFunctions = Collections.unmodifiableMap(
+                intervalsFunctions.entrySet().stream()
+                        .collect(Collectors.toMap(entry -> entry.getKey().getName(), Map.Entry::getValue))
+        );
     }
 
     @Override
@@ -87,7 +90,7 @@ public class DefaultingVolatileIntervalsService implements VolatileIntervalsServ
     ) {
         SimplifiedIntervalList simplifiedIntervals = new SimplifiedIntervalList(intervals);
         SimplifiedIntervalList volatileIntervals = IntervalUtils.collectBucketedIntervalsIntersectingIntervalList(
-                intervalsFunctions.getOrDefault(factSource, defaultIntervals).getVolatileIntervals(),
+                intervalsFunctions.getOrDefault(factSource.getName(), defaultIntervals).getVolatileIntervals(),
                 simplifiedIntervals,
                 granularity
         );

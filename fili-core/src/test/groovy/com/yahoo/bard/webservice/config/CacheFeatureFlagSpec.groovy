@@ -13,10 +13,20 @@ class CacheFeatureFlagSpec extends Specification {
     private static final String LOCAL_SIGNATURE_CACHE_CONFIG_KEY = SYSTEM_CONFIG.getPackageVariableName("druid_cache_v2_enabled")
     private static final String ETAG_CACHE_CONFIG_KEY = SYSTEM_CONFIG.getPackageVariableName("query_response_caching_strategy")
 
+    String queryResponseCachingStrategy
+
+    def setup() {
+        // store config value
+        queryResponseCachingStrategy = SYSTEM_CONFIG.getStringProperty(ETAG_CACHE_CONFIG_KEY, "NoCache")
+    }
+
     def cleanup() {
         SYSTEM_CONFIG.clearProperty(TTL_CACHE_CONFIG_KEY)
         SYSTEM_CONFIG.clearProperty(LOCAL_SIGNATURE_CACHE_CONFIG_KEY)
         SYSTEM_CONFIG.clearProperty(ETAG_CACHE_CONFIG_KEY)
+
+        // restore config value
+        SYSTEM_CONFIG.setProperty(ETAG_CACHE_CONFIG_KEY, queryResponseCachingStrategy)
     }
 
     @Unroll

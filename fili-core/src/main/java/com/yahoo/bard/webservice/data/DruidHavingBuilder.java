@@ -15,16 +15,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.Map;
+import java.util.ArrayList;
 import java.util.Set;
+import java.util.Map;
+import java.util.Arrays;
+
 import java.util.stream.Collectors;
+
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.HAVING_OPERATOR_IMPROPER_RANGE;
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.HAVING_OPERATOR_WRONG_NUMBER_OF_PARAMETERS;
 
 /**
  * Class to hold static methods to build druid query model objects from ApiHaving.
  */
 public class DruidHavingBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(DruidHavingBuilder.class);
-
+    private static final int HAVING_RANGE_PARAM_LENGTH = 2;
     /**
      * Build a having model that ANDs together having queries for each of the metrics.
      *
@@ -77,9 +83,36 @@ public class DruidHavingBuilder {
         LOG.trace("Building having using metric: {} and API Having: {}", metric, having);
 
         HavingOperation operation = having.getOperation();
-        List<Having> havings = having.getValues().stream()
-                .map(value -> new NumericHaving(operation.getType(), metric.getName(), value))
-                .collect(Collectors.toList());
+        List<Double> values = having.getValues();
+
+        Having newHaving;
+        if (operation.equals(HavingOperation.between) || operation.equals(HavingOperation.notBetween)) {
+            if (values.size() != HAVING_RANGE_PARAM_LENGTH) {
+                throw new UnsupportedOperationException(HAVING_OPERATOR_WRONG_NUMBER_OF_PARAMETERS.format
+                        (operation.name(), operation.name(), HAVING_RANGE_PARAM_LENGTH, values.size()));
+            }
+            double lowerValue = values.get(0);
+            double upperValue = values.get(1);
+            if (upperValue < lowerValue) {
+                throw new IllegalArgumentException(HAVING_OPERATOR_IMPROPER_RANGE.format(operation.name()));
+            }
+            List<Having> orHavings = new ArrayList<>();
+            orHavings.add(new NumericHaving(Having.DefaultHavingType.GREATER_THAN, metric.getName(),
+                    lowerValue));
+            orHavings.add(new NumericHaving(Having.DefaultHavingType.EQUAL_TO, metric.getName(), lowerValue));
+            OrHaving orHavingLower = new OrHaving(orHavings);
+            orHavings = new ArrayList<>();
+            orHavings.add(new NumericHaving(Having.DefaultHavingType.LESS_THAN, metric.getName(), upperValue));
+            orHavings.add(new NumericHaving(Having.DefaultHavingType.EQUAL_TO, metric.getName(), upperValue));
+            OrHaving orHavingUpper = new OrHaving(orHavings);
+            newHaving = new AndHaving(Arrays.asList(orHavingLower, orHavingUpper));
+        }
+        else {
+            List<Having> havings = having.getValues().stream()
+                    .map(value -> new NumericHaving(operation.getType(), metric.getName(), value))
+                    .collect(Collectors.toList());
+            newHaving = havings.size() == 1 ? havings.get(0) : new OrHaving(havings);
+        }
 
         // Negate the outer having to preserve expected semantics of negated queries.
         // For example, the having
@@ -96,7 +129,6 @@ public class DruidHavingBuilder {
         //     !(metric1 > 2 || metric1 > 4 || metric1 > 8)
         // . In both cases, the second method is correct.
 
-        Having newHaving = havings.size() == 1 ? havings.get(0) : new OrHaving(havings);
         return operation.isNegated() ? new NotHaving(newHaving) : newHaving;
     }
 }

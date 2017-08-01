@@ -28,10 +28,6 @@ public enum CacheFeatureFlag implements FeatureFlag {
 
     private static final Logger LOG = LoggerFactory.getLogger(CacheFeatureFlag.class);
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
-    private static final String QUERY_RESPONSE_CACHING_STRATEGY = SYSTEM_CONFIG.getStringProperty(
-            SYSTEM_CONFIG.getPackageVariableName("query_response_caching_strategy"),
-            "None"
-    );
 
     private final String value;
 
@@ -66,7 +62,12 @@ public enum CacheFeatureFlag implements FeatureFlag {
                     && BardFeatureFlag.DRUID_CACHE.isOn()
                     && BardFeatureFlag.DRUID_CACHE_V2.isOn());
         }
-        return QUERY_RESPONSE_CACHING_STRATEGY.equalsIgnoreCase(value);
+        return value.equalsIgnoreCase(
+                SYSTEM_CONFIG.getStringProperty(
+                        SYSTEM_CONFIG.getPackageVariableName("query_response_caching_strategy"),
+                        "NoCache"
+                )
+        );
     }
 
     @Override

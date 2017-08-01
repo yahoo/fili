@@ -2,6 +2,8 @@
 PUBLISH_WHITELIST="master"
 RELEASE_TAG_REGEX="^[0-9]+\\.[0-9]+\\.[0-9]+"
 
+export MAVEN_OPTS="-Xmx3000m"
+
 # Deploy if this has a travis tag and is on an approved branch
 MATCHING_TAG=$(echo $TRAVIS_TAG | egrep ${RELEASE_TAG_REGEX})
 if [[ ${MATCHING_TAG} != "" ]]; then
@@ -46,8 +48,8 @@ if [[ ${MAVEN_RETURN_CODE} -ne 0 ]]; then
 fi
 
 # Only publish whitelisted branches
-WHITELISTED=$(echo ${PUBLISH_WHITELIST} | grep ${TRAVIS_BRANCH})
-if [[ "${WHITELISTED}" == "" ]]; then
+WHITELISTED=$(for a in ${PUBLISH_WHITELIST}; do if [ ${TRAVIS_BRANCH} = ${a} ]; then echo true; fi; done;)
+if [[ "${WHITELISTED}" != "true" ]]; then
     echo "INFO Do not flag for publication, this is not a whitelisted branch: ${TRAVIS_BRANCH}"
     exit 0
 fi

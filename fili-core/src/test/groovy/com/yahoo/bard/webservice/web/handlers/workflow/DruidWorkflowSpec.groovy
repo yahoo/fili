@@ -2,8 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.handlers.workflow
 
-import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_CACHE
-import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_CACHE_V2
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.QUERY_SPLIT
 
 import com.yahoo.bard.webservice.config.SystemConfig
@@ -23,6 +21,7 @@ import com.yahoo.bard.webservice.web.handlers.DataRequestHandler
 import com.yahoo.bard.webservice.web.handlers.DebugRequestHandler
 import com.yahoo.bard.webservice.web.handlers.DefaultWebServiceHandlerSelector
 import com.yahoo.bard.webservice.web.handlers.DruidPartialDataRequestHandler
+import com.yahoo.bard.webservice.web.handlers.EtagCacheRequestHandler
 import com.yahoo.bard.webservice.web.handlers.SplitQueryRequestHandler
 import com.yahoo.bard.webservice.web.handlers.WebServiceSelectorRequestHandler
 import com.yahoo.bard.webservice.web.handlers.WeightCheckRequestHandler
@@ -36,10 +35,12 @@ import spock.lang.Specification
 class DruidWorkflowSpec extends Specification {
     private static final ObjectMapper MAPPER = new ObjectMapper()
             .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
-    private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+    private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance()
+    private static final String TTL_CACHE_CONFIG_KEY = SYSTEM_CONFIG.getPackageVariableName("druid_cache_enabled")
+    private static final String LOCAL_SIGNATURE_CACHE_CONFIG_KEY = SYSTEM_CONFIG.getPackageVariableName("druid_cache_v2_enabled")
+    private static final String ETAG_CACHE_CONFIG_KEY = SYSTEM_CONFIG.getPackageVariableName("query_response_caching_strategy")
+    private static final String UNCOVERED_INTERVAL_LIMIT_KEY = SYSTEM_CONFIG.getPackageVariableName("druid_uncovered_interval_limit")
 
-    boolean cacheStatus
-    boolean cacheV2Status
     boolean splittingStatus
 
     DruidWorkflow dw
@@ -52,28 +53,29 @@ class DruidWorkflowSpec extends Specification {
     QuerySigningService<Long> querySigningService = Mock(SegmentIntervalsHashIdGenerator)
     VolatileIntervalsService volatileIntervalsService = Mock(VolatileIntervalsService)
 
-    SystemConfig systemConfig
-    String uncoveredKey
+    String queryResponseCachingStrategy
 
     def setup() {
-        cacheStatus = DRUID_CACHE.isOn()
-        cacheV2Status = DRUID_CACHE_V2.isOn()
-        splittingStatus = QUERY_SPLIT.isOn()
+        // store config value
+        queryResponseCachingStrategy = SYSTEM_CONFIG.getStringProperty(ETAG_CACHE_CONFIG_KEY, "NoCache")
 
-        systemConfig = SystemConfigProvider.getInstance()
-        uncoveredKey = SYSTEM_CONFIG.getPackageVariableName("druid_uncovered_interval_limit")
+        splittingStatus = QUERY_SPLIT.isOn()
     }
 
     def cleanup() {
-        DRUID_CACHE.setOn(cacheStatus)
-        DRUID_CACHE_V2.setOn(cacheV2Status)
+        SYSTEM_CONFIG.clearProperty(TTL_CACHE_CONFIG_KEY)
+        SYSTEM_CONFIG.clearProperty(LOCAL_SIGNATURE_CACHE_CONFIG_KEY)
+        SYSTEM_CONFIG.clearProperty(ETAG_CACHE_CONFIG_KEY)
         QUERY_SPLIT.setOn(splittingStatus)
+
+        // restore config value
+        SYSTEM_CONFIG.setProperty(ETAG_CACHE_CONFIG_KEY, queryResponseCachingStrategy)
     }
 
     def "Test workflow config controls workflow stages"() {
         setup:
-        DRUID_CACHE.setOn(doCache)
-        DRUID_CACHE_V2.setOn(doCacheV2)
+        SYSTEM_CONFIG.setProperty(TTL_CACHE_CONFIG_KEY, String.valueOf(doCache))
+        SYSTEM_CONFIG.setProperty(LOCAL_SIGNATURE_CACHE_CONFIG_KEY, String.valueOf(doCacheV2))
 
         when:
         dw = new DruidWorkflow(
@@ -98,29 +100,84 @@ class DruidWorkflowSpec extends Specification {
 
         when:
         handlers = getHandlerChain(defaultHandler.uiWebServiceHandler.next)
-        boolean isCaching = handlers.find(byClass(CacheRequestHandler)) != null |
-                handlers.find(byClass(CacheV2RequestHandler)) != null
-        boolean isCachingV2 = handlers.find(byClass(CacheV2RequestHandler)) != null
 
         then:
-        isCaching == doCache
-        isCachingV2 == doCacheV2
+        (handlers.find(byClass(CacheRequestHandler)) != null) == isCaching
+        (handlers.find(byClass(CacheV2RequestHandler)) != null) == isCachingV2
+        handlers.find(byClass(EtagCacheRequestHandler)) == null
 
         when:
         handlers = getHandlerChain(defaultHandler.nonUiWebServiceHandler.next)
-        isCaching = handlers.find(byClass(CacheRequestHandler)) != null |
-                handlers.find(byClass(CacheV2RequestHandler)) != null
-        isCachingV2 = handlers.find(byClass(CacheV2RequestHandler)) != null
 
         then:
-        isCaching == doCache
-        isCachingV2 == doCacheV2
+        (handlers.find(byClass(CacheRequestHandler)) != null) == isCaching
+        (handlers.find(byClass(CacheV2RequestHandler)) != null) == isCachingV2
+        handlers.find(byClass(EtagCacheRequestHandler)) == null
+
+        cleanup:
+        SYSTEM_CONFIG.clearProperty(TTL_CACHE_CONFIG_KEY)
+        SYSTEM_CONFIG.clearProperty(LOCAL_SIGNATURE_CACHE_CONFIG_KEY)
 
         where:
-        doCache | doCacheV2
-        false   | false
-        true    | false
-        true    | true
+        doCache | doCacheV2 | isCaching | isCachingV2
+        true    | false     | true      | false
+        false   | true      | false     | false
+        true    | true      | false     | true
+        false   | false     | false     | false
+    }
+
+    def "Test workflow picks up cache request handler based on query_response_caching_strategy config value when TTL and LocalSig cache are not set"() {
+        setup:
+        SYSTEM_CONFIG.setProperty(ETAG_CACHE_CONFIG_KEY, etagConfigValue)
+
+        when:
+        dw = new DruidWorkflow(
+                "LocalSignature".equals(etagConfigValue) || "ETag".equals(etagConfigValue)
+                        ? Mock(TupleDataCache)
+                        : Mock(DataCache),
+                uiWebService,
+                nonUiWebService,
+                weightUtil,
+                physicalTableDictionary,
+                partialDataHandler,
+                querySigningService,
+                volatileIntervalsService,
+                MAPPER
+        )
+        DataRequestHandler workflow = dw.buildWorkflow()
+        List<DataRequestHandler> handlers = getHandlerChain(workflow)
+        WebServiceSelectorRequestHandler select = handlers.find(byClass(WebServiceSelectorRequestHandler))
+        def defaultHandler = select.handlerSelector as DefaultWebServiceHandlerSelector
+
+        then:
+        defaultHandler.uiWebServiceHandler.getWebService() == uiWebService
+        defaultHandler.nonUiWebServiceHandler.getWebService() == nonUiWebService
+
+        when:
+        handlers = getHandlerChain(defaultHandler.uiWebServiceHandler.next)
+
+        then:
+        (handlers.find(byClass(CacheRequestHandler)) != null) == isCaching
+        (handlers.find(byClass(CacheV2RequestHandler)) != null) == isCachingV2
+        (handlers.find(byClass(EtagCacheRequestHandler)) != null) == isEtagCaching
+
+        when:
+        handlers = getHandlerChain(defaultHandler.nonUiWebServiceHandler.next)
+
+        then:
+        (handlers.find(byClass(CacheRequestHandler)) != null) == isCaching
+        (handlers.find(byClass(CacheV2RequestHandler)) != null) == isCachingV2
+        (handlers.find(byClass(EtagCacheRequestHandler)) != null) == isEtagCaching
+
+        cleanup:
+        SYSTEM_CONFIG.clearProperty(ETAG_CACHE_CONFIG_KEY)
+
+        where:
+        etagConfigValue  | isCaching | isCachingV2 | isEtagCaching
+        "Ttl"            | true      | false       | false
+        "LocalSignature" | false     | true        | false
+        "ETag"           | false     | false       | true
+        "NoCache"        | false     | false       | false
     }
 
     def "Test workflow contains standard handlers"() {
@@ -206,7 +263,7 @@ class DruidWorkflowSpec extends Specification {
 
     def "Test workflow contains DruidPartialDataRequestHandler when druidUncoveredIntervalLimit > 0"() {
         setup:
-        systemConfig.setProperty(uncoveredKey, '10')
+        SYSTEM_CONFIG.setProperty(UNCOVERED_INTERVAL_LIMIT_KEY, '10')
         dw = new DruidWorkflow(
                 dataCache,
                 uiWebService,
@@ -232,14 +289,12 @@ class DruidWorkflowSpec extends Specification {
         handlers2.find(byClass(DruidPartialDataRequestHandler)) != null
 
         cleanup:
-        systemConfig.clearProperty(uncoveredKey)
+        SYSTEM_CONFIG.clearProperty(UNCOVERED_INTERVAL_LIMIT_KEY)
     }
 
     def "Test workflow doesn't contain DruidPartialDataRequestHandler when druidUncoveredIntervalLimit <= 0"() {
         setup:
-        SystemConfig systemConfig = SystemConfigProvider.getInstance()
-        String uncoveredKey = SYSTEM_CONFIG.getPackageVariableName("druid_uncovered_interval_limit")
-        systemConfig.setProperty(uncoveredKey, '0')
+        SYSTEM_CONFIG.setProperty(UNCOVERED_INTERVAL_LIMIT_KEY, '0')
         dw = new DruidWorkflow(
                 dataCache,
                 uiWebService,
@@ -265,6 +320,6 @@ class DruidWorkflowSpec extends Specification {
         handlers2.find(byClass(DruidPartialDataRequestHandler)) == null
 
         cleanup:
-        systemConfig.clearProperty(uncoveredKey)
+        SYSTEM_CONFIG.clearProperty(UNCOVERED_INTERVAL_LIMIT_KEY)
     }
 }

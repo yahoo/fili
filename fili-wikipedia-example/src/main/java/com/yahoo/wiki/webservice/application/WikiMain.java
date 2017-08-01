@@ -10,11 +10,11 @@ import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensions;
 import com.codahale.metrics.servlet.InstrumentedFilter;
 import com.codahale.metrics.servlets.AdminServlet;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.BoundRequestBuilder;
+import org.asynchttpclient.DefaultAsyncHttpClient;
+import org.asynchttpclient.ListenableFuture;
+import org.asynchttpclient.Response;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.HandlerList;
@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.EnumSet;
+import java.util.concurrent.ExecutionException;
 
 import javax.servlet.DispatcherType;
 
@@ -53,17 +54,23 @@ public class WikiMain {
      * @throws IOException If something goes terribly wrong when building the JSON or sending it
      */
     private static void markDimensionCacheHealthy(int port) throws IOException {
+        AsyncHttpClient asyncHttpClient = new DefaultAsyncHttpClient();
         for (DimensionConfig dimensionConfig : new WikiDimensions().getAllDimensionConfigurations()) {
             String dimension = dimensionConfig.getApiName();
-            HttpPost post = new HttpPost("http://localhost:" + port + "/v1/cache/dimensions/" + dimension);
-            post.setHeader("Content-type", "application/json");
-            post.setEntity(
-                    new StringEntity(
+            BoundRequestBuilder boundRequestBuilder = asyncHttpClient.preparePost("http://localhost:" + port +
+                    "/v1/cache/dimensions/" + dimension)
+                    .addHeader("Content-type", "application/json")
+                    .setBody(
                             String.format("{\n \"name\":\"%s\",\n \"lastUpdated\":\"2016-01-01\"\n}", dimension)
-                    ));
-            CloseableHttpClient client = HttpClientBuilder.create().build();
-            CloseableHttpResponse response = client.execute(post);
-            LOG.debug("Mark Dimension Cache Updated Response: ", response);
+                    );
+
+            ListenableFuture<Response> responseFuture = boundRequestBuilder.execute();
+            try {
+                Response response = responseFuture.get();
+                LOG.debug("Mark Dimension Cache Updated Response: ", response);
+            } catch (InterruptedException | ExecutionException e) {
+                LOG.warn("Failed while marking dimensions healthy", e);
+            }
         }
     }
 

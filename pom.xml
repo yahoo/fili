@@ -18,6 +18,7 @@
         <module>fili-system-config</module>
         <module>fili-core</module>
         <module>fili-navi</module>
+        <module>fili-security</module>
         <module>fili</module>
         <module>fili-wikipedia-example</module>
         <module>fili-generic-example</module>
@@ -84,6 +85,8 @@
         <version.groovy>2.4.5</version.groovy>
         <version.guava>21.0</version.guava>
         <version.druid.api>0.3.8</version.druid.api>
+        <version.h2>1.4.195</version.h2>
+        <version.calcite>1.12.0</version.calcite>
         <profiles.active>test</profiles.active>
 
         <javadoc_options>${disableDocLint}</javadoc_options>
@@ -371,12 +374,6 @@
                 <artifactId>jackson-dataformat-csv</artifactId>
                 <version>${version.jackson}</version>
             </dependency>
-            <dependency>
-                <!--TODO: switch back to jackson parser-->
-                <groupId>org.json</groupId>
-                <artifactId>json</artifactId>
-                <version>20160810</version>
-            </dependency>
 
             <!-- Redis -->
             <dependency>
@@ -461,6 +458,19 @@
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-servlet</artifactId>
                 <version>9.2.5.v20141112</version>
+            </dependency>
+
+             <!-- Support for sql backend -->
+            <dependency>
+                <groupId>org.apache.calcite</groupId>
+                <artifactId>calcite-core</artifactId>
+                <version>${version.calcite}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>${version.h2}</version>
+                <scope>test</scope>
             </dependency>
 
         </dependencies>
@@ -639,6 +649,9 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>2.16</version>
                     <configuration>
+                        <forkCount>1</forkCount>
+                        <reuseForks>true</reuseForks>
+                        <argLine>-Xmx3G</argLine>
                         <redirectTestOutputToFile>true</redirectTestOutputToFile>
                         <includes>
                             <include>%regex[.*Spec.*]</include>
@@ -750,95 +763,96 @@
                         </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <reportPlugins>
-                        <reportPlugin>
-                            <artifactId>maven-surefire-report-plugin</artifactId>
-                            <version>${maven-surefire-report-plugin.version}</version>
-                            <configuration>
-                                <argLine>-Djava.library.path=${nativeDir}:${libDir} -XX:-UseLargePages
-                                    -XX:-UseLargePages
-                                    -Dlog4j.properties=file:src/test/resources/log4j.properties</argLine>
-                                <properties combine.self="override"/>
-                            </configuration>
-                            <reportSets>
-                                <reportSet>
-                                    <reports>
-                                        <report>report-only</report>
-                                    </reports>
-                                </reportSet>
-                            </reportSets>
-                        </reportPlugin>
-                        <reportPlugin>
-                            <artifactId>maven-pmd-plugin</artifactId>
-                            <version>${maven-pmd-plugin-version}</version>
-                            <reportSets>
-                                <reportSet>
-                                    <reports>
-                                        <report>pmd</report>
-                                        <report>cpd</report>
-                                    </reports>
-                                </reportSet>
-                            </reportSets>
-                            <configuration>
-                                <targetJdk>${target_jdk_version}</targetJdk>
-                                <aggregate>true</aggregate>
-                            </configuration>
-                        </reportPlugin>
-                        <reportPlugin>
-                            <groupId>org.apache.maven.plugins</groupId>
-                            <artifactId>maven-project-info-reports-plugin</artifactId>
-                            <version>${maven-project-info-reports-plugin-version}</version>
-                            <configuration >
-                                <dependencyLocationsEnabled>${dependency.locations.enabled}</dependencyLocationsEnabled>
-                            </configuration>
-                        </reportPlugin>
-                        <reportPlugin>
-                            <artifactId>maven-checkstyle-plugin</artifactId>
-                            <version>${maven-checkstyle-plugin-version}</version>
-                            <reportSets>
-                                <reportSet>
-                                    <reports>
-                                        <report>checkstyle-aggregate</report>
-                                    </reports>
-                                </reportSet>
-                            </reportSets>
-                        </reportPlugin>
-                        <reportPlugin>
-                            <artifactId>maven-javadoc-plugin</artifactId>
-                            <version>${maven-javadoc-plugin-version}</version>
-                            <reportSets>
-                                <reportSet>
-                                    <reports>
-                                        <report>javadoc-no-fork</report>
-                                        <report>test-javadoc-no-fork</report>
-                                    </reports>
-                                    <configuration>
-                                        <aggregate>true</aggregate>
-                                        <quiet>true</quiet>
-                                        <excludePackageNames>${javadocs.package.exclude}</excludePackageNames>
-                                        <additionalJOptions>
-                                            <additionalJOption>-XDiag</additionalJOption>
-                                            <!-- SR 3-7600023701 -->
-                                            <additionalJOption>-J-XX:-UseG1GC</additionalJOption>
-                                            <additionalJOption>-J-Xms20m</additionalJOption>
-                                            <additionalJOption>-J-XX:-UseLargePages</additionalJOption>
-                                            <additionalJOption>${javadoc_options}</additionalJOption>
-                                        </additionalJOptions>
-                                        <!-- lint breaks JDK8 builds, disable -->
-                                        <additionalparam>${disableDocLint}</additionalparam>
-                                    </configuration>
-                                </reportSet>
-                            </reportSets>
-                        </reportPlugin>
-                        <reportPlugin>
-                            <groupId>org.codehaus.mojo</groupId>
-                            <artifactId>findbugs-maven-plugin</artifactId>
-                            <version>3.0.3</version>
-                        </reportPlugin>
-                    </reportPlugins>
-                </configuration>
             </plugin>
         </plugins>
     </build>
+    <reporting>
+        <plugins>
+            <plugin>
+                <artifactId>maven-surefire-report-plugin</artifactId>
+                <version>${maven-surefire-report-plugin.version}</version>
+                <configuration>
+                    <argLine>-Djava.library.path=${nativeDir}:${libDir} -XX:-UseLargePages
+                        -XX:-UseLargePages
+                        -Dlog4j.properties=file:src/test/resources/log4j.properties
+                    </argLine>
+                    <properties combine.self="override"/>
+                </configuration>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>report-only</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+            <plugin>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <version>${maven-pmd-plugin-version}</version>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>pmd</report>
+                            <report>cpd</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+                <configuration>
+                    <targetJdk>${target_jdk_version}</targetJdk>
+                    <aggregate>true</aggregate>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>${maven-project-info-reports-plugin-version}</version>
+                <configuration>
+                    <dependencyLocationsEnabled>${dependency.locations.enabled}</dependencyLocationsEnabled>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>${maven-checkstyle-plugin-version}</version>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>checkstyle-aggregate</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+            <plugin>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${maven-javadoc-plugin-version}</version>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>javadoc-no-fork</report>
+                            <report>test-javadoc-no-fork</report>
+                        </reports>
+                        <configuration>
+                            <aggregate>true</aggregate>
+                            <quiet>true</quiet>
+                            <excludePackageNames>${javadocs.package.exclude}</excludePackageNames>
+                            <additionalJOptions>
+                                <additionalJOption>-XDiag</additionalJOption>
+                                <!-- SR 3-7600023701 -->
+                                <additionalJOption>-J-XX:-UseG1GC</additionalJOption>
+                                <additionalJOption>-J-Xms20m</additionalJOption>
+                                <additionalJOption>-J-XX:-UseLargePages</additionalJOption>
+                                <additionalJOption>${javadoc_options}</additionalJOption>
+                            </additionalJOptions>
+                            <!-- lint breaks JDK8 builds, disable -->
+                            <additionalparam>${disableDocLint}</additionalparam>
+                        </configuration>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>findbugs-maven-plugin</artifactId>
+                <version>3.0.3</version>
+            </plugin>
+        </plugins>
+    </reporting>
 </project>
