@@ -122,17 +122,14 @@ public class FilterEvaluator implements ReflectiveVisitor {
      * @return a RexNode containing an equivalent filter to the one given.
      */
     public RexNode evaluate(SearchFilter searchFilter) {
-        // todo rebase and cleanup when pr396 gets merged
-        String typeKey = "type";
-        String valueKey = "value";
-
-        String searchType = searchFilter.getQuery().get(typeKey);
-        SearchFilter.QueryType queryType = SearchFilter.QueryType.fromType(searchType);
+        String searchType = searchFilter.getQueryType();
+        SearchFilter.QueryType optionalQuery = SearchFilter.QueryType.fromType(searchType)
+                .orElseThrow(() -> new IllegalArgumentException("Couldn't convert " + searchType + " to a QueryType."));
 
         String columnName = searchFilter.getDimension().getApiName();
-        String valueToFind = searchFilter.getQuery().get(valueKey);
+        String valueToFind = searchFilter.getQueryValue();
 
-        switch (queryType) {
+        switch (optionalQuery) {
             case Contains:
                 return builder.call(
                         SqlStdOperatorTable.LIKE,
@@ -153,7 +150,7 @@ public class FilterEvaluator implements ReflectiveVisitor {
                 // todo: fragment takes json array of strings and checks if any are contained? just OR search over them?
                 // http://druid.io/docs/0.9.1.1/querying/filters.html
             default:
-                throw new UnsupportedOperationException(queryType + " not implemented.");
+                throw new UnsupportedOperationException(optionalQuery + " not implemented.");
         }
     }
 

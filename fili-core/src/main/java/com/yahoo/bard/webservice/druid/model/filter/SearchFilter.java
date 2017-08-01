@@ -97,11 +97,11 @@ public class SearchFilter extends DimensionalFilter {
         return query;
     }
 
-    private String getQueryType() {
+    public String getQueryType() {
         return query.get(QUERY_TYPE);
     }
 
-    private String getQueryValue() {
+    public String getQueryValue() {
         return query.get(QUERY_VALUE);
     }
 
