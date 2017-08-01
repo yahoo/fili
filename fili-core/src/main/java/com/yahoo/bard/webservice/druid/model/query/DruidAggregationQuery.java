@@ -8,11 +8,13 @@ import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 import com.yahoo.bard.webservice.table.Column;
+import com.yahoo.bard.webservice.util.Utils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -92,8 +94,8 @@ public interface DruidAggregationQuery<Q extends DruidAggregationQuery<? super Q
 
     @Override
     @JsonIgnore
-    default DruidAggregationQuery<?> getInnerQuery() {
-        return (DruidAggregationQuery<?>) DruidFactQuery.super.getInnerQuery();
+    default Optional<? extends DruidAggregationQuery> getInnerQuery() {
+        return (Optional<? extends DruidAggregationQuery>) DruidFactQuery.super.getInnerQuery();
     }
 
     @Override

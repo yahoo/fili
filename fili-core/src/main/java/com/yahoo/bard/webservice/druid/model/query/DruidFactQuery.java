@@ -10,6 +10,7 @@ import org.joda.time.Interval;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Common interface for Druid Fact Query classes.
@@ -79,8 +80,8 @@ public interface DruidFactQuery<Q extends DruidFactQuery<? super Q>> extends Dru
 
     @Override
     @JsonIgnore
-    default DruidFactQuery<?> getInnerQuery() {
-        return (DruidFactQuery<?>) DruidQuery.super.getInnerQuery();
+    default Optional<? extends DruidFactQuery> getInnerQuery() {
+        return (Optional<? extends DruidFactQuery>) DruidQuery.super.getInnerQuery();
     }
 
     @Override

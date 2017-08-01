@@ -15,6 +15,7 @@ import com.yahoo.bard.webservice.druid.model.datasource.DataSource;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
+import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.druid.model.query.QueryContext;
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier;
@@ -32,6 +33,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -213,7 +215,9 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
 
         // Merge the time grains
         ZonelessTimeGrain mergedGrain = mergeTimeGrains(self.getTimeGrain(), sibling.getTimeGrain());
-        TemplateDruidQuery mergedNested = self.isNested() ? self.nestedQuery.merge(sibling.getInnerQuery()) : null;
+        TemplateDruidQuery mergedNested = self.isNested() ?
+                self.nestedQuery.merge(sibling.getInnerQuery().orElse(null))
+                : null;
         return new TemplateDruidQuery(mergedAggregations, mergedPostAggregations, mergedNested, mergedGrain);
     }
 
@@ -357,8 +361,12 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
     }
 
     @Override
-    public TemplateDruidQuery getInnerQuery() {
-        return nestedQuery;
+    public Optional<TemplateDruidQuery> getInnerQuery() {
+        return Optional.ofNullable(nestedQuery);
+    }
+
+    public TemplateDruidQuery getInnerQueryUnchecked() {
+        return getInnerQuery().orElse(null);
     }
 
     @Override
@@ -393,10 +401,10 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
      */
     private int calculateDepth(TemplateDruidQuery candidate) {
         int theDepth = 1;
-        TemplateDruidQuery iterator = candidate.nestedQuery;
-        while (iterator != null) {
+        Optional<TemplateDruidQuery> iterator = Optional.ofNullable(candidate.nestedQuery);
+        while (iterator.isPresent()) {
             theDepth++;
-            iterator = iterator.getInnerQuery();
+            iterator = iterator.get().getInnerQuery();
         }
         return theDepth;
     }
@@ -489,7 +497,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
      */
     @Override
     public TemplateDruidQuery withGranularity(Granularity granularity) {
-        if (granularity instanceof  ZonelessTimeGrain) {
+        if (granularity instanceof ZonelessTimeGrain) {
             return withGranularity((ZonelessTimeGrain) granularity);
         }
         throw new UnsupportedOperationException("Template Druid Query only supports Zoneless Time Grains");
@@ -526,9 +534,9 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
 
         return
                 Objects.equals(aggregations, that.aggregations) &&
-                Objects.equals(postAggregations, that.postAggregations) &&
-                Objects.equals(nestedQuery, that.nestedQuery) &&
-                Objects.equals(timeGrain, that.timeGrain);
+                        Objects.equals(postAggregations, that.postAggregations) &&
+                        Objects.equals(nestedQuery, that.nestedQuery) &&
+                        Objects.equals(timeGrain, that.timeGrain);
     }
 
     @Override

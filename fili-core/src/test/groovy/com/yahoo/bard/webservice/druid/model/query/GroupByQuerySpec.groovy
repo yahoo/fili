@@ -516,8 +516,8 @@ class GroupByQuerySpec extends Specification {
 
         then: "The intervals at each level are the new intervals"
         converted.intervals == endingIntervals
-        converted.innerQuery.intervals == endingIntervals
-        converted.innerQuery.innerQuery.intervals == endingIntervals
+        converted.getInnerQuery().get().intervals == endingIntervals
+        converted.getInnerQuery().get().getInnerQuery().get().intervals == endingIntervals
     }
 
     def "Check column stream is generated for query"() {

@@ -79,7 +79,7 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
         if (templateDruidQuery.isNested()) {
             //If the Logical Metric is nested, update the aggs and post aggs of the nested query.
             TemplateDruidQuery newInnerQuery = updateTemplateDruidQuery(
-                    templateDruidQuery.getInnerQuery(),
+                    templateDruidQuery.getInnerQueryUnchecked(),
                     metricFilterObject,
                     dimensionDictionary,
                     table,
@@ -144,7 +144,7 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
         return new TemplateDruidQuery(
                 updatedOuterAggs,
                 updateOuterPostAggs,
-                outerQuery.getInnerQuery(),
+                outerQuery.getInnerQueryUnchecked(),
                 outerQuery.getTimeGrain()
         );
     }
@@ -278,7 +278,7 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
         }
 
         //with the filtered aggregation and reconstructed post aggregation, generate new templateDruidQuery
-        return new TemplateDruidQuery(updatedAggs, updatedPostAggs, query.getInnerQuery(), query.getTimeGrain());
+        return new TemplateDruidQuery(updatedAggs, updatedPostAggs, query.getInnerQueryUnchecked(), query.getTimeGrain());
     }
 
    @Override
