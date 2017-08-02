@@ -48,8 +48,7 @@ public enum BardFeatureFlag implements FeatureFlag {
     @Override
     public void setOn(Boolean newValue) {
         SYSTEM_CONFIG.setProperty(SYSTEM_CONFIG.getPackageVariableName(propertyName), newValue.toString());
-        on = null;
-        isOn();
+        on = newValue;
     }
 
     @Override
