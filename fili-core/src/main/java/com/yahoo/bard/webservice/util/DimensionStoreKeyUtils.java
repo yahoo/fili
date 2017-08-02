@@ -6,6 +6,8 @@ import com.yahoo.bard.webservice.config.BardFeatureFlag;
 
 import java.util.Locale;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * Provider for magic strings used in dimension keystore key generation.
  */
@@ -39,21 +41,19 @@ public class DimensionStoreKeyUtils {
      * this key is passed into the appropriate {@link com.yahoo.bard.webservice.data.dimension.KeyValueStore},
      * the KeyValueStore will return the metadata of the associated dimension.
      *
-     * @param keyFieldName  The dimension field name to be appended to the beginning of the key
-     * @param keyFieldValue  The key of the dimension whose data is desired
+     * @param fieldName  The dimension field name to be appended to the beginning of the key
+     * @param fieldValue  The key of the dimension whose data is desired
      *
      * @return A key that, when passed into the appropriate KeyValueStore, will return the associated dimension value.
      */
-    public static String getRowKey(String keyFieldName, String keyFieldValue) {
+    public static String getRowKey(@NotNull String fieldName, String fieldValue) {
         boolean caseSensitive = BardFeatureFlag.CASE_SENSITIVE_KEYS.isOn();
-        String name = keyFieldName == null ?
-                "" : caseSensitive ? keyFieldName : keyFieldName.toLowerCase(Locale.ENGLISH);
-        String fieldValue = keyFieldValue == null ?
-                "" : caseSensitive ? keyFieldValue : keyFieldValue.toLowerCase(Locale.ENGLISH);
+        String lookupFieldValue = fieldValue == null ? "" : fieldValue;
 
-        return new StringBuilder().append(name)
+        return new StringBuilder()
+                .append(caseSensitive ? fieldName : fieldName.toLowerCase(Locale.ENGLISH))
                 .append(KEY_SEPARATOR)
-                .append(fieldValue)
+                .append(caseSensitive ? lookupFieldValue : lookupFieldValue.toLowerCase(Locale.ENGLISH))
                 .append(ROW_KEY_SUFFIX)
                 .toString();
     }
