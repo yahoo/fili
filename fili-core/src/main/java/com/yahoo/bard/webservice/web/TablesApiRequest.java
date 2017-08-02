@@ -155,11 +155,12 @@ public class TablesApiRequest extends ApiRequest {
     ) throws BadApiRequestException {
         super(format, perPage, page, uriInfo);
 
-        this.tables = generateTables(tableName, bardConfigResources.getLogicalTableDictionary());
+        LogicalTableDictionary logicalTableDictionary = bardConfigResources.getLogicalTableDictionary();
+        this.tables = generateTables(tableName, logicalTableDictionary);
 
         if (tableName != null && granularity != null) {
             this.granularity = generateGranularity(granularity, bardConfigResources.getGranularityParser());
-            this.table = generateTable(tableName, this.granularity, bardConfigResources.getLogicalTableDictionary());
+            this.table = generateTable(tableName, this.granularity, logicalTableDictionary);
         } else {
             this.table = null;
             this.granularity = null;

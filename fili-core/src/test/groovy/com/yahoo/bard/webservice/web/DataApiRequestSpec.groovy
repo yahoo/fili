@@ -3,8 +3,6 @@
 package com.yahoo.bard.webservice.web
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
-import static com.yahoo.bard.webservice.util.DateTimeFormatterFactory.FULLY_OPTIONAL_DATETIME_FORMATTER
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TIME_ALIGNMENT
 
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
@@ -25,15 +23,10 @@ import com.yahoo.bard.webservice.util.IntervalUtils
 
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
-import org.joda.time.Interval
-import org.joda.time.format.DateTimeFormatter
 
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
-
-import javax.ws.rs.core.MultivaluedHashMap
-import javax.ws.rs.core.PathSegment
 
 class DataApiRequestSpec extends Specification {
 
@@ -49,7 +42,6 @@ class DataApiRequestSpec extends Specification {
     static final DateTimeZone orginalTimeZone = DateTimeZone.default
 
     class ConcreteApiRequest extends ApiRequest {}
-    ConcreteApiRequest concreteApiRequest = new ConcreteApiRequest()
 
     def setupSpec() {
         DateTimeZone.default = IntervalUtils.SYSTEM_ALIGNMENT_EPOCH.zone
@@ -108,45 +100,14 @@ class DataApiRequestSpec extends Specification {
         thrown BadApiRequestException
     }
 
-
-    def "check empty generateDimensions"() {
-
-        Set<Dimension> dims = new DataApiRequest().generateDimensions(new ArrayList<PathSegment>(), dimensionDict)
-
-        expect:
-        dims == [] as Set
-    }
-
-    def "check parsing generateDimensions"() {
-
-        PathSegment one = Mock(PathSegment)
-        PathSegment two = Mock(PathSegment)
-        PathSegment three = Mock(PathSegment)
-        Map emptyMap = new MultivaluedHashMap<>()
-
-        one.getPath() >> "one"
-        one.getMatrixParameters() >> emptyMap
-        two.getPath() >> "two"
-        two.getMatrixParameters() >> emptyMap
-        three.getPath() >> "three"
-        three.getMatrixParameters() >> emptyMap
-
-        Set<Dimension> dims = new DataApiRequest().generateDimensions([one, two, three], dimensionDict)
-
-        HashSet<Dimension> expected =
-        ["one", "two", "three"].collect { String name ->
-            Dimension dim = dimensionDict.findByApiName(name)
-            assert dim?.apiName == name
-            dim
-        }
-
-        expect:
-        dims == expected
-    }
-
     def "check parsing generateLogicalMetrics"() {
 
-        Set<LogicalMetric> logicalMetrics = new DataApiRequest().generateLogicalMetrics("met1,met2,met3", metricDict, dimensionDict, table)
+        Set<LogicalMetric> logicalMetrics = new DataApiRequest().generateLogicalMetrics(
+                "met1,met2,met3",
+                metricDict,
+                dimensionDict,
+                table
+        )
 
         HashSet<Dimension> expected =
         ["met1", "met2", "met3" ].collect { String name ->
@@ -189,63 +150,5 @@ class DataApiRequestSpec extends Specification {
 
         expect:
         granularity.getAlignmentDescription() == expectedMessage
-    }
-
-    def "check invalid week granularity alignment creates error"() {
-        setup:
-        String expectedMessage = "'[2015-02-15T00:00:00.000Z/2016-02-22T00:00:00.000Z]'"
-        expectedMessage += " does not align with granularity 'week'."
-        expectedMessage += " Week must start on a Monday and end on a Monday."
-        Granularity<?> granularity = new DataApiRequest().generateGranularity("week", new StandardGranularityParser())
-        Set<Interval> intervals = new DataApiRequest().generateIntervals(
-                "2015-02-15/2016-02-22",
-                granularity,
-                FULLY_OPTIONAL_DATETIME_FORMATTER
-        )
-
-        expect:
-        granularity.accepts(intervals) == false
-        TIME_ALIGNMENT.logFormat(intervals, granularity, granularity.getAlignmentDescription()) == expectedMessage
-    }
-
-    @Unroll
-    def "Time parsed with #timeZone vs UTC is #hours apart"() {
-        setup:
-        String baseTimeString = "2015-01-01T15:00";
-        DateTime baseTime = DateTime.parse(baseTimeString, FULLY_OPTIONAL_DATETIME_FORMATTER);
-        DateTimeZone dateTimeZone = DateTimeZone.forID(timeZone)
-
-        DateTimeFormatter adjustedFormatter = FULLY_OPTIONAL_DATETIME_FORMATTER.withZone(dateTimeZone)
-
-        expect:
-        DataApiRequest.getAsDateTime(null, null, baseTimeString, adjustedFormatter).plusHours(hours) == baseTime
-
-        where:
-
-        hours | timeZone
-        0     | "UTC"
-        -10   | "Pacific/Honolulu"
-        -8    | "US/Pacific"
-        8     | "Asia/Hong_Kong"
-    }
-
-    @Unroll
-    def "Test validate daily alignment with #intervalString and #zone"() {
-        DateTimeFormatter dateTimeFormatter = FULLY_OPTIONAL_DATETIME_FORMATTER
-
-        DateTimeZone dateTimeZone = DateTimeZone.forID(zone)
-        Set<Interval> intervals = DataApiRequest.generateIntervals(
-                intervalString,
-                DAY,
-                dateTimeFormatter.withZone(dateTimeZone)
-        )
-
-        expect:
-        DataApiRequest.validateTimeAlignment(DAY, intervals)
-
-        where:
-        intervalString          | zone
-        "2005-03-25/2005-03-26" | "UTC"
-        "2005-03-25/2005-03-26" | "US/Pacific"
     }
 }
