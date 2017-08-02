@@ -5,18 +5,12 @@ package com.yahoo.bard.webservice.web
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
-import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
-import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
-import com.yahoo.bard.webservice.data.time.GranularityParser
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser
-import com.yahoo.bard.webservice.druid.model.query.Granularity
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.LogicalTableDictionary
 import com.yahoo.bard.webservice.table.TableGroup
-import com.yahoo.bard.webservice.table.TableIdentifier
 import com.yahoo.bard.webservice.web.endpoints.TablesServlet
-import com.yahoo.bard.webservice.web.util.BardConfigResources
 
 import spock.lang.Shared
 import spock.lang.Specification
