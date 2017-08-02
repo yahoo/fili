@@ -5,6 +5,8 @@ package com.yahoo.bard.webservice.util;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableCollection;
+import com.google.common.collect.ImmutableMap;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
@@ -78,58 +80,6 @@ public class Utils {
         if (!parent.exists() && !parent.mkdirs()) {
             throw new IllegalStateException("Couldn't create dir: " + parent);
         }
-    }
-
-    /**
-     * An terminator to the recursive making of immutable collection trees.
-     *
-     * @param <T>  The type of the collection
-     * @param nonCollection  An object that isn't a map or collection
-     *
-     * @return The object itself
-     */
-    private static <T> T makeImmutable(T nonCollection) {
-        return nonCollection;
-    }
-
-    /**
-     * A recursive call to make a map and all it's values immutable.
-     *
-     * @param <K>  The key type of the map
-     * @param <V>  The value type of the map
-     * @param mutableMap  The original, potentially mutable, map
-     *
-     * @return An immutable Map with all it's values made immutable.
-     */
-    public static <K, V> Map<K, V> makeImmutable(Map<K, V> mutableMap) {
-        Map<K, V> newMap = new HashMap<>();
-        for (Map.Entry<K, V>  entry : mutableMap.entrySet()) {
-            newMap.put(entry.getKey(), Utils.makeImmutable(entry.getValue()));
-        }
-        return Collections.unmodifiableMap(newMap);
-    }
-
-    /**
-     * A recursive call to make a collection and all it's values immutable.
-     *
-     * @param <T>  The type of the collection
-     * @param mutableCollection  The original, potentially mutable, collection
-     *
-     * @return Am immutable copy whose values are also immutable.
-     */
-    public static <T> Collection<T> makeImmutable(Collection<T> mutableCollection) {
-        Collection<T> newCollection;
-        try {
-            @SuppressWarnings("unchecked")
-            Class<Collection<T>> cls = (Class<Collection<T>>) mutableCollection.getClass();
-            newCollection = cls.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw new IllegalStateException(e);
-        }
-        for (T element : mutableCollection) {
-            newCollection.add(Utils.makeImmutable(element));
-        }
-        return Collections.unmodifiableCollection(newCollection);
     }
 
     /**
