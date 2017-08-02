@@ -30,7 +30,6 @@ public enum CacheFeatureFlag implements FeatureFlag {
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     private final String value;
-    Boolean on = null;
 
     /**
      * Constructor.
