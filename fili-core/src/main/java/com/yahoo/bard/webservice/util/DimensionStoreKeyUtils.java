@@ -11,6 +11,9 @@ import java.util.Locale;
  */
 public class DimensionStoreKeyUtils {
 
+    public static final String ROW_KEY_SUFFIX = "_row_key";
+    public static final String KEY_SEPARATOR = "_";
+
     public static String getLastUpdatedKey() {
         return "last_updated_key";
     }
@@ -36,23 +39,23 @@ public class DimensionStoreKeyUtils {
      * this key is passed into the appropriate {@link com.yahoo.bard.webservice.data.dimension.KeyValueStore},
      * the KeyValueStore will return the metadata of the associated dimension.
      *
-     * @param rowName  The dimension field name to be appended to the beginning of the key
-     * @param rowValue  The id of the dimension whose data is desired
+     * @param keyFieldName  The dimension field name to be appended to the beginning of the key
+     * @param keyFieldValue  The key of the dimension whose data is desired
      *
-     * @return A key that, when passed into the appropriate KeyValueStore, will return the associated dimension
-     * metadata.
+     * @return A key that, when passed into the appropriate KeyValueStore, will return the associated dimension value.
      */
-    public static String getRowKey(String rowName, String rowValue) {
-        String key = "";
-        if (rowName != null) {
-            key = BardFeatureFlag.CASE_SENSITIVE_KEYS.isOn() ? rowName : rowName.toLowerCase(Locale.ENGLISH);
-        }
-        if (rowValue != null) {
-            key += "_" + (
-                    BardFeatureFlag.CASE_SENSITIVE_KEYS.isOn() ? rowValue : rowValue.toLowerCase(Locale.ENGLISH)
-            );
-        }
-        return key + "_row_key";
+    public static String getRowKey(String keyFieldName, String keyFieldValue) {
+        boolean caseSensitive = BardFeatureFlag.CASE_SENSITIVE_KEYS.isOn();
+        String name = keyFieldName == null ?
+                "" : caseSensitive ? keyFieldName : keyFieldName.toLowerCase(Locale.ENGLISH);
+        String fieldValue = keyFieldValue == null ?
+                "" : caseSensitive ? keyFieldValue : keyFieldValue.toLowerCase(Locale.ENGLISH);
+
+        return new StringBuilder().append(name)
+                .append(KEY_SEPARATOR)
+                .append(fieldValue)
+                .append(ROW_KEY_SUFFIX)
+                .toString();
     }
 
     /**
