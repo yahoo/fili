@@ -30,6 +30,7 @@ public enum CacheFeatureFlag implements FeatureFlag {
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     private final String value;
+    Boolean on = null;
 
     /**
      * Constructor.
@@ -47,31 +48,49 @@ public enum CacheFeatureFlag implements FeatureFlag {
 
     @Override
     public boolean isOn() {
-        // TODO: Remove this if conditional after cache V1 & V2 configuration flags are removed
-        if (BardFeatureFlag.DRUID_CACHE.isSet() || BardFeatureFlag.DRUID_CACHE_V2.isSet()) {
-            // no cache
-            if (this.value.equals("NoCache")) {
-                return ! BardFeatureFlag.DRUID_CACHE.isOn();
-            }
+        if (on == null) {
+            // TODO: Remove this if conditional after cache V1 & V2 configuration flags are removed
+            if (BardFeatureFlag.DRUID_CACHE.isSet() || BardFeatureFlag.DRUID_CACHE_V2.isSet()) {
+                // no cache
+                if (this.value.equals("NoCache")) {
+                    return ! BardFeatureFlag.DRUID_CACHE.isOn();
+                }
 
-            return (this.value.equals("Ttl")
-                    && !BardFeatureFlag.DRUID_CACHE_V2.isOn()
-                    && BardFeatureFlag.DRUID_CACHE.isOn()
-            )
-                    || (this.value.equals("LocalSignature")
-                    && BardFeatureFlag.DRUID_CACHE.isOn()
-                    && BardFeatureFlag.DRUID_CACHE_V2.isOn());
-        }
-        return value.equalsIgnoreCase(
-                SYSTEM_CONFIG.getStringProperty(
-                        SYSTEM_CONFIG.getPackageVariableName("query_response_caching_strategy"),
-                        "NoCache"
+                return (this.value.equals("Ttl")
+                        && !BardFeatureFlag.DRUID_CACHE_V2.isOn()
+                        && BardFeatureFlag.DRUID_CACHE.isOn()
                 )
-        );
+                        || (this.value.equals("LocalSignature")
+                        && BardFeatureFlag.DRUID_CACHE.isOn()
+                        && BardFeatureFlag.DRUID_CACHE_V2.isOn());
+            }
+            on = value.equalsIgnoreCase(SYSTEM_CONFIG.getStringProperty(
+                    SYSTEM_CONFIG.getPackageVariableName("query_response_caching_strategy"), "NoCache")
+            );
+        }
+        return on;
     }
 
     @Override
     public void setOn(Boolean newValue) {
         LOG.warn("setOn(Boolean) method does not apply in CacheFeatureFlag");
+        on = null;
+        isOn();
+    }
+
+    /**
+     * Because these fields share a common value when that value is updated, clear all the cached values.
+     */
+    protected static void resetAll() {
+        for (CacheFeatureFlag featureFlag: CacheFeatureFlag.values()) {
+            SYSTEM_CONFIG.clearProperty(SYSTEM_CONFIG.getPackageVariableName("query_response_caching_strategy"));
+            featureFlag.on = null;
+        }
+    }
+
+    @Override
+    public void reset() {
+        SYSTEM_CONFIG.clearProperty(SYSTEM_CONFIG.getPackageVariableName("query_response_caching_strategy"));
+        on = null;
     }
 }

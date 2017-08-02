@@ -60,6 +60,11 @@ Current
 
 ### Fixed:
 
+- [Fix performance bug around feature flag](https://github.com/yahoo/fili/issues/473)
+    * BardFeatureFlag, when used in a tight loop, is very expensive.  Underlying map configuration copies the config map on each access.
+    * Switching to lazy value evaluation
+    * Added reset contract so changes to feature flags can be directly reverted rather than going through the `SystemConfig` directly
+
 - [Fix deploy branch issue where substrings of whitelisted branches could be released](https://github.com/yahoo/fili/issues/453)
 
 - [Fix availability testing utils to be compatible with composite tables](https://github.com/yahoo/fili/pull/419)

@@ -51,4 +51,9 @@ public interface FeatureFlag {
      * @param newValue  The new status of the feature flag.
      */
     void setOn(Boolean newValue);
+
+    /**
+     * Restores the feature flag to the startup state (if supported by the underlying conf mechanism).
+     */
+    void reset();
 }
