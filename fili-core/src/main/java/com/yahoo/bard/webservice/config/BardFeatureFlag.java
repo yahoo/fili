@@ -21,7 +21,8 @@ public enum BardFeatureFlag implements FeatureFlag {
     static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     private final String propertyName;
-    
+    private Boolean on = null;
+
     /**
      * Constructor.
      *
