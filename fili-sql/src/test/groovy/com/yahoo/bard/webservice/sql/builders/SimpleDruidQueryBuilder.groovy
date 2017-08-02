@@ -46,6 +46,7 @@ import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery
 import com.yahoo.bard.webservice.metadata.DataSourceMetadata
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
+import com.yahoo.bard.webservice.sql.ApiToFieldMapper
 import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable
 import com.yahoo.bard.webservice.table.ConstrainedTable
@@ -62,6 +63,14 @@ import java.util.stream.Collectors
 class SimpleDruidQueryBuilder {
     public static final String START = "2015-09-12T00:00:00.000Z"
     public static final String END = "2015-09-13T00:00:00.000Z"
+
+    public static ApiToFieldMapper getApiToFieldMapper() {
+        return new ApiToFieldMapper(getDictionary().get(WIKITICKER).schema)
+    }
+
+    public static ApiToFieldMapper getApiToFieldMapper(String apiPrepend, String fieldPrepend) {
+        return new ApiToFieldMapper(getDictionary(apiPrepend, fieldPrepend).get(WIKITICKER).schema)
+    }
 
     public static PhysicalTableDictionary getDictionary() {
         return getDictionary("", "")
