@@ -1,9 +1,12 @@
 package com.yahoo.wiki.webservice.web.endpoints
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService
 import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration
 import com.yahoo.wiki.webservice.data.config.auto.DruidNavigator
+
+import com.fasterxml.jackson.databind.ObjectMapper
+
 import spock.lang.Specification
 
 class MultipleDatasourceDruidConfigLoaderSpec extends Specification {
@@ -12,6 +15,7 @@ class MultipleDatasourceDruidConfigLoaderSpec extends Specification {
     private String[] table1_dimensions = ["1_dim1", "1_dim2"]
     private String[] table2_metrics = ["2_metric1", "2_metric2"]
     private String[] table2_dimensions = ["2_dim1", "2_dim2"]
+    private static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
 
     private TestDruidWebService druidWebService
 
@@ -19,7 +23,7 @@ class MultipleDatasourceDruidConfigLoaderSpec extends Specification {
         druidWebService = new TestDruidWebService("testInstance")
         druidWebService.jsonResponse = {
             if (druidWebService.lastUrl.equals("/datasources/")) {
-                return new ObjectMapper().writeValueAsString(datasources)
+                return MAPPER.writeValueAsString(datasources)
             } else if (druidWebService.lastUrl.equals("/datasources/table1/?full")) {
                 return getFullTable(datasources[0], table1_metrics, table1_dimensions)
             } else if (druidWebService.lastUrl.equals("/datasources/table2/?full")) {

@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.serializers
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.DimensionRow
@@ -21,7 +22,7 @@ class DimensionToNameSerializerSpec extends Specification {
     // NOTE: Dimension serialization is properly tested in GroupByQuerySpec.groovy
     def "allows implementing classes to override default serialization"() {
         setup:
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new ObjectMappersSuite().getMapper()
 
         expect:
         // NOTE: The fact that this doesn't show an exception demonstrates that it does not hit the DimensionToNameSerializer as well

@@ -2,12 +2,12 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.client.impl
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.druid.client.DruidServiceConfig
-import com.fasterxml.jackson.databind.ObjectMapper
-
-import spock.lang.Specification
 
 import org.asynchttpclient.Response
+
+import spock.lang.Specification
 
 import java.nio.charset.StandardCharsets
 import java.util.function.Supplier
@@ -35,7 +35,7 @@ class HeaderNestingJsonBuilderStrategySpec extends Specification {
         druidServiceConfig.getUrl() >> "url"
         AsyncDruidWebServiceImpl asyncDruidWebServiceImplV2 = new AsyncDruidWebServiceImpl(
                 druidServiceConfig,
-                new ObjectMapper(),
+                new ObjectMappersSuite().getMapper(),
                 Mock(Supplier),
                 new HeaderNestingJsonBuilderStrategy(AsyncDruidWebServiceImpl.DEFAULT_JSON_NODE_BUILDER_STRATEGY)
         )

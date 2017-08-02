@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.web.handlers.workflow
 
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.QUERY_SPLIT
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.config.SystemConfig
 import com.yahoo.bard.webservice.config.SystemConfigProvider
 import com.yahoo.bard.webservice.data.PartialDataHandler
@@ -28,13 +29,11 @@ import com.yahoo.bard.webservice.web.handlers.WeightCheckRequestHandler
 import com.yahoo.bard.webservice.web.util.QueryWeightUtil
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 
 import spock.lang.Specification
 
 class DruidWorkflowSpec extends Specification {
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-            .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
+    private static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance()
     private static final String TTL_CACHE_CONFIG_KEY = SYSTEM_CONFIG.getPackageVariableName("druid_cache_enabled")
     private static final String LOCAL_SIGNATURE_CACHE_CONFIG_KEY = SYSTEM_CONFIG.getPackageVariableName("druid_cache_v2_enabled")

@@ -1,9 +1,11 @@
 package com.yahoo.bard.webservice.data.dimension
 
-import static com.yahoo.bard.webservice.data.dimension.TestTaggedDimensionField.TEST_TWO_TAG
-import static com.yahoo.bard.webservice.data.dimension.TestTaggedDimensionField.TEST_ONE_TAG
 import static com.yahoo.bard.webservice.data.dimension.TestTaggedDimensionField.TEST_NO_TAG
+import static com.yahoo.bard.webservice.data.dimension.TestTaggedDimensionField.TEST_ONE_TAG
+import static com.yahoo.bard.webservice.data.dimension.TestTaggedDimensionField.TEST_TWO_TAG
 import static com.yahoo.bard.webservice.data.dimension.impl.DefaultDimensionFieldTag.PRIMARY_KEY
+
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
 
 import com.fasterxml.jackson.databind.ObjectMapper
 
@@ -21,7 +23,7 @@ class TaggedDimensionFieldSpec extends Specification {
     TaggedDimensionField twoTagField
 
     def setup() {
-        objectMapper = new ObjectMapper()
+        objectMapper = new ObjectMappersSuite().getMapper()
 
         mockTag = Mock(Tag)
         mockTag.getName() >> "mockTag"

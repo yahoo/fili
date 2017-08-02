@@ -30,8 +30,8 @@ import com.yahoo.bard.webservice.data.cache.StubDataCache
 import com.yahoo.bard.webservice.data.cache.TupleDataCache
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig
-import com.yahoo.bard.webservice.data.config.dimension.TypeAwareDimensionLoader
 import com.yahoo.bard.webservice.data.config.dimension.TestDimensions
+import com.yahoo.bard.webservice.data.config.dimension.TypeAwareDimensionLoader
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader
 import com.yahoo.bard.webservice.data.config.table.TableLoader
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
@@ -45,8 +45,6 @@ import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 import com.codahale.metrics.health.HealthCheck
 import com.codahale.metrics.health.HealthCheckRegistry
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
-import com.fasterxml.jackson.datatype.joda.JodaModule
 
 import org.glassfish.hk2.api.DynamicConfiguration
 import org.glassfish.hk2.utilities.Binder
@@ -57,9 +55,7 @@ import spock.lang.Specification
 
 public class AbstractBinderFactorySpec extends Specification {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-            .registerModule(new JodaModule())
-            .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
+    private static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
 
     final SystemConfig systemConfig = SystemConfigProvider.getInstance()
 

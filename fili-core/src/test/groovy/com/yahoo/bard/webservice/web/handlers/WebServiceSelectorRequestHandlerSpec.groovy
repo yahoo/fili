@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.handlers
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.druid.client.DruidServiceConfig
 import com.yahoo.bard.webservice.druid.client.DruidWebService
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
@@ -11,7 +12,6 @@ import com.yahoo.bard.webservice.web.DataApiRequestTypeIdentifier
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -26,7 +26,7 @@ class WebServiceSelectorRequestHandlerSpec extends Specification {
     DruidWebService nonUiWebService = Mock(DruidWebService)
     DataRequestHandler uiWebServiceNext = Mock(DataRequestHandler)
     DataRequestHandler nonUiWebServiceNext = Mock(DataRequestHandler)
-    ObjectMapper mapper = new ObjectMapper().registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
+    ObjectMapper mapper = new ObjectMappersSuite().getMapper()
     GroupByQuery groupByQuery = Mock(GroupByQuery)
     GroupByQuery modifiedGroupByQuery = Mock(GroupByQuery)
     RequestContext rc

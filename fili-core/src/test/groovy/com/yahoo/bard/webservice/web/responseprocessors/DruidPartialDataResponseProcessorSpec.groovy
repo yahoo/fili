@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.responseprocessors
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
@@ -13,7 +14,6 @@ import com.yahoo.bard.webservice.web.ErrorMessageFormat
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 
 import org.joda.time.Interval
 
@@ -22,8 +22,7 @@ import spock.lang.Specification
 import java.util.stream.Collectors
 
 class DruidPartialDataResponseProcessorSpec extends Specification {
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-            .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
+    private static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
     private static final int ERROR_STATUS_CODE = 500
     private static final String REASON_PHRASE = 'The server encountered an unexpected condition which ' +
             'prevented it from fulfilling the request.'
