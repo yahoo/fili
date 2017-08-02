@@ -69,6 +69,11 @@ Current
 - [Fix metric and dimension names for wikipedia-example](https://github.com/yahoo/fili/pull/415)
     * The metrics and dimensions configured in the `fili-wikipedia-example` were different from those in Druid and as a result the queries sent to Druid were incorrect
 
+- [Fix performance bug around feature flag](https://github.com/yahoo/fili/issues/473)
+    * BardFeatureFlag, when used in a tight loop, is very expensive.  Underlying map configuration copies the config map on each access.
+    * Switching to lazy value evaluation
+    * Added reset contract so changes to feature flags can be directly reverted rather than going through the `SystemConfig` directly
+
 
 ### Known Issues:
 

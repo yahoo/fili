@@ -2,9 +2,12 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.handlers.workflow
 
+import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_CACHE
+import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_CACHE_V2
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.QUERY_SPLIT
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
+import com.yahoo.bard.webservice.config.CacheFeatureFlag
 import com.yahoo.bard.webservice.config.SystemConfig
 import com.yahoo.bard.webservice.config.SystemConfigProvider
 import com.yahoo.bard.webservice.data.PartialDataHandler
@@ -62,6 +65,9 @@ class DruidWorkflowSpec extends Specification {
     }
 
     def cleanup() {
+        DRUID_CACHE.reset()
+        DRUID_CACHE_V2.reset()
+
         SYSTEM_CONFIG.clearProperty(TTL_CACHE_CONFIG_KEY)
         SYSTEM_CONFIG.clearProperty(LOCAL_SIGNATURE_CACHE_CONFIG_KEY)
         SYSTEM_CONFIG.clearProperty(ETAG_CACHE_CONFIG_KEY)
@@ -73,8 +79,9 @@ class DruidWorkflowSpec extends Specification {
 
     def "Test workflow config controls workflow stages"() {
         setup:
-        SYSTEM_CONFIG.setProperty(TTL_CACHE_CONFIG_KEY, String.valueOf(doCache))
-        SYSTEM_CONFIG.setProperty(LOCAL_SIGNATURE_CACHE_CONFIG_KEY, String.valueOf(doCacheV2))
+        DRUID_CACHE.setOn(doCache)
+        DRUID_CACHE_V2.setOn(doCacheV2)
+        CacheFeatureFlag.resetAll()
 
         when:
         dw = new DruidWorkflow(
@@ -127,6 +134,7 @@ class DruidWorkflowSpec extends Specification {
 
     def "Test workflow picks up cache request handler based on query_response_caching_strategy config value when TTL and LocalSig cache are not set"() {
         setup:
+        CacheFeatureFlag.resetAll()
         SYSTEM_CONFIG.setProperty(ETAG_CACHE_CONFIG_KEY, etagConfigValue)
 
         when:
