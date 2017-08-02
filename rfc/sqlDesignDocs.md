@@ -17,7 +17,9 @@ Customers will be able to configure their connection to a SQL database similar t
 
 ## Implementation
 
-1. Define a `SqlBackedClient` 
+1. Create a `fili-sql` module.
+
+2. Define a `SqlBackedClient` 
 
    ```java
    Future<JsonNode> executeQuery(
@@ -29,7 +31,7 @@ Customers will be able to configure their connection to a SQL database similar t
 
    This method accepts and translates a `DruidQuery` to SQL, executes it, reads the results, and builds Druid json results.
 
-2. Define a `DruidQueryToSqlConverter` so that we can query the backend
+3. Define a `DruidQueryToSqlConverter` so that we can query the backend
 
    1. Define a `SqlTimeConverter` which handles grouping/filtering on intervals. The default behaviour for grouping is to explode the timegrain out into the equivalent DateTime parts for grouping, then reassemble a DateTime when processing the results.
 
@@ -57,13 +59,15 @@ Customers will be able to configure their connection to a SQL database similar t
 
    6. Define a `PostAggregationEvaluator` to manually perform the `PostAggregation` and type casting after the results have been collected.
 
-3. Define a `SqlResultSetProcessor` so that the results can be read into the Druid `GroupByQuery` style and final name mapping + type castings can be performed.
+4. Define a `SqlResultSetProcessor` so that the results can be read into the Druid `GroupByQuery` style and final name mapping + type castings can be performed.
 
-4. Define a `SqlPhysicalTable` which will allow for detecting SQL backed queries and additionally provide the `schemaName` and `timestampColumn` parameters for querying the table.
+5. Define a `SqlPhysicalTable` which will allow for detecting SQL backed queries and additionally provide the `schemaName` and `timestampColumn` parameters for querying the table.
 
-5. Define a `SqlDimensionLoader` which will perform the equivalent operations as `DruidDimensionLoader` for SQL backed datasources.
+6. Define a `SqlDimensionLoader` which will perform the equivalent operations as `DruidDimensionLoader` for SQL backed datasources.
 
-6. Define a `SqlRequestHandler` to detect SQL backed queries which will be added to a `SqlWorkflow`. The `SqlRequestHandler` should be injected before any caching can occur because Fili shouldn't handle caching against a SQL backed datasource
+7. Define a `SqlRequestHandler` to detect SQL backed queries which will be added to a `SqlWorkflow`. The `SqlRequestHandler` should be injected before any caching can occur because Fili shouldn't handle caching against a SQL backed datasource
+
+8. Create a Sample app for using a SQL backend
 
 ## Milestones
 
