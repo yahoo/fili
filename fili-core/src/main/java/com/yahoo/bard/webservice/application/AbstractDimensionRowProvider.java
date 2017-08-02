@@ -35,7 +35,7 @@ public abstract class AbstractDimensionRowProvider {
     private Consumer<Dimension> dimensionLoadedConsumer;
 
     /**
-     * DruidDimensionsLoader fetches data from Druid and adds it to the dimension cache.
+     * DimensionLoader fetches data from Druid and adds it to the dimension cache.
      * The dimensions to be loaded can be passed in as a parameter.
      *
      * @param physicalTableDictionary  The physical tables

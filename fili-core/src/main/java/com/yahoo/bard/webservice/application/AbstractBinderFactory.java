@@ -46,7 +46,6 @@ import com.yahoo.bard.webservice.data.cache.StubDataCache;
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
-import com.yahoo.bard.webservice.data.config.dimension.DimensionLoader;
 import com.yahoo.bard.webservice.data.config.dimension.TypeAwareDimensionLoader;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
@@ -314,12 +313,12 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 bind(buildResponseWriter(getMappers())).to(ResponseWriter.class);
 
                 if (DRUID_DIMENSIONS_LOADER.isOn()) {
-                    DruidDimensionsLoader druidDimensionsLoader = buildDruidDimensionsLoader(
+                    DimensionLoader dimensionLoader = buildDruidDimensionsLoader(
                             nonUiDruidWebService,
                             loader.getPhysicalTableDictionary(),
                             loader.getDimensionDictionary()
                     );
-                    setupDruidDimensionsLoader(healthCheckRegistry, druidDimensionsLoader);
+                    setupDruidDimensionsLoader(healthCheckRegistry, dimensionLoader);
                 }
                 if (SYSTEM_CONFIG.getBooleanProperty(DEPRECATED_PERMISSIVE_AVAILABILITY_FLAG, false)) {
                     LOG.warn(
@@ -681,24 +680,25 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     }
 
     /**
-     * Build a DruidDimensionsLoader.
+     * Build a DimensionLoader.
      *
      * @param webService  The web service used by the loader to query dimension values
      * @param physicalTableDictionary  The table to update dimensions on
      * @param dimensionDictionary  The dimensions to update
      *
-     * @return A DruidDimensionsLoader
+     * @return A DimensionLoader
      */
-    protected DruidDimensionsLoader buildDruidDimensionsLoader(
+    protected DimensionLoader buildDruidDimensionsLoader(
             DruidWebService webService,
             PhysicalTableDictionary physicalTableDictionary,
             DimensionDictionary dimensionDictionary
     ) {
-        return new DruidDimensionsLoader(
+        DruidDimensionRowProvider druidDimensionRowProvider = new DruidDimensionRowProvider(
                 physicalTableDictionary,
                 dimensionDictionary,
                 webService
         );
+        return new DimensionLoader(Collections.singletonList(druidDimensionRowProvider));
     }
 
     /**
@@ -722,20 +722,20 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     }
 
     /**
-     * Schedule DruidDimensionsLoader and register its health check.
+     * Schedule DimensionLoader and register its health check.
      *
      * @param healthCheckRegistry  The health check registry to register Dimension lookup health checks
-     * @param dataDruidDimensionsLoader  The DruidDimensionLoader used for monitoring and health checks
+     * @param dataDimensionLoader  The DruidDimensionLoader used for monitoring and health checks
      */
     protected final void setupDruidDimensionsLoader(
             HealthCheckRegistry healthCheckRegistry,
-            DruidDimensionsLoader dataDruidDimensionsLoader
+            DimensionLoader dataDimensionLoader
     ) {
-        scheduleLoader(dataDruidDimensionsLoader);
+        scheduleLoader(dataDimensionLoader);
 
-        // Register DruidDimensionsLoader health check
+        // Register DimensionLoader health check
         HealthCheck druidDimensionsLoaderHealthCheck = new DruidDimensionsLoaderHealthCheck(
-                dataDruidDimensionsLoader,
+                dataDimensionLoader,
                 DRUID_DIM_LOADER_HC_LAST_RUN_PERIOD_MILLIS
         );
         healthCheckRegistry.register(HEALTH_CHECK_NAME_DRUID_DIM_LOADER, druidDimensionsLoaderHealthCheck);
@@ -890,7 +890,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      * @return A configurationLoader instance
      */
     protected ConfigurationLoader buildConfigurationLoader(
-            DimensionLoader dimensionLoader,
+            com.yahoo.bard.webservice.data.config.dimension.DimensionLoader dimensionLoader,
             MetricLoader metricLoader,
             TableLoader tableLoader
     ) {
@@ -904,7 +904,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      *
      * @return a Dimension Loader instance
      */
-    protected DimensionLoader getDimensionLoader() {
+    protected com.yahoo.bard.webservice.data.config.dimension.DimensionLoader getDimensionLoader() {
         return new TypeAwareDimensionLoader(getDimensionConfigurations());
     }
 

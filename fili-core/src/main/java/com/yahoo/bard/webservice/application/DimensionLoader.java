@@ -22,13 +22,13 @@ import java.util.function.Consumer;
 import javax.inject.Singleton;
 
 /**
- * DruidDimensionsLoader sends requests to the druid search query interface to get a list of dimension
+ * DimensionLoader sends requests to the druid search query interface to get a list of dimension
  * values to add to the dimension cache.
  */
 @Singleton
-public class DruidDimensionsLoader extends Loader<Boolean>
+public class DimensionLoader extends Loader<Boolean>
         implements BiConsumer<Dimension, DimensionRow>, Consumer<Dimension> {
-    private static final Logger LOG = LoggerFactory.getLogger(DruidDimensionsLoader.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DimensionLoader.class);
 
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
@@ -41,14 +41,14 @@ public class DruidDimensionsLoader extends Loader<Boolean>
     private final Collection<AbstractDimensionRowProvider> dimensionRowProviders;
 
     /**
-     * DruidDimensionsLoader fetches data from Druid and adds it to the dimension cache.
+     * DimensionLoader fetches data from Druid and adds it to the dimension cache.
      * The dimensions to be loaded can be passed in as a parameter.
      *
      * @param dimensionRowProviders  A set of {@link AbstractDimensionRowProvider} to initialize dimensions.
      */
-    public DruidDimensionsLoader(Collection<AbstractDimensionRowProvider> dimensionRowProviders) {
+    public DimensionLoader(Collection<AbstractDimensionRowProvider> dimensionRowProviders) {
         super(
-                DruidDimensionsLoader.class.getSimpleName(),
+                DimensionLoader.class.getSimpleName(),
                 SYSTEM_CONFIG.getLongProperty(DRUID_DIM_LOADER_TIMER_DELAY_KEY, 0),
                 SYSTEM_CONFIG.getLongProperty(
                         DRUID_DIM_LOADER_TIMER_DURATION_KEY,

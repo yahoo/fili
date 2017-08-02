@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.application.healthchecks
 
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_DIMENSIONS_LOADER
 
-import com.yahoo.bard.webservice.application.DruidDimensionsLoader
+import com.yahoo.bard.webservice.application.DimensionLoader
 
 import org.joda.time.DateTime
 
@@ -14,11 +14,11 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 
-class DruidDimensionsLoaderHealthCheckSpec extends Specification {
+class DimensionLoaderHealthCheckSpec extends Specification {
     private static final long TWO_MINUTES = 2 * 60 * 1000;
 
     /**
-     * Setup loader health check and lastRunTimestamp on DruidDimensionsLoader.
+     * Setup loader health check and lastRunTimestamp on DimensionLoader.
      * lastRunTimestamp = current time - timeToSubtract
      *
      * @param timeToSubtract The number of milliseconds to subtract from current time.
@@ -27,7 +27,7 @@ class DruidDimensionsLoaderHealthCheckSpec extends Specification {
      * @return DruidDimensionsLoaderHealthCheck object
      */
     DruidDimensionsLoaderHealthCheck setupLoaderHealthCheck(long timeToSubtract, long window) {
-        DruidDimensionsLoader loader = Mock(DruidDimensionsLoader.class)
+        DimensionLoader loader = Mock(DimensionLoader.class)
         loader.getLastRunTimestamp() >> { return DateTime.now().minus(timeToSubtract)}
         new DruidDimensionsLoaderHealthCheck(loader, window)
     }

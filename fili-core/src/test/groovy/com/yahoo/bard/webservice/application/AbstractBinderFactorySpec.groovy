@@ -289,7 +289,7 @@ public class AbstractBinderFactorySpec extends Specification {
         HealthCheckRegistry registry = Mock(HealthCheckRegistry)
 
         when:
-        DruidDimensionsLoader druidDimensionsLoader = binderFactory.buildDruidDimensionsLoader(
+        DimensionLoader druidDimensionsLoader = binderFactory.buildDruidDimensionsLoader(
                 webService,
                 physicalTableDictionary,
                 dimensionDictionary
@@ -298,7 +298,8 @@ public class AbstractBinderFactorySpec extends Specification {
         binderFactory.shutdownLoaderScheduler()
 
         then:
-        druidDimensionsLoader.druidWebService.is(webService)
+        DruidDimensionRowProvider druidDimensionRowProvider = druidDimensionsLoader.dimensionRowProviders.getAt(0)
+        druidDimensionRowProvider.druidWebService.is(webService)
         1 * registry.register(HEALTH_CHECK_NAME_DRUID_DIM_LOADER, _ as DruidDimensionsLoaderHealthCheck) >> {
             string, healthCheck -> capturedHealthCheck = healthCheck
         }
