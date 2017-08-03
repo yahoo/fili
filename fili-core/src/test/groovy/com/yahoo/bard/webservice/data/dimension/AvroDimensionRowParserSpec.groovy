@@ -9,7 +9,7 @@ import org.apache.avro.generic.GenericRecord
 
 import spock.lang.Specification
 
-import java.util.stream.Collectors
+import java.util.function.Consumer
 
 class AvroDimensionRowParserSpec extends Specification {
     LinkedHashSet<DimensionField> dimensionFields
@@ -29,8 +29,23 @@ class AvroDimensionRowParserSpec extends Specification {
         Set<DimensionRow> dimSet = [dimensionRow1, dimensionRow2] as Set
 
         expect:
-        avroDimensionRowParser.parseAvroFileDimensionRows(dimension, "target/avro/avroFilesTesting/sampleData.avro")
-            .collect(Collectors.toSet())== dimSet
+        avroDimensionRowParser.parseAvroFileDimensionRows(dimension, "target/avro/avroFilesTesting/sampleData.avro") == dimSet
+    }
+
+    def "Schema file containing all the dimension fields and data parses to expected rows, using consumer"() {
+        given:
+        DimensionRow dimensionRow1 = BardDimensionField.makeDimensionRow(dimension, "12345", "bar")
+        DimensionRow dimensionRow2 = BardDimensionField.makeDimensionRow(dimension, "67890", "baz")
+        Set<DimensionRow> dimSet = [dimensionRow1, dimensionRow2] as Set
+
+        Set<DimensionRow> actual = new LinkedHashSet<>()
+        Consumer<DimensionRow> rowConsumer = {actual.add(it)}
+
+        when:
+        avroDimensionRowParser.parseAvroFileDimensionRows(dimension, "target/avro/avroFilesTesting/sampleData.avro", rowConsumer)
+
+        then:
+        actual == dimSet
     }
 
     def "Schema file does not contain all the dimension fields throws an IllegalArgumentException"() {
@@ -38,8 +53,7 @@ class AvroDimensionRowParserSpec extends Specification {
         dimensionFields.add(BardDimensionField.FIELD1)
 
         when:
-        avroDimensionRowParser.parseAvroFileDimensionRows(dimension, "target/avro/avroFilesTesting/sampleData.avro").
-                collect(Collectors.toSet())
+        avroDimensionRowParser.parseAvroFileDimensionRows(dimension, "target/avro/avroFilesTesting/sampleData.avro")
 
         then:
         IllegalArgumentException exception = thrown(IllegalArgumentException)
