@@ -40,8 +40,8 @@ Current
 
 ### Changed:
 
-- [Make AvroDimensionRowParser.parseAvroFileDimensionRows return a stream instead of a Set](https://github.com/yahoo/fili/issues/483)
-    * In order to do deferred file reading, the stream must be closed to ensure that the file is closed.
+- [Make AvroDimensionRowParser.parseAvroFileDimensionRows support consumer model](https://github.com/yahoo/fili/issues/483)
+    * In order to do deferred/buffered file reading, create a call back style method.
 
 - [Make HttpResponseMaker injectable and change functions signature related to custom response creation](https://github.com/yahoo/fili/pull/447)
     * Make `HttpResponseMaker` injectable. `DataServlet` and `JobsServlet` takes `HttpResponseMaker` as input parameter now

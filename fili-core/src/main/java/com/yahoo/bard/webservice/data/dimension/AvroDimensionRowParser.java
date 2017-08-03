@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -129,24 +128,10 @@ public class AvroDimensionRowParser {
             LOG.error(msg);
             throw new IllegalArgumentException(msg);
         }
-        Function<GenericRecord, Map<String, String>> recordMapFunction =
-                genericRecord -> {
-                    try {
-                        return recordToMap(genericRecord, dimension);
-                    } catch (RuntimeException unknown) {
-                        try {
-                            dataFileReader.close();
-                        } catch (IOException warn) {
-                            String msg = String.format("Error closing avro file, at the location %s", avroFilePath);
-                            LOG.warn(msg, warn);
-                        }
-                        throw unknown;
-                    }
-                };
 
         // Generates a set of dimension Rows after retrieving the appropriate fields
         return StreamSupport.stream(dataFileReader.spliterator(), false)
-                .map(recordMapFunction)
+                .map(record -> recordToMap(record, dimension))
                 .map(dimension::parseDimensionRow);
 
     }
