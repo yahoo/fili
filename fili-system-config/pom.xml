@@ -47,7 +47,7 @@
                     <execution>
                         <phase>generate-test-resources</phase>
                         <configuration>
-                            <tasks>
+                            <target>
                                 <delete
                                         quiet="true"
                                         dir="${project.build.directory}/moduleJars"/>
@@ -59,7 +59,7 @@
                                 <jar
                                         destfile="${project.build.directory}/moduleJars/jars/fili-system-config-test2.jar"
                                         basedir="${project.basedir}/src/test/resources/jar2-contents"/>
-                            </tasks>
+                            </target>
                         </configuration>
                         <goals>
                             <goal>run</goal>
