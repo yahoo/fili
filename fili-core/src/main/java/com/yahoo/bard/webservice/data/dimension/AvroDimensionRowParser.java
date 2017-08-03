@@ -85,6 +85,20 @@ public class AvroDimensionRowParser {
                 .allMatch(avroFields::contains);
     }
 
+
+    Map<String, String> recordToMap(GenericRecord genericRecord, Dimension dimension) {
+        return dimension.getDimensionFields()
+                .stream()
+                .collect(
+                        Collectors.toMap(
+                                DimensionField::getName,
+                                dimensionField -> resolveRecordValue(
+                                        genericRecord,
+                                        dimensionFieldNameMapper.convert(dimension, dimensionField)
+                                )
+                        ));
+    }
+
     /**
      * Parses the avro file and populates the dimension rows after validating the schema.
      *
@@ -102,6 +116,7 @@ public class AvroDimensionRowParser {
         DatumReader<GenericRecord> datumReader = new GenericDatumReader<>();
 
         // Creates an AVRO DataFileReader object that reads the AVRO data file one record at a time
+        DataFileReader<GenericRecord> dataFileReader
         try {
             DataFileReader<GenericRecord> dataFileReader = new DataFileReader<>(new File(avroFilePath), datumReader);
             // Validate Schema
@@ -110,34 +125,41 @@ public class AvroDimensionRowParser {
                 LOG.error(msg);
                 throw new IllegalArgumentException(msg);
             }
-            Function<GenericRecord, Map<String, String>> recordMapFunction = genericRecord -> dimension
-                    .getDimensionFields()
-                    .stream()
-                    .collect(
-                            Collectors.toMap(
-                                    DimensionField::getName,
-                                    dimensionField -> resolveRecordValue(
-                                            genericRecord, dimensionFieldNameMapper.convert(dimension, dimensionField))
-                            )
-                    );
+            Function<GenericRecord, Map<String, String>> recordMapFunction =
+                    genericRecord -> {
+                        try {
+                            return recordToMap(genericRecord, dimension);
+                        } catch (RuntimeException unknown) {
+                            try {
+                                dataFileReader.close();
+                            } catch (IOException warn) {
+                                String msg = String.format("Error closing avro file, at the location %s", avroFilePath);
+                                LOG.warn(msg, warn);
+                            }
+                            throw unknown;
+                        }
+                    };
+
             Runnable fileCloser = () -> {
                 try {
                     dataFileReader.close();
-                } catch (IOException e) {
+                } catch (IOException warn) {
                     String msg = String.format("Error closing avro file, at the location %s", avroFilePath);
-                    LOG.error(msg, e);
-                    throw new IllegalArgumentException(msg, e);
+                    LOG.warn(msg, warn);
                 }
             };
             // Generates a set of dimension Rows after retrieving the appropriate fields
             return StreamSupport.stream(dataFileReader.spliterator(), false)
+                    .onClose(fileCloser)
                     .map(recordMapFunction)
-                    .map(dimension::parseDimensionRow)
-                    .onClose(fileCloser);
+                    .map(dimension::parseDimensionRow);
 
         } catch (IOException e) {
             String msg = String.format("Unable to process the file, at the location %s", avroFilePath);
             LOG.error(msg, e);
+            try {
+                dataFil
+            }
             throw new IllegalArgumentException(msg, e);
         }
     }
