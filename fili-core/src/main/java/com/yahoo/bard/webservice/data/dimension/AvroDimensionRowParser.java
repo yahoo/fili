@@ -19,7 +19,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
@@ -93,34 +95,42 @@ public class AvroDimensionRowParser {
      *
      * @throws IllegalArgumentException thrown if JSON object `fields` is not present
      */
-    public Set<DimensionRow> parseAvroFileDimensionRows(Dimension dimension, String avroFilePath)
+    public Stream<DimensionRow> parseAvroFileDimensionRows(Dimension dimension, String avroFilePath)
         throws IllegalArgumentException {
 
         // Creates an AVRO DatumReader object
         DatumReader<GenericRecord> datumReader = new GenericDatumReader<>();
 
         // Creates an AVRO DataFileReader object that reads the AVRO data file one record at a time
-        try (DataFileReader<GenericRecord> dataFileReader = new DataFileReader<>(new File(avroFilePath), datumReader)) {
+        try {
+            DataFileReader<GenericRecord> dataFileReader = new DataFileReader<>(new File(avroFilePath), datumReader);
             // Validate Schema
             if (!doesSchemaContainAllDimensionFields(dimension, dataFileReader.getSchema())) {
                 String msg = "The AVRO schema file does not contain all the configured dimension fields";
                 LOG.error(msg);
                 throw new IllegalArgumentException(msg);
             }
-
+            Function<GenericRecord, Map<String, String>> recordMapFunction = genericRecord -> dimension
+                    .getDimensionFields()
+                    .stream()
+                    .collect(
+                            Collectors.toMap(
+                                    DimensionField::getName,
+                                    dimensionField -> resolveRecordValue(
+                                            genericRecord, dimensionFieldNameMapper.convert(dimension, dimensionField))
+                            )
+                    );
+            Runnable fileCloser = () -> {
+                try {
+                    dataFileReader.close();
+                } catch (IOException ignore) {
+                }
+            };
             // Generates a set of dimension Rows after retrieving the appropriate fields
             return StreamSupport.stream(dataFileReader.spliterator(), false)
-                    .map(genericRecord -> dimension.getDimensionFields().stream()
-                            .collect(
-                                 Collectors.toMap(
-                                     DimensionField::getName,
-                                     dimensionField -> resolveRecordValue(
-                                             genericRecord, dimensionFieldNameMapper.convert(dimension, dimensionField))
-                                 )
-                            )
-                    )
+                    .map(recordMapFunction)
                     .map(dimension::parseDimensionRow)
-                    .collect(Collectors.toSet());
+                    .onClose(fileCloser);
 
         } catch (IOException e) {
             String msg = String.format("Unable to process the file, at the location %s", avroFilePath);

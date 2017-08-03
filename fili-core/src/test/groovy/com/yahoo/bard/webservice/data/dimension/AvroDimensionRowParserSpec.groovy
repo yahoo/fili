@@ -2,7 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.dimension
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 
@@ -10,6 +9,7 @@ import org.apache.avro.generic.GenericRecord
 
 import spock.lang.Specification
 
+import java.util.stream.Collectors
 
 class AvroDimensionRowParserSpec extends Specification {
     LinkedHashSet<DimensionField> dimensionFields
@@ -29,7 +29,8 @@ class AvroDimensionRowParserSpec extends Specification {
         Set<DimensionRow> dimSet = [dimensionRow1, dimensionRow2] as Set
 
         expect:
-        avroDimensionRowParser.parseAvroFileDimensionRows(dimension, "target/avro/avroFilesTesting/sampleData.avro") == dimSet
+        avroDimensionRowParser.parseAvroFileDimensionRows(dimension, "target/avro/avroFilesTesting/sampleData.avro")
+            .collect(Collectors.toSet())== dimSet
     }
 
     def "Schema file does not contain all the dimension fields throws an IllegalArgumentException"() {
@@ -37,7 +38,8 @@ class AvroDimensionRowParserSpec extends Specification {
         dimensionFields.add(BardDimensionField.FIELD1)
 
         when:
-        avroDimensionRowParser.parseAvroFileDimensionRows(dimension, "target/avro/avroFilesTesting/sampleData.avro")
+        avroDimensionRowParser.parseAvroFileDimensionRows(dimension, "target/avro/avroFilesTesting/sampleData.avro").
+                collect(Collectors.toSet())
 
         then:
         IllegalArgumentException exception = thrown(IllegalArgumentException)
