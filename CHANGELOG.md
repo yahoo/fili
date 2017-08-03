@@ -17,7 +17,7 @@ Current
 
 - [Fili-security module](https://github.com/yahoo/fili/pull/405)
     * Added security module for fili data security filters
-    * Created `ChainingRequestMapper`, and a set of mappers for gatekeeping on security roles and whitelisting dimension filters. 
+    * Created `ChainingRequestMapper`, and a set of mappers for gatekeeping on security roles and whitelisting dimension filters.
 
 - [Add Table-wide Availability](https://github.com/yahoo/fili/pull/414)
     * Add `availableIntervals` field to tables endpoint by union the availability for the logical table without taking
@@ -39,6 +39,9 @@ Current
 
 
 ### Changed:
+
+- [DruidQuery::getInnerQuery and Datasource::getQuery return Optional](https://github.com/yahoo/fili/pull/485)
+    * Returning `Optional` is more correct for their usage and should protect against unexpected null values.
 
 - [Use all available segment metadata in fili-generic-example](https://github.com/yahoo/fili/pull/445)
     * The fili-generic-example now uses all segment metadata given by Druid instead of just the first one and also provides it to the metadata service.
