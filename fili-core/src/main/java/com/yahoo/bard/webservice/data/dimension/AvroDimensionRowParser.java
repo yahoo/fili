@@ -93,7 +93,7 @@ public class AvroDimensionRowParser {
      *
      * @return  A map of fields and values for a dimension row
      */
-    Map<String, String> recordToMap(GenericRecord genericRecord, Dimension dimension) {
+    private Map<String, String> recordToMap(GenericRecord genericRecord, Dimension dimension) {
         return dimension.getDimensionFields()
                 .stream()
                 .collect(
@@ -107,11 +107,10 @@ public class AvroDimensionRowParser {
     }
 
     /**
-     * Parses the avro file and populates the dimension rows after validating the schema.
+     * Returns a stream which parses avro records into dimension rows
      *
      * @param dataFileReader  An open file reader for avro records
      * @param dimension  The dimension object used to configure the dimension
-     * @param avroFilePath  The path of the AVRO data file (.avro)
      *
      * @return A stream over the open file which produces dimension rows
      *
@@ -119,9 +118,8 @@ public class AvroDimensionRowParser {
      */
     private Stream<DimensionRow> streamDimensionRows(
             DataFileReader<GenericRecord> dataFileReader,
-            Dimension dimension,
-            String avroFilePath
-    ) {
+            Dimension dimension
+    ) throws IllegalArgumentException {
         // Validate Schema
         if (!doesSchemaContainAllDimensionFields(dimension, dataFileReader.getSchema())) {
             String msg = "The AVRO schema file does not contain all the configured dimension fields";
@@ -137,7 +135,7 @@ public class AvroDimensionRowParser {
     }
 
     /**
-     * Parses the avro file and populates the dimension rows after validating the schema.
+     * Parses the avro file and sends dimension rows to a consumer
      *
      * @param dimension  The dimension object used to configure the dimension
      * @param avroFilePath  The path of the AVRO data file (.avro)
@@ -145,13 +143,14 @@ public class AvroDimensionRowParser {
      *
      * @throws IllegalArgumentException thrown if JSON object `fields` is not present
      */
-    public void parseAvroFileDimensionRows(Dimension dimension, String avroFilePath, Consumer<DimensionRow> consumer) {
+    public void parseAvroFileDimensionRows(Dimension dimension, String avroFilePath, Consumer<DimensionRow> consumer)
+            throws IllegalArgumentException {
         GenericDatumReader datumReader = new GenericDatumReader();
 
         // Creates an AVRO DataFileReader object that reads the AVRO data file one record at a time
         try (DataFileReader<GenericRecord> dataFileReader = new DataFileReader<>(new File(avroFilePath), datumReader)) {
 
-            streamDimensionRows(dataFileReader, dimension, avroFilePath).forEach(consumer);
+            streamDimensionRows(dataFileReader, dimension).forEach(consumer);
 
         } catch (IOException e) {
             String msg = String.format("Unable to process the file, at the location %s", avroFilePath);
@@ -161,7 +160,7 @@ public class AvroDimensionRowParser {
     }
 
     /**
-     * Parses the avro file and populates the dimension rows after validating the schema.
+     * Parses the avro file and returns the dimension rows
      *
      * @param dimension The dimension object used to configure the dimension
      * @param avroFilePath The path of the AVRO data file (.avro)
@@ -177,7 +176,7 @@ public class AvroDimensionRowParser {
         // Creates an AVRO DataFileReader object that reads the AVRO data file one record at a time
         try (DataFileReader<GenericRecord> dataFileReader = new DataFileReader<>(new File(avroFilePath), datumReader)) {
 
-            return streamDimensionRows(dataFileReader, dimension, avroFilePath).collect(Collectors.toSet());
+            return streamDimensionRows(dataFileReader, dimension).collect(Collectors.toSet());
 
         } catch (IOException e) {
             String msg = String.format("Unable to process the file, at the location %s", avroFilePath);
