@@ -79,6 +79,7 @@ class CardinalityAggregationSpec extends Specification {
         //       Consequently, query's also need this to be serialized.
         DruidAggregationQuery query = Mock(DruidAggregationQuery)
         DataSource ds = Mock(DataSource)
+        ds.getQuery() >> Optional.empty()
         ds.getPhysicalTable() >> constrainedTable
         query.dataSource >> ds
         query.aggregations >> [a1]

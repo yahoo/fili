@@ -39,7 +39,7 @@ class TemplateDruidQueryMergerSpec extends Specification {
             PostAggregation q2_postagg1 = new ConstantPostAggregation("field7", 100)
 
             TemplateDruidQuery nested = new TemplateDruidQuery([nested_agg1] as Set, [nested_postagg1] as Set, (ZonelessTimeGrain) null)
-            TemplateDruidQuery q1 = new TemplateDruidQuery([q1_agg1,q1_agg2] as Set, [q1_postagg1] as Set, nested, (ZonelessTimeGrain) null)
+            TemplateDruidQuery q1 = new TemplateDruidQuery([q1_agg1,q1_agg2] as Set, [q1_postagg1] as Set, Optional.of(nested), (ZonelessTimeGrain) null)
 
             TemplateDruidQuery q2 = new TemplateDruidQuery([q2_agg1] as Set, [q2_postagg1] as Set, (ZonelessTimeGrain) null)
             TemplateDruidQuery q3 = new TemplateDruidQuery([q3_agg1] as Set, [] as Set, (ZonelessTimeGrain) null)
@@ -61,8 +61,8 @@ class TemplateDruidQueryMergerSpec extends Specification {
             merged.getAggregations().sort() == [q1_agg1,q1_agg2,q2_agg1,new SketchCountAggregation("foo", "foo", 1000)].sort()
             merged.getPostAggregations().sort() == [q1_postagg1, q2_postagg1].sort()
             //q3_agg1 should be nested where the inner query is a sketch merge (name=foo, fieldName=bar)
-            merged.getInnerQuery().getAggregations().sort() == [q2_agg1,new SketchMergeAggregation("foo", "bar", 1000),nested_agg1].sort()
-            merged.getInnerQuery().getPostAggregations().sort() == [nested_postagg1]
+            merged.getInnerQuery().get().getAggregations().sort() == [q2_agg1,new SketchMergeAggregation("foo", "bar", 1000),nested_agg1].sort()
+            merged.getInnerQuery().get().getPostAggregations().sort() == [nested_postagg1]
             merged.depth() == 2
     }
 

@@ -8,7 +8,6 @@ import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 import com.yahoo.bard.webservice.table.Column;
-import com.yahoo.bard.webservice.util.Utils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 

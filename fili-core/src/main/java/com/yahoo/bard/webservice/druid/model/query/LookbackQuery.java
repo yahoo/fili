@@ -136,7 +136,7 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
 
     @Override
     public Optional<? extends DruidAggregationQuery> getInnerQuery() {
-        return Optional.ofNullable((DruidAggregationQuery) this.dataSource.getQuery());
+        return (Optional<? extends DruidAggregationQuery>) this.dataSource.getQuery();
     }
 
     /**
@@ -144,7 +144,8 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
      *
      * @return the inner query.
      */
-    public DruidAggregationQuery<?> getInnerQueryUnchecked() {
+    @JsonIgnore
+    private DruidAggregationQuery<?> getInnerQueryUnchecked() {
         return getInnerQuery().get();
     }
 
@@ -269,10 +270,10 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
 
     @Override
     public LookbackQuery withAllIntervals(Collection<Interval> intervals) {
-        DruidFactQuery<?> innerQuery = (DruidFactQuery<?>) this.dataSource.getQuery();
-        return (innerQuery == null) ?
+        Optional<DruidFactQuery<?>> innerQuery = (Optional<DruidFactQuery<?>>) this.dataSource.getQuery();
+        return !innerQuery.isPresent() ?
                 withIntervals(intervals) :
-                withDataSource(new QueryDataSource(innerQuery.withAllIntervals(intervals))).withIntervals(intervals);
+                withDataSource(new QueryDataSource(innerQuery.get().withAllIntervals(intervals))).withIntervals(intervals);
     }
 
     @Override
@@ -282,10 +283,10 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
 
     @Override
     public LookbackQuery withInnermostDataSource(DataSource dataSource) {
-        DruidFactQuery<?> innerQuery = (DruidFactQuery<?>) this.dataSource.getQuery();
+        Optional<DruidFactQuery<?>> innerQuery = (Optional<DruidFactQuery<?>>) this.dataSource.getQuery();
         return (innerQuery == null) ?
                 withDataSource(dataSource) :
-                withDataSource(new QueryDataSource(innerQuery.withInnermostDataSource(dataSource)));
+                withDataSource(new QueryDataSource(innerQuery.get().withInnermostDataSource(dataSource)));
     }
 
     @Override

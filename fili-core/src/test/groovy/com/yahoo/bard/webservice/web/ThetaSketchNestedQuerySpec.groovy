@@ -40,7 +40,7 @@ class ThetaSketchNestedQuerySpec extends Specification {
     def "updateNestedQueryPostAggs appends the filter to the postAgg name if it is not of the type 'CONSTANT'"() {
 
         String filterSuffix = "-" + resources.filterObj.get("AND").toString().replaceAll("[^a-zA-Z0-9]", "");
-        Set<PostAggregation> nestedQueryPostAggs = resources.dayAvgFoosTdq.nestedQuery.getPostAggregations()
+        Set<PostAggregation> nestedQueryPostAggs = resources.dayAvgFoosTdq.nestedQuery.get().getPostAggregations()
         Set<PostAggregation> postAggregations = FieldConverterSupplier.metricsFilterSetBuilder.updateNestedQueryPostAggs(nestedQueryPostAggs, nameMapper, filterSuffix)
 
         expect:
@@ -70,7 +70,7 @@ class ThetaSketchNestedQuerySpec extends Specification {
 
     def "Intersection reporting when Logical Metric has nested query"(){
         LinkedHashSet<LogicalMetric> logicalMetrics =  new DataApiRequest().generateLogicalMetrics("dayAvgFoos(AND(country|id-in[US,IN],property|id-in[114,125]))", resources.metricDict, resources.dimensionDict, resources.table)
-        TemplateDruidQuery nestedQuery = logicalMetrics.first().templateDruidQuery.getInnerQueryUnchecked()
+        TemplateDruidQuery nestedQuery = logicalMetrics.first().templateDruidQuery.getInnerQuery().get()
 
         Set<Aggregation> expectedNestedAggs = new HashSet<>()
         expectedNestedAggs.addAll(resources.fooNoBarFilteredAggregationSet)

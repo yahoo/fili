@@ -183,7 +183,7 @@ class DruidQueryBuilderSpec extends Specification {
         dq1.dataSource.type == DefaultDataSourceType.QUERY
         dq1.granularity == granularity.withZone(UTC)
 
-        GroupByQuery dq2 = dq1.dataSource.query
+        GroupByQuery dq2 = dq1.dataSource.getQuery().get()
         dq2.filter == filter
         dq2.dataSource.type == DefaultDataSourceType.TABLE
         dq2.dataSource.name == table.name
@@ -274,7 +274,7 @@ class DruidQueryBuilderSpec extends Specification {
                 [] as Set,
                 limitSpec
         )
-        GroupByQuery dq2 = dq1.dataSource.query
+        GroupByQuery dq2 = dq1.dataSource.getQuery().get()
 
         then:
         dq1?.filter == null
@@ -298,7 +298,7 @@ class DruidQueryBuilderSpec extends Specification {
                 [] as Set,
                 limitSpec
         )
-        dq2 = dq1.dataSource.query
+        dq2 = dq1.dataSource.getQuery().get()
 
 
         then:

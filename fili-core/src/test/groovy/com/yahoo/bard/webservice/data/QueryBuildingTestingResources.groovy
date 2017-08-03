@@ -283,12 +283,12 @@ public class QueryBuildingTestingResources {
         logicalDictionary = new LogicalTableDictionary()
         logicalDictionary.putAll(baseMap)
 
-        simpleTemplateQuery = new TemplateDruidQuery([] as LinkedHashSet, [] as LinkedHashSet, null, null)
+        simpleTemplateQuery = new TemplateDruidQuery([] as LinkedHashSet, [] as LinkedHashSet)
         simpleNestedTemplateQuery = simpleTemplateQuery.nest()
         complexTemplateQuery = new TemplateDruidQuery(
                 [] as LinkedHashSet,
                 [] as LinkedHashSet,
-                simpleTemplateQuery,
+                Optional.of(simpleTemplateQuery),
                 null
         )
 
@@ -296,13 +296,13 @@ public class QueryBuildingTestingResources {
         complexTemplateWithInnerGrainQuery = new TemplateDruidQuery(
                 [] as LinkedHashSet,
                 [] as LinkedHashSet,
-                simpleTemplateWithGrainQuery,
+                Optional.of(simpleTemplateWithGrainQuery),
                 null
         )
         complexTemplateWithDoubleGrainQuery = new TemplateDruidQuery(
                 [] as LinkedHashSet,
                 [] as LinkedHashSet,
-                simpleTemplateWithGrainQuery,
+                Optional.of(simpleTemplateWithGrainQuery),
                 WEEK
         )
 

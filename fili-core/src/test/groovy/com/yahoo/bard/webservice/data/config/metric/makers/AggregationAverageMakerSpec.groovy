@@ -171,7 +171,7 @@ class AggregationAverageMakerSpec extends Specification{
         TemplateDruidQuery outerQuery = new TemplateDruidQuery(
                 [outerSum, AggregationAverageMaker.COUNT_OUTER] as LinkedHashSet,
                 [average] as LinkedHashSet,
-                innerQueryTemplate
+                Optional.of(innerQueryTemplate)
         )
 
         return new LogicalMetric(outerQuery, new NoOpResultSetMapper(), NAME, DESCRIPTION)

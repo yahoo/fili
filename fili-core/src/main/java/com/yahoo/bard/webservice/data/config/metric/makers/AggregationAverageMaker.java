@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -113,7 +114,7 @@ public class AggregationAverageMaker extends MetricMaker {
         Set<PostAggregation> outerPostAggs = Collections.singleton(average);
 
         // Build the resulting query template
-        return new TemplateDruidQuery(outerAggs, outerPostAggs, innerQuery);
+        return new TemplateDruidQuery(outerAggs, outerPostAggs, Optional.of(innerQuery));
     }
 
     /**

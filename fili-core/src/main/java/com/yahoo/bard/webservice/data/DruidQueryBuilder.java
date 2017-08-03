@@ -213,7 +213,7 @@ public class DruidQueryBuilder {
             // Build the inner query without an order by, since we only want to do that at the top level
             // Sorts don't apply to inner queries and Filters only apply to the innermost query
             GroupByQuery query = buildGroupByQuery(
-                    template.getInnerQueryUnchecked(),
+                    template.getInnerQuery().get(),
                     table,
                     mergedGranularity,
                     timeZone,
