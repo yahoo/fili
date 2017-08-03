@@ -92,6 +92,9 @@ Current
 
 ### Removed:
 
+- [Remove dependency on org.apache.httpcomponents](https://github.com/yahoo/fili/pull/482)
+    * This library was only used in `fili-wikipedia-example` and has been replaced with AsyncHttpClient.
+
 - [Remove dependency on org.json](https://github.com/yahoo/fili/pull/416)
     * Replace uses of org.json with the jackson equivalent
 
