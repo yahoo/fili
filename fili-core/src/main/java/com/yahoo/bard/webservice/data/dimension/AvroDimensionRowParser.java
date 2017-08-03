@@ -123,7 +123,10 @@ public class AvroDimensionRowParser {
             Runnable fileCloser = () -> {
                 try {
                     dataFileReader.close();
-                } catch (IOException ignore) {
+                } catch (IOException e) {
+                    String msg = String.format("Error closing avro file, at the location %s", avroFilePath);
+                    LOG.error(msg, e);
+                    throw new IllegalArgumentException(msg, e);
                 }
             };
             // Generates a set of dimension Rows after retrieving the appropriate fields
