@@ -40,6 +40,9 @@ Current
 
 ### Changed:
 
+- [Make AvroDimensionRowParser.parseAvroFileDimensionRows support consumer model](https://github.com/yahoo/fili/issues/483)
+    * In order to do deferred/buffered file reading, create a call back style method.
+
 - [Make HttpResponseMaker injectable and change functions signature related to custom response creation](https://github.com/yahoo/fili/pull/447)
     * Make `HttpResponseMaker` injectable. `DataServlet` and `JobsServlet` takes `HttpResponseMaker` as input parameter now
     * Add `ApiRequest` to `BuildResponse`, `HttpReponseChannel` and `createResponseBuilder` to enable passing information needed by customizable serialization
