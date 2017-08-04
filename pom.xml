@@ -2,9 +2,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <prerequisites>
-        <maven>3.0</maven>
-    </prerequisites>
 
     <groupId>com.yahoo.fili</groupId>
     <artifactId>fili-parent-pom</artifactId>
@@ -95,10 +92,10 @@
 
         <disableDocLint>-Xdoclint:none</disableDocLint>
 
-        <min_maven_version>3.0</min_maven_version>
+        <min_maven_version>3.3.9</min_maven_version>
         <!-- TODO: Review these -->
         <maven.deploy.skip>${env.DO_NOT_PUBLISH}</maven.deploy.skip>
-        <enforcer.skip>true</enforcer.skip>
+        <enforcer.skip>false</enforcer.skip>
 
         <checkstyle.skip>false</checkstyle.skip>
         <checkstyle.config.location>checkstyle-style.xml</checkstyle.config.location>
@@ -674,6 +671,26 @@
             </plugins>
         </pluginManagement>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>1.4.1</version>
+                <executions>
+                    <execution>
+                        <id>enforce-maven-version</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <version>[${min_maven_version},)</version>
+                                </requireMavenVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
