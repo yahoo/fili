@@ -208,8 +208,7 @@ to see the global numbers, not the per-region numbers.
 
 This example also shows that we can filter by dimensions that we are not grouping on! Filters are very rich and
 powerful, so take a look at the [Filters](#filtering) section for more details. Oh, and one last thing about filters on
-the Data resource: Only `in` and `notin` are supported at the moment, but additional filter operations will be added 
-soon!
+the Data resource: By default `in`, `notin`, `eq`, `startswith`, and `contains` are supported, but `startswith` and `contains` may be disabled.
 
 ### Response Format Example ###
 
