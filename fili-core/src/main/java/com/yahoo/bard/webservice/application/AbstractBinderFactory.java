@@ -1089,7 +1089,10 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      * @param mapper shared instance of {@link com.fasterxml.jackson.databind.ObjectMapper}
      *
      * @return A DruidWebService
+     *
+     * @deprecated removed non-ui webservice, this method is no longer used
      */
+    @Deprecated
     protected DruidWebService buildNonUiDruidWebService(ObjectMapper mapper) {
         return buildDruidWebService(DruidClientConfigHelper.getNonUiServiceConfig(), mapper);
     }

@@ -306,12 +306,8 @@ public class JerseyTestBinder {
         return harness;
     }
 
-    public DruidWebService getUiDruidWebService() {
-        return state.uiWebService;
-    }
-
-    public DruidWebService getNonUiDruidWebService() {
-        return state.nonUiWebService;
+    public DruidWebService getDruidWebService() {
+        return state.webService;
     }
 
     public DruidWebService getMetadataDruidWebService() {
@@ -406,15 +402,10 @@ public class JerseyTestBinder {
 
         // This alternate switched implementation approach is not really used anywhere, should be split off into a
         // separate subclass if needed
-        if (state.uiWebService == null) {
-            state.uiWebService = (useTestWebService) ?
+        if (state.webService == null) {
+            state.webService = (useTestWebService) ?
                     new TestDruidWebService("Test UI WS") :
-                    new AsyncDruidWebServiceImpl(DruidClientConfigHelper.getUiServiceConfig(), mapper);
-        }
-        if (state.nonUiWebService == null) {
-            state.nonUiWebService = (useTestWebService) ?
-                    new TestDruidWebService("Test NonUI WS") :
-                    new AsyncDruidWebServiceImpl(DruidClientConfigHelper.getNonUiServiceConfig(), mapper);
+                    new AsyncDruidWebServiceImpl(DruidClientConfigHelper.getServiceConfig(), mapper);
         }
         if (state.metadataWebService == null) {
             state.metadataWebService = (useTestWebService) ?

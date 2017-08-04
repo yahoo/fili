@@ -86,7 +86,7 @@ class DataServletContextsSpec extends Specification {
         testWebService = new TestDruidWebService("default web service");
         testMetadataWebService = new TestDruidWebService("default metadata web service");
         jtb = new TestWebserviceJerseyTestBinder((Class[]) resources)
-        assert jtb.nonUiDruidWebService instanceof DruidWebService
+        assert jtb.druidWebService instanceof DruidWebService
         TestDruidServlet.setResponse(defaultResponse)
     }
 

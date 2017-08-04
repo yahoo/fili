@@ -176,13 +176,13 @@ abstract class AsyncFunctionalSpec extends Specification {
      *  @param  druidResponse The fake response to be injected.
      */
     def injectDruidResponse(Closure<String> druidResponse) {
-        if (jtb.nonUiDruidWebService instanceof TestDruidWebService) {
+        if (jtb.druidWebService instanceof TestDruidWebService) {
             int statusCode = getDruidStatusCode()
-            jtb.nonUiDruidWebService.statusCode = statusCode
+            jtb.druidWebService.statusCode = statusCode
             if (statusCode == 200) {
-                jtb.nonUiDruidWebService.jsonResponse = druidResponse
+                jtb.druidWebService.jsonResponse = druidResponse
             } else {
-                jtb.nonUiDruidWebService.reasonPhrase = druidResponse.call()
+                jtb.druidWebService.reasonPhrase = druidResponse.call()
             }
         }
     }

@@ -89,7 +89,7 @@ class DataServletTimezoneSpec extends Specification {
         testWebService = new TestDruidWebService("default web service")
         testMetadataWebService = new TestDruidWebService("default metadata web service")
         jtb = new TestWebserviceJerseyTestBinder((Class<?>[]) resources.toArray())
-        assert jtb.nonUiDruidWebService instanceof DruidWebService
+        assert jtb.druidWebService instanceof DruidWebService
     }
 
     @Unroll

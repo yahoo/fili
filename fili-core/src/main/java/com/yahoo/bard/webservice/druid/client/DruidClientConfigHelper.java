@@ -97,7 +97,7 @@ public class DruidClientConfigHelper {
     public static Integer getDruidNonUiPriority() {
         String priority = SYSTEM_CONFIG.getStringProperty(NON_UI_DRUID_PRIORITY_KEY, null);
         if (priority == null || "".equals(priority)) {
-            return getDruidPriority();
+            return null;
         }
         return Integer.parseInt(priority);
     }

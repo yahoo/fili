@@ -89,8 +89,7 @@ public class TestBinderFactory extends AbstractBinderFactory {
             }
         };
         state = new ApplicationState();
-        state.uiWebService = new TestDruidWebService("default ui");
-        state.nonUiWebService = new TestDruidWebService("default non ui");
+        state.webService = new TestDruidWebService("default");
         state.metadataWebService = new TestDruidWebService("default metadata service");
     }
 
@@ -218,12 +217,7 @@ public class TestBinderFactory extends AbstractBinderFactory {
 
     @Override
     protected DruidWebService buildDruidWebService(ObjectMapper mapper) {
-        return state.uiWebService;
-    }
-
-    @Override
-    protected DruidWebService buildNonUiDruidWebService(ObjectMapper mapper) {
-        return state.nonUiWebService;
+        return state.webService;
     }
 
     @Override
