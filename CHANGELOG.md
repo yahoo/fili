@@ -40,6 +40,9 @@ Current
 
 ### Changed:
 
+- [LuceneSearchProvide needs to handle nulls](https://github.com/yahoo/fili/issues/487)
+    * Lucene search provider cannot handle null load values.  Treat all null values as empty string.
+
 - [Make AvroDimensionRowParser.parseAvroFileDimensionRows support consumer model](https://github.com/yahoo/fili/issues/483)
     * In order to do deferred/buffered file reading, create a call back style method.
 

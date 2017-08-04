@@ -307,7 +307,7 @@ public class LuceneSearchProvider implements SearchProvider {
             Field fieldToUpdate = fieldMap.get(field);
 
             // Set field value to updated value
-            fieldToUpdate.setStringValue(newRow.get(field));
+            fieldToUpdate.setStringValue(newRow.getOrDefault(field, ""));
         }
 
         // Build the term to delete the old document by the key value (which should be unique)
