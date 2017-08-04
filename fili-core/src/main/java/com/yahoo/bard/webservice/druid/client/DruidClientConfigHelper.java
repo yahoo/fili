@@ -31,7 +31,9 @@ public class DruidClientConfigHelper {
     private static final String NON_UI_DRUID_PRIORITY_KEY =
             SYSTEM_CONFIG.getPackageVariableName("non_ui_druid_priority");
 
-
+    /**
+     * The routing priority for all queries.
+     */
     private static final String DRUID_PRIORITY_KEY =
             SYSTEM_CONFIG.getPackageVariableName("druid_priority");
 
@@ -47,6 +49,9 @@ public class DruidClientConfigHelper {
     private static final String NON_UI_DRUID_BROKER_URL_KEY =
             SYSTEM_CONFIG.getPackageVariableName("non_ui_druid_broker");
 
+    /**
+     * The url for the broker vip which serves all queries.
+     */
     private static final String DRUID_BROKER_URL_KEY =
             SYSTEM_CONFIG.getPackageVariableName("druid_broker");
 
@@ -68,6 +73,9 @@ public class DruidClientConfigHelper {
     private static final String NON_UI_DRUID_REQUEST_TIMEOUT_KEY =
             SYSTEM_CONFIG.getPackageVariableName("non_ui_druid_request_timeout");
 
+    /**
+     * The timeout setting for all queries.
+     */
     private static final String DRUID_REQUEST_TIMEOUT_KEY =
             SYSTEM_CONFIG.getPackageVariableName("druid_request_timeout");
 
@@ -79,7 +87,7 @@ public class DruidClientConfigHelper {
     /**
      * Fetches the druid UI request Priority.
      *
-     * @return druid UI request timeout
+     * @return druid UI request priority
      */
     public static Integer getDruidUiPriority() {
         String priority = SYSTEM_CONFIG.getStringProperty(UI_DRUID_PRIORITY_KEY, null);
@@ -92,7 +100,7 @@ public class DruidClientConfigHelper {
     /**
      * Fetches the druid non-UI Priority.
      *
-     * @return druid non-UI URL
+     * @return druid non-UI priority
      */
     public static Integer getDruidNonUiPriority() {
         String priority = SYSTEM_CONFIG.getStringProperty(NON_UI_DRUID_PRIORITY_KEY, null);
@@ -102,6 +110,11 @@ public class DruidClientConfigHelper {
         return Integer.parseInt(priority);
     }
 
+    /**
+     * Fetches the druid Priority.
+     *
+     * @return druid priority
+     */
     public static Integer getDruidPriority() {
         String priority = SYSTEM_CONFIG.getStringProperty(DRUID_PRIORITY_KEY, null);
         if (priority == null || "".equals(priority)) {
@@ -188,9 +201,9 @@ public class DruidClientConfigHelper {
     }
 
     /**
-     * Fetches the druid non-UI request timeout.
+     * Fetches the druid request timeout.
      *
-     * @return druid non-UI request timeout
+     * @return druid request timeout
      */
     public static Integer getDruidTimeout() {
         Integer time = fetchDruidResponseTimeOut(DRUID_REQUEST_TIMEOUT_KEY);
