@@ -56,8 +56,7 @@ class ResultSetResponseProcessorSpec extends Specification {
 
     private static final ObjectMappersSuite MAPPERS = new ObjectMappersSuite()
 
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-            .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
+    private static final ObjectMapper MAPPER = MAPPERS.getMapper()
 
     HttpResponseMaker httpResponseMaker
     GroupByQuery groupByQuery

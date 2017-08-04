@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.config;
 
+import org.slf4j.LoggerFactory;
+
 /**
  * Feature flags bind an object to a system configuration name.
  */
@@ -51,4 +53,16 @@ public interface FeatureFlag {
      * @param newValue  The new status of the feature flag.
      */
     void setOn(Boolean newValue);
+
+    /**
+     * Restores the feature flag to the startup state (if supported by the underlying conf mechanism).
+     */
+    default void reset() {
+        String message = String.format(
+                "Current implementation of FeatureFlag: %s does not support reset operation.",
+                this.getClass().getSimpleName()
+        );
+        LoggerFactory.getLogger(FeatureFlag.class).error(message);
+        throw new UnsupportedOperationException(message);
+    }
 }

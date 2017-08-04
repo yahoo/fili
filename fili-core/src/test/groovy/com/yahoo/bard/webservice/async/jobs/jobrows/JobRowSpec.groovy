@@ -12,6 +12,7 @@ import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField.JOB_T
 import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField.QUERY
 import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField.STATUS
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.async.jobs.JobTestUtils
 
 import com.fasterxml.jackson.databind.JsonNode
@@ -20,7 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import spock.lang.Specification
 
 class JobRowSpec extends Specification {
-    static final ObjectMapper MAPPER = new ObjectMapper()
+    static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
 
 
     def "The JobRow constructor throws an IllegalArgumentException if the valuesMap does not contain the key field"() {

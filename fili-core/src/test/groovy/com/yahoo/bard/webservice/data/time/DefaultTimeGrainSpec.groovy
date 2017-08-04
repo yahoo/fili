@@ -10,10 +10,10 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.QUARTER
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.WEEK
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.YEAR
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 
 import org.joda.time.DateTime
 
@@ -21,8 +21,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 class DefaultTimeGrainSpec extends Specification {
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-            .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
+    private static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
 
     @Unroll
     def "#timeGrain serializes to #expectedJson with default timezone (UTC)"() {

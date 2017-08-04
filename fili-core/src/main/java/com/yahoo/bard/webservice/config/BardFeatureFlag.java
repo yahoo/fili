@@ -21,6 +21,7 @@ public enum BardFeatureFlag implements FeatureFlag {
     static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     private final String propertyName;
+    private Boolean on = null;
 
     /**
      * Constructor.
@@ -38,11 +39,21 @@ public enum BardFeatureFlag implements FeatureFlag {
 
     @Override
     public boolean isOn() {
-        return SYSTEM_CONFIG.getBooleanProperty(SYSTEM_CONFIG.getPackageVariableName(propertyName), false);
+        if (on == null) {
+            on = SYSTEM_CONFIG.getBooleanProperty(SYSTEM_CONFIG.getPackageVariableName(propertyName), false);
+        }
+        return on;
     }
 
     @Override
     public void setOn(Boolean newValue) {
         SYSTEM_CONFIG.setProperty(SYSTEM_CONFIG.getPackageVariableName(propertyName), newValue.toString());
+        on = newValue;
+    }
+
+    @Override
+    public void reset() {
+        SYSTEM_CONFIG.clearProperty(SYSTEM_CONFIG.getPackageVariableName(propertyName));
+        on = null;
     }
 }

@@ -10,9 +10,14 @@ Current
 
 ### Added:
 
+- [Have Tables Endpoint Support (but not use) Additional Query Parameters](https://github.com/yahoo/fili/pull/437)
+    * Make the availability consider the TablesApiRequest by passing it into the getLogicalTableFullView method
+    * Move auxiliary methods from `DataApiRequest` to `ApiRequest` in order to make them sharable between
+    `DataApiRequest` and `TableApiRequest`.
+
 - [Fili-security module](https://github.com/yahoo/fili/pull/405)
     * Added security module for fili data security filters
-    * Created `ChainingRequestMapper`, and a set of mappers for gatekeeping on security roles and whitelisting dimension filters. 
+    * Created `ChainingRequestMapper`, and a set of mappers for gatekeeping on security roles and whitelisting dimension filters.
 
 - [Add Table-wide Availability](https://github.com/yahoo/fili/pull/414)
     * Add `availableIntervals` field to tables endpoint by union the availability for the logical table without taking
@@ -59,6 +64,11 @@ Current
 
 
 ### Fixed:
+
+- [Fix performance bug around feature flag](https://github.com/yahoo/fili/issues/473)
+    * BardFeatureFlag, when used in a tight loop, is very expensive.  Underlying map configuration copies the config map on each access.
+    * Switching to lazy value evaluation
+    * Added reset contract so changes to feature flags can be directly reverted rather than going through the `SystemConfig` directly
 
 - [Fix deploy branch issue where substrings of whitelisted branches could be released](https://github.com/yahoo/fili/issues/453)
 

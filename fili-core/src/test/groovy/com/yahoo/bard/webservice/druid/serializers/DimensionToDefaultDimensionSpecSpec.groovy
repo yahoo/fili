@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.druid.serializers
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR
 import static org.joda.time.DateTimeZone.UTC
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.data.DruidQueryBuilder
 import com.yahoo.bard.webservice.data.PartialDataHandler
 import com.yahoo.bard.webservice.data.QueryBuildingTestingResources
@@ -35,7 +36,7 @@ class DimensionToDefaultDimensionSpecSpec extends Specification {
     DruidAggregationQuery<?> druidQuery
 
     def setup() {
-        objectMapper = new ObjectMapper()
+        objectMapper = new ObjectMappersSuite().getMapper()
         resources = new QueryBuildingTestingResources()
         DefaultPhysicalTableResolver resolver = new DefaultPhysicalTableResolver(new PartialDataHandler(), new DefaultingVolatileIntervalsService())
         builder = new DruidQueryBuilder(resources.logicalDictionary, resolver)

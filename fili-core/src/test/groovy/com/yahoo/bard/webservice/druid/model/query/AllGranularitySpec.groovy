@@ -2,10 +2,10 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.query
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.ObjectWriter
 
 import org.joda.time.DateTime
@@ -22,7 +22,7 @@ class AllGranularitySpec extends Specification {
 
     def "All granularity serializes to 'all'"() {
         setup:
-        ObjectWriter writer = new ObjectMapper().writer()
+        ObjectWriter writer = new ObjectMappersSuite().getMapper().writer()
 
         expect:
         writer.writeValueAsString(allGranularity) == /"all"/

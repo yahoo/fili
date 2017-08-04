@@ -4,20 +4,19 @@ package com.yahoo.bard.webservice.logging.blocks
 
 import static javax.ws.rs.core.Response.Status.OK
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.util.CacheLastObserver
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 
 import com.fasterxml.jackson.databind.ObjectMapper
 
+import rx.Observable
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import rx.Observable
-
-
 class EpilogueSpec extends Specification {
 
-    static final ObjectMapper JSON_SERIALIZER = new ObjectMapper()
+    static final ObjectMapper JSON_SERIALIZER = new ObjectMappersSuite().getMapper()
 
     @Unroll
     def "When the responseLengthObserver receives #messages and #errorType Epilogue serializes correctly"() {

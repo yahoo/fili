@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.web
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static org.joda.time.DateTimeZone.UTC
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.data.config.metric.MetricInstance
 import com.yahoo.bard.webservice.data.config.metric.makers.AggregationAverageMaker
 import com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker
@@ -37,9 +38,9 @@ import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
 import com.yahoo.bard.webservice.druid.util.ThetaSketchFieldConverter
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.Column
-import com.yahoo.bard.webservice.table.StrictPhysicalTable
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.PhysicalTable
+import com.yahoo.bard.webservice.table.StrictPhysicalTable
 import com.yahoo.bard.webservice.table.TableGroup
 
 import com.fasterxml.jackson.databind.JsonNode
@@ -70,7 +71,7 @@ class ThetaSketchIntersectionReportingResources extends Specification {
     public ObjectMapper mapper
 
     ThetaSketchIntersectionReportingResources init() {
-        mapper = new ObjectMapper()
+        mapper = new ObjectMappersSuite().getMapper()
 
         LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>()
         dimensionFields.add(BardDimensionField.ID)

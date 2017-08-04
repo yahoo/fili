@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.web
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static org.joda.time.DateTimeZone.UTC
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.data.config.metric.MetricInstance
 import com.yahoo.bard.webservice.data.config.metric.makers.AggregationAverageMaker
 import com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker
@@ -36,9 +37,9 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationP
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
 import com.yahoo.bard.webservice.druid.util.SketchFieldConverter
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
-import com.yahoo.bard.webservice.table.StrictPhysicalTable
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.PhysicalTable
+import com.yahoo.bard.webservice.table.StrictPhysicalTable
 import com.yahoo.bard.webservice.table.TableGroup
 
 import com.fasterxml.jackson.databind.JsonNode
@@ -46,6 +47,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
 
 import spock.lang.Specification
+
 /**
  * This class is a resource container for intersection report tests.
  *
@@ -72,7 +74,7 @@ class SketchIntersectionReportingResources extends Specification {
     public ObjectMapper mapper
 
     SketchIntersectionReportingResources init() {
-        mapper = new ObjectMapper()
+        mapper = new ObjectMappersSuite().getMapper()
 
         LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>()
         dimensionFields.add(BardDimensionField.ID)

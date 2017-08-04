@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.web.endpoints
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.data.time.GranularityParser
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser
 import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService
@@ -11,7 +12,6 @@ import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.util.JsonSortStrategy
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 
 import org.joda.time.DateTimeZone
 import org.joda.time.Interval
@@ -35,8 +35,7 @@ import javax.ws.rs.core.Response
 abstract class BaseDataServletComponentSpec extends Specification {
 
     private static final Logger LOG = LoggerFactory.getLogger(BaseDataServletComponentSpec.class)
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-            .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
+    private static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
 
     private static GranularityParser granularityParser = new StandardGranularityParser()
 

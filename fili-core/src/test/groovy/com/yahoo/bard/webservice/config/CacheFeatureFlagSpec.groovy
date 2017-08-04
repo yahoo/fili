@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.config
 
+import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_CACHE
+import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_CACHE_V2
 import static com.yahoo.bard.webservice.config.CacheFeatureFlag.*
 
 import spock.lang.Specification
@@ -21,12 +23,10 @@ class CacheFeatureFlagSpec extends Specification {
     }
 
     def cleanup() {
-        SYSTEM_CONFIG.clearProperty(TTL_CACHE_CONFIG_KEY)
-        SYSTEM_CONFIG.clearProperty(LOCAL_SIGNATURE_CACHE_CONFIG_KEY)
-        SYSTEM_CONFIG.clearProperty(ETAG_CACHE_CONFIG_KEY)
-
-        // restore config value
-        SYSTEM_CONFIG.setProperty(ETAG_CACHE_CONFIG_KEY, queryResponseCachingStrategy)
+        CacheFeatureFlag.TTL.reset()
+        CacheFeatureFlag.ETAG.reset()
+        CacheFeatureFlag.LOCAL_SIGNATURE.reset()
+        CacheFeatureFlag.NONE.reset()
     }
 
     @Unroll
@@ -34,18 +34,20 @@ class CacheFeatureFlagSpec extends Specification {
         setup:
         def badValues = [NONE, TTL, LOCAL_SIGNATURE, ETAG]
         badValues.remove(expected)
-        SYSTEM_CONFIG.setProperty(TTL_CACHE_CONFIG_KEY, String.valueOf(ttlIsOn))
-        SYSTEM_CONFIG.setProperty(LOCAL_SIGNATURE_CACHE_CONFIG_KEY, String.valueOf(localSignatureIsOn))
+        DRUID_CACHE.setOn(ttlIsOn)
+        DRUID_CACHE_V2.setOn(localSignatureIsOn)
+        expected.reset()
 
         expect:
         expected.isOn()
         badValues.each {
+            it.reset()
             assert ! it.isOn()
         }
 
         cleanup:
-        SYSTEM_CONFIG.clearProperty(TTL_CACHE_CONFIG_KEY)
-        SYSTEM_CONFIG.clearProperty(LOCAL_SIGNATURE_CACHE_CONFIG_KEY)
+        DRUID_CACHE.reset()
+        DRUID_CACHE_V2.reset()
 
         where:
         ttlIsOn | localSignatureIsOn | NoCacheOn | expected
