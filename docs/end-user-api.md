@@ -753,54 +753,18 @@ error response with an HTTP response status code of 429.
 There are a number of different errors you may encounter when interacting with the API. All of them are indicated by the
 HTTP response status code, and most of them have a helpful message indicating what went wrong.
 
-#### 400 BAD REQUEST ####
+| Code | Meaning                         | Cause                                                                                                                                                                                                          |
+| ---- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 400  | BAD REQUEST                     | You have some sort of syntax error in your request. We couldn't figure out what you were trying to ask.                                                                                                        |
+| 401  | UNAUTHORIZED                    | We don't know who you are, so send your request again, but tell us who you are. Usually this means you didn't include proper security authentication information in your request                               |
+| 403  | FORBIDDEN                       | We know who you are, but you can't come in.                                                                                                                                                                    |
+| 404  | NOT FOUND                       | We don't know what resource you're talking about. You probably have a typo in your URL path.                                                                                                                   |
+| 416  | REQUESTED RANGE NOT SATISFIABLE | We can't get that data for you from Druid.                                                                                                                                                                     |
+| 422  | UNPROCESSABLE ENTITY            | We understood the request (ie. syntax is correct), but something else about the query is wrong. Likely something like a dimension mis-match, or a metric / dimension not being available in the logical table. |
+| 429  | TOO MANY REQUESTS               | You've hit the rate limit. Wait a little while for any requests you may have sent to finish and try your request again.                                                                                        |
+| 500  | INTERNAL SERVER ERROR           | Some other error on our end. We try to catch and investigate all of these, but we might miss them, so please let us know if you get 500 errors.                                                                |
+| 502  | BAD GATEWAY                     | Bad Druid response.                                                                                                                                                                                            |
+| 503  | SERVICE UNAVAILABLE             | Druid can't be reached.                                                                                                                                                                                        |
+| 504  | GATEWAY TIMEOUT                 | Druid query timeout.                                                                                                                                                                                           |
+| 507  | INSUFFICIENT STORAGE            | Too heavy of a query.                                                                                                                                                                                          |
 
-You have some sort of syntax error in your request. We couldn't figure out what you were trying to ask.
-
-#### 401 UNAUTHORIZED ####
-
-We don't know who you are, so send your request again, but tell us who you are.
-
-Usually this means you didn't include proper security authentication information in your request
-
-#### 403 FORBIDDEN ####
-
-We know who you are, but you can't come in.
-
-#### 404 NOT FOUND ####
-
-We don't know what resource you're talking about. You probably have a typo in your URL path.
-
-#### 416 REQUESTED RANGE NOT SATISFIABLE ####
-
-We can't get that data for you from Druid.
-
-#### 422 UNPROCESSABLE ENTITY ####
-
-We understood the request (ie. syntax is correct), but something else about the query is wrong. Likely something like
-a dimension mis-match, or a metric / dimension not being available in the logical table.
-
-#### 429 TOO MANY REQUESTS ####
-
-You've hit the rate limit. Wait a little while for any requests you may have sent to finish and try your request again.
-
-#### 500 INTERNAL SERVER ERROR ####
-
-Some other error on our end. We try to catch and investigate all of these, but we might miss them, so please let us know
-if you get 500 errors.
-
-#### 502 BAD GATEWAY ####
-
-Bad Druid response
-
-#### 503 SERVICE UNAVAILABLE ####
-
-Druid can't be reached
-
-#### 504 GATEWAY TIMEOUT ####
-
-Druid query timeout
-
-#### 507 INSUFFICIENT STORAGE ####
-
-Too heavy of a query
