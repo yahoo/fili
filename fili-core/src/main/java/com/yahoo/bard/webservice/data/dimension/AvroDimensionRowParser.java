@@ -107,7 +107,7 @@ public class AvroDimensionRowParser {
     }
 
     /**
-     * Returns a stream which parses avro records into dimension rows
+     * Returns a stream which parses avro records into dimension rows.
      *
      * @param dataFileReader  An open file reader for avro records
      * @param dimension  The dimension object used to configure the dimension
@@ -135,7 +135,7 @@ public class AvroDimensionRowParser {
     }
 
     /**
-     * Parses the avro file and sends dimension rows to a consumer
+     * Parses the avro file and sends dimension rows to a consumer.
      *
      * @param dimension  The dimension object used to configure the dimension
      * @param avroFilePath  The path of the AVRO data file (.avro)
@@ -160,7 +160,7 @@ public class AvroDimensionRowParser {
     }
 
     /**
-     * Parses the avro file and returns the dimension rows
+     * Parses the avro file and returns the dimension rows.
      *
      * @param dimension The dimension object used to configure the dimension
      * @param avroFilePath The path of the AVRO data file (.avro)
