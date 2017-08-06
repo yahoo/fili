@@ -88,12 +88,11 @@ public class DruidClientConfigHelper {
      * Fetches the druid UI request Priority.
      *
      * @return druid UI request priority
+     * @deprecated
      */
+    @Deprecated
     public static Integer getDruidUiPriority() {
         String priority = SYSTEM_CONFIG.getStringProperty(UI_DRUID_PRIORITY_KEY, null);
-        if (priority == null || "".equals(priority)) {
-            return getDruidNonUiPriority();
-        }
         return Integer.parseInt(priority);
     }
 
@@ -101,11 +100,13 @@ public class DruidClientConfigHelper {
      * Fetches the druid non-UI Priority.
      *
      * @return druid non-UI priority
+     * @deprecated
      */
+    @Deprecated
     public static Integer getDruidNonUiPriority() {
         String priority = SYSTEM_CONFIG.getStringProperty(NON_UI_DRUID_PRIORITY_KEY, null);
         if (priority == null || "".equals(priority)) {
-            return null;
+            return getDruidUiPriority();
         }
         return Integer.parseInt(priority);
     }
@@ -118,7 +119,7 @@ public class DruidClientConfigHelper {
     public static Integer getDruidPriority() {
         String priority = SYSTEM_CONFIG.getStringProperty(DRUID_PRIORITY_KEY, null);
         if (priority == null || "".equals(priority)) {
-            return getDruidUiPriority();
+            return getDruidNonUiPriority();
         }
         return Integer.parseInt(priority);
     }
@@ -127,12 +128,14 @@ public class DruidClientConfigHelper {
      * Fetches the druid UI URL.
      *
      * @return druid UI URL
+     * @deprecated
      */
+    @Deprecated
     public static String getDruidUiUrl() {
         String url =  SYSTEM_CONFIG.getStringProperty(UI_DRUID_BROKER_URL_KEY, null);
         if (url == null) {
             LOG.warn("ui_druid_broker not set, using non_ui_druid_broker instead");
-            return getDruidNonUiUrl();
+            return null;
         }
         return url;
     }
@@ -141,12 +144,14 @@ public class DruidClientConfigHelper {
      * Fetches the druid non-UI URL.
      *
      * @return druid non-UI URL
+     * @deprecated
      */
+    @Deprecated
     public static String getDruidNonUiUrl() {
         String url = SYSTEM_CONFIG.getStringProperty(NON_UI_DRUID_BROKER_URL_KEY, null);
         if (url == null) {
             LOG.warn("non_ui_druid_broker not set, using druid_broker instead");
-            return getDruidUrl();
+            return getDruidUiUrl();
         }
         return url;
     }
@@ -160,7 +165,7 @@ public class DruidClientConfigHelper {
         String url = SYSTEM_CONFIG.getStringProperty(DRUID_BROKER_URL_KEY, null);
         if (url == null) {
             LOG.warn("druid_broker not set, using ui_druid_broker instead");
-            return getDruidUiUrl();
+            return getDruidNonUiUrl();
         }
         return url;
     }
@@ -178,24 +183,24 @@ public class DruidClientConfigHelper {
      * Fetches the druid UI request timeout.
      *
      * @return druid UI request timeout
+     * @deprecated
      */
+    @Deprecated
     public static Integer getDruidUiTimeout() {
-        Integer time = fetchDruidResponseTimeOut(UI_DRUID_REQUEST_TIMEOUT_KEY);
-        if (time == null) {
-            return fetchDruidResponseTimeOut(NON_UI_DRUID_BROKER_URL_KEY);
-        }
-        return time;
+        return fetchDruidResponseTimeOut(UI_DRUID_REQUEST_TIMEOUT_KEY);
     }
 
     /**
      * Fetches the druid non-UI request timeout.
      *
      * @return druid non-UI request timeout
+     * @deprecated
      */
+    @Deprecated
     public static Integer getDruidNonUiTimeout() {
         Integer time = fetchDruidResponseTimeOut(NON_UI_DRUID_REQUEST_TIMEOUT_KEY);
         if (time == null) {
-            return fetchDruidResponseTimeOut(DRUID_REQUEST_TIMEOUT_KEY);
+            return fetchDruidResponseTimeOut(UI_DRUID_REQUEST_TIMEOUT_KEY);
         }
         return time;
     }
@@ -208,7 +213,7 @@ public class DruidClientConfigHelper {
     public static Integer getDruidTimeout() {
         Integer time = fetchDruidResponseTimeOut(DRUID_REQUEST_TIMEOUT_KEY);
         if (time == null) {
-            return fetchDruidResponseTimeOut(UI_DRUID_REQUEST_TIMEOUT_KEY);
+            return fetchDruidResponseTimeOut(NON_UI_DRUID_REQUEST_TIMEOUT_KEY);
         }
         return time;
     }
