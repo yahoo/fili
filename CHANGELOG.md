@@ -130,6 +130,9 @@ Current
 
 ### Fixed:
 
+- [Slices endpoint returns druid name instead of api name](https://github.com/yahoo/fili/pull/491)
+    * The slices endpoint now gives the druid name instead of the api name for dimensions.
+
 - [Prevent NPE in test due to null instance variables in DataApiRequest](https://github.com/yahoo/fili/pull/532)
     * A particular order of loading [`ClassScannerSpec`](./fili-core/src/test/groovy/com/yahoo/bard/webservice/util/ClassScannerSpec.groovy)
       classes results in `NullPointerException` and fails tests, because some instance variables from testing [`DataApiRequest`](./fili-core/src/main/java/com/yahoo/bard/webservice/web/DataApiRequest.java)
