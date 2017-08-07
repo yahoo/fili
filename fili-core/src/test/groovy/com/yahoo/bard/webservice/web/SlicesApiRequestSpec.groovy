@@ -8,8 +8,8 @@ import com.yahoo.bard.webservice.metadata.BaseDataSourceMetadataSpec
 import com.yahoo.bard.webservice.metadata.DataSourceMetadata
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.metadata.SegmentInfo
+import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
-import com.yahoo.bard.webservice.table.Table
 import com.yahoo.bard.webservice.web.endpoints.SlicesServlet
 
 import org.joda.time.DateTime
@@ -81,7 +81,7 @@ class SlicesApiRequestSpec extends BaseDataSourceMetadataSpec {
     def "check api request construction for a given table name"() {
         setup:
         String name = "all_pets"
-        Table table = fullDictionary.get(name)
+        PhysicalTable table = fullDictionary.get(name)
         String uri = baseUri.replaceAll("/slices/.*", "") + "/dimensions/"
 
         builder.build(_) >> { List<List<String>> args ->
@@ -94,7 +94,7 @@ class SlicesApiRequestSpec extends BaseDataSourceMetadataSpec {
         table.allAvailableIntervals.each {
             Map<String, Object> row = [:] as LinkedHashMap
             row["intervals"] = it.value
-            row["name"] = it.key.name
+            row["name"] = table.getPhysicalColumnName(it.key.name)
             if (it.key instanceof DimensionColumn) {
                 row["uri"] = uri + it.key.name
                 dimensionsResult.add(row)
