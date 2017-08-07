@@ -23,8 +23,8 @@ class TemplateDruidQuerySpec extends Specification {
             Set<PostAggregation> postAggs = []
 
             TemplateDruidQuery q1 = new TemplateDruidQuery(aggs, postAggs)
-            TemplateDruidQuery q2 = new TemplateDruidQuery(aggs, postAggs, Optional.of(q1))
-            TemplateDruidQuery q3 = new TemplateDruidQuery(aggs, postAggs, Optional.of(q2))
+            TemplateDruidQuery q2 = new TemplateDruidQuery(aggs, postAggs, q1)
+            TemplateDruidQuery q3 = new TemplateDruidQuery(aggs, postAggs, q2)
 
         expect:
             q1.depth() == 1
@@ -38,8 +38,8 @@ class TemplateDruidQuerySpec extends Specification {
             Set<PostAggregation> postAggs = []
 
             TemplateDruidQuery q1 = new TemplateDruidQuery(aggs, postAggs)
-            TemplateDruidQuery q2 = new TemplateDruidQuery(aggs, postAggs, Optional.of(q1))
-            TemplateDruidQuery q3 = new TemplateDruidQuery(aggs, postAggs, Optional.of(q2))
+            TemplateDruidQuery q2 = new TemplateDruidQuery(aggs, postAggs, q1)
+            TemplateDruidQuery q3 = new TemplateDruidQuery(aggs, postAggs, q2)
 
         expect:
             q1.isNested() == false
@@ -90,7 +90,7 @@ class TemplateDruidQuerySpec extends Specification {
             PostAggregation q2_postagg1 = new ConstantPostAggregation("field7", 100)
 
             TemplateDruidQuery nested = new TemplateDruidQuery([nested_agg1] as Set, [nested_postagg1] as Set)
-            TemplateDruidQuery q1 = new TemplateDruidQuery([q1_agg1,q1_agg2] as Set, [q1_postagg1] as Set, Optional.of(nested))
+            TemplateDruidQuery q1 = new TemplateDruidQuery([q1_agg1,q1_agg2] as Set, [q1_postagg1] as Set, nested)
 
             TemplateDruidQuery q2 = new TemplateDruidQuery([q2_agg1] as Set, [q2_postagg1] as Set)
 
@@ -116,7 +116,7 @@ class TemplateDruidQuerySpec extends Specification {
             Aggregation q2_agg1 = new LongSumAggregation("duplicate", "duplicate")
 
             TemplateDruidQuery nested = new TemplateDruidQuery([nested_agg1] as Set, [] as Set)
-            TemplateDruidQuery q1 = new TemplateDruidQuery([q1_agg1, q1_agg2] as Set, [] as Set, Optional.of(nested))
+            TemplateDruidQuery q1 = new TemplateDruidQuery([q1_agg1, q1_agg2] as Set, [] as Set, nested)
             TemplateDruidQuery q2 = new TemplateDruidQuery([q2_agg1] as Set, [] as Set)
 
         when:
@@ -145,7 +145,7 @@ class TemplateDruidQuerySpec extends Specification {
             PostAggregation q2_postagg1 = new ConstantPostAggregation("duplicate", 100)
 
             TemplateDruidQuery nested = new TemplateDruidQuery([nested_agg1] as Set, [nested_postagg1] as Set)
-            TemplateDruidQuery q1 = new TemplateDruidQuery([q1_agg1, q1_agg2] as Set, [q1_postagg1] as Set, Optional.of(nested))
+            TemplateDruidQuery q1 = new TemplateDruidQuery([q1_agg1, q1_agg2] as Set, [q1_postagg1] as Set, nested)
             TemplateDruidQuery q2 = new TemplateDruidQuery([q2_agg1] as Set, [q2_postagg1] as Set)
 
         when:

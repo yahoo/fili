@@ -44,7 +44,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
 
     private static final Logger LOG = LoggerFactory.getLogger(TemplateDruidQuery.class);
 
-    private final Optional<TemplateDruidQuery> nestedQuery;
+    private final TemplateDruidQuery nestedQuery;
     private final ZonelessTimeGrain timeGrain;
     private final Set<Aggregation> aggregations;
     private final Set<PostAggregation> postAggregations;
@@ -58,7 +58,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
      * @param postAggregations  post aggregations for this query template
      */
     public TemplateDruidQuery(Collection<Aggregation> aggregations, Collection<PostAggregation> postAggregations) {
-        this(aggregations, postAggregations, Optional.empty(), (ZonelessTimeGrain) null);
+        this(aggregations, postAggregations, null, (ZonelessTimeGrain) null);
     }
 
     /**
@@ -73,7 +73,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
             Collection<PostAggregation> postAggregations,
             ZonelessTimeGrain timeGrain
     ) {
-        this(aggregations, postAggregations, Optional.empty(), timeGrain);
+        this(aggregations, postAggregations, null, timeGrain);
     }
 
     /**
@@ -86,7 +86,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
     public TemplateDruidQuery(
             Collection<Aggregation> aggregations,
             Collection<PostAggregation> postAggregations,
-            Optional<TemplateDruidQuery> nestedQuery
+            TemplateDruidQuery nestedQuery
     ) {
         this(aggregations, postAggregations, nestedQuery, (ZonelessTimeGrain) null);
     }
@@ -102,7 +102,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
     public TemplateDruidQuery(
             Collection<Aggregation> aggregations,
             Collection<PostAggregation> postAggregations,
-            Optional<TemplateDruidQuery> nestedQuery,
+            TemplateDruidQuery nestedQuery,
             ZonelessTimeGrain timeGrain
     ) {
         // Convert the sets to LinkedHashSet to preserve order, and then make them unmodifiable
@@ -168,13 +168,13 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
             innerQuery = new TemplateDruidQuery(
                     innerAggregations,
                     Collections.emptySet(),
-                    Optional.empty(),
-                    null)
-            ;
+                    null,
+                    null
+            );
         }
 
         // Create the outer query, floating the post aggregations upward
-        return new TemplateDruidQuery(outerAggregations, postAggregations, Optional.of(innerQuery), timeGrain);
+        return new TemplateDruidQuery(outerAggregations, postAggregations, innerQuery, timeGrain);
     }
 
     /**
@@ -183,8 +183,8 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
      * @return false if outer TimeGrain cannot be composed by the inner time grain
      */
     public boolean isTimeGrainValid() {
-        if (nestedQuery.isPresent()) {
-            TimeGrain nestedTimeGrain = nestedQuery.get().getTimeGrain();
+        if (nestedQuery != null) {
+            TimeGrain nestedTimeGrain = nestedQuery.getTimeGrain();
             // Nested time grain must be smaller or equal to this time grain
             return timeGrain == null || nestedTimeGrain == null || timeGrain.satisfiedBy(nestedTimeGrain);
         }
@@ -202,9 +202,6 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
     public TemplateDruidQuery merge(TemplateDruidQuery sibling) {
 
         // TODO: Handle merging with a null TDQ
-//        if (!nestedQuery.isPresent()) {
-//            throw new RuntimeException("Not sure what to do");
-//        }
 
         // Correct the queries to have the same depth by nesting if necessary.
         TemplateDruidQuery self = this;
@@ -223,12 +220,12 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
         // Merge the time grains
         ZonelessTimeGrain mergedGrain = mergeTimeGrains(self.getTimeGrain(), sibling.getTimeGrain());
         TemplateDruidQuery mergedNested = self.isNested() ?
-                self.nestedQuery.get().merge(sibling.getInnerQuery().get())
+                self.nestedQuery.merge(sibling.getInnerQuery().get())
                 : null;
         return new TemplateDruidQuery(
                 mergedAggregations,
                 mergedPostAggregations,
-                Optional.ofNullable(mergedNested),
+                mergedNested,
                 mergedGrain
         );
     }
@@ -374,7 +371,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
 
     @Override
     public Optional<TemplateDruidQuery> getInnerQuery() {
-        return nestedQuery;
+        return Optional.ofNullable(nestedQuery);
     }
 
     @Override
@@ -409,7 +406,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
      */
     private int calculateDepth(TemplateDruidQuery candidate) {
         int theDepth = 1;
-        Optional<TemplateDruidQuery> iterator = candidate.nestedQuery;
+        Optional<TemplateDruidQuery> iterator = candidate.getInnerQuery();
         while (iterator.isPresent()) {
             theDepth++;
             iterator = iterator.get().getInnerQuery();
@@ -469,7 +466,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
      * @return copy of the query
      */
     public TemplateDruidQuery withInnerQuery(TemplateDruidQuery newNestedQuery) {
-        return new TemplateDruidQuery(aggregations, postAggregations, Optional.ofNullable(newNestedQuery), timeGrain);
+        return new TemplateDruidQuery(aggregations, postAggregations, newNestedQuery, timeGrain);
     }
 
     /**

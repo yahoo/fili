@@ -40,7 +40,7 @@ class ThetaSketchNestedQuerySpec extends Specification {
     def "updateNestedQueryPostAggs appends the filter to the postAgg name if it is not of the type 'CONSTANT'"() {
 
         String filterSuffix = "-" + resources.filterObj.get("AND").toString().replaceAll("[^a-zA-Z0-9]", "");
-        Set<PostAggregation> nestedQueryPostAggs = resources.dayAvgFoosTdq.nestedQuery.get().getPostAggregations()
+        Set<PostAggregation> nestedQueryPostAggs = resources.dayAvgFoosTdq.nestedQuery.getPostAggregations()
         Set<PostAggregation> postAggregations = FieldConverterSupplier.metricsFilterSetBuilder.updateNestedQueryPostAggs(nestedQueryPostAggs, nameMapper, filterSuffix)
 
         expect:

@@ -39,7 +39,7 @@ class TemplateDruidQueryMergerSpec extends Specification {
             PostAggregation q2_postagg1 = new ConstantPostAggregation("field7", 100)
 
             TemplateDruidQuery nested = new TemplateDruidQuery([nested_agg1] as Set, [nested_postagg1] as Set, (ZonelessTimeGrain) null)
-            TemplateDruidQuery q1 = new TemplateDruidQuery([q1_agg1,q1_agg2] as Set, [q1_postagg1] as Set, Optional.of(nested), (ZonelessTimeGrain) null)
+            TemplateDruidQuery q1 = new TemplateDruidQuery([q1_agg1,q1_agg2] as Set, [q1_postagg1] as Set, nested, (ZonelessTimeGrain) null)
 
             TemplateDruidQuery q2 = new TemplateDruidQuery([q2_agg1] as Set, [q2_postagg1] as Set, (ZonelessTimeGrain) null)
             TemplateDruidQuery q3 = new TemplateDruidQuery([q3_agg1] as Set, [] as Set, (ZonelessTimeGrain) null)

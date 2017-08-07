@@ -144,7 +144,7 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
         return new TemplateDruidQuery(
                 updatedOuterAggs,
                 updateOuterPostAggs,
-                outerQuery.getInnerQuery(),
+                outerQuery.getInnerQuery().orElse(null),
                 outerQuery.getTimeGrain()
         );
     }
@@ -278,7 +278,12 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
         }
 
         //with the filtered aggregation and reconstructed post aggregation, generate new templateDruidQuery
-        return new TemplateDruidQuery(updatedAggs, updatedPostAggs, query.getInnerQuery(), query.getTimeGrain());
+        return new TemplateDruidQuery(
+                updatedAggs,
+                updatedPostAggs,
+                query.getInnerQuery().orElse(null),
+                query.getTimeGrain()
+        );
     }
 
    @Override

@@ -288,7 +288,7 @@ public class QueryBuildingTestingResources {
         complexTemplateQuery = new TemplateDruidQuery(
                 [] as LinkedHashSet,
                 [] as LinkedHashSet,
-                Optional.of(simpleTemplateQuery),
+                simpleTemplateQuery,
                 null
         )
 
@@ -296,13 +296,13 @@ public class QueryBuildingTestingResources {
         complexTemplateWithInnerGrainQuery = new TemplateDruidQuery(
                 [] as LinkedHashSet,
                 [] as LinkedHashSet,
-                Optional.of(simpleTemplateWithGrainQuery),
+                simpleTemplateWithGrainQuery,
                 null
         )
         complexTemplateWithDoubleGrainQuery = new TemplateDruidQuery(
                 [] as LinkedHashSet,
                 [] as LinkedHashSet,
-                Optional.of(simpleTemplateWithGrainQuery),
+                simpleTemplateWithGrainQuery,
                 WEEK
         )
 
