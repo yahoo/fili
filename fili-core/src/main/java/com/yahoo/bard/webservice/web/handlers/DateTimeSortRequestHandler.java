@@ -4,7 +4,7 @@ package com.yahoo.bard.webservice.web.handlers;
 
 import com.yahoo.bard.webservice.data.metric.mappers.DateTimeSortMapper;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.DataApiRequestInterface;
 import com.yahoo.bard.webservice.web.responseprocessors.MappingResponseProcessor;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 
@@ -29,7 +29,7 @@ public class DateTimeSortRequestHandler implements DataRequestHandler {
     @Override
     public boolean handleRequest(
             RequestContext context,
-            DataApiRequest request,
+            DataApiRequestInterface request,
             DruidAggregationQuery<?> druidQuery,
             ResponseProcessor response
     ) {

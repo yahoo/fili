@@ -8,7 +8,7 @@ import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.DataApiRequestInterface;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 import com.yahoo.bard.webservice.web.responseprocessors.WeightCheckResponseProcessor;
@@ -62,7 +62,7 @@ public class WeightCheckRequestHandler extends BaseDataRequestHandler {
     @Override
     public boolean handleRequest(
             final RequestContext context,
-            final DataApiRequest request,
+            final DataApiRequestInterface request,
             final DruidAggregationQuery<?> druidQuery,
             final ResponseProcessor response
     ) {
@@ -109,46 +109,43 @@ public class WeightCheckRequestHandler extends BaseDataRequestHandler {
      */
     protected SuccessCallback buildSuccessCallback(
             final RequestContext context,
-            final DataApiRequest request,
+            final DataApiRequestInterface request,
             final DruidAggregationQuery<?> druidQuery,
             final ResponseProcessor response,
             final long queryRowLimit
     ) {
-        return new SuccessCallback() {
-            @Override
-            public void invoke(JsonNode jsonResult) {
-                try {
-                    // The result will contain either one result reflecting the row count or
-                    // none if the request matches no rows.
-                    LOG.debug("{}", writer.writeValueAsString(jsonResult));
+        return jsonResult -> {
+            try {
+                // The result will contain either one result reflecting the row count or
+                // none if the request matches no rows.
+                LOG.debug("{}", writer.writeValueAsString(jsonResult));
 
-                    JsonNode row = jsonResult.get(0);
-                    // If the weight limit query is empty or reports acceptable rows, run the full query
-                    if (row != null) {
-                        int rowCount = row.get("event").get("count").asInt();
+                JsonNode row = jsonResult.get(0);
+                // If the weight limit query is empty or reports acceptable rows, run the full query
+                if (row != null) {
+                    int rowCount = row.get("event").get("count").asInt();
 
-                        if (rowCount > queryRowLimit) {
-                            String reason = String.format(
-                                    ErrorMessageFormat.WEIGHT_CHECK_FAILED.logFormat(rowCount, queryRowLimit),
-                                    rowCount,
-                                    queryRowLimit
-                            );
-                            String description = ErrorMessageFormat.WEIGHT_CHECK_FAILED.format();
+                    if (rowCount > queryRowLimit) {
+                        String reason = String.format(
+                                ErrorMessageFormat.WEIGHT_CHECK_FAILED.logFormat(rowCount, queryRowLimit),
+                                rowCount,
+                                queryRowLimit
+                        );
+                        String description = ErrorMessageFormat.WEIGHT_CHECK_FAILED.format();
 
-                            LOG.debug(reason);
-                            response.getErrorCallback(druidQuery).dispatch(
-                                507, //  Insufficient Storage
-                                reason,
-                                description
-                            );
-                            return;
-                        }
+                        LOG.debug(reason);
+                        response.getErrorCallback(druidQuery).dispatch(
+                            507, //  Insufficient Storage
+                            reason,
+                            description
+                        );
+                        return;
                     }
-                    next.handleRequest(context, request, druidQuery, response);
-                } catch (Throwable e) {
-                    LOG.info("Exception processing druid call in success", e);
-                    response.getFailureCallback(druidQuery).dispatch(e);
                 }
+                next.handleRequest(context, request, druidQuery, response);
+            } catch (Throwable e) {
+                LOG.info("Exception processing druid call in success", e);
+                response.getFailureCallback(druidQuery).dispatch(e);
             }
         };
     }

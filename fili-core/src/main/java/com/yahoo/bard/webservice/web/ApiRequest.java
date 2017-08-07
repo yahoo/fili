@@ -37,7 +37,7 @@ import javax.ws.rs.core.UriInfo;
 /**
  * API Request. Abstract class offering default implementations for the common components of API request objects.
  */
-public abstract class ApiRequest {
+public abstract class ApiRequest implements ApiRequestInterface {
     private static final Logger LOG = LoggerFactory.getLogger(ApiRequest.class);
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
@@ -245,49 +245,27 @@ public abstract class ApiRequest {
         }
     }
 
-    /**
-     * Get the type of the requested response format.
-     *
-     * @return The format of the response for this API request.
-     */
+    @Override
     public ResponseFormatType getFormat() {
         return format;
     }
 
-    /**
-     * Get the requested pagination parameters.
-     *
-     * @return The pagination parameters for this API request
-     */
+    @Override
     public Optional<PaginationParameters> getPaginationParameters() {
         return paginationParameters;
     }
 
-    /**
-     * Get the uri info.
-     *
-     * @return The uri info of this API request
-     */
+    @Override
     public UriInfo getUriInfo() {
         return uriInfo;
     }
 
-    /**
-     * Get the pagination object associated with this request.
-     * This object has valid contents after a call to {@link #getPage}
-     *
-     * @return The pagination object.
-     */
+    @Override
     public Pagination<?> getPagination() {
         return pagination;
     }
 
-    /**
-     * Returns how long the user is willing to wait before a request should go asynchronous.
-     *
-     * @return The maximum number of milliseconds the request is allowed to take before going from synchronous to
-     * asynchronous
-     */
+    @Override
     public long getAsyncAfter() {
         return asyncAfter;
     }

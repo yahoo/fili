@@ -3,7 +3,7 @@
 package com.yahoo.bard.webservice.web.handlers;
 
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.DataApiRequestInterface;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 
 /**
@@ -29,7 +29,7 @@ public interface DataRequestHandler {
      */
     boolean handleRequest(
             RequestContext context,
-            final DataApiRequest request,
+            final DataApiRequestInterface request,
             final DruidAggregationQuery<?> druidQuery,
             final ResponseProcessor response
     );

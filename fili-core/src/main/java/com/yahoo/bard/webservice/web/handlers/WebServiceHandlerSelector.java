@@ -3,7 +3,7 @@
 package com.yahoo.bard.webservice.web.handlers;
 
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.DataApiRequestInterface;
 
 /**
  * WebServiceHandlerSelectors are responsible for choosing the right web service with the right broker URL to call.
@@ -20,5 +20,5 @@ public interface WebServiceHandlerSelector {
      *
      * @return the appropriate WebServiceHandler for this request
      */
-    WebServiceHandler select(DruidAggregationQuery<?> druidQuery, DataApiRequest request, RequestContext context);
+    WebServiceHandler select(DruidAggregationQuery<?> druidQuery, DataApiRequestInterface request, RequestContext context);
 }

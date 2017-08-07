@@ -14,7 +14,7 @@ import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
 import com.yahoo.bard.webservice.util.Utils;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.DataApiRequestInterface;
 import com.yahoo.bard.webservice.web.responseprocessors.CacheV2ResponseProcessor;
 import com.yahoo.bard.webservice.web.responseprocessors.LoggingContext;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
@@ -76,7 +76,7 @@ public class CacheV2RequestHandler extends BaseDataRequestHandler {
     @Override
     public boolean handleRequest(
             final RequestContext context,
-            final DataApiRequest request,
+            final DataApiRequestInterface request,
             final DruidAggregationQuery<?> druidQuery,
             final ResponseProcessor response
     ) {

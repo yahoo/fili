@@ -4,7 +4,7 @@ package com.yahoo.bard.webservice.web.handlers;
 
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.DataApiRequestInterface;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 
 /**
@@ -33,7 +33,7 @@ public class WebServiceHandler implements DataRequestHandler {
     @Override
     public boolean handleRequest(
             RequestContext context,
-            DataApiRequest request,
+            DataApiRequestInterface request,
             DruidAggregationQuery<?> druidQuery,
             ResponseProcessor response
     ) {

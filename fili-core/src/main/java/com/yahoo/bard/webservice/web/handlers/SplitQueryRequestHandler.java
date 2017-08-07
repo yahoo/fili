@@ -10,7 +10,7 @@ import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.util.IntervalUtils;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.DataApiRequestInterface;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 import com.yahoo.bard.webservice.web.responseprocessors.SplitQueryResponseProcessor;
 
@@ -57,7 +57,7 @@ public class SplitQueryRequestHandler implements DataRequestHandler {
     @Override
     public boolean handleRequest(
             final RequestContext context,
-            final DataApiRequest request,
+            final DataApiRequestInterface request,
             final DruidAggregationQuery<?> druidQuery,
             final ResponseProcessor response
     ) {

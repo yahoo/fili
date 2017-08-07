@@ -7,7 +7,7 @@ import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.logging.RequestLog;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.DataApiRequestInterface;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -55,7 +55,7 @@ public class SplitQueryResponseProcessor implements ResponseProcessor {
     @SuppressWarnings("unchecked")
     public SplitQueryResponseProcessor(
             ResponseProcessor next,
-            DataApiRequest request,
+            DataApiRequestInterface request,
             DruidAggregationQuery<?> druidQuery,
             Map<Interval, AtomicInteger> expectedIntervals,
             RequestLog logCtx

@@ -11,7 +11,7 @@ import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
 import com.yahoo.bard.webservice.util.Utils;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.DataApiRequestInterface;
 import com.yahoo.bard.webservice.web.responseprocessors.DruidJsonRequestContentKeys;
 import com.yahoo.bard.webservice.web.responseprocessors.DruidJsonResponseContentKeys;
 import com.yahoo.bard.webservice.web.responseprocessors.EtagCacheResponseProcessor;
@@ -66,7 +66,7 @@ public class EtagCacheRequestHandler extends BaseDataRequestHandler {
     @Override
     public boolean handleRequest(
             RequestContext context,
-            DataApiRequest request,
+            DataApiRequestInterface request,
             DruidAggregationQuery<?> druidQuery,
             ResponseProcessor response
     ) {

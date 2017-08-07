@@ -92,7 +92,7 @@ import javax.ws.rs.core.UriInfo;
 /**
  * Data API Request. Such an API Request binds, validates, and models the parts of a request to the data endpoint.
  */
-public class DataApiRequest extends ApiRequest {
+public class DataApiRequest extends ApiRequest implements DataApiRequestInterface {
     private static final Logger LOG = LoggerFactory.getLogger(DataApiRequest.class);
     private static final String RATIO_METRIC_CATEGORY = "Ratios";
     public static final String REQUEST_MAPPER_NAMESPACE = "dataApiRequestMapper";
@@ -1381,6 +1381,7 @@ public class DataApiRequest extends ApiRequest {
     *
     * @return the Druid filter
     */
+    @Override
     public Filter getFilter() {
         try (TimedPhase timer = RequestLog.startTiming("BuildingDruidFilter")) {
             return filterBuilder.buildFilters(this.filters);
@@ -1390,34 +1391,42 @@ public class DataApiRequest extends ApiRequest {
         }
     }
 
+    @Override
     public Map<LogicalMetric, Set<ApiHaving>> getHavings() {
         return this.havings;
     }
 
+    @Override
     public Having getHaving() {
         return this.having;
     }
 
+    @Override
     public LinkedHashSet<OrderByColumn> getSorts() {
         return this.sorts;
     }
 
+    @Override
     public OptionalInt getCount() {
         return count == 0 ? OptionalInt.empty() : OptionalInt.of(count);
     }
 
+    @Override
     public OptionalInt getTopN() {
         return topN == 0 ? OptionalInt.empty() : OptionalInt.of(topN);
     }
 
+    @Override
     public DateTimeZone getTimeZone() {
         return timeZone;
     }
 
+    @Override
     public DruidFilterBuilder getFilterBuilder() {
         return filterBuilder;
     }
 
+    @Override
     public Optional<OrderByColumn> getDateTimeSort() {
         return dateTimeSort;
     }
