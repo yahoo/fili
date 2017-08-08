@@ -85,6 +85,7 @@
         <version.groovy>2.4.5</version.groovy>
         <version.guava>21.0</version.guava>
         <version.druid.api>0.3.8</version.druid.api>
+        <version.aspectj>1.8.10</version.aspectj>
         <profiles.active>test</profiles.active>
 
         <javadoc_options>${disableDocLint}</javadoc_options>
@@ -196,6 +197,23 @@
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-core</artifactId>
                 <version>4.3.4.RELEASE</version>
+            </dependency>
+
+            <!-- AspectJ -->
+            <dependency>
+                <groupId>org.aspectj</groupId>
+                <artifactId>aspectjweaver</artifactId>
+                <version>${version.aspectj}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.aspectj</groupId>
+                <artifactId>aspectjrt</artifactId>
+                <version>${version.aspectj}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.aspectj</groupId>
+                <artifactId>aspectjtools</artifactId>
+                <version>${version.aspectj}</version>
             </dependency>
 
             <!-- Test -->
@@ -492,6 +510,13 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
         </dependency>
+
+        <!-- AspectJ -->
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+            <scope>runtime</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -542,6 +567,39 @@
                         <includeTestSourceDirectory>true</includeTestSourceDirectory>
                         <consoleOutput>true</consoleOutput>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>aspectj-maven-plugin</artifactId>
+                    <version>1.10</version>
+                    <configuration>
+                        <showWeaveInfo>true</showWeaveInfo>
+                        <complianceLevel>${source_jdk_version}</complianceLevel>
+                        <source>${source_jdk_version}</source>
+                        <target>${target_jdk_version}</target>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <!-- IMPORTANT -->
+                            <phase>process-sources</phase>
+                            <goals>
+                                <goal>compile</goal>
+                                <goal>test-compile</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.aspectj</groupId>
+                            <artifactId>aspectjrt</artifactId>
+                            <version>${version.aspectj}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.aspectj</groupId>
+                            <artifactId>aspectjtools</artifactId>
+                            <version>${version.aspectj}</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -658,6 +716,8 @@
                         <showWarnings>true</showWarnings>
                         <optimize>true</optimize>
                         <encoding>${project.build.sourceEncoding}</encoding>
+                        <!-- IMPORTANT -->
+                        <useIncrementalCompilation>false</useIncrementalCompilation>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -679,6 +739,10 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>aspectj-maven-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
