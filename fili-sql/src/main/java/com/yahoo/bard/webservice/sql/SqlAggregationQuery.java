@@ -81,7 +81,7 @@ public class SqlAggregationQuery extends AbstractDruidAggregationQuery<SqlAggreg
                 postAggregations,
                 intervals,
                 context,
-                false
+                doFork
         );
     }
 
