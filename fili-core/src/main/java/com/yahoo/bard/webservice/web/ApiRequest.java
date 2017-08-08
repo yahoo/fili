@@ -48,6 +48,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -101,6 +102,7 @@ public abstract class ApiRequest {
      * Parses the API request URL and generates the API request object.
      *
      * @param format  response data format JSON or CSV. Default is JSON.
+     * @param headerFormat  The accept field from http request header
      * @param asyncAfter  How long the user is willing to wait for a synchronous request in milliseconds, if null
      * defaults to the system config {@code default_asyncAfter}
      * @param perPage  number of rows to display per page of results. If present in the original request, must be a
@@ -113,13 +115,14 @@ public abstract class ApiRequest {
      */
     public ApiRequest(
             String format,
+            String headerFormat,
             String asyncAfter,
             @NotNull String perPage,
             @NotNull String page,
             UriInfo uriInfo
     ) throws BadApiRequestException {
         this.uriInfo = uriInfo;
-        this.format = generateAcceptFormat(format);
+        this.format = generateAcceptFormat(format, headerFormat);
         this.paginationParameters = generatePaginationParameters(perPage, page);
         this.builder = Response.status(Response.Status.OK);
         this.asyncAfter = generateAsyncAfter(
@@ -134,6 +137,7 @@ public abstract class ApiRequest {
      * Parses the API request URL and generates the API request object. Defaults asyncAfter to never.
      *
      * @param format  response data format JSON or CSV. Default is JSON.
+     * @param headerFormat  The accept field from http request header
      * @param perPage  number of rows to display per page of results. If present in the original request, must be a
      * positive integer. If not present, must be the empty string.
      * @param page  desired page of results. If present in the original request, must be a positive integer. If not
@@ -144,11 +148,12 @@ public abstract class ApiRequest {
      */
     public ApiRequest(
             String format,
+            final String headerFormat,
             @NotNull String perPage,
             @NotNull String page,
             UriInfo uriInfo
     ) throws BadApiRequestException {
-        this(format, SYNCHRONOUS_REQUEST_FLAG, perPage, page, uriInfo);
+        this(format, headerFormat , SYNCHRONOUS_REQUEST_FLAG, perPage, page, uriInfo);
     }
 
     /**
@@ -588,15 +593,37 @@ public abstract class ApiRequest {
      * Generates the format in which the response data is expected.
      *
      * @param format  Expects a URL format query String.
+     * @param headerFormatString  The accept field from http request header
      *
      * @return Response format type (CSV or JSON).
      * @throws BadApiRequestException if the requested format is not found.
      */
-    protected ResponseFormatType generateAcceptFormat(String format) throws BadApiRequestException {
+    protected ResponseFormatType generateAcceptFormat(
+            String format,
+            final String headerFormatString
+    ) throws BadApiRequestException {
         try {
-            return format == null ?
-                    ResponseFormatType.JSON :
-                    ResponseFormatType.valueOf(format.toUpperCase(Locale.ENGLISH));
+            String headerFormat = null;
+            if (headerFormatString != null) {
+                Map<String, String> acceptFormats = new HashMap<>();
+                acceptFormats.put("application/json", "json");
+                acceptFormats.put("application/vnd.api+json", "jsonapi");
+                acceptFormats.put("text/csv", "csv");
+                for (String acceptFormat : acceptFormats.keySet()) {
+                    if (headerFormatString.contains(acceptFormat)) {
+                        headerFormat = acceptFormats.get(acceptFormat);
+                        break;
+                    }
+                }
+            }
+
+            if (format != null) {
+                return ResponseFormatType.valueOf(format.toUpperCase(Locale.ENGLISH));
+            } else if (headerFormat != null) {
+                return ResponseFormatType.valueOf(headerFormat.toUpperCase(Locale.ENGLISH));
+            } else {
+                return ResponseFormatType.JSON;
+            }
         } catch (IllegalArgumentException e) {
             LOG.error(ACCEPT_FORMAT_INVALID.logFormat(format), e);
             throw new BadApiRequestException(ACCEPT_FORMAT_INVALID.format(format));

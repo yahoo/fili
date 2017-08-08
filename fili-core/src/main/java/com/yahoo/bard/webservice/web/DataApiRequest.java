@@ -127,6 +127,7 @@ public class DataApiRequest extends ApiRequest {
      * @param count  count of number of records to be returned in the response
      * @param topN  number of first records per time bucket to be returned in the response
      * @param format  response data format JSON or CSV. Default is JSON.
+     * @param headerFormat  The accept field from http request header
      * @param timeZoneId  a joda time zone id
      * @param asyncAfter  How long the user is willing to wait for a synchronous request in milliseconds
      * @param perPage  number of rows to display per page of results. If present in the original request,
@@ -162,6 +163,7 @@ public class DataApiRequest extends ApiRequest {
             String count,
             String topN,
             String format,
+            String headerFormat,
             String timeZoneId,
             String asyncAfter,
             @NotNull String perPage,
@@ -169,7 +171,7 @@ public class DataApiRequest extends ApiRequest {
             UriInfo uriInfo,
             BardConfigResources bardConfigResources
     ) throws BadApiRequestException {
-        super(format, asyncAfter, perPage, page, uriInfo);
+        super(format, headerFormat, asyncAfter, perPage, page, uriInfo);
 
         GranularityParser granularityParser = bardConfigResources.getGranularityParser();
         DimensionDictionary dimensionDictionary = bardConfigResources.getDimensionDictionary();

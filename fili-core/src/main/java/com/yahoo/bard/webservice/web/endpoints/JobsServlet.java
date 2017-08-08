@@ -152,6 +152,7 @@ public class JobsServlet extends EndpointServlet {
 
             JobsApiRequest apiRequest = new JobsApiRequest (
                     format,
+                    containerRequestContext.getHeaderString("Accept"),
                     null, //asyncAfter is null so it behaves like a synchronous request
                     perPage,
                     page,
@@ -222,6 +223,7 @@ public class JobsServlet extends EndpointServlet {
             RequestLog.record(new JobRequest(ticket));
             JobsApiRequest apiRequest = new JobsApiRequest (
                     ResponseFormatType.JSON.toString(),
+                    containerRequestContext.getHeaderString("Accept"),
                     null,
                     "",
                     "",
@@ -280,6 +282,7 @@ public class JobsServlet extends EndpointServlet {
 
             JobsApiRequest apiRequest = new JobsApiRequest (
                     format,
+                    containerRequestContext.getHeaderString("Accept"),
                     asyncAfter,
                     perPage,
                     page,

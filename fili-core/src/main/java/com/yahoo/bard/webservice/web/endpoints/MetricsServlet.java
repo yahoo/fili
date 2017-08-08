@@ -113,6 +113,7 @@ public class MetricsServlet extends EndpointServlet {
             MetricsApiRequest apiRequest = new MetricsApiRequest(
                     null,
                     format,
+                    containerRequestContext.getHeaderString("Accept"),
                     perPage,
                     page,
                     metricDictionary,
@@ -176,7 +177,15 @@ public class MetricsServlet extends EndpointServlet {
             RequestLog.startTiming(this);
             RequestLog.record(new MetricRequest(metricName));
 
-            MetricsApiRequest apiRequest = new MetricsApiRequest(metricName, null, "", "", metricDictionary, uriInfo);
+            MetricsApiRequest apiRequest = new MetricsApiRequest(
+                    metricName,
+                    null,
+                    containerRequestContext.getHeaderString("Accept"),
+                    "",
+                    "",
+                    metricDictionary,
+                    uriInfo
+            );
 
             if (requestMapper != null) {
                 apiRequest = (MetricsApiRequest) requestMapper.apply(apiRequest, containerRequestContext);

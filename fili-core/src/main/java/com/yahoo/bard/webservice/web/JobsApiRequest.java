@@ -36,6 +36,7 @@ public class JobsApiRequest extends ApiRequest {
      * Parses the API request URL and generates the Api Request object.
      *
      * @param format  response data format JSON or CSV. Default is JSON.
+     * @param headerFormat  The accept field from http request header
      * @param asyncAfter  How long the user is willing to wait for a synchronous request in milliseconds
      * @param perPage  number of rows to display per page of results. If present in the original request,
      * must be a positive integer. If not present, must be the empty string.
@@ -51,6 +52,7 @@ public class JobsApiRequest extends ApiRequest {
      */
     public JobsApiRequest(
             String format,
+            String headerFormat,
             String asyncAfter,
             @NotNull String perPage,
             @NotNull String page,
@@ -59,7 +61,7 @@ public class JobsApiRequest extends ApiRequest {
             JobPayloadBuilder jobPayloadBuilder,
             ApiJobStore apiJobStore
     ) {
-        super(format, asyncAfter, perPage, page, uriInfo);
+        super(format, headerFormat, asyncAfter, perPage, page, uriInfo);
         this.jobPayloadBuilder = jobPayloadBuilder;
         this.apiJobStore = apiJobStore;
         this.filters = filters;

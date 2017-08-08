@@ -98,6 +98,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
         JobsApiRequest apiRequest = new JobsApiRequest(
                 null,
                 null,
+                null,
                 "",
                 "",
                 null,
@@ -123,6 +124,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
         JobsApiRequest apiRequest = new JobsApiRequest(
                 null,
                 null,
+                null,
                 "",
                 "",
                 null,
@@ -145,6 +147,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
         setup:
         TestSubscriber<PreResponse> testSubscriber = new TestSubscriber<>()
         JobsApiRequest apiRequest = new JobsApiRequest(
+                null,
                 null,
                 null,
                 "",
@@ -174,7 +177,17 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
     def "getResults returns an empty observable if the PreResponse is not available in the PreResponseStore before the async timeout"() {
         setup:
         TestSubscriber<PreResponse> testSubscriber = new TestSubscriber<>()
-        JobsApiRequest apiRequest = new JobsApiRequest(null, "5", "", "", null, uriInfo, jobPayloadBuilder, apiJobStore)
+        JobsApiRequest apiRequest = new JobsApiRequest(
+                null,
+                null,
+                "5",
+                "",
+                "",
+                null,
+                uriInfo,
+                jobPayloadBuilder,
+                apiJobStore
+        )
 
         when: "we start the async chain"
         jobsServlet.getResults("ticket3", apiRequest.asyncAfter).subscribe(testSubscriber)
@@ -190,6 +203,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
     def "If the PreResponse is available in the PreResponseStore and we miss the notification from broadcastChannel, we go to the PreResponseStore exactly once"() {
         setup:
         JobsApiRequest apiRequest1 = new JobsApiRequest(
+                null,
                 null,
                 "5",
                 "",
@@ -219,6 +233,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
 
         and:
         JobsApiRequest apiRequest = new JobsApiRequest(
+                null,
                 null,
                 "never",
                 "",
@@ -258,6 +273,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
         setup:
         JobsApiRequest apiRequest1 = new JobsApiRequest(
                 null,
+                null,
                 "2",
                 "",
                 "",
@@ -282,6 +298,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
     def "If the notification from broadcastChannel is received within the async timeout, we go to the PreResponsestore twice"() {
         setup:
         JobsApiRequest apiRequest1 = new JobsApiRequest(
+                null,
                 null,
                 "never",
                 "",

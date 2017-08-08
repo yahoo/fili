@@ -45,6 +45,7 @@ public class DimensionsApiRequest extends ApiRequest {
      * ((field name and operation):((multiple values bounded by [])or(single value))))(followed by , or end of string)
      * }</pre>
      * @param format  response data format JSON or CSV. Default is JSON.
+     * @param headerFormat  The accept field from http request header
      * @param perPage  number of rows to display per page of results. If present in the original request,
      * must be a positive integer. If not present, must be the empty string.
      * @param page  desired page of results. If present in the original request, must be a positive
@@ -64,12 +65,13 @@ public class DimensionsApiRequest extends ApiRequest {
             String dimension,
             String filters,
             String format,
+            String headerFormat,
             @NotNull String perPage,
             @NotNull String page,
             DimensionDictionary dimensionDictionary,
             UriInfo uriInfo
     ) throws BadApiRequestException {
-        super(format, perPage, page, uriInfo);
+        super(format, headerFormat, perPage, page, uriInfo);
 
         // Zero or more grouping dimensions may be specified
         this.dimensions = generateDimensions(dimension, dimensionDictionary);

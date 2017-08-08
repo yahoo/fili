@@ -86,15 +86,18 @@ class DataApiRequestSpec extends Specification {
         responseFormat == expectedFormat
 
         where:
-        responseFormat          | expectedFormat
-        ResponseFormatType.JSON | new DataApiRequest().generateAcceptFormat(null)
-        ResponseFormatType.JSON | new DataApiRequest().generateAcceptFormat("json")
-        ResponseFormatType.CSV  | new DataApiRequest().generateAcceptFormat("csv")
+        responseFormat              | expectedFormat
+        ResponseFormatType.JSON     | new DataApiRequest().generateAcceptFormat(null, null)
+        ResponseFormatType.JSON     | new DataApiRequest().generateAcceptFormat("json", null)
+        ResponseFormatType.JSON     | new DataApiRequest().generateAcceptFormat(null, "application/json")
+        ResponseFormatType.CSV      | new DataApiRequest().generateAcceptFormat("csv", null)
+        ResponseFormatType.CSV      | new DataApiRequest().generateAcceptFormat(null, "text/csv")
+        ResponseFormatType.JSONAPI  | new DataApiRequest().generateAcceptFormat(null, "application/vnd.api+json")
     }
 
     def "check invalid parsing generateFormat"() {
         when:
-        new DataApiRequest().generateAcceptFormat("bad")
+        new DataApiRequest().generateAcceptFormat("bad", null)
 
         then:
         thrown BadApiRequestException

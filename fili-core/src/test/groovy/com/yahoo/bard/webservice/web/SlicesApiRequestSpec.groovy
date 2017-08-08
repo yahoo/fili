@@ -67,6 +67,7 @@ class SlicesApiRequestSpec extends BaseDataSourceMetadataSpec {
         SlicesApiRequest apiRequest = new SlicesApiRequest(
                 null,
                 null,
+                null,
                 "",
                 "",
                 fullDictionary,
@@ -121,6 +122,7 @@ class SlicesApiRequestSpec extends BaseDataSourceMetadataSpec {
         SlicesApiRequest apiRequest = new SlicesApiRequest(
                 name,
                 null,
+                null,
                 "",
                 "",
                 fullDictionary,
@@ -142,6 +144,7 @@ class SlicesApiRequestSpec extends BaseDataSourceMetadataSpec {
         when:
         new SlicesApiRequest(
                 name,
+                null,
                 null,
                 "",
                 "",

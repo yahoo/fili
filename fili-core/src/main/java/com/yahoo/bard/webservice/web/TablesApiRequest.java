@@ -61,6 +61,7 @@ public class TablesApiRequest extends ApiRequest {
      * ((field name and operation):((multiple values bounded by [])or(single value))))(followed by , or end of string)
      * }</pre>
      * @param format  response data format JSON or CSV. Default is JSON.
+     * @param headerFormat  The accept field from http request header
      * @param perPage  number of rows to display per page of results. If present in the original request,
      * must be a positive integer. If not present, must be the empty string.
      * @param page  desired page of results. If present in the original request, must be a positive
@@ -78,12 +79,13 @@ public class TablesApiRequest extends ApiRequest {
             String tableName,
             String granularity,
             String format,
+            String headerFormat,
             @NotNull String perPage,
             @NotNull String page,
             UriInfo uriInfo,
             BardConfigResources bardConfigResources
     ) throws BadApiRequestException {
-        super(format, perPage, page, uriInfo);
+        super(format, headerFormat, perPage, page, uriInfo);
 
         this.tables = generateTables(tableName, bardConfigResources.getLogicalTableDictionary());
 
@@ -121,6 +123,7 @@ public class TablesApiRequest extends ApiRequest {
      * @param tableName  Logical table corresponding to the table name specified in the URL
      * @param granularity  Requested time granularity
      * @param format  Response data format JSON or CSV. Default is JSON.
+     * @param headerFormat  The accept field from http request header
      * @param perPage  Number of rows to display per page of results. It must represent a positive integer or an empty
      * string if it's not specified
      * @param page  Desired page of results. It must represent a positive integer or an empty
@@ -143,6 +146,7 @@ public class TablesApiRequest extends ApiRequest {
             String tableName,
             String granularity,
             String format,
+            final String headerFormat,
             @NotNull String perPage,
             @NotNull String page,
             UriInfo uriInfo,
@@ -153,7 +157,7 @@ public class TablesApiRequest extends ApiRequest {
             String filters,
             String timeZoneId
     ) throws BadApiRequestException {
-        super(format, perPage, page, uriInfo);
+        super(format, headerFormat, perPage, page, uriInfo);
 
         LogicalTableDictionary logicalTableDictionary = bardConfigResources.getLogicalTableDictionary();
         this.tables = generateTables(tableName, logicalTableDictionary);

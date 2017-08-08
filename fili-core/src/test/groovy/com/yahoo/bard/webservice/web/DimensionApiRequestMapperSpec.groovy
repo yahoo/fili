@@ -33,6 +33,7 @@ class DimensionApiRequestMapperSpec extends Specification {
                 "color",
                 "shape|desc-in[shape]",
                 null,
+                null,
                 "",
                 "",
                 resourceDictionaries.getDimensionDictionary(),
@@ -49,6 +50,7 @@ class DimensionApiRequestMapperSpec extends Specification {
                 "color",
                 "shape|desc-in[shape],color|desc-in[red]",
                 null,
+                null,
                 "",
                 "",
                 resourceDictionaries.getDimensionDictionary(),
@@ -64,6 +66,7 @@ class DimensionApiRequestMapperSpec extends Specification {
         dimensionsApiRequest = new DimensionsApiRequest(
                 "color",
                 "color|desc-in[red]",
+                null,
                 null,
                 "",
                 "",

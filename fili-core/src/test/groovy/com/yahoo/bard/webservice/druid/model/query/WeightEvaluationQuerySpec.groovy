@@ -114,6 +114,7 @@ class WeightEvaluationQuerySpec extends Specification {
                 null, //counts
                 null, //topN
                 null, //format
+                null, //header format
                 null, //timeZoneId
                 null, //asyncAfter
                 "", //perPage
@@ -143,6 +144,7 @@ class WeightEvaluationQuerySpec extends Specification {
                 null, //counts
                 null, //topN
                 null, //format
+                null, //header format
                 null, //timeZoneId
                 null, //asyncAfter
                 "", //perPage
@@ -171,6 +173,7 @@ class WeightEvaluationQuerySpec extends Specification {
                 null, //counts
                 null, //topN
                 null, //format
+                null, //header format
                 null, //timeZoneId
                 null, //asyncAfter
                 "", //perPage
@@ -199,6 +202,7 @@ class WeightEvaluationQuerySpec extends Specification {
                 null, //counts
                 null, //topN
                 null, //format
+                null, //header format
                 null, //timeZoneId
                 null, //asyncAfter
                 "", //perPage

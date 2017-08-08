@@ -32,6 +32,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -66,12 +67,19 @@ public class FeatureFlagsServlet extends EndpointServlet {
          * Constructor.
          *
          * @param format  Format of the request
+         * @param headerFormat  The accept field from http request header
          * @param perPage  How many items to show per page
          * @param page  Which page to show
          * @param uriInfo  URL information about the request
          */
-        FeatureFlagApiRequest(String format, String perPage, String page, UriInfo uriInfo) {
-            super(format, perPage, page, uriInfo);
+        FeatureFlagApiRequest(
+                String format,
+                final String headerFormat,
+                String perPage,
+                String page,
+                UriInfo uriInfo
+        ) {
+            super(format, headerFormat, perPage, page, uriInfo);
         }
     }
 
@@ -101,6 +109,7 @@ public class FeatureFlagsServlet extends EndpointServlet {
      * @param page the page to start from
      * @param format the format to use
      * @param uriInfo the injected UriInfo
+     * @param containerRequestContext Context from the http request object
      *
      * @return Response Format:
      * <pre><code>
@@ -121,13 +130,20 @@ public class FeatureFlagsServlet extends EndpointServlet {
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @QueryParam("format") String format,
-            @Context UriInfo uriInfo
+            @Context UriInfo uriInfo,
+            @Context final ContainerRequestContext containerRequestContext
     ) {
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new FeatureFlagRequest("all"));
 
-            FeatureFlagApiRequest apiRequest = new FeatureFlagApiRequest(format, perPage, page, uriInfo);
+            FeatureFlagApiRequest apiRequest = new FeatureFlagApiRequest(
+                    format,
+                    containerRequestContext.getHeaderString("Accept"),
+                    perPage,
+                    page,
+                    uriInfo
+            );
 
             List<FeatureFlagEntry> status = flags.getValues().stream()
                     .map(flag -> new FeatureFlagEntry(flag.getName(), flag.isOn()))
@@ -158,6 +174,7 @@ public class FeatureFlagsServlet extends EndpointServlet {
      * @param flagName The feature flag
      * @param format  The format to return results in
      * @param uriInfo  The injected UriInfo
+     * @param containerRequestContext Context from the http request object
      *
      * @return Response Format:
      * <pre><code>
@@ -176,13 +193,20 @@ public class FeatureFlagsServlet extends EndpointServlet {
     public Response getFeatureFlagStatus(
             @PathParam("flagName") String flagName,
             @QueryParam("format") String format,
-            @Context UriInfo uriInfo
+            @Context UriInfo uriInfo,
+            @Context final ContainerRequestContext containerRequestContext
     ) {
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new FeatureFlagRequest(flagName));
 
-            FeatureFlagApiRequest apiRequest = new FeatureFlagApiRequest(format, "", "", uriInfo);
+            FeatureFlagApiRequest apiRequest = new FeatureFlagApiRequest(
+                    format,
+                    containerRequestContext.getHeaderString("Accept"),
+                    "",
+                    "",
+                    uriInfo
+            );
 
             FeatureFlag flag = flags.forName(flagName);
             FeatureFlagEntry status = new FeatureFlagEntry(flag.getName(), flag.isOn());
