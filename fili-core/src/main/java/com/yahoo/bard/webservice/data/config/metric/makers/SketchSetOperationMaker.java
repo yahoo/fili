@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.data.config.metric.makers;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.metric.mappers.SketchRoundUpMapper;
@@ -42,7 +43,7 @@ public class SketchSetOperationMaker extends MetricMaker {
     }
 
     @Override
-    protected LogicalMetric makeInner(String metricName, List<String> dependentMetrics) {
+    protected LogicalMetric makeInner(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics) {
 
         TemplateDruidQuery mergedQuery = getMergedQuery(dependentMetrics);
 
@@ -52,6 +53,7 @@ public class SketchSetOperationMaker extends MetricMaker {
 
         // Create the SketchSetOperationPostAggregation
         SketchSetOperationPostAggregation setPostAggregation;
+        String metricName = logicalMetricInfo.getName();
         setPostAggregation = new SketchSetOperationPostAggregation(
                 metricName,
                 function,
@@ -68,7 +70,7 @@ public class SketchSetOperationMaker extends MetricMaker {
                 mergedQuery.getTimeGrain()
         );
 
-        return new LogicalMetric(query, new SketchRoundUpMapper(metricName), metricName);
+        return new LogicalMetric(query, new SketchRoundUpMapper(metricName), logicalMetricInfo);
     }
 
     @Override

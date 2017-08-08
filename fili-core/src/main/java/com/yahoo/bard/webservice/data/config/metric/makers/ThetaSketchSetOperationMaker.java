@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.data.config.metric.makers;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.metric.mappers.SketchRoundUpMapper;
@@ -37,7 +38,7 @@ public class ThetaSketchSetOperationMaker extends MetricMaker {
     }
 
     @Override
-    protected LogicalMetric makeInner(String metricName, List<String> dependentMetrics) {
+    protected LogicalMetric makeInner(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics) {
 
         TemplateDruidQuery mergedQuery = getMergedQuery(dependentMetrics);
 
@@ -47,6 +48,7 @@ public class ThetaSketchSetOperationMaker extends MetricMaker {
                 .collect(Collectors.toList());
 
         // Create the ThetaSketchSetOperationPostAggregation
+        String metricName = logicalMetricInfo.getName();
         ThetaSketchSetOperationPostAggregation setPostAggregation = new ThetaSketchSetOperationPostAggregation(
                 metricName,
                 function,
@@ -55,7 +57,7 @@ public class ThetaSketchSetOperationMaker extends MetricMaker {
 
         PostAggregation estimate = new ThetaSketchEstimatePostAggregation(metricName, setPostAggregation);
         TemplateDruidQuery query = mergedQuery.withPostAggregations(Collections.singleton(estimate));
-        return new LogicalMetric(query, new SketchRoundUpMapper(metricName), metricName);
+        return new LogicalMetric(query, new SketchRoundUpMapper(metricName), logicalMetricInfo);
     }
 
     @Override

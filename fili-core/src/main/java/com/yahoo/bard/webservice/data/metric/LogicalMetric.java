@@ -27,10 +27,15 @@ public class LogicalMetric {
      * @param templateDruidQuery  Query the metric needs
      * @param calculation  Mapper for the metric
      * @param name  Name of the metric
-     * @param longName Long name of the metric
+     * @param longName  Long name of the metric
      * @param category  Category of the metric
      * @param description  Description of the metric
+     *
+     * @deprecated Properties, such as name, of LogicalMetric is stored in a unified object called
+     * {@link com.yahoo.bard.webservice.data.metric.LogicalMetricInfo}. Use new constructor
+     * {@link #LogicalMetric(TemplateDruidQuery, ResultSetMapper, LogicalMetricInfo)} instead.
      */
+    @Deprecated
     public LogicalMetric(
             TemplateDruidQuery templateDruidQuery,
             ResultSetMapper calculation,
@@ -39,12 +44,7 @@ public class LogicalMetric {
             String category,
             String description
     ) {
-        this.calculation = calculation;
-        this.name = name;
-        this.longName = longName;
-        this.category = category;
-        this.description = description;
-        this.query = templateDruidQuery;
+        this(templateDruidQuery, calculation, new LogicalMetricInfo(name, longName, category, description));
     }
 
     /**
@@ -57,14 +57,18 @@ public class LogicalMetric {
      * @param name  Name of the metric
      * @param description  Description of the metric
      *
+     * @deprecated Properties, such as name, of LogicalMetric is stored in a unified object called
+     * {@link com.yahoo.bard.webservice.data.metric.LogicalMetricInfo}. Use new constructor
+     * {@link #LogicalMetric(TemplateDruidQuery, ResultSetMapper, LogicalMetricInfo)} instead.
      */
+    @Deprecated
     public LogicalMetric(
             TemplateDruidQuery templateDruidQuery,
             ResultSetMapper calculation,
             String name,
             String description
     ) {
-        this(templateDruidQuery, calculation, name, name, DEFAULT_CATEGORY, description);
+        this(templateDruidQuery, calculation, new LogicalMetricInfo(name, name, DEFAULT_CATEGORY, description));
     }
 
     /**
@@ -75,9 +79,34 @@ public class LogicalMetric {
      * @param templateDruidQuery  Query the metric needs
      * @param calculation  Mapper for the metric
      * @param name  Name of the metric
+     *
+     * @deprecated Properties, such as name, of LogicalMetric is stored in a unified object called
+     * {@link com.yahoo.bard.webservice.data.metric.LogicalMetricInfo}. Use new constructor
+     * {@link #LogicalMetric(TemplateDruidQuery, ResultSetMapper, LogicalMetricInfo)} instead.
      */
+    @Deprecated
     public LogicalMetric(TemplateDruidQuery templateDruidQuery, ResultSetMapper calculation, String name) {
-        this(templateDruidQuery, calculation, name, name, DEFAULT_CATEGORY, name);
+        this(templateDruidQuery, calculation, new LogicalMetricInfo(name, name, DEFAULT_CATEGORY, name));
+    }
+
+    /**
+     * Constructor. Builds a Logical Metric whose instance variables are provided by a LogicalMetricInfo object.
+     *
+     * @param templateDruidQuery  Query the metric needs
+     * @param calculation  Mapper for the metric
+     * @param logicalMetricInfo  Logical Metric info provider
+     */
+    public LogicalMetric(
+            TemplateDruidQuery templateDruidQuery,
+            ResultSetMapper calculation,
+            LogicalMetricInfo logicalMetricInfo
+    ) {
+        this.calculation = calculation;
+        this.name = logicalMetricInfo.getName();
+        this.longName = logicalMetricInfo.getLongName();
+        this.category = logicalMetricInfo.getCategory();
+        this.description = logicalMetricInfo.getDescription();
+        this.query = templateDruidQuery;
     }
 
     public String getName() {
