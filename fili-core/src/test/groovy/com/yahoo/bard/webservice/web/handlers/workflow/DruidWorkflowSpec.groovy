@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.handlers.workflow
 
+import com.yahoo.bard.webservice.web.handlers.WeightCheckRequestHandler
+
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_CACHE
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_CACHE_V2
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.QUERY_SPLIT
@@ -28,6 +30,7 @@ import com.yahoo.bard.webservice.web.handlers.DruidPartialDataRequestHandler
 import com.yahoo.bard.webservice.web.handlers.EtagCacheRequestHandler
 import com.yahoo.bard.webservice.web.handlers.SplitQueryRequestHandler
 import com.yahoo.bard.webservice.web.handlers.WebServiceSelectorRequestHandler
+import com.yahoo.bard.webservice.web.handlers.WeightCheckRequestHandler
 import com.yahoo.bard.webservice.web.util.QueryWeightUtil
 
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -186,7 +189,7 @@ class DruidWorkflowSpec extends Specification {
         handlers = getHandlerChain(defaultHandler.webServiceHandler.next)
 
         then:
-        [AsyncWebServiceRequestHandler, DebugRequestHandler].every {
+        [AsyncWebServiceRequestHandler, DebugRequestHandler, WeightCheckRequestHandler].every {
             handlers.find(byClass(it)) != null
         }
     }
@@ -211,10 +214,10 @@ class DruidWorkflowSpec extends Specification {
         def defaultHandler = select.handlerSelector as DefaultWebServiceHandlerSelector
 
         when:
-        def handlers1 = getHandlerChain(defaultHandler.webServiceHandler.next)
+        def handler = getHandlerChain(defaultHandler.webServiceHandler.next)
 
         then:
-        handlers1.find(byClass(SplitQueryRequestHandler)) != null
+        handler.find(byClass(SplitQueryRequestHandler)) != null
 
         cleanup:
         QUERY_SPLIT.setOn(splittingStatus)
@@ -254,10 +257,10 @@ class DruidWorkflowSpec extends Specification {
         def defaultHandler = select.handlerSelector as DefaultWebServiceHandlerSelector
 
         when:
-        def handlers1 = getHandlerChain(defaultHandler.webServiceHandler.next)
+        def handler = getHandlerChain(defaultHandler.webServiceHandler.next)
 
         then:
-        handlers1.find(byClass(DruidPartialDataRequestHandler)) != null
+        handler.find(byClass(DruidPartialDataRequestHandler)) != null
 
         cleanup:
         SYSTEM_CONFIG.clearProperty(UNCOVERED_INTERVAL_LIMIT_KEY)
@@ -282,10 +285,10 @@ class DruidWorkflowSpec extends Specification {
         def defaultHandler = select.handlerSelector as DefaultWebServiceHandlerSelector
 
         when:
-        def handlers1 = getHandlerChain(defaultHandler.webServiceHandler.next)
+        def handler = getHandlerChain(defaultHandler.webServiceHandler.next)
 
         then:
-        handlers1.find(byClass(DruidPartialDataRequestHandler)) == null
+        handler.find(byClass(DruidPartialDataRequestHandler)) == null
 
         cleanup:
         SYSTEM_CONFIG.clearProperty(UNCOVERED_INTERVAL_LIMIT_KEY)

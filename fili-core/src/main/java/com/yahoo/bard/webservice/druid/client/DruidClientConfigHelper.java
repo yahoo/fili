@@ -88,6 +88,8 @@ public class DruidClientConfigHelper {
      * Fetches the druid UI request Priority.
      *
      * @return druid UI request priority
+     *
+     * The druid UI priority is deprecated, please use {@link #getDruidPriority()}.
      * @deprecated
      */
     @Deprecated
@@ -100,6 +102,8 @@ public class DruidClientConfigHelper {
      * Fetches the druid non-UI Priority.
      *
      * @return druid non-UI priority
+     *
+     * The druid non-UI priority is deprecated, please use {@link #getDruidPriority()}.
      * @deprecated
      */
     @Deprecated
@@ -128,6 +132,8 @@ public class DruidClientConfigHelper {
      * Fetches the druid UI URL.
      *
      * @return druid UI URL
+     *
+     * The druid UI URL is deprecated, please use {@link #getDruidUrl()}
      * @deprecated
      */
     @Deprecated
@@ -144,6 +150,8 @@ public class DruidClientConfigHelper {
      * Fetches the druid non-UI URL.
      *
      * @return druid non-UI URL
+     *
+     * The druid non-UI URL is deprecated, please use {@link #getDruidUrl()}.
      * @deprecated
      */
     @Deprecated
@@ -183,6 +191,8 @@ public class DruidClientConfigHelper {
      * Fetches the druid UI request timeout.
      *
      * @return druid UI request timeout
+     *
+     * The druid UI timeout is deprecated, please use {@link #getDruidTimeout()}.
      * @deprecated
      */
     @Deprecated
@@ -194,6 +204,8 @@ public class DruidClientConfigHelper {
      * Fetches the druid non-UI request timeout.
      *
      * @return druid non-UI request timeout
+     *
+     * The druid non-UI timeout is deprecated, please use {@link #getDruidTimeout()}.
      * @deprecated
      */
     @Deprecated
@@ -222,7 +234,9 @@ public class DruidClientConfigHelper {
      * Create a druid service configuration object for the UI service.
      *
      * @return a druid service configuration object with all configuration parameters set
+     * @deprecated
      */
+    @Deprecated
     public static DruidServiceConfig getUiServiceConfig() {
         return new DruidServiceConfig("Broker", getDruidUiUrl(), getDruidUiTimeout(), getDruidUiPriority());
     }
@@ -231,11 +245,18 @@ public class DruidClientConfigHelper {
      * Create a druid service configuration object for the non UI service.
      *
      * @return a druid service configuration object with all configuration parameters set
+     * @deprecated
      */
+    @Deprecated
     public static DruidServiceConfig getNonUiServiceConfig() {
         return new DruidServiceConfig("Broker", getDruidNonUiUrl(), getDruidNonUiTimeout(), getDruidNonUiPriority());
     }
 
+    /**
+     * Create a druid service configuration object.
+     *
+     * @return a druid service configuration object with all configuration parameters set
+     */
     public static DruidServiceConfig getServiceConfig() {
         return new DruidServiceConfig("Broker", getDruidUrl(), getDruidTimeout(), getDruidPriority());
     }

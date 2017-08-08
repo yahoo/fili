@@ -403,7 +403,7 @@ public class JerseyTestBinder {
         // This alternate switched implementation approach is not really used anywhere, should be split off into a
         // separate subclass if needed
         if (state.webService == null) {
-            state.webService = (useTestWebService) ?
+            state.webService = useTestWebService ?
                     new TestDruidWebService("Test UI WS") :
                     new AsyncDruidWebServiceImpl(DruidClientConfigHelper.getServiceConfig(), mapper);
         }
