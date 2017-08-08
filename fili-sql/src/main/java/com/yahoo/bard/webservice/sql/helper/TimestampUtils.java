@@ -14,7 +14,7 @@ public class TimestampUtils {
      * Private constructor - all methods static.
      */
     private TimestampUtils() {
-
+        throw new IllegalStateException("No instances");
     }
 
     /**
