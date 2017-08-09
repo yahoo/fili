@@ -45,6 +45,8 @@ import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.PreResponse;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.RequestValidationException;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequestImpl;
+import com.yahoo.bard.webservice.web.apirequest.HavingGenerator;
 import com.yahoo.bard.webservice.web.handlers.DataRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
 import com.yahoo.bard.webservice.web.handlers.RequestHandlerUtils;
@@ -107,6 +109,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
     private final DataRequestHandler dataRequestHandler;
     private final RequestMapper requestMapper;
     private final DruidFilterBuilder filterBuilder;
+    private final HavingGenerator havingGenerator;
     private final JobRowBuilder jobRowBuilder;
     private final AsynchronousWorkflowsBuilder asynchronousWorkflowsBuilder;
     private final JobPayloadBuilder jobPayloadBuilder;
@@ -135,6 +138,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
      * @param requestMapper  Allows for overriding the API request
      * @param objectMappers  JSON serialization tools
      * @param filterBuilder  Helper to build filters
+     * @param havingGenerator  Helper to generate having
      * @param granularityParser  Helper for parsing granularities
      * @param jobPayloadBuilder  The factory for building a view of the JobRow that is sent to the user
      * @param jobRowBuilder  The JobRows factory
@@ -154,6 +158,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             @Named(DataApiRequest.REQUEST_MAPPER_NAMESPACE) RequestMapper requestMapper,
             ObjectMappersSuite objectMappers,
             DruidFilterBuilder filterBuilder,
+            HavingGenerator havingGenerator,
             GranularityParser granularityParser,
             JobPayloadBuilder jobPayloadBuilder,
             JobRowBuilder jobRowBuilder,
@@ -170,6 +175,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
         this.writer = objectMappers.getMapper().writer();
         this.dataRequestHandler = workflowProvider.buildWorkflow();
         this.filterBuilder = filterBuilder;
+        this.havingGenerator = havingGenerator;
         this.granularityParser = granularityParser;
         this.jobPayloadBuilder = jobPayloadBuilder;
         this.jobRowBuilder = jobRowBuilder;
@@ -354,7 +360,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
         try {
             DataApiRequest apiRequest;
             try (TimedPhase timer = RequestLog.startTiming("DataApiRequest")) {
-                apiRequest = new DataApiRequest(
+                apiRequest = new DataApiRequestImpl(
                         tableName,
                         timeGrain,
                         dimensions,
@@ -425,7 +431,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             // Process the request
             RequestLog.startTiming(REQUEST_WORKFLOW_TIMER);
             boolean complete = dataRequestHandler.handleRequest(context, apiRequest, druidQuery, response);
-            if (! complete) {
+            if (!complete) {
                 throw new IllegalStateException("No request handler accepted request.");
             }
         } catch (RequestValidationException e) {
@@ -551,6 +557,10 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
 
     public DruidFilterBuilder getFilterBuilder() {
         return filterBuilder;
+    }
+
+    public HavingGenerator getHavingApiGenerator() {
+        return havingGenerator;
     }
 
     public ObjectWriter getWriter() {

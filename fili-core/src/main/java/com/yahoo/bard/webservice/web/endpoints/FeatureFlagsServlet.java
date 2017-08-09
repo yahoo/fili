@@ -10,7 +10,7 @@ import com.yahoo.bard.webservice.config.FeatureFlag;
 import com.yahoo.bard.webservice.config.FeatureFlagRegistry;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.FeatureFlagRequest;
-import com.yahoo.bard.webservice.web.ApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.ApiRequestImpl;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -62,7 +62,7 @@ public class FeatureFlagsServlet extends EndpointServlet {
     /**
      * FeatureFlag-specific ApiRequest.
      */
-    class FeatureFlagApiRequest extends ApiRequest {
+    class FeatureFlagApiRequest extends ApiRequestImpl {
         /**
          * Constructor.
          *

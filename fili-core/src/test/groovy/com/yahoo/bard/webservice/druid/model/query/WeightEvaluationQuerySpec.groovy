@@ -30,6 +30,8 @@ import com.yahoo.bard.webservice.druid.model.DefaultQueryType
 import com.yahoo.bard.webservice.druid.model.aggregation.SketchCountAggregation
 import com.yahoo.bard.webservice.table.resolver.DefaultPhysicalTableResolver
 import com.yahoo.bard.webservice.web.DataApiRequest
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequestImpl
+import com.yahoo.bard.webservice.web.apirequest.DefaultHavingApiGenerator
 import com.yahoo.bard.webservice.web.endpoints.DataServlet
 
 import org.joda.time.Interval
@@ -77,6 +79,7 @@ class WeightEvaluationQuerySpec extends Specification {
         dataServlet.getDimensionDictionary() >> configurationLoader.dimensionDictionary
         dataServlet.getLogicalTableDictionary() >> configurationLoader.logicalTableDictionary
         dataServlet.getFilterBuilder() >> new DefaultDruidFilterBuilder()
+        dataServlet.getHavingApiGenerator() >> new DefaultHavingApiGenerator(configurationLoader)
         dataServlet.getGranularityParser() >> new StandardGranularityParser()
 
         builder = new DruidQueryBuilder(
@@ -102,7 +105,7 @@ class WeightEvaluationQuerySpec extends Specification {
 
     def "Worst case estimate calculation for day"() {
         given: "outer daily use daily time grain"
-        final DataApiRequest apiRequest = new DataApiRequest(
+        final DataApiRequest apiRequest = new DataApiRequestImpl(
                 "shapes",
                 "day",
                 [size, shape, color, other],
@@ -131,7 +134,7 @@ class WeightEvaluationQuerySpec extends Specification {
 
     def "Worst case estimate calculation for daily average aggregated to week"() {
         given: "weekly day average in outer query, use inner daily time grain"
-        final DataApiRequest apiRequest = new DataApiRequest(
+        final DataApiRequest apiRequest = new DataApiRequestImpl(
                 "shapes",
                 "week",
                 [size, shape, color, other],
@@ -159,7 +162,7 @@ class WeightEvaluationQuerySpec extends Specification {
 
     def "Worst case estimate calculation for weekly aggregate"() {
         given: "weekly day average in outer query, use inner daily timegrain"
-        final DataApiRequest apiRequest = new DataApiRequest(
+        final DataApiRequest apiRequest = new DataApiRequestImpl(
                 "shapes",
                 "week",
                 [size, shape, color, other],
@@ -187,7 +190,7 @@ class WeightEvaluationQuerySpec extends Specification {
 
     def "Weight check query strips sort columns"() {
         given: "weekly day average in outer query, use inner daily timegrain"
-        final DataApiRequest apiRequest = new DataApiRequest(
+        final DataApiRequest apiRequest = new DataApiRequestImpl(
                 "shapes",
                 "week",
                 [size, shape, color, other],

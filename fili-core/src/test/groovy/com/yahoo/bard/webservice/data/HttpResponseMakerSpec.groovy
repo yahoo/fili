@@ -24,6 +24,7 @@ import com.yahoo.bard.webservice.web.responseprocessors.ResultSetResponseProcess
 
 import rx.subjects.PublishSubject
 import rx.subjects.Subject
+
 import spock.lang.Specification
 
 import javax.ws.rs.container.AsyncResponse

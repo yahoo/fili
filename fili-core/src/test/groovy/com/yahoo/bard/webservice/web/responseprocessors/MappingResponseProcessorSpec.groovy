@@ -22,7 +22,6 @@ import com.fasterxml.jackson.databind.JsonNode
 
 import rx.subjects.PublishSubject
 import rx.subjects.Subject
-
 import spock.lang.Specification
 
 import javax.ws.rs.container.AsyncResponse

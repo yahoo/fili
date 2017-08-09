@@ -7,6 +7,7 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_UNDEFINED
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
+import com.yahoo.bard.webservice.web.apirequest.ApiRequestImpl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +22,7 @@ import javax.ws.rs.core.UriInfo;
 /**
  * Metrics API Request. Such an API Request binds, validates, and models the parts of a request to the tables endpoint.
  */
-public class MetricsApiRequest extends ApiRequest {
+public class MetricsApiRequest  extends ApiRequestImpl {
     private static final Logger LOG = LoggerFactory.getLogger(MetricsApiRequest.class);
     public static final String REQUEST_MAPPER_NAMESPACE = "metricsApiRequestMapper";
 

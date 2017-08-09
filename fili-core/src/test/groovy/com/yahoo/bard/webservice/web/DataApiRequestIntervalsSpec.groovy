@@ -18,10 +18,13 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.time.GranularityParser
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser
+import com.yahoo.bard.webservice.data.time.TimeGrain
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.TableGroup
 import com.yahoo.bard.webservice.util.DateTimeFormatterFactory
 import com.yahoo.bard.webservice.util.IntervalUtils
+import com.yahoo.bard.webservice.web.apirequest.ApiRequestImpl
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequestImpl
 
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
@@ -31,6 +34,8 @@ import org.joda.time.format.DateTimeFormatter
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
+
+import java.util.function.Function
 
 class DataApiRequestIntervalsSpec extends Specification {
 
@@ -44,9 +49,12 @@ class DataApiRequestIntervalsSpec extends Specification {
     static GranularityParser granularityParser = new StandardGranularityParser()
     DateTimeFormatter dateTimeFormatter
 
+    @Shared
+    Function<TimeGrain, DateTime> dateParser = { new DataApiRequestImpl().getCurrentDate(new DateTime(), it)}
+
     static final DateTimeZone originalTimeZone = DateTimeZone.default
 
-    class ConcreteApiRequest extends ApiRequest {}
+    class ConcreteApiRequest extends ApiRequestImpl {}
     ConcreteApiRequest concreteApiRequest = new ConcreteApiRequest()
 
     def setupSpec() {
@@ -88,10 +96,10 @@ class DataApiRequestIntervalsSpec extends Specification {
         Interval expectedInterval = new Interval(parsedStart, parsedStop)
 
         expect: "The interval string parses into a single interval"
-        new DataApiRequest().generateIntervals(intervalString, concreteApiRequest.generateGranularity(name, granularityParser), dateTimeFormatter).size() == 1
+        new DataApiRequestImpl().generateIntervals(intervalString, concreteApiRequest.generateGranularity(name, granularityParser), dateTimeFormatter).size() == 1
 
         and: "It parses to the interval we expect"
-        new DataApiRequest().generateIntervals(intervalString, concreteApiRequest.generateGranularity(name, granularityParser), dateTimeFormatter).first() == expectedInterval
+        new DataApiRequestImpl().generateIntervals(intervalString, concreteApiRequest.generateGranularity(name, granularityParser), dateTimeFormatter).first() == expectedInterval
 
         where:
         intervalString                                    | name  | parsedStart                                  | parsedStop
@@ -129,10 +137,10 @@ class DataApiRequestIntervalsSpec extends Specification {
         Interval expectedInterval = new Interval(parsedStart, parsedStop)
 
         expect: "The interval string parses into a single interval"
-        new DataApiRequest().generateIntervals(intervalString, concreteApiRequest.generateGranularity(name, granularityParser), dateTimeFormatter).size() == 1
+        new DataApiRequestImpl().generateIntervals(intervalString, concreteApiRequest.generateGranularity(name, granularityParser), dateTimeFormatter).size() == 1
 
         and: "It parses to the interval we expect"
-        new DataApiRequest().generateIntervals(intervalString, concreteApiRequest.generateGranularity(name, granularityParser), dateTimeFormatter).first() == expectedInterval
+        new DataApiRequestImpl().generateIntervals(intervalString, concreteApiRequest.generateGranularity(name, granularityParser), dateTimeFormatter).first() == expectedInterval
 
         where:
         intervalString                     | name      | parsedStart                                    | parsedStop
@@ -175,14 +183,14 @@ class DataApiRequestIntervalsSpec extends Specification {
         Interval expectedInterval = new Interval(parsedStart, parsedStop)
 
         expect: "The interval string parses into a single interval"
-        new DataApiRequest().generateIntervals(
+        new DataApiRequestImpl().generateIntervals(
                 intervalString,
                 concreteApiRequest.generateGranularity(name, granularityParser),
                 dateTimeFormatter
         ).size() == 1
 
         and: "It parses to the interval we expect"
-        new DataApiRequest().generateIntervals(
+        new DataApiRequestImpl().generateIntervals(
                 intervalString,
                 concreteApiRequest.generateGranularity(name, granularityParser),
                 dateTimeFormatter
@@ -190,36 +198,36 @@ class DataApiRequestIntervalsSpec extends Specification {
 
         where:
         intervalString                  | name      | parsedStart                                                                 | parsedStop
-        "P3Y/current"                   | "year"    | new DataApiRequest().getCurrentDate(new DateTime(), YEAR).minusYears(3)     | new DataApiRequest().getCurrentDate(new DateTime(), YEAR)
-        "current/P3Y"                   | "year"    | new DataApiRequest().getCurrentDate(new DateTime(), YEAR)                   | new DataApiRequest().getCurrentDate(new DateTime(), YEAR).plusYears(3)
-        "P3Y/next"                      | "year"    | new DataApiRequest().getCurrentDate(new DateTime(), YEAR).minusYears(2)     | new DataApiRequest().getCurrentDate(new DateTime(), YEAR).plusYears(1)
-        "current/next"                  | "year"    | new DataApiRequest().getCurrentDate(new DateTime(), YEAR)                   | new DataApiRequest().getCurrentDate(new DateTime(), YEAR).plusYears(1)
+        "P3Y/current"                   | "year"    | dateParser.apply(YEAR).minusYears(3)     | dateParser.apply(YEAR)
+        "current/P3Y"                   | "year"    | dateParser.apply(YEAR)                  | dateParser.apply(YEAR).plusYears(3)
+        "P3Y/next"                      | "year"    | dateParser.apply(YEAR).minusYears(2)     | dateParser.apply(YEAR).plusYears(1)
+        "current/next"                  | "year"    | dateParser.apply(YEAR)                   | dateParser.apply(YEAR).plusYears(1)
 
-        "P3M/current"                   | "quarter" | new DataApiRequest().getCurrentDate(new DateTime(), QUARTER).minusMonths(3) | new DataApiRequest().getCurrentDate(new DateTime(), QUARTER)
-        "current/P3M"                   | "quarter" | new DataApiRequest().getCurrentDate(new DateTime(), QUARTER)                | new DataApiRequest().getCurrentDate(new DateTime(), QUARTER).plusMonths(3)
-        "P3M/next"                      | "quarter" | new DataApiRequest().getCurrentDate(new DateTime(), QUARTER)                | new DataApiRequest().getCurrentDate(new DateTime(), QUARTER).plusMonths(3)
-        "current/next"                  | "quarter" | new DataApiRequest().getCurrentDate(new DateTime(), QUARTER)                | new DataApiRequest().getCurrentDate(new DateTime(), QUARTER).plusMonths(3)
+        "P3M/current"                   | "quarter" | dateParser.apply(QUARTER).minusMonths(3) | dateParser.apply(QUARTER)
+        "P3M/next"                      | "quarter" | dateParser.apply(QUARTER)                | dateParser.apply(QUARTER).plusMonths(3)
+        "current/P3M"                   | "quarter" | dateParser.apply(QUARTER)                | dateParser.apply(QUARTER).plusMonths(3)
+        "current/next"                  | "quarter" | dateParser.apply(QUARTER)               | dateParser.apply(QUARTER).plusMonths(3)
 
-        "P2W/current"                   | "week"    | new DataApiRequest().getCurrentDate(new DateTime(), WEEK).minusWeeks(2)     | new DataApiRequest().getCurrentDate(new DateTime(), WEEK)
-        "current/P2W"                   | "week"    | new DataApiRequest().getCurrentDate(new DateTime(), WEEK)                   | new DataApiRequest().getCurrentDate(new DateTime(), WEEK).plusWeeks(2)
-        "P2W/next"                      | "week"    | new DataApiRequest().getCurrentDate(new DateTime(), WEEK).minusWeeks(1)     | new DataApiRequest().getCurrentDate(new DateTime(), WEEK).plusWeeks(1)
-        "current/next"                  | "week"    | new DataApiRequest().getCurrentDate(new DateTime(), WEEK)                   | new DataApiRequest().getCurrentDate(new DateTime(), WEEK).plusWeeks(1)
+        "P2W/current"                   | "week"    | dateParser.apply(WEEK).minusWeeks(2)     | dateParser.apply(WEEK)
+        "current/P2W"                   | "week"    | dateParser.apply(WEEK)                  | dateParser.apply(WEEK).plusWeeks(2)
+        "P2W/next"                      | "week"    | dateParser.apply(WEEK).minusWeeks(1)     | dateParser.apply(WEEK).plusWeeks(1)
+        "current/next"                  | "week"    | dateParser.apply(WEEK)                  | dateParser.apply(WEEK).plusWeeks(1)
 
-        "P3D/current"                   | "day"     | new DataApiRequest().getCurrentDate(new DateTime(), DAY).minusDays(3)       | new DataApiRequest().getCurrentDate(new DateTime(), DAY)
-        "current/P3D"                   | "day"     | new DataApiRequest().getCurrentDate(new DateTime(), DAY)                    | new DataApiRequest().getCurrentDate(new DateTime(), DAY).plusDays(3)
-        "P3D/next"                      | "day"     | new DataApiRequest().getCurrentDate(new DateTime(), DAY).minusDays(2)       | new DataApiRequest().getCurrentDate(new DateTime(), DAY).plusDays(1)
-        "current/next"                  | "day"     | new DataApiRequest().getCurrentDate(new DateTime(), DAY)                    | new DataApiRequest().getCurrentDate(new DateTime(), DAY).plusDays(1)
+        "P3D/current"                   | "day"     | dateParser.apply(DAY).minusDays(3)       | dateParser.apply(DAY)
+        "current/P3D"                   | "day"     | dateParser.apply(DAY)                   | dateParser.apply(DAY).plusDays(3)
+        "P3D/next"                      | "day"     | dateParser.apply(DAY).minusDays(2)       | dateParser.apply(DAY).plusDays(1)
+        "current/next"                  | "day"     | dateParser.apply(DAY)                    | dateParser.apply(DAY).plusDays(1)
 
-        "P3M/current"                   | "month"   | new DataApiRequest().getCurrentDate(new DateTime(), MONTH).minusMonths(3)   | new DataApiRequest().getCurrentDate(new DateTime(), MONTH)
-        "current/P3M"                   | "month"   | new DataApiRequest().getCurrentDate(new DateTime(), MONTH)                  | new DataApiRequest().getCurrentDate(new DateTime(), MONTH).plusMonths(3)
-        "P3M/next"                      | "month"   | new DataApiRequest().getCurrentDate(new DateTime(), MONTH).minusMonths(2)   | new DataApiRequest().getCurrentDate(new DateTime(), MONTH).plusMonths(1)
-        "current/next"                  | "month"   | new DataApiRequest().getCurrentDate(new DateTime(), MONTH)                  | new DataApiRequest().getCurrentDate(new DateTime(), MONTH).plusMonths(1)
+        "P3M/current"                   | "month"   | dateParser.apply(MONTH).minusMonths(3)   | dateParser.apply(MONTH)
+        "current/P3M"                   | "month"   | dateParser.apply(MONTH)                 | dateParser.apply(MONTH).plusMonths(3)
+        "P3M/next"                      | "month"   | dateParser.apply(MONTH).minusMonths(2)   | dateParser.apply(MONTH).plusMonths(1)
+        "current/next"                  | "month"   | dateParser.apply(MONTH)                 | dateParser.apply(MONTH).plusMonths(1)
     }
 
     @Unroll
     def "check invalid usage of macros as time intervals string #intervalString"() {
         when:
-        new DataApiRequest().generateIntervals(
+        new DataApiRequestImpl().generateIntervals(
                 intervalString,
                 concreteApiRequest.generateGranularity(name, granularityParser),
                 dateTimeFormatter
@@ -246,7 +254,7 @@ class DataApiRequestIntervalsSpec extends Specification {
         }
 
         expect:
-        Set<Interval> intervals = new DataApiRequest().generateIntervals(
+        Set<Interval> intervals = new DataApiRequestImpl().generateIntervals(
                 interval1 + "," + interval2,
                 concreteApiRequest.generateGranularity("day", granularityParser),
                 dateTimeFormatter
@@ -261,7 +269,7 @@ class DataApiRequestIntervalsSpec extends Specification {
     @Unroll
     def "check bad generateIntervals throws #reason.simpleName"() {
         when:
-        new DataApiRequest().generateIntervals(
+        new DataApiRequestImpl().generateIntervals(
                 interval1 + "," + interval2,
                 concreteApiRequest.generateGranularity("day", granularityParser),
                 dateTimeFormatter
