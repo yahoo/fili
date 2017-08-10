@@ -89,12 +89,14 @@ public class DruidClientConfigHelper {
      *
      * @return druid UI request priority
      *
-     * The druid UI priority is deprecated, please use {@link #getDruidPriority()}.
-     * @deprecated
+     * @deprecated The druid UI priority is deprecated, please use {@link #getDruidPriority()}.
      */
     @Deprecated
     public static Integer getDruidUiPriority() {
         String priority = SYSTEM_CONFIG.getStringProperty(UI_DRUID_PRIORITY_KEY, null);
+        if (priority == null || "".equals(priority)) {
+            return null;
+        }
         return Integer.parseInt(priority);
     }
 
@@ -103,8 +105,7 @@ public class DruidClientConfigHelper {
      *
      * @return druid non-UI priority
      *
-     * The druid non-UI priority is deprecated, please use {@link #getDruidPriority()}.
-     * @deprecated
+     * @deprecated The druid non-UI priority is deprecated, please use {@link #getDruidPriority()}.
      */
     @Deprecated
     public static Integer getDruidNonUiPriority() {
@@ -133,8 +134,7 @@ public class DruidClientConfigHelper {
      *
      * @return druid UI URL
      *
-     * The druid UI URL is deprecated, please use {@link #getDruidUrl()}
-     * @deprecated
+     * @deprecated The druid UI URL is deprecated, please use {@link #getDruidUrl()}
      */
     @Deprecated
     public static String getDruidUiUrl() {
@@ -151,8 +151,7 @@ public class DruidClientConfigHelper {
      *
      * @return druid non-UI URL
      *
-     * The druid non-UI URL is deprecated, please use {@link #getDruidUrl()}.
-     * @deprecated
+     * @deprecated The druid non-UI URL is deprecated, please use {@link #getDruidUrl()}.
      */
     @Deprecated
     public static String getDruidNonUiUrl() {
@@ -192,8 +191,7 @@ public class DruidClientConfigHelper {
      *
      * @return druid UI request timeout
      *
-     * The druid UI timeout is deprecated, please use {@link #getDruidTimeout()}.
-     * @deprecated
+     * @deprecated The druid UI timeout is deprecated, please use {@link #getDruidTimeout()}.
      */
     @Deprecated
     public static Integer getDruidUiTimeout() {
@@ -205,8 +203,7 @@ public class DruidClientConfigHelper {
      *
      * @return druid non-UI request timeout
      *
-     * The druid non-UI timeout is deprecated, please use {@link #getDruidTimeout()}.
-     * @deprecated
+     * @deprecated The druid non-UI timeout is deprecated, please use {@link #getDruidTimeout()}.
      */
     @Deprecated
     public static Integer getDruidNonUiTimeout() {
@@ -234,7 +231,8 @@ public class DruidClientConfigHelper {
      * Create a druid service configuration object for the UI service.
      *
      * @return a druid service configuration object with all configuration parameters set
-     * @deprecated
+     *
+     * @deprecated The druid UI service config is deprecated, please use {@link #getServiceConfig()}.
      */
     @Deprecated
     public static DruidServiceConfig getUiServiceConfig() {
@@ -245,7 +243,8 @@ public class DruidClientConfigHelper {
      * Create a druid service configuration object for the non UI service.
      *
      * @return a druid service configuration object with all configuration parameters set
-     * @deprecated
+     *
+     * @deprecated The druid Non-UI service config is deprecated, please use {@link #getServiceConfig()}.
      */
     @Deprecated
     public static DruidServiceConfig getNonUiServiceConfig() {
