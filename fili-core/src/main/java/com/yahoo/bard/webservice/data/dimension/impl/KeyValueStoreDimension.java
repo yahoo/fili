@@ -14,6 +14,7 @@ import com.yahoo.bard.webservice.util.DimensionStoreKeyUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -103,6 +104,7 @@ public class KeyValueStoreDimension implements Dimension {
         this.keyValueStore = keyValueStore;
         this.objectMapper = new ObjectMapper();
         this.objectMapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+        this.objectMapper.registerModule(new AfterburnerModule());
         this.key = dimensionFields.isEmpty() ? null : dimensionFields.iterator().next();
         this.searchProvider = searchProvider;
 
