@@ -98,6 +98,9 @@ Current
 
 ### Removed:
 
+- [Remove custom immutable collections in favor of Guava](https://github.com/yahoo/fili/pull/479)
+    * `Utils.makeImmutable(...)` was misleading and uneeded so it has been removed. Use Guava's immutable collections.
+
 - [Remove dependency on org.apache.httpcomponents](https://github.com/yahoo/fili/pull/482)
     * This library was only used in `fili-wikipedia-example` and has been replaced with AsyncHttpClient.
 
