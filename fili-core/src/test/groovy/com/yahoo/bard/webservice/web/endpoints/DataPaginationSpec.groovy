@@ -177,12 +177,13 @@ class DataPaginationSpec extends BaseDataServletComponentSpec {
         Response response = makeAbstractRequest({getQueryParams("$ROWS_PER_PAGE", "$page")})
 
         then: "We get a 400 (Bad Request) if the page requested is less than 1, and a 404 if past the end"
-        response.status == (page < 1 ? 400 : 404)
+        response.status == (page < 1 && page != -1 ? 400 : 404)
 
         where:
         page | numPages
         -512 |  3
         -2   |  3
+        -1   |  3
         0    |  3
         4    |  3
         5    |  3
@@ -221,10 +222,11 @@ class DataPaginationSpec extends BaseDataServletComponentSpec {
 
         where:
         rowsPerPage   | page
-        //Only positive numbers are allowed.
+        //Only positive numbers and -1 (last) are allowed.
         '1'           | '-2'
         '-2'          | '2'
         '0'           | '2'
+        '-1'          | '2'
         //Only Integers are allowed.
         '2.5'         | '2'
         '1'           | '5.0'
