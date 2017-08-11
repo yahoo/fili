@@ -5,9 +5,13 @@ package com.yahoo.wiki.webservice.data.config.auto;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
+import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
+
+import org.joda.time.DateTimeZone;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -19,13 +23,18 @@ public class StaticWikiConfigLoader implements Supplier<List<? extends DataSourc
     public static DataSourceConfiguration getWikiDruidConfig() {
         return new DataSourceConfiguration() {
             @Override
-            public String getName() {
+            public String getPhysicalTableName() {
                 return "wikiticker";
             }
 
             @Override
+            public String getApiTableName() {
+                return getPhysicalTableName();
+            }
+
+            @Override
             public TableName getTableName() {
-                return this::getName;
+                return this::getPhysicalTableName;
             }
 
             @Override
@@ -62,9 +71,18 @@ public class StaticWikiConfigLoader implements Supplier<List<? extends DataSourc
             }
 
             @Override
-            public TimeGrain getValidTimeGrain() {
-                return DefaultTimeGrain.HOUR;
+            public ZonedTimeGrain getZonedTimeGrain() {
+                return new ZonedTimeGrain(
+                        DefaultTimeGrain.HOUR,
+                        DateTimeZone.UTC
+                );
             }
+
+            @Override
+            public List<TimeGrain> getValidTimeGrains() {
+                return Collections.singletonList(DefaultTimeGrain.HOUR);
+            }
+
         };
     }
 

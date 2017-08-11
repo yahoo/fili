@@ -1,0 +1,63 @@
+{
+  "tables": [
+    {
+      "apiTableName": "wikiticker",
+      "physicalTableName": "wikiticker",
+      "zonedTimeGrain": {
+        "timeGrain": "HOUR",
+        "timeZone": "UTC"
+      },
+      "timeGrains": [
+        "HOUR",
+        "DAY"
+      ],
+      "type": "concrete",
+      "category": "General",
+      "description": "The wiki table",
+      "longName": "wikipedia table",
+      "metrics": [
+        {
+          "apiMetricName": "added",
+          "dependentMetrics": [
+            "added"
+          ],
+          "type": "longSum"
+        },
+        {
+          "apiMetricName": "deleted",
+          "type": "longSum"
+        },
+        {
+          "apiMetricName": "delta",
+          "type": "doubleSum",
+          "timeGrains": [
+            "DAY"
+          ]
+        },
+        {
+          "apiMetricName": "manualDelta",
+          "type": "arithmetic",
+          "dependentMetrics": [
+            "added",
+            "deleted"
+          ],
+          "params": [
+            "-"
+          ]
+        }
+      ],
+      "dimensions": [
+        {
+          "apiDimensionName": "metroCode",
+          "physicalDimensionName": "metroCode",
+          "description": "the metroCode for the edit made",
+          "longName": "wiki metroCode",
+          "category": "General"
+        },
+        {
+          "apiDimensionName": "isRobot"
+        }
+      ]
+    }
+  ]
+}

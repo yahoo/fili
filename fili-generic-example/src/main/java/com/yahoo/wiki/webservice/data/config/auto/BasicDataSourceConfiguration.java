@@ -2,28 +2,31 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.auto;
 
-import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
+import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
+import com.yahoo.bard.webservice.data.time.ZonelessTimeGrain;
+
+import org.joda.time.DateTimeZone;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 /**
- * TableConfig to hold all metrics, dimensions, timegrains, and the name of a datasource.
+ * BasicDataSourceConfiguration to hold all metrics, dimensions, timegrains, and the name of a datasource.
  */
-public class TableConfig implements DataSourceConfiguration {
+public class BasicDataSourceConfiguration implements DataSourceConfiguration {
     private final String tableName;
     private final List<String> metrics;
     private final List<String> dimensions;
     private TimeGrain timeGrain;
 
     /**
-     * Construct the TableConfig from a name.
+     * Construct the BasicDataSourceConfiguration from a name.
      *
-     * @param name  Name of the TableConfig.
+     * @param name  Name of the BasicDataSourceConfiguration.
      */
-    public TableConfig(String name) {
+    public BasicDataSourceConfiguration(String name) {
         tableName = name;
         metrics = new ArrayList<>();
         dimensions = new ArrayList<>();
@@ -32,7 +35,7 @@ public class TableConfig implements DataSourceConfiguration {
     /**
      * Add a metric to the datasource.
      *
-     * @param metric  Name of metric to hold in TableConfig.
+     * @param metric  Name of metric to hold in BasicDataSourceConfiguration.
      */
     public void addMetric(String metric) {
         metrics.add(metric);
@@ -41,7 +44,7 @@ public class TableConfig implements DataSourceConfiguration {
     /**
      * Add a dimension to the datasource.
      *
-     * @param dimension  Name of dimension to hold in the TableConfig.
+     * @param dimension  Name of dimension to hold in the BasicDataSourceConfiguration.
      */
     public void addDimension(String dimension) {
         dimensions.add(dimension);
@@ -50,7 +53,7 @@ public class TableConfig implements DataSourceConfiguration {
     /**
      * Add a {@link TimeGrain} to the datasource.
      *
-     * @param timeGrain  Valid Timegrain to hold in the TableConfig.
+     * @param timeGrain  Valid Timegrain to hold in the BasicDataSourceConfiguration.
      */
     public void setTimeGrain(TimeGrain timeGrain) {
         this.timeGrain = timeGrain;
@@ -62,24 +65,19 @@ public class TableConfig implements DataSourceConfiguration {
      * @return the name of the table.
      */
     @Override
-    public String getName() {
+    public String getPhysicalTableName() {
         return tableName;
     }
 
-    /**
-     * Gets the {@link TableName} of the current datasource.
-     *
-     * @return the TableName for the TableConfig.
-     */
     @Override
-    public TableName getTableName() {
-        return this::getName;
+    public String getApiTableName() {
+        return getPhysicalTableName();
     }
 
     /**
      * Gets the metrics from the datasource.
      *
-     * @return the names of metrics stored in TableConfig.
+     * @return the names of metrics stored in BasicDataSourceConfiguration.
      */
     @Override
     public List<String> getMetrics() {
@@ -89,20 +87,24 @@ public class TableConfig implements DataSourceConfiguration {
     /**
      * Gets the dimensions from the datasource.
      *
-     * @return the names of the dimensions stored in the TableConfig.
+     * @return the names of the dimensions stored in the BasicDataSourceConfiguration.
      */
     @Override
     public List<String> getDimensions() {
         return Collections.unmodifiableList(dimensions);
     }
 
-    /**
-     * Gets the valid TimeGrains for the datasource.
-     *
-     * @return the valid TimeGrains stored in the TableConfig.
-     */
     @Override
-    public TimeGrain getValidTimeGrain() {
-        return timeGrain;
+    public ZonedTimeGrain getZonedTimeGrain() {
+        return new ZonedTimeGrain(
+                (ZonelessTimeGrain) timeGrain,
+                DateTimeZone.UTC
+        );
     }
+
+    @Override
+    public List<TimeGrain> getValidTimeGrains() {
+        return Collections.singletonList(timeGrain);
+    }
+
 }

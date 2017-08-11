@@ -40,7 +40,7 @@ class ConfigurationLoaderSpec extends Specification {
         loader = new ConfigurationLoader(
                 new KeyValueStoreDimensionLoader(dimensions),
                 new GenericMetricLoader(wikiConfigLoader),
-                new GenericTableLoader(wikiConfigLoader, genericDimensions, new DataSourceMetadataService())
+                new GenericTableLoader(wikiConfigLoader, new DataSourceMetadataService())
         )
         loader.load()
 

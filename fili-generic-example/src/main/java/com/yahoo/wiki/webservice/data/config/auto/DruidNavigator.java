@@ -35,7 +35,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
     private static final Logger LOG = LoggerFactory.getLogger(DruidNavigator.class);
     private static final String COORDINATOR_TABLES_PATH = "/datasources/";
     private final DruidWebService druidWebService;
-    private final List<TableConfig> tableConfigurations;
+    private final List<BasicDataSourceConfiguration> tableConfigurations;
 
     /**
      * Constructs a DruidNavigator to load datasources from druid.
@@ -73,10 +73,10 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
         Future<Response> responseFuture = queryDruid(rootNode -> {
             if (rootNode.isArray()) {
                 rootNode.forEach(jsonNode -> {
-                    TableConfig tableConfig = new TableConfig(jsonNode.asText());
-                    Future<Response> tableResponseFuture = loadTable(tableConfig);
+                    BasicDataSourceConfiguration basicDataSourceConfiguration = new BasicDataSourceConfiguration(jsonNode.asText());
+                    Future<Response> tableResponseFuture = loadTable(basicDataSourceConfiguration);
                     fullTableResponses.add(tableResponseFuture);
-                    tableConfigurations.add(tableConfig);
+                    tableConfigurations.add(basicDataSourceConfiguration);
                 });
             }
         }, COORDINATOR_TABLES_PATH);
@@ -118,12 +118,12 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      *      ]
      * }
      *
-     * @param table The TableConfig to be loaded with queries against druid.
+     * @param table The BasicDataSourceConfiguration to be loaded with queries against druid.
      *
      * @return future response for the query loading the table
      */
-    private Future<Response> loadTable(TableConfig table) {
-        String url = COORDINATOR_TABLES_PATH + table.getName() + "/?full";
+    private Future<Response> loadTable(BasicDataSourceConfiguration table) {
+        String url = COORDINATOR_TABLES_PATH + table.getPhysicalTableName() + "/?full";
         String segmentsPath = "segments";
         return queryDruid(rootNode -> {
             if (rootNode.get(segmentsPath).size() == 0) {
@@ -134,12 +134,12 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
             loadMetrics(table, segments);
             loadDimensions(table, segments);
             loadTimeGrains(table, segments);
-            LOG.debug("Loaded table " + table.getName());
+            LOG.debug("Loaded table " + table.getPhysicalTableName());
         }, url);
     }
 
     /**
-     * Add all metrics from druid query to the {@link TableConfig}.
+     * Add all metrics from druid query to the {@link BasicDataSourceConfiguration}.
      *
      * The expected response is:
      * {
@@ -148,17 +148,17 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      *      ...
      * }
      *
-     * @param table  The TableConfig to be loaded.
+     * @param table  The BasicDataSourceConfiguration to be loaded.
      * @param segmentJson The JsonNode containing a list of metrics.
      */
-    private void loadMetrics(TableConfig table, JsonNode segmentJson) {
+    private void loadMetrics(BasicDataSourceConfiguration table, JsonNode segmentJson) {
         JsonNode metricsArray = segmentJson.get("metrics");
         Arrays.asList(metricsArray.asText().split(",")).forEach(table::addMetric);
         LOG.debug("loaded metrics {}", table.getMetrics());
     }
 
     /**
-     * Add all dimensions from druid query to the {@link TableConfig}.
+     * Add all dimensions from druid query to the {@link BasicDataSourceConfiguration}.
      *
      * The expected response is:
      * {
@@ -167,17 +167,17 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      *      ...
      * }
      *
-     * @param table  The TableConfig to be loaded.
+     * @param table  The BasicDataSourceConfiguration to be loaded.
      * @param segmentJson The JsonNode containing a list of dimensions.
      */
-    private void loadDimensions(TableConfig table, JsonNode segmentJson) {
+    private void loadDimensions(BasicDataSourceConfiguration table, JsonNode segmentJson) {
         JsonNode dimensionsArray = segmentJson.get("dimensions");
         Arrays.asList(dimensionsArray.asText().split(",")).forEach(table::addDimension);
         LOG.debug("loaded dimensions {}", table.getDimensions());
     }
 
     /**
-     * Find a valid timegrain from druid query to the {@link TableConfig}.
+     * Find a valid timegrain from druid query to the {@link BasicDataSourceConfiguration}.
      *
      * {
      *      ...,
@@ -185,10 +185,10 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      *      ...
      * }
      *
-     * @param tableConfig The TableConfig to be loaded.
+     * @param basicDataSourceConfiguration The BasicDataSourceConfiguration to be loaded.
      * @param segmentJson The JsonNode containing a time interval.
      */
-    private void loadTimeGrains(TableConfig tableConfig, JsonNode segmentJson) {
+    private void loadTimeGrains(BasicDataSourceConfiguration basicDataSourceConfiguration, JsonNode segmentJson) {
         JsonNode timeInterval = segmentJson.get("interval");
         String[] utcTimes = timeInterval.asText().split("/");
         Optional<TimeGrain> timeGrain = Optional.empty();
@@ -206,7 +206,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
         if (!timeGrain.isPresent()) {
             LOG.warn("Couldn't detect timegrain for {}, defaulting to DAY TimeGrain.", timeInterval.asText());
         }
-        tableConfig.setTimeGrain(timeGrain.orElse(DefaultTimeGrain.DAY));
+        basicDataSourceConfiguration.setTimeGrain(timeGrain.orElse(DefaultTimeGrain.DAY));
     }
 
     /**

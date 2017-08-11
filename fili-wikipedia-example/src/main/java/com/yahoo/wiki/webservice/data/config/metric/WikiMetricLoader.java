@@ -4,9 +4,11 @@ package com.yahoo.wiki.webservice.data.config.metric;
 
 import com.yahoo.bard.webservice.data.config.metric.MetricInstance;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
+import com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.CountMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.DoubleSumMaker;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
+import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation;
 import com.yahoo.wiki.webservice.data.config.names.WikiApiMetricName;
 import com.yahoo.wiki.webservice.data.config.names.WikiDruidMetricName;
 

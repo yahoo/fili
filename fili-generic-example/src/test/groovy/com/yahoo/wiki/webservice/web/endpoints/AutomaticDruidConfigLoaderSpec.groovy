@@ -4,7 +4,7 @@ import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService
 import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration
 import com.yahoo.wiki.webservice.data.config.auto.DruidNavigator
-import com.yahoo.wiki.webservice.data.config.auto.TableConfig
+import com.yahoo.wiki.webservice.data.config.auto.BasicDataSourceConfiguration
 import spock.lang.Specification
 
 public class AutomaticDruidConfigLoaderSpec extends Specification {
@@ -63,7 +63,7 @@ public class AutomaticDruidConfigLoaderSpec extends Specification {
         druidWebService.lastUrl == '/datasources/' + datasource + '/?full'
         List<String> returnedTableNames = new ArrayList<>()
         for (DataSourceConfiguration druidConfig : returnedTables) {
-            returnedTableNames.add(druidConfig.getName())
+            returnedTableNames.add(druidConfig.getPhysicalTableName())
         }
         returnedTableNames.contains("wikiticker")
     }
@@ -74,15 +74,15 @@ public class AutomaticDruidConfigLoaderSpec extends Specification {
 
         then: "what we expect"
         druidWebService.lastUrl == '/datasources/' + datasource + '/?full'
-        returnedTables.get(0).getValidTimeGrain() == DefaultTimeGrain.DAY
+        returnedTables.get(0).getValidTimeGrains().get(0) == DefaultTimeGrain.DAY
     }
 
     def "get metric names from druid"() {
         setup:
-        TableConfig wikiticker
+        BasicDataSourceConfiguration wikiticker
 
         when: "We send a request"
-        wikiticker = new TableConfig("$datasource")
+        wikiticker = new BasicDataSourceConfiguration("$datasource")
         druidNavigator.loadTable(wikiticker)
 
         then: "what we expect"
