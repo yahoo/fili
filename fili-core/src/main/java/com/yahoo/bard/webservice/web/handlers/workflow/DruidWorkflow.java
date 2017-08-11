@@ -83,7 +83,7 @@ public class DruidWorkflow implements RequestWorkflowProvider {
     @Inject
     public DruidWorkflow(
             @NotNull DataCache<?> dataCache,
-            @Named("druidWebService") DruidWebService webService,
+            DruidWebService webService,
             QueryWeightUtil weightUtil,
             PhysicalTableDictionary physicalTableDictionary,
             PartialDataHandler partialDataHandler,
