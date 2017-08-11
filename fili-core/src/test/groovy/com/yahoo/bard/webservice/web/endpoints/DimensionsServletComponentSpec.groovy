@@ -906,7 +906,7 @@ class DimensionsServletComponentSpec extends Specification {
 
     def "test negative page number is handled correctly"() {
         setup:
-        Map<String, String> queryParams = [page: -1, perPage: 3]
+        Map<String, String> queryParams = [page: -2, perPage: 3]
 
         when: "We send a request"
         def result = makeRequest("/dimensions/model/values", queryParams)

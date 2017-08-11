@@ -182,7 +182,7 @@ class DataPaginationSpec extends BaseDataServletComponentSpec {
         where:
         page | numPages
         -512 |  3
-        -1   |  3
+        -2   |  3
         0    |  3
         4    |  3
         5    |  3

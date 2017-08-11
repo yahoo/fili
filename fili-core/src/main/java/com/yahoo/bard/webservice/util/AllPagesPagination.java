@@ -41,7 +41,7 @@ public class AllPagesPagination<T> implements Pagination<T> {
     public AllPagesPagination(Collection<T> entireCollection, PaginationParameters paginationParameters)
             throws PageNotFoundException {
         this.collectionSize = entireCollection.size();
-        this.pageToFetch = paginationParameters.getPage();
+        this.pageToFetch = paginationParameters.getPage(entireCollection.size());
         this.countPerPage = paginationParameters.getPerPage();
         this.lastPage = (collectionSize > countPerPage) ? (collectionSize - 1) / countPerPage + 1 : 1;
 

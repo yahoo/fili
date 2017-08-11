@@ -28,7 +28,7 @@ public class SinglePagePagination<T> implements Pagination<T> {
      * @param totalMatch  The total number of results found. The single page collection is part of these results
      */
     public SinglePagePagination(List<T> entirePage, PaginationParameters paginationParameters, int totalMatch) {
-        this.pageToFetch = paginationParameters.getPage();
+        this.pageToFetch = paginationParameters.getPage(entirePage.size());
         this.countPerPage = paginationParameters.getPerPage();
         this.totalMatch = totalMatch;
         this.lastPage = (totalMatch > countPerPage) ? (totalMatch - 1) / countPerPage + 1 : 1;

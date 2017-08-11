@@ -21,6 +21,9 @@ public class PaginationParameters {
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
     private static final Logger LOG = LoggerFactory.getLogger(PaginationParameters.class);
     private static final int MINIMAL_VALUE = 1;
+    private static final int LAST_PAGE = -1;
+    private static final String FIRST = "first";
+    private static final String LAST = "last";
 
     private static final int DEFAULT_MAX_RESULTS_WITHOUT_FILTERS = 10000;
     private static final int MAX_RESULTS_WITHOUT_FILTER = SYSTEM_CONFIG.getIntProperty(
@@ -90,6 +93,11 @@ public class PaginationParameters {
             throw new BadPaginationException(errorMessage.format(parameterName));
         }
         try {
+            if (parameter.equals(FIRST)) {
+                return 1;
+            } else if (parameter.equals(LAST)) {
+                return LAST_PAGE;
+            }
             return Integer.parseInt(parameter);
         } catch (NumberFormatException ignored) {
             ErrorMessageFormat errorMessage = ErrorMessageFormat.PAGINATION_PARAMETER_INVALID;
@@ -107,7 +115,7 @@ public class PaginationParameters {
      * @throws BadPaginationException if 'parameter' is not greater than 0.
      */
     private void validate(int parameter, String parameterName) throws BadPaginationException {
-        if (parameter < MINIMAL_VALUE) {
+        if (parameter < MINIMAL_VALUE && parameter != LAST_PAGE) {
             ErrorMessageFormat errorMessage = ErrorMessageFormat.PAGINATION_PARAMETER_INVALID;
             LOG.debug(errorMessage.logFormat(parameterName, parameter));
             throw new BadPaginationException(errorMessage.format(parameterName, parameter));
@@ -118,7 +126,10 @@ public class PaginationParameters {
         return perPage;
     }
 
-    public int getPage() {
+    public int getPage(int resultSize) {
+        if (page == -1) {
+            return (int) Math.ceil(((double) resultSize) / perPage);
+        }
         return page;
     }
 
