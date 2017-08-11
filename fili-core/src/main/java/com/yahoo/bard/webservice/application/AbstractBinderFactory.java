@@ -217,7 +217,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
 
                 bind(FeatureFlagRegistry.class).to(FeatureFlagRegistry.class);
 
-                // Bard currently expects there to be one web service 
+                // Bard currently expects there to be one web service
                 DruidWebService druidWebService = buildDruidWebService(getMappers().getMapper());
 
                 bind(druidWebService).to(DruidWebService.class);

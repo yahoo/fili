@@ -33,7 +33,6 @@ import com.yahoo.bard.webservice.web.util.QueryWeightUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.validation.constraints.NotNull;
 
