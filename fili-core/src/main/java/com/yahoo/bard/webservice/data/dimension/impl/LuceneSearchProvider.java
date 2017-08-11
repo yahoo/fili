@@ -311,7 +311,7 @@ public class LuceneSearchProvider implements SearchProvider {
         }
 
         // Build the term to delete the old document by the key value (which should be unique)
-        Term keyTerm = new Term(fieldMap.get(dimension.getKey()).name(), newRow.get(dimension.getKey()));
+        Term keyTerm = new Term(fieldMap.get(dimension.getKey()).name(), newRow.getOrDefault(dimension.getKey(), ""));
 
         // Update the document by the key term
         writer.updateDocument(keyTerm, luceneDimensionRowDoc);
