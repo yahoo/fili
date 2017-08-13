@@ -350,9 +350,9 @@ class DimensionsServletComponentSpec extends Specification {
 
         where:
         paginating |  page   | perPage | explicitlyNotExplicitly
-       // true       |   "1"   |   "5"   | "explicitly"
-        //false      |   ""    |   ""    | "not explicitly"
-        //true       | "first" |   "5"   | "explicitly"
+        true       |   "1"   |   "5"   | "explicitly"
+        false      |   ""    |   ""    | "not explicitly"
+        true       | "first" |   "5"   | "explicitly"
         true       | "last"  |   "5"   | "explicitly"
     }
 
