@@ -107,12 +107,12 @@ public class PaginationParameters {
     }
 
     /**
-     * Verifies that the passed parameter is greater than 0.
+     * Verifies that the passed parameter is greater than 0 or is -1 (last page).
      *
      * @param parameter  The parameter to be validated.
      * @param parameterName  The name of the parameter to appear in the error message
      *
-     * @throws BadPaginationException if 'parameter' is not greater than 0.
+     * @throws BadPaginationException if 'parameter' is not greater than 0 or is not -1.
      */
     private void validate(int parameter, String parameterName) throws BadPaginationException {
         if (parameter < MINIMAL_VALUE && parameter != LAST_PAGE) {
@@ -126,9 +126,16 @@ public class PaginationParameters {
         return perPage;
     }
 
+    /**
+     * Returns the requested page number.
+     *
+     * @param resultSize  The number of rows in the result set
+     *
+     * @return The request page number
+     */
     public int getPage(int resultSize) {
         if (page == -1) {
-            return (int) Math.ceil(((double) resultSize) / perPage);
+            return resultSize == 0 ? 1 : (int) Math.ceil(((double) resultSize) / perPage);
         }
         return page;
     }

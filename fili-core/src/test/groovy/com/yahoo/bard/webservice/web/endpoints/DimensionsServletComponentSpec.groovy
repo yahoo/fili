@@ -349,9 +349,11 @@ class DimensionsServletComponentSpec extends Specification {
         GroovyTestUtils.compareJson(result, expectedResponse)
 
         where:
-        paginating | page | perPage | explicitlyNotExplicitly
-        true       | "1"  | "5"     | "explicitly"
-        false      | ""   | ""      | "not explicitly"
+        paginating |  page   | perPage | explicitlyNotExplicitly
+       // true       |   "1"   |   "5"   | "explicitly"
+        //false      |   ""    |   ""    | "not explicitly"
+        //true       | "first" |   "5"   | "explicitly"
+        true       | "last"  |   "5"   | "explicitly"
     }
 
     def "test dimension value endpoint filter-chain"() {

@@ -136,6 +136,15 @@ class PaginationParametersSpec extends Specification {
         invalidPerPage << ["0", "-2", "1.0", "2.3", "$Long.MAX_VALUE", "1a", "AndrewIsMostlyHarmless."]
     }
 
+    def "If the result set is empty and the page is last then getPage returns the first page"() {
+        given:
+        PaginationParameters parameters = new PaginationParameters("3", "last")
+
+        expect:
+        parameters.getPage(0) == 1
+
+    }
+
     String missingParamMessage(String missingParam) {
         "Missing parameter '$missingParam.' Both 'perPage' and 'page' are required for pagination."
     }

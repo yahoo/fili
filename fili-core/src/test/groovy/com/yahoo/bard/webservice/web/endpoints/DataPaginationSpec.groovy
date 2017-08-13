@@ -144,7 +144,7 @@ class DataPaginationSpec extends BaseDataServletComponentSpec {
 
 
     @Unroll
-    def "Page #page of #numPages with the correct headers and #rowsPerPage rows per page of data, is returned"() {
+    def "Page #pageParam of #numPages with the correct headers and #rowsPerPage rows per page of data, is returned"() {
         given: "A known Druid response, and the expected API response"
         String druidResponse = getFakeDruidResponse(numPages * rowsPerPage)
         validateJson(druidResponse)
@@ -154,7 +154,7 @@ class DataPaginationSpec extends BaseDataServletComponentSpec {
         injectDruidResponse(druidResponse)
 
         when: "We send a request"
-        Response response = makeAbstractRequest {getQueryParams("$rowsPerPage", "$page")}
+        Response response = makeAbstractRequest {getQueryParams("$rowsPerPage", pageParam)}
 
         then:
         headersAreCorrect(response.getHeaders(), ROWS_PER_PAGE, page, numPages, true)
@@ -162,28 +162,29 @@ class DataPaginationSpec extends BaseDataServletComponentSpec {
 
         where:
         rowsPerPage = ROWS_PER_PAGE
-        numPages | page
-        1        |  1
-        2        |  1
-        2        |  2
-        3        |  1
-        3        |  2
-        3        |  3
+        numPages | page | pageParam
+        1        |  1   | "1"
+        2        |  1   | "1"
+        2        |  2   | "2"
+        3        |  1   | "1"
+        3        |  2   | "2"
+        3        |  3   | "3"
+        3        |  1   | "first"
+        3        |  3   | "last"
     }
 
     @Unroll
-    def "An error is returned if #page is less than 1 or greater than #numPages"() {
+    def "An error is returned if #page is less than 1 but not last (-1) or greater than #numPages"() {
         when: "We send a request with an incorrect page requested"
         Response response = makeAbstractRequest({getQueryParams("$ROWS_PER_PAGE", "$page")})
 
-        then: "We get a 400 (Bad Request) if the page requested is less than 1, and a 404 if past the end"
+        then: "We get a 400 (Bad Request) if the page requested is less than 1 and not -1, and a 404 if past the end"
         response.status == (page < 1 && page != -1 ? 400 : 404)
 
         where:
         page | numPages
         -512 |  3
         -2   |  3
-        -1   |  3
         0    |  3
         4    |  3
         5    |  3
@@ -222,11 +223,10 @@ class DataPaginationSpec extends BaseDataServletComponentSpec {
 
         where:
         rowsPerPage   | page
-        //Only positive numbers and -1 (last) are allowed.
+        //Only positive numbers are allowed.
         '1'           | '-2'
         '-2'          | '2'
         '0'           | '2'
-        '-1'          | '2'
         //Only Integers are allowed.
         '2.5'         | '2'
         '1'           | '5.0'
