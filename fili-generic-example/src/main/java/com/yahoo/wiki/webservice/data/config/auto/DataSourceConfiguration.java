@@ -35,14 +35,14 @@ public interface DataSourceConfiguration {
     /**
      * Gets the names of all the metrics for the current datasource.
      *
-     * @return a list of names of metrics for the current datasource.
+     * @return a set of names of metrics for the current datasource.
      */
     Set<String> getMetrics();
 
     /**
      * Gets the names of all the dimensions for the current datasource.
      *
-     * @return a list of names of dimensions for the current datasource.
+     * @return a set of names of dimensions for the current datasource.
      */
     Set<String> getDimensions();
 
