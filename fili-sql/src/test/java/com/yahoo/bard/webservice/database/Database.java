@@ -72,6 +72,32 @@ public class Database {
         List<WikitickerEntry> entries = readJsonFile();
 
         Statement s = connection.createStatement();
+        /*
+        Unescaped Readable sql:
+        "CREATE TABLE  $WIKITICKER (
+            $ID                 INT PRIMARY KEY,
+            $COMMENT            VARCHAR(256),
+            $COUNTRY_ISO_CODE   VARCHAR(256),
+            $ADDED              INTEGER,
+            $TIME               TIMESTAMP,
+            $IS_NEW             BOOLEAN,
+            $IS_ROBOT           BOOLEAN,
+            $DELETED            INTEGER,
+            $METRO_CODE         VARCHAR(256),
+            $IS_UNPATROLLED     BOOLEAN,
+            $NAMESPACE          VARCHAR(256),
+            $PAGE               VARCHAR(256),
+            $COUNTRY_NAME       VARCHAR(256),
+            $CITY_NAME          VARCHAR(256),
+            $IS_MINOR           BOOLEAN,
+            $USER               VARCHAR(256),
+            $DELTA              INTEGER,
+            $IS_ANONYMOUS       BOOLEAN,
+            $REGION_ISO_CODE    VARCHAR(256),
+            $CHANNEL            VARCHAR(256),
+            $REGION_NAME        VARCHAR(256)
+        )"
+         */
         s.execute("CREATE TABLE \"" + WIKITICKER + "\" (\"" + ID + "\" INT PRIMARY KEY, \"" +
                 COMMENT + "\" VARCHAR(256), \"" +
                 COUNTRY_ISO_CODE + "\" VARCHAR(256), \"" +
@@ -96,6 +122,13 @@ public class Database {
                 ")"
         );
 
+        /*
+        Unescaped readable sql:
+        "INSERT INTO $WIKITICKER ($ID, $COMMENT, $COUNTRY_ISO_CODE, $ADDED, $TIME, $IS_NEW, $IS_ROBOT, $DELETED,
+        $METRO_CODE, $IS_UNPATROLLED, $NAMESPACE, $PAGE, $COUNTRY_NAME, $CITY_NAME, $IS_MINOR, $USER, $DELTA,
+        $IS_ANONYMOUS, $REGION_ISO_CODE, $CHANNEL, $REGION_NAME)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+         */
         String sqlInsert = "INSERT INTO \"" + WIKITICKER + "\" (\"" + ID + "\", \"" + COMMENT + "\", \"" +
                 COUNTRY_ISO_CODE + "\", \""
                 + ADDED + "\", \"" + TIME + "\", \"" + IS_NEW + "\", \"" + IS_ROBOT + "\", \"" + DELETED + "\", \"" +
