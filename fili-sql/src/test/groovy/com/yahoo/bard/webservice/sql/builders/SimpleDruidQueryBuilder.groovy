@@ -70,7 +70,7 @@ class SimpleDruidQueryBuilder {
     public static PhysicalTableDictionary getDictionary(String apiPrepend, String fieldPrepend) {
         def dataSource = getWikitickerDatasource(apiPrepend, fieldPrepend)
         PhysicalTableDictionary physicalTableDictionary = new PhysicalTableDictionary()
-        physicalTableDictionary.put(WIKITICKER, dataSource.getPhysicalTable().sourceTable as ConfigPhysicalTable)
+        physicalTableDictionary.put(WIKITICKER, dataSource.physicalTable.sourceTable as ConfigPhysicalTable)
         return physicalTableDictionary
     }
 
@@ -79,13 +79,13 @@ class SimpleDruidQueryBuilder {
                 WIKITICKER,
                 DefaultTimeGrain.DAY,
                 DateTimeZone.UTC,
-                asList(ADDED, DELETED, DELTA),
-                asList(
+                [ADDED, DELETED, DELTA],
+                [
                         COUNTRY_ISO_CODE, IS_NEW, IS_ROBOT, PAGE,
                         USER, COMMENT, IS_UNPATROLLED, NAMESPACE,
                         COUNTRY_NAME, CITY_NAME, IS_MINOR, IS_ANONYMOUS,
                         REGION_ISO_CODE, CHANNEL, REGION_NAME, METRO_CODE
-                ),
+                ],
                 apiPrepend,
                 fieldPrepend
         )
@@ -108,7 +108,7 @@ class SimpleDruidQueryBuilder {
                 aggregations,
                 postAggs,
                 intervals
-        );
+        )
     }
 
     public static GroupByQuery groupByQuery(
@@ -151,16 +151,16 @@ class SimpleDruidQueryBuilder {
             String apiPrepend,
             String fieldPrepend
     ) {
-        ZonedTimeGrain zonedTimeGrain = new ZonedTimeGrain(zonelessTimeGrain, dateTimeZone);
-        Set<Column> columns = setOf();
-        Map<String, String> logicalToPhysicalColumnNames = new HashMap<>()
+        ZonedTimeGrain zonedTimeGrain = new ZonedTimeGrain(zonelessTimeGrain, dateTimeZone)
+        Set<Column> columns = [] as Set
+        Map<String, String> logicalToPhysicalColumnNames = [:]
         metrics.forEach { logicalToPhysicalColumnNames.put(apiPrepend + it, fieldPrepend + it) }
         dimensions.forEach { logicalToPhysicalColumnNames.put(apiPrepend + it, fieldPrepend + it) }
 
         DataSourceMetadataService metadataService = new DataSourceMetadataService();
         metadataService.update(
                 DataSourceName.of(name),
-                new DataSourceMetadata(name, Collections.emptyMap(), Collections.emptyList())
+                new DataSourceMetadata(name, [:], [])
         );
 
         dimensions = dimensions.collect { apiPrepend + it }
@@ -181,17 +181,17 @@ class SimpleDruidQueryBuilder {
                 new ConstrainedTable(
                         strictPhysicalTable,
                         new DataSourceConstraint(
-                                setOf(),
-                                setOf(),
-                                setOf(),
-                                setOf(metrics),
-                                setOf(getDimensions(dimensions)),
-                                setOf(dimensions),
+                                [] as Set,
+                                [] as Set,
+                                [] as Set,
+                                metrics as Set,
+                                getDimensions(dimensions) as Set,
+                                dimensions as Set,
                                 metricsAndDimensions,
-                                Collections.emptyMap()
+                                [:]
                         )
                 )
-        );
+        )
     }
 
     public static List<Dimension> getDimensions(String... dimensions) {
@@ -217,13 +217,5 @@ class SimpleDruidQueryBuilder {
                         ScanSearchProviderManager.getInstance(dimension)
                 )
         )
-    }
-
-    public static <T> Set<T> setOf(T... e) {
-        return e == null ? Collections.emptySet() : new HashSet<>(asList(e));
-    }
-
-    public static <T> Set<T> setOf(List<T> e) {
-        return new HashSet<T>(e);
     }
 }
