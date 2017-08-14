@@ -40,6 +40,9 @@ Current
 
 ### Changed:
 
+- [Use all available segment metadata in fili-generic-example](https://github.com/yahoo/fili/pull/445)
+    * The fili-generic-example now uses all segment metadata given by Druid instead of just the first one and also provides it to the metadata service.
+
 - [Refactor Response class and implement new serialization logics](https://github.com/yahoo/fili/pull/455)
     * Define interface `ResponseWriter` and its default implementation
     * Refactor `Response` class, splitting into `ResponseData` and three implementations of `ResponseWriter`

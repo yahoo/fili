@@ -5,6 +5,9 @@ import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService
 import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration
 import com.yahoo.wiki.webservice.data.config.auto.DruidNavigator
 import com.yahoo.wiki.webservice.data.config.auto.TableConfig
+
+import com.fasterxml.jackson.databind.ObjectMapper
+
 import spock.lang.Specification
 
 public class AutomaticDruidConfigLoaderSpec extends Specification {
@@ -45,7 +48,7 @@ public class AutomaticDruidConfigLoaderSpec extends Specification {
 
     def setup() {
         druidWebService = new TestDruidWebService("testInstance")
-        druidNavigator = new DruidNavigator(druidWebService)
+        druidNavigator = new DruidNavigator(druidWebService, new ObjectMapper())
         druidWebService.jsonResponse = {
             if (druidWebService.lastUrl == "/datasources/") {
                 return expectedDataSources
@@ -87,14 +90,10 @@ public class AutomaticDruidConfigLoaderSpec extends Specification {
 
         then: "what we expect"
         druidWebService.lastUrl == '/datasources/' + datasource + '/?full'
-        List<String> returnedMetrics = wikiticker.getMetrics()
-        for (String m : metrics) {
-            assert returnedMetrics.contains(m)
-        }
+        Set<String> returnedMetrics = wikiticker.getMetrics()
+        returnedMetrics.equals(metrics as Set)
 
-        List<String> returnedDimensions = wikiticker.getDimensions()
-        for (String d : dimensions) {
-            assert returnedDimensions.contains(d)
-        }
+        Set<String> returnedDimensions = wikiticker.getDimensions()
+        returnedDimensions.equals(dimensions as Set)
     }
 }

@@ -8,7 +8,9 @@ import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.asynchttpclient.Response;
 import org.joda.time.DateTime;
@@ -16,6 +18,8 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.druid.timeline.DataSegment;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,15 +40,18 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
     private static final String COORDINATOR_TABLES_PATH = "/datasources/";
     private final DruidWebService druidWebService;
     private final List<TableConfig> tableConfigurations;
+    private final ObjectMapper mapper;
 
     /**
      * Constructs a DruidNavigator to load datasources from druid.
      *
      * @param druidWebService The DruidWebService to be used when talking to druid.
+     * @param mapper The instance of ObjectMapper.
      */
-    public DruidNavigator(DruidWebService druidWebService) {
+    public DruidNavigator(DruidWebService druidWebService, ObjectMapper mapper) {
         this.druidWebService = druidWebService;
         tableConfigurations = new ArrayList<>();
+        this.mapper = mapper;
     }
 
     /**
@@ -102,7 +109,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
 
     /**
      * Load a specific table with all reported metrics, dimensions, and timegrains.
-     * The schema from the first segment in druid's response is used for configuration.
+     * The schema from all available segments in druid's response is used for configuration.
      * The expected response is:
      * {
      *      ...
@@ -130,12 +137,35 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
                 LOG.error("The segments list returned from {} was empty.", url);
                 throw new RuntimeException("Can't configure table without segment data.");
             }
-            JsonNode segments = rootNode.get(segmentsPath).get(0);
-            loadMetrics(table, segments);
-            loadDimensions(table, segments);
-            loadTimeGrains(table, segments);
+            JsonNode segments = rootNode.get(segmentsPath);
+
+            segments.forEach(dataSegment -> {
+                loadMetrics(table, dataSegment);
+                loadDimensions(table, dataSegment);
+                loadTimeGrains(table, dataSegment);
+                loadDataSegment(table, dataSegment);
+            });
             LOG.debug("Loaded table " + table.getName());
         }, url);
+    }
+
+    /**
+     * Builds a {@link DataSegment} from the given json and adds it to the table.
+     *
+     * @param table  The TableConfig to be loaded.
+     * @param dataSegmentJson  The JsonNode containing the segment metadata.
+     */
+    private void loadDataSegment(TableConfig table, JsonNode dataSegmentJson) {
+        try {
+            DataSegment dataSegment = mapper.treeToValue(dataSegmentJson, DataSegment.class);
+            table.addDataSegment(dataSegment);
+        } catch (JsonProcessingException e) {
+            LOG.warn(
+                    "Failed while building segment metadata for {}. While this isn't an error, it's unusual behavior",
+                    table.getName(),
+                    e
+            );
+        }
     }
 
     /**
