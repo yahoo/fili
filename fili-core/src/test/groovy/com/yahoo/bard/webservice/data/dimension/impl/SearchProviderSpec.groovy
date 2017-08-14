@@ -25,9 +25,6 @@ import org.joda.time.DateTime
 
 import spock.lang.Specification
 
-
-import java.util.stream.Collectors;
-
 /**
  * Specification of behavior that all SearchProviders should share.
  */
