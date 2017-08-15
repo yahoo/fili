@@ -59,7 +59,7 @@ public enum DefaultSqlAggregationType {
                         sqlAggFunction,
                         false,
                         null,
-                        aggregation.getName(),
+                        apiToFieldMapper.apply(aggregation.getFieldName()),
                         builder.field(apiToFieldMapper.apply(aggregation.getFieldName()))
                 );
             }
