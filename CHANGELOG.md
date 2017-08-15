@@ -40,6 +40,9 @@ Current
 
 ### Changed:
 
+- [DruidDimensionLoader is now a more generic DimensionValueLoadTask](https://github.com/yahoo/fili/pull/449)
+    * The `DimensionValueLoadTask` takes in a collection of `DimensionValueLoader`s to allow for non-Druid dimensions to be loaded.
+
 - [DruidQuery::getInnerQuery and Datasource::getQuery return Optional](https://github.com/yahoo/fili/pull/485)
     * Returning `Optional` is more correct for their usage and should protect against unexpected null values.
 
