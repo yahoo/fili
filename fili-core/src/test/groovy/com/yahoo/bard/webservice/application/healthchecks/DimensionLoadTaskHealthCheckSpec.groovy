@@ -2,9 +2,9 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.application.healthchecks
 
-import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_COORDINATOR_METADATA
+import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_DIMENSIONS_LOADER
 
-import com.yahoo.bard.webservice.metadata.DataSourceMetadataLoader
+import com.yahoo.bard.webservice.application.DimensionValueLoadTask
 
 import org.joda.time.DateTime
 
@@ -12,35 +12,33 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class DataSourceMetadataLoaderHealthCheckSpec extends Specification {
-
+class DimensionLoadTaskHealthCheckSpec extends Specification {
     private static final long TWO_MINUTES = 2 * 60 * 1000;
 
     /**
-     * Setup loader health check and lastRunTimestamp on DataSourceMetadataLoader.
+     * Setup loader health check and lastRunTimestamp on DimensionLoader.
      * lastRunTimestamp = current time - timeToSubtract
      *
      * @param timeToSubtract The number of milliseconds to subtract from current time.
      * @param window The window to configure the loader with.
      *
-     * @return DataSourceMetadataLoaderHealthCheck object
+     * @return DruidDimensionsLoaderHealthCheck object
      */
-    DataSourceMetadataLoaderHealthCheck setupLoaderHealthCheck(long timeToSubtract, long window) {
-        DataSourceMetadataLoader loader = Mock(DataSourceMetadataLoader.class)
+    DruidDimensionsLoaderHealthCheck setupLoaderHealthCheck(long timeToSubtract, long window) {
+        DimensionValueLoadTask loader = Mock(DimensionValueLoadTask.class)
         loader.getLastRunTimestamp() >> { return DateTime.now().minus(timeToSubtract)}
-        new DataSourceMetadataLoaderHealthCheck(loader, window)
+        new DruidDimensionsLoaderHealthCheck(loader, window)
     }
 
-
-    @Shared boolean coordinatorStatus
+    @Shared boolean loaderStatus
 
     def setupSpec() {
-        coordinatorStatus = DRUID_COORDINATOR_METADATA.isOn();
-        DRUID_COORDINATOR_METADATA.setOn(true)
+        loaderStatus = DRUID_DIMENSIONS_LOADER.isOn();
+        DRUID_DIMENSIONS_LOADER.setOn(true)
     }
 
     def cleanupSpec() {
-        DRUID_COORDINATOR_METADATA.setOn(coordinatorStatus)
+        DRUID_DIMENSIONS_LOADER.setOn(loaderStatus)
     }
 
     @Unroll

@@ -8,27 +8,34 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
+import com.yahoo.bard.webservice.druid.client.FailureCallback;
+import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource;
+import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource;
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.DruidSearchQuery;
 import com.yahoo.bard.webservice.druid.model.query.RegexSearchQuerySpec;
 import com.yahoo.bard.webservice.druid.model.query.SearchQuerySpec;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
+import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
 
 import org.joda.time.DateTime;
-import org.joda.time.Duration;
 import org.joda.time.Interval;
+import org.joda.time.Years;
 
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
- * The DruidDimensionRowProvider queries druid to update values for dimensions.
+ * The DruidDimensionRowProvider sends requests to the druid search query interface to get a list of dimension
+ * values to add to the dimension cache.
  */
-public class DruidDimensionValueProvider extends AbstractDimensionValueProvider {
+public class DruidDimensionValueLoader implements DimensionValueLoader {
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     public static final String DRUID_DIM_LOADER_DIMENSIONS =
@@ -37,12 +44,16 @@ public class DruidDimensionValueProvider extends AbstractDimensionValueProvider 
             SYSTEM_CONFIG.getPackageVariableName("druid_dim_loader_row_limit");
     private static final Integer ROW_LIMIT = SYSTEM_CONFIG.getIntProperty(DRUID_DIM_LOADER_ROW_LIMIT, 1000);
 
-    private static final long TEN_YEARS_MILLIS = 10 * TimeUnit.DAYS.toMillis(365);
-    private static final Duration DURATION = new Duration(TEN_YEARS_MILLIS);
-    private static final Interval INTERVAL = new Interval(DURATION, DateTime.now());
+    private static final Interval INTERVAL = new Interval(Years.years(10), DateTime.now());
     private static final String ANY_MATCH_PATTERN = ".*";
     private static final SearchQuerySpec SEARCH_QUERY_SPEC = new RegexSearchQuerySpec(ANY_MATCH_PATTERN);
+
     private final DruidWebService druidWebService;
+    private final LinkedHashSet<Dimension> dimensions;
+    private final LinkedHashSet<DataSource> dataSources;
+
+    private HttpErrorCallback errorCallback;
+    private FailureCallback failureCallback;
 
     /**
      * DruidDimensionRowProvider fetches data from Druid and adds it to the dimension cache.
@@ -52,7 +63,7 @@ public class DruidDimensionValueProvider extends AbstractDimensionValueProvider 
      * @param dimensionDictionary  The dimensions to update
      * @param druidWebService  The druid webservice to query
      */
-    public DruidDimensionValueProvider(
+    public DruidDimensionValueLoader(
             PhysicalTableDictionary physicalTableDictionary,
             DimensionDictionary dimensionDictionary,
             DruidWebService druidWebService
@@ -75,19 +86,46 @@ public class DruidDimensionValueProvider extends AbstractDimensionValueProvider 
      * @param dimensionsToLoad  The dimensions to use.
      * @param druidWebService  The druid webservice to query.
      */
-    public DruidDimensionValueProvider(
+    public DruidDimensionValueLoader(
             PhysicalTableDictionary physicalTableDictionary,
             DimensionDictionary dimensionDictionary,
             List<String> dimensionsToLoad,
             DruidWebService druidWebService
     ) {
-        super(physicalTableDictionary, dimensionDictionary, dimensionsToLoad);
+        this.dimensions = dimensionsToLoad.stream()
+                .map(dimensionDictionary::findByApiName)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        this.dataSources = physicalTableDictionary.values().stream()
+                .map(table -> table.withConstraint(DataSourceConstraint.unconstrained(table)))
+                .map(TableDataSource::new)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
         this.druidWebService = druidWebService;
     }
 
     @Override
-    public void query(Dimension dimension, DataSource dataSource) {
+    public void setErrorCallback(HttpErrorCallback errorCallback) {
+        this.errorCallback = errorCallback;
+    }
 
+    @Override
+    public void setFailureCallback(FailureCallback failureCallback) {
+        this.failureCallback = failureCallback;
+    }
+
+    @Override
+    public Set<Dimension> getDimensions() {
+        return dimensions;
+    }
+
+    @Override
+    public Set<DataSource> getDataSources() {
+        return dataSources;
+    }
+
+    @Override
+    public void query(Dimension dimension, DataSource dataSource) {
         // Success callback will update the dimension cache
         SuccessCallback success = buildDruidDimensionsSuccessCallback(dimension);
 
@@ -106,8 +144,8 @@ public class DruidDimensionValueProvider extends AbstractDimensionValueProvider 
         druidWebService.postDruidQuery(
                 requestContext,
                 success,
-                getErrorCallback(),
-                getFailureCallback(),
+                errorCallback,
+                failureCallback,
                 druidSearchQuery
         );
     }
@@ -126,12 +164,12 @@ public class DruidDimensionValueProvider extends AbstractDimensionValueProvider 
                     String value = dim.get("value").asText();
                     if (dimension.findDimensionRowByKeyValue(value) == null) {
                         DimensionRow dimRow = dimension.createEmptyDimensionRow(value);
-                        provideDimensionRow(dimension, dimRow);
+                        updateDimensionWithValue(dimension, dimRow);
                     }
                 });
             });
 
-            provideLoadedDimension(dimension);
+            updateDimension(dimension);
         };
     }
 }

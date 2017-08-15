@@ -32,7 +32,7 @@ import org.joda.time.format.DateTimeFormat
 import spock.lang.Shared
 import spock.lang.Specification
 
-class DataSourceMetadataLoaderSpec extends Specification {
+class DataSourceMetadataLoadTaskSpec extends Specification {
     private static final ObjectMappersSuite MAPPERS = new ObjectMappersSuite()
 
     String tableName = TestDruidTableName.ALL_PETS.asName()
@@ -182,7 +182,7 @@ class DataSourceMetadataLoaderSpec extends Specification {
 
     def "test whether DataSourceMetadataLoader loads any metadata segments"() {
         setup: "run the loader"
-        DataSourceMetadataLoader loader = new DataSourceMetadataLoader(
+        DataSourceMetadataLoadTask loader = new DataSourceMetadataLoadTask(
                 tableDict,
                 metadataService,
                 druidWS,
@@ -207,7 +207,7 @@ class DataSourceMetadataLoaderSpec extends Specification {
     def "Test datasource metadata can deserialize JSON correctly"() {
         setup: "instantiate the loader"
         DataSourceMetadataService localMetadataService = Mock(DataSourceMetadataService)
-        DataSourceMetadataLoader loader = new DataSourceMetadataLoader(
+        DataSourceMetadataLoadTask loader = new DataSourceMetadataLoadTask(
                 tableDict,
                 localMetadataService,
                 druidWS,
@@ -240,7 +240,7 @@ class DataSourceMetadataLoaderSpec extends Specification {
     def "Test queryDataSourceMetadata builds callbacks and sends query"() {
         setup: "instantiate the loader"
         DruidWebService testWs = Mock(DruidWebService)
-        DataSourceMetadataLoader loader = new DataSourceMetadataLoader(
+        DataSourceMetadataLoadTask loader = new DataSourceMetadataLoadTask(
                 tableDict,
                 metadataService,
                 testWs,

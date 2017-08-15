@@ -17,8 +17,8 @@ import java.util.concurrent.ScheduledFuture;
  *
  * @param <V>  The type of the result returned by the task associated with this loader.
  */
-public abstract class Loader<V> implements Runnable {
-    private static final Logger LOG = LoggerFactory.getLogger(Loader.class);
+public abstract class LoadTask<V> implements Runnable {
+    private static final Logger LOG = LoggerFactory.getLogger(LoadTask.class);
 
     protected final String loaderName;
     protected final long delay;
@@ -32,7 +32,7 @@ public abstract class Loader<V> implements Runnable {
      * @param loaderName  The name of the loader.
      * @param delay  The initial delay of this loader in milliseconds.
      */
-    public Loader(String loaderName, long delay) {
+    public LoadTask(String loaderName, long delay) {
         this(loaderName, delay, 0);
     }
 
@@ -43,7 +43,7 @@ public abstract class Loader<V> implements Runnable {
      * @param delay  The initial delay of this loader in milliseconds.
      * @param period  The period of this loader in milliseconds. Zero period corresponds to a one-off loader.
      */
-    public Loader(String loaderName, long delay, long period) {
+    public LoadTask(String loaderName, long delay, long period) {
         this.loaderName = loaderName;
         this.delay = delay;
         this.period = period;
@@ -133,7 +133,7 @@ public abstract class Loader<V> implements Runnable {
     }
 
     /**
-     * A basic nested class dealing with http errors that can be re-used by classes extending {@link Loader}.
+     * A basic nested class dealing with http errors that can be re-used by classes extending {@link LoadTask}.
      */
     protected class TaskHttpErrorCallback implements HttpErrorCallback {
         @Override
@@ -149,7 +149,7 @@ public abstract class Loader<V> implements Runnable {
     }
 
     /**
-     * A basic nested class dealing with failures that can be re-used by classes extending {@link Loader}.
+     * A basic nested class dealing with failures that can be re-used by classes extending {@link LoadTask}.
      */
     protected class TaskFailureCallback implements FailureCallback {
         @Override

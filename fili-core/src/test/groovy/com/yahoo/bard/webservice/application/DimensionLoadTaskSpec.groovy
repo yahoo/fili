@@ -17,14 +17,12 @@ import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
-import com.fasterxml.jackson.datatype.joda.JodaModule
 
 import org.joda.time.DateTime
 
 import spock.lang.Specification
 
-class DimensionLoaderSpec extends Specification {
+class DimensionLoadTaskSpec extends Specification {
 
     static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
 
@@ -37,8 +35,8 @@ class DimensionLoaderSpec extends Specification {
 
     SystemConfig systemConfig = SystemConfigProvider.getInstance()
 
-    DimensionValueLoader loader
-    DruidDimensionValueProvider druidDimensionRowProvider
+    DimensionValueLoadTask loader
+    DruidDimensionValueLoader druidDimensionRowProvider
     String druidDimLoaderDimensions
     DruidWebService druidWebService
     DimensionDictionary dimensionDictionary
@@ -47,11 +45,11 @@ class DimensionLoaderSpec extends Specification {
     def setup() {
         SystemConfig systemConfig = SystemConfigProvider.getInstance()
         druidDimLoaderDimensions = systemConfig.getStringProperty(
-                DruidDimensionValueProvider.DRUID_DIM_LOADER_DIMENSIONS,
+                DruidDimensionValueLoader.DRUID_DIM_LOADER_DIMENSIONS,
                 null
         )
         systemConfig.setProperty(
-                DruidDimensionValueProvider.DRUID_DIM_LOADER_DIMENSIONS,
+                DruidDimensionValueLoader.DRUID_DIM_LOADER_DIMENSIONS,
                 LOADED_DIMENSIONS.join(',')
         )
 
@@ -60,20 +58,20 @@ class DimensionLoaderSpec extends Specification {
         PhysicalTableDictionary physicalTables = jtb.configurationLoader.physicalTableDictionary
         dimensionDictionary = jtb.getConfigurationLoader().dimensionDictionary
         druidWebService = Mock(DruidWebService)
-        druidDimensionRowProvider = new DruidDimensionValueProvider(
+        druidDimensionRowProvider = new DruidDimensionValueLoader(
                 physicalTables,
                 dimensionDictionary,
                 druidWebService
         )
-        loader = new DimensionValueLoader(Collections.singletonList(druidDimensionRowProvider))
+        loader = new DimensionValueLoadTask(Collections.singletonList(druidDimensionRowProvider))
     }
 
     def cleanup() {
         jtb.tearDown()
         if (druidDimLoaderDimensions == null) {
-            systemConfig.clearProperty(DruidDimensionValueProvider.DRUID_DIM_LOADER_DIMENSIONS)
+            systemConfig.clearProperty(DruidDimensionValueLoader.DRUID_DIM_LOADER_DIMENSIONS)
         } else {
-            systemConfig.setProperty(DruidDimensionValueProvider.DRUID_DIM_LOADER_DIMENSIONS, druidDimLoaderDimensions)
+            systemConfig.setProperty(DruidDimensionValueLoader.DRUID_DIM_LOADER_DIMENSIONS, druidDimLoaderDimensions)
         }
     }
 

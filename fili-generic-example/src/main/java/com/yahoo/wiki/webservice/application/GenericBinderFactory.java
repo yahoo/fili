@@ -3,8 +3,8 @@
 package com.yahoo.wiki.webservice.application;
 
 import com.yahoo.bard.webservice.application.AbstractBinderFactory;
-import com.yahoo.bard.webservice.application.DimensionValueLoader;
-import com.yahoo.bard.webservice.application.DruidDimensionValueProvider;
+import com.yahoo.bard.webservice.application.DimensionValueLoadTask;
+import com.yahoo.bard.webservice.application.DruidDimensionValueLoader;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
@@ -51,7 +51,7 @@ public class GenericBinderFactory extends AbstractBinderFactory {
     }
 
     @Override
-    protected DimensionValueLoader buildDruidDimensionsLoader(
+    protected DimensionValueLoadTask buildDruidDimensionsLoader(
             DruidWebService webService,
             PhysicalTableDictionary physicalTableDictionary,
             DimensionDictionary dimensionDictionary
@@ -60,14 +60,14 @@ public class GenericBinderFactory extends AbstractBinderFactory {
                 .map(DimensionConfig::getApiName)
                 .collect(Collectors.toList());
 
-        DruidDimensionValueProvider druidDimensionRowProvider = new DruidDimensionValueProvider(
+        DruidDimensionValueLoader druidDimensionRowProvider = new DruidDimensionValueLoader(
                 physicalTableDictionary,
                 dimensionDictionary,
                 dimensionsList,
                 webService
         );
 
-        return new DimensionValueLoader(Collections.singletonList(druidDimensionRowProvider));
+        return new DimensionValueLoadTask(Collections.singletonList(druidDimensionRowProvider));
     }
 
     @Override

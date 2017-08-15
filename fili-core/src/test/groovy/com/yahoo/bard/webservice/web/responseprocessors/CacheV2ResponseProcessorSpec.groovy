@@ -56,7 +56,7 @@ class CacheV2ResponseProcessorSpec extends Specification {
     CacheV2ResponseProcessor crp
 
     def setup() {
-        querySigningService.getSegmentSetId(_) >> Optional.of(1234)
+        querySigningService.getSegmentSetId(_) >> Optional.of(1234L)
         segmentId = querySigningService.getSegmentSetId(groupByQuery).get()
         crp = new CacheV2ResponseProcessor(next, cacheKey, dataCache, querySigningService, MAPPER)
     }

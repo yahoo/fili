@@ -37,7 +37,7 @@ import com.yahoo.bard.webservice.data.config.table.TableLoader
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.druid.client.DruidWebService
-import com.yahoo.bard.webservice.metadata.DataSourceMetadataLoader
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataLoadTask
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.LogicalTableDictionary
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
@@ -289,7 +289,7 @@ public class AbstractBinderFactorySpec extends Specification {
         HealthCheckRegistry registry = Mock(HealthCheckRegistry)
 
         when:
-        DimensionValueLoader druidDimensionsLoader = binderFactory.buildDruidDimensionsLoader(
+        DimensionValueLoadTask druidDimensionsLoader = binderFactory.buildDruidDimensionsLoader(
                 webService,
                 physicalTableDictionary,
                 dimensionDictionary
@@ -298,7 +298,7 @@ public class AbstractBinderFactorySpec extends Specification {
         binderFactory.shutdownLoaderScheduler()
 
         then:
-        DruidDimensionValueProvider druidDimensionRowProvider = druidDimensionsLoader.dimensionRowProviders.getAt(0)
+        DruidDimensionValueLoader druidDimensionRowProvider = druidDimensionsLoader.dimensionRowProviders.getAt(0)
         druidDimensionRowProvider.druidWebService.is(webService)
         1 * registry.register(HEALTH_CHECK_NAME_DRUID_DIM_LOADER, _ as DruidDimensionsLoaderHealthCheck) >> {
             string, healthCheck -> capturedHealthCheck = healthCheck
@@ -316,7 +316,7 @@ public class AbstractBinderFactorySpec extends Specification {
         HealthCheckRegistry registry = Mock(HealthCheckRegistry)
 
         when:
-        DataSourceMetadataLoader dataSourceMetadataLoader = binderFactory.buildDataSourceMetadataLoader(
+        DataSourceMetadataLoadTask dataSourceMetadataLoader = binderFactory.buildDataSourceMetadataLoader(
                 webService,
                 physicalTableDictionary,
                 metadataService,
