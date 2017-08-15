@@ -75,7 +75,7 @@ class SketchNestedQuerySpec extends Specification {
 
     def "Intersection reporting when Logical Metric has nested query"(){
         LinkedHashSet<LogicalMetric> logicalMetrics =  new DataApiRequest().generateLogicalMetrics("dayAvgFoos(AND(country|id-in[US,IN],property|id-in[114,125]))", resources.metricDict, resources.dimensionDict, resources.table)
-        TemplateDruidQuery nestedQuery = logicalMetrics.first().getTemplateDruidQuery().getInnerQuery()
+        TemplateDruidQuery nestedQuery = logicalMetrics.first().getTemplateDruidQuery().getInnerQuery().get()
 
         Set<Aggregation> expectedNestedAggs = new HashSet<>()
         expectedNestedAggs.addAll(resources.fooNoBarFilteredAggregationSet)
