@@ -59,7 +59,7 @@ public class PaginationParameters {
         this.perPage = parseParameter(perPage, "perPage");
         this.page = parseParameter(page, "page");
         validate(this.perPage, "perPage");
-        validate(this.page, "page");
+        validatePage(this.page, "page");
     }
 
     /**
@@ -74,7 +74,7 @@ public class PaginationParameters {
         this.perPage = perPage;
         this.page = page;
         validate(this.perPage, "perPage");
-        validate(this.page, "page");
+        validatePage(this.page, "page");
     }
 
     /**
@@ -115,6 +115,22 @@ public class PaginationParameters {
      * @throws BadPaginationException if 'parameter' is not greater than 0 or is not -1.
      */
     private void validate(int parameter, String parameterName) throws BadPaginationException {
+        if (parameter < MINIMAL_VALUE) {
+            ErrorMessageFormat errorMessage = ErrorMessageFormat.PAGINATION_PARAMETER_INVALID;
+            LOG.debug(errorMessage.logFormat(parameterName, parameter));
+            throw new BadPaginationException(errorMessage.format(parameterName, parameter));
+        }
+    }
+
+    /**
+     * Verifies that the page is positive or is -1 (last page).
+     *
+     * @param parameter  The parameter to be validated.
+     * @param parameterName  The name of the parameter to appear in the error message
+     *
+     * @throws BadPaginationException if 'parameter' is not greater than 0 or is not -1.
+     */
+    private void validatePage(int parameter, String parameterName) throws BadPaginationException {
         if (parameter < MINIMAL_VALUE && parameter != LAST_PAGE) {
             ErrorMessageFormat errorMessage = ErrorMessageFormat.PAGINATION_PARAMETER_INVALID;
             LOG.debug(errorMessage.logFormat(parameterName, parameter));
