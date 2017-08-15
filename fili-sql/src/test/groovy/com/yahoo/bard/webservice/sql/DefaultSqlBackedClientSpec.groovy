@@ -8,6 +8,15 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MINUTE
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MONTH
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.WEEK
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.YEAR
+import static com.yahoo.bard.webservice.database.Database.ADDED
+import static com.yahoo.bard.webservice.database.Database.COMMENT
+import static com.yahoo.bard.webservice.database.Database.DELETED
+import static com.yahoo.bard.webservice.database.Database.DELTA
+import static com.yahoo.bard.webservice.database.Database.IS_NEW
+import static com.yahoo.bard.webservice.database.Database.IS_ROBOT
+import static com.yahoo.bard.webservice.database.Database.PAGE
+import static com.yahoo.bard.webservice.database.Database.USER
+import static com.yahoo.bard.webservice.database.Database.WIKITICKER
 import static com.yahoo.bard.webservice.druid.model.query.AllGranularity.INSTANCE
 import static com.yahoo.bard.webservice.sql.builders.Aggregator.longMax
 import static com.yahoo.bard.webservice.sql.builders.Aggregator.longMin
@@ -31,16 +40,6 @@ import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.get
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.getDimensions
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.groupByQuery
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.timeSeriesQuery
-import static com.yahoo.bard.webservice.database.Database.ADDED
-import static com.yahoo.bard.webservice.database.Database.COMMENT
-import static com.yahoo.bard.webservice.database.Database.DELETED
-import static com.yahoo.bard.webservice.database.Database.DELTA
-import static com.yahoo.bard.webservice.database.Database.IS_NEW
-import static com.yahoo.bard.webservice.database.Database.IS_ROBOT
-import static com.yahoo.bard.webservice.database.Database.PAGE
-import static com.yahoo.bard.webservice.database.Database.USER
-import static com.yahoo.bard.webservice.database.Database.WIKITICKER
-import static java.util.Arrays.asList
 
 import com.yahoo.bard.webservice.data.DruidResponseParser
 import com.yahoo.bard.webservice.data.ResultSet
@@ -48,6 +47,7 @@ import com.yahoo.bard.webservice.data.ResultSetSchema
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
+import com.yahoo.bard.webservice.database.Database
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.filter.Filter
@@ -57,7 +57,6 @@ import com.yahoo.bard.webservice.druid.model.query.DruidQuery
 import com.yahoo.bard.webservice.druid.model.query.Granularity
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery
-import com.yahoo.bard.webservice.database.Database
 import com.yahoo.bard.webservice.table.Column
 
 import com.fasterxml.jackson.databind.JsonNode
@@ -95,19 +94,6 @@ class DefaultSqlBackedClientSpec extends Specification {
         )
     }
 
-    private static TimeSeriesQuery getBasicTimeseriesQuery(DefaultTimeGrain timeGrain) {
-        return timeSeriesQuery(
-                WIKITICKER,
-                null,
-                timeGrain,
-                asList(ADDED),
-                asList(),
-                asList(sum(ADDED)),
-                asList(),
-                asList(interval(START, END))
-        )
-    }
-
     private static TimeSeriesQuery getTimeSeriesQuery(DefaultTimeGrain timeGrain, Filter filter) {
         return getTimeSeriesQueryCustomAggregation(timeGrain, filter, { s -> sum(s) })
     }
@@ -117,11 +103,11 @@ class DefaultSqlBackedClientSpec extends Specification {
                 WIKITICKER,
                 filter,
                 timeGrain,
-                asList(ADDED, DELETED, DELTA),
-                asList(COMMENT),
-                asList(aggregation.apply(ADDED), aggregation.apply(DELETED), aggregation.apply(DELTA)),
-                asList(),
-                asList(interval(START, END))
+                [ADDED, DELETED, DELTA],
+                [COMMENT],
+                [aggregation.apply(ADDED), aggregation.apply(DELETED), aggregation.apply(DELTA)],
+                [],
+                [interval(START, END)]
         )
     }
 
@@ -130,11 +116,11 @@ class DefaultSqlBackedClientSpec extends Specification {
                 WIKITICKER,
                 filter,
                 timeGrain,
-                asList(ADDED, DELETED, DELTA),
-                asList(COMMENT),
-                asList(sum(ADDED), sum(DELETED), sum(DELTA)),
-                asList(),
-                asList(interval(START, "2015-09-12T12:00:00.000Z"), interval("2015-09-12T12:00:00.000Z", END))
+                [ADDED, DELETED, DELTA],
+                [COMMENT],
+                [sum(ADDED), sum(DELETED), sum(DELTA)],
+                [],
+                [interval(START, "2015-09-12T12:00:00.000Z"), interval("2015-09-12T12:00:00.000Z", END)]
         )
     }
 
@@ -151,11 +137,11 @@ class DefaultSqlBackedClientSpec extends Specification {
                 having,
                 getDimensions(dimensions),
                 timeGrain,
-                asList(ADDED, DELETED),
-                asList(COMMENT),
-                asList(sum(ADDED), sum(DELETED)),
-                asList(),
-                asList(interval(START, END)),
+                [ADDED, DELETED],
+                [COMMENT],
+                [sum(ADDED), sum(DELETED)],
+                [],
+                [interval(START, END)],
                 null
         )
     }
@@ -198,12 +184,12 @@ class DefaultSqlBackedClientSpec extends Specification {
         def end = new DateTime(END).plusMillis(-timeZoneId.getOffset(new DateTime(DateTimeZone.UTC))).toString()
 
         TimeSeriesQuery timeSeriesQuery = new TimeSeriesQuery(
-                dataSource(WIKITICKER, DAY, timeZoneId, asList(ADDED), asList(), "", ""),
+                dataSource(WIKITICKER, DAY, timeZoneId, [ADDED], [], "", ""),
                 timeGrain,
                 null,
-                asList(sum(ADDED)),
-                Collections.emptyList(),
-                asList(interval(start, end))
+                [sum(ADDED)],
+                [],
+                [interval(start, end)]
         )
         JsonNode jsonNode = sqlBackedClient.executeQuery(timeSeriesQuery, null, null).get();
         ResultSet parse = parse(jsonNode, timeSeriesQuery)
@@ -294,16 +280,16 @@ class DefaultSqlBackedClientSpec extends Specification {
         parse.size() == size
 
         where: "we have"
-        timeGrain | dims                     | filter                         | having                          | size
-        INSTANCE  | asList()                 | null                           | null                            | 39244
-        HOUR      | asList(IS_NEW, IS_ROBOT) | null                           | and(gt(ADDED, 1), lt(ADDED, 1)) | 0
-        HOUR      | asList(IS_ROBOT)         | null                           | null                            | 24 * 2
-        DAY       | asList(IS_NEW, IS_ROBOT) | null                           | null                            | 4
-        HOUR      | asList(IS_NEW, IS_ROBOT) | null                           | equals(ADDED, 0)                | 0
-        HOUR      | asList(IS_NEW, IS_ROBOT) | search(COMMENT, FIRST_COMMENT) | equals(ADDED, 36)               | 1
-        HOUR      | asList()                 | null                           | gt(ADDED, 400000)               | 12
-        HOUR      | asList()                 | null                           | null                            | 24
-        DAY       | asList(PAGE, USER)       | null                           | null                            | 36565
-        DAY       | asList()                 | null                           | null                            | 1
+        timeGrain | dims               | filter                         | having                          | size
+        INSTANCE  | []                 | null                           | null                            | 39244
+        HOUR      | [IS_NEW, IS_ROBOT] | null                           | and(gt(ADDED, 1), lt(ADDED, 1)) | 0
+        HOUR      | [IS_ROBOT]         | null                           | null                            | 24 * 2
+        DAY       | [IS_NEW, IS_ROBOT] | null                           | null                            | 4
+        HOUR      | [IS_NEW, IS_ROBOT] | null                           | equals(ADDED, 0)                | 0
+        HOUR      | [IS_NEW, IS_ROBOT] | search(COMMENT, FIRST_COMMENT) | equals(ADDED, 36)               | 1
+        HOUR      | []                 | null                           | gt(ADDED, 400000)               | 12
+        HOUR      | []                 | null                           | null                            | 24
+        DAY       | [PAGE, USER]       | null                           | null                            | 36565
+        DAY       | []                 | null                           | null                            | 1
     }
 }
