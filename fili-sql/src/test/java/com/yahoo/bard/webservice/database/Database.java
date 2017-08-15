@@ -29,6 +29,7 @@ import javax.sql.DataSource;
  */
 public class Database {
     private static final String DATABASE_URL = "jdbc:h2:mem:test";
+    public static final String SCHEMA = "PUBLIC";
     private static final String WIKITICKER_JSON_DATA = "wikiticker-2015-09-12-sampled.json";
     private static Connection connection;
     public static final String TIME = "TIME";
