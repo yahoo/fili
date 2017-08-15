@@ -66,7 +66,7 @@ public class JerseyTestBinder {
     public ConfigurationLoader configurationLoader;
     public TestBinderFactory testBinderFactory;
     public boolean useTestWebService = true;
-    private static final int RANDOM_PORT = 0;
+    private static final String RANDOM_PORT = "0";
 
     private DateTimeZone previousDateTimeZone;
 
@@ -159,7 +159,7 @@ public class JerseyTestBinder {
             @Override
             protected Application configure() {
                 // Find first available port.
-                forceSet(TestProperties.CONTAINER_PORT, String.valueOf(RANDOM_PORT));
+                forceSet(TestProperties.CONTAINER_PORT, RANDOM_PORT);
 
                 return config;
             }
