@@ -20,7 +20,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 class PostAggregationEvaluatorSpec extends Specification {
-    static Map<String, String> fieldToValue = new HashMap<>()
+    static Map<String, String> fieldToValue = [:]
     static String ONE = "one"
     static String FIVE = "five"
     static PostAggregationEvaluator postAggregationEvaluator = new PostAggregationEvaluator()
@@ -37,18 +37,18 @@ class PostAggregationEvaluatorSpec extends Specification {
         result == value
 
         where: "given"
-        postAgg                                                      | value
-        arithmetic(PLUS, field(sum(ONE)))                            | 1
-        arithmetic(PLUS, constant(1))                                | 1
-        arithmetic(PLUS, arithmetic(PLUS, constant(1)), constant(1)) | 2
-        arithmetic(PLUS, field(sum(ONE)), field(sum(FIVE)))          | 6
-        arithmetic(MINUS, field(sum(ONE)), field(sum(FIVE)))         | -4
-        arithmetic(MINUS, constant(1), constant(1), constant(1))     | -1
-        arithmetic(MULTIPLY, field(sum(ONE)), field(sum(FIVE)))      | 5
-        arithmetic(DIVIDE, field(sum(ONE)), field(sum(FIVE)))        | 1 / 5
-        arithmetic(DIVIDE, field(sum(ONE)), constant(0))             | 0
-        arithmetic(DIVIDE, constant(1), constant(1), constant(2))    | 1 / 2 // = ((1/1)/2)
-        arithmetic(DIVIDE, field(sum(ONE)), constant(1), constant(0))    | 0 // = ((1/1)/0)
+        postAgg                                                       | value
+        arithmetic(PLUS, field(sum(ONE)))                             | 1
+        arithmetic(PLUS, constant(1))                                 | 1
+        arithmetic(PLUS, arithmetic(PLUS, constant(1)), constant(1))  | 2
+        arithmetic(PLUS, field(sum(ONE)), field(sum(FIVE)))           | 6
+        arithmetic(MINUS, field(sum(ONE)), field(sum(FIVE)))          | -4
+        arithmetic(MINUS, constant(1), constant(1), constant(1))      | -1
+        arithmetic(MULTIPLY, field(sum(ONE)), field(sum(FIVE)))       | 5
+        arithmetic(DIVIDE, field(sum(ONE)), field(sum(FIVE)))         | 1 / 5
+        arithmetic(DIVIDE, field(sum(ONE)), constant(0))              | 0
+        arithmetic(DIVIDE, constant(1), constant(1), constant(2))     | 1 / 2 // = ((1/1)/2)
+        arithmetic(DIVIDE, field(sum(ONE)), constant(1), constant(0)) | 0 // = ((1/1)/0)
     }
 
     @Unroll
