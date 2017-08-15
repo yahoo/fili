@@ -4,6 +4,8 @@ package com.yahoo.bard.webservice.druid.model.filter;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -97,11 +99,13 @@ public class SearchFilter extends DimensionalFilter {
         return query;
     }
 
-    private String getQueryType() {
+    @JsonIgnore
+    public String getQueryType() {
         return query.get(QUERY_TYPE);
     }
 
-    private String getQueryValue() {
+    @JsonIgnore
+    public String getQueryValue() {
         return query.get(QUERY_VALUE);
     }
 
