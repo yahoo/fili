@@ -46,6 +46,7 @@ import com.yahoo.bard.webservice.data.cache.StubDataCache;
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
+import com.yahoo.bard.webservice.data.config.dimension.DimensionLoader;
 import com.yahoo.bard.webservice.data.config.dimension.TypeAwareDimensionLoader;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
@@ -313,7 +314,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 bind(buildResponseWriter(getMappers())).to(ResponseWriter.class);
 
                 if (DRUID_DIMENSIONS_LOADER.isOn()) {
-                    DimensionLoader dimensionLoader = buildDruidDimensionsLoader(
+                    DimensionValueLoader dimensionLoader = buildDruidDimensionsLoader(
                             nonUiDruidWebService,
                             loader.getPhysicalTableDictionary(),
                             loader.getDimensionDictionary()
@@ -680,25 +681,25 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     }
 
     /**
-     * Build a DimensionLoader.
+     * Build a DimensionValueLoader.
      *
      * @param webService  The web service used by the loader to query dimension values
      * @param physicalTableDictionary  The table to update dimensions on
      * @param dimensionDictionary  The dimensions to update
      *
-     * @return A DimensionLoader
+     * @return A DimensionValueLoader
      */
-    protected DimensionLoader buildDruidDimensionsLoader(
+    protected DimensionValueLoader buildDruidDimensionsLoader(
             DruidWebService webService,
             PhysicalTableDictionary physicalTableDictionary,
             DimensionDictionary dimensionDictionary
     ) {
-        DruidDimensionRowProvider druidDimensionRowProvider = new DruidDimensionRowProvider(
+        DruidDimensionValueProvider druidDimensionRowProvider = new DruidDimensionValueProvider(
                 physicalTableDictionary,
                 dimensionDictionary,
                 webService
         );
-        return new DimensionLoader(Collections.singletonList(druidDimensionRowProvider));
+        return new DimensionValueLoader(Collections.singletonList(druidDimensionRowProvider));
     }
 
     /**
@@ -722,18 +723,18 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     }
 
     /**
-     * Schedule DimensionLoader and register its health check.
+     * Schedule DimensionValueLoader and register its health check.
      *
      * @param healthCheckRegistry  The health check registry to register Dimension lookup health checks
      * @param dataDimensionLoader  The DruidDimensionLoader used for monitoring and health checks
      */
     protected final void setupDruidDimensionsLoader(
             HealthCheckRegistry healthCheckRegistry,
-            DimensionLoader dataDimensionLoader
+            DimensionValueLoader dataDimensionLoader
     ) {
         scheduleLoader(dataDimensionLoader);
 
-        // Register DimensionLoader health check
+        // Register DimensionValueLoader health check
         HealthCheck druidDimensionsLoaderHealthCheck = new DruidDimensionsLoaderHealthCheck(
                 dataDimensionLoader,
                 DRUID_DIM_LOADER_HC_LAST_RUN_PERIOD_MILLIS
@@ -890,7 +891,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      * @return A configurationLoader instance
      */
     protected ConfigurationLoader buildConfigurationLoader(
-            com.yahoo.bard.webservice.data.config.dimension.DimensionLoader dimensionLoader,
+            DimensionLoader dimensionLoader,
             MetricLoader metricLoader,
             TableLoader tableLoader
     ) {
@@ -904,7 +905,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      *
      * @return a Dimension Loader instance
      */
-    protected com.yahoo.bard.webservice.data.config.dimension.DimensionLoader getDimensionLoader() {
+    protected DimensionLoader getDimensionLoader() {
         return new TypeAwareDimensionLoader(getDimensionConfigurations());
     }
 

@@ -12,6 +12,7 @@ import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,16 +24,14 @@ import java.util.stream.Collectors;
 /**
  * The AbstractDimensionRowProvider provides a way to load dimension rows onto dimensions.
  */
-public abstract class AbstractDimensionRowProvider {
-    private static final Logger LOG = LoggerFactory.getLogger(AbstractDimensionRowProvider.class);
+public abstract class AbstractDimensionValueProvider {
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractDimensionValueProvider.class);
 
     private final List<Dimension> dimensions;
     private final List<DataSource> dataSources;
 
     private HttpErrorCallback errorCallback;
     private FailureCallback failureCallback;
-    private BiConsumer<Dimension, DimensionRow> dimensionRowConsumer;
-    private Consumer<Dimension> dimensionLoadedConsumer;
 
     /**
      * DimensionLoader fetches data from Druid and adds it to the dimension cache.
@@ -42,7 +41,7 @@ public abstract class AbstractDimensionRowProvider {
      * @param dimensionDictionary  The dimension dictionary to load dimensions from.
      * @param dimensionsToLoad  The dimensions to use.
      */
-    public AbstractDimensionRowProvider(
+    public AbstractDimensionValueProvider(
             PhysicalTableDictionary physicalTableDictionary,
             DimensionDictionary dimensionDictionary,
             List<String> dimensionsToLoad
@@ -56,6 +55,14 @@ public abstract class AbstractDimensionRowProvider {
                 .map(TableDataSource::new)
                 .collect(Collectors.toList());
     }
+
+    /**
+     * Queries for a specific {@link Dimension} against the given {@link DataSource}.
+     *
+     * @param dimension  The dimension to load.
+     * @param dataSource  The datasource to query values for.
+     */
+    protected abstract void query(Dimension dimension, DataSource dataSource);
 
     /**
      * Checks if a {@link Dimension} exists in a {@link DataSource}.
@@ -92,14 +99,6 @@ public abstract class AbstractDimensionRowProvider {
                 .filter(dataSource -> dimensionExistsInDataSource(dimension, dataSource))
                 .forEach(dataSource -> query(dimension, dataSource));
     }
-
-    /**
-     * Queries for a specific {@link Dimension} against the given {@link DataSource}.
-     *
-     * @param dimension  The dimension to load.
-     * @param dataSource  The datasource to query values for.
-     */
-    protected abstract void query(Dimension dimension, DataSource dataSource);
 
     /**
      * Set a callback if an error occurs while querying.
@@ -156,40 +155,21 @@ public abstract class AbstractDimensionRowProvider {
     }
 
     /**
-     * Invokes the consumer from {@link #setDimensionLoadedConsumer(Consumer)} to indicate the dimension has been
-     * loaded.
+     *  Tell the dimension it's been updated.
      *
      * @param dimension  The dimension to update saying it's been loaded.
      */
     protected void provideLoadedDimension(Dimension dimension) {
-        dimensionLoadedConsumer.accept(dimension);
+        dimension.setLastUpdated(DateTime.now());
     }
 
     /**
-     * Invokes the consumer from {@link #setDimensionRowConsumer(BiConsumer)} to load dimension row values.
+     * Adds dimension row values to a dimension.
      *
      * @param dimension  The dimension to add the row to.
      * @param dimensionRow  The dimension row to be added.
      */
     protected void provideDimensionRow(Dimension dimension, DimensionRow dimensionRow) {
-        dimensionRowConsumer.accept(dimension, dimensionRow);
-    }
-
-    /**
-     * Provides a consumer to load {@link DimensionRow} on {@link Dimension}.
-     *
-     * @param dimensionRowConsumer  The consumer of dimension rows.
-     */
-    public void setDimensionRowConsumer(BiConsumer<Dimension, DimensionRow> dimensionRowConsumer) {
-        this.dimensionRowConsumer = dimensionRowConsumer;
-    }
-
-    /**
-     * Provides a consumer to indicate a {@link Dimension} has been loaded.
-     *
-     * @param dimensionLoadedConsumer  The consumer of loaded dimensions.
-     */
-    public void setDimensionLoadedConsumer(Consumer<Dimension> dimensionLoadedConsumer) {
-        this.dimensionLoadedConsumer = dimensionLoadedConsumer;
+        dimension.addDimensionRow(dimensionRow);
     }
 }

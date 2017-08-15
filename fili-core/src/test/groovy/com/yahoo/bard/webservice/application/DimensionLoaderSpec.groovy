@@ -37,8 +37,8 @@ class DimensionLoaderSpec extends Specification {
 
     SystemConfig systemConfig = SystemConfigProvider.getInstance()
 
-    DimensionLoader loader
-    DruidDimensionRowProvider druidDimensionRowProvider
+    DimensionValueLoader loader
+    DruidDimensionValueProvider druidDimensionRowProvider
     String druidDimLoaderDimensions
     DruidWebService druidWebService
     DimensionDictionary dimensionDictionary
@@ -47,11 +47,11 @@ class DimensionLoaderSpec extends Specification {
     def setup() {
         SystemConfig systemConfig = SystemConfigProvider.getInstance()
         druidDimLoaderDimensions = systemConfig.getStringProperty(
-                DruidDimensionRowProvider.DRUID_DIM_LOADER_DIMENSIONS,
+                DruidDimensionValueProvider.DRUID_DIM_LOADER_DIMENSIONS,
                 null
         )
         systemConfig.setProperty(
-                DruidDimensionRowProvider.DRUID_DIM_LOADER_DIMENSIONS,
+                DruidDimensionValueProvider.DRUID_DIM_LOADER_DIMENSIONS,
                 LOADED_DIMENSIONS.join(',')
         )
 
@@ -60,20 +60,20 @@ class DimensionLoaderSpec extends Specification {
         PhysicalTableDictionary physicalTables = jtb.configurationLoader.physicalTableDictionary
         dimensionDictionary = jtb.getConfigurationLoader().dimensionDictionary
         druidWebService = Mock(DruidWebService)
-        druidDimensionRowProvider = new DruidDimensionRowProvider(
+        druidDimensionRowProvider = new DruidDimensionValueProvider(
                 physicalTables,
                 dimensionDictionary,
                 druidWebService
         )
-        loader = new DimensionLoader(Collections.singletonList(druidDimensionRowProvider))
+        loader = new DimensionValueLoader(Collections.singletonList(druidDimensionRowProvider))
     }
 
     def cleanup() {
         jtb.tearDown()
         if (druidDimLoaderDimensions == null) {
-            systemConfig.clearProperty(DruidDimensionRowProvider.DRUID_DIM_LOADER_DIMENSIONS)
+            systemConfig.clearProperty(DruidDimensionValueProvider.DRUID_DIM_LOADER_DIMENSIONS)
         } else {
-            systemConfig.setProperty(DruidDimensionRowProvider.DRUID_DIM_LOADER_DIMENSIONS, druidDimLoaderDimensions)
+            systemConfig.setProperty(DruidDimensionValueProvider.DRUID_DIM_LOADER_DIMENSIONS, druidDimLoaderDimensions)
         }
     }
 

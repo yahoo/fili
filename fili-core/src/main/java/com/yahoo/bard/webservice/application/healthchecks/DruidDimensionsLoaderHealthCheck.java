@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.application.healthchecks;
 
-import com.yahoo.bard.webservice.application.DimensionLoader;
+import com.yahoo.bard.webservice.application.DimensionValueLoader;
 
 import com.codahale.metrics.health.HealthCheck;
 
@@ -16,7 +16,7 @@ import javax.inject.Singleton;
 @Singleton
 public class DruidDimensionsLoaderHealthCheck extends HealthCheck {
 
-    private final DimensionLoader loader;
+    private final DimensionValueLoader loader;
     private final long lastRunDuration;
 
     /**
@@ -25,7 +25,7 @@ public class DruidDimensionsLoaderHealthCheck extends HealthCheck {
      * @param loader  segment metadata loader
      * @param lastRunDuration  last run duration
      */
-    public DruidDimensionsLoaderHealthCheck(DimensionLoader loader, long lastRunDuration) {
+    public DruidDimensionsLoaderHealthCheck(DimensionValueLoader loader, long lastRunDuration) {
         this.loader = loader;
         this.lastRunDuration = lastRunDuration;
     }

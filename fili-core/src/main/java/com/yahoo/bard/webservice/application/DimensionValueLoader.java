@@ -26,10 +26,7 @@ import javax.inject.Singleton;
  * values to add to the dimension cache.
  */
 @Singleton
-public class DimensionLoader extends Loader<Boolean>
-        implements BiConsumer<Dimension, DimensionRow>, Consumer<Dimension> {
-    private static final Logger LOG = LoggerFactory.getLogger(DimensionLoader.class);
-
+public class DimensionValueLoader extends Loader<Boolean> {
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     public static final String DRUID_DIM_LOADER_TIMER_DURATION_KEY =
@@ -38,17 +35,17 @@ public class DimensionLoader extends Loader<Boolean>
             SYSTEM_CONFIG.getPackageVariableName("druid_dim_loader_timer_delay");
 
     private final AtomicReference<DateTime> lastRunTimestamp;
-    private final Collection<AbstractDimensionRowProvider> dimensionRowProviders;
+    private final Collection<AbstractDimensionValueProvider> dimensionRowProviders;
 
     /**
      * DimensionLoader fetches data from Druid and adds it to the dimension cache.
      * The dimensions to be loaded can be passed in as a parameter.
      *
-     * @param dimensionRowProviders  A set of {@link AbstractDimensionRowProvider} to initialize dimensions.
+     * @param dimensionRowProviders  A set of {@link AbstractDimensionValueProvider} to initialize dimensions.
      */
-    public DimensionLoader(Collection<AbstractDimensionRowProvider> dimensionRowProviders) {
+    public DimensionValueLoader(Collection<AbstractDimensionValueProvider> dimensionRowProviders) {
         super(
-                DimensionLoader.class.getSimpleName(),
+                DimensionValueLoader.class.getSimpleName(),
                 SYSTEM_CONFIG.getLongProperty(DRUID_DIM_LOADER_TIMER_DELAY_KEY, 0),
                 SYSTEM_CONFIG.getLongProperty(
                         DRUID_DIM_LOADER_TIMER_DURATION_KEY,
@@ -63,33 +60,19 @@ public class DimensionLoader extends Loader<Boolean>
         FailureCallback failureCallback = getFailureCallback();
 
         dimensionRowProviders.forEach(dimensionRowProvider -> {
-            dimensionRowProvider.setDimensionRowConsumer(this);
-            dimensionRowProvider.setDimensionLoadedConsumer(this);
             dimensionRowProvider.setErrorCallback(errorCallback);
             dimensionRowProvider.setFailureCallback(failureCallback);
         });
     }
 
-
     @Override
     public void run() {
-        dimensionRowProviders.forEach(AbstractDimensionRowProvider::load);
+        dimensionRowProviders.forEach(AbstractDimensionValueProvider::load);
         // tell all dimensionRowProviders to load
         lastRunTimestamp.set(DateTime.now());
     }
 
     public DateTime getLastRunTimestamp() {
         return lastRunTimestamp.get();
-    }
-
-    @Override
-    public void accept(Dimension dimension, DimensionRow dimensionRow) {
-        dimension.addDimensionRow(dimensionRow);
-    }
-
-    @Override
-    public void accept(Dimension dimension) {
-        // Tell the dimension it's been updated
-        dimension.setLastUpdated(DateTime.now());
     }
 }

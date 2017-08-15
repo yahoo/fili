@@ -2,17 +2,15 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.application.healthchecks
 
-
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_DIMENSIONS_LOADER
 
-import com.yahoo.bard.webservice.application.DimensionLoader
+import com.yahoo.bard.webservice.application.DimensionValueLoader
 
 import org.joda.time.DateTime
 
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
-
 
 class DimensionLoaderHealthCheckSpec extends Specification {
     private static final long TWO_MINUTES = 2 * 60 * 1000;
@@ -27,7 +25,7 @@ class DimensionLoaderHealthCheckSpec extends Specification {
      * @return DruidDimensionsLoaderHealthCheck object
      */
     DruidDimensionsLoaderHealthCheck setupLoaderHealthCheck(long timeToSubtract, long window) {
-        DimensionLoader loader = Mock(DimensionLoader.class)
+        DimensionValueLoader loader = Mock(DimensionValueLoader.class)
         loader.getLastRunTimestamp() >> { return DateTime.now().minus(timeToSubtract)}
         new DruidDimensionsLoaderHealthCheck(loader, window)
     }

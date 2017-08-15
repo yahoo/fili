@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * The DruidDimensionRowProvider queries druid to update values for dimensions.
  */
-public class DruidDimensionRowProvider extends AbstractDimensionRowProvider {
+public class DruidDimensionValueProvider extends AbstractDimensionValueProvider {
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     public static final String DRUID_DIM_LOADER_DIMENSIONS =
@@ -52,7 +52,7 @@ public class DruidDimensionRowProvider extends AbstractDimensionRowProvider {
      * @param dimensionDictionary  The dimensions to update
      * @param druidWebService  The druid webservice to query
      */
-    public DruidDimensionRowProvider(
+    public DruidDimensionValueProvider(
             PhysicalTableDictionary physicalTableDictionary,
             DimensionDictionary dimensionDictionary,
             DruidWebService druidWebService
@@ -75,7 +75,7 @@ public class DruidDimensionRowProvider extends AbstractDimensionRowProvider {
      * @param dimensionsToLoad  The dimensions to use.
      * @param druidWebService  The druid webservice to query.
      */
-    public DruidDimensionRowProvider(
+    public DruidDimensionValueProvider(
             PhysicalTableDictionary physicalTableDictionary,
             DimensionDictionary dimensionDictionary,
             List<String> dimensionsToLoad,
