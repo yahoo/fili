@@ -20,6 +20,8 @@ import static com.yahoo.bard.webservice.database.Database.NAMESPACE
 import static com.yahoo.bard.webservice.database.Database.PAGE
 import static com.yahoo.bard.webservice.database.Database.REGION_ISO_CODE
 import static com.yahoo.bard.webservice.database.Database.REGION_NAME
+import static com.yahoo.bard.webservice.database.Database.SCHEMA
+import static com.yahoo.bard.webservice.database.Database.TIME
 import static com.yahoo.bard.webservice.database.Database.USER
 import static com.yahoo.bard.webservice.database.Database.WIKITICKER
 import static java.util.Arrays.asList
@@ -51,7 +53,9 @@ import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable
 import com.yahoo.bard.webservice.table.ConstrainedTable
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
+import com.yahoo.bard.webservice.table.SqlPhysicalTable
 import com.yahoo.bard.webservice.table.StrictPhysicalTable
+import com.yahoo.bard.webservice.table.availability.PermissiveAvailability
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
 import com.yahoo.bard.webservice.util.Utils
 
@@ -178,12 +182,14 @@ class SimpleDruidQueryBuilder {
         Set<String> metricsAndDimensions = new HashSet<>()
         metrics.forEach{ metricsAndDimensions.add(apiPrepend + it) }
         dimensions.forEach{ metricsAndDimensions.add(apiPrepend + it) }
-        def strictPhysicalTable = new StrictPhysicalTable(
+        def strictPhysicalTable = new SqlPhysicalTable(
                 TableName.of(name),
                 zonedTimeGrain,
                 columns,
                 logicalToPhysicalColumnNames,
-                metadataService
+                new PermissiveAvailability(DataSourceName.of(name), metadataService), //todo correct?
+                SCHEMA,
+                TIME
         )
 
         return new TableDataSource(
