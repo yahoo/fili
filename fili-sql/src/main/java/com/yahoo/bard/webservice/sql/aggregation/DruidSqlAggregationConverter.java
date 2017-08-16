@@ -19,7 +19,7 @@ public class DruidSqlAggregationConverter
     private Map<String, SqlAggregationType> druidToSqlAggregation;
 
     /**
-     * Constructors a map fron druid to sql aggregations using {@link #getDefaultDruidToSqlAggregation()}.
+     * Constructors a map from druid to sql aggregations using {@link #getDefaultDruidToSqlAggregation()}.
      */
     public DruidSqlAggregationConverter() {
         this(getDefaultDruidToSqlAggregation());
@@ -63,8 +63,7 @@ public class DruidSqlAggregationConverter
     @Override
     public Optional<SqlAggregation> apply(Aggregation aggregation, ApiToFieldMapper apiToFieldMapper) {
         String aggregationType = aggregation.getType();
-        return druidToSqlAggregation.containsKey(aggregationType) ?
-                Optional.of(druidToSqlAggregation.get(aggregationType).getSqlAggregation(aggregation, apiToFieldMapper))
-                : Optional.empty();
+        return Optional.ofNullable(druidToSqlAggregation.get(aggregationType))
+                .map(sqlAggregationType -> sqlAggregationType.getSqlAggregation(aggregation, apiToFieldMapper));
     }
 }
