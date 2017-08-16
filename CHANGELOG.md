@@ -86,6 +86,9 @@ Current
 
 ### Fixed:
 
+- [Fix datasource name physical table name mismatch in VolatileDataRequestHandler](https://github.com/yahoo/fili/issues/505)
+    * Fix fetching from `physicaltableDictionary` using datasource name. Now use proper physical table name instead.
+
 - [Fix performance bug around feature flag](https://github.com/yahoo/fili/issues/473)
     * BardFeatureFlag, when used in a tight loop, is very expensive.  Underlying map configuration copies the config map on each access.
     * Switching to lazy value evaluation
