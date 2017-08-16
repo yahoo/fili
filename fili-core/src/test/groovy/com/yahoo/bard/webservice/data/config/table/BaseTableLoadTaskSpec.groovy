@@ -29,10 +29,10 @@ import spock.lang.Specification
 /**
  * Testing basic table loader functionality.
  */
-class BaseTableLoaderSpec extends Specification {
-    private static class SimpleBaseTableLoader extends BaseTableLoader {
+class BaseTableLoadTaskSpec extends Specification {
+    private static class SimpleBaseTableLoadTask extends BaseTableLoader {
 
-        SimpleBaseTableLoader(DataSourceMetadataService metadataService) {
+        SimpleBaseTableLoadTask(DataSourceMetadataService metadataService) {
             super(metadataService)
         }
 
@@ -95,7 +95,7 @@ class BaseTableLoaderSpec extends Specification {
     PhysicalTableSchema physicalTableSchema
 
     def setup() {
-        loader = new SimpleBaseTableLoader(Mock(DataSourceMetadataService))
+        loader = new SimpleBaseTableLoadTask(Mock(DataSourceMetadataService))
         dicts = new ResourceDictionaries()
         apiNames = TestApiMetricName.getByLogicalTable(SHAPES)
         metricNames = TestDruidMetricName.getByLogicalTable(SHAPES)

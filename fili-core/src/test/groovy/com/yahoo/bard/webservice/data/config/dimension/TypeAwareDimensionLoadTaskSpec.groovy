@@ -10,7 +10,7 @@ import spock.lang.Specification
 /**
  * Testing the TypeAwareDimensionLoader
  */
-class TypeAwareDimensionLoaderSpec extends Specification {
+class TypeAwareDimensionLoadTaskSpec extends Specification {
 
     LinkedHashSet<DimensionConfig> dimensionConfigurations
     DimensionDictionary dimensionDictionary
@@ -21,7 +21,7 @@ class TypeAwareDimensionLoaderSpec extends Specification {
     }
 
     def "Test dimension loader for Lookup dimension"() {
-        given: "A Type Aware Dimension Loader with a list of dimension configurations"
+        given: "A Type Aware Dimension LoadTask with a list of dimension configurations"
         TypeAwareDimensionLoader typeAwareDimensionLoader = new TypeAwareDimensionLoader(dimensionConfigurations)
 
         when:
@@ -32,7 +32,7 @@ class TypeAwareDimensionLoaderSpec extends Specification {
     }
 
     def "Test dimension loader for KeyValueStore dimension"() {
-        given: "A Type Aware Dimension Loader with a list of dimension configurations"
+        given: "A Type Aware Dimension LoadTask with a list of dimension configurations"
         TypeAwareDimensionLoader typeAwareDimensionLoader = new TypeAwareDimensionLoader(dimensionConfigurations)
 
         when:

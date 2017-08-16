@@ -16,7 +16,7 @@ import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
 @Timeout(30) // Fail test if hangs
-class LoaderSpec extends Specification {
+class LoadTaskSpec extends Specification {
 
     // All times are in millis unless specified otherwise
     int expectedDelay = 500
@@ -32,12 +32,12 @@ class LoaderSpec extends Specification {
     long doneTime
     long startTime
 
-    class OneOffTestLoader extends Loader<Boolean> {
+    class OneOffTestLoadTask extends LoadTask<Boolean> {
         public long start
         public long end
         public static String expectedOneOffName = "OneOffLoader"
 
-        OneOffTestLoader(long delay) {
+        OneOffTestLoadTask(long delay) {
             super(expectedOneOffName, delay, 0)
         }
 
@@ -49,13 +49,13 @@ class LoaderSpec extends Specification {
         }
     }
 
-    class PeriodicTestLoader extends Loader<Boolean> {
+    class PeriodicTestLoadTask extends LoadTask<Boolean> {
         public long start
         public long end
         public int repeats = expectedRepeats
         public static final String expectedPeriodicName = "PeriodicLoader"
 
-        PeriodicTestLoader(long delay, long period) {
+        PeriodicTestLoadTask(long delay, long period) {
             super(expectedPeriodicName, delay, period)
         }
 
@@ -75,10 +75,10 @@ class LoaderSpec extends Specification {
 
     def "Test constructor of a one-off loader"() {
         setup:
-        Loader loader = new OneOffTestLoader(expectedDelay)
+        LoadTask loader = new OneOffTestLoadTask(expectedDelay)
 
         expect:
-        loader instanceof Loader
+        loader instanceof LoadTask
         loader.getName() == loader.expectedOneOffName
         loader.getName() == loader.toString()
         loader.getDefinedDelay() == expectedDelay
@@ -90,10 +90,10 @@ class LoaderSpec extends Specification {
 
     def "Test constructor of a periodic loader"() {
         setup:
-        Loader loader = new PeriodicTestLoader(expectedDelay, expectedPeriod)
+        LoadTask loader = new PeriodicTestLoadTask(expectedDelay, expectedPeriod)
 
         expect:
-        loader instanceof Loader
+        loader instanceof LoadTask
         loader.getName() == loader.expectedPeriodicName
         loader.getName() == loader.toString()
         loader.getDefinedDelay() == expectedDelay
@@ -107,7 +107,7 @@ class LoaderSpec extends Specification {
     def "Test scheduling of a one-off loader"() {
         setup: "Instantiate a task scheduler"
         TaskScheduler scheduler = new TaskScheduler(2)
-        Loader<?>loader = new OneOffTestLoader(expectedDelay)
+        LoadTask<?> loader = new OneOffTestLoadTask(expectedDelay)
 
         when: "The loader is scheduled to run"
         // doneTime - startTime is expected slightly higher then the actual duration, mainly because of the
@@ -144,7 +144,7 @@ class LoaderSpec extends Specification {
     def "Test scheduling of a periodic loader at fixed rate"() {
         setup: "Instantiate a task scheduler"
         TaskScheduler scheduler = new TaskScheduler(2)
-        Loader<?> loader = new PeriodicTestLoader(expectedDelay, expectedPeriod)
+        LoadTask<?> loader = new PeriodicTestLoadTask(expectedDelay, expectedPeriod)
 
         when: "The loader is scheduled to run periodically"
         // doneTime - startTime is expected slightly higher then the actual duration, mainly because of the
@@ -190,7 +190,7 @@ class LoaderSpec extends Specification {
     def "Test scheduling of a periodic loader with fixed delay"() {
         setup: "Instantiate a task scheduler"
         TaskScheduler scheduler = new TaskScheduler(2)
-        Loader<?> loader = new PeriodicTestLoader(expectedDelay, expectedPeriod)
+        LoadTask<?> loader = new PeriodicTestLoadTask(expectedDelay, expectedPeriod)
 
         when: "The loader is scheduled to run periodically"
         // doneTime - startTime is expected slightly higher then the actual duration, mainly because of the

@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 
 import spock.lang.Specification
 
-public class AutomaticDruidConfigLoaderSpec extends Specification {
+public class AutomaticDruidConfigLoadTaskSpec extends Specification {
     TestDruidWebService druidWebService
     DruidNavigator druidNavigator
     private String[] metrics = ["count", "added", "deleted", "delta", "user_unique"]

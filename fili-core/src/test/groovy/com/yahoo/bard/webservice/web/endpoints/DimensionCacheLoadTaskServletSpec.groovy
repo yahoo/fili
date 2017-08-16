@@ -25,7 +25,7 @@ import javax.ws.rs.client.Entity
 import javax.ws.rs.core.Response
 import javax.ws.rs.core.Response.Status
 
-class DimensionCacheLoaderServletSpec extends Specification {
+class DimensionCacheLoadTaskServletSpec extends Specification {
     private static final ObjectMappersSuite MAPPERS = new ObjectMappersSuite()
 
     DateTimeZone originalTimeZone

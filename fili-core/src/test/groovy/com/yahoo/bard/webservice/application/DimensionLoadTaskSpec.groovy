@@ -17,14 +17,12 @@ import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
-import com.fasterxml.jackson.datatype.joda.JodaModule
 
 import org.joda.time.DateTime
 
 import spock.lang.Specification
 
-class DruidDimensionsLoaderSpec extends Specification {
+class DimensionLoadTaskSpec extends Specification {
 
     static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
 
@@ -37,7 +35,8 @@ class DruidDimensionsLoaderSpec extends Specification {
 
     SystemConfig systemConfig = SystemConfigProvider.getInstance()
 
-    DruidDimensionsLoader loader
+    DimensionValueLoadTask loader
+    DruidDimensionValueLoader druidDimensionRowProvider
     String druidDimLoaderDimensions
     DruidWebService druidWebService
     DimensionDictionary dimensionDictionary
@@ -46,11 +45,11 @@ class DruidDimensionsLoaderSpec extends Specification {
     def setup() {
         SystemConfig systemConfig = SystemConfigProvider.getInstance()
         druidDimLoaderDimensions = systemConfig.getStringProperty(
-                DruidDimensionsLoader.DRUID_DIM_LOADER_DIMENSIONS,
+                DruidDimensionValueLoader.DRUID_DIM_LOADER_DIMENSIONS,
                 null
         )
         systemConfig.setProperty(
-                DruidDimensionsLoader.DRUID_DIM_LOADER_DIMENSIONS,
+                DruidDimensionValueLoader.DRUID_DIM_LOADER_DIMENSIONS,
                 LOADED_DIMENSIONS.join(',')
         )
 
@@ -59,29 +58,43 @@ class DruidDimensionsLoaderSpec extends Specification {
         PhysicalTableDictionary physicalTables = jtb.configurationLoader.physicalTableDictionary
         dimensionDictionary = jtb.getConfigurationLoader().dimensionDictionary
         druidWebService = Mock(DruidWebService)
-        loader = new DruidDimensionsLoader(physicalTables, dimensionDictionary, druidWebService)
+        druidDimensionRowProvider = new DruidDimensionValueLoader(
+                physicalTables,
+                dimensionDictionary,
+                druidWebService
+        )
+        loader = new DimensionValueLoadTask(Collections.singletonList(druidDimensionRowProvider))
     }
 
     def cleanup() {
         jtb.tearDown()
         if (druidDimLoaderDimensions == null) {
-            systemConfig.clearProperty(DruidDimensionsLoader.DRUID_DIM_LOADER_DIMENSIONS)
+            systemConfig.clearProperty(DruidDimensionValueLoader.DRUID_DIM_LOADER_DIMENSIONS)
         } else {
-            systemConfig.setProperty(DruidDimensionsLoader.DRUID_DIM_LOADER_DIMENSIONS, druidDimLoaderDimensions)
+            systemConfig.setProperty(DruidDimensionValueLoader.DRUID_DIM_LOADER_DIMENSIONS, druidDimLoaderDimensions)
         }
     }
 
     def "The DimensionLoader constructor successfully extracts the dimensions from a dimension dictionary"() {
         expect: "A list of singleton dimension lists that need to be loaded from Druid"
-        loader.dimensions == LOADED_DIMENSIONS.collect {[dimensionDictionary.findByApiName(it)]}
+        druidDimensionRowProvider.dimensions.collect { Collections.singletonList(it) } == LOADED_DIMENSIONS.collect { [dimensionDictionary.findByApiName(it)] }
     }
 
     def "When run, the DruidDimensionLoader sends the correct number of Druid queries"() {
         given: "A list of resolved dimensions that should be loaded by the loader"
-        List<Dimension> dimensions = LOADED_DIMENSIONS.collect {dimensionDictionary.findByApiName(it)}
+        List<Dimension> dimensions = LOADED_DIMENSIONS.collect { dimensionDictionary.findByApiName(it) }
 
         and: "The number of expected queries to Druid"
-        int numDruidQueries = dimensions.size() * jtb.configurationLoader.physicalTableDictionary.size()
+        // Queries are only sent to a table if the table actually has the dimension
+        def listOfAllDimensionSets = jtb.configurationLoader.physicalTableDictionary.values().collect { it.dimensions }
+        int numDruidQueries = 0
+        for (Set<Dimension> dimensionSet : listOfAllDimensionSets) {
+            for (Dimension dimension : dimensions) {
+                if (dimensionSet.contains(dimension)) {
+                    numDruidQueries += 1;
+                }
+            }
+        }
 
         when:
         loader.run()
@@ -101,7 +114,7 @@ class DruidDimensionsLoaderSpec extends Specification {
         )
 
         and: "The callback to test"
-        SuccessCallback callback = loader.buildDruidDimensionsSuccessCallback(dimension)
+        SuccessCallback callback = druidDimensionRowProvider.buildDruidDimensionsSuccessCallback(dimension)
 
         and: "The data to load with the callback"
         String jsonResult = """[
@@ -156,7 +169,7 @@ class DruidDimensionsLoaderSpec extends Specification {
         ]"""
 
         and: "The callback to test"
-        SuccessCallback callback = loader.buildDruidDimensionsSuccessCallback(dimension)
+        SuccessCallback callback = druidDimensionRowProvider.buildDruidDimensionsSuccessCallback(dimension)
 
         and: "The dimension value is already loaded once"
         if (dimension.findDimensionRowByKeyValue("male") == null) {
@@ -186,7 +199,7 @@ class DruidDimensionsLoaderSpec extends Specification {
         DateTime previousLastUpdated = dimension.lastUpdated
 
         and: "The callback to test"
-        SuccessCallback callback = loader.buildDruidDimensionsSuccessCallback(dimension)
+        SuccessCallback callback = druidDimensionRowProvider.buildDruidDimensionsSuccessCallback(dimension)
 
         and: "The data to load with the callback"
         String jsonResult = "[]"

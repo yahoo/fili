@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.application.healthchecks;
 
-import com.yahoo.bard.webservice.metadata.DataSourceMetadataLoader;
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataLoadTask;
 
 import com.codahale.metrics.health.HealthCheck;
 
@@ -16,7 +16,7 @@ import javax.inject.Singleton;
 @Singleton
 public class DataSourceMetadataLoaderHealthCheck extends HealthCheck {
 
-    private final DataSourceMetadataLoader loader;
+    private final DataSourceMetadataLoadTask loader;
     private final long executionWindow;
 
     /**
@@ -25,7 +25,7 @@ public class DataSourceMetadataLoaderHealthCheck extends HealthCheck {
      * @param loader  Datasource metadata loader.
      * @param executionWindow  The duration within which a loader must run successfully to be considered healthy.
      */
-    public DataSourceMetadataLoaderHealthCheck(DataSourceMetadataLoader loader, long executionWindow) {
+    public DataSourceMetadataLoaderHealthCheck(DataSourceMetadataLoadTask loader, long executionWindow) {
         this.loader = loader;
         this.executionWindow = executionWindow;
     }

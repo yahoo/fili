@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.metadata;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DRUID_METADATA_READ_ERROR;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 
-import com.yahoo.bard.webservice.application.Loader;
+import com.yahoo.bard.webservice.application.LoadTask;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.config.names.DataSourceName;
@@ -39,9 +39,9 @@ import javax.inject.Singleton;
  * Note that this uses the segmentMetadata query that touches the coordinator.
  */
 @Singleton
-public class DataSourceMetadataLoader extends Loader<Boolean> {
+public class DataSourceMetadataLoadTask extends LoadTask<Boolean> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DataSourceMetadataLoader.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DataSourceMetadataLoadTask.class);
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     public static final String DATASOURCE_METADATA_QUERY_FORMAT = "/datasources/%s?full";
@@ -73,14 +73,14 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
      * @param druidWebService  The druid webservice to query
      * @param mapper  Object mapper to parse druid metadata
      */
-    public DataSourceMetadataLoader(
+    public DataSourceMetadataLoadTask(
             PhysicalTableDictionary physicalTableDictionary,
             DataSourceMetadataService metadataService,
             DruidWebService druidWebService,
             ObjectMapper mapper
     ) {
         super(
-                DataSourceMetadataLoader.class.getSimpleName(),
+                DataSourceMetadataLoadTask.class.getSimpleName(),
                 SYSTEM_CONFIG.getLongProperty(DRUID_SEG_LOADER_TIMER_DELAY_KEY, 0),
                 SYSTEM_CONFIG.getLongProperty(
                         DRUID_SEG_LOADER_TIMER_DURATION_KEY,
@@ -300,7 +300,7 @@ public class DataSourceMetadataLoader extends Loader<Boolean> {
     /**
      * Defines the callback for http errors.
      */
-    private final class TaskHttpErrorCallback extends Loader<?>.TaskHttpErrorCallback {
+    private final class TaskHttpErrorCallback extends LoadTask<?>.TaskHttpErrorCallback {
         private final DataSourceName dataSourceName;
 
         /**

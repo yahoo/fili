@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 
 import spock.lang.Specification
 
-class MultipleDatasourceDruidConfigLoaderSpec extends Specification {
+class MultipleDatasourceDruidConfigLoadTaskSpec extends Specification {
     private String[] datasources = ["table1", "table2"]
     private String[] table1_metrics = ["1_metric1", "1_metric2"]
     private String[] table1_dimensions = ["1_dim1", "1_dim2"]

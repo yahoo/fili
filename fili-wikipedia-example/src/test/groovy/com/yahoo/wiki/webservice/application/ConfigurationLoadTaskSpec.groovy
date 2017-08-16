@@ -23,7 +23,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class ConfigurationLoaderSpec extends Specification {
+class ConfigurationLoadTaskSpec extends Specification {
 
     @Shared ConfigurationLoader loader
     @Shared DimensionDictionary dimensionDictionary
