@@ -24,7 +24,8 @@ public class SqlAggregation {
 
     /**
      * Gets the alias name to be used for the aggregation (i.e. the AS "fieldName") part of a sql aggregation.
-     * @return
+     *
+     * @return the alias name for the aggregation.
      */
     public String getSqlAggregationAsName() {
         return getSqlAggregationFieldName();
@@ -32,7 +33,8 @@ public class SqlAggregation {
 
     /**
      * The field name to call the aggregation on (i.e. the SUM("fieldName")) part of a sql aggregation.
-     * @return
+     *
+     * @return the field name to aggregate on.
      */
     public String getSqlAggregationFieldName() {
         return fieldName;
