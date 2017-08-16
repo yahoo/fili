@@ -4,71 +4,44 @@ package com.yahoo.bard.webservice.sql.aggregation;
 
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.sql.ApiToFieldMapper;
+import com.yahoo.bard.webservice.util.Utils;
 
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
-import org.apache.calcite.tools.RelBuilder;
+
+import java.util.Set;
 
 /**
- * All the aggregation types supported for use with a sql backend.
+ * All the default aggregation types supported for use with a sql backend.
  */
-public enum DefaultSqlAggregationType {
-    SUM("sum", SqlStdOperatorTable.SUM),
-    MIN("min", SqlStdOperatorTable.MIN),
-    MAX("max", SqlStdOperatorTable.MAX);
+public enum DefaultSqlAggregationType implements SqlAggregationType {
+    SUM(SqlStdOperatorTable.SUM, "LongSum", "DoubleSum"),
+    MIN(SqlStdOperatorTable.MIN, "LongMin", "DoubleMin"),
+    MAX(SqlStdOperatorTable.MAX, "LongMax", "DoubleMax");
     // todo avg
 
-    private final String type;
+    private final Set<String> validDruidAggregations;
     private final SqlAggFunction sqlAggFunction;
 
     /**
      * Construct an DefaultSqlAggregationType with a keyword to look for in a
      * druid aggregation types, i.e. {"longSum", "doubleMin"}.
      *
-     * @param type  The keyword to find in a druid type.
      * @param sqlAggFunction  The aggregation function that should be performed.
+     * @param aliases  The druid aggregation type.
      */
-    DefaultSqlAggregationType(String type, SqlAggFunction sqlAggFunction) {
-        this.type = type;
+    DefaultSqlAggregationType(SqlAggFunction sqlAggFunction, String... aliases) {
         this.sqlAggFunction = sqlAggFunction;
+        this.validDruidAggregations = Utils.asLinkedHashSet(aliases);
     }
 
-    /**
-     * Gets the type of aggregation.
-     *
-     * @return the aggregation type.
-     */
-    public String getType() {
-        return type;
+    @Override
+    public Set<String> getSupportedDruidAggregations() {
+        return validDruidAggregations;
     }
 
-    /**
-     * Builds an aggregate call using the {@link SqlAggFunction} corresponding
-     * to the aggregation type.
-     *
-     * @param aggregation  The druid aggregation.
-     * @param apiToFieldMapper  The mapping between api and physical names for the query.
-     *
-     * @return the AggCal built from the aggregation type.
-     */
-    public SqlAggregationBuilder with(Aggregation aggregation, ApiToFieldMapper apiToFieldMapper) {
-        return new SqlAggregationBuilder() {
-            @Override
-            public RelBuilder.AggCall build(RelBuilder builder) {
-                return builder.aggregateCall(
-                        sqlAggFunction,
-                        false,
-                        null,
-                        apiToFieldMapper.apply(aggregation.getFieldName()),
-                        builder.field(apiToFieldMapper.apply(aggregation.getFieldName()))
-                );
-            }
-
-            @Override
-            public Aggregation getAggregation() {
-                return aggregation;
-            }
-        };
-
+    @Override
+    public SqlAggregation getSqlAggregation(Aggregation aggregation, ApiToFieldMapper apiToFieldMapper) {
+        return new SqlAggregation(apiToFieldMapper.apply(aggregation.getFieldName()), sqlAggFunction);
     }
 }
