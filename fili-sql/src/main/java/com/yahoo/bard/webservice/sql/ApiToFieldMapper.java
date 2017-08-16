@@ -27,7 +27,7 @@ public class ApiToFieldMapper implements Function<String, String> {
     }
 
     /**
-     * Finds the api name given a field name and if none are found then it returns the given inpu.
+     * Finds the api name given a field name and if none are found then it returns the given input.
      *
      * @param input  The string to attempt to unalias.
      *
