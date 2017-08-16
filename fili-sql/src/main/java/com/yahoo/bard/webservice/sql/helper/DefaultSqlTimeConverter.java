@@ -7,6 +7,7 @@ import static org.apache.calcite.sql.fun.SqlStdOperatorTable.DAYOFYEAR;
 import static org.apache.calcite.sql.fun.SqlStdOperatorTable.HOUR;
 import static org.apache.calcite.sql.fun.SqlStdOperatorTable.MINUTE;
 import static org.apache.calcite.sql.fun.SqlStdOperatorTable.MONTH;
+import static org.apache.calcite.sql.fun.SqlStdOperatorTable.SECOND;
 import static org.apache.calcite.sql.fun.SqlStdOperatorTable.WEEK;
 import static org.apache.calcite.sql.fun.SqlStdOperatorTable.YEAR;
 
@@ -20,7 +21,9 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.fun.SqlDatePartFunction;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
+import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.MutableDateTime;
 
 import java.sql.Timestamp;
 import java.util.Collections;
@@ -33,31 +36,57 @@ import java.util.stream.Collectors;
  * Handles converting between a {@link DefaultTimeGrain} and a list of
  * {@link SqlDatePartFunction} to create groupBy statements on intervals of time.
  */
-public class DefaultSqlTimeConverter implements SqlTimeConverter {
+public class DefaultSqlTimeConverter {
     // This mapping shows what information we need to group for each granularity
-    private static final Map<Granularity, List<SqlDatePartFunction>> TIMEGRAIN_TO_GROUPBY = new
-            HashMap<Granularity, List<SqlDatePartFunction>>() {
-                {
-                    put(AllGranularity.INSTANCE, Collections.emptyList());
-                    put(DefaultTimeGrain.YEAR, asList(YEAR));
-                    put(DefaultTimeGrain.MONTH, asList(YEAR, MONTH));
-                    put(DefaultTimeGrain.WEEK, asList(YEAR, WEEK));
-                    put(DefaultTimeGrain.DAY, asList(YEAR, DAYOFYEAR));
-                    put(DefaultTimeGrain.HOUR, asList(YEAR, DAYOFYEAR, HOUR));
-                    put(DefaultTimeGrain.MINUTE, asList(YEAR, DAYOFYEAR, HOUR, MINUTE));
-                }
-            };
+    private final Map<Granularity, List<SqlDatePartFunction>> granularityToDateFunctionMap;
 
-    @Override
+    public DefaultSqlTimeConverter() {
+        this(buildDefaultGranularityToDateFunctionsMap());
+    }
+
+    public DefaultSqlTimeConverter(Map<Granularity, List<SqlDatePartFunction>> granularityToDateFunctionMap) {
+        this.granularityToDateFunctionMap = granularityToDateFunctionMap;
+    }
+
+    public static Map<Granularity, List<SqlDatePartFunction>> buildDefaultGranularityToDateFunctionsMap() {
+        Map<Granularity, List<SqlDatePartFunction>> defaultMap = new HashMap<>();
+        defaultMap.put(AllGranularity.INSTANCE, Collections.emptyList());
+        defaultMap.put(DefaultTimeGrain.YEAR, asList(YEAR));
+        defaultMap.put(DefaultTimeGrain.MONTH, asList(YEAR, MONTH));
+        defaultMap.put(DefaultTimeGrain.WEEK, asList(YEAR, WEEK));
+        defaultMap.put(DefaultTimeGrain.DAY, asList(YEAR, DAYOFYEAR));
+        defaultMap.put(DefaultTimeGrain.HOUR, asList(YEAR, DAYOFYEAR, HOUR));
+        defaultMap.put(DefaultTimeGrain.MINUTE, asList(YEAR, DAYOFYEAR, HOUR, MINUTE));
+
+        return defaultMap;
+    }
+
+    /**
+     * Gets a list of {@link SqlDatePartFunction} to be performed on a timestamp
+     * which can be used to group by the given {@link Granularity}.
+     *
+     * @param granularity  The granularity to map to a list of {@link SqlDatePartFunction}.
+     *
+     * @return the list of sql functions.
+     */
     public List<SqlDatePartFunction> timeGrainToDatePartFunctions(Granularity granularity) {
         if (granularity instanceof ZonedTimeGrain) {
             ZonedTimeGrain defaultTimeGrain = (ZonedTimeGrain) granularity;
-            return TIMEGRAIN_TO_GROUPBY.get(defaultTimeGrain.getBaseTimeGrain());
+            return granularityToDateFunctionMap.get(defaultTimeGrain.getBaseTimeGrain());
         }
-        return TIMEGRAIN_TO_GROUPBY.get(granularity);
+        return granularityToDateFunctionMap.get(granularity);
     }
 
-    @Override
+    /**
+     * Builds the time filters to only select rows that occur within the intervals of the query.
+     * NOTE: you must have one interval to select on.
+     *
+     * @param builder  The RelBuilder used for building queries.
+     * @param druidQuery  The druid query to build filters over.
+     * @param timestampColumn  The name of the timestamp column in the database.
+     *
+     * @return the RexNode for filtering to only the given intervals.
+     */
     public RexNode buildTimeFilters(
             RelBuilder builder,
             DruidAggregationQuery<?> druidQuery,
@@ -88,5 +117,102 @@ public class DefaultSqlTimeConverter implements SqlTimeConverter {
                 .collect(Collectors.toList());
 
         return builder.or(timeFilters);
+    }
+
+    /**
+     * Builds a list of {@link RexNode} which will effectively groupBy the given {@link Granularity}.
+     *
+     * @param builder  The RelBuilder used with calcite to build queries.
+     * @param granularity  The granularity to build the groupBy for.
+     * @param timeColumn  The name of the timestamp column.
+     *
+     * @return the list of {@link RexNode} needed in the groupBy.
+     */
+    public List<RexNode> buildGroupBy(RelBuilder builder, Granularity granularity, String timeColumn) {
+        List<SqlDatePartFunction> sqlDatePartFunctions = timeGrainToDatePartFunctions(granularity);
+        if (sqlDatePartFunctions.isEmpty()) {
+            return Collections.singletonList(builder.field(timeColumn));
+        }
+
+        return sqlDatePartFunctions
+                .stream()
+                .map(sqlDatePartFunction -> builder.call(sqlDatePartFunction, builder.field(timeColumn)))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Given an array of strings (a row from a {@link java.sql.ResultSet}) and the
+     * {@link Granularity} used to make groupBy statements on time, it will parse out a {@link DateTime}
+     * for the row which represents the beginning of the interval it was grouped on.
+     *
+     * @param offset the last column before the date fields.
+     * @param recordValues  The results returned by Sql needed to read the time columns.
+     * @param druidQuery  The original druid query which was made using calling
+     * {@link #buildGroupBy(RelBuilder, Granularity, String)}.
+     *
+     * @return the datetime for the start of the interval.
+     */
+    protected DateTime getIntervalStart(int offset, String[] recordValues, DruidAggregationQuery<?> druidQuery) {
+        List<SqlDatePartFunction> times = timeGrainToDatePartFunctions(druidQuery.getGranularity());
+
+        DateTimeZone timeZone = getTimeZone(druidQuery);
+
+        if (times.isEmpty()) {
+            throw new UnsupportedOperationException("Can't parse dateTime for if no times were grouped on.");
+        }
+
+        MutableDateTime mutableDateTime = new MutableDateTime(0, 1, 1, 0, 0, 0, 0, timeZone);
+
+        for (int i = 0; i < times.size(); i++) {
+            int value = Integer.parseInt(recordValues[offset + i]);
+            SqlDatePartFunction fn = times.get(i);
+            setDateTime(value, fn, mutableDateTime);
+        }
+
+        return mutableDateTime.toDateTime();
+    }
+
+    /**
+     * Gets the timezone of the backing table for the given druid query.
+     *
+     * @param druidQuery  The druid query to find the timezone for
+     *
+     * @return the {@link DateTimeZone} of the physical table for this query.
+     */
+    private DateTimeZone getTimeZone(DruidAggregationQuery<?> druidQuery) {
+        return druidQuery.getDataSource()
+                .getPhysicalTable()
+                .getSchema()
+                .getTimeGrain()
+                .getTimeZone();
+    }
+
+    /**
+     * Sets the correct part of a {@link DateTime} corresponding to a
+     * {@link SqlDatePartFunction}.
+     *
+     * @param value  The value to be set for the dateTime with the sqlDatePartFn
+     * @param sqlDatePartFn  The function used to extract part of a date with sql.
+     * @param dateTime  The original dateTime to create a copy of.
+     */
+    protected void setDateTime(int value, SqlDatePartFunction sqlDatePartFn, MutableDateTime dateTime) {
+        if (YEAR.equals(sqlDatePartFn)) {
+            dateTime.setYear(value);
+        } else if (MONTH.equals(sqlDatePartFn)) {
+            dateTime.setMonthOfYear(value);
+        } else if (WEEK.equals(sqlDatePartFn)) {
+            dateTime.setWeekOfWeekyear(value);
+            dateTime.setDayOfWeek(1);
+        } else if (DAYOFYEAR.equals(sqlDatePartFn)) {
+            dateTime.setDayOfYear(value);
+        } else if (HOUR.equals(sqlDatePartFn)) {
+            dateTime.setHourOfDay(value);
+        } else if (MINUTE.equals(sqlDatePartFn)) {
+            dateTime.setMinuteOfHour(value);
+        } else if (SECOND.equals(sqlDatePartFn)) {
+            dateTime.setSecondOfMinute(value);
+        } else {
+            throw new IllegalArgumentException("Can't set value " + value + " for " + sqlDatePartFn);
+        }
     }
 }
