@@ -27,11 +27,11 @@ public class ApiToFieldMapper implements Function<String, String> {
     }
 
     /**
-     * If a string starts with the prepended string, remove it.
+     * Finds the api name given a field name and if none are found then it returns the given inpu.
      *
      * @param input  The string to attempt to unalias.
      *
-     * @return the unaliased string.
+     * @return the api name of the column or the original input if no mapping was found.
      */
     public String unApply(String input) {
         return physicalTableSchema.getLogicalColumnNames(input).stream().findFirst().orElse(input);
