@@ -80,7 +80,7 @@ public class DefaultSqlBackedClient implements SqlBackedClient {
             FailureCallback failureCallback
     ) {
         RequestLog logCtx = RequestLog.dump();
-        //todo stop/start RequestLog phases
+        //todo eventually stop/start RequestLog phases
         return CompletableFuture.supplyAsync(() -> {
                     try {
                         JsonNode jsonNode = executeAndProcessQuery((DruidAggregationQuery) druidQuery);

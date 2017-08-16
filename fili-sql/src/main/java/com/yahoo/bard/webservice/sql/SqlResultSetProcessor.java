@@ -85,7 +85,7 @@ public class SqlResultSetProcessor {
             jsonWriter.writeStartArray();
             for (String[] row : sqlResults) {
                 jsonWriter.writeStartObject();
-                
+
                 DateTime timestamp;
                 if (AllGranularity.INSTANCE.equals(druidQuery.getGranularity())) {
                     timestamp = druidQuery.getIntervals().get(0).getStart();
