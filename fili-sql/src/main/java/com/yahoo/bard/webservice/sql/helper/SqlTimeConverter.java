@@ -36,18 +36,34 @@ import java.util.stream.Collectors;
  * Handles converting between a {@link DefaultTimeGrain} and a list of
  * {@link SqlDatePartFunction} to create groupBy statements on intervals of time.
  */
-public class DefaultSqlTimeConverter {
+public class SqlTimeConverter {
     // This mapping shows what information we need to group for each granularity
     private final Map<Granularity, List<SqlDatePartFunction>> granularityToDateFunctionMap;
 
-    public DefaultSqlTimeConverter() {
+    /**
+     * Builds a sql time converter which can group by, filter, and reparse dateTimes from a row in a ResultSet using the
+     * {@link #buildDefaultGranularityToDateFunctionsMap()} map.
+     */
+    public SqlTimeConverter() {
         this(buildDefaultGranularityToDateFunctionsMap());
     }
 
-    public DefaultSqlTimeConverter(Map<Granularity, List<SqlDatePartFunction>> granularityToDateFunctionMap) {
+    /**
+     * Builds a sql time converter which can group by, filter, and reparse dateTimes from a row in a ResultSet.
+     *
+     * @param granularityToDateFunctionMap  The mapping defining what granularity needs to be kept in order to properly
+     * group by and reparse a dateTime.
+     */
+    public SqlTimeConverter(Map<Granularity, List<SqlDatePartFunction>> granularityToDateFunctionMap) {
         this.granularityToDateFunctionMap = granularityToDateFunctionMap;
     }
 
+    /**
+     * Builds the default mapping between {@link Granularity} and the {@link SqlDatePartFunction}s needed to group on
+     * and read into a DateTime.
+     *
+     * @return the mapping between {@link Granularity} and {@link SqlDatePartFunction}s.
+     */
     public static Map<Granularity, List<SqlDatePartFunction>> buildDefaultGranularityToDateFunctionsMap() {
         Map<Granularity, List<SqlDatePartFunction>> defaultMap = new HashMap<>();
         defaultMap.put(AllGranularity.INSTANCE, Collections.emptyList());
@@ -152,7 +168,7 @@ public class DefaultSqlTimeConverter {
      *
      * @return the datetime for the start of the interval.
      */
-    protected DateTime getIntervalStart(int offset, String[] recordValues, DruidAggregationQuery<?> druidQuery) {
+    public DateTime getIntervalStart(int offset, String[] recordValues, DruidAggregationQuery<?> druidQuery) {
         List<SqlDatePartFunction> times = timeGrainToDatePartFunctions(druidQuery.getGranularity());
 
         DateTimeZone timeZone = getTimeZone(druidQuery);

@@ -14,14 +14,14 @@ import java.util.function.BiFunction;
 /**
  * The default implementation of  mapping from Druid's {@link Aggregation} to a {@link SqlAggregation}.
  */
-public class DefaultDruidSqlAggregationConverter
+public class DruidSqlAggregationConverter
         implements BiFunction<Aggregation, ApiToFieldMapper, Optional<SqlAggregation>> {
     private Map<String, SqlAggregationType> druidToSqlAggregation;
 
     /**
      * Constructors a map fron druid to sql aggregations using {@link #getDefaultDruidToSqlAggregation()}.
      */
-    public DefaultDruidSqlAggregationConverter() {
+    public DruidSqlAggregationConverter() {
         this(getDefaultDruidToSqlAggregation());
     }
 
@@ -30,7 +30,7 @@ public class DefaultDruidSqlAggregationConverter
      *
      * @param druidToSqlAggregation  The mapping from Druid aggregation name to Sql aggregation type.
      */
-    public DefaultDruidSqlAggregationConverter(Map<String, SqlAggregationType> druidToSqlAggregation) {
+    public DruidSqlAggregationConverter(Map<String, SqlAggregationType> druidToSqlAggregation) {
         this.druidToSqlAggregation = druidToSqlAggregation;
     }
 
