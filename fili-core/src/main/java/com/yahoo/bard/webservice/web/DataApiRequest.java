@@ -1020,7 +1020,7 @@ public class DataApiRequest extends ApiRequest {
     *
     * @return the Druid filter
     */
-    public Filter getFilter() {
+    public Filter getDruidFilter() {
         try (TimedPhase timer = RequestLog.startTiming("BuildingDruidFilter")) {
             return filterBuilder.buildFilters(this.apiFilters);
         } catch (DimensionRowNotFoundException e) {

@@ -126,7 +126,7 @@ public class DruidQueryBuilder {
                     request.getGranularity(),
                     request.getTimeZone(),
                     request.getDimensions(),
-                    request.getFilter(),
+                    request.getDruidFilter(),
                     request.getIntervals(),
                     druidTopNMetric,
                     request.getTopN().getAsInt()
@@ -137,7 +137,7 @@ public class DruidQueryBuilder {
                         table,
                         request.getGranularity(),
                         request.getTimeZone(),
-                        request.getFilter(),
+                        request.getDruidFilter(),
                         request.getIntervals()
                 ) :
                 buildGroupByQuery(
@@ -146,7 +146,7 @@ public class DruidQueryBuilder {
                         request.getGranularity(),
                         request.getTimeZone(),
                         request.getDimensions(),
-                        request.getFilter(),
+                        request.getDruidFilter(),
                         request.getHaving(),
                         request.getIntervals(),
                         druidOrderBy
