@@ -44,6 +44,8 @@ public class CalciteHelper {
     /**
      * Creates a {@link RelBuilder} which can be used to build sql.
      *
+     * @param schemaName  The name of the schema that the tables are on.
+     *
      * @return a {@link RelBuilder} or null if an error occurred.
      */
     public RelBuilder getNewRelBuilder(String schemaName) {
