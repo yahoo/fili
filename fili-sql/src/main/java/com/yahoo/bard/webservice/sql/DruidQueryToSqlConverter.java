@@ -35,8 +35,10 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
@@ -48,6 +50,8 @@ public class DruidQueryToSqlConverter {
     private final CalciteHelper calciteHelper;
     private final SqlTimeConverter sqlTimeConverter;
     private final BiFunction<Aggregation, ApiToFieldMapper, Optional<SqlAggregation>> druidSqlAggregationConverter;
+    public static final int NO_OFFSET = -1;
+    public static final int NO_LIMIT = -1;
 
     /**
      * Constructs the default converter.
@@ -165,10 +169,30 @@ public class DruidQueryToSqlConverter {
                 .filter(
                         getHavingFilter(builder, druidQuery, apiToFieldMapper)
                 )
-                .sort(
+                .sortLimit(
+                        NO_OFFSET,
+                        getLimit(druidQuery),
                         getSort(builder, druidQuery, apiToFieldMapper, sqlTable.getTimestampColumn())
                 )
                 .build();
+    }
+
+    /**
+     * Gets the number of rows to limit results to for a Group by Query. Otherwise no limit is applied.
+     *
+     * @param druidQuery  The query to get the row limit from.
+     *
+     * @return the number of rows to include in the results.
+     */
+    protected int getLimit(DruidAggregationQuery<?> druidQuery) {
+        if (druidQuery.getQueryType().equals(GROUP_BY)) {
+            GroupByQuery groupByQuery = (GroupByQuery) druidQuery;
+            LimitSpec limitSpec = groupByQuery.getLimitSpec();
+            if (limitSpec != null) {
+                return limitSpec.getLimit().orElse(NO_LIMIT);
+            }
+        }
+        return NO_LIMIT;
     }
 
     /**
@@ -192,7 +216,8 @@ public class DruidQueryToSqlConverter {
         int timePartFunctions = sqlTimeConverter.timeGrainToDatePartFunctions(druidQuery.getGranularity()).size();
         int groupBys = druidQuery.getDimensions().size() + timePartFunctions;
 
-        List<RexNode> metricSorts = new ArrayList<>();
+        List<RexNode> limitSpecSorts = new ArrayList<>();
+        Set<String> limitSpecColumns = new HashSet<>();
         if (druidQuery.getQueryType().equals(GROUP_BY)) {
             GroupByQuery groupByQuery = (GroupByQuery) druidQuery;
             LimitSpec limitSpec = groupByQuery.getLimitSpec();
@@ -200,22 +225,36 @@ public class DruidQueryToSqlConverter {
                 limitSpec.getColumns()
                         .stream()
                         .map(orderByColumn -> {
-                            RexNode sort = builder.field(orderByColumn.getDimension());
+                            String orderByField = apiToFieldMapper.apply(orderByColumn.getDimension());
+                            limitSpecColumns.add(orderByField);
+
+                            RexNode sort = builder.field(orderByField);
                             if (orderByColumn.getDirection().equals(SortDirection.DESC)) {
                                 sort = builder.desc(sort);
                             }
                             return sort;
                         })
-                        .forEach(metricSorts::add);
+                        .forEach(limitSpecSorts::add);
             }
         }
 
+        // add time group by
         if (timePartFunctions == 0) {
             sorts.add(builder.field(timestampColumn));
         }
         sorts.addAll(builder.fields().subList(druidQuery.getDimensions().size(), groupBys));
-        sorts.addAll(metricSorts);
-        sorts.addAll(getDimensionFields(builder, druidQuery, apiToFieldMapper));
+
+        // add limit spec group by
+        sorts.addAll(limitSpecSorts);
+
+        // add remaining group by
+        List<RexNode> unorderedDimensions = druidQuery.getDimensions().stream()
+                .map(Dimension::getApiName)
+                .map(apiToFieldMapper)
+                .filter(columnName -> !limitSpecColumns.contains(columnName))
+                .map(builder::field)
+                .collect(Collectors.toList());
+        sorts.addAll(unorderedDimensions);
 
         return sorts.stream()
                 .map(sort -> builder.call(SqlStdOperatorTable.NULLS_FIRST, sort))

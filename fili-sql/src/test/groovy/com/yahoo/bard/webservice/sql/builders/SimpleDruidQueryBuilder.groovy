@@ -42,6 +42,8 @@ import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
 import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.model.having.Having
 import com.yahoo.bard.webservice.druid.model.orderby.LimitSpec
+import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn
+import com.yahoo.bard.webservice.druid.model.orderby.SortDirection
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
 import com.yahoo.bard.webservice.druid.model.query.Granularity
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
@@ -148,6 +150,21 @@ class SimpleDruidQueryBuilder {
                 intervals,
                 limitSpec
         )
+    }
+
+    public static LimitSpec getSort(List<String> columns, List<SortDirection> sortDirections) {
+        return getSort(columns, sortDirections, OptionalInt.empty())
+    }
+
+    public static LimitSpec getSort(List<String> columns, List<SortDirection> sortDirections, OptionalInt limit) {
+        LinkedHashSet<OrderByColumn> sorts = []
+        for (int i = 0; i < columns.size(); i++) {
+            sorts.add(
+                    new OrderByColumn(columns.get(i), sortDirections.get(i))
+            )
+        }
+
+        return new LimitSpec(sorts, limit)
     }
 
     public static TableDataSource dataSource(String name, List<String> metrics, List<String> dimensions) {
