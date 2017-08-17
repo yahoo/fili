@@ -9,10 +9,16 @@ import com.yahoo.bard.webservice.data.config.names.FieldName;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
-import com.yahoo.bard.webservice.table.SqlPhysicalTable;
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
-import com.yahoo.bard.webservice.table.availability.PermissiveAvailability;
+import com.yahoo.bard.webservice.table.SqlPhysicalTable;
+import com.yahoo.bard.webservice.table.availability.BaseMetadataAvailability;
+import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
+import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
+import org.joda.time.Interval;
+
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -80,9 +86,47 @@ public class ConcreteSqlPhysicalTableDefinition extends ConcretePhysicalTableDef
                 getTimeGrain(),
                 buildColumns(dictionaries.getDimensionDictionary()),
                 getLogicalToPhysicalNames(),
-                new PermissiveAvailability(DataSourceName.of(getName().asName()), metadataService), //todo correct?
+                new EternalAvailability(DataSourceName.of(getName().asName()), metadataService),
                 schemaName,
                 timestampColumn
         );
+    }
+
+    /**
+     * Provides availability over {@link #ETERNITY}.
+     */
+    private static class EternalAvailability extends BaseMetadataAvailability {
+        private static final long MAX_INSTANT = Long.MAX_VALUE / 2;
+        private static final long MIN_INSTANT = Long.MIN_VALUE / 2;
+        private static final SimplifiedIntervalList ETERNITY = new SimplifiedIntervalList(
+                Collections.singletonList(new Interval(MIN_INSTANT, MAX_INSTANT))
+        );
+        private static final Map<String, SimplifiedIntervalList> ALL_COLUMNS_ETERNAL_AVAILABILITY =
+                new HashMap<String, SimplifiedIntervalList>() {
+                    @Override
+                    public SimplifiedIntervalList get(Object key) {
+                        return ETERNITY;
+                    }
+                };
+
+        /**
+         * Constructor an availability which is valid over {@link #ETERNITY}.
+         *
+         * @param dataSourceName  The name of the data source associated with this Availability
+         * @param metadataService  A service containing the datasource segment data
+         */
+        EternalAvailability(DataSourceName dataSourceName, DataSourceMetadataService metadataService) {
+            super(dataSourceName, metadataService);
+        }
+
+        @Override
+        public SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint constraint) {
+            return ETERNITY;
+        }
+
+        @Override
+        public Map<String, SimplifiedIntervalList> getAllAvailableIntervals() {
+            return ALL_COLUMNS_ETERNAL_AVAILABILITY;
+        }
     }
 }
