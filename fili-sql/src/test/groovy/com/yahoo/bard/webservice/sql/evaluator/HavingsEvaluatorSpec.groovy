@@ -18,10 +18,10 @@ import static com.yahoo.bard.webservice.sql.builders.Havings.or
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.database.Database
 import com.yahoo.bard.webservice.sql.ApiToFieldMapper
-import com.yahoo.bard.webservice.sql.aggregation.DefaultDruidSqlAggregationConverter
+import com.yahoo.bard.webservice.sql.aggregation.DruidSqlAggregationConverter
 import com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder
 import com.yahoo.bard.webservice.sql.helper.CalciteHelper
-import com.yahoo.bard.webservice.sql.helper.DefaultSqlTimeConverter
+import com.yahoo.bard.webservice.sql.helper.SqlTimeConverter
 
 import org.apache.calcite.rel.rel2sql.RelToSqlConverter
 import org.apache.calcite.rex.RexNode
@@ -38,9 +38,9 @@ class HavingsEvaluatorSpec extends Specification {
     static int ONE = 1
     static int TWO = 2
     static Connection CONNECTION = Database.initializeDatabase()
-    static DefaultSqlTimeConverter sqlTimeConverter = new DefaultSqlTimeConverter()
+    static SqlTimeConverter sqlTimeConverter = new SqlTimeConverter()
     static HavingEvaluator havingEvaluator = new HavingEvaluator()
-    static DefaultDruidSqlAggregationConverter druidSqlTypeConverter = new DefaultDruidSqlAggregationConverter()
+    static DruidSqlAggregationConverter druidSqlTypeConverter = new DruidSqlAggregationConverter()
     static final String API = "api_"
 
     private static RelBuilder getBuilder() {
