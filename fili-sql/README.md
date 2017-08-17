@@ -19,6 +19,8 @@ Setup
     - `bard__database_username = username`
     - `bard__database_password = password`
 
+- Make sure you build all of your SQL backed tables using `ConcreteSqlPhysicalTableDefinition`
+
 - Override these from `AbstractBinderFactory`
 
 ```java
@@ -41,8 +43,9 @@ protected DimensionValueLoadTask buildDruidDimensionsLoader(
     );
     SqlDimensionValueLoader sqlDimensionRowProvider = new SqlDimensionValueLoader(
                 physicalTableDictionary,
-                dimensionDictionary
-                //TODO make this
+                dimensionDictionary,
+                Arrays.asList("all", "the", "sql", "dimensions"), // Put Sql dimensions here
+                sqlBackedClient //build this
         );
     return new DimensionValueLoadTask(Arrays.asList(druidDimensionRowProvider, sqlDimensionRowProvider));
 }
