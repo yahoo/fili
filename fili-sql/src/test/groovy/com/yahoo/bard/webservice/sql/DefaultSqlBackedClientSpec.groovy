@@ -10,13 +10,18 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.WEEK
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.YEAR
 import static com.yahoo.bard.webservice.database.Database.ADDED
 import static com.yahoo.bard.webservice.database.Database.COMMENT
+import static com.yahoo.bard.webservice.database.Database.COUNTRY_ISO_CODE
 import static com.yahoo.bard.webservice.database.Database.DELETED
 import static com.yahoo.bard.webservice.database.Database.DELTA
 import static com.yahoo.bard.webservice.database.Database.IS_NEW
 import static com.yahoo.bard.webservice.database.Database.IS_ROBOT
+import static com.yahoo.bard.webservice.database.Database.METRO_CODE
 import static com.yahoo.bard.webservice.database.Database.PAGE
+import static com.yahoo.bard.webservice.database.Database.REGION_ISO_CODE
 import static com.yahoo.bard.webservice.database.Database.USER
 import static com.yahoo.bard.webservice.database.Database.WIKITICKER
+import static com.yahoo.bard.webservice.druid.model.orderby.SortDirection.ASC
+import static com.yahoo.bard.webservice.druid.model.orderby.SortDirection.DESC
 import static com.yahoo.bard.webservice.druid.model.query.AllGranularity.INSTANCE
 import static com.yahoo.bard.webservice.sql.builders.Aggregator.longMax
 import static com.yahoo.bard.webservice.sql.builders.Aggregator.longMin
@@ -52,11 +57,13 @@ import com.yahoo.bard.webservice.druid.model.DefaultQueryType
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.model.having.Having
+import com.yahoo.bard.webservice.druid.model.orderby.LimitSpec
 import com.yahoo.bard.webservice.druid.model.query.AbstractDruidAggregationQuery
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery
 import com.yahoo.bard.webservice.druid.model.query.Granularity
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery
+import com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder
 import com.yahoo.bard.webservice.table.Column
 
 import com.fasterxml.jackson.databind.JsonNode
@@ -129,7 +136,8 @@ class DefaultSqlBackedClientSpec extends Specification {
             Granularity timeGrain,
             Filter filter,
             Having having,
-            List<String> dimensions
+            List<String> dimensions,
+            LimitSpec limitSpec
     ) {
         return groupByQuery(
                 WIKITICKER,
@@ -142,7 +150,7 @@ class DefaultSqlBackedClientSpec extends Specification {
                 [sum(ADDED), sum(DELETED)],
                 [],
                 [interval(START, END)],
-                null
+                limitSpec
         )
     }
 
@@ -150,11 +158,11 @@ class DefaultSqlBackedClientSpec extends Specification {
     def "ExecuteQuery for #timeGrain want #size filter on #filter"() {
         setup:
         DruidQuery druidQueryMultipleIntervals = getTimeSeriesQueryMultipleIntervals(timeGrain, filter)
-        JsonNode jsonNodeMultipleIntervals = sqlBackedClient.executeQuery(druidQueryMultipleIntervals, null, null).get();
+        JsonNode jsonNodeMultipleIntervals = sqlBackedClient.executeQuery(druidQueryMultipleIntervals, null, null).get()
         ResultSet parseMultipleIntervals = parse(jsonNodeMultipleIntervals, druidQueryMultipleIntervals)
 
         DruidQuery druidQueryOneInterval = getTimeSeriesQuery(timeGrain, filter)
-        JsonNode jsonNodeOneInterval = sqlBackedClient.executeQuery(druidQueryOneInterval, null, null).get();
+        JsonNode jsonNodeOneInterval = sqlBackedClient.executeQuery(druidQueryOneInterval, null, null).get()
         ResultSet parseOneInterval = parse(jsonNodeOneInterval, druidQueryOneInterval)
 
         expect:
@@ -191,7 +199,7 @@ class DefaultSqlBackedClientSpec extends Specification {
                 [],
                 [interval(start, end)]
         )
-        JsonNode jsonNode = sqlBackedClient.executeQuery(timeSeriesQuery, null, null).get();
+        JsonNode jsonNode = sqlBackedClient.executeQuery(timeSeriesQuery, null, null).get()
         ResultSet parse = parse(jsonNode, timeSeriesQuery)
 
         expect:
@@ -214,7 +222,7 @@ class DefaultSqlBackedClientSpec extends Specification {
     def "Test timeseries on /#timeGrain/ with #filter"() {
         setup:
         DruidQuery druidQuery = getTimeSeriesQuery(timeGrain, filter)
-        JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery, null, null).get();
+        JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery, null, null).get()
 
         expect:
         parse(jsonNode, druidQuery)
@@ -234,7 +242,7 @@ class DefaultSqlBackedClientSpec extends Specification {
     def "Test doubles/longs serialize correctly on /#timeGrain/ with custom aggregation"() {
         setup:
         DruidQuery druidQuery = getTimeSeriesQueryCustomAggregation(timeGrain, null, aggregation)
-        JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery, null, null).get();
+        JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery, null, null).get()
 
         expect:
         parse(jsonNode, druidQuery)
@@ -272,8 +280,8 @@ class DefaultSqlBackedClientSpec extends Specification {
     @Unroll
     def "Test groupBy on /#timeGrain/#dims/"() {
         setup:
-        DruidQuery druidQuery = getGroupByQuery(timeGrain, filter, having, dims)
-        JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery, null, null).get();
+        DruidQuery druidQuery = getGroupByQuery(timeGrain, filter, having, dims, null)
+        JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery, null, null).get()
 
         expect:
         ResultSet parse = parse(jsonNode, druidQuery)
@@ -291,5 +299,25 @@ class DefaultSqlBackedClientSpec extends Specification {
         HOUR      | []                 | null                           | null                            | 24
         DAY       | [PAGE, USER]       | null                           | null                            | 36565
         DAY       | []                 | null                           | null                            | 1
+    }
+
+    @Unroll
+    def "test sorting on #dims with #metrics by #metricDirections expecting #expectedSize results"() {
+        setup:
+        DruidQuery druidQuery = getGroupByQuery(grain, null, null, dims, SimpleDruidQueryBuilder.getSort(metrics, metricDirections, limit))
+        JsonNode jsonNode = sqlBackedClient.executeQuery(druidQuery, null, null).get()
+
+        expect:
+        ResultSet parse = parse(jsonNode, druidQuery)
+        parse.size() == expectedSize
+
+        where:
+        grain    | dims                                    | metrics          | metricDirections | limit                | expectedSize
+        DAY      | [METRO_CODE]                            | [ADDED]          | [DESC]           | OptionalInt.of(10)   | 10
+        DAY      | []                                      | [ADDED, DELETED] | [DESC, ASC]      | OptionalInt.of(10)   | 1
+        DAY      | [METRO_CODE, IS_ROBOT, REGION_ISO_CODE] | [ADDED]          | [DESC]           | OptionalInt.of(100) | 100
+        YEAR     | [METRO_CODE]                            | []               | []               | OptionalInt.of(1)    | 1
+        MONTH    | [USER]                                  | []               | []               | OptionalInt.of(49)   | 49
+        INSTANCE | [COUNTRY_ISO_CODE]                      | []               | []               | OptionalInt.of(25)   | 25
     }
 }

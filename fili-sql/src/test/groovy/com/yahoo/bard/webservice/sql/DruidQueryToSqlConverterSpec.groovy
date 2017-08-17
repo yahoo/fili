@@ -55,21 +55,10 @@ class DruidQueryToSqlConverterSpec extends Specification {
         )
     }
 
-    private static LimitSpec getSort(List<String> columns, List<SortDirection> sortDirections) {
-        LinkedHashSet<OrderByColumn> sorts = []
-        for (int i = 0; i < columns.size(); i++) {
-            sorts.add(
-                    new OrderByColumn(columns.get(i), sortDirections.get(i))
-            )
-        }
-
-        return new LimitSpec(sorts)
-    }
-
     @Unroll
     def "test sorting on #dims with #metrics by #metricDirections"() {
         setup:
-        DruidQuery query = getGroupByQuery(grain, dims, getSort(metrics, metricDirections))
+        DruidQuery query = getGroupByQuery(grain, dims, SimpleDruidQueryBuilder.getSort(metrics, metricDirections))
         def sql = druidQueryToSqlConverter.buildSqlQuery(query, apiToFieldMapper)
 
         expect:
