@@ -42,7 +42,7 @@ public class SqlResultSetProcessor {
     private BiMap<Integer, String> columnToColumnName;
     private List<String[]> sqlResults;
     private final ObjectMapper objectMapper;
-    private final int groupByCount;
+    private final int groupByDimensionsCount;
     private final SqlTimeConverter sqlTimeConverter;
 
     /**
@@ -68,7 +68,7 @@ public class SqlResultSetProcessor {
         this.sqlResults = new ArrayList<>();
         this.columnToColumnName = HashBiMap.create();
 
-        this.groupByCount = druidQuery.getDimensions().size();
+        this.groupByDimensionsCount = druidQuery.getDimensions().size();
     }
 
     /**
@@ -91,7 +91,7 @@ public class SqlResultSetProcessor {
                     timestamp = druidQuery.getIntervals().get(0).getStart();
                 } else {
                     timestamp = sqlTimeConverter.getIntervalStart(
-                            groupByCount,
+                            groupByDimensionsCount,
                             row,
                             druidQuery
                     );
@@ -132,7 +132,7 @@ public class SqlResultSetProcessor {
         int columnCount = columnToColumnName.size();
 
         for (int i = 0; i < columnCount; i++) {
-            if (groupByCount <= i && i < groupByCount + lastTimeIndex) {
+            if (i >= groupByDimensionsCount && i < groupByDimensionsCount + lastTimeIndex) {
                 continue;
             }
             String columnName = columnToColumnName.get(i);
