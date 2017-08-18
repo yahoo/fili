@@ -1013,6 +1013,11 @@ public class DataApiRequest extends ApiRequest {
         return this.apiFilters;
     }
 
+    @Deprecated
+    public Map<Dimension, Set<ApiFilter>> getFilters() {
+        return this.apiFilters;
+    }
+
     /**
     * Builds and returns the Druid filters from this request's {@link ApiFilter}s.
     * <p>
@@ -1021,6 +1026,25 @@ public class DataApiRequest extends ApiRequest {
     * @return the Druid filter
     */
     public Filter getDruidFilter() {
+        try (TimedPhase timer = RequestLog.startTiming("BuildingDruidFilter")) {
+            return filterBuilder.buildFilters(this.apiFilters);
+        } catch (DimensionRowNotFoundException e) {
+            LOG.debug(e.getMessage());
+            throw new BadApiRequestException(e);
+        }
+    }
+
+    /**
+     * Builds and returns the Druid filters from this request's {@link ApiFilter}s.
+     * <p>
+     * The Druid filters are built (an expensive operation) every time this method is called. Use it judiciously.
+     *
+     * @return the Druid filter
+     *
+     * @deprecated this method has been deprecated because its name is unclear. Please use {@link #getDruidFilter()}.
+     */
+    @Deprecated
+    public Filter getFilter() {
         try (TimedPhase timer = RequestLog.startTiming("BuildingDruidFilter")) {
             return filterBuilder.buildFilters(this.apiFilters);
         } catch (DimensionRowNotFoundException e) {
