@@ -104,12 +104,12 @@ public class PaginationParameters {
     }
 
     /**
-     * Verifies that the passed parameter is greater than 0 or is -1 (last page).
+     * Verifies that the passed parameter is greater than 0.
      *
      * @param parameter  The parameter to be validated.
      * @param parameterName  The name of the parameter to appear in the error message
      *
-     * @throws BadPaginationException if 'parameter' is not greater than 0 or is not -1.
+     * @throws BadPaginationException if 'parameter' is not greater than 0.
      */
     private static void validate(int parameter, String parameterName) throws BadPaginationException {
         if (parameter < MINIMAL_VALUE) {
