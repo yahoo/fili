@@ -56,10 +56,7 @@ public class PaginationParameters {
      * @throws BadPaginationException If at least one of 'perPage' or 'page' is not a positive integer.
      */
     public PaginationParameters(String perPage, String page) throws BadPaginationException {
-        this.perPage = parseParameter(perPage, "perPage");
-        this.page = parseParameter(page, "page");
-        validate(this.perPage, "perPage");
-        validatePage(this.page, "page");
+        this(parseParameter(perPage, "perPage"), parseParameter(page, "page"));
     }
 
     /**
@@ -67,14 +64,10 @@ public class PaginationParameters {
      *
      * @param perPage  The number of rows to be displayed on each page.
      * @param page  The page to be displayed
-     *
-     * @throws BadPaginationException If at least one of 'perPage' or 'page' is not positive.
      */
-    public PaginationParameters(int perPage, int page) throws BadPaginationException {
+    public PaginationParameters(int perPage, int page) {
         this.perPage = perPage;
         this.page = page;
-        validate(this.perPage, "perPage");
-        validatePage(this.page, "page");
     }
 
     /**
@@ -86,19 +79,23 @@ public class PaginationParameters {
      * @return the parsed integer
      * @throws BadPaginationException If 'parameter' cannot be parsed as an integer.
      */
-    private int parseParameter (String parameter, String parameterName) throws BadPaginationException {
+    private static int parseParameter (String parameter, String parameterName) throws BadPaginationException {
         if (parameter.equals("")) {
             ErrorMessageFormat errorMessage = ErrorMessageFormat.PAGINATION_PARAMETER_MISSING;
             LOG.debug(errorMessage.logFormat(parameterName));
             throw new BadPaginationException(errorMessage.format(parameterName));
         }
         try {
-            if (parameter.equals(FIRST)) {
-                return 1;
-            } else if (parameter.equals(LAST)) {
-                return LAST_PAGE;
+            if (parameterName.equals("page")) {
+                if (parameter.equals(FIRST)) {
+                    return 1;
+                } else if (parameter.equals(LAST)) {
+                    return LAST_PAGE;
+                }
             }
-            return Integer.parseInt(parameter);
+            int parsedParameter = Integer.parseInt(parameter);
+            validate(parsedParameter, parameterName);
+            return parsedParameter;
         } catch (NumberFormatException ignored) {
             ErrorMessageFormat errorMessage = ErrorMessageFormat.PAGINATION_PARAMETER_INVALID;
             LOG.debug(errorMessage.logFormat(parameterName, parameter));
@@ -114,24 +111,8 @@ public class PaginationParameters {
      *
      * @throws BadPaginationException if 'parameter' is not greater than 0 or is not -1.
      */
-    private void validate(int parameter, String parameterName) throws BadPaginationException {
+    private static void validate(int parameter, String parameterName) throws BadPaginationException {
         if (parameter < MINIMAL_VALUE) {
-            ErrorMessageFormat errorMessage = ErrorMessageFormat.PAGINATION_PARAMETER_INVALID;
-            LOG.debug(errorMessage.logFormat(parameterName, parameter));
-            throw new BadPaginationException(errorMessage.format(parameterName, parameter));
-        }
-    }
-
-    /**
-     * Verifies that the page is positive or is -1 (last page).
-     *
-     * @param parameter  The parameter to be validated.
-     * @param parameterName  The name of the parameter to appear in the error message
-     *
-     * @throws BadPaginationException if 'parameter' is not greater than 0 or is not -1.
-     */
-    private void validatePage(int parameter, String parameterName) throws BadPaginationException {
-        if (parameter < MINIMAL_VALUE && parameter != LAST_PAGE) {
             ErrorMessageFormat errorMessage = ErrorMessageFormat.PAGINATION_PARAMETER_INVALID;
             LOG.debug(errorMessage.logFormat(parameterName, parameter));
             throw new BadPaginationException(errorMessage.format(parameterName, parameter));

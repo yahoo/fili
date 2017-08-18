@@ -45,9 +45,9 @@ class PaginationParametersSpec extends Specification {
 
         where:
         perPage | page  || expectedError
-        "-2" | "-2"     || errorMessage("perPage", "-2")
-        "0"   | "-2"    || errorMessage("perPage", "0")
-        "1"   | "-2"    || errorMessage("page", "-2")
+        "-2" | "-1"     || errorMessage("perPage", "-2")
+        "0"   | "-1"    || errorMessage("perPage", "0")
+        "1"   | "-1"    || errorMessage("page", "-1")
         "-2" | "0"      || errorMessage("perPage", "-2")
         "-2" | "1"      || errorMessage("perPage", "-2")
         "1a"  | "1a"    || errorMessage("perPage", "1a")

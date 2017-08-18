@@ -178,13 +178,13 @@ class DataPaginationSpec extends BaseDataServletComponentSpec {
         when: "We send a request with an incorrect page requested"
         Response response = makeAbstractRequest({getQueryParams("$ROWS_PER_PAGE", "$page")})
 
-        then: "We get a 400 (Bad Request) if the page requested is less than 1 and not -1, and a 404 if past the end"
-        response.status == (page < 1 && page != -1 ? 400 : 404)
+        then: "We get a 400 (Bad Request) if the page requested is less than 1, and a 404 if past the end"
+        response.status == (page < 1 ? 400 : 404)
 
         where:
         page | numPages
         -512 |  3
-        -2   |  3
+        -1   |  3
         0    |  3
         4    |  3
         5    |  3
