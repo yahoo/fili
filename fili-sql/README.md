@@ -20,36 +20,37 @@ Setup
     - `bard__database_password = password`
 
 - Make sure you build all of your SQL backed tables using `ConcreteSqlPhysicalTableDefinition`
+    - Also note that your SQL backed tables may use any timezone but the easiest to work with will always be UTC.
 
 - Override these from `AbstractBinderFactory`
 
-```java
-@Override
-protected Class<? extends RequestWorkflowProvider> getWorkflow() {
-    return SqlWorkflow.class;
-}
-
-@Override
-protected DimensionValueLoadTask buildDruidDimensionsLoader(
-        DruidWebService webService,
-        PhysicalTableDictionary physicalTableDictionary,
-        DimensionDictionary dimensionDictionary
-) {
-    DruidDimensionValueLoader druidDimensionRowProvider = new DruidDimensionValueLoader(
-            physicalTableDictionary,
-            dimensionDictionary,
-            Collections.emptyList(), // Put Druid Dimensions here if Applicable
-            webService
-    );
-    SqlDimensionValueLoader sqlDimensionRowProvider = new SqlDimensionValueLoader(
+    ```java
+    @Override
+    protected Class<? extends RequestWorkflowProvider> getWorkflow() {
+        return SqlWorkflow.class;
+    }
+    
+    @Override
+    protected DimensionValueLoadTask buildDruidDimensionsLoader(
+            DruidWebService webService,
+            PhysicalTableDictionary physicalTableDictionary,
+            DimensionDictionary dimensionDictionary
+    ) {
+        DruidDimensionValueLoader druidDimensionRowProvider = new DruidDimensionValueLoader(
                 physicalTableDictionary,
                 dimensionDictionary,
-                Arrays.asList("all", "the", "sql", "dimensions"), // Put Sql dimensions here
-                sqlBackedClient //build this
+                Collections.emptyList(), // Put Druid Dimensions here if Applicable
+                webService
         );
-    return new DimensionValueLoadTask(Arrays.asList(druidDimensionRowProvider, sqlDimensionRowProvider));
-}
-```
+        SqlDimensionValueLoader sqlDimensionRowProvider = new SqlDimensionValueLoader(
+                    physicalTableDictionary,
+                    dimensionDictionary,
+                    Arrays.asList("all", "the", "sql", "dimensions"), // Put Sql dimensions here
+                    sqlBackedClient //build this
+            );
+        return new DimensionValueLoadTask(Arrays.asList(druidDimensionRowProvider, sqlDimensionRowProvider));
+    }
+    ```
 
 You'll also want to make sure you load your SQL backed dimensions using `SqlDimensionValueLoader` in the `DimensionValueLoadTask`.
 
@@ -68,10 +69,3 @@ Supported queries
 - Character sets. Don't try to query unicode characters unless your database supports them.
 - MySQL databases are **much slower** than druid at doing TopN queries.
  *Do **NOT** make TopN queries over large amounts of time with small buckets.* (For example, don't ask for the TopN from every hour over an entire year.) 
-
-
-Todo
-----
-Both of these are likely to be difficult because of [this Calcite bug](https://issues.apache.org/jira/browse/CALCITE-1892)
-- Implement lookback/nested queries/any other queries
-- Implement TopN natively
