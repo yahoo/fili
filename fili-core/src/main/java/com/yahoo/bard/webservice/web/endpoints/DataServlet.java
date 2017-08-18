@@ -366,6 +366,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
                         count,
                         topN,
                         format,
+                        containerRequestContext.getHeaderString("Accept"),
                         timeZone,
                         asyncAfter,
                         perPage,

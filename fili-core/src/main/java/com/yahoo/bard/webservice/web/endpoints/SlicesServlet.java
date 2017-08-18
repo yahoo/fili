@@ -113,6 +113,7 @@ public class SlicesServlet extends EndpointServlet {
             SlicesApiRequest apiRequest = new SlicesApiRequest(
                     null,
                     format,
+                    containerRequestContext.getHeaderString("Accept"),
                     perPage,
                     page,
                     physicalTableDictionary,
@@ -195,6 +196,7 @@ public class SlicesServlet extends EndpointServlet {
             SlicesApiRequest apiRequest = new SlicesApiRequest(
                     sliceName,
                     null,
+                    containerRequestContext.getHeaderString("Accept"),
                     "",
                     "",
                     physicalTableDictionary,

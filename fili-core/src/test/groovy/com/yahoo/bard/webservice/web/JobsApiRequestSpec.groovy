@@ -74,6 +74,7 @@ class JobsApiRequestSpec extends Specification {
         defaultJobsApiRequest = new JobsApiRequest(
                 null,
                 null,
+                null,
                 "",
                 "",
                 null,
@@ -204,6 +205,7 @@ class JobsApiRequestSpec extends Specification {
         apiJobStore.save(userFooJobRow3)
 
         JobsApiRequest apiRequest = new JobsApiRequest(
+                null,
                 null,
                 null,
                 "",

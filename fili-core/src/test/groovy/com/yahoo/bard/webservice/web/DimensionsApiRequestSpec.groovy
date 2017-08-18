@@ -35,6 +35,7 @@ class DimensionsApiRequestSpec extends Specification {
                 null,
                 null,
                 null,
+                null,
                 "",
                 "",
                 fullDictionary,
@@ -52,6 +53,7 @@ class DimensionsApiRequestSpec extends Specification {
         when:
         DimensionsApiRequest apiRequest = new DimensionsApiRequest(
                 name,
+                null,
                 null,
                 null,
                 "",
@@ -75,6 +77,7 @@ class DimensionsApiRequestSpec extends Specification {
                 name,
                 filterString,
                 null,
+                null,
                 "",
                 "",
                 fullDictionary,
@@ -92,6 +95,7 @@ class DimensionsApiRequestSpec extends Specification {
         new DimensionsApiRequest(
                 name,
                 filter,
+                null,
                 null,
                 "",
                 "",

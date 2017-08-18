@@ -34,6 +34,7 @@ class MetricsApiRequestSpec extends Specification {
         MetricsApiRequest apiRequest = new MetricsApiRequest(
                 null,
                 null,
+                null,
                 "",
                 "",
                 fullDictionary,
@@ -52,6 +53,7 @@ class MetricsApiRequestSpec extends Specification {
         MetricsApiRequest apiRequest = new MetricsApiRequest(
                 name,
                 null,
+                null,
                 "",
                 "",
                 fullDictionary,
@@ -67,6 +69,7 @@ class MetricsApiRequestSpec extends Specification {
         when:
         new MetricsApiRequest(
                 name,
+                null,
                 null,
                 "",
                 "",

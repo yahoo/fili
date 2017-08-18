@@ -48,6 +48,7 @@ class TablesApiRequestSpec extends Specification {
                 null,
                 null,
                 null,
+                null,
                 "",
                 "",
                 null,
@@ -67,6 +68,7 @@ class TablesApiRequestSpec extends Specification {
         when:
         TablesApiRequest apiRequest = new TablesApiRequest(
                 name,
+                null,
                 null,
                 null,
                 "",
@@ -93,6 +95,7 @@ class TablesApiRequestSpec extends Specification {
                 name,
                 "day",
                 null,
+                null,
                 "",
                 "",
                 null,
@@ -111,6 +114,7 @@ class TablesApiRequestSpec extends Specification {
         new TablesApiRequest(
                 name,
                 grain,
+                null,
                 null,
                 "",
                 "",

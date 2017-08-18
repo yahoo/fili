@@ -88,14 +88,17 @@ class ApiRequestSpec extends Specification {
 
         where:
         responseFormat          | expectedFormat
-        ResponseFormatType.JSON | new ConcreteApiRequest().generateAcceptFormat(null)
-        ResponseFormatType.JSON | new ConcreteApiRequest().generateAcceptFormat("json")
-        ResponseFormatType.CSV  | new ConcreteApiRequest().generateAcceptFormat("csv")
+        ResponseFormatType.JSON     | new DataApiRequest().generateAcceptFormat(null, null)
+        ResponseFormatType.JSON     | new DataApiRequest().generateAcceptFormat("json", null)
+        ResponseFormatType.JSON     | new DataApiRequest().generateAcceptFormat(null, "application/json")
+        ResponseFormatType.CSV      | new DataApiRequest().generateAcceptFormat("csv", null)
+        ResponseFormatType.CSV      | new DataApiRequest().generateAcceptFormat(null, "text/csv")
+        ResponseFormatType.JSONAPI  | new DataApiRequest().generateAcceptFormat(null, "application/vnd.api+json")
     }
 
     def "check invalid parsing generateFormat"() {
         when:
-        new ConcreteApiRequest().generateAcceptFormat("bad")
+        new ConcreteApiRequest().generateAcceptFormat("bad", null)
 
         then:
         thrown BadApiRequestException
