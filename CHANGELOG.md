@@ -40,6 +40,9 @@ Current
 
 ### Changed:
 
+- [Rename filter variables and methods in DataApiRequest](https://github.com/yahoo/fili/pull/507)
+    * The method names `getFilter` and `getFilters` can be confusing, as well as the `filters` variable
+
 - [Refactor Response class and implement new serialization logics](https://github.com/yahoo/fili/pull/455)
     * Define interface `ResponseWriter` and its default implementation
     * Refactor `Response` class, splitting into `ResponseData` and three implementations of `ResponseWriter`
@@ -70,6 +73,9 @@ Current
     * CompletedFuture allows values to be returned when calling `.get` on a future instead of just throwing an exception
 
 ### Deprecated:
+
+- [Rename filter variables and methods in DataApiRequest](https://github.com/yahoo/fili/pull/507)
+    * Deprecated `getFilters` in favor of `getApiFilters` and `getFilter` in favor of `getDruidFilter`
 
 - [Add dimension dictionary to metric loader](https://github.com/yahoo/fili/pull/317)
     * Deprecated single argument version of `loadMetricDictionary` in `MetricLoader`, favor additional dimension dictionary argument `loadMetricDictionary` instead
