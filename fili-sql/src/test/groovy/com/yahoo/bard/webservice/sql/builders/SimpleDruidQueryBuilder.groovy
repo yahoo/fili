@@ -20,6 +20,8 @@ import static com.yahoo.bard.webservice.database.Database.NAMESPACE
 import static com.yahoo.bard.webservice.database.Database.PAGE
 import static com.yahoo.bard.webservice.database.Database.REGION_ISO_CODE
 import static com.yahoo.bard.webservice.database.Database.REGION_NAME
+import static com.yahoo.bard.webservice.database.Database.SCHEMA
+import static com.yahoo.bard.webservice.database.Database.TIME
 import static com.yahoo.bard.webservice.database.Database.USER
 import static com.yahoo.bard.webservice.database.Database.WIKITICKER
 import static java.util.Arrays.asList
@@ -40,6 +42,8 @@ import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
 import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.model.having.Having
 import com.yahoo.bard.webservice.druid.model.orderby.LimitSpec
+import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn
+import com.yahoo.bard.webservice.druid.model.orderby.SortDirection
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
 import com.yahoo.bard.webservice.druid.model.query.Granularity
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
@@ -51,7 +55,9 @@ import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable
 import com.yahoo.bard.webservice.table.ConstrainedTable
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
+import com.yahoo.bard.webservice.table.SqlPhysicalTable
 import com.yahoo.bard.webservice.table.StrictPhysicalTable
+import com.yahoo.bard.webservice.table.availability.PermissiveAvailability
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
 import com.yahoo.bard.webservice.util.Utils
 
@@ -146,6 +152,21 @@ class SimpleDruidQueryBuilder {
         )
     }
 
+    public static LimitSpec getSort(List<String> columns, List<SortDirection> sortDirections) {
+        return getSort(columns, sortDirections, OptionalInt.empty())
+    }
+
+    public static LimitSpec getSort(List<String> columns, List<SortDirection> sortDirections, OptionalInt limit) {
+        LinkedHashSet<OrderByColumn> sorts = []
+        for (int i = 0; i < columns.size(); i++) {
+            sorts.add(
+                    new OrderByColumn(columns.get(i), sortDirections.get(i))
+            )
+        }
+
+        return new LimitSpec(sorts, limit)
+    }
+
     public static TableDataSource dataSource(String name, List<String> metrics, List<String> dimensions) {
         return dataSource(name, DefaultTimeGrain.DAY, DateTimeZone.UTC, metrics, dimensions, "", "")
     }
@@ -178,12 +199,14 @@ class SimpleDruidQueryBuilder {
         Set<String> metricsAndDimensions = new HashSet<>()
         metrics.forEach{ metricsAndDimensions.add(apiPrepend + it) }
         dimensions.forEach{ metricsAndDimensions.add(apiPrepend + it) }
-        def strictPhysicalTable = new StrictPhysicalTable(
+        def strictPhysicalTable = new SqlPhysicalTable(
                 TableName.of(name),
                 zonedTimeGrain,
                 columns,
                 logicalToPhysicalColumnNames,
-                metadataService
+                new PermissiveAvailability(DataSourceName.of(name), metadataService), //todo correct?
+                SCHEMA,
+                TIME
         )
 
         return new TableDataSource(
