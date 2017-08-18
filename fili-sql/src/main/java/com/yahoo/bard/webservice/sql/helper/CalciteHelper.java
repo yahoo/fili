@@ -36,9 +36,9 @@ public class CalciteHelper {
     public CalciteHelper(DataSource dataSource) throws SQLException {
         this.dataSource = dataSource;
 
-        Connection connection = getConnection();
-        this.dialect = SqlDialect.create(connection.getMetaData());
-        connection.close();
+        try (Connection connection = getConnection()) {
+            this.dialect = SqlDialect.create(connection.getMetaData());
+        }
     }
 
     /**
@@ -119,18 +119,10 @@ public class CalciteHelper {
      * @return the schema.
      */
     private static SchemaPlus addSchema(SchemaPlus rootSchema, DataSource dataSource, String schemaName) {
+        // todo look into https://github.com/yahoo/fili/issues/509
         return rootSchema.add(// avg tests run at ~75-100ms
                 schemaName,
                 JdbcSchema.create(rootSchema, null, dataSource, null, null)
         );
-        // todo look into timing/behavior of cloneschema (above is faster, but it could just be a result of H2)
-        //        rootSchema.setCacheEnabled(true); //almost no effect
-        //        return rootSchema.add( // avg tests run at ~200ms
-        //                schemaName,
-        //                new CloneSchema(
-        //                        rootSchema.add(schemaName, JdbcSchema.create(rootSchema, null, dataSource, null,
-        // null))
-        //                )
-        //        );
     }
 }

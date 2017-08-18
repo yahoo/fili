@@ -34,7 +34,7 @@ import spock.lang.Unroll
 import java.sql.Connection
 import java.util.stream.Collectors
 
-class HavingsEvaluatorSpec extends Specification {
+class HavingEvaluatorSpec extends Specification {
     static int ONE = 1
     static int TWO = 2
     static Connection CONNECTION = Database.initializeDatabase()
@@ -70,7 +70,7 @@ class HavingsEvaluatorSpec extends Specification {
                 ),
                 aggregationCalls
         )
-        RexNode havingFilter = havingEvaluator.evaluateHaving(builder, having, apiToFieldMapper)
+        RexNode havingFilter = havingEvaluator.evaluateHaving(having, builder, apiToFieldMapper)
         builder.filter(havingFilter)
 
         expect:
@@ -93,6 +93,6 @@ class HavingsEvaluatorSpec extends Specification {
         RelBuilder builder = getBuilder()
 
         expect:
-        havingEvaluator.evaluateHaving(builder, null, null) == null
+        havingEvaluator.evaluateHaving(null, builder, null) == null
     }
 }

@@ -22,48 +22,47 @@ import java.util.stream.Collectors;
 
 /**
  * Evaluates Having filters on aggregated metrics to
- * build an equivalent {@link RexNode} for making a sql query.
+ * build an equivalent {@link RexNode} for making a sql query. To use this call
+ * {@link #evaluateHaving(Having, RelBuilder, ApiToFieldMapper)}.
  */
 public class HavingEvaluator implements ReflectiveVisitor {
-    private RelBuilder builder;
     private final ReflectUtil.MethodDispatcher<RexNode> dispatcher;
-    private ApiToFieldMapper apiToFieldMapper;
 
     /**
      * Constructor.
      */
     public HavingEvaluator() {
+        /*
+        The method dispatcher dynamically calls the correct method in this class based on the polymorphic first
+        argument. All methods must have the same signature except for the first argument.
+         */
         dispatcher = ReflectUtil.createMethodDispatcher(
                 RexNode.class,
                 this,
                 "evaluate",
-                Having.class
+                Having.class,
+                RelBuilder.class,
+                ApiToFieldMapper.class
         );
     }
 
     /**
      * Creates an {@link RexNode} which contains the given {@link Having}.
      *
-     * @param builder  The RelBuilder used with Calcite to make queries.
      * @param having  The having filter being evaluated.
+     * @param builder  The RelBuilder used with Calcite to make queries.
      * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
      *
      * @return the equivalent {@link RexNode} to be used in a sql query.
      *
      * @throws UnsupportedOperationException for havings which couldn't be evaluated.
      */
-    public RexNode evaluateHaving(
-            RelBuilder builder,
-            Having having,
-            ApiToFieldMapper apiToFieldMapper
-    ) {
+    public RexNode evaluateHaving(Having having, RelBuilder builder, ApiToFieldMapper apiToFieldMapper) {
         if (having == null) {
             return null;
         }
 
-        this.builder = builder;
-        this.apiToFieldMapper = apiToFieldMapper;
-        return dispatcher.invoke(having);
+        return dispatcher.invoke(having, builder, apiToFieldMapper);
     }
 
     /**
@@ -71,12 +70,14 @@ public class HavingEvaluator implements ReflectiveVisitor {
      * to a specific "evaluate" method.
      *
      * @param having  The having filter being evaluated.
+     * @param builder  The RelBuilder used with Calcite to make queries.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
      *
      * @return only throws exception.
      *
      * @throws UnsupportedOperationException for havings which couldn't be evaluated.
      */
-    public RexNode evaluate(Having having) {
+    public RexNode evaluate(Having having, RelBuilder builder, ApiToFieldMapper apiToFieldMapper) {
         throw new UnsupportedOperationException("Can't Process " + having);
     }
 
@@ -84,10 +85,12 @@ public class HavingEvaluator implements ReflectiveVisitor {
      * Evaluates a {@link NumericHaving}.
      *
      * @param having  The NumericHaving filter to be evaluated.
+     * @param builder  The RelBuilder used with Calcite to make queries.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
      *
      * @return the equivalent {@link RexNode} to be used in a sql query.
      */
-    public RexNode evaluate(NumericHaving having) {
+    public RexNode evaluate(NumericHaving having, RelBuilder builder, ApiToFieldMapper apiToFieldMapper) {
         Having.DefaultHavingType havingType = (Having.DefaultHavingType) having.getType();
         SqlOperator operator = null;
         switch (havingType) {
@@ -112,10 +115,12 @@ public class HavingEvaluator implements ReflectiveVisitor {
      * Evaluates a {@link NotHaving} filter.
      *
      * @param notHaving  The not having filter to be converted to be evaluated.
+     * @param builder  The RelBuilder used with Calcite to make queries.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
      *
      * @return the equivalent {@link RexNode} to be used in a sql query.
      */
-    public RexNode evaluate(NotHaving notHaving) {
+    public RexNode evaluate(NotHaving notHaving, RelBuilder builder, ApiToFieldMapper apiToFieldMapper) {
         return builder.call(
                 SqlStdOperatorTable.NOT,
                 dispatcher.invoke(notHaving.getHaving())
@@ -126,22 +131,26 @@ public class HavingEvaluator implements ReflectiveVisitor {
      * Evaluates a {@link OrHaving}.
      *
      * @param orHaving  The OrHaving to be evaluated.
+     * @param builder  The RelBuilder used with Calcite to make queries.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
      *
      * @return the equivalent {@link RexNode} to be used which ORs over the inner havings.
      */
-    public RexNode evaluate(OrHaving orHaving) {
-        return listEvaluate(orHaving, SqlStdOperatorTable.OR);
+    public RexNode evaluate(OrHaving orHaving, RelBuilder builder, ApiToFieldMapper apiToFieldMapper) {
+        return listEvaluate(orHaving, SqlStdOperatorTable.OR, builder, apiToFieldMapper);
     }
 
     /**
      * Evaluates a {@link AndHaving}.
      *
      * @param andHaving  The AndHaving to be evaluated.
+     * @param builder  The RelBuilder used with Calcite to make queries.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
      *
      * @return the equivalent {@link RexNode} to be used which ANDs over the inner havings.
      */
-    public RexNode evaluate(AndHaving andHaving) {
-        return listEvaluate(andHaving, SqlStdOperatorTable.AND);
+    public RexNode evaluate(AndHaving andHaving, RelBuilder builder, ApiToFieldMapper apiToFieldMapper) {
+        return listEvaluate(andHaving, SqlStdOperatorTable.AND, builder, apiToFieldMapper);
     }
 
     /**
@@ -149,16 +158,20 @@ public class HavingEvaluator implements ReflectiveVisitor {
      *
      * @param multiClauseHaving  The MultiClauseHaving filter to be evaluated.
      * @param operator  The operator to be performed over the inner clauses of this having filter.
+     * @param builder  The RelBuilder used with Calcite to make queries.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
      *
      * @return the equivalent {@link RexNode} to be used in a sql query.
      */
     public RexNode listEvaluate(
             MultiClauseHaving multiClauseHaving,
-            SqlOperator operator
+            SqlOperator operator,
+            RelBuilder builder,
+            ApiToFieldMapper apiToFieldMapper
     ) {
         List<RexNode> rexNodes = multiClauseHaving.getHavings()
                 .stream()
-                .map(dispatcher::invoke)
+                .map(having -> dispatcher.invoke(having, builder, apiToFieldMapper))
                 .collect(Collectors.toList());
 
         return builder.call(

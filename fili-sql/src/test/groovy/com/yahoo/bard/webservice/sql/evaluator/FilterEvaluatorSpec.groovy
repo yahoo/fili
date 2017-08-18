@@ -37,7 +37,7 @@ class FilterEvaluatorSpec extends Specification {
         ApiToFieldMapper apiToFieldMapper = SimpleDruidQueryBuilder.getApiToFieldMapper(API, "")
         RelBuilder builder = CalciteHelper.getBuilder(Database.getDataSource(), SCHEMA)
         builder.scan(WIKITICKER)
-        def rexnode = filterEvaluator.evaluateFilter(builder, filter, apiToFieldMapper)
+        def rexnode = filterEvaluator.evaluateFilter(filter, builder, apiToFieldMapper)
         builder.filter(rexnode)
 
         expect:
@@ -74,6 +74,6 @@ class FilterEvaluatorSpec extends Specification {
         RelBuilder builder = CalciteHelper.getBuilder(Database.getDataSource(), SCHEMA)
 
         expect:
-        filterEvaluator.evaluateFilter(builder, null, null) == null
+        filterEvaluator.evaluateFilter(null, builder, null) == null
     }
 }

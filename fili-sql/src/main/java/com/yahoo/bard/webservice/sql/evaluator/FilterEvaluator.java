@@ -27,44 +27,47 @@ import java.util.stream.Collectors;
 
 /**
  * Evaluates filters to find all the dimensions used in them and
- * to build a {@link RexNode} with an equivalent sql filter.
+ * to build a {@link RexNode} with an equivalent sql filter. To use this call
+ * {@link #evaluateFilter(Filter, RelBuilder, ApiToFieldMapper)}.
  */
 public class FilterEvaluator implements ReflectiveVisitor {
-    private RelBuilder builder;
     private final ReflectUtil.MethodDispatcher<RexNode> dispatcher;
-    private ApiToFieldMapper apiToFieldMapper;
 
     /**
      * Constructor.
      */
     public FilterEvaluator() {
+        /*
+        The method dispatcher dynamically calls the correct method in this class based on the polymorphic first
+        argument. All methods must have the same signature except for the first argument.
+         */
         dispatcher = ReflectUtil.createMethodDispatcher(
                 RexNode.class,
                 this,
                 "evaluate",
-                Filter.class
+                Filter.class,
+                RelBuilder.class,
+                ApiToFieldMapper.class
         );
     }
 
     /**
      * Evaluates and builds a filter and finds all the dimension names used in all filters.
      *
-     * @param builder  The RelBuilder used to build queries with Calcite.
      * @param filter  The filter to be evaluated.
+     * @param builder  The RelBuilder used to build queries with Calcite.
      * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
      *
      * @return a RexNode containing an equivalent filter to the one given.
      *
      * @throws UnsupportedOperationException for filters which couldn't be evaluated.
      */
-    public RexNode evaluateFilter(RelBuilder builder, Filter filter, ApiToFieldMapper apiToFieldMapper) {
+    public RexNode evaluateFilter(Filter filter, RelBuilder builder, ApiToFieldMapper apiToFieldMapper) {
         if (filter == null) {
             return null;
         }
 
-        this.builder = builder;
-        this.apiToFieldMapper = apiToFieldMapper;
-        return dispatcher.invoke(filter);
+        return dispatcher.invoke(filter, builder, apiToFieldMapper);
     }
 
     /**
@@ -72,12 +75,14 @@ public class FilterEvaluator implements ReflectiveVisitor {
      * to a specific "evaluate" method.
      *
      * @param filter  The filter to be evaluated.
+     * @param builder  The RelBuilder used to build queries with Calcite.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
      *
      * @return only throws exception.
      *
      * @throws UnsupportedOperationException for filters which couldn't be evaluated.
      */
-    public RexNode evaluate(Filter filter) {
+    public RexNode evaluate(Filter filter, RelBuilder builder, ApiToFieldMapper apiToFieldMapper) {
         throw new UnsupportedOperationException("Can't Process " + filter);
     }
 
@@ -85,10 +90,16 @@ public class FilterEvaluator implements ReflectiveVisitor {
      * Evaluates a regular expression filter.
      *
      * @param regexFilter  A regexFilter to be evaluated.
+     * @param builder  The RelBuilder used to build queries with Calcite.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
      *
      * @return a RexNode containing an equivalent filter to the one given.
      */
-    public RexNode evaluate(RegularExpressionFilter regexFilter) {
+    public RexNode evaluate(
+            RegularExpressionFilter regexFilter,
+            RelBuilder builder,
+            ApiToFieldMapper apiToFieldMapper
+    ) {
         // todo test this
         String apiName = regexFilter.getDimension().getApiName();
         return builder.call(
@@ -102,10 +113,12 @@ public class FilterEvaluator implements ReflectiveVisitor {
      * Evaluates a Selector filter.
      *
      * @param selectorFilter  A selectorFilter to be evaluated.
+     * @param builder  The RelBuilder used to build queries with Calcite.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
      *
      * @return a RexNode containing an equivalent filter to the one given.
      */
-    public RexNode evaluate(SelectorFilter selectorFilter) {
+    public RexNode evaluate(SelectorFilter selectorFilter, RelBuilder builder, ApiToFieldMapper apiToFieldMapper) {
         String apiName = selectorFilter.getDimension().getApiName();
         return builder.call(
                 SqlStdOperatorTable.EQUALS,
@@ -118,10 +131,12 @@ public class FilterEvaluator implements ReflectiveVisitor {
      * Evaluates a SearchFilter filter. Currently doesn't support Fragment mode.
      *
      * @param searchFilter  A searchFilter to be evaluated.
+     * @param builder  The RelBuilder used to build queries with Calcite.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
      *
      * @return a RexNode containing an equivalent filter to the one given.
      */
-    public RexNode evaluate(SearchFilter searchFilter) {
+    public RexNode evaluate(SearchFilter searchFilter, RelBuilder builder, ApiToFieldMapper apiToFieldMapper) {
         String searchType = searchFilter.getQueryType();
         SearchFilter.QueryType optionalQuery = SearchFilter.QueryType.fromType(searchType)
                 .orElseThrow(() -> new IllegalArgumentException("Couldn't convert " + searchType + " to a QueryType."));
@@ -158,10 +173,12 @@ public class FilterEvaluator implements ReflectiveVisitor {
      * Evaluates an Infilter filter.
      *
      * @param inFilter  An inFilter to be evaluated.
+     * @param builder  The RelBuilder used to build queries with Calcite.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
      *
      * @return a RexNode containing an equivalent filter to the one given.
      */
-    public RexNode evaluate(InFilter inFilter) {
+    public RexNode evaluate(InFilter inFilter, RelBuilder builder, ApiToFieldMapper apiToFieldMapper) {
         Dimension dimension = inFilter.getDimension();
 
         OrFilter orFilterOfSelectors = new OrFilter(
@@ -177,33 +194,39 @@ public class FilterEvaluator implements ReflectiveVisitor {
      * Evaluates an {@link OrFilter}.
      *
      * @param orFilter  An orFilter to be evaluated.
+     * @param builder  The RelBuilder used to build queries with Calcite.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
      *
      * @return a RexNode containing an equivalent filter which ORs over the inner filters.
      */
-    public RexNode evaluate(OrFilter orFilter) {
-        return listEvaluate(orFilter, SqlStdOperatorTable.OR);
+    public RexNode evaluate(OrFilter orFilter, RelBuilder builder, ApiToFieldMapper apiToFieldMapper) {
+        return listEvaluate(orFilter, SqlStdOperatorTable.OR, builder, apiToFieldMapper);
     }
 
     /**
      * Evaluates an {@link AndFilter}.
      *
      * @param andFilter  An andFilter to be evaluated.
+     * @param builder  The RelBuilder used to build queries with Calcite.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
      *
      * @return a RexNode containing an equivalent filter which ANDs over the inner filters.
      */
-    public RexNode evaluate(AndFilter andFilter) {
-        return listEvaluate(andFilter, SqlStdOperatorTable.AND);
+    public RexNode evaluate(AndFilter andFilter, RelBuilder builder, ApiToFieldMapper apiToFieldMapper) {
+        return listEvaluate(andFilter, SqlStdOperatorTable.AND, builder, apiToFieldMapper);
     }
 
     /**
      * Evaluates an {@link NotFilter}.
      *
      * @param notFilter  An notFilter to be evaluated.
+     * @param builder  The RelBuilder used to build queries with Calcite.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
      *
      * @return a RexNode containing an equivalent filter which NOTs over the inner filters.
      */
-    public RexNode evaluate(NotFilter notFilter) {
-        return listEvaluate(notFilter, SqlStdOperatorTable.NOT);
+    public RexNode evaluate(NotFilter notFilter, RelBuilder builder, ApiToFieldMapper apiToFieldMapper) {
+        return listEvaluate(notFilter, SqlStdOperatorTable.NOT, builder, apiToFieldMapper);
     }
 
     /**
@@ -211,16 +234,20 @@ public class FilterEvaluator implements ReflectiveVisitor {
      *
      * @param complexFilter  A complexFilter to be evaluated.
      * @param operator  The sql operator to be applied to a complexFilter's fields.
+     * @param builder  The RelBuilder used to build queries with Calcite.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
      *
      * @return a RexNode containing an equivalent filter to the one given.
      */
     private RexNode listEvaluate(
             ComplexFilter complexFilter,
-            SqlOperator operator
+            SqlOperator operator,
+            RelBuilder builder,
+            ApiToFieldMapper apiToFieldMapper
     ) {
         List<RexNode> rexNodes = complexFilter.getFields()
                 .stream()
-                .map(dispatcher::invoke)
+                .map(filter -> dispatcher.invoke(filter, builder, apiToFieldMapper))
                 .collect(Collectors.toList());
 
         return builder.call(
