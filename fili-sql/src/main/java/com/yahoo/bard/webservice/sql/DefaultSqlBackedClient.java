@@ -51,6 +51,7 @@ public class DefaultSqlBackedClient implements SqlBackedClient {
 
     /**
      * Creates a sql converter using the given database and datasource.
+     * TODO See https://github.com/yahoo/fili/issues/511
      *
      * @param url  The url location of the database to connect to.
      * @param driver  The driver (i.e. "org.h2.Driver") to connect with.
@@ -126,17 +127,15 @@ public class DefaultSqlBackedClient implements SqlBackedClient {
                 druidQueryToSqlConverter.getTimeConverter()
         );
 
-        try (
-                Connection connection = calciteHelper.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
-                ResultSet resultSet = preparedStatement.executeQuery()
-        ) {
+        try (Connection connection = calciteHelper.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
             resultSetProcessor.process(resultSet);
 
             JsonNode jsonNode = resultSetProcessor.buildDruidResponse();
             LOG.trace("Created response: {}", jsonNode);
             return jsonNode;
-
         } catch (SQLException e) {
             LOG.warn("Failed while processing {}", druidQuery);
             throw new RuntimeException("Couldn't generate sql", e);

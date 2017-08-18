@@ -50,6 +50,8 @@ public class DruidQueryToSqlConverter {
     private final CalciteHelper calciteHelper;
     private final SqlTimeConverter sqlTimeConverter;
     private final BiFunction<Aggregation, ApiToFieldMapper, Optional<SqlAggregation>> druidSqlAggregationConverter;
+    private final HavingEvaluator havingEvaluator;
+    private final FilterEvaluator filterEvaluator;
     public static final int NO_OFFSET = -1;
     public static final int NO_LIMIT = -1;
 
@@ -66,6 +68,8 @@ public class DruidQueryToSqlConverter {
         this.calciteHelper = calciteHelper;
         this.sqlTimeConverter = buildSqlTimeConverter();
         this.druidSqlAggregationConverter = buildDruidSqlTypeConverter();
+        this.havingEvaluator = new HavingEvaluator();
+        this.filterEvaluator = new FilterEvaluator();
     }
 
     /**
@@ -305,10 +309,9 @@ public class DruidQueryToSqlConverter {
         );
 
         if (druidQuery.getFilter() != null) {
-            FilterEvaluator filterEvaluator = new FilterEvaluator();
             RexNode druidQueryFilter = filterEvaluator.evaluateFilter(
-                    builder,
                     druidQuery.getFilter(),
+                    builder,
                     apiToFieldMapper
             );
             return builder.and(timeFilter, druidQueryFilter);
@@ -336,8 +339,7 @@ public class DruidQueryToSqlConverter {
             Having having = ((GroupByQuery) druidQuery).getHaving();
 
             if (having != null) {
-                HavingEvaluator havingEvaluator = new HavingEvaluator();
-                filter = havingEvaluator.evaluateHaving(builder, having, apiToFieldMapper);
+                filter = havingEvaluator.evaluateHaving(having, builder, apiToFieldMapper);
             }
         }
 
@@ -361,15 +363,11 @@ public class DruidQueryToSqlConverter {
         return druidQuery.getAggregations()
                 .stream()
                 .map(aggregation -> druidSqlAggregationConverter.apply(aggregation, apiToFieldMapper))
-                .filter(sqlAggregation -> {
-                    if (!sqlAggregation.isPresent()) {
-                        String msg = "Couldn't build sql aggregation with " + sqlAggregation;
-                        LOG.debug(msg);
-                        throw new RuntimeException(msg);
-                    }
-                    return true;
-                })
-                .map(Optional::get)
+                .map(optionalSqlAggregation -> optionalSqlAggregation.orElseThrow(() -> {
+                    String msg = "Couldn't build sql aggregation with " + optionalSqlAggregation;
+                    LOG.debug(msg);
+                    return new RuntimeException(msg);
+                }))
                 .map(sqlAggregation -> builder.aggregateCall(
                         sqlAggregation.getSqlAggFunction(),
                         false,
@@ -404,7 +402,7 @@ public class DruidQueryToSqlConverter {
 
         List<RexNode> dimensionFields = getDimensionFields(builder, druidQuery, apiToFieldMapper);
 
-        List<RexNode> allGroupBys = new ArrayList<>();
+        List<RexNode> allGroupBys = new ArrayList<>(timeFilters.size() + dimensionFields.size());
         allGroupBys.addAll(timeFilters);
         allGroupBys.addAll(dimensionFields);
         return allGroupBys;

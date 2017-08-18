@@ -98,11 +98,11 @@ public class SqlResultSetProcessor {
                 }
                 // all druid results are returned in UTC timestamps
                 jsonWriter.writeStringField("timestamp", timestamp.toDateTime(DateTimeZone.UTC).toString());
+
                 jsonWriter.writeObjectFieldStart("event");
-
                 processRow(resultTypeMapper, jsonWriter, row);
-
                 jsonWriter.writeEndObject();
+
                 jsonWriter.writeEndObject();
             }
             jsonWriter.writeEndArray();
@@ -132,7 +132,7 @@ public class SqlResultSetProcessor {
         int columnCount = columnToColumnName.size();
 
         for (int i = 0; i < columnCount; i++) {
-            if (i >= groupByDimensionsCount && i < groupByDimensionsCount + lastTimeIndex) {
+            if (isTimeColumn(lastTimeIndex, i)) {
                 continue;
             }
             String columnName = columnToColumnName.get(i);
@@ -158,15 +158,27 @@ public class SqlResultSetProcessor {
     }
 
     /**
+     * Checks whether the current position in a row is a raw column or an exploded date time column.
+     *
+     * @param lastTimeIndex  The index of the last column that is part of the exploded date time.
+     * @param currentIndex  The current index in the row.
+     *
+     * @return true if the current index is of an exploded date time column.
+     */
+    private boolean isTimeColumn(int lastTimeIndex, int currentIndex) {
+        return currentIndex >= groupByDimensionsCount && currentIndex < groupByDimensionsCount + lastTimeIndex;
+    }
+
+    /**
      * Reads the result set and converts it into a result that druid
      * would produce.
      *
-     * @param resultSet  The result set of the druid query.
+     * @param sqlResultSet  The result set of the druid query.
      *
      * @throws SQLException if results can't be read.
      */
-    public void process(ResultSet resultSet) throws SQLException {
-        ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+    public void process(ResultSet sqlResultSet) throws SQLException {
+        ResultSetMetaData resultSetMetaData = sqlResultSet.getMetaData();
         int resultSetColumnCount = resultSetMetaData.getColumnCount();
 
         if (resultSetColumnCount != columnToColumnName.size() && columnToColumnName.size() != 0) {
@@ -183,10 +195,10 @@ public class SqlResultSetProcessor {
             }
         }
 
-        while (resultSet.next()) {
+        while (sqlResultSet.next()) {
             String[] row = new String[resultSetColumnCount];
             for (int i = 1; i <= resultSetColumnCount; i++) {
-                row[i - 1] = resultSet.getString(i);
+                row[i - 1] = sqlResultSet.getString(i);
             }
             sqlResults.add(row);
         }
@@ -221,6 +233,7 @@ public class SqlResultSetProcessor {
     protected static Map<String, Function<String, Number>> getAggregationTypeMapper(
             DruidAggregationQuery<?> druidQuery
     ) {
+        // todo see https://github.com/yahoo/fili/issues/510
         //todo maybe "true"/"false" -> boolean
         return druidQuery.getAggregations()
                 .stream()
