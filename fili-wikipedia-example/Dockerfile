@@ -2,7 +2,8 @@ FROM druidio/example-cluster:latest
 LABEL maintainer="https://groups.google.com/forum/#!forum/fili-developers"
 
 # fili github information
-ENV GITHUB_OWNER=yahoo BRANCH=master
+ENV GITHUB_OWNER yahoo
+ENV BRANCH master
 
 RUN apt-get update && apt-get install -y --no-install-recommends git curl
 
