@@ -20,6 +20,7 @@ import com.yahoo.bard.webservice.util.StreamUtils;
 import com.yahoo.bard.webservice.web.DimensionsApiRequest;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.RequestValidationException;
+import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.RowLimitReachedException;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
@@ -67,6 +68,7 @@ public class DimensionsServlet extends EndpointServlet {
     private final DimensionDictionary dimensionDictionary;
     private final LogicalTableDictionary logicalTableDictionary;
     private final RequestMapper requestMapper;
+    private final ResponseFormatResolver formatResolver;
 
     /**
      * Constructor.
@@ -75,18 +77,21 @@ public class DimensionsServlet extends EndpointServlet {
      * @param logicalTableDictionary  All logical tables
      * @param requestMapper  Mapper to change the API request if needed
      * @param objectMappers  JSON tools
+     * @param formatResolver  The formatResolver for determining correct response format
      */
     @Inject
     public DimensionsServlet(
             DimensionDictionary dimensionDictionary,
             LogicalTableDictionary logicalTableDictionary,
             @Named(DimensionsApiRequest.REQUEST_MAPPER_NAMESPACE) RequestMapper requestMapper,
-            ObjectMappersSuite objectMappers
+            ObjectMappersSuite objectMappers,
+            ResponseFormatResolver formatResolver
     ) {
         super(objectMappers);
         this.dimensionDictionary = dimensionDictionary;
         this.logicalTableDictionary = logicalTableDictionary;
         this.requestMapper = requestMapper;
+        this.formatResolver = formatResolver;
     }
 
     /**
@@ -123,7 +128,7 @@ public class DimensionsServlet extends EndpointServlet {
             DimensionsApiRequest apiRequest = new DimensionsApiRequest(
                     null,
                     null,
-                    format,
+                    formatResolver.apply(format, containerRequestContext),
                     perPage,
                     page,
                     dimensionDictionary,
@@ -275,7 +280,7 @@ public class DimensionsServlet extends EndpointServlet {
             DimensionsApiRequest apiRequest = new DimensionsApiRequest(
                     dimensionName,
                     filterQuery,
-                    format,
+                    formatResolver.apply(format, containerRequestContext),
                     perPage,
                     page,
                     dimensionDictionary,

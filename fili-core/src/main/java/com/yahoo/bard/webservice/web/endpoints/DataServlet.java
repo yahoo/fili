@@ -47,6 +47,7 @@ import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.RequestValidationException;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestImpl;
 import com.yahoo.bard.webservice.web.apirequest.HavingGenerator;
+import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.handlers.DataRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
 import com.yahoo.bard.webservice.web.handlers.RequestHandlerUtils;
@@ -120,6 +121,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
     private final ObjectWriter writer;
     private final ObjectMappersSuite objectMappers;
     private final HttpResponseMaker httpResponseMaker;
+    private final ResponseFormatResolver formatResolver;
 
     // Default JodaTime zone to UTC
     private final DateTimeZone systemTimeZone = DateTimeZone.forID(SYSTEM_CONFIG.getStringProperty(
@@ -146,6 +148,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
      * @param preResponseStoredNotifications  The broadcast channel responsible for notifying other Bard processes
      * @param httpResponseMaker  The factory for building HTTP responses
      * that a query has been completed and its results stored in the
+     * @param formatResolver  The formatResolver for determining correct response format
      * {@link com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore}
      */
     @Inject
@@ -164,7 +167,8 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             JobRowBuilder jobRowBuilder,
             AsynchronousWorkflowsBuilder asynchronousWorkflowsBuilder,
             BroadcastChannel<String> preResponseStoredNotifications,
-            HttpResponseMaker httpResponseMaker
+            HttpResponseMaker httpResponseMaker,
+            ResponseFormatResolver formatResolver
     ) {
         this.resourceDictionaries = resourceDictionaries;
         this.druidQueryBuilder = druidQueryBuilder;
@@ -182,6 +186,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
         this.asynchronousWorkflowsBuilder = asynchronousWorkflowsBuilder;
         this.preResponseStoredNotifications = preResponseStoredNotifications;
         this.httpResponseMaker = httpResponseMaker;
+        this.formatResolver = formatResolver;
 
         LOG.trace(
                 "Initialized with ResourceDictionaries: {} \n\n" +
@@ -371,7 +376,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
                         sorts,
                         count,
                         topN,
-                        format,
+                        formatResolver.apply(format, containerRequestContext),
                         timeZone,
                         asyncAfter,
                         perPage,

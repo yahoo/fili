@@ -16,6 +16,7 @@ import com.yahoo.bard.webservice.web.JobsApiRequest
 import com.yahoo.bard.webservice.web.JsonResponseWriter
 import com.yahoo.bard.webservice.web.PreResponse
 import com.yahoo.bard.webservice.web.RequestMapper
+import com.yahoo.bard.webservice.web.ResponseFormatResolver
 import com.yahoo.bard.webservice.web.ResponseWriter
 
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -49,6 +50,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
     JobsServlet mockJobServlet
     HttpResponseMaker httpResponseMaker
     ResponseWriter responseWriter
+    ResponseFormatResolver formatResolver
 
     def setup() {
         objectMappersSuite = Mock(ObjectMappersSuite)
@@ -57,6 +59,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
         objectMappersSuite.getMapper() >> objectMapper
         objectMapper.writer() >> objectWriter
         responseWriter = new JsonResponseWriter(objectMappersSuite)
+        formatResolver =  Stub(ResponseFormatResolver)
 
         apiJobStore = Mock(ApiJobStore)
         jobPayloadBuilder = Mock(JobPayloadBuilder)
@@ -75,7 +78,8 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
                 preResponseStore,
                 broadcastChannel,
                 requestMapper,
-                httpResponseMaker
+                httpResponseMaker,
+                formatResolver
         )
 
         //Mocked objects for interaction testing
@@ -88,7 +92,8 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
                 mockPreResponseStore,
                 broadcastChannel,
                 requestMapper,
-                httpResponseMaker
+                httpResponseMaker,
+                formatResolver
         )
     }
 

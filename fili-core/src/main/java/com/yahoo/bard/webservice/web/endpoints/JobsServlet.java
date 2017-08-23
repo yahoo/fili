@@ -29,6 +29,7 @@ import com.yahoo.bard.webservice.web.JobsApiRequest;
 import com.yahoo.bard.webservice.web.PreResponse;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.RequestValidationException;
+import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.handlers.RequestHandlerUtils;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext;
@@ -91,6 +92,7 @@ public class JobsServlet extends EndpointServlet {
     private final BroadcastChannel<String> broadcastChannel;
     private final ObjectWriter writer;
     private final HttpResponseMaker httpResponseMaker;
+    private final ResponseFormatResolver formatResolver;
 
     /**
      * Constructor.
@@ -101,6 +103,7 @@ public class JobsServlet extends EndpointServlet {
      * @param broadcastChannel  Channel to notify other Bard processes (i.e. long pollers)
      * @param requestMapper  Mapper for changing the API request
      * @param httpResponseMaker  The factory for building HTTP responses
+     * @param formatResolver  The formatResolver for determining correct response format
      */
     @Inject
     public JobsServlet(
@@ -110,7 +113,8 @@ public class JobsServlet extends EndpointServlet {
             PreResponseStore preResponseStore,
             BroadcastChannel<String> broadcastChannel,
             @Named(JobsApiRequest.REQUEST_MAPPER_NAMESPACE) RequestMapper requestMapper,
-            HttpResponseMaker httpResponseMaker
+            HttpResponseMaker httpResponseMaker,
+            ResponseFormatResolver formatResolver
     ) {
         super(objectMappers);
         this.requestMapper = requestMapper;
@@ -120,6 +124,7 @@ public class JobsServlet extends EndpointServlet {
         this.broadcastChannel = broadcastChannel;
         this.writer = objectMappers.getMapper().writer();
         this.httpResponseMaker = httpResponseMaker;
+        this.formatResolver = formatResolver;
     }
 
     /**
@@ -152,7 +157,7 @@ public class JobsServlet extends EndpointServlet {
             RequestLog.record(new JobRequest("all"));
 
             JobsApiRequest apiRequest = new JobsApiRequest(
-                    format,
+                    formatResolver.apply(format, containerRequestContext),
                     null, //asyncAfter is null so it behaves like a synchronous request
                     perPage,
                     page,
@@ -280,7 +285,7 @@ public class JobsServlet extends EndpointServlet {
             RequestLog.record(new JobRequest(ticket));
 
             JobsApiRequest apiRequest = new JobsApiRequest(
-                    format,
+                    formatResolver.apply(format, containerRequestContext),
                     asyncAfter,
                     perPage,
                     page,

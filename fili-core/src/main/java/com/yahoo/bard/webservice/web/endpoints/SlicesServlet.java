@@ -13,6 +13,7 @@ import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.RequestValidationException;
+import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.SlicesApiRequest;
 
 import com.codahale.metrics.annotation.Timed;
@@ -53,6 +54,7 @@ public class SlicesServlet extends EndpointServlet {
     private final DataSourceMetadataService dataSourceMetadataService;
     private final PhysicalTableDictionary physicalTableDictionary;
     private final RequestMapper requestMapper;
+    private final ResponseFormatResolver formatResolver;
 
     /**
      * Constructor.
@@ -61,18 +63,21 @@ public class SlicesServlet extends EndpointServlet {
      * @param requestMapper  Mapper for changing the API request
      * @param dataSourceMetadataService  The data source metadata provider
      * @param objectMappers  JSON tools
+     * @param formatResolver  The formatResolver for determining correct response format
      */
     @Inject
     public SlicesServlet(
             PhysicalTableDictionary physicalTableDictionary,
             @Named(SlicesApiRequest.REQUEST_MAPPER_NAMESPACE) RequestMapper requestMapper,
             DataSourceMetadataService dataSourceMetadataService,
-            ObjectMappersSuite objectMappers
+            ObjectMappersSuite objectMappers,
+            ResponseFormatResolver formatResolver
     ) {
         super(objectMappers);
         this.physicalTableDictionary = physicalTableDictionary;
         this.requestMapper = requestMapper;
         this.dataSourceMetadataService = dataSourceMetadataService;
+        this.formatResolver = formatResolver;
     }
 
     /**
@@ -112,7 +117,7 @@ public class SlicesServlet extends EndpointServlet {
 
             SlicesApiRequest apiRequest = new SlicesApiRequest(
                     null,
-                    format,
+                    formatResolver.apply(format, containerRequestContext),
                     perPage,
                     page,
                     physicalTableDictionary,
