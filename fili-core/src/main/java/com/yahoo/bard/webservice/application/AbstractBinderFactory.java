@@ -606,7 +606,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
         }
 
         if (!metrics.containsKey(UPTIME)) {
-            MetricRegistryFactory.getRegistry().register(
+            metricRegistry.register(
                     UPTIME,
                     (Gauge<Long>) () -> ManagementFactory.getRuntimeMXBean().getUptime()
             );

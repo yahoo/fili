@@ -9,7 +9,9 @@ Current
 -------
 
 ### Added:
+
 - [Add Uptime Status Metric](https://github.com/yahoo/fili/pull/518)
+    * Add a metric to show how long Fili has been running 
 
 - [Have Tables Endpoint Support (but not use) Additional Query Parameters](https://github.com/yahoo/fili/pull/437)
     * Make the availability consider the TablesApiRequest by passing it into the getLogicalTableFullView method
