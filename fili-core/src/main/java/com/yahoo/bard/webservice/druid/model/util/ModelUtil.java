@@ -6,18 +6,12 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension;
 import com.yahoo.bard.webservice.data.dimension.impl.LookupDimension;
 import com.yahoo.bard.webservice.data.dimension.impl.RegisteredLookupDimension;
-import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.CascadeExtractionFunction;
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction;
-import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.LookupExtractionFunction;
-import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.NamespaceLookup;
-import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.RegisteredLookupExtractionFunction;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Utility functions related to druid models.
@@ -39,42 +33,10 @@ public class ModelUtil {
             return Optional.empty();
         } else if (sourceClass.equals(LookupDimension.class)) {
             LookupDimension lookupDimension = (LookupDimension) dimension;
-
-            List<ExtractionFunction> extractionFunctions = lookupDimension.getNamespaces().stream()
-                    .map(
-                            namespace -> new LookupExtractionFunction(
-                                    new NamespaceLookup(namespace),
-                                    false,
-                                    "Unknown " + namespace,
-                                    false,
-                                    true
-                            )
-                    ).collect(Collectors.toList());
-
-            return Optional.ofNullable(
-                    extractionFunctions.size() > 1 ?
-                            new CascadeExtractionFunction(extractionFunctions) :
-                            extractionFunctions.size() == 1 ? extractionFunctions.get(0) : null
-            );
+            return lookupDimension.getExtractionFunction();
         } else if (sourceClass.equals(RegisteredLookupDimension.class)) {
             RegisteredLookupDimension registeredLookupDimension = (RegisteredLookupDimension) dimension;
-
-            List<ExtractionFunction> extractionFunctions = registeredLookupDimension.getLookups().stream()
-                    .map(
-                            lookup -> new RegisteredLookupExtractionFunction(
-                                    lookup,
-                                    false,
-                                    "Unknown " + lookup,
-                                    false,
-                                    true
-                            )
-                    ).collect(Collectors.toList());
-
-            return Optional.ofNullable(
-                    extractionFunctions.size() > 1 ?
-                            new CascadeExtractionFunction(extractionFunctions) :
-                            extractionFunctions.size() == 1 ? extractionFunctions.get(0) : null
-            );
+            return registeredLookupDimension.getExtractionFunction();
         }
 
         LOG.debug("Could not resolve ExtractionFunction from the provided Dimension: {}", sourceClass.toString());
