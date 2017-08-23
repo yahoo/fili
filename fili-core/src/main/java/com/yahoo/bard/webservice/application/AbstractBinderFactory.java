@@ -156,7 +156,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     private static final String METER_SPLITS_TOTAL_RATIO = "queries.meter.split_queries.total_ratio";
     private static final String METER_SPLITS_RATIO = "queries.meter.split_queries.ratio";
 
-    private static final String UPTIME = "uptime";
+    private static final String JVM_UPTIME = "jvm.uptime";
 
     private static final String DRUID_HEADER_SUPPLIER_CLASS = "druid_header_supplier_class";
 
@@ -605,9 +605,9 @@ public abstract class AbstractBinderFactory implements BinderFactory {
             );
         }
 
-        if (!metrics.containsKey(UPTIME)) {
+        if (!metrics.containsKey(JVM_UPTIME)) {
             metricRegistry.register(
-                    UPTIME,
+                    JVM_UPTIME,
                     (Gauge<Long>) () -> ManagementFactory.getRuntimeMXBean().getUptime()
             );
         }
