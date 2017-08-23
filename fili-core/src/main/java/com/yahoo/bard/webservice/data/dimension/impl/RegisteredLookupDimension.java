@@ -24,7 +24,7 @@ import javax.validation.constraints.NotNull;
  * RegisteredLookupDimension creates a registered look up dimension based on the lookup chain.
  */
 @JsonSerialize(using = LookupDimensionToDimensionSpec.class)
-public class RegisteredLookupDimension extends ExtractionFunctionDimension {
+public class RegisteredLookupDimension extends KeyValueStoreDimension implements ExtractionFunctionDimension {
 
     private final List<String> lookups;
 

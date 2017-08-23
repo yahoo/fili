@@ -25,7 +25,7 @@ import javax.validation.constraints.NotNull;
  * LookupDimension creates a Look up dimension based on the namespace chain.
  */
 @JsonSerialize(using = LookupDimensionToDimensionSpec.class)
-public class LookupDimension extends ExtractionFunctionDimension {
+public class LookupDimension extends KeyValueStoreDimension implements ExtractionFunctionDimension {
 
     private final List<String> namespaces;
 
