@@ -17,6 +17,7 @@ import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.RequestValidationException;
+import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.TableFullViewProcessor;
 import com.yahoo.bard.webservice.web.TableView;
 import com.yahoo.bard.webservice.web.TablesApiRequest;
@@ -67,6 +68,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
     private final ResourceDictionaries resourceDictionaries;
     private final RequestMapper requestMapper;
     private final GranularityParser granularityParser;
+    private final ResponseFormatResolver formatResolver;
 
     /**
      * Constructor.
@@ -75,18 +77,21 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
      * @param requestMapper  Mapper to change the API request if needed
      * @param objectMappers  JSON tools
      * @param granularityParser  Helper for parsing granularities
+     * @param formatResolver  The formatResolver for determining correct response format
      */
     @Inject
     public TablesServlet(
             ResourceDictionaries resourceDictionaries,
             @Named(TablesApiRequest.REQUEST_MAPPER_NAMESPACE) RequestMapper requestMapper,
             ObjectMappersSuite objectMappers,
-            GranularityParser granularityParser
+            GranularityParser granularityParser,
+            ResponseFormatResolver formatResolver
     ) {
         super(objectMappers);
         this.resourceDictionaries = resourceDictionaries;
         this.requestMapper = requestMapper;
         this.granularityParser = granularityParser;
+        this.formatResolver = formatResolver;
     }
 
     /**
@@ -162,7 +167,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             TablesApiRequest apiRequest = new TablesApiRequest(
                     tableName,
                     null,
-                    format,
+                    formatResolver.accept(format, containerRequestContext),
                     perPage,
                     page,
                     uriInfo,

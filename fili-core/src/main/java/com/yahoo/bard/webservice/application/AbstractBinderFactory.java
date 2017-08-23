@@ -80,6 +80,7 @@ import com.yahoo.bard.webservice.table.resolver.DefaultPhysicalTableResolver;
 import com.yahoo.bard.webservice.table.resolver.PhysicalTableResolver;
 import com.yahoo.bard.webservice.util.DefaultingDictionary;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
+import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.CsvResponseWriter;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.DimensionApiRequestMapper;
@@ -127,6 +128,7 @@ import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -316,6 +318,8 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 bind(getHttpResponseMaker()).to(HttpResponseMaker.class);
 
                 bind(buildResponseWriter(getMappers())).to(ResponseWriter.class);
+
+                bind(buildResponseFormatResolver()).to(ResponseFormatResolver.class);
 
                 if (DRUID_DIMENSIONS_LOADER.isOn()) {
                     DimensionValueLoadTask dimensionLoader = buildDruidDimensionsLoader(
@@ -1121,6 +1125,32 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      */
     protected DruidWebService buildMetadataDruidWebService(ObjectMapper mapper) {
         return buildDruidWebService(DruidClientConfigHelper.getMetadataServiceConfig(), mapper);
+    }
+
+    /**
+     * Create a ResponseFormatResolver for Servlet objects.
+     * <p>
+     * Currently default types are json, jsonapi and csv types.
+     *
+     * @return A ResponseFormatResolver
+     */
+    protected ResponseFormatResolver buildResponseFormatResolver() {
+        return (format, containerRequestContext) -> {
+            Map<String, String> formatsMap = new LinkedHashMap<>();
+            formatsMap.put("application/json", "json");
+            formatsMap.put("application/vnd.api+json", "jsonapi");
+            formatsMap.put("text/csv", "csv");
+
+            String headerFormat = containerRequestContext.getHeaderString("Accept");
+            if (format != null || headerFormat == null) {
+                return format;
+            }
+            return formatsMap.entrySet().stream()
+                    .filter(entry -> headerFormat.contains(entry.getKey()))
+                    .map(Map.Entry::getValue)
+                    .findFirst()
+                    .orElse(null);
+        };
     }
 
     @Override
