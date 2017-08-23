@@ -14,6 +14,7 @@ import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.web.MetricsApiRequest;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.RequestValidationException;
+import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 
 import com.codahale.metrics.annotation.Timed;
 
@@ -58,6 +59,7 @@ public class MetricsServlet extends EndpointServlet {
     private final MetricDictionary metricDictionary;
     private final LogicalTableDictionary logicalTableDictionary;
     private final RequestMapper requestMapper;
+    private final ResponseFormatResolver formatResolver;
 
     /**
      * Constructor.
@@ -66,18 +68,21 @@ public class MetricsServlet extends EndpointServlet {
      * @param logicalTableDictionary  Logical tables to know about
      * @param requestMapper  Mapper to change the API request if needed
      * @param objectMappers  JSON tools
+     * @param formatResolver  The formatResolver for determining correct response format
      */
     @Inject
     public MetricsServlet(
             MetricDictionary metricDictionary,
             LogicalTableDictionary logicalTableDictionary,
             @Named(MetricsApiRequest.REQUEST_MAPPER_NAMESPACE) RequestMapper requestMapper,
-            ObjectMappersSuite objectMappers
+            ObjectMappersSuite objectMappers,
+            ResponseFormatResolver formatResolver
     ) {
         super(objectMappers);
         this.metricDictionary = metricDictionary;
         this.logicalTableDictionary = logicalTableDictionary;
         this.requestMapper = requestMapper;
+        this.formatResolver = formatResolver;
     }
 
     /**
@@ -114,7 +119,7 @@ public class MetricsServlet extends EndpointServlet {
 
             MetricsApiRequest apiRequest = new MetricsApiRequest(
                     null,
-                    format,
+                    formatResolver.accept(format, containerRequestContext),
                     perPage,
                     page,
                     metricDictionary,
@@ -179,7 +184,14 @@ public class MetricsServlet extends EndpointServlet {
             RequestLog.startTiming(this);
             RequestLog.record(new MetricRequest(metricName));
 
-            MetricsApiRequest apiRequest = new MetricsApiRequest(metricName, null, "", "", metricDictionary, uriInfo);
+            MetricsApiRequest apiRequest = new MetricsApiRequest(
+                    metricName,
+                    null,
+                    "",
+                    "",
+                    metricDictionary,
+                    uriInfo
+            );
 
             if (requestMapper != null) {
                 apiRequest = (MetricsApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
