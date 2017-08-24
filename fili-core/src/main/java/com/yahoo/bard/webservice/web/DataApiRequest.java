@@ -1014,6 +1014,7 @@ public class DataApiRequest extends ApiRequest {
     }
 
     /**
+     * Returns this request's Api filters.
      *
      * @return a Map of Dimensions to the set of Api Filters
      *
