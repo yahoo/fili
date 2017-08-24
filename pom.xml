@@ -81,7 +81,7 @@
         <version.hk2>2.5.0-b36</version.hk2>
         <version.metrics>3.2.2</version.metrics>
         <version.logback>1.2.3</version.logback>
-        <version.lucene>6.5.0</version.lucene>
+        <version.lucene>6.6.0</version.lucene>
         <version.jackson>2.6.2</version.jackson>
         <version.groovy>2.4.5</version.groovy>
         <version.guava>21.0</version.guava>
