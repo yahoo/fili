@@ -1013,9 +1013,15 @@ public class DataApiRequest extends ApiRequest {
         return this.apiFilters;
     }
 
+    /**
+     *
+     * @return a Map of Dimensions to the set of Api Filters
+     *
+     * @deprecated this method has been deprecated because its name is unclear. Please use {@link #getApiFilters()}.
+     */
     @Deprecated
     public Map<Dimension, Set<ApiFilter>> getFilters() {
-        return this.apiFilters;
+        return getApiFilters();
     }
 
     /**
@@ -1045,12 +1051,7 @@ public class DataApiRequest extends ApiRequest {
      */
     @Deprecated
     public Filter getFilter() {
-        try (TimedPhase timer = RequestLog.startTiming("BuildingDruidFilter")) {
-            return filterBuilder.buildFilters(this.apiFilters);
-        } catch (DimensionRowNotFoundException e) {
-            LOG.debug(e.getMessage());
-            throw new BadApiRequestException(e);
-        }
+        return getDruidFilter();
     }
 
     public Map<LogicalMetric, Set<ApiHaving>> getHavings() {
