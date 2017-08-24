@@ -191,7 +191,7 @@ public class LuceneSearchProvider implements SearchProvider {
         this.keyValueStore = keyValueStore;
         // Check initialization for the cardinality in a keyValueStore
         if (keyValueStore.get(DimensionStoreKeyUtils.getCardinalityKey()) == null) {
-            keyValueStore.put(DimensionStoreKeyUtils.getCardinalityKey(), "0");
+            refreshCardinality();
         }
     }
 
