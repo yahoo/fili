@@ -43,6 +43,10 @@ Current
 
 ### Changed:
 
+- [Decoupled from static dimension lookup building]()
+    * Instead of `ModelUtils`, create an interface for `ExtractionFunctionDimension` and rebase `LookupDimension` and `RegisteredLookupDimension` on that interface.
+    * `LookupDimensionToDimensionSpec` now uses only the Extraction interface to decide how to serialize dimensions.
+
 - [DruidDimensionLoader is now a more generic DimensionValueLoadTask](https://github.com/yahoo/fili/pull/449)
     * The `DimensionValueLoadTask` takes in a collection of `DimensionValueLoader`s to allow for non-Druid dimensions to be loaded.
 
