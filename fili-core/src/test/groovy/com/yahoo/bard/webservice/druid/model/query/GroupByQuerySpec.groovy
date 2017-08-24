@@ -497,7 +497,7 @@ class GroupByQuerySpec extends Specification {
         dq3.getDataSource().getNames() as List == ["inner2"]
         dq2.getDataSource().getNames() as List == ["inner1"]
         dq1.getDataSource().getNames() as List == ["inner1"]
-        dq3.getDataSource().getQuery().getDataSource() == inner2
+        dq3.getDataSource().getQuery().get().getDataSource() == inner2
     }
 
     def "Check all intervals injection"() {
@@ -516,8 +516,8 @@ class GroupByQuerySpec extends Specification {
 
         then: "The intervals at each level are the new intervals"
         converted.intervals == endingIntervals
-        converted.innerQuery.intervals == endingIntervals
-        converted.innerQuery.innerQuery.intervals == endingIntervals
+        converted.getInnerQuery().get().intervals == endingIntervals
+        converted.getInnerQuery().get().getInnerQuery().get().intervals == endingIntervals
     }
 
     def "Check column stream is generated for query"() {

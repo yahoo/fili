@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.druid.model.query.DruidFactQuery;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -33,7 +34,7 @@ public class QueryDataSource extends DataSource {
     }
 
     @Override
-    public DruidFactQuery<?> getQuery() {
-        return query;
+    public Optional<? extends DruidFactQuery<?>> getQuery() {
+        return Optional.ofNullable(query);
     }
 }

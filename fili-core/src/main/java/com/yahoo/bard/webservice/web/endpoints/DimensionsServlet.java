@@ -151,7 +151,7 @@ public class DimensionsServlet extends EndpointServlet {
             responseSender = () -> Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
         } catch (Error | Exception e) {
             String msg = String.format("Exception processing request: %s", e.getMessage());
-            LOG.info(msg, e);
+            LOG.error(msg, e);
             responseSender = () -> Response.status(Status.BAD_REQUEST).entity(msg).build();
         } finally {
             RequestLog.stopTiming(this);

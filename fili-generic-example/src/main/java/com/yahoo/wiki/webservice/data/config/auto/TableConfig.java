@@ -5,17 +5,22 @@ package com.yahoo.wiki.webservice.data.config.auto;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
 
+import io.druid.timeline.DataSegment;
+
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * TableConfig to hold all metrics, dimensions, timegrains, and the name of a datasource.
  */
 public class TableConfig implements DataSourceConfiguration {
     private final String tableName;
-    private final List<String> metrics;
-    private final List<String> dimensions;
+    private final Set<String> metrics;
+    private final Set<String> dimensions;
+    private final List<DataSegment> dataSegments;
     private TimeGrain timeGrain;
 
     /**
@@ -25,8 +30,9 @@ public class TableConfig implements DataSourceConfiguration {
      */
     public TableConfig(String name) {
         tableName = name;
-        metrics = new ArrayList<>();
-        dimensions = new ArrayList<>();
+        metrics = new HashSet<>();
+        dimensions = new HashSet<>();
+        dataSegments = new ArrayList<>();
     }
 
     /**
@@ -57,6 +63,15 @@ public class TableConfig implements DataSourceConfiguration {
     }
 
     /**
+     * Add a {@link DataSegment} to the existing known datasegments for this table.
+     *
+     * @param dataSegment  The {@link DataSegment} metadata given by Druid.
+     */
+    public void addDataSegment(DataSegment dataSegment) {
+        dataSegments.add(dataSegment);
+    }
+
+    /**
      * Gets the name of the table.
      *
      * @return the name of the table.
@@ -82,8 +97,8 @@ public class TableConfig implements DataSourceConfiguration {
      * @return the names of metrics stored in TableConfig.
      */
     @Override
-    public List<String> getMetrics() {
-        return Collections.unmodifiableList(metrics);
+    public Set<String> getMetrics() {
+        return Collections.unmodifiableSet(metrics);
     }
 
     /**
@@ -92,8 +107,8 @@ public class TableConfig implements DataSourceConfiguration {
      * @return the names of the dimensions stored in the TableConfig.
      */
     @Override
-    public List<String> getDimensions() {
-        return Collections.unmodifiableList(dimensions);
+    public Set<String> getDimensions() {
+        return Collections.unmodifiableSet(dimensions);
     }
 
     /**
@@ -104,5 +119,10 @@ public class TableConfig implements DataSourceConfiguration {
     @Override
     public TimeGrain getValidTimeGrain() {
         return timeGrain;
+    }
+
+    @Override
+    public List<DataSegment> getDataSegmentMetadata() {
+        return dataSegments;
     }
 }

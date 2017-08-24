@@ -69,7 +69,7 @@ import com.yahoo.bard.webservice.druid.model.query.LookbackQuery;
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier;
 import com.yahoo.bard.webservice.druid.util.FieldConverters;
 import com.yahoo.bard.webservice.druid.util.SketchFieldConverter;
-import com.yahoo.bard.webservice.metadata.DataSourceMetadataLoader;
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataLoadTask;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
 import com.yahoo.bard.webservice.metadata.RequestedIntervalsFunction;
@@ -101,6 +101,7 @@ import com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow;
 import com.yahoo.bard.webservice.web.handlers.workflow.RequestWorkflowProvider;
 import com.yahoo.bard.webservice.web.util.QueryWeightUtil;
 
+import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.RatioGauge;
@@ -117,6 +118,7 @@ import org.slf4j.LoggerFactory;
 import rx.subjects.PublishSubject;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.lang.reflect.Constructor;
 import java.time.Clock;
 import java.time.ZoneId;
@@ -153,6 +155,8 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     private static final String METER_CACHE_HIT_RATIO = "queries.meter.cache.hit_ratio";
     private static final String METER_SPLITS_TOTAL_RATIO = "queries.meter.split_queries.total_ratio";
     private static final String METER_SPLITS_RATIO = "queries.meter.split_queries.ratio";
+
+    private static final String JVM_UPTIME = "jvm.uptime";
 
     private static final String DRUID_HEADER_SUPPLIER_CLASS = "druid_header_supplier_class";
 
@@ -283,7 +287,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 );
 
                 if (DRUID_COORDINATOR_METADATA.isOn()) {
-                    DataSourceMetadataLoader dataSourceMetadataLoader = buildDataSourceMetadataLoader(
+                    DataSourceMetadataLoadTask dataSourceMetadataLoader = buildDataSourceMetadataLoader(
                             metadataDruidWebService,
                             loader.getPhysicalTableDictionary(),
                             dataSourceMetadataService,
@@ -314,12 +318,12 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 bind(buildResponseWriter(getMappers())).to(ResponseWriter.class);
 
                 if (DRUID_DIMENSIONS_LOADER.isOn()) {
-                    DruidDimensionsLoader druidDimensionsLoader = buildDruidDimensionsLoader(
+                    DimensionValueLoadTask dimensionLoader = buildDruidDimensionsLoader(
                             nonUiDruidWebService,
                             loader.getPhysicalTableDictionary(),
                             loader.getDimensionDictionary()
                     );
-                    setupDruidDimensionsLoader(healthCheckRegistry, druidDimensionsLoader);
+                    setupDruidDimensionsLoader(healthCheckRegistry, dimensionLoader);
                 }
                 if (SYSTEM_CONFIG.getBooleanProperty(DEPRECATED_PERMISSIVE_AVAILABILITY_FLAG, false)) {
                     LOG.warn(
@@ -600,6 +604,13 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                     }
             );
         }
+
+        if (!metrics.containsKey(JVM_UPTIME)) {
+            metricRegistry.register(
+                    JVM_UPTIME,
+                    (Gauge<Long>) () -> ManagementFactory.getRuntimeMXBean().getUptime()
+            );
+        }
     }
 
     /**
@@ -666,13 +677,13 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      *
      * @return A datasource metadata loader.
      */
-    protected DataSourceMetadataLoader buildDataSourceMetadataLoader(
+    protected DataSourceMetadataLoadTask buildDataSourceMetadataLoader(
             DruidWebService webService,
             PhysicalTableDictionary physicalTableDictionary,
             DataSourceMetadataService metadataService,
             ObjectMapper mapper
     ) {
-        return new DataSourceMetadataLoader(
+        return new DataSourceMetadataLoadTask(
                 physicalTableDictionary,
                 metadataService,
                 webService,
@@ -681,24 +692,25 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     }
 
     /**
-     * Build a DruidDimensionsLoader.
+     * Build a DimensionValueLoadTask.
      *
      * @param webService  The web service used by the loader to query dimension values
      * @param physicalTableDictionary  The table to update dimensions on
      * @param dimensionDictionary  The dimensions to update
      *
-     * @return A DruidDimensionsLoader
+     * @return A DimensionValueLoadTask
      */
-    protected DruidDimensionsLoader buildDruidDimensionsLoader(
+    protected DimensionValueLoadTask buildDruidDimensionsLoader(
             DruidWebService webService,
             PhysicalTableDictionary physicalTableDictionary,
             DimensionDictionary dimensionDictionary
     ) {
-        return new DruidDimensionsLoader(
+        DruidDimensionValueLoader druidDimensionRowProvider = new DruidDimensionValueLoader(
                 physicalTableDictionary,
                 dimensionDictionary,
                 webService
         );
+        return new DimensionValueLoadTask(Collections.singletonList(druidDimensionRowProvider));
     }
 
     /**
@@ -709,7 +721,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      */
     protected final void setupDataSourceMetaData(
             HealthCheckRegistry healthCheckRegistry,
-            DataSourceMetadataLoader dataSourceMetadataLoader
+            DataSourceMetadataLoadTask dataSourceMetadataLoader
     ) {
         scheduleLoader(dataSourceMetadataLoader);
 
@@ -722,20 +734,20 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     }
 
     /**
-     * Schedule DruidDimensionsLoader and register its health check.
+     * Schedule DimensionValueLoadTask and register its health check.
      *
      * @param healthCheckRegistry  The health check registry to register Dimension lookup health checks
-     * @param dataDruidDimensionsLoader  The DruidDimensionLoader used for monitoring and health checks
+     * @param dataDimensionLoader  The DruidDimensionLoader used for monitoring and health checks
      */
     protected final void setupDruidDimensionsLoader(
             HealthCheckRegistry healthCheckRegistry,
-            DruidDimensionsLoader dataDruidDimensionsLoader
+            DimensionValueLoadTask dataDimensionLoader
     ) {
-        scheduleLoader(dataDruidDimensionsLoader);
+        scheduleLoader(dataDimensionLoader);
 
-        // Register DruidDimensionsLoader health check
+        // Register DimensionValueLoadTask health check
         HealthCheck druidDimensionsLoaderHealthCheck = new DruidDimensionsLoaderHealthCheck(
-                dataDruidDimensionsLoader,
+                dataDimensionLoader,
                 DRUID_DIM_LOADER_HC_LAST_RUN_PERIOD_MILLIS
         );
         healthCheckRegistry.register(HEALTH_CHECK_NAME_DRUID_DIM_LOADER, druidDimensionsLoaderHealthCheck);
@@ -1112,20 +1124,20 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     }
 
     /**
-     * Schedule a loader task.
+     * Schedule a loadTask task.
      *
-     * @param loader  The loader task to run.
+     * @param loadTask  The loadTask task to run.
      */
-    protected void scheduleLoader(Loader<?> loader) {
-        loader.setFuture(
-                loader.isPeriodic ?
+    protected void scheduleLoader(LoadTask<?> loadTask) {
+        loadTask.setFuture(
+                loadTask.isPeriodic ?
                         loaderScheduler.scheduleAtFixedRate(
-                                loader,
-                                loader.getDefinedDelay(),
-                                loader.getDefinedPeriod(),
+                                loadTask,
+                                loadTask.getDefinedDelay(),
+                                loadTask.getDefinedPeriod(),
                                 TimeUnit.MILLISECONDS
                         ) :
-                        loaderScheduler.schedule(loader, loader.getDefinedDelay(), TimeUnit.MILLISECONDS)
+                        loaderScheduler.schedule(loadTask, loadTask.getDefinedDelay(), TimeUnit.MILLISECONDS)
         );
     }
 

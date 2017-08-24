@@ -29,25 +29,25 @@ class ExpectedTableEndpointSpec extends BaseTableServletComponentSpec {
                           "name": "shapes",
                           "longName": "shapes",
                           "granularity": "all",
-                          "uri": "http://localhost:9998/tables/shapes/all"
+                          "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/shapes/all"
                     },{
                           "category": "General",
                           "longName": "shapes",
                           "name": "shapes",
                           "granularity": "day",
-                          "uri": "http://localhost:9998/tables/shapes/day"
+                          "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/shapes/day"
                     },{
                           "category": "General",
                           "name": "shapes",
                           "longName": "shapes",
                           "granularity": "week",
-                          "uri": "http://localhost:9998/tables/shapes/week"
+                          "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/shapes/week"
                     },{
                           "category": "General",
                           "name": "shapes",
                           "longName": "shapes",
                           "granularity": "month",
-                          "uri": "http://localhost:9998/tables/shapes/month"
+                          "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/shapes/month"
                     }
                  ]
            }"""

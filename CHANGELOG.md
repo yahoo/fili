@@ -10,6 +10,9 @@ Current
 
 ### Added:
 
+- [Add Uptime Status Metric](https://github.com/yahoo/fili/pull/518)
+    * Add a metric to show how long Fili has been running 
+
 - [Have Tables Endpoint Support (but not use) Additional Query Parameters](https://github.com/yahoo/fili/pull/437)
     * Make the availability consider the TablesApiRequest by passing it into the getLogicalTableFullView method
     * Move auxiliary methods from `DataApiRequest` to `ApiRequest` in order to make them sharable between
@@ -17,7 +20,7 @@ Current
 
 - [Fili-security module](https://github.com/yahoo/fili/pull/405)
     * Added security module for fili data security filters
-    * Created `ChainingRequestMapper`, and a set of mappers for gatekeeping on security roles and whitelisting dimension filters. 
+    * Created `ChainingRequestMapper`, and a set of mappers for gatekeeping on security roles and whitelisting dimension filters.
 
 - [Add Table-wide Availability](https://github.com/yahoo/fili/pull/414)
     * Add `availableIntervals` field to tables endpoint by union the availability for the logical table without taking
@@ -39,6 +42,19 @@ Current
 
 
 ### Changed:
+
+- [Decoupled from static dimension lookup building]()
+    * Instead of `ModelUtils`, create an interface for `ExtractionFunctionDimension` and rebase `LookupDimension` and `RegisteredLookupDimension` on that interface.
+    * `LookupDimensionToDimensionSpec` now uses only the Extraction interface to decide how to serialize dimensions.
+
+- [DruidDimensionLoader is now a more generic DimensionValueLoadTask](https://github.com/yahoo/fili/pull/449)
+    * The `DimensionValueLoadTask` takes in a collection of `DimensionValueLoader`s to allow for non-Druid dimensions to be loaded.
+
+- [DruidQuery::getInnerQuery and Datasource::getQuery return Optional](https://github.com/yahoo/fili/pull/485)
+    * Returning `Optional` is more correct for their usage and should protect against unexpected null values.
+
+- [Use all available segment metadata in fili-generic-example](https://github.com/yahoo/fili/pull/445)
+    * The fili-generic-example now uses all segment metadata given by Druid instead of just the first one and also provides it to the metadata service.
 
 - [Refactor Response class and implement new serialization logics](https://github.com/yahoo/fili/pull/455)
     * Define interface `ResponseWriter` and its default implementation
@@ -76,6 +92,14 @@ Current
 
 
 ### Fixed:
+- [Fix Lucene Cardinality in New KeyValueStores](https://github.com/yahoo/fili/pull/521)
+    * Fix lucene to put correct cardinality value to new key value store that does not contain the cardinality key
+
+- [Log stack trace at error on unexpected DimensionServlet failures](https://github.com/yahoo/fili/pull/425)
+    * DimensionServlet was using debug to log unexpected exceptions and not printing the stack trace
+
+- [Fix datasource name physical table name mismatch in VolatileDataRequestHandler](https://github.com/yahoo/fili/issues/505)
+    * Fix fetching from `physicaltableDictionary` using datasource name. Now use proper physical table name instead.
 
 - [Fix performance bug around feature flag](https://github.com/yahoo/fili/issues/473)
     * BardFeatureFlag, when used in a tight loop, is very expensive.  Underlying map configuration copies the config map on each access.
@@ -90,7 +114,6 @@ Current
 
 - [Fix metric and dimension names for wikipedia-example](https://github.com/yahoo/fili/pull/415)
     * The metrics and dimensions configured in the `fili-wikipedia-example` were different from those in Druid and as a result the queries sent to Druid were incorrect
-
 
 ### Known Issues:
 
