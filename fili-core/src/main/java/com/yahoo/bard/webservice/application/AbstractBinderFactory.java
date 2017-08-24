@@ -101,6 +101,7 @@ import com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow;
 import com.yahoo.bard.webservice.web.handlers.workflow.RequestWorkflowProvider;
 import com.yahoo.bard.webservice.web.util.QueryWeightUtil;
 
+import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.RatioGauge;
@@ -117,6 +118,7 @@ import org.slf4j.LoggerFactory;
 import rx.subjects.PublishSubject;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.lang.reflect.Constructor;
 import java.time.Clock;
 import java.time.ZoneId;
@@ -153,6 +155,8 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     private static final String METER_CACHE_HIT_RATIO = "queries.meter.cache.hit_ratio";
     private static final String METER_SPLITS_TOTAL_RATIO = "queries.meter.split_queries.total_ratio";
     private static final String METER_SPLITS_RATIO = "queries.meter.split_queries.ratio";
+
+    private static final String JVM_UPTIME = "jvm.uptime";
 
     private static final String DRUID_HEADER_SUPPLIER_CLASS = "druid_header_supplier_class";
 
@@ -598,6 +602,13 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                                     : Ratio.of(0, 1);
                         }
                     }
+            );
+        }
+
+        if (!metrics.containsKey(JVM_UPTIME)) {
+            metricRegistry.register(
+                    JVM_UPTIME,
+                    (Gauge<Long>) () -> ManagementFactory.getRuntimeMXBean().getUptime()
             );
         }
     }
