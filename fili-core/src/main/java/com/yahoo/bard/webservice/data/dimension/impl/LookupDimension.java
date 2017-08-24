@@ -65,6 +65,7 @@ public class LookupDimension extends KeyValueStoreDimension implements Extractio
      * @return  Take the internal namespaces and construct a model object for the extraction functions.
      */
     @JsonIgnore
+    @Override
     public Optional<ExtractionFunction> getExtractionFunction() {
 
         List<ExtractionFunction> extractionFunctions = getNamespaces().stream()
