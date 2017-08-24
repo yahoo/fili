@@ -92,6 +92,8 @@ Current
 
 
 ### Fixed:
+- [Fix Lucene Cardinality in New KeyValueStores](https://github.com/yahoo/fili/pull/521)
+    * Fix lucene to put correct cardinality value to new key value store that does not contain the cardinality key
 
 - [Log stack trace at error on unexpected DimensionServlet failures](https://github.com/yahoo/fili/pull/425)
     * DimensionServlet was using debug to log unexpected exceptions and not printing the stack trace
