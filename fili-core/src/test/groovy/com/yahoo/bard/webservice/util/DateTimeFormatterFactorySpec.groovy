@@ -24,19 +24,19 @@ class DateTimeFormatterFactorySpec extends Specification {
 
         where:
         string                    | expected
-        "2005"                    | new DateTime(2005, 01, 01, 00, 00, 00, 000)
-        "2005-03"                 | new DateTime(2005, 03, 01, 00, 00, 00, 000)
-        "2005-03-25"              | new DateTime(2005, 03, 25, 00, 00, 00, 000)
+        "2005"                    | new DateTime(2005, 01, 01, 00, 00, 00, 000, DateTimeZone.UTC)
+        "2005-03"                 | new DateTime(2005, 03, 01, 00, 00, 00, 000, DateTimeZone.UTC)
+        "2005-03-25"              | new DateTime(2005, 03, 25, 00, 00, 00, 000, DateTimeZone.UTC)
 
-        "2005-03-25T10"           | new DateTime(2005, 03, 25, 10, 00, 00, 000)
-        "2005-03-25T10:20"        | new DateTime(2005, 03, 25, 10, 20, 00, 000)
-        "2005-03-25T10:20:30"     | new DateTime(2005, 03, 25, 10, 20, 30, 000)
-        "2005-03-25T10:20:30.555" | new DateTime(2005, 03, 25, 10, 20, 30, 555)
+        "2005-03-25T10"           | new DateTime(2005, 03, 25, 10, 00, 00, 000, DateTimeZone.UTC)
+        "2005-03-25T10:20"        | new DateTime(2005, 03, 25, 10, 20, 00, 000, DateTimeZone.UTC)
+        "2005-03-25T10:20:30"     | new DateTime(2005, 03, 25, 10, 20, 30, 000, DateTimeZone.UTC)
+        "2005-03-25T10:20:30.555" | new DateTime(2005, 03, 25, 10, 20, 30, 555, DateTimeZone.UTC)
 
-        "2005-03-25 10"           | new DateTime(2005, 03, 25, 10, 00, 00, 000)
-        "2005-03-25 10:20"        | new DateTime(2005, 03, 25, 10, 20, 00, 000)
-        "2005-03-25 10:20:30"     | new DateTime(2005, 03, 25, 10, 20, 30, 000)
-        "2005-03-25 10:20:30.555" | new DateTime(2005, 03, 25, 10, 20, 30, 555)
+        "2005-03-25 10"           | new DateTime(2005, 03, 25, 10, 00, 00, 000, DateTimeZone.UTC)
+        "2005-03-25 10:20"        | new DateTime(2005, 03, 25, 10, 20, 00, 000, DateTimeZone.UTC)
+        "2005-03-25 10:20:30"     | new DateTime(2005, 03, 25, 10, 20, 30, 000, DateTimeZone.UTC)
+        "2005-03-25 10:20:30.555" | new DateTime(2005, 03, 25, 10, 20, 30, 555, DateTimeZone.UTC)
     }
 
 
