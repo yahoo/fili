@@ -45,11 +45,11 @@ class PaginationParametersSpec extends Specification {
 
         where:
         perPage | page  || expectedError
-        "-2" | "-1"     || errorMessage("perPage", "-2")
+        "-1" | "-1"     || errorMessage("perPage", "-1")
         "0"   | "-1"    || errorMessage("perPage", "0")
         "1"   | "-1"    || errorMessage("page", "-1")
-        "-2" | "0"      || errorMessage("perPage", "-2")
-        "-2" | "1"      || errorMessage("perPage", "-2")
+        "-1" | "0"      || errorMessage("perPage", "-1")
+        "-1" | "1"      || errorMessage("perPage", "-1")
         "1a"  | "1a"    || errorMessage("perPage", "1a")
         "1a"  | "1"     || errorMessage("perPage", "1a")
         "1"   | "1a"    || errorMessage("page", "1a")
@@ -122,7 +122,7 @@ class PaginationParametersSpec extends Specification {
         thrown(BadPaginationException)
 
         where:
-        invalidPage << ["0", "-2", "1.0", "2.3", "$Long.MAX_VALUE", "1a", "AndrewIsMostlyHarmless."]
+        invalidPage << ["0", "-1", "1.0", "2.3", "$Long.MAX_VALUE", "1a", "AndrewIsMostlyHarmless."]
     }
 
     @Unroll
@@ -137,7 +137,7 @@ class PaginationParametersSpec extends Specification {
         thrown(BadPaginationException)
 
         where:
-        invalidPerPage << ["0", "-2", "1.0", "2.3", "$Long.MAX_VALUE", "1a", "AndrewIsMostlyHarmless."]
+        invalidPerPage << ["0", "-1", "1.0", "2.3", "$Long.MAX_VALUE", "1a", "AndrewIsMostlyHarmless."]
     }
 
     String missingParamMessage(String missingParam) {

@@ -174,7 +174,7 @@ class DataPaginationSpec extends BaseDataServletComponentSpec {
     }
 
     @Unroll
-    def "An error is returned if #page is less than 1 but not last (-1) or greater than #numPages"() {
+    def "An error is returned if #page is less than 1 or greater than #numPages"() {
         when: "We send a request with an incorrect page requested"
         Response response = makeAbstractRequest({getQueryParams("$ROWS_PER_PAGE", "$page")})
 
