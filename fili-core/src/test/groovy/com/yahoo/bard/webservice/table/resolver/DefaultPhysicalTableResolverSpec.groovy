@@ -138,7 +138,7 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
         apiRequest.granularity >> granularity
         apiRequest.filterDimensions >> prototype['filterDimensions']
         apiRequest.logicalMetrics >> prototype['logicalMetrics']
-        apiRequest.getFilters() >> Collections.emptyMap()
+        apiRequest.getApiFilters() >> Collections.emptyMap()
         return apiRequest
     }
 

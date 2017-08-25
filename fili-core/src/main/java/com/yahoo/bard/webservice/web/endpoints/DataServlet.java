@@ -220,7 +220,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
                 new DataRequest(
                         table,
                         request.getIntervals(),
-                        request.getFilters().values(),
+                        request.getApiFilters().values(),
                         metrics,
                         dimensions,
                         druidQuery.getDataSource().getNames(),
@@ -419,7 +419,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
 
             try (TimedPhase timer = RequestLog.startTiming("logRequestMetrics")) {
                 logRequestMetrics(apiRequest, readCache, druidQuery);
-                RequestLog.record(new DruidFilterInfo(apiRequest.getFilter()));
+                RequestLog.record(new DruidFilterInfo(apiRequest.getDruidFilter()));
             }
 
             // Process the request

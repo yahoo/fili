@@ -53,7 +53,7 @@ class PartialDataRequestHandlerSpec extends Specification {
         physicalTable.getAvailableIntervals() >> availableIntervals
         apiRequest.getDimensions() >> Collections.emptySet()
         apiRequest.getFilterDimensions() >> Collections.emptySet()
-        apiRequest.getFilters() >> Collections.emptyMap()
+        apiRequest.getApiFilters() >> Collections.emptyMap()
         apiRequest.getGranularity() >> DefaultTimeGrain.DAY
         groupByQuery.getMetricDimensions() >> Collections.emptySet()
         groupByQuery.getDependentFieldNames() >> Collections.emptySet()

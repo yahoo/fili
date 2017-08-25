@@ -43,6 +43,10 @@ Current
 
 ### Changed:
 
+
+- [Rename filter variables and methods in DataApiRequest](https://github.com/yahoo/fili/pull/507)
+    * The method names `getFilter` and `getFilters` can be confusing, as well as the `filters` variable
+    
 - [Decoupled from static dimension lookup building]()
     * Instead of `ModelUtils`, create an interface for `ExtractionFunctionDimension` and rebase `LookupDimension` and `RegisteredLookupDimension` on that interface.
     * `LookupDimensionToDimensionSpec` now uses only the Extraction interface to decide how to serialize dimensions.
@@ -86,6 +90,9 @@ Current
     * CompletedFuture allows values to be returned when calling `.get` on a future instead of just throwing an exception
 
 ### Deprecated:
+
+- [Rename filter variables and methods in DataApiRequest](https://github.com/yahoo/fili/pull/507)
+    * Deprecated `getFilters` in favor of `getApiFilters` and `getFilter` in favor of `getDruidFilter`
 
 - [Add dimension dictionary to metric loader](https://github.com/yahoo/fili/pull/317)
     * Deprecated single argument version of `loadMetricDictionary` in `MetricLoader`, favor additional dimension dictionary argument `loadMetricDictionary` instead
