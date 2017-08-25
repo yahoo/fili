@@ -314,7 +314,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 bind(buildResponseWriter(getMappers())).to(ResponseWriter.class);
 
                 if (DRUID_DIMENSIONS_LOADER.isOn()) {
-                    DruidDimensionsLoader druidDimensionsLoader = buildDruidDimensionsLoader(
+                    DimensionValueLoadTask dimensionLoader = buildDruidDimensionsLoader(
                             druidWebService,
                             loader.getPhysicalTableDictionary(),
                             loader.getDimensionDictionary()
