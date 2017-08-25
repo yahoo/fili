@@ -2,7 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.application;
 
-import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_COORDINATOR_METADATA;
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_DIMENSIONS_LOADER;
 import static com.yahoo.bard.webservice.web.handlers.CacheRequestHandler.CACHE_HITS;
 import static com.yahoo.bard.webservice.web.handlers.CacheRequestHandler.CACHE_REQUESTS;
@@ -115,8 +114,6 @@ import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import rx.subjects.PublishSubject;
-
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Constructor;
@@ -136,6 +133,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
+
+import rx.subjects.PublishSubject;
 
 /**
  *   Abstract Binder factory implements the standard buildBinder functionality.
@@ -227,11 +226,8 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 bind(nonUiDruidWebService).named("nonUiDruidWebService").to(DruidWebService.class);
 
                 // A separate web service for metadata
-                DruidWebService metadataDruidWebService = null;
-                if (DRUID_COORDINATOR_METADATA.isOn()) {
-                    metadataDruidWebService = buildMetadataDruidWebService(getMappers().getMapper());
-                    bind(metadataDruidWebService).named("metadataDruidWebService").to(DruidWebService.class);
-                }
+                DruidWebService metadataDruidWebService = buildMetadataDruidWebService(getMappers().getMapper());
+                bind(metadataDruidWebService).named("metadataDruidWebService").to(DruidWebService.class);
 
                 // Bind the timeGrain provider
                 bind(getGranularityDictionary()).to(GranularityDictionary.class);
@@ -286,16 +282,14 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                         dataSourceMetadataService
                 );
 
-                if (DRUID_COORDINATOR_METADATA.isOn()) {
-                    DataSourceMetadataLoadTask dataSourceMetadataLoader = buildDataSourceMetadataLoader(
-                            metadataDruidWebService,
-                            loader.getPhysicalTableDictionary(),
-                            dataSourceMetadataService,
-                            getMappers().getMapper()
-                    );
+                DataSourceMetadataLoadTask dataSourceMetadataLoader = buildDataSourceMetadataLoader(
+                        metadataDruidWebService,
+                        loader.getPhysicalTableDictionary(),
+                        dataSourceMetadataService,
+                        getMappers().getMapper()
+                );
 
-                    setupDataSourceMetaData(healthCheckRegistry, dataSourceMetadataLoader);
-                }
+                setupDataSourceMetaData(healthCheckRegistry, dataSourceMetadataLoader);
 
                 bind(querySigningService).to(QuerySigningService.class);
 

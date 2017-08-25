@@ -2,7 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.application.healthchecks
 
-import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_COORDINATOR_METADATA
 
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataLoadTask
 
@@ -29,18 +28,6 @@ class DataSourceMetadataLoadTaskHealthCheckSpec extends Specification {
         DataSourceMetadataLoadTask loader = Mock(DataSourceMetadataLoadTask.class)
         loader.getLastRunTimestamp() >> { return DateTime.now().minus(timeToSubtract)}
         new DataSourceMetadataLoaderHealthCheck(loader, window)
-    }
-
-
-    @Shared boolean coordinatorStatus
-
-    def setupSpec() {
-        coordinatorStatus = DRUID_COORDINATOR_METADATA.isOn();
-        DRUID_COORDINATOR_METADATA.setOn(true)
-    }
-
-    def cleanupSpec() {
-        DRUID_COORDINATOR_METADATA.setOn(coordinatorStatus)
     }
 
     @Unroll
