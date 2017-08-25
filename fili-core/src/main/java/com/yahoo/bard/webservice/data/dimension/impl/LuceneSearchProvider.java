@@ -563,7 +563,6 @@ public class LuceneSearchProvider implements SearchProvider {
             throws PageNotFoundException {
         int perPage = paginationParameters.getPerPage();
         validatePerPage(perPage);
-        int requestedPageNumber = paginationParameters.getPage();
 
         TreeSet<DimensionRow> filteredDimRows;
         int documentCount;
@@ -578,11 +577,11 @@ public class LuceneSearchProvider implements SearchProvider {
                         luceneIndexSearcher,
                         null,
                         query,
-                        perPage,
-                        requestedPageNumber
+                        perPage
                 );
                 hits = hitDocs.scoreDocs;
                 documentCount = hitDocs.totalHits;
+                int requestedPageNumber = paginationParameters.getPage(documentCount);
                 if (hits.length == 0) {
                     if (requestedPageNumber == 1) {
                         return new SinglePagePagination<>(Collections.emptyList(), paginationParameters, 0);
@@ -592,7 +591,7 @@ public class LuceneSearchProvider implements SearchProvider {
                 }
                 for (int currentPage = 1; currentPage < requestedPageNumber; currentPage++) {
                     ScoreDoc lastEntry = hits[hits.length - 1];
-                    hits = getPageOfData(luceneIndexSearcher, lastEntry, query, perPage, requestedPageNumber).scoreDocs;
+                    hits = getPageOfData(luceneIndexSearcher, lastEntry, query, perPage).scoreDocs;
                     if (hits.length == 0) {
                         throw new PageNotFoundException(requestedPageNumber, perPage, 0);
                     }
@@ -652,7 +651,6 @@ public class LuceneSearchProvider implements SearchProvider {
      * search after this entry (if lastEntry is null, the indexSearcher will begin its search from the beginning)
      * @param query  The Lucene query used to locate the desired dimension metadata
      * @param perPage  The number of entries per page
-     * @param currentPage  The desired page number
      *
      * @return The desired page of dimension metadata
      */
@@ -660,15 +658,14 @@ public class LuceneSearchProvider implements SearchProvider {
             IndexSearcher indexSearcher,
             ScoreDoc lastEntry,
             Query query,
-            int perPage,
-            int currentPage
+            int perPage
     ) {
         TimeLimitingCollectorManager manager = new TimeLimitingCollectorManager(searchTimeout, lastEntry, perPage);
         lock.readLock().lock();
         try {
             return indexSearcher.search(query, manager);
         } catch (IOException e) {
-            String errorMessage = "Unable to find dimension rows for page " + currentPage;
+            String errorMessage = "Unable to find dimension rows for specified page.";
             LOG.error(errorMessage);
             throw new RuntimeException(errorMessage);
         } catch (TimeLimitingCollector.TimeExceededException e) {

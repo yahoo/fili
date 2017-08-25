@@ -514,7 +514,7 @@ abstract class SearchProviderSpec<T extends SearchProvider> extends Specificatio
                 buildFilter("animal|desc-notin[this is an owl]")
         ]
         and: "We get the second page, where each page has two rows (so the last page has to have only one result)"
-        PaginationParameters parameters = new PaginationParameters(2, 2)
+        PaginationParameters parameters = new PaginationParameters("2", "last")
 
         when: "We query the search provider"
         Pagination<DimensionRow> resultsPage = searchProvider.findFilteredDimensionRowsPaged(filters, parameters)

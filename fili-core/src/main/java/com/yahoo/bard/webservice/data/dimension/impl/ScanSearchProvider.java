@@ -332,7 +332,11 @@ public class ScanSearchProvider implements SearchProvider, FilterDimensionRows {
     ) {
         TreeSet<DimensionRow> filteredDimensionRows = applyFilters(getAllOrderedDimensionRows(), filters);
         return new SinglePagePagination<>(
-                doPagination(filteredDimensionRows, paginationParameters.getPage(), paginationParameters.getPerPage())
+                doPagination(
+                        filteredDimensionRows,
+                        paginationParameters.getPage(filteredDimensionRows.size()),
+                        paginationParameters.getPerPage()
+                )
                         .stream()
                         .collect(Collectors.toList()),
                 paginationParameters,
@@ -349,9 +353,10 @@ public class ScanSearchProvider implements SearchProvider, FilterDimensionRows {
      * @return  All dimension rows that belongs to a requested page
      */
     private TreeSet<DimensionRow> getAllDimensionRowsPaged(PaginationParameters paginationParameters) {
+        TreeSet<DimensionRow> allRows = getAllOrderedDimensionRows();
         return doPagination(
-                getAllOrderedDimensionRows(),
-                paginationParameters.getPage(),
+                allRows,
+                paginationParameters.getPage(allRows.size()),
                 paginationParameters.getPerPage()
         );
     }

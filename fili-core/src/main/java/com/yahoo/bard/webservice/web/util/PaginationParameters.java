@@ -21,6 +21,9 @@ public class PaginationParameters {
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
     private static final Logger LOG = LoggerFactory.getLogger(PaginationParameters.class);
     private static final int MINIMAL_VALUE = 1;
+    private static final int LAST_PAGE = -1;
+    private static final String FIRST = "first";
+    private static final String LAST = "last";
 
     private static final int DEFAULT_MAX_RESULTS_WITHOUT_FILTERS = 10000;
     private static final int MAX_RESULTS_WITHOUT_FILTER = SYSTEM_CONFIG.getIntProperty(
@@ -53,10 +56,7 @@ public class PaginationParameters {
      * @throws BadPaginationException If at least one of 'perPage' or 'page' is not a positive integer.
      */
     public PaginationParameters(String perPage, String page) throws BadPaginationException {
-        this.perPage = parseParameter(perPage, "perPage");
-        this.page = parseParameter(page, "page");
-        validate(this.perPage, "perPage");
-        validate(this.page, "page");
+        this(parseParameter(perPage, "perPage"), parseParameter(page, "page"));
     }
 
     /**
@@ -64,14 +64,10 @@ public class PaginationParameters {
      *
      * @param perPage  The number of rows to be displayed on each page.
      * @param page  The page to be displayed
-     *
-     * @throws BadPaginationException If at least one of 'perPage' or 'page' is not positive.
      */
-    public PaginationParameters(int perPage, int page) throws BadPaginationException {
+    public PaginationParameters(int perPage, int page) {
         this.perPage = perPage;
         this.page = page;
-        validate(this.perPage, "perPage");
-        validate(this.page, "page");
     }
 
     /**
@@ -83,14 +79,23 @@ public class PaginationParameters {
      * @return the parsed integer
      * @throws BadPaginationException If 'parameter' cannot be parsed as an integer.
      */
-    private int parseParameter (String parameter, String parameterName) throws BadPaginationException {
+    private static int parseParameter (String parameter, String parameterName) throws BadPaginationException {
         if (parameter.equals("")) {
             ErrorMessageFormat errorMessage = ErrorMessageFormat.PAGINATION_PARAMETER_MISSING;
             LOG.debug(errorMessage.logFormat(parameterName));
             throw new BadPaginationException(errorMessage.format(parameterName));
         }
         try {
-            return Integer.parseInt(parameter);
+            if (parameterName.equals("page")) {
+                if (parameter.equals(FIRST)) {
+                    return 1;
+                } else if (parameter.equals(LAST)) {
+                    return LAST_PAGE;
+                }
+            }
+            int parsedParameter = Integer.parseInt(parameter);
+            validate(parsedParameter, parameterName);
+            return parsedParameter;
         } catch (NumberFormatException ignored) {
             ErrorMessageFormat errorMessage = ErrorMessageFormat.PAGINATION_PARAMETER_INVALID;
             LOG.debug(errorMessage.logFormat(parameterName, parameter));
@@ -106,7 +111,7 @@ public class PaginationParameters {
      *
      * @throws BadPaginationException if 'parameter' is not greater than 0.
      */
-    private void validate(int parameter, String parameterName) throws BadPaginationException {
+    private static void validate(int parameter, String parameterName) throws BadPaginationException {
         if (parameter < MINIMAL_VALUE) {
             ErrorMessageFormat errorMessage = ErrorMessageFormat.PAGINATION_PARAMETER_INVALID;
             LOG.debug(errorMessage.logFormat(parameterName, parameter));
@@ -118,7 +123,17 @@ public class PaginationParameters {
         return perPage;
     }
 
-    public int getPage() {
+    /**
+     * Returns the requested page number.
+     *
+     * @param resultSize  The number of rows in the result set
+     *
+     * @return The request page number
+     */
+    public int getPage(int resultSize) {
+        if (page == -1) {
+            return resultSize == 0 ? 1 : (int) Math.ceil(((double) resultSize) / perPage);
+        }
         return page;
     }
 
