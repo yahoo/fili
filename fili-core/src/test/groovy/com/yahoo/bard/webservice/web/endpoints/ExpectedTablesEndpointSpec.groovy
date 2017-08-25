@@ -29,133 +29,133 @@ class ExpectedTablesEndpointSpec extends BaseTableServletComponentSpec {
                     "longName": "hourly",
                     "name": "hourly",
                     "granularity": "all",
-                    "uri": "http://localhost:9998/tables/hourly/all"
+                    "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/hourly/all"
                 }, {
                     "category": "General",
                     "longName": "hourly",
                     "name": "hourly",
                     "granularity": "day",
-                    "uri": "http://localhost:9998/tables/hourly/day"
+                    "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/hourly/day"
                 }, {
                     "category": "General",
                     "longName": "hourly",
                     "name": "hourly",
                     "granularity": "hour",
-                    "uri": "http://localhost:9998/tables/hourly/hour"
+                    "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/hourly/hour"
                 }, {
                     "category": "General",
                     "longName": "hourly",
                     "name": "hourly",
                     "granularity": "month",
-                    "uri": "http://localhost:9998/tables/hourly/month"
+                    "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/hourly/month"
                 }, {
                     "category": "General",
                     "longName": "hourly",
                     "name": "hourly",
                     "granularity": "week",
-                    "uri": "http://localhost:9998/tables/hourly/week"
+                    "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/hourly/week"
                 }, {
                     "category": "General",
                     "longName": "hourly_monthly",
                     "name": "hourly_monthly",
                     "granularity": "all",
-                    "uri": "http://localhost:9998/tables/hourly_monthly/all"
+                    "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/hourly_monthly/all"
                 }, {
                     "category": "General",
                     "longName": "hourly_monthly",
                     "name": "hourly_monthly",
                     "granularity": "day",
-                    "uri": "http://localhost:9998/tables/hourly_monthly/day"
+                    "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/hourly_monthly/day"
                 }, {
                     "category": "General",
                     "longName": "hourly_monthly",
                     "name": "hourly_monthly",
                     "granularity": "hour",
-                    "uri": "http://localhost:9998/tables/hourly_monthly/hour"
+                    "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/hourly_monthly/hour"
                 }, {
                     "category": "General",
                     "longName": "hourly_monthly",
                     "name": "hourly_monthly",
                     "granularity": "month",
-                    "uri": "http://localhost:9998/tables/hourly_monthly/month"
+                    "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/hourly_monthly/month"
                 }, {
                     "category": "General",
                     "longName": "hourly_monthly",
                     "name": "hourly_monthly",
                     "granularity": "week",
-                    "uri": "http://localhost:9998/tables/hourly_monthly/week"
+                    "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/hourly_monthly/week"
                 }, {
                     "category": "General",
                     "longName": "monthly",
                     "name": "monthly",
                     "granularity": "all",
-                    "uri": "http://localhost:9998/tables/monthly/all"
+                    "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/monthly/all"
                 }, {
                     "category": "General",
                     "longName": "monthly",
                     "name": "monthly",
                     "granularity": "day",
-                    "uri": "http://localhost:9998/tables/monthly/day"
+                    "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/monthly/day"
                 }, {
                     "category": "General",
                     "longName": "monthly",
                     "name": "monthly",
                     "granularity": "month",
-                    "uri": "http://localhost:9998/tables/monthly/month"
+                    "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/monthly/month"
                 }, {
                     "category": "General",
                     "longName": "monthly",
                     "name": "monthly",
                     "granularity": "week",
-                    "uri": "http://localhost:9998/tables/monthly/week"
+                    "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/monthly/week"
                 }, {
                     "category": "General",
                     "longName": "pets",
                     "name": "pets",
                     "granularity": "all",
-                    "uri": "http://localhost:9998/tables/pets/all"
+                    "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/pets/all"
                 }, {
                     "category": "General",
                     "longName": "pets",
                     "name": "pets",
                     "granularity": "day",
-                    "uri": "http://localhost:9998/tables/pets/day"
+                    "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/pets/day"
                 }, {
                     "category": "General",
                     "longName": "pets",
                     "name": "pets",
                     "granularity": "month",
-                    "uri": "http://localhost:9998/tables/pets/month"
+                    "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/pets/month"
                 }, {
                     "category": "General",
                     "longName": "pets",
                     "name": "pets",
                     "granularity": "week",
-                    "uri": "http://localhost:9998/tables/pets/week"
+                    "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/pets/week"
                 }, {
                     "category": "General",
                     "longName": "shapes",
                     "name": "shapes",
                     "granularity": "all",
-                    "uri": "http://localhost:9998/tables/shapes/all"
+                    "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/shapes/all"
                 }, {
                     "category": "General",
                     "longName": "shapes",
                     "name": "shapes",
                     "granularity": "day",
-                    "uri": "http://localhost:9998/tables/shapes/day"
+                    "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/shapes/day"
                 }, {
                     "category": "General",
                     "longName": "shapes",
                     "name": "shapes",
                     "granularity": "month",
-                    "uri": "http://localhost:9998/tables/shapes/month"
+                    "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/shapes/month"
                 }, {
                     "category": "General",
                     "longName": "shapes",
                     "name": "shapes",
                     "granularity": "week",
-                    "uri": "http://localhost:9998/tables/shapes/week"
+                    "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/shapes/week"
                 }
             ]
         }"""

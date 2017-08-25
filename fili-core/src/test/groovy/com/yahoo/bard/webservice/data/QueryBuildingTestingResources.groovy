@@ -283,7 +283,7 @@ public class QueryBuildingTestingResources {
         logicalDictionary = new LogicalTableDictionary()
         logicalDictionary.putAll(baseMap)
 
-        simpleTemplateQuery = new TemplateDruidQuery([] as LinkedHashSet, [] as LinkedHashSet, null, null)
+        simpleTemplateQuery = new TemplateDruidQuery([] as LinkedHashSet, [] as LinkedHashSet)
         simpleNestedTemplateQuery = simpleTemplateQuery.nest()
         complexTemplateQuery = new TemplateDruidQuery(
                 [] as LinkedHashSet,

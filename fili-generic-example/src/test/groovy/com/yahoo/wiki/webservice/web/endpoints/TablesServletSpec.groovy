@@ -46,14 +46,14 @@ class TablesServletSpec extends Specification {
                                                     "granularity":"hour",
                                                     "name":"$tableName",
                                                     "longName":"$tableName",
-                                                    "uri":"http://localhost:9998/tables/$tableName/hour"
+                                                    "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableName/hour"
                                             },
                                             {
                                                     "category":"General",
                                                     "granularity":"all",
                                                     "name":"$tableName",
                                                     "longName":"$tableName",
-                                                    "uri":"http://localhost:9998/tables/$tableName/all"
+                                                    "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableName/all"
                                             }
                                         ]
                                     }"""
@@ -72,14 +72,14 @@ class TablesServletSpec extends Specification {
                                                 "granularity":"hour",
                                                 "name":"$tableName",
                                                 "longName":"$tableName",
-                                                "uri":"http://localhost:9998/tables/$tableName/hour"
+                                                "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableName/hour"
                                             },
                                             {
                                                 "category":"General",
                                                 "granularity":"all",
                                                 "name":"$tableName",
                                                 "longName":"$tableName",
-                                                "uri":"http://localhost:9998/tables/$tableName/all"
+                                                "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableName/all"
                                             }
                                         ]
                                     }"""
@@ -114,7 +114,7 @@ class TablesServletSpec extends Specification {
                                                         "name": "$it",
                                                         "longName": "$it",
                                                         "cardinality": 0,
-                                                        "uri": "http://localhost:9998/dimensions/$it"
+                                                        "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/dimensions/$it"
                                                     }""" 
                                                 }
                                                 .join(',')
@@ -127,7 +127,7 @@ class TablesServletSpec extends Specification {
                                                         "category": "General",
                                                         "name": "$it",
                                                         "longName": "$it",
-                                                        "uri": "http://localhost:9998/metrics/$it"
+                                                        "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/metrics/$it"
                                                     }""" 
                                                 }
                                                 .join(',')

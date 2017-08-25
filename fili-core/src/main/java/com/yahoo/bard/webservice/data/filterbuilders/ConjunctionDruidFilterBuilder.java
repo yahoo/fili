@@ -5,12 +5,12 @@ package com.yahoo.bard.webservice.data.filterbuilders;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
 import com.yahoo.bard.webservice.data.dimension.DimensionRowNotFoundException;
+import com.yahoo.bard.webservice.data.dimension.impl.ExtractionFunctionDimension;
+import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction;
 import com.yahoo.bard.webservice.druid.model.filter.AndFilter;
 import com.yahoo.bard.webservice.druid.model.filter.ExtractionFilter;
-import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter;
-import com.yahoo.bard.webservice.druid.model.util.ModelUtil;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 
@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -99,16 +100,29 @@ public abstract class ConjunctionDruidFilterBuilder implements DruidFilterBuilde
      * @return a list of Druid selector filters
      */
     protected List<Filter> buildSelectorFilters(Dimension dimension, Set<DimensionRow> rows) {
-        Optional<ExtractionFunction> extractionFunction = ModelUtil.getExtractionFunction(dimension);
 
-        if (extractionFunction.isPresent()) {
-            return rows.stream()
-                    .map(row -> new ExtractionFilter(dimension, row.get(dimension.getKey()), extractionFunction.get()))
-                    .collect(Collectors.toList());
+        Function<DimensionRow, Filter> filterBuilder = row -> new SelectorFilter(
+                dimension,
+                row.get(dimension.getKey())
+        );
+
+        if (dimension instanceof ExtractionFunctionDimension) {
+
+            Optional<ExtractionFunction> extractionFunction = ((ExtractionFunctionDimension) dimension)
+                    .getExtractionFunction();
+            if (extractionFunction.isPresent()) {
+                filterBuilder = row -> new ExtractionFilter(
+                        dimension,
+                        row.get(dimension.getKey()),
+                        extractionFunction.get()
+                );
+            }
         }
 
+        final Function<DimensionRow, Filter> finalFilterBuilder = filterBuilder;
+
         return rows.stream()
-                .map(row -> new SelectorFilter(dimension, row.get(dimension.getKey())))
-                .collect(Collectors.toList());
+                    .map(row -> finalFilterBuilder.apply(row))
+                    .collect(Collectors.toList());
     }
 }

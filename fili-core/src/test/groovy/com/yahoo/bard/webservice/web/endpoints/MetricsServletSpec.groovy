@@ -44,9 +44,9 @@ class MetricsServletSpec extends Specification {
         String expectedResponse = """{
                                         "rows":
                                         [
-                                            {"category": "General", "name":"metricA", "longName": "metricA", "uri":"http://localhost:9998/metrics/metricA"},
-                                            {"category": "General", "name":"metricB", "longName": "metricB", "uri":"http://localhost:9998/metrics/metricB"},
-                                            {"category": "General", "name":"metricC", "longName": "metricC", "uri":"http://localhost:9998/metrics/metricC"}
+                                            {"category": "General", "name":"metricA", "longName": "metricA", "uri":"http://localhost:${jtb.getHarness().getPort()}/metrics/metricA"},
+                                            {"category": "General", "name":"metricB", "longName": "metricB", "uri":"http://localhost:${jtb.getHarness().getPort()}/metrics/metricB"},
+                                            {"category": "General", "name":"metricC", "longName": "metricC", "uri":"http://localhost:${jtb.getHarness().getPort()}/metrics/metricC"}
                                         ]
                                     }"""
 

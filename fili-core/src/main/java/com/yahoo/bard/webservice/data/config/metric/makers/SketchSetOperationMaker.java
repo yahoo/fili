@@ -64,7 +64,7 @@ public class SketchSetOperationMaker extends MetricMaker {
         TemplateDruidQuery query = new TemplateDruidQuery(
                 mergedQuery.getAggregations(),
                 postAggs,
-                mergedQuery.getInnerQuery(),
+                mergedQuery.getInnerQuery().orElse(null),
                 mergedQuery.getTimeGrain()
         );
 

@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.data.dimension.impl
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.DimensionRow
+import com.yahoo.bard.webservice.data.dimension.KeyValueStore
 import com.yahoo.bard.webservice.data.dimension.TimeoutException
 import com.yahoo.bard.webservice.util.DimensionStoreKeyUtils
 import com.yahoo.bard.webservice.web.RowLimitReachedException
@@ -84,6 +85,17 @@ class LuceneSearchProviderSpec extends SearchProviderSpec<LuceneSearchProvider> 
 
         then: "An exception is thrown because too many rows are returned"
         thrown RowLimitReachedException
+    }
+
+    def "refresh cardinality is called when assigining a new key value store"() {
+        given: "a new key value store"
+        KeyValueStore keyValueStore = Mock()
+
+        when: "lucene gets a new key value store with no cardinality key"
+        searchProvider.setKeyValueStore(keyValueStore)
+
+        then: "the cardinality is set to the current lucene document count"
+        1 * keyValueStore.put('cardinality_key', '14')
     }
 
     @Override

@@ -49,7 +49,7 @@ public class JobsEndpointResources {
         fieldValueMap1.put(DefaultJobField.JOB_TICKET, "ticket1");
         fieldValueMap1.put(DefaultJobField.DATE_CREATED, "2016-01-01");
         fieldValueMap1.put(DefaultJobField.DATE_UPDATED, "2016-01-01");
-        fieldValueMap1.put(DefaultJobField.QUERY, "https://localhost:9998/v1/data/QUERY");
+        fieldValueMap1.put(DefaultJobField.QUERY, "https://localhost:PORT/v1/data/QUERY");
         fieldValueMap1.put(DefaultJobField.STATUS, "success");
         fieldValueMap1.put(DefaultJobField.USER_ID, "momo");
 
@@ -60,7 +60,7 @@ public class JobsEndpointResources {
         fieldValueMap2.put(DefaultJobField.JOB_TICKET, "ticket2");
         fieldValueMap2.put(DefaultJobField.DATE_CREATED, "2016-01-01");
         fieldValueMap2.put(DefaultJobField.DATE_UPDATED, "2016-01-01");
-        fieldValueMap2.put(DefaultJobField.QUERY, "https://localhost:9998/v1/data/QUERY");
+        fieldValueMap2.put(DefaultJobField.QUERY, "https://localhost:PORT/v1/data/QUERY");
         fieldValueMap2.put(DefaultJobField.STATUS, "pending");
         fieldValueMap2.put(DefaultJobField.USER_ID, "dodo");
 
@@ -71,7 +71,7 @@ public class JobsEndpointResources {
         fieldValueMap3.put(DefaultJobField.JOB_TICKET, "ticket3p");
         fieldValueMap3.put(DefaultJobField.DATE_CREATED, "2016-01-01");
         fieldValueMap3.put(DefaultJobField.DATE_UPDATED, "2016-01-01");
-        fieldValueMap3.put(DefaultJobField.QUERY, "https://localhost:9998/v1/data/QUERY");
+        fieldValueMap3.put(DefaultJobField.QUERY, "https://localhost:PORT/v1/data/QUERY");
         fieldValueMap3.put(DefaultJobField.STATUS, "success");
         fieldValueMap3.put(DefaultJobField.USER_ID, "yoyo");
 

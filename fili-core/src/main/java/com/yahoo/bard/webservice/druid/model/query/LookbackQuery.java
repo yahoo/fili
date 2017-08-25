@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -134,8 +135,18 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
     }
 
     @Override
-    public DruidAggregationQuery<?> getInnerQuery() {
-        return (DruidAggregationQuery) this.dataSource.getQuery();
+    public Optional<? extends DruidAggregationQuery> getInnerQuery() {
+        return (Optional<? extends DruidAggregationQuery>) this.dataSource.getQuery();
+    }
+
+    /**
+     * Return the Inner Query without checking that it exists.
+     *
+     * @return the inner query.
+     */
+    @JsonIgnore
+    private DruidAggregationQuery<?> getInnerQueryUnchecked() {
+        return getInnerQuery().get();
     }
 
     public Having getHaving() {
@@ -168,31 +179,31 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
     @Override
     @JsonIgnore
     public Granularity getGranularity() {
-        return getInnerQuery().getGranularity();
+        return getInnerQueryUnchecked().getGranularity();
     }
 
     @Override
     @JsonIgnore
     public Set<Aggregation> getAggregations() {
-        return getInnerQuery().getAggregations();
+        return getInnerQueryUnchecked().getAggregations();
     }
 
     @Override
     @JsonIgnore
     public Filter getFilter() {
-        return getInnerQuery().getFilter();
+        return getInnerQueryUnchecked().getFilter();
     }
 
     @Override
     @JsonIgnore
     public List<Interval> getIntervals() {
-        return getInnerQuery().getIntervals();
+        return getInnerQueryUnchecked().getIntervals();
     }
 
     @Override
     @JsonIgnore
     public Collection<Dimension> getDimensions() {
-        return getInnerQuery().getDimensions();
+        return getInnerQueryUnchecked().getDimensions();
     }
 
     @JsonProperty(value = "postAggregations")
@@ -203,7 +214,7 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
     @Override
     @JsonIgnore
     public Collection<PostAggregation> getPostAggregations() {
-        return Stream.concat(getInnerQuery().getPostAggregations().stream(), postAggregations.stream())
+        return Stream.concat(getInnerQueryUnchecked().getPostAggregations().stream(), postAggregations.stream())
                 .collect(Collectors.toCollection(LinkedHashSet<PostAggregation>::new));
     }
 
@@ -211,7 +222,7 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
 
     @Override
     public LookbackQuery withAggregations(Collection<Aggregation> aggregations) {
-        return withDataSource(new QueryDataSource(getInnerQuery().withAggregations(aggregations)));
+        return withDataSource(new QueryDataSource(getInnerQueryUnchecked().withAggregations(aggregations)));
     }
 
     @Override
@@ -228,7 +239,7 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
      * @return A LookbackQuery whose datasource is built using the provided postAggregations
      */
     public LookbackQuery withInnerQueryPostAggregations(Collection<PostAggregation> postAggregations) {
-        return new LookbackQuery(new QueryDataSource(getInnerQuery().withPostAggregations(postAggregations)), granularity, filter, aggregations, getLookbackPostAggregations(), intervals, context, false, lookbackOffsets, lookbackPrefixes, having, limitSpec);
+        return new LookbackQuery(new QueryDataSource(getInnerQueryUnchecked().withPostAggregations(postAggregations)), granularity, filter, aggregations, getLookbackPostAggregations(), intervals, context, false, lookbackOffsets, lookbackPrefixes, having, limitSpec);
     }
 
     /**
@@ -244,25 +255,25 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
 
     @Override
     public LookbackQuery withGranularity(Granularity granularity) {
-        return withDataSource(new QueryDataSource(getInnerQuery().withGranularity(granularity)));
+        return withDataSource(new QueryDataSource(getInnerQueryUnchecked().withGranularity(granularity)));
     }
 
     @Override
     public LookbackQuery withFilter(Filter filter) {
-        return withDataSource(new QueryDataSource(getInnerQuery().withFilter(filter)));
+        return withDataSource(new QueryDataSource(getInnerQueryUnchecked().withFilter(filter)));
     }
 
     @Override
     public LookbackQuery withIntervals(Collection<Interval> intervals) {
-        return withDataSource(new QueryDataSource(getInnerQuery().withIntervals(intervals)));
+        return withDataSource(new QueryDataSource(getInnerQueryUnchecked().withIntervals(intervals)));
     }
 
     @Override
     public LookbackQuery withAllIntervals(Collection<Interval> intervals) {
-        DruidFactQuery<?> innerQuery = (DruidFactQuery<?>) this.dataSource.getQuery();
-        return (innerQuery == null) ?
+        Optional<DruidFactQuery<?>> innerQuery = (Optional<DruidFactQuery<?>>) this.dataSource.getQuery();
+        return !innerQuery.isPresent() ?
                 withIntervals(intervals) :
-                withDataSource(new QueryDataSource(innerQuery.withAllIntervals(intervals))).withIntervals(intervals);
+                withDataSource(new QueryDataSource(innerQuery.get().withAllIntervals(intervals))).withIntervals(intervals);
     }
 
     @Override
@@ -272,10 +283,10 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
 
     @Override
     public LookbackQuery withInnermostDataSource(DataSource dataSource) {
-        DruidFactQuery<?> innerQuery = (DruidFactQuery<?>) this.dataSource.getQuery();
+        Optional<DruidFactQuery<?>> innerQuery = (Optional<DruidFactQuery<?>>) this.dataSource.getQuery();
         return (innerQuery == null) ?
                 withDataSource(dataSource) :
-                withDataSource(new QueryDataSource(innerQuery.withInnermostDataSource(dataSource)));
+                withDataSource(new QueryDataSource(innerQuery.get().withInnermostDataSource(dataSource)));
     }
 
     @Override
