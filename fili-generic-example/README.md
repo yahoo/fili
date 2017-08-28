@@ -1,7 +1,7 @@
 Fili Generic Loader Application
 ==================================
 
-This application will automatically configure fili to work with **any** instance
+This application will automatically configure Fili to work with **any** instance
  of Druid and show the basic metrics and dimensions. This lets you test what it's
   like using Fili without putting any effort into setting it up.
 
@@ -71,11 +71,11 @@ Here are some sample queries that you can run to verify your server:
     }
     ```
 
-- Count of edits by hour for the last 72 hours:  
-  
+- Count of edits by hour for the last 72 hours:
+
       GET http://localhost:9998/v1/data/wikiticker/day/?metrics=count&dateTime=PT72H/current
-    
-    Note: this will should be something like the response below since the 
+
+    Note: this will should be something like the response below since the
     wikiticker table doesn't have data for the past 72 hours from now.
     ```json
     {
@@ -93,7 +93,7 @@ Here are some sample queries that you can run to verify your server:
 
 ## Notable Restrictions
 
-- Using this is great for testing out fili and druid, but it can't do interesting things with metrics.
+- Using this is great for testing out Fili and druid, but it can't do interesting things with metrics.
 - This can only use 1 timegrain even though a datasource in druid *could* have more.
 
 ## Importing and Running in IntelliJ
