@@ -10,6 +10,9 @@ Current
 
 ### Added:
 
+- [Translate doc, built-in-makers.md, to Chinese](https://github.com/yahoo/fili/pull/499)
+    * Part of Fili translation in order to increase popularity of Fili in Chinese tech industries.
+
 - [Add Uptime Status Metric](https://github.com/yahoo/fili/pull/518)
     * Add a metric to show how long Fili has been running 
 
@@ -27,7 +30,6 @@ Current
 - [Add Table-wide Availability](https://github.com/yahoo/fili/pull/414)
     * Add `availableIntervals` field to tables endpoint by union the availability for the logical table without taking
     the TablesApiRequest into account.
-
 
 - [Implement EtagCacheRequestHandler](https://github.com/yahoo/fili/pull/312)
     * Add `EtagCacheRequestHandler` that checks the cache for a matching eTag
