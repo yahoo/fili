@@ -9,6 +9,8 @@ import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -143,6 +145,7 @@ public class DruidClientConfigHelper {
             LOG.warn("ui_druid_broker not set, using non_ui_druid_broker instead");
             return null;
         }
+        validateUrl(url);
         return url;
     }
 
@@ -160,6 +163,7 @@ public class DruidClientConfigHelper {
             LOG.warn("non_ui_druid_broker not set, using druid_broker instead");
             return getDruidUiUrl();
         }
+        validateUrl(url);
         return url;
     }
 
@@ -174,6 +178,7 @@ public class DruidClientConfigHelper {
             LOG.warn("druid_broker not set, using ui_druid_broker instead");
             return getDruidNonUiUrl();
         }
+        validateUrl(url);
         return url;
     }
 
@@ -287,6 +292,21 @@ public class DruidClientConfigHelper {
         } catch (SystemConfigException e) {
             LOG.error(e.getMessage(), e);
             throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Validate the format of url to see if it is a pontential validate url.
+     *
+     * @param url  The url to check against
+     */
+    private static void validateUrl(String url) {
+        try {
+            new URL(url);
+        } catch (MalformedURLException e) {
+            String message = String.format("Invalid druid host url provided: %s", url);
+            LOG.error(message);
+            throw new IllegalArgumentException(message, e);
         }
     }
 }
