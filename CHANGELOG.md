@@ -48,7 +48,7 @@ Current
 ### Changed:
 
 - [Fix wrong default druid url and broken getInnerMostQuery](https://github.com/yahoo/fili/pull/528)
-    * Comment out the wrong default druid broker url in module config, add check for validate url in `DruidClientConfigHelper `
+    * Comment out the wrong default druid broker url in module config that break old url config compatibility, add check for validate url in `DruidClientConfigHelper `
     * Fix broken `getInnermostQuery` method in `DruidQuery`
 
 - [Rename filter variables and methods in DataApiRequest](https://github.com/yahoo/fili/pull/507)
