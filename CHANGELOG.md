@@ -1338,3 +1338,4 @@ Jobs resource. Here are the highlights of what's in this release:
 
 - [`DruidDimensionsLoader` doesn't set the dimension's lastUpdated date](https://github.com/yahoo/fili/pull/24)
   * `DruidDimensionsLoader` now properly sets the `lastUpdated` field after it finished processing the Druid response
+  
