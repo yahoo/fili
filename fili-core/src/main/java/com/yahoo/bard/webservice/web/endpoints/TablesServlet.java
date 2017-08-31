@@ -20,6 +20,7 @@ import com.yahoo.bard.webservice.web.RequestValidationException;
 import com.yahoo.bard.webservice.web.TableFullViewProcessor;
 import com.yahoo.bard.webservice.web.TableView;
 import com.yahoo.bard.webservice.web.TablesApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.HavingGenerator;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 
 import com.codahale.metrics.annotation.Timed;
@@ -456,6 +457,18 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
     public DruidFilterBuilder getFilterBuilder() {
         return null;
     }
+
+    /**
+     * Having Api generator isn't used in TablesServlet but is part of the configuration interface, so this is an empty
+     * implementation.
+     *
+     * @return null because TablesApiRequest doesn't require it
+     */
+    @Override
+    public HavingGenerator getHavingApiGenerator() {
+        return null;
+    }
+
 
     /**
      * SystemTimeZone isn't used in TablesServlet but is part of the configuration interface, so this is an empty

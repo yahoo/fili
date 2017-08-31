@@ -1,6 +1,6 @@
 // Copyright 2016 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.web
+package com.yahoo.bard.webservice.web.apipackage
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.util.DateTimeFormatterFactory.FULLY_OPTIONAL_DATETIME_FORMATTER
@@ -22,6 +22,10 @@ import com.yahoo.bard.webservice.druid.model.query.Granularity
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.TableGroup
 import com.yahoo.bard.webservice.util.IntervalUtils
+import com.yahoo.bard.webservice.web.BadApiRequestException
+import com.yahoo.bard.webservice.web.ErrorMessageFormat
+import com.yahoo.bard.webservice.web.ResponseFormatType
+import com.yahoo.bard.webservice.web.apirequest.ApiRequestImpl
 
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
@@ -46,7 +50,7 @@ class ApiRequestSpec extends Specification {
 
     GranularityParser granularityParser = new StandardGranularityParser()
 
-    class ConcreteApiRequest extends ApiRequest {}
+    class ConcreteApiRequest extends ApiRequestImpl {}
 
     def setupSpec() {
         DateTimeZone.default = IntervalUtils.SYSTEM_ALIGNMENT_EPOCH.zone
