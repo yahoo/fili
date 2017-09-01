@@ -10,6 +10,15 @@ Current
 
 ### Added:
 
+- [Enable search provider to hot-swap index and key value store to hot-swap store location](https://github.com/yahoo/fili/pull/522)
+    * Add new default method to [`SearchProvider`](./fili-core/src/main/java/com/yahoo/bard/webservice/data/dimension/SearchProvider.java)
+      interface in order to support hot-swapping index.
+    * Implement the hot-swapping method of the `SearchProvider` interface in [`LuceneSearchProvider`](./fili-core/src/main/java/com/yahoo/bard/webservice/data/dimension/impl/LuceneSearchProvider.java)
+          - replace Lucene index by moving the old index directory to a different location, moving new indexes to a new
+            directory with the same old name, and deleting the old index directory in file system.
+    * Add new default method to [`KeyValueStore`](fili-core/src/main/java/com/yahoo/bard/webservice/data/dimension/KeyValueStore.java)
+      interface in order to support hot-swapping key value store location.
+
 - [Translate doc, built-in-makers.md, to Chinese](https://github.com/yahoo/fili/pull/499)
     * Part of Fili translation in order to increase popularity of Fili in Chinese tech industries.
 

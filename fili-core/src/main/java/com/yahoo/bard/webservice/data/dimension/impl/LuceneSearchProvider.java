@@ -18,9 +18,12 @@ import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.util.SinglePagePagination;
 import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.bard.webservice.web.ApiFilter;
+import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.PageNotFoundException;
 import com.yahoo.bard.webservice.web.RowLimitReachedException;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
+
+import org.apache.commons.io.FileUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -46,8 +49,14 @@ import org.apache.lucene.store.MMapDirectory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -61,7 +70,7 @@ import java.util.stream.Stream;
 
 /**
  * LuceneSearchProvider.
- * Search provider which uses lucene
+ * Search provider which uses lucene.
  */
 public class LuceneSearchProvider implements SearchProvider {
     private static final Logger LOG = LoggerFactory.getLogger(LuceneSearchProvider.class);
@@ -108,11 +117,10 @@ public class LuceneSearchProvider implements SearchProvider {
             luceneIndexIsHealthy = true;
         } catch (IOException e) {
             luceneIndexIsHealthy = false;
-            String message = String.format("Unable to create index directory %s:", this.luceneIndexPath);
+            String message = ErrorMessageFormat.UNABLE_TO_CREATE_DIR.format(this.luceneIndexPath);
             LOG.error(message, e);
         }
     }
-
 
     /**
      * Constructor.  The search timeout is initialized to the default (or configured) value.
@@ -317,6 +325,96 @@ public class LuceneSearchProvider implements SearchProvider {
         writer.updateDocument(keyTerm, luceneDimensionRowDoc);
     }
 
+    @Override
+    public void replaceIndex(String newLuceneIndexPathString) {
+        lock.writeLock().lock();
+        try {
+            Path oldLuceneIndexPath = Paths.get(luceneIndexPath);
+            String tempDir = oldLuceneIndexPath.resolveSibling(oldLuceneIndexPath.getFileName() + "_old").toString();
+
+            LOG.debug("Moving old Lucene index directory from {} to {} ...", luceneIndexPath, tempDir);
+            moveDirEntries(luceneIndexPath, tempDir);
+
+            LOG.debug("Moving all new Lucene indexes from {} to {} ...", newLuceneIndexPathString, luceneIndexPath);
+            moveDirEntries(newLuceneIndexPathString, luceneIndexPath);
+
+            LOG.debug(
+                    "Deleting {} since new Lucene indexes have been moved away from there and is now empty",
+                    newLuceneIndexPathString
+            );
+            deleteDir(newLuceneIndexPathString);
+
+            LOG.debug("Deleting old Lucene indexes in {} ...", tempDir);
+            deleteDir(tempDir);
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    /**
+     * Moves all files and sub-directories from one location to another.
+     * <p>
+     * Two locations must exist before calling this method.
+     *
+     * @param sourceDir  The location where files and sub-directories will be moved from
+     * @param destinationDir  The location where files and sub-directories will be moved to
+     */
+    private static void moveDirEntries(String sourceDir, String destinationDir) {
+        Path sourcePath = Paths.get(sourceDir).toAbsolutePath();
+        Path destinationPath = Paths.get(destinationDir).toAbsolutePath();
+
+        if (!Files.exists(destinationPath)) {
+            try {
+                Files.createDirectory(destinationPath);
+            } catch (IOException e) {
+                LOG.error(ErrorMessageFormat.UNABLE_TO_CREATE_DIR.format(destinationDir));
+                throw new RuntimeException(e);
+            }
+        }
+
+        try {
+            Files.walkFileTree(sourcePath, new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes basicFileAttributes)
+                        throws  IOException {
+                    Path destinationDirPath = destinationPath.resolve(sourcePath.relativize(dir));
+                    if (!Files.exists(destinationDirPath)) {
+                        Files.createDirectory(destinationDirPath);
+                        LOG.trace("Creating sub-directory {} under {} ...", dir, destinationDir);
+                    }
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes basicFileAttributes)
+                        throws IOException {
+                    Path destinationFileName = destinationPath.resolve(sourcePath.relativize(file));
+                    LOG.trace("Moving {} to {}", file, destinationFileName);
+                    Files.move(file, destinationFileName);
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        } catch (IOException e) {
+            LOG.error("I/O error thrown by SimpleFileVisitor method");
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Deletes a directory and all entries under that directory.
+     *
+     * @param path  The location of the directory that is to be deleted
+     */
+    private static void deleteDir(String path) {
+        try {
+            FileUtils.deleteDirectory(new File(path));
+        } catch (IOException e) {
+            String message = ErrorMessageFormat.UNABLE_TO_DELETE_DIR.format(path);
+            LOG.error(message);
+            throw new RuntimeException(message);
+        }
+    }
+
     /**
      * Clears the dimension cache, and resets the indices, effectively resetting the SearchProvider to a clean state.
      * <p>
@@ -349,7 +447,7 @@ public class LuceneSearchProvider implements SearchProvider {
                 writer.deleteAll();
                 writer.commit();
             } catch (IOException e) {
-                LOG.error("Failed to wipe Lucene index at directory: {}", luceneDirectory);
+                LOG.error(ErrorMessageFormat.FAIL_TO_WIPTE_LUCENE_INDEX_DIR.format(luceneDirectory));
                 throw new RuntimeException(e);
             }
 
