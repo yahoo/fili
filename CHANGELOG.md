@@ -117,6 +117,12 @@ Current
 
 
 ### Fixed:
+
+- [Prevent NPE in test due to null instance variables in DataApiRequest](https://github.com/yahoo/fili/pull/532)
+    * A particular order of loading [`ClassScannerSpec`](./fili-core/src/test/groovy/com/yahoo/bard/webservice/util/ClassScannerSpec.groovy)
+      classes results in `NullPointerException` and fails tests, because some instance variables from testing [`DataApiRequest`](./fili-core/src/main/java/com/yahoo/bard/webservice/web/DataApiRequest.java)
+      are null. This patch assigns non-null values to those variables.
+      
 - [Fix Lucene Cardinality in New KeyValueStores](https://github.com/yahoo/fili/pull/521)
     * Fix lucene to put correct cardinality value to new key value store that does not contain the cardinality key
 
