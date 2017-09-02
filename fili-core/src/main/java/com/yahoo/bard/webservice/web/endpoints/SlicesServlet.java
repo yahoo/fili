@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -104,6 +105,7 @@ public class SlicesServlet extends EndpointServlet {
             @Context UriInfo uriInfo,
             @Context final ContainerRequestContext containerRequestContext
     ) {
+        Supplier<Response> responseSender;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new SliceRequest("all"));
@@ -132,23 +134,23 @@ public class SlicesServlet extends EndpointServlet {
             );
 
             LOG.debug("Slice Endpoint Response: {}", response.getEntity());
-            RequestLog.stopTiming(this);
-            return response;
+            responseSender = () -> response;
         } catch (RequestValidationException e) {
             LOG.debug(e.getMessage(), e);
-            RequestLog.stopTiming(this);
-            return Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
+            responseSender = () -> Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
         } catch (IOException e) {
             String msg = String.format("Internal server error. IOException : %s", e.getMessage());
             LOG.error(msg, e);
-            RequestLog.stopTiming(this);
-            return Response.status(INTERNAL_SERVER_ERROR).entity(msg).build();
+            responseSender = () -> Response.status(INTERNAL_SERVER_ERROR).entity(msg).build();
         } catch (Error | Exception e) {
             String msg = String.format("Exception processing request: %s", e.getMessage());
             LOG.info(msg, e);
+            responseSender = () -> Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
+        } finally {
             RequestLog.stopTiming(this);
-            return Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
         }
+
+        return responseSender.get();
     }
 
     /**
@@ -185,6 +187,7 @@ public class SlicesServlet extends EndpointServlet {
             @Context UriInfo uriInfo,
             @Context final ContainerRequestContext containerRequestContext
     ) {
+        Supplier<Response> responseSender;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new SliceRequest(sliceName));
@@ -205,17 +208,18 @@ public class SlicesServlet extends EndpointServlet {
 
             String output = objectMappers.getMapper().writeValueAsString(apiRequest.getSlice());
             LOG.debug("Slice Endpoint Response: {}", output);
-            RequestLog.stopTiming(this);
-            return Response.status(Response.Status.OK).entity(output).build();
+            responseSender = () -> Response.status(Response.Status.OK).entity(output).build();
         } catch (RequestValidationException e) {
             LOG.debug(e.getMessage(), e);
-            RequestLog.stopTiming(this);
-            return Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
+            responseSender = () -> Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
         } catch (IOException | IllegalStateException e) {
             LOG.debug("Bad request exception : {}", e);
+            responseSender = () -> Response.status(BAD_REQUEST).entity("Exception: " + e.getMessage()).build();
+        } finally {
             RequestLog.stopTiming(this);
-            return Response.status(BAD_REQUEST).entity("Exception: " + e.getMessage()).build();
         }
+
+        return responseSender.get();
     }
 
     /**

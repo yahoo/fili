@@ -15,13 +15,16 @@ import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
 import com.yahoo.bard.webservice.web.DataApiRequest
+import com.yahoo.bard.webservice.web.JsonResponseWriter
 import com.yahoo.bard.webservice.web.PreResponse
 import com.yahoo.bard.webservice.web.ResponseFormatType
+import com.yahoo.bard.webservice.web.ResponseWriter
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext
 import com.yahoo.bard.webservice.web.responseprocessors.ResultSetResponseProcessor
 
 import rx.subjects.PublishSubject
 import rx.subjects.Subject
+
 import spock.lang.Specification
 
 import javax.ws.rs.container.AsyncResponse
@@ -45,6 +48,7 @@ class HttpResponseMakerSpec extends Specification {
     ResultSetResponseProcessor resultSetResponseProcessor
     Subject<PreResponse, PreResponse> responseEmitter
     HttpResponseMaker httpResponseMaker
+    ResponseWriter responseWriter
 
     def setup() {
         apiRequest = Mock(DataApiRequest)
@@ -54,8 +58,14 @@ class HttpResponseMakerSpec extends Specification {
         paramMap = Mock(MultivaluedMap)
         DimensionDictionary dimensionDictionary = Mock(DimensionDictionary)
         Dimension dim1 = Mock(Dimension)
+        responseWriter = new JsonResponseWriter(MAPPERS)
 
-        httpResponseChannel = new HttpResponseChannel(Mock(AsyncResponse), apiRequest, new HttpResponseMaker(MAPPERS, dimensionDictionary))
+        httpResponseChannel = new HttpResponseChannel(
+                Mock(AsyncResponse),
+                apiRequest,
+                new HttpResponseMaker(MAPPERS, dimensionDictionary, responseWriter)
+        )
+
         responseEmitter = PublishSubject.create()
         responseEmitter.subscribe(httpResponseChannel)
 
@@ -82,7 +92,7 @@ class HttpResponseMakerSpec extends Specification {
         resultSet = Mock(ResultSet)
         resultSet.getSchema() >> schema
 
-        httpResponseMaker = new HttpResponseMaker(MAPPERS, dimensionDictionary)
+        httpResponseMaker = new HttpResponseMaker(MAPPERS, dimensionDictionary, responseWriter)
         resultSetResponseProcessor = new ResultSetResponseProcessor(
                 apiRequest,
                 responseEmitter,

@@ -35,7 +35,7 @@ class UIJsonResponseSpec extends Specification {
     DateTime timeStamp
     LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> defaultDimensionFieldsToShow
     SimplifiedIntervalList volatileIntervals = []
-
+    FiliResponseWriter filiResponseWriter
 
     def setup() {
         // Default JodaTime zone to UTC
@@ -84,6 +84,11 @@ class UIJsonResponseSpec extends Specification {
         // Build a default schema
         newSchema = new ResultSetSchema(DAY, [dimensionColumn, metricColumn1, metricColumn2] as Set)
 
+        filiResponseWriter = new FiliResponseWriter(new FiliResponseWriterSelector(
+                new CsvResponseWriter(MAPPERS),
+                new JsonResponseWriter(MAPPERS),
+                new JsonApiResponseWriter(MAPPERS)
+        ))
     }
 
     def "Get single row response"() {
@@ -97,6 +102,8 @@ class UIJsonResponseSpec extends Specification {
 
 
         and: "An expected json serialization"
+        DataApiRequest apiRequest = Mock(DataApiRequest)
+        apiRequest.getFormat()  >> ResponseFormatType.JSON
         String expectedJSON = """{
             "rows":[{
                         "metricColumn1Name":1234567.1234,
@@ -108,20 +115,18 @@ class UIJsonResponseSpec extends Specification {
         }"""
 
         when: "get and serialize a JsonResponse"
-        Response jro = new Response(
+        ResponseData jro = new ResponseData(
                 resultSet,
                 apiMetricColumnNames,
                 defaultDimensionFieldsToShow,
-                ResponseFormatType.JSON,
                 new SimplifiedIntervalList(),
                 volatileIntervals,
-                [:],
                 (Pagination) null,
-                MAPPERS
+                [:]
         )
 
         ByteArrayOutputStream os = new ByteArrayOutputStream()
-        jro.write(os)
+        filiResponseWriter.write(apiRequest, jro, os)
 
         String responseJSON = os.toString()
 
@@ -137,6 +142,7 @@ class UIJsonResponseSpec extends Specification {
 
         and: "An API Request"
         DataApiRequest apiRequest = Mock(DataApiRequest)
+        apiRequest.getFormat()  >> ResponseFormatType.JSON
         LinkedHashSet<String> apiMetricColumnNames = getApiMetricColumnNames()
 
         apiRequest.getDimensionFields() >> defaultDimensionFieldsToShow
@@ -169,19 +175,17 @@ class UIJsonResponseSpec extends Specification {
         }"""
 
         when: "We get and serialize a JsonResponse for it"
-        Response jro = new Response(
+        ResponseData jro = new ResponseData(
                 resultSet,
                 apiMetricColumnNames,
                 defaultDimensionFieldsToShow,
-                ResponseFormatType.JSON,
                 new SimplifiedIntervalList(),
                 volatileIntervals,
-                [:],
                 (Pagination) null,
-                MAPPERS
+                [:]
         )
         ByteArrayOutputStream os = new ByteArrayOutputStream()
-        jro.write(os)
+        filiResponseWriter.write(apiRequest, jro, os)
 
         String responseJSON = os.toString()
         then: "The serialized JsonResponse matches what we expect"

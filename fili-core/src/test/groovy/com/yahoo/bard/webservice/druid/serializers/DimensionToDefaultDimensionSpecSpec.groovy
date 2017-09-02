@@ -52,7 +52,7 @@ class DimensionToDefaultDimensionSpecSpec extends Specification {
         apiRequest.getTopN() >> OptionalInt.empty()
         apiRequest.getSorts() >> ([])
         apiRequest.getCount() >> OptionalInt.empty()
-        apiRequest.getFilters() >> Collections.emptyMap()
+        apiRequest.getApiFilters() >> Collections.emptyMap()
     }
 
     def "Serialize to apiName when apiName and physicalName of a dimension is the same"() {

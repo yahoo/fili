@@ -19,12 +19,19 @@ class PaginationParametersSpec extends Specification {
 
         then: "The handler's perPage and page are as expected"
         handler.getPerPage() == expectedPerPage
-        handler.getPage() == expectedPage
+        handler.getPage(resultSize) == expectedPage
 
         where:
-        perPage | page || expectedPerPage   || expectedPage
-        "1"     | "2"  || 1                 || 2
-        "2"     | "1"  || 2                 || 1
+        perPage | page    || expectedPerPage   || expectedPage  || resultSize
+        "1"     | "2"     || 1                 || 2             || 10
+        "2"     | "1"     || 2                 || 1             || 10
+        "3"     | "last"  || 3                 || 4             || 10
+        "5"     | "last"  || 5                 || 2             || 10
+        "2"     | "first" || 2                 || 1             || 10
+        "3"     | "1"     || 3                 || 1             || 3
+        "3"     | "first" || 3                 || 1             || 3
+        "3"     | "last"  || 3                 || 1             || 3
+        "3"     | "last"  || 3                 || 1             || 0
     }
 
     @Unroll
@@ -38,11 +45,11 @@ class PaginationParametersSpec extends Specification {
 
         where:
         perPage | page  || expectedError
-        "-1"  | "-1"    || errorMessage("perPage", "-1")
+        "-1" | "-1"     || errorMessage("perPage", "-1")
         "0"   | "-1"    || errorMessage("perPage", "0")
         "1"   | "-1"    || errorMessage("page", "-1")
-        "-1"  | "0"     || errorMessage("perPage", "-1")
-        "-1"  | "1"     || errorMessage("perPage", "-1")
+        "-1" | "0"      || errorMessage("perPage", "-1")
+        "-1" | "1"      || errorMessage("perPage", "-1")
         "1a"  | "1a"    || errorMessage("perPage", "1a")
         "1a"  | "1"     || errorMessage("perPage", "1a")
         "1"   | "1a"    || errorMessage("page", "1a")

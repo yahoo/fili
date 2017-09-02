@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
+import java.util.Optional;
 
 /**
  * Druid groupBy query.
@@ -159,10 +160,10 @@ public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
 
     @Override
     public GroupByQuery withInnermostDataSource(DataSource dataSource) {
-        DruidFactQuery<?> innerQuery = (DruidFactQuery<?>) this.dataSource.getQuery();
-        return (innerQuery == null) ?
+        Optional<DruidFactQuery<?>> innerQuery = (Optional<DruidFactQuery<?>>) this.dataSource.getQuery();
+        return !innerQuery.isPresent() ?
                 withDataSource(dataSource) :
-                withDataSource(new QueryDataSource(innerQuery.withInnermostDataSource(dataSource)));
+                withDataSource(new QueryDataSource(innerQuery.get().withInnermostDataSource(dataSource)));
     }
 
     public GroupByQuery withDimensions(Collection<Dimension> dimensions) {
@@ -204,10 +205,10 @@ public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
 
     @Override
     public GroupByQuery withAllIntervals(Collection<Interval> intervals) {
-        DruidFactQuery<?> innerQuery = (DruidFactQuery<?>) this.dataSource.getQuery();
-        return (innerQuery == null) ?
+        Optional<DruidFactQuery<?>> innerQuery = (Optional<DruidFactQuery<?>>) this.dataSource.getQuery();
+        return !innerQuery.isPresent() ?
                 withIntervals(intervals) :
-                withDataSource(new QueryDataSource(innerQuery.withAllIntervals(intervals))).withIntervals(intervals);
+                withDataSource(new QueryDataSource(innerQuery.get().withAllIntervals(intervals))).withIntervals(intervals);
     }
 
     public GroupByQuery withOrderBy(LimitSpec limitSpec) {

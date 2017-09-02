@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.async.jobs.stores.ApiJobStore;
 import com.yahoo.bard.webservice.async.jobs.payloads.JobPayloadBuilder;
 import com.yahoo.bard.webservice.async.jobs.jobrows.JobRow;
 import com.yahoo.bard.webservice.async.jobs.stores.JobRowFilter;
+import com.yahoo.bard.webservice.web.apirequest.ApiRequestImpl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +24,7 @@ import javax.ws.rs.core.UriInfo;
 /**
  * Jobs API Request. Such an API Request binds, validates, and models the parts of a request to the Jobs endpoint.
  */
-public class JobsApiRequest extends ApiRequest {
+public class JobsApiRequest extends ApiRequestImpl {
 
     public static final String REQUEST_MAPPER_NAMESPACE = "jobsApiRequestMapper";
     private static final Logger LOG = LoggerFactory.getLogger(JobsApiRequest.class);

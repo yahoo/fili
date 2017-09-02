@@ -80,14 +80,14 @@ class DimensionsServletComponentSpec extends Specification {
         String expectedResponse = """{
                                         "dimensions":
                                         [
-                                            {"category": "General", "name": "color", "longName": "color", "uri": "http://localhost:9998/dimensions/color", "cardinality": 0},
-                                            {"category": "General", "name": "shape", "longName": "shape", "uri": "http://localhost:9998/dimensions/shape", "cardinality": 38},
-                                            {"category": "General", "name": "size", "longName": "size", "uri": "http://localhost:9998/dimensions/size", "cardinality": 0},
-                                            {"category": "General", "name": "model", "longName": "model", "uri": "http://localhost:9998/dimensions/model", "cardinality": 21},
-                                            {"category": "General", "name": "other", "longName": "other", "uri": "http://localhost:9998/dimensions/other", "cardinality": 100000},
-                                            {"category": "General", "name": "sex", "longName": "sex", "uri": "http://localhost:9998/dimensions/sex", "cardinality": 0},
-                                            {"category": "General", "name": "species", "longName": "species", "uri": "http://localhost:9998/dimensions/species", "cardinality": 0},
-                                            {"category": "General", "name": "breed", "longName": "breed", "uri": "http://localhost:9998/dimensions/breed", "cardinality": 0}
+                                            {"category": "General", "name": "color", "longName": "color", "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/color", "cardinality": 0},
+                                            {"category": "General", "name": "shape", "longName": "shape", "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/shape", "cardinality": 38},
+                                            {"category": "General", "name": "size", "longName": "size", "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/size", "cardinality": 0},
+                                            {"category": "General", "name": "model", "longName": "model", "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/model", "cardinality": 21},
+                                            {"category": "General", "name": "other", "longName": "other", "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/other", "cardinality": 100000},
+                                            {"category": "General", "name": "sex", "longName": "sex", "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/sex", "cardinality": 0},
+                                            {"category": "General", "name": "species", "longName": "species", "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/species", "cardinality": 0},
+                                            {"category": "General", "name": "breed", "longName": "breed", "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/breed", "cardinality": 0}
                                         ]
                                     }"""
 
@@ -121,112 +121,112 @@ class DimensionsServletComponentSpec extends Specification {
                                                 "longName": "shapes",
                                                 "name": "shapes",
                                                 "granularity": "day",
-                                                "uri": "http://localhost:9998/tables/shapes/day"
+                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/shapes/day"
                                             }, {
                                                 "category": "General",
                                                 "longName": "shapes",
                                                 "name": "shapes",
                                                 "granularity": "all",
-                                                "uri": "http://localhost:9998/tables/shapes/all"
+                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/shapes/all"
                                             }, {
                                                 "category": "General",
                                                 "longName": "shapes",
                                                 "name": "shapes",
                                                 "granularity": "week",
-                                                "uri": "http://localhost:9998/tables/shapes/week"
+                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/shapes/week"
                                             }, {
                                                 "category": "General",
                                                 "longName": "shapes",
                                                 "name": "shapes",
                                                 "granularity": "month",
-                                                "uri": "http://localhost:9998/tables/shapes/month"
+                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/shapes/month"
                                             }, {
                                                 "category": "General",
                                                 "longName": "monthly",
                                                 "name": "monthly",
                                                 "granularity": "day",
-                                                "uri": "http://localhost:9998/tables/monthly/day"
+                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/monthly/day"
                                             }, {
                                                 "category": "General",
                                                 "longName": "monthly",
                                                 "name": "monthly",
                                                 "granularity": "all",
-                                                "uri": "http://localhost:9998/tables/monthly/all"
+                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/monthly/all"
                                             }, {
                                                 "category": "General",
                                                 "longName": "monthly",
                                                 "name": "monthly",
                                                 "granularity": "week",
-                                                "uri": "http://localhost:9998/tables/monthly/week"
+                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/monthly/week"
                                             }, {
                                                 "category": "General",
                                                 "longName": "monthly",
                                                 "name": "monthly",
                                                 "granularity": "month",
-                                                "uri": "http://localhost:9998/tables/monthly/month"
+                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/monthly/month"
                                             }, {
                                                 "category": "General",
                                                 "longName": "hourly",
                                                 "name": "hourly",
                                                 "granularity": "hour",
-                                                "uri": "http://localhost:9998/tables/hourly/hour"
+                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/hourly/hour"
                                             }, {
                                                 "category": "General",
                                                 "longName": "hourly",
                                                 "name": "hourly",
                                                 "granularity": "all",
-                                                "uri": "http://localhost:9998/tables/hourly/all"
+                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/hourly/all"
                                             }, {
                                                 "category": "General",
                                                 "longName": "hourly",
                                                 "name": "hourly",
                                                 "granularity": "day",
-                                                "uri": "http://localhost:9998/tables/hourly/day"
+                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/hourly/day"
                                             }, {
                                                 "category": "General",
                                                 "longName": "hourly",
                                                 "name": "hourly",
                                                 "granularity": "week",
-                                                "uri": "http://localhost:9998/tables/hourly/week"
+                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/hourly/week"
                                             }, {
                                                 "category": "General",
                                                 "longName": "hourly",
                                                 "name": "hourly",
                                                 "granularity": "month",
-                                                "uri": "http://localhost:9998/tables/hourly/month"
+                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/hourly/month"
                                             }, {
                                                 "category": "General",
                                                 "longName": "hourly_monthly",
                                                 "name": "hourly_monthly",
                                                 "granularity": "hour",
-                                                "uri": "http://localhost:9998/tables/hourly_monthly/hour"
+                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/hourly_monthly/hour"
                                             }, {
                                                 "category": "General",
                                                 "longName": "hourly_monthly",
                                                 "name": "hourly_monthly",
                                                 "granularity": "all",
-                                                "uri": "http://localhost:9998/tables/hourly_monthly/all"
+                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/hourly_monthly/all"
                                             }, {
                                                 "category": "General",
                                                 "longName": "hourly_monthly",
                                                 "name": "hourly_monthly",
                                                 "granularity": "day",
-                                                "uri": "http://localhost:9998/tables/hourly_monthly/day"
+                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/hourly_monthly/day"
                                             }, {
                                                 "category": "General",
                                                 "longName": "hourly_monthly",
                                                 "name": "hourly_monthly",
                                                 "granularity": "week",
-                                                "uri": "http://localhost:9998/tables/hourly_monthly/week"
+                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/hourly_monthly/week"
                                             }, {
                                                 "category": "General",
                                                 "longName": "hourly_monthly",
                                                 "name": "hourly_monthly",
                                                 "granularity": "month",
-                                                "uri": "http://localhost:9998/tables/hourly_monthly/month"
+                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/hourly_monthly/month"
                                             }
                                         ],
-                                        "values": "http://localhost:9998/dimensions/other/values"
+                                        "values": "http://localhost:${jtb.getHarness().getPort()}/dimensions/other/values"
                                     }"""
         when: "We send a request"
         String result = makeRequest("/dimensions/other", null).get(String.class)
@@ -258,8 +258,8 @@ class DimensionsServletComponentSpec extends Specification {
                                                 "numberOfResults": 38,
                                                 "rowsPerPage": 3,
                                                 "paginationLinks": {
-                                                    "next": "http://localhost:9998/dimensions/shape/values?perPage=3&page=2",
-                                                    "last": "http://localhost:9998/dimensions/shape/values?perPage=3&page=13"
+                                                    "next": "http://localhost:${jtb.getHarness().getPort()}/dimensions/shape/values?perPage=3&page=2",
+                                                    "last": "http://localhost:${jtb.getHarness().getPort()}/dimensions/shape/values?perPage=3&page=13"
                                                 }
                                             }
                                          }
@@ -311,8 +311,8 @@ class DimensionsServletComponentSpec extends Specification {
                                      """.replaceAll("\\r?\\n?\\s","")
 
         Map<String, String> expectedLinks = [
-                ('"last"'): """<http://localhost:9998/dimensions/shape/values?perPage=3&format=CSV&page=13>""",
-                ('"next"'): """<http://localhost:9998/dimensions/shape/values?perPage=3&format=CSV&page=2>"""
+                ('"last"'): """<http://localhost:${jtb.getHarness().getPort()}/dimensions/shape/values?perPage=3&format=CSV&page=13>""",
+                ('"next"'): """<http://localhost:${jtb.getHarness().getPort()}/dimensions/shape/values?perPage=3&format=CSV&page=2>"""
         ]
 
         when: "We send a request"
@@ -349,9 +349,11 @@ class DimensionsServletComponentSpec extends Specification {
         GroovyTestUtils.compareJson(result, expectedResponse)
 
         where:
-        paginating | page | perPage | explicitlyNotExplicitly
-        true       | "1"  | "5"     | "explicitly"
-        false      | ""   | ""      | "not explicitly"
+        paginating |  page   | perPage | explicitlyNotExplicitly
+        true       |   "1"   |   "5"   | "explicitly"
+        false      |   ""    |   ""    | "not explicitly"
+        true       | "first" |   "5"   | "explicitly"
+        true       | "last"  |   "5"   | "explicitly"
     }
 
     def "test dimension value endpoint filter-chain"() {

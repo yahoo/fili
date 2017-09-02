@@ -4,8 +4,6 @@ import com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobStatus
 import com.yahoo.bard.webservice.async.workflows.TestAsynchronousWorkflowsBuilder
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 
-import rx.Observer
-
 import java.util.concurrent.CountDownLatch
 
 /**
@@ -65,8 +63,9 @@ class AsyncResultsReadySpec extends AsyncFunctionalSpec {
                 }
     */
 
-    static final String QUERY =
-            "http://localhost:9998/data/shapes/day?dateTime=2016-08-30%2F2016-08-31&metrics=height&asyncAfter=always"
+    String getQuery() {
+        return "http://localhost:${jtb.getHarness().getPort()}/data/shapes/day?dateTime=2016-08-30%2F2016-08-31&metrics=height&asyncAfter=always"
+    }
 
     final CountDownLatch jobMetadataReady = new CountDownLatch(1)
 
@@ -105,7 +104,7 @@ class AsyncResultsReadySpec extends AsyncFunctionalSpec {
         [
                 data: {
                     assert it.status == 202
-                    AsyncTestUtils.validateJobPayload(it.readEntity(String), QUERY, DefaultJobStatus.PENDING.name)
+                    AsyncTestUtils.validateJobPayload(jtb, it.readEntity(String), getQuery(), DefaultJobStatus.PENDING.name)
                 },
                 syncResults: {
                     assert it.status == 200
@@ -118,8 +117,9 @@ class AsyncResultsReadySpec extends AsyncFunctionalSpec {
                 jobs: { response ->
                         assert response.status == 200
                         AsyncTestUtils.validateJobPayload(
+                                jtb,
                                 response.readEntity(String),
-                                QUERY,
+                                getQuery(),
                                 DefaultJobStatus.SUCCESS.name
                         )
                 }

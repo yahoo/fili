@@ -13,6 +13,7 @@ import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
+import com.yahoo.bard.webservice.web.apirequest.ApiRequestImpl;
 import com.yahoo.bard.webservice.web.endpoints.DimensionsServlet;
 import com.yahoo.bard.webservice.web.endpoints.SlicesServlet;
 
@@ -34,7 +35,7 @@ import javax.ws.rs.core.UriInfo;
 /**
  * Slices API Request. Such an API Request binds, validates, and models the parts of a request to the slices endpoint.
  */
-public class SlicesApiRequest extends ApiRequest {
+public class SlicesApiRequest extends ApiRequestImpl {
     private static final Logger LOG = LoggerFactory.getLogger(SlicesApiRequest.class);
     public static final String REQUEST_MAPPER_NAMESPACE = "slicesApiRequestMapper";
 

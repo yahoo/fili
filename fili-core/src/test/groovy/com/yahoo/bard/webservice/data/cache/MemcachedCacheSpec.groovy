@@ -140,7 +140,7 @@ class MemcachedCacheSpec extends Specification {
            }"""
 
         when: "initial request"
-        jtb.nonUiDruidWebService.jsonResponse = {response}
+        jtb.druidWebService.jsonResponse = {response}
 
         String result = jtb.getHarness().target("data/shapes/day/color")
             .queryParam("metrics","width")
@@ -151,7 +151,7 @@ class MemcachedCacheSpec extends Specification {
         GroovyTestUtils.compareJson(result, expected)
 
         when: "Change druid result"
-        jtb.nonUiDruidWebService.jsonResponse = {"[]"}
+        jtb.druidWebService.jsonResponse = {"[]"}
 
         result = jtb.getHarness().target("data/shapes/day/color")
             .queryParam("metrics","width")
@@ -162,7 +162,7 @@ class MemcachedCacheSpec extends Specification {
         GroovyTestUtils.compareJson(result, expected)
 
         when: "force cache bypass"
-        jtb.nonUiDruidWebService.jsonResponse = {"[]"}
+        jtb.druidWebService.jsonResponse = {"[]"}
 
         expected = """{ "rows":[] }"""
 

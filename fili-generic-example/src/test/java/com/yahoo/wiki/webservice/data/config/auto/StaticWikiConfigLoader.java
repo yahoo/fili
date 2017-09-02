@@ -5,10 +5,14 @@ package com.yahoo.wiki.webservice.data.config.auto;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
+import com.yahoo.bard.webservice.util.Utils;
+
+import io.druid.timeline.DataSegment;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
 /**
@@ -29,8 +33,8 @@ public class StaticWikiConfigLoader implements Supplier<List<? extends DataSourc
             }
 
             @Override
-            public List<String> getMetrics() {
-                return Arrays.asList(
+            public Set<String> getMetrics() {
+                return Utils.asLinkedHashSet(
                         "count",
                         "added",
                         "deleted",
@@ -40,8 +44,13 @@ public class StaticWikiConfigLoader implements Supplier<List<? extends DataSourc
             }
 
             @Override
-            public List<String> getDimensions() {
-                return Arrays.asList(
+            public List<DataSegment> getDataSegmentMetadata() {
+                return Collections.emptyList();
+            }
+
+            @Override
+            public Set<String> getDimensions() {
+                return Utils.asLinkedHashSet(
                         "channel",
                         "cityName",
                         "comment",

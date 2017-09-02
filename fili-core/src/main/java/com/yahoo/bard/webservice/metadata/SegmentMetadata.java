@@ -3,7 +3,8 @@
 package com.yahoo.bard.webservice.metadata;
 
 import com.yahoo.bard.webservice.util.DateTimeUtils;
-import com.yahoo.bard.webservice.util.Utils;
+
+import com.google.common.collect.ImmutableMap;
 
 import org.joda.time.Interval;
 
@@ -54,8 +55,8 @@ public class SegmentMetadata {
             tempMetricIntervals.put(entry.getKey(), DateTimeUtils.mergeIntervalSet(entry.getValue()));
         }
 
-        dimensionIntervals = Utils.makeImmutable(tempDimensionIntervals);
-        metricIntervals = Utils.makeImmutable(tempMetricIntervals);
+        dimensionIntervals = ImmutableMap.copyOf(tempDimensionIntervals);
+        metricIntervals = ImmutableMap.copyOf(tempMetricIntervals);
         isEmpty = dimensionIntervals.isEmpty() && metricIntervals.isEmpty();
     }
 
@@ -67,8 +68,8 @@ public class SegmentMetadata {
      */
     @SuppressWarnings("unused") // Used by tests only
     private SegmentMetadata(Map<String, Set<Interval>> dimensionIntervals, Map<String, Set<Interval>> metricIntervals) {
-        this.dimensionIntervals = Utils.makeImmutable(dimensionIntervals);
-        this.metricIntervals = Utils.makeImmutable(metricIntervals);
+        this.dimensionIntervals = ImmutableMap.copyOf(dimensionIntervals);
+        this.metricIntervals = ImmutableMap.copyOf(metricIntervals);
         isEmpty = dimensionIntervals.isEmpty() && metricIntervals.isEmpty();
     }
 

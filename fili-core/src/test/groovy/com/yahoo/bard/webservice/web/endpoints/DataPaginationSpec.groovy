@@ -144,7 +144,7 @@ class DataPaginationSpec extends BaseDataServletComponentSpec {
 
 
     @Unroll
-    def "Page #page of #numPages with the correct headers and #rowsPerPage rows per page of data, is returned"() {
+    def "Page #pageParam of #numPages with the correct headers and #rowsPerPage rows per page of data, is returned"() {
         given: "A known Druid response, and the expected API response"
         String druidResponse = getFakeDruidResponse(numPages * rowsPerPage)
         validateJson(druidResponse)
@@ -154,7 +154,7 @@ class DataPaginationSpec extends BaseDataServletComponentSpec {
         injectDruidResponse(druidResponse)
 
         when: "We send a request"
-        Response response = makeAbstractRequest {getQueryParams("$rowsPerPage", "$page")}
+        Response response = makeAbstractRequest {getQueryParams("$rowsPerPage", pageParam)}
 
         then:
         headersAreCorrect(response.getHeaders(), ROWS_PER_PAGE, page, numPages, true)
@@ -162,13 +162,15 @@ class DataPaginationSpec extends BaseDataServletComponentSpec {
 
         where:
         rowsPerPage = ROWS_PER_PAGE
-        numPages | page
-        1        |  1
-        2        |  1
-        2        |  2
-        3        |  1
-        3        |  2
-        3        |  3
+        numPages | page | pageParam
+        1        |  1   | "1"
+        2        |  1   | "1"
+        2        |  2   | "2"
+        3        |  1   | "1"
+        3        |  2   | "2"
+        3        |  3   | "3"
+        3        |  1   | "first"
+        3        |  3   | "last"
     }
 
     @Unroll
@@ -324,7 +326,7 @@ class DataPaginationSpec extends BaseDataServletComponentSpec {
      * @return A String representation of a link to the desired page
      */
     String buildPageLink(int perPage, int page){
-        "http://localhost:9998/$target?metrics=height&dateTime=2014-09-01%2F2014-09-13&perPage=$perPage&page=$page"
+        "http://localhost:${jtb.getHarness().getPort()}/$target?metrics=height&dateTime=2014-09-01%2F2014-09-13&perPage=$perPage&page=$page"
     }
 
     /**

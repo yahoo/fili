@@ -18,9 +18,12 @@ import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.util.SinglePagePagination;
 import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.bard.webservice.web.ApiFilter;
+import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.PageNotFoundException;
 import com.yahoo.bard.webservice.web.RowLimitReachedException;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
+
+import org.apache.commons.io.FileUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -46,8 +49,14 @@ import org.apache.lucene.store.MMapDirectory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -61,7 +70,7 @@ import java.util.stream.Stream;
 
 /**
  * LuceneSearchProvider.
- * Search provider which uses lucene
+ * Search provider which uses lucene.
  */
 public class LuceneSearchProvider implements SearchProvider {
     private static final Logger LOG = LoggerFactory.getLogger(LuceneSearchProvider.class);
@@ -108,11 +117,10 @@ public class LuceneSearchProvider implements SearchProvider {
             luceneIndexIsHealthy = true;
         } catch (IOException e) {
             luceneIndexIsHealthy = false;
-            String message = String.format("Unable to create index directory %s:", this.luceneIndexPath);
+            String message = ErrorMessageFormat.UNABLE_TO_CREATE_DIR.format(this.luceneIndexPath);
             LOG.error(message, e);
         }
     }
-
 
     /**
      * Constructor.  The search timeout is initialized to the default (or configured) value.
@@ -191,7 +199,7 @@ public class LuceneSearchProvider implements SearchProvider {
         this.keyValueStore = keyValueStore;
         // Check initialization for the cardinality in a keyValueStore
         if (keyValueStore.get(DimensionStoreKeyUtils.getCardinalityKey()) == null) {
-            keyValueStore.put(DimensionStoreKeyUtils.getCardinalityKey(), "0");
+            refreshCardinality();
         }
     }
 
@@ -311,10 +319,100 @@ public class LuceneSearchProvider implements SearchProvider {
         }
 
         // Build the term to delete the old document by the key value (which should be unique)
-        Term keyTerm = new Term(fieldMap.get(dimension.getKey()).name(), newRow.get(dimension.getKey()));
+        Term keyTerm = new Term(fieldMap.get(dimension.getKey()).name(), newRow.getOrDefault(dimension.getKey(), ""));
 
         // Update the document by the key term
         writer.updateDocument(keyTerm, luceneDimensionRowDoc);
+    }
+
+    @Override
+    public void replaceIndex(String newLuceneIndexPathString) {
+        lock.writeLock().lock();
+        try {
+            Path oldLuceneIndexPath = Paths.get(luceneIndexPath);
+            String tempDir = oldLuceneIndexPath.resolveSibling(oldLuceneIndexPath.getFileName() + "_old").toString();
+
+            LOG.debug("Moving old Lucene index directory from {} to {} ...", luceneIndexPath, tempDir);
+            moveDirEntries(luceneIndexPath, tempDir);
+
+            LOG.debug("Moving all new Lucene indexes from {} to {} ...", newLuceneIndexPathString, luceneIndexPath);
+            moveDirEntries(newLuceneIndexPathString, luceneIndexPath);
+
+            LOG.debug(
+                    "Deleting {} since new Lucene indexes have been moved away from there and is now empty",
+                    newLuceneIndexPathString
+            );
+            deleteDir(newLuceneIndexPathString);
+
+            LOG.debug("Deleting old Lucene indexes in {} ...", tempDir);
+            deleteDir(tempDir);
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    /**
+     * Moves all files and sub-directories from one location to another.
+     * <p>
+     * Two locations must exist before calling this method.
+     *
+     * @param sourceDir  The location where files and sub-directories will be moved from
+     * @param destinationDir  The location where files and sub-directories will be moved to
+     */
+    private static void moveDirEntries(String sourceDir, String destinationDir) {
+        Path sourcePath = Paths.get(sourceDir).toAbsolutePath();
+        Path destinationPath = Paths.get(destinationDir).toAbsolutePath();
+
+        if (!Files.exists(destinationPath)) {
+            try {
+                Files.createDirectory(destinationPath);
+            } catch (IOException e) {
+                LOG.error(ErrorMessageFormat.UNABLE_TO_CREATE_DIR.format(destinationDir));
+                throw new RuntimeException(e);
+            }
+        }
+
+        try {
+            Files.walkFileTree(sourcePath, new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes basicFileAttributes)
+                        throws  IOException {
+                    Path destinationDirPath = destinationPath.resolve(sourcePath.relativize(dir));
+                    if (!Files.exists(destinationDirPath)) {
+                        Files.createDirectory(destinationDirPath);
+                        LOG.trace("Creating sub-directory {} under {} ...", dir, destinationDir);
+                    }
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes basicFileAttributes)
+                        throws IOException {
+                    Path destinationFileName = destinationPath.resolve(sourcePath.relativize(file));
+                    LOG.trace("Moving {} to {}", file, destinationFileName);
+                    Files.move(file, destinationFileName);
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        } catch (IOException e) {
+            LOG.error("I/O error thrown by SimpleFileVisitor method");
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Deletes a directory and all entries under that directory.
+     *
+     * @param path  The location of the directory that is to be deleted
+     */
+    private static void deleteDir(String path) {
+        try {
+            FileUtils.deleteDirectory(new File(path));
+        } catch (IOException e) {
+            String message = ErrorMessageFormat.UNABLE_TO_DELETE_DIR.format(path);
+            LOG.error(message);
+            throw new RuntimeException(message);
+        }
     }
 
     /**
@@ -349,7 +447,7 @@ public class LuceneSearchProvider implements SearchProvider {
                 writer.deleteAll();
                 writer.commit();
             } catch (IOException e) {
-                LOG.error("Failed to wipe Lucene index at directory: {}", luceneDirectory);
+                LOG.error(ErrorMessageFormat.FAIL_TO_WIPTE_LUCENE_INDEX_DIR.format(luceneDirectory));
                 throw new RuntimeException(e);
             }
 
@@ -563,7 +661,6 @@ public class LuceneSearchProvider implements SearchProvider {
             throws PageNotFoundException {
         int perPage = paginationParameters.getPerPage();
         validatePerPage(perPage);
-        int requestedPageNumber = paginationParameters.getPage();
 
         TreeSet<DimensionRow> filteredDimRows;
         int documentCount;
@@ -578,11 +675,11 @@ public class LuceneSearchProvider implements SearchProvider {
                         luceneIndexSearcher,
                         null,
                         query,
-                        perPage,
-                        requestedPageNumber
+                        perPage
                 );
                 hits = hitDocs.scoreDocs;
                 documentCount = hitDocs.totalHits;
+                int requestedPageNumber = paginationParameters.getPage(documentCount);
                 if (hits.length == 0) {
                     if (requestedPageNumber == 1) {
                         return new SinglePagePagination<>(Collections.emptyList(), paginationParameters, 0);
@@ -592,7 +689,7 @@ public class LuceneSearchProvider implements SearchProvider {
                 }
                 for (int currentPage = 1; currentPage < requestedPageNumber; currentPage++) {
                     ScoreDoc lastEntry = hits[hits.length - 1];
-                    hits = getPageOfData(luceneIndexSearcher, lastEntry, query, perPage, requestedPageNumber).scoreDocs;
+                    hits = getPageOfData(luceneIndexSearcher, lastEntry, query, perPage).scoreDocs;
                     if (hits.length == 0) {
                         throw new PageNotFoundException(requestedPageNumber, perPage, 0);
                     }
@@ -652,7 +749,6 @@ public class LuceneSearchProvider implements SearchProvider {
      * search after this entry (if lastEntry is null, the indexSearcher will begin its search from the beginning)
      * @param query  The Lucene query used to locate the desired dimension metadata
      * @param perPage  The number of entries per page
-     * @param currentPage  The desired page number
      *
      * @return The desired page of dimension metadata
      */
@@ -660,15 +756,14 @@ public class LuceneSearchProvider implements SearchProvider {
             IndexSearcher indexSearcher,
             ScoreDoc lastEntry,
             Query query,
-            int perPage,
-            int currentPage
+            int perPage
     ) {
         TimeLimitingCollectorManager manager = new TimeLimitingCollectorManager(searchTimeout, lastEntry, perPage);
         lock.readLock().lock();
         try {
             return indexSearcher.search(query, manager);
         } catch (IOException e) {
-            String errorMessage = "Unable to find dimension rows for page " + currentPage;
+            String errorMessage = "Unable to find dimension rows for specified page.";
             LOG.error(errorMessage);
             throw new RuntimeException(errorMessage);
         } catch (TimeLimitingCollector.TimeExceededException e) {

@@ -13,8 +13,10 @@ import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore
 import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseTestingUtils
 import com.yahoo.bard.webservice.async.broadcastchannels.SimpleBroadcastChannel
 import com.yahoo.bard.webservice.web.JobsApiRequest
+import com.yahoo.bard.webservice.web.JsonResponseWriter
 import com.yahoo.bard.webservice.web.PreResponse
 import com.yahoo.bard.webservice.web.RequestMapper
+import com.yahoo.bard.webservice.web.ResponseWriter
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.ObjectWriter
@@ -46,6 +48,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
     PreResponseStore mockPreResponseStore
     JobsServlet mockJobServlet
     HttpResponseMaker httpResponseMaker
+    ResponseWriter responseWriter
 
     def setup() {
         objectMappersSuite = Mock(ObjectMappersSuite)
@@ -53,6 +56,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
         ObjectWriter objectWriter = Mock(ObjectWriter)
         objectMappersSuite.getMapper() >> objectMapper
         objectMapper.writer() >> objectWriter
+        responseWriter = new JsonResponseWriter(objectMappersSuite)
 
         apiJobStore = Mock(ApiJobStore)
         jobPayloadBuilder = Mock(JobPayloadBuilder)
@@ -62,7 +66,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
 
         preResponseStore = new HashPreResponseStore()
         broadcastChannel = new SimpleBroadcastChannel<>(PublishSubject.create())
-        httpResponseMaker = new HttpResponseMaker(objectMappersSuite, dimensionDictionary)
+        httpResponseMaker = new HttpResponseMaker(objectMappersSuite, dimensionDictionary, responseWriter)
 
         jobsServlet = new JobsServlet(
                 objectMappersSuite,

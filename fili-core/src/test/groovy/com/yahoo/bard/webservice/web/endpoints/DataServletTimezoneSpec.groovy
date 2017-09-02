@@ -22,7 +22,7 @@ class DataServletTimezoneSpec extends Specification {
 
     static SystemConfig systemConfig = SystemConfigProvider.getInstance()
 
-    private static final String DRUID_URL_SETTING = systemConfig.getPackageVariableName("non_ui_druid_broker")
+    private static final String DRUID_URL_SETTING = systemConfig.getPackageVariableName("druid_broker")
 
     static String contextKey = systemConfig.getPackageVariableName("time_context_implementation")
 
@@ -89,7 +89,7 @@ class DataServletTimezoneSpec extends Specification {
         testWebService = new TestDruidWebService("default web service")
         testMetadataWebService = new TestDruidWebService("default metadata web service")
         jtb = new TestWebserviceJerseyTestBinder((Class<?>[]) resources.toArray())
-        assert jtb.nonUiDruidWebService instanceof DruidWebService
+        assert jtb.druidWebService instanceof DruidWebService
     }
 
     @Unroll
@@ -155,8 +155,7 @@ class DataServletTimezoneSpec extends Specification {
 
         @Override
         void buildWebServices() {
-            state.uiWebService = testWebService
-            state.nonUiWebService = testWebService
+            state.webService = testWebService
             state.metadataWebService = testWebService
         }
     }

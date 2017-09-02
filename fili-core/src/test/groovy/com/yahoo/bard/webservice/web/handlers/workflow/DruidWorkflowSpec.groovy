@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.handlers.workflow
 
+import com.yahoo.bard.webservice.web.handlers.WeightCheckRequestHandler
+
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_CACHE
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_CACHE_V2
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.QUERY_SPLIT
@@ -47,8 +49,7 @@ class DruidWorkflowSpec extends Specification {
 
     DruidWorkflow dw
     DataCache dataCache = Mock(DataCache)
-    DruidWebService uiWebService = Mock(DruidWebService)
-    DruidWebService nonUiWebService = Mock(DruidWebService)
+    DruidWebService webService = Mock(DruidWebService)
     QueryWeightUtil weightUtil = Mock(QueryWeightUtil)
     PhysicalTableDictionary physicalTableDictionary = Mock(PhysicalTableDictionary)
     PartialDataHandler partialDataHandler = Mock(PartialDataHandler)
@@ -86,8 +87,7 @@ class DruidWorkflowSpec extends Specification {
         when:
         dw = new DruidWorkflow(
                 doCacheV2 ? Mock(TupleDataCache) : Mock(DataCache),
-                uiWebService,
-                nonUiWebService,
+                webService,
                 weightUtil,
                 physicalTableDictionary,
                 partialDataHandler,
@@ -101,19 +101,10 @@ class DruidWorkflowSpec extends Specification {
         def defaultHandler = select.handlerSelector as DefaultWebServiceHandlerSelector
 
         then:
-        defaultHandler.uiWebServiceHandler.getWebService() == uiWebService
-        defaultHandler.nonUiWebServiceHandler.getWebService() == nonUiWebService
+        defaultHandler.webServiceHandler.getWebService() == webService
 
         when:
-        handlers = getHandlerChain(defaultHandler.uiWebServiceHandler.next)
-
-        then:
-        (handlers.find(byClass(CacheRequestHandler)) != null) == isCaching
-        (handlers.find(byClass(CacheV2RequestHandler)) != null) == isCachingV2
-        handlers.find(byClass(EtagCacheRequestHandler)) == null
-
-        when:
-        handlers = getHandlerChain(defaultHandler.nonUiWebServiceHandler.next)
+        handlers = getHandlerChain(defaultHandler.webServiceHandler.next)
 
         then:
         (handlers.find(byClass(CacheRequestHandler)) != null) == isCaching
@@ -142,8 +133,7 @@ class DruidWorkflowSpec extends Specification {
                 "LocalSignature".equals(etagConfigValue) || "ETag".equals(etagConfigValue)
                         ? Mock(TupleDataCache)
                         : Mock(DataCache),
-                uiWebService,
-                nonUiWebService,
+                webService,
                 weightUtil,
                 physicalTableDictionary,
                 partialDataHandler,
@@ -157,19 +147,10 @@ class DruidWorkflowSpec extends Specification {
         def defaultHandler = select.handlerSelector as DefaultWebServiceHandlerSelector
 
         then:
-        defaultHandler.uiWebServiceHandler.getWebService() == uiWebService
-        defaultHandler.nonUiWebServiceHandler.getWebService() == nonUiWebService
+        defaultHandler.webServiceHandler.getWebService() == webService
 
         when:
-        handlers = getHandlerChain(defaultHandler.uiWebServiceHandler.next)
-
-        then:
-        (handlers.find(byClass(CacheRequestHandler)) != null) == isCaching
-        (handlers.find(byClass(CacheV2RequestHandler)) != null) == isCachingV2
-        (handlers.find(byClass(EtagCacheRequestHandler)) != null) == isEtagCaching
-
-        when:
-        handlers = getHandlerChain(defaultHandler.nonUiWebServiceHandler.next)
+        handlers = getHandlerChain(defaultHandler.webServiceHandler.next)
 
         then:
         (handlers.find(byClass(CacheRequestHandler)) != null) == isCaching
@@ -191,8 +172,7 @@ class DruidWorkflowSpec extends Specification {
         setup:
         dw = new DruidWorkflow(
                 dataCache,
-                uiWebService,
-                nonUiWebService,
+                webService,
                 weightUtil,
                 physicalTableDictionary,
                 partialDataHandler,
@@ -206,14 +186,7 @@ class DruidWorkflowSpec extends Specification {
         def defaultHandler = select.handlerSelector as DefaultWebServiceHandlerSelector
 
         when:
-        handlers = getHandlerChain(defaultHandler.uiWebServiceHandler.next)
-
-        then:
-        [AsyncWebServiceRequestHandler, DebugRequestHandler].every {
-            handlers.find(byClass(it)) != null
-        }
-        when:
-        handlers = getHandlerChain(defaultHandler.nonUiWebServiceHandler.next)
+        handlers = getHandlerChain(defaultHandler.webServiceHandler.next)
 
         then:
         [AsyncWebServiceRequestHandler, DebugRequestHandler, WeightCheckRequestHandler].every {
@@ -227,8 +200,7 @@ class DruidWorkflowSpec extends Specification {
 
         dw = new DruidWorkflow(
                 dataCache,
-                uiWebService,
-                nonUiWebService,
+                webService,
                 weightUtil,
                 physicalTableDictionary,
                 partialDataHandler,
@@ -242,12 +214,10 @@ class DruidWorkflowSpec extends Specification {
         def defaultHandler = select.handlerSelector as DefaultWebServiceHandlerSelector
 
         when:
-        def handlers1 = getHandlerChain(defaultHandler.uiWebServiceHandler.next)
-        def handlers2 = getHandlerChain(defaultHandler.nonUiWebServiceHandler.next)
+        def handler = getHandlerChain(defaultHandler.webServiceHandler.next)
 
         then:
-        handlers1.find(byClass(SplitQueryRequestHandler)) != null
-        handlers2.find(byClass(SplitQueryRequestHandler)) != null
+        handler.find(byClass(SplitQueryRequestHandler)) != null
 
         cleanup:
         QUERY_SPLIT.setOn(splittingStatus)
@@ -273,8 +243,7 @@ class DruidWorkflowSpec extends Specification {
         SYSTEM_CONFIG.setProperty(UNCOVERED_INTERVAL_LIMIT_KEY, '10')
         dw = new DruidWorkflow(
                 dataCache,
-                uiWebService,
-                nonUiWebService,
+                webService,
                 weightUtil,
                 physicalTableDictionary,
                 partialDataHandler,
@@ -288,12 +257,10 @@ class DruidWorkflowSpec extends Specification {
         def defaultHandler = select.handlerSelector as DefaultWebServiceHandlerSelector
 
         when:
-        def handlers1 = getHandlerChain(defaultHandler.uiWebServiceHandler.next)
-        def handlers2 = getHandlerChain(defaultHandler.nonUiWebServiceHandler.next)
+        def handler = getHandlerChain(defaultHandler.webServiceHandler.next)
 
         then:
-        handlers1.find(byClass(DruidPartialDataRequestHandler)) != null
-        handlers2.find(byClass(DruidPartialDataRequestHandler)) != null
+        handler.find(byClass(DruidPartialDataRequestHandler)) != null
 
         cleanup:
         SYSTEM_CONFIG.clearProperty(UNCOVERED_INTERVAL_LIMIT_KEY)
@@ -304,8 +271,7 @@ class DruidWorkflowSpec extends Specification {
         SYSTEM_CONFIG.setProperty(UNCOVERED_INTERVAL_LIMIT_KEY, '0')
         dw = new DruidWorkflow(
                 dataCache,
-                uiWebService,
-                nonUiWebService,
+                webService,
                 weightUtil,
                 physicalTableDictionary,
                 partialDataHandler,
@@ -319,12 +285,10 @@ class DruidWorkflowSpec extends Specification {
         def defaultHandler = select.handlerSelector as DefaultWebServiceHandlerSelector
 
         when:
-        def handlers1 = getHandlerChain(defaultHandler.uiWebServiceHandler.next)
-        def handlers2 = getHandlerChain(defaultHandler.nonUiWebServiceHandler.next)
+        def handler = getHandlerChain(defaultHandler.webServiceHandler.next)
 
         then:
-        handlers1.find(byClass(DruidPartialDataRequestHandler)) == null
-        handlers2.find(byClass(DruidPartialDataRequestHandler)) == null
+        handler.find(byClass(DruidPartialDataRequestHandler)) == null
 
         cleanup:
         SYSTEM_CONFIG.clearProperty(UNCOVERED_INTERVAL_LIMIT_KEY)

@@ -13,9 +13,9 @@ class DruidClientConfigHelperSpec extends Specification {
     private static final SystemConfig systemConfig = SystemConfigProvider.getInstance()
 
     private static final String UI_URL_SETTING_KEY =
-            systemConfig.getPackageVariableName("ui_druid_broker");
+            systemConfig.getPackageVariableName("ui_druid_broker")
 
-    private static final String NON_UI_URL_SETTING_KEY = systemConfig.getPackageVariableName("non_ui_druid_broker");
+    private static final String NON_UI_URL_SETTING_KEY = systemConfig.getPackageVariableName("non_ui_druid_broker")
 
     private static final String UI_DRUID_REQUEST_TIMEOUT_KEY = systemConfig.getPackageVariableName(
             "ui_druid_request_timeout"
@@ -96,5 +96,14 @@ class DruidClientConfigHelperSpec extends Specification {
     def "check if appropriate non-UI druid request timeout is fetched"() {
         expect:
         DruidClientConfigHelper.getDruidNonUiTimeout() == Integer.parseInt(expectedNonUiRequestTimeout)
+    }
+
+    def "invalid url will throw illegal exception"() {
+        when:
+        DruidClientConfigHelper.validateUrl("[BAD URL]")
+
+        then:
+        IllegalArgumentException e = thrown()
+        e.message == "Invalid druid host url provided: [BAD URL]"
     }
 }
