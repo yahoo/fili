@@ -126,7 +126,7 @@ public class DruidQueryBuilder {
                     request.getGranularity(),
                     request.getTimeZone(),
                     request.getDimensions(),
-                    request.getFilter(),
+                    request.getDruidFilter(),
                     request.getIntervals(),
                     druidTopNMetric,
                     request.getTopN().getAsInt()
@@ -137,7 +137,7 @@ public class DruidQueryBuilder {
                         table,
                         request.getGranularity(),
                         request.getTimeZone(),
-                        request.getFilter(),
+                        request.getDruidFilter(),
                         request.getIntervals()
                 ) :
                 buildGroupByQuery(
@@ -146,7 +146,7 @@ public class DruidQueryBuilder {
                         request.getGranularity(),
                         request.getTimeZone(),
                         request.getDimensions(),
-                        request.getFilter(),
+                        request.getDruidFilter(),
                         request.getHaving(),
                         request.getIntervals(),
                         druidOrderBy
@@ -213,7 +213,7 @@ public class DruidQueryBuilder {
             // Build the inner query without an order by, since we only want to do that at the top level
             // Sorts don't apply to inner queries and Filters only apply to the innermost query
             GroupByQuery query = buildGroupByQuery(
-                    template.getInnerQuery(),
+                    template.getInnerQuery().get(),
                     table,
                     mergedGranularity,
                     timeZone,

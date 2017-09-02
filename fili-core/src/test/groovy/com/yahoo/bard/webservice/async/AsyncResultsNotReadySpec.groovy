@@ -6,7 +6,6 @@ import com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobStatus
 import spock.lang.Timeout
 
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 
 import javax.ws.rs.core.Response
 
@@ -43,8 +42,9 @@ class AsyncResultsNotReadySpec extends AsyncFunctionalSpec {
 
     final CountDownLatch validationFinished = new CountDownLatch(3)
 
-    static final String QUERY =
-            "http://localhost:9998/data/shapes/day/color?dateTime=2016-08-30%2F2016-08-31&metrics=height&asyncAfter=always"
+    String getQuery() {
+        return "http://localhost:${jtb.getHarness().getPort()}/data/shapes/day/color?dateTime=2016-08-30%2F2016-08-31&metrics=height&asyncAfter=always"
+    }
 
     @Override
     Map<String, Closure<String>> getResultsToTargetFunctions() {
@@ -65,8 +65,9 @@ class AsyncResultsNotReadySpec extends AsyncFunctionalSpec {
                     try {
                         assert response.status == 202
                         AsyncTestUtils.validateJobPayload(
+                                jtb,
                                 response.readEntity(String),
-                                QUERY,
+                                getQuery(),
                                 DefaultJobStatus.PENDING.name
                         )
                     } finally {
@@ -78,8 +79,9 @@ class AsyncResultsNotReadySpec extends AsyncFunctionalSpec {
                         assert response.status == 200
                         //The jobs endpoint returns job metadata containing the same expected value as the data endpoint
                         AsyncTestUtils.validateJobPayload(
+                                jtb,
                                 response.readEntity(String),
-                                QUERY,
+                                getQuery(),
                                 DefaultJobStatus.PENDING.name
                         )
                     } finally {
@@ -92,8 +94,9 @@ class AsyncResultsNotReadySpec extends AsyncFunctionalSpec {
                         //The results endpoint returns job metadata containing the same expected value as the data
                         // endpoint
                         AsyncTestUtils.validateJobPayload(
+                                jtb,
                                 response.readEntity(String),
-                                QUERY,
+                                getQuery(),
                                 DefaultJobStatus.PENDING.name
                         )
                     } finally {

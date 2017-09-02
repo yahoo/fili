@@ -41,6 +41,7 @@ import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.StrictPhysicalTable
 import com.yahoo.bard.webservice.table.TableGroup
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequestImpl
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -185,10 +186,10 @@ class SketchIntersectionReportingResources extends Specification {
         fooNoBarAggregation = fooNoBarInstance.make().templateDruidQuery.aggregations.first()
         Aggregation regFoosAggregation = regFoosInstance.make().templateDruidQuery.aggregations.first()
 
-        fooNoBarFilteredAggregationSet = FieldConverterSupplier.metricsFilterSetBuilder.getFilteredAggregation(filterObj, fooNoBarAggregation, dimensionDict, table, new DataApiRequest())
+        fooNoBarFilteredAggregationSet = FieldConverterSupplier.metricsFilterSetBuilder.getFilteredAggregation(filterObj, fooNoBarAggregation, dimensionDict, table, new DataApiRequestImpl())
         fooNoBarPostAggregationInterim = SketchSetOperationHelper.makePostAggFromAgg(SketchSetOperationPostAggFunction.INTERSECT, "fooNoBar", new ArrayList<>(fooNoBarFilteredAggregationSet))
 
-        fooRegFoosFilteredAggregationSet = FieldConverterSupplier.metricsFilterSetBuilder.getFilteredAggregation(filterObj, regFoosAggregation, dimensionDict, table, new DataApiRequest())
+        fooRegFoosFilteredAggregationSet = FieldConverterSupplier.metricsFilterSetBuilder.getFilteredAggregation(filterObj, regFoosAggregation, dimensionDict, table, new DataApiRequestImpl())
         fooRegFoosPostAggregationInterim = SketchSetOperationHelper.makePostAggFromAgg(SketchSetOperationPostAggFunction.INTERSECT, "regFoos", new ArrayList<>(fooRegFoosFilteredAggregationSet))
 
         interimPostAggDictionary = [:]

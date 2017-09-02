@@ -10,8 +10,7 @@ import com.yahoo.bard.webservice.metadata.QuerySigningService;
 * Holds the application state when testing so that it can be more easily shared between the JTB and the TBF.
 */
 public class ApplicationState {
-    DruidWebService uiWebService;
-    DruidWebService nonUiWebService;
+    DruidWebService webService;
     DruidWebService metadataWebService;
     DataCache<?> cache;
     QuerySigningService<?> querySigningService;

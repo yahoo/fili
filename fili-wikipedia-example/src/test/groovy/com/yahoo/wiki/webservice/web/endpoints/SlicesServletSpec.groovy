@@ -41,7 +41,7 @@ class SlicesServletSpec extends Specification {
         String expectedResponse = """{
             "rows":
             [
-                {"timeGrain":"hour", "name":"$sliceNameHour", "uri":"http://localhost:9998/slices/$sliceNameHour"},
+                {"timeGrain":"hour", "name":"$sliceNameHour", "uri":"http://localhost:${jtb.getHarness().getPort()}/slices/$sliceNameHour"},
             ]
         }"""
 
@@ -70,7 +70,7 @@ class SlicesServletSpec extends Specification {
                         dimensionNames.collect {"""
                                 {
                                     "name":"$it",
-                                    "uri":"http://localhost:9998/dimensions/$it",
+                                    "uri":"http://localhost:${jtb.getHarness().getPort()}/dimensions/$it",
                                     "intervals":["$interval"]
                                 }
                         """}

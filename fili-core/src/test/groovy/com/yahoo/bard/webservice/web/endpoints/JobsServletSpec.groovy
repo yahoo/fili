@@ -25,10 +25,10 @@ class JobsServletSpec extends Specification {
     def "jobs/ticket endpoint returns the correct response to a get request"() {
         setup:
         String expectedResponse = """{
-                "query": "https://localhost:9998/v1/data/QUERY",
-                "results": "http://localhost:9998/jobs/ticket1/results",
-                "syncResults": "http://localhost:9998/jobs/ticket1/results?asyncAfter=never",
-                "self": "http://localhost:9998/jobs/ticket1",
+                "query": "https://localhost:PORT/v1/data/QUERY",
+                "results": "http://localhost:${jtb.getHarness().getPort()}/jobs/ticket1/results",
+                "syncResults": "http://localhost:${jtb.getHarness().getPort()}/jobs/ticket1/results?asyncAfter=never",
+                "self": "http://localhost:${jtb.getHarness().getPort()}/jobs/ticket1",
                 "status": "success",
                 "jobTicket": "ticket1",
                 "dateCreated": "2016-01-01",
@@ -52,11 +52,11 @@ class JobsServletSpec extends Specification {
                   "dateCreated": "2016-01-01",
                   "dateUpdated": "2016-01-01",
                   "jobTicket": "ticket1",
-                  "query": "https://localhost:9998/v1/data/QUERY",
-                  "results": "http://localhost:9998/jobs/ticket1/results",
-                  "self": "http://localhost:9998/jobs/ticket1",
+                  "query": "https://localhost:PORT/v1/data/QUERY",
+                  "results": "http://localhost:${jtb.getHarness().getPort()}/jobs/ticket1/results",
+                  "self": "http://localhost:${jtb.getHarness().getPort()}/jobs/ticket1",
                   "status": "success",
-                  "syncResults": "http://localhost:9998/jobs/ticket1/results?asyncAfter=never",
+                  "syncResults": "http://localhost:${jtb.getHarness().getPort()}/jobs/ticket1/results?asyncAfter=never",
                   "userId": "momo"
                 }
               ],
@@ -65,8 +65,8 @@ class JobsServletSpec extends Specification {
                   "currentPage": 1,
                   "numberOfResults": 3,
                   "paginationLinks": {
-                    "last": "http://localhost:9998/jobs?perPage=1&page=3",
-                    "next": "http://localhost:9998/jobs?perPage=1&page=2"
+                    "last": "http://localhost:${jtb.getHarness().getPort()}/jobs?perPage=1&page=3",
+                    "next": "http://localhost:${jtb.getHarness().getPort()}/jobs?perPage=1&page=2"
                   },
                   "rowsPerPage": 1
                 }
@@ -113,10 +113,10 @@ class JobsServletSpec extends Specification {
     def "jobs/result endpoint returns the job metadata if the PreResponse is not available in the PreResponsestore in the async timeout"() {
         setup:
         String expectedResponse = """{
-                "query": "https://localhost:9998/v1/data/QUERY",
-                "results": "http://localhost:9998/jobs/ticket2/results",
-                "syncResults": "http://localhost:9998/jobs/ticket2/results?asyncAfter=never",
-                "self": "http://localhost:9998/jobs/ticket2",
+                "query": "https://localhost:PORT/v1/data/QUERY",
+                "results": "http://localhost:${jtb.getHarness().getPort()}/jobs/ticket2/results",
+                "syncResults": "http://localhost:${jtb.getHarness().getPort()}/jobs/ticket2/results?asyncAfter=never",
+                "self": "http://localhost:${jtb.getHarness().getPort()}/jobs/ticket2",
                 "status": "pending",
                 "jobTicket": "ticket2",
                 "dateCreated": "2016-01-01",
@@ -170,33 +170,33 @@ class JobsServletSpec extends Specification {
                             "dateCreated":"2016-01-01",
                             "dateUpdated":"2016-01-01",
                             "jobTicket":"ticket1",
-                            "query":"https://localhost:9998/v1/data/QUERY",
-                            "results":"http://localhost:9998/jobs/ticket1/results",
-                            "self":"http://localhost:9998/jobs/ticket1",
+                            "query":"https://localhost:PORT/v1/data/QUERY",
+                            "results":"http://localhost:${jtb.getHarness().getPort()}/jobs/ticket1/results",
+                            "self":"http://localhost:${jtb.getHarness().getPort()}/jobs/ticket1",
                             "status":"success",
-                            "syncResults":"http://localhost:9998/jobs/ticket1/results?asyncAfter=never",
+                            "syncResults":"http://localhost:${jtb.getHarness().getPort()}/jobs/ticket1/results?asyncAfter=never",
                             "userId": "momo"
                         },
                         {
                             "dateCreated":"2016-01-01",
                             "dateUpdated":"2016-01-01",
                             "jobTicket":"ticket2",
-                            "query":"https://localhost:9998/v1/data/QUERY",
-                            "results":"http://localhost:9998/jobs/ticket2/results",
-                            "self":"http://localhost:9998/jobs/ticket2",
+                            "query":"https://localhost:PORT/v1/data/QUERY",
+                            "results":"http://localhost:${jtb.getHarness().getPort()}/jobs/ticket2/results",
+                            "self":"http://localhost:${jtb.getHarness().getPort()}/jobs/ticket2",
                             "status":"pending",
-                            "syncResults":"http://localhost:9998/jobs/ticket2/results?asyncAfter=never",
+                            "syncResults":"http://localhost:${jtb.getHarness().getPort()}/jobs/ticket2/results?asyncAfter=never",
                             "userId": "dodo"
                         },
                         {
                             "dateCreated": "2016-01-01",
                             "dateUpdated":"2016-01-01",
                             "jobTicket": "ticket3p",
-                            "query": "https://localhost:9998/v1/data/QUERY",
-                            "results": "http://localhost:9998/jobs/ticket3p/results",
-                            "self": "http://localhost:9998/jobs/ticket3p",
+                            "query": "https://localhost:PORT/v1/data/QUERY",
+                            "results": "http://localhost:${jtb.getHarness().getPort()}/jobs/ticket3p/results",
+                            "self": "http://localhost:${jtb.getHarness().getPort()}/jobs/ticket3p",
                             "status": "success",
-                            "syncResults": "http://localhost:9998/jobs/ticket3p/results?asyncAfter=never",
+                            "syncResults": "http://localhost:${jtb.getHarness().getPort()}/jobs/ticket3p/results?asyncAfter=never",
                             "userId": "yoyo"
                         }
                       ]
@@ -217,11 +217,11 @@ class JobsServletSpec extends Specification {
                                             "dateCreated":"2016-01-01",
                                             "dateUpdated":"2016-01-01",
                                             "jobTicket":"ticket1",
-                                            "query":"https://localhost:9998/v1/data/QUERY",
-                                            "results":"http://localhost:9998/jobs/ticket1/results",
-                                            "self":"http://localhost:9998/jobs/ticket1",
+                                            "query":"https://localhost:PORT/v1/data/QUERY",
+                                            "results":"http://localhost:${jtb.getHarness().getPort()}/jobs/ticket1/results",
+                                            "self":"http://localhost:${jtb.getHarness().getPort()}/jobs/ticket1",
                                             "status":"success",
-                                            "syncResults":"http://localhost:9998/jobs/ticket1/results?asyncAfter=never",
+                                            "syncResults":"http://localhost:${jtb.getHarness().getPort()}/jobs/ticket1/results?asyncAfter=never",
                                             "userId": "momo"
                                         }
                                   ]}"""
@@ -295,8 +295,8 @@ class JobsServletSpec extends Specification {
               ],
               "meta": {
                 "pagination": {
-                  "last": "http://localhost:9998/jobs/ticket3p/results?asyncAfter=5&perPage=1&page=3",
-                  "next": "http://localhost:9998/jobs/ticket3p/results?asyncAfter=5&perPage=1&page=2",
+                  "last": "http://localhost:${jtb.getHarness().getPort()}/jobs/ticket3p/results?asyncAfter=5&perPage=1&page=3",
+                  "next": "http://localhost:${jtb.getHarness().getPort()}/jobs/ticket3p/results?asyncAfter=5&perPage=1&page=2",
                   "currentPage": 1,
                   "rowsPerPage": 1,
                   "numberOfResults": 3
@@ -312,9 +312,9 @@ class JobsServletSpec extends Specification {
               "meta": {
                 "pagination": {
                   "currentPage": 3,
-                  "first": "http://localhost:9998/jobs/ticket3p/results?asyncAfter=5&perPage=1&page=1",
+                  "first": "http://localhost:${jtb.getHarness().getPort()}/jobs/ticket3p/results?asyncAfter=5&perPage=1&page=1",
                   "numberOfResults": 3,
-                  "previous": "http://localhost:9998/jobs/ticket3p/results?asyncAfter=5&perPage=1&page=2",
+                  "previous": "http://localhost:${jtb.getHarness().getPort()}/jobs/ticket3p/results?asyncAfter=5&perPage=1&page=2",
                   "rowsPerPage": 1
                 }
               },
@@ -334,8 +334,8 @@ class JobsServletSpec extends Specification {
               "meta": {
                 "pagination": {
                   "currentPage": 1,
-                  "last": "http://localhost:9998/jobs/ticket3p/results?asyncAfter=5&perPage=2&page=2",
-                  "next": "http://localhost:9998/jobs/ticket3p/results?asyncAfter=5&perPage=2&page=2",
+                  "last": "http://localhost:${jtb.getHarness().getPort()}/jobs/ticket3p/results?asyncAfter=5&perPage=2&page=2",
+                  "next": "http://localhost:${jtb.getHarness().getPort()}/jobs/ticket3p/results?asyncAfter=5&perPage=2&page=2",
                   "numberOfResults": 3,
                   "rowsPerPage": 2
                 }
@@ -365,10 +365,10 @@ class JobsServletSpec extends Specification {
               ],
               "meta": {
                 "pagination": {
-                  "first": "http://localhost:9998/jobs/ticket3p/results?asyncAfter=5&perPage=1&page=1",
-                  "last": "http://localhost:9998/jobs/ticket3p/results?asyncAfter=5&perPage=1&page=3",
-                  "next": "http://localhost:9998/jobs/ticket3p/results?asyncAfter=5&perPage=1&page=3",
-                  "previous": "http://localhost:9998/jobs/ticket3p/results?asyncAfter=5&perPage=1&page=1",
+                  "first": "http://localhost:${jtb.getHarness().getPort()}/jobs/ticket3p/results?asyncAfter=5&perPage=1&page=1",
+                  "last": "http://localhost:${jtb.getHarness().getPort()}/jobs/ticket3p/results?asyncAfter=5&perPage=1&page=3",
+                  "next": "http://localhost:${jtb.getHarness().getPort()}/jobs/ticket3p/results?asyncAfter=5&perPage=1&page=3",
+                  "previous": "http://localhost:${jtb.getHarness().getPort()}/jobs/ticket3p/results?asyncAfter=5&perPage=1&page=1",
                   "currentPage": 2,
                   "rowsPerPage": 1,
                   "numberOfResults": 3

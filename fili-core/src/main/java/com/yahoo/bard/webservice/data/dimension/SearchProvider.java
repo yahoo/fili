@@ -7,6 +7,8 @@ import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
+import org.slf4j.LoggerFactory;
+
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -143,6 +145,20 @@ public interface SearchProvider {
      * @return true if healthy
      */
     boolean isHealthy();
+
+    /**
+     * Replaces index with a new index in hot-swap manner.
+     *
+     * @param newLuceneIndexPathString  The location of directory that contains the the new index.
+     */
+    default void replaceIndex(String newLuceneIndexPathString) {
+        String message = String.format(
+                "Current implementation of SearchProvider: %s does not support index replacement operation.",
+                this.getClass().getSimpleName()
+        );
+        LoggerFactory.getLogger(SearchProvider.class).error(message);
+        throw new UnsupportedOperationException(message);
+    }
 
     /**
      * Clears the dimension cache, and resets the indices, effectively resetting the SearchProvider to a clean state.

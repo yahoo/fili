@@ -10,6 +10,23 @@ Current
 
 ### Added:
 
+- [Enable search provider to hot-swap index and key value store to hot-swap store location](https://github.com/yahoo/fili/pull/522)
+    * Add new default method to [`SearchProvider`](./fili-core/src/main/java/com/yahoo/bard/webservice/data/dimension/SearchProvider.java)
+      interface in order to support hot-swapping index.
+    * Implement the hot-swapping method of the `SearchProvider` interface in [`LuceneSearchProvider`](./fili-core/src/main/java/com/yahoo/bard/webservice/data/dimension/impl/LuceneSearchProvider.java)
+          - replace Lucene index by moving the old index directory to a different location, moving new indexes to a new
+            directory with the same old name, and deleting the old index directory in file system.
+    * Add new default method to [`KeyValueStore`](fili-core/src/main/java/com/yahoo/bard/webservice/data/dimension/KeyValueStore.java)
+      interface in order to support hot-swapping key value store location.
+
+- [Translate doc, built-in-makers.md, to Chinese](https://github.com/yahoo/fili/pull/499)
+    * Part of Fili translation in order to increase popularity of Fili in Chinese tech industries.
+
+- [Add Uptime Status Metric](https://github.com/yahoo/fili/pull/518)
+    * Add a metric to show how long Fili has been running 
+
+- [Add `druid_broker` config parameter to replace `ui_druid_broker` and `non_ui_druid_broker`](https://github.com/yahoo/fili/pull/489)
+    
 - [Have Tables Endpoint Support (but not use) Additional Query Parameters](https://github.com/yahoo/fili/pull/437)
     * Make the availability consider the TablesApiRequest by passing it into the getLogicalTableFullView method
     * Move auxiliary methods from `DataApiRequest` to `ApiRequest` in order to make them sharable between
@@ -22,7 +39,6 @@ Current
 - [Add Table-wide Availability](https://github.com/yahoo/fili/pull/414)
     * Add `availableIntervals` field to tables endpoint by union the availability for the logical table without taking
     the TablesApiRequest into account.
-
 
 - [Implement EtagCacheRequestHandler](https://github.com/yahoo/fili/pull/312)
     * Add `EtagCacheRequestHandler` that checks the cache for a matching eTag
@@ -39,6 +55,38 @@ Current
 
 
 ### Changed:
+
+- [Fix wrong default druid url and broken getInnerMostQuery](https://github.com/yahoo/fili/pull/528)
+    * Comment out the wrong default druid broker url in module config that break old url config compatibility, add check for validate url in `DruidClientConfigHelper `
+    * Fix broken `getInnermostQuery` method in `DruidQuery`
+
+- [Rename filter variables and methods in DataApiRequest](https://github.com/yahoo/fili/pull/507)
+    * The method names `getFilter` and `getFilters` can be confusing, as well as the `filters` variable
+    
+- [Decoupled from static dimension lookup building]()
+    * Instead of `ModelUtils`, create an interface for `ExtractionFunctionDimension` and rebase `LookupDimension` and `RegisteredLookupDimension` on that interface.
+    * `LookupDimensionToDimensionSpec` now uses only the Extraction interface to decide how to serialize dimensions.
+
+- [DruidDimensionLoader is now a more generic DimensionValueLoadTask](https://github.com/yahoo/fili/pull/449)
+    * The `DimensionValueLoadTask` takes in a collection of `DimensionValueLoader`s to allow for non-Druid dimensions to be loaded.
+
+- [DruidQuery::getInnerQuery and Datasource::getQuery return Optional](https://github.com/yahoo/fili/pull/485)
+    * Returning `Optional` is more correct for their usage and should protect against unexpected null values.
+
+- [Use all available segment metadata in fili-generic-example](https://github.com/yahoo/fili/pull/445)
+    * The fili-generic-example now uses all segment metadata given by Druid instead of just the first one and also provides it to the metadata service.
+
+- [Refactor Response class and implement new serialization logics](https://github.com/yahoo/fili/pull/455)
+    * Define interface `ResponseWriter` and its default implementation
+    * Refactor `Response` class, splitting into `ResponseData` and three implementations of `ResponseWriter`
+    * Define interface `ResponseWriterSelector` and its default implementation.
+    * Hook up the new serialization logic with `HttpResponseMaker` to replace the old one
+
+- [LuceneSearchProvide needs to handle nulls](https://github.com/yahoo/fili/issues/487)
+    * Lucene search provider cannot handle null load values.  Treat all null values as empty string.
+
+- [Make AvroDimensionRowParser.parseAvroFileDimensionRows support consumer model](https://github.com/yahoo/fili/issues/483)
+    * In order to do deferred/buffered file reading, create a call back style method.
 
 - [Make HttpResponseMaker injectable and change functions signature related to custom response creation](https://github.com/yahoo/fili/pull/447)
     * Make `HttpResponseMaker` injectable. `DataServlet` and `JobsServlet` takes `HttpResponseMaker` as input parameter now
@@ -59,11 +107,24 @@ Current
 
 ### Deprecated:
 
+- [Rename filter variables and methods in DataApiRequest](https://github.com/yahoo/fili/pull/507)
+    * Deprecated `getFilters` in favor of `getApiFilters` and `getFilter` in favor of `getDruidFilter`
+
+- [Deprecate `ui_druid_broker` and `non_ui_druid_broker` and added `druid_broker`](https://github.com/yahoo/fili/pull/489)
+
 - [Add dimension dictionary to metric loader](https://github.com/yahoo/fili/pull/317)
     * Deprecated single argument version of `loadMetricDictionary` in `MetricLoader`, favor additional dimension dictionary argument `loadMetricDictionary` instead
 
 
 ### Fixed:
+- [Fix Lucene Cardinality in New KeyValueStores](https://github.com/yahoo/fili/pull/521)
+    * Fix lucene to put correct cardinality value to new key value store that does not contain the cardinality key
+
+- [Log stack trace at error on unexpected DimensionServlet failures](https://github.com/yahoo/fili/pull/425)
+    * DimensionServlet was using debug to log unexpected exceptions and not printing the stack trace
+
+- [Fix datasource name physical table name mismatch in VolatileDataRequestHandler](https://github.com/yahoo/fili/issues/505)
+    * Fix fetching from `physicaltableDictionary` using datasource name. Now use proper physical table name instead.
 
 - [Fix performance bug around feature flag](https://github.com/yahoo/fili/issues/473)
     * BardFeatureFlag, when used in a tight loop, is very expensive.  Underlying map configuration copies the config map on each access.
@@ -79,12 +140,17 @@ Current
 - [Fix metric and dimension names for wikipedia-example](https://github.com/yahoo/fili/pull/415)
     * The metrics and dimensions configured in the `fili-wikipedia-example` were different from those in Druid and as a result the queries sent to Druid were incorrect
 
-
 ### Known Issues:
 
 
 
 ### Removed:
+
+- [Remove custom immutable collections in favor of Guava](https://github.com/yahoo/fili/pull/479)
+    * `Utils.makeImmutable(...)` was misleading and uneeded so it has been removed. Use Guava's immutable collections.
+
+- [Remove dependency on org.apache.httpcomponents](https://github.com/yahoo/fili/pull/482)
+    * This library was only used in `fili-wikipedia-example` and has been replaced with AsyncHttpClient.
 
 - [Remove dependency on org.json](https://github.com/yahoo/fili/pull/416)
     * Replace uses of org.json with the jackson equivalent

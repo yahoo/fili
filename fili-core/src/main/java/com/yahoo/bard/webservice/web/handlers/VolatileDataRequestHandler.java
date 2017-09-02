@@ -57,15 +57,17 @@ public class VolatileDataRequestHandler implements DataRequestHandler {
         MappingResponseProcessor mappingResponse = (MappingResponseProcessor) response;
 
         // Gather the volatile intervals. A volatile interval in one data source make that interval volatile overall.
-        SimplifiedIntervalList volatileIntervals = druidQuery.getInnermostQuery().getDataSource().getNames().stream()
-                .map(physicalTableDictionary::get)
-                .map(table -> volatileIntervalsService.getVolatileIntervals(
-                             druidQuery.getGranularity(),
-                             druidQuery.getIntervals(),
-                             table
-                ))
-                .flatMap(SimplifiedIntervalList::stream)
-                .collect(SimplifiedIntervalList.getCollector());
+        SimplifiedIntervalList volatileIntervals = volatileIntervalsService.getVolatileIntervals(
+                druidQuery.getGranularity(),
+                druidQuery.getIntervals(),
+                physicalTableDictionary.get(
+                        druidQuery
+                                .getInnermostQuery()
+                                .getDataSource()
+                                .getPhysicalTable()
+                                .getName()
+                )
+        );
 
         if (!volatileIntervals.isEmpty()) {
             ResponseContext responseContext = response.getResponseContext();

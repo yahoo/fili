@@ -7,6 +7,7 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.EMPTY_DICTIONARY;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
+import com.yahoo.bard.webservice.web.apirequest.ApiRequestImpl;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import com.google.common.collect.Sets;
@@ -29,7 +30,7 @@ import javax.ws.rs.core.UriInfo;
  * Dimensions API Request. Such an API Request binds, validates, and models the parts of a request to the dimensions
  * endpoint.
  */
-public class DimensionsApiRequest extends ApiRequest {
+public class DimensionsApiRequest extends ApiRequestImpl {
     private static final Logger LOG = LoggerFactory.getLogger(DimensionsApiRequest.class);
     public static final String REQUEST_MAPPER_NAMESPACE = "dimensionApiRequestMapper";
 

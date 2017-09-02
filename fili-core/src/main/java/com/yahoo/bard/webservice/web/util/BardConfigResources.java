@@ -8,6 +8,7 @@ import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.time.GranularityParser;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
+import com.yahoo.bard.webservice.web.apirequest.HavingGenerator;
 
 import org.joda.time.DateTimeZone;
 
@@ -37,6 +38,13 @@ public interface BardConfigResources {
      * @return A filter builder resource
      */
     DruidFilterBuilder getFilterBuilder();
+
+    /**
+     * Having Api Generator.
+     *
+     * @return  A Having Generator
+     */
+    HavingGenerator getHavingApiGenerator();
 
     /**
      * The configured default time zone for dates.

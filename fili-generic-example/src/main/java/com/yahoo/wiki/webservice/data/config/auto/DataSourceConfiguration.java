@@ -5,7 +5,10 @@ package com.yahoo.wiki.webservice.data.config.auto;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
 
+import io.druid.timeline.DataSegment;
+
 import java.util.List;
+import java.util.Set;
 
 /**
  * Holds the minimum necessary configuration necessary to set up fili to
@@ -32,16 +35,16 @@ public interface DataSourceConfiguration {
     /**
      * Gets the names of all the metrics for the current datasource.
      *
-     * @return a list of names of metrics for the current datasource.
+     * @return a set of names of metrics for the current datasource.
      */
-    List<String> getMetrics();
+    Set<String> getMetrics();
 
     /**
      * Gets the names of all the dimensions for the current datasource.
      *
-     * @return a list of names of dimensions for the current datasource.
+     * @return a set of names of dimensions for the current datasource.
      */
-    List<String> getDimensions();
+    Set<String> getDimensions();
 
     /**
      * Gets the {@link TimeGrain} which is valid for use in queries.
@@ -51,4 +54,11 @@ public interface DataSourceConfiguration {
      * @return a {@link TimeGrain} for the current table.
      */
     TimeGrain getValidTimeGrain();
+
+    /**
+     * Gets a list of segment metadata for a datasource in Druid.
+     *
+     * @return the list of datasegments reported by druid.
+     */
+    List<DataSegment> getDataSegmentMetadata();
 }

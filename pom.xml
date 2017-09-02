@@ -19,6 +19,7 @@
         <module>fili</module>
         <module>fili-wikipedia-example</module>
         <module>fili-generic-example</module>
+        <module>fili-sql</module>
     </modules>
 
     <organization>
@@ -77,7 +78,7 @@
         <version.hk2>2.5.0-b36</version.hk2>
         <version.metrics>3.2.2</version.metrics>
         <version.logback>1.2.3</version.logback>
-        <version.lucene>6.5.0</version.lucene>
+        <version.lucene>6.6.0</version.lucene>
         <version.jackson>2.6.2</version.jackson>
         <version.groovy>2.4.5</version.groovy>
         <version.guava>21.0</version.guava>
@@ -350,6 +351,11 @@
                 <version>${version.jackson}</version>
             </dependency>
             <dependency>
+                <groupId>com.fasterxml.jackson.module</groupId>
+                <artifactId>jackson-module-afterburner</artifactId>
+                <version>${version.jackson}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-annotations</artifactId>
                 <version>${version.jackson}</version>
@@ -395,12 +401,6 @@
                 <groupId>org.asynchttpclient</groupId>
                 <artifactId>async-http-client</artifactId>
                 <version>2.0.24</version>
-            </dependency>
-            <dependency>
-                <!-- TODO: Move to only async dependency -->
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpclient</artifactId>
-                <version>4.5.2</version>
             </dependency>
 
             <!-- ReactiveX -->

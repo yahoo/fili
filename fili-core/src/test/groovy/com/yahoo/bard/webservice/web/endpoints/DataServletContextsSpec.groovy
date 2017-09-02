@@ -22,7 +22,7 @@ class DataServletContextsSpec extends Specification {
 
     private static final SystemConfig systemConfig = SystemConfigProvider.getInstance()
 
-    private static final String DRUID_URL_SETTING = systemConfig.getPackageVariableName("non_ui_druid_broker")
+    private static final String DRUID_URL_SETTING = systemConfig.getPackageVariableName("druid_broker")
 
     static String saveDruidURL
 
@@ -86,7 +86,7 @@ class DataServletContextsSpec extends Specification {
         testWebService = new TestDruidWebService("default web service");
         testMetadataWebService = new TestDruidWebService("default metadata web service");
         jtb = new TestWebserviceJerseyTestBinder((Class[]) resources)
-        assert jtb.nonUiDruidWebService instanceof DruidWebService
+        assert jtb.druidWebService instanceof DruidWebService
         TestDruidServlet.setResponse(defaultResponse)
     }
 
@@ -107,7 +107,7 @@ class DataServletContextsSpec extends Specification {
     @Unroll
     def "Request with values"() {
         when:
-        testWebService.serviceConfig = new DruidServiceConfig("Ui/Non-Ui Broker", null, timeout, priority);
+        testWebService.serviceConfig = new DruidServiceConfig("Broker", null, timeout, priority);
 
         TestDruidServlet.setResponse(defaultResponse)
 
@@ -136,8 +136,7 @@ class DataServletContextsSpec extends Specification {
 
         @Override
         void buildWebServices() {
-            state.uiWebService = testWebService
-            state.nonUiWebService = testWebService
+            state.webService = testWebService
             state.metadataWebService = testMetadataWebService
         }
     }

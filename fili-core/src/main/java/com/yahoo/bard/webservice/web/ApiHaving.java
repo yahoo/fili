@@ -82,7 +82,7 @@ public class ApiHaving {
      * @param operation  The operation to perform (i.e. greater than, less than).
      * @param values  The numbers to compare the metric to.
      */
-    private ApiHaving(LogicalMetric metric, HavingOperation operation, List<Double> values) {
+    public ApiHaving(LogicalMetric metric, HavingOperation operation, List<Double> values) {
         this.metric = metric;
         this.operation = operation;
         this.values = Collections.unmodifiableList(values);

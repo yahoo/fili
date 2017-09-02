@@ -155,8 +155,8 @@ abstract class BaseDataServletComponentSpec extends Specification {
 
         then: "The query sent to druid is what we expect"
         compareResult(
-                jtb.nonUiDruidWebService instanceof TestDruidWebService ?
-                        jtb.nonUiDruidWebService.jsonQuery :
+                jtb.druidWebService instanceof TestDruidWebService ?
+                        jtb.druidWebService.jsonQuery :
                         "{}",
                 expectedDruidQuery,
                 JsonSortStrategy.SORT_BOTH // Most of a Druid query is order-neutral, so normalize both lists and maps.
@@ -253,8 +253,8 @@ abstract class BaseDataServletComponentSpec extends Specification {
      *  @param  druidResponse The closure generating the fake response to be injected.
      */
     void injectDruidResponse(Closure<String> druidResponse) {
-        if (jtb.nonUiDruidWebService instanceof TestDruidWebService) {
-            jtb.nonUiDruidWebService.jsonResponse = druidResponse
+        if (jtb.druidWebService instanceof TestDruidWebService) {
+            jtb.druidWebService.jsonResponse = druidResponse
         }
     }
 

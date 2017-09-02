@@ -14,13 +14,14 @@ import com.yahoo.bard.webservice.druid.client.HttpErrorCallback
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.web.DataApiRequest
+import com.yahoo.bard.webservice.web.JsonResponseWriter
 import com.yahoo.bard.webservice.web.PreResponse
+import com.yahoo.bard.webservice.web.ResponseWriter
 
 import com.fasterxml.jackson.databind.JsonNode
 
 import rx.subjects.PublishSubject
 import rx.subjects.Subject
-
 import spock.lang.Specification
 
 import javax.ws.rs.container.AsyncResponse
@@ -31,14 +32,20 @@ class MappingResponseProcessorSpec extends Specification{
     DataApiRequest apiRequest
     ObjectMappersSuite objectMappers
     Subject<PreResponse, PreResponse> mappingResponseChannel
+    ResponseWriter responseWriter
 
     def setup() {
         groupByQuery = Mock(GroupByQuery)
         apiRequest = Mock(DataApiRequest)
         objectMappers = new ObjectMappersSuite()
+        responseWriter = new JsonResponseWriter(objectMappers)
 
         AsyncResponse asyncResponse = Mock(AsyncResponse)
-        HttpResponseChannel httpResponseChannel = new HttpResponseChannel(asyncResponse, apiRequest, new HttpResponseMaker(objectMappers, Mock(DimensionDictionary)))
+        HttpResponseChannel httpResponseChannel = new HttpResponseChannel(
+                asyncResponse,
+                apiRequest,
+                new HttpResponseMaker(objectMappers, Mock(DimensionDictionary), responseWriter)
+        )
         mappingResponseChannel = PublishSubject.create()
         mappingResponseChannel.subscribe(httpResponseChannel)
     }

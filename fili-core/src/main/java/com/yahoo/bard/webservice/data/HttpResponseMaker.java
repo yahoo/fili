@@ -18,8 +18,9 @@ import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.web.ApiRequest;
 import com.yahoo.bard.webservice.web.PreResponse;
-import com.yahoo.bard.webservice.web.Response;
+import com.yahoo.bard.webservice.web.ResponseData;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
+import com.yahoo.bard.webservice.web.ResponseWriter;
 import com.yahoo.bard.webservice.web.handlers.RequestHandlerUtils;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext;
 import com.yahoo.bard.webservice.web.util.ResponseFormat;
@@ -37,6 +38,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.StreamingOutput;
 
 /**
  * Translates a PreResponse into an HTTP Response containing the results of a query.
@@ -46,17 +48,23 @@ public class HttpResponseMaker {
 
     private final ObjectMappersSuite objectMappers;
     private final DimensionDictionary dimensionDictionary;
+    private final ResponseWriter responseWriter;
 
     /**
      * Class constructor.
-     *
      * @param objectMappers  Mappers object for serialization
      * @param dimensionDictionary  The dimension dictionary from which to look up dimensions by name
+     * @param responseWriter  Serializer which takes responseData and apiRequest, outputs formatted data stream.
      */
     @Inject
-    public HttpResponseMaker(ObjectMappersSuite objectMappers, DimensionDictionary dimensionDictionary) {
+    public HttpResponseMaker(
+            ObjectMappersSuite objectMappers,
+            DimensionDictionary dimensionDictionary,
+            ResponseWriter responseWriter
+    ) {
         this.objectMappers = objectMappers;
         this.dimensionDictionary = dimensionDictionary;
+        this.responseWriter = responseWriter;
     }
 
     /**
@@ -136,22 +144,22 @@ public class HttpResponseMaker {
                                 LinkedHashMap::new
                         ));
 
-        Response response = new Response(
+        ResponseData responseData = new ResponseData(
                 resultSet,
                 (LinkedHashSet<String>) responseContext.get(API_METRIC_COLUMN_NAMES.getName()),
                 requestedApiDimensionFields,
-                responseFormatType,
                 getPartialIntervalsWithDefault(responseContext),
                 getVolatileIntervalsWithDefault(responseContext),
-                bodyLinks,
                 pagination,
-                objectMappers
+                bodyLinks
         );
 
+        StreamingOutput stream = outputStream -> {
+            responseWriter.write(apiRequest, responseData, outputStream);
+        };
+
         // pass stream handler as response
-        ResponseBuilder rspBuilder = javax.ws.rs.core.Response.ok(
-                response.getResponseStream()
-        );
+        ResponseBuilder rspBuilder = javax.ws.rs.core.Response.ok(stream);
 
         // build response
         switch (responseFormatType) {

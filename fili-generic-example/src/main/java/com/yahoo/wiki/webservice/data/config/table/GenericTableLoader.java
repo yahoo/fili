@@ -83,7 +83,7 @@ public class GenericTableLoader extends BaseTableLoader {
                     new DataSourceMetadata(
                             dataSourceConfiguration.getName(),
                             Collections.emptyMap(),
-                            Collections.emptyList()
+                            dataSourceConfiguration.getDataSegmentMetadata()
                     )
             );
 

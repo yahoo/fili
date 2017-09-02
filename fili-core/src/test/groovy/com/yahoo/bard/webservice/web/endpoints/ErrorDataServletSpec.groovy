@@ -55,8 +55,7 @@ class ErrorDataServletSpec extends Specification {
     static String saveDruidURL
     JerseyTestBinder jtb = new JerseyTestBinder(DataServlet.class)
     JsonSlurper jsonSlurper = new JsonSlurper()
-    TestDruidWebService uiTestWebService
-    TestDruidWebService nonUiTestWebService
+    TestDruidWebService testWebService
 
     String standardGoodPathElements = "data/shapes/week/color"
 
@@ -124,9 +123,7 @@ class ErrorDataServletSpec extends Specification {
 
     def setup() {
         // Create the test web container to test the resources
-        uiTestWebService = jtb.uiDruidWebService
-        nonUiTestWebService = jtb.nonUiDruidWebService
-        assert jtb.nonUiDruidWebService instanceof DruidWebService
+        testWebService = jtb.druidWebService
     }
 
     def cleanup() {
@@ -137,9 +134,9 @@ class ErrorDataServletSpec extends Specification {
 
     def "Valid druid request passes"() {
         setup:
-        DruidServiceConfig oldConfig = nonUiTestWebService.serviceConfig
-        nonUiTestWebService.serviceConfig = new DruidServiceConfig("Non-Ui Broker", oldConfig.url, 123, oldConfig.priority)
-        nonUiTestWebService.jsonResponse = {standardGoodDruidResponse}
+        DruidServiceConfig oldConfig = testWebService.serviceConfig
+        testWebService.serviceConfig = new DruidServiceConfig("Broker", oldConfig.url, 123, oldConfig.priority)
+        testWebService.jsonResponse = {standardGoodDruidResponse}
         String expectedDruidQuery = standardGoodDruidQuery
 
         expect:
@@ -148,11 +145,11 @@ class ErrorDataServletSpec extends Specification {
                 .queryParam("dateTime","2014-09-01%2F2014-09-08")
                 .request().get()
         r.getStatus() == 200
-        GroovyTestUtils.compareJson(jtb.nonUiDruidWebService.jsonQuery, expectedDruidQuery)
+        GroovyTestUtils.compareJson(jtb.druidWebService.jsonQuery, expectedDruidQuery)
 
         cleanup:
         // Reset the timeout
-        nonUiTestWebService.serviceConfig = oldConfig
+        testWebService.serviceConfig = oldConfig
     }
 
     def "Invalid time grain fails"() {
@@ -723,7 +720,7 @@ class ErrorDataServletSpec extends Specification {
         String jsonFailure =
                 """{ "status": 400, "statusName":"Bad Request", "reason" : "Bad Request", "description" : "description"}"""
 
-        jtb.nonUiDruidWebService.setFailure(jsonFailure)
+        jtb.druidWebService.setFailure(jsonFailure)
 
         expect:
         // pageViews will respond with error
@@ -745,7 +742,7 @@ class ErrorDataServletSpec extends Specification {
         setup:
         String jsonFailure =
                 """{ "status": 406, "statusName": "Not Acceptable", "reason" : "Not Acceptable", "description" : ""}"""
-        nonUiTestWebService.setFailure(jsonFailure)
+        testWebService.setFailure(jsonFailure)
 
         expect:
         // pageViews will respond with error
@@ -768,7 +765,7 @@ class ErrorDataServletSpec extends Specification {
         // this special test causes uncaught exception in test servlet
         String jsonFailure =
                 """{ "status": 500, "statusName": "Internal Server Error", "reason" : "Internal Server Error", "description" : ""}"""
-        nonUiTestWebService.setFailure(jsonFailure)
+        testWebService.setFailure(jsonFailure)
 
         // pageViews will respond with error
         Response r = jtb.getHarness().target("data/shapes/day/color")
@@ -795,8 +792,8 @@ class ErrorDataServletSpec extends Specification {
         String description = ErrorMessageFormat.WEIGHT_CHECK_FAILED.format()
         String statusName = "507"
         String expectedJson = buildFailureJson( statusCode, statusName, reason, description)
-        nonUiTestWebService.weightResponse = """[{"version":"v1","timestamp":"2014-09-01T00:00:00.000Z","event":{"count":30000}}]"""
-        nonUiTestWebService.setFailure(statusCode, statusName, reason, description)
+        testWebService.weightResponse = """[{"version":"v1","timestamp":"2014-09-01T00:00:00.000Z","event":{"count":30000}}]"""
+        testWebService.setFailure(statusCode, statusName, reason, description)
 
         // create 10 dimensionRows per dimension to get past worst case estimate
         DimensionDictionary dimensionStore = jtb.configurationLoader.dimensionDictionary
@@ -836,8 +833,8 @@ class ErrorDataServletSpec extends Specification {
         String description = ErrorMessageFormat.WEIGHT_CHECK_FAILED.format()
         String statusName = "507"
         String expectedJson = buildFailureJson( statusCode, statusName, reason, description)
-        nonUiTestWebService.weightResponse = """[{"version":"v1","timestamp":"2014-09-01T00:00:00.000Z","event":{"count":429820}}]"""
-        nonUiTestWebService.setFailure(statusCode, statusName, reason, description)
+        testWebService.weightResponse = """[{"version":"v1","timestamp":"2014-09-01T00:00:00.000Z","event":{"count":429820}}]"""
+        testWebService.setFailure(statusCode, statusName, reason, description)
 
         // create 10 dimensionRows per dimension to get past worst case estimate
         DimensionDictionary dimensionStore = jtb.configurationLoader.dimensionDictionary
@@ -872,8 +869,8 @@ class ErrorDataServletSpec extends Specification {
 
     def "Test empty result returns correct 200 result"() {
         setup:
-        nonUiTestWebService.jsonResponse = {"[]"}
-        nonUiTestWebService.weightResponse = "[]"
+        testWebService.jsonResponse = {"[]"}
+        testWebService.weightResponse = "[]"
 
         // create 10 dimensionRows per dimension to get past worst case estimate
         DimensionDictionary dimensionStore = jtb.configurationLoader.dimensionDictionary

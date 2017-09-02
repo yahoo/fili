@@ -90,7 +90,7 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
 
         validateSecurityFilters(securityContext.getUserPrincipal(), securityFilters);
 
-        Map<Dimension, Set<ApiFilter>> revisedFilters = mergeSecurityFilters(request.getFilters(), securityFilters);
+        Map<Dimension, Set<ApiFilter>> revisedFilters = mergeSecurityFilters(request.getApiFilters(), securityFilters);
 
         return request.withFilters(revisedFilters);
     }
