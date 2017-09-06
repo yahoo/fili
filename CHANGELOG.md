@@ -56,6 +56,10 @@ Current
 
 ### Changed:
 
+- [Make BaseKeyValueStoreSpec extendable](https://github.com/yahoo/fili/pull/533)
+    * 1. Change `assert store.isOpen()` to `store.open()` in test `setup()`
+    * 2. Add `childSetup()` and `childCleanup` so that derived classes could add their own setup and cleanup logic
+
 - [Fix wrong default druid url and broken getInnerMostQuery](https://github.com/yahoo/fili/pull/528)
     * Comment out the wrong default druid broker url in module config that break old url config compatibility, add check for validate url in `DruidClientConfigHelper `
     * Fix broken `getInnermostQuery` method in `DruidQuery`
