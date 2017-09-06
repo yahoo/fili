@@ -372,7 +372,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     public DataApiRequestImpl() {
         super();
         this.table = null;
-        this.granularity = DefaultTimeGrain.DAY;
+        this.granularity = null;
         this.dimensions = Collections.emptySet();
         this.perDimensionFields = null;
         this.logicalMetrics = Collections.emptySet();
