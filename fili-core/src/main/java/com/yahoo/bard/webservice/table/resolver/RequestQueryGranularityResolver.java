@@ -43,7 +43,7 @@ public class RequestQueryGranularityResolver implements BiFunction<DataApiReques
             return requestGranularity;
         }
 
-        if (queryGrain.satisfiedBy(requestGranularity)) {
+        if (requestGranularity.satisfiedBy(queryGrain)) {
             return queryGrain.buildZonedTimeGrain(apiRequest.getTimeZone());
         }
 

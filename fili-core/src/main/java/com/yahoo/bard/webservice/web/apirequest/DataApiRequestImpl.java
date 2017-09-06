@@ -367,12 +367,15 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
 
     /**
      * No argument constructor, meant to be used only for testing.
+     *
+     * @deprecated it's not a good practice to have testing code here. This constructor will be removed entirely.
      */
+    @Deprecated
     @ForTesting
     public DataApiRequestImpl() {
         super();
         this.table = null;
-        this.granularity = null;
+        this.granularity = DefaultTimeGrain.DAY;
         this.dimensions = Collections.emptySet();
         this.perDimensionFields = null;
         this.logicalMetrics = Collections.emptySet();
