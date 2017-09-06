@@ -7,24 +7,38 @@ import spock.lang.Timeout
 
 @Timeout(30)
 abstract class BaseKeyValueStoreSpec extends Specification {
+    private static final String STORE_NAME = "test_store1"
 
     abstract KeyValueStore getInstance(String storeName)
 
     abstract void removeInstance(String storeName)
 
-    /** A common store used by most tests.
+    /**
+     * A common store used by most tests.
      */
     KeyValueStore store1
 
     def setup() {
-        store1 = getInstance("test_store1")
-        assert store1.isOpen()
+        store1 = getInstance(STORE_NAME)
+        store1.open()
+        childSetup()
     }
 
     def cleanup() {
         store1.close()
-        removeInstance("test_store1")
+        removeInstance(STORE_NAME)
+        childCleanup()
     }
+
+    /**
+     * Override this method with any child-specific setup the child class needs to perform.
+     */
+    void childSetup() {}
+
+    /**
+     * Override this method with any child-specific cleanup the child class needs to perform.
+     */
+    void childCleanup() {}
 
     def "get a nonexistent key returns null"() {
         given: 'the key does not exist in the store'
