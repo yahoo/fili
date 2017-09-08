@@ -22,7 +22,5 @@ bard__dimension_backend = memory
 # 4. NoCache
 bard__query_response_caching_strategy = LocalSignature
 
-bard__druid_coordinator_metadata_enabled = true
-
 # Default the timeout to 10 minutes, in milliseconds
 bard__druid_request_timeout = 600000

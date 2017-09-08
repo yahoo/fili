@@ -8,7 +8,6 @@ import static com.yahoo.bard.webservice.application.AbstractBinderFactory.HEALTH
 import static com.yahoo.bard.webservice.application.AbstractBinderFactory.HEALTH_CHECK_VERSION
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_CACHE
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_CACHE_V2
-import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_COORDINATOR_METADATA
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.PARTIAL_DATA
 import static com.yahoo.bard.webservice.data.config.names.TestApiDimensionName.COLOR
 import static com.yahoo.bard.webservice.data.config.names.TestApiDimensionName.SHAPE
@@ -70,7 +69,6 @@ public class AbstractBinderFactorySpec extends Specification {
     @Shared boolean partialDataStatus = PARTIAL_DATA.isOn()
     @Shared boolean cacheStatus = DRUID_CACHE.isOn()
     @Shared boolean cacheV2Status = DRUID_CACHE_V2.isOn()
-    @Shared boolean coordinatorStatus = DRUID_COORDINATOR_METADATA.isOn()
 
     String oldUiURL
     String oldNonUiURL
@@ -85,7 +83,6 @@ public class AbstractBinderFactorySpec extends Specification {
      */
     def setup() {
         DRUID_CACHE.setOn(false)
-        DRUID_COORDINATOR_METADATA.setOn(true)
         try {
             oldUiURL = systemConfig.getStringProperty(UI_DRUID_BROKER_URL_KEY)
         } catch (SystemConfigException e) {
@@ -121,7 +118,6 @@ public class AbstractBinderFactorySpec extends Specification {
     def cleanup() {
         systemConfig.clearProperty(DIMENSION_BACKEND_KEY)
         PARTIAL_DATA.setOn(partialDataStatus)
-        DRUID_COORDINATOR_METADATA.setOn(coordinatorStatus)
         DRUID_CACHE.setOn(cacheStatus)
         DRUID_CACHE_V2.setOn(cacheV2Status)
         propertyRestore(UI_DRUID_BROKER_URL_KEY, oldUiURL)

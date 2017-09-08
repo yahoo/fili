@@ -14,7 +14,6 @@ public enum BardFeatureFlag implements FeatureFlag {
     DATA_FILTER_SUBSTRING_OPERATIONS("data_filter_substring_operations_enabled"),
     INTERSECTION_REPORTING("intersection_reporting_enabled"),
     UPDATED_METADATA_COLLECTION_NAMES("updated_metadata_collection_names_enabled"),
-    DRUID_COORDINATOR_METADATA("druid_coordinator_metadata_enabled"),
     DRUID_DIMENSIONS_LOADER("druid_dimensions_loader_enabled"),
     CASE_SENSITIVE_KEYS("case_sensitive_keys_enabled");
 
