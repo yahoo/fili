@@ -76,7 +76,7 @@ class AggregatabilityValidationSpec extends Specification {
     @Unroll
     def "Aggregatability validates successfully with #aggSize aggregatable and #nonAggSize non-aggregatable group by dimensions and #hasFilter filter#filterFormat"() {
         setup:
-        DataApiRequest apiRequest = new DataApiRequestImpl();
+        DataApiRequest apiRequest = new DataApiRequestImpl()
         Set<Dimension> dims = apiRequest.generateDimensions(aggDims + nonAggDims, dimensionDict)
         Map<Dimension, Set<ApiFilter>> filters = apiRequest.generateFilters(filterString, table, dimensionDict)
 
