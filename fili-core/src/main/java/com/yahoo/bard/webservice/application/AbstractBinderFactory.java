@@ -1135,12 +1135,11 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      * @return A ResponseFormatResolver
      */
     protected ResponseFormatResolver buildResponseFormatResolver() {
+        Map<String, String> formatsMap = new LinkedHashMap<>();
+        formatsMap.put("application/json", "json");
+        formatsMap.put("application/vnd.api+json", "jsonapi");
+        formatsMap.put("text/csv", "csv");
         return (format, containerRequestContext) -> {
-            Map<String, String> formatsMap = new LinkedHashMap<>();
-            formatsMap.put("application/json", "json");
-            formatsMap.put("application/vnd.api+json", "jsonapi");
-            formatsMap.put("text/csv", "csv");
-
             String headerFormat = containerRequestContext.getHeaderString("Accept");
             if (format != null || headerFormat == null) {
                 return format;
