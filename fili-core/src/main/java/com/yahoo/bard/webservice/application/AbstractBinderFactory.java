@@ -80,9 +80,9 @@ import com.yahoo.bard.webservice.table.resolver.DefaultPhysicalTableResolver;
 import com.yahoo.bard.webservice.table.resolver.PhysicalTableResolver;
 import com.yahoo.bard.webservice.util.DefaultingDictionary;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
-import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.CsvResponseWriter;
 import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.DefaultResponseFormatResolver;
 import com.yahoo.bard.webservice.web.DimensionApiRequestMapper;
 import com.yahoo.bard.webservice.web.DimensionsApiRequest;
 import com.yahoo.bard.webservice.web.FiliResponseWriter;
@@ -95,6 +95,7 @@ import com.yahoo.bard.webservice.web.MetricsApiRequest;
 import com.yahoo.bard.webservice.web.MetricsFilterSetBuilder;
 import com.yahoo.bard.webservice.web.NoOpRequestMapper;
 import com.yahoo.bard.webservice.web.RequestMapper;
+import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.ResponseWriter;
 import com.yahoo.bard.webservice.web.SlicesApiRequest;
 import com.yahoo.bard.webservice.web.TablesApiRequest;
@@ -128,7 +129,6 @@ import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -1135,21 +1135,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      * @return A ResponseFormatResolver
      */
     protected ResponseFormatResolver buildResponseFormatResolver() {
-        Map<String, String> formatsMap = new LinkedHashMap<>();
-        formatsMap.put("application/json", "json");
-        formatsMap.put("application/vnd.api+json", "jsonapi");
-        formatsMap.put("text/csv", "csv");
-        return (format, containerRequestContext) -> {
-            String headerFormat = containerRequestContext.getHeaderString("Accept");
-            if (format != null || headerFormat == null) {
-                return format;
-            }
-            return formatsMap.entrySet().stream()
-                    .filter(entry -> headerFormat.contains(entry.getKey()))
-                    .map(Map.Entry::getValue)
-                    .findFirst()
-                    .orElse(null);
-        };
+        return new DefaultResponseFormatResolver();
     }
 
     @Override

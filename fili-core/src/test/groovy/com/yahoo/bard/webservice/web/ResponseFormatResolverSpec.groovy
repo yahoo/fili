@@ -4,25 +4,15 @@ package com.yahoo.bard.webservice.web
 
 import spock.lang.Shared
 import spock.lang.Specification
+import spock.lang.Unroll
 
+import javax.inject.Inject
 import javax.ws.rs.container.ContainerRequestContext
 
 class ResponseFormatResolverSpec extends Specification {
 
     @Shared
-    ResponseFormatResolver resolver =  [ accept: {format, containerRequestContext ->
-            Map<String, String> formatsMap = ["application/json": "json", "application/vnd.api+json": "jsonapi", "text/csv": "csv"]
-
-            String headerFormat = containerRequestContext.getHeaderString("Accept");
-            if (format != null || headerFormat == null) {
-                return format
-            }
-            return formatsMap.entrySet().stream()
-                    .filter{entry -> headerFormat.contains(entry.getKey())}
-                    .map{entry -> entry.getValue()}
-                    .findFirst()
-                    .orElse(null)
-    }] as ResponseFormatResolver
+    ResponseFormatResolver resolver = new DefaultResponseFormatResolver()
 
     def requestContextWithAcceptType(String type) {
         return Stub(ContainerRequestContext) {
@@ -30,6 +20,7 @@ class ResponseFormatResolverSpec extends Specification {
         }
     }
 
+    @Unroll
     def "test Responseresolver select correct format"() {
         expect:
         responseFormat == expectedFormat

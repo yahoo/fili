@@ -184,14 +184,7 @@ public class MetricsServlet extends EndpointServlet {
             RequestLog.startTiming(this);
             RequestLog.record(new MetricRequest(metricName));
 
-            MetricsApiRequest apiRequest = new MetricsApiRequest(
-                    metricName,
-                    null,
-                    "",
-                    "",
-                    metricDictionary,
-                    uriInfo
-            );
+            MetricsApiRequest apiRequest = new MetricsApiRequest(metricName, null, "", "", metricDictionary, uriInfo);
 
             if (requestMapper != null) {
                 apiRequest = (MetricsApiRequest) requestMapper.apply(apiRequest, containerRequestContext);

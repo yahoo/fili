@@ -11,10 +11,12 @@ import javax.ws.rs.container.ContainerRequestContext;
  */
 public interface ResponseFormatResolver {
     /**
-     * Resolve desirable format from URI and ContainerRequestContext.
+     * Resolve desirable format from URI and ContainerRequestContext. In case of a null return, Fili handles null
+     * format at {@link FiliResponseWriterSelector}, which use json as default value.
      *
      * @param format  The format String from URI
      * @param containerRequestContext  ContainerRequestContext object that contains request related information
+     *
      * @return A resolved format decided by the function
      */
     String accept(String format, ContainerRequestContext containerRequestContext);
