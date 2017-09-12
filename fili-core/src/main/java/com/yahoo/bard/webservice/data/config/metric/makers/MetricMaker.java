@@ -73,7 +73,7 @@ public abstract class MetricMaker {
         assertRequiredDependentMetricCount(metricName, dependentMetrics);
 
         // Have the subclass actually build the metric
-        return this.makeInner(metricName, dependentMetrics);
+        return this.makeInner(new LogicalMetricInfo(metricName), dependentMetrics);
     }
 
     /**
@@ -151,7 +151,14 @@ public abstract class MetricMaker {
      *
      * @return the new logicalMetric
      */
-    protected abstract LogicalMetric makeInner(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics);
+    protected LogicalMetric makeInner(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics) {
+        String message = String.format(
+                "Current implementation of MetricMaker '%s' does not support makeInner operation",
+                this.getClass().getSimpleName()
+        );
+        LoggerFactory.getLogger(MetricMaker.class).error(message);
+        throw new UnsupportedOperationException(message);
+    }
 
     /**
      * Get the number of dependent metrics the maker requires for making the metric.
