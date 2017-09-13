@@ -39,4 +39,5 @@ notifications:
     on_success: change
     on_failure: always
     on_start: never
-        
+
+group: deprecated-2017Q3
