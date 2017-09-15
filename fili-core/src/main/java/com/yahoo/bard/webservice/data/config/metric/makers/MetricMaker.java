@@ -64,16 +64,37 @@ public abstract class MetricMaker {
      * @param dependentMetrics  Metrics this metric depends on
      *
      * @return The new logicalMetric
+     *
+     * @deprecated logical metric needs more config-richness to not just configure metric name, but also metric long
+     * name, description, etc. Use {@link #make(LogicalMetricInfo, List)} instead.
      */
+    @Deprecated
     public LogicalMetric make(String metricName, List<String> dependentMetrics) {
+        return make(new LogicalMetricInfo(metricName), dependentMetrics);
+    }
+
+    /**
+     * Make the metric.
+     * <p>
+     * This method also sanity-checks the dependent metrics to make sure that they
+     * are metrics we have built and are in the metric dictionary.
+     * <p>
+     * Also sanity-checks that the number of dependent metrics are correct for the maker.
+     *
+     * @param logicalMetricInfo  Logical metric info provider
+     * @param dependentMetrics  Metrics this metric depends on
+     *
+     * @return The new logicalMetric
+     */
+    public LogicalMetric make(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics) {
         // Check that all of the dependent metrics are in the dictionary
         assertDependentMetricsExist(dependentMetrics);
 
         // Check that we have the right number of metrics
-        assertRequiredDependentMetricCount(metricName, dependentMetrics);
+        assertRequiredDependentMetricCount(logicalMetricInfo.getName(), dependentMetrics);
 
         // Have the subclass actually build the metric
-        return this.makeInner(new LogicalMetricInfo(metricName), dependentMetrics);
+        return this.makeInner(logicalMetricInfo, dependentMetrics);
     }
 
     /**
