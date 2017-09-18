@@ -25,7 +25,6 @@ import java.util.List;
 public class MetricInstance {
 
     private final LogicalMetricInfo logicalMetricInfo;
-    private final String metricName;
     private final List<String> dependencyMetricNames;
     private final MetricMaker maker;
 
@@ -43,7 +42,6 @@ public class MetricInstance {
     @Deprecated
     public MetricInstance(String metricName, MetricMaker maker, String... dependencyMetricNames) {
         this.logicalMetricInfo = new LogicalMetricInfo(metricName);
-        this.metricName = logicalMetricInfo.getName();
         this.maker = maker;
         this.dependencyMetricNames = Arrays.asList(dependencyMetricNames);
     }
@@ -58,7 +56,6 @@ public class MetricInstance {
      */
     public MetricInstance(LogicalMetricInfo logicalMetricInfo, MetricMaker maker, String... dependencyMetricNames) {
         this.logicalMetricInfo = logicalMetricInfo;
-        this.metricName = logicalMetricInfo.getName();
         this.maker = maker;
         this.dependencyMetricNames = Arrays.asList(dependencyMetricNames);
     }
@@ -76,7 +73,6 @@ public class MetricInstance {
     @Deprecated
     public MetricInstance(FieldName metricName, MetricMaker maker, FieldName... dependencyFields) {
         this.logicalMetricInfo = new LogicalMetricInfo(metricName.asName());
-        this.metricName = logicalMetricInfo.getName();
         this.maker = maker;
         this.dependencyMetricNames = new ArrayList<>();
         for (FieldName fieldName : dependencyFields) {
@@ -93,7 +89,6 @@ public class MetricInstance {
      */
     public MetricInstance(LogicalMetricInfo logicalMetricInfo, MetricMaker maker, FieldName... dependencyFields) {
         this.logicalMetricInfo = logicalMetricInfo;
-        this.metricName = logicalMetricInfo.getName();
         this.maker = maker;
         this.dependencyMetricNames = new ArrayList<>();
         for (FieldName fieldName : dependencyFields) {
@@ -102,7 +97,7 @@ public class MetricInstance {
     }
 
     public String getMetricName() {
-        return metricName;
+        return logicalMetricInfo.getName();
     }
 
     public List<String> getDependencyMetricNames() {

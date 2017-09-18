@@ -10,6 +10,11 @@ Current
 
 ### Added:
 
+- [Allow Webservice to Configure Metric Long Name](https://github.com/yahoo/fili/pull/492)
+    * Logical metric needs more config-richness to not just configure metric name, but also metric long name,
+      description, etc. MetricInstance is now created by accepting a LogicalMetricInfo which contains all those
+      informations, instead of accepting a metric name.
+
 - [Enable search provider to hot-swap index and key value store to hot-swap store location](https://github.com/yahoo/fili/pull/522)
     * Add new default method to [`SearchProvider`](./fili-core/src/main/java/com/yahoo/bard/webservice/data/dimension/SearchProvider.java)
       interface in order to support hot-swapping index.
