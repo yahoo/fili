@@ -7,9 +7,9 @@ import com.yahoo.bard.webservice.data.config.names.FieldName;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * A Metric instance holds all of the information needed to construct a LogicalMetric.
@@ -74,10 +74,9 @@ public class MetricInstance {
     public MetricInstance(FieldName metricName, MetricMaker maker, FieldName... dependencyFields) {
         this.logicalMetricInfo = new LogicalMetricInfo(metricName.asName());
         this.maker = maker;
-        this.dependencyMetricNames = new ArrayList<>();
-        for (FieldName fieldName : dependencyFields) {
-            this.dependencyMetricNames.add(fieldName.asName());
-        }
+        this.dependencyMetricNames = Arrays.stream(dependencyFields)
+                .map(FieldName::asName)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -90,10 +89,9 @@ public class MetricInstance {
     public MetricInstance(LogicalMetricInfo logicalMetricInfo, MetricMaker maker, FieldName... dependencyFields) {
         this.logicalMetricInfo = logicalMetricInfo;
         this.maker = maker;
-        this.dependencyMetricNames = new ArrayList<>();
-        for (FieldName fieldName : dependencyFields) {
-            this.dependencyMetricNames.add(fieldName.asName());
-        }
+        this.dependencyMetricNames = Arrays.stream(dependencyFields)
+                .map(FieldName::asName)
+                .collect(Collectors.toList());
     }
 
     public String getMetricName() {
