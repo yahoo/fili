@@ -15,7 +15,6 @@ import org.apache.lucene.store.FSDirectory
 
 import java.nio.file.Files
 import java.nio.file.Path
-
 /**
  * Specification for behavior specific to the LuceneSearchProvider
  */
@@ -239,24 +238,20 @@ class LuceneSearchProviderSpec extends SearchProviderSpec<LuceneSearchProvider> 
         Throwable cause = null
 
         @Override
-        public void run() {
-            try {
-                DimensionRow dimensionRow3new = BardDimensionField.makeDimensionRow(
-                        keyValueStoreDimension,
-                        "kumquat",
-                        "this is still not an animal"
-                )
-                DimensionRow dimensionRow4 = BardDimensionField.makeDimensionRow(
-                        keyValueStoreDimension,
-                        "badger",
-                        "Badger badger badger badger mushroom mushroom badger badger badger"
-                )
-                keyValueStoreDimension.addDimensionRow(dimensionRow3new)
-                Thread.sleep(100)
-                keyValueStoreDimension.addDimensionRow(dimensionRow4)
-            } catch (Throwable t) {
-                cause = t
-            }
+        void run() {
+            DimensionRow dimensionRow3new = BardDimensionField.makeDimensionRow(
+                    keyValueStoreDimension,
+                    "kumquat",
+                    "this is still not an animal"
+            )
+            DimensionRow dimensionRow4 = BardDimensionField.makeDimensionRow(
+                    keyValueStoreDimension,
+                    "badger",
+                    "Badger badger badger badger mushroom mushroom badger badger badger"
+            )
+            keyValueStoreDimension.addDimensionRow(dimensionRow3new)
+            Thread.sleep(100)
+            keyValueStoreDimension.addDimensionRow(dimensionRow4)
         }
     }
 
