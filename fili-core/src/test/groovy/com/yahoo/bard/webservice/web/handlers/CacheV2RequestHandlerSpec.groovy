@@ -8,6 +8,8 @@ import com.yahoo.bard.webservice.data.cache.TupleDataCache
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery
 import com.yahoo.bard.webservice.druid.model.query.TopNQuery
+import com.yahoo.bard.webservice.logging.RequestLog
+import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo
 import com.yahoo.bard.webservice.metadata.QuerySigningService
 import com.yahoo.bard.webservice.metadata.SegmentIntervalsHashIdGenerator
 import com.yahoo.bard.webservice.web.DataApiRequest
@@ -56,6 +58,7 @@ class CacheV2RequestHandlerSpec extends Specification {
         containerRequestContext.getHeaders() >> (["Bard-Testing": "###BYPASS###", "ClientId": "UI"] as
                 MultivaluedHashMap<String, String>)
         requestContext = new RequestContext(containerRequestContext, true)
+        RequestLog.record(new BardQueryInfo(""))
     }
 
     def "Test constructor initializes object"() {

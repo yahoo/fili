@@ -37,6 +37,17 @@ public class LogBlock {
     }
 
     /**
+     * Return a part of logging information in this LogBlock.
+     *
+     * @param name  Name of a {@link LogInfo} object to be returned
+     *
+     * @return a part of logging information in this LogBlock
+     */
+    public LogInfo get(String name) {
+        return body.get(name);
+    }
+
+    /**
      * Create a new LogBlock with the same body but updated uuid.
      *
      * @param uuid  New uuid.

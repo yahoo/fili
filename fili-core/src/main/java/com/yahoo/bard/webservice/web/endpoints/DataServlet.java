@@ -226,7 +226,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
         LogicalTable table = request.getTable();
         REGISTRY.meter("request.logical.table." + table.getName() + "." + table.getGranularity()).mark();
 
-        RequestLog.record(new BardQueryInfo(druidQuery.getQueryType().toJson(), false));
+        RequestLog.record(new BardQueryInfo(druidQuery.getQueryType().toJson()));
         RequestLog.record(
                 new DataRequest(
                         table,

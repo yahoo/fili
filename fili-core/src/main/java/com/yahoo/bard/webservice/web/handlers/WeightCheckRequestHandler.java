@@ -8,6 +8,8 @@ import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
+import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
@@ -71,6 +73,9 @@ public class WeightCheckRequestHandler extends BaseDataRequestHandler {
             return next.handleRequest(context, request, druidQuery, response);
         }
 
+        ((BardQueryInfo) RequestLog.retrieve(BardQueryInfo.class)).incrementCountFor(
+                BardQueryInfo.WEIGHT_CHECK
+        );
         final WeightCheckResponseProcessor weightCheckResponse = new WeightCheckResponseProcessor(response);
         final DruidAggregationQuery<?> weightEvaluationQuery = queryWeightUtil.makeWeightEvaluationQuery(druidQuery);
         Granularity granularity = druidQuery.getInnermostQuery().getGranularity();
