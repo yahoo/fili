@@ -186,13 +186,12 @@ class WeightCheckRequestHandlerSpec extends Specification {
         """
         JsonParser parser = new JsonFactory().createParser(weightResponse)
         JsonNode jsonResult = MAPPER.readTree(parser)
-        1 * next.handleRequest(context, request, groupByQuery, response)
 
         when:
         success.invoke(jsonResult)
 
         then:
-        1 == 1
+        1 * next.handleRequest(context, request, groupByQuery, response)
     }
 
     def "Test build and invoke success callback count too high"() {
@@ -217,15 +216,15 @@ class WeightCheckRequestHandlerSpec extends Specification {
         """
         JsonParser parser = new JsonFactory().createParser(weightResponse)
         JsonNode jsonResult = new ObjectMapper().readTree(parser)
-        0 * next.handleRequest(context, request, groupByQuery, response)
         HttpErrorCallback ec = Mock(HttpErrorCallback)
-        1 * response.getErrorCallback(groupByQuery) >> ec
-        1 * ec.dispatch(507, _, _)
+
         when:
         success.invoke(jsonResult)
 
         then:
-        1 == 1
+        0 * next.handleRequest(context, request, groupByQuery, response)
+        1 * response.getErrorCallback(groupByQuery) >> ec
+        1 * ec.dispatch(507, _, _)
     }
 
     def "Test build and invoke success callback invalid json"() {
@@ -250,15 +249,14 @@ class WeightCheckRequestHandlerSpec extends Specification {
         """
         JsonParser parser = new JsonFactory().createParser(weightResponse)
         JsonNode jsonResult = new ObjectMapper().readTree(parser)
-        0 * next.handleRequest(context, request, groupByQuery, response)
         FailureCallback fc = Mock(FailureCallback)
-        1 * response.getFailureCallback(groupByQuery) >> fc
-        1 * fc.dispatch(_)
 
         when:
         success.invoke(jsonResult)
 
         then:
-        1 == 1
+        0 * next.handleRequest(context, request, groupByQuery, response)
+        1 * response.getFailureCallback(groupByQuery) >> fc
+        1 * fc.dispatch(_)
     }
 }

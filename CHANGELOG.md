@@ -10,6 +10,15 @@ Current
 
 ### Added:
 
+- [Add Code Narc to validate Groovy style](https://github.com/yahoo/fili/pull/420)
+    * Checkstyle is great, but it doesn't process Groovy. Code Narc is Checkstyle for Groovy, so we should totally use
+      it.
+      
+- [Allow Webservice to Configure Metric Long Name](https://github.com/yahoo/fili/pull/492)
+    * Logical metric needs more config-richness to not just configure metric name, but also metric long name,
+      description, etc. MetricInstance is now created by accepting a LogicalMetricInfo which contains all these fields
+      in addition to metric name.
+
 - [Enable search provider to hot-swap index and key value store to hot-swap store location](https://github.com/yahoo/fili/pull/522)
     * Add new default method to [`SearchProvider`](./fili-core/src/main/java/com/yahoo/bard/webservice/data/dimension/SearchProvider.java)
       interface in order to support hot-swapping index.
@@ -38,7 +47,7 @@ Current
 
 - [Add Table-wide Availability](https://github.com/yahoo/fili/pull/414)
     * Add `availableIntervals` field to tables endpoint by union the availability for the logical table without taking
-    the TablesApiRequest into account.
+      the TablesApiRequest into account.
 
 - [Implement EtagCacheRequestHandler](https://github.com/yahoo/fili/pull/312)
     * Add `EtagCacheRequestHandler` that checks the cache for a matching eTag
@@ -47,7 +56,7 @@ Current
 
 - [Implement EtagCacheResponseProcessor](https://github.com/yahoo/fili/pull/311)
     * Add `EtagCacheResponseProcessor` that caches the results if appropriate after completing a query according to
-    etag value.
+      etag value.
 
 - [Add dimension dictionary to metric loader](https://github.com/yahoo/fili/pull/317)
     * Added a two argument version of `loadMetricDictionary` default method in `MetricLoader` interface that allows dimension

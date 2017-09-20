@@ -5,10 +5,11 @@ package com.yahoo.bard.webservice.data.config.metric;
 import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker;
 import com.yahoo.bard.webservice.data.config.names.FieldName;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * A Metric instance holds all of the information needed to construct a LogicalMetric.
@@ -23,7 +24,7 @@ import java.util.List;
  */
 public class MetricInstance {
 
-    private final String metricName;
+    private final LogicalMetricInfo logicalMetricInfo;
     private final List<String> dependencyMetricNames;
     private final MetricMaker maker;
 
@@ -34,9 +35,27 @@ public class MetricInstance {
      * @param maker  The Metric Maker that creates the actual Logical Metric
      * @param dependencyMetricNames  The names of metrics either in the dictionary or raw druid metrics that this
      * Logical Metric depends on
+     *
+     * @deprecated logical metric needs more config-richness to not just configure metric name, but also metric long
+     * name, description, etc. Use {@link #MetricInstance(LogicalMetricInfo, MetricMaker, String...)} instead.
      */
+    @Deprecated
     public MetricInstance(String metricName, MetricMaker maker, String... dependencyMetricNames) {
-        this.metricName = metricName;
+        this.logicalMetricInfo = new LogicalMetricInfo(metricName);
+        this.maker = maker;
+        this.dependencyMetricNames = Arrays.asList(dependencyMetricNames);
+    }
+
+    /**
+     * Construct a MetricInstance from Strings with a list of dependencyMetricNames.
+     *
+     * @param logicalMetricInfo  Logical metric info provider
+     * @param maker  The Metric Maker that creates the actual Logical Metric
+     * @param dependencyMetricNames  The names of metrics either in the dictionary or raw druid metrics that this
+     * Logical Metric depends on
+     */
+    public MetricInstance(LogicalMetricInfo logicalMetricInfo, MetricMaker maker, String... dependencyMetricNames) {
+        this.logicalMetricInfo = logicalMetricInfo;
         this.maker = maker;
         this.dependencyMetricNames = Arrays.asList(dependencyMetricNames);
     }
@@ -47,18 +66,36 @@ public class MetricInstance {
      * @param metricName  The name of the Logical Metric when it's in the metric dictionary
      * @param maker  The Metric Maker that creates the actual Logical Metric
      * @param dependencyFields  The field names that this Logical Metric depends on
+     *
+     * @deprecated logical metric needs more config-richness to not just configure metric name, but also metric long
+     * name, description, etc. Use {@link #MetricInstance(LogicalMetricInfo, MetricMaker, FieldName...)} instead.
      */
+    @Deprecated
     public MetricInstance(FieldName metricName, MetricMaker maker, FieldName... dependencyFields) {
-        this.metricName = metricName.asName();
+        this.logicalMetricInfo = new LogicalMetricInfo(metricName.asName());
         this.maker = maker;
-        this.dependencyMetricNames = new ArrayList<>();
-        for (FieldName fieldName : dependencyFields) {
-            this.dependencyMetricNames.add(fieldName.asName());
-        }
+        this.dependencyMetricNames = Arrays.stream(dependencyFields)
+                .map(FieldName::asName)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Construct a MetricInstance from FieldNames with a list of dependencyFields.
+     *
+     * @param logicalMetricInfo  Logical metric info provider
+     * @param maker  The Metric Maker that creates the actual Logical Metric
+     * @param dependencyFields  The field names that this Logical Metric depends on
+     */
+    public MetricInstance(LogicalMetricInfo logicalMetricInfo, MetricMaker maker, FieldName... dependencyFields) {
+        this.logicalMetricInfo = logicalMetricInfo;
+        this.maker = maker;
+        this.dependencyMetricNames = Arrays.stream(dependencyFields)
+                .map(FieldName::asName)
+                .collect(Collectors.toList());
     }
 
     public String getMetricName() {
-        return metricName;
+        return logicalMetricInfo.getName();
     }
 
     public List<String> getDependencyMetricNames() {
@@ -77,7 +114,7 @@ public class MetricInstance {
      */
     public MetricInstance withName(String metricName) {
         return new MetricInstance(
-                metricName,
+                logicalMetricInfo,
                 maker,
                 dependencyMetricNames.toArray(new String[dependencyMetricNames.size()])
         );
@@ -91,7 +128,7 @@ public class MetricInstance {
      */
     public MetricInstance withMaker(MetricMaker maker) {
         return new MetricInstance(
-                metricName,
+                logicalMetricInfo,
                 maker,
                 dependencyMetricNames.toArray(new String[dependencyMetricNames.size()])
         );
@@ -105,7 +142,7 @@ public class MetricInstance {
      */
     public MetricInstance withDependencyMetricNames(List<String> dependencyMetricNames) {
         return new MetricInstance(
-                metricName,
+                logicalMetricInfo,
                 maker,
                 dependencyMetricNames.toArray(new String[dependencyMetricNames.size()])
         );
@@ -117,6 +154,6 @@ public class MetricInstance {
      * @return The LogicalMetric with the provided name, using the given maker, that depends on the given metrics.
      */
     public LogicalMetric make() {
-        return maker.make(metricName, dependencyMetricNames);
+        return maker.make(logicalMetricInfo, dependencyMetricNames);
     }
 }

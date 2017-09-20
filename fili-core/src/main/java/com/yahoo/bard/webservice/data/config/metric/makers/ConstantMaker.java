@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.data.config.metric.makers;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.druid.model.postaggregation.ConstantPostAggregation;
@@ -42,7 +43,8 @@ public class ConstantMaker extends MetricMaker {
     }
 
     @Override
-    protected LogicalMetric makeInner(String metricName, List<String> dependentMetrics) {
+    protected LogicalMetric makeInner(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics) {
+        String metricName = logicalMetricInfo.getName();
         try {
             Set<PostAggregation> postAggregations = Collections.singleton(new ConstantPostAggregation(
                     metricName,
@@ -52,7 +54,7 @@ public class ConstantMaker extends MetricMaker {
             return new LogicalMetric(
                     new TemplateDruidQuery(Collections.emptySet(), postAggregations),
                     NO_OP_MAPPER,
-                    metricName
+                    logicalMetricInfo
             );
         } catch (NumberFormatException nfe) {
             String message = String.format(

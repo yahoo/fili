@@ -10,7 +10,7 @@ import static com.yahoo.bard.webservice.sql.builders.Aggregator.max
 import static com.yahoo.bard.webservice.sql.builders.Aggregator.min
 import static com.yahoo.bard.webservice.sql.builders.Aggregator.sum
 import static com.yahoo.bard.webservice.sql.builders.Havings.and
-import static com.yahoo.bard.webservice.sql.builders.Havings.equals
+import static com.yahoo.bard.webservice.sql.builders.Havings.equal
 import static com.yahoo.bard.webservice.sql.builders.Havings.gt
 import static com.yahoo.bard.webservice.sql.builders.Havings.lt
 import static com.yahoo.bard.webservice.sql.builders.Havings.or
@@ -79,12 +79,12 @@ class HavingEvaluatorSpec extends Specification {
                 toString();
         sql.contains(expectedHavingSql)
         where: "we have"
-        having                                                | aggregations                           | expectedHavingSql
-        gt(API + ADDED, ONE)                                  | [sum(API + ADDED)]                     | "HAVING SUM(`${ADDED}`) > 1"
-        lt(API + DELETED, ONE)                                | [sum(API + DELETED)]                   | "HAVING SUM(`${DELETED}`) < 1"
-        equals(API + DELETED, ONE)                            | [sum(API + DELETED), sum(API + ADDED)] | "HAVING SUM(`${DELETED}`) = 1"
-        or(equals(API + DELETED, ONE), lt(API + ADDED, TWO))  | [max(API + DELETED), min(API + ADDED)] | "HAVING MAX(`${DELETED}`) = 1 OR MIN(`${ADDED}`) < 2"
-        and(equals(API + DELETED, ONE), lt(API + ADDED, TWO)) | [max(API + DELETED), min(API + ADDED)] | "HAVING MAX(`${DELETED}`) = 1 AND MIN(`${ADDED}`) < 2"
+        having                                               | aggregations                           | expectedHavingSql
+        gt(API + ADDED, ONE)                                 | [sum(API + ADDED)]                     | "HAVING SUM(`${ADDED}`) > 1"
+        lt(API + DELETED, ONE)                               | [sum(API + DELETED)]                   | "HAVING SUM(`${DELETED}`) < 1"
+        equal(API + DELETED, ONE)                            | [sum(API + DELETED), sum(API + ADDED)] | "HAVING SUM(`${DELETED}`) = 1"
+        or(equal(API + DELETED, ONE), lt(API + ADDED, TWO))  | [max(API + DELETED), min(API + ADDED)] | "HAVING MAX(`${DELETED}`) = 1 OR MIN(`${ADDED}`) < 2"
+        and(equal(API + DELETED, ONE), lt(API + ADDED, TWO)) | [max(API + DELETED), min(API + ADDED)] | "HAVING MAX(`${DELETED}`) = 1 AND MIN(`${ADDED}`) < 2"
 
     }
 
