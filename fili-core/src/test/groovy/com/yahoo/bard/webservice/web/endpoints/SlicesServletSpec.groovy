@@ -33,15 +33,15 @@ class SlicesServletSpec extends Specification {
         String expectedResponse = """{
             "rows":
             [
-                {"timeGrain":"hour", "name":"color_shapes_hourly", "uri":"http://localhost:9998/slices/color_shapes_hourly"},
-                {"timeGrain":"day", "name":"color_shapes", "uri":"http://localhost:9998/slices/color_shapes"},
-                {"timeGrain":"month", "name":"color_shapes_monthly", "uri":"http://localhost:9998/slices/color_shapes_monthly"},
-                {"timeGrain":"day", "name":"color_size_shapes", "uri":"http://localhost:9998/slices/color_size_shapes"},
-                {"timeGrain":"day", "name":"color_size_shape_shapes", "uri":"http://localhost:9998/slices/color_size_shape_shapes"},
-                {"timeGrain":"day", "name":"all_pets", "uri":"http://localhost:9998/slices/all_pets"},
-                {"timeGrain":"day", "name":"all_shapes", "uri":"http://localhost:9998/slices/all_shapes"},
-                {"timeGrain":"month", "name":"monthly", "uri":"http://localhost:9998/slices/monthly"},
-                {"timeGrain":"hour", "name":"hourly", "uri":"http://localhost:9998/slices/hourly"}
+                {"timeGrain":"hour", "name":"color_shapes_hourly", "uri":"http://localhost:${jtb.getHarness().getPort()}/slices/color_shapes_hourly"},
+                {"timeGrain":"day", "name":"color_shapes", "uri":"http://localhost:${jtb.getHarness().getPort()}/slices/color_shapes"},
+                {"timeGrain":"month", "name":"color_shapes_monthly", "uri":"http://localhost:${jtb.getHarness().getPort()}/slices/color_shapes_monthly"},
+                {"timeGrain":"day", "name":"color_size_shapes", "uri":"http://localhost:${jtb.getHarness().getPort()}/slices/color_size_shapes"},
+                {"timeGrain":"day", "name":"color_size_shape_shapes", "uri":"http://localhost:${jtb.getHarness().getPort()}/slices/color_size_shape_shapes"},
+                {"timeGrain":"day", "name":"all_pets", "uri":"http://localhost:${jtb.getHarness().getPort()}/slices/all_pets"},
+                {"timeGrain":"day", "name":"all_shapes", "uri":"http://localhost:${jtb.getHarness().getPort()}/slices/all_shapes"},
+                {"timeGrain":"month", "name":"monthly", "uri":"http://localhost:${jtb.getHarness().getPort()}/slices/monthly"},
+                {"timeGrain":"hour", "name":"hourly", "uri":"http://localhost:${jtb.getHarness().getPort()}/slices/hourly"}
             ]
         }"""
 
@@ -60,9 +60,9 @@ class SlicesServletSpec extends Specification {
             "timeZone":"UTC",
             "dimensions":
             [
-                {"name":"breed", "uri":"http://localhost:9998/dimensions/breed", "intervals":["$interval"]},
-                {"name":"sex", "uri":"http://localhost:9998/dimensions/sex", "intervals":["$interval"]},
-                {"name":"species", "uri":"http://localhost:9998/dimensions/species", "intervals":["$interval"]}
+                {"name":"breed", "uri":"http://localhost:${jtb.getHarness().getPort()}/dimensions/breed", "intervals":["$interval"]},
+                {"name":"class", "uri":"http://localhost:${jtb.getHarness().getPort()}/dimensions/species", "intervals":["$interval"]},
+                {"name":"sex", "uri":"http://localhost:${jtb.getHarness().getPort()}/dimensions/sex", "intervals":["$interval"]}
             ],
             "segmentInfo": {},
             "metrics":

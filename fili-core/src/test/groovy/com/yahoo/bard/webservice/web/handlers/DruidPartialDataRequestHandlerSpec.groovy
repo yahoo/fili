@@ -4,13 +4,7 @@ package com.yahoo.bard.webservice.web.handlers
 
 import com.yahoo.bard.webservice.config.SystemConfig
 import com.yahoo.bard.webservice.config.SystemConfigProvider
-import com.yahoo.bard.webservice.druid.model.datasource.DataSource
-import com.yahoo.bard.webservice.druid.model.filter.Filter
-import com.yahoo.bard.webservice.druid.model.having.Having
-import com.yahoo.bard.webservice.druid.model.orderby.LimitSpec
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
-import com.yahoo.bard.webservice.druid.model.query.Granularity
-import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.druid.model.query.QueryContext
 import com.yahoo.bard.webservice.web.DataApiRequest
 import com.yahoo.bard.webservice.web.responseprocessors.DruidPartialDataResponseProcessor

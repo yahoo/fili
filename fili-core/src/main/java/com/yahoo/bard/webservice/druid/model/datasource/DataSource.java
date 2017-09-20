@@ -8,9 +8,11 @@ import com.yahoo.bard.webservice.table.ConstrainedTable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -79,14 +81,25 @@ public abstract class DataSource {
     }
 
     /**
+     * Get the query that defines the data source. Empty queries become null for serialization.
+     *
+     * @return the serializable version of the query.
+     */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("query")
+    private DruidQuery<?> getQueryForSerialization() {
+        return getQuery().orElse(null);
+    }
+
+    /**
      * Get the query that defines the data source.
      * <p>
-     * May be null if the data source does not have a query.
+     * May be empty if the data source does not have a query.
      *
      * @return the query that this data source is generated from
      */
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public DruidQuery<?> getQuery() {
-        return null;
+    @JsonIgnore
+    public Optional<? extends DruidQuery<?>> getQuery() {
+        return Optional.empty();
     }
 }

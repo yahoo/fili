@@ -44,7 +44,7 @@ public class DataSourceConstraint {
         this.filterDimensions = Collections.unmodifiableSet(dataApiRequest.getFilterDimensions());
         this.metricDimensions = Collections.unmodifiableSet(templateDruidQuery.getMetricDimensions());
         this.metricNames = Collections.unmodifiableSet(templateDruidQuery.getDependentFieldNames());
-        this.apiFilters = Collections.unmodifiableMap(dataApiRequest.getFilters());
+        this.apiFilters = Collections.unmodifiableMap(dataApiRequest.getApiFilters());
         this.allDimensions = Collections.unmodifiableSet(Stream.of(
                 getRequestDimensions().stream(),
                 getFilterDimensions().stream(),

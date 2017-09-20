@@ -32,7 +32,7 @@ class AsyncDruidWebServiceImplSpec extends Specification {
         supplier.get() >> expectedHeaders
 
         AsyncDruidWebServiceImplWrapper webServiceImplWrapper = new AsyncDruidWebServiceImplWrapper(
-                DruidClientConfigHelper.getNonUiServiceConfig(),
+                DruidClientConfigHelper.getServiceConfig(),
                 MAPPER,
                 supplier
         )
@@ -57,7 +57,7 @@ class AsyncDruidWebServiceImplSpec extends Specification {
         supplier.get() >> expectedHeaders
 
         AsyncDruidWebServiceImplWrapper webServiceImplWrapper = new AsyncDruidWebServiceImplWrapper(
-                DruidClientConfigHelper.getNonUiServiceConfig(),
+                DruidClientConfigHelper.getServiceConfig(),
                 MAPPER,
                 supplier
         )

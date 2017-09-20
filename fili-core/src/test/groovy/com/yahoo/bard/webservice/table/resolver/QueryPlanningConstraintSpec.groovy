@@ -13,7 +13,7 @@ class QueryPlanningConstraintSpec extends Specification {
         DataApiRequest dataApiRequest = Mock(DataApiRequest)
         dataApiRequest.getDimensions() >> ([] as Set)
         dataApiRequest.getFilterDimensions() >> ([] as Set)
-        dataApiRequest.getFilters() >> [:]
+        dataApiRequest.getApiFilters() >> [:]
         dataApiRequest.getIntervals() >> ([] as Set)
         dataApiRequest.getLogicalMetrics() >> ([] as Set)
         dataApiRequest.getGranularity() >> (DefaultTimeGrain.DAY)

@@ -7,13 +7,12 @@ import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField.QUERY
 import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField.STATUS
 import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField.USER_ID
 
-import com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField
+import com.yahoo.bard.webservice.application.JerseyTestBinder
+
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.util.JsonSlurper
 
 import org.joda.time.DateTime
-
-import javax.ws.rs.core.UriBuilder
 
 /**
  * Contains a collection of functions to aid in testing asynchronous
@@ -57,7 +56,7 @@ class AsyncTestUtils {
     * @param query  The query that triggered the job
     * @param status  The job's expected status
     */
-   static void validateJobPayload(String asynchronousPayload, String query, String status) {
+   static void validateJobPayload(JerseyTestBinder jtb, String asynchronousPayload, String query, String status) {
       Map payloadJson = JSON_PARSER.parseText(asynchronousPayload)
       //The test payload builder always sets the user id to greg in TestBinderFactory::buildJobRowBuilder.
       assert payloadJson[USER_ID.name] == "greg"
@@ -66,11 +65,11 @@ class AsyncTestUtils {
       assert GroovyTestUtils.compareURL(payloadJson[QUERY.name] as String, query)
       assert GroovyTestUtils.compareURL(
               payloadJson["results"],
-              "http://localhost:9998/jobs/${payloadJson[JOB_TICKET.name]}/results"
+              "http://localhost:${jtb.getHarness().getPort()}/jobs/${payloadJson[JOB_TICKET.name]}/results"
       )
       assert GroovyTestUtils.compareURL(
               payloadJson["syncResults"],
-              "http://localhost:9998/jobs/${payloadJson[JOB_TICKET.name]}/results&asyncAfter=never"
+              "http://localhost:${jtb.getHarness().getPort()}/jobs/${payloadJson[JOB_TICKET.name]}/results&asyncAfter=never"
       );
       //Validate that the dates are valid dates
       DateTime.parse(payloadJson[DATE_CREATED.name])

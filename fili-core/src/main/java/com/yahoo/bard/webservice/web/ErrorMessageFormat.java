@@ -255,7 +255,11 @@ public enum ErrorMessageFormat implements MessageFormatter {
     TOO_FEW_BACKING_DATA_SOURCES("TableDataSource built with insufficient backing data sources: %s"),
     HAVING_OPERATOR_WRONG_NUMBER_OF_PARAMETERS("Wrong number of parameters provided for %s operator. " +
                                               "%s operator needs %d parameters but found %d"),
-    HAVING_OPERATOR_IMPROPER_RANGE("Upper range cannot be less than the lower range for %s operator.")
+    HAVING_OPERATOR_IMPROPER_RANGE("Upper range cannot be less than the lower range for %s operator."),
+
+    UNABLE_TO_CREATE_DIR("Unable to create directory %s."),
+    UNABLE_TO_DELETE_DIR("Unable to delete directory %s."),
+    FAIL_TO_WIPTE_LUCENE_INDEX_DIR("Failed to wipe Lucene index at directory: %s")
     ;
 
     private final String messageFormat;

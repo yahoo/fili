@@ -14,6 +14,7 @@ import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.TableGroup
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequestImpl
 
 import org.joda.time.DateTime
 
@@ -75,7 +76,7 @@ class AggregatabilityValidationSpec extends Specification {
     @Unroll
     def "Aggregatability validates successfully with #aggSize aggregatable and #nonAggSize non-aggregatable group by dimensions and #hasFilter filter#filterFormat"() {
         setup:
-        DataApiRequest apiRequest = new DataApiRequest();
+        DataApiRequest apiRequest = new DataApiRequestImpl()
         Set<Dimension> dims = apiRequest.generateDimensions(aggDims + nonAggDims, dimensionDict)
         Map<Dimension, Set<ApiFilter>> filters = apiRequest.generateFilters(filterString, table, dimensionDict)
 
@@ -161,7 +162,7 @@ class AggregatabilityValidationSpec extends Specification {
     @Unroll
     def "Aggregatability validation throws #exception.simpleName with #aggSize aggregatable and #nonAggSize non-aggregatable group by dimensions and #hasFilter filter#filterFormat"() {
         setup:
-        DataApiRequest apiRequest = new DataApiRequest();
+        DataApiRequest apiRequest = new DataApiRequestImpl();
         Set<Dimension> dims = apiRequest.generateDimensions(aggDims + nonAggDims, dimensionDict)
         Map<Dimension, Set<ApiFilter>> filters = apiRequest.generateFilters(filterString, table, dimensionDict)
 

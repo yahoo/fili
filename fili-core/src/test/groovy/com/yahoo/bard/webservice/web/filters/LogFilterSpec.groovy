@@ -174,7 +174,7 @@ class LogFilterSpec extends Specification {
 
     def "client reset by peer still logs"() {
         when:
-        URL url = new URL("http://localhost:9998/test/fail")
+        URL url = new URL("http://localhost:${jtb.getHarness().getPort()}/test/fail")
         HttpURLConnection con = url.openConnection()
         con.setUseCaches(false)
         con.setInstanceFollowRedirects(false)

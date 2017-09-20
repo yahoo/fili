@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 
 import org.joda.time.Interval;
 
@@ -34,6 +35,7 @@ public class ObjectMappersSuite {
         jodaModule.setMixInAnnotation(ShardSpec.class, ShardSpecMixIn.class);
         jsonMapper.registerModule(jodaModule);
         jsonMapper.registerModule(new Jdk8Module().configureAbsentsAsNulls(false));
+        jsonMapper.registerModule(new AfterburnerModule());
     }
 
     /**

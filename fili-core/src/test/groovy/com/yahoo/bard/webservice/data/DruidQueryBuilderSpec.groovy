@@ -31,8 +31,6 @@ import com.yahoo.bard.webservice.druid.model.query.TopNQuery
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.ConstrainedTable
 import com.yahoo.bard.webservice.table.TableTestUtils
-import com.yahoo.bard.webservice.table.StrictPhysicalTable
-import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.resolver.DefaultPhysicalTableResolver
 import com.yahoo.bard.webservice.web.ApiFilter
 import com.yahoo.bard.webservice.web.ApiHaving
@@ -121,7 +119,7 @@ class DruidQueryBuilderSpec extends Specification {
         apiRequest.getGranularity() >> HOUR.buildZonedTimeGrain(UTC)
         apiRequest.getTimeZone() >> UTC
         apiRequest.getDimensions() >> ([resources.d1] as Set)
-        apiRequest.getFilters() >> apiFilters
+        apiRequest.getApiFilters() >> apiFilters
         apiRequest.getLogicalMetrics() >> ([lm1] as Set)
         apiRequest.getIntervals() >> intervals
         apiRequest.getFilterDimensions() >> []
@@ -183,7 +181,7 @@ class DruidQueryBuilderSpec extends Specification {
         dq1.dataSource.type == DefaultDataSourceType.QUERY
         dq1.granularity == granularity.withZone(UTC)
 
-        GroupByQuery dq2 = dq1.dataSource.query
+        GroupByQuery dq2 = dq1.dataSource.getQuery().get()
         dq2.filter == filter
         dq2.dataSource.type == DefaultDataSourceType.TABLE
         dq2.dataSource.name == table.name
@@ -274,7 +272,7 @@ class DruidQueryBuilderSpec extends Specification {
                 [] as Set,
                 limitSpec
         )
-        GroupByQuery dq2 = dq1.dataSource.query
+        GroupByQuery dq2 = dq1.dataSource.getQuery().get()
 
         then:
         dq1?.filter == null
@@ -298,7 +296,7 @@ class DruidQueryBuilderSpec extends Specification {
                 [] as Set,
                 limitSpec
         )
-        dq2 = dq1.dataSource.query
+        dq2 = dq1.dataSource.getQuery().get()
 
 
         then:

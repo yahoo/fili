@@ -35,6 +35,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -114,6 +115,7 @@ public class DimensionsServlet extends EndpointServlet {
             @Context final UriInfo uriInfo,
             @Context final ContainerRequestContext containerRequestContext
     ) {
+        Supplier<Response> responseSender;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new DimensionRequest("all", "no"));
@@ -143,18 +145,19 @@ public class DimensionsServlet extends EndpointServlet {
                     null
             );
             LOG.debug("Dimensions Endpoint Response: {}", response.getEntity());
-            RequestLog.stopTiming(this);
-            return response;
+            responseSender = () -> response;
         } catch (RequestValidationException e) {
             LOG.debug(e.getMessage(), e);
-            RequestLog.stopTiming(this);
-            return Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
+            responseSender = () -> Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
         } catch (Error | Exception e) {
             String msg = String.format("Exception processing request: %s", e.getMessage());
-            LOG.info(msg, e);
+            LOG.error(msg, e);
+            responseSender = () -> Response.status(Status.BAD_REQUEST).entity(msg).build();
+        } finally {
             RequestLog.stopTiming(this);
-            return Response.status(Status.BAD_REQUEST).entity(msg).build();
         }
+
+        return responseSender.get();
     }
 
     /**
@@ -176,6 +179,7 @@ public class DimensionsServlet extends EndpointServlet {
             @Context final UriInfo uriInfo,
             @Context final ContainerRequestContext containerRequestContext
     ) {
+        Supplier<Response> responseSender;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new DimensionRequest(dimensionName, "no"));
@@ -202,23 +206,23 @@ public class DimensionsServlet extends EndpointServlet {
 
             String output = objectMappers.getMapper().writeValueAsString(result);
             LOG.debug("Dimension Endpoint Response: {}", output);
-            RequestLog.stopTiming(this);
-            return Response.status(Status.OK).entity(output).build();
+            responseSender = () -> Response.status(Status.OK).entity(output).build();
         } catch (RequestValidationException e) {
             LOG.debug(e.getMessage(), e);
-            RequestLog.stopTiming(this);
-            return Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
+            responseSender = () -> Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
         } catch (JsonProcessingException e) {
             String msg = String.format("Internal server error. JsonProcessingException : %s", e.getMessage());
             LOG.error(msg, e);
-            RequestLog.stopTiming(this);
-            return Response.status(Status.INTERNAL_SERVER_ERROR).entity(msg).build();
+            responseSender = () -> Response.status(Status.INTERNAL_SERVER_ERROR).entity(msg).build();
         } catch (Error | Exception e) {
             String msg = String.format("Exception processing request: %s", e.getMessage());
             LOG.info(msg, e);
+            responseSender = () -> Response.status(Status.BAD_REQUEST).entity(msg).build();
+        } finally {
             RequestLog.stopTiming(this);
-            return Response.status(Status.BAD_REQUEST).entity(msg).build();
         }
+
+        return responseSender.get();
     }
 
     /**
@@ -263,6 +267,7 @@ public class DimensionsServlet extends EndpointServlet {
             @Context final UriInfo uriInfo,
             @Context final ContainerRequestContext containerRequestContext
     ) {
+        Supplier<Response> responseSender;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new DimensionRequest(dimensionName, "yes"));
@@ -313,23 +318,23 @@ public class DimensionsServlet extends EndpointServlet {
             );
 
             LOG.debug("Dimension Value Endpoint Response: {}", response.getEntity());
-            RequestLog.stopTiming(this);
-            return response;
+            responseSender = () -> response;
         } catch (RequestValidationException e) {
             LOG.debug(e.getMessage(), e);
-            RequestLog.stopTiming(this);
-            return Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
+            responseSender = () -> Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
         } catch (RowLimitReachedException e) {
             String msg = String.format("Row limit exceeded for dimension %s: %s", dimensionName, e.getMessage());
             LOG.debug(msg, e);
-            RequestLog.stopTiming(this);
-            return Response.status(INSUFFICIENT_STORAGE).entity(msg).build();
+            responseSender = () -> Response.status(INSUFFICIENT_STORAGE).entity(msg).build();
         } catch (Error | Exception e) {
             String msg = String.format("Exception processing request: %s", e.getMessage());
             LOG.debug(msg, e);
+            responseSender = () -> Response.status(BAD_REQUEST).entity(msg).build();
+        } finally {
             RequestLog.stopTiming(this);
-            return Response.status(BAD_REQUEST).entity(msg).build();
         }
+
+        return responseSender.get();
     }
 
     /**

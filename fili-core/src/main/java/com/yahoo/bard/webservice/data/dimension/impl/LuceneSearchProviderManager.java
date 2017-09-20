@@ -33,12 +33,12 @@ public class LuceneSearchProviderManager {
     private static final Map<String, LuceneSearchProvider> LUCENE_SEARCH_PROVIDERS = new HashMap<>();
 
     /**
-     * Get instance pointing to a search provider This method makes sure that there just one instance of search provider
-     * for a given dimension.
+     * Get instance pointing to a search provider. This method makes sure that there just one instance of search
+     * provider for a given dimension.
      *
-     * @param providerName name unique identifier for search provider instances
+     * @param providerName  Name unique identifier for search provider instances
      *
-     * @return The lucene search provider
+     * @return the lucene search provider
      */
     public static synchronized LuceneSearchProvider getInstance(String providerName) {
         LuceneSearchProvider luceneProvider = LUCENE_SEARCH_PROVIDERS.get(providerName);
@@ -77,6 +77,6 @@ public class LuceneSearchProviderManager {
                 "%s/dimensionCache/%s/lucene_indexes/",
                 SYSTEM_CONFIG.getStringProperty(LUCENE_INDEX_PATH),
                 providerName
-        );
+        ).replaceAll("/+", "/"); // replaces one or more slashes with one slash:
     }
 }

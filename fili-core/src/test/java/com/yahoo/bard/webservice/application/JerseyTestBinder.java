@@ -37,6 +37,7 @@ import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
+import org.glassfish.jersey.test.TestProperties;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
 import org.slf4j.Logger;
@@ -55,7 +56,6 @@ import javax.ws.rs.core.Application;
  * Configures JerseyTest and also sets up DI.  This is a singleton since JerseyTest binds a network port.
  */
 public class JerseyTestBinder {
-
     private static final Logger LOG = LoggerFactory.getLogger(JerseyTestBinder.class);
 
     public ApplicationState state;
@@ -66,6 +66,7 @@ public class JerseyTestBinder {
     public ConfigurationLoader configurationLoader;
     public TestBinderFactory testBinderFactory;
     public boolean useTestWebService = true;
+    private static final String RANDOM_PORT = "0";
 
     private DateTimeZone previousDateTimeZone;
 
@@ -100,10 +101,11 @@ public class JerseyTestBinder {
      * @param resourceClasses  Resource classes for Jersey to load
      */
     public JerseyTestBinder(boolean doStart, ApplicationState state, Class<?>... resourceClasses) {
+
         this.state = state;
 
         //Initializing the Sketch field converter
-        FieldConverterSupplier.sketchConverter =  initializeSketchConverter();
+        FieldConverterSupplier.sketchConverter = initializeSketchConverter();
 
         //Initialize the metrics filter helper
         FieldConverterSupplier.metricsFilterSetBuilder = initializeMetricsFilterSetBuilder();
@@ -156,6 +158,9 @@ public class JerseyTestBinder {
         this.harness = new JerseyTest() {
             @Override
             protected Application configure() {
+                // Find first available port.
+                forceSet(TestProperties.CONTAINER_PORT, RANDOM_PORT);
+
                 return config;
             }
         };
@@ -239,7 +244,7 @@ public class JerseyTestBinder {
             if (isAlive()) {
                 // Include thread stack dump
                 StringBuilder sb = new StringBuilder("Timeout starting Jersey\n");
-                for (StackTraceElement ste: this.getStackTrace()) {
+                for (StackTraceElement ste : this.getStackTrace()) {
                     sb.append("\tat ").append(ste).append('\n');
                 }
                 // try to interrupt and tear down
@@ -301,12 +306,8 @@ public class JerseyTestBinder {
         return harness;
     }
 
-    public DruidWebService getUiDruidWebService() {
-        return state.uiWebService;
-    }
-
-    public DruidWebService getNonUiDruidWebService() {
-        return state.nonUiWebService;
+    public DruidWebService getDruidWebService() {
+        return state.webService;
     }
 
     public DruidWebService getMetadataDruidWebService() {
@@ -401,15 +402,10 @@ public class JerseyTestBinder {
 
         // This alternate switched implementation approach is not really used anywhere, should be split off into a
         // separate subclass if needed
-        if (state.uiWebService == null) {
-            state.uiWebService = (useTestWebService) ?
+        if (state.webService == null) {
+            state.webService = useTestWebService ?
                     new TestDruidWebService("Test UI WS") :
-                    new AsyncDruidWebServiceImpl(DruidClientConfigHelper.getUiServiceConfig(), mapper);
-        }
-        if (state.nonUiWebService == null) {
-            state.nonUiWebService = (useTestWebService) ?
-                    new TestDruidWebService("Test NonUI WS") :
-                    new AsyncDruidWebServiceImpl(DruidClientConfigHelper.getNonUiServiceConfig(), mapper);
+                    new AsyncDruidWebServiceImpl(DruidClientConfigHelper.getServiceConfig(), mapper);
         }
         if (state.metadataWebService == null) {
             state.metadataWebService = (useTestWebService) ?

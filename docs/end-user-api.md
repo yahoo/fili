@@ -413,7 +413,7 @@ The general format of a single filter is:
 These filters can be combined by comma-separating each individual filter, and the filter strings are [URL-encoded](http://en.wikipedia.org/wiki/Percent-encoding),
 comma-separated values:
 
-    myDim|id-contains[foo,bar],myDim|id-notin[baz],yourDim|desc-startsWith[Once%20upon%20a%20time,in%20a%20galaxy]
+    myDim|id-contains[foo,bar],myDim|id-notin[baz],yourDim|desc-startswith[Once%20upon%20a%20time,in%20a%20galaxy]
 
 These are the available filter operations (Though not all of them are supported by all endpoints):
 
@@ -421,7 +421,7 @@ These are the available filter operations (Though not all of them are supported 
 - **notin**: `Not In` filters are an exact match on a filter string, where all rows _except_ matching rows are included
 - **contains**: `Contains` filters search for the filter string to be contained in the searched field, and work like an 
     `in` filter
-- **startsWith**: `Starts With` filters search for the filter string to be at the beginning of the searched field, and 
+- **startswith**: `Starts With` filters search for the filter string to be at the beginning of the searched field, and 
     work like an `in` filter
 
 Let's take an example, and break down what it means.

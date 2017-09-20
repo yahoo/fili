@@ -95,7 +95,7 @@ class RateLimitFilterSpec extends Specification {
 
         void runTest() {
 
-            URL url = new URL("http://localhost:9998/test/data?"+TestRateLimitFilter.USER_PARAM+"="+this.user+"&t="+Thread.currentThread().getName())
+            URL url = new URL("http://localhost:${jtb.getHarness().getPort()}/test/data?"+TestRateLimitFilter.USER_PARAM+"="+this.user+"&t="+Thread.currentThread().getName())
 
             HttpURLConnection con = url.openConnection()
             con.setInstanceFollowRedirects(false)
@@ -113,7 +113,7 @@ class RateLimitFilterSpec extends Specification {
                     break
 
                 default:
-                    assert false
+                    fail
             }
         }
     }
@@ -208,7 +208,7 @@ class RateLimitFilterSpec extends Specification {
     def "UI header triggers UI user limit"() {
         when: "UI user opens 20 simultaneous requests"
         Map headers = [
-            referer: "http://localhost:9998/",
+            referer: "http://localhost:${jtb.getHarness().getPort()}/",
             (DataApiRequestTypeIdentifier.CLIENT_HEADER_NAME) : (DataApiRequestTypeIdentifier.CLIENT_HEADER_VALUE)
         ]
         List<Thread> threads = []
@@ -266,7 +266,7 @@ class RateLimitFilterSpec extends Specification {
                     fail.incrementAndGet()
                     break
                 default:
-                    assert false
+                    fail
             }
         }
     }

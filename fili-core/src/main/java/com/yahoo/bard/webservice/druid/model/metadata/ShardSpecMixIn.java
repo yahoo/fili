@@ -14,6 +14,7 @@ import io.druid.timeline.partition.NoneShardSpec;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = NumberedShardSpec.class, name = "hashed"),
         @JsonSubTypes.Type(value = NumberedShardSpec.class, name = "linear"),
+        @JsonSubTypes.Type(value = NumberedShardSpec.class, name = "numbered"),
         @JsonSubTypes.Type(value = NoneShardSpec.class, name = "none")
 })
 public abstract class ShardSpecMixIn { }
