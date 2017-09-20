@@ -56,7 +56,16 @@ class PrefaceSpec extends Specification {
 
     def "User set to username value at serialization time"() {
         given: "A request with a userPrincipal"
-        def securityContext = new MockSecurityContext(null)
+        def currentUserPrincipalName = Preface.NO_USER_PRINCIPAL_USER_NAME;
+        UserPrincipal userPrincipal = new UserPrincipal() {
+            @Override
+            String getName() {
+                return currentUserPrincipalName
+            }
+        }
+        def securityContext = Mock(SecurityContext) {
+            getUserPrincipal() >> userPrincipal
+        }
         mockRequest.getSecurityContext() >> securityContext
         def preface = new Preface(mockRequest)
 
@@ -65,49 +74,9 @@ class PrefaceSpec extends Specification {
 
         when: "Set the username value"
         String knownUserName = "Known User Name"
-        def userPrincipal = new MockUserPrincipal(knownUserName)
-        securityContext.setUserPrincipal(userPrincipal)
+        currentUserPrincipalName = knownUserName;
 
         then: "Use the set username value"
         preface.getUser() == knownUserName
-    }
-
-    static class MockUserPrincipal implements UserPrincipal {
-        private final String name
-
-        MockUserPrincipal(String name) {
-            this.name = name
-        }
-
-        @Override
-        String getName() {
-            return name
-        }
-
-        @Override
-        boolean implies(Subject subject) { return false }
-    }
-
-    static class MockSecurityContext implements SecurityContext {
-        private UserPrincipal userPrincipal
-        MockSecurityContext(UserPrincipal userPrincipal) {
-            this.userPrincipal = userPrincipal;
-        }
-
-        void setUserPrincipal(UserPrincipal userPrincipal) {
-            this.userPrincipal = userPrincipal;
-        }
-
-        @Override
-        Principal getUserPrincipal() {
-            return userPrincipal
-        }
-
-        @Override
-        boolean isUserInRole(String role) { return false }
-        @Override
-        boolean isSecure() { return false }
-        @Override
-        String getAuthenticationScheme() { return null }
     }
 }
