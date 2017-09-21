@@ -52,7 +52,6 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
     ResponseWriter responseWriter
     ResponseFormatResolver formatResolver
 
-
     def setup() {
         objectMappersSuite = Mock(ObjectMappersSuite)
         ObjectMapper objectMapper = Mock(ObjectMapper)

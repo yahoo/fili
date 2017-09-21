@@ -118,7 +118,6 @@ public class TablesApiRequest extends ApiRequestImpl {
         );
     }
 
-
     /**
      * Parses the API request URL and generates the API Request object with specified query constraints, i.e.
      * dimensions, metrics, date time intervals, and filters.

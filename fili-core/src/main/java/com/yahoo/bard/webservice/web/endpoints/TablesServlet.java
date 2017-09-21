@@ -167,7 +167,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             TablesApiRequest apiRequest = new TablesApiRequest(
                     tableName,
                     null,
-                    formatResolver.accept(format, containerRequestContext),
+                    formatResolver.apply(format, containerRequestContext),
                     perPage,
                     page,
                     uriInfo,

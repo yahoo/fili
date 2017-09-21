@@ -17,7 +17,7 @@ Current
       
 =======
 - [Evaluate format type from both URI and Accept header](https://github.com/yahoo/fili/pull/495)
-    * Add a new functional interface `ResponseFormatResolver`.
+    * Add a new functional interface `ResponseFormatResolver` to coalesce Accept header format type and URI format type.
     * Implement a concrete implementation of `ResponseFormatResolver` in `AbstractBindingFactory`.
 
 >>>>>>> allow evaluate from header format
