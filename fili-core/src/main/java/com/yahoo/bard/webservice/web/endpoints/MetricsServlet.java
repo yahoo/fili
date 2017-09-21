@@ -119,7 +119,7 @@ public class MetricsServlet extends EndpointServlet {
 
             MetricsApiRequest apiRequest = new MetricsApiRequest(
                     null,
-                    formatResolver.accept(format, containerRequestContext),
+                    formatResolver.apply(format, containerRequestContext),
                     perPage,
                     page,
                     metricDictionary,

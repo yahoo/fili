@@ -12,20 +12,23 @@ import javax.ws.rs.container.ContainerRequestContext;
  * and csv.
  */
 public class DefaultResponseFormatResolver implements ResponseFormatResolver {
-    Map<String, String> formatsMap;
+    public static String ACCEPT_HEADER_JSON = "application/json";
+    public static String ACCEPT_HEADER_JSONAPI = "application/vnd.api+json";
+    public static String ACCEPT_HEADER_CSV = "text/csv";
+    private Map<String, String> formatsMap;
 
     /**
      * Constructor.
      */
     public DefaultResponseFormatResolver() {
         formatsMap = new LinkedHashMap<>();
-        formatsMap.put("application/json", "json");
-        formatsMap.put("application/vnd.api+json", "jsonapi");
-        formatsMap.put("text/csv", "csv");
+        formatsMap.put(ACCEPT_HEADER_JSON, "json");
+        formatsMap.put(ACCEPT_HEADER_JSONAPI, "jsonapi");
+        formatsMap.put(ACCEPT_HEADER_CSV, "csv");
     }
 
     @Override
-    public String accept(final String format, final ContainerRequestContext containerRequestContext) {
+    public String apply(final String format, final ContainerRequestContext containerRequestContext) {
         String headerFormat = containerRequestContext.getHeaderString("Accept");
         if (format != null || headerFormat == null) {
             return format;

@@ -128,7 +128,7 @@ public class DimensionsServlet extends EndpointServlet {
             DimensionsApiRequest apiRequest = new DimensionsApiRequest(
                     null,
                     null,
-                    formatResolver.accept(format, containerRequestContext),
+                    formatResolver.apply(format, containerRequestContext),
                     perPage,
                     page,
                     dimensionDictionary,
@@ -280,7 +280,7 @@ public class DimensionsServlet extends EndpointServlet {
             DimensionsApiRequest apiRequest = new DimensionsApiRequest(
                     dimensionName,
                     filterQuery,
-                    formatResolver.accept(format, containerRequestContext),
+                    formatResolver.apply(format, containerRequestContext),
                     perPage,
                     page,
                     dimensionDictionary,

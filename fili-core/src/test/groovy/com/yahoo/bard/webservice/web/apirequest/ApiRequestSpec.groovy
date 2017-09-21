@@ -97,7 +97,6 @@ class ApiRequestSpec extends Specification {
         ResponseFormatType.CSV  | new ConcreteApiRequest().generateAcceptFormat("csv")
     }
 
-
     def "check invalid parsing generateFormat"() {
         when:
         new ConcreteApiRequest().generateAcceptFormat("bad")

@@ -117,7 +117,7 @@ public class SlicesServlet extends EndpointServlet {
 
             SlicesApiRequest apiRequest = new SlicesApiRequest(
                     null,
-                    formatResolver.accept(format, containerRequestContext),
+                    formatResolver.apply(format, containerRequestContext),
                     perPage,
                     page,
                     physicalTableDictionary,

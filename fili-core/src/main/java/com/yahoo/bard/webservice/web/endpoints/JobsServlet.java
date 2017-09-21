@@ -157,7 +157,7 @@ public class JobsServlet extends EndpointServlet {
             RequestLog.record(new JobRequest("all"));
 
             JobsApiRequest apiRequest = new JobsApiRequest(
-                    formatResolver.accept(format, containerRequestContext),
+                    formatResolver.apply(format, containerRequestContext),
                     null, //asyncAfter is null so it behaves like a synchronous request
                     perPage,
                     page,
@@ -285,7 +285,7 @@ public class JobsServlet extends EndpointServlet {
             RequestLog.record(new JobRequest(ticket));
 
             JobsApiRequest apiRequest = new JobsApiRequest(
-                    formatResolver.accept(format, containerRequestContext),
+                    formatResolver.apply(format, containerRequestContext),
                     asyncAfter,
                     perPage,
                     page,

@@ -376,7 +376,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
                         sorts,
                         count,
                         topN,
-                        formatResolver.accept(format, containerRequestContext),
+                        formatResolver.apply(format, containerRequestContext),
                         timeZone,
                         asyncAfter,
                         perPage,
