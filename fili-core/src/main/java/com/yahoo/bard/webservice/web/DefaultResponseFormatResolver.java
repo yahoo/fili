@@ -12,10 +12,10 @@ import javax.ws.rs.container.ContainerRequestContext;
  * and csv.
  */
 public class DefaultResponseFormatResolver implements ResponseFormatResolver {
-    public static String ACCEPT_HEADER_JSON = "application/json";
-    public static String ACCEPT_HEADER_JSONAPI = "application/vnd.api+json";
-    public static String ACCEPT_HEADER_CSV = "text/csv";
-    private Map<String, String> formatsMap;
+    public static final String ACCEPT_HEADER_JSON = "application/json";
+    public static final String ACCEPT_HEADER_JSONAPI = "application/vnd.api+json";
+    public static final String ACCEPT_HEADER_CSV = "text/csv";
+    private final Map<String, String> formatsMap;
 
     /**
      * Constructor.
