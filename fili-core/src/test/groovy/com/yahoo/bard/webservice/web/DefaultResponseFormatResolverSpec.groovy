@@ -25,14 +25,14 @@ class DefaultResponseFormatResolverSpec extends Specification {
         responseFormat == expectedFormat
 
         where:
-        expectedFormat | responseFormat
-        null           | resolver.apply(null, requestContextWithAcceptType(null))
-        "json"         | resolver.apply("json",requestContextWithAcceptType(null))
-        "json"         | resolver.apply(null, requestContextWithAcceptType(DefaultResponseFormatResolver.ACCEPT_HEADER_JSON))
-        "csv"          | resolver.apply("csv", requestContextWithAcceptType(null))
-        "csv"          | resolver.apply(null, requestContextWithAcceptType(DefaultResponseFormatResolver.ACCEPT_HEADER_CSV))
-        "jsonapi"      | resolver.apply(null, requestContextWithAcceptType(DefaultResponseFormatResolver.ACCEPT_HEADER_JSONAPI))
-        "csv"          | resolver.apply("csv", requestContextWithAcceptType(DefaultResponseFormatResolver.ACCEPT_HEADER_JSONAPI))
-        "json"         | resolver.apply("json", requestContextWithAcceptType(DefaultResponseFormatResolver.ACCEPT_HEADER_CSV))
+        expectedFormat                            | responseFormat
+        null                                      | resolver.apply(null, requestContextWithAcceptType(null))
+        DefaultResponseFormatResolver.URI_JSON    | resolver.apply(DefaultResponseFormatResolver.URI_JSON,requestContextWithAcceptType(null))
+        DefaultResponseFormatResolver.URI_JSON    | resolver.apply(null, requestContextWithAcceptType(DefaultResponseFormatResolver.ACCEPT_HEADER_JSON))
+        DefaultResponseFormatResolver.URI_CSV     | resolver.apply(DefaultResponseFormatResolver.URI_CSV, requestContextWithAcceptType(null))
+        DefaultResponseFormatResolver.URI_CSV     | resolver.apply(null, requestContextWithAcceptType(DefaultResponseFormatResolver.ACCEPT_HEADER_CSV))
+        DefaultResponseFormatResolver.URI_JSONAPI | resolver.apply(null, requestContextWithAcceptType(DefaultResponseFormatResolver.ACCEPT_HEADER_JSONAPI))
+        DefaultResponseFormatResolver.URI_CSV     | resolver.apply(DefaultResponseFormatResolver.URI_CSV, requestContextWithAcceptType(DefaultResponseFormatResolver.ACCEPT_HEADER_JSONAPI))
+        DefaultResponseFormatResolver.URI_JSON    | resolver.apply(DefaultResponseFormatResolver.URI_JSON, requestContextWithAcceptType(DefaultResponseFormatResolver.ACCEPT_HEADER_CSV))
     }
 }

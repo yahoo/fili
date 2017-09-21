@@ -15,6 +15,10 @@ public class DefaultResponseFormatResolver implements ResponseFormatResolver {
     public static final String ACCEPT_HEADER_JSON = "application/json";
     public static final String ACCEPT_HEADER_JSONAPI = "application/vnd.api+json";
     public static final String ACCEPT_HEADER_CSV = "text/csv";
+    public static final String URI_JSON = "json";
+    public static final String URI_JSONAPI = "jsonapi";
+    public static final String URI_CSV = "csv";
+
     private final Map<String, String> formatsMap;
 
     /**
@@ -22,9 +26,9 @@ public class DefaultResponseFormatResolver implements ResponseFormatResolver {
      */
     public DefaultResponseFormatResolver() {
         formatsMap = new LinkedHashMap<>();
-        formatsMap.put(ACCEPT_HEADER_JSON, "json");
-        formatsMap.put(ACCEPT_HEADER_JSONAPI, "jsonapi");
-        formatsMap.put(ACCEPT_HEADER_CSV, "csv");
+        formatsMap.put(ACCEPT_HEADER_JSON, URI_JSON);
+        formatsMap.put(ACCEPT_HEADER_JSONAPI, URI_JSONAPI);
+        formatsMap.put(ACCEPT_HEADER_CSV, URI_CSV);
     }
 
     @Override
