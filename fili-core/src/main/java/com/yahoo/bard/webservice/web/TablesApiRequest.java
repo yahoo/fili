@@ -19,6 +19,7 @@ import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.table.TableIdentifier;
 import com.yahoo.bard.webservice.web.apirequest.ApiRequestImpl;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
+import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import org.joda.time.Interval;
 import org.slf4j.Logger;
@@ -30,12 +31,14 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.PathSegment;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 /**
@@ -222,6 +225,44 @@ public class TablesApiRequest extends ApiRequestImpl {
     }
 
     /**
+     * All argument constructor and its used primarily for withers - hence its private.
+     *
+     * @param format Response data format JSON or CSV. Default is JSON
+     * @param paginationParameters The parameters used to describe pagination
+     * @param uriInfo The URI of the request object
+     * @param builder The response builder for this request
+     * @param tables Set of logical tables
+     * @param table Logical table
+     * @param granularity Requested time granularity
+     * @param dimensions Grouping dimensions / Dimension constraint
+     * @param metrics Metrics constraint
+     * @param intervals Data / Time constraint
+     * @param filters Filter constraint
+     */
+    private TablesApiRequest(
+        ResponseFormatType format,
+        Optional<PaginationParameters> paginationParameters,
+        UriInfo uriInfo,
+        Response.ResponseBuilder builder,
+        Set<LogicalTable> tables,
+        LogicalTable table,
+        Granularity granularity,
+        Set<Dimension> dimensions,
+        Set<LogicalMetric> metrics,
+        Set<Interval> intervals,
+        Map<Dimension, Set<ApiFilter>> filters
+    ) {
+        super(format, SYNCHRONOUS_ASYNC_AFTER_VALUE, paginationParameters, uriInfo, builder);
+        this.tables = tables;
+        this.table = table;
+        this.granularity = granularity;
+        this.dimensions = dimensions;
+        this.metrics = metrics;
+        this.intervals = intervals;
+        this.filters = filters;
+    }
+
+    /**
      * No argument constructor, meant to be used only for testing.
      */
     @ForTesting
@@ -339,6 +380,56 @@ public class TablesApiRequest extends ApiRequestImpl {
             return generated;
         }
     }
+
+    //CHECKSTYLE:OFF
+    public TablesApiRequest withFormat(ResponseFormatType format) {
+        return new TablesApiRequest(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, metrics, intervals, filters);
+    }
+
+    public TablesApiRequest withPaginationParameters(Optional<PaginationParameters> paginationParameters) {
+        return new TablesApiRequest(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, metrics, intervals, filters);
+    }
+
+    public TablesApiRequest withUriInfo(UriInfo uriInfo) {
+        return new TablesApiRequest(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, metrics, intervals, filters);
+    }
+
+    public TablesApiRequest withBuilder(Response.ResponseBuilder builder) {
+        return new TablesApiRequest(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, metrics, intervals, filters);
+    }
+
+    public TablesApiRequest withTables(Set<LogicalTable> tables) {
+        return new TablesApiRequest(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, metrics, intervals, filters);
+    }
+
+    public TablesApiRequest withTable(LogicalTable table) {
+        return new TablesApiRequest(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, metrics, intervals, filters);
+    }
+
+    public TablesApiRequest withGranularity(Set<LogicalTable> tables) {
+        return new TablesApiRequest(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, metrics, intervals, filters);
+    }
+
+    public TablesApiRequest withTables(Granularity granularity) {
+        return new TablesApiRequest(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, metrics, intervals, filters);
+    }
+
+    public TablesApiRequest withDimensions(Set<Dimension> dimensions) {
+        return new TablesApiRequest(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, metrics, intervals, filters);
+    }
+
+    public TablesApiRequest withMetrics(Set<LogicalMetric> metrics) {
+        return new TablesApiRequest(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, metrics, intervals, filters);
+    }
+
+    public TablesApiRequest withIntervals(Set<Interval> intervals) {
+        return new TablesApiRequest(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, metrics, intervals, filters);
+    }
+
+    public TablesApiRequest withFilters(Map<Dimension, Set<ApiFilter>> filters) {
+        return new TablesApiRequest(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, metrics, intervals, filters);
+    }
+    //CHECKSTYLE:ON
 
     public Set<LogicalTable> getTables() {
         return this.tables;

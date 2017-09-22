@@ -10,6 +10,10 @@ Current
 
 ### Added:
 
+- [Add Constructor and wither for TableApiRequest](https://github.com/yahoo/fili/pull/539)
+    *  Making the TablesApiRequest similar to other ApiRequest classses so added an all argument constructor 
+       and withers. The all argument constructor is made private since its used only by the withers. 
+      
 - [Add Code Narc to validate Groovy style](https://github.com/yahoo/fili/pull/420)
     * Checkstyle is great, but it doesn't process Groovy. Code Narc is Checkstyle for Groovy, so we should totally use
       it.
