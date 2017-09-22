@@ -130,6 +130,9 @@ Current
 
 ### Fixed:
 
+- [Fix ConstantMaker make method with LogicalMetricInfo class](https://github.com/yahoo/fili/pull/540)
+    * The ConstantMaker make method needs to be rewritten with the LogicalMetricInfo class.
+    
 - [Slices endpoint returns druid name instead of api name](https://github.com/yahoo/fili/pull/491)
     * The slices endpoint now gives the druid name instead of the api name for dimensions.
 
