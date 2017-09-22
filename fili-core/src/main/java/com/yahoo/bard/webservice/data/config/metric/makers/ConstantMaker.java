@@ -34,12 +34,12 @@ public class ConstantMaker extends MetricMaker {
     }
 
     @Override
-    public LogicalMetric make(String metricName, List<String> dependentMetrics) {
+    public LogicalMetric make(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics) {
         // Check that we have the right number of metrics
-        assertRequiredDependentMetricCount(metricName, dependentMetrics);
+        assertRequiredDependentMetricCount(logicalMetricInfo.getName(), dependentMetrics);
 
         // Actually build the metric.
-        return makeInner(metricName, dependentMetrics);
+        return makeInner(logicalMetricInfo, dependentMetrics);
     }
 
     @Override
