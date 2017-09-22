@@ -22,6 +22,7 @@ import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.RequestValidationException;
 import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.RowLimitReachedException;
+import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequestImpl;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import com.codahale.metrics.annotation.Timed;
@@ -125,7 +126,7 @@ public class DimensionsServlet extends EndpointServlet {
             RequestLog.startTiming(this);
             RequestLog.record(new DimensionRequest("all", "no"));
 
-            DimensionsApiRequest apiRequest = new DimensionsApiRequest(
+            DimensionsApiRequestImpl apiRequest = new DimensionsApiRequestImpl(
                     null,
                     null,
                     formatResolver.apply(format, containerRequestContext),
@@ -136,7 +137,7 @@ public class DimensionsServlet extends EndpointServlet {
             );
 
             if (requestMapper != null) {
-                apiRequest = (DimensionsApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
+                apiRequest = (DimensionsApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
             Stream<Map<String, Object>> result = apiRequest.getPage(
@@ -189,7 +190,7 @@ public class DimensionsServlet extends EndpointServlet {
             RequestLog.startTiming(this);
             RequestLog.record(new DimensionRequest(dimensionName, "no"));
 
-            DimensionsApiRequest apiRequest = new DimensionsApiRequest(
+            DimensionsApiRequestImpl apiRequest = new DimensionsApiRequestImpl(
                     dimensionName,
                     null,
                     null,
@@ -200,7 +201,7 @@ public class DimensionsServlet extends EndpointServlet {
             );
 
             if (requestMapper != null) {
-                apiRequest = (DimensionsApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
+                apiRequest = (DimensionsApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
             Map<String, Object> result = getDimensionFullView(
@@ -277,7 +278,7 @@ public class DimensionsServlet extends EndpointServlet {
             RequestLog.startTiming(this);
             RequestLog.record(new DimensionRequest(dimensionName, "yes"));
 
-            DimensionsApiRequest apiRequest = new DimensionsApiRequest(
+            DimensionsApiRequestImpl apiRequest = new DimensionsApiRequestImpl(
                     dimensionName,
                     filterQuery,
                     formatResolver.apply(format, containerRequestContext),
@@ -288,7 +289,7 @@ public class DimensionsServlet extends EndpointServlet {
             );
 
             if (requestMapper != null) {
-                apiRequest = (DimensionsApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
+                apiRequest = (DimensionsApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
             // build filtered dimension rows

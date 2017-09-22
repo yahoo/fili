@@ -15,6 +15,7 @@ import com.yahoo.bard.webservice.web.MetricsApiRequest;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.RequestValidationException;
 import com.yahoo.bard.webservice.web.ResponseFormatResolver;
+import com.yahoo.bard.webservice.web.apirequest.MetricsApiRequestImpl;
 
 import com.codahale.metrics.annotation.Timed;
 
@@ -117,7 +118,7 @@ public class MetricsServlet extends EndpointServlet {
             RequestLog.startTiming(this);
             RequestLog.record(new MetricRequest("all"));
 
-            MetricsApiRequest apiRequest = new MetricsApiRequest(
+            MetricsApiRequestImpl apiRequest = new MetricsApiRequestImpl(
                     null,
                     formatResolver.apply(format, containerRequestContext),
                     perPage,
@@ -127,7 +128,7 @@ public class MetricsServlet extends EndpointServlet {
             );
 
             if (requestMapper != null) {
-                apiRequest = (MetricsApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
+                apiRequest = (MetricsApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
             Stream<Map<String, String>> result = apiRequest.getPage(
@@ -184,7 +185,14 @@ public class MetricsServlet extends EndpointServlet {
             RequestLog.startTiming(this);
             RequestLog.record(new MetricRequest(metricName));
 
-            MetricsApiRequest apiRequest = new MetricsApiRequest(metricName, null, "", "", metricDictionary, uriInfo);
+            MetricsApiRequest apiRequest = new MetricsApiRequestImpl(
+                    metricName,
+                    null,
+                    "",
+                    "",
+                    metricDictionary,
+                    uriInfo
+            );
 
             if (requestMapper != null) {
                 apiRequest = (MetricsApiRequest) requestMapper.apply(apiRequest, containerRequestContext);

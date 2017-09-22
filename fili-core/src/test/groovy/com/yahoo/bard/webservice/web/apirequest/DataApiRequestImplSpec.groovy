@@ -23,8 +23,6 @@ import com.yahoo.bard.webservice.util.IntervalUtils
 import com.yahoo.bard.webservice.web.BadApiRequestException
 import com.yahoo.bard.webservice.web.ErrorMessageFormat
 import com.yahoo.bard.webservice.web.ResponseFormatType
-import com.yahoo.bard.webservice.web.apirequest.ApiRequestImpl
-import com.yahoo.bard.webservice.web.apirequest.DataApiRequestImpl
 
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
@@ -33,7 +31,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class DataApiRequestSpec extends Specification {
+class DataApiRequestImplSpec extends Specification {
 
     @Shared
     DimensionDictionary dimensionDict
