@@ -94,9 +94,10 @@ class SlicesApiRequestSpec extends BaseDataSourceMetadataSpec {
         table.allAvailableIntervals.each {
             Map<String, Object> row = [:] as LinkedHashMap
             row["intervals"] = it.value
-            row["name"] = table.getPhysicalColumnName(it.key.name)
+            row["name"] = it.key.name
             if (it.key instanceof DimensionColumn) {
                 row["uri"] = uri + it.key.name
+                row["factName"] = table.getPhysicalColumnName(it.key.name)
                 dimensionsResult.add(row)
             } else {
                 metricsResult.add(row)

@@ -171,6 +171,11 @@ Current
 
 ### Removed:
 
+- [Reverted the druid name change in slices endpoint instead added to factName](https://github.com/yahoo/fili/pull/541)
+    * Reverting the PR-419(https://github.com/yahoo/fili/pull/419) so that the name still points to apiName and added factName which points to druidName.
+      `name` was not valid for cases when it is a Lookup dimension because it was pointing to the base dimension name , so reverted that change and added
+      `druidName` which is the actual druid fact name and `name` being the apiName
+    
 - [Remove custom immutable collections in favor of Guava](https://github.com/yahoo/fili/pull/479)
     * `Utils.makeImmutable(...)` was misleading and uneeded so it has been removed. Use Guava's immutable collections.
 

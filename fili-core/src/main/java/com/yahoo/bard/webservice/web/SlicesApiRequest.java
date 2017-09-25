@@ -179,7 +179,9 @@ public class SlicesApiRequest extends ApiRequestImpl {
                     Column key = e.getKey();
                     if (key instanceof DimensionColumn) {
                         Dimension dimension = ((DimensionColumn) key).getDimension();
-                        row.put("name", table.getPhysicalColumnName(dimension.getApiName()));
+                        String dimensionApiName = dimension.getApiName();
+                        row.put("name", dimensionApiName);
+                        row.put("factName", table.getPhysicalColumnName(dimensionApiName));
                         row.put("uri", DimensionsServlet.getDimensionUrl(dimension, uriInfo));
                         dimensionsResult.add(row);
                     } else {
