@@ -73,7 +73,11 @@ class AsyncResultsReadySpec extends AsyncFunctionalSpec {
         TestAsynchronousWorkflowsBuilder.addSubscriber(
                 TestAsynchronousWorkflowsBuilder.Workflow.JOB_MARKED_COMPLETE,
                 {jobMetadataReady.countDown()},
-                {throw it}
+                {
+                    System.err.println(it)
+                    it.printStackTrace()
+                    throw it
+                }
         )
     }
 
@@ -82,7 +86,7 @@ class AsyncResultsReadySpec extends AsyncFunctionalSpec {
     }
 
     @Override
-    Map<String, Closure<String>> getResultsToTargetFunctions() {
+    LinkedHashMap<String, Closure<String>> getResultsToTargetFunctions() {
         [
                 data: { "data/shapes/day" },
                 //By querying the syncResults link first, we wait until the results are ready, thanks to the
@@ -100,7 +104,7 @@ class AsyncResultsReadySpec extends AsyncFunctionalSpec {
     }
 
     @Override
-    Map<String, Closure<Void>> getResultAssertions() {
+    LinkedHashMap<String, Closure<Void>> getResultAssertions() {
         [
                 data: {
                     assert it.status == 202
@@ -127,7 +131,7 @@ class AsyncResultsReadySpec extends AsyncFunctionalSpec {
     }
 
     @Override
-    Map<String, Closure<Map<String, List<String>>>> getQueryParameters() {
+    LinkedHashMap<String, Closure<Map<String, List<String>>>> getQueryParameters() {
         [
                 data: {[
                         metrics: ["height"],
