@@ -152,6 +152,7 @@ abstract class AsyncFunctionalSpec extends Specification {
         expect: "All the asynchronous interactions behave appropriately"
         getResultsToTargetFunctions().each {interactionName, resultsToTarget ->
             //First, we make a request.
+            Thread.sleep(1000)
             Response response = makeAbstractRequest(
                     // To make a request, we need the target (i.e. path), which may be constructed using responses from
                     // previous requests
