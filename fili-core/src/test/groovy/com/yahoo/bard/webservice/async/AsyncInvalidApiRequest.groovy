@@ -31,18 +31,18 @@ class AsyncInvalidApiRequest extends AsyncFunctionalSpec {
             }"""
 
     @Override
-    Map<String, Closure<String>> getResultsToTargetFunctions() {
+    LinkedHashMap<String, Closure<String>> getResultsToTargetFunctions() {
         [ data: { "data/shapes/day" } ]
     }
 
     @Override
-    Map<String, Closure<Void>> getResultAssertions() {
+    LinkedHashMap<String, Closure<Void>> getResultAssertions() {
         [ data: { assert GroovyTestUtils.compareErrorPayload(it.readEntity(String), EXPECTED_ERROR_MESSAGE) } ]
 
     }
 
     @Override
-    Map<String, Closure<Map<String, List<String>>>> getQueryParameters() {
+    LinkedHashMap<String, Closure<Map<String, List<String>>>> getQueryParameters() {
         [
                 data: { [
                         asyncAfter: ["always"],

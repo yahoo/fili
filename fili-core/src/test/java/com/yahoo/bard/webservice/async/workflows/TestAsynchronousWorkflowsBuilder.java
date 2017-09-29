@@ -12,8 +12,8 @@ import rx.Observable;
 import rx.Observer;
 
 import java.time.Clock;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -30,7 +30,7 @@ import javax.inject.Singleton;
 @Singleton
 public class TestAsynchronousWorkflowsBuilder extends DefaultAsynchronousWorkflowsBuilder {
 
-    static final Map<Workflow, Observer> SUBSCRIBERS = new HashMap<>();
+    static final Map<Workflow, Observer> SUBSCRIBERS = new ConcurrentHashMap<>();
     /**
      * A factory for constructing the asynchronous response building workflow.
      *
@@ -135,7 +135,7 @@ public class TestAsynchronousWorkflowsBuilder extends DefaultAsynchronousWorkflo
                 jobMetadataSerializer
         );
 
-        Map<Workflow, Observable> workflowMap = new HashMap<>();
+        Map<Workflow, Observable> workflowMap = new ConcurrentHashMap<>();
         workflowMap.put(Workflow.SYNCHRONOUS, workflows.getSynchronousPayload());
         workflowMap.put(Workflow.ASYNCHRONOUS, workflows.getAsynchronousPayload());
         workflowMap.put(Workflow.PRERESPONSE_READY, workflows.getPreResponseReadyNotifications());
