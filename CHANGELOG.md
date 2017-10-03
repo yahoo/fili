@@ -68,6 +68,8 @@ Current
 
 
 ### Changed:
+- [Substitute preflight method wildcard character with explicit allowed methods](https://github.com/yahoo/fili/pull/545)
+    * Modify ResponseCorsFilter Allowed Methods header to explicitly list allowed methods. Some browsers do not support a wildcard header value.
 
 - [Make Field Accessor PostAggregation able to reference post aggregations in adddition to aggregations]
     * Druid allows (but does not protect against ordering) post aggregation trees referencing columns that are also post aggregation trees.  This makes it possible to send such a query by using a field accessor to reference another query expression.  Using this capability may have some risk.
