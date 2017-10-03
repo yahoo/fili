@@ -68,6 +68,8 @@ Current
 
 
 ### Changed:
+- [Substitute preflight method wildcard character with explicit allowed methods](https://github.com/yahoo/fili/pull/545)
+    * Modify ResponseCorsFilter Allowed Methods header to explicitly list allowed methods. Some browsers do not support a wildcard header value.
 
 - [Include ETags on responses](https://github.com/yahoo/fili/pull/417)
     * Modify FullResponse JSON Objects to contain a flag showing whether a response is new or fetched from cache.
