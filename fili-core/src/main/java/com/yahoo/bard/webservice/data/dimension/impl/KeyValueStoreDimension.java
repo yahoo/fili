@@ -478,7 +478,6 @@ public class KeyValueStoreDimension implements Dimension {
         try {
             String dimRowIndexes = keyValueStore.get(DimensionStoreKeyUtils.getAllValuesKey());
             if (dimRowIndexes == null) {
-                LOG.debug("Null value for dimension {} while deleting: ", apiName);
                 return;
             }
 
