@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.druid.model.postaggregation;
 import static com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation.DefaultPostAggregationType.FIELD_ACCESS;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
-import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
+import com.yahoo.bard.webservice.druid.model.MetricField;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -24,14 +24,14 @@ public class FieldAccessorPostAggregation extends PostAggregation {
 
     private static final Logger LOG = LoggerFactory.getLogger(FieldAccessorPostAggregation.class);
 
-    private final Aggregation aggregation;
+    private final MetricField metricField;
 
     /**
      * Constructor.
      *
      * @param aggregation  Aggregation to access
      */
-    public FieldAccessorPostAggregation(@NotNull Aggregation aggregation) {
+    public FieldAccessorPostAggregation(@NotNull MetricField aggregation) {
         super(FIELD_ACCESS, null);
 
         // Check for null aggregation
@@ -41,21 +41,40 @@ public class FieldAccessorPostAggregation extends PostAggregation {
             throw new IllegalArgumentException(message);
         }
 
-        this.aggregation = aggregation;
+        this.metricField = aggregation;
     }
 
     @Override
     public boolean isSketch() {
-        return aggregation.isSketch();
+        return metricField.isSketch();
     }
 
+    /**
+     * Retrieve the MetricField column which this field accesses.
+     *
+     * @return An aggregation or post-aggregation referenced by this post aggregator.
+     *
+     * @deprecated Use getMetricField instead
+     */
     @JsonIgnore
-    public Aggregation getAggregation() {
-        return aggregation;
+    @Deprecated
+    public MetricField getAggregation() {
+        return metricField;
     }
+
+    /**
+     * Retrieve the MetricField column which this field accesses.
+     *
+     * @return An aggregation or post-aggregation referenced by this post aggregator.
+     */
+    @JsonIgnore
+    public MetricField getMetricField() {
+        return metricField;
+    }
+
 
     public String getFieldName() {
-        return aggregation.getName();
+        return metricField.getName();
     }
 
     @JsonIgnore
@@ -67,13 +86,13 @@ public class FieldAccessorPostAggregation extends PostAggregation {
     @JsonIgnore
     @Override
     public Set<Dimension> getDependentDimensions() {
-        return aggregation.getDependentDimensions();
+        return metricField.getDependentDimensions();
     }
 
     @Override
     @JsonIgnore
     public boolean isFloatingPoint() {
-        return aggregation.isFloatingPoint();
+        return metricField.isFloatingPoint();
     }
 
     /**
@@ -103,11 +122,11 @@ public class FieldAccessorPostAggregation extends PostAggregation {
 
         FieldAccessorPostAggregation that = (FieldAccessorPostAggregation) o;
 
-        return aggregation.equals(that.aggregation);
+        return metricField.equals(that.metricField);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), aggregation);
+        return Objects.hash(super.hashCode(), metricField);
     }
 }
