@@ -73,6 +73,9 @@ Current
 
 ### Changed:
 
+- [Make Field Accessor PostAggregation able to reference post aggregations in adddition to aggregations]
+    * Druid allows (but does not protect against ordering) post aggregation trees referencing columns that are also post aggregation trees.  This makes it possible to send such a query by using a field accessor to reference another query expression.  Using this capability may have some risk.
+
 - [Include ETags on responses](https://github.com/yahoo/fili/pull/417)
     * Modify FullResponse JSON Objects to contain a flag showing whether a response is new or fetched from cache.
 
