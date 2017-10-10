@@ -75,6 +75,8 @@ public interface Dimension {
      * @param name  field name
      *
      * @return DimensionField
+     *
+     * @throws IllegalArgumentException if this dimension does not have a field with the specified name
      */
     DimensionField getFieldByName(String name);
 
