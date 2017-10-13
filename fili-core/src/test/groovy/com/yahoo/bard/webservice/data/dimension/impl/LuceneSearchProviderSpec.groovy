@@ -12,6 +12,7 @@ import com.yahoo.bard.webservice.web.util.PaginationParameters
 
 import org.apache.commons.io.FileUtils
 import org.apache.lucene.store.FSDirectory
+import org.junit.Ignore
 
 import java.nio.file.Files
 import java.nio.file.Path
@@ -191,31 +192,32 @@ class LuceneSearchProviderSpec extends SearchProviderSpec<LuceneSearchProvider> 
         !Files.exists(file4)
     }
 
-//    def "replaceIndex hot-swaps Lucene indexes in place"() {
-//        given:
-//        // destination = "target/tmp/dimensionCache/animal/lucene_indexes", where we will keep indexes all the time
-//        Path oldIndexFile = destinationPath.resolve("segments_2")
-//        Files.createFile(oldIndexFile)
-//
-//        expect:
-//        Files.exists(destinationPath)
-//        Files.exists(oldIndexFile)
-//
-//        when:
-//        // source = "target/tmp/dimensionCache/animal/new_lucene_indexes", where new indexes come from
-//        searchProvider.replaceIndex(sourceDir)
-//
-//        then:
-//        Files.exists(destinationPath)
-//        !Files.exists(oldIndexFile)
-//
-//        and:
-//        Files.exists(destinationPath.resolve("segments_1"))
-//        Files.exists(destinationPath.resolve("_1.cfs"))
-//        Files.exists(destinationPath.resolve("_1.si"))
-//        Files.exists(destinationPath.resolve("subDir"))
-//        Files.exists(destinationPath.resolve("subDir").resolve("subDirFile"))
-//    }
+    @Ignore("This test is currently not valid because the replacement index is invalid.")
+    def "replaceIndex hot-swaps Lucene indexes in place"() {
+        given:
+        // destination = "target/tmp/dimensionCache/animal/lucene_indexes", where we will keep indexes all the time
+        Path oldIndexFile = destinationPath.resolve("segments_2")
+        Files.createFile(oldIndexFile)
+
+        expect:
+        Files.exists(destinationPath)
+        Files.exists(oldIndexFile)
+
+        when:
+        // source = "target/tmp/dimensionCache/animal/new_lucene_indexes", where new indexes come from
+        searchProvider.replaceIndex(sourceDir)
+
+        then:
+        Files.exists(destinationPath)
+        !Files.exists(oldIndexFile)
+
+        and:
+        Files.exists(destinationPath.resolve("segments_1"))
+        Files.exists(destinationPath.resolve("_1.cfs"))
+        Files.exists(destinationPath.resolve("_1.si"))
+        Files.exists(destinationPath.resolve("subDir"))
+        Files.exists(destinationPath.resolve("subDir").resolve("subDirFile"))
+    }
 
     @Override
     boolean indicesHaveBeenCleared() {
