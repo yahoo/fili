@@ -205,7 +205,9 @@ public class LuceneSearchProvider implements SearchProvider {
 
     @Override
     public int getDimensionCardinality() {
-        return Integer.parseInt(keyValueStore.get(DimensionStoreKeyUtils.getCardinalityKey()));
+        return Integer.parseInt(
+                keyValueStore.getOrDefault(DimensionStoreKeyUtils.getCardinalityKey(), "0")
+        );
     }
 
     @Override
