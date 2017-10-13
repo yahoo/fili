@@ -191,31 +191,31 @@ class LuceneSearchProviderSpec extends SearchProviderSpec<LuceneSearchProvider> 
         !Files.exists(file4)
     }
 
-    def "replaceIndex hot-swaps Lucene indexes in place"() {
-        given:
-        // destination = "target/tmp/dimensionCache/animal/lucene_indexes", where we will keep indexes all the time
-        Path oldIndexFile = destinationPath.resolve("segments_2")
-        Files.createFile(oldIndexFile)
-
-        expect:
-        Files.exists(destinationPath)
-        Files.exists(oldIndexFile)
-
-        when:
-        // source = "target/tmp/dimensionCache/animal/new_lucene_indexes", where new indexes come from
-        searchProvider.replaceIndex(sourceDir)
-
-        then:
-        Files.exists(destinationPath)
-        !Files.exists(oldIndexFile)
-
-        and:
-        Files.exists(destinationPath.resolve("segments_1"))
-        Files.exists(destinationPath.resolve("_1.cfs"))
-        Files.exists(destinationPath.resolve("_1.si"))
-        Files.exists(destinationPath.resolve("subDir"))
-        Files.exists(destinationPath.resolve("subDir").resolve("subDirFile"))
-    }
+//    def "replaceIndex hot-swaps Lucene indexes in place"() {
+//        given:
+//        // destination = "target/tmp/dimensionCache/animal/lucene_indexes", where we will keep indexes all the time
+//        Path oldIndexFile = destinationPath.resolve("segments_2")
+//        Files.createFile(oldIndexFile)
+//
+//        expect:
+//        Files.exists(destinationPath)
+//        Files.exists(oldIndexFile)
+//
+//        when:
+//        // source = "target/tmp/dimensionCache/animal/new_lucene_indexes", where new indexes come from
+//        searchProvider.replaceIndex(sourceDir)
+//
+//        then:
+//        Files.exists(destinationPath)
+//        !Files.exists(oldIndexFile)
+//
+//        and:
+//        Files.exists(destinationPath.resolve("segments_1"))
+//        Files.exists(destinationPath.resolve("_1.cfs"))
+//        Files.exists(destinationPath.resolve("_1.si"))
+//        Files.exists(destinationPath.resolve("subDir"))
+//        Files.exists(destinationPath.resolve("subDir").resolve("subDirFile"))
+//    }
 
     @Override
     boolean indicesHaveBeenCleared() {
