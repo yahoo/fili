@@ -145,6 +145,8 @@ Current
 
 ### Fixed:
 
+- [Handle Number Format errors from empty or missing cardinality value](https://github.com/yahoo/fili/issues/549)
+
 - [Fix ConstantMaker make method with LogicalMetricInfo class](https://github.com/yahoo/fili/pull/540)
     * The ConstantMaker make method needs to be rewritten with the LogicalMetricInfo class.
 
