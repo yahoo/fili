@@ -12,7 +12,8 @@ import com.yahoo.bard.webservice.web.util.PaginationParameters
 
 import org.apache.commons.io.FileUtils
 import org.apache.lucene.store.FSDirectory
-import org.junit.Ignore
+
+import spock.lang.Ignore
 
 import java.nio.file.Files
 import java.nio.file.Path
