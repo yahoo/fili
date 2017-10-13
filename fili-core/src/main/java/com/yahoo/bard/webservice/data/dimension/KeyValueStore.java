@@ -50,7 +50,7 @@ public interface KeyValueStore extends Closeable {
     String get(@NotNull String key);
 
     /**
-     * Get the value for a key from store or provide a default
+     * Get the value for a key from store or provide a default.
      *
      * @param key  Key to get the value for
      * @param defaultValue A default value in case key is null
