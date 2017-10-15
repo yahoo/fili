@@ -15,7 +15,7 @@ Current
         - Currently there is only a binary flag (`BardQueryInfo.cached`) that is inconsistently set for split queries
         - Three new metrics are added
             1. Number of split queries satisfied by cache
-            2. Number of split queries not satisfied by cache
+            2. Number of split queries actually sent to the fact store. (not satisfied by cache)
             3. Number of weight-checked queries
 
 - [Documentation that `Dimension::getFieldByName` should throw an `IllegalArgumentException` if there is no field with the passed in name](https://github.com/yahoo/fili/pull/547)

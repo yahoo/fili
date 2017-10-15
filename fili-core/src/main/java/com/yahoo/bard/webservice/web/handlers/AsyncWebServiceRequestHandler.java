@@ -52,9 +52,7 @@ public class AsyncWebServiceRequestHandler extends BaseDataRequestHandler {
         HttpErrorCallback error = response.getErrorCallback(druidQuery);
         FailureCallback failure = response.getFailureCallback(druidQuery);
 
-        ((BardQueryInfo) RequestLog.retrieve(BardQueryInfo.class)).incrementCountFor(
-                BardQueryInfo.FACT_QUERIES
-        );
+        BardQueryInfo.incrementCountFactHits();
         druidWebService.postDruidQuery(context, success, error, failure, druidQuery);
         return true;
     }

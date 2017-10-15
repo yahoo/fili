@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.logging.blocks;
 
 import com.yahoo.bard.webservice.logging.LogInfo;
+import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -23,48 +24,79 @@ import java.util.stream.Stream;
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class BardQueryInfo implements LogInfo {
     @JsonIgnore
-    public static final String WEIGHT_CHECK = "weight check queries count";
-    @JsonIgnore
-    public static final String FACT_QUERIES = "fact queries count";
-    @JsonIgnore
-    public static final String FACT_QUERY_CACHE_HIT  = "fact query cache hit count";
-
-    @JsonIgnore
     private static final Logger LOG = LoggerFactory.getLogger(BardQueryInfo.class);
+    @JsonIgnore
+    private static final String WEIGHT_CHECK = "weight check queries count";
+    @JsonIgnore
+    private static final String FACT_QUERIES = "fact queries count";
+    @JsonIgnore
+    private static final String FACT_QUERY_CACHE_HIT  = "fact query cache hit count";
+
+    protected static final Map<String, AtomicInteger> QUERY_COUNTER = Stream.of(
+            new AbstractMap.SimpleImmutableEntry<>(WEIGHT_CHECK, new AtomicInteger()),
+            new AbstractMap.SimpleImmutableEntry<>(FACT_QUERIES, new AtomicInteger()),
+            new AbstractMap.SimpleImmutableEntry<>(FACT_QUERY_CACHE_HIT, new AtomicInteger())
+    ).collect(Collectors.toMap(
+            AbstractMap.SimpleImmutableEntry::getKey,
+            AbstractMap.SimpleImmutableEntry::getValue
+    ));
 
     protected final String type;
-    protected final Map<String, AtomicInteger> queryCounter;
 
     /**
      * Constructor.
      *
-     * @param type  Type of Bard query
+     * @param queryType  Type of Bard query
      */
-    public BardQueryInfo(String type) {
-        this.type = type;
-        this.queryCounter = Stream.of(
-                new AbstractMap.SimpleImmutableEntry<>(WEIGHT_CHECK, new AtomicInteger()),
-                new AbstractMap.SimpleImmutableEntry<>(FACT_QUERIES, new AtomicInteger()),
-                new AbstractMap.SimpleImmutableEntry<>(FACT_QUERY_CACHE_HIT, new AtomicInteger())
-        ).collect(Collectors.toMap(
-                AbstractMap.SimpleImmutableEntry::getKey,
-                AbstractMap.SimpleImmutableEntry::getValue
-        ));
+    public BardQueryInfo(String queryType) {
+        this.type = queryType;
     }
 
     /**
-     * Increments the number of a kind query, whose possible type are all specified in
+     * Increments the number of fact queries.
+     */
+    public static void incrementCountFactHits() {
+        getBardQueryInfo().incrementCountFor(BardQueryInfo.FACT_QUERIES);
+    }
+
+    /**
+     * Increments the number of cache-hit queries.
+     */
+    public static void incrementCountCacheHits() {
+        getBardQueryInfo().incrementCountFor(BardQueryInfo.FACT_QUERY_CACHE_HIT);
+    }
+
+    /**
+     * Increments the number of weight check queries.
+     */
+    public static void incrementCountWeightCheck() {
+        getBardQueryInfo().incrementCountFor(BardQueryInfo.WEIGHT_CHECK);
+    }
+
+    /**
+     * Retrieves {@link com.yahoo.bard.webservice.logging.blocks.BardQueryInfo} from
+     * {@link com.yahoo.bard.webservice.logging.RequestLog}.
+     *
+     * @return {@link com.yahoo.bard.webservice.logging.blocks.BardQueryInfo} from
+     * {@link com.yahoo.bard.webservice.logging.RequestLog}
+     */
+    protected static BardQueryInfo getBardQueryInfo() {
+        return ((BardQueryInfo) RequestLog.retrieve(BardQueryInfo.class));
+    }
+
+    /**
+     * Increments the number of a type of query, whose possible type are all specified in
      * {@link com.yahoo.bard.webservice.logging.blocks.BardQueryInfo}.
      *
-     * @param query  The type of the query
+     * @param queryType  The type of the query
      */
-    public void incrementCountFor(String query) {
+    protected static void incrementCountFor(String queryType) {
         try {
-            queryCounter.get(query).incrementAndGet();
+            QUERY_COUNTER.get(queryType).incrementAndGet();
         } catch (NullPointerException exception) {
-            String message = ErrorMessageFormat.RESOURCE_RETRIEVAL_FAILURE.format(query);
+            String message = ErrorMessageFormat.RESOURCE_RETRIEVAL_FAILURE.format(queryType);
             LOG.error(message);
-            throw new RuntimeException(message, exception);
+            throw new IllegalArgumentException(message, exception);
         }
     }
 }
