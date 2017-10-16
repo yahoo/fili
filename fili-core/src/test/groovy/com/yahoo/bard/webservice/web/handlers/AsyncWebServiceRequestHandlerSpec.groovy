@@ -46,6 +46,9 @@ class AsyncWebServiceRequestHandlerSpec extends Specification {
         SuccessCallback sc = null
         boolean success
 
+        expect:
+        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.FACT_QUERIES).get() == 0
+
         when:
         success = handler.handleRequest(rc, request, groupByQuery, response)
 
