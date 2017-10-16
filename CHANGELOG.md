@@ -179,6 +179,10 @@ Current
 
       are made available.
 
+- [Added mandatory logging for LoadTask errors]
+    * Finalized `run()` in `LoadTask` with mandatory logging of exceptions.
+    * Created mandatory runInner to replace run in all `LoadTask` instances
+
 - [Substitute preflight method wildcard character with explicit allowed methods](https://github.com/yahoo/fili/pull/545)
     * Modify ResponseCorsFilter Allowed Methods header to explicitly list allowed methods. Some browsers do not support a wildcard header value.
 

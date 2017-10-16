@@ -97,7 +97,7 @@ public class DataSourceMetadataLoadTask extends LoadTask<Boolean> {
     }
 
     @Override
-    public void run() {
+    public void runInner() {
         physicalTableDictionary.values().stream()
                 .map(PhysicalTable::getDataSourceNames)
                 .flatMap(Set::stream)

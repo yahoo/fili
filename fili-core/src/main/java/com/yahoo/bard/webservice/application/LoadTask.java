@@ -18,13 +18,17 @@ import java.util.concurrent.ScheduledFuture;
  * @param <V>  The type of the result returned by the task associated with this loader.
  */
 public abstract class LoadTask<V> implements Runnable {
+
     private static final Logger LOG = LoggerFactory.getLogger(LoadTask.class);
+    public static final String LOAD_TASK_ERROR_FORMAT = "Exception while running %s: %s";
 
     protected final String loaderName;
     protected final long delay;
     protected final long period;
     protected final boolean isPeriodic;
     protected ScheduledFuture<?> future;
+
+    private boolean failed = false;
 
     /**
      * Creates a one-off loader.
@@ -50,8 +54,22 @@ public abstract class LoadTask<V> implements Runnable {
         this.isPeriodic = period > 0;
     }
 
+    /**
+     * Internal implementation of {@link LoadTask#run()} task that will be used so that {@link LoadTask#run()} can
+     * add mandatory exception handling.
+     */
+    public abstract void runInner();
+
     @Override
-    public abstract void run();
+    public final void run() {
+        try {
+            runInner();
+        } catch (RuntimeException t) {
+            LOG.error(String.format(LOAD_TASK_ERROR_FORMAT, getName(), t.getMessage()), t);
+            failed = true;
+            throw t;
+        }
+    };
 
     /**
      * Return the name of this loader.
@@ -156,5 +174,9 @@ public abstract class LoadTask<V> implements Runnable {
         public void invoke(Throwable error) {
             LOG.error("{}: Async request to druid failed:", getName(), error);
         }
+    }
+
+    public boolean isFailed() {
+        return failed;
     }
 }
