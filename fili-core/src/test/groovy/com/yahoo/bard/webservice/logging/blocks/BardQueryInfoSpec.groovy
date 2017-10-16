@@ -23,14 +23,14 @@ class BardQueryInfoSpec extends Specification {
     }
 
     @Unroll
-    def "incrementCountFor(#queryType) increment count of #queryType by 1"() {
+    def "incrementCountFor(#queryType) increments count of #queryType by 1"() {
         expect: "count for #queryType is 0"
         BardQueryInfo.QUERY_COUNTER.get(queryType).get() == 0
 
         when: "calling incrementCountFor(#queryType)"
         BardQueryInfo.incrementCountFor(queryType)
 
-        then:
+        then: "count of #queryType is incremented by 1"
         BardQueryInfo.QUERY_COUNTER.get(queryType).get() == 1
 
         where:
@@ -41,26 +41,26 @@ class BardQueryInfoSpec extends Specification {
     }
 
     def "incrementCountFor(String) throws IllegalArgumentException on non-existing query type"() {
-        when:
+        when: "BardQueryInfo is given an unknown query type"
         BardQueryInfo.incrementCountFor("nonExistingQueryType")
 
-        then:
+        then: "IllegalArgumentException is thrown with exception message"
         IllegalArgumentException illegalArgumentException = thrown()
         illegalArgumentException.message == ErrorMessageFormat.RESOURCE_RETRIEVAL_FAILURE.format("nonExistingQueryType")
     }
 
-    def "incrementCount*() methods increment their corresponding query counts by 1"() {
+    def "incrementCount*() methods increment their corresponding query type counts by 1"() {
         expect: "all query counts are 0"
         BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.WEIGHT_CHECK).get() == 0
         BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.FACT_QUERIES).get() == 0
         BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
 
-        when:
+        when: "calling incrementCount*() methods for all query types"
         BardQueryInfo.incrementCountWeightCheck()
         BardQueryInfo.incrementCountFactHits()
         BardQueryInfo.incrementCountCacheHits()
 
-        then:
+        then: "counts of all query types are incremented by 1"
         BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.WEIGHT_CHECK).get() == 1
         BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.FACT_QUERIES).get() == 1
         BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 1
