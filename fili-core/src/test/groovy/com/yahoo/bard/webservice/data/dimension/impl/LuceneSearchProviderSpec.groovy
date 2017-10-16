@@ -13,6 +13,8 @@ import com.yahoo.bard.webservice.web.util.PaginationParameters
 import org.apache.commons.io.FileUtils
 import org.apache.lucene.store.FSDirectory
 
+import spock.lang.Ignore
+
 import java.nio.file.Files
 import java.nio.file.Path
 /**
@@ -191,6 +193,7 @@ class LuceneSearchProviderSpec extends SearchProviderSpec<LuceneSearchProvider> 
         !Files.exists(file4)
     }
 
+    @Ignore("This test is currently not valid because the replacement index is invalid.")
     def "replaceIndex hot-swaps Lucene indexes in place"() {
         given:
         // destination = "target/tmp/dimensionCache/animal/lucene_indexes", where we will keep indexes all the time
