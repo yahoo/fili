@@ -144,7 +144,7 @@ class CacheRequestHandlerSpec extends Specification {
         and: "The request is marked as processed"
         requestProcessed
 
-        and: "The count of fact query cache hit is noe incremented"
+        and: "The count of fact query cache hit is not incremented"
         BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
     }
 
