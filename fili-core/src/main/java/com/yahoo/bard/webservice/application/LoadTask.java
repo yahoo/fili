@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.application;
 
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
+import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +21,6 @@ import java.util.concurrent.ScheduledFuture;
 public abstract class LoadTask<V> implements Runnable {
 
     private static final Logger LOG = LoggerFactory.getLogger(LoadTask.class);
-    public static final String LOAD_TASK_ERROR_FORMAT = "Exception while running %s: %s";
 
     protected final String loaderName;
     protected final long delay;
@@ -65,7 +65,7 @@ public abstract class LoadTask<V> implements Runnable {
         try {
             runInner();
         } catch (RuntimeException t) {
-            LOG.error(String.format(LOAD_TASK_ERROR_FORMAT, getName(), t.getMessage()), t);
+            LOG.error(ErrorMessageFormat.LOAD_TASK_FAILURE.logFormat(getName(), t.getMessage()), t);
             failed = true;
             throw t;
         }

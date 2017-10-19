@@ -10,8 +10,6 @@ import com.yahoo.bard.webservice.druid.client.FailureCallback
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback
 import com.yahoo.bard.webservice.logging.TestLogAppender
 
-import com.fasterxml.jackson.databind.ObjectMapper
-
 import spock.lang.Ignore
 import spock.lang.Specification
 import spock.lang.Timeout
@@ -240,8 +238,7 @@ class LoadTaskSpec extends Specification {
 
     class FailingTestLoadTask extends LoadTaskSpec.OneOffTestLoadTask {
 
-
-        public static final String UNIQUE_VALUE_1 = "UNIQUE_VALUE_1"
+        public static final String UNIQUE_VALUE_1 = "FailingTestLoadTask.UNIQUE_VALUE_1"
 
         FailingTestLoadTask(long delay) {
             super(delay)
@@ -253,26 +250,15 @@ class LoadTaskSpec extends Specification {
         }
     }
 
-
     def "Test error gets logged on failed test"() {
-        setup:
         setup: "Instantiate a task scheduler"
-        ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
-
-
         TaskScheduler scheduler = new TaskScheduler(2)
         LoadTask<Boolean> loader = new FailingTestLoadTask(expectedDelay)
-        loader.setFuture(
-                scheduler.schedule(
-                        loader,
-                        1,
-                        TimeUnit.MILLISECONDS
-                )
-        )
+        loader.setFuture(scheduler.schedule(loader,1, TimeUnit.MILLISECONDS))
         Thread.sleep(10)
 
         expect:
         loader.failed
-        logAppender.getMessages().find { it.contains(/UNIQUE_VALUE_1/) }
+        logAppender.getMessages().find { it.contains(/FailingTestLoadTask.UNIQUE_VALUE_1/) }
     }
 }

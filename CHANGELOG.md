@@ -179,7 +179,7 @@ Current
 
       are made available.
 
-- [Added mandatory logging for LoadTask errors]
+- [Added mandatory logging for LoadTask errors](https://github.com/yahoo/fili/pull/553)
     * Finalized `run()` in `LoadTask` with mandatory logging of exceptions.
     * Created mandatory runInner to replace run in all `LoadTask` instances
 
