@@ -55,9 +55,9 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
     private final LogicalTable table;
     private final Granularity granularity;
     private final Set<Dimension> dimensions;
-    private final Set<LogicalMetric> metrics;
+    private final Set<LogicalMetric> logicalMetrics;
     private final Set<Interval> intervals;
-    private final Map<Dimension, Set<ApiFilter>> filters;
+    private final Map<Dimension, Set<ApiFilter>> apiFilters;
 
     /**
      * Parses the API request URL and generates the Api Request object.
@@ -103,9 +103,9 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         }
 
         dimensions = Collections.emptySet();
-        metrics = Collections.emptySet();
+        logicalMetrics = Collections.emptySet();
         intervals = Collections.emptySet();
-        filters = Collections.emptyMap();
+        apiFilters = Collections.emptyMap();
 
         LOG.debug(
                 "Api request: Tables: {},\nGranularity: {},\nFormat: {}\nPagination: {}" +
@@ -115,9 +115,9 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
                 this.format,
                 this.paginationParameters,
                 this.dimensions,
-                this.metrics,
+                this.logicalMetrics,
                 this.intervals,
-                this.filters
+                this.apiFilters
         );
     }
 
@@ -179,11 +179,11 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         validateRequestDimensions(this.dimensions, this.table);
 
         // parse metrics
-        this.metrics = generateLogicalMetrics(
+        this.logicalMetrics = generateLogicalMetrics(
                 metrics,
                 bardConfigResources.getMetricDictionary().getScope(Collections.singletonList(tableName))
         );
-        validateMetrics(this.metrics, this.table);
+        validateMetrics(this.logicalMetrics, this.table);
 
         // parse interval
         this.intervals = generateIntervals(
@@ -199,8 +199,8 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         validateTimeAlignment(this.granularity, this.intervals);
 
         // parse filters
-        this.filters = generateFilters(filters, table, dimensionDictionary);
-        validateRequestDimensions(this.filters.keySet(), this.table);
+        this.apiFilters = generateFilters(filters, table, dimensionDictionary);
+        validateRequestDimensions(getFilterDimensions(), this.table);
 
         LOG.debug(
                 "Api request: Tables: {},\nGranularity: {},\nFormat: {}\nPagination: {}" +
@@ -212,11 +212,11 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
                 this.dimensions.stream()
                         .map(Dimension::getApiName)
                         .collect(Collectors.toList()),
-                this.metrics.stream()
+                this.logicalMetrics.stream()
                         .map(LogicalMetric::getName)
                         .collect(Collectors.toList()),
                 this.intervals,
-                this.filters.entrySet().stream()
+                this.apiFilters.entrySet().stream()
                         .collect(
                                 Collectors.toMap(
                                         entry -> entry.getKey().getApiName(),
@@ -260,9 +260,9 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         this.table = table;
         this.granularity = granularity;
         this.dimensions = dimensions;
-        this.metrics = metrics;
+        this.logicalMetrics = metrics;
         this.intervals = intervals;
-        this.filters = filters;
+        this.apiFilters = filters;
     }
 
     /**
@@ -278,9 +278,9 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         this.table = null;
         this.granularity = null;
         this.dimensions = null;
-        this.metrics = null;
+        this.logicalMetrics = null;
         this.intervals = null;
-        this.filters = null;
+        this.apiFilters = null;
     }
 
     /**
@@ -402,64 +402,89 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         return this.granularity;
     }
 
+    @Override
+    public Set<Dimension> getDimensions() {
+        return dimensions;
+    }
+
+    @Override
+    public Set<Dimension> getFilterDimensions() {
+        return apiFilters.keySet();
+    }
+
+    @Override
+    public Map<Dimension, Set<ApiFilter>> getApiFilters() {
+        return apiFilters;
+    }
+
+    @Override
+    public Set<Interval> getIntervals() {
+        return intervals;
+    }
+
+    @Override
+    public Set<LogicalMetric> getLogicalMetrics() {
+        return logicalMetrics;
+    }
+
     //CHECKSTYLE:OFF
     @Override
     public TablesApiRequest withFormat(ResponseFormatType format) {
-        return new TablesApiRequestImpl(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, metrics, intervals, filters);
+        return new TablesApiRequestImpl(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
     }
 
     @Override
     public TablesApiRequest withPaginationParameters(Optional<PaginationParameters> paginationParameters) {
-        return new TablesApiRequestImpl(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, metrics, intervals, filters);
+        return new TablesApiRequestImpl(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
     }
 
     @Override
     public TablesApiRequest withUriInfo(UriInfo uriInfo) {
-        return new TablesApiRequestImpl(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, metrics, intervals, filters);
+        return new TablesApiRequestImpl(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
     }
 
     @Override
     public TablesApiRequest withBuilder(Response.ResponseBuilder builder) {
-        return new TablesApiRequestImpl(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, metrics, intervals, filters);
+        return new TablesApiRequestImpl(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
     }
 
     @Override
     public TablesApiRequest withTables(Set<LogicalTable> tables) {
-        return new TablesApiRequestImpl(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, metrics, intervals, filters);
+        return new TablesApiRequestImpl(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
     }
 
     public TablesApiRequest withTable(LogicalTable table) {
-        return new TablesApiRequestImpl(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, metrics, intervals, filters);
+        return new TablesApiRequestImpl(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
     }
 
     @Override
     public TablesApiRequest withGranularity(Set<LogicalTable> tables) {
-        return new TablesApiRequestImpl(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, metrics, intervals, filters);
+        return new TablesApiRequestImpl(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
     }
 
     @Override
     public TablesApiRequest withTables(Granularity granularity) {
-        return new TablesApiRequestImpl(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, metrics, intervals, filters);
+        return new TablesApiRequestImpl(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
     }
 
     @Override
     public TablesApiRequest withDimensions(Set<Dimension> dimensions) {
-        return new TablesApiRequestImpl(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, metrics, intervals, filters);
+        return new TablesApiRequestImpl(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
     }
 
     @Override
-    public TablesApiRequest withMetrics(Set<LogicalMetric> metrics) {
-        return new TablesApiRequestImpl(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, metrics, intervals, filters);
+    public TablesApiRequest withMetrics(Set<LogicalMetric> logicalMetrics) {
+        return new TablesApiRequestImpl(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
     }
 
     @Override
     public TablesApiRequest withIntervals(Set<Interval> intervals) {
-        return new TablesApiRequestImpl(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, metrics, intervals, filters);
+        return new TablesApiRequestImpl(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
     }
 
     @Override
     public TablesApiRequest withFilters(Map<Dimension, Set<ApiFilter>> filters) {
-        return new TablesApiRequestImpl(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, metrics, intervals, filters);
+        return new TablesApiRequestImpl(format, paginationParameters, uriInfo, builder, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
     }
     //CHECKSTYLE:ON
 }

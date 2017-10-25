@@ -10,6 +10,7 @@ import com.yahoo.bard.webservice.config.FeatureFlag;
 import com.yahoo.bard.webservice.config.FeatureFlagRegistry;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.FeatureFlagRequest;
+import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.apirequest.ApiRequestImpl;
 
 import com.codahale.metrics.annotation.Timed;
@@ -146,7 +147,7 @@ public class FeatureFlagsServlet extends EndpointServlet {
             LOG.debug("Feature Flags Endpoint Response: {}", response.getEntity());
             responseSender = () -> response;
         } catch (Error | Exception e) {
-            String msg = String.format("Exception processing request: %s", e.getMessage());
+            String msg = ErrorMessageFormat.REQUEST_PROCESSING_EXCEPTION.format(e.getMessage());
             LOG.info(msg, e);
             responseSender = () -> Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
         } finally {
@@ -197,11 +198,11 @@ public class FeatureFlagsServlet extends EndpointServlet {
             LOG.debug("Feature Flags Endpoint Response: {}", output);
             responseSender = () -> Response.status(Response.Status.OK).entity(output).build();
         } catch (JsonProcessingException e) {
-            String msg = String.format("Internal server error. JsonProcessingException : %s", e.getMessage());
+            String msg = ErrorMessageFormat.INTERNAL_SERVER_ERROR_ON_JSON_PROCESSING.format(e.getMessage());
             LOG.error(msg, e);
             responseSender = () -> Response.status(INTERNAL_SERVER_ERROR).entity(msg).build();
         } catch (Error | Exception e) {
-            String msg = String.format("Exception processing request: %s", e.getMessage());
+            String msg = ErrorMessageFormat.REQUEST_PROCESSING_EXCEPTION.format(e.getMessage());
             LOG.info(msg, e);
             responseSender = () -> Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
         } finally {

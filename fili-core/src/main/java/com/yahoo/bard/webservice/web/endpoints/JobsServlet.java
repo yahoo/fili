@@ -24,6 +24,7 @@ import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.util.StreamUtils;
 import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.bard.webservice.web.ApiRequest;
+import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.JobNotFoundException;
 import com.yahoo.bard.webservice.web.JobsApiRequest;
 import com.yahoo.bard.webservice.web.PreResponse;
@@ -193,7 +194,7 @@ public class JobsServlet extends EndpointServlet {
             LOG.debug(e.getMessage(), e);
             observableResponse = Observable.just(RequestHandlerUtils.makeErrorResponse(e.getStatus(), e, writer));
         } catch (Error | Exception e) {
-            String msg = String.format("Exception processing request: %s", e.getMessage());
+            String msg = ErrorMessageFormat.REQUEST_PROCESSING_EXCEPTION.format(e.getMessage());
             LOG.info(msg, e);
             observableResponse = Observable.just(Response.status(INTERNAL_SERVER_ERROR).entity(e.getMessage()).build());
         } finally {
