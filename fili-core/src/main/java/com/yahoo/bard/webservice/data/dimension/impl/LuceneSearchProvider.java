@@ -329,25 +329,34 @@ public class LuceneSearchProvider implements SearchProvider {
 
     @Override
     public void replaceIndex(String newLuceneIndexPathString) {
+        LOG.debug(
+                "Replacing Lucene indexes at {} for dimension {} with new index at {}",
+                luceneDirectory.toString(),
+                dimension.getApiName(),
+                newLuceneIndexPathString
+        );
+
         lock.writeLock().lock();
         try {
             Path oldLuceneIndexPath = Paths.get(luceneIndexPath);
             String tempDir = oldLuceneIndexPath.resolveSibling(oldLuceneIndexPath.getFileName() + "_old").toString();
 
-            LOG.debug("Moving old Lucene index directory from {} to {} ...", luceneIndexPath, tempDir);
+            LOG.trace("Moving old Lucene index directory from {} to {} ...", luceneIndexPath, tempDir);
             moveDirEntries(luceneIndexPath, tempDir);
 
-            LOG.debug("Moving all new Lucene indexes from {} to {} ...", newLuceneIndexPathString, luceneIndexPath);
+            LOG.trace("Moving all new Lucene indexes from {} to {} ...", newLuceneIndexPathString, luceneIndexPath);
             moveDirEntries(newLuceneIndexPathString, luceneIndexPath);
 
-            LOG.debug(
+            LOG.trace(
                     "Deleting {} since new Lucene indexes have been moved away from there and is now empty",
                     newLuceneIndexPathString
             );
             deleteDir(newLuceneIndexPathString);
 
-            LOG.debug("Deleting old Lucene indexes in {} ...", tempDir);
+            LOG.trace("Deleting old Lucene indexes in {} ...", tempDir);
             deleteDir(tempDir);
+
+            reopenIndexSearcher(false);
         } finally {
             lock.writeLock().unlock();
         }

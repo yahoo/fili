@@ -155,6 +155,9 @@ Current
 
 - [Handle Number Format errors from empty or missing cardinality value](https://github.com/yahoo/fili/issues/549)
 
+- [Fix lucene search provider replace method](https://github.com/yahoo/fili/pull/551)
+    * Reopen the search index
+
 - [Fix ConstantMaker make method with LogicalMetricInfo class](https://github.com/yahoo/fili/pull/540)
     * The ConstantMaker make method needs to be rewritten with the LogicalMetricInfo class.
 
