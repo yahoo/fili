@@ -7,7 +7,6 @@ import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,13 +22,9 @@ import java.util.stream.Stream;
  */
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class BardQueryInfo implements LogInfo {
-    @JsonIgnore
     private static final Logger LOG = LoggerFactory.getLogger(BardQueryInfo.class);
-    @JsonIgnore
     private static final String WEIGHT_CHECK = "weight check queries count";
-    @JsonIgnore
     private static final String FACT_QUERIES = "fact queries count";
-    @JsonIgnore
     private static final String FACT_QUERY_CACHE_HIT  = "fact query cache hit count";
 
     protected static final Map<String, AtomicInteger> QUERY_COUNTER = Stream.of(
@@ -91,12 +86,12 @@ public class BardQueryInfo implements LogInfo {
      * @param queryType  The type of the query
      */
     protected static void incrementCountFor(String queryType) {
-        try {
-            QUERY_COUNTER.get(queryType).incrementAndGet();
-        } catch (NullPointerException exception) {
+        AtomicInteger count = QUERY_COUNTER.get(queryType);
+        if (count == null) {
             String message = ErrorMessageFormat.RESOURCE_RETRIEVAL_FAILURE.format(queryType);
             LOG.error(message);
-            throw new IllegalArgumentException(message, exception);
+            throw new IllegalArgumentException(message);
         }
+        count.incrementAndGet();
     }
 }

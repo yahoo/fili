@@ -340,13 +340,14 @@ public class RequestLog {
             LOG.error(message);
             throw new IllegalStateException(message);
         }
-        try {
-            return requestLog.info.get(cls.getSimpleName());
-        } catch (NullPointerException exception) {
+
+        LogInfo logInfo = requestLog.info.get(cls.getSimpleName());
+        if (logInfo == null) {
             String message = ErrorMessageFormat.RESOURCE_RETRIEVAL_FAILURE.format(cls.getSimpleName());
             LOG.error(message);
-            throw new IllegalStateException(message, exception);
+            throw new IllegalStateException(message);
         }
+        return logInfo;
     }
 
     /**
