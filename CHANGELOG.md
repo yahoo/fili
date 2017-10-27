@@ -10,6 +10,14 @@ Current
 
 ### Added:
 
+- [Refactor ApiRequest](https://github.com/yahoo/fili/pull/538)
+    * Add inteface layer to each type of API request class. The types of API request under the refactor are
+        - `TablesApiRequest`
+        - `DimensionApiRequest`
+        - `SlicesApiRequest`
+        - `MetricsApiRequest`
+        - `JobsApiRequest`
+
 - [Implement Query Split Logging](https://github.com/yahoo/fili/pull/537)
     * Include metrics in logging to allow for better evaluation of the impact of caching for split queries.
         - Currently there is only a binary flag (`BardQueryInfo.cached`) that is inconsistently set for split queries

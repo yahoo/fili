@@ -22,6 +22,7 @@ import com.yahoo.bard.webservice.web.TableFullViewProcessor;
 import com.yahoo.bard.webservice.web.TableView;
 import com.yahoo.bard.webservice.web.TablesApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.TablesApiRequestImpl;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 
 import com.codahale.metrics.annotation.Timed;
@@ -164,7 +165,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             RequestLog.startTiming(this);
             RequestLog.record(new TableRequest(tableName != null ? tableName : "all", "all"));
 
-            TablesApiRequest apiRequest = new TablesApiRequest(
+            TablesApiRequestImpl tablesApiRequestImpl = new TablesApiRequestImpl(
                     tableName,
                     null,
                     formatResolver.apply(format, containerRequestContext),
@@ -175,15 +176,18 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             );
 
             if (requestMapper != null) {
-                apiRequest = (TablesApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
+                tablesApiRequestImpl = (TablesApiRequestImpl) requestMapper.apply(
+                        tablesApiRequestImpl,
+                        containerRequestContext
+                );
             }
 
-            Stream<Map<String, String>> result = apiRequest.getPage(
-                    getLogicalTableListSummaryView(apiRequest.getTables(), uriInfo)
+            Stream<Map<String, String>> result = tablesApiRequestImpl.getPage(
+                    getLogicalTableListSummaryView(tablesApiRequestImpl.getTables(), uriInfo)
             );
 
             Response response = formatResponse(
-                    apiRequest,
+                    tablesApiRequestImpl,
                     result,
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "tables" : "rows",
                     null
@@ -230,7 +234,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             RequestLog.startTiming(this);
             RequestLog.record(new TableRequest(tableName, grain));
 
-            TablesApiRequest apiRequest = new TablesApiRequest(
+            TablesApiRequestImpl tablesApiRequestImpl = new TablesApiRequestImpl(
                     tableName,
                     grain,
                     null,
@@ -241,10 +245,13 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             );
 
             if (requestMapper != null) {
-                apiRequest = (TablesApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
+                tablesApiRequestImpl = (TablesApiRequestImpl) requestMapper.apply(
+                        tablesApiRequestImpl,
+                        containerRequestContext
+                );
             }
 
-            Map<String, Object> result = getLogicalTableFullView(apiRequest, uriInfo);
+            Map<String, Object> result = getLogicalTableFullView(tablesApiRequestImpl, uriInfo);
             String output = objectMappers.getMapper().writeValueAsString(result);
             LOG.debug("Tables Endpoint Response: {}", output);
             responseSender = () ->  Response.status(Response.Status.OK).entity(output).build();
@@ -288,7 +295,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             RequestLog.startTiming(this);
             RequestLog.record(new TableRequest("all", "all"));
 
-            TablesApiRequest tablesApiRequest = new TablesApiRequest(
+            TablesApiRequestImpl tablesApiRequestImpl = new TablesApiRequestImpl(
                     null,
                     null,
                     null,
@@ -299,15 +306,18 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             );
 
             if (requestMapper != null) {
-                tablesApiRequest = (TablesApiRequest) requestMapper.apply(tablesApiRequest, containerRequestContext);
+                tablesApiRequestImpl = (TablesApiRequestImpl) requestMapper.apply(
+                        tablesApiRequestImpl,
+                        containerRequestContext
+                );
             }
 
             TableFullViewProcessor fullViewProcessor = new TableFullViewProcessor();
 
-            Stream<TableView> paginatedResult = tablesApiRequest.getPage(
-                    fullViewProcessor.formatTables(tablesApiRequest.getTables(), uriInfo)
+            Stream<TableView> paginatedResult = tablesApiRequestImpl.getPage(
+                    fullViewProcessor.formatTables(tablesApiRequestImpl.getTables(), uriInfo)
             );
-            Response response = formatResponse(tablesApiRequest, paginatedResult, "tables", null);
+            Response response = formatResponse(tablesApiRequestImpl, paginatedResult, "tables", null);
 
             LOG.debug("Tables Endpoint Response: {}", response.getEntity());
             responseSender = () -> response;

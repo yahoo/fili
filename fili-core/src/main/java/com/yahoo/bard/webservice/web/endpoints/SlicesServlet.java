@@ -15,6 +15,7 @@ import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.RequestValidationException;
 import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.SlicesApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.SlicesApiRequestImpl;
 
 import com.codahale.metrics.annotation.Timed;
 
@@ -115,7 +116,7 @@ public class SlicesServlet extends EndpointServlet {
             RequestLog.startTiming(this);
             RequestLog.record(new SliceRequest("all"));
 
-            SlicesApiRequest apiRequest = new SlicesApiRequest(
+            SlicesApiRequestImpl apiRequest = new SlicesApiRequestImpl(
                     null,
                     formatResolver.apply(format, containerRequestContext),
                     perPage,
@@ -126,7 +127,7 @@ public class SlicesServlet extends EndpointServlet {
             );
 
             if (requestMapper != null) {
-                apiRequest = (SlicesApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
+                apiRequest = (SlicesApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
             Stream<Map<String, String>> result = apiRequest.getPage(apiRequest.getSlices());
@@ -197,7 +198,7 @@ public class SlicesServlet extends EndpointServlet {
             RequestLog.startTiming(this);
             RequestLog.record(new SliceRequest(sliceName));
 
-            SlicesApiRequest apiRequest = new SlicesApiRequest(
+            SlicesApiRequestImpl apiRequest = new SlicesApiRequestImpl(
                     sliceName,
                     null,
                     "",
@@ -208,7 +209,7 @@ public class SlicesServlet extends EndpointServlet {
             );
 
             if (requestMapper != null) {
-                apiRequest = (SlicesApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
+                apiRequest = (SlicesApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
             String output = objectMappers.getMapper().writeValueAsString(apiRequest.getSlice());

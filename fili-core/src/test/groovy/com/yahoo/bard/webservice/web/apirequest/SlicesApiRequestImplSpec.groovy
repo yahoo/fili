@@ -1,6 +1,6 @@
 // Copyright 2016 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.web
+package com.yahoo.bard.webservice.web.apirequest
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
@@ -10,6 +10,8 @@ import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.metadata.SegmentInfo
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
+import com.yahoo.bard.webservice.web.BadApiRequestException
+import com.yahoo.bard.webservice.web.SlicesApiRequest
 import com.yahoo.bard.webservice.web.endpoints.SlicesServlet
 
 import org.joda.time.DateTime
@@ -20,7 +22,7 @@ import spock.lang.Unroll
 import javax.ws.rs.core.UriBuilder
 import javax.ws.rs.core.UriInfo
 
-class SlicesApiRequestSpec extends BaseDataSourceMetadataSpec {
+class SlicesApiRequestImplSpec extends BaseDataSourceMetadataSpec {
 
     JerseyTestBinder jtb
     UriInfo uriInfo = Mock(UriInfo)
@@ -64,7 +66,7 @@ class SlicesApiRequestSpec extends BaseDataSourceMetadataSpec {
         }
 
         when:
-        SlicesApiRequest apiRequest = new SlicesApiRequest(
+        SlicesApiRequestImpl apiRequest = new SlicesApiRequestImpl(
                 null,
                 null,
                 "",
@@ -115,11 +117,11 @@ class SlicesApiRequestSpec extends BaseDataSourceMetadataSpec {
             "metrics": metricsResult,
             // This test compares generated metadata against itself, meaning that the contents of this generation are
             // not under test.
-            "segmentInfo": SlicesApiRequest.generateSegmentMetadataView(sliceMetadata)
+            "segmentInfo": SlicesApiRequestImpl.generateSegmentMetadataView(sliceMetadata)
         ] as LinkedHashMap
 
         when:
-        SlicesApiRequest apiRequest = new SlicesApiRequest(
+        SlicesApiRequestImpl apiRequest = new SlicesApiRequestImpl(
                 name,
                 null,
                 "",
@@ -141,7 +143,7 @@ class SlicesApiRequestSpec extends BaseDataSourceMetadataSpec {
         }
 
         when:
-        new SlicesApiRequest(
+        new SlicesApiRequestImpl(
                 name,
                 null,
                 "",

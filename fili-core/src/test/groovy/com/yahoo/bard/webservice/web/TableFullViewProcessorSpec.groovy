@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.web
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.LogicalTableDictionary
+import com.yahoo.bard.webservice.web.apirequest.TablesApiRequestImpl
 import com.yahoo.bard.webservice.web.endpoints.MetricsServlet
 import com.yahoo.bard.webservice.web.endpoints.TablesServlet
 
@@ -43,8 +44,8 @@ class TableFullViewProcessorSpec extends Specification {
 
         TablesServlet tablesServlet = Mock(TablesServlet)
         tablesServlet.getLogicalTableDictionary() >> fullDictionary
-        TablesApiRequest apiRequest = new TablesApiRequest(null, null, null, "", "", null, tablesServlet)
-        Set<LogicalTable> logicalTableSet = apiRequest.getTables();
+        TablesApiRequestImpl tablesApiRequestImpl = new TablesApiRequestImpl(null, null, null, "", "", null, tablesServlet)
+        Set<LogicalTable> logicalTableSet = tablesApiRequestImpl.getTables();
 
         petsShapesTables= new HashSet<>()
         petsShapesTables = logicalTableSet.findAll {it.getName() == "pets" || it.getName() == "shapes"}

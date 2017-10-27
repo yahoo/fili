@@ -31,6 +31,7 @@ import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.RequestValidationException;
 import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
+import com.yahoo.bard.webservice.web.apirequest.JobsApiRequestImpl;
 import com.yahoo.bard.webservice.web.handlers.RequestHandlerUtils;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys;
@@ -156,8 +157,8 @@ public class JobsServlet extends EndpointServlet {
             RequestLog.startTiming(this);
             RequestLog.record(new JobRequest("all"));
 
-            JobsApiRequest apiRequest = new JobsApiRequest(
-                    formatResolver.apply(format, containerRequestContext),
+            JobsApiRequestImpl apiRequest = new JobsApiRequestImpl(
+                    format,
                     null, //asyncAfter is null so it behaves like a synchronous request
                     perPage,
                     page,
@@ -168,12 +169,12 @@ public class JobsServlet extends EndpointServlet {
             );
 
             if (requestMapper != null) {
-                apiRequest = (JobsApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
+                apiRequest = (JobsApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
             // apiRequest is not final and cannot be used inside a lambda. Therefore we are assigning apiRequest to
             // jobsApiRequest.
-            JobsApiRequest jobsApiRequest = apiRequest;
+            JobsApiRequestImpl jobsApiRequest = apiRequest;
 
             Function<Collection<Map<String, String>>, AllPagesPagination<Map<String, String>>> paginationFactory =
                     jobsApiRequest.getAllPagesPaginationFactory(
@@ -223,7 +224,7 @@ public class JobsServlet extends EndpointServlet {
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new JobRequest(ticket));
-            JobsApiRequest apiRequest = new JobsApiRequest(
+            JobsApiRequestImpl apiRequest = new JobsApiRequestImpl(
                     ResponseFormatType.JSON.toString(),
                     null,
                     "",
@@ -235,7 +236,7 @@ public class JobsServlet extends EndpointServlet {
             );
 
             if (requestMapper != null) {
-                apiRequest = (JobsApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
+                apiRequest = (JobsApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
             observableResponse = handleJobResponse(ticket, apiRequest);
@@ -284,8 +285,8 @@ public class JobsServlet extends EndpointServlet {
             RequestLog.startTiming(this);
             RequestLog.record(new JobRequest(ticket));
 
-            JobsApiRequest apiRequest = new JobsApiRequest(
-                    formatResolver.apply(format, containerRequestContext),
+            JobsApiRequestImpl apiRequest = new JobsApiRequestImpl(
+                    format,
                     asyncAfter,
                     perPage,
                     page,
@@ -296,12 +297,12 @@ public class JobsServlet extends EndpointServlet {
             );
 
             if (requestMapper != null) {
-                apiRequest = (JobsApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
+                apiRequest = (JobsApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
             // apiRequest is not final and cannot be used inside a lambda. Therefore we are assigning apiRequest to
             // jobsApiRequest.
-            JobsApiRequest jobsApiRequest = apiRequest;
+            JobsApiRequestImpl jobsApiRequest = apiRequest;
 
             Observable<PreResponse> preResponseObservable = getResults(ticket, apiRequest.getAsyncAfter());
 
@@ -336,7 +337,7 @@ public class JobsServlet extends EndpointServlet {
      * result to the user.
      *
      * @param ticket  The ticket that can uniquely identify a Job
-     * @param apiRequest  JobsApiRequest object with all the associated info in it
+     * @param apiRequest  JobsApiRequestImpl object with all the associated info in it
      * @param asyncResponse  Parameter specifying for how long the request should be asyncAfter
      * @param preResponseObservable  An Observable wrapping a PreResponse or an empty observable
      * @param isEmpty  A boolean that indicates if the PreResponse is empty
@@ -345,7 +346,7 @@ public class JobsServlet extends EndpointServlet {
      */
     protected Observable<Response> handlePreResponse(
             String ticket,
-            JobsApiRequest apiRequest,
+            JobsApiRequestImpl apiRequest,
             AsyncResponse asyncResponse,
             Observable<PreResponse> preResponseObservable,
             boolean isEmpty
@@ -430,11 +431,11 @@ public class JobsServlet extends EndpointServlet {
      * Process a request to get job payload.
      *
      * @param ticket  The ticket that can uniquely identify a Job
-     * @param apiRequest  JobsApiRequest object with all the associated info in it
+     * @param apiRequest  JobsApiRequestImpl object with all the associated info in it
      *
      * @return an observable response to be consumed.
      */
-    protected Observable<Response> handleJobResponse(String ticket, JobsApiRequest apiRequest) {
+    protected Observable<Response> handleJobResponse(String ticket, JobsApiRequestImpl apiRequest) {
         return apiRequest.getJobViewObservable(ticket)
                 //map the job to Json String
                 .map(
