@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.dimension;
 
+import com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy;
 import com.yahoo.bard.webservice.druid.serializers.DimensionToDefaultDimensionSpec;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -148,6 +149,15 @@ public interface Dimension {
      * @return long name
      */
     String getLongName();
+
+    /**
+     * Returns the storage strategy of the dimension.
+     * <p>
+     * See {@link com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy}.
+     *
+     * @return the storage strategy of the dimension.
+     */
+    StorageStrategy getStorageStrategy();
 
     /**
      * Get the cardinality of the dimension.
