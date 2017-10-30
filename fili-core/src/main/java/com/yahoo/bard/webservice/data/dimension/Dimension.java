@@ -151,9 +151,7 @@ public interface Dimension {
     String getLongName();
 
     /**
-     * Returns the storage strategy of the dimension.
-     * <p>
-     * See {@link com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy}.
+     * Returns the {@link com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy} of the dimension.
      *
      * @return the storage strategy of the dimension.
      */
