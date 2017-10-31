@@ -39,7 +39,6 @@ import com.yahoo.bard.webservice.web.BadFilterException;
 import com.yahoo.bard.webservice.web.BadPaginationException;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.FilterOperation;
-import com.yahoo.bard.webservice.web.ForTesting;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.TimeMacros;
 import com.yahoo.bard.webservice.web.util.PaginationLink;
@@ -155,18 +154,6 @@ public abstract class ApiRequestImpl implements ApiRequest {
             UriInfo uriInfo
     ) throws BadApiRequestException {
         this(format, SYNCHRONOUS_REQUEST_FLAG, perPage, page, uriInfo);
-    }
-
-    /**
-     * No argument constructor, meant to be used only for testing.
-     */
-    @ForTesting
-    protected ApiRequestImpl() {
-        this.uriInfo = null;
-        this.format = null;
-        this.paginationParameters = null;
-        this.builder = Response.status(Response.Status.OK);
-        this.asyncAfter = Long.MAX_VALUE;
     }
 
     /**

@@ -14,7 +14,6 @@ import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
-import com.yahoo.bard.webservice.web.ForTesting;
 import com.yahoo.bard.webservice.web.SlicesApiRequest;
 import com.yahoo.bard.webservice.web.endpoints.DimensionsServlet;
 import com.yahoo.bard.webservice.web.endpoints.SlicesServlet;
@@ -90,19 +89,6 @@ public class SlicesApiRequestImpl extends ApiRequestImpl implements SlicesApiReq
                 this.format,
                 this.paginationParameters
         );
-    }
-
-    /**
-     * No argument constructor, meant to be used only for testing.
-     *
-     * @deprecated it's not a good practice to have testing code here. This constructor will be removed entirely.
-     */
-    @Deprecated
-    @ForTesting
-    protected SlicesApiRequestImpl() {
-        super();
-        this.slices = null;
-        this.slice = null;
     }
 
     /**

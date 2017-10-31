@@ -18,6 +18,7 @@ import com.yahoo.bard.webservice.table.TableGroup
 import com.yahoo.bard.webservice.util.FilterTokenizer
 import com.yahoo.bard.webservice.util.IntervalUtils
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestImpl
+import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
@@ -69,7 +70,7 @@ class DataApiRequestFilterSpec extends Specification {
     @Unroll
     def "Find #filterCount filters and #filterValueCount values when parsing filter string #filterString"() {
         when:
-        Map<Dimension, Set<ApiFilter>> filters = new DataApiRequestImpl().generateFilters(filterString, table, dimensionDict)
+        Map<Dimension, Set<ApiFilter>> filters = new TestingDataApiRequestImpl().generateFilters(filterString, table, dimensionDict)
 
         then:
         filters.size() == dimensions
@@ -99,7 +100,7 @@ class DataApiRequestFilterSpec extends Specification {
         DATA_FILTER_SUBSTRING_OPERATIONS.setOn(false)
 
         when: "We try to generate the filter"
-        new DataApiRequestImpl().generateFilters(filterString, table, dimensionDict)
+        new TestingDataApiRequestImpl().generateFilters(filterString, table, dimensionDict)
 
         then: "An error is thrown"
         thrown(BadApiRequestException)
@@ -117,7 +118,11 @@ class DataApiRequestFilterSpec extends Specification {
         setup:
         String expectedMessage = ErrorMessageFormat.FILTER_FIELD_NOT_IN_DIMENSIONS.format('unknown', 'locale')
         when:
-        new DataApiRequestImpl().generateFilters("locale|unknown-in[US,India],locale.id-eq[5]", table, dimensionDict)
+        new TestingDataApiRequestImpl().generateFilters(
+                "locale|unknown-in[US,India],locale.id-eq[5]",
+                table,
+                dimensionDict
+        )
 
         then:
         Exception e = thrown(BadApiRequestException)
@@ -133,7 +138,11 @@ class DataApiRequestFilterSpec extends Specification {
 
         String expectedMessage = ErrorMessageFormat.FILTER_DIMENSION_NOT_IN_TABLE.format('locale', 'name')
         when:
-        new DataApiRequestImpl().generateFilters("locale|id-in[US,India],locale.id-eq[5]", table, dimensionDict)
+        new TestingDataApiRequestImpl().generateFilters(
+                "locale|id-in[US,India],locale.id-eq[5]",
+                table,
+                dimensionDict
+        )
 
         then:
         Exception e = thrown(BadApiRequestException)
@@ -144,7 +153,11 @@ class DataApiRequestFilterSpec extends Specification {
         setup:
         String expectedMessage = ErrorMessageFormat.FILTER_DIMENSION_UNDEFINED.format('undefined')
         when:
-        new DataApiRequestImpl().generateFilters("undefined|id-in[US,India],locale.id-eq[5]", table, dimensionDict)
+        new TestingDataApiRequestImpl().generateFilters(
+                "undefined|id-in[US,India],locale.id-eq[5]",
+                table,
+                dimensionDict
+        )
 
         then:
         Exception e = thrown(BadApiRequestException)
@@ -156,7 +169,11 @@ class DataApiRequestFilterSpec extends Specification {
         // Split for filter splits to ],.  Everything before this is included in bad error.
         String expectedMessage = ErrorMessageFormat.FILTER_INVALID.format('locale.id-in[US,India]')
         when:
-        new DataApiRequestImpl().generateFilters("locale.id-in[US,India],locale.id-eq[5]", table, dimensionDict)
+        new TestingDataApiRequestImpl().generateFilters(
+                "locale.id-in[US,India],locale.id-eq[5]",
+                table,
+                dimensionDict
+        )
 
         then:
         Exception e = thrown(BadApiRequestException)
@@ -171,7 +188,7 @@ class DataApiRequestFilterSpec extends Specification {
 
         String expectedMessage = ErrorMessageFormat.FILTER_ERROR.format(filter, error)
         when:
-        new DataApiRequestImpl().generateFilters(filter, table, dimensionDict)
+        new TestingDataApiRequestImpl().generateFilters(filter, table, dimensionDict)
 
         then:
         Exception e = thrown(BadApiRequestException)
@@ -183,7 +200,11 @@ class DataApiRequestFilterSpec extends Specification {
         // Split for filter splits to ],.  Everything before this is included in bad error.
         String expectedMessage = ErrorMessageFormat.FILTER_OPERATOR_INVALID.format('in:')
         when:
-        new DataApiRequestImpl().generateFilters("locale|id-in:[US,India],locale.id-eq[5]", table, dimensionDict)
+        new TestingDataApiRequestImpl().generateFilters(
+                "locale|id-in:[US,India],locale.id-eq[5]",
+                table,
+                dimensionDict
+        )
 
         then:
         Exception e = thrown(BadApiRequestException)

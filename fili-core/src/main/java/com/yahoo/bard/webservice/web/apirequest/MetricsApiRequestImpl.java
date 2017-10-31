@@ -8,7 +8,6 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_UNDEFINED
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
-import com.yahoo.bard.webservice.web.ForTesting;
 import com.yahoo.bard.webservice.web.MetricsApiRequest;
 
 import org.slf4j.Logger;
@@ -68,18 +67,6 @@ public class MetricsApiRequestImpl extends ApiRequestImpl implements MetricsApiR
                 this.format,
                 this.paginationParameters
         );
-    }
-
-    /**
-     * No argument constructor, meant to be used only for testing.
-     *
-     * @deprecated it's not a good practice to have testing code here. This constructor will be removed entirely.
-     */
-    @Deprecated
-    @ForTesting
-    protected MetricsApiRequestImpl() {
-        super();
-        this.metrics = null;
     }
 
     /**
