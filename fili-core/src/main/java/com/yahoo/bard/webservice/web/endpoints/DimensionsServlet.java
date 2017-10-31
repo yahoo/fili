@@ -375,6 +375,7 @@ public class DimensionsServlet extends EndpointServlet {
         resultRow.put("longName", dimension.getLongName());
         resultRow.put("uri", getDimensionUrl(dimension, uriInfo));
         resultRow.put("cardinality", dimension.getCardinality());
+        resultRow.put("storageStrategy", dimension.getStorageStrategy());
         return resultRow;
     }
 
@@ -400,6 +401,7 @@ public class DimensionsServlet extends EndpointServlet {
         resultRow.put("fields", dimension.getDimensionFields());
         resultRow.put("values", getDimensionValuesUrl(dimension, uriInfo));
         resultRow.put("cardinality", dimension.getCardinality());
+        resultRow.put("storageStrategy", dimension.getStorageStrategy());
         resultRow.put(
                 "tables",
                 TablesServlet.getLogicalTableListSummaryView(

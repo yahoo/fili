@@ -11,6 +11,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
+import com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.TableGroup
@@ -62,7 +63,8 @@ class AggregatabilityValidationSpec extends Specification {
                     MapStoreManager.getInstance(name),
                     ScanSearchProviderManager.getInstance(name),
                     new LinkedHashSet<DimensionField>(),
-                    false
+                    false,
+                    StorageStrategy.LOADED
             )
             keyValueStoreDimension.setLastUpdated(new DateTime(10000))
             dimensionDict.add(keyValueStoreDimension)
