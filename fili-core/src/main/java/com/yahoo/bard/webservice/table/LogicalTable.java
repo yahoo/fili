@@ -46,6 +46,7 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
      * @param tableGroup  The tablegroup for the logical table
      * @param metricDictionary The metric dictionary to bind tableGroup's metrics
      */
+    //TODO Deprecate this constructor in favor of new LogicalTableInfo based constructor
     public LogicalTable(
             @NotNull String name,
             @NotNull Granularity granularity,
