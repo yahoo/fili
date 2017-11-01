@@ -10,10 +10,13 @@ Current
 
 ### Added:
 
+- [Have Table Endpoint Filter Using QueryPlanningConstraint](https://github.com/yahoo/fili/pull/439)
+    * Enable tables endpoint to fiilter availabilities based on availability-constraint
+
 - [Implement dimension metadata to indicate storage strategy](https://github.com/yahoo/fili/pull/558)
     * In order to allow clients to be notified if a dimension's values are browsable and searchable, a storage strategy
       metadata is added to dimension.
-      
+
 - [Refactor ApiRequest](https://github.com/yahoo/fili/pull/538)
     * Add inteface layer to each type of API request class. The types of API request under the refactor are
         - `TablesApiRequest`

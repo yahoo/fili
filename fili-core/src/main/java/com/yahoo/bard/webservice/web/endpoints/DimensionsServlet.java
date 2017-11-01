@@ -18,6 +18,7 @@ import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.util.StreamUtils;
 import com.yahoo.bard.webservice.web.DimensionsApiRequest;
+import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.RequestValidationException;
 import com.yahoo.bard.webservice.web.ResponseFormatResolver;
@@ -156,7 +157,7 @@ public class DimensionsServlet extends EndpointServlet {
             LOG.debug(e.getMessage(), e);
             responseSender = () -> Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
         } catch (Error | Exception e) {
-            String msg = String.format("Exception processing request: %s", e.getMessage());
+            String msg = ErrorMessageFormat.REQUEST_PROCESSING_EXCEPTION.format(e.getMessage());
             LOG.error(msg, e);
             responseSender = () -> Response.status(Status.BAD_REQUEST).entity(msg).build();
         } finally {
@@ -217,11 +218,11 @@ public class DimensionsServlet extends EndpointServlet {
             LOG.debug(e.getMessage(), e);
             responseSender = () -> Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
         } catch (JsonProcessingException e) {
-            String msg = String.format("Internal server error. JsonProcessingException : %s", e.getMessage());
+            String msg = ErrorMessageFormat.INTERNAL_SERVER_ERROR_ON_JSON_PROCESSING.format(e.getMessage());
             LOG.error(msg, e);
             responseSender = () -> Response.status(Status.INTERNAL_SERVER_ERROR).entity(msg).build();
         } catch (Error | Exception e) {
-            String msg = String.format("Exception processing request: %s", e.getMessage());
+            String msg = ErrorMessageFormat.REQUEST_PROCESSING_EXCEPTION.format(e.getMessage());
             LOG.info(msg, e);
             responseSender = () -> Response.status(Status.BAD_REQUEST).entity(msg).build();
         } finally {
@@ -333,7 +334,7 @@ public class DimensionsServlet extends EndpointServlet {
             LOG.debug(msg, e);
             responseSender = () -> Response.status(INSUFFICIENT_STORAGE).entity(msg).build();
         } catch (Error | Exception e) {
-            String msg = String.format("Exception processing request: %s", e.getMessage());
+            String msg = ErrorMessageFormat.REQUEST_PROCESSING_EXCEPTION.format(e.getMessage());
             LOG.debug(msg, e);
             responseSender = () -> Response.status(BAD_REQUEST).entity(msg).build();
         } finally {

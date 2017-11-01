@@ -42,6 +42,41 @@ public interface TablesApiRequest extends ApiRequest {
      */
     Granularity getGranularity();
 
+    /**
+     * Returns the set of grouping dimensions on this request.
+     *
+     * @return the set of grouping dimensions on this request
+     */
+    Set<Dimension> getDimensions();
+
+    /**
+     * Returns the dimensions used in filters on this request.
+     *
+     * @return the dimensions used in filters on this request
+     */
+    Set<Dimension> getFilterDimensions();
+
+    /**
+     * Returns a map of filters by dimension for this request, grouped by dimensions.
+     *
+     * @return the map of filters by dimension for this request, grouped by dimensions
+     */
+    Map<Dimension, Set<ApiFilter>> getApiFilters();
+
+    /**
+     * Returns the intervals for this query.
+     *
+     * @return the intervals for this query
+     */
+    Set<Interval> getIntervals();
+
+    /**
+     * Returns the logical metrics requested in this query.
+     *
+     * @return the logical metrics requested in this query
+     */
+    Set<LogicalMetric> getLogicalMetrics();
+
     // CHECKSTYLE:OFF
     TablesApiRequest withFormat(ResponseFormatType format);
 
