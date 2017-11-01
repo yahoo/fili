@@ -7,7 +7,7 @@ import static com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPo
 import static com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationPostAggFunction.UNION
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
-import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
+import com.yahoo.bard.webservice.config.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper

@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.data.config.metric;
 import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker;
 import com.yahoo.bard.webservice.data.config.names.FieldName;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
-import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
+import com.yahoo.bard.webservice.config.LogicalMetricInfo;
 
 import java.util.Arrays;
 import java.util.List;

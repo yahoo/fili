@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.data.config.metric.makers;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
-import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
+import com.yahoo.bard.webservice.config.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
