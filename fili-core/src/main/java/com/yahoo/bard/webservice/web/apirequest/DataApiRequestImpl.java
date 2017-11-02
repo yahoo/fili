@@ -24,11 +24,9 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.dimension.DimensionRowNotFoundException;
-import com.yahoo.bard.webservice.data.filterbuilders.DefaultDruidFilterBuilder;
 import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
-import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
 import com.yahoo.bard.webservice.data.time.GranularityParser;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
@@ -48,7 +46,6 @@ import com.yahoo.bard.webservice.web.BadApiRequestException;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.DimensionFieldSpecifierKeywords;
 import com.yahoo.bard.webservice.web.FilterOperation;
-import com.yahoo.bard.webservice.web.ForTesting;
 import com.yahoo.bard.webservice.web.MetricParser;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
@@ -294,6 +291,73 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     }
 
     /**
+     * All argument constructor, meant to be used for rewriting apiRequest.
+     *
+     * @param format  Format for the response
+     * @param paginationParameters  Pagination info
+     * @param uriInfo  The URI info
+     * @param builder  A response builder
+     * @param table  Logical table requested
+     * @param granularity  Granularity of the request
+     * @param dimensions  Grouping dimensions of the request
+     * @param perDimensionFields  Fields for each of the grouped dimensions
+     * @param logicalMetrics  Metrics requested
+     * @param intervals  Intervals requested
+     * @param apiFilters  Global filters
+     * @param havings  Top-level Having caluses for the request
+     * @param having  Single global Druid Having
+     * @param sorts  Sorting info for the request
+     * @param count  Global limit for the request
+     * @param topN  Count of per-bucket limit (TopN) for the request
+     * @param asyncAfter  How long in milliseconds the user is willing to wait for a synchronous response
+     * @param timeZone  TimeZone for the request
+     * @param filterBuilder  A builder to use when building filters for the request
+     * @param havingApiGenerator  A generator to generate havings map for the request
+     * @param dateTimeSort  A dateTime sort column with its direction
+     */
+    protected DataApiRequestImpl(
+            ResponseFormatType format,
+            Optional<PaginationParameters> paginationParameters,
+            UriInfo uriInfo,
+            Response.ResponseBuilder builder,
+            LogicalTable table,
+            Granularity granularity,
+            Set<Dimension> dimensions,
+            LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> perDimensionFields,
+            Set<LogicalMetric> logicalMetrics,
+            Set<Interval> intervals,
+            Map<Dimension, Set<ApiFilter>> apiFilters,
+            Map<LogicalMetric, Set<ApiHaving>> havings,
+            Having having,
+            LinkedHashSet<OrderByColumn> sorts,
+            int count,
+            int topN,
+            long asyncAfter,
+            DateTimeZone timeZone,
+            DruidFilterBuilder filterBuilder,
+            HavingGenerator havingApiGenerator,
+            Optional<OrderByColumn> dateTimeSort
+    ) {
+        super(format, asyncAfter, paginationParameters, uriInfo, builder);
+        this.table = table;
+        this.granularity = granularity;
+        this.dimensions = dimensions;
+        this.perDimensionFields = perDimensionFields;
+        this.logicalMetrics = logicalMetrics;
+        this.intervals = intervals;
+        this.apiFilters = apiFilters;
+        this.havings = havings;
+        this.having = having;
+        this.sorts = sorts;
+        this.count = count;
+        this.topN = topN;
+        this.timeZone = timeZone;
+        this.filterBuilder = filterBuilder;
+        this.havingApiGenerator = havingApiGenerator;
+        this.dateTimeSort = dateTimeSort;
+    }
+
+    /**
      * To check whether dateTime column request is first one in the sort list or not.
      *
      * @param sortColumns  LinkedHashMap of columns and its direction. Using LinkedHashMap to preserve the order
@@ -363,99 +427,6 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             return sortDirectionMap;
         }
         return null;
-    }
-
-    /**
-     * No argument constructor, meant to be used only for testing.
-     *
-     * @deprecated it's not a good practice to have testing code here. This constructor will be removed entirely.
-     */
-    @Deprecated
-    @ForTesting
-    public DataApiRequestImpl() {
-        super();
-        this.table = null;
-        this.granularity = DefaultTimeGrain.DAY;
-        this.dimensions = Collections.emptySet();
-        this.perDimensionFields = null;
-        this.logicalMetrics = Collections.emptySet();
-        this.intervals = Collections.emptySet();
-        this.filterBuilder = new DefaultDruidFilterBuilder();
-        this.havingApiGenerator = null;
-        this.apiFilters = Collections.emptyMap();
-        this.havings = null;
-        this.having = null;
-        this.sorts = null;
-        this.dateTimeSort = null;
-        this.count = 0;
-        this.topN = 0;
-        this.timeZone = null;
-    }
-
-    /**
-     * All argument constructor, meant to be used for rewriting apiRequest.
-     *  @param format  Format for the response
-     * @param paginationParameters  Pagination info
-     * @param uriInfo  The URI info
-     * @param builder  A response builder
-     * @param table  Logical table requested
-     * @param granularity  Granularity of the request
-     * @param dimensions  Grouping dimensions of the request
-     * @param perDimensionFields  Fields for each of the grouped dimensions
-     * @param logicalMetrics  Metrics requested
-     * @param intervals  Intervals requested
-     * @param apiFilters  Global filters
-     * @param havings  Top-level Having caluses for the request
-     * @param having  Single global Druid Having
-     * @param sorts  Sorting info for the request
-     * @param count  Global limit for the request
-     * @param topN  Count of per-bucket limit (TopN) for the request
-     * @param asyncAfter  How long in milliseconds the user is willing to wait for a synchronous response
-     * @param timeZone  TimeZone for the request
-     * @param filterBuilder  A builder to use when building filters for the request
-     * @param havingApiGenerator  A generator to generate havings map for the request
-     * @param dateTimeSort  A dateTime sort column with its direction
-     */
-    private DataApiRequestImpl(
-            ResponseFormatType format,
-            Optional<PaginationParameters> paginationParameters,
-            UriInfo uriInfo,
-            Response.ResponseBuilder builder,
-            LogicalTable table,
-            Granularity granularity,
-            Set<Dimension> dimensions,
-            LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> perDimensionFields,
-            Set<LogicalMetric> logicalMetrics,
-            Set<Interval> intervals,
-            Map<Dimension, Set<ApiFilter>> apiFilters,
-            Map<LogicalMetric, Set<ApiHaving>> havings,
-            Having having,
-            LinkedHashSet<OrderByColumn> sorts,
-            int count,
-            int topN,
-            long asyncAfter,
-            DateTimeZone timeZone,
-            DruidFilterBuilder filterBuilder,
-            HavingGenerator havingApiGenerator,
-            Optional<OrderByColumn> dateTimeSort
-    ) {
-        super(format, asyncAfter, paginationParameters, uriInfo, builder);
-        this.table = table;
-        this.granularity = granularity;
-        this.dimensions = dimensions;
-        this.perDimensionFields = perDimensionFields;
-        this.logicalMetrics = logicalMetrics;
-        this.intervals = intervals;
-        this.apiFilters = apiFilters;
-        this.havings = havings;
-        this.having = having;
-        this.sorts = sorts;
-        this.count = count;
-        this.topN = topN;
-        this.timeZone = timeZone;
-        this.filterBuilder = filterBuilder;
-        this.havingApiGenerator = havingApiGenerator;
-        this.dateTimeSort = dateTimeSort;
     }
 
     /**

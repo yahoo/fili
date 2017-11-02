@@ -19,7 +19,6 @@ import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.table.TableIdentifier;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
-import com.yahoo.bard.webservice.web.ForTesting;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.TablesApiRequest;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
@@ -263,24 +262,6 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         this.logicalMetrics = metrics;
         this.intervals = intervals;
         this.apiFilters = filters;
-    }
-
-    /**
-     * No argument constructor, meant to be used only for testing.
-     *
-     * @deprecated it's not a good practice to have testing code here. This constructor will be removed entirely.
-     */
-    @Deprecated
-    @ForTesting
-    protected TablesApiRequestImpl() {
-        super();
-        this.tables = null;
-        this.table = null;
-        this.granularity = null;
-        this.dimensions = null;
-        this.logicalMetrics = null;
-        this.intervals = null;
-        this.apiFilters = null;
     }
 
     /**

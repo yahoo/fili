@@ -11,7 +11,6 @@ import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
 import com.yahoo.bard.webservice.web.BadFilterException;
 import com.yahoo.bard.webservice.web.DimensionsApiRequest;
-import com.yahoo.bard.webservice.web.ForTesting;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
@@ -88,19 +87,6 @@ public class DimensionsApiRequestImpl extends ApiRequestImpl implements Dimensio
                 this.format,
                 this.paginationParameters
         );
-    }
-
-    /**
-     * No argument constructor, meant to be used only for testing.
-     *
-     * @deprecated it's not a good practice to have testing code here. This constructor will be removed entirely.
-     */
-    @Deprecated
-    @ForTesting
-    protected DimensionsApiRequestImpl() {
-        super();
-        this.dimensions = null;
-        this.filters = null;
     }
 
     /**

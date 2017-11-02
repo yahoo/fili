@@ -15,6 +15,7 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationP
 import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationPostAggregation
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestImpl
+import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 
 import spock.lang.Specification
 /**
@@ -39,7 +40,12 @@ class SketchIntersectionReportingSpec extends Specification {
 
     def "When the format of the metric filter is invalid, BadApiRequestException is thrown"(){
         when:
-        new DataApiRequestImpl().generateLogicalMetrics("foos(AND(country|id-in[US,IN]property|id-in[14,125]))", resources.metricDict, resources.dimensionDict, resources.table)
+        new TestingDataApiRequestImpl().generateLogicalMetrics(
+                "foos(AND(country|id-in[US,IN]property|id-in[14,125]))",
+                resources.metricDict,
+                resources.dimensionDict,
+                resources.table
+        )
 
         then:
         Exception e = thrown(BadApiRequestException)
@@ -49,7 +55,12 @@ class SketchIntersectionReportingSpec extends Specification {
 
     def "When the API query contains duplicate metrics, BadApiRequestException is thrown"(){
         when:
-        new DataApiRequestImpl().generateLogicalMetrics("foos,foos(AND(country|id-in[US,IN],property|id-in[14,125]))", resources.metricDict, resources.dimensionDict, resources.table)
+        new TestingDataApiRequestImpl().generateLogicalMetrics(
+                "foos,foos(AND(country|id-in[US,IN],property|id-in[14,125]))",
+                resources.metricDict,
+                resources.dimensionDict,
+                resources.table
+        )
 
         then:
         Exception e = thrown(BadApiRequestException)
@@ -58,7 +69,12 @@ class SketchIntersectionReportingSpec extends Specification {
 
     def "When the queried metric is not present in Metric Dictionary, BadApiRequestException is thrown"() {
         when:
-        new DataApiRequestImpl().generateLogicalMetrics("dinga", resources.metricDict, resources.dimensionDict, resources.table)
+        new TestingDataApiRequestImpl().generateLogicalMetrics(
+                "dinga",
+                resources.metricDict,
+                resources.dimensionDict,
+                resources.table
+        )
 
         then:
         Exception e = thrown(BadApiRequestException)
@@ -67,7 +83,12 @@ class SketchIntersectionReportingSpec extends Specification {
 
     def "When metric filter contains 'OR' condition, BadApiRequestException is thrown"(){
         when:
-        new DataApiRequestImpl().generateLogicalMetrics("foos(OR(country|id-in[US,IN],property|id-in[14,125]))", resources.metricDict, resources.dimensionDict, resources.table)
+        new TestingDataApiRequestImpl().generateLogicalMetrics(
+                "foos(OR(country|id-in[US,IN],property|id-in[14,125]))",
+                resources.metricDict,
+                resources.dimensionDict,
+                resources.table
+        )
 
         then:
         Exception e = thrown(BadApiRequestException)
@@ -75,7 +96,12 @@ class SketchIntersectionReportingSpec extends Specification {
     }
 
     def "When the INTERSECTION_REPORTING flag is enabled and the query contains unfiltered metrics, the Logical Metrics returned are equal to the Logical Metrics from the Metric Dictionary"() {
-        Set<LogicalMetric> logicalMetrics = new DataApiRequestImpl().generateLogicalMetrics("pageViews,foos", resources.metricDict, resources.dimensionDict, resources.table)
+        Set<LogicalMetric> logicalMetrics = new TestingDataApiRequestImpl().generateLogicalMetrics(
+                "pageViews,foos",
+                resources.metricDict,
+                resources.dimensionDict,
+                resources.table
+        )
         HashSet<Dimension> expected =
                 ["pageViews", "foos"].collect { String name ->
                     LogicalMetric metric = resources.metricDict.get(name)
@@ -89,7 +115,12 @@ class SketchIntersectionReportingSpec extends Specification {
 
     def "When metric filter contains invalid dimension, BadApiRequestException is thrown"(){
         when:
-        new DataApiRequestImpl().generateLogicalMetrics("foos(AND(country1|id-in[US,IN],property|id-in[14,125]))", resources.metricDict, resources.dimensionDict, resources.table)
+        new TestingDataApiRequestImpl().generateLogicalMetrics(
+                "foos(AND(country1|id-in[US,IN],property|id-in[14,125]))",
+                resources.metricDict,
+                resources.dimensionDict,
+                resources.table
+        )
 
         then:
         Exception e = thrown(BadApiRequestException)
@@ -102,7 +133,7 @@ class SketchIntersectionReportingSpec extends Specification {
                 resources.filterObj,
                 resources.dimensionDict,
                 resources.table,
-                new DataApiRequestImpl()
+                new TestingDataApiRequestImpl()
         )
 
         expect:
@@ -116,7 +147,7 @@ class SketchIntersectionReportingSpec extends Specification {
                 resources.filterObj,
                 resources.dimensionDict,
                 resources.table,
-                new DataApiRequestImpl()
+                new TestingDataApiRequestImpl()
         )
 
         Set<Aggregation> aggregations = templateDruidQuery.aggregations;
@@ -156,7 +187,12 @@ class SketchIntersectionReportingSpec extends Specification {
 
     def "When invalid(non-sketch) metric is used for filtering, IllegalArgumentException is thrown "(){
         when:
-        new DataApiRequestImpl().generateLogicalMetrics("pageViews(AND(country|id-in[US,IN],property|id-in[news,sports]))", resources.metricDict, resources.dimensionDict, resources.table)
+        new TestingDataApiRequestImpl().generateLogicalMetrics(
+                "pageViews(AND(country|id-in[US,IN],property|id-in[news,sports]))",
+                resources.metricDict,
+                resources.dimensionDict,
+                resources.table
+        )
 
         then:
         Exception e = thrown(IllegalArgumentException)
@@ -164,7 +200,12 @@ class SketchIntersectionReportingSpec extends Specification {
     }
 
     def "When API request contains filtered metrics, the Logical Metric returned by generateLogicalMetrics is filtered and therefore not equal to the Logical Metric from the Metric dictionary "(){
-        LinkedHashSet<LogicalMetric> logicalMetrics =  new DataApiRequestImpl().generateLogicalMetrics("foos(AND(country|id-in[US,IN],property|id-in[14,125]))", resources.metricDict, resources.dimensionDict, resources.table)
+        LinkedHashSet<LogicalMetric> logicalMetrics =  new TestingDataApiRequestImpl().generateLogicalMetrics(
+                "foos(AND(country|id-in[US,IN],property|id-in[14,125]))",
+                resources.metricDict,
+                resources.dimensionDict,
+                resources.table
+        )
 
         HashSet<Dimension> expected =
                 ["foos"].collect { String name ->
@@ -178,10 +219,15 @@ class SketchIntersectionReportingSpec extends Specification {
     }
 
     def "An exception is thrown when validateMetrics is passed an intersection expression using invalid metrics"(){
-        LinkedHashSet<LogicalMetric> logicalMetrics =  new DataApiRequestImpl().generateLogicalMetrics("regFoos(AND(country|id-in[US,IN],property|id-in[14,125]))", resources.metricDict, resources.dimensionDict, resources.table)
+        LinkedHashSet<LogicalMetric> logicalMetrics =  new TestingDataApiRequestImpl().generateLogicalMetrics(
+                "regFoos(AND(country|id-in[US,IN],property|id-in[14,125]))",
+                resources.metricDict,
+                resources.dimensionDict,
+                resources.table
+        )
 
         when:
-        new DataApiRequestImpl().validateMetrics(logicalMetrics,resources.table)
+        new TestingDataApiRequestImpl().validateMetrics(logicalMetrics,resources.table)
 
         then:
         String expectedMessage = "Requested metric(s) '[regFoos]' are not supported by the table 'NETWORK'."
@@ -191,17 +237,27 @@ class SketchIntersectionReportingSpec extends Specification {
     }
 
     def "No exception is thrown when validateMetrics is passed an intersection expression using valid metrics"(){
-        LinkedHashSet<LogicalMetric> logicalMetrics =  new DataApiRequestImpl().generateLogicalMetrics("foos(AND(country|id-in[US,IN],property|id-in[14,125]))", resources.metricDict, resources.dimensionDict, resources.table)
+        LinkedHashSet<LogicalMetric> logicalMetrics =  new TestingDataApiRequestImpl().generateLogicalMetrics(
+                "foos(AND(country|id-in[US,IN],property|id-in[14,125]))",
+                resources.metricDict,
+                resources.dimensionDict,
+                resources.table
+        )
 
         when:
-        new DataApiRequestImpl().validateMetrics(logicalMetrics, resources.table)
+        new TestingDataApiRequestImpl().validateMetrics(logicalMetrics, resources.table)
 
         then:
         noExceptionThrown()
     }
 
     def "The dimensions returned from the filtered logical metric are correct"() {
-        LinkedHashSet<LogicalMetric> logicalMetrics =  new DataApiRequestImpl().generateLogicalMetrics("foos(AND(country|id-in[US,IN],property|id-in[14,125]))", resources.metricDict, resources.dimensionDict, resources.table)
+        LinkedHashSet<LogicalMetric> logicalMetrics =  new TestingDataApiRequestImpl().generateLogicalMetrics(
+                "foos(AND(country|id-in[US,IN],property|id-in[14,125]))",
+                resources.metricDict,
+                resources.dimensionDict,
+                resources.table
+        )
 
         expect:
         logicalMetrics.first().templateDruidQuery.metricDimensions.sort() == [resources.propertyDim, resources.countryDim].sort()

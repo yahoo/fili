@@ -43,6 +43,7 @@ import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.StrictPhysicalTable
 import com.yahoo.bard.webservice.table.TableGroup
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestImpl
+import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -184,11 +185,31 @@ class ThetaSketchIntersectionReportingResources extends Specification {
         fooNoBarAggregation = fooNoBarInstance.make().templateDruidQuery.aggregations.first()
         Aggregation regFoosAggregation = regFoosInstance.make().templateDruidQuery.aggregations.first()
 
-        fooNoBarFilteredAggregationSet = FieldConverterSupplier.metricsFilterSetBuilder.getFilteredAggregation(filterObj, fooNoBarAggregation, dimensionDict, table, new DataApiRequestImpl())
-        fooNoBarPostAggregationInterim = ThetaSketchSetOperationHelper.makePostAggFromAgg(SketchSetOperationPostAggFunction.INTERSECT, "fooNoBar", new ArrayList<>(fooNoBarFilteredAggregationSet))
+        fooNoBarFilteredAggregationSet = FieldConverterSupplier.metricsFilterSetBuilder.getFilteredAggregation(
+                filterObj,
+                fooNoBarAggregation,
+                dimensionDict,
+                table,
+                new TestingDataApiRequestImpl()
+        )
+        fooNoBarPostAggregationInterim = ThetaSketchSetOperationHelper.makePostAggFromAgg(
+                SketchSetOperationPostAggFunction.INTERSECT,
+                "fooNoBar",
+                new ArrayList<>(fooNoBarFilteredAggregationSet)
+        )
 
-        fooRegFoosFilteredAggregationSet = FieldConverterSupplier.metricsFilterSetBuilder.getFilteredAggregation(filterObj, regFoosAggregation, dimensionDict, table, new DataApiRequestImpl())
-        fooRegFoosPostAggregationInterim = ThetaSketchSetOperationHelper.makePostAggFromAgg(SketchSetOperationPostAggFunction.INTERSECT, "regFoos", new ArrayList<>(fooRegFoosFilteredAggregationSet))
+        fooRegFoosFilteredAggregationSet = FieldConverterSupplier.metricsFilterSetBuilder.getFilteredAggregation(
+                filterObj,
+                regFoosAggregation,
+                dimensionDict,
+                table,
+                new TestingDataApiRequestImpl()
+        )
+        fooRegFoosPostAggregationInterim = ThetaSketchSetOperationHelper.makePostAggFromAgg(
+                SketchSetOperationPostAggFunction.INTERSECT,
+                "regFoos",
+                new ArrayList<>(fooRegFoosFilteredAggregationSet)
+        )
 
         interimPostAggDictionary = [:]
         interimPostAggDictionary.put(fooNoBarAggregation.getName(), fooNoBarFilteredAggregationSet as List)

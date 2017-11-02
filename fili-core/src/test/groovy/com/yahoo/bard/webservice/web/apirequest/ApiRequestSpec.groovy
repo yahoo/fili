@@ -26,6 +26,7 @@ import com.yahoo.bard.webservice.web.BadApiRequestException
 import com.yahoo.bard.webservice.web.ErrorMessageFormat
 import com.yahoo.bard.webservice.web.ResponseFormatType
 import com.yahoo.bard.webservice.web.apirequest.ApiRequestImpl
+import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
@@ -49,8 +50,6 @@ class ApiRequestSpec extends Specification {
     LogicalTable table
 
     GranularityParser granularityParser = new StandardGranularityParser()
-
-    class ConcreteApiRequest extends ApiRequestImpl {}
 
     def setupSpec() {
         DateTimeZone.default = IntervalUtils.SYSTEM_ALIGNMENT_EPOCH.zone
@@ -92,14 +91,14 @@ class ApiRequestSpec extends Specification {
 
         where:
         responseFormat          | expectedFormat
-        ResponseFormatType.JSON | new ConcreteApiRequest().generateAcceptFormat(null)
-        ResponseFormatType.JSON | new ConcreteApiRequest().generateAcceptFormat("json")
-        ResponseFormatType.CSV  | new ConcreteApiRequest().generateAcceptFormat("csv")
+        ResponseFormatType.JSON | new TestingDataApiRequestImpl().generateAcceptFormat(null)
+        ResponseFormatType.JSON | new TestingDataApiRequestImpl().generateAcceptFormat("json")
+        ResponseFormatType.CSV  | new TestingDataApiRequestImpl().generateAcceptFormat("csv")
     }
 
     def "check invalid parsing generateFormat"() {
         when:
-        new ConcreteApiRequest().generateAcceptFormat("bad")
+        new TestingDataApiRequestImpl().generateAcceptFormat("bad")
 
         then:
         thrown BadApiRequestException
@@ -108,7 +107,7 @@ class ApiRequestSpec extends Specification {
     @Unroll
     def "check valid granularity name #name parses to granularity #expected"() {
         expect:
-        new ConcreteApiRequest().generateGranularity(name, granularityParser) == expected
+        new TestingDataApiRequestImpl().generateGranularity(name, granularityParser) == expected
 
         where:
         name  | expected
@@ -122,7 +121,7 @@ class ApiRequestSpec extends Specification {
         String expectedMessage = ErrorMessageFormat.UNKNOWN_GRANULARITY.format(timeGrainName)
 
         when:
-        new ConcreteApiRequest().generateGranularity(timeGrainName, new StandardGranularityParser())
+        new TestingDataApiRequestImpl().generateGranularity(timeGrainName, new StandardGranularityParser())
 
         then:
         Exception e = thrown(BadApiRequestException)
@@ -131,7 +130,10 @@ class ApiRequestSpec extends Specification {
 
     def "check empty generateDimensions"() {
 
-        Set<Dimension> dims = new ConcreteApiRequest().generateDimensions(new ArrayList<PathSegment>(), dimensionDict)
+        Set<Dimension> dims = new TestingDataApiRequestImpl().generateDimensions(
+                new ArrayList<PathSegment>(),
+                dimensionDict
+        )
 
         expect:
         dims == [] as Set
@@ -151,7 +153,7 @@ class ApiRequestSpec extends Specification {
         three.getPath() >> "three"
         three.getMatrixParameters() >> emptyMap
 
-        Set<Dimension> dims = new ConcreteApiRequest().generateDimensions([one, two, three], dimensionDict)
+        Set<Dimension> dims = new TestingDataApiRequestImpl().generateDimensions([one, two, three], dimensionDict)
 
         HashSet<Dimension> expected =
                 ["one", "two", "three"].collect { String name ->
@@ -169,14 +171,14 @@ class ApiRequestSpec extends Specification {
         DateTimeFormatter dateTimeFormatter = FULLY_OPTIONAL_DATETIME_FORMATTER
 
         DateTimeZone dateTimeZone = DateTimeZone.forID(zone)
-        Set<Interval> intervals = ConcreteApiRequest.generateIntervals(
+        Set<Interval> intervals = TestingDataApiRequestImpl.generateIntervals(
                 intervalString,
                 DAY,
                 dateTimeFormatter.withZone(dateTimeZone)
         )
 
         expect:
-        ConcreteApiRequest.validateTimeAlignment(DAY, intervals)
+        TestingDataApiRequestImpl.validateTimeAlignment(DAY, intervals)
 
         where:
         intervalString          | zone
@@ -189,8 +191,11 @@ class ApiRequestSpec extends Specification {
         String expectedMessage = "'[2015-02-15T00:00:00.000Z/2016-02-22T00:00:00.000Z]'"
         expectedMessage += " does not align with granularity 'week'."
         expectedMessage += " Week must start on a Monday and end on a Monday."
-        Granularity<?> granularity = new ConcreteApiRequest().generateGranularity("week", new StandardGranularityParser())
-        Set<Interval> intervals = new ConcreteApiRequest().generateIntervals(
+        Granularity<?> granularity = new TestingDataApiRequestImpl().generateGranularity(
+                "week",
+                new StandardGranularityParser()
+        )
+        Set<Interval> intervals = new TestingDataApiRequestImpl().generateIntervals(
                 "2015-02-15/2016-02-22",
                 granularity,
                 FULLY_OPTIONAL_DATETIME_FORMATTER
@@ -211,7 +216,11 @@ class ApiRequestSpec extends Specification {
         DateTimeFormatter adjustedFormatter = FULLY_OPTIONAL_DATETIME_FORMATTER.withZone(dateTimeZone)
 
         expect:
-        ConcreteApiRequest.getAsDateTime(null, null, baseTimeString, adjustedFormatter).plusHours(hours) == baseTime
+        TestingDataApiRequestImpl.getAsDateTime(
+                null,
+                null,
+                baseTimeString,
+                adjustedFormatter).plusHours(hours) == baseTime
 
         where:
 

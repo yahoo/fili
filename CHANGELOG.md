@@ -97,6 +97,7 @@ Current
 
 
 ### Changed:
+
 - [Substitute preflight method wildcard character with explicit allowed methods](https://github.com/yahoo/fili/pull/545)
     * Modify ResponseCorsFilter Allowed Methods header to explicitly list allowed methods. Some browsers do not support a wildcard header value.
 
@@ -214,6 +215,17 @@ Current
 
 ### Removed:
 
+- [Remove testing constructor of *ApiRequestImpl](https://github.com/yahoo/fili/pull/559)
+    * It is a better practice to separate testing code with implementation. All testing constructors of the following
+      API requests are removed:
+        - `ApiRequestImpl`
+        - `DataApiRequestImpl`
+        - `DimensionsApiRequestImpl`
+        - `MetricsApiRequestImpl`
+        - `SlicesApiRequestImpl`
+        - `TablesApiRequestImpl`
+    * Meanwhile, construction of testing API request is delegated to testing class, e.g. `TestingDataApiRequestImpl`
+    
 - [Reverted the druid name change in slices endpoint instead added to factName](https://github.com/yahoo/fili/pull/541)
     * Reverting the PR-419(https://github.com/yahoo/fili/pull/419) so that the name still points to apiName and added factName which points to druidName.
       `name` was not valid for cases when it is a Lookup dimension because it was pointing to the base dimension name , so reverted that change and added
