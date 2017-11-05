@@ -1,6 +1,8 @@
 Glossary
 ========
 
+*Read this in other languages: [中文](../translations/zh/docs/glossary-zh.md).*
+
 This is collection of terms related to Fili and its concepts.
 
 Table of Contents
@@ -22,6 +24,7 @@ Table of Contents
   - [Snapshot Cache](#snapshot-cache)
   - [Search Provider](#search-provider)
   - [Filter](#api-filter)
+  - [Dimension Loader](#dimension-loader)
 - [Tables](#tables)
   - [Logical Table](#logical-table)
   - [Physical Table](#physical-table)
@@ -30,13 +33,13 @@ Table of Contents
   - [Time Grain](#time-grain)
   - [Granularity](#granularity)
   - [Interval](#interval)
+  - [Period](#period)
 - [Workflow](#workflow)
   - [Workflow](#workflow)
   - [Request Handler](#request-handler)
   - [Response Processor](#response-processor)
   - [Result](#result)
   - [Result Set](#result-set)
-  - [Dimension Loader](#dimension-loader)
 - [Application Concerns](#application-concerns)
   - [Health Check](#health-check)
   - [Feature Flag](#feature-flag)
@@ -145,7 +148,7 @@ Dimension Rows, as well as for using those indexes when searching for Dimension 
 An API Filter is the API concept of a filter for particular Dimension Rows within a Dimension. API Filters consist of 
 3 components:
 
-- **Selector**: Selects what Dimension Rows the filter is seeking and indicates what field the filter applies to.
+- **Selector**: Selects what Dimension Rows the filter is seeking and indicates what field the filter applies to
 - **Operator**: Determines how the values in the value list are used to find the Dimension Rows
 - **Value List**: The list of values for the operator to use when selecting the dimension rows
 
@@ -207,7 +210,7 @@ dynamically during the Request Handler phase.
 ### Request Handler
 
 A Request Handler is the type of component that makes up the Request Handling phase of the workflow. Request Handlers 
-work with a Druid Query and have the API Request available. This allows them to do things like manipulate the Druid 
+work with a Druid Query and have the API Request available. This allows them to do things like manipulating the Druid 
 query to, for example, enhance a metric or update the query in ways that the Template Druid Query for the Logical 
 Metric was not able to express.
 
@@ -305,7 +308,7 @@ what time ranges are volatile for a Physical Table.
 ### Weight Check
 
 Weight Check is a Fili capability that estimates the memory pressure a query will put on Druid Broker nodes for 
-queries that use Sketches.
+queries that use [Sketches](#sketch).
 
 
 Miscellaneous
