@@ -45,8 +45,6 @@ class DataApiRequestImplSpec extends Specification {
 
     static final DateTimeZone orginalTimeZone = DateTimeZone.default
 
-    class ConcreteApiRequest extends ApiRequestImpl {}
-
     def setupSpec() {
         DateTimeZone.default = IntervalUtils.SYSTEM_ALIGNMENT_EPOCH.zone
     }
@@ -105,7 +103,7 @@ class DataApiRequestImplSpec extends Specification {
     }
 
     def "check parsing generateLogicalMetrics"() {
-
+        given:
         Set<LogicalMetric> logicalMetrics = new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "met1,met2,met3",
                 metricDict,
@@ -119,8 +117,23 @@ class DataApiRequestImplSpec extends Specification {
             assert metric?.name == name
             metric
         }
+
         expect:
         logicalMetrics == expected
+    }
+
+    def "generateLogicalMetrics throws BadApiRequestException on non-existing LogicalMetric"() {
+        when:
+        Set<LogicalMetric> logicalMetrics = new TestingDataApiRequestImpl().generateLogicalMetrics(
+                "met1,met2,nonExistingMetric",
+                metricDict,
+                dimensionDict,
+                table
+        )
+
+        then: "BadApiRequestException is thrown"
+        BadApiRequestException exception = thrown()
+        exception.message == ErrorMessageFormat.METRICS_UNDEFINED.logFormat(["nonExistingMetric"])
     }
 
     @Unroll

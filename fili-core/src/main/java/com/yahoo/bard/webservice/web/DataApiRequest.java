@@ -168,7 +168,7 @@ import javax.ws.rs.core.UriInfo;
      *
      * @return Set of filter objects.
      */
-     Map<Dimension, Set<ApiFilter>> generateFilters(
+    Map<Dimension, Set<ApiFilter>> generateFilters(
             String filterQuery,
             LogicalTable table,
             DimensionDictionary dimensionDictionary
