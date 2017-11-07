@@ -188,8 +188,10 @@ class DefaultSqlBackedClientSpec extends Specification {
         setup:
         def timeZoneId = DateTimeZone.forID(timeZone)
         // shift the start and end dates by the offset from utc time
-        def start = new DateTime(START).plusMillis(-timeZoneId.getOffset(new DateTime(DateTimeZone.UTC))).toString()
-        def end = new DateTime(END).plusMillis(-timeZoneId.getOffset(new DateTime(DateTimeZone.UTC))).toString()
+
+        def raw = new DateTime(START)
+        def start = raw.plusMillis(timeZoneId.getOffset(raw)).toString()
+        def end = (new DateTime(END)).plusMillis(-timeZoneId.getOffset(raw)).toString()
 
         TimeSeriesQuery timeSeriesQuery = new TimeSeriesQuery(
                 dataSource(WIKITICKER, DAY, timeZoneId, [ADDED], [], "", ""),

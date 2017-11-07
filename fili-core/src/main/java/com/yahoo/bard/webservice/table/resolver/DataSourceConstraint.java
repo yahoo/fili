@@ -282,4 +282,10 @@ public class DataSourceConstraint {
                         metricNames.stream()
                 ).collect(Collectors.toSet()));
     }
+
+    public String toString() {
+        return "DSC: dimensions: " + requestDimensions + " filterDimensions: " + filterDimensions + " " +
+                "metricDimensions: " + metricDimensions + " metric names: " + metricNames + " apiFilters: " +
+                apiFilters;
+    }
 }
