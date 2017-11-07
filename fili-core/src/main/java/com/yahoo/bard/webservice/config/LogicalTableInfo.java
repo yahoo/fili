@@ -10,15 +10,23 @@ public interface LogicalTableInfo {
     /**
      * A unique identifier for the table used in API path segments and internal dictionaries.
      *
-     * @return
+     * @return  The name of the logical table.
      */
     String getName();
 
     /**
-     * A human friendly name for this table inted
-     * @return
+     * A human friendly name for this table. Meant to help users understand the name of this table, not used for
+     * internal logic
+     *
+     * @return  A human friendly name for this table
      */
     String getLongName();
 
+    /**
+     * A description of this logical table. Meant to help users understand the purpose of this table, not used for
+     * internal logic
+     *
+     * @return  A
+     */
     String getDescription();
 }

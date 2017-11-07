@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.table;
 
+import com.yahoo.bard.webservice.config.DefaultLogicalTableInfo;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.config.names.FieldName;
@@ -214,7 +215,12 @@ public abstract class BaseTableLoader implements TableLoader {
         // For every legal grain
         for (Granularity grain : validGrains) {
             // Build the logical table
-            LogicalTable logicalTable = new LogicalTable(logicalTableName, grain, nameGroup, metricDictionary);
+            LogicalTable logicalTable = new LogicalTable(
+                    (DefaultLogicalTableInfo) () -> logicalTableName,
+                    grain,
+                    nameGroup,
+                    metricDictionary);
+
             // Load it into the dictionary
             tableDictionary.put(new TableIdentifier(logicalTable), logicalTable);
         }
