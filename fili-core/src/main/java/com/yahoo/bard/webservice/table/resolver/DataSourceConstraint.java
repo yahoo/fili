@@ -283,11 +283,7 @@ public class DataSourceConstraint {
                 ).collect(Collectors.toSet()));
     }
 
-    /**
-     * String representation
-     *
-     * @return All the to strings of the contained collections
-     */
+    @Override
     public String toString() {
         return "DSC: dimensions: " + requestDimensions + " filterDimensions: " + filterDimensions + " " +
                 "metricDimensions: " + metricDimensions + " metric names: " + metricNames + " apiFilters: " +
