@@ -169,6 +169,10 @@ Current
 
 ### Fixed:
 
+- [Fix tests with wrong time offset calculation](https://github.com/yahoo/fili/pull/567)
+    * Time-checking based tests setup time offset in a wrong way. `timeZoneId.getOffset` is fixed to take the right
+      argument.
+
 - [Handle Number Format errors from empty or missing cardinality value](https://github.com/yahoo/fili/issues/549)
 
 - [Fix lucene search provider replace method](https://github.com/yahoo/fili/pull/551)
