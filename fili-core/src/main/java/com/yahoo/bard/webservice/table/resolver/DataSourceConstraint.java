@@ -254,14 +254,14 @@ public class DataSourceConstraint {
                 ).flatMap(Function.identity()).collect(Collectors.toSet())
         );
     }
-
+/*
     @Override
     public String toString() {
         // Totally trivial change.
         return " requestDimensions: " + requestDimensions.getClass() + " " + requestDimensions.toString() +
                 " filterDimensions: " + filterDimensions.getClass() + " " + filterDimensions.toString() +
                 " metricDimensions: " + metricDimensions.getClass() + " " + metricDimensions.toString();
-    }
+    }*/
 
     /**
      * Returns an immutable set of all dimension names.
