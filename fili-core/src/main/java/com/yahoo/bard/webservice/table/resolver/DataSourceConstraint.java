@@ -263,11 +263,18 @@ public class DataSourceConstraint {
         );
     }
 
+    /**
+     * This is a comment.
+     *
+     * @return A detailed description of the contents of this object.
+     */
     public String dumpString() {
         // Totally trivial change.
         return " requestDimensions: " + requestDimensions.getClass() + " " + requestDimensions.toString() +
                 " filterDimensions: " + filterDimensions.getClass() + " " + filterDimensions.toString() +
-                " metricDimensions: " + metricDimensions.getClass() + " " + metricDimensions.toString();
+                " metricDimensions: " + metricDimensions.getClass() + " " + metricDimensions.toString() +
+                " metricNames: " + metricNames.getClass() + " " + metricNames.toString() +
+                " apiFilters: " + apiFilters.getClass() + " " + apiFilters.toString();
     }
 
     /**
