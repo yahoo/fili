@@ -218,6 +218,8 @@ public class DataSourceConstraint {
         }
         if (obj instanceof DataSourceConstraint) {
             DataSourceConstraint that = (DataSourceConstraint) obj;
+            System.out.println("That: " + that.apiFilters.entrySet());
+
             return Objects.equals(this.requestDimensions, that.requestDimensions)
                     && Objects.equals(this.filterDimensions, that.filterDimensions)
                     && Objects.equals(this.metricDimensions, that.metricDimensions)
