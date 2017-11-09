@@ -7,14 +7,13 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.table.LogicalTable;
-import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.TablesApiRequest;
+import com.yahoo.bard.webservice.web.filters.ApiFilters;
 
 import org.joda.time.Interval;
 
 import java.util.Collections;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -52,7 +51,7 @@ public class QueryPlanningConstraint extends DataSourceConstraint {
             Set<Dimension> filterDimensions,
             Set<Dimension> metricDimensions,
             Set<String> metricNames,
-            Map<Dimension, Set<ApiFilter>> apiFilters,
+            ApiFilters apiFilters,
             LogicalTable logicalTable,
             Set<Interval> intervals,
             Set<LogicalMetric> logicalMetrics,

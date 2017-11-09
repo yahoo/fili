@@ -41,6 +41,7 @@ import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.FilterOperation;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.TimeMacros;
+import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.PaginationLink;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
@@ -57,11 +58,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -436,7 +435,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
      * contains a 'startsWith' or 'contains' operation while the BardFeatureFlag.DATA_STARTS_WITH_CONTAINS_ENABLED is
      * off.
      */
-    public Map<Dimension, Set<ApiFilter>> generateFilters(
+    public ApiFilters generateFilters(
             String filterQuery,
             LogicalTable table,
             DimensionDictionary dimensionDictionary
@@ -444,7 +443,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
         try (TimedPhase timer = RequestLog.startTiming("GeneratingFilters")) {
             LOG.trace("Dimension Dictionary: {}", dimensionDictionary);
             // Set of filter objects
-            Map<Dimension, Set<ApiFilter>> generated = new LinkedHashMap<>();
+            ApiFilters generated = new ApiFilters();
 
             // Filters are optional hence check if filters are requested.
             if (filterQuery == null || "".equals(filterQuery)) {

@@ -6,14 +6,17 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.table.LogicalTable;
+import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
+
 import org.joda.time.Interval;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 /**
  * Tables API Request. Such an API Request binds, validates, and models the parts of a request to the tables endpoint.
@@ -61,7 +64,7 @@ public interface TablesApiRequest extends ApiRequest {
      *
      * @return the map of filters by dimension for this request, grouped by dimensions
      */
-    Map<Dimension, Set<ApiFilter>> getApiFilters();
+    ApiFilters getApiFilters();
 
     /**
      * Returns the intervals for this query.
