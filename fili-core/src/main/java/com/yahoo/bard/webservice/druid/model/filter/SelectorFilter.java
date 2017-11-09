@@ -4,6 +4,8 @@ package com.yahoo.bard.webservice.druid.model.filter;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 
+import com.google.common.base.Preconditions;
+
 import java.util.Objects;
 
 /**
@@ -30,6 +32,7 @@ public class SelectorFilter extends DimensionalFilter {
 
     @Override
     public SelectorFilter withDimension(Dimension dimension) {
+        Preconditions.checkNotNull(dimension);
         return new SelectorFilter(dimension,  value);
     }
 
