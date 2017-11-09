@@ -216,16 +216,24 @@ public class DataSourceConstraint {
         if (this == obj) {
             return true;
         }
+        boolean result;
+
         if (obj instanceof DataSourceConstraint) {
             DataSourceConstraint that = (DataSourceConstraint) obj;
-
-            return Objects.equals(this.requestDimensions, that.requestDimensions)
+            result =  Objects.equals(this.requestDimensions, that.requestDimensions)
                     && Objects.equals(this.filterDimensions, that.filterDimensions)
                     && Objects.equals(this.metricDimensions, that.metricDimensions)
                     && Objects.equals(this.metricNames, that.metricNames)
                     && Objects.equals(this.apiFilters, that.apiFilters);
+
+            if (!result) {
+                String message = "this: " + this.dumpString() + " that: " + that.dumpString();
+                throw new IllegalStateException(message);
+            }
+        } else {
+            result = false;
         }
-        return false;
+        return result;
     }
 
     @Override
@@ -254,14 +262,13 @@ public class DataSourceConstraint {
                 ).flatMap(Function.identity()).collect(Collectors.toSet())
         );
     }
-/*
-    @Override
-    public String toString() {
+
+    public String dumpString() {
         // Totally trivial change.
         return " requestDimensions: " + requestDimensions.getClass() + " " + requestDimensions.toString() +
                 " filterDimensions: " + filterDimensions.getClass() + " " + filterDimensions.toString() +
                 " metricDimensions: " + metricDimensions.getClass() + " " + metricDimensions.toString();
-    }*/
+    }
 
     /**
      * Returns an immutable set of all dimension names.
