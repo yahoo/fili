@@ -218,10 +218,6 @@ public class DataSourceConstraint {
         }
         if (obj instanceof DataSourceConstraint) {
             DataSourceConstraint that = (DataSourceConstraint) obj;
-            if (((DataSourceConstraint) obj).apiFilters == null) {
-                throw new NullPointerException("Filters is null!");
-            }
-            System.err.println("That: " + that.apiFilters.entrySet());
 
             return Objects.equals(this.requestDimensions, that.requestDimensions)
                     && Objects.equals(this.filterDimensions, that.filterDimensions)
@@ -229,7 +225,6 @@ public class DataSourceConstraint {
                     && Objects.equals(this.metricNames, that.metricNames)
                     && Objects.equals(this.apiFilters, that.apiFilters);
         }
-
         return false;
     }
 
@@ -258,6 +253,13 @@ public class DataSourceConstraint {
                         getMetricDimensions().stream()
                 ).flatMap(Function.identity()).collect(Collectors.toSet())
         );
+    }
+
+    @Override
+    public String toString() {
+        return " requestDimensions: " + requestDimensions.getClass() + " " + requestDimensions.toString() +
+                " filterDimensions: " + filterDimensions.getClass() + " " + filterDimensions.toString() +
+                " metricDimensions: " + metricDimensions.getClass() + " " + metricDimensions.toString();
     }
 
     /**
