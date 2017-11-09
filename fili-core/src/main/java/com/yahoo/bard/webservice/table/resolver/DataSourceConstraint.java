@@ -218,7 +218,10 @@ public class DataSourceConstraint {
         }
         if (obj instanceof DataSourceConstraint) {
             DataSourceConstraint that = (DataSourceConstraint) obj;
-            System.out.println("That: " + that.apiFilters.entrySet());
+            if (((DataSourceConstraint) obj).apiFilters == null) {
+                throw new NullPointerException("Filters is null!");
+            }
+            System.err.println("That: " + that.apiFilters.entrySet());
 
             return Objects.equals(this.requestDimensions, that.requestDimensions)
                     && Objects.equals(this.filterDimensions, that.filterDimensions)
