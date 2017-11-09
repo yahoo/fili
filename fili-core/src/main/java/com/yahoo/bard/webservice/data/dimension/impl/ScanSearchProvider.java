@@ -58,7 +58,7 @@ public class ScanSearchProvider implements SearchProvider, FilterDimensionRows {
     }
 
     @Override
-    public void setKeyValueStore(KeyValueStore keyValueStore) {
+    public void setKeyValueStoreInner(KeyValueStore keyValueStore) {
         this.keyValueStore = keyValueStore;
 
         // Check initialization for the cardinality in a keyValueStore

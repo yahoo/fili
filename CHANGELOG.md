@@ -10,6 +10,10 @@ Current
 
 ### Added:
 
+- [Check initialization of dimension storage](https://github.com/yahoo/fili/pull/571)
+    * Uninitialized dimension storage causes a null based error when search provider attempts to retrieve
+      cardinality. A default method is added to search provider interface that forces a null check.
+
 - [Have Table Endpoint Filter Using QueryPlanningConstraint](https://github.com/yahoo/fili/pull/439)
     * Enable tables endpoint to fiilter availabilities based on availability-constraint
 

@@ -140,6 +140,14 @@ abstract class SearchProviderSpec<T extends SearchProvider> extends Specificatio
      */
     abstract void cleanSearchProvider(String dimensionName)
 
+    def "setKeyValueStore() throws IllegalArgumentException on null dimension store"() {
+        when:
+        searchProvider.setKeyValueStore(null)
+
+        then:
+        thrown(NullPointerException)
+    }
+
     def "getDimensionCardinality returns cardinality count"() {
         expect:
         searchProvider.getDimensionCardinality() == dimensionRows.size()

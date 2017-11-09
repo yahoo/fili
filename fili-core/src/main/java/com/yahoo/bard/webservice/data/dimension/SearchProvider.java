@@ -7,6 +7,8 @@ import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
+import com.google.common.base.Preconditions;
+
 import org.slf4j.LoggerFactory;
 
 import java.util.LinkedHashSet;
@@ -33,7 +35,17 @@ public interface SearchProvider {
      *
      * @param keyValueStore  KeyValueStore that holds the data rows indexed by the Search Provider
      */
-    void setKeyValueStore(KeyValueStore keyValueStore);
+    default void setKeyValueStore(KeyValueStore keyValueStore) {
+        Preconditions.checkNotNull(keyValueStore);
+        setKeyValueStoreInner(keyValueStore);
+    }
+
+    /**
+     * Inner setter for store.
+     *
+     * @param keyValueStore  KeyValueStore that holds the data rows indexed by the Search Provider
+     */
+    void setKeyValueStoreInner(KeyValueStore keyValueStore);
 
     /**
      * Gets the number of distinct dimension rows (assuming the key field is unique) in the index.
