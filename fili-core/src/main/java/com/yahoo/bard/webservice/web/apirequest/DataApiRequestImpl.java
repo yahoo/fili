@@ -48,6 +48,7 @@ import com.yahoo.bard.webservice.web.DimensionFieldSpecifierKeywords;
 import com.yahoo.bard.webservice.web.FilterOperation;
 import com.yahoo.bard.webservice.web.MetricParser;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
+import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
@@ -93,7 +94,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     private final LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> perDimensionFields;
     private final Set<LogicalMetric> logicalMetrics;
     private final Set<Interval> intervals;
-    private final Map<Dimension, Set<ApiFilter>> apiFilters;
+    private final ApiFilters apiFilters;
     private final Map<LogicalMetric, Set<ApiHaving>> havings;
     private final Having having;
     private final LinkedHashSet<OrderByColumn> sorts;
@@ -326,7 +327,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> perDimensionFields,
             Set<LogicalMetric> logicalMetrics,
             Set<Interval> intervals,
-            Map<Dimension, Set<ApiFilter>> apiFilters,
+            ApiFilters apiFilters,
             Map<LogicalMetric, Set<ApiHaving>> havings,
             Having having,
             LinkedHashSet<OrderByColumn> sorts,
@@ -878,7 +879,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     }
 
     @Override
-    public DataApiRequestImpl withFilters(Map<Dimension, Set<ApiFilter>> apiFilters) {
+    public DataApiRequestImpl withFilters(ApiFilters apiFilters) {
         return new DataApiRequestImpl(format, paginationParameters, uriInfo, builder, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, filterBuilder, havingApiGenerator, dateTimeSort);
     }
 
@@ -965,7 +966,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     }
 
     @Override
-    public Map<Dimension, Set<ApiFilter>> getApiFilters() {
+    public ApiFilters getApiFilters() {
         return this.apiFilters;
     }
 

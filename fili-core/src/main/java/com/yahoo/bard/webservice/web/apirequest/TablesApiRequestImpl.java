@@ -21,6 +21,7 @@ import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.TablesApiRequest;
+import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
@@ -56,7 +57,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
     private final Set<Dimension> dimensions;
     private final Set<LogicalMetric> logicalMetrics;
     private final Set<Interval> intervals;
-    private final Map<Dimension, Set<ApiFilter>> apiFilters;
+    private final ApiFilters apiFilters;
 
     /**
      * Parses the API request URL and generates the Api Request object.
@@ -104,7 +105,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         dimensions = Collections.emptySet();
         logicalMetrics = Collections.emptySet();
         intervals = Collections.emptySet();
-        apiFilters = Collections.emptyMap();
+        apiFilters = new ApiFilters(Collections.emptyMap());
 
         LOG.debug(
                 "Api request: Tables: {},\nGranularity: {},\nFormat: {}\nPagination: {}" +
@@ -252,7 +253,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
             Set<Dimension> dimensions,
             Set<LogicalMetric> metrics,
             Set<Interval> intervals,
-            Map<Dimension, Set<ApiFilter>> filters
+            ApiFilters filters
     ) {
         super(format, SYNCHRONOUS_ASYNC_AFTER_VALUE, paginationParameters, uriInfo, builder);
         this.tables = tables;
@@ -394,7 +395,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
     }
 
     @Override
-    public Map<Dimension, Set<ApiFilter>> getApiFilters() {
+    public ApiFilters getApiFilters() {
         return apiFilters;
     }
 
