@@ -16,6 +16,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * Constraints for retrieving potential table availability for a given query.
  */
@@ -60,11 +62,11 @@ public class DataSourceConstraint {
      * @param apiFilters  Map of dimension to its set of API filters
      */
     protected DataSourceConstraint(
-            Set<Dimension> requestDimensions,
-            Set<Dimension> filterDimensions,
-            Set<Dimension> metricDimensions,
-            Set<String> metricNames,
-            Map<Dimension, Set<ApiFilter>> apiFilters
+            @NotNull Set<Dimension> requestDimensions,
+            @NotNull Set<Dimension> filterDimensions,
+            @NotNull Set<Dimension> metricDimensions,
+            @NotNull Set<String> metricNames,
+            @NotNull Map<Dimension, Set<ApiFilter>> apiFilters
     ) {
         this.requestDimensions = Collections.unmodifiableSet(requestDimensions);
         this.filterDimensions = Collections.unmodifiableSet(filterDimensions);
@@ -93,14 +95,14 @@ public class DataSourceConstraint {
      */
     @Deprecated
     protected DataSourceConstraint(
-            Set<Dimension> requestDimensions,
-            Set<Dimension> filterDimensions,
-            Set<Dimension> metricDimensions,
-            Set<String> metricNames,
-            Set<Dimension> allDimensions,
-            Set<String> allDimensionNames,
-            Set<String> allColumnNames,
-            Map<Dimension, Set<ApiFilter>> apiFilters
+            @NotNull Set<Dimension> requestDimensions,
+            @NotNull Set<Dimension> filterDimensions,
+            @NotNull Set<Dimension> metricDimensions,
+            @NotNull Set<String> metricNames,
+            @NotNull Set<Dimension> allDimensions,
+            @NotNull Set<String> allDimensionNames,
+            @NotNull Set<String> allColumnNames,
+            @NotNull Map<Dimension, Set<ApiFilter>> apiFilters
     ) {
         this.requestDimensions = requestDimensions;
         this.filterDimensions = filterDimensions;
