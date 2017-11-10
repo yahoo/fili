@@ -49,7 +49,7 @@ public class NoOpSearchProvider implements SearchProvider {
     }
 
     @Override
-    public void setKeyValueStore(KeyValueStore keyValueStore) {
+    public void setKeyValueStoreInner(KeyValueStore keyValueStore) {
         // do nothing
     }
 
