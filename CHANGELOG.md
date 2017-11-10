@@ -169,6 +169,9 @@ Current
 
 ### Fixed:
 
+- [Fix intermittent class scanner error on DataSourceConstraint equal](https://github.com/yahoo/fili/pull/573)
+   * Class Scanner Spec was injecting an improper dependant field due to type erasure.  Made field type explicit.
+
 - [Fix tests with wrong time offset calculation](https://github.com/yahoo/fili/pull/567)
     * Time-checking based tests setup time offset in a wrong way. `timeZoneId.getOffset` is fixed to take the right
       argument.
@@ -1342,4 +1345,4 @@ Jobs resource. Here are the highlights of what's in this release:
 
 - [`DruidDimensionsLoader` doesn't set the dimension's lastUpdated date](https://github.com/yahoo/fili/pull/24)
   * `DruidDimensionsLoader` now properly sets the `lastUpdated` field after it finished processing the Druid response
-  
+
