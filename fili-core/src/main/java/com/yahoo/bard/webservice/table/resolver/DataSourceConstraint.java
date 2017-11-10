@@ -9,6 +9,7 @@ import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -28,7 +29,7 @@ public class DataSourceConstraint {
     private final Set<Dimension> filterDimensions;
     private final Set<Dimension> metricDimensions;
     private final Set<String> metricNames;
-    private final Map<Dimension, Set<ApiFilter>> apiFilters;
+    private final LinkedHashMap<Dimension, Set<ApiFilter>> apiFilters;
 
     // Calculated fields
     private final Set<Dimension> allDimensions;
@@ -46,7 +47,9 @@ public class DataSourceConstraint {
         this.filterDimensions = Collections.unmodifiableSet(dataApiRequest.getFilterDimensions());
         this.metricDimensions = Collections.unmodifiableSet(templateDruidQuery.getMetricDimensions());
         this.metricNames = Collections.unmodifiableSet(templateDruidQuery.getDependentFieldNames());
-        this.apiFilters = Collections.unmodifiableMap(dataApiRequest.getApiFilters());
+        this.apiFilters = dataApiRequest.getApiFilters() == null
+                ? null
+                : new LinkedHashMap<>(dataApiRequest.getApiFilters());
         this.allDimensions = generateAllDimensions();
         this.allDimensionNames = generateAllDimensionNames();
         this.allColumnNames = generateAllColumnNames();
@@ -75,7 +78,7 @@ public class DataSourceConstraint {
         this.allDimensions = generateAllDimensions();
         this.allDimensionNames = generateAllDimensionNames();
         this.allColumnNames = generateAllColumnNames();
-        this.apiFilters = apiFilters;
+        this.apiFilters = apiFilters == null ? null : new LinkedHashMap<>(apiFilters);
     }
 
     /**
@@ -111,7 +114,7 @@ public class DataSourceConstraint {
         this.allDimensions = allDimensions;
         this.allDimensionNames = allDimensionNames;
         this.allColumnNames = allColumnNames;
-        this.apiFilters = apiFilters;
+        this.apiFilters = apiFilters == null ? null : new LinkedHashMap<>(apiFilters);
     }
 
     /**
@@ -124,7 +127,9 @@ public class DataSourceConstraint {
         this.filterDimensions = dataSourceConstraint.getFilterDimensions();
         this.metricDimensions = dataSourceConstraint.getMetricDimensions();
         this.metricNames = dataSourceConstraint.getMetricNames();
-        this.apiFilters = dataSourceConstraint.getApiFilters();
+        this.apiFilters = dataSourceConstraint.getApiFilters() == null
+                ? null
+                : new LinkedHashMap<>(dataSourceConstraint.getApiFilters());
         this.allDimensions = dataSourceConstraint.getAllDimensions();
         this.allDimensionNames = dataSourceConstraint.getAllDimensionNames();
         this.allColumnNames = dataSourceConstraint.getAllColumnNames();
