@@ -10,6 +10,9 @@ Current
 
 ### Added:
 
+- [Backwards compatible constructor for KeyValueStoreDimension around storage strategy]()
+    * Provide a backwards compatible constructor for existing implementations that don't provide storage strategies.
+
 - [Have Table Endpoint Filter Using QueryPlanningConstraint](https://github.com/yahoo/fili/pull/439)
     * Enable tables endpoint to fiilter availabilities based on availability-constraint
 
