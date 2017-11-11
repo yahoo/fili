@@ -122,6 +122,45 @@ public class KeyValueStoreDimension implements Dimension {
 
     /**
      * Constructor.
+     *
+     * @param dimensionName  API Name of the dimension
+     * @param longName  Long API Name of the dimension
+     * @param category  Category of the dimension
+     * @param description  Description of the dimension
+     * @param dimensionFields  Metadata fields of the dimension
+     * @param keyValueStore  Metadata store for the dimension
+     * @param searchProvider  Search provider over the metadata for the dimension
+     * @param defaultDimensionFields  Default fields for the dimension
+     * @param isAggregatable  Whether the dimension is aggregatable
+     * {@link com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy}
+     */
+    public KeyValueStoreDimension(
+            String dimensionName,
+            String longName,
+            String category,
+            String description,
+            @NotNull LinkedHashSet<DimensionField> dimensionFields,
+            @NotNull KeyValueStore keyValueStore,
+            SearchProvider searchProvider,
+            @NotNull LinkedHashSet<DimensionField> defaultDimensionFields,
+            boolean isAggregatable
+    ) {
+        this(
+                dimensionName,
+                longName,
+                category,
+                description,
+                dimensionFields,
+                keyValueStore,
+                searchProvider,
+                defaultDimensionFields,
+                isAggregatable,
+                StorageStrategy.LOADED
+        );
+    }
+
+    /**
+     * Constructor.
      * <p>
      * It constructs an aggregatable dimension that defaults the Long Api Name to the Api Name and sets the Category
      * to the default category.
@@ -190,7 +229,7 @@ public class KeyValueStoreDimension implements Dimension {
     /**
      * Constructor.
      * <p>
-     * It constructs an aggregatable dimension that defaults the Long Api Name to the Api Name and sets the Category
+     * Build an aggregatable dimension that defaults the Long Api Name to the Api Name and sets the Category
      * to the default category.
      *
      * @param dimensionName  API Name of the dimension
