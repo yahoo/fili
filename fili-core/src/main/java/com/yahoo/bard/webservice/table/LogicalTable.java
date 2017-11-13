@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table;
 
+import com.yahoo.bard.webservice.config.DefaultLogicalTableInfo;
 import com.yahoo.bard.webservice.config.LogicalTableInfo;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricColumn;
@@ -9,7 +10,6 @@ import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 
 import org.joda.time.ReadablePeriod;
-import org.joda.time.Years;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -22,16 +22,16 @@ import javax.validation.constraints.NotNull;
  */
 public class LogicalTable implements Table, Comparable<LogicalTable> {
 
-    public static final String DEFAULT_CATEGORY = "General";
-    public static final ReadablePeriod DEFAULT_RETENTION = Years.ONE;
 
     private TableGroup tableGroup;
     private LogicalTableSchema schema;
 
+    private String name;
+    private String longName;
+    private String description;
     private String category;
     private ReadablePeriod retention;
 
-    private LogicalTableInfo tableInfo;
 
     // parameter used by the compare to method
     private String comparableParam;
@@ -43,7 +43,7 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
      *
      * @param name  The logical table name
      * @param granularity  The logical table granularity
-     * @param tableGroup  The tablegroup for the logical table
+     * @param tableGroup  The tableGroup for the logical table
      * @param metricDictionary The metric dictionary to bind tableGroup's metrics
      *
      * @deprecated in favor of constructing using LogicalTableInfo with default values
@@ -55,7 +55,7 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
             TableGroup tableGroup,
             MetricDictionary metricDictionary
     ) {
-        this(name, DEFAULT_CATEGORY, name, granularity, DEFAULT_RETENTION, name, tableGroup, metricDictionary);
+        this(new DefaultLogicalTableInfo(name), granularity, tableGroup, metricDictionary);
     }
 
     /**
@@ -74,9 +74,10 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
             MetricDictionary metricDictionary
     ) {
         this(logicalTableInfo.getName(),
-                DEFAULT_CATEGORY,
+                logicalTableInfo.getCategory(),
                 logicalTableInfo.getLongName(),
-                granularity, DEFAULT_RETENTION,
+                granularity,
+                logicalTableInfo.getRetention().orElse(null),
                 logicalTableInfo.getDescription(),
                 tableGroup,
                 metricDictionary);
@@ -104,30 +105,15 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
             TableGroup tableGroup,
             MetricDictionary metricDictionary
     ) {
-        this.tableInfo = new LogicalTableInfo() {
-            @Override
-            public String getName() {
-                return name;
-            }
-
-            @Override
-            public String getLongName() {
-                return longName;
-            }
-
-            @Override
-            public String getDescription() {
-                return description;
-            }
-        };
-
-        this.tableGroup = tableGroup;
+        this.name = name;
+        this.longName = longName;
+        this.description = description;
         this.category = category;
         this.retention = retention;
+
+        this.tableGroup = tableGroup;
         this.comparableParam = name + granularity.toString();
-
         schema = new LogicalTableSchema(tableGroup, granularity, metricDictionary);
-
     }
 
     public TableGroup getTableGroup() {
@@ -150,7 +136,7 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
     }
 
     public String getLongName() {
-        return tableInfo.getLongName();
+        return longName;
     }
 
     public ReadablePeriod getRetention() {
@@ -158,7 +144,7 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
     }
 
     public String getDescription() {
-        return tableInfo.getDescription();
+        return description;
     }
 
     public Granularity getGranularity() {
@@ -167,7 +153,7 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
 
     @Override
     public String getName() {
-        return tableInfo.getName();
+        return name;
     }
 
     @Override

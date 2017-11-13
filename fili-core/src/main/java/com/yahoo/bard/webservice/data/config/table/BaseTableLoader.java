@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.data.config.table;
 
 import com.yahoo.bard.webservice.config.DefaultLogicalTableInfo;
+import com.yahoo.bard.webservice.config.LogicalTableInfo;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.config.names.FieldName;
@@ -216,7 +217,7 @@ public abstract class BaseTableLoader implements TableLoader {
         for (Granularity grain : validGrains) {
             // Build the logical table
             LogicalTable logicalTable = new LogicalTable(
-                    (DefaultLogicalTableInfo) () -> logicalTableName,
+                    new DefaultLogicalTableInfo(logicalTableName),
                     grain,
                     nameGroup,
                     metricDictionary);
@@ -395,13 +396,38 @@ public abstract class BaseTableLoader implements TableLoader {
             TableGroup group,
             MetricDictionary metrics
     ) {
-        return buildLogicalTable(
-                name,
+        return new LogicalTable(
+                new DefaultLogicalTableInfo(name),
                 granularity,
-                LogicalTable.DEFAULT_CATEGORY,
-                name,
-                LogicalTable.DEFAULT_RETENTION,
-                name,
+                group,
+                metrics
+        );
+    }
+
+    /**
+     * Build a logical table, supplying it with a name, grain, table group, and metrics.
+     * <p>
+     * Note: This builds a logical table with all valid metrics for the grain of the table
+     *
+     * @param logicalTableInfo The name, description, category and retention for the logical table
+     * @param granularity  The granularity for this logical table
+     * @param group  The group of physical tables for this logical table
+     * @param metrics  The dictionary of all metrics
+     *
+     * @return The logical table built
+     *
+     * @deprecated The LogicalTable constructor is being mirrored here, can be referenced directly
+     */
+    @Deprecated
+    public LogicalTable buildLogicalTable(
+            LogicalTableInfo logicalTableInfo,
+            Granularity granularity,
+            TableGroup group,
+            MetricDictionary metrics
+    ) {
+        return new LogicalTable(
+                logicalTableInfo,
+                granularity,
                 group,
                 metrics
         );
