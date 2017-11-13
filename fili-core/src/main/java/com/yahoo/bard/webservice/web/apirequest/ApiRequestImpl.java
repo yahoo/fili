@@ -13,6 +13,7 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_ASYNC_AFT
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_INTERVAL_GRANULARITY;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_TIME_ZONE;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_NOT_IN_TABLE;
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_GRANULARITY_MISMATCH;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TIME_ALIGNMENT;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.UNKNOWN_GRANULARITY;
 
@@ -22,6 +23,7 @@ import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.time.GranularityParser;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
@@ -29,6 +31,8 @@ import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.TimedPhase;
 import com.yahoo.bard.webservice.table.LogicalTable;
+import com.yahoo.bard.webservice.table.LogicalTableDictionary;
+import com.yahoo.bard.webservice.table.TableIdentifier;
 import com.yahoo.bard.webservice.util.AllPagesPagination;
 import com.yahoo.bard.webservice.util.GranularityParseException;
 import com.yahoo.bard.webservice.util.Pagination;
@@ -302,6 +306,39 @@ public abstract class ApiRequestImpl implements ApiRequest {
      */
     protected String generateMetricName(String filterString) {
         return filterString.replace("|", "_").replace("-", "_").replace(",", "_").replace("]", "").replace("[", "_");
+    }
+
+    /**
+     * Extracts the list of metrics from the url metric query string and generates a set of LogicalMetrics.
+     * <p>
+     * If the query contains undefined metrics, {@link com.yahoo.bard.webservice.web.BadApiRequestException} will be
+     * thrown.
+     *
+     * @param apiMetricQuery  URL query string containing the metrics separated by ','
+     * @param metricDictionary  Metric dictionary contains the map of valid metric names and logical metric objects
+     *
+     * @return set of metric objects
+     */
+    protected LinkedHashSet<LogicalMetric> generateLogicalMetrics(
+            String apiMetricQuery,
+            MetricDictionary metricDictionary
+    ) {
+        LinkedHashSet<LogicalMetric> metrics = new LinkedHashSet<>();
+        List<String> invalidMetricNames = new ArrayList<>();
+        for (String metricName : apiMetricQuery.split(",")) {
+            LogicalMetric logicalMetric = metricDictionary.get(metricName);
+            if (logicalMetric == null) {
+                invalidMetricNames.add(metricName);
+            } else {
+                metrics.add(logicalMetric);
+            }
+        }
+        if (!invalidMetricNames.isEmpty()) {
+            String message = ErrorMessageFormat.METRICS_UNDEFINED.logFormat(invalidMetricNames);
+            LOG.error(message);
+            throw new BadApiRequestException(message);
+        }
+        return metrics;
     }
 
     /**
@@ -602,6 +639,34 @@ public abstract class ApiRequestImpl implements ApiRequest {
         } catch (BadPaginationException invalidParameters) {
             throw new BadApiRequestException(invalidParameters.getMessage());
         }
+    }
+
+    /**
+     * Extracts a specific logical table object given a valid table name and a valid granularity.
+     *
+     * @param tableName  logical table corresponding to the table name specified in the URL
+     * @param granularity  logical table corresponding to the table name specified in the URL
+     * @param logicalTableDictionary  Logical table dictionary contains the map of valid table names and table objects.
+     *
+     * @return Set of logical table objects.
+     * @throws BadApiRequestException Invalid table exception if the table dictionary returns a null.
+     */
+    protected LogicalTable generateTable(
+            String tableName,
+            Granularity granularity,
+            LogicalTableDictionary logicalTableDictionary
+    ) throws BadApiRequestException {
+        LogicalTable generated = logicalTableDictionary.get(new TableIdentifier(tableName, granularity));
+
+        // check if requested logical table grain pair exists
+        if (generated == null) {
+            String msg = TABLE_GRANULARITY_MISMATCH.logFormat(granularity, tableName);
+            LOG.error(msg);
+            throw new BadApiRequestException(msg);
+        }
+
+        LOG.trace("Generated logical table: {} with granularity {}", generated, granularity);
+        return generated;
     }
 
     @Override

@@ -4,7 +4,6 @@ package com.yahoo.bard.webservice.web.apirequest;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.EMPTY_DICTIONARY;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_UNDEFINED;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_GRANULARITY_MISMATCH;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_UNDEFINED;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
@@ -16,7 +15,6 @@ import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.TimedPhase;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
-import com.yahoo.bard.webservice.table.TableIdentifier;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
@@ -294,34 +292,6 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         }
 
         LOG.trace("Generated set of logical tables: {}", generated);
-        return generated;
-    }
-
-    /**
-     * Extracts a specific logical table object given a valid table name and a valid granularity.
-     *
-     * @param tableName  logical table corresponding to the table name specified in the URL
-     * @param granularity  logical table corresponding to the table name specified in the URL
-     * @param tableDictionary  Logical table dictionary contains the map of valid table names and table objects.
-     *
-     * @return Set of logical table objects.
-     * @throws BadApiRequestException Invalid table exception if the table dictionary returns a null.
-     */
-    protected LogicalTable generateTable(
-            String tableName,
-            Granularity granularity,
-            LogicalTableDictionary tableDictionary
-    ) throws BadApiRequestException {
-        LogicalTable generated = tableDictionary.get(new TableIdentifier(tableName, granularity));
-
-        // check if requested logical table grain pair exists
-        if (generated == null) {
-            String msg = TABLE_GRANULARITY_MISMATCH.logFormat(granularity, tableName);
-            LOG.error(msg);
-            throw new BadApiRequestException(msg);
-        }
-
-        LOG.trace("Generated logical table: {} with granularity {}", generated, granularity);
         return generated;
     }
 

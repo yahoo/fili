@@ -21,6 +21,7 @@ import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.resolver.QueryPlanningConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
+import com.yahoo.bard.webservice.util.TableUtils;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.RequestValidationException;
@@ -568,7 +569,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                 ),
                 new SimpleImmutableEntry<>(
                         "availableIntervals",
-                        getConstrainedLogicalTableAvailability(
+                        TableUtils.getConstrainedLogicalTableAvailability(
                                 logicalTable,
                                 new QueryPlanningConstraint(
                                         tablesApiRequest.getDimensions(),
@@ -659,23 +660,5 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
 
     public LogicalTableDictionary getLogicalTableDictionary() {
         return resourceDictionaries.getLogicalDictionary();
-    }
-
-    /**
-     * Returns union of constrained availabilities of constrained logical table.
-     *
-     * @param logicalTable  The constrained logical table
-     * @param queryPlanningConstraint  The constraint
-     *
-     * @return the union of constrained availabilities of constrained logical table
-     */
-    private static SimplifiedIntervalList getConstrainedLogicalTableAvailability(
-            LogicalTable logicalTable,
-            QueryPlanningConstraint queryPlanningConstraint
-    ) {
-        return logicalTable.getTableGroup().getPhysicalTables().stream()
-                .map(physicalTable -> physicalTable.withConstraint(queryPlanningConstraint))
-                .map(PhysicalTable::getAvailableIntervals)
-                .reduce(new SimplifiedIntervalList(), SimplifiedIntervalList::union);
     }
 }

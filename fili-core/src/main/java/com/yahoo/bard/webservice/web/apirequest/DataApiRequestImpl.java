@@ -8,7 +8,6 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INCORRECT_METRIC_
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTEGER_INVALID;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_METRIC_FILTER_CONDITION;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_MISSING;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_UNDEFINED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.NON_AGGREGATABLE_INVALID;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_DIRECTION_INVALID;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_METRICS_NOT_IN_QUERY_FORMAT;
@@ -45,6 +44,7 @@ import com.yahoo.bard.webservice.web.ApiHaving;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.DimensionFieldSpecifierKeywords;
+import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.FilterOperation;
 import com.yahoo.bard.webservice.web.MetricParser;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
@@ -596,7 +596,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @param dimensionDictionary  Dimension dictionary to look the dimension up in
      * @param table  The logical table for the data request
      *
-     * @return Set of metric objects.
+     * @return set of metric objects
      * @throws BadApiRequestException if the metric dictionary returns a null or if the apiMetricQuery is invalid.
      */
     protected LinkedHashSet<LogicalMetric> generateLogicalMetrics(
@@ -617,7 +617,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             List<String> invalidMetricNames = new ArrayList<>();
 
             //If INTERSECTION_REPORTING_ENABLED flag is true, convert the aggregators into FilteredAggregators and
-            //replace old PostAggs with  new postAggs in order to generate a new Filtered Logical Metric
+            //replace old PostAggs with new postAggs in order to generate a new Filtered Logical Metric
             if (BardFeatureFlag.INTERSECTION_REPORTING.isOn()) {
                 ArrayNode metricsJsonArray;
                 try {
@@ -690,25 +690,16 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                         generated.add(logicalMetric);
                     }
                 }
+
+                if (!invalidMetricNames.isEmpty()) {
+                    String message = ErrorMessageFormat.METRICS_UNDEFINED.logFormat(invalidMetricNames);
+                    LOG.error(message);
+                    throw new BadApiRequestException(message);
+                }
             } else {
                 //Feature flag for intersection reporting is disabled
                 // list of metrics extracted from the query string
-                List<String> metricApiQuery = Arrays.asList(apiMetricQuery.split(","));
-                for (String metricName : metricApiQuery) {
-                    LogicalMetric logicalMetric = metricDictionary.get(metricName);
-
-                    // If metric dictionary returns a null, it means the requested metric is not found.
-                    if (logicalMetric == null) {
-                        invalidMetricNames.add(metricName);
-                    } else {
-                        generated.add(logicalMetric);
-                    }
-                }
-            }
-
-            if (!invalidMetricNames.isEmpty()) {
-                LOG.debug(METRICS_UNDEFINED.logFormat(invalidMetricNames.toString()));
-                throw new BadApiRequestException(METRICS_UNDEFINED.format(invalidMetricNames.toString()));
+                generated = generateLogicalMetrics(apiMetricQuery, metricDictionary);
             }
             LOG.trace("Generated set of logical metric: {}", generated);
             return generated;

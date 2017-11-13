@@ -98,6 +98,16 @@ Current
 
 ### Changed:
 
+- [Make shareable methods accessiable to all types of API requests](https://github.com/yahoo/fili/pull/565)
+    * As non-data endpoints are behaving more like data endpoints, some methods deserve to be shared among all types of
+      API requests. Methods for
+
+        - parsing and generating `LogicalMetrics`
+        - parsing and generating `LogicalTable`
+        - computing the union of constrained availabilities of constrained logical table
+
+      are made available.
+
 - [Substitute preflight method wildcard character with explicit allowed methods](https://github.com/yahoo/fili/pull/545)
     * Modify ResponseCorsFilter Allowed Methods header to explicitly list allowed methods. Some browsers do not support a wildcard header value.
 
