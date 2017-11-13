@@ -10,6 +10,9 @@ Current
 
 ### Added:
 
+- [Check for null dimension when building selector filter](https://github.com/yahoo/fili/pull/572)
+    * Dimension is checked for null.
+
 - [Have Table Endpoint Filter Using QueryPlanningConstraint](https://github.com/yahoo/fili/pull/439)
     * Enable tables endpoint to fiilter availabilities based on availability-constraint
 

@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.druid.serializers.DimensionToNameSerializer;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Preconditions;
 
 import java.util.Objects;
 
@@ -26,6 +27,7 @@ public abstract class DimensionalFilter<T extends DimensionalFilter<? super T>> 
      */
     protected DimensionalFilter(Dimension dimension, FilterType type) {
         super(type);
+        Preconditions.checkNotNull(dimension);
         this.dimension = dimension;
     }
 
