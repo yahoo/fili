@@ -101,6 +101,10 @@ Current
 
 ### Changed:
 
+- [Expose `RequestLog` `LogInfo` objects](https://github.com/yahoo/fili/pull/574)
+    * Exposes the `LogInfo` objects stored in the `RequestLog`, via `RequestLog::retrieveAll` making it easier
+        for customers to implement their own scheme for logging the `RequestLog`.
+
 - [Display corrected case on StorageStrategy serialization](https://github.com/yahoo/fili/pull/578)
     * The default serialization of enum is `name()` which is final and thus cannot be overridden. An API method is added
       to return the API name of a storage strategy.
@@ -251,7 +255,7 @@ Current
         - `SlicesApiRequestImpl`
         - `TablesApiRequestImpl`
     * Meanwhile, construction of testing API request is delegated to testing class, e.g. `TestingDataApiRequestImpl`
-    
+
 - [Reverted the druid name change in slices endpoint instead added to factName](https://github.com/yahoo/fili/pull/541)
     * Reverting the PR-419(https://github.com/yahoo/fili/pull/419) so that the name still points to apiName and added factName which points to druidName.
       `name` was not valid for cases when it is a Lookup dimension because it was pointing to the base dimension name , so reverted that change and added
