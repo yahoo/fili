@@ -230,8 +230,8 @@ to. Or put another way, the table can certainly not respond to any intervals bey
 Constrained availability will be defined as the availability for a table given a set of query constraints. 
 
 Currently the tables/table/timeGrain response lacks an indication of the time range(s) for which the table has data
-(ie. can answer questions), but implementation is going on to expand the Table resource so that it can take pretty much
-the same inputs that the Data resource takes, and would use those inputs to constrain / restrict the available time
+(ie. can answer questions), but implementation is going on to expand the table resource so that it can take pretty much
+the same inputs that the data resource takes, and would use those inputs to constrain / restrict the available time
 ranges (and even available schema, etc.) of the logical table.
 
 The constraints are:
@@ -282,7 +282,7 @@ an optional filter clause, and an interval parameter. An example response could 
     }
 ```
 
-Node the line`"availableIntervals": ["2016-05-01 00:00:00.000/2017-05-27 00:00:00.000"]`.
+Note the line`"availableIntervals": ["2016-05-01 00:00:00.000/2017-05-27 00:00:00.000"]`.
 
 Query Options
 -------------
