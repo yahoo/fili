@@ -100,6 +100,7 @@ Current
 
 
 ### Changed:
+- [Made StorageStrategy lower case]
 
 - [Make shareable methods accessiable to all types of API requests](https://github.com/yahoo/fili/pull/565)
     * As non-data endpoints are behaving more like data endpoints, some methods deserve to be shared among all types of

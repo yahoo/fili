@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.dimension.metadata;
 
+import java.util.Locale;
+
 /**
  * Allows clients to be notified if a dimension's values are browsable and searchable.
  * <p>
@@ -23,6 +25,6 @@ public enum StorageStrategy {
 
     @Override
     public String toString() {
-        return name();
+        return name().toLowerCase(Locale.ENGLISH);
     }
 }
