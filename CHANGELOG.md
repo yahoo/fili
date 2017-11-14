@@ -10,6 +10,9 @@ Current
 
 ### Added:
 
+- [Added LogicalTableInfo interface to encapsulate table configuration](https://github.com/yahoo/fili/pull/570/files)
+    * Implemented `DefaultLogicalTableInfo` to capture defaulting currently done via constructos in LogicalTableInfo
+
 - [Implement TimeFormatExtractionFunction](https://github.com/yahoo/fili/pull/611)
     * Enable [`TimeFormatExtractionFunction`](http://druid.io/docs/0.10.1/querying/dimensionspecs.html#time-format-extraction-function)
       in Fili so that API users could interact with Druid using `TimeFormatExtractionFunction` through Fili.
@@ -122,6 +125,7 @@ Current
 
 ### Changed:
 
+<<<<<<< 3742874b877fbdfeed7137e25e173a050df1d105
 - [Lift required override on deprecated method in MetricLoader](https://github.com/yahoo/fili/pull/609)
     * Add default implementation to deprecated `loadMetricDictionary` in `MetricLoader` so that downstream projects are
       able to implement the new version without worrying about the deprecated version.
@@ -168,6 +172,11 @@ Current
       to return the API name of a storage strategy.
 
 - [Made StorageStrategy lower case]
+=======
+- [Deprecated LogicalTable constructors with just name](https://github.com/yahoo/fili/pull/570/files)
+
+- [Moved LogicalMetricInfo to config package](https://github.com/yahoo/fili/pull/570/files)
+>>>>>>> CHANGELOG
 
 - [Make shareable methods accessiable to all types of API requests](https://github.com/yahoo/fili/pull/565)
     * As non-data endpoints are behaving more like data endpoints, some methods deserve to be shared among all types of
