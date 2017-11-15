@@ -80,14 +80,14 @@ class DimensionsServletComponentSpec extends Specification {
         String expectedResponse = """{
                                         "dimensions":
                                         [
-                                            {"category": "General", "name": "color", "longName": "color", "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/color", "cardinality": 0, "storageStrategy":"LOADED"},
-                                            {"category": "General", "name": "shape", "longName": "shape", "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/shape", "cardinality": 38, "storageStrategy":"LOADED"},
-                                            {"category": "General", "name": "size", "longName": "size", "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/size", "cardinality": 0, "storageStrategy":"LOADED"},
-                                            {"category": "General", "name": "model", "longName": "model", "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/model", "cardinality": 21, "storageStrategy":"LOADED"},
-                                            {"category": "General", "name": "other", "longName": "other", "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/other", "cardinality": 100000, "storageStrategy":"LOADED"},
-                                            {"category": "General", "name": "sex", "longName": "sex", "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/sex", "cardinality": 0, "storageStrategy":"LOADED"},
-                                            {"category": "General", "name": "species", "longName": "species", "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/species", "cardinality": 0, "storageStrategy":"LOADED"},
-                                            {"category": "General", "name": "breed", "longName": "breed", "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/breed", "cardinality": 0, "storageStrategy":"LOADED"}
+                                            {"category": "General", "name": "color", "longName": "color", "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/color", "cardinality": 0, "storageStrategy":"Loaded"},
+                                            {"category": "General", "name": "shape", "longName": "shape", "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/shape", "cardinality": 38, "storageStrategy":"Loaded"},
+                                            {"category": "General", "name": "size", "longName": "size", "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/size", "cardinality": 0, "storageStrategy":"Loaded"},
+                                            {"category": "General", "name": "model", "longName": "model", "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/model", "cardinality": 21, "storageStrategy":"Loaded"},
+                                            {"category": "General", "name": "other", "longName": "other", "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/other", "cardinality": 100000, "storageStrategy":"Loaded"},
+                                            {"category": "General", "name": "sex", "longName": "sex", "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/sex", "cardinality": 0, "storageStrategy":"Loaded"},
+                                            {"category": "General", "name": "species", "longName": "species", "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/species", "cardinality": 0, "storageStrategy":"Loaded"},
+                                            {"category": "General", "name": "breed", "longName": "breed", "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/breed", "cardinality": 0, "storageStrategy":"Loaded"}
                                         ]
                                     }"""
 
@@ -115,7 +115,7 @@ class DimensionsServletComponentSpec extends Specification {
                                         ],
                                         "longName": "other",
                                         "name": "other",
-                                        "storageStrategy":"LOADED",
+                                        "storageStrategy":"Loaded",
                                         "tables": [
                                             {
                                                 "category": "General",
