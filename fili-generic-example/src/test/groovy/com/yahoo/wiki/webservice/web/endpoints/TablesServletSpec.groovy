@@ -114,7 +114,7 @@ class TablesServletSpec extends Specification {
                                                         "name": "$it",
                                                         "longName": "$it",
                                                         "cardinality": 0,
-                                                        "storageStrategy":"Loaded",
+                                                        "storageStrategy":"loaded",
                                                         "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/dimensions/$it"
                                                     }""" 
                                                 }
