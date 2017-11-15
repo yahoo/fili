@@ -100,6 +100,11 @@ Current
 
 
 ### Changed:
+
+- [Display corrected case on StorageStrategy serialization](https://github.com/yahoo/fili/pull/578)
+    * The default serialization of enum is `name()` which is final and thus cannot be overridden. An API method is added
+      to return the API name of a storage strategy.
+
 - [Made StorageStrategy lower case]
 
 - [Make shareable methods accessiable to all types of API requests](https://github.com/yahoo/fili/pull/565)

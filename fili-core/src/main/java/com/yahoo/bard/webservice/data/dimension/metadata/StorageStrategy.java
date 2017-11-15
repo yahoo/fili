@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.dimension.metadata;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import java.util.Locale;
 
 /**
@@ -23,8 +25,22 @@ public enum StorageStrategy {
      */
     NONE;
 
-    @Override
-    public String toString() {
-        return name().toLowerCase(Locale.ENGLISH);
+    private final String apiName;
+
+    /**
+     * Constructor.
+     */
+    StorageStrategy() {
+        this.apiName = name().toLowerCase(Locale.ENGLISH);
+    }
+
+    /**
+     * Returns the API name of this StorageStrategy.
+     *
+     * @return the API name of this StorageStrategy
+     */
+    @JsonValue
+    public String getApiName() {
+        return apiName;
     }
 }
