@@ -1108,6 +1108,12 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "longName": "width",
                       "name": "width",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/width"
+                    },
+                    {
+                      "category": "General",
+                      "longName": "scopedWidth",
+                      "name": "scopedWidth",
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/scopedWidth"
                     }
                   ],
                   "name": "all",
@@ -1284,6 +1290,12 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "longName": "width",
                       "name": "width",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/width"
+                    },
+                    {
+                      "category": "General",
+                      "longName": "scopedWidth",
+                      "name": "scopedWidth",
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/scopedWidth"
                     }
                   ],
                   "name": "day",
@@ -1472,6 +1484,12 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "longName": "width",
                       "name": "width",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/width"
+                    },
+                    {
+                      "category": "General",
+                      "longName": "scopedWidth",
+                      "name": "scopedWidth",
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/scopedWidth"
                     }
                   ],
                   "name": "month",
@@ -1660,6 +1678,12 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "longName": "width",
                       "name": "width",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/width"
+                    },
+                    {
+                      "category": "General",
+                      "longName": "scopedWidth",
+                      "name": "scopedWidth",
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/scopedWidth"
                     }
                   ],
                   "name": "week",

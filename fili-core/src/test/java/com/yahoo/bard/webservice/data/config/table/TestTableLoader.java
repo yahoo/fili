@@ -12,9 +12,11 @@ import com.yahoo.bard.webservice.data.config.dimension.TestDimensions;
 import com.yahoo.bard.webservice.data.config.names.TestApiMetricName;
 import com.yahoo.bard.webservice.data.config.names.TestDruidMetricName;
 import com.yahoo.bard.webservice.data.config.names.TestLogicalTableName;
+import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
+import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.bard.webservice.util.Utils;
 
@@ -24,6 +26,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Load the test-specific table configuration.
@@ -111,20 +115,39 @@ public class TestTableLoader extends BaseTableLoader {
         }
         validGrains.add(AllGranularity.INSTANCE);
 
-        loadLogicalTablesWithGranularities(logicalTableTableGroup, validGrains, dictionaries);
+        MetricDictionary metricDictionary = dictionaries.getMetricDictionary();
+        LogicalTableDictionary tableDictionary = dictionaries.getLogicalDictionary();
+        loadLogicalTablesWithGranularities(
+                logicalTableTableGroup,
+                validGrains,
+                tableDictionary,
+                logicalTableTableGroup.keySet().stream()
+                        .collect(Collectors.toMap(Function.identity(), metricDictionary::getScope))
+        );
 
         Map<String, TableGroup> hourlyGroup = new HashMap<>();
         hourlyGroup.put(
                 TestLogicalTableName.HOURLY.asName(),
                 logicalTableTableGroup.get(TestLogicalTableName.HOURLY.asName())
         );
-        loadLogicalTablesWithGranularities(hourlyGroup, Utils.asLinkedHashSet(HOUR), dictionaries);
+        loadLogicalTablesWithGranularities(
+                hourlyGroup,
+                Utils.asLinkedHashSet(HOUR),
+                tableDictionary,
+                hourlyGroup.keySet().stream().collect(Collectors.toMap(Function.identity(), metricDictionary::getScope))
+        );
 
         Map<String, TableGroup> hourlyMonthlyGroup = new HashMap<>();
         hourlyMonthlyGroup.put(
                 TestLogicalTableName.HOURLY_MONTHLY.asName(),
                 logicalTableTableGroup.get(TestLogicalTableName.HOURLY_MONTHLY.asName())
         );
-        loadLogicalTablesWithGranularities(hourlyMonthlyGroup, Utils.asLinkedHashSet(HOUR, MONTH), dictionaries);
+        loadLogicalTablesWithGranularities(
+                hourlyMonthlyGroup,
+                Utils.asLinkedHashSet(HOUR, MONTH),
+                tableDictionary,
+                hourlyMonthlyGroup.keySet().stream()
+                        .collect(Collectors.toMap(Function.identity(), metricDictionary::getScope))
+        );
     }
 }
