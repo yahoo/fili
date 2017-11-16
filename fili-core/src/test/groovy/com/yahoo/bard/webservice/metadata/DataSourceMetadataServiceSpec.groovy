@@ -16,6 +16,15 @@ class DataSourceMetadataServiceSpec extends BaseDataSourceMetadataSpec {
 
     DataSourceMetadata metadata
 
+    @Override
+    def childSetupSpec() {
+        tableName = generateTableName()
+        intervals = generateIntervals()
+        dimensions = generateDimensions()
+        metrics = generateMetrics()
+        segments = generateSegments()
+    }
+
     def setup() {
         metadata = new DataSourceMetadata(tableName, [:], segments)
     }
@@ -41,12 +50,12 @@ class DataSourceMetadataServiceSpec extends BaseDataSourceMetadataSpec {
                 .map({it.values()})
                 .map({it.collect {it.identifier}})
                 .collect(Collectors.toList())  == [
-                        [segment1.identifier, segment2.identifier],
-                        [segment3.identifier, segment4.identifier]
+                        [segments[0].identifier, segments[1].identifier],
+                        [segments[2].identifier, segments[3].identifier]
                 ]
 
         and: "all the intervals by column in metadata service are simplified to interval12"
-        [[interval12]].containsAll(metadataService.getAvailableIntervalsByDataSource(dataSourceName).values())
+        [[intervals["interval12"]]].containsAll(metadataService.getAvailableIntervalsByDataSource(dataSourceName).values())
 
         cleanup:
         jtb.tearDown()
@@ -54,13 +63,14 @@ class DataSourceMetadataServiceSpec extends BaseDataSourceMetadataSpec {
 
     def "grouping segment data by date time behave as expected"() {
         given:
-        ConcurrentSkipListMap<DateTime, Map<String, SegmentInfo>> segmentByTime = DataSourceMetadataService.groupSegmentByTime(metadata)
-        DateTime dateTime1 = new DateTime(interval1.start)
-        DateTime dateTime2 = new DateTime(interval2.start)
+        ConcurrentSkipListMap<DateTime, Map<String, SegmentInfo>> segmentByTime = DataSourceMetadataService
+                .groupSegmentByTime(metadata)
+        DateTime dateTime1 = new DateTime(intervals["interval1"].start)
+        DateTime dateTime2 = new DateTime(intervals["interval2"].start)
 
         expect:
         segmentByTime.keySet() == [dateTime1, dateTime2] as Set
-        segmentByTime.get(new DateTime(interval2.start)).keySet() == [segment3.identifier, segment4.identifier] as Set
+        segmentByTime.get(new DateTime(intervals["interval2"].start)).keySet() == [segments[2].identifier, segments[3].identifier] as Set
     }
 
     def "grouping intervals by column behave as expected"() {
@@ -68,8 +78,8 @@ class DataSourceMetadataServiceSpec extends BaseDataSourceMetadataSpec {
         Map<String, List<Interval>> intervalByColumn = DataSourceMetadataService.groupIntervalByColumn(metadata)
 
         expect:
-        intervalByColumn.keySet() == (dimensions123 + metrics123) as Set
-        intervalByColumn.get(dimensions123.get(0)) == [interval12]
+        intervalByColumn.keySet() == (dimensions*.asName() + metrics*.asName()) as Set
+        intervalByColumn.get(dimensions.get(0).asName()) == [intervals["interval12"]]
     }
 
     def "accessing availability by column throws exception if the table does not exist in datasource metadata service"() {

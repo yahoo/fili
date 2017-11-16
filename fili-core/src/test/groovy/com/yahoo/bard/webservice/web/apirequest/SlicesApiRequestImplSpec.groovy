@@ -36,6 +36,13 @@ class SlicesApiRequestImplSpec extends BaseDataSourceMetadataSpec {
     @Shared
     PhysicalTableDictionary emptyDictionary = new PhysicalTableDictionary()
 
+    @Override
+    def childSetupSpec() {
+        tableName = generateTableName()
+        intervals = generateIntervals()
+        segments = generateSegments()
+    }
+
     def setup() {
         jtb = new JerseyTestBinder(SlicesServlet.class)
         fullDictionary = jtb.configurationLoader.physicalTableDictionary

@@ -56,15 +56,22 @@ class SegmentIntervalsHashIdGeneratorSpec extends BaseDataSourceMetadataSpec {
     @Shared
     LookbackQuery lookbackQuery
 
+    @Override
+    def childSetupSpec() {
+        tableName = generateTableName()
+        intervals = generateIntervals()
+        segments = generateSegments()
+    }
+
     def setupSpec() {
         segmentInfoMap1 = [:] as LinkedHashMap
         segmentInfoMap2 = [:] as LinkedHashMap
         segmentInfoMap3 = [:] as LinkedHashMap
 
-        segmentInfoMap1[segment1.identifier] = new SegmentInfo(segment1)
-        segmentInfoMap1[segment2.identifier] = new SegmentInfo(segment2)
+        segmentInfoMap1[segments[0].identifier] = new SegmentInfo(segments[0])
+        segmentInfoMap1[segments[1].identifier] = new SegmentInfo(segments[1])
 
-        segmentInfoMap2[segment3.identifier] = new SegmentInfo(segment3)
+        segmentInfoMap2[segments[2].identifier] = new SegmentInfo(segments[2])
 
         jtb = new JerseyTestBinder()
         tableDict = jtb.configurationLoader.physicalTableDictionary
@@ -80,11 +87,11 @@ class SegmentIntervalsHashIdGeneratorSpec extends BaseDataSourceMetadataSpec {
         customSegmentSetIdGenerator = new SegmentIntervalsHashIdGenerator(metadataService, signingFunctions)
 
         availabilityList1 = [
-                (interval1.start): segmentInfoMap1,
-                (interval2.start): segmentInfoMap2
+                (intervals["interval1"].start): segmentInfoMap1,
+                (intervals["interval2"].start): segmentInfoMap2
         ] as ConcurrentSkipListMap
 
-        availabilityList2 = [(interval2.start): segmentInfoMap2] as ConcurrentSkipListMap
+        availabilityList2 = [(intervals["interval2"].start): segmentInfoMap2] as ConcurrentSkipListMap
 
         AtomicReference<ConcurrentSkipListMap<DateTime, Map<String, SegmentInfo>>> atomicRef = new AtomicReference<>()
         atomicRef.set(availabilityList1)
@@ -95,7 +102,7 @@ class SegmentIntervalsHashIdGeneratorSpec extends BaseDataSourceMetadataSpec {
         )
 
         timeSeriesQuery = new TimeSeriesQuerySpec().defaultQuery(
-                intervals: [interval2],
+                intervals: [intervals["interval2"]],
                 dataSource: new TableDataSource(
                         TableTestUtils.buildTable(
                                 tableName,
@@ -125,7 +132,7 @@ class SegmentIntervalsHashIdGeneratorSpec extends BaseDataSourceMetadataSpec {
         }
 
         DruidAggregationQuery<?> query = Mock(DruidAggregationQuery)
-        query.intervals >> [interval1, interval2]
+        query.intervals >> [intervals["interval1"], intervals["interval2"]]
         query.innermostQuery >> query
         query.dataSource >> dataSource
 

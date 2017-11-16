@@ -13,6 +13,16 @@ import com.google.common.collect.RangeSet
 import org.joda.time.DateTime
 
 class DataSourceMetadataSpec extends BaseDataSourceMetadataSpec {
+    @Override
+    def childSetupSpec() {
+        tableName = generateTableName()
+        intervals = generateIntervals()
+        rangeSet = generateRangeSet()
+        dimensions = generateDimensions()
+        metrics = generateMetrics()
+        segments = generateSegments()
+    }
+
     def "test construct healthy datasource metadata (interval version)"() {
         setup:
         DataSourceMetadata metadata = new DataSourceMetadata(tableName, [:], segments)
@@ -23,17 +33,17 @@ class DataSourceMetadataSpec extends BaseDataSourceMetadataSpec {
         metadata.getProperties() == [:]
         metadata.getSegments() == segments
         intervalLists.size() == 2
-        intervalLists.get(DIMENSIONS).keySet().sort() == dimensions123.sort()
+        intervalLists.get(DIMENSIONS).keySet().sort() == dimensions*.asName().sort()
         intervalLists.get(DIMENSIONS).values() as List == [
-                [interval12] as SimplifiedIntervalList,
-                [interval12] as SimplifiedIntervalList,
-                [interval12] as SimplifiedIntervalList
+                [intervals["interval12"]] as SimplifiedIntervalList,
+                [intervals["interval12"]] as SimplifiedIntervalList,
+                [intervals["interval12"]] as SimplifiedIntervalList
         ]
-        intervalLists.get(METRICS).keySet().sort() == metrics123.sort()
+        intervalLists.get(METRICS).keySet().sort() == metrics*.asName().sort()
         intervalLists.get(METRICS).values() as List == [
-                [interval12] as SimplifiedIntervalList,
-                [interval12] as SimplifiedIntervalList,
-                [interval12] as SimplifiedIntervalList
+                [intervals["interval12"]] as SimplifiedIntervalList,
+                [intervals["interval12"]] as SimplifiedIntervalList,
+                [intervals["interval12"]] as SimplifiedIntervalList
         ]
     }
 
@@ -47,17 +57,17 @@ class DataSourceMetadataSpec extends BaseDataSourceMetadataSpec {
         metadata.getProperties() == [:]
         metadata.getSegments() == segments
         rangeLists.size() == 2
-        rangeLists.get(DIMENSIONS).keySet().sort() == dimensions123.sort()
+        rangeLists.get(DIMENSIONS).keySet().sort() == dimensions*.asName().sort()
         rangeLists.get(DIMENSIONS).values() as List == [
-                rangeSet12,
-                rangeSet12,
-                rangeSet12
+                rangeSet,
+                rangeSet,
+                rangeSet
         ]
-        rangeLists.get(METRICS).keySet().sort() == metrics123.sort()
+        rangeLists.get(METRICS).keySet().sort() == metrics*.asName().sort()
         rangeLists.get(METRICS).values() as List == [
-                rangeSet12,
-                rangeSet12,
-                rangeSet12
+                rangeSet,
+                rangeSet,
+                rangeSet
         ]
     }
 }
