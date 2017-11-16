@@ -573,7 +573,6 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                                 logicalTable,
                                 new QueryPlanningConstraint(
                                         tablesApiRequest.getDimensions(),
-                                        tablesApiRequest.getFilterDimensions(),
                                         Collections.emptySet(),
                                         Collections.emptySet(),
                                         tablesApiRequest.getApiFilters(),

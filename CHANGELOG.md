@@ -766,6 +766,13 @@ Removals:
 
 ### Removed:
 
+- [Avoid explicitly specifying filtered dimensions](https://github.com/yahoo/fili/pull/579)
+    * It takes a set of `ApiFilters` and `filterDimensions` to construct a `DataSourceConstraint`. It's easy to
+      construct a buggy `DataSourceConstraint` with specified `ApiFilters` but with an empty set of
+      `filterDimensions`(`filterDimensions` = `ApiFilters.keySet()`). Since `filterDimensions` can be derived from
+      `ApiFilters`, `filterDimensions` has been removed from constructor of `DataSourceConstraint` and
+      `QueryPlanningConstraint`. 
+
 - [Refactor Physical Table Definition and Update Table Loader](https://github.com/yahoo/fili/pull/207)
     * Removed deprecated `PhysicalTableDefinition` constructor that takes a `ZonlessTimeGrain`. Use `ZonedTimeGrain`
       instead

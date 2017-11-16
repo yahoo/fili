@@ -36,7 +36,6 @@ public class QueryPlanningConstraint extends DataSourceConstraint {
      * Constructor.
      *
      * @param requestDimensions  Dimensions contained in request
-     * @param filterDimensions  Filtered dimensions
      * @param metricDimensions  Metric related dimensions
      * @param metricNames  Names of metrics
      * @param apiFilters  Map of dimension to its set of API filters
@@ -48,7 +47,6 @@ public class QueryPlanningConstraint extends DataSourceConstraint {
      */
     public QueryPlanningConstraint(
             Set<Dimension> requestDimensions,
-            Set<Dimension> filterDimensions,
             Set<Dimension> metricDimensions,
             Set<String> metricNames,
             ApiFilters apiFilters,
@@ -58,7 +56,7 @@ public class QueryPlanningConstraint extends DataSourceConstraint {
             Granularity minimumGranularity,
             Granularity requestGranularity
     ) {
-        super(requestDimensions, filterDimensions, metricDimensions, metricNames, apiFilters);
+        super(requestDimensions, metricDimensions, metricNames, apiFilters);
         this.logicalTable = logicalTable;
         this.intervals = intervals;
         this.logicalMetrics = logicalMetrics;
@@ -95,7 +93,6 @@ public class QueryPlanningConstraint extends DataSourceConstraint {
     public QueryPlanningConstraint(@NotNull TablesApiRequest tablesApiRequest) {
         super(
                 tablesApiRequest.getDimensions(),
-                tablesApiRequest.getFilterDimensions(),
                 Collections.emptySet(),
                 Collections.emptySet(),
                 tablesApiRequest.getApiFilters()
