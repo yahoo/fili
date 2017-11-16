@@ -351,6 +351,21 @@ public class RequestLog {
     }
 
     /**
+     * Returns a map of all the LogInfo blocks currently registered with this thread's RequestLog.
+     *
+     * @return A map of all the LogInfo objects registered to this thread's RequestLog
+     */
+    public static Map<String, LogInfo> retrieveAll() {
+        RequestLog requestLog = RLOG.get();
+        if (requestLog == null) {
+            String message = String.format("Attempted to retrieve log info while request log object was uninitialized");
+            LOG.error(message);
+            throw new IllegalStateException(message);
+        }
+        return requestLog.info.any();
+    }
+
+    /**
      * Write the request log object of the current thread as JSON.
      * The thread's request log is cleared after a call to this method.
      */
