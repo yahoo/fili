@@ -29,8 +29,7 @@ import spock.lang.Specification
  * Take "intervals" as an example
  * <ul>
  *     <li>
- *         you don't need any of the resources(including "intervals") defined in this Spec, you do nothing and
- *         leave childSetupSpec() empty as it is in this Spec
+ *         you don't need any of the resources(including "intervals") defined in this Spec, you do nothing
  *     </li>
  *     <li>
  *         you need "intervals" in your test, you override childSetupSpec() and call its generation method in your Spec
