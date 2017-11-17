@@ -29,7 +29,7 @@ import spock.lang.Specification
  * Take "intervals" as an example
  * <ul>
  *     <li>
- *         you don't need any of the resources(including "intervals") defined in metadata tests, you do nothing and
+ *         you don't need any of the resources(including "intervals") defined in this Spec, you do nothing and
  *         leave childSetupSpec() empty as it is in this Spec
  *     </li>
  *     <li>
