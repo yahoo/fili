@@ -106,6 +106,10 @@ Current
 
 ### Changed:
 
+- [Better programmatic generation of metadata json in tests](https://github.com/yahoo/fili/pull/412)
+    * Rework metadata tests to be more generated from strings and more pluggable to support heavier and more expressive
+      testing. This allows for more consistency, as well as make it easier to test more cases.
+
 - [Expose `RequestLog` `LogInfo` objects](https://github.com/yahoo/fili/pull/574)
     * Exposes the `LogInfo` objects stored in the `RequestLog`, via `RequestLog::retrieveAll` making it easier
         for customers to implement their own scheme for logging the `RequestLog`.
