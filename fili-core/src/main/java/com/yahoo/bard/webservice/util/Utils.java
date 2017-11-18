@@ -2,11 +2,15 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.util;
 
+import com.yahoo.bard.webservice.web.ErrorMessageFormat;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,6 +34,7 @@ import javax.ws.rs.core.MultivaluedMap;
  * Utils.
  */
 public class Utils {
+    private static final Logger LOG = LoggerFactory.getLogger(Utils.class);
     /**
      * Given a collection of objects which share the same super class, return the subset of objects that share a common
      * sub class.
@@ -75,6 +80,55 @@ public class Utils {
         File parent = targetFile.getParentFile();
         if (!parent.exists() && !parent.mkdirs()) {
             throw new IllegalStateException("Couldn't create dir: " + parent);
+        }
+    }
+
+    /**
+     * Moves all files and sub-directories from one location to another.
+     * <p>
+     * Two locations must exist before calling this method.
+     *
+     * @param sourceDir  The location where files and sub-directories will be moved from
+     * @param destinationDir  The location where files and sub-directories will be moved to
+     */
+    public static void moveDirEntries(String sourceDir, String destinationDir) {
+        Path sourcePath = Paths.get(sourceDir).toAbsolutePath();
+        Path destinationPath = Paths.get(destinationDir).toAbsolutePath();
+
+        if (!Files.exists(destinationPath)) {
+            try {
+                Files.createDirectory(destinationPath);
+            } catch (IOException e) {
+                LOG.error(ErrorMessageFormat.UNABLE_TO_CREATE_DIR.format(destinationDir));
+                throw new RuntimeException(e);
+            }
+        }
+
+        try {
+            Files.walkFileTree(sourcePath, new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes basicFileAttributes)
+                        throws  IOException {
+                    Path destinationDirPath = destinationPath.resolve(sourcePath.relativize(dir));
+                    if (!Files.exists(destinationDirPath)) {
+                        Files.createDirectory(destinationDirPath);
+                        LOG.trace("Creating sub-directory {} under {} ...", dir, destinationDir);
+                    }
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes basicFileAttributes)
+                        throws IOException {
+                    Path destinationFileName = destinationPath.resolve(sourcePath.relativize(file));
+                    LOG.trace("Moving {} to {}", file, destinationFileName);
+                    Files.move(file, destinationFileName);
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        } catch (IOException e) {
+            LOG.error("I/O error thrown by SimpleFileVisitor method");
+            throw new RuntimeException(e);
         }
     }
 

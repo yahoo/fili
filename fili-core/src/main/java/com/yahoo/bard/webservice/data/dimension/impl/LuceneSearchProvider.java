@@ -23,7 +23,6 @@ import com.yahoo.bard.webservice.web.PageNotFoundException;
 import com.yahoo.bard.webservice.web.RowLimitReachedException;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -49,14 +48,9 @@ import org.apache.lucene.store.MMapDirectory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -342,87 +336,23 @@ public class LuceneSearchProvider implements SearchProvider {
             String tempDir = oldLuceneIndexPath.resolveSibling(oldLuceneIndexPath.getFileName() + "_old").toString();
 
             LOG.trace("Moving old Lucene index directory from {} to {} ...", luceneIndexPath, tempDir);
-            moveDirEntries(luceneIndexPath, tempDir);
+            Utils.moveDirEntries(luceneIndexPath, tempDir);
 
             LOG.trace("Moving all new Lucene indexes from {} to {} ...", newLuceneIndexPathString, luceneIndexPath);
-            moveDirEntries(newLuceneIndexPathString, luceneIndexPath);
+            Utils.moveDirEntries(newLuceneIndexPathString, luceneIndexPath);
 
             LOG.trace(
                     "Deleting {} since new Lucene indexes have been moved away from there and is now empty",
                     newLuceneIndexPathString
             );
-            deleteDir(newLuceneIndexPathString);
+            Utils.deleteFiles(newLuceneIndexPathString);
 
             LOG.trace("Deleting old Lucene indexes in {} ...", tempDir);
-            deleteDir(tempDir);
+            Utils.deleteFiles(tempDir);
 
             reopenIndexSearcher(false);
         } finally {
             lock.writeLock().unlock();
-        }
-    }
-
-    /**
-     * Moves all files and sub-directories from one location to another.
-     * <p>
-     * Two locations must exist before calling this method.
-     *
-     * @param sourceDir  The location where files and sub-directories will be moved from
-     * @param destinationDir  The location where files and sub-directories will be moved to
-     */
-    private static void moveDirEntries(String sourceDir, String destinationDir) {
-        Path sourcePath = Paths.get(sourceDir).toAbsolutePath();
-        Path destinationPath = Paths.get(destinationDir).toAbsolutePath();
-
-        if (!Files.exists(destinationPath)) {
-            try {
-                Files.createDirectory(destinationPath);
-            } catch (IOException e) {
-                LOG.error(ErrorMessageFormat.UNABLE_TO_CREATE_DIR.format(destinationDir));
-                throw new RuntimeException(e);
-            }
-        }
-
-        try {
-            Files.walkFileTree(sourcePath, new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes basicFileAttributes)
-                        throws  IOException {
-                    Path destinationDirPath = destinationPath.resolve(sourcePath.relativize(dir));
-                    if (!Files.exists(destinationDirPath)) {
-                        Files.createDirectory(destinationDirPath);
-                        LOG.trace("Creating sub-directory {} under {} ...", dir, destinationDir);
-                    }
-                    return FileVisitResult.CONTINUE;
-                }
-
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes basicFileAttributes)
-                        throws IOException {
-                    Path destinationFileName = destinationPath.resolve(sourcePath.relativize(file));
-                    LOG.trace("Moving {} to {}", file, destinationFileName);
-                    Files.move(file, destinationFileName);
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-        } catch (IOException e) {
-            LOG.error("I/O error thrown by SimpleFileVisitor method");
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Deletes a directory and all entries under that directory.
-     *
-     * @param path  The location of the directory that is to be deleted
-     */
-    private static void deleteDir(String path) {
-        try {
-            FileUtils.deleteDirectory(new File(path));
-        } catch (IOException e) {
-            String message = ErrorMessageFormat.UNABLE_TO_DELETE_DIR.format(path);
-            LOG.error(message);
-            throw new RuntimeException(message);
         }
     }
 

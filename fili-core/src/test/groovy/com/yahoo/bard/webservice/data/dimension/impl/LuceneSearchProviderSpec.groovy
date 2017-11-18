@@ -11,12 +11,19 @@ import com.yahoo.bard.webservice.web.RowLimitReachedException
 import com.yahoo.bard.webservice.web.util.PaginationParameters
 
 import org.apache.commons.io.FileUtils
+import org.apache.lucene.analysis.standard.StandardAnalyzer
+import org.apache.lucene.document.Document
+import org.apache.lucene.document.Field
+import org.apache.lucene.document.TextField
+import org.apache.lucene.index.IndexWriter
+import org.apache.lucene.index.IndexWriterConfig
 import org.apache.lucene.store.FSDirectory
-
-import spock.lang.Ignore
+import org.apache.lucene.store.MMapDirectory
 
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.stream.Collectors
+
 /**
  * Specification for behavior specific to the LuceneSearchProvider
  */
@@ -48,19 +55,6 @@ class LuceneSearchProviderSpec extends SearchProviderSpec<LuceneSearchProvider> 
 
         sourcePath = Files.createDirectory(new File(sourceDir).getAbsoluteFile().toPath())
         destinationPath = new File(destinationDir).getAbsoluteFile().toPath()
-
-        file1 = sourcePath.resolve("segments_1")
-        file2 = sourcePath.resolve("_1.cfs")
-        file3 = sourcePath.resolve("_1.si")
-        subDir = sourcePath.resolve("subDir")
-
-        Files.createFile(file1)
-        Files.createFile(file2)
-        Files.createFile(file3)
-        Files.createDirectory(subDir)
-
-        file4 = subDir.resolve("subDirFile")
-        Files.createFile(file4)
     }
 
     @Override
@@ -138,86 +132,31 @@ class LuceneSearchProviderSpec extends SearchProviderSpec<LuceneSearchProvider> 
         1 * keyValueStore.put('cardinality_key', '14')
     }
 
-    def "moveDirEntries moves all entries of a directory to a new directory, while keeping all old empty dirs"() {
-        expect:
-        Files.exists(sourcePath)
-        Files.exists(file1)
-        Files.exists(file2)
-        Files.exists(file3)
-        Files.exists(subDir)
-        Files.exists(file4)
-
-        !Files.exists(destinationPath.resolve("segments_1"))
-        !Files.exists(destinationPath.resolve("_1.cfs"))
-        !Files.exists(destinationPath.resolve("_1.si"))
-        !Files.exists(destinationPath.resolve("subDir"))
-        !Files.exists(destinationPath.resolve("subDir").resolve("subDirFile"))
-
-        when:
-        searchProvider.moveDirEntries(sourceDir, destinationDir)
-
-        then:
-        Files.exists(sourcePath)
-        !Files.exists(file1)
-        !Files.exists(file2)
-        !Files.exists(file3)
-        Files.exists(subDir)
-        !Files.exists(file4)
-
-        and:
-        Files.exists(destinationPath.resolve("segments_1"))
-        Files.exists(destinationPath.resolve("_1.cfs"))
-        Files.exists(destinationPath.resolve("_1.si"))
-        Files.exists(destinationPath.resolve("subDir"))
-        Files.exists(destinationPath.resolve("subDir").resolve("subDirFile"))
-    }
-
-    def "deleteDir deletes all entries under a specified directory including the directory itself"() {
-        expect:
-        Files.exists(sourcePath)
-        Files.exists(file1)
-        Files.exists(file2)
-        Files.exists(file3)
-        Files.exists(subDir)
-        Files.exists(file4)
-
-        when:
-        searchProvider.deleteDir(sourceDir)
-
-        then:
-        !Files.exists(sourcePath)
-        !Files.exists(file1)
-        !Files.exists(file2)
-        !Files.exists(file3)
-        !Files.exists(subDir)
-        !Files.exists(file4)
-    }
-
-    @Ignore("This test is currently not valid because the replacement index is invalid.")
     def "replaceIndex hot-swaps Lucene indexes in place"() {
-        given:
-        // destination = "target/tmp/dimensionCache/animal/lucene_indexes", where we will keep indexes all the time
-        Path oldIndexFile = destinationPath.resolve("segments_2")
-        Files.createFile(oldIndexFile)
+        given: "a set of new index files and old index files"
+        List<Path> newIndexFiles = generateIndexFiles(sourcePath)
+        List<Path> oldIndexFIles = Files.list(destinationPath).collect(Collectors.toList())
 
-        expect:
-        Files.exists(destinationPath)
-        Files.exists(oldIndexFile)
+        expect: "new index files do not exist in lucene directory"
+        newIndexFiles.forEach{it -> !Files.exists(it)}
 
-        when:
-        // source = "target/tmp/dimensionCache/animal/new_lucene_indexes", where new indexes come from
+        and: "old index files exist in lucene directory"
+        oldIndexFIles.forEach{it -> Files.exists(it)}
+
+        when: "we swap the new index files with the old index files"
         searchProvider.replaceIndex(sourceDir)
 
-        then:
+        then: "the path of lucene directory remains unchanged"
         Files.exists(destinationPath)
-        !Files.exists(oldIndexFile)
 
-        and:
-        Files.exists(destinationPath.resolve("segments_1"))
-        Files.exists(destinationPath.resolve("_1.cfs"))
-        Files.exists(destinationPath.resolve("_1.si"))
-        Files.exists(destinationPath.resolve("subDir"))
-        Files.exists(destinationPath.resolve("subDir").resolve("subDirFile"))
+        and: "new index files are in the lucene directory"
+        newIndexFiles.forEach{it -> Files.exists(it)}
+
+        and: "old index files are gone"
+        oldIndexFIles.forEach{it -> !Files.exists(it)}
+
+        and: "directory that used to contain the new index files is also gone"
+        !Files.exists(sourcePath)
     }
 
     @Override
@@ -270,5 +209,27 @@ class LuceneSearchProviderSpec extends SearchProviderSpec<LuceneSearchProvider> 
             if (it.cause != null) {
                 throw it.cause
             } }
+    }
+
+    /**
+     * Generate and returns a list of Lucene index files under a specified path.
+     *
+     * @param path  The specified path under which the index files are generated
+     *
+     * @return the list of Lucene index files under the specified path
+     */
+    List<Path> generateIndexFiles(Path path) {
+        IndexWriter indexWriter = new IndexWriter(
+                new MMapDirectory(path),
+                new IndexWriterConfig(new StandardAnalyzer())
+        )
+        indexWriter.commit()
+
+        Document document = new Document()
+        document.add(new TextField("text", "text", Field.Store.YES))
+        indexWriter.addDocument(document)
+        indexWriter.commit()
+
+        Files.list(path).collect(Collectors.toList())
     }
 }
