@@ -1,52 +1,50 @@
-Key Performance Indicators - Fili Web Service
-=============================================
+关键运行情况指标 - Fili Web 服务
+================================
 
-*Read this in other languages: [中文](../translations/zh/docs/kpis-zh.md).*
-
-These are the key performance indicators for the Fili Web Service component, listed in categories by order of importance.
+以下是 Fili Web 服务的关键运行情况指标，根据类别按照重要程度依次列出。
 
 
-Server Error Responses (HTTP 5XX)
----------------------------------
+服务器报错（HTTP 5XX）
+---------------------
 
-Shows how much trouble _the service_ is having.
+显示服务出现了多少次报错。
 
 - com.codahale.metrics.servlet.AbstractInstrumentedFilter.responseCodes.serverError.m1_rate
 
 
-Druid Errors
-------------
+Druid 报错
+----------
 
-Shows how much trouble queries are having against druid.
+显示查询访问 druid 时出现了多少次报错。
 
 - druid.errors.exceptions.m1_rate
 - druid.errors.http.m1_rate
 
 
-Requests
---------
+访问
+----
 
-Shows how many requests the service is serving.
+显示服务处理了多少次访问。
 
 - com.codahale.metrics.servlet.AbstractInstrumentedFilter.requests.m1_rate
 - com.codahale.metrics.servlet.AbstractInstrumentedFilter.requests.m15_rate
 
 
-System Metrics
---------------
+系统运行状况
+------------
 
-Shows the overall health of the system's low-level resources and activities.
+显示系统底层资源和运行情况的正常与否。
 
 - CPU
-- Memory
-- Network IO
-- GC Pauses
+- 内存
+- 网络 IO
+- Garbage Collection 骤停
 
 
-Latency
--------
+延时
+----
 
-Shows duration of overall requests and druid requests. (m1_rate and pN)
+显示整个请求和 druid 请求用时。（m1_rate 和 pN）
 
 - com.codahale.metrics.servlet.AbstractInstrumentedFilter.requests.p50
 - com.codahale.metrics.servlet.AbstractInstrumentedFilter.requests.p75
@@ -62,28 +60,28 @@ Shows duration of overall requests and druid requests. (m1_rate and pN)
 - druid.requests.p999
 
 
-Rate Limiting Rejections
-------------------------
+访问速率限制
+------------
 
-Shows if users are hitting rate limits.
+显示用户是否超过最大访问速率。
 
 - ratelimit.meter.reject.ui.m1_rate
 - ratelimit.meter.reject.user.m1_rate
 - ratelimit.meter.reject.global.m1_rate
 
 
-Active Requests
----------------
+处理中的请求
+------------
 
-Shows load at a given point in time. (ie. how close are the load is to the limits of Druid)
+显示某个时间的负载。（距离 Druid 的最大负载能力还差多少）
 
 - com.codahale.metrics.servlet.AbstractInstrumentedFilter.activeRequests.count
 
 
-Bad Request Responses (HTTP 4XX)
---------------------------------
+错误请求相应（HTTP 4XX）
+-----------------------
 
-Shows how much trouble users are having interacting with the API.
+显示用户发送了多少次不符合 API 语法要求的请求。
 
 - com.codahale.metrics.servlet.AbstractInstrumentedFilter.responseCodes.badRequest.m1_rate
 - com.codahale.metrics.servlet.AbstractInstrumentedFilter.responseCodes.notFound.m1_rate
