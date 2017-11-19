@@ -1,7 +1,7 @@
 Configuring Metrics
 ===================
 
-*Read this in other languages: [中文](../translations/zh/configuring-metrics-zh.md).*
+*Read this in other languages: [中文](../translations/zh/docs/configuring-metrics-zh.md).*
 
 Table of Contents
 -----------------
