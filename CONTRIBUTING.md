@@ -1,6 +1,8 @@
 Contributing [![Developers Google Group](https://img.shields.io/badge/google_group-developers-blue.svg?maxAge=2592000)](https://groups.google.com/forum/#!forum/fili-developers)
 ============
 
+*Read this in other languages: [中文](/translations/zh/CONTRIBUTING-zh.md).*
+
 If you are considering contributing to Fili, thank you! We welcome all contributions, big or small. 
 
 The only thing we ask is that you try to abide by the style and conventions of the project. Many of the conventions are

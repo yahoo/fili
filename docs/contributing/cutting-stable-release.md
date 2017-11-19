@@ -1,6 +1,8 @@
 How to Cut a Stable Release
 ===========================
 
+*Read this in other languages: [中文](../../translations/zh/docs/contributing/cutting-stable-release-zh.md).*
+
 While Fili development generally happens in a roll-forward kind of way, we need to periodically draw a line in the sand
 and mark groups of changes as "stable" and supported. Typically, it's a good idea to do this just before large,
 codebase-wide refactorings or changes are about to happen. To make it easier to do, since more frequent releases make

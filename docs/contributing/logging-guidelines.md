@@ -1,6 +1,8 @@
 Logging Guidelines
 ==================
 
+*Read this in other languages: [中文](../../translations/zh/docs/contributing/logging-guidelines-zh.md).*
+
 Logs are an important tool for debugging problems, as well as for gaining insight into how something is running under
 otherwise normal conditions. Because logs are so useful, it's tempting to always log everything that's going on, but
 processing logs is much more work than it would seem and writing too many logs has a significant negative impact on
@@ -35,7 +37,7 @@ events that likely require urgent intervention. Here are some examples:
 
 - There is a configuration error that will prevent the application from working _correctly_.
 - There is an unexpected error (ie. not caused by the user) that is going to result in failing the request with a 500 
-  HTTP status code. 
+  HTTP status code.
   
   Expected request failure conditions that are _not_ the user's fault which result in 5xx-level HTTP
   status codes should _not_ result in a log at the `Error` level. Examples of these include `503 Service Unavailable` 

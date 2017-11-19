@@ -1,6 +1,8 @@
 Code Review PR Workflow
 =======================
 
+*Read this in other languages: [中文](../../translations/zh/docs/contributing/code-review-pr-workflow-zh.md).*
+
 Code review through Pull Requests (PRs) is an important aspect of development because it is one of the primary 
 communication channels of changes in the codebase to everyone else working on it. Determining the state of a PR, 
 however, is not always easy, especially for very active PRs with lots of comments and discussion. This document 
@@ -80,13 +82,13 @@ move through, ending up being either Closed or Merged.
 
 <sub>* denotes built-in GitHub PR states. </sub>
 
-### Work in Progress  
+### Work in Progress
 
 Changes are actively being made to the PR, often in response to feedback from reviewers, or to allow feedback on 
 partial work. Feel free to review it, but the code is not considered complete by the author and will likely require 
 re-review once the work in progress is completed.
 
-### Reviewable  
+### Reviewable
 
 The author considers the changes complete and ready for full review.
 
@@ -130,7 +132,6 @@ to happen to the commits or changes in the PR before it can be considered [Merge
 
 - [Breakfix](#breakfix)
 - [Breaking Change](#breaking-change)
-- [Need Announce](#need-announce)
 - [Need 2 Reviews](#need-2-reviews)
 - [Need 1 Review](#need-1-review)
 - [Need Changes](#need-changes)
@@ -153,17 +154,7 @@ but once they are, they will be linked here. In the mean time, the working list 
 - Druid Queries
 - RequestLog
 - Request / Response workflow interfaces (including ResultSetMapper, RequestHandler, and ResponseProcessor interfaces) 
-- Feature Flags 
-
-### Need Announce
-
-The changes in the PR are interesting enough to customers that they should be notified of the changes. This includes
-changes like:
-
-- Breaking changes
-- Significant new features or capabilities
-- Known (and hopefully fixed) bugs
-- Deprecations
+- Feature Flags
 
 ### Need 2 Reviews
 

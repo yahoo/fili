@@ -1,8 +1,10 @@
 Troubleshooting
 ===============
 
-The following offers some solutions to common issues when setting up and using Fili.
- If you come across any issues that you think belong here, please feel free to contribute.
+*Read this in other languages: [中文](../translations/zh/docs/troubleshooting-zh.md).*
+
+The following offers some solutions to common issues when setting up and using Fili. If you come across any issues that
+you think belong here, please feel free to contribute.
 
 Table of Contents
 -----------------
@@ -24,8 +26,8 @@ App tests return a 500 error
 ----------------------------
 
 It may be that the versions of dependencies in your application's POM are out of sync with the dependency
-versions used by fili. If that is the case, then modifying your dependency versions to use the same version as
-fili should solve the problem.
+versions used by Fili. If that is the case, then modifying your dependency versions to use the same version as
+Fili should solve the problem.
 
 
 Fili crashes and with IllegalStateException
@@ -45,8 +47,8 @@ Server log claims the segment metadata loader is not healthy
 
 Your dimensions have never been updated, and don't have a `lastUpdated` field set. This can happen if you forgot to 
 set up your dimension loader. You can get more details about the problem at the `/healthcheck` endpoint.
-If the dimensions are not being loaded, then see the [Dimension Loading](#dimension-loading) for more details on how
-to set up the dimension loader (or [configure all of your dimensions to be non-loaded](#non-loaded-dimensions)).
+If the dimensions are not being loaded, then see the [Dimension Loading][dimension-loading] for more details on how
+to set up the dimension loader (or [configure all of your dimensions to be non-loaded][non-loaded-dimensions]).
 
 
 Debugging Queries
@@ -58,9 +60,11 @@ If you make a query to Fili that doesn't work as expected it may be helpful to a
 GET http://localhost:9998/v1/data/wikipedia/day?metrics=added&dateTime=2000-01-01/3000-01-01&format=debug
 ```
 
-This lets you see the exact query which would have been sent to Druid. [See the Druid Querying Docs][druid-docs]
+This lets you see the exact query which would have been sent to Druid. [See the Druid Querying Docs][druid-docs].
 
 
 
 [druid-docs]: http://druid.io/docs/latest/querying/querying.html
 [fili-logging]: contributing/logging-guidelines.md
+[dimension-loading]: setup.md#dimension-loading
+[non-loaded-dimensions]: setup.md#non-loaded-dimensions

@@ -1,7 +1,9 @@
 Markdown Documentation Style Guide
 ==================================
 
-Markdown is great for writing documentation. GitHub natively displays it in a very pleasing, consistent way, it's
+*Read this in other languages: [中文](/translations/zh/docs/contributing/markdown-documentation-style-guide-zh.md).*
+
+Markdown is great for writing documentation. GitHub natively displays it in a very pleasing, consistent way. It's
 easily rendered into a number of other formats, and it's easy to read when it's not rendered (ie. as text). As with
 anything that supports rich formatting, however, the best format is not always clear, and understanding documentation is
 particularly hard when there isn't a clear, consistent style used throughout a set of documentation. 

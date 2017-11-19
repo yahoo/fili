@@ -1,6 +1,9 @@
 Fili Documentation - Home
 =========================
 
+*Read this in other languages: [中文](../translations/zh/docs/README-zh.md).*
+
+
 Welcome to Fili's documentation hub! We're still building out documentation on many aspects of Fili, but here you'll
 find what documentation we do have. To make it easier to find the help you need, we've broken the documentation down
 into a few categories, but if you can't find what you're looking for, please don't hesitate to 

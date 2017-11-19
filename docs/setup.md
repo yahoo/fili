@@ -1,6 +1,8 @@
 Setup
 =====
 
+*Read this in other languages: [中文](../translations/zh/docs/setup-zh.md).*
+
 The following will guide you through standing up Fili in front of a Druid instance.
 
 [Also see Troubleshooting.md](troubleshooting.md)
@@ -13,14 +15,13 @@ Table of Contents
 - [Fili Wikipedia Example](#fili-wikipedia-example)
 - [Configure Metadata](#configure-metadata)
 - [Configuration Files](#configuration-files)
-- [Scripts](#scripts)
 - [Build and deploy the WAR](#build-and-deploy-the-war)
 - [Dimension Loading](#dimension-loading)
 
 Prerequisites
 -------------
 
-- [Jetty][jetty]
+- [Jetty][jetty].
 
 - A working [Druid][druid] cluster to serve as Fili's backend.
 
@@ -48,7 +49,7 @@ application.](#configure-metadata)
 - [Setup the dimension loader.](#dimension-loading)
 
 Fili Wikipedia Example
-----------------------------
+----------------------
 
 The [Fili wikipedia example][fili-wikipedia-example] is where you will leverage the Fili library. Here is where
 you will configure your application-specific metrics, dimensions, and tables.
@@ -77,12 +78,12 @@ Next, several configuration files and scripts need to be tweaked:
     you wish to use an in-memory map)
         - (Optional: MDBM) `bard__mdbm_location = dir/to/mdbm` - Note that Fili assumes this directory contains a
         `dimensionCache` folder.
-    - `bard__non_ui_broker = http://url/to/druid/broker`
-    - `bard__ui_broker = http://url/to/druid/broker`
+    - `bard__non_ui_druid_broker = http://url/to/druid/broker`
+    - `bard__ui_druid_broker = http://url/to/druid/broker`
     - `bard__druid_coord = http://url/to/druid/coordinator`
     
-* [pom.xml][pomXml] -  Find the `fili.version` tag, and update that to point to the desired version of Fili, rather
-   than a snapshot. 
+* [pom.xml][pomXml] - Find the `fili.version` tag, and update that to point to the desired version of Fili, rather than
+  a snapshot. 
 
 Note that both `bard__non_ui_broker` and `bard__ui_broker` are set to the same broker URL. These parameters are 
 artifacts of the project Fili was spun out of. Eventually, these two settings will be generalized into something useful
@@ -136,7 +137,7 @@ The second request is a very simple JSON object:
 
 ```json
 {
-    "lastUpdated": "Roughly current date in ISO 8601 format",
+    "lastUpdated": "Roughly current date in ISO 8601 format"
 }
 ```
  
@@ -149,10 +150,10 @@ consists of a field `id` and a field `description`. Then we might send the follo
     "dimensionRows": [
         {
             "id": "male",
-             "description": "The visitor was of the male persuasion.",
+            "description": "The visitor was of the male persuasion."
         }, {
             "id": "female",
-             "description": "The visitor was of the female persuasion."
+            "description": "The visitor was of the female persuasion."
         }, {
             "id": "unknown",
             "description": "We don't know the gender of the visitor. Oh woe is us."
@@ -162,6 +163,7 @@ consists of a field `id` and a field `description`. Then we might send the follo
 ```
 
 Followed by: 
+
 ```json
 {
     "lastUpdated": "2015-12-16T10:25:00"

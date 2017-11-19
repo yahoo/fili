@@ -59,25 +59,25 @@ Fili支持sketches，不支持hyperUnique对象，因为二者功能重复。`Ja
 询。内层查询在每一个返回的结果列里插入一个值为1的常数列。外部查询则对所有返回结果（行）的长数列执行长整数之和 -
 `longSum`。
 
-[aggregationAverageMaker]: ../../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/AggregationAverageMaker.java
+[aggregationAverageMaker]: ../../../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/AggregationAverageMaker.java
 [aggregationAverageMaker-docs]: https://github.com/yahoo/fili/issues/10
-[arithmeticMaker]: ../../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/ArithmeticMaker.java
+[arithmeticMaker]: ../../../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/ArithmeticMaker.java
 
-[configuring metrics]: ../../docs/configuring-metrics.md
-[constantMaker]: ../../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/ConstantMaker.java
-[countMaker]: ../../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/CountMaker.java
+[configuring metrics]: ../../../docs/configuring-metrics.md
+[constantMaker]: ../../../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/ConstantMaker.java
+[countMaker]: ../../../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/CountMaker.java
 
-[doubleMaxMaker]: ../../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/DoubleMaxMaker.java
-[doubleMinMaker]: ../../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/DoubleMinMaker.java
-[doubleSumMaker]: ../../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/DoubleSumMaker.java
+[doubleMaxMaker]: ../../../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/DoubleMaxMaker.java
+[doubleMinMaker]: ../../../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/DoubleMinMaker.java
+[doubleSumMaker]: ../../../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/DoubleSumMaker.java
 [druid aggregations]: http://druid.io/docs/0.8.1/querying/aggregations.html
 [druid post-aggregations]: http://druid.io/docs/0.8.1/querying/post-aggregations.html
 [druid sketch module]: https://github.com/DataSketches/sketches-core
 
-[longMaxMaker]: ../../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/LongMaxMaker.java
-[longMinMaker]: ../../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/LongMinMaker.java
-[longSumMaker]: ../../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/LongSumMaker.java
+[longMaxMaker]: ../../../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/LongMaxMaker.java
+[longMinMaker]: ../../../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/LongMinMaker.java
+[longSumMaker]: ../../../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/LongSumMaker.java
 
-[sketchCountMaker]: ../../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/SketchCountMaker.java
-[sketchSetOperationMaker]: ../../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/SketchSetOperationMaker.java
+[sketchCountMaker]: ../../../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/SketchCountMaker.java
+[sketchSetOperationMaker]: ../../../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/SketchSetOperationMaker.java
 [sketch module]: https://github.com/druid-io/druid/pull/1991/files
