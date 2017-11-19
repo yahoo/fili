@@ -1,6 +1,8 @@
 Fili API Guide
 ==================
 
+*Read this in other languages: [中文](../translations/zh/docs/end-user-api-zh.md).*
+
 The Fili API provides access to the underlying data that powers Fili.
 
 All interaction with the API is via HTTPS `GET` requests, which means that your entire query is just a URL, making it
@@ -140,7 +142,8 @@ Time grain is the granularity or "bucket size" of each response row. Or, to look
 period over which metrics are aggregated. In particular, this matters a lot for metrics that are counting "unique" 
 things, like Unique Identifier.
 
-Defaulted granularities include second, minute, hour, day, week, month, quarter, year.  The all granularity aggregates all data into a single bucket. 
+Defaulted granularities include second, minute, hour, day, week, month, quarter, year.  The all granularity aggregates
+all data into a single bucket. 
 
 Data Queries
 ------------
@@ -208,11 +211,13 @@ to see the global numbers, not the per-region numbers.
 
 This example also shows that we can filter by dimensions that we are not grouping on! Filters are very rich and
 powerful, so take a look at the [Filters](#filtering) section for more details. Oh, and one last thing about filters on
-the Data resource: By default `in`, `notin`, `eq`, `startswith`, and `contains` are supported, but `startswith` and `contains` may be disabled.
+the Data resource: By default `in`, `notin`, `eq`, `startswith`, and `contains` are supported, but `startswith` and
+`contains` may be disabled.
 
 ### Response Format Example ###
 
-Now, the very last thing we need from our report: We need it [in CSV format](https://sampleapp.fili.io/v1/data/network/week?metrics=pageViews,dayAvgTimeSpent&dateTime=2014-09-01/2014-09-08&filters=productRegion|id-notin[Americas Region]&format=csv),
+Now, the very last thing we need from our report: We need it
+[in CSV format](https://sampleapp.fili.io/v1/data/network/week?metrics=pageViews,dayAvgTimeSpent&dateTime=2014-09-01/2014-09-08&filters=productRegion|id-notin[Americas Region]&format=csv),
 so that we can pull it into Excel and play around with it! No worries, the Fili API supports CSV!
 
     GET https://sampleapp.fili.io/v1/data/network/week?metrics=pageViews,dayAvgTimeSpent&dateTime=2014-09-01/2014-09-08&filters=productRegion|id-notin[Americas Region]&format=csv
@@ -223,7 +228,7 @@ Query Options
 -------------
 
 Many of the resources in the Fili API support different query options. Here are the different options that are
-supported, and how the use the options:
+supported and the usage of the options:
 
 - [Pagination / Limit](#pagination--limit)
 - [Response Format](#response-format)
@@ -304,8 +309,7 @@ won't include a link to the `next` page.
 
 #### Dimension ####
 
-Currently, the dimension endpoint only prints the `previous` and `next` links inside the top-level JSON object. It does, 
-however, include the same links in the headers as the data endpoint: `first`, `last`, `next` and `prev`.
+The dimension endpoint includes the same links in the headers as the data endpoint: `first`, `last`, `next` and `prev`.
 
 Unlike the Data endpoint, the Dimension endpoint _always_ paginates. It defaults to page 1, and 10000 rows per page. The
 default rows per page is configurable, and may be adjusted by modifying the configuration `default_per_page.` 
@@ -313,11 +317,11 @@ default rows per page is configurable, and may be adjusted by modifying the conf
 _Note that `default_per_page` applies **only** to the Dimension endpoint. It does not affect the Data endpoint._
 
 - **perPage**:
-    Setting only the `perPage` parameter also gives a "limit" behavior, returning only the top `perPage` rows.
+    Setting only the `perPage` parameter won't work
 
     [Example](https://sampleapp.fili.io/v1/dimensions/productRegion/values?perPage=2): `GET https://sampleapp.fili.io/v1/dimensions/productRegion/values?perPage=2`
     
-    _Note: This will likely change to not return "all" by default in a future version_
+    _Note: This generates an error response, because both `perPage` and `page` are required for pagination_
     
 - **page**:    
     `page` defaults to 1, the first page.
@@ -520,7 +524,55 @@ the response depend on the format of the response:
 ##### JSON #####
 Instead of the normal format for each requested field for a dimension (`"dimensionName|fieldName":"fieldValue"`), each 
 record in the response will only have a single entry for the dimension who's value is the value of the key-field for
-that dimension (`"dimensionName":"keyFieldValue"`)
+that dimension (`"dimensionName":"keyFieldValue"`). For example, the response of normal format(unsimplified) looks like
+this
+
+```json
+{
+    "rows": [
+        {
+            "dateTime": "2014-09-01 00:00:00.000",
+            "gender|id": "-1",
+            "gender|desc": "Unknown",
+            "pageViews": 1681441753
+        },{
+            "dateTime": "2014-09-01 00:00:00.000",
+            "gender|id": "f",
+            "gender|desc": "Female",
+            "pageViews": 958894425
+        },{
+            "dateTime": "2014-09-01 00:00:00.000",
+            "gender|id": "m",
+            "gender|desc": "Male",
+            "pageViews": 1304365910
+        }
+    ]
+}
+```
+
+The response of with `show=none` looks like
+
+```json
+{
+    "rows": [
+        {
+            "dateTime": "2014-09-01 00:00:00.000",
+            "gender": "-1",
+            "pageViews": 1681441753
+        },{
+            "dateTime": "2014-09-01 00:00:00.000",
+            "gender": "f",
+            "pageViews": 958894425
+        },{
+            "dateTime": "2014-09-01 00:00:00.000",
+            "gender": "m",
+            "pageViews": 1304365910
+        }
+    ]
+}
+```
+
+Note that `gender|desc` field is gone and `gender|id` becomes just `gender`.
 
 ##### CSV #####
 Instead of the normal header format for each requested field for a dimension (`"dimensionName|fieldName":"fieldValue"`),
@@ -529,8 +581,64 @@ values of the column for that dimension will be the key-field for that dimension
 
 ##### JSON-API #####
 The `none` keyword for a dimension prevents the sidecar object for that dimension from being included in the response.
+For example
 
-            
+```json
+{
+    "rows": [
+        {
+            "dateTime": "2014-09-01 00:00:00.000",
+            "gender": "-1",
+            "pageViews": 1681441753
+        },{
+            "dateTime": "2014-09-01 00:00:00.000",
+            "gender": "f",
+            "pageViews": 958894425
+        },{
+            "dateTime": "2014-09-01 00:00:00.000",
+            "gender": "m",
+            "pageViews": 1304365910
+        }
+    ],
+    "gender": [
+        {
+            "id": "-1",
+            "desc": "Unknown"
+        },{
+            "id": "f",
+            "desc": "Female"
+        },{
+            "id": "m",
+            "desc": "Male"
+        }
+    ]
+}
+```
+
+The simplified version is
+
+```json
+{
+    "rows": [
+        {
+            "dateTime": "2014-09-01 00:00:00.000",
+            "gender": "-1",
+            "pageViews": 1681441753
+        },{
+            "dateTime": "2014-09-01 00:00:00.000",
+            "gender": "f",
+            "pageViews": 958894425
+        },{
+            "dateTime": "2014-09-01 00:00:00.000",
+            "gender": "m",
+            "pageViews": 1304365910
+        }
+    ],
+    "gender": [ ]
+}
+```
+
+  
 ### Sorting ###
 
 Sorting of the records in a response [can be done](https://sampleapp.fili.io/v1/data/network/day/gender?metrics=pageViews&dateTime=2014-09-01/2014-09-02&sort=pageViews|asc)
@@ -564,11 +672,11 @@ performs any post-Druid calculations on one of the metrics that you are sorting 
 
 Suppose we would like to know which three pages have the top three pageview counts for each week between January and 
 September 2014. We can easily answer such a question with a `topN` query. `topN` queries allow us to ask for the top 
-results for each time bucket, up to a limit `n` in a request. Of course, a `topN` query implies that some sort of ordering has been imposed
- on the data. Therefore, a `topN` query has two components:
+results for each time bucket, up to a limit `n` in a request. Of course, a `topN` query implies that some sort of
+ordering has been imposed on the data. Therefore, a `topN` query has two components:
 
 1. `topN=n` where `n` is the number of results to return for each bucket
-2. `sort=metricName|dir` telling Fili how to sort the results before filtering down to the top N. See the section on 
+2. `sort=metricName|desc` telling Fili how to sort the results before filtering down to the top N. See the section on 
 [sorting](#sorting) for more details about the sort clause.
 
 Going back to the sample question at the start of the section, let's see how that looks as a
@@ -577,8 +685,8 @@ Going back to the sample question at the start of the section, let's see how tha
     GET https://sampleapp.fili.io/v1/data/network/week/pages?metrics=pageViews&dateTime=2014-06-01/2014-08-31&topN=3&sort=pageViews|desc
 
 We want the three highest pageview counts for each week, so `n` is set to three, and the query is aggregated to the week
-granularity. Furthermore, we want the three _largest_ pagecounts. Therefore, we sort `pageViews` in descending order (the
-first entry is the highest, the second entry is the lowest, and so on).
+granularity. Furthermore, we want the three _largest_ pagecounts. Therefore, we sort `pageViews` in descending order
+(the first entry is the highest, the second entry is the lowest, and so on).
 
 Fili also supports asking for metrics in addition to the one being sorted on in `topN` queries. Suppose we want to know the [daily average time 
 spent (`dayAvgTimeSpent`) on the three pages with the highest number of page views for each week between January 6th and September 
@@ -626,6 +734,7 @@ A user may get the status of all jobs by sending a `GET` to `jobs` endpoint.
 ```
 https://HOST:PORT/v1/jobs
 ```
+
 If no jobs are available in the system, an empty collection is returned.
 
 The `jobs` endpoint supports filtering on job fields (i.e. `userId`, `status`), using the same syntax as the
@@ -657,6 +766,7 @@ meta-data as follows:
     "userId": "Foo"
 }
 ```
+
 * `query` is the original query
 * `results` provides a link to the data, whether it is fully synchronous or switches from
    synchronous to asynchronous after a timeout depends on the default setting of `asyncAfter`.
@@ -685,7 +795,7 @@ just like the [`format`](#response-format) parameter on queries sent to the `dat
 a query to the `data` endpoint, and allow the user to get pages of the results.
 
 3. **`asyncAfter`** - Allows the user to specify how long they are willing to wait for results from the
-result store. Behaves like the [`asyncAfter`](async) parameter on the `data` endpoint.
+result store. Behaves like the [`asyncAfter`](#asynchronous-queries) parameter on the `data` endpoint.
 
 If the results for the given ticket are ready, we get the results in the format specified. Otherwise, we get the
 [job's metadata](#job-meta-data).
@@ -701,29 +811,42 @@ Misc
 
 ### Dates and Times ###
 
-The date interval is specified using the `dateTime` parameter in the format `dateTime=d1/d2`. The first date is the start date, and the second is the non-inclusive end date. For example, `dateTime=2015-10-01/2015-10-03` will return the data for October 1st and 2nd, but not the 3rd. Dates can be one of: 
+The date interval is specified using the `dateTime` parameter in the format `dateTime=d1/d2`. The first date is the
+start date, and the second is the non-inclusive end date. For example, `dateTime=2015-10-01/2015-10-03` will return the
+data for October 1st and 2nd, but not the 3rd. Dates can be one of: 
 
 1. ISO 8601 formatted date
 2. ISO 8601 duration  (see below)
 3. Date macro (see below)
 
-We have followed the ISO 8601 standards as closely as possible in the API. Wikipedia has a [great article](http://en.wikipedia.org/wiki/ISO_8601) on ISO 8601 dates and times if you want to dig deep. 
+We have followed the ISO 8601 standards as closely as possible in the API. Wikipedia has a
+[great article](http://en.wikipedia.org/wiki/ISO_8601) on ISO 8601 dates and times if you want to dig deep. 
 
 #### Date Periods  (ISO 8601 Durations) ####
 
-Date Periods have been implemented in accordance with the [ISO 8601 standard](https://en.wikipedia.org/wiki/ISO_8601#Durations). Briefly, a period is specified by the letter `P`, followed by a number and then a timegrain (M=month,W=week,D=day,etc).  For example, if you wanted 30 days of data, you would specify `P30D`.  The number and period may be repeated, so `P1Y2M` is an interval of one year and two months. 
+Date Periods have been implemented in accordance with the
+[ISO 8601 standard](https://en.wikipedia.org/wiki/ISO_8601#Durations). Briefly, a period is specified by the letter `P`,
+followed by a number and then a timegrain (M=month,W=week,D=day,etc). For example, if you wanted 30 days of data, you
+would specify `P30D`.  The number and period may be repeated, so `P1Y2M` is an interval of one year and two months. 
 
 This period can take the place of either the start or end date in the query.
 
 #### Date Macros ####
 
-We have created a macro named `current`, which will always be translated to the beginning of the current time grain period.  For example, if your time grain is `day`, then `current` will resolve to today’s date.  If your query time grain is `month`, then `current` will resolve to the first of the current month.
+We have created a macro named `current`, which will always be translated to the beginning of the current time grain
+period. For example, if your time grain is `day`, then `current` will resolve to today’s date. If your query time grain
+is `month`, then `current` will resolve to the first of the current month.
 
-There is also a similar macro named `next` which resolves to the beginning of the next interval. For example, if your time grain is `day`, then, `next` will resolve to tomorrow's date.
+There is also a similar macro named `next` which resolves to the beginning of the next interval. For example, if your
+time grain is `day`, then, `next` will resolve to tomorrow's date.
 
 #### Time Zone
 
-Currently, time zone cannot be specified for the start or stop instants of an interval. Instead, the time zone of a query can be changed via the `timeZone` query parameter. This changes the time zone in which the intervals specified in the `dateTime` are interpreted. By default, the query will use the default time zone of the API, but any [time zone identifier](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List) can be specified to override that. For example, specifying query parameters
+Currently, time zone cannot be specified for the start or stop instants of an interval. Instead, the time zone of a
+query can be changed via the `timeZone` query parameter. This changes the time zone in which the intervals specified in
+the `dateTime` are interpreted. By default, the query will use the default time zone of the API, but any
+[time zone identifier](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List) can be specified to override
+that. For example, specifying query parameters
 
     dateTime=2016-09-16/2016-09-17&timeZone=America/Los_Angeles
     vs
