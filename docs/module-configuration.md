@@ -1,6 +1,8 @@
 Module Configuration
 ====================
 
+*Read this in other languages: [中文](../translations/zh/docs/module-configuration-zh.md).*
+
 Fili has two main configuration avenues, the domain object configuration (Metrics, Dimensions, and Tables) which happens
 via compiled Java code, and module configuration via properties. The domain configuration is [covered](setup.md)
 [elsewhere](configuring-metrics), and we'll only cover the module configuration infrastructure here. 
@@ -26,7 +28,7 @@ loaded.
 | -------: | ----------------------------------- | ---------------------------------------------------------------------- |
 | (High) 1 | Environment variables               |                                                                        |
 |        2 | Java properties                     |                                                                        |
-|        3 | `userConfig.properties`<sup>*</sup> | For a controlling a specific, non-standard environment, like a dev box |
+|        3 | `userConfig.properties`<sup>*</sup> | For controlling a specific, non-standard environment, like a dev box   |
 |        4 | `testApplicationConfig.properties`  | For test runner overrides                                              |
 |        5 | `applicationConfig.properties`      | Every application MUST provide one of these                            |
 |  (Low) 6 | `moduleConfig.properties`           | `moduleConfig.properties` files will be applied in dependency order    |
