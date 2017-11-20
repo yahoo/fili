@@ -11,10 +11,6 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.Closeable;
 import java.security.Principal;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,8 +21,7 @@ import javax.validation.constraints.NotNull;
 /**
  * Handles Rate Limiting for web service.
  */
-public class RateLimiter {
-    private static final Logger LOG = LoggerFactory.getLogger(RateLimiter.class);
+public class DefaultRateLimiter implements RateLimiter {
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     // Property names
@@ -65,11 +60,11 @@ public class RateLimiter {
     private final Meter rejectUserMeter;
 
     /**
-     * Loads defaults and create RateLimiter.
+     * Loads defaults and create DefaultRateLimiter.
      *
      * @throws SystemConfigException If any parameters fail to load
      */
-    public RateLimiter() throws SystemConfigException {
+    public DefaultRateLimiter() throws SystemConfigException {
         // Load limits
         requestLimitGlobal = SYSTEM_CONFIG.getIntProperty(REQUEST_LIMIT_GLOBAL_KEY, DEFAULT_REQUEST_LIMIT_GLOBAL);
         requestLimitPerUser = SYSTEM_CONFIG.getIntProperty(REQUEST_LIMIT_PER_USER_KEY, DEFAULT_REQUEST_LIMIT_PER_USER);
@@ -88,21 +83,7 @@ public class RateLimiter {
     }
 
     /**
-     * Type of outstanding request.
-     */
-    public enum RequestType {
-        USER, UI, BYPASS
-    }
-
-    /**
-     * Type of rate limit.
-     */
-    public enum RateLimitType {
-        GLOBAL, USER
-    }
-
-    /**
-     * Get the current count for this username.
+     * Get the current count for this username. If user does not have a counter, create one.
      *
      * @param userName  Username to get the count for
      *
@@ -130,195 +111,26 @@ public class RateLimiter {
      * @return token holding this user's count
      */
     public RequestToken getToken(RequestType type, Principal user) {
+        String userName = String.valueOf(user == null ? null : user.getName());
+        AtomicInteger userCount;
+        OutstandingRequestToken token;
         switch (type) {
             case UI:
-                return new OutstandingRequestToken(user, requestLimitUi, requestUiMeter, rejectUiMeter);
+                userCount = getCount(userName);
+                token = new OutstandingRequestToken(user, requestLimitUi, requestLimitGlobal, userCount, globalCount,
+                        requestUiMeter, rejectUiMeter, requestGlobalCounter);
+                token.setDisabledRate(DISABLED_RATE);
+                return token;
             case USER:
-                return new OutstandingRequestToken(user, requestLimitPerUser, requestUserMeter, rejectUserMeter);
+                userCount = getCount(userName);
+                token = new OutstandingRequestToken(user, requestLimitPerUser, requestLimitGlobal, userCount,
+                        globalCount, requestUserMeter, rejectUserMeter, requestGlobalCounter);
+                token.setDisabledRate(DISABLED_RATE);
+                return token;
             case BYPASS:
-                return new BypassRequestToken();
+                return new BypassRequestToken(requestBypassMeter);
             default:
                 throw new IllegalStateException("Unknown request type " + type);
-        }
-    }
-
-    /**
-     * Increment the initial count and check if the count has gone over the request limit.
-     *
-     * @param initialCount  Initial count that we're incrementing and checking against the limit
-     * @param requestLimit  Limit to check the incremented initial count against
-     *
-     * @return True if the incremented count is <= the request limit, false if it's gone over and the request limit
-     * isn't the DISABLED_RATE (-1).
-     */
-    private boolean incrementAndCheckCount(AtomicInteger initialCount, int requestLimit) {
-        int count = initialCount.incrementAndGet();
-        if (count > requestLimit && requestLimit != DISABLED_RATE) {
-            initialCount.decrementAndGet();
-            LOG.info("reject: {} > {}", count, requestLimit);
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Resource representing an outstanding request.
-     */
-    public abstract class RequestToken implements Closeable {
-        /**
-         * Check if the token is bound.
-         *
-         * @return true if bound or false if rejected
-         */
-        public abstract boolean isBound();
-
-        /**
-         * Bind the counters to the token.
-         *
-         * @return true if the token was able to be bound or is already bounf, or false if rejected.
-         */
-        public abstract boolean bind();
-
-        /**
-         * Release the token's counters.
-         */
-        public abstract void unBind();
-    }
-
-    /**
-     * RequestToken for successfully bound request.
-     */
-    public class OutstandingRequestToken extends RequestToken {
-        final String userName;
-        final AtomicInteger count;
-        boolean isBound;
-
-        /**
-         * Bind outstanding request to token, or fail and set to unbound.
-         *
-         * @param user  request user
-         * @param requestLimit  request limit
-         * @param requestMeter  request meter
-         * @param rejectMeter  reject meter
-         */
-        public OutstandingRequestToken(Principal user, int requestLimit, Meter requestMeter, Meter rejectMeter) {
-            userName = String.valueOf(user == null ? null : user.getName());
-            count = getCount(userName);
-
-            // Bind globally
-            if (!incrementAndCheckCount(globalCount, requestLimitGlobal)) {
-                rejectRequest(rejectMeter, RateLimitType.GLOBAL);
-                return;
-            }
-
-            // Bind to the user
-            if (!incrementAndCheckCount(count, requestLimit)) {
-                // Decrement the global count that had already been incremented
-                globalCount.decrementAndGet();
-
-                rejectRequest(rejectMeter, RateLimitType.USER);
-                return;
-            }
-
-            // Measure the accepted request and current open connections
-            requestMeter.mark();
-            requestGlobalCounter.inc();
-
-            isBound = true;
-        }
-
-        /**
-         * Do the house keeping needed to reject the request.
-         *
-         * @param rejectMeter  Meter to count the rejection in
-         * @param limitType  Type of rate limit
-         */
-        private void rejectRequest(Meter rejectMeter, RateLimitType limitType) {
-            rejectMeter.mark();
-            LOG.info("{} limit {}", limitType, userName);
-            isBound = false;
-        }
-
-        @Override
-        public void close() {
-            if (isBound) {
-                isBound = false;
-
-                // Unbind
-                if (globalCount.decrementAndGet() < 0) {
-                    // Reset to 0 if it falls below 0
-                    int old = globalCount.getAndSet(0);
-                    LOG.error("Lost global count {} on user {}", old, userName);
-                }
-                if (count.decrementAndGet() < 0) {
-                    // Reset to 0 if it falls below 0
-                    int old = count.getAndSet(0);
-                    LOG.error("Lost user count {} on user {}", old, userName);
-                    throw new IllegalStateException("Lost user count");
-                }
-            }
-        }
-
-        @Override
-        protected void finalize() throws Throwable {
-            try {
-                if (isBound) {
-                    LOG.debug("orphaned {}", userName);
-                    close();
-                }
-            } finally {
-                super.finalize();
-            }
-        }
-
-        @Override
-        public boolean isBound() {
-            return isBound;
-        }
-
-        @Override
-        public boolean bind() {
-            return isBound;
-        }
-
-        @Override
-        public void unBind() {
-            close();
-        }
-    }
-
-    /**
-     * RequestToken for rejected request.
-     */
-    public class BypassRequestToken extends RequestToken {
-
-        /**
-         * Constructor.
-         * <p>
-         * Also counts the bypass token as being issued.
-         */
-        public BypassRequestToken() {
-            requestBypassMeter.mark();
-        }
-
-        @Override
-        public boolean isBound() {
-            return true;
-        }
-
-        @Override
-        public boolean bind() {
-            return true;
-        }
-
-        @Override
-        public void unBind() {
-            // Do nothing
-        }
-
-        @Override
-        public void close() {
-            // Do nothing
         }
     }
 }
