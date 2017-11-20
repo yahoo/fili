@@ -103,7 +103,6 @@ import com.yahoo.bard.webservice.web.SlicesApiRequest;
 import com.yahoo.bard.webservice.web.TablesApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DefaultHavingApiGenerator;
 import com.yahoo.bard.webservice.web.apirequest.HavingGenerator;
-import com.yahoo.bard.webservice.web.filters.RateLimitFilter;
 import com.yahoo.bard.webservice.web.apirequest.PerRequestDictionaryHavingGenerator;
 import com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow;
 import com.yahoo.bard.webservice.web.handlers.workflow.RequestWorkflowProvider;
@@ -1145,7 +1144,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     }
 
     /**
-     * Creates a new RateLimiter for the RateLimitFilter
+     * Creates a new RateLimiter for the RateLimitFilter.
      *
      * @return A DefaultRateLimiter
      */

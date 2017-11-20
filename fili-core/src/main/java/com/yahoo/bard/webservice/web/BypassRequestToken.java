@@ -1,4 +1,4 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web;
 
@@ -13,6 +13,8 @@ public class BypassRequestToken extends RequestToken {
      * Constructor.
      * <p>
      * Also counts the bypass token as being issued.
+     *
+     * @param requestBypassMeter  Bypass meter for tracking amount of bypass requests issued.
      */
     public BypassRequestToken(Meter requestBypassMeter) {
         requestBypassMeter.mark();
