@@ -75,7 +75,7 @@ class DataSourceMetadataLoadTaskSpec extends BaseDataSourceMetadataSpec {
                 dimensions.(TestApiDimensionName.BREED.asName()).asName(),
                 dimensions.(TestApiDimensionName.SEX.asName()).asName()
         ]
-        quotedDimensions = dimensions13.collect() { '"' + it + '"'}
+        quotedDimensions = dimensions13.collect() { /"$it"/ }
 
         metrics123 = [
                 metrics.(TestApiMetricName.A_ROW_NUM.asName()).asName(),
