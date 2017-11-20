@@ -8,9 +8,10 @@ import com.yahoo.bard.webservice.config.SystemConfigException;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.bard.webservice.web.DataApiRequestTypeIdentifier;
+import com.yahoo.bard.webservice.web.DefaultRateLimiter;
 import com.yahoo.bard.webservice.web.RateLimiter;
-import com.yahoo.bard.webservice.web.RateLimiter.RequestToken;
-import com.yahoo.bard.webservice.web.RateLimiter.RequestType;
+import com.yahoo.bard.webservice.web.RequestToken;
+import com.yahoo.bard.webservice.web.RequestType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,7 @@ import java.net.URI;
 import java.security.Principal;
 
 import javax.annotation.Priority;
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -44,12 +46,25 @@ public class RateLimitFilter implements ContainerRequestFilter, ContainerRespons
     protected final RateLimiter rateLimiter;
 
     /**
-     * Load RateLimiter for this filter.
+     * Constructs a RateLimitFilter using the provided rate limiter
      *
-     * @throws SystemConfigException  If any critical configuration fails to load for the RateLimiter
+     * @param rateLimiter
+     * @throws SystemConfigException
      */
+    @Inject
+    public RateLimitFilter(RateLimiter rateLimiter) throws SystemConfigException {
+        this.rateLimiter = rateLimiter;
+    }
+
+    /**
+     * Load DefaultRateLimiter for this filter.
+     *
+     * @throws SystemConfigException  If any critical configuration fails to load for the DefaultRateLimiter
+     * @deprecated Use the constructor that takes
+     */
+    @Deprecated
     public RateLimitFilter() throws SystemConfigException {
-        rateLimiter = new RateLimiter();
+        rateLimiter = new DefaultRateLimiter();
     }
 
     @Override
