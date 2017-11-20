@@ -26,14 +26,18 @@ public class OutstandingRequestToken extends RequestToken {
     /**
      * Bind outstanding request to token, or fail and set to unbound.
      *
-     * @param user  request user
-     * @param requestLimit  request limit
-     * @param requestMeter  request meter
-     * @param rejectMeter  reject meter
+     * @param user  The user that issued the request.
+     * @param requestLimit  The limit on the amount of requests that user can issue.
+     * @param requestLimitGlobal  The limit on the amount of requests any user can issue.
+     * @param userCount  The amount of in-flight requests the user hass issued.
+     * @param globalCount  The total amount of in-flight requests.
+     * @param requestMeter  A meter counting the total amount of accepted requests made.
+     * @param rejectMeter  A meter counting the total number of rejected requests made.
+     * @param requestGlobalCounter  A counter tracking the total number of accepted requests made.
      */
     public OutstandingRequestToken(Principal user, int requestLimit, int requestLimitGlobal, AtomicInteger userCount,
-            AtomicInteger globalCount, Meter requestMeter, Meter rejectMeter, Counter requestGlobalCounter)
-    {
+            AtomicInteger globalCount, Meter requestMeter, Meter rejectMeter, Counter requestGlobalCounter
+    ) {
         this.userCount = userCount;
         this.globalCount = globalCount;
         userName = String.valueOf(user == null ? null : user.getName());

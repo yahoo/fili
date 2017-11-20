@@ -46,10 +46,10 @@ public class RateLimitFilter implements ContainerRequestFilter, ContainerRespons
     protected final RateLimiter rateLimiter;
 
     /**
-     * Constructs a RateLimitFilter using the provided rate limiter
+     * Constructs a RateLimitFilter using the provided rate limiter.
      *
-     * @param rateLimiter
-     * @throws SystemConfigException
+     * @param rateLimiter  RateLimiter object to handle rate limiting logic.
+     * @throws SystemConfigException if RateLimiter construction fails.
      */
     @Inject
     public RateLimitFilter(RateLimiter rateLimiter) throws SystemConfigException {
