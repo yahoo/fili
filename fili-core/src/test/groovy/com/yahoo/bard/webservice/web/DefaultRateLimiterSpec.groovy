@@ -2,17 +2,15 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web
 
-import com.yahoo.bard.webservice.web.RateLimiter.RequestToken
-import com.yahoo.bard.webservice.web.RateLimiter.RequestType
 import com.yahoo.bard.webservice.web.filters.RateLimitFilterSpec
 
 import spock.lang.Specification
 
 import java.security.Principal
 
-class RateLimiterSpec extends Specification {
+class DefaultRateLimiterSpec extends Specification {
 
-    RateLimiter rateLimiter
+    DefaultRateLimiter rateLimiter
     Principal user
 
     def setupSpec() {
@@ -20,7 +18,7 @@ class RateLimiterSpec extends Specification {
     }
 
     def setup() {
-        rateLimiter = new RateLimiter()
+        rateLimiter = new DefaultRateLimiter()
         user = Mock(Principal)
         user.getName() >> { return "user" }
 
@@ -35,7 +33,7 @@ class RateLimiterSpec extends Specification {
 
     def "user request"() {
         when:
-        RateLimiter.RequestToken token = rateLimiter.getToken(RequestType.USER, user)
+        RequestToken token = rateLimiter.getToken(RequestType.USER, user)
         token.close()
 
         then:
@@ -50,7 +48,7 @@ class RateLimiterSpec extends Specification {
 
     def "ui request"() {
         when:
-        RateLimiter.RequestToken token = rateLimiter.getToken(RequestType.UI, user)
+        RequestToken token = rateLimiter.getToken(RequestType.UI, user)
         token.close()
 
         then:
@@ -65,7 +63,7 @@ class RateLimiterSpec extends Specification {
 
     def "bypass request"() {
         when:
-        RateLimiter.RequestToken token = rateLimiter.getToken(RequestType.BYPASS, user)
+        RequestToken token = rateLimiter.getToken(RequestType.BYPASS, user)
         token.close()
 
         then:
@@ -110,7 +108,7 @@ class RateLimiterSpec extends Specification {
 
     def "OutstandingRequestToken closed"() {
         when:
-        RateLimiter.RequestToken token = rateLimiter.getToken(RequestType.USER, user)
+        RequestToken token = rateLimiter.getToken(RequestType.USER, user)
 
         then:
         rateLimiter.globalCount.get() == 1
@@ -139,7 +137,7 @@ class RateLimiterSpec extends Specification {
 
     def "OutstandingRequestToken orphan closed"() {
         when:
-        RateLimiter.RequestToken token = rateLimiter.getToken(RequestType.USER, user)
+        RequestToken token = rateLimiter.getToken(RequestType.USER, user)
 
         then:
         rateLimiter.globalCount.get() == 1
@@ -161,8 +159,8 @@ class RateLimiterSpec extends Specification {
 
     def "Lose user counts"() {
         when:
-        RateLimiter.OutstandingRequestToken token = rateLimiter.getToken(RequestType.USER, user)
-        token.count.decrementAndGet()
+        OutstandingRequestToken token = rateLimiter.getToken(RequestType.USER, user)
+        token.userCount.decrementAndGet()
         token.close()
 
         then:
@@ -173,7 +171,7 @@ class RateLimiterSpec extends Specification {
 
     def "Lose global counts"() {
         when:
-        RateLimiter.RequestToken token = rateLimiter.getToken(RequestType.USER, user)
+        RequestToken token = rateLimiter.getToken(RequestType.USER, user)
         rateLimiter.globalCount.decrementAndGet()
         token.close()
 
