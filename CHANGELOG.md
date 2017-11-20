@@ -112,6 +112,11 @@ Current
     * Rework metadata tests to be more generated from strings and more pluggable to support heavier and more expressive
       testing. This allows for more consistency, as well as make it easier to test more cases.
 
+- [Ability to implement use custom rate limiting schemes](https://github.com/yahoo/fili/pull/586)
+    * Added constructor for a rate limiter to `RateLimiterFilter` which takes a `RateLimiter`
+    * Deprecated old constructor
+    * `AbsractBinderFactory` now binds a `DefaultRateLimiter` to `RateLimiter.class`
+
 - [Expose `RequestLog` `LogInfo` objects](https://github.com/yahoo/fili/pull/574)
     * Exposes the `LogInfo` objects stored in the `RequestLog`, via `RequestLog::retrieveAll` making it easier
         for customers to implement their own scheme for logging the `RequestLog`.
