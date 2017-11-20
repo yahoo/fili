@@ -14,6 +14,10 @@ class SegmentMetadataSpec extends BaseDataSourceMetadataSpec {
     private static final String intervalString13 = "2012-01-01T00:00:00.000Z/2015-03-17T00:00:00.000Z"
     private static final String intervalString23 = "2013-12-27T00:00:00.000Z/2015-03-17T00:00:00.000Z"
 
+    def inputData
+    def expectedDimensions
+    def expectedMetrics
+
     @Override
     Map<String, Interval> generateIntervals() {
         [
@@ -29,44 +33,43 @@ class SegmentMetadataSpec extends BaseDataSourceMetadataSpec {
         intervals = generateIntervals()
     }
 
-    def dimensionSet1 = ["dim1"]
-    def dimensionSet12 = ["dim1", "dim2"]
-    def dimensionSet123 = ["dim1", "dim2", "dim3"]
+    def setup() {
+        def metrics12 = ["metric1", "metric2"]
+        Interval interval3 = intervals.interval3
+        Interval interval13 = intervals.interval13
 
-    def metrics1 = ["metric1"]
-    def metrics12 = ["metric1", "metric2"]
+        inputData = [
+                (intervalString1): ["dimensions": ["dim1", "dim2"], "metrics": ["metric1"]],
+                (intervalString2): ["dimensions": ["dim1"], "metrics":metrics12],
+                (intervalString3): ["dimensions": ["dim1", "dim2", "dim3"], "metrics": metrics12]
+        ]
 
-    def inputData1 = [
-            (intervalString1): ["dimensions":dimensionSet12, "metrics":metrics1],
-            (intervalString2): ["dimensions":dimensionSet1, "metrics":metrics12],
-            (intervalString3): ["dimensions":dimensionSet123, "metrics": metrics12]
-    ]
+        expectedDimensions = [
+                "dim1": [interval13] as Set,
+                "dim2": [intervals.interval1, interval3] as Set,
+                "dim3": [interval3] as Set
+        ]
 
-    def expectedDimensions1 = [
-            "dim1": [intervals["interval13"]] as Set,
-            "dim2": [intervals["interval1"], intervals["interval3"]] as Set,
-            "dim3": [intervals["interval3"]] as Set
-    ]
-
-    def expectedMetrics = [
-            "metric1": [intervals["interval13"]] as Set,
-            "metric2": [intervals["interval23"]] as Set
-    ]
+        expectedMetrics = [
+                "metric1": [interval13] as Set,
+                "metric2": [intervals.interval23] as Set
+        ]
+    }
 
     def "test construct healthy segment metadata"() {
         setup:
-        SegmentMetadata metadata = new SegmentMetadata(inputData1)
+        SegmentMetadata metadata = new SegmentMetadata(inputData)
 
         expect:
-        metadata.dimensionIntervals == expectedDimensions1
+        metadata.dimensionIntervals == expectedDimensions
         metadata.metricIntervals == expectedMetrics
         !metadata.empty
     }
 
     def "Test equality"() {
         setup:
-        SegmentMetadata metadata1 = new SegmentMetadata(inputData1)
-        SegmentMetadata expected = new SegmentMetadata(expectedDimensions1, expectedMetrics)
+        SegmentMetadata metadata1 = new SegmentMetadata(inputData)
+        SegmentMetadata expected = new SegmentMetadata(expectedDimensions, expectedMetrics)
 
         expect:
         metadata1 == expected

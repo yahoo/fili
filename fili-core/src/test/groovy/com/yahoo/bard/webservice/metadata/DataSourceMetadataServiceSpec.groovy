@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.metadata
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.data.config.names.DataSourceName
+import com.yahoo.bard.webservice.data.config.names.TestApiDimensionName
 
 import org.joda.time.DateTime
 import org.joda.time.Interval
@@ -26,7 +27,7 @@ class DataSourceMetadataServiceSpec extends BaseDataSourceMetadataSpec {
     }
 
     def setup() {
-        metadata = new DataSourceMetadata(tableName, [:], segments)
+        metadata = new DataSourceMetadata(tableName, [:], segments.values().toList())
     }
 
     def "test metadata service updates segment availability for physical tables and access methods behave correctly"() {
@@ -50,8 +51,8 @@ class DataSourceMetadataServiceSpec extends BaseDataSourceMetadataSpec {
                 .map({it.values()})
                 .map({it.collect {it.identifier}})
                 .collect(Collectors.toList())  == [
-                        [segments[0].identifier, segments[1].identifier],
-                        [segments[2].identifier, segments[3].identifier]
+                        [segments.segment1.identifier, segments.segment2.identifier],
+                        [segments.segment3.identifier, segments.segment4.identifier]
                 ]
 
         and: "all the intervals by column in metadata service are simplified to interval12"
@@ -70,7 +71,7 @@ class DataSourceMetadataServiceSpec extends BaseDataSourceMetadataSpec {
 
         expect:
         segmentByTime.keySet() == [dateTime1, dateTime2] as Set
-        segmentByTime.get(new DateTime(intervals["interval2"].start)).keySet() == [segments[2].identifier, segments[3].identifier] as Set
+        segmentByTime.get(new DateTime(intervals["interval2"].start)).keySet() == [segments.segment3.identifier, segments.segment4.identifier] as Set
     }
 
     def "grouping intervals by column behave as expected"() {
@@ -78,8 +79,8 @@ class DataSourceMetadataServiceSpec extends BaseDataSourceMetadataSpec {
         Map<String, List<Interval>> intervalByColumn = DataSourceMetadataService.groupIntervalByColumn(metadata)
 
         expect:
-        intervalByColumn.keySet() == (dimensions*.asName() + metrics*.asName()) as Set
-        intervalByColumn.get(dimensions.get(0).asName()) == [intervals["interval12"]]
+        intervalByColumn.keySet() == dimensions.keySet() + metrics.keySet()
+        intervalByColumn.get(dimensions.(TestApiDimensionName.BREED.asName()).asName()) == [intervals["interval12"]]
     }
 
     def "accessing availability by column throws exception if the table does not exist in datasource metadata service"() {

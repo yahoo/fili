@@ -24,34 +24,39 @@ import javax.ws.rs.core.UriInfo
 
 class SlicesApiRequestImplSpec extends BaseDataSourceMetadataSpec {
 
-    JerseyTestBinder jtb
-    UriInfo uriInfo = Mock(UriInfo)
-    UriBuilder builder = Mock(UriBuilder)
-    String baseUri = "http://localhost:9998/v1/slices/"
-    DataSourceMetadataService dataSourceMetadataService = new DataSourceMetadataService()
-
     @Shared
     PhysicalTableDictionary fullDictionary
-
     @Shared
-    PhysicalTableDictionary emptyDictionary = new PhysicalTableDictionary()
+    PhysicalTableDictionary emptyDictionary
+
+    JerseyTestBinder jtb
+    UriInfo uriInfo
+    UriBuilder builder
+    String baseUri
+    DataSourceMetadataService dataSourceMetadataService
 
     @Override
     def childSetupSpec() {
         tableName = generateTableName()
-        intervals = generateIntervals()
         segments = generateSegments()
+
+        emptyDictionary = new PhysicalTableDictionary()
     }
 
     def setup() {
+        uriInfo = Mock(UriInfo)
+        builder = Mock(UriBuilder)
+        baseUri = "http://localhost:9998/v1/slices/"
+        dataSourceMetadataService = new DataSourceMetadataService()
+
         jtb = new JerseyTestBinder(SlicesServlet.class)
         fullDictionary = jtb.configurationLoader.physicalTableDictionary
         uriInfo.getBaseUriBuilder() >> builder
         builder.path(_) >> builder
         builder.path(_, _) >> builder
 
-        DataSourceMetadata dataSourceMetadata = new DataSourceMetadata("all_pets", [:], segments)
-        dataSourceMetadataService.update(fullDictionary.get("all_pets").dataSourceNames[0], dataSourceMetadata)
+        DataSourceMetadata dataSourceMetadata = new DataSourceMetadata(tableName, [:], segments.values().toList())
+        dataSourceMetadataService.update(fullDictionary.get(tableName).dataSourceNames[0], dataSourceMetadata)
     }
 
     def cleanup() {

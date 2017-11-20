@@ -22,6 +22,7 @@ import com.yahoo.bard.webservice.util.DefaultingDictionary
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 
 import org.joda.time.DateTime
+import org.joda.time.Interval
 import org.joda.time.Period
 
 import spock.lang.Shared
@@ -31,6 +32,10 @@ import java.util.concurrent.ConcurrentSkipListMap
 import java.util.concurrent.atomic.AtomicReference
 
 class SegmentIntervalsHashIdGeneratorSpec extends BaseDataSourceMetadataSpec {
+    @Shared
+    Interval interval1
+    @Shared
+    Interval interval2
     @Shared
     Map<String, SegmentInfo> segmentInfoMap1
     @Shared
@@ -64,14 +69,17 @@ class SegmentIntervalsHashIdGeneratorSpec extends BaseDataSourceMetadataSpec {
     }
 
     def setupSpec() {
+        interval1 = intervals.interval1
+        interval2 = intervals.interval2
+
         segmentInfoMap1 = [:] as LinkedHashMap
         segmentInfoMap2 = [:] as LinkedHashMap
         segmentInfoMap3 = [:] as LinkedHashMap
 
-        segmentInfoMap1[segments[0].identifier] = new SegmentInfo(segments[0])
-        segmentInfoMap1[segments[1].identifier] = new SegmentInfo(segments[1])
+        segmentInfoMap1[segments.segment1.identifier] = new SegmentInfo(segments.segment1)
+        segmentInfoMap1[segments.segment2.identifier] = new SegmentInfo(segments.segment2)
 
-        segmentInfoMap2[segments[2].identifier] = new SegmentInfo(segments[2])
+        segmentInfoMap2[segments.segment3.identifier] = new SegmentInfo(segments.segment3)
 
         jtb = new JerseyTestBinder()
         tableDict = jtb.configurationLoader.physicalTableDictionary
@@ -87,11 +95,11 @@ class SegmentIntervalsHashIdGeneratorSpec extends BaseDataSourceMetadataSpec {
         customSegmentSetIdGenerator = new SegmentIntervalsHashIdGenerator(metadataService, signingFunctions)
 
         availabilityList1 = [
-                (intervals["interval1"].start): segmentInfoMap1,
-                (intervals["interval2"].start): segmentInfoMap2
+                (interval1.start): segmentInfoMap1,
+                (interval2.start): segmentInfoMap2
         ] as ConcurrentSkipListMap
 
-        availabilityList2 = [(intervals["interval2"].start): segmentInfoMap2] as ConcurrentSkipListMap
+        availabilityList2 = [(interval2.start): segmentInfoMap2] as ConcurrentSkipListMap
 
         AtomicReference<ConcurrentSkipListMap<DateTime, Map<String, SegmentInfo>>> atomicRef = new AtomicReference<>()
         atomicRef.set(availabilityList1)
@@ -102,7 +110,7 @@ class SegmentIntervalsHashIdGeneratorSpec extends BaseDataSourceMetadataSpec {
         )
 
         timeSeriesQuery = new TimeSeriesQuerySpec().defaultQuery(
-                intervals: [intervals["interval2"]],
+                intervals: [interval2],
                 dataSource: new TableDataSource(
                         TableTestUtils.buildTable(
                                 tableName,
@@ -132,7 +140,7 @@ class SegmentIntervalsHashIdGeneratorSpec extends BaseDataSourceMetadataSpec {
         }
 
         DruidAggregationQuery<?> query = Mock(DruidAggregationQuery)
-        query.intervals >> [intervals["interval1"], intervals["interval2"]]
+        query.intervals >> [interval1, interval2]
         query.innermostQuery >> query
         query.dataSource >> dataSource
 

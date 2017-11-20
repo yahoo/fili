@@ -7,10 +7,6 @@ import com.yahoo.bard.webservice.data.config.names.TestApiMetricName
 import com.yahoo.bard.webservice.data.config.names.TestDruidTableName
 import com.yahoo.bard.webservice.druid.model.metadata.NumberedShardSpec
 
-import com.google.common.collect.Range
-import com.google.common.collect.RangeSet
-import com.google.common.collect.TreeRangeSet
-
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.joda.time.Interval
@@ -72,76 +68,179 @@ abstract class BaseDataSourceMetadataSpec extends Specification {
 
     @Shared
     String tableName
+
+    /**
+     * A map of interval name(String) to an Interval object.
+     * <p>
+     * With a map, you can use {@code intervals.interval1} rather than {@code intervals[0]}. This allows you writing
+     * specs to give your intervals meaningful names and then use them.
+     */
     @Shared
     Map<String, Interval> intervals
+
+    /**
+     * A map of dimension name(String) to a TestApiDimensionName object.
+     * <p>
+     * With a map, you can use {@code dimensions.dim3.asName()} rather than {@code dimensions[2].asName()}. This allows
+     * you writing specs to give your dimensions meaningful names and then use them.
+     */
     @Shared
-    RangeSet<DateTime> rangeSet
+    Map<String, TestApiDimensionName> dimensions
+
+    /**
+     * A map of metric name(String) to a TestApiMetricName object.
+     * <p>
+     * With a map, you can use {@code metrics.metric3.asName()} rather than {@code metrics[2].asName()}. This allows you
+     * writing specs to give your metrics meaningful names and then use them.
+     */
     @Shared
-    List<TestApiDimensionName> dimensions
+    Map<String, TestApiMetricName> metrics
+
+    /**
+     * A map of segment name(String) to a DataSegment object.
+     * <p>
+     * With a map, you can use {@code segments.identifier3} rather than {@code segments[2]}. This allows you writing
+     * specs to give your segments meaningful names and then use them.
+     */
     @Shared
-    List<TestApiMetricName> metrics
+    Map<String, DataSegment> segments
+
+    /**
+     * A map of version name to a version object.
+     * <p>
+     * With a map, you can use {@code versions.version3} rather than {@code version[2]}. This allows you writing specs
+     * to give your versions meaningful names and then use them.
+     */
     @Shared
-    Integer binversion1
+    Map<String, String> versions
+
+    /**
+     * A map of size identifier to the actual size.
+     * <p>
+     * With a map, you can use {@code sizes.identifier3} rather than {@code sizes[2]}. This allows you writing specs
+     * to give your sizes meaningful names and them use them.
+     */
     @Shared
-    long size1
+    Map<String, Long> sizes
+
+    /**
+     * A map of binary version name to its actual binary version.
+     * <p>
+     * A binary version is used as a required argument to construct a DataSegment.
+     * <p>
+     * With a map, you can use {@code binaryVersions.version3} rather than {@code binaryVersions[2]}. This allows you
+     * writing specs to give your sizes meaningful names and then use them.
+     */
     @Shared
-    long size2
-    @Shared
-    List<String> versions
-    @Shared
-    List<DataSegment> segments
+    Map<String, Integer> binaryVersions
 
     def setupSpec() {
         currentTZ = DateTimeZone.getDefault()
         DateTimeZone.setDefault(DateTimeZone.UTC)
-        binversion1 = 9
-        size1 = 1024
-        size2 = 512
 
         childSetupSpec()
     }
 
     def childSetupSpec() {}
 
-    def shutdownSpec() {
+    def cleanupSpec() {
         DateTimeZone.setDefault(currentTZ)
     }
 
+    def childCleanupSpec() {}
+
     String generateTableName() {
-        TestDruidTableName.ALL_PETS.asName()
+        return TestDruidTableName.ALL_PETS.asName()
     }
 
+    /**
+     * Returns a map of interval name(String) to an Interval object.
+     *
+     * @return a map of interval name to an Interval object.
+     */
     Map<String, Interval> generateIntervals() {
-        [
-                "interval1": Interval.parse("2015-01-01T00:00:00.000Z/2015-01-02T00:00:00.000Z"),
-                "interval2": Interval.parse("2015-01-02T00:00:00.000Z/2015-01-03T00:00:00.000Z"),
-                "interval12": Interval.parse("2015-01-01T00:00:00.000Z/2015-01-03T00:00:00.000Z")
+        return [
+                interval1: Interval.parse("2015-01-01T00:00:00.000Z/2015-01-02T00:00:00.000Z"),
+                interval2: Interval.parse("2015-01-02T00:00:00.000Z/2015-01-03T00:00:00.000Z"),
+                interval12: Interval.parse("2015-01-01T00:00:00.000Z/2015-01-03T00:00:00.000Z")
         ]
     }
 
-    RangeSet<DateTime> generateRangeSet() {
-        rangeSet = TreeRangeSet.create()
-        rangeSet.add(Range.closedOpen(intervals["interval12"].getStart(), intervals["interval12"].getEnd()))
-        rangeSet
-    }
-
-    List<TestApiDimensionName> generateDimensions() {
-        [TestApiDimensionName.BREED, TestApiDimensionName.SPECIES, TestApiDimensionName.SEX]
-    }
-
-    List<TestApiMetricName> generateMetrics() {
-        [TestApiMetricName.A_ROW_NUM, TestApiMetricName.A_LIMBS, TestApiMetricName.A_DAY_AVG_LIMBS]
-    }
-
-    List<String> generateVersions() {
-        [
-                DateTimeFormat.fullDateTime().print(DateTime.now().minusDays(1)),
-                DateTimeFormat.fullDateTime().print(DateTime.now())
+    /**
+     * Returns a map of dimension name(String) to a TestApiDimensionName object.
+     *
+     * @return a map of dimension name to a TestApiDimensionName object
+     */
+    Map<String, TestApiDimensionName> generateDimensions() {
+        return [
+                (TestApiDimensionName.BREED.asName()): TestApiDimensionName.BREED,
+                (TestApiDimensionName.SPECIES.asName()): TestApiDimensionName.SPECIES,
+                (TestApiDimensionName.SEX.asName()): TestApiDimensionName.SEX
         ]
     }
 
-    List<DataSegment> generateSegments() {
+    /**
+     * Returns a map of metric name(String) to a TestApiMetricName object.
+     *
+     * @return a map of metric name to a TestApiMetricName object
+     */
+    Map<String, TestApiMetricName> generateMetrics() {
+        return [
+                (TestApiMetricName.A_ROW_NUM.asName()): TestApiMetricName.A_ROW_NUM,
+                (TestApiMetricName.A_LIMBS.asName()): TestApiMetricName.A_LIMBS,
+                (TestApiMetricName.A_DAY_AVG_LIMBS.asName()): TestApiMetricName.A_DAY_AVG_LIMBS
+        ]
+    }
+
+    /**
+     * Returns a map of version name to a version object.
+     *
+     * @return map of version name to a version object
+     */
+    Map<String, String> generateVersions() {
+        return [
+                version1: DateTimeFormat.fullDateTime().print(DateTime.now().minusDays(1)),
+                version2: DateTimeFormat.fullDateTime().print(DateTime.now())
+        ]
+    }
+
+    /**
+     * Returns a map of size identifier to its actual size.
+     *
+     * @return a map of size identifier to its actual size
+     */
+    Map<String, Long> generateSizes() {
+        return [
+                size1: 1024,
+                size2: 512
+        ]
+    }
+
+    /**
+     * Returns a map of binary version name to its actual version.
+     *
+     * @return a map of binary version name to its actual version
+     */
+    Map<String, Integer> generateBinaryVersions() {
+        return [binaryversion1: 9]
+    }
+
+    /**
+     * Returns a map of segment name(String) to a DataSegment object.
+     * <p>
+     * This method also generates {@code tableName}, {@code intervals}, {@code dimensions}, {@code metrics},
+     * {@code versions}, {@code sizes}, and {@code binaryVersions}
+     *
+     * @return a map of segment name to a DataSegment object
+     */
+    Map<String, DataSegment> generateSegments() {
+        tableName = generateTableName()
+        intervals = generateIntervals()
+        dimensions = generateDimensions()
+        metrics = generateMetrics()
         versions = generateVersions()
+        sizes = generateSizes()
+        binaryVersions = generateBinaryVersions()
 
         NumberedShardSpec partition1 = Stub(NumberedShardSpec) {
             getPartitionNum() >> 0
@@ -151,50 +250,50 @@ abstract class BaseDataSourceMetadataSpec extends Specification {
             getPartitionNum() >> 1
         }
 
-        [
-                new DataSegment(
+        return [
+                segment1: new DataSegment(
                         tableName,
-                        intervals["interval1"],
-                        versions[0],
+                        intervals.interval1,
+                        versions.version1,
                         null,
-                        dimensions*.asName(),
-                        metrics*.asName(),
+                        dimensions.keySet().toList(),
+                        metrics.keySet().toList(),
                         partition1,
-                        binversion1,
-                        size1
+                        binaryVersions.binaryVersion1,
+                        sizes.size1
                 ),
-                new DataSegment(
+                segment2: new DataSegment(
                         tableName,
-                        intervals["interval1"],
-                        versions[1],
+                        intervals.interval1,
+                        versions.version2,
                         null,
-                        dimensions*.asName(),
-                        metrics*.asName(),
+                        dimensions.keySet().toList(),
+                        metrics.keySet().toList(),
                         partition2,
-                        binversion1,
-                        size2
+                        binaryVersions.binaryVersion1,
+                        sizes.size2
                 ),
-                new DataSegment(
+                segment3: new DataSegment(
                         tableName,
-                        intervals["interval2"],
-                        versions[0],
+                        intervals.interval2,
+                        versions.version1,
                         null,
-                        dimensions*.asName(),
-                        metrics*.asName(),
+                        dimensions.keySet().toList(),
+                        metrics.keySet().toList(),
                         partition1,
-                        binversion1,
-                        size1
+                        binaryVersions.binaryVersion1,
+                        sizes.size1
                 ),
-                new DataSegment(
+                segment4: new DataSegment(
                         tableName,
-                        intervals["interval2"],
-                        versions[1],
+                        intervals.interval2,
+                        versions.version2,
                         null,
-                        dimensions*.asName(),
-                        metrics*.asName(),
+                        dimensions.keySet().toList(),
+                        metrics.keySet().toList(),
                         partition2,
-                        binversion1,
-                        size2
+                        binaryVersions.binaryVersion1,
+                        sizes.size2
                 )
         ]
     }
