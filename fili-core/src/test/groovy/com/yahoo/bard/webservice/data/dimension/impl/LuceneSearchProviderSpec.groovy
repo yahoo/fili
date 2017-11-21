@@ -10,7 +10,6 @@ import com.yahoo.bard.webservice.util.DimensionStoreKeyUtils
 import com.yahoo.bard.webservice.web.RowLimitReachedException
 import com.yahoo.bard.webservice.web.util.PaginationParameters
 
-import org.apache.commons.io.FileUtils
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.document.Document
 import org.apache.lucene.document.Field
@@ -32,37 +31,18 @@ class LuceneSearchProviderSpec extends SearchProviderSpec<LuceneSearchProvider> 
     int rowLimit
     int searchTimeout
 
-    String sourceDir
-    String destinationDir
-
-    Path sourcePath
-    Path file1
-    Path file2
-    Path file3
-    Path subDir
-    Path file4
-    Path destinationPath
-
     @Override
     void childSetup() {
         //Clears compiler warnings from IntelliJ. Can't use the getter, because that requires knowledge of the
         //dimension name, which this Spec does not have access to.
         rowLimit = searchProvider.maxResults
         searchTimeout = searchProvider.searchTimeout
-
-        sourceDir = "target/tmp/dimensionCache/animal/new_lucene_indexes"
-        destinationDir = "target/tmp/dimensionCache/animal/lucene_indexes"
-
-        sourcePath = Files.createDirectory(new File(sourceDir).getAbsoluteFile().toPath())
-        destinationPath = new File(destinationDir).getAbsoluteFile().toPath()
     }
 
     @Override
     void childCleanup() {
         searchProvider.maxResults = rowLimit
         searchProvider.searchTimeout = searchTimeout
-
-        FileUtils.deleteDirectory(new File(sourceDir))
     }
 
     @Override
@@ -134,14 +114,20 @@ class LuceneSearchProviderSpec extends SearchProviderSpec<LuceneSearchProvider> 
 
     def "replaceIndex hot-swaps Lucene indexes in place"() {
         given: "a set of new index files and old index files"
+        String sourceDir = "target/tmp/dimensionCache/animal/new_lucene_indexes"
+        String destinationDir = "target/tmp/dimensionCache/animal/lucene_indexes"
+
+        Path sourcePath = Files.createDirectories(new File(sourceDir).getAbsoluteFile().toPath())
+        Path destinationPath = Files.createDirectories(new File(destinationDir).getAbsoluteFile().toPath())
+
         List<Path> newIndexFiles = generateIndexFiles(sourcePath)
-        List<Path> oldIndexFIles = Files.list(destinationPath).collect(Collectors.toList())
+        List<Path> oldIndexFiles = Files.list(destinationPath).collect(Collectors.toList())
 
         expect: "new index files do not exist in lucene directory"
         newIndexFiles.forEach{it -> !Files.exists(it)}
 
         and: "old index files exist in lucene directory"
-        oldIndexFIles.forEach{it -> Files.exists(it)}
+        oldIndexFiles.forEach{it -> Files.exists(it)}
 
         when: "we swap the new index files with the old index files"
         searchProvider.replaceIndex(sourceDir)
@@ -153,7 +139,7 @@ class LuceneSearchProviderSpec extends SearchProviderSpec<LuceneSearchProvider> 
         newIndexFiles.forEach{it -> Files.exists(it)}
 
         and: "old index files are gone"
-        oldIndexFIles.forEach{it -> !Files.exists(it)}
+        oldIndexFiles.forEach{it -> !Files.exists(it)}
 
         and: "directory that used to contain the new index files is also gone"
         !Files.exists(sourcePath)
