@@ -94,6 +94,10 @@ public class MetricInstance {
                 .collect(Collectors.toList());
     }
 
+    public String getMetricName() {
+        return logicalMetricInfo.getName();
+    }
+
     /**
      * Returns the LogicalMetricInfo of this MetricInstance.
      *
