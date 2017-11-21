@@ -98,6 +98,15 @@ public class MetricInstance {
         return logicalMetricInfo.getName();
     }
 
+    /**
+     * Returns the LogicalMetricInfo of this MetricInstance.
+     *
+     * @return the LogicalMetricInfo of this MetricInstance
+     */
+    public LogicalMetricInfo getLogicalMetricInfo() {
+        return logicalMetricInfo;
+    }
+
     public List<String> getDependencyMetricNames() {
         return dependencyMetricNames;
     }

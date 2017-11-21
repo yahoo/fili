@@ -10,6 +10,11 @@ Current
 
 ### Added:
 
+- [Add getter for LogicalMetricInfo in MetricInstance](https://github.com/yahoo/fili/pull/588)
+    * There are 3 instance variables inside `MetricInstance` class, two of which have getters. The one without getter,
+      `LogicalMetricInfo`, should have one, as well, so that subclass can access it without creating a duplicate
+      `LogicalMetricInfo` inside their own.
+
 - [Backwards compatible constructor for KeyValueStoreDimension around storage strategy]()
     * Provide a backwards compatible constructor for existing implementations that don't provide storage strategies.
 
