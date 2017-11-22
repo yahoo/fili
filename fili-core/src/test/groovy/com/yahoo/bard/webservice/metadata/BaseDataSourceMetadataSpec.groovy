@@ -256,8 +256,8 @@ abstract class BaseDataSourceMetadataSpec extends Specification {
                         intervals.interval1,
                         versions.version1,
                         null,
-                        dimensions.keySet().toList(),
-                        metrics.keySet().toList(),
+                        dimensions.keySet() as List,
+                        metrics.keySet() as List,
                         partition1,
                         binaryVersions.binaryVersion1,
                         sizes.size1
@@ -267,8 +267,8 @@ abstract class BaseDataSourceMetadataSpec extends Specification {
                         intervals.interval1,
                         versions.version2,
                         null,
-                        dimensions.keySet().toList(),
-                        metrics.keySet().toList(),
+                        dimensions.keySet() as List,
+                        metrics.keySet() as List,
                         partition2,
                         binaryVersions.binaryVersion1,
                         sizes.size2
@@ -278,8 +278,8 @@ abstract class BaseDataSourceMetadataSpec extends Specification {
                         intervals.interval2,
                         versions.version1,
                         null,
-                        dimensions.keySet().toList(),
-                        metrics.keySet().toList(),
+                        dimensions.keySet() as List,
+                        metrics.keySet() as List,
                         partition1,
                         binaryVersions.binaryVersion1,
                         sizes.size1
@@ -289,8 +289,8 @@ abstract class BaseDataSourceMetadataSpec extends Specification {
                         intervals.interval2,
                         versions.version2,
                         null,
-                        dimensions.keySet().toList(),
-                        metrics.keySet().toList(),
+                        dimensions.keySet() as List,
+                        metrics.keySet() as List,
                         partition2,
                         binaryVersions.binaryVersion1,
                         sizes.size2
