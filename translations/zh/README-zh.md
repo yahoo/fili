@@ -18,14 +18,14 @@ Fili 具备灵活的数据库存储和访问，搭配 Fili 的 web 服务在不�
 
 Fili 还提供其他功能，部分如下：
 
-| 功能类                                                                   | 操作类                                                                        |
-|--------------------------------------------------------------------------|-------------------------------------------------------------------------------|
-| 高级度量定义（Complex metric definition）                                | 访问速率控制（Rate limiting）                                                 |
-| 数据查找速率优化（Performance slice routing）                            | 查询语句资源耗费计算（Query weight checks）                                   |
-| 维度合并（标注和筛选）（Dimension joins (both annotation and filtering)）| [详尽的系统使用数据（Rich usage metrics）](docs/monitoring-and-operations.md) |
-| 缺失数据警示（Partial interval protection）                              | 系统运行状况检查（Health checks）                                             |
-| 变动性数据处理（Volatile data handling）                                 | 缓存（Caching）                                                               |
-| 模块化架构（Modular architecture）                                       |                                                                               |
+| 功能类                                                                    | 操作类                                                                        |
+|---------------------------------------------------------------------------|-------------------------------------------------------------------------------|
+| 高级度量定义（Complex metric definition）                                 | 访问速率控制（Rate limiting）                                                 |
+| 数据查找速率优化（Performance slice routing）                             | 查询语句资源耗费计算（Query weight checks）                                   |
+| 维度合并（标注和筛选）（Dimension joins（both annotation and filtering））| [详尽的系统使用数据（Rich usage metrics）](docs/monitoring-and-operations.md) |
+| 缺失数据警示（Partial interval protection）                               | 系统运行状况检查（Health checks）                                             |
+| 变动性数据处理（Volatile data handling）                                  | 缓存（Caching）                                                               |
+| 模块化架构（Modular architecture）                                        |                                                                               |
 
 
 社区 [![Gitter](https://img.shields.io/gitter/room/yahoo/fili.svg?maxAge=2592000)](https://gitter.im/yahoo/fili) [![Users Google Group](https://img.shields.io/badge/google_group-users-blue.svg?maxAge=2592000)](https://groups.google.com/forum/#!forum/fili-users) [![Developers Google Group](https://img.shields.io/badge/google_group-developers-blue.svg?maxAge=2592000)](https://groups.google.com/forum/#!forum/fili-developers)
