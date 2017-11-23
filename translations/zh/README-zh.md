@@ -39,7 +39,7 @@ Fili 的开源社区设在 [Gitter](https://gitter.im/yahoo/fili)，可以讨论
 使用简介
 -----------
 
-Fili 自带一个配置好的[样本应用](fili-wikipedia-example)，您可以将其修改变成您自己的 web 服务。样本应用提供 Wikipedia 的文章编辑数据，以 [Druid's quick-start tutorial](http://druid.io/docs/0.9.1.1/tutorials/quickstart.html) 为参照。
+Fili 自带一个配置好的[样本应用](fili-wikipedia-example)，您可以将其修改变成您自己的 web 服务。样本应用提供 Wikipedia 的文章编辑数据，以 [Druid 样本应用指南](http://druid.io/docs/0.9.1.1/tutorials/quickstart.html)为参照。
 
 版本
 -----------
