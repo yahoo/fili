@@ -3,7 +3,7 @@ Fili
 
 [![Download](https://api.bintray.com/packages/yahoo/maven/fili/images/download.svg)](https://bintray.com/yahoo/maven/fili/_latestVersion) [![Gitter](https://img.shields.io/gitter/room/yahoo/fili.svg?maxAge=2592000)](https://gitter.im/yahoo/fili) [![Travis](https://img.shields.io/travis/yahoo/fili/master.svg?maxAge=2592000)](https://travis-ci.org/yahoo/fili/builds/) [![Codacy grade](https://img.shields.io/codacy/grade/91fa6c38f25d4ea0ae3569ee70a33e38.svg?maxAge=21600)](https://www.codacy.com/app/Fili/fili/dashboard) [![Users Google Group](https://img.shields.io/badge/google_group-users-blue.svg?maxAge=2592000)](https://groups.google.com/forum/#!forum/fili-users) [![Developers Google Group](https://img.shields.io/badge/google_group-developers-blue.svg?maxAge=2592000)](https://groups.google.com/forum/#!forum/fili-developers)
 
-Fili 是用来搭建和维护 RESTful web 服务的 Java 框架，主要应用于时间大数据的访问和分析。Fili 的 [API](docs/end-user-api-zh.md) 使用 HTTP GET，十分简洁，易于使用，大大简化了[度量（metic）和维度（dimension）定义](docs/configuring-metrics-zh.md)，数据存储，和访问查询优化。Fili 是一个适用于大数据，高拓展性的框架，完全支持 [Druid](http://druid.io) 数据库，Fili 架构本身有很强的扩展性，可以兼容其他任何数据库。
+Fili 是一个搭建和维护 RESTful web 服务的 Java 开源框架，主要应用于时间大数据的访问和分析。Fili 的 [API](docs/end-user-api-zh.md) 使用 HTTP GET，十分简洁，易于使用，大大简化了[度量（metic）和维度（dimension）定义](docs/configuring-metrics-zh.md)，数据存储，和访问查询优化。Fili 是一个适用于大数据，高拓展性的框架，完全支持 [Druid](http://druid.io) 数据库，Fili 架构本身有很强的扩展性，可以兼容其他任何数据库。
 
 Fili 的数据访问、分析包括以下几个领域核心概念：
 
@@ -30,7 +30,7 @@ Fili 还提供其他功能，部分如下：
 
 社区 [![Gitter](https://img.shields.io/gitter/room/yahoo/fili.svg?maxAge=2592000)](https://gitter.im/yahoo/fili) [![Users Google Group](https://img.shields.io/badge/google_group-users-blue.svg?maxAge=2592000)](https://groups.google.com/forum/#!forum/fili-users) [![Developers Google Group](https://img.shields.io/badge/google_group-developers-blue.svg?maxAge=2592000)](https://groups.google.com/forum/#!forum/fili-developers)
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Fili 的开源社区设在 [Gitter](https://gitter.im/yahoo/fili)，可以讨论问题，意见，想法，新功能，新需求。我们希望越来越多的企业使用 Fili 作为处理时间大数据的商业解决方案，并与我们联系，帮助您让 Fili 在你的商业方案中发挥最大效用。Fili 还有很多功能正在开发当中，您的反馈可以帮助 Fili 向更好的方向改进。
+Fili 的开源社区设在 [Gitter](https://gitter.im/yahoo/fili)，可以讨论问题，意见，想法，新功能，新需求。我们希望越来越多的企业使用 Fili 作为处理时间大数据的商业解决方案，并与我们联系，帮助您让 Fili 在您的商业方案中发挥最大效用。Fili 还有很多功能正在开发当中，您的反馈可以帮助 Fili 向更好的方向改进。
 
 其他问题，例如 Fili 出现故障，无法在 Gitter 上获得解决方案，请使用 [GitHub Issue](https://github.com/yahoo/fili/issues)。
 
