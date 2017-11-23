@@ -34,14 +34,14 @@ forcing them to go through a painful migration.
 
 Fili also provides a plethora of other capabilities. Here are some of them:
 
-| Functionality                                   | Operability                                        |
-|-------------------------------------------------|----------------------------------------------------|
-| Complex metric definition                       | Rate limiting                                      |
-| Performance slice routing                       | Query weight checks                                | 
-| Dimension joins (both annotation and filtering) | [Rich usage metrics](monitoring-and-operations.md) |
-| Partial interval protection                     | Health checks                                      |
-| Volatile data handling                          | Caching                                            |
-| Modular architecture                            |                                                    |
+| Functionality                                   | Operability                                             |
+|-------------------------------------------------|-------------------------------------------------------- |
+| Complex metric definition                       | Rate limiting                                           |
+| Performance slice routing                       | Query weight checks                                     | 
+| Dimension joins (both annotation and filtering) | [Rich usage metrics](docs/monitoring-and-operations.md) |
+| Partial interval protection                     | Health checks                                           |
+| Volatile data handling                          | Caching                                                 |
+| Modular architecture                            |                                                         |
 
 
 Community [![Gitter](https://img.shields.io/gitter/room/yahoo/fili.svg?maxAge=2592000)](https://gitter.im/yahoo/fili) [![Users Google Group](https://img.shields.io/badge/google_group-users-blue.svg?maxAge=2592000)](https://groups.google.com/forum/#!forum/fili-users) [![Developers Google Group](https://img.shields.io/badge/google_group-developers-blue.svg?maxAge=2592000)](https://groups.google.com/forum/#!forum/fili-developers)
