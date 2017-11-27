@@ -43,4 +43,9 @@ public enum StorageStrategy {
     public String getApiName() {
         return apiName;
     }
+
+    @Override
+    public String toString() {
+        return getApiName();
+    }
 }
