@@ -9,9 +9,9 @@ import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.bard.webservice.web.DataApiRequestTypeIdentifier;
 import com.yahoo.bard.webservice.web.DefaultRateLimiter;
+import com.yahoo.bard.webservice.web.RateLimitRequestToken;
 import com.yahoo.bard.webservice.web.RateLimiter;
-import com.yahoo.bard.webservice.web.RequestToken;
-import com.yahoo.bard.webservice.web.RequestType;
+import com.yahoo.bard.webservice.web.DefaultRateLimitRequestType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,27 +81,27 @@ public class RateLimitFilter implements ContainerRequestFilter, ContainerRespons
 
             MultivaluedMap<String, String> headers = Utils.headersToLowerCase(request.getHeaders());
 
-            // Pick RequestType
-            RequestType type;
+            // Pick DefaultRateLimitRequestType
+            DefaultRateLimitRequestType type;
             if (DataApiRequestTypeIdentifier.isBypass(headers)) {
                 // Bypass requests are unlimited
-                type = RequestType.BYPASS;
+                type = DefaultRateLimitRequestType.BYPASS;
             } else if (
                     DataApiRequestTypeIdentifier.isCorsPreflight(request.getMethod(), request.getSecurityContext())
             ) {
                 // CORS Preflight requests are unlimited
-                type = RequestType.BYPASS;
+                type = DefaultRateLimitRequestType.BYPASS;
             } else if (DataApiRequestTypeIdentifier.isUi(headers)) {
                 // UI requests have a different limit
-                type = RequestType.UI;
+                type = DefaultRateLimitRequestType.UI;
             } else {
-                type = RequestType.USER;
+                type = DefaultRateLimitRequestType.USER;
             }
 
             // Get the token
             SecurityContext securityContext = request.getSecurityContext();
             Principal user = securityContext == null ? null : securityContext.getUserPrincipal();
-            RequestToken token = rateLimiter.getToken(type, user);
+            RateLimitRequestToken token = rateLimiter.getToken(type, user);
 
             // Add the token to the request if it was bound
             if (token.isBound()) {
@@ -121,7 +121,7 @@ public class RateLimitFilter implements ContainerRequestFilter, ContainerRespons
     @Override
     public void filter(ContainerRequestContext request, ContainerResponseContext response) throws IOException {
         // Release the token
-        RequestToken token = (RequestToken) request.getProperty(PROPERTY_TOKEN);
+        RateLimitRequestToken token = (RateLimitRequestToken) request.getProperty(PROPERTY_TOKEN);
         if (token != null) {
             token.close();
         }

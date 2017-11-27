@@ -10,7 +10,7 @@ import spock.lang.Specification
 import java.security.Principal
 import java.util.concurrent.atomic.AtomicInteger
 
-class OutstandingRequestTokenSpec extends Specification{
+class OutstandingRateLimitedRateLimitRequestTokenSpec extends Specification{
 
     Principal user
     AtomicInteger globalCount
@@ -35,7 +35,7 @@ class OutstandingRequestTokenSpec extends Specification{
         AtomicInteger userCount = new AtomicInteger()
 
         when: "create a new token"
-        RequestToken token = new OutstandingRequestToken(user, requestLimit, globalRequestLimit, userCount,
+        RateLimitRequestToken token = new OutstandingRateLimitedRateLimitRequestToken(user, requestLimit, globalRequestLimit, userCount,
                 globalCount, requestMeter, rejectMeter, requestGlobalCounter)
 
         then: "counters have incremented"
@@ -65,7 +65,7 @@ class OutstandingRequestTokenSpec extends Specification{
         AtomicInteger userCount = new AtomicInteger()
 
         when: "create a new token"
-        RequestToken token = new OutstandingRequestToken(user, requestLimit, globalRequestLimit, userCount,
+        RateLimitRequestToken token = new OutstandingRateLimitedRateLimitRequestToken(user, requestLimit, globalRequestLimit, userCount,
                 globalCount, requestMeter, rejectMeter, requestGlobalCounter)
 
         then: "request was rejected, and not bound"
@@ -86,12 +86,12 @@ class OutstandingRequestTokenSpec extends Specification{
         AtomicInteger user2Count = new AtomicInteger()
         user2.getName() >> { return "user2" }
         (1..3).each {
-            new OutstandingRequestToken(user, requestLimit, globalRequestLimit, userCount,
+            new OutstandingRateLimitedRateLimitRequestToken(user, requestLimit, globalRequestLimit, userCount,
                     globalCount, requestMeter, rejectMeter, requestGlobalCounter)
         }
 
         when: "create a new token for user2"
-        RequestToken user2Token = new OutstandingRequestToken(user2, requestLimit, globalRequestLimit, user2Count,
+        RateLimitRequestToken user2Token = new OutstandingRateLimitedRateLimitRequestToken(user2, requestLimit, globalRequestLimit, user2Count,
                 globalCount, requestMeter, rejectMeter, requestGlobalCounter)
 
         then: "user2 request was rejected, user1 requests are successful"

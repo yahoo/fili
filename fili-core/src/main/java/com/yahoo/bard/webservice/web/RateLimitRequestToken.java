@@ -7,7 +7,7 @@ import java.io.Closeable;
 /**
  * Resource representing an outstanding request.
  */
-public abstract class RequestToken implements Closeable {
+public abstract class RateLimitRequestToken implements Closeable {
     /**
      * Check if the token is bound.
      *

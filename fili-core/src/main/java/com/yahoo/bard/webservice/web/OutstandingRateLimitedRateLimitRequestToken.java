@@ -12,16 +12,16 @@ import java.security.Principal;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * RequestToken for successfully bound request.
+ * RateLimitRequestToken for successfully bound request.
  */
-public class OutstandingRequestToken extends RequestToken {
+public class OutstandingRateLimitedRateLimitRequestToken extends RateLimitRequestToken {
     private final String userName;
     private final AtomicInteger userCount;
     private final AtomicInteger globalCount;
     private boolean isBound;
 
     private static int DISABLED_RATE = -1;
-    private static final Logger LOG = LoggerFactory.getLogger(OutstandingRequestToken.class);
+    private static final Logger LOG = LoggerFactory.getLogger(OutstandingRateLimitedRateLimitRequestToken.class);
 
     /**
      * Bind outstanding request to token, or fail and set to unbound.
@@ -35,8 +35,9 @@ public class OutstandingRequestToken extends RequestToken {
      * @param rejectMeter  A meter counting the total number of rejected requests made.
      * @param requestGlobalCounter  A counter tracking the total number of accepted requests made.
      */
-    public OutstandingRequestToken(Principal user, int requestLimit, int requestLimitGlobal, AtomicInteger userCount,
-            AtomicInteger globalCount, Meter requestMeter, Meter rejectMeter, Counter requestGlobalCounter
+    public OutstandingRateLimitedRateLimitRequestToken(Principal user, int requestLimit, int requestLimitGlobal,
+            AtomicInteger userCount, AtomicInteger globalCount, Meter requestMeter, Meter rejectMeter,
+            Counter requestGlobalCounter
     ) {
         this.userCount = userCount;
         this.globalCount = globalCount;
@@ -44,7 +45,7 @@ public class OutstandingRequestToken extends RequestToken {
 
         // Bind globally
         if (!incrementAndCheckCount(globalCount, requestLimitGlobal)) {
-            rejectRequest(rejectMeter, RateLimitType.GLOBAL);
+            rejectRequest(rejectMeter, DefaultRateLimitType.GLOBAL);
             return;
         }
 
@@ -53,7 +54,7 @@ public class OutstandingRequestToken extends RequestToken {
             // Decrement the global count that had already been incremented
             globalCount.decrementAndGet();
 
-            rejectRequest(rejectMeter, RateLimitType.USER);
+            rejectRequest(rejectMeter, DefaultRateLimitType.USER);
             return;
         }
 

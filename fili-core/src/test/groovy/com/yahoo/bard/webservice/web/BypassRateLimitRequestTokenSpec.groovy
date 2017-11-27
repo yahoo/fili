@@ -6,7 +6,7 @@ import com.codahale.metrics.Meter
 
 import spock.lang.Specification
 
-class BypassRequestTokenSpec extends Specification {
+class BypassRateLimitRequestTokenSpec extends Specification {
 
     Meter bypassMeter
 
@@ -16,7 +16,7 @@ class BypassRequestTokenSpec extends Specification {
 
     def "Creating bypass token increments bypass meter"() {
         when: "create bypass token"
-        new BypassRequestToken(bypassMeter)
+        new BypassRateLimitRequestToken(bypassMeter)
 
         then: "Meter incremented"
         bypassMeter.getCount() == 1
@@ -24,7 +24,7 @@ class BypassRequestTokenSpec extends Specification {
 
     def "Bypass token is always bound"() {
         when: "create bypass token"
-        RequestToken token = new BypassRequestToken(bypassMeter)
+        RateLimitRequestToken token = new BypassRateLimitRequestToken(bypassMeter)
 
         then: "token is bound"
         token.isBound() == true

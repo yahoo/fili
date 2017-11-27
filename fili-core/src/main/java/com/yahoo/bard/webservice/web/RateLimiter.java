@@ -14,7 +14,7 @@ public interface RateLimiter {
      *
      * @param type  The type of request.
      * @param user  The user making the request.
-     * @return a RequestToken object representing a request.
+     * @return a RateLimitRequestToken object representing a request.
      */
-    RequestToken getToken(RequestType type, Principal user);
+    RateLimitRequestToken getToken(RateLimitRequestType type, Principal user);
 }

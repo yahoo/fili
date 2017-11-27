@@ -33,7 +33,7 @@ class DefaultRateLimiterSpec extends Specification {
 
     def "user request"() {
         when:
-        RequestToken token = rateLimiter.getToken(RequestType.USER, user)
+        RateLimitRequestToken token = rateLimiter.getToken(DefaultRateLimitRequestType.USER, user)
         token.close()
 
         then:
@@ -48,7 +48,7 @@ class DefaultRateLimiterSpec extends Specification {
 
     def "ui request"() {
         when:
-        RequestToken token = rateLimiter.getToken(RequestType.UI, user)
+        RateLimitRequestToken token = rateLimiter.getToken(DefaultRateLimitRequestType.UI, user)
         token.close()
 
         then:
@@ -63,7 +63,7 @@ class DefaultRateLimiterSpec extends Specification {
 
     def "bypass request"() {
         when:
-        RequestToken token = rateLimiter.getToken(RequestType.BYPASS, user)
+        RateLimitRequestToken token = rateLimiter.getToken(DefaultRateLimitRequestType.BYPASS, user)
         token.close()
 
         then:
@@ -79,7 +79,7 @@ class DefaultRateLimiterSpec extends Specification {
 
     def "Null user request"() {
         when: "We have the global limit of tokens for a null user"
-        List<RequestToken> tokens = (1..RateLimitFilterSpec.LIMIT_GLOBAL).collect { rateLimiter.getToken(RequestType.USER,  null ) }
+        List<RateLimitRequestToken> tokens = (1..RateLimitFilterSpec.LIMIT_GLOBAL).collect { rateLimiter.getToken(DefaultRateLimitRequestType.USER,  null ) }
 
         and: "They have all been closed:"
         tokens.each { token -> token.close() }
@@ -108,7 +108,7 @@ class DefaultRateLimiterSpec extends Specification {
 
     def "OutstandingRequestToken closed"() {
         when:
-        RequestToken token = rateLimiter.getToken(RequestType.USER, user)
+        RateLimitRequestToken token = rateLimiter.getToken(DefaultRateLimitRequestType.USER, user)
 
         then:
         rateLimiter.globalCount.get() == 1
@@ -137,7 +137,7 @@ class DefaultRateLimiterSpec extends Specification {
 
     def "OutstandingRequestToken orphan closed"() {
         when:
-        RequestToken token = rateLimiter.getToken(RequestType.USER, user)
+        RateLimitRequestToken token = rateLimiter.getToken(DefaultRateLimitRequestType.USER, user)
 
         then:
         rateLimiter.globalCount.get() == 1
@@ -159,7 +159,7 @@ class DefaultRateLimiterSpec extends Specification {
 
     def "Lose user counts"() {
         when:
-        OutstandingRequestToken token = rateLimiter.getToken(RequestType.USER, user)
+        OutstandingRateLimitedRateLimitRequestToken token = rateLimiter.getToken(DefaultRateLimitRequestType.USER, user)
         token.userCount.decrementAndGet()
         token.close()
 
@@ -171,7 +171,7 @@ class DefaultRateLimiterSpec extends Specification {
 
     def "Lose global counts"() {
         when:
-        RequestToken token = rateLimiter.getToken(RequestType.USER, user)
+        RateLimitRequestToken token = rateLimiter.getToken(DefaultRateLimitRequestType.USER, user)
         rateLimiter.globalCount.decrementAndGet()
         token.close()
 
