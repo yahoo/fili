@@ -9,6 +9,8 @@ Current
 -------
 
 ### Added:
+- [Add loaded strategy onto tables full view endpoint](https://github.com/yahoo/fili/pull/589)
+    * Add dimension storage strategy to table full view endpoint
 
 - [Add getter for LogicalMetricInfo in MetricInstance](https://github.com/yahoo/fili/pull/588)
     * There are 3 instance variables inside `MetricInstance` class, two of which have getters. The one without getter,

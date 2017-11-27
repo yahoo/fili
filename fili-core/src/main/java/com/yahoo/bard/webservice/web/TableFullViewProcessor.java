@@ -136,6 +136,7 @@ public class TableFullViewProcessor implements TableMetadataFormatter {
         resultRow.put("uri", DimensionsServlet.getDimensionUrl(dimension, uriInfo));
         resultRow.put("cardinality", dimension.getCardinality());
         resultRow.put("fields", dimension.getDimensionFields());
+        resultRow.put("storageStrategy", dimension.getStorageStrategy());
         return resultRow;
     }
 }
