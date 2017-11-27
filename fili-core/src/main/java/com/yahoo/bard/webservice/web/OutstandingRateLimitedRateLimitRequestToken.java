@@ -125,15 +125,6 @@ public class OutstandingRateLimitedRateLimitRequestToken extends RateLimitReques
     }
 
     /**
-     * Sets the value of the disabled rate.
-     *
-     * @param disabledRate  The disabled rate to be set.
-     */
-    public void setDisabledRate(int disabledRate) {
-        this.DISABLED_RATE = disabledRate;
-    }
-
-    /**
      * Increment the initial count and check if the count has gone over the request limit.
      *
      * @param initialCount  Initial count that we're incrementing and checking against the limit

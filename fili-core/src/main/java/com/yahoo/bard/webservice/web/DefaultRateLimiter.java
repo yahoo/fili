@@ -39,8 +39,6 @@ public class DefaultRateLimiter implements RateLimiter {
 
     private static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry();
 
-    private static final int DISABLED_RATE = -1;
-
     // Request limits
     final int requestLimitGlobal;
     final int requestLimitPerUser;
@@ -119,13 +117,11 @@ public class DefaultRateLimiter implements RateLimiter {
                 userCount = getCount(userName);
                 token = new OutstandingRateLimitedRateLimitRequestToken(user, requestLimitUi, requestLimitGlobal,
                         userCount, globalCount,  requestUiMeter, rejectUiMeter, requestGlobalCounter);
-                token.setDisabledRate(DISABLED_RATE);
                 return token;
             case "USER":
                 userCount = getCount(userName);
                 token = new OutstandingRateLimitedRateLimitRequestToken(user, requestLimitPerUser, requestLimitGlobal,
                         userCount, globalCount, requestUserMeter, rejectUserMeter, requestGlobalCounter);
-                token.setDisabledRate(DISABLED_RATE);
                 return token;
             case "BYPASS":
                 return new BypassRateLimitRequestToken(requestBypassMeter);

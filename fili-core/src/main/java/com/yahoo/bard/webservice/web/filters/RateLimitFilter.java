@@ -49,6 +49,7 @@ public class RateLimitFilter implements ContainerRequestFilter, ContainerRespons
      * Constructs a RateLimitFilter using the provided rate limiter.
      *
      * @param rateLimiter  RateLimiter object to handle rate limiting logic.
+     *
      * @throws SystemConfigException if RateLimiter construction fails.
      */
     @Inject
@@ -59,8 +60,9 @@ public class RateLimitFilter implements ContainerRequestFilter, ContainerRespons
     /**
      * Load DefaultRateLimiter for this filter.
      *
-     * @throws SystemConfigException  If any critical configuration fails to load for the DefaultRateLimiter
-     * @deprecated Use the constructor that takes
+     * @throws SystemConfigException  If any critical configuration fails to load for the DefaultRateLimiter.
+     *
+     * @deprecated Use the constructor that takes a RateLimiter.
      */
     @Deprecated
     public RateLimitFilter() throws SystemConfigException {
