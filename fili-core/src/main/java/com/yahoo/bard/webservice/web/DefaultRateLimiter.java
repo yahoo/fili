@@ -110,25 +110,25 @@ public class DefaultRateLimiter implements RateLimiter {
      *
      * @return token holding this user's count
      */
-    public RequestToken getToken(RequestType type, Principal user) {
+    public RateLimitRequestToken getToken(RateLimitRequestType type, Principal user) {
         String userName = String.valueOf(user == null ? null : user.getName());
         AtomicInteger userCount;
-        OutstandingRequestToken token;
-        switch (type) {
-            case UI:
+        OutstandingRateLimitedRateLimitRequestToken token;
+        switch (type.getType()) {
+            case "UI":
                 userCount = getCount(userName);
-                token = new OutstandingRequestToken(user, requestLimitUi, requestLimitGlobal, userCount, globalCount,
-                        requestUiMeter, rejectUiMeter, requestGlobalCounter);
+                token = new OutstandingRateLimitedRateLimitRequestToken(user, requestLimitUi, requestLimitGlobal,
+                        userCount, globalCount,  requestUiMeter, rejectUiMeter, requestGlobalCounter);
                 token.setDisabledRate(DISABLED_RATE);
                 return token;
-            case USER:
+            case "USER":
                 userCount = getCount(userName);
-                token = new OutstandingRequestToken(user, requestLimitPerUser, requestLimitGlobal, userCount,
-                        globalCount, requestUserMeter, rejectUserMeter, requestGlobalCounter);
+                token = new OutstandingRateLimitedRateLimitRequestToken(user, requestLimitPerUser, requestLimitGlobal,
+                        userCount, globalCount, requestUserMeter, rejectUserMeter, requestGlobalCounter);
                 token.setDisabledRate(DISABLED_RATE);
                 return token;
-            case BYPASS:
-                return new BypassRequestToken(requestBypassMeter);
+            case "BYPASS":
+                return new BypassRateLimitRequestToken(requestBypassMeter);
             default:
                 throw new IllegalStateException("Unknown request type " + type);
         }

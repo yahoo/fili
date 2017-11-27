@@ -3,8 +3,8 @@
 package com.yahoo.bard.webservice.web;
 
 /**
- * Type of outstanding request.
+ * Type of rate limit.
  */
-public enum RequestType {
-    USER, UI, BYPASS
+public enum DefaultRateLimitType implements RateLimitType {
+    GLOBAL, USER
 }

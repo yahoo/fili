@@ -5,9 +5,9 @@ package com.yahoo.bard.webservice.web;
 import com.codahale.metrics.Meter;
 
 /**
- * RequestToken for rejected request.
+ * RateLimitRequestToken for rejected request.
  */
-public class BypassRequestToken extends RequestToken {
+public class BypassRateLimitRequestToken extends RateLimitRequestToken {
 
     /**
      * Constructor.
@@ -16,7 +16,7 @@ public class BypassRequestToken extends RequestToken {
      *
      * @param requestBypassMeter  Bypass meter for tracking amount of bypass requests issued.
      */
-    public BypassRequestToken(Meter requestBypassMeter) {
+    public BypassRateLimitRequestToken(Meter requestBypassMeter) {
         requestBypassMeter.mark();
     }
 
