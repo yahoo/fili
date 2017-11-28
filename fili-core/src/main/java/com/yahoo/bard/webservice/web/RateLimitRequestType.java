@@ -7,9 +7,9 @@ package com.yahoo.bard.webservice.web;
  */
 public interface RateLimitRequestType {
     /**
-     * A way to query for the type of rate limit request.
+     * Gets the name of the rate limit request type.
      *
-     * @return String representing rate limit request type.
+     * @return name of the rate limit request type
      */
-    String getType();
+    String getName();
 }

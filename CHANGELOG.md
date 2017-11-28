@@ -120,9 +120,12 @@ Current
       testing. This allows for more consistency, as well as make it easier to test more cases.
 
 - [Ability to use custom rate limiting schemes](https://github.com/yahoo/fili/pull/586)
-    * Added constructor for a rate limiter to `RateLimiterFilter` which takes a `RateLimiter`
-    * Deprecated old constructor
-    * `AbsractBinderFactory` now binds a `DefaultRateLimiter` to `RateLimiter.class`
+    * Allows users to rate limit based on different criteria that the default criteria.
+    * Previous rate limiting code is now located in `DefaultRateLimiter`.
+    * Create a new rate limiter by:
+        - implementing the `RateLimiter` interface
+        - overriding the `buildRateLimiter` method in concrete implementation of `AbstractBinderFactory` to return
+            custom `RateLimiter` implementation
 
 - [Expose `RequestLog` `LogInfo` objects](https://github.com/yahoo/fili/pull/574)
     * Exposes the `LogInfo` objects stored in the `RequestLog`, via `RequestLog::retrieveAll` making it easier

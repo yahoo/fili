@@ -14,14 +14,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * RateLimitRequestToken for successfully bound request.
  */
-public class OutstandingRateLimitedRateLimitRequestToken extends RateLimitRequestToken {
+public class OutstandingRateLimitedRequestToken extends RateLimitRequestToken {
+    private static final int DISABLED_RATE = -1;
+    private static final Logger LOG = LoggerFactory.getLogger(OutstandingRateLimitedRequestToken.class);
+
     private final String userName;
     private final AtomicInteger userCount;
     private final AtomicInteger globalCount;
     private boolean isBound;
-
-    private static int DISABLED_RATE = -1;
-    private static final Logger LOG = LoggerFactory.getLogger(OutstandingRateLimitedRateLimitRequestToken.class);
 
     /**
      * Bind outstanding request to token, or fail and set to unbound.
@@ -35,7 +35,7 @@ public class OutstandingRateLimitedRateLimitRequestToken extends RateLimitReques
      * @param rejectMeter  A meter counting the total number of rejected requests made.
      * @param requestGlobalCounter  A counter tracking the total number of accepted requests made.
      */
-    public OutstandingRateLimitedRateLimitRequestToken(Principal user, int requestLimit, int requestLimitGlobal,
+    public OutstandingRateLimitedRequestToken(Principal user, int requestLimit, int requestLimitGlobal,
             AtomicInteger userCount, AtomicInteger globalCount, Meter requestMeter, Meter rejectMeter,
             Counter requestGlobalCounter
     ) {

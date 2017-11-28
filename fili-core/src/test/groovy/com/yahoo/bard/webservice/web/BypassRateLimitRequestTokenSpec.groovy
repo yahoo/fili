@@ -26,13 +26,13 @@ class BypassRateLimitRequestTokenSpec extends Specification {
         when: "create bypass token"
         RateLimitRequestToken token = new BypassRateLimitRequestToken(bypassMeter)
 
-        then: "token is bound"
+        then:
         token.isBound() == true
 
         when: "close the token"
         token.close()
 
-        then: "token is still bound"
+        then:
         token.isBound() == true
     }
 }

@@ -10,6 +10,7 @@ import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.bard.webservice.web.DataApiRequestTypeIdentifier;
 import com.yahoo.bard.webservice.web.DefaultRateLimiter;
 import com.yahoo.bard.webservice.web.RateLimitRequestToken;
+import com.yahoo.bard.webservice.web.RateLimitRequestType;
 import com.yahoo.bard.webservice.web.RateLimiter;
 import com.yahoo.bard.webservice.web.DefaultRateLimitRequestType;
 
@@ -60,9 +61,9 @@ public class RateLimitFilter implements ContainerRequestFilter, ContainerRespons
     /**
      * Load DefaultRateLimiter for this filter.
      *
-     * @throws SystemConfigException  If any critical configuration fails to load for the DefaultRateLimiter.
+     * @throws SystemConfigException  If any critical configuration fails to load for the DefaultRateLimiter
      *
-     * @deprecated Use the constructor that takes a RateLimiter.
+     * @deprecated Use the constructor that takes a RateLimiter
      */
     @Deprecated
     public RateLimitFilter() throws SystemConfigException {
@@ -83,8 +84,8 @@ public class RateLimitFilter implements ContainerRequestFilter, ContainerRespons
 
             MultivaluedMap<String, String> headers = Utils.headersToLowerCase(request.getHeaders());
 
-            // Pick DefaultRateLimitRequestType
-            DefaultRateLimitRequestType type;
+            // Pick RateLimitRequestType
+            RateLimitRequestType type;
             if (DataApiRequestTypeIdentifier.isBypass(headers)) {
                 // Bypass requests are unlimited
                 type = DefaultRateLimitRequestType.BYPASS;
