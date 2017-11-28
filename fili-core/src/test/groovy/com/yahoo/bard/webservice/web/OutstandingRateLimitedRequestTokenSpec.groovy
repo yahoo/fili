@@ -10,19 +10,22 @@ import spock.lang.Specification
 import java.security.Principal
 import java.util.concurrent.atomic.AtomicInteger
 
-class OutstandingRateLimitedRateLimitRequestTokenSpec extends Specification{
+class OutstandingRateLimitedRequestTokenSpec extends Specification{
 
     Principal user
     AtomicInteger globalCount
+    AtomicInteger userCount
     Meter requestMeter
     Meter rejectMeter
     Counter requestGlobalCounter
 
     def setup() {
         user = Mock(Principal)
-        user.getName() >> { return "user" }
+        user.getName() >> "user"
 
+        userCount = new AtomicInteger()
         globalCount = new AtomicInteger()
+
         requestMeter = new Meter()
         rejectMeter = new Meter()
         requestGlobalCounter = new Counter()
@@ -35,7 +38,7 @@ class OutstandingRateLimitedRateLimitRequestTokenSpec extends Specification{
         AtomicInteger userCount = new AtomicInteger()
 
         when: "create a new token"
-        RateLimitRequestToken token = new OutstandingRateLimitedRateLimitRequestToken(user, requestLimit, globalRequestLimit, userCount,
+        RateLimitRequestToken token = new OutstandingRateLimitedRequestToken(user, requestLimit, globalRequestLimit, userCount,
                 globalCount, requestMeter, rejectMeter, requestGlobalCounter)
 
         then: "counters have incremented"
@@ -65,7 +68,7 @@ class OutstandingRateLimitedRateLimitRequestTokenSpec extends Specification{
         AtomicInteger userCount = new AtomicInteger()
 
         when: "create a new token"
-        RateLimitRequestToken token = new OutstandingRateLimitedRateLimitRequestToken(user, requestLimit, globalRequestLimit, userCount,
+        RateLimitRequestToken token = new OutstandingRateLimitedRequestToken(user, requestLimit, globalRequestLimit, userCount,
                 globalCount, requestMeter, rejectMeter, requestGlobalCounter)
 
         then: "request was rejected, and not bound"
@@ -84,14 +87,16 @@ class OutstandingRateLimitedRateLimitRequestTokenSpec extends Specification{
         AtomicInteger userCount = new AtomicInteger()
         Principal user2 = Mock(Principal)
         AtomicInteger user2Count = new AtomicInteger()
-        user2.getName() >> { return "user2" }
+        user2.getName() >> "user2"
+
+        // launch three requests; this will bring us to the global limit
         (1..3).each {
-            new OutstandingRateLimitedRateLimitRequestToken(user, requestLimit, globalRequestLimit, userCount,
+            new OutstandingRateLimitedRequestToken(user, requestLimit, globalRequestLimit, userCount,
                     globalCount, requestMeter, rejectMeter, requestGlobalCounter)
         }
 
-        when: "create a new token for user2"
-        RateLimitRequestToken user2Token = new OutstandingRateLimitedRateLimitRequestToken(user2, requestLimit, globalRequestLimit, user2Count,
+        when: "create a new token (launch a new request) for user2"
+        RateLimitRequestToken user2Token = new OutstandingRateLimitedRequestToken(user2, requestLimit, globalRequestLimit, user2Count,
                 globalCount, requestMeter, rejectMeter, requestGlobalCounter)
 
         then: "user2 request was rejected, user1 requests are successful"

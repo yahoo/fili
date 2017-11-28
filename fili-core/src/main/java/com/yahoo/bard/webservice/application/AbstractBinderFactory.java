@@ -1145,7 +1145,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     /**
      * Creates a new RateLimiter for the RateLimitFilter.
      *
-     * @return A DefaultRateLimiter
+     * @return a DefaultRateLimiter
      */
     protected RateLimiter buildRateLimiter() {
         return new DefaultRateLimiter();

@@ -159,7 +159,7 @@ class DefaultRateLimiterSpec extends Specification {
 
     def "Lose user counts"() {
         when:
-        OutstandingRateLimitedRateLimitRequestToken token = rateLimiter.getToken(DefaultRateLimitRequestType.USER, user)
+        OutstandingRateLimitedRequestToken token = rateLimiter.getToken(DefaultRateLimitRequestType.USER, user)
         token.userCount.decrementAndGet()
         token.close()
 

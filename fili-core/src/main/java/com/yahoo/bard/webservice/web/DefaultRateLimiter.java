@@ -1,4 +1,4 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web;
 
@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.validation.constraints.NotNull;
 
 /**
- * Handles Rate Limiting for web service.
+ * This is the default implementation of a rate limiter.
  */
 public class DefaultRateLimiter implements RateLimiter {
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
@@ -40,9 +40,9 @@ public class DefaultRateLimiter implements RateLimiter {
     private static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry();
 
     // Request limits
-    final int requestLimitGlobal;
-    final int requestLimitPerUser;
-    final int requestLimitUi;
+    private final int requestLimitGlobal;
+    private final int requestLimitPerUser;
+    private final int requestLimitUi;
 
     // Live count holders
     private final AtomicInteger globalCount = new AtomicInteger();
@@ -58,7 +58,7 @@ public class DefaultRateLimiter implements RateLimiter {
     private final Meter rejectUserMeter;
 
     /**
-     * Loads defaults and create DefaultRateLimiter.
+     * Loads defaults and creates DefaultRateLimiter.
      *
      * @throws SystemConfigException If any parameters fail to load
      */
@@ -103,30 +103,31 @@ public class DefaultRateLimiter implements RateLimiter {
     /**
      * Increment user outstanding requests count.
      *
-     * @param type  request type
-     * @param user  request user
+     * @param type  Request type
+     * @param user  Request user
      *
      * @return token holding this user's count
      */
     public RateLimitRequestToken getToken(RateLimitRequestType type, Principal user) {
         String userName = String.valueOf(user == null ? null : user.getName());
-        AtomicInteger userCount;
-        OutstandingRateLimitedRateLimitRequestToken token;
-        switch (type.getType()) {
-            case "UI":
-                userCount = getCount(userName);
-                token = new OutstandingRateLimitedRateLimitRequestToken(user, requestLimitUi, requestLimitGlobal,
-                        userCount, globalCount,  requestUiMeter, rejectUiMeter, requestGlobalCounter);
-                return token;
-            case "USER":
-                userCount = getCount(userName);
-                token = new OutstandingRateLimitedRateLimitRequestToken(user, requestLimitPerUser, requestLimitGlobal,
-                        userCount, globalCount, requestUserMeter, rejectUserMeter, requestGlobalCounter);
-                return token;
-            case "BYPASS":
-                return new BypassRateLimitRequestToken(requestBypassMeter);
-            default:
-                throw new IllegalStateException("Unknown request type " + type);
+
+        if (type.getName().equals(DefaultRateLimitRequestType.BYPASS.getName())) {
+            return new BypassRateLimitRequestToken(requestBypassMeter);
+        } else if (type.getName().equals(DefaultRateLimitRequestType.UI.getName()) ||
+                type.getName().equals(DefaultRateLimitRequestType.USER.getName())) {
+            boolean isUIQuery = type.getName().equals(DefaultRateLimitRequestType.UI.getName());
+            return new OutstandingRateLimitedRequestToken(
+                    user,
+                    isUIQuery ? requestLimitUi : requestLimitPerUser,
+                    requestLimitGlobal,
+                    getCount(userName),
+                    globalCount,
+                    isUIQuery ? requestUiMeter : requestUserMeter,
+                    isUIQuery ? rejectUiMeter : rejectUserMeter,
+                    requestGlobalCounter
+            );
+        } else {
+            throw new IllegalStateException("Unknown request type " + type);
         }
     }
 }

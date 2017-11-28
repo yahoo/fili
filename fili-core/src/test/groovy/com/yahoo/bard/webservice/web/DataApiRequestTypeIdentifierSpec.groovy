@@ -7,7 +7,7 @@ import spock.lang.Specification
 import javax.ws.rs.core.MultivaluedHashMap
 import javax.ws.rs.core.MultivaluedMap
 
-class DataApiDefaultRateLimitRequestTypeIdentifierSpec extends Specification {
+class DataApiRequestTypeIdentifierSpec extends Specification {
 
     def "check if UI request is detected"() {
         setup:
