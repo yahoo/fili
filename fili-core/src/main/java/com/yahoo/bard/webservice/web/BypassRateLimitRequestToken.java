@@ -7,7 +7,7 @@ import com.codahale.metrics.Meter;
 /**
  * RateLimitRequestToken for rejected request.
  */
-public class BypassRateLimitRequestToken extends RateLimitRequestToken {
+public class BypassRateLimitRequestToken implements RateLimitRequestToken {
 
     /**
      * Constructor.
@@ -19,6 +19,11 @@ public class BypassRateLimitRequestToken extends RateLimitRequestToken {
     public BypassRateLimitRequestToken(Meter requestBypassMeter) {
         requestBypassMeter.mark();
     }
+
+    /**
+     * Constructor that does not require a meter.
+     */
+    public BypassRateLimitRequestToken() { }
 
     @Override
     public boolean isBound() {
