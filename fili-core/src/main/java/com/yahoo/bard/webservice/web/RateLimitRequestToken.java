@@ -7,23 +7,23 @@ import java.io.Closeable;
 /**
  * Resource representing an outstanding request.
  */
-public abstract class RateLimitRequestToken implements Closeable {
+public interface RateLimitRequestToken extends Closeable {
     /**
      * Check if the token is bound.
      *
      * @return true if bound or false if rejected
      */
-    public abstract boolean isBound();
+    boolean isBound();
 
     /**
      * Bind the counters to the token.
      *
      * @return true if the token was able to be bound or is already bounf, or false if rejected.
      */
-    public abstract boolean bind();
+    boolean bind();
 
     /**
      * Release the token's counters.
      */
-    public abstract void unBind();
+    void unBind();
 }
