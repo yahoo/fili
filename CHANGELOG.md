@@ -203,6 +203,13 @@ Current
 
 ### Fixed:
 
+- [Turn on Lucene swap-index test](https://github.com/yahoo/fili/pull/582)
+    * A test on swapping Lucene index files was turned off in https://github.com/yahoo/fili/pull/551. That test is
+      turned on again
+    * A duplicate method `deleteDir()` is found in `LuceneSearchProvider.java` and is removed.
+    * `moveDirEntries()`, which is essentially a utility method to move directory files, is moved to utility class,
+      `Utils.java`
+
 - [Fix intermittent class scanner error on DataSourceConstraint equal](https://github.com/yahoo/fili/pull/573)
    * Class Scanner Spec was injecting an improper dependant field due to type erasure.  Made field type explicit.
 
