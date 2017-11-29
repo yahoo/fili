@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.application.MetricRegistryFactory;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigException;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
+import com.yahoo.bard.webservice.util.Utils;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
@@ -17,6 +18,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.validation.constraints.NotNull;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.SecurityContext;
 
 /**
  * This is the default implementation of a rate limiter.
@@ -100,22 +104,20 @@ public class DefaultRateLimiter implements RateLimiter {
         return count;
     }
 
-    /**
-     * Increment user outstanding requests count.
-     *
-     * @param type  Request type
-     * @param user  Request user
-     *
-     * @return token holding this user's count
-     */
-    public RateLimitRequestToken getToken(RateLimitRequestType type, Principal user) {
+    @Override
+    public RateLimitRequestToken getToken(ContainerRequestContext request) {
+        MultivaluedMap<String, String> headers = Utils.headersToLowerCase(request.getHeaders());
+        SecurityContext securityContext = request.getSecurityContext();
+        Principal user = securityContext == null ? null : securityContext.getUserPrincipal();
         String userName = String.valueOf(user == null ? null : user.getName());
 
-        if (type.getName().equals(DefaultRateLimitRequestType.BYPASS.getName())) {
+        if (DataApiRequestTypeIdentifier.isBypass(headers) ||
+                DataApiRequestTypeIdentifier.isCorsPreflight(request.getMethod(), request.getSecurityContext())) {
+            // Bypass and CORS Preflight requests are unlimited
             return new BypassRateLimitRequestToken(requestBypassMeter);
-        } else if (type.getName().equals(DefaultRateLimitRequestType.UI.getName()) ||
-                type.getName().equals(DefaultRateLimitRequestType.USER.getName())) {
-            boolean isUIQuery = type.getName().equals(DefaultRateLimitRequestType.UI.getName());
+        } else {
+            // Is either a UI query or a User query
+            boolean isUIQuery = DataApiRequestTypeIdentifier.isUi(headers);
             return new OutstandingRateLimitedRequestToken(
                     user,
                     isUIQuery ? requestLimitUi : requestLimitPerUser,
@@ -126,8 +128,6 @@ public class DefaultRateLimiter implements RateLimiter {
                     isUIQuery ? rejectUiMeter : rejectUserMeter,
                     requestGlobalCounter
             );
-        } else {
-            throw new IllegalStateException("Unknown request type " + type);
         }
     }
 }

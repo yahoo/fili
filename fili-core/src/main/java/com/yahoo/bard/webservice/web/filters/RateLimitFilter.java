@@ -6,20 +6,15 @@ import static com.yahoo.bard.webservice.web.ResponseCode.RATE_LIMIT;
 
 import com.yahoo.bard.webservice.config.SystemConfigException;
 import com.yahoo.bard.webservice.logging.RequestLog;
-import com.yahoo.bard.webservice.util.Utils;
-import com.yahoo.bard.webservice.web.DataApiRequestTypeIdentifier;
 import com.yahoo.bard.webservice.web.DefaultRateLimiter;
 import com.yahoo.bard.webservice.web.RateLimitRequestToken;
-import com.yahoo.bard.webservice.web.RateLimitRequestType;
 import com.yahoo.bard.webservice.web.RateLimiter;
-import com.yahoo.bard.webservice.web.DefaultRateLimitRequestType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
-import java.security.Principal;
 
 import javax.annotation.Priority;
 import javax.inject.Inject;
@@ -29,9 +24,7 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.container.PreMatching;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
 
 /**
  * Filter all requests to respond RATE_LIMIT if user/global limits are exceeded.
@@ -80,31 +73,9 @@ public class RateLimitFilter implements ContainerRequestFilter, ContainerRespons
 
         // Determine if we should filter based on URL path
         // TODO: Make this based on resource mapped to or at least more configurable with _not_ strings
+        // TODO What is /test and /data ?
         if (path.startsWith("/v1/data") || path.startsWith("/data") || path.startsWith("/test")) {
-
-            MultivaluedMap<String, String> headers = Utils.headersToLowerCase(request.getHeaders());
-
-            // Pick RateLimitRequestType
-            RateLimitRequestType type;
-            if (DataApiRequestTypeIdentifier.isBypass(headers)) {
-                // Bypass requests are unlimited
-                type = DefaultRateLimitRequestType.BYPASS;
-            } else if (
-                    DataApiRequestTypeIdentifier.isCorsPreflight(request.getMethod(), request.getSecurityContext())
-            ) {
-                // CORS Preflight requests are unlimited
-                type = DefaultRateLimitRequestType.BYPASS;
-            } else if (DataApiRequestTypeIdentifier.isUi(headers)) {
-                // UI requests have a different limit
-                type = DefaultRateLimitRequestType.UI;
-            } else {
-                type = DefaultRateLimitRequestType.USER;
-            }
-
-            // Get the token
-            SecurityContext securityContext = request.getSecurityContext();
-            Principal user = securityContext == null ? null : securityContext.getUserPrincipal();
-            RateLimitRequestToken token = rateLimiter.getToken(type, user);
+            RateLimitRequestToken token = rateLimiter.getToken(request);
 
             // Add the token to the request if it was bound
             if (token.isBound()) {
