@@ -164,7 +164,6 @@ public class DefaultRateLimiter implements RateLimiter {
             SecurityContext securityContext = request.getSecurityContext();
             Principal user = securityContext == null ? null : securityContext.getUserPrincipal();
             String userName = String.valueOf(user == null ? null : user.getName());
-            AtomicInteger count = getCount(userName);
 
             boolean isUIQuery = DataApiRequestTypeIdentifier.isUi(headers);
             Meter requestMeter;
@@ -180,29 +179,68 @@ public class DefaultRateLimiter implements RateLimiter {
                 rejectMeter = rejectUserMeter;
                 requestLimit = requestLimitPerUser;
             }
+            AtomicInteger count = getCount(userName);
 
-            if (!incrementAndCheckCount(globalCount, requestLimitGlobal)) {
-                rejectRequest(rejectMeter, true, isUIQuery, userName);
-                return REJECT_REQUEST_TOKEN;
-            }
+            return createNewRateLimitRequestToken(count, userName, isUIQuery, requestLimit, requestMeter, rejectMeter);
 
-
-            // Bind to the user
-            if (!incrementAndCheckCount(count, requestLimit)) {
-                // Decrement the global count that had already been incremented
-                globalCount.decrementAndGet();
-                rejectRequest(rejectMeter, false, isUIQuery, userName);
-                return REJECT_REQUEST_TOKEN;
-            }
-
-            // Measure the accepted request and current open connections
-            requestMeter.mark();
-            requestGlobalCounter.inc();
-
-            // Return new request token
-            RateLimitCleanupOnRequestComplete callback = generateCleanupClosure(count, userName);
-            return new CallbackRateLimitRequestToken(true, callback);
+//            if (!incrementAndCheckCount(globalCount, requestLimitGlobal)) {
+//                rejectRequest(rejectMeter, true, isUIQuery, userName);
+//                return REJECT_REQUEST_TOKEN;
+//            }
+//
+//
+//            // Bind to the user
+//            if (!incrementAndCheckCount(count, requestLimit)) {
+//                // Decrement the global count that had already been incremented
+//                globalCount.decrementAndGet();
+//                rejectRequest(rejectMeter, false, isUIQuery, userName);
+//                return REJECT_REQUEST_TOKEN;
+//            }
+//
+//            // Measure the accepted request and current open connections
+//            requestMeter.mark();
+//            requestGlobalCounter.inc();
+//
+//            // Return new request token
+//            RateLimitCleanupOnRequestComplete callback = generateCleanupClosure(count, userName);
+//            return new CallbackRateLimitRequestToken(true, callback);
         }
+    }
+
+    /**
+     * Fefwewfwe.
+     *
+     * @param count  F
+     * @param userName  F
+     * @param isUIQuery  F
+     * @param requestLimit  F
+     * @param requestMeter  F
+     * @param rejectMeter  F
+     * @return f
+     */
+    private RateLimitRequestToken createNewRateLimitRequestToken(AtomicInteger count, String userName,
+            boolean isUIQuery, int requestLimit, Meter requestMeter, Meter rejectMeter) {
+        if (!incrementAndCheckCount(globalCount, requestLimitGlobal)) {
+            rejectRequest(rejectMeter, true, isUIQuery, userName);
+            return REJECT_REQUEST_TOKEN;
+        }
+
+
+        // Bind to the user
+        if (!incrementAndCheckCount(count, requestLimit)) {
+            // Decrement the global count that had already been incremented
+            globalCount.decrementAndGet();
+            rejectRequest(rejectMeter, false, isUIQuery, userName);
+            return REJECT_REQUEST_TOKEN;
+        }
+
+        // Measure the accepted request and current open connections
+        requestMeter.mark();
+        requestGlobalCounter.inc();
+
+        // Return new request token
+        RateLimitCleanupOnRequestComplete callback = generateCleanupClosure(count, userName);
+        return new CallbackRateLimitRequestToken(true, callback);
     }
 
     /**
