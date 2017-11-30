@@ -167,9 +167,19 @@ public class DefaultRateLimiter implements RateLimiter {
             AtomicInteger count = getCount(userName);
 
             boolean isUIQuery = DataApiRequestTypeIdentifier.isUi(headers);
-            Meter requestMeter = isUIQuery ? requestUiMeter : requestUserMeter;
-            Meter rejectMeter = isUIQuery ? rejectUiMeter : rejectUserMeter;
-            int requestLimit = isUIQuery ? requestLimitUi : requestLimitPerUser;
+            Meter requestMeter;
+            Meter rejectMeter;
+            int requestLimit;
+
+            if (isUIQuery) {
+                requestMeter = requestUiMeter;
+                rejectMeter = rejectUiMeter;
+                requestLimit = requestLimitUi;
+            } else {
+                requestMeter = requestUserMeter;
+                rejectMeter = rejectUserMeter;
+                requestLimit = requestLimitPerUser;
+            }
 
             if (!incrementAndCheckCount(globalCount, requestLimitGlobal)) {
                 rejectRequest(rejectMeter, true, isUIQuery, userName);

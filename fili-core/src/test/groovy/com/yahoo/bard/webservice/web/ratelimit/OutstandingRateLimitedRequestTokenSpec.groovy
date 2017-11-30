@@ -1,3 +1,5 @@
+package com.yahoo.bard.webservice.web.ratelimit
+
 //// Copyright 2017 Yahoo Inc.
 //// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 //package com.yahoo.bard.webservice.web
@@ -10,7 +12,7 @@
 //import java.security.Principal
 //import java.util.concurrent.atomic.AtomicInteger
 //
-//class OutstandingRateLimitedRequestTokenSpec extends Specification{
+//class com.yahoo.bard.webservice.web.ratelimit.OutstandingRateLimitedRequestTokenSpec extends Specification{
 //
 //    Principal user
 //    AtomicInteger globalCount
