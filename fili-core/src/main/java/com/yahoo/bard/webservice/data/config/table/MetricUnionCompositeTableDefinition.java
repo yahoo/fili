@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.table;
 
+import com.google.common.collect.Sets;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.names.FieldName;
@@ -11,6 +12,7 @@ import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.MetricUnionCompositeTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
+import com.yahoo.bard.webservice.table.availability.Availability;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +30,8 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
     private static final Logger LOG = LoggerFactory.getLogger(MetricUnionCompositeTableDefinition.class);
 
     private final Set<TableName> dependentTableNames;
+    private Map<Availability, Set<String>> availabilitiesToMetricNames;
+    private final Set<FieldName> metricNames;
 
     /**
      * Define a physical table using a zoned time grain.
@@ -47,6 +51,7 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
     ) {
         super(name, timeGrain, metricNames, dimensionConfigs);
         this.dependentTableNames = dependentTableNames;
+        this.metricNames = metricNames;
     }
 
     /**
@@ -70,6 +75,7 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
     ) {
         super(name, timeGrain, metricNames, dimensionConfigs, logicalToPhysicalNames);
         this.dependentTableNames = dependentTableNames;
+        this.metricNames = metricNames;
     }
 
     @Override
@@ -79,12 +85,28 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
 
     @Override
     public ConfigPhysicalTable build(ResourceDictionaries dictionaries, DataSourceMetadataService metadataService) {
+
+        // Construct a map of availability to its assigned metric
+        // by intersecting its underlying datasource metrics with table configured metrics
+        availabilitiesToMetricNames = getPhysicalTables(dictionaries).stream()
+                .collect(
+                        Collectors.toMap(
+                                ConfigPhysicalTable::getAvailability,
+                                physicalTable ->
+                                        Sets.intersection(
+                                                physicalTable.getSchema().getMetricColumnNames(),
+                                                metricNames
+                                        )
+                        )
+                );
+
         return new MetricUnionCompositeTable(
                 getName(),
                 getTimeGrain(),
                 buildColumns(dictionaries.getDimensionDictionary()),
                 getPhysicalTables(dictionaries),
-                getLogicalToPhysicalNames()
+                getLogicalToPhysicalNames(),
+                availabilitiesToMetricNames
         );
     }
 

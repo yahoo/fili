@@ -3,13 +3,8 @@
 package com.yahoo.bard.webservice.table.availability;
 
 import com.yahoo.bard.webservice.data.config.names.DataSourceName;
-import com.yahoo.bard.webservice.data.metric.MetricColumn;
-import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
-import com.yahoo.bard.webservice.util.Utils;
-
-import com.google.common.collect.Sets;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +14,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
@@ -81,28 +75,15 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
      *
      * @param availabilities  A set of <tt>Availabilities</tt> whose Dimension schemas are (typically) the same and
      * the Metric columns are unique(i.e. no overlap) on every availability
-     * @param columns  The set of all configured columns, including dimension columns, that metric union availability
+     * @param availabilitiesToMetricNames  A map of all availabilities to set of metric names
      * will respond with
      */
-    public MetricUnionAvailability(@NotNull Set<Availability> availabilities, @NotNull Set<Column> columns) {
+    public MetricUnionAvailability(@NotNull Set<Availability> availabilities,
+                                   @NotNull Map<Availability, Set<String>> availabilitiesToMetricNames) {
         super(availabilities.stream());
-        metricNames = Utils.getSubsetByType(columns, MetricColumn.class).stream()
-                .map(MetricColumn::getName)
-                .collect(Collectors.toSet());
+        metricNames = availabilitiesToMetricNames.values().stream().flatMap(Set::stream).collect(Collectors.toSet());
 
-        // Construct a map of availability to its assigned metric
-        // by intersecting its underlying datasource metrics with table configured metrics
-        availabilitiesToMetricNames = availabilities.stream()
-                .collect(
-                        Collectors.toMap(
-                                Function.identity(),
-                                availability ->
-                                        Sets.intersection(
-                                                availability.getAllAvailableIntervals().keySet(),
-                                                metricNames
-                                        )
-                        )
-                );
+        this.availabilitiesToMetricNames = availabilitiesToMetricNames;
 
         // validate metric uniqueness such that
         // each table's underlying datasource schema don't have repeated metric column
