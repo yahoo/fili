@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.web
 
 import com.yahoo.bard.webservice.web.filters.RateLimitFilterSpec
+import com.yahoo.bard.webservice.web.ratelimit.DefaultRateLimiter
 
 import spock.lang.Specification
 
@@ -25,6 +26,8 @@ class DefaultRateLimiterSpec extends Specification {
 
     static String REFERER_HEADER_NAME
     static String REFERER_HEADER_VALUE
+
+    final static String USERNAME = "user"
 
     DefaultRateLimiter rateLimiter
     Principal user
@@ -49,7 +52,7 @@ class DefaultRateLimiterSpec extends Specification {
 
     def setup() {
         user = Mock(Principal)
-        user.getName() >> "user"
+        user.getName() >> USERNAME
 
         rateLimiter = new DefaultRateLimiter()
         // reset metrics to 0
@@ -68,6 +71,7 @@ class DefaultRateLimiterSpec extends Specification {
         securityContext.getUserPrincipal() >> { return user}
         request.getHeaders() >> {return headers }
         request.getMethod() >> { return requestMethod }
+        request.getSecurityContext() >> { return securityContext }
     }
 
     def "bypass request"() {
@@ -93,6 +97,7 @@ class DefaultRateLimiterSpec extends Specification {
         setup:
         headers.remove(CLIENT_HEADER_NAME)
         requestMethod = HttpMethod.OPTIONS
+        securityContext = null
 
         when:
         RateLimitRequestToken token = rateLimiter.getToken(request)
@@ -143,6 +148,23 @@ class DefaultRateLimiterSpec extends Specification {
         rateLimiter.rejectUserMeter.count == 0
     }
 
+    def "username of request is stored while request is open, doesn't get removed on all requests closed"() {
+        expect:
+        rateLimiter.userCounts.containsKey(USERNAME) == false
+
+        when:
+        RateLimitRequestToken token = rateLimiter.getToken(request)
+
+        then:
+        rateLimiter.userCounts.containsKey(USERNAME) == true
+
+        when:
+        token.close()
+
+        then:
+        rateLimiter.userCounts.containsKey(USERNAME) == true
+
+    }
 
     def "Null user request"() {
         setup:
@@ -229,8 +251,8 @@ class DefaultRateLimiterSpec extends Specification {
 
     def "Lose user counts"() {
         when:
-        DefaultRateLimiter.OutstandingRateLimitRequestToken token = rateLimiter.getToken(request)
-        token.count.decrementAndGet()
+        RateLimitRequestToken token = rateLimiter.getToken(request)
+        rateLimiter.userCounts.get(USERNAME).decrementAndGet()
         token.close()
 
         then:

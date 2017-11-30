@@ -1,12 +1,16 @@
 // Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.web;
+package com.yahoo.bard.webservice.web.ratelimit;
 
 import com.yahoo.bard.webservice.application.MetricRegistryFactory;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigException;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.util.Utils;
+import com.yahoo.bard.webservice.web.DataApiRequestTypeIdentifier;
+import com.yahoo.bard.webservice.web.RateLimitCleanupOnRequestComplete;
+import com.yahoo.bard.webservice.web.RateLimitRequestToken;
+import com.yahoo.bard.webservice.web.RateLimiter;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
@@ -28,9 +32,13 @@ import javax.ws.rs.core.SecurityContext;
 /**
  * This is the default implementation of a rate limiter.
  */
-public class DefaultRateLimiter implements RateLimiter, RateLimitCleanupOnRequestComplete {
+public class DefaultRateLimiter implements RateLimiter {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultRateLimiter.class);
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+    private static final RateLimitRequestToken REJECT_REQUEST_TOKEN =
+            new CallbackRateLimitRequestToken(false, () -> { });
+    private static final RateLimitRequestToken BYPASS_TOKEN =
+            new BypassRateLimitRequestToken();
 
     // Property names
     private static final @NotNull String REQUEST_LIMIT_GLOBAL_KEY =
@@ -135,6 +143,7 @@ public class DefaultRateLimiter implements RateLimiter, RateLimitCleanupOnReques
      * @param rejectMeter  Meter to count the rejection in
      * @param isRejectGlobal  Whether or not the rejection is on the global rate limit
      * @param isUIQuery  Whether or not the request is a UI Query
+     * @param userName  Username of the user who made the request
      */
     private void rejectRequest(Meter rejectMeter, boolean isRejectGlobal, boolean isUIQuery, String userName) {
         rejectMeter.mark();
@@ -149,7 +158,8 @@ public class DefaultRateLimiter implements RateLimiter, RateLimitCleanupOnReques
         if (DataApiRequestTypeIdentifier.isBypass(headers) ||
                 DataApiRequestTypeIdentifier.isCorsPreflight(request.getMethod(), request.getSecurityContext())) {
             // Bypass and CORS Preflight requests are unlimited
-            return new BypassRateLimitRequestToken(requestBypassMeter);
+            requestBypassMeter.mark();
+            return BYPASS_TOKEN;
         } else {
             SecurityContext securityContext = request.getSecurityContext();
             Principal user = securityContext == null ? null : securityContext.getUserPrincipal();
@@ -162,7 +172,7 @@ public class DefaultRateLimiter implements RateLimiter, RateLimitCleanupOnReques
 
             if (!incrementAndCheckCount(globalCount, requestLimitGlobal)) {
                 rejectRequest(rejectMeter, true, isUIQuery, userName);
-                return new RejectedRateLimitRequestToken();
+                return REJECT_REQUEST_TOKEN;
             }
 
             // Bind to the user
@@ -170,7 +180,7 @@ public class DefaultRateLimiter implements RateLimiter, RateLimitCleanupOnReques
                 // Decrement the global count that had already been incremented
                 globalCount.decrementAndGet();
                 rejectRequest(rejectMeter, false, isUIQuery, userName);
-                return new RejectedRateLimitRequestToken();
+                return REJECT_REQUEST_TOKEN;
             }
 
             // Measure the accepted request and current open connections
@@ -178,135 +188,32 @@ public class DefaultRateLimiter implements RateLimiter, RateLimitCleanupOnReques
             requestGlobalCounter.inc();
 
             // Return new request token
-            return new CallbackRateLimitRequestToken(this, request);
+            RateLimitCleanupOnRequestComplete callback = generateCleanupClosure(count, userName);
+            return new CallbackRateLimitRequestToken(true, callback);
         }
     }
 
-    @Override
-    public void cleanup(final ContainerRequestContext request) {
-        String userName = request.getSecurityContext().getUserPrincipal().getName();
-        AtomicInteger count = getCount(userName);
-
-        // Unbind
-        if (globalCount.decrementAndGet() < 0) {
-            // Reset to 0 if it falls below 0
-            int old = globalCount.getAndSet(0);
-            LOG.error("Lost global count {} on user {}", old, userName);
-        }
-        if (count.decrementAndGet() < 0) {
-            // Reset to 0 if it falls below 0
-            int old = count.getAndSet(0);
-            LOG.error("Lost user count {} on user {}", old, userName);
-            throw new IllegalStateException("Lost user count");
-        }
+    /**
+     * Creates a callback to be passed to a token to execute when a request has completed. The callback handles
+     * decrementing the global and user counters.
+     *
+     * @param count  The AtomicInteger that stores the amount of in-flight requests an individual user owns
+     * @param userName  The name of the user that made the request
+     * @return The callback interface to be given to a CallbackRateLimitRequestToken
+     */
+    private RateLimitCleanupOnRequestComplete generateCleanupClosure(AtomicInteger count, String userName) {
+        return () -> {
+            if (globalCount.decrementAndGet() < 0) {
+                // Reset to 0 if it falls below 0
+                int old = globalCount.getAndSet(0);
+                LOG.error("Lost global count {} on user {}", old, userName);
+            }
+            if (count.decrementAndGet() < 0) {
+                // Reset to 0 if it falls below 0
+                int old = count.getAndSet(0);
+                LOG.error("Lost user count {} on user {}", old, userName);
+                throw new IllegalStateException("Lost user count");
+            }
+        };
     }
-
-//    /**
-//     * Simple rate limiting token implementation.
-//     */
-//    private class OutstandingRateLimitRequestToken implements RateLimitRequestToken {
-//        private boolean isBound;
-//        private String userName;
-//        private AtomicInteger count;
-//
-//        Meter requestMeter;
-//        Meter rejectMeter;
-//
-//        /**
-//         * Create a token, and decide whether to accept and reject the request.
-//         *
-//         * @param user  The user the request belongs to
-//         * @param isUIQuery  A boolean representing whether the request sent from the UI or from some other source
-//         */
-//        OutstandingRateLimitRequestToken(Principal user, Boolean isUIQuery) {
-//            this.userName = String.valueOf(user == null ? null : user.getName());
-//            this.count = getCount(userName);
-//
-//            requestMeter = isUIQuery ? requestUiMeter : requestUserMeter;
-//            rejectMeter = isUIQuery ? rejectUiMeter : rejectUserMeter;
-//            int requestLimit = isUIQuery ? requestLimitUi : requestLimitPerUser;
-//
-//            // Bind globally
-//            if (!incrementAndCheckCount(globalCount, requestLimitGlobal)) {
-//                rejectRequest(rejectMeter, true, isUIQuery);
-//                return;
-//            }
-//
-//            // Bind to the user
-//            if (!incrementAndCheckCount(count, requestLimit)) {
-//                // Decrement the global count that had already been incremented
-//                globalCount.decrementAndGet();
-//
-//                rejectRequest(rejectMeter, false, isUIQuery);
-//                return;
-//            }
-//
-//            // Measure the accepted request and current open connections
-//            requestMeter.mark();
-//            requestGlobalCounter.inc();
-//
-//            isBound = true;
-//        }
-//
-//        /**
-//         * Do the house keeping needed to reject the request.
-//         *
-//         * @param rejectMeter  Meter to count the rejection in
-//         * @param isRejectGlobal  Whether or not the rejection is on the global rate limit
-//         * @param isUIQuery  Whether or not the request is a UI Query
-//         */
-//        private void rejectRequest(Meter rejectMeter, boolean isRejectGlobal, boolean isUIQuery) {
-//            rejectMeter.mark();
-//            String limitType = isRejectGlobal ? "GLOBAL" : (isUIQuery ? "UI" : "USER");
-//            LOG.info("{} limit {}", limitType, userName);
-//            isBound = false;
-//        }
-//
-//        @Override
-//        public void close() {
-//            if (isBound) {
-//                isBound = false;
-//
-//                // Unbind
-//                if (globalCount.decrementAndGet() < 0) {
-//                    // Reset to 0 if it falls below 0
-//                    int old = globalCount.getAndSet(0);
-//                    LOG.error("Lost global count {} on user {}", old, userName);
-//                }
-//                if (count.decrementAndGet() < 0) {
-//                    // Reset to 0 if it falls below 0
-//                    int old = count.getAndSet(0);
-//                    LOG.error("Lost user count {} on user {}", old, userName);
-//                    throw new IllegalStateException("Lost user count");
-//                }
-//            }
-//        }
-//
-//        @Override
-//        protected void finalize() throws Throwable {
-//            try {
-//                if (isBound) {
-//                    LOG.debug("orphaned {}", userName);
-//                    close();
-//                }
-//            } finally {
-//                super.finalize();
-//            }
-//        }
-//
-//        @Override
-//        public boolean isBound() {
-//            return isBound;
-//        }
-//
-//        @Override
-//        public boolean bind() {
-//            return isBound;
-//        }
-//
-//        @Override
-//        public void unBind() {
-//            close();
-//        }
-//    }
 }

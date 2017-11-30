@@ -1,27 +1,15 @@
 // Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.web;
+package com.yahoo.bard.webservice.web.ratelimit;
 
-import com.codahale.metrics.Meter;
+import com.yahoo.bard.webservice.web.RateLimitRequestToken;
 
 /**
- * RateLimitRequestToken for rejected request.
+ * RateLimitRequestToken for bypass request. Bypass requests are never rate limited.
  */
 public class BypassRateLimitRequestToken implements RateLimitRequestToken {
-
     /**
      * Constructor.
-     * <p>
-     * Also counts the bypass token as being issued.
-     *
-     * @param requestBypassMeter  Bypass meter for tracking amount of bypass requests issued.
-     */
-    public BypassRateLimitRequestToken(Meter requestBypassMeter) {
-        requestBypassMeter.mark();
-    }
-
-    /**
-     * Constructor that does not require a meter.
      */
     public BypassRateLimitRequestToken() { }
 

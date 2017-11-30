@@ -6,7 +6,7 @@ import static com.yahoo.bard.webservice.web.ResponseCode.RATE_LIMIT;
 
 import com.yahoo.bard.webservice.config.SystemConfigException;
 import com.yahoo.bard.webservice.logging.RequestLog;
-import com.yahoo.bard.webservice.web.DefaultRateLimiter;
+import com.yahoo.bard.webservice.web.ratelimit.DefaultRateLimiter;
 import com.yahoo.bard.webservice.web.RateLimitRequestToken;
 import com.yahoo.bard.webservice.web.RateLimiter;
 
