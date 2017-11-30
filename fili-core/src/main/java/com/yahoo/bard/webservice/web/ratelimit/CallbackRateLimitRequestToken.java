@@ -10,8 +10,8 @@ import com.yahoo.bard.webservice.web.RateLimitRequestToken;
  * transaction is completed.
  */
 public class CallbackRateLimitRequestToken implements RateLimitRequestToken {
-    RateLimitCleanupOnRequestComplete rateLimitCleanup;
-    boolean isBound;
+    private RateLimitCleanupOnRequestComplete rateLimitCleanup;
+    private boolean isBound;
 
     /**
      * Constructor.

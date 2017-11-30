@@ -8,10 +8,6 @@ import com.yahoo.bard.webservice.web.RateLimitRequestToken;
  * RateLimitRequestToken for bypass request. Bypass requests are never rate limited.
  */
 public class BypassRateLimitRequestToken implements RateLimitRequestToken {
-    /**
-     * Constructor.
-     */
-    public BypassRateLimitRequestToken() { }
 
     @Override
     public boolean isBound() {

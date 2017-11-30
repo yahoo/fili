@@ -147,7 +147,7 @@ public class DefaultRateLimiter implements RateLimiter {
      */
     private void rejectRequest(Meter rejectMeter, boolean isRejectGlobal, boolean isUIQuery, String userName) {
         rejectMeter.mark();
-        String limitType = isRejectGlobal ? "GLOBAL" : (isUIQuery ? "UI" : "USER");
+        String limitType = isRejectGlobal ? "GLOBAL" : isUIQuery ? "UI" : "USER";
         LOG.info("{} limit {}", limitType, userName);
     }
 
@@ -165,6 +165,7 @@ public class DefaultRateLimiter implements RateLimiter {
             Principal user = securityContext == null ? null : securityContext.getUserPrincipal();
             String userName = String.valueOf(user == null ? null : user.getName());
             AtomicInteger count = getCount(userName);
+
             boolean isUIQuery = DataApiRequestTypeIdentifier.isUi(headers);
             Meter requestMeter = isUIQuery ? requestUiMeter : requestUserMeter;
             Meter rejectMeter = isUIQuery ? rejectUiMeter : rejectUserMeter;
@@ -174,6 +175,7 @@ public class DefaultRateLimiter implements RateLimiter {
                 rejectRequest(rejectMeter, true, isUIQuery, userName);
                 return REJECT_REQUEST_TOKEN;
             }
+
 
             // Bind to the user
             if (!incrementAndCheckCount(count, requestLimit)) {
