@@ -179,44 +179,24 @@ public class DefaultRateLimiter implements RateLimiter {
                 rejectMeter = rejectUserMeter;
                 requestLimit = requestLimitPerUser;
             }
+
             AtomicInteger count = getCount(userName);
-
             return createNewRateLimitRequestToken(count, userName, isUIQuery, requestLimit, requestMeter, rejectMeter);
-
-//            if (!incrementAndCheckCount(globalCount, requestLimitGlobal)) {
-//                rejectRequest(rejectMeter, true, isUIQuery, userName);
-//                return REJECT_REQUEST_TOKEN;
-//            }
-//
-//
-//            // Bind to the user
-//            if (!incrementAndCheckCount(count, requestLimit)) {
-//                // Decrement the global count that had already been incremented
-//                globalCount.decrementAndGet();
-//                rejectRequest(rejectMeter, false, isUIQuery, userName);
-//                return REJECT_REQUEST_TOKEN;
-//            }
-//
-//            // Measure the accepted request and current open connections
-//            requestMeter.mark();
-//            requestGlobalCounter.inc();
-//
-//            // Return new request token
-//            RateLimitCleanupOnRequestComplete callback = generateCleanupClosure(count, userName);
-//            return new CallbackRateLimitRequestToken(true, callback);
         }
     }
 
     /**
-     * Fefwewfwe.
+     * Creates a new RateLimitRequestToken.
      *
-     * @param count  F
-     * @param userName  F
-     * @param isUIQuery  F
-     * @param requestLimit  F
-     * @param requestMeter  F
-     * @param rejectMeter  F
-     * @return f
+     * @param count  The atomic reference that holds the amount of in-flight requests the user owns
+     * @param userName  The user who launched the request
+     * @param isUIQuery  Whether or not this query was generated from the UI
+     * @param requestLimit  The limit of requests the user is allowed to launch
+     * @param requestMeter  Meter tracking the amount of requests that have been launched
+     * @param rejectMeter  Meter tracking the amount of requests that have been rejected
+     *
+     * @return a new RateLimitRequestToken, representing an in-flight (or rejected) request that is tracked by the
+     * RateLimiter
      */
     private RateLimitRequestToken createNewRateLimitRequestToken(AtomicInteger count, String userName,
             boolean isUIQuery, int requestLimit, Meter requestMeter, Meter rejectMeter) {
@@ -249,6 +229,7 @@ public class DefaultRateLimiter implements RateLimiter {
      *
      * @param count  The AtomicInteger that stores the amount of in-flight requests an individual user owns
      * @param userName  The name of the user that made the request
+     *
      * @return The callback interface to be given to a CallbackRateLimitRequestToken
      */
     private RateLimitCleanupOnRequestComplete generateCleanupClosure(AtomicInteger count, String userName) {
