@@ -1,9 +1,10 @@
 // Copyright 2016 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.web
+package com.yahoo.bard.webservice.web.ratelimiter
 
+import com.yahoo.bard.webservice.web.RateLimitRequestToken
+import com.yahoo.bard.webservice.web.RateLimiter
 import com.yahoo.bard.webservice.web.filters.RateLimitFilterSpec
-import com.yahoo.bard.webservice.web.ratelimiter.DefaultRateLimiter
 
 import spock.lang.Specification
 
@@ -27,7 +28,7 @@ class DefaultRateLimiterSpec extends Specification {
     static String REFERER_HEADER_NAME
     static String REFERER_HEADER_VALUE
 
-    DefaultRateLimiter rateLimiter
+    RateLimiter rateLimiter
     Principal user
     MultivaluedMap<String, String> headers
     SecurityContext securityContext
