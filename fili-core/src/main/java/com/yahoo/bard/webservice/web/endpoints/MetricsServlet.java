@@ -256,6 +256,7 @@ public class MetricsServlet extends EndpointServlet {
         resultRow.put("category", logicalMetric.getCategory());
         resultRow.put("name", logicalMetric.getName());
         resultRow.put("longName", logicalMetric.getLongName());
+        resultRow.put("type", logicalMetric.getType());
         resultRow.put("uri", getLogicalMetricUrl(logicalMetric, uriInfo));
         return resultRow;
     }

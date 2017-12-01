@@ -10,10 +10,30 @@ package com.yahoo.bard.webservice.data.metric;
  * logical metric construction.
  */
 public class LogicalMetricInfo {
+    private static final String TYPE_DEFUALT = "DEFAULT";
+
     private final String name;
     private final String longName;
     private final String category;
     private final String description;
+    private final String type;
+
+    /**
+     * Constructor. Builds a fully specified Logical Metric Info.
+     *
+     * @param name  Name of the metric
+     * @param longName  Long name of the metric
+     * @param category  Category of the metric
+     * @param description  Description of the metric
+     * @param type  Type of metric
+     */
+    public LogicalMetricInfo(String name, String longName, String category, String description, String type) {
+        this.name = name;
+        this.longName = longName;
+        this.category = category;
+        this.description = description;
+        this.type = type;
+    }
 
     /**
      * Constructor. Builds a fully specified Logical Metric Info.
@@ -24,10 +44,7 @@ public class LogicalMetricInfo {
      * @param description  Description of the metric
      */
     public LogicalMetricInfo(String name, String longName, String category, String description) {
-        this.name = name;
-        this.longName = longName;
-        this.category = category;
-        this.description = description;
+        this(name, longName, category, description, TYPE_DEFUALT);
     }
 
     /**
@@ -37,7 +54,7 @@ public class LogicalMetricInfo {
      * @param name  Name of the metric
      */
     public LogicalMetricInfo(String name) {
-        this(name, name, LogicalMetric.DEFAULT_CATEGORY, name);
+        this(name, name, LogicalMetric.DEFAULT_CATEGORY, name, TYPE_DEFUALT);
     }
 
     /**
@@ -48,7 +65,7 @@ public class LogicalMetricInfo {
      * @param longName  Long name of the metric
      */
     public LogicalMetricInfo(String name, String longName) {
-        this(name, longName, LogicalMetric.DEFAULT_CATEGORY, name);
+        this(name, longName, LogicalMetric.DEFAULT_CATEGORY, name, TYPE_DEFUALT);
     }
 
     /**
@@ -85,5 +102,14 @@ public class LogicalMetricInfo {
      */
     public String getDescription() {
         return description;
+    }
+
+    /**
+     * Returns the type of the metric.
+     *
+     * @return the type of the metric
+     */
+    public String getType() {
+        return type;
     }
 }

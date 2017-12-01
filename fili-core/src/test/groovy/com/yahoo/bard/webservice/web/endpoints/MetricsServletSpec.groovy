@@ -6,6 +6,7 @@ import static com.yahoo.bard.webservice.util.JsonSortStrategy.SORT_BOTH
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 
@@ -22,6 +23,7 @@ class MetricsServletSpec extends Specification {
     def setup() {
         // Create the test web container to test the resources
         jtb = new JerseyTestBinder(MetricsServlet.class)
+        String DEFAULT_CATEGORY = "General"
 
         // Set known logical metrics
         NoOpResultSetMapper mapper = new NoOpResultSetMapper()
@@ -29,7 +31,7 @@ class MetricsServletSpec extends Specification {
         //Rather than use the default TestMetricLoader data, throw it out and load a simpler data set
         jtb.configurationLoader.dictionaries.metricDictionary.clearLocal()
         ["metricA", "metricB", "metricC"].each { String metricName ->
-            jtb.configurationLoader.metricDictionary.put(metricName, new LogicalMetric(null, mapper, metricName))
+            jtb.configurationLoader.metricDictionary.put(metricName, new LogicalMetric(null, mapper, new LogicalMetricInfo(metricName, metricName, DEFAULT_CATEGORY, metricName, metricName)))
         }
     }
 
@@ -44,9 +46,9 @@ class MetricsServletSpec extends Specification {
         String expectedResponse = """{
                                         "rows":
                                         [
-                                            {"category": "General", "name":"metricA", "longName": "metricA", "uri":"http://localhost:${jtb.getHarness().getPort()}/metrics/metricA"},
-                                            {"category": "General", "name":"metricB", "longName": "metricB", "uri":"http://localhost:${jtb.getHarness().getPort()}/metrics/metricB"},
-                                            {"category": "General", "name":"metricC", "longName": "metricC", "uri":"http://localhost:${jtb.getHarness().getPort()}/metrics/metricC"}
+                                            {"category": "General", "name":"metricA", "longName": "metricA", "type": "metricA", "uri":"http://localhost:${jtb.getHarness().getPort()}/metrics/metricA"},
+                                            {"category": "General", "name":"metricB", "longName": "metricB", "type": "metricB", "uri":"http://localhost:${jtb.getHarness().getPort()}/metrics/metricB"},
+                                            {"category": "General", "name":"metricC", "longName": "metricC", "type": "metricC", "uri":"http://localhost:${jtb.getHarness().getPort()}/metrics/metricC"}
                                         ]
                                     }"""
 
