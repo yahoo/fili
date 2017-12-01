@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.availability;
 
+import com.google.common.collect.ImmutableSet;
 import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
@@ -78,10 +79,15 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
      * @param availabilitiesToMetricNames  A map of all availabilities to set of metric names
      * will respond with
      */
-    public MetricUnionAvailability(@NotNull Set<Availability> availabilities,
-                                   @NotNull Map<Availability, Set<String>> availabilitiesToMetricNames) {
+    public MetricUnionAvailability(
+            @NotNull Set<Availability> availabilities,
+            @NotNull Map<Availability, Set<String>> availabilitiesToMetricNames
+    ) {
         super(availabilities.stream());
-        metricNames = availabilitiesToMetricNames.values().stream().flatMap(Set::stream).collect(Collectors.toSet());
+        metricNames = availabilitiesToMetricNames.values()
+                .stream()
+                .flatMap(Set::stream)
+                .collect(Collectors.collectingAndThen(Collectors.toSet(), ImmutableSet::copyOf));
 
         this.availabilitiesToMetricNames = availabilitiesToMetricNames;
 
