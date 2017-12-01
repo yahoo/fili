@@ -94,7 +94,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
-                      "type": "default",
+                      "type": "DEFAULT",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     }
                   ],
