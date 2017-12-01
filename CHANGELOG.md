@@ -118,6 +118,10 @@ Current
 
 ### Changed:
 
+- [Moved availabilities to metrics construction to MetricUnionCompositeTableDefinition](https://github.com/yahoo/fili/pull/592)
+    * Currently, the availability to metrics construction is taking place even before the availability is loaded. Hence, 
+      moving the construction to MetricUnionCompositeTableDefinition so that availability is loaded first.
+      
 - [Better programmatic generation of metadata json in tests](https://github.com/yahoo/fili/pull/412)
     * Rework metadata tests to be more generated from strings and more pluggable to support heavier and more expressive
       testing. This allows for more consistency, as well as make it easier to test more cases.
