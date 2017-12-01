@@ -86,26 +86,7 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
 
     @Override
     public ConfigPhysicalTable build(ResourceDictionaries dictionaries, DataSourceMetadataService metadataService) {
-
-        Set<Column> columns = buildColumns(dictionaries.getDimensionDictionary());
-        Set<String> metricNames = Utils.getSubsetByType(columns, MetricColumn.class).stream()
-                .map(MetricColumn::getName)
-                .collect(Collectors.collectingAndThen(Collectors.toSet(), ImmutableSet::copyOf));
-
-        // Construct a map of availability to its assigned metric
-        // by intersecting its underlying datasource metrics with table configured metrics
-        Map<Availability, Set<String>> availabilitiesToMetricNames = getPhysicalTables(dictionaries).stream()
-                .collect(
-                        Collectors.collectingAndThen(Collectors.toMap(
-                                ConfigPhysicalTable::getAvailability,
-                                physicalTable ->
-                                        Sets.intersection(
-                                                physicalTable.getSchema().getMetricColumnNames(),
-                                                metricNames
-                                        )
-                        ), ImmutableMap::copyOf)
-                );
-
+        Map<Availability, Set<String>> availabilitiesToMetricNames = getAvailabilitiesToMetrics(dictionaries);
         return new MetricUnionCompositeTable(
                 getName(),
                 getTimeGrain(),
@@ -140,5 +121,34 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
                 .map(physicalTableDictionary::get)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
+    }
+
+    /**
+     * Returns a map from availability to set of metrics.
+     *
+     * @param dictionaries  The ResourceDictionaries from which the tables are to be retrieved
+     *
+     * @return A map from <tt>Availability</tt> to set of <tt>MetricColumn</tt>
+     */
+    public Map<Availability, Set<String>> getAvailabilitiesToMetrics(ResourceDictionaries dictionaries) {
+        Set<Column> columns = buildColumns(dictionaries.getDimensionDictionary());
+        Set<String> metricNames = Utils.getSubsetByType(columns, MetricColumn.class).stream()
+                .map(MetricColumn::getName)
+                .collect(Collectors.collectingAndThen(Collectors.toSet(), ImmutableSet::copyOf));
+
+        // Construct a map of availability to its assigned metric
+        // by intersecting its underlying datasource metrics with table configured metrics
+        Map<Availability, Set<String>> availabilitiesToMetricNames = getPhysicalTables(dictionaries).stream()
+                .collect(
+                        Collectors.collectingAndThen(Collectors.toMap(
+                                ConfigPhysicalTable::getAvailability,
+                                physicalTable ->
+                                        Sets.intersection(
+                                                physicalTable.getSchema().getMetricColumnNames(),
+                                                metricNames
+                                        )
+                        ), ImmutableMap::copyOf)
+                );
+        return availabilitiesToMetricNames;
     }
 }

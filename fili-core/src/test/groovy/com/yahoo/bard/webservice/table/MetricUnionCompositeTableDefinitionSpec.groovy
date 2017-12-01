@@ -7,11 +7,9 @@ import com.yahoo.bard.webservice.data.config.names.FieldName
 import com.yahoo.bard.webservice.data.config.names.TableName
 import com.yahoo.bard.webservice.data.config.table.MetricUnionCompositeTableDefinition
 import com.yahoo.bard.webservice.data.dimension.Dimension
-import com.yahoo.bard.webservice.data.dimension.DimensionColumn
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrainSpec
-import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.availability.Availability
 import spock.lang.Specification
 
