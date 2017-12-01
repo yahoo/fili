@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.web
 
 import com.yahoo.bard.webservice.web.filters.RateLimitFilterSpec
+import com.yahoo.bard.webservice.web.ratelimiter.DefaultRateLimiter
 
 import spock.lang.Specification
 

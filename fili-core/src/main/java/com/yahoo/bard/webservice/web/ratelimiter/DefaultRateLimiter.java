@@ -1,12 +1,15 @@
 // Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.web;
+package com.yahoo.bard.webservice.web.ratelimiter;
 
 import com.yahoo.bard.webservice.application.MetricRegistryFactory;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigException;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.util.Utils;
+import com.yahoo.bard.webservice.web.DataApiRequestTypeIdentifier;
+import com.yahoo.bard.webservice.web.RateLimitRequestToken;
+import com.yahoo.bard.webservice.web.RateLimiter;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
@@ -153,8 +156,8 @@ public class DefaultRateLimiter implements RateLimiter {
         private String userName;
         private AtomicInteger count;
 
-        Meter requestMeter;
-        Meter rejectMeter;
+        private Meter requestMeter;
+        private Meter rejectMeter;
         /**
          * Create a token, and decide whether to accept and reject the request.
          *
