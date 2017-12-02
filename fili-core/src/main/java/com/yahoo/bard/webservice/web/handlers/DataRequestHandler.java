@@ -29,8 +29,8 @@ public interface DataRequestHandler {
      */
     boolean handleRequest(
             RequestContext context,
-            final DataApiRequest request,
-            final DruidAggregationQuery<?> druidQuery,
-            final ResponseProcessor response
+            DataApiRequest request,
+            DruidAggregationQuery<?> druidQuery,
+            ResponseProcessor response
     );
 }
