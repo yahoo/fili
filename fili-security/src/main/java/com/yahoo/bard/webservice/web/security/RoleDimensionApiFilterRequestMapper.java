@@ -16,6 +16,7 @@ import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.FilterOperation;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.RequestValidationException;
+import com.yahoo.bard.webservice.web.filters.ApiFilters;
 
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
@@ -24,7 +25,6 @@ import org.slf4j.LoggerFactory;
 
 import java.security.Principal;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -90,7 +90,7 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
 
         validateSecurityFilters(securityContext.getUserPrincipal(), securityFilters);
 
-        Map<Dimension, Set<ApiFilter>> revisedFilters = mergeSecurityFilters(request.getApiFilters(), securityFilters);
+        ApiFilters revisedFilters = mergeSecurityFilters(request.getApiFilters(), securityFilters);
 
         return request.withFilters(revisedFilters);
     }
@@ -103,11 +103,11 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
      *
      * @return  A set of request filters supplemented with filters from this request.
      */
-    protected Map<Dimension, Set<ApiFilter>> mergeSecurityFilters(
+    protected ApiFilters mergeSecurityFilters(
             Map<Dimension, Set<ApiFilter>> requestFilters,
             Set<ApiFilter> securityFilters
     ) {
-        Map<Dimension, Set<ApiFilter>> revisedFilters = new LinkedHashMap<>(requestFilters);
+        ApiFilters revisedFilters = new ApiFilters(requestFilters);
         Set<ApiFilter> requestDimensionFilters = revisedFilters.getOrDefault(
                 dimension,
                 Collections.emptySet()

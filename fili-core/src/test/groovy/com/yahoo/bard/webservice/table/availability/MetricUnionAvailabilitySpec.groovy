@@ -9,6 +9,7 @@ import com.yahoo.bard.webservice.table.ConfigPhysicalTable
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
+import com.yahoo.bard.webservice.web.filters.ApiFilters
 
 import org.joda.time.Interval
 
@@ -35,6 +36,8 @@ class MetricUnionAvailabilitySpec extends Specification {
 
     MetricUnionAvailability metricUnionAvailability
 
+    ApiFilters apiFilters
+
     def setup() {
         availability1 = Mock(Availability)
         availability2 = Mock(Availability)
@@ -55,6 +58,8 @@ class MetricUnionAvailabilitySpec extends Specification {
         physicalTable2.getAvailability() >> availability2
 
         physicalTables = [physicalTable1, physicalTable2] as Set
+
+        apiFilters = new ApiFilters()
     }
 
     def "Metric columns are initialized by fetching columns from availabilities, not from physical tables"() {
@@ -175,7 +180,7 @@ class MetricUnionAvailabilitySpec extends Specification {
                 [] as Set,
                 [] as Set,
                 [metric1, metric2, 'un_configured'] as Set,
-                [:]
+                [:] as ApiFilters
         )
 
         PhysicalDataSourceConstraint physicalDataSourceConstraint = new PhysicalDataSourceConstraint(dataSourceConstraint, [metric1, metric2, 'ignored2'] as Set)
@@ -208,7 +213,7 @@ class MetricUnionAvailabilitySpec extends Specification {
                 [] as Set,
                 [] as Set,
                 [metric1, metric2] as Set,
-                [:]
+                apiFilters
         )
 
         PhysicalDataSourceConstraint physicalDataSourceConstraint = new PhysicalDataSourceConstraint(dataSourceConstraint, [metric1, metric2] as Set)
@@ -254,7 +259,7 @@ class MetricUnionAvailabilitySpec extends Specification {
                 [] as Set,
                 [] as Set,
                 [metric1, metric2, 'un_configured'] as Set,
-                [:]
+                apiFilters
         )
 
         PhysicalDataSourceConstraint physicalDataSourceConstraint = new PhysicalDataSourceConstraint(dataSourceConstraint, [metric1, metric2, 'un_configured'] as Set)

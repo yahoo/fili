@@ -11,9 +11,12 @@ import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.SliceRequest;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
+import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.RequestValidationException;
+import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.SlicesApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.SlicesApiRequestImpl;
 
 import com.codahale.metrics.annotation.Timed;
 
@@ -53,6 +56,7 @@ public class SlicesServlet extends EndpointServlet {
     private final DataSourceMetadataService dataSourceMetadataService;
     private final PhysicalTableDictionary physicalTableDictionary;
     private final RequestMapper requestMapper;
+    private final ResponseFormatResolver formatResolver;
 
     /**
      * Constructor.
@@ -61,18 +65,21 @@ public class SlicesServlet extends EndpointServlet {
      * @param requestMapper  Mapper for changing the API request
      * @param dataSourceMetadataService  The data source metadata provider
      * @param objectMappers  JSON tools
+     * @param formatResolver  The formatResolver for determining correct response format
      */
     @Inject
     public SlicesServlet(
             PhysicalTableDictionary physicalTableDictionary,
             @Named(SlicesApiRequest.REQUEST_MAPPER_NAMESPACE) RequestMapper requestMapper,
             DataSourceMetadataService dataSourceMetadataService,
-            ObjectMappersSuite objectMappers
+            ObjectMappersSuite objectMappers,
+            ResponseFormatResolver formatResolver
     ) {
         super(objectMappers);
         this.physicalTableDictionary = physicalTableDictionary;
         this.requestMapper = requestMapper;
         this.dataSourceMetadataService = dataSourceMetadataService;
+        this.formatResolver = formatResolver;
     }
 
     /**
@@ -110,9 +117,9 @@ public class SlicesServlet extends EndpointServlet {
             RequestLog.startTiming(this);
             RequestLog.record(new SliceRequest("all"));
 
-            SlicesApiRequest apiRequest = new SlicesApiRequest(
+            SlicesApiRequestImpl apiRequest = new SlicesApiRequestImpl(
                     null,
-                    format,
+                    formatResolver.apply(format, containerRequestContext),
                     perPage,
                     page,
                     physicalTableDictionary,
@@ -121,7 +128,7 @@ public class SlicesServlet extends EndpointServlet {
             );
 
             if (requestMapper != null) {
-                apiRequest = (SlicesApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
+                apiRequest = (SlicesApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
             Stream<Map<String, String>> result = apiRequest.getPage(apiRequest.getSlices());
@@ -143,7 +150,7 @@ public class SlicesServlet extends EndpointServlet {
             LOG.error(msg, e);
             responseSender = () -> Response.status(INTERNAL_SERVER_ERROR).entity(msg).build();
         } catch (Error | Exception e) {
-            String msg = String.format("Exception processing request: %s", e.getMessage());
+            String msg = ErrorMessageFormat.REQUEST_PROCESSING_EXCEPTION.format(e.getMessage());
             LOG.info(msg, e);
             responseSender = () -> Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
         } finally {
@@ -192,7 +199,7 @@ public class SlicesServlet extends EndpointServlet {
             RequestLog.startTiming(this);
             RequestLog.record(new SliceRequest(sliceName));
 
-            SlicesApiRequest apiRequest = new SlicesApiRequest(
+            SlicesApiRequestImpl apiRequest = new SlicesApiRequestImpl(
                     sliceName,
                     null,
                     "",
@@ -203,7 +210,7 @@ public class SlicesServlet extends EndpointServlet {
             );
 
             if (requestMapper != null) {
-                apiRequest = (SlicesApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
+                apiRequest = (SlicesApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
             String output = objectMappers.getMapper().writeValueAsString(apiRequest.getSlice());

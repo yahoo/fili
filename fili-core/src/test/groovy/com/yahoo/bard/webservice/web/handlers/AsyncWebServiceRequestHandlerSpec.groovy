@@ -5,7 +5,10 @@ package com.yahoo.bard.webservice.web.handlers
 import com.yahoo.bard.webservice.druid.client.DruidWebService
 import com.yahoo.bard.webservice.druid.client.SuccessCallback
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
+import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo
+import com.yahoo.bard.webservice.logging.blocks.BardQueryInfoUtils
 import com.yahoo.bard.webservice.web.DataApiRequest
+import com.yahoo.bard.webservice.web.responseprocessors.LoggingContext
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor
 
 import com.fasterxml.jackson.databind.JsonNode
@@ -17,6 +20,14 @@ import spock.lang.Specification
 import java.util.concurrent.Future
 
 class AsyncWebServiceRequestHandlerSpec extends Specification {
+
+    def setup() {
+        BardQueryInfoUtils.initializeBardQueryInfo()
+    }
+
+    def cleanup() {
+        BardQueryInfoUtils.resetBardQueryInfo()
+    }
 
     def "Test handle request invokes asynch call"() {
         setup:
@@ -34,6 +45,10 @@ class AsyncWebServiceRequestHandlerSpec extends Specification {
 
         SuccessCallback sc = null
         boolean success
+
+        expect:
+        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.FACT_QUERIES).get() == 0
+
         when:
         success = handler.handleRequest(rc, request, groupByQuery, response)
 
@@ -46,11 +61,12 @@ class AsyncWebServiceRequestHandlerSpec extends Specification {
             sc = a1
             return Mock(Future)
         }
+        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.FACT_QUERIES).get() == 1
 
         when:
         sc.invoke(rootNode)
 
         then:
-        1 * response.processResponse(rootNode, groupByQuery, _)
+        1 * response.processResponse(rootNode, groupByQuery, _ as LoggingContext)
     }
 }

@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.data.config.metric.makers;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.druid.model.aggregation.CountAggregation;
@@ -27,13 +28,13 @@ public class CountMaker extends MetricMaker {
     }
 
     @Override
-    protected LogicalMetric makeInner(String metricName, List<String> dependentMetrics) {
+    protected LogicalMetric makeInner(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics) {
         TemplateDruidQuery query = new TemplateDruidQuery(
-                Collections.singleton(new CountAggregation(metricName)),
+                Collections.singleton(new CountAggregation(logicalMetricInfo.getName())),
                 Collections.emptySet()
         );
 
-        return new LogicalMetric(query, NO_OP_MAPPER, metricName);
+        return new LogicalMetric(query, NO_OP_MAPPER, logicalMetricInfo);
     }
 
     @Override

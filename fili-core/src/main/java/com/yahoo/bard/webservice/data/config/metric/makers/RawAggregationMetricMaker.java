@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.data.config.metric.makers;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper;
@@ -48,12 +49,13 @@ public abstract class RawAggregationMetricMaker extends MetricMaker {
 
 
     @Override
-    protected LogicalMetric makeInner(String metricName, List<String> dependentMetrics) {
+    protected LogicalMetric makeInner(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics) {
+        String metricName = logicalMetricInfo.getName();
         Aggregation aggregation = aggregationFactory.apply(metricName, dependentMetrics.get(0));
         return new LogicalMetric(
                 new TemplateDruidQuery(Collections.singleton(aggregation), Collections.emptySet()),
                 getResultSetMapper(metricName),
-                metricName
+                logicalMetricInfo
         );
     }
 

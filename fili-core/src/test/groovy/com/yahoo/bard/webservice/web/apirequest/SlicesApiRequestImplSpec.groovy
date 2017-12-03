@@ -1,6 +1,6 @@
 // Copyright 2016 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.web
+package com.yahoo.bard.webservice.web.apirequest
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
@@ -8,8 +8,10 @@ import com.yahoo.bard.webservice.metadata.BaseDataSourceMetadataSpec
 import com.yahoo.bard.webservice.metadata.DataSourceMetadata
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.metadata.SegmentInfo
+import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
-import com.yahoo.bard.webservice.table.Table
+import com.yahoo.bard.webservice.web.BadApiRequestException
+import com.yahoo.bard.webservice.web.SlicesApiRequest
 import com.yahoo.bard.webservice.web.endpoints.SlicesServlet
 
 import org.joda.time.DateTime
@@ -20,29 +22,41 @@ import spock.lang.Unroll
 import javax.ws.rs.core.UriBuilder
 import javax.ws.rs.core.UriInfo
 
-class SlicesApiRequestSpec extends BaseDataSourceMetadataSpec {
-
-    JerseyTestBinder jtb
-    UriInfo uriInfo = Mock(UriInfo)
-    UriBuilder builder = Mock(UriBuilder)
-    String baseUri = "http://localhost:9998/v1/slices/"
-    DataSourceMetadataService dataSourceMetadataService = new DataSourceMetadataService()
+class SlicesApiRequestImplSpec extends BaseDataSourceMetadataSpec {
 
     @Shared
     PhysicalTableDictionary fullDictionary
-
     @Shared
-    PhysicalTableDictionary emptyDictionary = new PhysicalTableDictionary()
+    PhysicalTableDictionary emptyDictionary
+
+    JerseyTestBinder jtb
+    UriInfo uriInfo
+    UriBuilder builder
+    String baseUri
+    DataSourceMetadataService dataSourceMetadataService
+
+    @Override
+    def childSetupSpec() {
+        tableName = generateTableName()
+        segments = generateSegments()
+
+        emptyDictionary = new PhysicalTableDictionary()
+    }
 
     def setup() {
+        uriInfo = Mock(UriInfo)
+        builder = Mock(UriBuilder)
+        baseUri = "http://localhost:9998/v1/slices/"
+        dataSourceMetadataService = new DataSourceMetadataService()
+
         jtb = new JerseyTestBinder(SlicesServlet.class)
         fullDictionary = jtb.configurationLoader.physicalTableDictionary
         uriInfo.getBaseUriBuilder() >> builder
         builder.path(_) >> builder
         builder.path(_, _) >> builder
 
-        DataSourceMetadata dataSourceMetadata = new DataSourceMetadata("all_pets", [:], segments)
-        dataSourceMetadataService.update(fullDictionary.get("all_pets").dataSourceNames[0], dataSourceMetadata)
+        DataSourceMetadata dataSourceMetadata = new DataSourceMetadata(tableName, [:], segments.values().toList())
+        dataSourceMetadataService.update(fullDictionary.get(tableName).dataSourceNames[0], dataSourceMetadata)
     }
 
     def cleanup() {
@@ -64,7 +78,7 @@ class SlicesApiRequestSpec extends BaseDataSourceMetadataSpec {
         }
 
         when:
-        SlicesApiRequest apiRequest = new SlicesApiRequest(
+        SlicesApiRequestImpl apiRequest = new SlicesApiRequestImpl(
                 null,
                 null,
                 "",
@@ -81,7 +95,7 @@ class SlicesApiRequestSpec extends BaseDataSourceMetadataSpec {
     def "check api request construction for a given table name"() {
         setup:
         String name = "all_pets"
-        Table table = fullDictionary.get(name)
+        PhysicalTable table = fullDictionary.get(name)
         String uri = baseUri.replaceAll("/slices/.*", "") + "/dimensions/"
 
         builder.build(_) >> { List<List<String>> args ->
@@ -97,6 +111,7 @@ class SlicesApiRequestSpec extends BaseDataSourceMetadataSpec {
             row["name"] = it.key.name
             if (it.key instanceof DimensionColumn) {
                 row["uri"] = uri + it.key.name
+                row["factName"] = table.getPhysicalColumnName(it.key.name)
                 dimensionsResult.add(row)
             } else {
                 metricsResult.add(row)
@@ -114,11 +129,11 @@ class SlicesApiRequestSpec extends BaseDataSourceMetadataSpec {
             "metrics": metricsResult,
             // This test compares generated metadata against itself, meaning that the contents of this generation are
             // not under test.
-            "segmentInfo": SlicesApiRequest.generateSegmentMetadataView(sliceMetadata)
+            "segmentInfo": SlicesApiRequestImpl.generateSegmentMetadataView(sliceMetadata)
         ] as LinkedHashMap
 
         when:
-        SlicesApiRequest apiRequest = new SlicesApiRequest(
+        SlicesApiRequestImpl apiRequest = new SlicesApiRequestImpl(
                 name,
                 null,
                 "",
@@ -140,7 +155,7 @@ class SlicesApiRequestSpec extends BaseDataSourceMetadataSpec {
         }
 
         when:
-        new SlicesApiRequest(
+        new SlicesApiRequestImpl(
                 name,
                 null,
                 "",

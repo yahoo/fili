@@ -52,9 +52,9 @@ class MappingResponseProcessorSpec extends Specification{
 
     MappingResponseProcessor buildSimpleMRP() {
         return new MappingResponseProcessor(apiRequest, objectMappers) {
-            public FailureCallback getFailureCallback(DruidAggregationQuery<?> query) {return null;}
-            public HttpErrorCallback getErrorCallback(DruidAggregationQuery<?> query) {return null;}
-            public void processResponse(JsonNode json, DruidAggregationQuery<?> query, LoggingContext metadata) {}
+            FailureCallback getFailureCallback(DruidAggregationQuery<?> query) {return null}
+            HttpErrorCallback getErrorCallback(DruidAggregationQuery<?> query) {return null}
+            void processResponse(JsonNode json, DruidAggregationQuery<?> query, LoggingContext metadata) {return}
         }
     }
 

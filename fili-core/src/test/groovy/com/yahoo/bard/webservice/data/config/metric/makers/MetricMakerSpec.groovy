@@ -7,6 +7,7 @@ import static com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPo
 import static com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationPostAggFunction.UNION
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
@@ -125,10 +126,10 @@ class MetricMakerSpec extends Specification {
     MetricMaker getMakerInstance(){
         new MetricMaker(dictionary) {
             @Override
-            protected LogicalMetric makeInner(String metricName, List<String> dependentMetrics) {
+            protected LogicalMetric makeInner(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics) {
                 DEFAULT_METRIC
             }
-
+            
             @Override
             protected int getDependentMetricsRequired() {
                 DEPENDENT_METRICS

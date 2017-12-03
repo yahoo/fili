@@ -1,6 +1,6 @@
 // Copyright 2016 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.web
+package com.yahoo.bard.webservice.web.apirequest
 
 import com.yahoo.bard.webservice.async.jobs.JobTestUtils
 import com.yahoo.bard.webservice.async.jobs.stores.JobRowFilter
@@ -16,6 +16,12 @@ import com.yahoo.bard.webservice.async.jobs.payloads.JobPayloadBuilder
 import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore
 import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseTestingUtils
 import com.yahoo.bard.webservice.async.broadcastchannels.SimpleBroadcastChannel
+import com.yahoo.bard.webservice.web.BadApiRequestException
+import com.yahoo.bard.webservice.web.FilterOperation
+import com.yahoo.bard.webservice.web.JobNotFoundException
+import com.yahoo.bard.webservice.web.JobRequestFailedException
+import com.yahoo.bard.webservice.web.JobsApiRequest
+import com.yahoo.bard.webservice.web.PreResponse
 
 import rx.observers.TestSubscriber
 import rx.subjects.PublishSubject;
@@ -25,16 +31,16 @@ import javax.ws.rs.core.UriBuilder
 import javax.ws.rs.core.UriInfo
 
 /**
- * Tests for JobsApiRequest.
+ * Tests for JobsApiRequestImpl.
  */
-class JobsApiRequestSpec extends Specification {
+class JobsApiRequestImplSpec extends Specification {
     BroadcastChannel<String> broadcastChannel
     UriInfo uriInfo
     JobPayloadBuilder jobPayloadBuilder
     ApiJobStore apiJobStore
     PreResponseStore preResponseStore
     PreResponse ticket1PreResponse
-    JobsApiRequest defaultJobsApiRequest
+    JobsApiRequest defaultApiRequest
 
     def setup() {
         uriInfo = Mock(UriInfo)
@@ -71,7 +77,7 @@ class JobsApiRequestSpec extends Specification {
 
         broadcastChannel = new SimpleBroadcastChannel<>(PublishSubject.create())
 
-        defaultJobsApiRequest = new JobsApiRequest(
+        defaultApiRequest = new JobsApiRequestImpl(
                 null,
                 null,
                 "",
@@ -99,7 +105,7 @@ class JobsApiRequestSpec extends Specification {
         ]
 
         when:
-        defaultJobsApiRequest.getJobViewObservable("ticket1").subscribe(getSubscriber)
+        defaultApiRequest.getJobViewObservable("ticket1").subscribe(getSubscriber)
 
         then:
         getSubscriber.assertReceivedOnNext([job])
@@ -110,7 +116,7 @@ class JobsApiRequestSpec extends Specification {
         TestSubscriber<Map<String, String>> errorSubscriber = new TestSubscriber<>()
 
         when:
-        defaultJobsApiRequest.getJobViewObservable("IDontExist").subscribe(errorSubscriber)
+        defaultApiRequest.getJobViewObservable("IDontExist").subscribe(errorSubscriber)
 
         then:
         errorSubscriber.assertError(JobNotFoundException.class)
@@ -122,7 +128,7 @@ class JobsApiRequestSpec extends Specification {
         TestSubscriber<Map<String, String>> errorSubscriber = new TestSubscriber<>()
 
         when:
-        defaultJobsApiRequest.getJobViewObservable("badTicket").subscribe(errorSubscriber)
+        defaultApiRequest.getJobViewObservable("badTicket").subscribe(errorSubscriber)
 
         then:
         errorSubscriber.assertError(JobRequestFailedException.class)
@@ -134,7 +140,7 @@ class JobsApiRequestSpec extends Specification {
         TestSubscriber<Map<String, String>> errorSubscriber = new TestSubscriber<>()
 
         when:
-        defaultJobsApiRequest.getJobViews().subscribe(errorSubscriber)
+        defaultApiRequest.getJobViews().subscribe(errorSubscriber)
 
         then:
         errorSubscriber.assertError(JobRequestFailedException.class)
@@ -146,7 +152,7 @@ class JobsApiRequestSpec extends Specification {
         String filterQuery = "userId-eq[foo]"
 
         when:
-        Set<JobRowFilter> filters = defaultJobsApiRequest.buildJobStoreFilter(filterQuery)
+        Set<JobRowFilter> filters = defaultApiRequest.buildJobStoreFilter(filterQuery)
 
         then:
         filters.size() == 1
@@ -161,7 +167,7 @@ class JobsApiRequestSpec extends Specification {
         String filterQuery = "userId-eq[foo],status-eq[success]"
 
         when:
-        Set<JobRowFilter> filters = defaultJobsApiRequest.buildJobStoreFilter(filterQuery)
+        Set<JobRowFilter> filters = defaultApiRequest.buildJobStoreFilter(filterQuery)
 
         then:
         filters.size() == 2
@@ -183,7 +189,7 @@ class JobsApiRequestSpec extends Specification {
         String badFilterQuery = "userId[foo]"
 
         when:
-        defaultJobsApiRequest.buildJobStoreFilter(badFilterQuery)
+        defaultApiRequest.buildJobStoreFilter(badFilterQuery)
 
         then:
         BadApiRequestException exception = thrown()
@@ -203,7 +209,7 @@ class JobsApiRequestSpec extends Specification {
         apiJobStore.save(userFooJobRow2)
         apiJobStore.save(userFooJobRow3)
 
-        JobsApiRequest apiRequest = new JobsApiRequest(
+        JobsApiRequestImpl apiRequest = new JobsApiRequestImpl(
                 null,
                 null,
                 "",

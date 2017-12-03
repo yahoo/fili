@@ -72,6 +72,7 @@ class SlicesServletSpec extends Specification {
                 """
                                 {
                                     "name":"$it",
+                                    "factName":"$it",
                                     "uri":"http://localhost:${jtb.getHarness().getPort()}/dimensions/$it",
                                     "intervals":["$interval"]
                                 }

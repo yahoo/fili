@@ -1,16 +1,18 @@
 // Copyright 2016 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.web
+package com.yahoo.bard.webservice.web.apirequest
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
+import com.yahoo.bard.webservice.web.BadApiRequestException
+import com.yahoo.bard.webservice.web.MetricsApiRequest
 import com.yahoo.bard.webservice.web.endpoints.MetricsServlet
 
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class MetricsApiRequestSpec extends Specification {
+class MetricsApiRequestImplSpec extends Specification {
 
     JerseyTestBinder jtb
 
@@ -31,7 +33,7 @@ class MetricsApiRequestSpec extends Specification {
 
     def "check api request construction for the top level endpoint (all tables)"() {
         when:
-        MetricsApiRequest apiRequest = new MetricsApiRequest(
+        MetricsApiRequestImpl apiRequest = new MetricsApiRequestImpl(
                 null,
                 null,
                 "",
@@ -49,7 +51,7 @@ class MetricsApiRequestSpec extends Specification {
         String name = "height"
 
         when:
-        MetricsApiRequest apiRequest = new MetricsApiRequest(
+        MetricsApiRequestImpl apiRequest = new MetricsApiRequestImpl(
                 name,
                 null,
                 "",
@@ -65,7 +67,7 @@ class MetricsApiRequestSpec extends Specification {
     @Unroll
     def "api request construction throws #exception.simpleName because #reason"() {
         when:
-        new MetricsApiRequest(
+        new MetricsApiRequestImpl(
                 name,
                 null,
                 "",

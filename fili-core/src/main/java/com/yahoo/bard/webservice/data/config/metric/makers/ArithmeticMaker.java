@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.data.config.metric.makers;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.metric.mappers.ColumnMapper;
@@ -89,7 +90,7 @@ public class ArithmeticMaker extends MetricMaker {
     }
 
     @Override
-    protected LogicalMetric makeInner(String metricName, List<String> dependentMetrics) {
+    protected LogicalMetric makeInner(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics) {
         // Get the ArithmeticPostAggregation operands from the dependent metrics
         List<PostAggregation> operands = dependentMetrics.stream()
                 .map(metrics::get)
@@ -99,13 +100,17 @@ public class ArithmeticMaker extends MetricMaker {
 
         // Create the ArithmeticPostAggregation
         Set<PostAggregation> postAggregations = Collections.singleton(new ArithmeticPostAggregation(
-                metricName,
+                logicalMetricInfo.getName(),
                 function,
                 operands
         ));
 
         TemplateDruidQuery query = getMergedQuery(dependentMetrics).withPostAggregations(postAggregations);
-        return new LogicalMetric(query, resultSetMapperSupplier.apply(metricName), metricName);
+        return new LogicalMetric(
+                query,
+                resultSetMapperSupplier.apply(logicalMetricInfo.getName()),
+                logicalMetricInfo
+        );
     }
 
     @Override

@@ -7,6 +7,7 @@ import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.table.availability.Availability;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
+import com.yahoo.bard.webservice.table.resolver.QueryPlanningConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import org.joda.time.DateTime;
@@ -56,6 +57,33 @@ public class ConstrainedTable implements PhysicalTable {
         );
         dataSourceNames = Collections.unmodifiableSet(
                 sourceAvailability.getDataSourceNames(physicalDataSourceConstraint)
+        );
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param sourceTable  The table being constrained
+     * @param queryPlanningConstraint  The constraint being applied
+     */
+    public ConstrainedTable(ConfigPhysicalTable sourceTable, QueryPlanningConstraint queryPlanningConstraint) {
+        this.constraint = queryPlanningConstraint;
+        this.sourceTable = sourceTable;
+
+        Availability sourceAvailability = sourceTable.getAvailability();
+
+        availableIntervals = new SimplifiedIntervalList(
+                sourceAvailability.getAvailableIntervals(constraint)
+        );
+
+        allAvailableIntervals = Collections.unmodifiableMap(
+                mapToSchemaAvailability(
+                        sourceAvailability.getAllAvailableIntervals(),
+                        getSchema()
+                )
+        );
+        dataSourceNames = Collections.unmodifiableSet(
+                sourceAvailability.getDataSourceNames(constraint)
         );
     }
 

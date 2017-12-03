@@ -24,12 +24,15 @@ import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.util.StreamUtils;
 import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.bard.webservice.web.ApiRequest;
+import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.JobNotFoundException;
 import com.yahoo.bard.webservice.web.JobsApiRequest;
 import com.yahoo.bard.webservice.web.PreResponse;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.RequestValidationException;
+import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
+import com.yahoo.bard.webservice.web.apirequest.JobsApiRequestImpl;
 import com.yahoo.bard.webservice.web.handlers.RequestHandlerUtils;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys;
@@ -91,6 +94,7 @@ public class JobsServlet extends EndpointServlet {
     private final BroadcastChannel<String> broadcastChannel;
     private final ObjectWriter writer;
     private final HttpResponseMaker httpResponseMaker;
+    private final ResponseFormatResolver formatResolver;
 
     /**
      * Constructor.
@@ -101,6 +105,7 @@ public class JobsServlet extends EndpointServlet {
      * @param broadcastChannel  Channel to notify other Bard processes (i.e. long pollers)
      * @param requestMapper  Mapper for changing the API request
      * @param httpResponseMaker  The factory for building HTTP responses
+     * @param formatResolver  The formatResolver for determining correct response format
      */
     @Inject
     public JobsServlet(
@@ -110,7 +115,8 @@ public class JobsServlet extends EndpointServlet {
             PreResponseStore preResponseStore,
             BroadcastChannel<String> broadcastChannel,
             @Named(JobsApiRequest.REQUEST_MAPPER_NAMESPACE) RequestMapper requestMapper,
-            HttpResponseMaker httpResponseMaker
+            HttpResponseMaker httpResponseMaker,
+            ResponseFormatResolver formatResolver
     ) {
         super(objectMappers);
         this.requestMapper = requestMapper;
@@ -120,6 +126,7 @@ public class JobsServlet extends EndpointServlet {
         this.broadcastChannel = broadcastChannel;
         this.writer = objectMappers.getMapper().writer();
         this.httpResponseMaker = httpResponseMaker;
+        this.formatResolver = formatResolver;
     }
 
     /**
@@ -151,7 +158,7 @@ public class JobsServlet extends EndpointServlet {
             RequestLog.startTiming(this);
             RequestLog.record(new JobRequest("all"));
 
-            JobsApiRequest apiRequest = new JobsApiRequest(
+            JobsApiRequestImpl apiRequest = new JobsApiRequestImpl(
                     format,
                     null, //asyncAfter is null so it behaves like a synchronous request
                     perPage,
@@ -163,12 +170,12 @@ public class JobsServlet extends EndpointServlet {
             );
 
             if (requestMapper != null) {
-                apiRequest = (JobsApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
+                apiRequest = (JobsApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
             // apiRequest is not final and cannot be used inside a lambda. Therefore we are assigning apiRequest to
             // jobsApiRequest.
-            JobsApiRequest jobsApiRequest = apiRequest;
+            JobsApiRequestImpl jobsApiRequest = apiRequest;
 
             Function<Collection<Map<String, String>>, AllPagesPagination<Map<String, String>>> paginationFactory =
                     jobsApiRequest.getAllPagesPaginationFactory(
@@ -187,7 +194,7 @@ public class JobsServlet extends EndpointServlet {
             LOG.debug(e.getMessage(), e);
             observableResponse = Observable.just(RequestHandlerUtils.makeErrorResponse(e.getStatus(), e, writer));
         } catch (Error | Exception e) {
-            String msg = String.format("Exception processing request: %s", e.getMessage());
+            String msg = ErrorMessageFormat.REQUEST_PROCESSING_EXCEPTION.format(e.getMessage());
             LOG.info(msg, e);
             observableResponse = Observable.just(Response.status(INTERNAL_SERVER_ERROR).entity(e.getMessage()).build());
         } finally {
@@ -218,7 +225,7 @@ public class JobsServlet extends EndpointServlet {
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new JobRequest(ticket));
-            JobsApiRequest apiRequest = new JobsApiRequest(
+            JobsApiRequestImpl apiRequest = new JobsApiRequestImpl(
                     ResponseFormatType.JSON.toString(),
                     null,
                     "",
@@ -230,7 +237,7 @@ public class JobsServlet extends EndpointServlet {
             );
 
             if (requestMapper != null) {
-                apiRequest = (JobsApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
+                apiRequest = (JobsApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
             observableResponse = handleJobResponse(ticket, apiRequest);
@@ -279,7 +286,7 @@ public class JobsServlet extends EndpointServlet {
             RequestLog.startTiming(this);
             RequestLog.record(new JobRequest(ticket));
 
-            JobsApiRequest apiRequest = new JobsApiRequest(
+            JobsApiRequestImpl apiRequest = new JobsApiRequestImpl(
                     format,
                     asyncAfter,
                     perPage,
@@ -291,12 +298,12 @@ public class JobsServlet extends EndpointServlet {
             );
 
             if (requestMapper != null) {
-                apiRequest = (JobsApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
+                apiRequest = (JobsApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
             // apiRequest is not final and cannot be used inside a lambda. Therefore we are assigning apiRequest to
             // jobsApiRequest.
-            JobsApiRequest jobsApiRequest = apiRequest;
+            JobsApiRequestImpl jobsApiRequest = apiRequest;
 
             Observable<PreResponse> preResponseObservable = getResults(ticket, apiRequest.getAsyncAfter());
 
@@ -331,7 +338,7 @@ public class JobsServlet extends EndpointServlet {
      * result to the user.
      *
      * @param ticket  The ticket that can uniquely identify a Job
-     * @param apiRequest  JobsApiRequest object with all the associated info in it
+     * @param apiRequest  JobsApiRequestImpl object with all the associated info in it
      * @param asyncResponse  Parameter specifying for how long the request should be asyncAfter
      * @param preResponseObservable  An Observable wrapping a PreResponse or an empty observable
      * @param isEmpty  A boolean that indicates if the PreResponse is empty
@@ -340,7 +347,7 @@ public class JobsServlet extends EndpointServlet {
      */
     protected Observable<Response> handlePreResponse(
             String ticket,
-            JobsApiRequest apiRequest,
+            JobsApiRequestImpl apiRequest,
             AsyncResponse asyncResponse,
             Observable<PreResponse> preResponseObservable,
             boolean isEmpty
@@ -425,11 +432,11 @@ public class JobsServlet extends EndpointServlet {
      * Process a request to get job payload.
      *
      * @param ticket  The ticket that can uniquely identify a Job
-     * @param apiRequest  JobsApiRequest object with all the associated info in it
+     * @param apiRequest  JobsApiRequestImpl object with all the associated info in it
      *
      * @return an observable response to be consumed.
      */
-    protected Observable<Response> handleJobResponse(String ticket, JobsApiRequest apiRequest) {
+    protected Observable<Response> handleJobResponse(String ticket, JobsApiRequestImpl apiRequest) {
         return apiRequest.getJobViewObservable(ticket)
                 //map the job to Json String
                 .map(

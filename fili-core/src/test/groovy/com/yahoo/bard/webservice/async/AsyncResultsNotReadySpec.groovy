@@ -47,7 +47,7 @@ class AsyncResultsNotReadySpec extends AsyncFunctionalSpec {
     }
 
     @Override
-    Map<String, Closure<String>> getResultsToTargetFunctions() {
+    LinkedHashMap<String, Closure<String>> getResultsToTargetFunctions() {
         [
                 data: {"data/shapes/day/color"},
                 jobs: {AsyncTestUtils.buildTicketLookup(it.data.readEntity(String))},
@@ -59,11 +59,11 @@ class AsyncResultsNotReadySpec extends AsyncFunctionalSpec {
     }
 
     @Override
-    Map<String, Closure<Void>> getResultAssertions() {
+    LinkedHashMap<String, Closure<Void>> getResultAssertions() {
         [
                 data: {Response response ->
                     try {
-                        assert response.status == 202
+                        assert response.status == 202 : response.toString()
                         AsyncTestUtils.validateJobPayload(
                                 jtb,
                                 response.readEntity(String),
@@ -73,10 +73,11 @@ class AsyncResultsNotReadySpec extends AsyncFunctionalSpec {
                     } finally {
                         validationFinished.countDown()
                     }
+                    sleep(10)
                 },
                 jobs: {Response response ->
                     try {
-                        assert response.status == 200
+                        assert response.status == 200 : response.toString()
                         //The jobs endpoint returns job metadata containing the same expected value as the data endpoint
                         AsyncTestUtils.validateJobPayload(
                                 jtb,
@@ -90,7 +91,7 @@ class AsyncResultsNotReadySpec extends AsyncFunctionalSpec {
                 },
                 results: {Response response ->
                     try {
-                        assert response.status == 200
+                        assert response.status == 200 : response.toString()
                         //The results endpoint returns job metadata containing the same expected value as the data
                         // endpoint
                         AsyncTestUtils.validateJobPayload(
@@ -107,7 +108,7 @@ class AsyncResultsNotReadySpec extends AsyncFunctionalSpec {
     }
 
     @Override
-    Map<String, Closure<Map<String, List<String>>>> getQueryParameters() {
+    LinkedHashMap<String, Closure<Map<String, List<String>>>> getQueryParameters() {
         [
                 data: {[
                         metrics: ["height"],
