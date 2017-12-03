@@ -2,353 +2,107 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web;
 
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.EMPTY_DICTIONARY;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_UNDEFINED;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_GRANULARITY_MISMATCH;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_UNDEFINED;
-
 import com.yahoo.bard.webservice.data.dimension.Dimension;
-import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
-import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
-import com.yahoo.bard.webservice.logging.RequestLog;
-import com.yahoo.bard.webservice.logging.TimedPhase;
 import com.yahoo.bard.webservice.table.LogicalTable;
-import com.yahoo.bard.webservice.table.LogicalTableDictionary;
-import com.yahoo.bard.webservice.table.TableIdentifier;
-import com.yahoo.bard.webservice.web.apirequest.ApiRequestImpl;
-import com.yahoo.bard.webservice.web.util.BardConfigResources;
+import com.yahoo.bard.webservice.web.filters.ApiFilters;
+import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import org.joda.time.Interval;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.core.PathSegment;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 /**
  * Tables API Request. Such an API Request binds, validates, and models the parts of a request to the tables endpoint.
  */
-public class TablesApiRequest extends ApiRequestImpl {
-    private static final Logger LOG = LoggerFactory.getLogger(TablesApiRequest.class);
-    public static final String REQUEST_MAPPER_NAMESPACE = "tablesApiRequestMapper";
-
-    private final Set<LogicalTable> tables;
-    private final LogicalTable table;
-    private final Granularity granularity;
-    private final Set<Dimension> dimensions;
-    private final Set<LogicalMetric> metrics;
-    private final Set<Interval> intervals;
-    private final Map<Dimension, Set<ApiFilter>> filters;
+public interface TablesApiRequest extends ApiRequest {
+    String REQUEST_MAPPER_NAMESPACE = "tablesApiRequestMapper";
 
     /**
-     * Parses the API request URL and generates the Api Request object.
+     * Returns a set of LogicalTables associated with a table API request.
      *
-     * @param tableName  logical table corresponding to the table name specified in the URL
-     * @param granularity  string time granularity in URL
-     * <pre>{@code
-     * ((field name and operation):((multiple values bounded by [])or(single value))))(followed by , or end of string)
-     * }</pre>
-     * @param format  response data format JSON or CSV. Default is JSON.
-     * @param perPage  number of rows to display per page of results. If present in the original request,
-     * must be a positive integer. If not present, must be the empty string.
-     * @param page  desired page of results. If present in the original request, must be a positive
-     * integer. If not present, must be the empty string.
-     * @param uriInfo  The URI of the request object.
-     * @param bardConfigResources  The configuration resources used to build this api request
-     *
-     * @throws BadApiRequestException is thrown in the following scenarios:
-     * <ol>
-     *     <li>Invalid table in the API request.</li>
-     *     <li>Pagination parameters in the API request that are not positive integers.</li>
-     * </ol>
+     * @return the set of LogicalTables associated with a table API request
      */
-    public TablesApiRequest(
-            String tableName,
-            String granularity,
-            String format,
-            @NotNull String perPage,
-            @NotNull String page,
-            UriInfo uriInfo,
-            BardConfigResources bardConfigResources
-    ) throws BadApiRequestException {
-        super(format, perPage, page, uriInfo);
-
-        this.tables = generateTables(tableName, bardConfigResources.getLogicalTableDictionary());
-
-        if (tableName != null && granularity != null) {
-            this.granularity = generateGranularity(granularity, bardConfigResources.getGranularityParser());
-            this.table = generateTable(tableName, this.granularity, bardConfigResources.getLogicalTableDictionary());
-        } else {
-            this.table = null;
-            this.granularity = null;
-        }
-
-        dimensions = Collections.emptySet();
-        metrics = Collections.emptySet();
-        intervals = Collections.emptySet();
-        filters = Collections.emptyMap();
-
-        LOG.debug(
-                "Api request: Tables: {},\nGranularity: {},\nFormat: {}\nPagination: {}" +
-                        "\nDimensions: {}\nMetrics: {}\nIntervals: {}\nFilters: {}",
-                this.tables,
-                this.granularity,
-                this.format,
-                this.paginationParameters,
-                this.dimensions,
-                this.metrics,
-                this.intervals,
-                this.filters
-        );
-    }
+    Set<LogicalTable> getTables();
 
     /**
-     * Parses the API request URL and generates the API Request object with specified query constraints, i.e.
-     * dimensions, metrics, date time intervals, and filters.
+     * Returns the LogicalTable requested in the table API request URL.
      *
-     * @param tableName  Logical table corresponding to the table name specified in the URL
-     * @param granularity  Requested time granularity
-     * @param format  Response data format JSON or CSV. Default is JSON.
-     * @param perPage  Number of rows to display per page of results. It must represent a positive integer or an empty
-     * string if it's not specified
-     * @param page  Desired page of results. It must represent a positive integer or an empty
-     * string if it's not specified
-     * @param uriInfo  The URI of the request
-     * @param bardConfigResources  The configuration resources used to build this API request
-     * @param dimensions  Grouping dimensions / Dimension constraint
-     * @param metrics  Metrics constraint
-     * @param intervals  Data / Time constraint
-     * @param filters  Filter constraint
-     * @param timeZoneId  A joda time zone id
-     *
-     * @throws BadApiRequestException on
-     * <ol>
-     *     <li>invalid table</li>
-     *     <li>invalid pagination parameters</li>
-     * </ol>
+     * @return the LogicalTable requested in the table API request URL
      */
-    public TablesApiRequest(
-            String tableName,
-            String granularity,
-            String format,
-            @NotNull String perPage,
-            @NotNull String page,
-            UriInfo uriInfo,
-            BardConfigResources bardConfigResources,
-            List<PathSegment> dimensions,
-            String metrics,
-            String intervals,
-            String filters,
-            String timeZoneId
-    ) throws BadApiRequestException {
-        super(format, perPage, page, uriInfo);
-
-        LogicalTableDictionary logicalTableDictionary = bardConfigResources.getLogicalTableDictionary();
-        this.tables = generateTables(tableName, logicalTableDictionary);
-
-        if (tableName != null && granularity != null) {
-            this.granularity = generateGranularity(granularity, bardConfigResources.getGranularityParser());
-            this.table = generateTable(tableName, this.granularity, logicalTableDictionary);
-        } else {
-            this.table = null;
-            this.granularity = null;
-        }
-
-        // parse dimensions
-        DimensionDictionary dimensionDictionary = bardConfigResources.getDimensionDictionary();
-        this.dimensions = generateDimensions(dimensions, dimensionDictionary);
-        validateRequestDimensions(this.dimensions, this.table);
-
-        // parse metrics
-        this.metrics = generateLogicalMetrics(
-                metrics,
-                bardConfigResources.getMetricDictionary().getScope(Collections.singletonList(tableName))
-        );
-        validateMetrics(this.metrics, this.table);
-
-        // parse interval
-        this.intervals = generateIntervals(
-                intervals,
-                this.granularity,
-                generateDateTimeFormatter(
-                        generateTimeZone(
-                                timeZoneId,
-                                bardConfigResources.getSystemTimeZone()
-                        )
-                )
-        );
-        validateTimeAlignment(this.granularity, this.intervals);
-
-        // parse filters
-        this.filters = generateFilters(filters, table, dimensionDictionary);
-        validateRequestDimensions(this.filters.keySet(), this.table);
-
-        LOG.debug(
-                "Api request: Tables: {},\nGranularity: {},\nFormat: {}\nPagination: {}" +
-                        "\nDimensions: {}\nMetrics: {}\nIntervals: {}\nFilters: {}",
-                this.tables,
-                this.granularity,
-                this.format,
-                this.paginationParameters,
-                this.dimensions.stream()
-                        .map(Dimension::getApiName)
-                        .collect(Collectors.toList()),
-                this.metrics.stream()
-                        .map(LogicalMetric::getName)
-                        .collect(Collectors.toList()),
-                this.intervals,
-                this.filters.entrySet().stream()
-                        .collect(
-                                Collectors.toMap(
-                                        entry -> entry.getKey().getApiName(),
-                                        Function.identity()
-
-                                )
-                        )
-        );
-    }
+    LogicalTable getTable();
 
     /**
-     * No argument constructor, meant to be used only for testing.
+     * Returns the grain to group the results of this request.
+     *
+     * @return the grain to group the results of this request
      */
-    @ForTesting
-    protected TablesApiRequest() {
-        super();
-        this.tables = null;
-        this.table = null;
-        this.granularity = null;
-        this.dimensions = null;
-        this.metrics = null;
-        this.intervals = null;
-        this.filters = null;
-    }
+    Granularity getGranularity();
 
     /**
-     * Extracts the list of logical table names from the url table path segment and generates a set of logical table
-     * objects based on it.
+     * Returns the set of grouping dimensions on this request.
      *
-     * @param tableName  logical table corresponding to the table name specified in the URL
-     * @param tableDictionary  Logical table dictionary contains the map of valid table names and table objects.
-     *
-     * @return Set of logical table objects.
-     * @throws BadApiRequestException if an invalid table is requested or the logical table dictionary is empty.
+     * @return the set of grouping dimensions on this request
      */
-    protected Set<LogicalTable> generateTables(String tableName, LogicalTableDictionary tableDictionary)
-            throws BadApiRequestException {
-        Set<LogicalTable> generated = tableDictionary.values().stream()
-                .filter(logicalTable -> tableName == null || tableName.equals(logicalTable.getName()))
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-
-        // Check if logical tables exist with the requested logical table name
-        if (generated.isEmpty()) {
-            String msg;
-            if (tableDictionary.isEmpty()) {
-                msg = EMPTY_DICTIONARY.logFormat("Logical Table");
-            } else {
-                msg = TABLE_UNDEFINED.logFormat(tableName);
-            }
-            LOG.error(msg);
-            throw new BadApiRequestException(msg);
-        }
-
-        LOG.trace("Generated set of logical tables: {}", generated);
-        return generated;
-    }
+    Set<Dimension> getDimensions();
 
     /**
-     * Extracts a specific logical table object given a valid table name and a valid granularity.
+     * Returns the dimensions used in filters on this request.
      *
-     * @param tableName  logical table corresponding to the table name specified in the URL
-     * @param granularity  logical table corresponding to the table name specified in the URL
-     * @param tableDictionary  Logical table dictionary contains the map of valid table names and table objects.
-     *
-     * @return Set of logical table objects.
-     * @throws BadApiRequestException Invalid table exception if the table dictionary returns a null.
+     * @return the dimensions used in filters on this request
      */
-    protected LogicalTable generateTable(
-            String tableName,
-            Granularity granularity,
-            LogicalTableDictionary tableDictionary
-    ) throws BadApiRequestException {
-        LogicalTable generated = tableDictionary.get(new TableIdentifier(tableName, granularity));
-
-        // check if requested logical table grain pair exists
-        if (generated == null) {
-            String msg = TABLE_GRANULARITY_MISMATCH.logFormat(granularity, tableName);
-            LOG.error(msg);
-            throw new BadApiRequestException(msg);
-        }
-
-        LOG.trace("Generated logical table: {} with granularity {}", generated, granularity);
-        return generated;
-    }
+    Set<Dimension> getFilterDimensions();
 
     /**
-     * Extracts the list of metrics from the url metric query string and generates a set of LogicalMetrics.
+     * Returns a map of filters by dimension for this request, grouped by dimensions.
      *
-     * @param apiMetricQuery  URL query string containing the metrics separated by ','.
-     * @param metricDictionary  Metric dictionary contains the map of valid metric names and logical metric objects.
-     *
-     * @return Set of metric objects.
-     * @throws BadApiRequestException if the metric dictionary returns a null or if the apiMetricQuery is invalid.
+     * @return the map of filters by dimension for this request, grouped by dimensions
      */
-    protected LinkedHashSet<LogicalMetric> generateLogicalMetrics(
-            String apiMetricQuery,
-            MetricDictionary metricDictionary
-    ) throws BadApiRequestException {
-        try (TimedPhase timer = RequestLog.startTiming("GeneratingLogicalMetrics")) {
-            LOG.trace("Metric dictionary: {}", metricDictionary);
+    ApiFilters getApiFilters();
 
-            if (apiMetricQuery == null || "".equals(apiMetricQuery)) {
-                return new LinkedHashSet<>();
-            }
-            // set of logical metric objects
-            LinkedHashSet<LogicalMetric> generated = new LinkedHashSet<>();
-            List<String> invalidMetricNames = new ArrayList<>();
+    /**
+     * Returns the intervals for this query.
+     *
+     * @return the intervals for this query
+     */
+    Set<Interval> getIntervals();
 
-            List<String> metricApiQuery = Arrays.asList(apiMetricQuery.split(","));
-            for (String metricName : metricApiQuery) {
-                LogicalMetric logicalMetric = metricDictionary.get(metricName);
+    /**
+     * Returns the logical metrics requested in this query.
+     *
+     * @return the logical metrics requested in this query
+     */
+    Set<LogicalMetric> getLogicalMetrics();
 
-                // If metric dictionary returns a null, it means the requested metric is not found.
-                if (logicalMetric == null) {
-                    invalidMetricNames.add(metricName);
-                } else {
-                    generated.add(logicalMetric);
-                }
-            }
+    // CHECKSTYLE:OFF
+    TablesApiRequest withFormat(ResponseFormatType format);
 
-            if (!invalidMetricNames.isEmpty()) {
-                LOG.debug(METRICS_UNDEFINED.logFormat(invalidMetricNames.toString()));
-                throw new BadApiRequestException(METRICS_UNDEFINED.format(invalidMetricNames.toString()));
-            }
-            LOG.trace("Generated set of logical metric: {}", generated);
-            return generated;
-        }
-    }
+    TablesApiRequest withPaginationParameters(Optional<PaginationParameters> paginationParameters);
 
-    public Set<LogicalTable> getTables() {
-        return this.tables;
-    }
+    TablesApiRequest withUriInfo(UriInfo uriInfo);
 
-    public LogicalTable getTable() {
-        return this.table;
-    }
+    TablesApiRequest withBuilder(Response.ResponseBuilder builder);
 
-    public Granularity getGranularity() {
-        return this.granularity;
-    }
+    TablesApiRequest withTables(Set<LogicalTable> tables);
+
+    TablesApiRequest withTable(LogicalTable table);
+
+    TablesApiRequest withGranularity(Set<LogicalTable> tables);
+
+    TablesApiRequest withTables(Granularity granularity);
+
+    TablesApiRequest withDimensions(Set<Dimension> dimensions);
+
+    TablesApiRequest withMetrics(Set<LogicalMetric> metrics);
+
+    TablesApiRequest withIntervals(Set<Interval> intervals);
+
+    TablesApiRequest withFilters(Map<Dimension, Set<ApiFilter>> filters);
+    // CHECKSTYLE:ON
 }

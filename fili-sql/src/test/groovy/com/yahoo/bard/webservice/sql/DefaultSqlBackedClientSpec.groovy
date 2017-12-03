@@ -34,7 +34,7 @@ import static com.yahoo.bard.webservice.sql.builders.Filters.or
 import static com.yahoo.bard.webservice.sql.builders.Filters.search
 import static com.yahoo.bard.webservice.sql.builders.Filters.select
 import static com.yahoo.bard.webservice.sql.builders.Havings.and
-import static com.yahoo.bard.webservice.sql.builders.Havings.equals
+import static com.yahoo.bard.webservice.sql.builders.Havings.equal
 import static com.yahoo.bard.webservice.sql.builders.Havings.gt
 import static com.yahoo.bard.webservice.sql.builders.Havings.lt
 import static com.yahoo.bard.webservice.sql.builders.Intervals.interval
@@ -188,8 +188,9 @@ class DefaultSqlBackedClientSpec extends Specification {
         setup:
         def timeZoneId = DateTimeZone.forID(timeZone)
         // shift the start and end dates by the offset from utc time
-        def start = new DateTime(START).plusMillis(-timeZoneId.getOffset(new DateTime(DateTimeZone.UTC))).toString()
-        def end = new DateTime(END).plusMillis(-timeZoneId.getOffset(new DateTime(DateTimeZone.UTC))).toString()
+        def raw = new DateTime(START)
+        def start = new DateTime(START).plusMillis(-timeZoneId.getOffset(raw)).toString()
+        def end = new DateTime(END).plusMillis(-timeZoneId.getOffset(raw)).toString()
 
         TimeSeriesQuery timeSeriesQuery = new TimeSeriesQuery(
                 dataSource(WIKITICKER, DAY, timeZoneId, [ADDED], [], "", ""),
@@ -293,8 +294,8 @@ class DefaultSqlBackedClientSpec extends Specification {
         HOUR      | [IS_NEW, IS_ROBOT] | null                           | and(gt(ADDED, 1), lt(ADDED, 1)) | 0
         HOUR      | [IS_ROBOT]         | null                           | null                            | 24 * 2
         DAY       | [IS_NEW, IS_ROBOT] | null                           | null                            | 4
-        HOUR      | [IS_NEW, IS_ROBOT] | null                           | equals(ADDED, 0)                | 0
-        HOUR      | [IS_NEW, IS_ROBOT] | search(COMMENT, FIRST_COMMENT) | equals(ADDED, 36)               | 1
+        HOUR      | [IS_NEW, IS_ROBOT] | null                           | equal(ADDED, 0)                 | 0
+        HOUR      | [IS_NEW, IS_ROBOT] | search(COMMENT, FIRST_COMMENT) | equal(ADDED, 36)                | 1
         HOUR      | []                 | null                           | gt(ADDED, 400000)               | 12
         HOUR      | []                 | null                           | null                            | 24
         DAY       | [PAGE, USER]       | null                           | null                            | 36565

@@ -1,13 +1,12 @@
 package com.yahoo.bard.webservice.async
 
 import com.yahoo.bard.webservice.util.JsonSlurper
-
 /**
  * Verifies that synchronous queries are not stored in the JobStore.
  */
 class SynchronousQueriesAreNotStoredSpec extends AsyncFunctionalSpec {
     @Override
-    Map<String, Closure<String>> getResultsToTargetFunctions() {
+    LinkedHashMap<String, Closure<String>> getResultsToTargetFunctions() {
         return [
                 data: {"data/shapes/day"},
                 jobs: {"jobs"}
@@ -15,7 +14,7 @@ class SynchronousQueriesAreNotStoredSpec extends AsyncFunctionalSpec {
     }
 
     @Override
-    Map<String, Closure<Void>> getResultAssertions() {
+    LinkedHashMap<String, Closure<Void>> getResultAssertions() {
         return [
                 data: {assert it.status == 200},
                 jobs: {
@@ -25,7 +24,7 @@ class SynchronousQueriesAreNotStoredSpec extends AsyncFunctionalSpec {
     }
 
     @Override
-    Map<String, Closure<Map<String, List<String>>>> getQueryParameters() {
+    LinkedHashMap<String, Closure<Map<String, List<String>>>> getQueryParameters() {
         return [
                 data: {[
                         metrics: ["height"],

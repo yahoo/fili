@@ -113,7 +113,7 @@ class RateLimitFilterSpec extends Specification {
                     break
 
                 default:
-                    assert false
+                    fail
             }
         }
     }
@@ -266,7 +266,7 @@ class RateLimitFilterSpec extends Specification {
                     fail.incrementAndGet()
                     break
                 default:
-                    assert false
+                    fail
             }
         }
     }

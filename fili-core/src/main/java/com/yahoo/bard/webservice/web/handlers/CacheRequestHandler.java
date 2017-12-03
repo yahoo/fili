@@ -84,14 +84,13 @@ public class CacheRequestHandler extends BaseDataRequestHandler {
                 if (jsonResult != null) {
                     try {
                         if (context.getNumberOfOutgoing().decrementAndGet() == 0) {
-                            RequestLog.record(new BardQueryInfo(druidQuery.getQueryType().toJson(), true));
+                            BardQueryInfo.incrementCountCacheHits();
                             RequestLog.stopTiming(REQUEST_WORKFLOW_TIMER);
                         }
 
                         if (context.getNumberOfIncoming().decrementAndGet() == 0) {
                             RequestLog.startTiming(RESPONSE_WORKFLOW_TIMER);
                         }
-
                         CACHE_HITS.mark(1);
                         RequestLog logCtx = RequestLog.dump();
                         nextResponse.processResponse(

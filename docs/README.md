@@ -14,6 +14,7 @@ General
 -------
 - [End-User API](end-user-api.md)
 - [FAQ](faq.md)
+- [Troubleshooting](troubleshooting.md)
 - [Glossary](glossary.md)
 - [License](/LICENSE.md)
 

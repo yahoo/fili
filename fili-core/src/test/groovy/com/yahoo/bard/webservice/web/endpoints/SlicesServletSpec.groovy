@@ -60,9 +60,9 @@ class SlicesServletSpec extends Specification {
             "timeZone":"UTC",
             "dimensions":
             [
-                {"name":"breed", "uri":"http://localhost:${jtb.getHarness().getPort()}/dimensions/breed", "intervals":["$interval"]},
-                {"name":"sex", "uri":"http://localhost:${jtb.getHarness().getPort()}/dimensions/sex", "intervals":["$interval"]},
-                {"name":"species", "uri":"http://localhost:${jtb.getHarness().getPort()}/dimensions/species", "intervals":["$interval"]}
+                {"name":"breed","factName":"breed", "uri":"http://localhost:${jtb.getHarness().getPort()}/dimensions/breed", "intervals":["$interval"]},
+                {"name":"species","factName":"class", "uri":"http://localhost:${jtb.getHarness().getPort()}/dimensions/species", "intervals":["$interval"]},
+                {"name":"sex","factName":"sex", "uri":"http://localhost:${jtb.getHarness().getPort()}/dimensions/sex", "intervals":["$interval"]}
             ],
             "segmentInfo": {},
             "metrics":
@@ -79,7 +79,7 @@ class SlicesServletSpec extends Specification {
     }
 
     String makeRequest(String target) {
-        // Set target of call 
+        // Set target of call
         def httpCall = jtb.getHarness().target(target)
 
         // Make the call

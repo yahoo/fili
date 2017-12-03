@@ -3,6 +3,7 @@ Setup
 
 The following will guide you through standing up Fili in front of a Druid instance.
 
+[Also see Troubleshooting.md](troubleshooting.md)
 
 Table of Contents
 -----------------
@@ -15,7 +16,6 @@ Table of Contents
 - [Scripts](#scripts)
 - [Build and deploy the WAR](#build-and-deploy-the-war)
 - [Dimension Loading](#dimension-loading)
-- [Troubleshooting](#troubleshooting)
 
 Prerequisites
 -------------
@@ -197,34 +197,6 @@ You can reduce the complexity of setup by making all of your dimensions non-load
 interested in rapidly setting up a Fili instance, you may wish to make all of your dimensions non-loaded. You can
 load your dimensions later, once you have verified that Fili will meet your needs.
 
-
-Troubleshooting
----------------
-
-The Fili logs are Jetty logs, so they can be found wherever your Jetty instance stores its logs.
-
-#### App tests return a 500 error ####
-
-It may be that the versions of dependencies in your application's POM are out of sync with the dependency
-versions used by fili. If that is the case, then modifying your dependency versions to use the same version as
-fili should solve the problem.
-
-#### Fili crashes and throws `IllegalStateException: Couldn't create dir: path/to/mdbm/dimensionCache/page` ####
-
-There are two possible causes:
- 
- 1. The `dimensionCache` subdirectory in `path/to/mdbm` does not exist. Fili assumes `path/to/mdbm/dimensionCache`
-already exists, and does not attempt to create it.
- 
- 2. `dimensionCache` exists, but does not have the correct read/write/execute permissions. The user that Jetty is 
- running under (typically `nobody`) needs to have read, write, and execute permissions on `dimensionCache`.
-
-#### Server log claims the segment metadata loader is not healthy ####
-
-Your dimensions have never been updated, and don't have a `lastUpdated` field set. This can happen if you forgot to 
-set up your dimension loader. You can get more details about the problem at the `/healthcheck` endpoint.
-If the dimensions are not being loaded, then see the [Dimension Loading](#dimension-loading) for more details on how
-to set up the dimension loader (or [configure all of your dimensions to be non-loaded](#non-loaded-dimensions)).
 
 [applicationConfig]: ../fili-wikipedia-example/src/main/resources/applicationConfig.properties
 

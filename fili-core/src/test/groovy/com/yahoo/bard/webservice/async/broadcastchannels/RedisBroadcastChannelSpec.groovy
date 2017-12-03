@@ -13,31 +13,30 @@ import org.redisson.config.Config
 
 class RedisBroadcastChannelSpec extends BroadcastChannelSpec {
 
-
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.instance
 
     boolean USE_REAL_REDIS_CLIENT = SYSTEM_CONFIG.getBooleanProperty(
             SYSTEM_CONFIG.getPackageVariableName("use_real_redis_client"),
             false
-    );
+    )
 
     String REDIS_CHANNEL = SYSTEM_CONFIG.getStringProperty(
             SYSTEM_CONFIG.getPackageVariableName("redisbroadcastchannel_name"),
             "preResponse_notification_channel"
-    );
+    )
 
     List<RedissonClient> redissonClients = new ArrayList<>()
 
     List<MessageListener<String>> topicListeners = new ArrayList<>()
 
     @Override
-    public BroadcastChannel<String> getBroadcastChannel() {
+    BroadcastChannel<String> getBroadcastChannel() {
         RedissonClient redissonClient = USE_REAL_REDIS_CLIENT ? Redisson.create(createConfig()) : mockRedissonClient()
         redissonClients << redissonClient
         return new RedisBroadcastChannel<String>(redissonClient)
     }
 
-    public RedissonClient mockRedissonClient() {
+    RedissonClient mockRedissonClient() {
         RedissonClient redissonClient = Mock(RedissonClient)
         RTopic<String> topic = Mock(RTopic)
 
@@ -55,7 +54,7 @@ class RedisBroadcastChannelSpec extends BroadcastChannelSpec {
         return redissonClient
     }
 
-    public static Config createConfig() {
+    static Config createConfig() {
         // Redis server details
         String redisHost = SYSTEM_CONFIG.getStringProperty(
                 SYSTEM_CONFIG.getPackageVariableName("redis_host"),

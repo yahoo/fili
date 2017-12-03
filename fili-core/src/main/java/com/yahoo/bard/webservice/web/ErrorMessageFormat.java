@@ -154,7 +154,7 @@ public enum ErrorMessageFormat implements MessageFormatter {
     ),
     LOG_UNABLE_TO_DESERIALIZE("Unable to deserialize results for job %s from %s"),
 
-    RESOURCE_RETRIEVAL_FAILURE("Unable to retrieve the resource for given resource name: %s. %s"),
+    RESOURCE_RETRIEVAL_FAILURE("Unable to retrieve the resource for given resource name: %s."),
     RESOURCE_STORAGE_FAILURE("Unable to store the resource for resource name %s. %s"),
     RESOURCE_DELETION_FAILURE("Unable to delete the resource for resource name %s. %s"),
 
@@ -247,6 +247,8 @@ public enum ErrorMessageFormat implements MessageFormatter {
 
     ETAG_MISSING_FROM_RESPONSE("JSON response is missing response etag"),
 
+    INTERNAL_SERVER_ERROR_ON_JSON_PROCESSING("Internal server error. JsonProcessingException : %s"),
+
     INTERNAL_SERVER_ERROR_REASON_PHRASE(
             "The server encountered an unexpected condition which prevented it from fulfilling the request."
     ),
@@ -259,7 +261,9 @@ public enum ErrorMessageFormat implements MessageFormatter {
 
     UNABLE_TO_CREATE_DIR("Unable to create directory %s."),
     UNABLE_TO_DELETE_DIR("Unable to delete directory %s."),
-    FAIL_TO_WIPTE_LUCENE_INDEX_DIR("Failed to wipe Lucene index at directory: %s")
+    FAIL_TO_WIPTE_LUCENE_INDEX_DIR("Failed to wipte Lucene index at directory: %s"),
+
+    REQUEST_PROCESSING_EXCEPTION("Exception processing request: %s")
     ;
 
     private final String messageFormat;

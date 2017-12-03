@@ -8,7 +8,6 @@ import static com.yahoo.bard.webservice.data.config.names.TestDruidTableName.MON
 import com.yahoo.bard.webservice.web.endpoints.BaseDataServletComponentSpec
 import com.yahoo.bard.webservice.web.endpoints.DataServlet
 
-import org.joda.time.DateTime
 import org.joda.time.Interval
 
 /**

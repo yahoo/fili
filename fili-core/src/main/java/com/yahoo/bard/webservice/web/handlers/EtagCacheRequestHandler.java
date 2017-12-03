@@ -90,7 +90,7 @@ public class EtagCacheRequestHandler extends BaseDataRequestHandler {
                             );
 
                     if (context.getNumberOfOutgoing().decrementAndGet() == 0) {
-                        RequestLog.record(new BardQueryInfo(druidQuery.getQueryType().toJson(), true));
+                        BardQueryInfo.incrementCountCacheHits();
                         RequestLog.stopTiming(REQUEST_WORKFLOW_TIMER);
                     }
 

@@ -1,16 +1,18 @@
 // Copyright 2016 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.web
+package com.yahoo.bard.webservice.web.apirequest
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
+import com.yahoo.bard.webservice.web.ApiFilter
+import com.yahoo.bard.webservice.web.BadApiRequestException
 import com.yahoo.bard.webservice.web.endpoints.DimensionsServlet
 
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class DimensionsApiRequestSpec extends Specification {
+class DimensionsApiRequestImplSpec extends Specification {
 
     JerseyTestBinder jtb
 
@@ -31,7 +33,7 @@ class DimensionsApiRequestSpec extends Specification {
 
     def "check api request construction for the top level endpoint (all dimensions)"() {
         when:
-        DimensionsApiRequest apiRequest = new DimensionsApiRequest(
+        DimensionsApiRequestImpl apiRequest = new DimensionsApiRequestImpl(
                 null,
                 null,
                 null,
@@ -50,7 +52,7 @@ class DimensionsApiRequestSpec extends Specification {
         String name = "color"
 
         when:
-        DimensionsApiRequest apiRequest = new DimensionsApiRequest(
+        DimensionsApiRequestImpl apiRequest = new DimensionsApiRequestImpl(
                 name,
                 null,
                 null,
@@ -71,7 +73,7 @@ class DimensionsApiRequestSpec extends Specification {
         ApiFilter expectedFilter = new ApiFilter(filterString, fullDictionary)
 
         when:
-        DimensionsApiRequest apiRequest = new DimensionsApiRequest(
+        DimensionsApiRequestImpl apiRequest = new DimensionsApiRequestImpl(
                 name,
                 filterString,
                 null,
@@ -89,7 +91,7 @@ class DimensionsApiRequestSpec extends Specification {
     @Unroll
     def "api request construction throws #exception.simpleName because #reason"() {
         when:
-        new DimensionsApiRequest(
+        new DimensionsApiRequestImpl(
                 name,
                 filter,
                 null,

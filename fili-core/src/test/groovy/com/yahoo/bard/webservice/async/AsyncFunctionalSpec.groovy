@@ -57,7 +57,7 @@ abstract class AsyncFunctionalSpec extends Specification {
      *
      * @return a map of closures that derives request targets from maps of named query Responses
      */
-    abstract Map<String, Closure<String>> getResultsToTargetFunctions()
+    abstract LinkedHashMap<String, Closure<String>> getResultsToTargetFunctions()
 
     /**
      * Returns a map of closures, each of which is an operation Response -> Void that takes a query response, and
@@ -67,7 +67,7 @@ abstract class AsyncFunctionalSpec extends Specification {
      *
      * @return a map of closures that take a query result, and performs whatever validation needs to be performed.
      */
-    abstract Map<String, Closure<Void>> getResultAssertions()
+    abstract LinkedHashMap<String, Closure<Void>> getResultAssertions()
 
     /**
      * Get the map of closures generating query parameters for each target.
@@ -79,7 +79,7 @@ abstract class AsyncFunctionalSpec extends Specification {
      *
      * @return The map of query parameters for each target.
      */
-    abstract Map<String, Closure<Map<String, List<String>>>> getQueryParameters()
+    abstract LinkedHashMap<String, Closure<Map<String, List<String>>>> getQueryParameters()
 
     /**
      * Returns the classes for the Jetty resources (i.e. servlets) that need to be set up in the test environment.
@@ -141,17 +141,18 @@ abstract class AsyncFunctionalSpec extends Specification {
         injectDruidResponse(getFakeDruidResponse())
 
         and: "The map of all previous responses"
-        Map<String, Response> previousResponses = [:]
+        LinkedHashMap<String, Response> previousResponses = [:]
 
         and: "The closures that perform verification against the results"
-        Map<String, Closure<Void>> resultValidations = getResultAssertions()
+        LinkedHashMap<String, Closure<Void>> resultValidations = getResultAssertions()
 
         and: "The query parameters for each request"
-        Map<String, Closure<Map<String, List<String>>>> queryParameters = getQueryParameters()
+        LinkedHashMap<String, Closure<Map<String, List<String>>>> queryParameters = getQueryParameters()
 
         expect: "All the asynchronous interactions behave appropriately"
         getResultsToTargetFunctions().each {interactionName, resultsToTarget ->
             //First, we make a request.
+            Thread.sleep(1000)
             Response response = makeAbstractRequest(
                     // To make a request, we need the target (i.e. path), which may be constructed using responses from
                     // previous requests

@@ -56,10 +56,10 @@ import com.yahoo.bard.webservice.table.ConfigPhysicalTable
 import com.yahoo.bard.webservice.table.ConstrainedTable
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 import com.yahoo.bard.webservice.table.SqlPhysicalTable
-import com.yahoo.bard.webservice.table.StrictPhysicalTable
 import com.yahoo.bard.webservice.table.availability.PermissiveAvailability
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
 import com.yahoo.bard.webservice.util.Utils
+import com.yahoo.bard.webservice.web.filters.ApiFilters
 
 import org.joda.time.DateTimeZone
 import org.joda.time.Interval
@@ -220,7 +220,7 @@ class SimpleDruidQueryBuilder {
                                 getDimensions(dimensions) as Set,
                                 dimensions as Set,
                                 metricsAndDimensions,
-                                [:]
+                                new ApiFilters()
                         )
                 )
         )

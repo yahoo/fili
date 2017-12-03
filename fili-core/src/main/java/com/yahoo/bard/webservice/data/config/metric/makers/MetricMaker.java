@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.data.config.metric.makers;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper;
@@ -63,16 +64,37 @@ public abstract class MetricMaker {
      * @param dependentMetrics  Metrics this metric depends on
      *
      * @return The new logicalMetric
+     *
+     * @deprecated logical metric needs more config-richness to not just configure metric name, but also metric long
+     * name, description, etc. Use {@link #make(LogicalMetricInfo, List)} instead.
      */
+    @Deprecated
     public LogicalMetric make(String metricName, List<String> dependentMetrics) {
+        return make(new LogicalMetricInfo(metricName), dependentMetrics);
+    }
+
+    /**
+     * Make the metric.
+     * <p>
+     * This method also sanity-checks the dependent metrics to make sure that they
+     * are metrics we have built and are in the metric dictionary.
+     * <p>
+     * Also sanity-checks that the number of dependent metrics are correct for the maker.
+     *
+     * @param logicalMetricInfo  Logical metric info provider
+     * @param dependentMetrics  Metrics this metric depends on
+     *
+     * @return The new logicalMetric
+     */
+    public LogicalMetric make(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics) {
         // Check that all of the dependent metrics are in the dictionary
         assertDependentMetricsExist(dependentMetrics);
 
         // Check that we have the right number of metrics
-        assertRequiredDependentMetricCount(metricName, dependentMetrics);
+        assertRequiredDependentMetricCount(logicalMetricInfo.getName(), dependentMetrics);
 
         // Have the subclass actually build the metric
-        return this.makeInner(metricName, dependentMetrics);
+        return this.makeInner(logicalMetricInfo, dependentMetrics);
     }
 
     /**
@@ -132,9 +154,32 @@ public abstract class MetricMaker {
      * @param metricName  Name for the metric we're making
      * @param dependentMetrics  Metrics this metric depends on
      *
-     * @return The new logicalMetric
+     * @return the new logicalMetric
+     *
+     * @deprecated logical metric needs more config-richness to not just configure metric name, but also metric long
+     * name, description, etc. Use {@link #makeInner(LogicalMetricInfo, List)} instead.
      */
-    protected abstract LogicalMetric makeInner(String metricName, List<String> dependentMetrics);
+    @Deprecated
+    protected LogicalMetric makeInner(String metricName, List<String> dependentMetrics) {
+        return makeInner(new LogicalMetricInfo(metricName), dependentMetrics);
+    }
+
+    /**
+     * Delegated to for actually making the metric.
+     *
+     * @param logicalMetricInfo  Logical metric info provider
+     * @param dependentMetrics  Metrics this metric depends on
+     *
+     * @return the new logicalMetric
+     */
+    protected LogicalMetric makeInner(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics) {
+        String message = String.format(
+                "Current implementation of MetricMaker '%s' does not support makeInner operation",
+                this.getClass().getSimpleName()
+        );
+        LoggerFactory.getLogger(MetricMaker.class).error(message);
+        throw new UnsupportedOperationException(message);
+    }
 
     /**
      * Get the number of dependent metrics the maker requires for making the metric.

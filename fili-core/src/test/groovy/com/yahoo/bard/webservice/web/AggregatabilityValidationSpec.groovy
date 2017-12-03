@@ -11,10 +11,12 @@ import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
+import com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.TableGroup
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestImpl
+import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 
 import org.joda.time.DateTime
 
@@ -62,7 +64,8 @@ class AggregatabilityValidationSpec extends Specification {
                     MapStoreManager.getInstance(name),
                     ScanSearchProviderManager.getInstance(name),
                     new LinkedHashSet<DimensionField>(),
-                    false
+                    false,
+                    StorageStrategy.LOADED
             )
             keyValueStoreDimension.setLastUpdated(new DateTime(10000))
             dimensionDict.add(keyValueStoreDimension)
@@ -76,7 +79,7 @@ class AggregatabilityValidationSpec extends Specification {
     @Unroll
     def "Aggregatability validates successfully with #aggSize aggregatable and #nonAggSize non-aggregatable group by dimensions and #hasFilter filter#filterFormat"() {
         setup:
-        DataApiRequest apiRequest = new DataApiRequestImpl()
+        DataApiRequest apiRequest = new TestingDataApiRequestImpl()
         Set<Dimension> dims = apiRequest.generateDimensions(aggDims + nonAggDims, dimensionDict)
         Map<Dimension, Set<ApiFilter>> filters = apiRequest.generateFilters(filterString, table, dimensionDict)
 
@@ -162,7 +165,7 @@ class AggregatabilityValidationSpec extends Specification {
     @Unroll
     def "Aggregatability validation throws #exception.simpleName with #aggSize aggregatable and #nonAggSize non-aggregatable group by dimensions and #hasFilter filter#filterFormat"() {
         setup:
-        DataApiRequest apiRequest = new DataApiRequestImpl();
+        DataApiRequest apiRequest = new TestingDataApiRequestImpl()
         Set<Dimension> dims = apiRequest.generateDimensions(aggDims + nonAggDims, dimensionDict)
         Map<Dimension, Set<ApiFilter>> filters = apiRequest.generateFilters(filterString, table, dimensionDict)
 

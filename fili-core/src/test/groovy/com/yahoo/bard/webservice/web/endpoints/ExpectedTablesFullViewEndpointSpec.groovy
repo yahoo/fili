@@ -75,6 +75,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -107,6 +108,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -139,6 +141,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -171,6 +174,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -203,6 +207,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -243,6 +248,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -281,6 +287,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -319,6 +326,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -351,6 +359,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -389,6 +398,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -435,6 +445,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -473,6 +484,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -511,6 +523,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -549,6 +562,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -595,6 +609,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "breed",
                       "name": "breed",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -611,6 +626,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "sex",
                       "name": "sex",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -627,6 +643,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "species",
                       "name": "species",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -671,6 +688,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "breed",
                       "name": "breed",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -687,6 +705,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "sex",
                       "name": "sex",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -703,6 +722,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "species",
                       "name": "species",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -747,6 +767,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "breed",
                       "name": "breed",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -763,6 +784,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "sex",
                       "name": "sex",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -779,6 +801,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "species",
                       "name": "species",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -823,6 +846,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "breed",
                       "name": "breed",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -839,6 +863,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "sex",
                       "name": "sex",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -855,6 +880,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "species",
                       "name": "species",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -907,6 +933,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "color",
                       "name": "color",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Blue pigment",
@@ -932,6 +959,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "model",
                       "name": "model",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -948,6 +976,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "shape",
                       "name": "shape",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -964,6 +993,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "size",
                       "name": "size",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -980,6 +1010,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -1090,6 +1121,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "color",
                       "name": "color",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Blue pigment",
@@ -1115,6 +1147,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "model",
                       "name": "model",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -1131,6 +1164,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "shape",
                       "name": "shape",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -1147,6 +1181,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "size",
                       "name": "size",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -1163,6 +1198,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -1261,6 +1297,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "color",
                       "name": "color",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Blue pigment",
@@ -1286,6 +1323,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "model",
                       "name": "model",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -1302,6 +1340,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "shape",
                       "name": "shape",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -1318,6 +1357,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "size",
                       "name": "size",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -1334,6 +1374,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -1444,6 +1485,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "color",
                       "name": "color",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Blue pigment",
@@ -1469,6 +1511,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "model",
                       "name": "model",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -1485,6 +1528,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "shape",
                       "name": "shape",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -1501,6 +1545,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "size",
                       "name": "size",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -1517,6 +1562,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",                       
                       "fields": [
                         {
                           "description":"Dimension Description",

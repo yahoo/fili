@@ -82,6 +82,7 @@ import com.yahoo.bard.webservice.util.DefaultingDictionary;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.web.CsvResponseWriter;
 import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.DefaultResponseFormatResolver;
 import com.yahoo.bard.webservice.web.DimensionApiRequestMapper;
 import com.yahoo.bard.webservice.web.DimensionsApiRequest;
 import com.yahoo.bard.webservice.web.FiliResponseWriter;
@@ -94,6 +95,7 @@ import com.yahoo.bard.webservice.web.MetricsApiRequest;
 import com.yahoo.bard.webservice.web.MetricsFilterSetBuilder;
 import com.yahoo.bard.webservice.web.NoOpRequestMapper;
 import com.yahoo.bard.webservice.web.RequestMapper;
+import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.ResponseWriter;
 import com.yahoo.bard.webservice.web.SlicesApiRequest;
 import com.yahoo.bard.webservice.web.TablesApiRequest;
@@ -316,6 +318,8 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 bind(getHttpResponseMaker()).to(HttpResponseMaker.class);
 
                 bind(buildResponseWriter(getMappers())).to(ResponseWriter.class);
+
+                bind(buildResponseFormatResolver()).to(ResponseFormatResolver.class);
 
                 if (DRUID_DIMENSIONS_LOADER.isOn()) {
                     DimensionValueLoadTask dimensionLoader = buildDruidDimensionsLoader(
@@ -1121,6 +1125,17 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      */
     protected DruidWebService buildMetadataDruidWebService(ObjectMapper mapper) {
         return buildDruidWebService(DruidClientConfigHelper.getMetadataServiceConfig(), mapper);
+    }
+
+    /**
+     * Create a ResponseFormatResolver for Servlet objects.
+     * <p>
+     * Currently default types are json, jsonapi and csv types.
+     *
+     * @return A ResponseFormatResolver
+     */
+    protected ResponseFormatResolver buildResponseFormatResolver() {
+        return new DefaultResponseFormatResolver();
     }
 
     @Override
