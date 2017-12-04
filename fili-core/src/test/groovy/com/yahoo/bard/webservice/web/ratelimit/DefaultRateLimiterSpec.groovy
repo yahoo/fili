@@ -2,9 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.ratelimit
 
-import com.yahoo.bard.webservice.web.RateLimitRequestToken
 import com.yahoo.bard.webservice.web.filters.RateLimitFilterSpec
-import com.yahoo.bard.webservice.web.ratelimit.DefaultRateLimiter
 
 import spock.lang.Specification
 

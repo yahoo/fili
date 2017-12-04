@@ -121,11 +121,13 @@ Current
 
 - [Ability to use custom rate limiting schemes](https://github.com/yahoo/fili/pull/586)
     * Allows users to rate limit based on different criteria that the default criteria.
-    * Previous rate limiting code is now located in `DefaultRateLimiter`.
+    * Existing rate limiting code is now located in `DefaultRateLimiter`.
     * Create a new rate limiter by:
         - implementing the `RateLimiter` interface
         - overriding the `buildRateLimiter` method in concrete implementation of `AbstractBinderFactory` to return
             custom `RateLimiter` implementation
+        - Default token that uses a callback mechanism is available
+            * `CallbackRateLimitRequestToken` takes an implementation of the callback interface `RateLimitCleanupOnRequestComplete`. When the request is completed the token calls the `cleanup` method of the callback to handle releasing any resources associate with the inflight request that this token belongs to.
 
 - [Expose `RequestLog` `LogInfo` objects](https://github.com/yahoo/fili/pull/574)
     * Exposes the `LogInfo` objects stored in the `RequestLog`, via `RequestLog::retrieveAll` making it easier

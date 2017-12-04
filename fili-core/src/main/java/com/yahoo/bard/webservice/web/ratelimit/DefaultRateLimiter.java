@@ -8,8 +8,6 @@ import com.yahoo.bard.webservice.config.SystemConfigException;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.bard.webservice.web.DataApiRequestTypeIdentifier;
-import com.yahoo.bard.webservice.web.RateLimitCleanupOnRequestComplete;
-import com.yahoo.bard.webservice.web.RateLimitRequestToken;
 import com.yahoo.bard.webservice.web.RateLimiter;
 
 import com.codahale.metrics.Counter;
@@ -155,8 +153,10 @@ public class DefaultRateLimiter implements RateLimiter {
     public RateLimitRequestToken getToken(ContainerRequestContext request) {
         MultivaluedMap<String, String> headers = Utils.headersToLowerCase(request.getHeaders());
 
-        if (DataApiRequestTypeIdentifier.isBypass(headers) ||
-                DataApiRequestTypeIdentifier.isCorsPreflight(request.getMethod(), request.getSecurityContext())) {
+        if (
+            DataApiRequestTypeIdentifier.isBypass(headers) ||
+            DataApiRequestTypeIdentifier.isCorsPreflight(request.getMethod(), request.getSecurityContext())
+        ) {
             // Bypass and CORS Preflight requests are unlimited
             requestBypassMeter.mark();
             return BYPASS_TOKEN;
@@ -230,7 +230,7 @@ public class DefaultRateLimiter implements RateLimiter {
      * @param count  The AtomicInteger that stores the amount of in-flight requests an individual user owns
      * @param userName  The name of the user that made the request
      *
-     * @return The callback interface to be given to a CallbackRateLimitRequestToken
+     * @return A callback implementation to be given to a CallbackRateLimitRequestToken
      */
     private RateLimitCleanupOnRequestComplete generateCleanupClosure(AtomicInteger count, String userName) {
         return () -> {

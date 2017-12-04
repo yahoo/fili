@@ -7,7 +7,7 @@ import static com.yahoo.bard.webservice.web.ResponseCode.RATE_LIMIT;
 import com.yahoo.bard.webservice.config.SystemConfigException;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.web.ratelimit.DefaultRateLimiter;
-import com.yahoo.bard.webservice.web.RateLimitRequestToken;
+import com.yahoo.bard.webservice.web.ratelimit.RateLimitRequestToken;
 import com.yahoo.bard.webservice.web.RateLimiter;
 
 import org.slf4j.Logger;
@@ -34,8 +34,9 @@ import javax.ws.rs.core.Response;
 @Priority(5)
 public class RateLimitFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
-    private static final String PROPERTY_TOKEN = RateLimiter.class.getName() + ".token";
     private static final Logger LOG = LoggerFactory.getLogger(RateLimitFilter.class);
+    private static final String PROPERTY_TOKEN = RateLimiter.class.getName() + ".token";
+    private static final String DATA_PATH = "/v1/data";
 
     protected final RateLimiter rateLimiter;
 
@@ -72,9 +73,7 @@ public class RateLimitFilter implements ContainerRequestFilter, ContainerRespons
         String path = uri.getPath();
 
         // Determine if we should filter based on URL path
-        // TODO: Make this based on resource mapped to or at least more configurable with _not_ strings
-        // TODO What is /test and /data ?
-        if (path.startsWith("/v1/data") || path.startsWith("/data") || path.startsWith("/test")) {
+        if (path.startsWith(DATA_PATH) || path.startsWith("/test")) {
             RateLimitRequestToken token = rateLimiter.getToken(request);
 
             // Add the token to the request if it was bound

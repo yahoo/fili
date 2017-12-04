@@ -2,8 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.ratelimit;
 
-import com.yahoo.bard.webservice.web.RateLimitRequestToken;
-
 /**
  * RateLimitRequestToken for bypass request. Bypass requests are never rate limited.
  */
