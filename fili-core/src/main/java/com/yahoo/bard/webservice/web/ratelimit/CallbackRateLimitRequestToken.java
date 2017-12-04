@@ -5,11 +5,16 @@ package com.yahoo.bard.webservice.web.ratelimit;
 import com.yahoo.bard.webservice.web.RateLimitCleanupOnRequestComplete;
 import com.yahoo.bard.webservice.web.RateLimitRequestToken;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Request token that takes a rateLimitCleanup object on creation, and calls that to handle the cleanup when the request
  * transaction is completed.
  */
 public class CallbackRateLimitRequestToken implements RateLimitRequestToken {
+    private static final Logger LOG = LoggerFactory.getLogger(CallbackRateLimitRequestToken.class);
+
     private final RateLimitCleanupOnRequestComplete rateLimitCleanup;
     private boolean isBound;
 
@@ -52,6 +57,7 @@ public class CallbackRateLimitRequestToken implements RateLimitRequestToken {
     protected void finalize() throws Throwable {
         try {
             if (isBound) {
+                LOG.debug("orphaned CallbackRateLimitToken");
                 close();
             }
         } finally {
