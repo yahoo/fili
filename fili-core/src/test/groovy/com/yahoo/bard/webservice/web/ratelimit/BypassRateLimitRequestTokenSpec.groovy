@@ -3,7 +3,6 @@
 package com.yahoo.bard.webservice.web.ratelimit
 
 import com.yahoo.bard.webservice.web.RateLimitRequestToken
-import com.yahoo.bard.webservice.web.ratelimit.BypassRateLimitRequestToken
 
 import com.codahale.metrics.Meter
 
