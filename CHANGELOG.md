@@ -125,7 +125,7 @@ Current
     * Create a new rate limiter by:
         - implementing the `RateLimiter` interface
         - overriding the `buildRateLimiter` method in concrete implementation of `AbstractBinderFactory` to return
-            custom `RateLimiter` implementation
+          custom `RateLimiter` implementation
         - Default token that uses a callback mechanism is available
             * `CallbackRateLimitRequestToken` takes an implementation of the callback interface `RateLimitCleanupOnRequestComplete`. When the request is completed the token calls the `cleanup` method of the callback to handle releasing any resources associate with the inflight request that this token belongs to.
 
