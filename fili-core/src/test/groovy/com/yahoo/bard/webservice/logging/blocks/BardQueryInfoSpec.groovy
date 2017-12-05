@@ -19,19 +19,19 @@ class BardQueryInfoSpec extends Specification {
 
     def "getBardQueryInfo() returns registered BardQueryInfo instance"() {
         expect:
-        BardQueryInfo.getBardQueryInfo() == bardQueryInfo
+        bardQueryInfo.getBardQueryInfo() == bardQueryInfo
     }
 
     @Unroll
     def "incrementCountFor(#queryType) increments count of #queryType by 1"() {
         expect: "count for #queryType is 0"
-        BardQueryInfo.QUERY_COUNTER.get(queryType).get() == 0
+        bardQueryInfo.queryCounter.get(queryType).get() == 0
 
         when: "calling incrementCountFor(#queryType)"
-        BardQueryInfo.incrementCountFor(queryType)
+        bardQueryInfo.incrementCountFor(queryType)
 
         then: "count of #queryType is incremented by 1"
-        BardQueryInfo.QUERY_COUNTER.get(queryType).get() == 1
+        bardQueryInfo.queryCounter.get(queryType).get() == 1
 
         where:
         queryType                          | _
@@ -42,7 +42,7 @@ class BardQueryInfoSpec extends Specification {
 
     def "incrementCountFor(String) throws IllegalArgumentException on non-existing query type"() {
         when: "BardQueryInfo is given an unknown query type"
-        BardQueryInfo.incrementCountFor("nonExistingQueryType")
+        bardQueryInfo.incrementCountFor("nonExistingQueryType")
 
         then: "IllegalArgumentException is thrown with exception message"
         IllegalArgumentException illegalArgumentException = thrown()
@@ -51,18 +51,18 @@ class BardQueryInfoSpec extends Specification {
 
     def "incrementCount*() methods increment their corresponding query type counts by 1"() {
         expect: "all query counts are 0"
-        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.WEIGHT_CHECK).get() == 0
-        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.FACT_QUERIES).get() == 0
-        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
+        bardQueryInfo.queryCounter.get(BardQueryInfo.WEIGHT_CHECK).get() == 0
+        bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERIES).get() == 0
+        bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
 
         when: "calling incrementCount*() methods for all query types"
-        BardQueryInfo.incrementCountWeightCheck()
-        BardQueryInfo.incrementCountFactHits()
-        BardQueryInfo.incrementCountCacheHits()
+        bardQueryInfo.incrementCountWeightCheck()
+        bardQueryInfo.incrementCountFactHits()
+        bardQueryInfo.incrementCountCacheHits()
 
         then: "counts of all query types are incremented by 1"
-        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.WEIGHT_CHECK).get() == 1
-        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.FACT_QUERIES).get() == 1
-        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 1
+        bardQueryInfo.queryCounter.get(BardQueryInfo.WEIGHT_CHECK).get() == 1
+        bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERIES).get() == 1
+        bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 1
     }
 }

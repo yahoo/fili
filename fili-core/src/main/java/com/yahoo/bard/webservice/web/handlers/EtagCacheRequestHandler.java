@@ -90,7 +90,7 @@ public class EtagCacheRequestHandler extends BaseDataRequestHandler {
                             );
 
                     if (context.getNumberOfOutgoing().decrementAndGet() == 0) {
-                        BardQueryInfo.incrementCountCacheHits();
+                        BardQueryInfo.getBardQueryInfo().incrementCountCacheHits();
                         RequestLog.stopTiming(REQUEST_WORKFLOW_TIMER);
                     }
 

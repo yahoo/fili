@@ -27,16 +27,8 @@ public class BardQueryInfo implements LogInfo {
     private static final String FACT_QUERIES = "fact queries count";
     private static final String FACT_QUERY_CACHE_HIT  = "fact query cache hit count";
 
-    protected static final Map<String, AtomicInteger> QUERY_COUNTER = Stream.of(
-            new AbstractMap.SimpleImmutableEntry<>(WEIGHT_CHECK, new AtomicInteger()),
-            new AbstractMap.SimpleImmutableEntry<>(FACT_QUERIES, new AtomicInteger()),
-            new AbstractMap.SimpleImmutableEntry<>(FACT_QUERY_CACHE_HIT, new AtomicInteger())
-    ).collect(Collectors.toMap(
-            AbstractMap.SimpleImmutableEntry::getKey,
-            AbstractMap.SimpleImmutableEntry::getValue
-    ));
-
     protected final String type;
+    protected final Map<String, AtomicInteger> queryCounter;
 
     /**
      * Constructor.
@@ -45,27 +37,14 @@ public class BardQueryInfo implements LogInfo {
      */
     public BardQueryInfo(String queryType) {
         this.type = queryType;
-    }
-
-    /**
-     * Increments the number of fact queries.
-     */
-    public static void incrementCountFactHits() {
-        getBardQueryInfo().incrementCountFor(BardQueryInfo.FACT_QUERIES);
-    }
-
-    /**
-     * Increments the number of cache-hit queries.
-     */
-    public static void incrementCountCacheHits() {
-        getBardQueryInfo().incrementCountFor(BardQueryInfo.FACT_QUERY_CACHE_HIT);
-    }
-
-    /**
-     * Increments the number of weight check queries.
-     */
-    public static void incrementCountWeightCheck() {
-        getBardQueryInfo().incrementCountFor(BardQueryInfo.WEIGHT_CHECK);
+        this.queryCounter = Stream.of(
+                new AbstractMap.SimpleImmutableEntry<>(WEIGHT_CHECK, new AtomicInteger()),
+                new AbstractMap.SimpleImmutableEntry<>(FACT_QUERIES, new AtomicInteger()),
+                new AbstractMap.SimpleImmutableEntry<>(FACT_QUERY_CACHE_HIT, new AtomicInteger())
+        ).collect(Collectors.toMap(
+                AbstractMap.SimpleImmutableEntry::getKey,
+                AbstractMap.SimpleImmutableEntry::getValue
+        ));
     }
 
     /**
@@ -75,8 +54,29 @@ public class BardQueryInfo implements LogInfo {
      * @return {@link com.yahoo.bard.webservice.logging.blocks.BardQueryInfo} from
      * {@link com.yahoo.bard.webservice.logging.RequestLog}
      */
-    protected static BardQueryInfo getBardQueryInfo() {
+    public static BardQueryInfo getBardQueryInfo() {
         return ((BardQueryInfo) RequestLog.retrieve(BardQueryInfo.class));
+    }
+
+    /**
+     * Increments the number of fact queries.
+     */
+    public void incrementCountFactHits() {
+        getBardQueryInfo().incrementCountFor(BardQueryInfo.FACT_QUERIES);
+    }
+
+    /**
+     * Increments the number of cache-hit queries.
+     */
+    public void incrementCountCacheHits() {
+        getBardQueryInfo().incrementCountFor(BardQueryInfo.FACT_QUERY_CACHE_HIT);
+    }
+
+    /**
+     * Increments the number of weight check queries.
+     */
+    public void incrementCountWeightCheck() {
+        getBardQueryInfo().incrementCountFor(BardQueryInfo.WEIGHT_CHECK);
     }
 
     /**
@@ -85,8 +85,8 @@ public class BardQueryInfo implements LogInfo {
      *
      * @param queryType  The type of the query
      */
-    protected static void incrementCountFor(String queryType) {
-        AtomicInteger count = QUERY_COUNTER.get(queryType);
+    protected void incrementCountFor(String queryType) {
+        AtomicInteger count = queryCounter.get(queryType);
         if (count == null) {
             String message = ErrorMessageFormat.RESOURCE_RETRIEVAL_FAILURE.format(queryType);
             LOG.error(message);

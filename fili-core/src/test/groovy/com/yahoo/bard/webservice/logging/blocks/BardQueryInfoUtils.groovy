@@ -27,8 +27,8 @@ class BardQueryInfoUtils {
         RequestLog.dump()
 
         // reset counts of all query types after each individual test
-        for (Map.Entry<String, AtomicInteger> entry : BardQueryInfo.QUERY_COUNTER.entrySet()) {
-            entry.value = new AtomicInteger()
-        }
+//        for (Map.Entry<String, AtomicInteger> entry : BardQueryInfo.queryCounter.entrySet()) {
+//            entry.value = new AtomicInteger()
+//        }
     }
 }

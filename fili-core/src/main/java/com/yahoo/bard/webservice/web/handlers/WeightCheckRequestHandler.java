@@ -72,7 +72,7 @@ public class WeightCheckRequestHandler extends BaseDataRequestHandler {
             return next.handleRequest(context, request, druidQuery, response);
         }
 
-        BardQueryInfo.incrementCountWeightCheck();
+        BardQueryInfo.getBardQueryInfo().incrementCountWeightCheck();
         final WeightCheckResponseProcessor weightCheckResponse = new WeightCheckResponseProcessor(response);
         final DruidAggregationQuery<?> weightEvaluationQuery = queryWeightUtil.makeWeightEvaluationQuery(druidQuery);
         Granularity granularity = druidQuery.getInnermostQuery().getGranularity();
