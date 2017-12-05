@@ -3,7 +3,6 @@
 package com.yahoo.bard.webservice.logging.blocks
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
-import com.yahoo.bard.webservice.logging.RequestLog
 
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -15,8 +14,6 @@ class BardQueryInfoSpec extends Specification {
 
     def setup() {
         bardQueryInfo = BardQueryInfoUtils.initializeBardQueryInfo()
-        RequestLog.getId() // initialize RequestLog
-        RequestLog.record(bardQueryInfo)
     }
 
     def cleanup() {
@@ -25,11 +22,11 @@ class BardQueryInfoSpec extends Specification {
 
     def "getBardQueryInfo() returns registered BardQueryInfo instance"() {
         expect:
-        bardQueryInfo.getBardQueryInfo() == bardQueryInfo
+        BardQueryInfo.getBardQueryInfo() == bardQueryInfo
     }
 
     @Unroll
-    def "incrementCountFor(#queryType) increments count of #queryType by 1"() {
+    def "increment Count For #queryType increments counter by 1"() {
         setup:
         AtomicInteger counter = BardQueryInfo.bardQueryInfo.queryCounter.get(queryType);
 
