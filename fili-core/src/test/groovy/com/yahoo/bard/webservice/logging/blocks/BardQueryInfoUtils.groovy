@@ -12,7 +12,7 @@ class BardQueryInfoUtils {
      */
     static BardQueryInfo initializeBardQueryInfo() {
         resetBardQueryInfo()
-        BardQueryInfo bardQueryInfo = new BardQueryInfo(null)
+        BardQueryInfo bardQueryInfo = new BardQueryInfo("test")
         RequestLog.getId() // initialize RequestLog
         RequestLog.record(bardQueryInfo)
         return bardQueryInfo

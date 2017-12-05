@@ -206,7 +206,7 @@ Current
 - [Debug BardQueryInfo to show query split counting](https://github.com/yahoo/fili/pull/596/files)
     * Query counter in `BardQueryInfo` does not show up in logging because the counter used to be static and JSON
       serializer does not serialize static fields.
-    * This patch changes the counter to an instance variable, which JSON serializer will pick up and serialize.
+    * This externalizes the state via a getter for serialization.
 
 - [Fix intermittent class scanner error on DataSourceConstraint equal](https://github.com/yahoo/fili/pull/573)
    * Class Scanner Spec was injecting an improper dependant field due to type erasure.  Made field type explicit.

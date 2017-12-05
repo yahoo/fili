@@ -4,7 +4,6 @@ package com.yahoo.bard.webservice.logging.blocks;
 
 import com.yahoo.bard.webservice.logging.LogInfo;
 import com.yahoo.bard.webservice.logging.RequestLog;
-import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 
@@ -20,15 +19,17 @@ import java.util.stream.Stream;
 /**
  * Main log of a request served by the TablesServlet.
  */
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
+@JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.PUBLIC_ONLY)
 public class BardQueryInfo implements LogInfo {
     private static final Logger LOG = LoggerFactory.getLogger(BardQueryInfo.class);
-    private static final String WEIGHT_CHECK = "weight check queries count";
-    private static final String FACT_QUERIES = "fact queries count";
-    private static final String FACT_QUERY_CACHE_HIT  = "fact query cache hit count";
+    public static final String WEIGHT_CHECK = "weightCheckQueries";
+    public static final String FACT_QUERIES = "factQueryCount";
+    public static final String FACT_QUERY_CACHE_HIT = "factCacheHits";
 
-    protected final String type;
-    protected final Map<String, AtomicInteger> queryCounter;
+    private final String type;
+    private final AtomicInteger weightCheckCount = new AtomicInteger();
+    private final AtomicInteger factQueryCount = new AtomicInteger();
+    private final AtomicInteger factCacheHitCount = new AtomicInteger();
 
     /**
      * Constructor.
@@ -37,10 +38,17 @@ public class BardQueryInfo implements LogInfo {
      */
     public BardQueryInfo(String queryType) {
         this.type = queryType;
-        this.queryCounter = Stream.of(
-                new AbstractMap.SimpleImmutableEntry<>(WEIGHT_CHECK, new AtomicInteger()),
-                new AbstractMap.SimpleImmutableEntry<>(FACT_QUERIES, new AtomicInteger()),
-                new AbstractMap.SimpleImmutableEntry<>(FACT_QUERY_CACHE_HIT, new AtomicInteger())
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public Map<String, AtomicInteger> getQueryCounter() {
+        return Stream.of(
+                new AbstractMap.SimpleImmutableEntry<>(WEIGHT_CHECK, weightCheckCount),
+                new AbstractMap.SimpleImmutableEntry<>(FACT_QUERIES, factQueryCount),
+                new AbstractMap.SimpleImmutableEntry<>(FACT_QUERY_CACHE_HIT, factCacheHitCount)
         ).collect(Collectors.toMap(
                 AbstractMap.SimpleImmutableEntry::getKey,
                 AbstractMap.SimpleImmutableEntry::getValue
@@ -61,37 +69,21 @@ public class BardQueryInfo implements LogInfo {
     /**
      * Increments the number of fact queries.
      */
-    public void incrementCountFactHits() {
-        getBardQueryInfo().incrementCountFor(BardQueryInfo.FACT_QUERIES);
+    public static void incrementCountFactHits() {
+        getBardQueryInfo().factQueryCount.incrementAndGet();
     }
 
     /**
      * Increments the number of cache-hit queries.
      */
-    public void incrementCountCacheHits() {
-        getBardQueryInfo().incrementCountFor(BardQueryInfo.FACT_QUERY_CACHE_HIT);
+    public static void incrementCountCacheHits() {
+        getBardQueryInfo().factCacheHitCount.incrementAndGet();
     }
 
     /**
      * Increments the number of weight check queries.
      */
-    public void incrementCountWeightCheck() {
-        getBardQueryInfo().incrementCountFor(BardQueryInfo.WEIGHT_CHECK);
-    }
-
-    /**
-     * Increments the number of a type of query, whose possible type are all specified in
-     * {@link com.yahoo.bard.webservice.logging.blocks.BardQueryInfo}.
-     *
-     * @param queryType  The type of the query
-     */
-    protected void incrementCountFor(String queryType) {
-        AtomicInteger count = queryCounter.get(queryType);
-        if (count == null) {
-            String message = ErrorMessageFormat.RESOURCE_RETRIEVAL_FAILURE.format(queryType);
-            LOG.error(message);
-            throw new IllegalArgumentException(message);
-        }
-        count.incrementAndGet();
+    public static void incrementCountWeightCheck() {
+        getBardQueryInfo().weightCheckCount.incrementAndGet();
     }
 }
