@@ -4,8 +4,6 @@ package com.yahoo.bard.webservice.logging.blocks
 
 import com.yahoo.bard.webservice.logging.RequestLog
 
-import java.util.concurrent.atomic.AtomicInteger
-
 class BardQueryInfoUtils {
     /**
      * Constructs and returns a testing BardQueryInfo instance without a query type.
@@ -25,10 +23,5 @@ class BardQueryInfoUtils {
      */
     static void resetBardQueryInfo() {
         RequestLog.dump()
-
-        // reset counts of all query types after each individual test
-//        for (Map.Entry<String, AtomicInteger> entry : BardQueryInfo.queryCounter.entrySet()) {
-//            entry.value = new AtomicInteger()
-//        }
     }
 }
