@@ -10,7 +10,7 @@ package com.yahoo.bard.webservice.data.metric;
  * logical metric construction.
  */
 public class LogicalMetricInfo {
-    private static final String TYPE_DEFUALT = "DEFAULT";
+    private static final String TYPE_DEFAULT = "number";
 
     private final String name;
     private final String longName;
@@ -44,7 +44,7 @@ public class LogicalMetricInfo {
      * @param description  Description of the metric
      */
     public LogicalMetricInfo(String name, String longName, String category, String description) {
-        this(name, longName, category, description, TYPE_DEFUALT);
+        this(name, longName, category, description, TYPE_DEFAULT);
     }
 
     /**
@@ -54,7 +54,7 @@ public class LogicalMetricInfo {
      * @param name  Name of the metric
      */
     public LogicalMetricInfo(String name) {
-        this(name, name, LogicalMetric.DEFAULT_CATEGORY, name, TYPE_DEFUALT);
+        this(name, name, LogicalMetric.DEFAULT_CATEGORY, name, TYPE_DEFAULT);
     }
 
     /**
@@ -65,7 +65,7 @@ public class LogicalMetricInfo {
      * @param longName  Long name of the metric
      */
     public LogicalMetricInfo(String name, String longName) {
-        this(name, longName, LogicalMetric.DEFAULT_CATEGORY, name, TYPE_DEFUALT);
+        this(name, longName, LogicalMetric.DEFAULT_CATEGORY, name, TYPE_DEFAULT);
     }
 
     /**

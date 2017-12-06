@@ -77,9 +77,9 @@ class TableFullViewProcessorSpec extends Specification {
                 "uri:http://localhost:9998/v1/sex, cardinality:0, fields:[id, desc], storageStrategy:loaded], " +
                 "[category:General, name:species, longName:species, uri:http://localhost:9998/v1/species, " +
                 "cardinality:0, fields:[id, desc], storageStrategy:loaded]], longName:All, " +
-                "metrics:[[category:General, name:rowNum, longName:rowNum, type:DEFAULT, uri:http://localhost:9998/v1/rowNum], " +
-                "[category:General, name:limbs, longName:limbs, type:DEFAULT, uri:http://localhost:9998/v1/limbs], " +
-                "[category:General, name:dayAvgLimbs, longName:dayAvgLimbs, type:DEFAULT, " +
+                "metrics:[[category:General, name:rowNum, longName:rowNum, type:number, uri:http://localhost:9998/v1/rowNum], " +
+                "[category:General, name:limbs, longName:limbs, type:number, uri:http://localhost:9998/v1/limbs], " +
+                "[category:General, name:dayAvgLimbs, longName:dayAvgLimbs, type:number, " +
                 "uri:http://localhost:9998/v1/dayAvgLimbs]], name:all, retention:P1Y]"
         
         LogicalTable petsTable = petsShapesTables.find {it.getName() == "pets"}

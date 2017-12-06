@@ -135,7 +135,7 @@ class TablesServletSpec extends Specification {
                                                         "category": "General",
                                                         "name": "$it",
                                                         "longName": "$it",
-                                                        "type": "DEFAULT",
+                                                        "type": "number",
                                                         "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/metrics/$it"
                                                     }"""
                                                 }
