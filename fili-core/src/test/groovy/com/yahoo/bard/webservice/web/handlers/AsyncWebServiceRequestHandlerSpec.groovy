@@ -21,8 +21,10 @@ import java.util.concurrent.Future
 
 class AsyncWebServiceRequestHandlerSpec extends Specification {
 
+    BardQueryInfo bardQueryInfo
+
     def setup() {
-        BardQueryInfoUtils.initializeBardQueryInfo()
+        bardQueryInfo = BardQueryInfoUtils.initializeBardQueryInfo()
     }
 
     def cleanup() {
@@ -47,7 +49,7 @@ class AsyncWebServiceRequestHandlerSpec extends Specification {
         boolean success
 
         expect:
-        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.FACT_QUERIES).get() == 0
+        bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERIES).get() == 0
 
         when:
         success = handler.handleRequest(rc, request, groupByQuery, response)
@@ -61,7 +63,7 @@ class AsyncWebServiceRequestHandlerSpec extends Specification {
             sc = a1
             return Mock(Future)
         }
-        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.FACT_QUERIES).get() == 1
+        bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERIES).get() == 1
 
         when:
         sc.invoke(rootNode)

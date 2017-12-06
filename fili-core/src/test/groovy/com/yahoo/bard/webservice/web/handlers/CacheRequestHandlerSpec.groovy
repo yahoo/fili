@@ -46,13 +46,15 @@ class CacheRequestHandlerSpec extends Specification {
 
     ObjectMapper mapper = new ObjectMappersSuite().getMapper()
 
+    BardQueryInfo bardQueryInfo
+
     def setup() {
         handler = new CacheRequestHandler(next, dataCache, mapper)
         containerRequestContext = Mock(ContainerRequestContext)
         containerRequestContext.getHeaders() >> (["Bard-Testing": "###BYPASS###", "ClientId": "UI"] as
                 MultivaluedHashMap<String, String>)
         requestContext = new RequestContext(containerRequestContext, true)
-        BardQueryInfoUtils.initializeBardQueryInfo()
+        bardQueryInfo = BardQueryInfoUtils.initializeBardQueryInfo()
     }
 
     def cleanup() {
@@ -67,7 +69,7 @@ class CacheRequestHandlerSpec extends Specification {
 
     def "Test handle request on cache hit responds to the group by request"() {
         expect: "The count of fact query cache hit is 0"
-        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
+        bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
 
         when: "A groupBy query runs with a valid cache hit"
         boolean requestProcessed = handler.handleRequest(requestContext, apiRequest, groupByQuery, response)
@@ -82,12 +84,12 @@ class CacheRequestHandlerSpec extends Specification {
         requestProcessed
 
         and: "The count of fact query cache hit is incremented by 1"
-        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 1
+        bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 1
     }
 
     def "Test handle request on cache hit responds to the top N request"() {
         expect: "The count of fact query cache hit is 0"
-        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
+        bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
 
         when: "A topN query runs with a valid cache hit"
         boolean requestProcessed = handler.handleRequest(requestContext, apiRequest, topNQuery, response)
@@ -102,12 +104,12 @@ class CacheRequestHandlerSpec extends Specification {
         requestProcessed
 
         and: "The count of fact query cache hit is incremented by 1"
-        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 1
+        bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 1
     }
 
     def "Test handle request on cache hit responds to the time series request"() {
         expect: "The count of fact query cache hit is 0"
-        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
+        bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
 
         when: "A timeseries query runs with a valid cache hit"
         boolean requestProcessed = handler.handleRequest(requestContext, apiRequest, timeseriesQuery, response)
@@ -122,12 +124,12 @@ class CacheRequestHandlerSpec extends Specification {
         requestProcessed
 
         and: "The count of fact query cache hit is incremented by 1"
-        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 1
+        bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 1
     }
 
     def "Test handle request cache miss delegates response to next handler"() {
         expect: "The count of fact query cache hit is 0"
-        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
+        bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
 
         when: "A request is sent that has a cache miss"
         boolean requestProcessed = handler.handleRequest(requestContext, apiRequest, groupByQuery, response)
@@ -145,7 +147,7 @@ class CacheRequestHandlerSpec extends Specification {
         requestProcessed
 
         and: "The count of fact query cache hit is not incremented"
-        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
+        bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
     }
 
     def "Test handle request cache skip delegates response to next handler"() {
@@ -153,7 +155,7 @@ class CacheRequestHandlerSpec extends Specification {
         RequestContext requestContext = new RequestContext(containerRequestContext, false)
 
         expect: "The count of fact query cache hit is 0"
-        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
+        bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
 
         when: "A request is sent that has a cache miss"
         boolean requestProcessed = handler.handleRequest(requestContext, apiRequest, groupByQuery, response)
@@ -171,12 +173,12 @@ class CacheRequestHandlerSpec extends Specification {
         requestProcessed
 
         and: "The count of fact query cache hit is not incremented"
-        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
+        bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
     }
 
     def "Test handle request cache json key error delegates to next handler with cache response processor"() {
         expect: "The count of fact query cache hit is 0"
-        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
+        bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
 
         when: "Query that retrieves cache hit with json serialization error"
         boolean requestProcessed = handler.handleRequest(requestContext, apiRequest, groupByQuery, response)
@@ -191,7 +193,7 @@ class CacheRequestHandlerSpec extends Specification {
         requestProcessed
 
         and: "The count of fact query cache hit is incremented by 1"
-        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 1
+        bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 1
     }
 
     def "Test handle request key parse error delegates to next handler with cache response processor"() {
@@ -202,7 +204,7 @@ class CacheRequestHandlerSpec extends Specification {
         handler = Spy(CacheRequestHandler, constructorArgs: [next, dataCache, mapper])
 
         expect: "The count of fact query cache hit is 0"
-        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
+        bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
 
         when: "A request is sent with an invalid cache key"
         boolean requestProcessed = handler.handleRequest(requestContext, apiRequest, groupByQuery, response)
@@ -217,6 +219,6 @@ class CacheRequestHandlerSpec extends Specification {
         requestProcessed
 
         and: "The count of fact query cache hit is not incremented"
-        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
+        bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
     }
 }

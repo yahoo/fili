@@ -100,7 +100,7 @@ public class CacheV2RequestHandler extends BaseDataRequestHandler {
                     ) {
                         try {
                             if (context.getNumberOfOutgoing().decrementAndGet() == 0) {
-                                BardQueryInfo.incrementCountCacheHits();
+                                BardQueryInfo.getBardQueryInfo().incrementCountCacheHits();
                                 RequestLog.stopTiming(REQUEST_WORKFLOW_TIMER);
                             }
 
