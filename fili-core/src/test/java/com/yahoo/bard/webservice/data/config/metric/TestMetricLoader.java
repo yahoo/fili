@@ -11,6 +11,7 @@ import static com.yahoo.bard.webservice.data.config.names.TestApiMetricName.A_HE
 import static com.yahoo.bard.webservice.data.config.names.TestApiMetricName.A_LIMBS;
 import static com.yahoo.bard.webservice.data.config.names.TestApiMetricName.A_OTHER_USERS;
 import static com.yahoo.bard.webservice.data.config.names.TestApiMetricName.A_ROW_NUM;
+import static com.yahoo.bard.webservice.data.config.names.TestApiMetricName.A_SCOPED_WIDTH;
 import static com.yahoo.bard.webservice.data.config.names.TestApiMetricName.A_USERS;
 import static com.yahoo.bard.webservice.data.config.names.TestApiMetricName.A_VOLUME;
 import static com.yahoo.bard.webservice.data.config.names.TestApiMetricName.A_WIDTH;
@@ -26,6 +27,7 @@ import com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.LongSumMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.RowNumMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.SketchCountMaker;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation.ArithmeticPostAggregationFunction;
 
@@ -103,8 +105,11 @@ public class TestMetricLoader implements MetricLoader {
         );
 
         metrics.stream().map(MetricInstance::make).forEach(metricDictionary::add);
+        metricDictionary.getScope("shapes").add(
+                new MetricInstance(new LogicalMetricInfo(A_SCOPED_WIDTH.asName()), longSumMaker, WIDTH.asName()).make()
+        );
         //Allows us to add some non-numeric LogicalMetrics without having to write a Maker for them. Makers should
         //be written if using complex metrics in production code.
-        NonNumericMetrics.getLogicalMetrics().stream().forEach(metricDictionary::add);
+        NonNumericMetrics.getLogicalMetrics().forEach(metricDictionary::add);
     }
 }

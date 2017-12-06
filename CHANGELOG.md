@@ -203,6 +203,10 @@ Current
 
 ### Fixed:
 
+- [Scoped metric dictionaries and the having clause now work together by default](https://github.com/yahoo/fili/pull/580)
+    * Add a new ApiHavingGenerator that builds a temporary metric dictionary from the set of requested metrics(not from globally scoped metric dictionary), and then using those to resolve the having clause.
+    * Add a table generating functions in BaseTableLoader that effectively allow the customer to provide a different metric dictionary at lower scope(not from the globally scoped metric dictionary) for use when building each table.
+
 - [Debug BardQueryInfo to show query split counting](https://github.com/yahoo/fili/pull/596/files)
     * Query counter in `BardQueryInfo` does not show up in logging because the counter used to be static and JSON
       serializer does not serialize static fields.

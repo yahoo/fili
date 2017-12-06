@@ -37,7 +37,8 @@ public enum TestApiMetricName implements ApiMetricName {
     A_STRING_METRIC,
     A_BOOLEAN_METRIC,
     A_JSON_NODE_METRIC,
-    A_NULL_METRIC;
+    A_NULL_METRIC,
+    A_SCOPED_WIDTH;
 
     private final String apiName;
     private final List<TimeGrain> supportedGrains;
@@ -121,7 +122,8 @@ public enum TestApiMetricName implements ApiMetricName {
                         A_STRING_METRIC,
                         A_BOOLEAN_METRIC,
                         A_NULL_METRIC,
-                        A_JSON_NODE_METRIC
+                        A_JSON_NODE_METRIC,
+                        A_SCOPED_WIDTH
                 );
             case MONTHLY:
                 return Utils.asLinkedHashSet(A_LIMBS, A_DAY_AVG_LIMBS);

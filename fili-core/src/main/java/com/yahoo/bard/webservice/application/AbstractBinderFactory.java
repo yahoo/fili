@@ -101,6 +101,7 @@ import com.yahoo.bard.webservice.web.SlicesApiRequest;
 import com.yahoo.bard.webservice.web.TablesApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DefaultHavingApiGenerator;
 import com.yahoo.bard.webservice.web.apirequest.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.PerRequestDictionaryHavingGenerator;
 import com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow;
 import com.yahoo.bard.webservice.web.handlers.workflow.RequestWorkflowProvider;
 import com.yahoo.bard.webservice.web.util.QueryWeightUtil;
@@ -635,7 +636,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      * @return An object to generate having maps from having string.
      */
     protected HavingGenerator buildHavingGenerator(ConfigurationLoader loader) {
-        return new DefaultHavingApiGenerator(loader);
+        return new PerRequestDictionaryHavingGenerator(new DefaultHavingApiGenerator(loader.getMetricDictionary()));
     }
 
     /**

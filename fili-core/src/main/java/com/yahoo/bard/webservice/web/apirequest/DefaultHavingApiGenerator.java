@@ -3,9 +3,10 @@
 
 package com.yahoo.bard.webservice.web.apirequest;
 
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.HAVING_METRICS_NOT_IN_QUERY_FORMAT;
+
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
-import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.TimedPhase;
 import com.yahoo.bard.webservice.web.ApiHaving;
@@ -24,8 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.HAVING_METRICS_NOT_IN_QUERY_FORMAT;
-
 /**
  * Generates having objects based on the having query in the api request.
  */
@@ -33,15 +32,26 @@ public class DefaultHavingApiGenerator implements HavingGenerator {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultHavingApiGenerator.class);
     private static final String COMMA_AFTER_BRACKET_PATTERN = "(?<=]),";
 
-    private final MetricDictionary metricDictionary;
+    private final Map<String, LogicalMetric> metricDictionary;
 
     /**
      * Constructor.
+     * <p>
+     * Uses the globally scoped set of metrics to resolve having clauses.
      *
      * @param loader  Configuration loader that connects resource dictionaries with the loader.
      */
     public DefaultHavingApiGenerator(ConfigurationLoader loader) {
-        this.metricDictionary = loader.getMetricDictionary();
+        this(loader.getMetricDictionary());
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param metricDictionary  Dictionary of metrics for generating APIs
+     */
+    public DefaultHavingApiGenerator(Map<String, LogicalMetric> metricDictionary) {
+        this.metricDictionary = metricDictionary;
     }
 
     /**
@@ -60,7 +70,6 @@ public class DefaultHavingApiGenerator implements HavingGenerator {
         Set<LogicalMetric> logicalMetrics
     ) throws BadApiRequestException {
         try (TimedPhase phase = RequestLog.startTiming("GeneratingHavings")) {
-            LOG.trace("Metric Dictionary: {}", metricDictionary);
             // Havings are optional hence check if havings are requested.
             if (havingQuery == null || "".equals(havingQuery)) {
                 return Collections.emptyMap();
@@ -98,5 +107,16 @@ public class DefaultHavingApiGenerator implements HavingGenerator {
 
             return generated;
         }
+    }
+
+    /**
+     * Rebuild this having generator with a custom metric dictionary.
+     *
+     * @param metricDictionary  An alternate dictionary.
+     *
+     * @return  A replacement metric dictionary
+     */
+    public HavingGenerator withMetricDictionary(Map<String, LogicalMetric> metricDictionary) {
+        return new DefaultHavingApiGenerator(metricDictionary);
     }
 }
