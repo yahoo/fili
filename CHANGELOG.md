@@ -119,7 +119,7 @@ Current
     * Rework metadata tests to be more generated from strings and more pluggable to support heavier and more expressive
       testing. This allows for more consistency, as well as make it easier to test more cases.
 
-- [Ability to use custom rate limiting schemes](https://github.com/yahoo/fili/pull/586)
+- [Ability to use custom rate limiting schemes](https://github.com/yahoo/fili/pull/591)
     * Allows users to rate limit based on different criteria that the default criteria.
     * Existing rate limiting code is now located in `DefaultRateLimiter`.
     * Create a new rate limiter by:
