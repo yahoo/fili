@@ -9,6 +9,13 @@ Current
 -------
 
 ### Added:
+
+- [Enable checkstyle to detect incorrect package header](https://github.com/yahoo/fili/pull/594)
+    * Fili was able to pass the build with wrong package headers in some source files. This needs to be fixed, and it's
+      fixed in this PR by adding PackageDeclaration checkstyle rule.
+    * In addition, checkstyle version has been bumped to the latest one(Nov, 2017), which is now able to detect more
+      styling errors.
+
 - [Add loaded strategy onto tables full view endpoint](https://github.com/yahoo/fili/pull/589)
     * Add dimension storage strategy to table full view endpoint
 

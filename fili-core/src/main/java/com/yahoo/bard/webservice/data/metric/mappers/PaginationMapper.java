@@ -46,8 +46,6 @@ public class PaginationMapper extends ResultSetMapper {
      * @param resultSet  The result set to be cut down.
      *
      * @return The page of results desired.
-     *
-     * @throws com.yahoo.bard.webservice.web.PageNotFoundException if the page requested is past the last page of data.
      */
     @Override
     public ResultSet map(ResultSet resultSet) {
