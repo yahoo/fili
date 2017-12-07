@@ -1161,6 +1161,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "scopedWidth",
                       "name": "scopedWidth",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/scopedWidth"
                     }
                   ],
@@ -1355,6 +1356,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "scopedWidth",
                       "name": "scopedWidth",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/scopedWidth"
                     }
                   ],
@@ -1563,6 +1565,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "scopedWidth",
                       "name": "scopedWidth",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/scopedWidth"
                     }
                   ],
@@ -1771,6 +1774,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "scopedWidth",
                       "name": "scopedWidth",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/scopedWidth"
                     }
                   ],
