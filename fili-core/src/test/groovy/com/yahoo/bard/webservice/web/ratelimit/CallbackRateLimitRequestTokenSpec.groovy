@@ -5,31 +5,17 @@ package com.yahoo.bard.webservice.web.ratelimit
 import spock.lang.Specification
 
 class CallbackRateLimitRequestTokenSpec extends Specification {
-
-    class Cell<T> {
-        T data
-
-        void set(T data) {
-            this.data = data
-        }
-
-        T get() {
-            return data
-        }
-    }
-
-    Cell<Integer> cell
     RateLimitCleanupOnRequestComplete callback
     RateLimitRequestToken token
+    Runnable runnable
 
     def setup() {
-        cell = new Cell<>()
-        cell.set(1)
+        runnable = Mock(Runnable)
 
         callback = new RateLimitCleanupOnRequestComplete() {
             @Override
             void cleanup() {
-                cell.set(cell.get() + 1)
+                runnable.run()
             }
         }
 
@@ -41,7 +27,7 @@ class CallbackRateLimitRequestTokenSpec extends Specification {
         token.close()
 
         then:
-        cell.get() == 2
+        1 * runnable.run()
     }
 
     def "Doesn't close if already closed"() {
@@ -50,7 +36,7 @@ class CallbackRateLimitRequestTokenSpec extends Specification {
         token.close()
 
         then:
-        cell.get() == 2
+        1 * runnable.run()
     }
 
     def "If initialized unbound, behaves as if closed"() {
@@ -61,7 +47,7 @@ class CallbackRateLimitRequestTokenSpec extends Specification {
         token.close()
 
         then:
-        cell.get() == 1
+        0 * runnable.run()
     }
 
     def "If token is initialized bound, it only unbinds when closed"() {

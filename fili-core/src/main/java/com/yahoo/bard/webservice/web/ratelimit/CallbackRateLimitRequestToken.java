@@ -49,7 +49,6 @@ public class CallbackRateLimitRequestToken implements RateLimitRequestToken {
         }
     }
 
-    //TODO Take username for logging? Is it ok to just not log this, or log without passing username?
     @Override
     protected void finalize() throws Throwable {
         try {

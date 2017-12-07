@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.web.ratelimit;
 
 import java.io.Closeable;
+import java.io.IOException;
 
 /**
  * Resource representing an outstanding request.
@@ -24,6 +25,10 @@ public interface RateLimitRequestToken extends Closeable {
 
     /**
      * Release the token's counters.
+     *
+     * @throws IOException if close fails
      */
-    void unBind();
+    default void unBind() throws IOException {
+        this.close();
+    }
 }
