@@ -32,46 +32,46 @@ import javax.ws.rs.core.SecurityContext;
  */
 public class DefaultRateLimiter implements RateLimiter {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultRateLimiter.class);
-    private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
-    private static final RateLimitRequestToken REJECT_REQUEST_TOKEN =
+    protected static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+    protected static final RateLimitRequestToken REJECT_REQUEST_TOKEN =
             new CallbackRateLimitRequestToken(false, () -> { });
-    private static final RateLimitRequestToken BYPASS_TOKEN =
+    protected static final RateLimitRequestToken BYPASS_TOKEN =
             new BypassRateLimitRequestToken();
 
     // Property names
-    private static final @NotNull String REQUEST_LIMIT_GLOBAL_KEY =
+    protected static final @NotNull String REQUEST_LIMIT_GLOBAL_KEY =
             SYSTEM_CONFIG.getPackageVariableName("request_limit_global");
-    private static final @NotNull String REQUEST_LIMIT_PER_USER_KEY =
+    protected static final @NotNull String REQUEST_LIMIT_PER_USER_KEY =
             SYSTEM_CONFIG.getPackageVariableName("request_limit_per_user");
-    private static final @NotNull String REQUEST_LIMIT_UI_KEY =
+    protected static final @NotNull String REQUEST_LIMIT_UI_KEY =
             SYSTEM_CONFIG.getPackageVariableName("request_limit_ui");
 
     // Default values
-    private static final int DEFAULT_REQUEST_LIMIT_GLOBAL = 70;
-    private static final int DEFAULT_REQUEST_LIMIT_PER_USER = 2;
-    private static final int DEFAULT_REQUEST_LIMIT_UI = 52;
+    protected static final int DEFAULT_REQUEST_LIMIT_GLOBAL = 70;
+    protected static final int DEFAULT_REQUEST_LIMIT_PER_USER = 2;
+    protected static final int DEFAULT_REQUEST_LIMIT_UI = 52;
 
-    private static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry();
+    protected static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry();
 
-    private static final int DISABLED_RATE = -1;
+    protected static final int DISABLED_RATE = -1;
 
     // Request limits
-    private final int requestLimitGlobal;
-    private final int requestLimitPerUser;
-    private final int requestLimitUi;
+    protected final int requestLimitGlobal;
+    protected final int requestLimitPerUser;
+    protected final int requestLimitUi;
 
     // Live count holders
-    private final AtomicInteger globalCount = new AtomicInteger();
-    private final Map<String, AtomicInteger> userCounts = new ConcurrentHashMap<>();
+    protected final AtomicInteger globalCount = new AtomicInteger();
+    protected final Map<String, AtomicInteger> userCounts = new ConcurrentHashMap<>();
 
-    private final Counter requestGlobalCounter;
-    private final Counter usersCounter;
+    protected final Counter requestGlobalCounter;
+    protected final Counter usersCounter;
 
-    private final Meter requestBypassMeter;
-    private final Meter requestUiMeter;
-    private final Meter requestUserMeter;
-    private final Meter rejectUiMeter;
-    private final Meter rejectUserMeter;
+    protected final Meter requestBypassMeter;
+    protected final Meter requestUiMeter;
+    protected final Meter requestUserMeter;
+    protected final Meter rejectUiMeter;
+    protected final Meter rejectUserMeter;
 
     /**
      * Loads defaults and creates DefaultRateLimiter.
@@ -103,7 +103,7 @@ public class DefaultRateLimiter implements RateLimiter {
      *
      * @return The atomic count for the user
      */
-    private AtomicInteger getCount(String userName) {
+    protected AtomicInteger getCount(String userName) {
         AtomicInteger count = userCounts.get(userName);
 
         // Create a counter if we don't have one yet
@@ -125,7 +125,7 @@ public class DefaultRateLimiter implements RateLimiter {
      * @return True if the incremented count is <= the request limit, false if it's gone over and the request limit
      * isn't the DISABLED_RATE (-1).
      */
-    private boolean incrementAndCheckCount(AtomicInteger initialCount, int requestLimit) {
+    protected boolean incrementAndCheckCount(AtomicInteger initialCount, int requestLimit) {
         int count = initialCount.incrementAndGet();
         if (count > requestLimit && requestLimit != DISABLED_RATE) {
             initialCount.decrementAndGet();
@@ -143,7 +143,7 @@ public class DefaultRateLimiter implements RateLimiter {
      * @param isUIQuery  Whether or not the request is a UI Query
      * @param userName  Username of the user who made the request
      */
-    private void rejectRequest(Meter rejectMeter, boolean isRejectGlobal, boolean isUIQuery, String userName) {
+    protected void rejectRequest(Meter rejectMeter, boolean isRejectGlobal, boolean isUIQuery, String userName) {
         rejectMeter.mark();
         String limitType = isRejectGlobal ? "GLOBAL" : isUIQuery ? "UI" : "USER";
         LOG.info("{} limit {}", limitType, userName);
@@ -198,7 +198,7 @@ public class DefaultRateLimiter implements RateLimiter {
      * @return a new RateLimitRequestToken, representing an in-flight (or rejected) request that is tracked by the
      * RateLimiter
      */
-    private RateLimitRequestToken createNewRateLimitRequestToken(AtomicInteger count, String userName,
+    protected RateLimitRequestToken createNewRateLimitRequestToken(AtomicInteger count, String userName,
             boolean isUIQuery, int requestLimit, Meter requestMeter, Meter rejectMeter) {
         if (!incrementAndCheckCount(globalCount, requestLimitGlobal)) {
             rejectRequest(rejectMeter, true, isUIQuery, userName);
@@ -232,7 +232,7 @@ public class DefaultRateLimiter implements RateLimiter {
      *
      * @return A callback implementation to be given to a CallbackRateLimitRequestToken
      */
-    private RateLimitCleanupOnRequestComplete generateCleanupClosure(AtomicInteger count, String userName) {
+    protected RateLimitCleanupOnRequestComplete generateCleanupClosure(AtomicInteger count, String userName) {
         return () -> {
             if (globalCount.decrementAndGet() < 0) {
                 // Reset to 0 if it falls below 0
