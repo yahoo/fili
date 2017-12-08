@@ -38,11 +38,6 @@ public class CallbackRateLimitRequestToken implements RateLimitRequestToken {
 
     @Override
     public void unBind() {
-        close();
-    }
-
-    @Override
-    public void close() {
         if (this.isBound) {
             rateLimitCleanup.cleanup();
             this.isBound = false;
@@ -54,7 +49,7 @@ public class CallbackRateLimitRequestToken implements RateLimitRequestToken {
         try {
             if (isBound) {
                 LOG.debug("orphaned CallbackRateLimitToken");
-                close();
+                unBind();
             }
         } finally {
             super.finalize();

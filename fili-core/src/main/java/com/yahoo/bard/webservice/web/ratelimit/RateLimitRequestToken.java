@@ -26,9 +26,15 @@ public interface RateLimitRequestToken extends Closeable {
     /**
      * Release the token's counters.
      *
+     */
+    void unBind();
+
+    /**
+     * By default, close will trigger unbind.
+     *
      * @throws IOException if close fails
      */
-    default void unBind() throws IOException {
-        this.close();
+    default void close() throws IOException {
+        unBind();
     }
 }

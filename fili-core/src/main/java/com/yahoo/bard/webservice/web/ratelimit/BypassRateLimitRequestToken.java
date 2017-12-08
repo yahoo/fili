@@ -21,9 +21,4 @@ public class BypassRateLimitRequestToken implements RateLimitRequestToken {
     public void unBind() {
         // Do nothing
     }
-
-    @Override
-    public void close() {
-        // Do nothing
-    }
 }
