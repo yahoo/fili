@@ -3,6 +3,7 @@ package com.yahoo.bard.webservice.table
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName
+import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.data.config.names.TableName
 import com.yahoo.bard.webservice.data.config.table.MetricUnionCompositeTableDefinition
 import com.yahoo.bard.webservice.data.dimension.Dimension
@@ -53,22 +54,22 @@ class MetricUnionCompositeTableDefinitionSpec extends Specification {
     MetricColumn metricColumn3 = new MetricColumn(metricName3)
 
     DimensionDictionary dimensionDictionary
+    DimensionColumn dimensionColumn
     PhysicalTableDictionary physicalTableDictionary
     ResourceDictionaries resourceDictionaries = Mock(ResourceDictionaries)
+    DataSourceMetadataService metadataService = Mock(DataSourceMetadataService)
+    DimensionConfig dimensionConfig = Mock(DimensionConfig)
+    TableName name = TableName.of('table')
 
-    DataSourceMetadataService dataSourceMetadataService = Mock(DataSourceMetadataService)
     def setup() {
-        resourceDictionaries.getDimensionDictionary() >> dimensionDictionary
-
         ApiMetricName.of(metricName1)
-        TableName name = TableName.of('table')
+
 
         Dimension dimension = Mock(Dimension)
         dimension.apiName >> "dimension"
 
-        DimensionConfig dimensionConfig = Mock(DimensionConfig)
         dimensionConfig.apiName >> "dimension"
-        DimensionColumn dimensionColumn = new DimensionColumn(dimension)
+        dimensionColumn = new DimensionColumn(dimension)
 
 
         Schema table1Schema = new PhysicalTableSchema(timeGrain, [dimensionColumn, metricColumn1], [:])
@@ -89,13 +90,22 @@ class MetricUnionCompositeTableDefinitionSpec extends Specification {
         table3.getName() >> metric3Table.asName()
         table3.getSchema() >> table3Schema
 
-        Availability availability = Mock(Availability)
+        Availability availability1 = Mock(Availability)
+        Availability availability2 = Mock(Availability)
+
+        DataSourceName dataSourceName1 = Mock(DataSourceName)
+        dataSourceName1.asName() >> "source1"
+
+        DataSourceName dataSourceName2 = Mock(DataSourceName)
+        dataSourceName2.asName() >> "source2"
+
+        availability1.dataSourceNames >> ([dataSourceName1] as Set)
+        availability2.dataSourceNames >> ([dataSourceName2] as Set)
+
+        table1.availability >> availability1
+        table2.availability >> availability2
 
         Set<ConfigPhysicalTable> tables = [table1, table2, table3, table12]
-
-        tables.each {
-            it.availability >> availability
-        }
 
         resourceDictionaries.getDimensionDictionary() >> dimensionDictionary
         Map<String, ConfigPhysicalTable> tableMap = tables.collectEntries {
@@ -129,25 +139,41 @@ class MetricUnionCompositeTableDefinitionSpec extends Specification {
 
 
     def "getTableToMetricsMap groups #metrics to #expected"() {
-        // TODO
-        setup:
+        given:
+        Set<TableName> dependantTables = tables.collectEntries{
+            [TableName.of(it)]
+        }.keySet().toSet()
 
-        expect:
-        true
+        MetricUnionCompositeTableDefinition metricUnionCompositeTableDefinition = new MetricUnionCompositeTableDefinition(name, timeGrain, [apiMetricName1, apiMetricName2] as Set, dependantTables, [dimensionConfig] as Set)
+
+        Map<ConfigPhysicalTable, Set<String>> expectedTableToMetricsMap = expected.collectEntries {
+            [physicalTableDictionary.get(it.key), new HashSet<String>(it.value)]
+        }
+
+        when:
+        Map<ConfigPhysicalTable, Set<String>>  tableToMetricsMap = metricUnionCompositeTableDefinition.getTableToMetricsMap(resourceDictionaries)
+
+        then:
+        expectedTableToMetricsMap == tableToMetricsMap
 
         where:
-        metrics                     | tables              | expected
+        metrics                     | tables                      | expected
         [metricName1, metricName2]  | [tableName1, tableName2]    | [(tableName1): [metricName1], (tableName2): [metricName2]]
-        [metricName1, metricName2]  | [tableName12, tableName3]   | [(tableName1): [metricName1, metricName2], (tableName3): []]
+        [metricName1, metricName2]  | [tableName12, tableName3]   | [(tableName12): [metricName1, metricName2], (tableName3): []]
 
     }
 
     def "validateDependentMetrics throws exception"() {
-        // TODO
-        setup:
+        given:
+        Map<ConfigPhysicalTable, Set<String>> tableMetricMap = metrics.collectEntries {
+            [physicalTableDictionary.get(it.key), new HashSet<String>(it.value)]
+        }
 
-        expect:
-        true
+        when:
+        MetricUnionCompositeTableDefinition.validateDependentMetrics(tableMetricMap)
+
+        then:
+        thrown(IllegalArgumentException)
 
         where:
         metrics                                                         | comment
@@ -157,6 +183,29 @@ class MetricUnionCompositeTableDefinitionSpec extends Specification {
 
 
     def "build produces expected metric union"() {
-        //TODO
+        given:
+        Set<TableName> dependantTables = tables.collectEntries{
+            [TableName.of(it)]
+        }.keySet().toSet()
+
+        Map<String, String> logicalToPhysicalNames = new HashMap<>()
+        logicalToPhysicalNames.put(dimensionConfig.getApiName(), dimensionConfig.getApiName())
+
+        Map<Availability, Set<String>> availabilitiesToMetricNames = tableMap.collectEntries {
+            [physicalTableDictionary.get(it.key).availability, new HashSet<String>(it.value)]
+        }
+        MetricUnionCompositeTable expectedPhysicalTable = new MetricUnionCompositeTable(name, timeGrain, [dimensionColumn, metricColumn1, metricColumn2] as Set, [table1, table2] as Set, logicalToPhysicalNames, availabilitiesToMetricNames)
+
+        MetricUnionCompositeTableDefinition metricUnionCompositeTableDefinition = new MetricUnionCompositeTableDefinition(name, timeGrain, [apiMetricName1, apiMetricName2] as Set, dependantTables, [dimensionConfig] as Set)
+
+        when:
+        ConfigPhysicalTable physicalTable = metricUnionCompositeTableDefinition.build(resourceDictionaries,metadataService)
+
+        then:
+        expectedPhysicalTable == physicalTable
+
+        where:
+        tableMap                                                    | tables
+        [(tableName1): [metricName1], (tableName2): [metricName2]]  | [tableName1, tableName2]
     }
 }
