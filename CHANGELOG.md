@@ -10,6 +10,9 @@ Current
 
 ### Added:
 
+- [Complete DateTimeUtils tests](https://github.com/yahoo/fili/pull/595)
+    * Add tests for all un-tested methods in `DateTimeUtils`.
+    
 - [Enable checkstyle to detect incorrect package header](https://github.com/yahoo/fili/pull/594)
     * Fili was able to pass the build with wrong package headers in some source files. This needs to be fixed, and it's
       fixed in this PR by adding PackageDeclaration checkstyle rule.
