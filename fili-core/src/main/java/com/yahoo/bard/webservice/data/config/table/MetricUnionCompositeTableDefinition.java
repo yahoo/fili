@@ -39,11 +39,12 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
     private final Set<TableName> dependentTableNames;
     private final Set<String> dependentTableNameString;
 
-    public static String MISSING_DEPENDANT_TABLE_FORMAT = "Dependent able %s does not exist.";
-    public static String MISSING_METRIC_FORMAT = "Required metric %s doesn't appear on any dependent table";
-    public static String DUPLICATE_METRIC_FORMAT = "Required metric(s) %s appears on more than one dependent table";
+    public static final String MISSING_DEPENDANT_TABLE_FORMAT = "Dependent able %s does not exist.";
+    public static final String MISSING_METRIC_FORMAT = "Required metric %s doesn't appear on any dependent table";
+    public static final String DUPLICATE_METRIC_FORMAT = "Required metric(s) %s appears on more " +
+            "than one dependent table";
 
-    public static String VALIDATION_ERROR_FORMAT = "Error building table %s: %s";
+    public static final String VALIDATION_ERROR_FORMAT = "Error building table %s: %s";
 
     /**
      * Define a physical table using a zoned time grain.
@@ -129,7 +130,7 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
             PhysicalTableDictionary physicalTableDictionary
     ) {
         Set<String> missingTableNames = tableNames.stream()
-                .filter(it-> ! physicalTableDictionary.containsKey(it))
+                .filter(it -> ! physicalTableDictionary.containsKey(it))
                 .collect(Collectors.toSet());
 
         if (!missingTableNames.isEmpty()) {
