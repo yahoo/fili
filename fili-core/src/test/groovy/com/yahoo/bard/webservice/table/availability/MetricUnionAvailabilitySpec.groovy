@@ -38,6 +38,8 @@ class MetricUnionAvailabilitySpec extends Specification {
 
     ApiFilters apiFilters
 
+    Map<Availability, Set<String>> availabilitiesToMetricNames
+
     def setup() {
         availability1 = Mock(Availability)
         availability2 = Mock(Availability)
@@ -60,6 +62,8 @@ class MetricUnionAvailabilitySpec extends Specification {
         physicalTables = [physicalTable1, physicalTable2] as Set
 
         apiFilters = new ApiFilters()
+
+        availabilitiesToMetricNames = new HashMap<>()
     }
 
     def "Metric columns are initialized by fetching columns from availabilities, not from physical tables"() {
@@ -67,10 +71,13 @@ class MetricUnionAvailabilitySpec extends Specification {
         availability1.getAllAvailableIntervals() >> [(metric1): []]
         availability2.getAllAvailableIntervals() >> [(metric2): []]
 
+        availabilitiesToMetricNames.put(availability1, [metric1] as Set)
+        availabilitiesToMetricNames.put(availability2, [metric2] as Set)
+
         MetricColumn tableColumn1 = new MetricColumn("shouldNotBeReturned1")
         MetricColumn tableColumn2 = new MetricColumn("shouldNotBeReturned2")
 
-        metricUnionAvailability = new MetricUnionAvailability(physicalTables.availability as Set, [metricColumn1, metricColumn2] as Set)
+        metricUnionAvailability = new MetricUnionAvailability(physicalTables.availability as Set, availabilitiesToMetricNames)
 
         when:
         Map<Availability, Set<String>> availabilitiesToAvailableColumns = metricUnionAvailability.availabilitiesToMetricNames
@@ -115,9 +122,11 @@ class MetricUnionAvailabilitySpec extends Specification {
         given:
         availability1.getAllAvailableIntervals() >> [(metric1): []]
         availability2.getAllAvailableIntervals() >> [(metric1): []]
+        availabilitiesToMetricNames.put(availability1, [metric1] as Set)
+        availabilitiesToMetricNames.put(availability2, [metric1] as Set)
 
         when:
-        metricUnionAvailability = new MetricUnionAvailability(physicalTables.availability as Set, [metricColumn1] as Set)
+        metricUnionAvailability = new MetricUnionAvailability(physicalTables.availability as Set, availabilitiesToMetricNames)
 
         then:
         RuntimeException exception = thrown()
@@ -129,13 +138,16 @@ class MetricUnionAvailabilitySpec extends Specification {
         availability1.getAllAvailableIntervals() >> [:]
         availability2.getAllAvailableIntervals() >> [:]
 
-        metricUnionAvailability = new MetricUnionAvailability(physicalTables.availability as Set, [] as Set)
+        availabilitiesToMetricNames.put(availability1, [metric1] as Set)
+        availabilitiesToMetricNames.put(availability2, [metric2] as Set)
+
+        metricUnionAvailability = new MetricUnionAvailability(physicalTables.availability as Set, availabilitiesToMetricNames)
 
         ConfigPhysicalTable physicalTable3 = Mock(ConfigPhysicalTable)
         physicalTable3.getAvailability() >> metricUnionAvailability
         MetricUnionAvailability outerMetricUnionAvailability = new MetricUnionAvailability(
                 [physicalTable3.availability] as Set,
-                [] as Set
+                availabilitiesToMetricNames
         )
 
         expect:
@@ -152,7 +164,11 @@ class MetricUnionAvailabilitySpec extends Specification {
                 (metric2): [new Interval('2019-01-01/2019-02-01')]
         ]
 
-        metricUnionAvailability = new MetricUnionAvailability(physicalTables.availability as Set, [metricColumn1] as Set)
+
+        availabilitiesToMetricNames.put(availability1, [metric1] as Set)
+        availabilitiesToMetricNames.put(availability2, [metric2] as Set)
+
+        metricUnionAvailability = new MetricUnionAvailability(physicalTables.availability as Set, availabilitiesToMetricNames)
 
         expect:
         metricUnionAvailability.getAllAvailableIntervals() == [
@@ -170,7 +186,10 @@ class MetricUnionAvailabilitySpec extends Specification {
                 'un_requested': []
         ]
 
-        metricUnionAvailability = new MetricUnionAvailability(physicalTables.availability as Set, [metricColumn1, metricColumn2] as Set)
+        availabilitiesToMetricNames.put(availability1, [metric1] as Set)
+        availabilitiesToMetricNames.put(availability2, [metric2] as Set)
+
+        metricUnionAvailability = new MetricUnionAvailability(physicalTables.availability as Set, availabilitiesToMetricNames)
 
         DataSourceConstraint dataSourceConstraint = new DataSourceConstraint(
                 [] as Set,
@@ -196,6 +215,9 @@ class MetricUnionAvailabilitySpec extends Specification {
         availability1.getAllAvailableIntervals() >> [(metric1): []]
         availability2.getAllAvailableIntervals() >> [(metric2): []]
 
+        availabilitiesToMetricNames.put(availability1, [metric1] as Set)
+        availabilitiesToMetricNames.put(availability2, [metric2] as Set)
+
         availability1.getAvailableIntervals(_ as PhysicalDataSourceConstraint) >> new SimplifiedIntervalList(
                 availableIntervals1.collect{it -> new Interval(it)} as Set
         )
@@ -203,7 +225,7 @@ class MetricUnionAvailabilitySpec extends Specification {
                 availableIntervals2.collect{it -> new Interval(it)} as Set
         )
 
-        metricUnionAvailability = new MetricUnionAvailability(physicalTables.availability as Set, [metricColumn1, metricColumn2] as Set)
+        metricUnionAvailability = new MetricUnionAvailability(physicalTables.availability as Set, availabilitiesToMetricNames)
 
         DataSourceConstraint dataSourceConstraint = new DataSourceConstraint(
                 [] as Set,
@@ -242,6 +264,9 @@ class MetricUnionAvailabilitySpec extends Specification {
         availability1.getAllAvailableIntervals() >> [(metric1): ['2018-01-01/2018-02-01']]
         availability2.getAllAvailableIntervals() >> [(metric2): ['2018-01-01/2018-02-01']]
 
+        availabilitiesToMetricNames.put(availability1, [metric1] as Set)
+        availabilitiesToMetricNames.put(availability2, [metric2] as Set)
+
         availability1.getAvailableIntervals(_ as PhysicalDataSourceConstraint) >> new SimplifiedIntervalList(
                 [new Interval('2018-01-01/2018-02-01')]
         )
@@ -249,7 +274,7 @@ class MetricUnionAvailabilitySpec extends Specification {
                 [new Interval('2018-01-01/2018-02-01')]
         )
 
-        metricUnionAvailability = new MetricUnionAvailability(physicalTables.availability as Set, [metricColumn1, metricColumn2] as Set)
+        metricUnionAvailability = new MetricUnionAvailability(physicalTables.availability as Set, availabilitiesToMetricNames)
 
         DataSourceConstraint dataSourceConstraint = new DataSourceConstraint(
                 [] as Set,
