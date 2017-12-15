@@ -118,10 +118,16 @@ Current
 
 ### Changed:
 
+- [Move makeRequest to JTB](https://github.com/yahoo/fili/pull/590)
+    * Move `makeRequest` from test to `JerseyTestBinder`
+    * Some tests uses variable name `jerseyTestBinder`; some uses `jtb`. They are all renamed to the former for naming
+      conformance
+    * Re-indent testing strings for better code formatting
+
 - [Moved availabilities to metrics construction to MetricUnionCompositeTableDefinition](https://github.com/yahoo/fili/pull/592)
     * Currently, the availability to metrics construction is taking place even before the availability is loaded. Hence, 
       moving the construction to MetricUnionCompositeTableDefinition so that availability is loaded first.
-      
+
 - [Better programmatic generation of metadata json in tests](https://github.com/yahoo/fili/pull/412)
     * Rework metadata tests to be more generated from strings and more pluggable to support heavier and more expressive
       testing. This allows for more consistency, as well as make it easier to test more cases.

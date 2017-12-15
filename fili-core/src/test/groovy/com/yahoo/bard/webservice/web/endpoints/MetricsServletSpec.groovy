@@ -13,31 +13,36 @@ import com.yahoo.bard.webservice.util.GroovyTestUtils
 import spock.lang.Specification
 import spock.lang.Timeout
 
-import javax.ws.rs.client.Invocation
-
 @Timeout(30)    // Fail test if hangs
 class MetricsServletSpec extends Specification {
 
-    JerseyTestBinder jtb
+    JerseyTestBinder jerseyTestBinder
 
     def setup() {
         // Create the test web container to test the resources
-        jtb = new JerseyTestBinder(MetricsServlet.class)
+        jerseyTestBinder = new JerseyTestBinder(MetricsServlet.class)
         String DEFAULT_CATEGORY = "General"
 
         // Set known logical metrics
         NoOpResultSetMapper mapper = new NoOpResultSetMapper()
 
         //Rather than use the default TestMetricLoader data, throw it out and load a simpler data set
-        jtb.configurationLoader.dictionaries.metricDictionary.clearLocal()
+        jerseyTestBinder.configurationLoader.dictionaries.metricDictionary.clearLocal()
         ["metricA", "metricB", "metricC"].each { String metricName ->
-            jtb.configurationLoader.metricDictionary.put(metricName, new LogicalMetric(null, mapper, new LogicalMetricInfo(metricName, metricName, DEFAULT_CATEGORY, metricName, metricName)))
+            jerseyTestBinder.configurationLoader.metricDictionary.put(
+                    metricName,
+                    new LogicalMetric(
+                            null,
+                            mapper,
+                            new LogicalMetricInfo(metricName, metricName, DEFAULT_CATEGORY, metricName, metricName)
+                    )
+            )
         }
     }
 
     def cleanup() {
         // Release the test web container
-        jtb.tearDown()
+        jerseyTestBinder.tearDown()
     }
 
     def "test metrics endpoint"() {
@@ -46,14 +51,14 @@ class MetricsServletSpec extends Specification {
         String expectedResponse = """{
                                         "rows":
                                         [
-                                            {"category": "General", "name":"metricA", "longName": "metricA", "type": "metricA", "uri":"http://localhost:${jtb.getHarness().getPort()}/metrics/metricA"},
-                                            {"category": "General", "name":"metricB", "longName": "metricB", "type": "metricB", "uri":"http://localhost:${jtb.getHarness().getPort()}/metrics/metricB"},
-                                            {"category": "General", "name":"metricC", "longName": "metricC", "type": "metricC", "uri":"http://localhost:${jtb.getHarness().getPort()}/metrics/metricC"}
+                                            {"category": "General", "name":"metricA", "longName": "metricA", "type": "metricA", "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/metrics/metricA"},
+                                            {"category": "General", "name":"metricB", "longName": "metricB", "type": "metricB", "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/metrics/metricB"},
+                                            {"category": "General", "name":"metricC", "longName": "metricC", "type": "metricC", "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/metrics/metricC"}
                                         ]
                                     }"""
 
         when: "We send a request"
-        String result = makeRequest("/metrics", [:]).get(String.class)
+        String result = jerseyTestBinder.makeRequest("/metrics", [:]).get(String.class)
 
         then: "The response what we expect"
         GroovyTestUtils.compareJson(result, expectedResponse, SORT_BOTH)
@@ -70,22 +75,9 @@ class MetricsServletSpec extends Specification {
                                     }"""
 
         when: "We send a request"
-        String result = makeRequest("/metrics/metricA", [:]).get(String.class)
+        String result = jerseyTestBinder.makeRequest("/metrics/metricA", [:]).get(String.class)
 
         then: "The response what we expect"
         GroovyTestUtils.compareJson(result, expectedResponse)
-    }
-
-    Invocation.Builder makeRequest(String target, LinkedHashMap<String, Object> queryParams) {
-        // Set target of call
-        def httpCall = jtb.getHarness().target(target)
-
-        // Add query params to call
-        queryParams.each { String key, Object value ->
-            httpCall = httpCall.queryParam(key, value)
-        }
-
-        // Make the call
-        httpCall.request()
     }
 }
