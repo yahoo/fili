@@ -5,7 +5,6 @@ package com.yahoo.bard.webservice.web.apirequest
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
-import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
@@ -104,14 +103,14 @@ class DataApiRequestImplSpec extends Specification {
 
     def "check parsing generateLogicalMetrics"() {
         given:
-        Set<LogicalMetric> logicalMetrics = new TestingDataApiRequestImpl().generateLogicalMetrics(
+        Set<LogicalMetric> logicalMetrics = DefaultLogicalMetricsGenerators.generateLogicalMetrics(
                 "met1,met2,met3",
                 metricDict,
                 dimensionDict,
                 table
         )
 
-        HashSet<Dimension> expected =
+        HashSet<LogicalMetric> expected =
         ["met1", "met2", "met3" ].collect { String name ->
             LogicalMetric metric = metricDict.get(name)
             assert metric?.name == name
@@ -124,7 +123,7 @@ class DataApiRequestImplSpec extends Specification {
 
     def "generateLogicalMetrics throws BadApiRequestException on non-existing LogicalMetric"() {
         when:
-        Set<LogicalMetric> logicalMetrics = new TestingDataApiRequestImpl().generateLogicalMetrics(
+        Set<LogicalMetric> logicalMetrics = DefaultLogicalMetricsGenerators.generateLogicalMetrics(
                 "met1,met2,nonExistingMetric",
                 metricDict,
                 dimensionDict,
@@ -139,7 +138,7 @@ class DataApiRequestImplSpec extends Specification {
     @Unroll
     def "check valid granularity name #name parses to granularity #expected"() {
         expect:
-        new TestingDataApiRequestImpl().generateGranularity(name, granularityParser) == expected
+        new TestingDataApiRequestImpl().bindGranularity(name, granularityParser) == expected
 
         where:
         name    | expected
@@ -153,7 +152,7 @@ class DataApiRequestImplSpec extends Specification {
         String expectedMessage = ErrorMessageFormat.UNKNOWN_GRANULARITY.format(timeGrainName)
 
         when:
-        new TestingDataApiRequestImpl().generateGranularity(timeGrainName, granularityParser)
+        new TestingDataApiRequestImpl().bindGranularity(timeGrainName, granularityParser)
 
         then:
         Exception e = thrown(BadApiRequestException)
@@ -163,7 +162,7 @@ class DataApiRequestImplSpec extends Specification {
     def "check weekly granularity has the expected alignment description"() {
         setup:
         String expectedMessage = " Week must start on a Monday and end on a Monday."
-        Granularity<?> granularity = new TestingDataApiRequestImpl().generateGranularity(
+        Granularity<?> granularity = new TestingDataApiRequestImpl().bindGranularity(
                 "week",
                 new StandardGranularityParser()
         )

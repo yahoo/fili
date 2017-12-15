@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Generates having objects based on the having query in the api request.
+ * Utility class to hold generator code for havings.
  */
 public class DefaultHavingApiGenerator implements HavingGenerator {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultHavingApiGenerator.class);

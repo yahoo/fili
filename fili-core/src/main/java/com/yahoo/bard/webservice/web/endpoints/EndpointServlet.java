@@ -77,11 +77,11 @@ public abstract class EndpointServlet {
      */
     protected <T> Response formatResponse(
             ApiRequest apiRequest,
-            Response.ResponseBuilder builder,
             Pagination pagination,
             ContainerRequestContext containerRequestContext,
             Stream<T> rows,
             String jsonName,
+            Response.ResponseBuilder builder,
             List<String> csvColumnNames
     ) {
         UriInfo uriInfo = containerRequestContext.getUriInfo();
@@ -145,21 +145,19 @@ public abstract class EndpointServlet {
                 apiRequest.getPaginationParameters().orElse(ApiRequestImpl.DEFAULT_PAGINATION)
         );
 
-        Response.ResponseBuilder builder = responseBuilderSupplier.get();
-
-        Stream<T> stream = ResponsePaginator.paginate(builder, pagination, uriInfo);
         Response.ResponseBuilder responseBuilder = Response.status(Response.Status.OK);
 
-        Response response = formatResponse(
+        Stream<T> stream = ResponsePaginator.paginate(responseBuilder, pagination, uriInfo);
+
+        return formatResponse(
                 apiRequest,
-                responseBuilder,
                 pagination,
                 containerRequestContext,
                 stream,
                 jsonName,
+                responseBuilder,
                 csvColumnNames
         );
-        return response;
     }
 
     /**
@@ -177,7 +175,7 @@ public abstract class EndpointServlet {
     protected <T> Response paginateAndFormatResponse(
             ApiRequest apiRequest,
             ContainerRequestContext containerRequestContext,
-            Pagination pagination,
+            Pagination<T> pagination,
             String jsonName,
             List<String> csvColumnNames
     ) {
@@ -188,15 +186,14 @@ public abstract class EndpointServlet {
         Stream<T> stream = ResponsePaginator.paginate(builder, pagination, uriInfo);
         Response.ResponseBuilder responseBuilder = Response.status(Response.Status.OK);
 
-        Response response = formatResponse(
+        return formatResponse(
                 apiRequest,
-                responseBuilder,
                 pagination,
                 containerRequestContext,
                 stream,
                 jsonName,
+                responseBuilder,
                 csvColumnNames
         );
-        return response;
     }
 }

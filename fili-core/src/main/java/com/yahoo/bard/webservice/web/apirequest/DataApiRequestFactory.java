@@ -10,8 +10,7 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.PathSegment;
 
 /**
- * Layer of injection to provide preprocessing of BardConfig in response to request parameters and transformation of
- * request parameters before performing binding in the ApiRequest constructors.
+ * An interface for a factory used to build DataApiRequests.
  */
 public interface DataApiRequestFactory {
 
@@ -43,7 +42,7 @@ public interface DataApiRequestFactory {
      * @deprecated in favor of the version that uses the filename parameter
      */
     @Deprecated
-    DataApiRequest buildApiRequest(
+    default DataApiRequest buildApiRequest(
             String tableName,
             String granularity,
             List<PathSegment> dimensions,
@@ -60,7 +59,27 @@ public interface DataApiRequestFactory {
             @NotNull String perPage,
             @NotNull String page,
             BardConfigResources bardConfigResources
-    );
+    ) {
+        return buildApiRequest(
+                tableName,
+                granularity,
+                dimensions,
+                logicalMetrics,
+                intervals,
+                apiFilters,
+                havings,
+                sorts,
+                count,
+                topN,
+                format,
+                null,
+                timeZoneId,
+                asyncAfter,
+                perPage,
+                page,
+                bardConfigResources
+        );
+    }
 
     /**
      * Factory method for building {@link DataApiRequest} objects.
@@ -78,10 +97,10 @@ public interface DataApiRequestFactory {
      * @param count  count of number of records to be returned in the response
      * @param topN  number of first records per time bucket to be returned in the response
      * @param format  response data format
-     * @param timeZoneId  a joda time zone id
-     * @param asyncAfter  How long the user is willing to wait for a synchronous request in milliseconds
      * @param downloadFilename  The filename for the response to be downloaded as. If null indicates response should
      * not be downloaded.
+     * @param timeZoneId  a joda time zone id
+     * @param asyncAfter  How long the user is willing to wait for a synchronous request in milliseconds
      * @param perPage  number of rows to display per page of results. If present in the original request,
      * must be a positive integer. If not present, must be the empty string.
      * @param page  desired page of results. If present in the original request, must be a positive

@@ -144,11 +144,21 @@ public class DimensionsServlet extends EndpointServlet {
                 apiRequest = (DimensionsApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
+<<<<<<< b07b1ca280a5768b6ff28f1150c6778fd13ea6ab
             Response response = paginateAndFormatResponse(
+=======
+            Stream<Map<String, Object>> result = apiRequest.getPage(
+                    getDimensionListSummaryView(apiRequest.getDimensions(), uriInfo)
+            );
+
+
+            Response response = formatResponse(
+>>>>>>> temp
                     apiRequest,
                     containerRequestContext,
                     getDimensionListSummaryView(apiRequest.getDimensions(), uriInfo),
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "dimensions" : "rows",
+                    Response.status(Response.Status.OK),
                     null
             );
             LOG.debug("Dimensions Endpoint Response: {}", response.getEntity());
@@ -300,8 +310,9 @@ public class DimensionsServlet extends EndpointServlet {
                     .getPaginationParameters()
                     .orElse(ApiRequestImpl.DEFAULT_PAGINATION);
 
-            Pagination<DimensionRow> pagedRows = getPagedRows(apiRequest, searchProvider, paginationParameters);
             Response.ResponseBuilder builder = Response.status(Response.Status.OK);
+
+            Pagination<DimensionRow> pagedRows = getPagedRows(apiRequest, searchProvider, paginationParameters);
 
             Stream<Map<String, String>> rows = ResponsePaginator.paginate(builder, pagedRows, uriInfo)
                     .map(DimensionRow::entrySet)
@@ -322,6 +333,7 @@ public class DimensionsServlet extends EndpointServlet {
                     containerRequestContext,
                     rows,
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "dimensions" : "rows",
+                    Response.status(Response.Status.OK),
                     null
             );
 

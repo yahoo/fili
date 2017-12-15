@@ -109,7 +109,8 @@ public class ResponseData {
         this(
                 resultSet,
                 apiRequest.getLogicalMetrics().stream()
-                        .map(LogicalMetric::getName)
+                        .map(LogicalMetric::getOutputNames)
+                        .flatMap(List::stream)
                         .collect(Collectors.toCollection(LinkedHashSet<String>::new)),
                 apiRequest.getDimensionFields(),
                 missingIntervals,

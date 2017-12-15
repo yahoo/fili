@@ -2,18 +2,24 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest;
 
+<<<<<<< 298fce66f1668fcfde4f429ae6eafa21d00ac9ee
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
+=======
+import com.yahoo.bard.webservice.data.metric.MetricDictionary;
+import com.yahoo.bard.webservice.web.util.PaginationParameters;
+>>>>>>> temp
 
-import java.util.List;
+import java.util.Optional;
 
-import javax.ws.rs.core.PathSegment;
+import javax.ws.rs.container.ContainerRequestContext;
 
 /**
  * An implementation of DataApiRequestFactory that does not modify the initial parameters at all.
  */
 public class DefaultDataApiRequestFactory implements DataApiRequestFactory {
 
-    @Override
+    //@Override
+    /*
     public DataApiRequest buildApiRequest(
             String tableName,
             String granularity,
@@ -30,6 +36,7 @@ public class DefaultDataApiRequestFactory implements DataApiRequestFactory {
             String asyncAfter,
             String perPage,
             String page,
+            ContainerRequestContext requestContext,
             BardConfigResources bardConfigResources
     ) {
         return buildApiRequest(
@@ -90,7 +97,22 @@ public class DefaultDataApiRequestFactory implements DataApiRequestFactory {
                 asyncAfter,
                 perPage,
                 page,
+                requestContext,
                 bardConfigResources
         );
+<<<<<<< 298fce66f1668fcfde4f429ae6eafa21d00ac9ee
+=======
+    }*/
+
+    @Override
+    public DataApiRequest buildDataApiRequest(
+            final DataApiRequestModel model,
+            final String asyncAfter,
+            final Optional<PaginationParameters> paginationParameters,
+            final ContainerRequestContext requestContext,
+            final MetricDictionary dictionary
+    ) {
+        return null;
+>>>>>>> temp
     }
 }

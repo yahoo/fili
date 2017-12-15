@@ -198,6 +198,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                     containerRequestContext,
                     getLogicalTableListSummaryView(tablesApiRequestImpl.getTables(), uriInfo),
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "tables" : "rows",
+                    Response.status(Response.Status.OK),
                     null
             );
             LOG.debug("Tables Endpoint Response: {}", response.getEntity());
@@ -410,6 +411,10 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                     "tables",
                     null
             );
+<<<<<<< b07b1ca280a5768b6ff28f1150c6778fd13ea6ab
+=======
+            Response response = formatResponse(tablesApiRequestImpl, paginatedResult, "tables", Response.status(Response.Status.OK),null);
+>>>>>>> temp
 
             LOG.debug("Tables Endpoint Response: {}", response.getEntity());
             return response;

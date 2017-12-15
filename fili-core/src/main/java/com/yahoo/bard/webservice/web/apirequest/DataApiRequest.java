@@ -37,7 +37,6 @@ import javax.ws.rs.core.Response;
 public interface DataApiRequest extends ApiRequest {
     String REQUEST_MAPPER_NAMESPACE = "dataApiRequestMapper";
     String RATIO_METRIC_CATEGORY = "Ratios";
-    String DATE_TIME_STRING = "dateTime";
 
     // Schema fields
 
@@ -236,10 +235,7 @@ public interface DataApiRequest extends ApiRequest {
 
     DataApiRequest withDimensions(LinkedHashSet<Dimension> dimensions);
 
-    DataApiRequest withPerDimensionFields(
-            LinkedHashMap<Dimension,
-                    LinkedHashSet<DimensionField>> perDimensionFields
-    );
+    DataApiRequest withPerDimensionFields(LinkedHashMap<Dimension,LinkedHashSet<DimensionField>> perDimensionFields);
 
     DataApiRequest withLogicalMetrics(LinkedHashSet<LogicalMetric> logicalMetrics);
 
@@ -267,7 +263,7 @@ public interface DataApiRequest extends ApiRequest {
 
     DataApiRequest withCount(int count);
 
-    DataApiRequest withPaginationParameters(Optional<PaginationParameters> paginationParameters);
+    DataApiRequest withPaginationParameters(PaginationParameters paginationParameters);
 
     // Presentation
 

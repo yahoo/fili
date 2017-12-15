@@ -79,7 +79,7 @@ class JobsServletSpec extends Specification {
         String result = jerseyTestBinder.makeRequest("/jobs", [perPage: 1, page: 1]).get(String.class)
 
         then: "what we expect is one job row with pagination meta data"
-        GroovyTestUtils.compareJson(result, expectedResponse, JsonSortStrategy.SORT_BOTH)
+        GroovyTestUtils.compareJson(result, expectedResponse, JsonSortStrategy.SORT_BOTH, [])
     }
 
     def "jobs/ticket endpoint returns a 404 if the ticket does not exist in the ApiJobStore"() {

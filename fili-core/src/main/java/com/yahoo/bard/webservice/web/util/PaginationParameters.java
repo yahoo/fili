@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * A wrapper around the pagination parameters ('perPage' and 'page') to simplify working with pagination requests.
@@ -43,6 +44,8 @@ public class PaginationParameters {
      * Return only the first result.
      */
     public static final PaginationParameters ONE_RESULT = new PaginationParameters(1, 1);
+    public static final String PAGE_NAME = "page";
+    public static final String PER_PAGE_NAME = "perPage";
 
     private final int perPage;
     private final int page;
@@ -56,7 +59,7 @@ public class PaginationParameters {
      * @throws BadPaginationException If at least one of 'perPage' or 'page' is not a positive integer.
      */
     public PaginationParameters(String perPage, String page) throws BadPaginationException {
-        this(parseParameter(perPage, "perPage"), parseParameter(page, "page"));
+        this(parseParameter(perPage, PER_PAGE_NAME), parseParameter(page, PAGE_NAME));
     }
 
     /**
@@ -68,6 +71,25 @@ public class PaginationParameters {
     public PaginationParameters(int perPage, int page) {
         this.perPage = perPage;
         this.page = page;
+    }
+
+    /**
+     * Builder method for possibly empty paginations.
+     *
+     * @param perPageRequest  The number of rows to be displayed on each page.
+     * @param pageRequest  The page to be displayed
+     */
+    public static Optional<PaginationParameters> buildPagination(String perPageRequest, String pageRequest) {
+        if ((perPageRequest == null || "".equals(perPageRequest)) && (pageRequest == null || "".equals(pageRequest))) {
+            return Optional.empty();
+        }
+        int perPageActual =  (perPageRequest != null && ! "".equals(perPageRequest)) ?
+                DEFAULT_MAX_RESULTS_WITHOUT_FILTERS :
+                parseParameter(perPageRequest, PER_PAGE_NAME);
+        int pageActual =  (perPageRequest != null && ! "".equals(perPageRequest)) ?
+                1 :
+                parseParameter(perPageRequest, PAGE_NAME);
+        return Optional.of(new PaginationParameters(perPageActual, pageActual));
     }
 
     /**
@@ -86,7 +108,7 @@ public class PaginationParameters {
             throw new BadPaginationException(errorMessage.format(parameterName));
         }
         try {
-            if (parameterName.equals("page")) {
+            if (parameterName.equals(PAGE_NAME)) {
                 if (parameter.equals(FIRST)) {
                     return 1;
                 } else if (parameter.equals(LAST)) {
@@ -147,7 +169,7 @@ public class PaginationParameters {
      * @throws BadPaginationException If page is not a positive Java int.
      */
     public PaginationParameters withPage(String page) throws BadPaginationException {
-        return new PaginationParameters(perPage, parseParameter(page, "page"));
+        return new PaginationParameters(perPage, parseParameter(page, PAGE_NAME));
     }
 
     /**
@@ -160,12 +182,12 @@ public class PaginationParameters {
      * @throws BadPaginationException If page is not a positive Java int.
      */
     public PaginationParameters withPerPage(String perPage) throws BadPaginationException {
-        return new PaginationParameters(parseParameter(perPage, "perPage"), page);
+        return new PaginationParameters(parseParameter(perPage, PER_PAGE_NAME), page);
     }
 
     @Override
     public String toString() {
-        return "perPage=" + perPage + "&page=" + page;
+        return  PER_PAGE_NAME + "=" + perPage + "&" + PAGE_NAME + page;
     }
 
     @Override

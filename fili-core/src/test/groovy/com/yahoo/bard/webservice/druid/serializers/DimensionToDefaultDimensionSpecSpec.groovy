@@ -9,6 +9,8 @@ import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.data.DruidQueryBuilder
 import com.yahoo.bard.webservice.data.PartialDataHandler
 import com.yahoo.bard.webservice.data.QueryBuildingTestingResources
+import com.yahoo.bard.webservice.data.filterbuilders.DefaultDruidFilterBuilder
+import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
 import com.yahoo.bard.webservice.data.volatility.DefaultingVolatileIntervalsService
@@ -34,17 +36,24 @@ class DimensionToDefaultDimensionSpecSpec extends Specification {
     DruidQueryBuilder builder
     DataApiRequest apiRequest
     DruidAggregationQuery<?> druidQuery
+    DruidFilterBuilder druidFilterBuilder
 
     def setup() {
         objectMapper = new ObjectMappersSuite().getMapper()
         resources = new QueryBuildingTestingResources()
+        druidFilterBuilder = new DefaultDruidFilterBuilder()
+
         DefaultPhysicalTableResolver resolver = new DefaultPhysicalTableResolver(new PartialDataHandler(), new DefaultingVolatileIntervalsService())
+<<<<<<< dc42c05507c7823fbfaef0e0657e55e263debd93
         builder = new DruidQueryBuilder(
                 resources.logicalDictionary,
                 resolver,
                 resources.druidFilterBuilder,
                 resources.druidHavingBuilder
         )
+=======
+        builder = new DruidQueryBuilder(resources.logicalDictionary, resolver, druidFilterBuilder)
+>>>>>>> Fixing Pagination
         apiRequest = Mock(DataApiRequest)
         LogicalMetric lm1 = new LogicalMetric(resources.simpleTemplateQuery, new NoOpResultSetMapper(), "lm1", null)
 

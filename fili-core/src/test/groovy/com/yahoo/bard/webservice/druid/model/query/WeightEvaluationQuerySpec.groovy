@@ -42,8 +42,10 @@ import org.joda.time.Interval
 import spock.lang.Specification
 import spock.lang.Unroll
 
+import javax.ws.rs.container.ContainerRequestContext
 import javax.ws.rs.core.MultivaluedHashMap
 import javax.ws.rs.core.PathSegment
+import javax.ws.rs.core.UriInfo
 
 class WeightEvaluationQuerySpec extends Specification {
 
@@ -58,6 +60,7 @@ class WeightEvaluationQuerySpec extends Specification {
     PathSegment other = Mock(PathSegment)
 
     SystemConfig systemConfig = SystemConfigProvider.getInstance()
+    ContainerRequestContext containerRequestContext = Mock(ContainerRequestContext)
 
     // other is configured with NoOpSearchProvider and its cardinality is package_name__query_weight_limit
     int queryWeightLimit = systemConfig.getIntProperty(
@@ -88,8 +91,12 @@ class WeightEvaluationQuerySpec extends Specification {
         builder = new DruidQueryBuilder(
                 jtb.configurationLoader.logicalTableDictionary,
                 new DefaultPhysicalTableResolver((PartialDataHandler) null, (VolatileIntervalsService) null),
+<<<<<<< dc42c05507c7823fbfaef0e0657e55e263debd93
                 new DruidInFilterBuilder(),
                 new DefaultDruidHavingBuilder()
+=======
+                new DefaultDruidFilterBuilder()
+>>>>>>> Fixing Pagination
         )
 
         Map emptyMap = new MultivaluedHashMap<>()
@@ -101,6 +108,8 @@ class WeightEvaluationQuerySpec extends Specification {
         color.getMatrixParameters() >> emptyMap
         other.getPath() >> "other"
         other.getMatrixParameters() >> emptyMap
+
+        containerRequestContext.getUriInfo() >> Mock(UriInfo)
     }
 
     def cleanup() {
@@ -126,6 +135,10 @@ class WeightEvaluationQuerySpec extends Specification {
                 null, //asyncAfter
                 "", //perPage
                 "", //page
+<<<<<<< dc42c05507c7823fbfaef0e0657e55e263debd93
+=======
+                containerRequestContext, //containerRequestContext
+>>>>>>> Fixing Pagination
                 dataServlet
         )
 
@@ -154,6 +167,10 @@ class WeightEvaluationQuerySpec extends Specification {
                 null, //asyncAfter
                 "", //perPage
                 "", //page
+<<<<<<< dc42c05507c7823fbfaef0e0657e55e263debd93
+=======
+                containerRequestContext, //containerRequestContext
+>>>>>>> Fixing Pagination
                 dataServlet
         )
 
@@ -181,6 +198,10 @@ class WeightEvaluationQuerySpec extends Specification {
                 null, //asyncAfter
                 "", //perPage
                 "", //page
+<<<<<<< dc42c05507c7823fbfaef0e0657e55e263debd93
+=======
+                containerRequestContext, //containerRequestContext
+>>>>>>> Fixing Pagination
                 dataServlet
         )
 
@@ -208,6 +229,10 @@ class WeightEvaluationQuerySpec extends Specification {
                 null, //asyncAfter
                 "", //perPage
                 "", //page
+<<<<<<< dc42c05507c7823fbfaef0e0657e55e263debd93
+=======
+                containerRequestContext, //containerRequestContext
+>>>>>>> Fixing Pagination
                 dataServlet
         )
 

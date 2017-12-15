@@ -7,7 +7,7 @@ import com.yahoo.bard.webservice.data.ResultSet;
 import com.yahoo.bard.webservice.data.ResultSetSchema;
 import com.yahoo.bard.webservice.util.AllPagesPagination;
 import com.yahoo.bard.webservice.util.Pagination;
-import com.yahoo.bard.webservice.web.AbstractResponse;
+import com.yahoo.bard.webservice.web.apirequest.PaginationHelper;
 import com.yahoo.bard.webservice.web.responseprocessors.MappingResponseProcessor;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
@@ -50,7 +50,7 @@ public class PaginationMapper extends ResultSetMapper {
     @Override
     public ResultSet map(ResultSet resultSet) {
         Pagination<Result> pages = new AllPagesPagination<>(resultSet, paginationParameters);
-        AbstractResponse.addLinks(pages, uriBuilder, responseProcessor);
+        PaginationHelper.addLinks(pages, uriBuilder, responseProcessor);
         //uses map for additional flexibility and robustness, even though it is currently a no-op.
         return new ResultSet(map(resultSet.getSchema()), pages.getPageOfData());
     }

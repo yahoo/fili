@@ -9,6 +9,7 @@ import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.data.DruidQueryBuilder
 import com.yahoo.bard.webservice.data.PartialDataHandler
 import com.yahoo.bard.webservice.data.QueryBuildingTestingResources
+import com.yahoo.bard.webservice.data.filterbuilders.DefaultDruidFilterBuilder
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
 import com.yahoo.bard.webservice.data.volatility.DefaultingVolatileIntervalsService
@@ -40,12 +41,16 @@ class RegisteredLookupDimensionToDimensionSpecSpec extends Specification{
         objectMapper = new ObjectMappersSuite().getMapper()
         resources = new QueryBuildingTestingResources()
         resolver = new DefaultPhysicalTableResolver(new PartialDataHandler(), new DefaultingVolatileIntervalsService())
+<<<<<<< dc42c05507c7823fbfaef0e0657e55e263debd93
         builder = new DruidQueryBuilder(
                 resources.logicalDictionary,
                 resolver,
                 resources.druidFilterBuilder,
                 resources.druidHavingBuilder
         )
+=======
+        builder = new DruidQueryBuilder(resources.logicalDictionary, resolver, new DefaultDruidFilterBuilder())
+>>>>>>> Fixing Pagination
         apiRequest = Mock(DataApiRequest)
         LogicalMetric lm1 = new LogicalMetric(resources.simpleTemplateQuery, new NoOpResultSetMapper(), "lm1", null)
 

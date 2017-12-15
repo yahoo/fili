@@ -158,7 +158,7 @@ class DataPaginationSpec extends BaseDataServletComponentSpec {
 
         then:
         headersAreCorrect(response.getHeaders(), ROWS_PER_PAGE, page, numPages, true)
-        GroovyTestUtils.compareJson(response.readEntity(String), apiResponse)
+        GroovyTestUtils.compareJson(response.readEntity(String), apiResponse, [])
 
         where:
         rowsPerPage = ROWS_PER_PAGE
@@ -202,11 +202,13 @@ class DataPaginationSpec extends BaseDataServletComponentSpec {
         injectDruidResponse(druidResponse)
 
         when: "We send a request that returns fewer results than we want per page"
+        def foo = getQueryParams("$perPage", "1")
+
         Response response = makeAbstractRequest({getQueryParams("$perPage", "1")})
 
         then: "We get all the results in one page, and nothing else"
         headersAreCorrect(response.getHeaders(), perPage, 1, 1, true)
-        GroovyTestUtils.compareJson(response.readEntity(String), apiResponse)
+        GroovyTestUtils.compareJson(response.readEntity(String), apiResponse, [])
 
         where:
         perPage = NUM_ALL_RESULTS + 5

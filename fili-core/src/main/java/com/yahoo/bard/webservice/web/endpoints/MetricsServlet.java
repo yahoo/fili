@@ -170,6 +170,8 @@ public class MetricsServlet extends EndpointServlet {
     @Path("/{metricName}")
     public Response getMetric(
             @PathParam("metricName") String metricName,
+            @QueryParam("format") String format,
+            @QueryParam("filename") String filename,
             @Context final ContainerRequestContext containerRequestContext
     ) {
         UriInfo uriInfo = containerRequestContext.getUriInfo();
@@ -181,7 +183,8 @@ public class MetricsServlet extends EndpointServlet {
 
             apiRequest = new MetricsApiRequestImpl(
                     metricName,
-                    null,
+                    format,
+                    filename,
                     "",
                     "",
                     metricDictionary

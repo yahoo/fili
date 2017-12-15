@@ -114,6 +114,7 @@ import com.yahoo.bard.webservice.web.apirequest.DefaultDataApiRequestFactory;
 import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.JobsApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.MetricsApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.PojoDataApiRequestFactory;
 import com.yahoo.bard.webservice.web.apirequest.SlicesApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.TablesApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.binders.DefaultHavingApiGenerator;
@@ -249,6 +250,8 @@ public abstract class AbstractBinderFactory implements BinderFactory {
 
                 bind(druidWebService).to(DruidWebService.class);
 
+                bind(PojoDataApiRequestFactory.class).to(DataApiRequestFactory.class);
+
                 // A separate web service for metadata
                 DruidWebService metadataDruidWebService = null;
                 if (DRUID_COORDINATOR_METADATA.isOn()) {
@@ -278,11 +281,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 // Build the datasource metadata service containing the data segments
                 bind(getDataSourceMetadataService()).to(DataSourceMetadataService.class);
 
-                // Build the configuration loader and load configuration
-                loader = getConfigurationLoader();
-                loader.load();
-                bindDictionaries(this);
-                bind(buildHavingGenerator(loader)).to(HavingGenerator.class);
+                loadAndBindConfigurations(this);
 
                 // Bind the request mappers
                 bindRequestMappers(this);
@@ -374,9 +373,9 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 // Call post-binding hook to allow for additional binding
                 afterBinding(this);
             }
-
         };
     }
+
 
     /**
      * Binds all the resource dictionaries.
@@ -1207,6 +1206,26 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      */
     protected @NotNull Map<String, RequestMapper> getRequestMappers(ResourceDictionaries resourceDictionaries) {
         return new HashMap<>(0);
+    }
+
+    /**
+     * Load the configuration dictionaries and bind them to their respective classes.
+     *
+     * @param binder The HK2 Binder being initialized
+     */
+    public void loadAndBindConfigurations(AbstractBinder binder) {
+        // Extracted from main build binder to satisfy stylecheck rules on method length
+        loader = getConfigurationLoader();
+        loader.load();
+
+        // Bind the configuration dictionaries
+        binder.bind(loader.getDimensionDictionary()).to(DimensionDictionary.class);
+        binder.bind(loader.getMetricDictionary()).to(MetricDictionary.class);
+        binder.bind(loader.getLogicalTableDictionary()).to(LogicalTableDictionary.class);
+        binder.bind(loader.getPhysicalTableDictionary()).to(PhysicalTableDictionary.class);
+        binder.bind(loader.getDictionaries()).to(ResourceDictionaries.class);
+
+        binder.bind(buildHavingGenerator(loader)).to(HavingGenerator.class);
     }
 
     /**

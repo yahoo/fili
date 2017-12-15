@@ -8,10 +8,7 @@ import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import java.util.LinkedHashSet;
-import java.util.Optional;
 import java.util.Set;
-
-import javax.ws.rs.core.Response;
 
 /**
  * Dimensions API Request. Such an API Request binds, validates, and models the parts of a request to the dimensions
@@ -24,9 +21,7 @@ public interface DimensionsApiRequest extends ApiRequest {
     // CHECKSTYLE:OFF
     DimensionsApiRequest withFormat(ResponseFormatType format);
 
-    DimensionsApiRequest withPaginationParameters(Optional<PaginationParameters> paginationParameters);
-
-    DimensionsApiRequest withBuilder(Response.ResponseBuilder builder);
+    DimensionsApiRequest withPaginationParameters(PaginationParameters paginationParameters);
 
     DimensionsApiRequest withDimensions(LinkedHashSet<Dimension> dimensions);
 
@@ -39,5 +34,6 @@ public interface DimensionsApiRequest extends ApiRequest {
     Dimension getDimension();
 
     Set<ApiFilter> getFilters();
+
     // CHECKSTYLE:ON
 }

@@ -16,7 +16,6 @@ import org.joda.time.Interval;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import javax.ws.rs.core.Response;
@@ -87,7 +86,7 @@ public interface TablesApiRequest extends ApiRequest {
     // CHECKSTYLE:OFF
     TablesApiRequest withFormat(ResponseFormatType format);
 
-    TablesApiRequest withPaginationParameters(Optional<PaginationParameters> paginationParameters);
+    TablesApiRequest withPaginationParameters(PaginationParameters paginationParameters);
 
     TablesApiRequest withBuilder(Response.ResponseBuilder builder);
 

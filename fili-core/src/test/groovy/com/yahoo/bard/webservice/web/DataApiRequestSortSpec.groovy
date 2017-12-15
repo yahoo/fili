@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.web
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn
 import com.yahoo.bard.webservice.druid.model.orderby.SortDirection
+import com.yahoo.bard.webservice.web.apirequest.DefaultSortColumnGenerators
 import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 import com.yahoo.bard.webservice.web.endpoints.DataServlet
 
@@ -94,7 +95,7 @@ class DataApiRequestSortSpec extends Specification {
     @Unroll
     def "Check dateTime column is first in the sort column map #columnDirection "() {
         expect:
-        new TestingDataApiRequestImpl().isDateTimeFirstSortField(columnDirection) == expected
+        DefaultSortColumnGenerators.isDateTimeFirstSortField(columnDirection) == expected
 
         where:
         columnDirection                                                                          | expected

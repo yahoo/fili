@@ -23,6 +23,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
+import com.yahoo.bard.webservice.data.filterbuilders.DefaultDruidFilterBuilder
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.LogicalMetricColumn
 import com.yahoo.bard.webservice.data.metric.MetricColumn
@@ -30,6 +31,7 @@ import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.FilteredAggregation
+import com.yahoo.bard.webservice.druid.model.builders.DruidInFilterBuilder
 import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.model.filter.InFilter
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation
@@ -44,7 +46,6 @@ import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.StrictPhysicalTable
 import com.yahoo.bard.webservice.table.TableGroup
-import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -81,8 +82,8 @@ class ThetaSketchIntersectionReportingResources extends Specification {
         dimensionFields.add(BardDimensionField.DESC)
 
         //Initializing the Sketch field converters
-        FieldConverterSupplier.sketchConverter = new ThetaSketchFieldConverter();
-        FieldConverterSupplier.metricsFilterSetBuilder = new FilteredThetaSketchMetricsHelper();
+        FieldConverterSupplier.sketchConverter = new ThetaSketchFieldConverter()
+        FieldConverterSupplier.metricsFilterSetBuilder = new FilteredThetaSketchMetricsHelper()
 
         propertyDim = new KeyValueStoreDimension(
                 "property",
@@ -127,8 +128,8 @@ class ThetaSketchIntersectionReportingResources extends Specification {
                 SketchSetOperationPostAggFunction.UNION
         )
         ThetaSketchMaker ThetaSketchMaker = new ThetaSketchMaker(new MetricDictionary(), 16384)
-        ArithmeticMaker sumMaker = new ArithmeticMaker(metricDict, ArithmeticPostAggregation.ArithmeticPostAggregationFunction.PLUS);
-        ThetaSketchSetOperationMaker setDifferenceMaker = new ThetaSketchSetOperationMaker(metricDict, SketchSetOperationPostAggFunction.NOT);
+        ArithmeticMaker sumMaker = new ArithmeticMaker(metricDict, ArithmeticPostAggregation.ArithmeticPostAggregationFunction.PLUS)
+        ThetaSketchSetOperationMaker setDifferenceMaker = new ThetaSketchSetOperationMaker(metricDict, SketchSetOperationPostAggFunction.NOT)
         AggregationAverageMaker simpleDailyAverageMaker = new AggregationAverageMaker(metricDict, DAY)
 
         MetricInstance pageViews = new MetricInstance("pageViews", new LongSumMaker(metricDict), "pageViews")
@@ -159,7 +160,7 @@ class ThetaSketchIntersectionReportingResources extends Specification {
         LogicalMetric ratioMetric = new LogicalMetric(foosMetric.templateDruidQuery, foosMetric.calculation, "ratioMetric", "ratioMetric Long Name", "Ratios", "Dummy metric Ratio Metric description")
         metricDict.add(ratioMetric)
 
-        LogicalMetricColumn lmc = new LogicalMetricColumn(foosMetric);
+        LogicalMetricColumn lmc = new LogicalMetricColumn(foosMetric)
 
         columns.add(lmc)
 
@@ -175,7 +176,7 @@ class ThetaSketchIntersectionReportingResources extends Specification {
 
         table = new LogicalTable("NETWORK", DAY, tableGroup, metricDict)
 
-        ArrayNode metricJsonObjArray = mapper.readTree("[{\"filter\":{\"AND\":\"country|id-in[US,IN],property|id-in[114,125]\"},\"name\":\"foo\"},{\"filter\":{},\"name\":\"pageviews\"}]")
+        ArrayNode metricJsonObjArray = (ArrayNode) mapper.readTree("[{\"filter\":{\"AND\":\"country|id-in[US,IN],property|id-in[114,125]\"},\"name\":\"foo\"},{\"filter\":{},\"name\":\"pageviews\"}]")
         JsonNode jsonobject = metricJsonObjArray.get(0)
         filterObj = jsonobject.get("filter")
         filter = new InFilter(countryDim, Lists.asList("US", "IN"))
@@ -184,7 +185,7 @@ class ThetaSketchIntersectionReportingResources extends Specification {
 
         fooPostAggregation = foos.make().templateDruidQuery.getPostAggregations().first()
 
-        dayAvgFoosTdq = dayAvgFoos.make().templateDruidQuery;
+        dayAvgFoosTdq = dayAvgFoos.make().templateDruidQuery
 
         fooNoBarAggregation = fooNoBarInstance.make().templateDruidQuery.aggregations.first()
         Aggregation regFoosAggregation = regFoosInstance.make().templateDruidQuery.aggregations.first()
@@ -194,7 +195,11 @@ class ThetaSketchIntersectionReportingResources extends Specification {
                 fooNoBarAggregation,
                 dimensionDict,
                 table,
-                new TestingDataApiRequestImpl()
+<<<<<<< dc42c05507c7823fbfaef0e0657e55e263debd93
+                new DruidInFilterBuilder()
+=======
+                new DefaultDruidFilterBuilder()
+>>>>>>> Fixing Pagination
         )
         fooNoBarPostAggregationInterim = ThetaSketchSetOperationHelper.makePostAggFromAgg(
                 SketchSetOperationPostAggFunction.INTERSECT,
@@ -207,7 +212,11 @@ class ThetaSketchIntersectionReportingResources extends Specification {
                 regFoosAggregation,
                 dimensionDict,
                 table,
-                new TestingDataApiRequestImpl()
+<<<<<<< dc42c05507c7823fbfaef0e0657e55e263debd93
+                new DruidInFilterBuilder()
+=======
+                new DefaultDruidFilterBuilder()
+>>>>>>> Fixing Pagination
         )
         fooRegFoosPostAggregationInterim = ThetaSketchSetOperationHelper.makePostAggFromAgg(
                 SketchSetOperationPostAggFunction.INTERSECT,

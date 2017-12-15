@@ -3,16 +3,12 @@
 package com.yahoo.bard.webservice.web.apirequest;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.EMPTY_DICTIONARY;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_UNDEFINED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_UNDEFINED;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
-import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.time.Granularity;
-import com.yahoo.bard.webservice.logging.RequestLog;
-import com.yahoo.bard.webservice.logging.TimedPhase;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.web.ApiFilter;
@@ -28,13 +24,12 @@ import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -42,6 +37,7 @@ import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 /**
  * Tables API Request Implementation binds, validates, and models the parts of a request to the table endpoint.
@@ -128,7 +124,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         this.tables = generateTables(tableName, bardConfigResources.getLogicalTableDictionary());
 
         if (tableName != null && granularity != null) {
-            this.granularity = generateGranularity(granularity, bardConfigResources.getGranularityParser());
+            this.granularity = bindGranularity(granularity, bardConfigResources.getGranularityParser());
             this.table = generateTable(tableName, this.granularity, bardConfigResources.getLogicalTableDictionary());
         } else {
             this.table = null;
@@ -256,7 +252,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         this.tables = generateTables(tableName, logicalTableDictionary);
 
         if (tableName != null && granularity != null) {
-            this.granularity = generateGranularity(granularity, bardConfigResources.getGranularityParser());
+            this.granularity = bindGranularity(granularity, bardConfigResources.getGranularityParser());
             this.table = generateTable(tableName, this.granularity, logicalTableDictionary);
         } else {
             this.table = null;
@@ -266,30 +262,31 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         // parse dimensions
         DimensionDictionary dimensionDictionary = bardConfigResources.getDimensionDictionary();
         this.dimensions = generateDimensions(dimensions, dimensionDictionary);
-        validateRequestDimensions(this.dimensions, this.table);
+        ApiRequestValidators.INSTANCE.validateRequestDimensions(this.dimensions, this.table);
 
         // parse metrics
         this.logicalMetrics = generateLogicalMetrics(
                 metrics,
                 bardConfigResources.getMetricDictionary().getScope(Collections.singletonList(tableName))
         );
-        validateMetrics(this.logicalMetrics, this.table);
+        ApiRequestValidators.INSTANCE.validateMetrics(this.logicalMetrics, this.table);
 
+        // parse interval
         // parse interval
         this.intervals = generateIntervals(
                 intervals,
                 this.granularity,
                 generateDateTimeFormatter(
-                        generateTimeZone(
+                        DateAndTimeGenerators.INSTANCE.generateTimeZone(
                                 timeZoneId,
                                 bardConfigResources.getSystemTimeZone()
                         )
                 )
         );
-        validateTimeAlignment(this.granularity, this.intervals);
 
         // parse filters
         this.apiFilters = getFilterGenerator().generate(filters, table, dimensionDictionary);
+        ApiRequestValidators.INSTANCE.validateRequestDimensions(getFilterDimensions(), this.table);
         validateRequestDimensions(getFilterDimensions(), this.table);
 
         LOG.debug(
@@ -343,7 +340,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
     @Deprecated
     private TablesApiRequestImpl(
             ResponseFormatType format,
-            Optional<PaginationParameters> paginationParameters,
+            PaginationParameters paginationParameters,
             LinkedHashSet<LogicalTable> tables,
             LogicalTable table,
             Granularity granularity,
@@ -373,7 +370,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
     private TablesApiRequestImpl(
             ResponseFormatType format,
             String downloadFilename,
-            Optional<PaginationParameters> paginationParameters,
+            PaginationParameters paginationParameters,
             LinkedHashSet<LogicalTable> tables,
             LogicalTable table,
             Granularity granularity,
@@ -424,49 +421,6 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         return generated;
     }
 
-    /**
-     * Extracts the list of metrics from the url metric query string and generates a set of LogicalMetrics.
-     *
-     * @param apiMetricQuery  URL query string containing the metrics separated by ','.
-     * @param metricDictionary  Metric dictionary contains the map of valid metric names and logical metric objects.
-     *
-     * @return Set of metric objects.
-     * @throws BadApiRequestException if the metric dictionary returns a null or if the apiMetricQuery is invalid.
-     */
-    protected LinkedHashSet<LogicalMetric> generateLogicalMetrics(
-            String apiMetricQuery,
-            MetricDictionary metricDictionary
-    ) throws BadApiRequestException {
-        try (TimedPhase timer = RequestLog.startTiming("GeneratingLogicalMetrics")) {
-            LOG.trace("Metric dictionary: {}", metricDictionary);
-
-            if (apiMetricQuery == null || "".equals(apiMetricQuery)) {
-                return new LinkedHashSet<>();
-            }
-            // set of logical metric objects
-            LinkedHashSet<LogicalMetric> generated = new LinkedHashSet<>();
-            List<String> invalidMetricNames = new ArrayList<>();
-
-            List<String> metricApiQuery = Arrays.asList(apiMetricQuery.split(","));
-            for (String metricName : metricApiQuery) {
-                LogicalMetric logicalMetric = metricDictionary.get(metricName);
-
-                // If metric dictionary returns a null, it means the requested metric is not found.
-                if (logicalMetric == null) {
-                    invalidMetricNames.add(metricName);
-                } else {
-                    generated.add(logicalMetric);
-                }
-            }
-
-            if (!invalidMetricNames.isEmpty()) {
-                LOG.debug(METRICS_UNDEFINED.logFormat(invalidMetricNames.toString()));
-                throw new BadApiRequestException(METRICS_UNDEFINED.format(invalidMetricNames.toString()));
-            }
-            LOG.trace("Generated set of logical metric: {}", generated);
-            return generated;
-        }
-    }
 
     @Override
     public Set<LogicalTable> getTables() {
@@ -515,7 +469,12 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
     }
 
     @Override
-    public TablesApiRequest withPaginationParameters(Optional<PaginationParameters> paginationParameters) {
+    public TablesApiRequest withDownloadFilename(String downloadFilename) {
+        return new TablesApiRequestImpl(format, downloadFilename, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
+    }
+
+    @Override
+    public TablesApiRequest withPaginationParameters(PaginationParameters paginationParameters) {
         return new TablesApiRequestImpl(format, downloadFilename, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
     }
 
@@ -529,18 +488,18 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         return new TablesApiRequestImpl(format, downloadFilename, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
     }
 
-    public TablesApiRequest withTable(LogicalTable table) {
-        return new TablesApiRequestImpl(format, downloadFilename, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
-    }
-
-
     @Override
-    public TablesApiRequest withMetrics(LinkedHashSet<LogicalMetric> logicalMetrics) {
+    public TablesApiRequest withTable(LogicalTable table) {
         return new TablesApiRequestImpl(format, downloadFilename, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
     }
 
     @Override
     public TablesApiRequest withGranularity(Granularity granularity) {
+        return new TablesApiRequestImpl(format, downloadFilename, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
+    }
+
+    @Override
+    public TablesApiRequest withMetrics(LinkedHashSet<LogicalMetric> logicalMetrics) {
         return new TablesApiRequestImpl(format, downloadFilename, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
     }
 
@@ -551,17 +510,14 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
     @Override
     @Deprecated
     public TablesApiRequest withIntervals(Set<Interval> intervals) {
-            return new TablesApiRequestImpl(format, downloadFilename, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, new ArrayList<>(intervals), apiFilters);
+        return withIntervals(new ArrayList<>(intervals));
     }
+
     @Override
     public TablesApiRequest withIntervals(List<Interval> intervals) {
         return new TablesApiRequestImpl(format, downloadFilename, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
     }
 
-    @Override
-    public TablesApiRequest withDownloadFilename(String downloadFilename) {
-        return new TablesApiRequestImpl(format, downloadFilename, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
-    }
 
     @Override
     public TablesApiRequest withFilters(Map<Dimension, Set<ApiFilter>> filters) {

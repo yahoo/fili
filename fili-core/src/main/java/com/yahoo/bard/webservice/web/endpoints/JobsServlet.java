@@ -87,7 +87,7 @@ public class JobsServlet extends EndpointServlet {
     private static final String PER_PAGE = "perPage";
 
     private final ApiJobStore apiJobStore;
-    private final RequestMapper requestMapper;
+    private final RequestMapper<JobsApiRequest> requestMapper;
     private final JobPayloadBuilder jobPayloadBuilder;
     private final PreResponseStore preResponseStore;
     private final BroadcastChannel<String> broadcastChannel;
@@ -116,7 +116,7 @@ public class JobsServlet extends EndpointServlet {
             JobPayloadBuilder jobPayloadBuilder,
             PreResponseStore preResponseStore,
             BroadcastChannel<String> broadcastChannel,
-            @Named(JobsApiRequest.REQUEST_MAPPER_NAMESPACE) RequestMapper requestMapper,
+            @Named(JobsApiRequest.REQUEST_MAPPER_NAMESPACE) RequestMapper<JobsApiRequest> requestMapper,
             HttpResponseMaker httpResponseMaker,
             ResponseFormatResolver formatResolver,
             @Named(JobsApiRequest.EXCEPTION_HANDLER_NAMESPACE) MetadataExceptionHandler exceptionHandler
@@ -159,7 +159,7 @@ public class JobsServlet extends EndpointServlet {
             @Suspended AsyncResponse asyncResponse
     ) {
         Observable<Response> observableResponse;
-    JobsApiRequestImpl apiRequest = null;
+        JobsApiRequestImpl apiRequest = null;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new JobRequest("all"));
@@ -185,14 +185,13 @@ public class JobsServlet extends EndpointServlet {
             JobsApiRequestImpl jobsApiRequest = apiRequest;
 
             Function<Collection<Map<String, String>>, AllPagesPagination<Map<String, String>>> paginationFactory =
-                    jobsApiRequest.getAllPagesPaginationFactory(
-                            jobsApiRequest.getPaginationParameters()
-                                    .orElse(
-                                            ApiRequestImpl.DEFAULT_PAGINATION
-                                    )
-                    );
+                    data -> new AllPagesPagination<>(data, jobsApiRequest.getPaginationParameters()
+                            .orElse(
+                                    ApiRequestImpl.DEFAULT_PAGINATION
+                            ));
 
             observableResponse = apiRequest.getJobViews().toList()
+<<<<<<< b07b1ca280a5768b6ff28f1150c6778fd13ea6ab
                     .map(jobs -> paginateAndFormatResponse(
                             jobsApiRequest,
                             containerRequestContext,
@@ -200,6 +199,10 @@ public class JobsServlet extends EndpointServlet {
                             "jobs",
                             null
                     ))
+=======
+                    .map(jobs -> jobsApiRequest.getPage(paginationFactory.apply(jobs)))
+                    .map(result -> formatResponse(jobsApiRequest, result, "jobs", Response.status(Response.Status.OK), null))
+>>>>>>> temp
                     .defaultIfEmpty(getResponse("{}"))
                     .onErrorReturn(this::getErrorResponse);
         } catch (Throwable t) {
@@ -493,7 +496,7 @@ public class JobsServlet extends EndpointServlet {
                 .flatMap(preResponse -> handlePreResponseWithError(
                         preResponse,
                         containerRequestContext.getUriInfo(),
-                        apiRequest.getPaginationParameters()
+                        apiRequest.getPaginationParameters().orElse(null)
                 ))
                 .subscribe(
                         new HttpResponseChannel(
@@ -518,7 +521,7 @@ public class JobsServlet extends EndpointServlet {
     protected Observable<PreResponse> handlePreResponseWithError(
             PreResponse preResponse,
             UriInfo uriInfo,
-            Optional<PaginationParameters> paginationParameters
+            PaginationParameters paginationParameters
     ) {
         ResponseContext responseContext = preResponse.getResponseContext();
 
@@ -534,14 +537,13 @@ public class JobsServlet extends EndpointServlet {
             return Observable.error(responseException);
         }
 
-        return paginationParameters
-                .map(pageParams -> new AllPagesPagination<>(preResponse.getResultSet(), pageParams))
-                .map(page -> new PreResponse(
-                        new ResultSet(preResponse.getResultSet().getSchema(), page.getPageOfData()),
-                        addPaginationInfoToResponseContext(responseContext, uriInfo, page)
-                ))
-                .map(Observable::just)
-                .orElse(Observable.just(preResponse));
+        Pagination<Result> pagination = new AllPagesPagination<>(preResponse.getResultSet(), paginationParameters);
+        ResultSet pagedResultSet = new ResultSet(preResponse.getResultSet().getSchema(), pagination.getPageOfData());
+
+        return Observable.just(new PreResponse(
+                pagedResultSet,
+                addPaginationInfoToResponseContext(responseContext, uriInfo, pagination)
+        ));
     }
 
     /**

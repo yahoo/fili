@@ -2,19 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest;
 
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.ACCEPT_FORMAT_INVALID;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSIONS_NOT_IN_TABLE;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSIONS_UNDEFINED;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTERVAL_INVALID;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTERVAL_MISSING;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTERVAL_ZERO_LENGTH;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_ASYNC_AFTER;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_INTERVAL_GRANULARITY;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_TIME_ZONE;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_NOT_IN_TABLE;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_GRANULARITY_MISMATCH;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TIME_ALIGNMENT;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.UNKNOWN_GRANULARITY;
 
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
@@ -22,78 +11,81 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
-import com.yahoo.bard.webservice.data.time.AllGranularity;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.data.time.GranularityParser;
-import com.yahoo.bard.webservice.data.time.TimeGrain;
-import com.yahoo.bard.webservice.logging.RequestLog;
-import com.yahoo.bard.webservice.logging.TimedPhase;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.table.TableIdentifier;
 import com.yahoo.bard.webservice.util.AllPagesPagination;
-import com.yahoo.bard.webservice.util.GranularityParseException;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
-import com.yahoo.bard.webservice.web.BadPaginationException;
-import com.yahoo.bard.webservice.web.DefaultResponseFormatType;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
-import com.yahoo.bard.webservice.web.TimeMacro;
+import com.yahoo.bard.webservice.web.apirequest.binders.DefaultGranularityBinder;
+import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.joda.time.Duration;
 import org.joda.time.Interval;
-import org.joda.time.Period;
 import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.PathSegment;
+import javax.ws.rs.core.Response;
 
 /**
  * API Request. Abstract class offering default implementations for the common components of API request objects.
  */
 public abstract class ApiRequestImpl implements ApiRequest {
-    private static final Logger LOG = LoggerFactory.getLogger(ApiRequestImpl.class);
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+
+    private static final Logger LOG = LoggerFactory.getLogger(ApiRequestImpl.class);
+
     protected static final String COMMA_AFTER_BRACKET_PATTERN = "(?<=]),";
 
     private static final int DEFAULT_PER_PAGE = SYSTEM_CONFIG.getIntProperty(
             SYSTEM_CONFIG.getPackageVariableName("default_per_page")
     );
     private static final int DEFAULT_PAGE = 1;
+
     public static final PaginationParameters DEFAULT_PAGINATION = new PaginationParameters(
             DEFAULT_PER_PAGE,
             DEFAULT_PAGE
     );
+
     protected static final String SYNCHRONOUS_REQUEST_FLAG = "never";
     protected static final String ASYNCHRONOUS_REQUEST_FLAG = "always";
 
     protected final ResponseFormatType format;
-    protected final Optional<PaginationParameters> paginationParameters;
-    protected final long asyncAfter;
+    PaginationParameters paginationParameters;
+
+    protected final Long asyncAfter;
     protected final String downloadFilename;
+
+    //PaginationHelper paginationHelper;
+
+    private static Supplier<Response.ResponseBuilder> DEFAULT_RESPONSE_SOURCE =
+            () -> Response.status(Response.Status.OK);
+
+    DefaultGranularityBinder granularityBinder;
 
     /**
      * Parses the API request URL and generates the API request object.
      *
      * @param format  response data format JSON or CSV. Default is JSON.
      * @param asyncAfter  How long the user is willing to wait for a synchronous request in milliseconds, if null
+
      * defaults to the system config {@code default_asyncAfter}
      * @param perPage  number of rows to display per page of results. If present in the original request, must be a
      * positive integer. If not present, must be the empty string.
@@ -110,14 +102,14 @@ public abstract class ApiRequestImpl implements ApiRequest {
             @NotNull String perPage,
             @NotNull String page
     ) throws BadApiRequestException {
-        this(format, null, asyncAfter, perPage, page);
+        this(format,  null, asyncAfter, perPage, page);
     }
 
     /**
      * Parses the API request URL and generates the API request object.
      *
-     * @param format  response data format JSON or CSV. Default is JSON.
-     * @param asyncAfter  How long the user is willing to wait for a synchronous request in milliseconds, if null
+     * @param formatRequest  response data format JSON or CSV. Default is JSON.
+     * @param asyncAfterRequest  How long the user is willing to wait for a synchronous request in milliseconds, if null
      * defaults to the system config {@code default_asyncAfter}
      * @param downloadFilename  The filename for the response to be downloaded as. If null or empty indicates response
      * should not be downloaded.
@@ -129,24 +121,22 @@ public abstract class ApiRequestImpl implements ApiRequest {
      * @throws BadApiRequestException if pagination parameters in the API request are not positive integers.
      */
     public ApiRequestImpl(
-            String format,
+            String formatRequest,
             String downloadFilename,
-            String asyncAfter,
+            String asyncAfterRequest,
             @NotNull String perPage,
             @NotNull String page
     ) throws BadApiRequestException {
-        this.format = generateAcceptFormat(format);
-        this.paginationParameters = generatePaginationParameters(perPage, page);
-        this.asyncAfter = generateAsyncAfter(
-                asyncAfter == null ?
-                        SYSTEM_CONFIG.getStringProperty(SYSTEM_CONFIG.getPackageVariableName("default_asyncAfter")) :
-                        asyncAfter
-        );
+        this.format = generateAcceptFormat(formatRequest);
         this.downloadFilename = downloadFilename;
+        this.asyncAfter = generateAsyncAfter(asyncAfterRequest);
+        this.paginationParameters =
+                DefaultOutputFormatGenerators.INSTANCE.generatePaginationParameters(perPage, page).orElse(null);
     }
 
     /**
-     * Parses the API request URL and generates the API request object. Defaults asyncAfter to never.
+     * Parses the API request URL and generates the API request object. Defaults asyncAfter to never and filename to
+     * null.
      *
      * @param format  response data format JSON or CSV. Default is JSON.
      * @param perPage  number of rows to display per page of results. If present in the original request, must be a
@@ -164,6 +154,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
         this(format, null, SYNCHRONOUS_REQUEST_FLAG, perPage, page);
     }
 
+
     /**
      * All argument constructor, meant to be used for rewriting apiRequest.
      *
@@ -175,8 +166,8 @@ public abstract class ApiRequestImpl implements ApiRequest {
     @Deprecated
     protected ApiRequestImpl(
             ResponseFormatType format,
-            long asyncAfter,
-            Optional<PaginationParameters> paginationParameters
+            Long asyncAfter,
+            PaginationParameters paginationParameters
     ) {
         this.format = format;
         this.asyncAfter = asyncAfter;
@@ -197,12 +188,27 @@ public abstract class ApiRequestImpl implements ApiRequest {
             ResponseFormatType format,
             String downloadFilename,
             long asyncAfter,
-            Optional<PaginationParameters> paginationParameters
+            PaginationParameters paginationParameters
     ) {
         this.format = format;
         this.downloadFilename = downloadFilename;
         this.asyncAfter = asyncAfter;
         this.paginationParameters = paginationParameters;
+    }
+
+    @Override
+    public ResponseFormatType getFormat() {
+        return format;
+    }
+
+    @Override
+    public Optional<PaginationParameters> getPaginationParameters() {
+        return Optional.ofNullable(paginationParameters);
+    }
+
+    @Override
+    public Long getAsyncAfter() {
+        return asyncAfter;
     }
 
     /**
@@ -215,17 +221,12 @@ public abstract class ApiRequestImpl implements ApiRequest {
      * @return A granularity instance with time zone information
      * @throws BadApiRequestException if the string matches no meaningful granularity
      */
-    protected Granularity generateGranularity(
+    protected Granularity bindGranularity(
             @NotNull String granularity,
             @NotNull DateTimeZone dateTimeZone,
             @NotNull GranularityParser granularityParser
     ) throws BadApiRequestException {
-        try {
-            return granularityParser.parseGranularity(granularity, dateTimeZone);
-        } catch (GranularityParseException e) {
-            LOG.error(UNKNOWN_GRANULARITY.logFormat(granularity), granularity);
-            throw new BadApiRequestException(e.getMessage());
-        }
+        return granularityBinder.bindGranularity(granularity, dateTimeZone, granularityParser);
     }
 
     /**
@@ -237,14 +238,9 @@ public abstract class ApiRequestImpl implements ApiRequest {
      * @return A granularity instance without time zone information
      * @throws BadApiRequestException if the string matches no meaningful granularity
      */
-    protected Granularity generateGranularity(String granularity, GranularityParser granularityParser)
+    protected Granularity bindGranularity(String granularity, GranularityParser granularityParser)
             throws BadApiRequestException {
-        try {
-            return granularityParser.parseGranularity(granularity);
-        } catch (GranularityParseException e) {
-            LOG.error(UNKNOWN_GRANULARITY.logFormat(granularity), granularity);
-            throw new BadApiRequestException(e.getMessage(), e);
-        }
+        return DefaultGranularityGenerators.generateGranularity(granularity, granularityParser);
     }
 
     /**
@@ -261,40 +257,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
             List<PathSegment> apiDimensions,
             DimensionDictionary dimensionDictionary
     ) throws BadApiRequestException {
-        try (TimedPhase timer = RequestLog.startTiming("GeneratingDimensions")) {
-            // Dimensions are optional hence check if dimensions are requested.
-            if (apiDimensions == null || apiDimensions.isEmpty()) {
-                return new LinkedHashSet<>();
-            }
-
-            // set of dimension names (strings)
-            List<String> dimApiNames = apiDimensions.stream()
-                    .map(PathSegment::getPath)
-                    .filter(s -> !s.isEmpty())
-                    .collect(Collectors.toList());
-
-            // set of dimension objects
-            LinkedHashSet<Dimension> generated = new LinkedHashSet<>();
-            List<String> invalidDimensions = new ArrayList<>();
-            for (String dimApiName : dimApiNames) {
-                Dimension dimension = dimensionDictionary.findByApiName(dimApiName);
-
-                // If dimension dictionary returns a null, it means the requested dimension is not found.
-                if (dimension == null) {
-                    invalidDimensions.add(dimApiName);
-                } else {
-                    generated.add(dimension);
-                }
-            }
-
-            if (!invalidDimensions.isEmpty()) {
-                LOG.debug(DIMENSIONS_UNDEFINED.logFormat(invalidDimensions.toString()));
-                throw new BadApiRequestException(DIMENSIONS_UNDEFINED.format(invalidDimensions.toString()));
-            }
-
-            LOG.trace("Generated set of dimension: {}", generated);
-            return generated;
-        }
+        return DefaultDimensionGenerators.INSTANCE.generateDimensions(apiDimensions, dimensionDictionary);
     }
 
     /**
@@ -307,30 +270,8 @@ public abstract class ApiRequestImpl implements ApiRequest {
      */
     protected void validateRequestDimensions(Set<Dimension> requestDimensions, LogicalTable table)
             throws BadApiRequestException {
-        // Requested dimensions must lie in the logical table
-        requestDimensions = new HashSet<>(requestDimensions);
-        requestDimensions.removeAll(table.getDimensions());
-
-        if (!requestDimensions.isEmpty()) {
-            List<String> dimensionNames = requestDimensions.stream()
-                    .map(Dimension::getApiName)
-                    .collect(Collectors.toList());
-            LOG.debug(DIMENSIONS_NOT_IN_TABLE.logFormat(dimensionNames, table.getName()));
-            throw new BadApiRequestException(DIMENSIONS_NOT_IN_TABLE.format(dimensionNames, table.getName()));
-        }
+        ApiRequestValidators.INSTANCE.validateRequestDimensions(requestDimensions, table);
     }
-
-    /**
-     * Given a single dimension filter string, generate a metric name extension.
-     *
-     * @param filterString  Single dimension filter string.
-     *
-     * @return Metric name extension created for the filter.
-     */
-    protected String generateMetricName(String filterString) {
-        return filterString.replace("|", "_").replace("-", "_").replace(",", "_").replace("]", "").replace("[", "_");
-    }
-
     /**
      * Extracts the list of metrics from the url metric query string and generates a set of LogicalMetrics.
      * <p>
@@ -345,23 +286,9 @@ public abstract class ApiRequestImpl implements ApiRequest {
     protected LinkedHashSet<LogicalMetric> generateLogicalMetrics(
             String apiMetricQuery,
             MetricDictionary metricDictionary
+
     ) {
-        LinkedHashSet<LogicalMetric> metrics = new LinkedHashSet<>();
-        List<String> invalidMetricNames = new ArrayList<>();
-        for (String metricName : apiMetricQuery.split(",")) {
-            LogicalMetric logicalMetric = metricDictionary.get(metricName);
-            if (logicalMetric == null) {
-                invalidMetricNames.add(metricName);
-            } else {
-                metrics.add(logicalMetric);
-            }
-        }
-        if (!invalidMetricNames.isEmpty()) {
-            String message = ErrorMessageFormat.METRICS_UNDEFINED.logFormat(invalidMetricNames);
-            LOG.error(message);
-            throw new BadApiRequestException(message);
-        }
-        return metrics;
+        return DefaultLogicalMetricsGenerators.INSTANCE.generateLogicalMetrics(apiMetricQuery, metricDictionary);
     }
 
     /**
@@ -430,76 +357,28 @@ public abstract class ApiRequestImpl implements ApiRequest {
             Granularity granularity,
             DateTimeFormatter dateTimeFormatter
     ) throws BadApiRequestException {
-        try (TimedPhase timer = RequestLog.startTiming("GeneratingIntervals")) {
-            List<Interval> generated = new ArrayList<>();
-            if (apiIntervalQuery == null || apiIntervalQuery.equals("")) {
-                LOG.debug(INTERVAL_MISSING.logFormat());
-                throw new BadApiRequestException(INTERVAL_MISSING.format());
-            }
-            List<String> apiIntervals = Arrays.asList(apiIntervalQuery.split(","));
-            // Split each interval string into the start and stop instances, parse them, and add the interval to the
-            // list
+        return DateAndTimeGenerators.INSTANCE.generateIntervals(apiIntervalQuery, granularity, dateTimeFormatter);
+    }
 
-            for (String apiInterval : apiIntervals) {
-                String[] split = apiInterval.split("/");
-
-                // Check for both a start and a stop
-                if (split.length != 2) {
-                    String message = "Start and End dates are required.";
-                    LOG.debug(INTERVAL_INVALID.logFormat(apiIntervalQuery, message));
-                    throw new BadApiRequestException(INTERVAL_INVALID.format(apiIntervalQuery, message));
-                }
-
-                try {
-                    String start = split[0].toUpperCase(Locale.ENGLISH);
-                    String end = split[1].toUpperCase(Locale.ENGLISH);
-                    //If start & end intervals are period then marking as invalid interval.
-                    //Becacuse either one should be macro or actual date to generate an interval
-                    if (start.startsWith("P") && end.startsWith("P")) {
-                        LOG.debug(INTERVAL_INVALID.logFormat(start));
-                        throw new BadApiRequestException(INTERVAL_INVALID.format(apiInterval));
-                    }
-
-                    Interval interval;
-                    //If start interval is period, then create new interval with computed end date
-                    //possible end interval could be next,current, date
-                    if (start.startsWith("P")) {
-                        interval = new Interval(
-                                Period.parse(start),
-                                getAsDateTime(now, granularity, split[1], dateTimeFormatter)
-                        );
-                        //If end string is period, then create an interval with the computed start date
-                        //Possible start & end string could be a macro or an ISO 8601 DateTime
-                    } else if (end.startsWith("P")) {
-                        interval = new Interval(
-                                getAsDateTime(now, granularity, split[0], dateTimeFormatter),
-                                Period.parse(end)
-                        );
-                    } else {
-                        //start and end interval could be either macros or actual datetime
-                        interval = new Interval(
-                                getAsDateTime(now, granularity, split[0], dateTimeFormatter),
-                                getAsDateTime(now, granularity, split[1], dateTimeFormatter)
-                        );
-                    }
-
-                    // Zero length intervals are invalid
-                    if (interval.toDuration().equals(Duration.ZERO)) {
-                        LOG.debug(INTERVAL_ZERO_LENGTH.logFormat(apiInterval));
-                        throw new BadApiRequestException(INTERVAL_ZERO_LENGTH.format(apiInterval));
-                    }
-                    generated.add(interval);
-                } catch (IllegalArgumentException iae) {
-                    // Handle poor JodaTime message (special case)
-                    String internalMessage = iae.getMessage().equals("The end instant must be greater the start") ?
-                            "The end instant must be greater than the start instant" :
-                            iae.getMessage();
-                    LOG.debug(INTERVAL_INVALID.logFormat(apiIntervalQuery, internalMessage), iae);
-                    throw new BadApiRequestException(INTERVAL_INVALID.format(apiIntervalQuery, internalMessage), iae);
-                }
-            }
-            return generated;
-        }
+    /**
+     * Generates filter objects on the based on the filter query in the api request.
+     *
+     * @param filterQuery  Expects a URL filter query String in the format:
+     * (dimension name).(fieldname)-(operation):[?(value or comma separated values)]?
+     * @param table  The logical table for the data request
+     * @param dimensionDictionary  DimensionDictionary
+     *
+     * @return Set of filter objects.
+     * @throws BadApiRequestException if the filter query string does not match required syntax, or the filter
+     * contains a 'startsWith' or 'contains' operation while the BardFeatureFlag.DATA_STARTS_WITH_CONTAINS_ENABLED is
+     * off.
+     */
+    public ApiFilters generateFilters(
+            String filterQuery,
+            LogicalTable table,
+            DimensionDictionary dimensionDictionary
+    ) throws BadApiRequestException {
+        return DefaultFilterGenerator.generateFilters(filterQuery, table, dimensionDictionary);
     }
 
     /**
@@ -520,16 +399,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
             String dateText,
             DateTimeFormatter timeFormatter
     ) throws BadApiRequestException {
-        //If granularity is all and dateText is macro, then throw an exception
-        TimeMacro macro = TimeMacro.forName(dateText);
-        if (macro != null) {
-            if (granularity instanceof AllGranularity) {
-                LOG.debug(INVALID_INTERVAL_GRANULARITY.logFormat(macro, dateText));
-                throw new BadApiRequestException(INVALID_INTERVAL_GRANULARITY.format(macro, dateText));
-            }
-            return macro.getDateTime(now, (TimeGrain) granularity);
-        }
-        return DateTime.parse(dateText, timeFormatter);
+        return DateAndTimeGenerators.getAsDateTime(now, granularity, dateText, timeFormatter);
     }
 
     /**
@@ -540,37 +410,8 @@ public abstract class ApiRequestImpl implements ApiRequest {
      *
      * @return the request's TimeZone
      */
-    protected DateTimeZone generateTimeZone(String timeZoneId, DateTimeZone systemTimeZone) {
-        try (TimedPhase timer = RequestLog.startTiming("generatingTimeZone")) {
-            if (timeZoneId == null) {
-                return systemTimeZone;
-            }
-            try {
-                return DateTimeZone.forID(timeZoneId);
-            } catch (IllegalArgumentException ignored) {
-                LOG.debug(INVALID_TIME_ZONE.logFormat(timeZoneId));
-                throw new BadApiRequestException(INVALID_TIME_ZONE.format(timeZoneId));
-            }
-        }
-    }
-
-    /**
-     * Throw an exception if any of the intervals are not accepted by this granularity.
-     *
-     * @param granularity  The granularity whose alignment is being tested.
-     * @param intervals  The intervals being tested.
-     *
-     * @throws BadApiRequestException if the granularity does not align to the intervals
-     */
-    protected static void validateTimeAlignment(
-            Granularity granularity,
-            List<Interval> intervals
-    ) throws BadApiRequestException {
-        if (!granularity.accepts(intervals)) {
-            String alignmentDescription = granularity.getAlignmentDescription();
-            LOG.debug(TIME_ALIGNMENT.logFormat(intervals, granularity, alignmentDescription));
-            throw new BadApiRequestException(TIME_ALIGNMENT.format(intervals, granularity, alignmentDescription));
-        }
+    protected DateTimeZone bindTimeZone(String timeZoneId, DateTimeZone systemTimeZone) {
+        return granularityBinder.bindTimeZone(timeZoneId, systemTimeZone);
     }
 
     /**
@@ -582,35 +423,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
      * @throws BadApiRequestException if the requested format is not found.
      */
     protected ResponseFormatType generateAcceptFormat(String format) throws BadApiRequestException {
-        try {
-            return format == null ?
-                    DefaultResponseFormatType.JSON :
-                    DefaultResponseFormatType.valueOf(format.toUpperCase(Locale.ENGLISH));
-        } catch (IllegalArgumentException e) {
-            LOG.error(ACCEPT_FORMAT_INVALID.logFormat(format), e);
-            throw new BadApiRequestException(ACCEPT_FORMAT_INVALID.format(format));
-        }
-    }
-
-    /**
-     * Builds the paginationParameters object, if the request provides both a perPage and page field.
-     *
-     * @param perPage  The number of rows per page.
-     * @param page  The page to display.
-     *
-     * @return An Optional wrapping a PaginationParameters if both 'perPage' and 'page' exist.
-     * @throws BadApiRequestException if 'perPage' or 'page' is not a positive integer, or if either one is empty
-     * string but not both.
-     */
-    protected Optional<PaginationParameters> generatePaginationParameters(String perPage, String page)
-            throws BadApiRequestException {
-        try {
-            return "".equals(perPage) && "".equals(page) ?
-                    Optional.empty() :
-                    Optional.of(new PaginationParameters(perPage, page));
-        } catch (BadPaginationException invalidParameters) {
-            throw new BadApiRequestException(invalidParameters.getMessage());
-        }
+        return DefaultOutputFormatGenerators.INSTANCE.generateAcceptFormat(format);
     }
 
     /**
@@ -632,7 +445,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
 
         // check if requested logical table grain pair exists
         if (generated == null) {
-            String msg = TABLE_GRANULARITY_MISMATCH.logFormat(granularity, tableName);
+            String msg = ErrorMessageFormat.TABLE_GRANULARITY_MISMATCH.logFormat(granularity, tableName);
             LOG.error(msg);
             throw new BadApiRequestException(msg);
         }
@@ -646,23 +459,8 @@ public abstract class ApiRequestImpl implements ApiRequest {
         return Optional.ofNullable(downloadFilename);
     }
 
-    @Override
-    public ResponseFormatType getFormat() {
-        return format;
-    }
-
-    @Override
-    public Optional<PaginationParameters> getPaginationParameters() {
-        return paginationParameters;
-    }
-
-    @Override
-    public Long getAsyncAfter() {
-        return asyncAfter;
-    }
-
     @Deprecated
-    public PaginationParameters getDefaultPagination() {
+    public PaginationParameters getDefaultPaginationParams() {
         return DEFAULT_PAGINATION;
     }
 
@@ -692,13 +490,9 @@ public abstract class ApiRequestImpl implements ApiRequest {
      * @throws BadApiRequestException if asyncAfterString is neither the string representation of a natural number, nor
      * {@code never}
      */
-    protected long generateAsyncAfter(String asyncAfterString) throws BadApiRequestException {
+    protected Long generateAsyncAfter(String asyncAfterString) throws BadApiRequestException {
         try {
-            return asyncAfterString.equals(SYNCHRONOUS_REQUEST_FLAG) ?
-                    SYNCHRONOUS_ASYNC_AFTER_VALUE :
-                    asyncAfterString.equals(ASYNCHRONOUS_REQUEST_FLAG) ?
-                            ASYNCHRONOUS_ASYNC_AFTER_VALUE :
-                            Long.parseLong(asyncAfterString);
+            return DefaultOutputFormatGenerators.INSTANCE.generateAsyncAfter(asyncAfterString);
         } catch (NumberFormatException e) {
             LOG.debug(INVALID_ASYNC_AFTER.logFormat(asyncAfterString), e);
             throw new BadApiRequestException(INVALID_ASYNC_AFTER.format(asyncAfterString), e);

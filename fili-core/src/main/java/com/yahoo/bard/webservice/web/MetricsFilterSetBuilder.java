@@ -9,11 +9,14 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.aggregation.FilteredAggregation;
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
+import com.yahoo.bard.webservice.druid.model.filter.MultiClauseFilter;
+import com.yahoo.bard.webservice.druid.model.filter.NotFilter;
+import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationPostAggFunction;
 import com.yahoo.bard.webservice.table.LogicalTable;
-import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -49,7 +52,6 @@ public interface MetricsFilterSetBuilder {
      * <pre>{@code {"AND":{"dim2|id-in":["abc","xyz"],"dim3|id-in":["mobile","tablet"]}},"name":"metric"} </pre>
      * @param dimensionDictionary  Dimension dictionary to look the dimension up in
      * @param table  The logical table for the data request
-     * @param apiRequest  The data api request that will be used to generate the filters
      *
      * @return A Logical Metric that is filtered
      * @throws FilterBuilderException if the dimension mentioned in the
@@ -59,8 +61,8 @@ public interface MetricsFilterSetBuilder {
             LogicalMetric logicalMetric,
             JsonNode metricFilterObject,
             DimensionDictionary dimensionDictionary,
-            LogicalTable table,
-            DataApiRequest apiRequest
+            LogicalTable table
+
     ) throws FilterBuilderException;
 
     /**
@@ -118,7 +120,7 @@ public interface MetricsFilterSetBuilder {
      * @param metricFilterObject  Metric filter associated with the metric
      * @param dimensionDictionary  Dimension dictionary to look the dimension up in
      * @param table  The logical table for the data request
-     * @param apiRequest  The data api request that will be used to generate the filters
+     * @param filterBuilder  The filter builder that will be used to generate the filters
      *
      * @return updated query which contains filtered aggregations
      * @throws FilterBuilderException if the dimension row in the metric
@@ -129,7 +131,7 @@ public interface MetricsFilterSetBuilder {
             JsonNode metricFilterObject,
             DimensionDictionary dimensionDictionary,
             LogicalTable table,
-            DataApiRequest apiRequest
+            DruidFilterBuilder filterBuilder
     ) throws FilterBuilderException;
 
     /**
@@ -171,7 +173,7 @@ public interface MetricsFilterSetBuilder {
      * FilteredAggregation
      * @param dimensionDictionary  Dimension dictionary to look the dimension up in
      * @param table  The logical table for the data request
-     * @param apiRequest  The data api request that will be used to generate the filters
+     * @param filterBuilder  The filter builder
      *
      * @return A set of FilteredAggregators for the given aggregator and Filter
      * @throws FilterBuilderException if the dimension row in the metric filter is not found or other error occurs.
@@ -181,7 +183,7 @@ public interface MetricsFilterSetBuilder {
             Aggregation aggregation,
             DimensionDictionary dimensionDictionary,
             LogicalTable table,
-            DataApiRequest apiRequest
+            DruidFilterBuilder filterBuilder
     ) throws FilterBuilderException;
 
     /**
@@ -210,5 +212,17 @@ public interface MetricsFilterSetBuilder {
      *
      * @return Set of dimensions belonging to a Filter
      */
-    Set<Dimension> gatherFilterDimensions(Filter filter, Set<Dimension> dimensions);
+    default Set<Dimension> gatherFilterDimensions(Filter filter, Set<Dimension> dimensions) {
+
+        if (filter instanceof SelectorFilter) {
+            dimensions.add(((SelectorFilter) filter).getDimension());
+        } else if (filter instanceof MultiClauseFilter) {
+            for (Filter multiclauseFilter: ((MultiClauseFilter) filter).getFields()) {
+                gatherFilterDimensions(multiclauseFilter, dimensions);
+            }
+        } else if (filter instanceof NotFilter) {
+            gatherFilterDimensions(((NotFilter) filter).getField(), dimensions);
+        }
+        return dimensions;
+    }
 }

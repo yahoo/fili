@@ -20,12 +20,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.LinkedHashSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.core.Response;
 
 /**
  * Dimension API Request Implementation binds, validates, and models the parts of a request to the dimension endpoint.
@@ -138,14 +136,13 @@ public class DimensionsApiRequestImpl extends ApiRequestImpl implements Dimensio
     @Deprecated
     private DimensionsApiRequestImpl(
             ResponseFormatType format,
-            Optional<PaginationParameters> paginationParameters,
+            PaginationParameters paginationParameters,
             Iterable<Dimension> dimensions,
             Iterable<ApiFilter> filters
     ) {
-        super(format, SYNCHRONOUS_ASYNC_AFTER_VALUE, paginationParameters);
-        this.dimensions = Sets.newLinkedHashSet(dimensions);
-        this.filters = Sets.newLinkedHashSet(filters);
+        this(format, null, null, dimensions, filters);
     }
+
     /**
      * All argument constructor, meant to be used for rewriting apiRequest.
      *
@@ -159,7 +156,7 @@ public class DimensionsApiRequestImpl extends ApiRequestImpl implements Dimensio
     private DimensionsApiRequestImpl(
             ResponseFormatType format,
             String downloadFilename,
-            Optional<PaginationParameters> paginationParameters,
+            PaginationParameters paginationParameters,
             Iterable<Dimension> dimensions,
             Iterable<ApiFilter> filters
     ) {
@@ -264,12 +261,7 @@ public class DimensionsApiRequestImpl extends ApiRequestImpl implements Dimensio
     }
 
     @Override
-    public DimensionsApiRequest withPaginationParameters(Optional<PaginationParameters> paginationParameters) {
-        return new DimensionsApiRequestImpl(format, downloadFilename, paginationParameters, dimensions, filters);
-    }
-
-    @Override
-    public DimensionsApiRequest withBuilder(Response.ResponseBuilder builder) {
+    public DimensionsApiRequest withDownloadFilename(String downloadFilename) {
         return new DimensionsApiRequestImpl(format, downloadFilename, paginationParameters, dimensions, filters);
     }
 
@@ -284,13 +276,13 @@ public class DimensionsApiRequestImpl extends ApiRequestImpl implements Dimensio
     }
 
     @Override
-    public DimensionsApiRequest withDownloadFilename(String downloadFilename) {
+    public DimensionsApiRequest withPaginationParameters(PaginationParameters paginationParameters) {
         return new DimensionsApiRequestImpl(format, downloadFilename, paginationParameters, dimensions, filters);
     }
 
     @Override
     public LinkedHashSet<Dimension> getDimensions() {
-        return this.dimensions;
+        return dimensions;
     }
 
     @Override

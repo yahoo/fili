@@ -106,7 +106,7 @@ class ApiRequestSpec extends Specification {
     @Unroll
     def "check valid granularity name #name parses to granularity #expected"() {
         expect:
-        new TestingDataApiRequestImpl().generateGranularity(name, granularityParser) == expected
+        new TestingDataApiRequestImpl().bindGranularity(name, granularityParser) == expected
 
         where:
         name  | expected
@@ -120,7 +120,7 @@ class ApiRequestSpec extends Specification {
         String expectedMessage = ErrorMessageFormat.UNKNOWN_GRANULARITY.format(timeGrainName)
 
         when:
-        new TestingDataApiRequestImpl().generateGranularity(timeGrainName, new StandardGranularityParser())
+        new TestingDataApiRequestImpl().bindGranularity(timeGrainName, new StandardGranularityParser())
 
         then:
         Exception e = thrown(BadApiRequestException)
@@ -177,7 +177,7 @@ class ApiRequestSpec extends Specification {
         )
 
         expect:
-        TestingDataApiRequestImpl.validateTimeAlignment(DAY, intervals)
+        ApiRequestValidators.validateTimeAlignment(DAY, intervals)
 
         where:
         intervalString          | zone
@@ -190,11 +190,11 @@ class ApiRequestSpec extends Specification {
         String expectedMessage = "'[2015-02-15T00:00:00.000Z/2016-02-22T00:00:00.000Z]'"
         expectedMessage += " does not align with granularity 'week'."
         expectedMessage += " Week must start on a Monday and end on a Monday."
-        Granularity<?> granularity = new TestingDataApiRequestImpl().generateGranularity(
+        Granularity<?> granularity = new TestingDataApiRequestImpl().bindGranularity(
                 "week",
                 new StandardGranularityParser()
         )
-        Set<Interval> intervals = new TestingDataApiRequestImpl().generateIntervals(
+        Set<Interval> intervals = DateAndTimeGenerators.generateIntervals(
                 "2015-02-15/2016-02-22",
                 granularity,
                 FULLY_OPTIONAL_DATETIME_FORMATTER

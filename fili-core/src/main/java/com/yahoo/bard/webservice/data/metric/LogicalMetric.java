@@ -5,6 +5,8 @@ package com.yahoo.bard.webservice.data.metric;
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper;
 import com.yahoo.bard.webservice.druid.model.MetricField;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 import javax.validation.constraints.NotNull;
@@ -105,6 +107,10 @@ public class LogicalMetric {
 
     public String getName() {
         return logicalMetricInfo.getName();
+    }
+
+    public List<String> getOutputNames() {
+        return Arrays.asList(this.name);
     }
 
     public String getDescription() {
