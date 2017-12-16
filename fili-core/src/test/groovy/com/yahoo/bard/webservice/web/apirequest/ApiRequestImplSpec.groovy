@@ -2,8 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest
 
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_GRANULARITY_MISMATCH
-
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.druid.model.query.Granularity
@@ -28,6 +26,7 @@ class ApiRequestImplSpec extends Specification {
         String tableName = "tableName"
         Granularity granularity = Mock(Granularity)
         LogicalTableDictionary logicalTableDictionary = Mock(LogicalTableDictionary)
+        logicalTableDictionary.getNames() >> [tableName]
         TableIdentifier tableIdentifier = new TableIdentifier(tableName, granularity)
         LogicalTable logicalTable = Mock(LogicalTable)
         logicalTableDictionary.get(tableIdentifier) >> logicalTable
@@ -41,6 +40,7 @@ class ApiRequestImplSpec extends Specification {
         String tableName = "tableName"
         Granularity granularity = Mock(Granularity)
         LogicalTableDictionary logicalTableDictionary = Mock(LogicalTableDictionary)
+        logicalTableDictionary.getNames() >> []
         TableIdentifier tableIdentifier = new TableIdentifier(tableName, granularity)
         LogicalTable logicalTable = Mock(LogicalTable)
         logicalTableDictionary.get(tableIdentifier) >> logicalTable
@@ -52,7 +52,7 @@ class ApiRequestImplSpec extends Specification {
 
         then: "we get a BadApiRequestException"
         BadApiRequestException exception = thrown()
-        exception.message == TABLE_GRANULARITY_MISMATCH.logFormat(granularity, nonExistingTableName)
+        exception.message == ErrorMessageFormat.TABLE_UNDEFINED.logFormat(nonExistingTableName)
     }
 
     def "generateLogicalMetrics() returns existing LogicalMetrics"() {

@@ -10,6 +10,7 @@ import com.yahoo.bard.webservice.MessageFormatter;
 public enum ErrorMessageFormat implements MessageFormatter {
 
     TABLE_UNDEFINED("Table name '%s' does not exist."),
+    GRANULARITY_NOT_SUPPORTED("Time grain '%s' is not supported. '%s' supports '%s'"),
     TABLE_ALIGNMENT_UNDEFINED("Table '%s' cannot be aligned to a request with intervals: %s."),
     TABLE_SCHEMA_UNDEFINED(
             "Table '%s' is incompatible with the dimensions '%s', metrics '%s' and granularity '%s' requested.",
@@ -30,6 +31,13 @@ public enum ErrorMessageFormat implements MessageFormatter {
     GRANULARITY_MERGE("'%s' time zone cannot be applied to time grain '%s'"),
 
     INVALID_GRANULARITY("Granularity %s is of an unexpected type %s."),
+
+    /**
+     * An error message indicating that a type of granularity is not configured/supported in a table.
+     *
+     * @deprecated Use a more details error message {@link #GRANULARITY_NOT_SUPPORTED}.
+     */
+    @Deprecated
     TABLE_GRANULARITY_MISMATCH("Invalid pair of granularity '%s' and table '%s'."),
 
     TIME_ALIGNMENT("'%s' does not align with granularity '%s'.%s"),

@@ -13,7 +13,6 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_DIRECTION_IN
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_METRICS_NOT_IN_QUERY_FORMAT;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_METRICS_NOT_SORTABLE_FORMAT;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_METRICS_UNDEFINED;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_UNDEFINED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TOP_N_UNSORTED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.UNSUPPORTED_FILTERED_METRIC_CATEGORY;
 
@@ -37,7 +36,6 @@ import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.TimedPhase;
 import com.yahoo.bard.webservice.table.LogicalTable;
-import com.yahoo.bard.webservice.table.TableIdentifier;
 import com.yahoo.bard.webservice.util.StreamUtils;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.ApiHaving;
@@ -184,14 +182,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         // Time grain must be from allowed interval keywords
         this.granularity = generateGranularity(granularity, timeZone, granularityParser);
 
-        TableIdentifier tableId = new TableIdentifier(tableName, this.granularity);
-
-        // Logical table must be in the logical table dictionary
-        this.table = bardConfigResources.getLogicalTableDictionary().get(tableId);
-        if (this.table == null) {
-            LOG.debug(TABLE_UNDEFINED.logFormat(tableName));
-            throw new BadApiRequestException(TABLE_UNDEFINED.format(tableName));
-        }
+        this.table = generateTable(tableName, this.granularity, bardConfigResources.getLogicalTableDictionary());
 
         DateTimeFormatter dateTimeFormatter = generateDateTimeFormatter(timeZone);
 

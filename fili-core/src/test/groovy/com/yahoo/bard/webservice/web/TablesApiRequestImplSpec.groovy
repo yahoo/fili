@@ -124,10 +124,10 @@ class TablesApiRequestImplSpec extends Specification {
         e.getMessage().matches(reason)
 
         where:
-        name     | grain     | dictionary      | exception              | reason
-        "pets"   | "day"     | emptyDictionary | BadApiRequestException | ".*Logical Table Dictionary is empty.*"
-        "beasts" | "day"     | fullDictionary  | BadApiRequestException | ".*Table name.*does not exist.*"
-        "pets"   | "century" | fullDictionary  | BadApiRequestException | ".*not a valid granularity.*"
-        "pets"   | "hour"    | fullDictionary  | BadApiRequestException | "Invalid pair of granularity .* and table.*"
+        name     | grain     | dictionary      | exception                | reason
+        "pets"   | "day"     | emptyDictionary | BadApiRequestException   | ErrorMessageFormat.EMPTY_DICTIONARY.logFormat("Logical Table")
+        "beasts" | "day"     | fullDictionary  | BadApiRequestException   | ErrorMessageFormat.TABLE_UNDEFINED.logFormat("beasts")
+        "pets"   | "century" | fullDictionary  | BadApiRequestException   | ErrorMessageFormat.UNKNOWN_GRANULARITY.logFormat("century")
+        "pets"   | "hour"    | fullDictionary  | IllegalArgumentException | ErrorMessageFormat.GRANULARITY_NOT_SUPPORTED.format("hour", "pets", ".*")
     }
 }
