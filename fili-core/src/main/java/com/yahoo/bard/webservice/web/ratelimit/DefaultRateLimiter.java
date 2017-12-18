@@ -122,8 +122,8 @@ public class DefaultRateLimiter implements RateLimiter {
      * @param initialCount  Initial count that we're incrementing and checking against the limit
      * @param requestLimit  Limit to check the incremented initial count against
      *
-     * @return True if the incremented count is <= the request limit, false if it's gone over and the request limit
-     * isn't the DISABLED_RATE (-1).
+     * @return True if the incremented count is less than or equal to the request limit, false if it's gone over and the
+     * request limit isn't the DISABLED_RATE (-1).
      */
     protected boolean incrementAndCheckCount(AtomicInteger initialCount, int requestLimit) {
         int count = initialCount.incrementAndGet();
