@@ -118,6 +118,10 @@ Current
 
 ### Changed:
 
+- [Added DataApiRequestFactory layer](https://github.com/yahoo/fili/issues/603)
+    * Replaced static construction of DataApiRequest with an injectableFactory
+    * Create an additional constructor for DataApiRequestImpl which unpacks the config resources bundle to make it easier to override dictionaries.
+
 - [Refactored HttpResponseMaker to allow for custom ResponseData implementations](https://github.com/yahoo/fili/pull/605)
     * Currently ResponseData is being directly created in when building a response in the HttpResponseMaker. This creation
     has been extracted to a factory method, which subclasses of HttpResponseMaker can override.

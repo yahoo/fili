@@ -82,6 +82,8 @@ import com.yahoo.bard.webservice.util.DefaultingDictionary;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.web.CsvResponseWriter;
 import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequestFactory;
+import com.yahoo.bard.webservice.web.apirequest.DefaultDataApiRequestFactory;
 import com.yahoo.bard.webservice.web.ratelimit.DefaultRateLimiter;
 import com.yahoo.bard.webservice.web.DefaultResponseFormatResolver;
 import com.yahoo.bard.webservice.web.DimensionApiRequestMapper;
@@ -245,6 +247,8 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 bind(TemplateDruidQueryMerger.class).to(TemplateDruidQueryMerger.class);
                 bind(buildDruidResponseParser()).to(DruidResponseParser.class);
                 bind(buildDruidFilterBuilder()).to(DruidFilterBuilder.class);
+
+                bind(buildDataApiRequestFactory()).to(DataApiRequestFactory.class);
 
                 //Initialize the field converter
                 FieldConverterSupplier.sketchConverter = initializeSketchConverter();
@@ -630,6 +634,17 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      */
     protected DruidFilterBuilder buildDruidFilterBuilder() {
         return new DefaultDruidFilterBuilder();
+    }
+
+    /**
+     * Creates an factory that constructs DataApiRequests
+     * .
+     * Constructs a {@link DefaultDataApiRequestFactory} by default.
+     *
+     * @return An object to build Druid filters from API filters
+     */
+    protected DataApiRequestFactory buildDataApiRequestFactory() {
+        return new DefaultDataApiRequestFactory();
     }
 
     /**
