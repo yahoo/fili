@@ -118,6 +118,11 @@ Current
 
 ### Changed:
 
+- [Refactored HttpResponseMaker to allow for custom ResponseData implementations](https://github.com/yahoo/fili/pull/605)
+    * Currently ResponseData is being directly created in when building a response in the HttpResponseMaker. This creation
+    has been extracted to a factory method, which subclasses of HttpResponseMaker can override.
+    * Changed relevant methods fields from private to protected.
+
 - [Move makeRequest to JTB](https://github.com/yahoo/fili/pull/590)
     * Move `makeRequest` from test to `JerseyTestBinder`
     * Some tests uses variable name `jerseyTestBinder`; some uses `jtb`. They are all renamed to the former for naming
