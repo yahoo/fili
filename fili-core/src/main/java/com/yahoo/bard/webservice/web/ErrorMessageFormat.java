@@ -10,7 +10,7 @@ import com.yahoo.bard.webservice.MessageFormatter;
 public enum ErrorMessageFormat implements MessageFormatter {
 
     TABLE_UNDEFINED("Table name '%s' does not exist."),
-    GRANULARITY_NOT_SUPPORTED("Time grain '%s' is not supported. '%s' supports '%s'"),
+    GRANULARITY_NOT_SUPPORTED("Time grain '%s' is not supported"),
     TABLE_ALIGNMENT_UNDEFINED("Table '%s' cannot be aligned to a request with intervals: %s."),
     TABLE_SCHEMA_UNDEFINED(
             "Table '%s' is incompatible with the dimensions '%s', metrics '%s' and granularity '%s' requested.",

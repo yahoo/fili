@@ -54,8 +54,6 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
 import org.joda.time.Interval;
 import org.joda.time.Period;
-import org.joda.time.PeriodType;
-import org.joda.time.ReadablePeriod;
 import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -667,17 +665,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
         LogicalTable table = logicalTableDictionary.get(new TableIdentifier(tableName, granularity));
         // No matching granularity is found for this table
         if (table == null) {
-            List<ReadablePeriod> granularities = logicalTableDictionary.getGranularities(tableName);
-            String message = ErrorMessageFormat.GRANULARITY_NOT_SUPPORTED.format(
-                    granularity.getName(),
-                    tableName,
-                    logicalTableDictionary.getGranularities(tableName).isEmpty()
-                            ? "no granularities"
-                            : granularities.stream()
-                            .map(ReadablePeriod::getPeriodType)
-                            .map(PeriodType::getName)
-                            .collect(Collectors.joining(", "))
-            );
+            String message = ErrorMessageFormat.GRANULARITY_NOT_SUPPORTED.format(granularity.getName(), tableName);
             LOG.error(message);
             throw new IllegalArgumentException(message);
         }

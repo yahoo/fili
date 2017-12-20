@@ -5,8 +5,6 @@ package com.yahoo.bard.webservice.table;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 
-import org.joda.time.ReadablePeriod;
-
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -56,22 +54,6 @@ public class LogicalTableDictionary extends LinkedHashMap<TableIdentifier, Logic
     public List<String> getNames() {
         return this.keySet().stream()
                 .map(TableIdentifier::getKey)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Returns a list of configured granularities of a logical table.
-     *
-     * @param logicalTableName  The name of the logical table
-     *
-     * @return a list of configured granularities of the logical table
-     */
-    public List<ReadablePeriod> getGranularities(String logicalTableName) {
-        return this.keySet().stream()
-                .filter(tableIdentifier -> tableIdentifier.getKey().equals(logicalTableName) &&
-                        tableIdentifier.getValue().isPresent()
-                )
-                .map(tableIdentifier -> tableIdentifier.getValue().get())
                 .collect(Collectors.toList());
     }
 }

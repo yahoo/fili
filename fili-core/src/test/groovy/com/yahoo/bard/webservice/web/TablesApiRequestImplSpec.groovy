@@ -128,6 +128,6 @@ class TablesApiRequestImplSpec extends Specification {
         "pets"   | "day"     | emptyDictionary | BadApiRequestException   | ErrorMessageFormat.EMPTY_DICTIONARY.logFormat("Logical Table")
         "beasts" | "day"     | fullDictionary  | BadApiRequestException   | ErrorMessageFormat.TABLE_UNDEFINED.logFormat("beasts")
         "pets"   | "century" | fullDictionary  | BadApiRequestException   | ErrorMessageFormat.UNKNOWN_GRANULARITY.logFormat("century")
-        "pets"   | "hour"    | fullDictionary  | IllegalArgumentException | ErrorMessageFormat.GRANULARITY_NOT_SUPPORTED.format("hour", "pets", ".*")
+        "pets"   | "hour"    | fullDictionary  | IllegalArgumentException | ErrorMessageFormat.GRANULARITY_NOT_SUPPORTED.format("hour", "pets")
     }
 }
