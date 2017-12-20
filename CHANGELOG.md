@@ -233,6 +233,11 @@ Current
 
 ### Fixed:
 
+- [Fix handling of partially-matched LogicalTable lookup](https://github.com/yahoo/fili/pull/601)
+    * While searching for a mathing `LogicalTable`, instead of look up by key `TableIdentifier` only, we scan table name
+      first and give an error it it doesn't exist in dictionary. Then look up by key `TableIdentifier` and give the
+      second error if we don't find the identifier.
+
 - [Scoped metric dictionaries and the having clause now work together by default](https://github.com/yahoo/fili/pull/580)
     * Add a new ApiHavingGenerator that builds a temporary metric dictionary from the set of requested metrics(not from globally scoped metric dictionary), and then using those to resolve the having clause.
     * Add a table generating functions in BaseTableLoader that effectively allow the customer to provide a different metric dictionary at lower scope(not from the globally scoped metric dictionary) for use when building each table.

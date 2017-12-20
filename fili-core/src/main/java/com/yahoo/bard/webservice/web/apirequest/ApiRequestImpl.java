@@ -13,7 +13,7 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_ASYNC_AFT
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_INTERVAL_GRANULARITY;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_TIME_ZONE;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_NOT_IN_TABLE;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_GRANULARITY_MISMATCH;
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_UNDEFINED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TIME_ALIGNMENT;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.UNKNOWN_GRANULARITY;
 
@@ -656,17 +656,22 @@ public abstract class ApiRequestImpl implements ApiRequest {
             Granularity granularity,
             LogicalTableDictionary logicalTableDictionary
     ) throws BadApiRequestException {
-        LogicalTable generated = logicalTableDictionary.get(new TableIdentifier(tableName, granularity));
-
-        // check if requested logical table grain pair exists
-        if (generated == null) {
-            String msg = TABLE_GRANULARITY_MISMATCH.logFormat(granularity, tableName);
-            LOG.error(msg);
-            throw new BadApiRequestException(msg);
+        // No matching table name is found for this table
+        if (!logicalTableDictionary.getNames().contains(tableName)) {
+            LOG.debug(TABLE_UNDEFINED.logFormat(tableName));
+            throw new BadApiRequestException(TABLE_UNDEFINED.format(tableName));
         }
 
-        LOG.trace("Generated logical table: {} with granularity {}", generated, granularity);
-        return generated;
+        LogicalTable table = logicalTableDictionary.get(new TableIdentifier(tableName, granularity));
+        // No matching granularity is found for this table
+        if (table == null) {
+            String message = ErrorMessageFormat.GRANULARITY_NOT_SUPPORTED.format(granularity.getName(), tableName);
+            LOG.error(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        LOG.trace("Generated logical table: {} with granularity {}", table, granularity);
+        return table;
     }
 
     @Override

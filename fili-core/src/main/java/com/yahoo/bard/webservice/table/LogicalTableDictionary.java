@@ -45,4 +45,15 @@ public class LogicalTableDictionary extends LinkedHashMap<TableIdentifier, Logic
                 .filter(it -> it.getDimensions().contains(dimension))
                 .collect(Collectors.toList());
     }
+
+    /**
+     * Returns a list of logical table names in this LogicalTableDictionary.
+     *
+     * @return  The list of logical table names in this LogicalTableDictionary
+     */
+    public List<String> getNames() {
+        return this.keySet().stream()
+                .map(TableIdentifier::getKey)
+                .collect(Collectors.toList());
+    }
 }
