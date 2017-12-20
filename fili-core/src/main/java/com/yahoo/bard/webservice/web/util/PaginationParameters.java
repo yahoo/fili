@@ -25,17 +25,17 @@ public class PaginationParameters {
     private static final String FIRST = "first";
     private static final String LAST = "last";
 
-    private static final int DEFAULT_MAX_RESULTS_WITHOUT_FILTERS = 10000;
-    private static final int MAX_RESULTS_WITHOUT_FILTER = SYSTEM_CONFIG.getIntProperty(
-            SYSTEM_CONFIG.getPackageVariableName("max_results_without_filters"),
-            DEFAULT_MAX_RESULTS_WITHOUT_FILTERS
+    private static final int DEFAULT_MAX_RESULTS_PER_PAGE = 10000;
+    private static final int MAX_RESULTS_PER_PAGE = SYSTEM_CONFIG.getIntProperty(
+            SYSTEM_CONFIG.getPackageVariableName("max_results_per_page"),
+            DEFAULT_MAX_RESULTS_PER_PAGE
     );
 
     /**
      * The common pagination parameter object used by non-paginating method in search providers.
      */
     public static final PaginationParameters EVERYTHING_IN_ONE_PAGE = new PaginationParameters(
-            MAX_RESULTS_WITHOUT_FILTER,
+            MAX_RESULTS_PER_PAGE,
             1
     );
 

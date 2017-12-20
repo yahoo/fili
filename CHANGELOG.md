@@ -118,6 +118,11 @@ Current
 
 ### Changed:
 
+- [Remove unused param & fix naming](https://github.com/yahoo/fili/pull/600)
+    * Remove unused parameters in `LuceneSearchProviderManager`
+    * System config `max_results_without_filters` is changed to `max_results_per_page` because it is also used in the
+      case when no filter is applied
+
 - [Move makeRequest to JTB](https://github.com/yahoo/fili/pull/590)
     * Move `makeRequest` from test to `JerseyTestBinder`
     * Some tests uses variable name `jerseyTestBinder`; some uses `jtb`. They are all renamed to the former for naming
