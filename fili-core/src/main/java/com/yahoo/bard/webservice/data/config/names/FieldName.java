@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.data.config.names;
 /**
  * Marker interface for enums that can be treated as a metric or dimension field name for Druid Query fields.
  */
+@FunctionalInterface
 public interface FieldName {
 
     /**

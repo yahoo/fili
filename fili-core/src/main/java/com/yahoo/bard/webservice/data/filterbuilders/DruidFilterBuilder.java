@@ -13,6 +13,7 @@ import java.util.Set;
 /**
  * Builds druid query model objects from ApiFilters.
  */
+@FunctionalInterface
 public interface DruidFilterBuilder {
 
     /**
