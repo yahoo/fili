@@ -5,6 +5,8 @@ package com.yahoo.bard.webservice.data.config.metric;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 
+import org.slf4j.LoggerFactory;
+
 /**
  * Defines the core interactions for loading metrics into a metric dictionary.
  */
@@ -18,7 +20,12 @@ public interface MetricLoader {
      * @deprecated in favor of loadMetricDictionary(MetricDictionary, DimensionDictionary)
      */
     @Deprecated
-    void loadMetricDictionary(MetricDictionary metricDictionary);
+    default void loadMetricDictionary(MetricDictionary metricDictionary) {
+        String message = "loadMetricDictionary(MetricDictionary) is not implemented. It has been deprecated. " +
+                "Implement and use loadMetricDictionary(MetricDictionary, DimensionDictionary) instead.";
+        LoggerFactory.getLogger(MetricLoader.class).error(message);
+        throw new UnsupportedOperationException(message);
+    }
 
     /**
      * Load metrics and populate the metric dictionary with dimension dictionary for dimension dependent metrics.
