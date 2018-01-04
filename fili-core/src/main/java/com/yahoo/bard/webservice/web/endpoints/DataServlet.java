@@ -45,9 +45,9 @@ import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.PreResponse;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.RequestValidationException;
-import com.yahoo.bard.webservice.web.apirequest.DataApiRequestImpl;
-import com.yahoo.bard.webservice.web.apirequest.HavingGenerator;
 import com.yahoo.bard.webservice.web.ResponseFormatResolver;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequestFactory;
+import com.yahoo.bard.webservice.web.apirequest.HavingGenerator;
 import com.yahoo.bard.webservice.web.handlers.DataRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
 import com.yahoo.bard.webservice.web.handlers.RequestHandlerUtils;
@@ -123,6 +123,8 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
     private final HttpResponseMaker httpResponseMaker;
     private final ResponseFormatResolver formatResolver;
 
+    private final DataApiRequestFactory dataApiRequestFactory;
+
     // Default JodaTime zone to UTC
     private final DateTimeZone systemTimeZone = DateTimeZone.forID(SYSTEM_CONFIG.getStringProperty(
             SYSTEM_CONFIG.getPackageVariableName("timezone"),
@@ -149,6 +151,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
      * @param httpResponseMaker  The factory for building HTTP responses
      * that a query has been completed and its results stored in the
      * @param formatResolver  The formatResolver for determining correct response format
+     * @param dataApiRequestFactory A factory to build dataApiRequests
      * {@link com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore}
      */
     @Inject
@@ -168,7 +171,8 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             AsynchronousWorkflowsBuilder asynchronousWorkflowsBuilder,
             BroadcastChannel<String> preResponseStoredNotifications,
             HttpResponseMaker httpResponseMaker,
-            ResponseFormatResolver formatResolver
+            ResponseFormatResolver formatResolver,
+            DataApiRequestFactory dataApiRequestFactory
     ) {
         this.resourceDictionaries = resourceDictionaries;
         this.druidQueryBuilder = druidQueryBuilder;
@@ -187,6 +191,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
         this.preResponseStoredNotifications = preResponseStoredNotifications;
         this.httpResponseMaker = httpResponseMaker;
         this.formatResolver = formatResolver;
+        this.dataApiRequestFactory = dataApiRequestFactory;
 
         LOG.trace(
                 "Initialized with ResourceDictionaries: {} \n\n" +
@@ -365,7 +370,8 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
         try {
             DataApiRequest apiRequest;
             try (TimedPhase timer = RequestLog.startTiming("DataApiRequest")) {
-                apiRequest = new DataApiRequestImpl(
+
+                apiRequest = dataApiRequestFactory.buildApiRequest(
                         tableName,
                         timeGrain,
                         dimensions,
