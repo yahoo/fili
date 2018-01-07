@@ -38,15 +38,15 @@ import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 
 /**
- * Load the table configuration for any druid setup.
+ * Load the table configuration for any Druid setup.
  */
 public class GenericTableLoader extends BaseTableLoader {
-    private final Map<String, Set<Granularity>> dataSourceToValidGrains = new HashMap<>();
+    private final Map<String, Set<Granularity>> dataSourceToValidGrains;
     // Set up the metrics
-    private final Map<String, Set<FieldName>> dataSourceToDruidMetricNames = new HashMap<>();
-    private final Map<String, Set<ApiMetricName>> dataSourceToApiMetricNames = new HashMap<>();
+    private final Map<String, Set<FieldName>> dataSourceToDruidMetricNames;
+    private final Map<String, Set<ApiMetricName>> dataSourceToApiMetricNames;
     // Set up the table definitions
-    private final Map<String, Set<PhysicalTableDefinition>> dataSourceToTableDefinitions = new HashMap<>();
+    private final Map<String, Set<PhysicalTableDefinition>> dataSourceToTableDefinitions;
     private final Supplier<List<? extends DataSourceConfiguration>> configLoader;
 
     /**
@@ -62,6 +62,10 @@ public class GenericTableLoader extends BaseTableLoader {
             DataSourceMetadataService metadataService
     ) {
         super(metadataService);
+        dataSourceToValidGrains = new HashMap<>();
+        dataSourceToDruidMetricNames = new HashMap<>();
+        dataSourceToApiMetricNames = new HashMap<>();
+        dataSourceToTableDefinitions = new HashMap<>();
         this.configLoader = configLoader;
         configureTables(genericDimensionConfigs, metadataService);
     }
@@ -69,8 +73,8 @@ public class GenericTableLoader extends BaseTableLoader {
     /**
      * Set up the tables for this table loader.
      *
-     * @param genericDimensionConfigs  The dimensions to load into test tables.
-     * @param metadataService  The metadata service to plays the datasources in.
+     * @param genericDimensionConfigs  The dimensions to load into the tables
+     * @param metadataService  Container that holds and updates data source data segments
      */
     private void configureTables(
             GenericDimensionConfigs genericDimensionConfigs,
@@ -83,7 +87,7 @@ public class GenericTableLoader extends BaseTableLoader {
                     new DataSourceMetadata(
                             dataSourceConfiguration.getName(),
                             Collections.emptyMap(),
-                            dataSourceConfiguration.getDataSegmentMetadata()
+                            dataSourceConfiguration.getDataSegments()
                     )
             );
 
@@ -100,7 +104,7 @@ public class GenericTableLoader extends BaseTableLoader {
                     getPhysicalTableDefinitions(
                             dataSourceConfiguration,
                             dataSourceConfiguration.getValidTimeGrain(),
-                            genericDimensionConfigs.getDimensionConfigs(dataSourceConfiguration)
+                            genericDimensionConfigs.getDimensionConfigs(dataSourceConfiguration.getName())
                     )
             );
 
@@ -164,11 +168,6 @@ public class GenericTableLoader extends BaseTableLoader {
         );
     }
 
-    /**
-     * Load each logical table from the datasources given.
-     *
-     * @param dictionaries  ResourceDictionaries to load with each table.
-     */
     @Override
     public void loadTableDictionary(ResourceDictionaries dictionaries) {
         configLoader.get()

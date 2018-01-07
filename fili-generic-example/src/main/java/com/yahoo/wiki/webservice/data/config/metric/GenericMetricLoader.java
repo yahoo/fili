@@ -5,9 +5,9 @@ package com.yahoo.wiki.webservice.data.config.metric;
 import com.yahoo.bard.webservice.data.config.metric.MetricInstance;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.metric.makers.DoubleSumMaker;
-import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
-import com.yahoo.bard.webservice.data.config.names.FieldName;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
+import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration;
 
 import org.slf4j.Logger;
@@ -33,9 +33,7 @@ public class GenericMetricLoader implements MetricLoader {
      *
      * @param configLoader  Gives a list of {@link DataSourceConfiguration} to build the metrics from.
      */
-    public GenericMetricLoader(
-            @NotNull Supplier<List<? extends DataSourceConfiguration>> configLoader
-    ) {
+    public GenericMetricLoader(@NotNull Supplier<List<? extends DataSourceConfiguration>> configLoader) {
         this.configLoader = configLoader;
     }
 
@@ -62,26 +60,17 @@ public class GenericMetricLoader implements MetricLoader {
                 .forEach(dataSourceConfiguration -> {
                     dataSourceConfiguration.getMetrics()
                             .forEach(metric -> {
-                                ApiMetricName apiMetricName = new FiliApiMetricName(
-                                        metric,
-                                        dataSourceConfiguration.getValidTimeGrain()
+                                metrics.add(
+                                        new MetricInstance(
+                                                new LogicalMetricInfo(metric),
+                                                doubleSumMaker,
+                                                new DruidMetricName(metric)
+                                        )
                                 );
-                                FieldName fieldName = new DruidMetricName(metric);
-                                metrics.add(new MetricInstance(apiMetricName, doubleSumMaker, fieldName));
                             });
                 });
 
+        Utils.addToMetricDictionary(metricDictionary, metrics);
         LOG.debug("About to load direct aggregation metrics. Metric dictionary keys: {}", metricDictionary.keySet());
-        addToMetricDictionary(metricDictionary, metrics);
-    }
-
-    /**
-     * Create metrics from instance descriptors and store in the metric dictionary.
-     *
-     * @param metricDictionary  The dictionary to store metrics in
-     * @param metrics  The list of metric descriptors
-     */
-    private void addToMetricDictionary(MetricDictionary metricDictionary, List<MetricInstance> metrics) {
-        metrics.stream().map(MetricInstance::make).forEach(metricDictionary::add);
     }
 }

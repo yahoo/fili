@@ -2,6 +2,9 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.util;
 
+import com.yahoo.bard.webservice.data.config.metric.MetricInstance;
+import com.yahoo.bard.webservice.data.metric.MetricDictionary;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -19,6 +22,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -183,5 +187,15 @@ public class Utils {
      */
     public static <T, U, V> ImmutablePair<T, V> withRight(ImmutablePair<T, U> pair, V right) {
         return new ImmutablePair<>(pair.getLeft(), right);
+    }
+
+    /**
+     * Create metrics from instance descriptors and store in the metric dictionary.
+     *
+     * @param metricDictionary  The dictionary to store metrics in
+     * @param metrics  The list of metric descriptors
+     */
+    public static void addToMetricDictionary(MetricDictionary metricDictionary, List<MetricInstance> metrics) {
+        metrics.stream().map(MetricInstance::make).forEach(metricDictionary::add);
     }
 }

@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * TableConfig to hold all metrics, dimensions, timegrains, and the name of a datasource.
+ * TableConfig to hold all metrics, dimensions, valid time grain, and the name of a datasource.
  */
 public class TableConfig implements DataSourceConfiguration {
     private final String tableName;
@@ -54,7 +54,7 @@ public class TableConfig implements DataSourceConfiguration {
     }
 
     /**
-     * Add a {@link TimeGrain} to the datasource.
+     * Sets {@link TimeGrain} of the datasource.
      *
      * @param timeGrain  Valid Timegrain to hold in the TableConfig.
      */
@@ -65,7 +65,7 @@ public class TableConfig implements DataSourceConfiguration {
     /**
      * Add a {@link DataSegment} to the existing known datasegments for this table.
      *
-     * @param dataSegment  The {@link DataSegment} metadata given by Druid.
+     * @param dataSegment  The {@link DataSegment} given by Druid.
      */
     public void addDataSegment(DataSegment dataSegment) {
         dataSegments.add(dataSegment);
@@ -122,7 +122,7 @@ public class TableConfig implements DataSourceConfiguration {
     }
 
     @Override
-    public List<DataSegment> getDataSegmentMetadata() {
-        return dataSegments;
+    public List<DataSegment> getDataSegments() {
+        return Collections.unmodifiableList(dataSegments);
     }
 }

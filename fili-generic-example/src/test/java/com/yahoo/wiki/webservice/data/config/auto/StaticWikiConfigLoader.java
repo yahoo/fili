@@ -44,7 +44,7 @@ public class StaticWikiConfigLoader implements Supplier<List<? extends DataSourc
             }
 
             @Override
-            public List<DataSegment> getDataSegmentMetadata() {
+            public List<DataSegment> getDataSegments() {
                 return Collections.emptyList();
             }
 

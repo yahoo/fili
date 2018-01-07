@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Holds the minimum necessary configuration necessary to set up fili to
- * make requests to druid. This defines all metrics, dimensions, and *one*
- * valid time grain of a datasource.
+ * Holds the minimum necessary configuration to set up fili to
+ * make requests to druid. This defines all metrics, dimensions, *one*
+ * valid time grain, and data segments of a datasource.
  * Note the restriction to one time grain, a druid datasource could have
  * more than one, but it *should* have just a single grain.
  */
@@ -56,9 +56,9 @@ public interface DataSourceConfiguration {
     TimeGrain getValidTimeGrain();
 
     /**
-     * Gets a list of segment metadata for a datasource in Druid.
+     * Gets a list of {@link io.druid.timeline.DataSegment data segments} for a datasource in Druid.
      *
-     * @return the list of datasegments reported by druid.
+     * @return the list of data segments reported by druid.
      */
-    List<DataSegment> getDataSegmentMetadata();
+    List<DataSegment> getDataSegments();
 }
