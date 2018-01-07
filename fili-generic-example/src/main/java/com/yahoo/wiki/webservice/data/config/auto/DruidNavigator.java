@@ -162,7 +162,8 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
         } catch (JsonProcessingException e) {
             LOG.warn(
                     "Failed while building segment metadata for {}. While this isn't an error, it's unusual behavior",
-                    table.getName()
+                    table.getName(),
+                    e
             );
         }
     }
