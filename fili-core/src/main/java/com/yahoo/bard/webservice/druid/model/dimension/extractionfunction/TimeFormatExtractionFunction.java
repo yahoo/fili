@@ -10,6 +10,7 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 
 import java.util.Locale;
+import java.util.Objects;
 
 /**
  * An extraction function that returns the dimension value formatted according to given format string, time zone, and
@@ -169,5 +170,27 @@ public class TimeFormatExtractionFunction extends ExtractionFunction {
      */
     public TimeFormatExtractionFunction withAsMillis(boolean asMillis) {
         return new TimeFormatExtractionFunction(format, locale, timeZone, granularity, asMillis);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), format, locale, timeZone, granularity, asMillis);
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (other == null || this.getClass() != other.getClass()) {
+            return false;
+        }
+        TimeFormatExtractionFunction that = (TimeFormatExtractionFunction) other;
+        return super.equals(other) &&
+                Objects.equals(this.format, that.format) &&
+                Objects.equals(this.locale, that.locale) &&
+                Objects.equals(this.timeZone, that.timeZone) &&
+                Objects.equals(this.granularity, that.granularity) &&
+                this.asMillis == that.asMillis;
     }
 }
