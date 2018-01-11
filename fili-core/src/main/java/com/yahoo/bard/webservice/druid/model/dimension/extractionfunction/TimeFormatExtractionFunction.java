@@ -2,8 +2,11 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.dimension.extractionfunction;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.Include;
+
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.joda.time.DateTimeZone;
@@ -12,8 +15,6 @@ import org.joda.time.format.DateTimeFormat;
 import java.util.Locale;
 import java.util.Objects;
 
-import javax.validation.constraints.NotNull;
-
 /**
  * An extraction function that returns the dimension value formatted according to given format string, time zone, and
  * locale.
@@ -21,12 +22,28 @@ import javax.validation.constraints.NotNull;
  * Visit http://druid.io/docs/0.10.1/querying/dimensionspecs.html#time-format-extraction-function for more details on
  * Time Format Extraction Function.
  */
+@JsonInclude(Include.NON_NULL)
 public class TimeFormatExtractionFunction extends ExtractionFunction {
     private final DateTimeFormat format;
     private final Locale locale;
     private final DateTimeZone timeZone;
     private final Granularity granularity;
-    private final boolean asMillis;
+    private final Boolean asMillis;
+
+    /**
+     * Constructor.
+     * <p>
+     * Druid only requires "type" parameter in dimension spec. Other fields can all be null. See
+     * http://druid.io/docs/0.10.1/querying/dimensionspecs.html#time-format-extraction-function for more details.
+     */
+    public TimeFormatExtractionFunction() {
+        super(DefaultExtractionFunctionType.TIME_FORMAT);
+        format = null;
+        locale = null;
+        timeZone = null;
+        granularity = null;
+        asMillis = null;
+    }
 
     /**
      * Constructor.
@@ -43,11 +60,11 @@ public class TimeFormatExtractionFunction extends ExtractionFunction {
      * @param asMillis  Boolean value, set to true to treat input strings as millis rather than ISO8601 strings.
      */
     public TimeFormatExtractionFunction(
-            @NotNull DateTimeFormat format,
+            DateTimeFormat format,
             Locale locale,
             DateTimeZone timeZone,
             Granularity granularity,
-            boolean asMillis
+            Boolean asMillis
     ) {
         super(DefaultExtractionFunctionType.TIME_FORMAT);
         this.format = format;
@@ -105,7 +122,7 @@ public class TimeFormatExtractionFunction extends ExtractionFunction {
      * @return the whether to treat input input strings as millis(true) or ISO8601 strings(false)
      */
     @JsonProperty(value = "asMillis")
-    public boolean isAsMillis() {
+    public Boolean isAsMillis() {
         return asMillis;
     }
 
@@ -170,7 +187,7 @@ public class TimeFormatExtractionFunction extends ExtractionFunction {
      *
      * @return new {@link TimeFormatExtractionFunction} with the specified config on "asMillis"
      */
-    public TimeFormatExtractionFunction withAsMillis(boolean asMillis) {
+    public TimeFormatExtractionFunction withAsMillis(Boolean asMillis) {
         return new TimeFormatExtractionFunction(format, locale, timeZone, granularity, asMillis);
     }
 
