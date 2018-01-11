@@ -12,6 +12,8 @@ import org.joda.time.format.DateTimeFormat;
 import java.util.Locale;
 import java.util.Objects;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * An extraction function that returns the dimension value formatted according to given format string, time zone, and
  * locale.
@@ -41,11 +43,11 @@ public class TimeFormatExtractionFunction extends ExtractionFunction {
      * @param asMillis  Boolean value, set to true to treat input strings as millis rather than ISO8601 strings.
      */
     public TimeFormatExtractionFunction(
-            DateTimeFormat format,
-            Locale locale,
-            DateTimeZone timeZone,
-            Granularity granularity,
-            boolean asMillis
+            @NotNull DateTimeFormat format,
+            @NotNull Locale locale,
+            @NotNull DateTimeZone timeZone,
+            @NotNull Granularity granularity,
+            @NotNull boolean asMillis
     ) {
         super(DefaultExtractionFunctionType.TIME_FORMAT);
         this.format = format;
