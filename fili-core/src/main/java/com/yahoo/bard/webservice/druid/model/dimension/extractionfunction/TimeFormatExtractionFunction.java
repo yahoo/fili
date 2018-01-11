@@ -44,10 +44,10 @@ public class TimeFormatExtractionFunction extends ExtractionFunction {
      */
     public TimeFormatExtractionFunction(
             @NotNull DateTimeFormat format,
-            @NotNull Locale locale,
-            @NotNull DateTimeZone timeZone,
-            @NotNull Granularity granularity,
-            @NotNull boolean asMillis
+            Locale locale,
+            DateTimeZone timeZone,
+            Granularity granularity,
+            boolean asMillis
     ) {
         super(DefaultExtractionFunctionType.TIME_FORMAT);
         this.format = format;
