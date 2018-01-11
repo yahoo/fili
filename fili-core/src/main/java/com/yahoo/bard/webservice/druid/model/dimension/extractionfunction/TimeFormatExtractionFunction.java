@@ -210,6 +210,6 @@ public class TimeFormatExtractionFunction extends ExtractionFunction {
                 Objects.equals(this.locale, that.locale) &&
                 Objects.equals(this.timeZone, that.timeZone) &&
                 Objects.equals(this.granularity, that.granularity) &&
-                this.asMillis == that.asMillis;
+                Objects.equals(this.asMillis, that.asMillis);
     }
 }
