@@ -10,7 +10,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.joda.time.DateTimeZone;
-import org.joda.time.format.DateTimeFormat;
 
 import java.util.Locale;
 import java.util.Objects;
@@ -24,7 +23,7 @@ import java.util.Objects;
  */
 @JsonInclude(Include.NON_NULL)
 public class TimeFormatExtractionFunction extends ExtractionFunction {
-    private final DateTimeFormat format;
+    private final String format;
     private final Locale locale;
     private final DateTimeZone timeZone;
     private final Granularity granularity;
@@ -60,7 +59,7 @@ public class TimeFormatExtractionFunction extends ExtractionFunction {
      * @param asMillis  Boolean value, set to true to treat input strings as millis rather than ISO8601 strings.
      */
     public TimeFormatExtractionFunction(
-            DateTimeFormat format,
+            String format,
             Locale locale,
             DateTimeZone timeZone,
             Granularity granularity,
@@ -75,12 +74,12 @@ public class TimeFormatExtractionFunction extends ExtractionFunction {
     }
 
     /**
-     * Returns {@link org.joda.time.format.DateTimeFormat format} of this {@link TimeFormatExtractionFunction}.
+     * Returns format of this {@link TimeFormatExtractionFunction}.
      *
-     * @return the {@link org.joda.time.format.DateTimeFormat format} of this {@link TimeFormatExtractionFunction}
+     * @return the format of this {@link TimeFormatExtractionFunction}
      */
     @JsonProperty(value = "format")
-    public DateTimeFormat getFormat() {
+    public String getFormat() {
         return format;
     }
 
@@ -127,16 +126,14 @@ public class TimeFormatExtractionFunction extends ExtractionFunction {
     }
 
     /**
-     * Returns a new {@link TimeFormatExtractionFunction} with a specified
-     * {@link org.joda.time.format.DateTimeFormat format}.
+     * Returns a new {@link TimeFormatExtractionFunction} with a specified format.
      *
      * @param format  The date time format for the resulting dimension value, in
      * {@link org.joda.time.format.DateTimeFormat Joda Time DateTimeFormat}, or null to use the default ISO8601 format.
      *
-     * @return the new {@link TimeFormatExtractionFunction} with the specified
-     * {@link org.joda.time.format.DateTimeFormat format}
+     * @return the new {@link TimeFormatExtractionFunction} with the specified format
      */
-    public TimeFormatExtractionFunction withFormat(DateTimeFormat format) {
+    public TimeFormatExtractionFunction withFormat(String format) {
         return new TimeFormatExtractionFunction(format, locale, timeZone, granularity, asMillis);
     }
 
