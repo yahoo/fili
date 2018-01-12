@@ -10,6 +10,10 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.ISODateTimeFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Locale;
 import java.util.Objects;
@@ -23,6 +27,8 @@ import java.util.Objects;
  */
 @JsonInclude(Include.NON_NULL)
 public class TimeFormatExtractionFunction extends ExtractionFunction {
+    private static final Logger LOG = LoggerFactory.getLogger(TimeFormatExtractionFunction.class);
+
     private final String format;
     private final Locale locale;
     private final DateTimeZone timeZone;
@@ -66,6 +72,16 @@ public class TimeFormatExtractionFunction extends ExtractionFunction {
             Boolean asMillis
     ) {
         super(DefaultExtractionFunctionType.TIME_FORMAT);
+
+        // validate format
+        try {
+            DateTimeFormat.forPattern(format);
+        } catch (IllegalArgumentException exception) {
+            String message = String.format("%s is an invalid format", format);
+            LOG.error(message);
+            throw new IllegalArgumentException(message, exception);
+        }
+
         this.format = format;
         this.locale = locale;
         this.timeZone = timeZone;
