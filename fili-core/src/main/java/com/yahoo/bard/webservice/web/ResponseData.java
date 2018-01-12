@@ -173,7 +173,7 @@ public class ResponseData {
      */
     public Stream<String> generateDimensionColumnHeaders(Map.Entry<Dimension, LinkedHashSet<DimensionField>> entry) {
         if (entry.getValue().isEmpty()) {
-            return Stream.of(entry.getKey().getApiName());
+            return Stream.empty();
         } else {
             return entry.getValue().stream().map(dimField -> getDimensionColumnName(entry.getKey(), dimField));
         }
@@ -200,11 +200,7 @@ public class ResponseData {
             if (requestedApiDimensionFields.get(dimension) != null) {
                 requestedDimensionFields = requestedApiDimensionFields.get(dimension);
 
-                // When no fields are requested, show the key field
-                if (requestedDimensionFields.isEmpty()) {
-                    // When no fields are requested, show the key field
-                    row.put(dimension.getApiName(), drow.get(dimension.getKey()));
-                } else {
+                if (!requestedDimensionFields.isEmpty()) {
                     // Otherwise, show the fields requested, with the pipe-separated name
                     for (DimensionField dimensionField : requestedDimensionFields) {
                         row.put(getDimensionColumnName(dimension, dimensionField), drow.get(dimensionField));
@@ -242,22 +238,22 @@ public class ResponseData {
             // Get the pieces we need out of the map entry
             Dimension dimension = dimensionColumnEntry.getKey().getDimension();
             DimensionRow dimensionRow = dimensionColumnEntry.getValue();
+            Set<DimensionField> requestedDimensionFields = requestedApiDimensionFields.get(dimension);
 
-            if (requestedApiDimensionFields.get(dimension) != null) {
+            if (requestedDimensionFields == null || requestedDimensionFields.isEmpty())
+            {
                 // add sidecar only if at-least one field needs to be shown
-                Set<DimensionField> requestedDimensionFields = requestedApiDimensionFields.get(dimension);
-                if (!requestedDimensionFields.isEmpty()) {
-                    // The key field is required
-                    requestedDimensionFields.add(dimension.getKey());
-
-                    //
-                    Map<DimensionField, String> dimensionFieldToValueMap = requestedDimensionFields.stream()
-                            .collect(StreamUtils.toLinkedMap(Function.identity(), dimensionRow::get));
-
-                    // Add the dimension row's requested fields to the sidecar map
-                    sidecars.get(dimension).add(dimensionFieldToValueMap);
-                }
+                continue;
             }
+
+            // The key field is required
+            requestedDimensionFields.add(dimension.getKey());
+
+            Map<DimensionField, String> dimensionFieldToValueMap = requestedDimensionFields.stream()
+                    .collect(StreamUtils.toLinkedMap(Function.identity(), dimensionRow::get));
+
+            // Add the dimension row's requested fields to the sidecar map
+            sidecars.get(dimension).add(dimensionFieldToValueMap);
 
             // Put the dimension name and dimension row's key value into the row map
             row.put(dimension.getApiName(), dimensionRow.get(dimension.getKey()));
