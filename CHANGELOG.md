@@ -10,6 +10,10 @@ Current
 
 ### Added:
 
+- [Implement TimeFormatExtractionFunction](https://github.com/yahoo/fili/pull/611)
+    * Enable [`TimeFormatExtractionFunction`](http://druid.io/docs/0.10.1/querying/dimensionspecs.html#time-format-extraction-function)
+      in Fili so that API users could interact with Druid using `TimeFormatExtractionFunction` through Fili.
+
 - [Complete DateTimeUtils tests](https://github.com/yahoo/fili/pull/595)
     * Add tests for all un-tested methods in `DateTimeUtils`.
     
