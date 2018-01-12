@@ -22,7 +22,7 @@ class TimeFormatExtractionFunctionSpec extends Specification {
         objectMapper = new ObjectMappersSuite().getMapper()
     }
 
-    def "TimeFormatExtractionFunction with no optional fields serializes to default JSON object"() {
+    def "TimeFormatExtractionFunction with no optional fields serializes to default extraction function"() {
         expect:
         GroovyTestUtils.compareJson(
                 objectMapper.writeValueAsString(new TimeFormatExtractionFunction()),
@@ -30,7 +30,7 @@ class TimeFormatExtractionFunctionSpec extends Specification {
         )
     }
 
-    def "TimeFormatExtractionFunction with all optional fields set serializes to a complete JSON object"() {
+    def "TimeFormatExtractionFunction with all optional fields set serializes to a complete extraction function"() {
         expect:
         GroovyTestUtils.compareJson(
                 objectMapper.writeValueAsString(
