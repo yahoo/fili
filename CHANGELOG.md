@@ -122,6 +122,10 @@ Current
 
 ### Changed:
 
+- [Lift required override on deprecated method in MetricLoader](https://github.com/yahoo/fili/pull/609)
+    * Add default implementation to deprecated `loadMetricDictionary` in `MetricLoader` so that downstream projects are
+      able to implement the new version without worrying about the deprecated version.
+
 - [Added DataApiRequestFactory layer](https://github.com/yahoo/fili/issues/603)
     * Replaced static construction of DataApiRequest with an injectableFactory
     * Create an additional constructor for DataApiRequestImpl which unpacks the config resources bundle to make it easier to override dictionaries.
