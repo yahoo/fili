@@ -2,10 +2,12 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.availability
 
+import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.data.config.names.TableName
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrainSpec
 import com.yahoo.bard.webservice.table.Column
+import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
 import com.yahoo.bard.webservice.table.resolver.DataSourceFilter
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
@@ -17,6 +19,7 @@ import org.joda.time.Interval
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
+
 /**
  * Test for partition availability behavior.
  */
@@ -69,6 +72,34 @@ class PartitionAvailabilitySpec extends Specification{
         [SOURCE1]          | []        | [SOURCE1]
         [SOURCE1]          | [SOURCE1] | [SOURCE1]
         [SOURCE1, SOURCE2] | [SOURCE1] | [SOURCE1, SOURCE2]
+    }
+
+    def "getDataSourceNames(constraint) returns only datasource names that are actually needed"() {
+        given:
+        DataSourceName name1 = DataSourceName.of("datasource1")
+        DataSourceName name2 = DataSourceName.of("datasource2")
+
+        availability1 = Mock(Availability)
+        availability2 = Mock(Availability)
+
+        availability1.getDataSourceNames() >> ([name1] as Set)
+        availability2.getDataSourceNames() >> ([name2] as Set)
+
+        availability1.getDataSourceNames(_ as DataSourceConstraint) >> ([name1] as Set)
+        availability2.getDataSourceNames(_ as DataSourceConstraint) >> ([name2] as Set)
+
+        DataSourceFilter partition1 = Mock(DataSourceFilter)
+        DataSourceFilter partition2 = Mock(DataSourceFilter)
+
+        partition1.apply(_ as DataSourceConstraint) >> true
+        partition2.apply(_ as DataSourceConstraint) >> false
+
+        Map<Availability, DataSourceFilter> partitionMap = [(availability1): partition1, (availability2) : partition2]
+
+        partitionAvailability = new PartitionAvailability(partitionMap)
+
+        expect:
+        partitionAvailability.getDataSourceNames(Mock(DataSourceConstraint)) == [name1] as Set
     }
 
     @Unroll
