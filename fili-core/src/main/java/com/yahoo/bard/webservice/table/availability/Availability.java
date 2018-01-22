@@ -34,7 +34,7 @@ public interface Availability {
      */
     @Deprecated
     default Set<DataSourceName> getDataSourceNames(PhysicalDataSourceConstraint constraint) {
-        return getDataSourceNames();
+        return getDataSourceNames((DataSourceConstraint) constraint);
     }
 
     /**

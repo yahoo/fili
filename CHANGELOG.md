@@ -798,6 +798,10 @@ Removals:
 
 ### Fixed:
 
+- [Fix druid partial data and partition table incompatibility](https://github.com/yahoo/fili/pull/615)
+    * Datasource names returned by partition table now contains only datasources that are actually used in the query
+    * Fix the problem where uncovered intervals is given by druid for partition table that fili filtered out
+
 - [Fix the generic example for loading multiple tables](https://github.com/yahoo/fili/pull/309)
     * Loading multiple tables caused it to hang and eventually time out.
     * Also fixed issue causing all tables to show the same set of dimensions.
