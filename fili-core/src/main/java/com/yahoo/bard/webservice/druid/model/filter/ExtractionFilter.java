@@ -5,18 +5,17 @@ package com.yahoo.bard.webservice.druid.model.filter;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.Objects;
 
 /**
  * Filter for matching a dimension using some specific Extraction function.
+ *
+ * @deprecated  Use other dimensional filters with extractionFn specified instead
  */
+@Deprecated
 public class ExtractionFilter extends DimensionalFilter {
 
     private final String value;
-
-    private final ExtractionFunction extractionFunction;
 
     /**
      * Constructor.
@@ -26,23 +25,17 @@ public class ExtractionFilter extends DimensionalFilter {
      * @param extractionFn  Function to do the extraction
      */
     public ExtractionFilter(Dimension dimension, String value, ExtractionFunction extractionFn) {
-        super(dimension, DefaultFilterType.EXTRACTION);
+        super(dimension, DefaultFilterType.EXTRACTION, extractionFn);
         this.value = value;
-        this.extractionFunction = extractionFn;
     }
 
     public String getValue() {
         return value;
     }
 
-    @JsonProperty(value = "extractionFn")
-    public ExtractionFunction getExtractionFunction() {
-        return extractionFunction;
-    }
-
     @Override
     public ExtractionFilter withDimension(Dimension dimension) {
-        return new ExtractionFilter(dimension, value, extractionFunction);
+        return new ExtractionFilter(dimension, value, getExtractionFunction());
     }
 
     /**
@@ -53,7 +46,7 @@ public class ExtractionFilter extends DimensionalFilter {
      * @return a new instance of this filter with the given value
      */
     public ExtractionFilter withValue(String value) {
-        return new ExtractionFilter(getDimension(), value, extractionFunction);
+        return new ExtractionFilter(getDimension(), value, getExtractionFunction());
     }
 
     /**
@@ -69,7 +62,7 @@ public class ExtractionFilter extends DimensionalFilter {
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), value, extractionFunction);
+        return Objects.hash(super.hashCode(), value);
     }
 
     @Override
@@ -80,7 +73,6 @@ public class ExtractionFilter extends DimensionalFilter {
 
         return
                 super.equals(obj) &&
-                Objects.equals(value, other.value) &&
-                Objects.equals(extractionFunction, other.extractionFunction);
+                Objects.equals(value, other.value);
     }
 }

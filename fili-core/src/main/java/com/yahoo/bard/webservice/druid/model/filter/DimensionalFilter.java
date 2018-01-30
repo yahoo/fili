@@ -3,8 +3,12 @@
 package com.yahoo.bard.webservice.druid.model.filter;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.data.dimension.impl.ExtractionFunctionDimension;
+import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction;
 import com.yahoo.bard.webservice.druid.serializers.DimensionToNameSerializer;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import java.util.Objects;
@@ -14,24 +18,50 @@ import java.util.Objects;
  *
  * @param <T> a DimensionalFilter
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public abstract class DimensionalFilter<T extends DimensionalFilter<? super T>> extends Filter {
 
     private final Dimension dimension;
+    private final ExtractionFunction extractionFunction;
 
     /**
-     * Constructor.
+     * Constructor, default extraction function to the one on dimension if it has one.
      *
      * @param dimension  Dimension to filter
      * @param type Type of the filter
      */
     protected DimensionalFilter(Dimension dimension, FilterType type) {
         super(type);
+
         this.dimension = dimension;
+        if (dimension instanceof ExtractionFunctionDimension) {
+            extractionFunction = ((ExtractionFunctionDimension) dimension).getExtractionFunction().get();
+        } else {
+            extractionFunction = null;
+        }
+    }
+
+    /**
+     * Constructor, with explicit extraction function provided.
+     *
+     * @param dimension  Dimension to filter
+     * @param type Type of the filter
+     * @param extractionFunction  Extraction function to be applied on dimension
+     */
+    protected DimensionalFilter(Dimension dimension, FilterType type, ExtractionFunction extractionFunction) {
+        super(type);
+        this.dimension = dimension;
+        this.extractionFunction = extractionFunction;
     }
 
     @JsonSerialize(using = DimensionToNameSerializer.class)
     public Dimension getDimension() {
         return dimension;
+    }
+
+    @JsonProperty(value = "extractionFn")
+    public ExtractionFunction getExtractionFunction() {
+        return extractionFunction;
     }
 
     /**
@@ -45,7 +75,7 @@ public abstract class DimensionalFilter<T extends DimensionalFilter<? super T>> 
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), dimension);
+        return Objects.hash(super.hashCode(), dimension, extractionFunction);
     }
 
     @Override
@@ -56,6 +86,7 @@ public abstract class DimensionalFilter<T extends DimensionalFilter<? super T>> 
 
         return
                 super.equals(obj) &&
-                Objects.equals(dimension, other.dimension);
+                Objects.equals(dimension, other.dimension) &&
+                Objects.equals(extractionFunction, other.extractionFunction);
     }
 }
