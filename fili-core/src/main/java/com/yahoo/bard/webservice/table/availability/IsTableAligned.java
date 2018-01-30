@@ -9,6 +9,7 @@ import java.util.function.Predicate;
 /**
  * A predicate to determine whether a table aligns with a criteria.
  */
+@FunctionalInterface
 public interface IsTableAligned extends Predicate<PhysicalTable> {
 
     /**

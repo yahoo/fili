@@ -9,6 +9,7 @@ import javax.ws.rs.core.UriInfo;
  * Interface for building JobRows (i.e. metadata about an asynchronous job) from Bard requests. Provides an injection
  * point that allows customers to build custom job metadata.
  */
+@FunctionalInterface
 public interface JobRowBuilder {
 
     /**
