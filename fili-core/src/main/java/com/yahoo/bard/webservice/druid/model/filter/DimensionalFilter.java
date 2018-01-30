@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Filter for matching a dimension.
@@ -34,10 +35,13 @@ public abstract class DimensionalFilter<T extends DimensionalFilter<? super T>> 
         super(type);
 
         this.dimension = dimension;
+
         if (dimension instanceof ExtractionFunctionDimension) {
-            extractionFunction = ((ExtractionFunctionDimension) dimension).getExtractionFunction().get();
+            Optional<ExtractionFunction> optionalExtractionFunction = ((ExtractionFunctionDimension) dimension)
+                    .getExtractionFunction();
+            this.extractionFunction = optionalExtractionFunction.isPresent() ? optionalExtractionFunction.get() : null;
         } else {
-            extractionFunction = null;
+            this.extractionFunction = null;
         }
     }
 
@@ -86,7 +90,7 @@ public abstract class DimensionalFilter<T extends DimensionalFilter<? super T>> 
 
         return
                 super.equals(obj) &&
-                Objects.equals(dimension, other.dimension) &&
-                Objects.equals(extractionFunction, other.extractionFunction);
+                        Objects.equals(dimension, other.dimension) &&
+                        Objects.equals(extractionFunction, other.extractionFunction);
     }
 }

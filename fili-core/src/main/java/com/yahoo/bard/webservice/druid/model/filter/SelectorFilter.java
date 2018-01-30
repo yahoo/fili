@@ -21,7 +21,8 @@ public class SelectorFilter extends DimensionalFilter {
      * @param value  Value of the filter
      */
     public SelectorFilter(Dimension dimension, String value) {
-        this(dimension, value, null);
+        super(dimension, DefaultFilterType.SELECTOR);
+        this.value = value;
     }
 
     /**
@@ -30,7 +31,6 @@ public class SelectorFilter extends DimensionalFilter {
      * @param dimension  Dimension to apply the extraction to
      * @param value  Value of the filter
      * @param extractionFn  Extraction function to be applied on dimension
-     *
      */
     public SelectorFilter(Dimension dimension, String value, ExtractionFunction extractionFn) {
         super(dimension, DefaultFilterType.SELECTOR, extractionFn);

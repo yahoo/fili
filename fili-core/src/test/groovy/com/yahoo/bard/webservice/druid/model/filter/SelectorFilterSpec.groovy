@@ -1,3 +1,5 @@
+// Copyright 2017 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.filter
 
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.RegisteredLookupExtractionFunction
@@ -9,7 +11,7 @@ import spock.lang.Specification
 /**
  * Test selector filter serialization.
  */
-class SelectorFilterSpec extends Specification{
+class SelectorFilterSpec extends Specification {
 
     ObjectMapper objectMapper
 
