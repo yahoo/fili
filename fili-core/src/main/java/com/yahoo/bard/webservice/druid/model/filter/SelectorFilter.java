@@ -43,7 +43,7 @@ public class SelectorFilter extends DimensionalFilter {
 
     @Override
     public SelectorFilter withDimension(Dimension dimension) {
-        return new SelectorFilter(dimension,  value);
+        return new SelectorFilter(dimension,  value, getExtractionFunction());
     }
 
     /**
@@ -54,7 +54,7 @@ public class SelectorFilter extends DimensionalFilter {
      * @return a new instance of this filter with the given value
      */
     public SelectorFilter withValue(String value) {
-        return new SelectorFilter(getDimension(), value);
+        return new SelectorFilter(getDimension(), value, getExtractionFunction());
     }
 
     /**

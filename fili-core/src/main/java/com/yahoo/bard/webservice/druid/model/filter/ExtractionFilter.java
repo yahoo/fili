@@ -10,7 +10,7 @@ import java.util.Objects;
 /**
  * Filter for matching a dimension using some specific Extraction function.
  *
- * @deprecated  Use other dimensional filters with extractionFn specified instead
+ * @deprecated  Use {@link SelectorFilter} dimensional filters with extractionFn specified instead
  */
 @Deprecated
 public class ExtractionFilter extends DimensionalFilter {
