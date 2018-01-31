@@ -52,16 +52,16 @@ Unless aliasing is supported and used (see below), responses will use the full s
 Reserved parameter names
 ------------------------
 
-Two optional features which may be supported in some fili implementations are 'filter' and 'AS'.  These parameter names should be treated as reserved when configuring metrics.
+Two optional features which may be supported in some fili implementations are 'filter' and 'as'.  These parameter names should be treated as reserved when configuring metrics.
 
-Dynamic aggregation filters, if supported, use the parameter name `filter`. Values will be parsed according to the same rules as the entries in the `filters` query parameter.  The expected behavior of the filter parameter is that rows in the base fact will not be aggregated unless the included filter is true.  This is potentially costly in performance and global filters should always be preferred to dynamic filters, if possible.
+Dynamic aggregation filters, if supported, use the parameter name `filters`. Values will be parsed according to the same rules as the entries in the `filters` query parameter.  The expected behavior of the filters parameter is that rows in the base fact will not be aggregated unless the included filters is true.  This is potentially costly in performance and global filters should always be preferred to dynamic filters, if possible.
 
-The `AS` parameter name, if supported, will create an alias for the dynamic metric which will be used in the schema of the response as well as in the having clause of the request.
+The `as` parameter name, if supported, will create an alias for the dynamic metric which will be used in the schema of the response as well as in the having clause of the request.
 
 Example:
 
 ```
-?metrics=users(filter,dim1|id-in['a','b'],AS=DimOneInAOrB)&having=DimOneInAOrB-gt[50]
+?metrics=users(filters=dim1|id-in['a','b'],as=DimOneInAOrB)&having=DimOneInAOrB-gt[50]
 ```
 
 This would create a variation of the standard `users` aggregation which only counted users from records where the dimension `dim1` had values "a" or "b", and would display result rows only which for which this metric had at least 50 users.
@@ -102,7 +102,7 @@ Recommended types to be implemented:
 
 `identifier`: The parameter value will be parsed as an identifier string.
 
-`filter`: The parameter accepts values parsed as the entries in the filters query parameter.
+`filter`: The parameter accepts values parsed identically to the filters query parameter.
 
 `dimension`: The parameter accepts values from a dimension.
 
@@ -119,6 +119,6 @@ Proposed future type extensions:
 Reserved Parameter Types
 ------------------------
 
-The `filter` reserved parameter should have an implicit type of `filter`
+The `filters` reserved parameter should have an implicit type of `filter`
 
-The `AS` reserved parameter should have an implicit type of `identifier`
+The `as` reserved parameter should have an implicit type of `identifier`
