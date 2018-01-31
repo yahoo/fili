@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.application;
 
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_COORDINATOR_METADATA;
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_DIMENSIONS_LOADER;
+import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_LOOKUP_METADATA;
 import static com.yahoo.bard.webservice.web.handlers.CacheRequestHandler.CACHE_HITS;
 import static com.yahoo.bard.webservice.web.handlers.CacheRequestHandler.CACHE_REQUESTS;
 import static com.yahoo.bard.webservice.web.handlers.DefaultWebServiceHandlerSelector.QUERY_REQUEST_TOTAL;
@@ -13,6 +14,7 @@ import static com.yahoo.bard.webservice.web.handlers.SplitQueryRequestHandler.SP
 import com.yahoo.bard.webservice.application.healthchecks.AllDimensionsLoadedHealthCheck;
 import com.yahoo.bard.webservice.application.healthchecks.DataSourceMetadataLoaderHealthCheck;
 import com.yahoo.bard.webservice.application.healthchecks.DruidDimensionsLoaderHealthCheck;
+import com.yahoo.bard.webservice.application.healthchecks.LookupHealthCheck;
 import com.yahoo.bard.webservice.application.healthchecks.VersionHealthCheck;
 import com.yahoo.bard.webservice.async.broadcastchannels.BroadcastChannel;
 import com.yahoo.bard.webservice.async.broadcastchannels.SimpleBroadcastChannel;
@@ -71,6 +73,7 @@ import com.yahoo.bard.webservice.druid.util.FieldConverters;
 import com.yahoo.bard.webservice.druid.util.SketchFieldConverter;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataLoadTask;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
+import com.yahoo.bard.webservice.metadata.LookupMetadataLoadTask;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
 import com.yahoo.bard.webservice.metadata.RequestedIntervalsFunction;
 import com.yahoo.bard.webservice.metadata.SegmentIntervalsHashIdGenerator;
@@ -157,6 +160,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     public static final String HEALTH_CHECK_NAME_DATASOURCE_METADATA = "datasource metadata loader";
+    public static final String HEALTH_CHECK_NAME_LOOKUP = "lookup loader";
     public static final String HEALTH_CHECK_NAME_DRUID_DIM_LOADER = "druid dimensions loader";
     public static final String HEALTH_CHECK_VERSION = "version";
     public static final String HEALTH_CHECK_NAME_DIMENSION = "dimension check";
@@ -304,6 +308,13 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                     );
 
                     setupDataSourceMetaData(healthCheckRegistry, dataSourceMetadataLoader);
+                }
+
+                if (DRUID_LOOKUP_METADATA.isOn()) {
+                    setupLookUpMetadataLoader(
+                            healthCheckRegistry,
+                            buildLookupMetaDataLoader(metadataDruidWebService, loader.getDimensionDictionary())
+                    );
                 }
 
                 bind(querySigningService).to(QuerySigningService.class);
@@ -727,6 +738,22 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     }
 
     /**
+     * Builds a lookup metadata loader.
+     *
+     * @param webService  The web service used by the loader to query druid for lookup statuses.
+     * @param dimensionDictionary  A {@link com.yahoo.bard.webservice.data.dimension.DimensionDictionary} that is used
+     * to obtain a list of lookups in Fili.
+     *
+     * @return a lookup loader
+     */
+    protected LookupMetadataLoadTask buildLookupMetaDataLoader(
+            DruidWebService webService,
+            DimensionDictionary dimensionDictionary
+    ) {
+        return new LookupMetadataLoadTask(webService, dimensionDictionary);
+    }
+
+    /**
      * Build a DimensionValueLoadTask.
      *
      * @param webService  The web service used by the loader to query dimension values
@@ -766,6 +793,20 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 SEG_LOADER_HC_LAST_RUN_PERIOD_MILLIS
         );
         healthCheckRegistry.register(HEALTH_CHECK_NAME_DATASOURCE_METADATA, dataSourceMetadataLoaderHealthCheck);
+    }
+
+    /**
+     * Schedule a lookup loader and register its health check.
+     *
+     * @param healthCheckRegistry  The health check registry to register lookup health checks.
+     * @param lookupMetadataLoadTask  The {@link LookupMetadataLoadTask} to use.
+     */
+    protected final void setupLookUpMetadataLoader(
+            HealthCheckRegistry healthCheckRegistry,
+            LookupMetadataLoadTask lookupMetadataLoadTask
+    ) {
+        scheduleLoader(lookupMetadataLoadTask);
+        healthCheckRegistry.register(HEALTH_CHECK_NAME_LOOKUP, new LookupHealthCheck(lookupMetadataLoadTask));
     }
 
     /**

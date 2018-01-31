@@ -38,7 +38,7 @@ class FeatureFlagRegistrySpec extends Specification {
         values == ["partial_data_enabled", "druid_cache_enabled", "druid_cache_v2_enabled", "query_split_enabled",
                    "top_n_enabled", "data_filter_substring_operations_enabled", "intersection_reporting_enabled",
                    "updated_metadata_collection_names_enabled", "druid_coordinator_metadata_enabled",
-                   "druid_dimensions_loader_enabled", "case_sensitive_keys_enabled"] as Set
+                   "druid_lookup_metadata_enabled", "druid_dimensions_loader_enabled", "case_sensitive_keys_enabled"] as Set
     }
 
     @Unroll
