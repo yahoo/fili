@@ -23,8 +23,7 @@ import com.yahoo.bard.webservice.util.IntervalUtils
 import com.yahoo.bard.webservice.web.BadApiRequestException
 import com.yahoo.bard.webservice.web.ErrorMessageFormat
 import com.yahoo.bard.webservice.web.ResponseFormatType
-import com.yahoo.bard.webservice.web.apirequest.ApiRequestImpl
-import com.yahoo.bard.webservice.web.apirequest.DataApiRequestImpl
+import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
@@ -33,7 +32,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class DataApiRequestSpec extends Specification {
+class DataApiRequestImplSpec extends Specification {
 
     @Shared
     DimensionDictionary dimensionDict
@@ -45,8 +44,6 @@ class DataApiRequestSpec extends Specification {
     GranularityParser granularityParser = new StandardGranularityParser()
 
     static final DateTimeZone orginalTimeZone = DateTimeZone.default
-
-    class ConcreteApiRequest extends ApiRequestImpl {}
 
     def setupSpec() {
         DateTimeZone.default = IntervalUtils.SYSTEM_ALIGNMENT_EPOCH.zone
@@ -92,22 +89,22 @@ class DataApiRequestSpec extends Specification {
 
         where:
         responseFormat          | expectedFormat
-        ResponseFormatType.JSON | new DataApiRequestImpl().generateAcceptFormat(null)
-        ResponseFormatType.JSON | new DataApiRequestImpl().generateAcceptFormat("json")
-        ResponseFormatType.CSV  | new DataApiRequestImpl().generateAcceptFormat("csv")
+        ResponseFormatType.JSON | new TestingDataApiRequestImpl().generateAcceptFormat(null)
+        ResponseFormatType.JSON | new TestingDataApiRequestImpl().generateAcceptFormat("json")
+        ResponseFormatType.CSV  | new TestingDataApiRequestImpl().generateAcceptFormat("csv")
     }
 
     def "check invalid parsing generateFormat"() {
         when:
-        new DataApiRequestImpl().generateAcceptFormat("bad")
+        new TestingDataApiRequestImpl().generateAcceptFormat("bad")
 
         then:
         thrown BadApiRequestException
     }
 
     def "check parsing generateLogicalMetrics"() {
-
-        Set<LogicalMetric> logicalMetrics = new DataApiRequestImpl().generateLogicalMetrics(
+        given:
+        Set<LogicalMetric> logicalMetrics = new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "met1,met2,met3",
                 metricDict,
                 dimensionDict,
@@ -120,14 +117,29 @@ class DataApiRequestSpec extends Specification {
             assert metric?.name == name
             metric
         }
+
         expect:
         logicalMetrics == expected
+    }
+
+    def "generateLogicalMetrics throws BadApiRequestException on non-existing LogicalMetric"() {
+        when:
+        Set<LogicalMetric> logicalMetrics = new TestingDataApiRequestImpl().generateLogicalMetrics(
+                "met1,met2,nonExistingMetric",
+                metricDict,
+                dimensionDict,
+                table
+        )
+
+        then: "BadApiRequestException is thrown"
+        BadApiRequestException exception = thrown()
+        exception.message == ErrorMessageFormat.METRICS_UNDEFINED.logFormat(["nonExistingMetric"])
     }
 
     @Unroll
     def "check valid granularity name #name parses to granularity #expected"() {
         expect:
-        new DataApiRequestImpl().generateGranularity(name, granularityParser) == expected
+        new TestingDataApiRequestImpl().generateGranularity(name, granularityParser) == expected
 
         where:
         name    | expected
@@ -141,7 +153,7 @@ class DataApiRequestSpec extends Specification {
         String expectedMessage = ErrorMessageFormat.UNKNOWN_GRANULARITY.format(timeGrainName)
 
         when:
-        new DataApiRequestImpl().generateGranularity(timeGrainName, granularityParser)
+        new TestingDataApiRequestImpl().generateGranularity(timeGrainName, granularityParser)
 
         then:
         Exception e = thrown(BadApiRequestException)
@@ -151,7 +163,10 @@ class DataApiRequestSpec extends Specification {
     def "check weekly granularity has the expected alignment description"() {
         setup:
         String expectedMessage = " Week must start on a Monday and end on a Monday."
-        Granularity<?> granularity = new DataApiRequestImpl().generateGranularity("week", new StandardGranularityParser())
+        Granularity<?> granularity = new TestingDataApiRequestImpl().generateGranularity(
+                "week",
+                new StandardGranularityParser()
+        )
 
         expect:
         granularity.getAlignmentDescription() == expectedMessage

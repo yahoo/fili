@@ -82,6 +82,10 @@ import com.yahoo.bard.webservice.util.DefaultingDictionary;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.web.CsvResponseWriter;
 import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequestFactory;
+import com.yahoo.bard.webservice.web.apirequest.DefaultDataApiRequestFactory;
+import com.yahoo.bard.webservice.web.ratelimit.DefaultRateLimiter;
+import com.yahoo.bard.webservice.web.DefaultResponseFormatResolver;
 import com.yahoo.bard.webservice.web.DimensionApiRequestMapper;
 import com.yahoo.bard.webservice.web.DimensionsApiRequest;
 import com.yahoo.bard.webservice.web.FiliResponseWriter;
@@ -93,12 +97,15 @@ import com.yahoo.bard.webservice.web.JsonResponseWriter;
 import com.yahoo.bard.webservice.web.MetricsApiRequest;
 import com.yahoo.bard.webservice.web.MetricsFilterSetBuilder;
 import com.yahoo.bard.webservice.web.NoOpRequestMapper;
+import com.yahoo.bard.webservice.web.RateLimiter;
 import com.yahoo.bard.webservice.web.RequestMapper;
+import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.ResponseWriter;
 import com.yahoo.bard.webservice.web.SlicesApiRequest;
 import com.yahoo.bard.webservice.web.TablesApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DefaultHavingApiGenerator;
 import com.yahoo.bard.webservice.web.apirequest.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.PerRequestDictionaryHavingGenerator;
 import com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow;
 import com.yahoo.bard.webservice.web.handlers.workflow.RequestWorkflowProvider;
 import com.yahoo.bard.webservice.web.util.QueryWeightUtil;
@@ -241,6 +248,8 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 bind(buildDruidResponseParser()).to(DruidResponseParser.class);
                 bind(buildDruidFilterBuilder()).to(DruidFilterBuilder.class);
 
+                bind(buildDataApiRequestFactory()).to(DataApiRequestFactory.class);
+
                 //Initialize the field converter
                 FieldConverterSupplier.sketchConverter = initializeSketchConverter();
 
@@ -316,6 +325,10 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 bind(getHttpResponseMaker()).to(HttpResponseMaker.class);
 
                 bind(buildResponseWriter(getMappers())).to(ResponseWriter.class);
+
+                bind(buildResponseFormatResolver()).to(ResponseFormatResolver.class);
+
+                bind(buildRateLimiter()).to(RateLimiter.class);
 
                 if (DRUID_DIMENSIONS_LOADER.isOn()) {
                     DimensionValueLoadTask dimensionLoader = buildDruidDimensionsLoader(
@@ -624,6 +637,17 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     }
 
     /**
+     * Creates an factory that constructs DataApiRequests
+     * .
+     * Constructs a {@link DefaultDataApiRequestFactory} by default.
+     *
+     * @return An object to build Druid filters from API filters
+     */
+    protected DataApiRequestFactory buildDataApiRequestFactory() {
+        return new DefaultDataApiRequestFactory();
+    }
+
+    /**
      * Creates an object that generates map of Api Having from having string.
      * Constructs a {@link DefaultHavingApiGenerator} by default.
      * @param loader  Configuration loader that connects resource dictionaries with the loader.
@@ -631,7 +655,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      * @return An object to generate having maps from having string.
      */
     protected HavingGenerator buildHavingGenerator(ConfigurationLoader loader) {
-        return new DefaultHavingApiGenerator(loader);
+        return new PerRequestDictionaryHavingGenerator(new DefaultHavingApiGenerator(loader.getMetricDictionary()));
     }
 
     /**
@@ -1121,6 +1145,26 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      */
     protected DruidWebService buildMetadataDruidWebService(ObjectMapper mapper) {
         return buildDruidWebService(DruidClientConfigHelper.getMetadataServiceConfig(), mapper);
+    }
+
+    /**
+     * Create a ResponseFormatResolver for Servlet objects.
+     * <p>
+     * Currently default types are json, jsonapi and csv types.
+     *
+     * @return A ResponseFormatResolver
+     */
+    protected ResponseFormatResolver buildResponseFormatResolver() {
+        return new DefaultResponseFormatResolver();
+    }
+
+    /**
+     * Creates a new RateLimiter for the RateLimitFilter.
+     *
+     * @return a RateLimiter implementation
+     */
+    protected RateLimiter buildRateLimiter() {
+        return new DefaultRateLimiter();
     }
 
     @Override

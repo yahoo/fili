@@ -306,7 +306,7 @@ public class RequestLog {
     /**
      * Record logging information in the logging context.
      *
-     * @param logPhase  the name of the class destined to hold this logging information
+     * @param logPhase  The name of the class destined to hold this logging information
      *
      * @see LogBlock
      */
@@ -319,6 +319,50 @@ public class RequestLog {
                     logPhase.getClass().getSimpleName()
             );
         }
+    }
+
+    /**
+     * Retrieve logging information in the logging context.
+     *
+     * @param cls  The class destined to hold this logging information
+     *
+     * @return the logging information in the logging context
+     *
+     * @see LogBlock
+     */
+    public static LogInfo retrieve(Class cls) {
+        RequestLog requestLog = RLOG.get();
+        if (requestLog == null) {
+            String message = String.format(
+                    "Attempted to retrieve log info while request log object was uninitialized: %s",
+                    cls.getSimpleName()
+            );
+            LOG.error(message);
+            throw new IllegalStateException(message);
+        }
+
+        LogInfo logInfo = requestLog.info.get(cls.getSimpleName());
+        if (logInfo == null) {
+            String message = ErrorMessageFormat.RESOURCE_RETRIEVAL_FAILURE.format(cls.getSimpleName());
+            LOG.error(message);
+            throw new IllegalStateException(message);
+        }
+        return logInfo;
+    }
+
+    /**
+     * Returns a map of all the LogInfo blocks currently registered with this thread's RequestLog.
+     *
+     * @return A map of all the LogInfo objects registered to this thread's RequestLog
+     */
+    public static Map<String, LogInfo> retrieveAll() {
+        RequestLog requestLog = RLOG.get();
+        if (requestLog == null) {
+            String message = String.format("Attempted to retrieve log info while request log object was uninitialized");
+            LOG.error(message);
+            throw new IllegalStateException(message);
+        }
+        return requestLog.info.any();
     }
 
     /**

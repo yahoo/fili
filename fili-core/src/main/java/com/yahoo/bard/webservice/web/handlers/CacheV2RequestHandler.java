@@ -100,15 +100,14 @@ public class CacheV2RequestHandler extends BaseDataRequestHandler {
                     ) {
                         try {
                             if (context.getNumberOfOutgoing().decrementAndGet() == 0) {
-                                RequestLog.record(new BardQueryInfo(druidQuery.getQueryType().toJson(), true));
                                 RequestLog.stopTiming(REQUEST_WORKFLOW_TIMER);
                             }
 
                             if (context.getNumberOfIncoming().decrementAndGet() == 0) {
                                 RequestLog.startTiming(RESPONSE_WORKFLOW_TIMER);
                             }
-
                             CACHE_HITS.mark(1);
+                            BardQueryInfo.getBardQueryInfo().incrementCountCacheHits();
                             RequestLog logCtx = RequestLog.dump();
                             nextResponse.processResponse(
                                     mapper.readTree(cacheEntry.getValue()),

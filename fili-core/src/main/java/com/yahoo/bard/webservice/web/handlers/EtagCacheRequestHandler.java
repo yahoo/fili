@@ -90,7 +90,6 @@ public class EtagCacheRequestHandler extends BaseDataRequestHandler {
                             );
 
                     if (context.getNumberOfOutgoing().decrementAndGet() == 0) {
-                        RequestLog.record(new BardQueryInfo(druidQuery.getQueryType().toJson(), true));
                         RequestLog.stopTiming(REQUEST_WORKFLOW_TIMER);
                     }
 
@@ -99,6 +98,7 @@ public class EtagCacheRequestHandler extends BaseDataRequestHandler {
                     }
 
                     CACHE_HITS.mark(1);
+                    BardQueryInfo.getBardQueryInfo().incrementCountCacheHits();
                 } else { // Current query is not in data cache
                     // Insert "If-None-Match" header into RequestContext; the value a random pre-defined string
                     context.getHeaders().putSingle(

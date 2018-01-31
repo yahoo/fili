@@ -1,29 +1,59 @@
 // Copyright 2016 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.web
+package com.yahoo.bard.webservice.web.ratelimit
 
-import com.yahoo.bard.webservice.web.RateLimiter.RequestToken
-import com.yahoo.bard.webservice.web.RateLimiter.RequestType
 import com.yahoo.bard.webservice.web.filters.RateLimitFilterSpec
 
 import spock.lang.Specification
 
 import java.security.Principal
 
-class RateLimiterSpec extends Specification {
+import javax.ws.rs.HttpMethod
+import javax.ws.rs.container.ContainerRequestContext
+import javax.ws.rs.core.MultivaluedHashMap
+import javax.ws.rs.core.MultivaluedMap
+import javax.ws.rs.core.SecurityContext
 
-    RateLimiter rateLimiter
+class DefaultRateLimiterSpec extends Specification {
+
+    static String BYPASS_HEADER_NAME
+    static String BYPASS_HEADER_VALUE
+
+    static String CLIENT_HEADER_NAME
+    static String CLIENT_HEADER_UI
+    static String CLIENT_HEADER_USER
+
+    static String REFERER_HEADER_NAME
+    static String REFERER_HEADER_VALUE
+
+    final static String USERNAME = "user"
+
+    DefaultRateLimiter rateLimiter
     Principal user
+    MultivaluedMap<String, String> headers
+    SecurityContext securityContext
+    String requestMethod
+    ContainerRequestContext request
 
     def setupSpec() {
         RateLimitFilterSpec.setDefaults()
+
+        BYPASS_HEADER_NAME = "bard-testing"
+        BYPASS_HEADER_VALUE = "###BYPASS###"
+
+        CLIENT_HEADER_NAME = "clientid"
+        CLIENT_HEADER_UI = "UI"
+        CLIENT_HEADER_USER = "USER"
+
+        REFERER_HEADER_NAME = "referer"
+        REFERER_HEADER_VALUE = "test"
     }
 
     def setup() {
-        rateLimiter = new RateLimiter()
         user = Mock(Principal)
-        user.getName() >> { return "user" }
+        user.getName() >> USERNAME
 
+        rateLimiter = new DefaultRateLimiter()
         // reset metrics to 0
         rateLimiter.with {
             [requestGlobalCounter, usersCounter].each { it.dec(it.count) }
@@ -31,11 +61,60 @@ class RateLimiterSpec extends Specification {
                 it.mark(-it.count)
             }
         }
+
+        headers = new MultivaluedHashMap<>()
+        securityContext = Mock(SecurityContext)
+        request = Mock(ContainerRequestContext)
+        headers.add(CLIENT_HEADER_NAME, CLIENT_HEADER_USER)
+        requestMethod = HttpMethod.GET
+        securityContext.getUserPrincipal() >> { return user}
+        request.getHeaders() >> {return headers }
+        request.getMethod() >> { return requestMethod }
+        request.getSecurityContext() >> { return securityContext }
+    }
+
+    def "bypass request"() {
+        setup:
+        headers.remove(CLIENT_HEADER_NAME)
+        headers.add(BYPASS_HEADER_NAME, BYPASS_HEADER_VALUE)
+
+        when:
+        RateLimitRequestToken token = rateLimiter.getToken(request)
+        token.close()
+
+        then:
+        rateLimiter.requestGlobalCounter.count == 0
+        rateLimiter.usersCounter.count == 0
+        rateLimiter.requestBypassMeter.count == 1
+        rateLimiter.requestUiMeter.count == 0
+        rateLimiter.requestUserMeter.count == 0
+        rateLimiter.rejectUiMeter.count == 0
+        rateLimiter.rejectUserMeter.count == 0
+    }
+
+    def "CORS preflight request"() {
+        setup:
+        headers.remove(CLIENT_HEADER_NAME)
+        requestMethod = HttpMethod.OPTIONS
+        securityContext = null
+
+        when:
+        RateLimitRequestToken token = rateLimiter.getToken(request)
+        token.close()
+
+        then:
+        rateLimiter.requestGlobalCounter.count == 0
+        rateLimiter.usersCounter.count == 0
+        rateLimiter.requestBypassMeter.count == 1
+        rateLimiter.requestUiMeter.count == 0
+        rateLimiter.requestUserMeter.count == 0
+        rateLimiter.rejectUiMeter.count == 0
+        rateLimiter.rejectUserMeter.count == 0
     }
 
     def "user request"() {
         when:
-        RateLimiter.RequestToken token = rateLimiter.getToken(RequestType.USER, user)
+        RateLimitRequestToken token = rateLimiter.getToken(request)
         token.close()
 
         then:
@@ -49,8 +128,13 @@ class RateLimiterSpec extends Specification {
     }
 
     def "ui request"() {
+        setup:
+        headers.remove(CLIENT_HEADER_NAME)
+        headers.add(CLIENT_HEADER_NAME, CLIENT_HEADER_UI)
+        headers.add(REFERER_HEADER_NAME, REFERER_HEADER_VALUE)
+
         when:
-        RateLimiter.RequestToken token = rateLimiter.getToken(RequestType.UI, user)
+        RateLimitRequestToken token = rateLimiter.getToken(request)
         token.close()
 
         then:
@@ -63,25 +147,30 @@ class RateLimiterSpec extends Specification {
         rateLimiter.rejectUserMeter.count == 0
     }
 
-    def "bypass request"() {
+    def "username of request is stored while request is open, doesn't get removed on all requests closed"() {
+        expect:
+        rateLimiter.userCounts.containsKey(USERNAME) == false
+
         when:
-        RateLimiter.RequestToken token = rateLimiter.getToken(RequestType.BYPASS, user)
+        RateLimitRequestToken token = rateLimiter.getToken(request)
+
+        then:
+        rateLimiter.userCounts.containsKey(USERNAME) == true
+
+        when:
         token.close()
 
         then:
-        rateLimiter.requestGlobalCounter.count == 0
-        rateLimiter.usersCounter.count == 0
-        rateLimiter.requestBypassMeter.count == 1
-        rateLimiter.requestUiMeter.count == 0
-        rateLimiter.requestUserMeter.count == 0
-        rateLimiter.rejectUiMeter.count == 0
-        rateLimiter.rejectUserMeter.count == 0
+        rateLimiter.userCounts.containsKey(USERNAME) == true
+
     }
 
-
     def "Null user request"() {
+        setup:
+        user = null
+
         when: "We have the global limit of tokens for a null user"
-        List<RequestToken> tokens = (1..RateLimitFilterSpec.LIMIT_GLOBAL).collect { rateLimiter.getToken(RequestType.USER,  null ) }
+        List<RateLimitRequestToken> tokens = (1..RateLimitFilterSpec.LIMIT_GLOBAL).collect { rateLimiter.getToken(request) }
 
         and: "They have all been closed:"
         tokens.each { token -> token.close() }
@@ -110,7 +199,7 @@ class RateLimiterSpec extends Specification {
 
     def "OutstandingRequestToken closed"() {
         when:
-        RateLimiter.RequestToken token = rateLimiter.getToken(RequestType.USER, user)
+        RateLimitRequestToken token = rateLimiter.getToken(request)
 
         then:
         rateLimiter.globalCount.get() == 1
@@ -139,7 +228,7 @@ class RateLimiterSpec extends Specification {
 
     def "OutstandingRequestToken orphan closed"() {
         when:
-        RateLimiter.RequestToken token = rateLimiter.getToken(RequestType.USER, user)
+        RateLimitRequestToken token = rateLimiter.getToken(request)
 
         then:
         rateLimiter.globalCount.get() == 1
@@ -161,8 +250,8 @@ class RateLimiterSpec extends Specification {
 
     def "Lose user counts"() {
         when:
-        RateLimiter.OutstandingRequestToken token = rateLimiter.getToken(RequestType.USER, user)
-        token.count.decrementAndGet()
+        RateLimitRequestToken token = rateLimiter.getToken(request)
+        rateLimiter.userCounts.get(USERNAME).decrementAndGet()
         token.close()
 
         then:
@@ -173,7 +262,7 @@ class RateLimiterSpec extends Specification {
 
     def "Lose global counts"() {
         when:
-        RateLimiter.RequestToken token = rateLimiter.getToken(RequestType.USER, user)
+        RateLimitRequestToken token = rateLimiter.getToken(request)
         rateLimiter.globalCount.decrementAndGet()
         token.close()
 

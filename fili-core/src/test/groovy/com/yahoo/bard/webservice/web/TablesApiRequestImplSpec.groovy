@@ -10,13 +10,14 @@ import com.yahoo.bard.webservice.data.time.StandardGranularityParser
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.LogicalTableDictionary
 import com.yahoo.bard.webservice.table.TableGroup
+import com.yahoo.bard.webservice.web.apirequest.TablesApiRequestImpl
 import com.yahoo.bard.webservice.web.endpoints.TablesServlet
 
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class TablesApiRequestSpec extends Specification {
+class TablesApiRequestImplSpec extends Specification {
 
     JerseyTestBinder jtb
 
@@ -44,7 +45,7 @@ class TablesApiRequestSpec extends Specification {
         tablesServlet.getLogicalTableDictionary() >> fullDictionary
 
         when:
-        TablesApiRequest apiRequest = new TablesApiRequest(
+        TablesApiRequestImpl tablesApiRequestImpl = new TablesApiRequestImpl(
                 null,
                 null,
                 null,
@@ -55,7 +56,7 @@ class TablesApiRequestSpec extends Specification {
         )
 
         then:
-        apiRequest.getTables() as Set == fullDictionary.values() as Set
+        tablesApiRequestImpl.getTables() as Set == fullDictionary.values() as Set
     }
 
     def "check api request construction for a given table name"() {
@@ -65,7 +66,7 @@ class TablesApiRequestSpec extends Specification {
 
 
         when:
-        TablesApiRequest apiRequest = new TablesApiRequest(
+        TablesApiRequestImpl tablesApiRequestImpl = new TablesApiRequestImpl(
                 name,
                 null,
                 null,
@@ -76,7 +77,7 @@ class TablesApiRequestSpec extends Specification {
         )
 
         then:
-        apiRequest.getTables() == fullDictionary.values().findAll({ it.getName() == name }) as Set
+        tablesApiRequestImpl.getTables() == fullDictionary.values().findAll({ it.getName() == name }) as Set
     }
 
     def "check api request construction for a given table name and a given granularity"() {
@@ -89,7 +90,7 @@ class TablesApiRequestSpec extends Specification {
         tablesServlet.getLogicalTableDictionary() >> fullDictionary
 
         when:
-        TablesApiRequest apiRequest = new TablesApiRequest(
+        TablesApiRequestImpl tablesApiRequestImpl = new TablesApiRequestImpl(
                 name,
                 "day",
                 null,
@@ -100,7 +101,7 @@ class TablesApiRequestSpec extends Specification {
         )
 
         then:
-        apiRequest.getTable() == table
+        tablesApiRequestImpl.getTable() == table
     }
 
     @Unroll
@@ -108,7 +109,7 @@ class TablesApiRequestSpec extends Specification {
         tablesServlet.getLogicalTableDictionary() >> dictionary
 
         when:
-        new TablesApiRequest(
+        new TablesApiRequestImpl(
                 name,
                 grain,
                 null,

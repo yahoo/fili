@@ -13,6 +13,7 @@ import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn;
 import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestImpl;
+import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import org.joda.time.DateTimeZone;
@@ -155,7 +156,7 @@ import javax.ws.rs.core.UriInfo;
      *
      * @return a map of filters by dimension
      */
-     Map<Dimension, Set<ApiFilter>> getApiFilters();
+     ApiFilters getApiFilters();
 
     /**
      * Generates filter objects on the based on the filter query in the api request.
@@ -167,7 +168,7 @@ import javax.ws.rs.core.UriInfo;
      *
      * @return Set of filter objects.
      */
-     Map<Dimension, Set<ApiFilter>> generateFilters(
+    Map<Dimension, Set<ApiFilter>> generateFilters(
             String filterQuery,
             LogicalTable table,
             DimensionDictionary dimensionDictionary
@@ -195,7 +196,7 @@ import javax.ws.rs.core.UriInfo;
 
     DataApiRequestImpl withIntervals(Set<Interval> intervals);
 
-    DataApiRequestImpl withFilters(Map<Dimension, Set<ApiFilter>> filters);
+    DataApiRequestImpl withFilters(ApiFilters filters);
 
     DataApiRequestImpl withHavings(Map<LogicalMetric, Set<ApiHaving>> havings);
 

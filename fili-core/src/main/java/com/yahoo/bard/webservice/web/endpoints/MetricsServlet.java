@@ -11,9 +11,12 @@ import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.MetricRequest;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
+import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.MetricsApiRequest;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.RequestValidationException;
+import com.yahoo.bard.webservice.web.ResponseFormatResolver;
+import com.yahoo.bard.webservice.web.apirequest.MetricsApiRequestImpl;
 
 import com.codahale.metrics.annotation.Timed;
 
@@ -58,6 +61,7 @@ public class MetricsServlet extends EndpointServlet {
     private final MetricDictionary metricDictionary;
     private final LogicalTableDictionary logicalTableDictionary;
     private final RequestMapper requestMapper;
+    private final ResponseFormatResolver formatResolver;
 
     /**
      * Constructor.
@@ -66,18 +70,21 @@ public class MetricsServlet extends EndpointServlet {
      * @param logicalTableDictionary  Logical tables to know about
      * @param requestMapper  Mapper to change the API request if needed
      * @param objectMappers  JSON tools
+     * @param formatResolver  The formatResolver for determining correct response format
      */
     @Inject
     public MetricsServlet(
             MetricDictionary metricDictionary,
             LogicalTableDictionary logicalTableDictionary,
             @Named(MetricsApiRequest.REQUEST_MAPPER_NAMESPACE) RequestMapper requestMapper,
-            ObjectMappersSuite objectMappers
+            ObjectMappersSuite objectMappers,
+            ResponseFormatResolver formatResolver
     ) {
         super(objectMappers);
         this.metricDictionary = metricDictionary;
         this.logicalTableDictionary = logicalTableDictionary;
         this.requestMapper = requestMapper;
+        this.formatResolver = formatResolver;
     }
 
     /**
@@ -112,9 +119,9 @@ public class MetricsServlet extends EndpointServlet {
             RequestLog.startTiming(this);
             RequestLog.record(new MetricRequest("all"));
 
-            MetricsApiRequest apiRequest = new MetricsApiRequest(
+            MetricsApiRequestImpl apiRequest = new MetricsApiRequestImpl(
                     null,
-                    format,
+                    formatResolver.apply(format, containerRequestContext),
                     perPage,
                     page,
                     metricDictionary,
@@ -122,7 +129,7 @@ public class MetricsServlet extends EndpointServlet {
             );
 
             if (requestMapper != null) {
-                apiRequest = (MetricsApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
+                apiRequest = (MetricsApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
             Stream<Map<String, String>> result = apiRequest.getPage(
@@ -145,7 +152,7 @@ public class MetricsServlet extends EndpointServlet {
             LOG.error(msg, e);
             responseSender = () -> Response.status(INTERNAL_SERVER_ERROR).entity(msg).build();
         } catch (Error | Exception e) {
-            String msg = String.format("Exception processing request: %s", e.getMessage());
+            String msg = ErrorMessageFormat.REQUEST_PROCESSING_EXCEPTION.format(e.getMessage());
             LOG.info(msg, e);
             responseSender = () -> Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
         } finally {
@@ -179,7 +186,14 @@ public class MetricsServlet extends EndpointServlet {
             RequestLog.startTiming(this);
             RequestLog.record(new MetricRequest(metricName));
 
-            MetricsApiRequest apiRequest = new MetricsApiRequest(metricName, null, "", "", metricDictionary, uriInfo);
+            MetricsApiRequest apiRequest = new MetricsApiRequestImpl(
+                    metricName,
+                    null,
+                    "",
+                    "",
+                    metricDictionary,
+                    uriInfo
+            );
 
             if (requestMapper != null) {
                 apiRequest = (MetricsApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
@@ -202,7 +216,7 @@ public class MetricsServlet extends EndpointServlet {
             LOG.error(msg, e);
             responseSender = () -> Response.status(INTERNAL_SERVER_ERROR).entity(msg).build();
         } catch (Error | Exception e) {
-            String msg = String.format("Exception processing request: %s", e.getMessage());
+            String msg = ErrorMessageFormat.REQUEST_PROCESSING_EXCEPTION.format(e.getMessage());
             LOG.info(msg, e);
             responseSender = () -> Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
         } finally {
@@ -242,6 +256,7 @@ public class MetricsServlet extends EndpointServlet {
         resultRow.put("category", logicalMetric.getCategory());
         resultRow.put("name", logicalMetric.getName());
         resultRow.put("longName", logicalMetric.getLongName());
+        resultRow.put("type", logicalMetric.getType());
         resultRow.put("uri", getLogicalMetricUrl(logicalMetric, uriInfo));
         return resultRow;
     }

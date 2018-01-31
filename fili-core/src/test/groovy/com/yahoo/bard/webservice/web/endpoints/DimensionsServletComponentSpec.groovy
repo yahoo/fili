@@ -17,14 +17,12 @@ import spock.lang.Specification
 import spock.lang.Timeout
 import spock.lang.Unroll
 
-import javax.ws.rs.client.Invocation
-
 @Timeout(30)    // Fail test if hangs
 class DimensionsServletComponentSpec extends Specification {
 
     static final int NUM_MODELS_TO_GENERATE = 9
 
-    @Shared JerseyTestBinder jtb
+    @Shared JerseyTestBinder jerseyTestBinder
     @Shared JsonSlurper jsonSlurper = new JsonSlurper()
     @Shared boolean originalMetadataCollectionNames
 
@@ -33,8 +31,8 @@ class DimensionsServletComponentSpec extends Specification {
         BardFeatureFlag.UPDATED_METADATA_COLLECTION_NAMES.setOn(true)
 
         // Create the test web container to test the resources
-        jtb = new JerseyTestBinder(DimensionsServlet.class)
-        DimensionDictionary dimensionStore = jtb.configurationLoader.dimensionDictionary
+        jerseyTestBinder = new JerseyTestBinder(DimensionsServlet.class)
+        DimensionDictionary dimensionStore = jerseyTestBinder.configurationLoader.dimensionDictionary
 
         dimensionStore.findByApiName("shape").with {
             for (i in 1..35) {
@@ -72,27 +70,27 @@ class DimensionsServletComponentSpec extends Specification {
 
     def cleanupSpec() {
         BardFeatureFlag.UPDATED_METADATA_COLLECTION_NAMES.setOn(originalMetadataCollectionNames)
-        jtb.tearDown()
+        jerseyTestBinder.tearDown()
     }
 
     def "test dimensions endpoint"() {
         setup:
         String expectedResponse = """{
-                                        "dimensions":
-                                        [
-                                            {"category": "General", "name": "color", "longName": "color", "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/color", "cardinality": 0},
-                                            {"category": "General", "name": "shape", "longName": "shape", "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/shape", "cardinality": 38},
-                                            {"category": "General", "name": "size", "longName": "size", "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/size", "cardinality": 0},
-                                            {"category": "General", "name": "model", "longName": "model", "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/model", "cardinality": 21},
-                                            {"category": "General", "name": "other", "longName": "other", "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/other", "cardinality": 100000},
-                                            {"category": "General", "name": "sex", "longName": "sex", "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/sex", "cardinality": 0},
-                                            {"category": "General", "name": "species", "longName": "species", "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/species", "cardinality": 0},
-                                            {"category": "General", "name": "breed", "longName": "breed", "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/breed", "cardinality": 0}
-                                        ]
+                                         "dimensions":
+                                         [
+                                             {"category": "General", "name": "color", "longName": "color", "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/dimensions/color", "cardinality": 0, "storageStrategy":"loaded"},
+                                             {"category": "General", "name": "shape", "longName": "shape", "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/dimensions/shape", "cardinality": 38, "storageStrategy":"loaded"},
+                                             {"category": "General", "name": "size", "longName": "size", "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/dimensions/size", "cardinality": 0, "storageStrategy":"loaded"},
+                                             {"category": "General", "name": "model", "longName": "model", "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/dimensions/model", "cardinality": 21, "storageStrategy":"loaded"},
+                                             {"category": "General", "name": "other", "longName": "other", "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/dimensions/other", "cardinality": 100000, "storageStrategy":"loaded"},
+                                             {"category": "General", "name": "sex", "longName": "sex", "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/dimensions/sex", "cardinality": 0, "storageStrategy":"loaded"},
+                                             {"category": "General", "name": "species", "longName": "species", "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/dimensions/species", "cardinality": 0, "storageStrategy":"loaded"},
+                                             {"category": "General", "name": "breed", "longName": "breed", "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/dimensions/breed", "cardinality": 0, "storageStrategy":"loaded"}
+                                         ]
                                     }"""
 
         when: "We send a request"
-        String result = makeRequest("/dimensions", null).get(String.class)
+        String result = jerseyTestBinder.makeRequest("/dimensions").get(String.class)
 
         then: "The response what we expect"
         GroovyTestUtils.compareJson(result, expectedResponse, SORT_BOTH)
@@ -115,121 +113,122 @@ class DimensionsServletComponentSpec extends Specification {
                                         ],
                                         "longName": "other",
                                         "name": "other",
+                                        "storageStrategy":"loaded",
                                         "tables": [
                                             {
                                                 "category": "General",
                                                 "longName": "shapes",
                                                 "name": "shapes",
                                                 "granularity": "day",
-                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/shapes/day"
+                                                "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/shapes/day"
                                             }, {
                                                 "category": "General",
                                                 "longName": "shapes",
                                                 "name": "shapes",
                                                 "granularity": "all",
-                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/shapes/all"
+                                                "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/shapes/all"
                                             }, {
                                                 "category": "General",
                                                 "longName": "shapes",
                                                 "name": "shapes",
                                                 "granularity": "week",
-                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/shapes/week"
+                                                "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/shapes/week"
                                             }, {
                                                 "category": "General",
                                                 "longName": "shapes",
                                                 "name": "shapes",
                                                 "granularity": "month",
-                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/shapes/month"
+                                                "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/shapes/month"
                                             }, {
                                                 "category": "General",
                                                 "longName": "monthly",
                                                 "name": "monthly",
                                                 "granularity": "day",
-                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/monthly/day"
+                                                "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/monthly/day"
                                             }, {
                                                 "category": "General",
                                                 "longName": "monthly",
                                                 "name": "monthly",
                                                 "granularity": "all",
-                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/monthly/all"
+                                                "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/monthly/all"
                                             }, {
                                                 "category": "General",
                                                 "longName": "monthly",
                                                 "name": "monthly",
                                                 "granularity": "week",
-                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/monthly/week"
+                                                "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/monthly/week"
                                             }, {
                                                 "category": "General",
                                                 "longName": "monthly",
                                                 "name": "monthly",
                                                 "granularity": "month",
-                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/monthly/month"
+                                                "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/monthly/month"
                                             }, {
                                                 "category": "General",
                                                 "longName": "hourly",
                                                 "name": "hourly",
                                                 "granularity": "hour",
-                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/hourly/hour"
+                                                "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/hourly/hour"
                                             }, {
                                                 "category": "General",
                                                 "longName": "hourly",
                                                 "name": "hourly",
                                                 "granularity": "all",
-                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/hourly/all"
+                                                "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/hourly/all"
                                             }, {
                                                 "category": "General",
                                                 "longName": "hourly",
                                                 "name": "hourly",
                                                 "granularity": "day",
-                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/hourly/day"
+                                                "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/hourly/day"
                                             }, {
                                                 "category": "General",
                                                 "longName": "hourly",
                                                 "name": "hourly",
                                                 "granularity": "week",
-                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/hourly/week"
+                                                "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/hourly/week"
                                             }, {
                                                 "category": "General",
                                                 "longName": "hourly",
                                                 "name": "hourly",
                                                 "granularity": "month",
-                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/hourly/month"
+                                                "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/hourly/month"
                                             }, {
                                                 "category": "General",
                                                 "longName": "hourly_monthly",
                                                 "name": "hourly_monthly",
                                                 "granularity": "hour",
-                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/hourly_monthly/hour"
+                                                "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/hourly_monthly/hour"
                                             }, {
                                                 "category": "General",
                                                 "longName": "hourly_monthly",
                                                 "name": "hourly_monthly",
                                                 "granularity": "all",
-                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/hourly_monthly/all"
+                                                "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/hourly_monthly/all"
                                             }, {
                                                 "category": "General",
                                                 "longName": "hourly_monthly",
                                                 "name": "hourly_monthly",
                                                 "granularity": "day",
-                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/hourly_monthly/day"
+                                                "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/hourly_monthly/day"
                                             }, {
                                                 "category": "General",
                                                 "longName": "hourly_monthly",
                                                 "name": "hourly_monthly",
                                                 "granularity": "week",
-                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/hourly_monthly/week"
+                                                "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/hourly_monthly/week"
                                             }, {
                                                 "category": "General",
                                                 "longName": "hourly_monthly",
                                                 "name": "hourly_monthly",
                                                 "granularity": "month",
-                                                "uri": "http://localhost:${jtb.getHarness().getPort()}/tables/hourly_monthly/month"
+                                                "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/hourly_monthly/month"
                                             }
                                         ],
-                                        "values": "http://localhost:${jtb.getHarness().getPort()}/dimensions/other/values"
+                                        "values": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/dimensions/other/values"
                                     }"""
         when: "We send a request"
-        String result = makeRequest("/dimensions/other", null).get(String.class)
+        String result = jerseyTestBinder.makeRequest("/dimensions/other").get(String.class)
 
         then: "The response what we expect"
         GroovyTestUtils.compareJson(result, expectedResponse, SORT_BOTH)
@@ -239,35 +238,35 @@ class DimensionsServletComponentSpec extends Specification {
         setup:
         String expectedResponse = """{
                                          "dimensions" : [
-                                                    {
-                                                        "id" : "a_distinct1",
-                                                        "description" : "a_distinct1_row"
-                                                    },
-                                                    {
-                                                        "id" : "a_distinct2",
-                                                        "description" : "a_distinct2_row"
-                                                    },
-                                                    {
-                                                        "id" : "shape1",
-                                                        "description" : "shape1Desc"
-                                                    }
+                                             {
+                                                 "id" : "a_distinct1",
+                                                 "description" : "a_distinct1_row"
+                                             },
+                                             {
+                                                 "id" : "a_distinct2",
+                                                 "description" : "a_distinct2_row"
+                                             },
+                                             {
+                                                 "id" : "shape1",
+                                                 "description" : "shape1Desc"
+                                             }
                                          ],
                                          "meta": {
-                                            "pagination": {
-                                                "currentPage": 1,
-                                                "numberOfResults": 38,
-                                                "rowsPerPage": 3,
-                                                "paginationLinks": {
-                                                    "next": "http://localhost:${jtb.getHarness().getPort()}/dimensions/shape/values?perPage=3&page=2",
-                                                    "last": "http://localhost:${jtb.getHarness().getPort()}/dimensions/shape/values?perPage=3&page=13"
-                                                }
-                                            }
+                                              "pagination": {
+                                                  "currentPage": 1,
+                                                  "numberOfResults": 38,
+                                                  "rowsPerPage": 3,
+                                                  "paginationLinks": {
+                                                      "next": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/dimensions/shape/values?perPage=3&page=2",
+                                                      "last": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/dimensions/shape/values?perPage=3&page=13"
+                                                  }
+                                              }
                                          }
                                      }"""
 
         Map<String, String> queryParams = [page: 1, perPage: 3]
         when: "We send a request"
-        def result = makeRequest("/dimensions/shape/values", queryParams)
+        def result = jerseyTestBinder.makeRequest("/dimensions/shape/values", queryParams)
 
         then: "The response is what we expect"
         Map actualJson = jsonSlurper.parseText(result.get(String.class))
@@ -288,7 +287,7 @@ class DimensionsServletComponentSpec extends Specification {
                                      }"""
 
         when: "We send a request"
-        def result = makeRequest("/dimensions/other/values", null)
+        def result = jerseyTestBinder.makeRequest("/dimensions/other/values")
 
 
         then: "The response what we expect"
@@ -311,12 +310,12 @@ class DimensionsServletComponentSpec extends Specification {
                                      """.replaceAll("\\r?\\n?\\s","")
 
         Map<String, String> expectedLinks = [
-                ('"last"'): """<http://localhost:${jtb.getHarness().getPort()}/dimensions/shape/values?perPage=3&format=CSV&page=13>""",
-                ('"next"'): """<http://localhost:${jtb.getHarness().getPort()}/dimensions/shape/values?perPage=3&format=CSV&page=2>"""
+                ('"last"'): """<http://localhost:${jerseyTestBinder.getHarness().getPort()}/dimensions/shape/values?perPage=3&format=CSV&page=13>""",
+                ('"next"'): """<http://localhost:${jerseyTestBinder.getHarness().getPort()}/dimensions/shape/values?perPage=3&format=CSV&page=2>"""
         ]
 
         when: "We send a request"
-        def result = makeRequest("/dimensions/shape/values", queryParams)
+        def result = jerseyTestBinder.makeRequest("/dimensions/shape/values", queryParams)
 
         then: "The response what we expect"
         result.head().getHeaderString("Content-Disposition") == "attachment; filename=dimensions-shape-values.csv"
@@ -343,7 +342,7 @@ class DimensionsServletComponentSpec extends Specification {
                                      }"""
 
         when: "We send a request"
-        String result = makeRequest("/dimensions/shape/values", queryParams).get().readEntity(String)
+        String result = jerseyTestBinder.makeRequest("/dimensions/shape/values", queryParams).get().readEntity(String)
 
         then: "We get the expected response"
         GroovyTestUtils.compareJson(result, expectedResponse)
@@ -367,27 +366,27 @@ class DimensionsServletComponentSpec extends Specification {
 
         String expectedResponse = """{
                                          "dimensions" : [
-                                                    {
-                                                    "id" : "shape2",
-                                                    "description" : "shape2Desc"
-                                                    },
-                                                    {
-                                                    "id" : "shape3",
-                                                    "description" : "shape3Desc"
-                                                    },
-                                                    {
-                                                    "id" : "shape4",
-                                                    "description" : "shape4Desc"
-                                                    },
-                                                    {
-                                                    "id" : "shape5",
-                                                    "description" : "shape5Desc"
-                                                    }
+                                             {
+                                                 "id" : "shape2",
+                                                 "description" : "shape2Desc"
+                                             },
+                                             {
+                                                 "id" : "shape3",
+                                                 "description" : "shape3Desc"
+                                             },
+                                             {
+                                                 "id" : "shape4",
+                                                 "description" : "shape4Desc"
+                                             },
+                                             {
+                                                 "id" : "shape5",
+                                                 "description" : "shape5Desc"
+                                             }
                                          ]
                                      }"""
 
         when: "We send a request"
-        String result = makeRequest("/dimensions/shape/values", queryParams).get(String.class)
+        String result = jerseyTestBinder.makeRequest("/dimensions/shape/values", queryParams).get(String.class)
 
         then:
         GroovyTestUtils.compareJson(result, expectedResponse)
@@ -399,23 +398,23 @@ class DimensionsServletComponentSpec extends Specification {
 
         String expectedResponse = """{
                                          "dimensions" : [
-                                                    {
-                                                    "id" : "a_distinct1",
-                                                    "description" : "a_distinct1_row"
-                                                    },
-                                                    {
-                                                    "id" : "a_distinct2",
-                                                    "description" : "a_distinct2_row"
-                                                    },
-                                                    {
-                                                    "id" : "unique",
-                                                    "description" : "unique_row"
-                                                    }
+                                             {
+                                                 "id" : "a_distinct1",
+                                                 "description" : "a_distinct1_row"
+                                             },
+                                             {
+                                                 "id" : "a_distinct2",
+                                                 "description" : "a_distinct2_row"
+                                             },
+                                             {
+                                                 "id" : "unique",
+                                                 "description" : "unique_row"
+                                             }
                                          ]
                                      }"""
 
         when: "We send a request"
-        String result = makeRequest("/dimensions/shape/values", queryParams).get(String.class)
+        String result = jerseyTestBinder.makeRequest("/dimensions/shape/values", queryParams).get(String.class)
 
         then:
         GroovyTestUtils.compareJson(result, expectedResponse)
@@ -427,19 +426,19 @@ class DimensionsServletComponentSpec extends Specification {
 
         String expectedResponse = """{
                                          "dimensions" : [
-                                                    {
-                                                    "id" : "a_distinct1",
-                                                    "description" : "a_distinct1_row"
-                                                    },
-                                                    {
-                                                    "id" : "a_distinct2",
-                                                    "description" : "a_distinct2_row"
-                                                    }
+                                             {
+                                                 "id" : "a_distinct1",
+                                                 "description" : "a_distinct1_row"
+                                             },
+                                             {
+                                                 "id" : "a_distinct2",
+                                                 "description" : "a_distinct2_row"
+                                             }
                                          ]
                                      }"""
 
         when: "We send a request"
-        String result = makeRequest("/dimensions/shape/values", queryParams).get(String.class)
+        String result = jerseyTestBinder.makeRequest("/dimensions/shape/values", queryParams).get(String.class)
 
         then:
         GroovyTestUtils.compareJson(result, expectedResponse)
@@ -453,15 +452,15 @@ class DimensionsServletComponentSpec extends Specification {
 
         String expectedResponse = """{
                                          "dimensions" : [
-                                                    {
-                                                    "id" : "a_distinct2",
-                                                    "description" : "a_distinct2_row"
-                                                    }
+                                             {
+                                                 "id" : "a_distinct2",
+                                                 "description" : "a_distinct2_row"
+                                             }
                                          ]
                                      }"""
 
         when: "We send a request"
-        String result = makeRequest("/dimensions/shape/values", queryParams).get(String.class)
+        String result = jerseyTestBinder.makeRequest("/dimensions/shape/values", queryParams).get(String.class)
 
         then:
         GroovyTestUtils.compareJson(result, expectedResponse)
@@ -473,15 +472,15 @@ class DimensionsServletComponentSpec extends Specification {
 
         String expectedResponse = """{
                                          "dimensions" : [
-                                                    {
-                                                    "id" : "a_distinct2",
-                                                    "description" : "a_distinct2_row"
-                                                    }
+                                             {
+                                                 "id" : "a_distinct2",
+                                                 "description" : "a_distinct2_row"
+                                             }
                                          ]
                                      }"""
 
         when: "We send a request"
-        String result = makeRequest("/dimensions/shape/values", queryParams).get(String.class)
+        String result = jerseyTestBinder.makeRequest("/dimensions/shape/values", queryParams).get(String.class)
 
         then:
         GroovyTestUtils.compareJson(result, expectedResponse)
@@ -495,15 +494,15 @@ class DimensionsServletComponentSpec extends Specification {
 
         String expectedResponse = """{
                                          "dimensions" : [
-                                                    {
-                                                    "id" : "a_distinct1",
-                                                    "description" : "a_distinct1_row"
-                                                    }
+                                             {
+                                                 "id" : "a_distinct1",
+                                                 "description" : "a_distinct1_row"
+                                             }
                                          ]
                                      }"""
 
         when: "We send a request"
-        String result = makeRequest("/dimensions/shape/values", queryParams).get(String.class)
+        String result = jerseyTestBinder.makeRequest("/dimensions/shape/values", queryParams).get(String.class)
 
         then:
         GroovyTestUtils.compareJson(result, expectedResponse)
@@ -520,19 +519,19 @@ class DimensionsServletComponentSpec extends Specification {
 
         String expectedResponse = """{
                                          "dimensions" : [
-                                                    {
-                                                    "id" : "model2",
-                                                    "description" : "model2Desc"
-                                                    },
-                                                    {
-                                                    "id" : "model3",
-                                                    "description" : "model3Desc"
-                                                    }
+                                             {
+                                                 "id" : "model2",
+                                                 "description" : "model2Desc"
+                                             },
+                                             {
+                                                 "id" : "model3",
+                                                 "description" : "model3Desc"
+                                             }
                                          ]
                                      }"""
 
         when: "We send a request"
-        String result = makeRequest("/dimensions/model/values", queryParams).get(String.class)
+        String result = jerseyTestBinder.makeRequest("/dimensions/model/values", queryParams).get(String.class)
 
         then:
         GroovyTestUtils.compareJson(result, expectedResponse)
@@ -544,23 +543,23 @@ class DimensionsServletComponentSpec extends Specification {
 
         String expectedResponse = """{
                                          "dimensions" : [
-                                                    {
-                                                    "id" : "a_distinct1",
-                                                    "description" : "a_distinct1_row"
-                                                    },
-                                                    {
-                                                    "id" : "a_distinct2",
-                                                    "description" : "a_distinct2_row"
-                                                    },
-                                                    {
-                                                    "id" : "unique",
-                                                    "description" : "unique_row"
-                                                    }
+                                             {
+                                                 "id" : "a_distinct1",
+                                                 "description" : "a_distinct1_row"
+                                             },
+                                             {
+                                                 "id" : "a_distinct2",
+                                                 "description" : "a_distinct2_row"
+                                             },
+                                             {
+                                                 "id" : "unique",
+                                                 "description" : "unique_row"
+                                             }
                                          ]
                                      }"""
 
         when: "We send a request"
-        String result = makeRequest("/dimensions/model/values", queryParams).get(String.class)
+        String result = jerseyTestBinder.makeRequest("/dimensions/model/values", queryParams).get(String.class)
 
         then:
         GroovyTestUtils.compareJson(result, expectedResponse)
@@ -572,19 +571,19 @@ class DimensionsServletComponentSpec extends Specification {
 
         String expectedResponse = """{
                                          "dimensions" : [
-                                                    {
-                                                    "id" : "a_distinct1",
-                                                    "description" : "a_distinct1_row"
-                                                    },
-                                                    {
-                                                    "id" : "a_distinct2",
-                                                    "description" : "a_distinct2_row"
-                                                    }
+                                             {
+                                                 "id" : "a_distinct1",
+                                                 "description" : "a_distinct1_row"
+                                             },
+                                             {
+                                                 "id" : "a_distinct2",
+                                                 "description" : "a_distinct2_row"
+                                             }
                                          ]
                                      }"""
 
         when: "We send a request"
-        String result = makeRequest("/dimensions/model/values", queryParams).get(String.class)
+        String result = jerseyTestBinder.makeRequest("/dimensions/model/values", queryParams).get(String.class)
 
         then:
         GroovyTestUtils.compareJson(result, expectedResponse)
@@ -596,15 +595,15 @@ class DimensionsServletComponentSpec extends Specification {
 
         String expectedResponse = """{
                                          "dimensions" : [
-                                                    {
-                                                    "id" : "unique",
-                                                    "description" : "unique_row"
-                                                    }
+                                             {
+                                                 "id" : "unique",
+                                                 "description" : "unique_row"
+                                             }
                                          ]
                                      }"""
 
         when: "We send a request"
-        String result = makeRequest("/dimensions/model/values", queryParams).get(String.class)
+        String result = jerseyTestBinder.makeRequest("/dimensions/model/values", queryParams).get(String.class)
 
         then:
         GroovyTestUtils.compareJson(result, expectedResponse)
@@ -616,19 +615,19 @@ class DimensionsServletComponentSpec extends Specification {
 
         String expectedResponse = """{
                                          "dimensions" : [
-                                                    {
-                                                    "id" : "a_distinct1",
-                                                    "description" : "a_distinct1_row"
-                                                    },
-                                                    {
-                                                    "id" : "a_distinct2",
-                                                    "description" : "a_distinct2_row"
-                                                    }
+                                             {
+                                                 "id" : "a_distinct1",
+                                                 "description" : "a_distinct1_row"
+                                             },
+                                             {
+                                                 "id" : "a_distinct2",
+                                                 "description" : "a_distinct2_row"
+                                             }
                                          ]
                                      }"""
 
         when: "We send a request"
-        String result = makeRequest("/dimensions/model/values", queryParams).get(String.class)
+        String result = jerseyTestBinder.makeRequest("/dimensions/model/values", queryParams).get(String.class)
 
         then:
         GroovyTestUtils.compareJson(result, expectedResponse)
@@ -648,7 +647,7 @@ class DimensionsServletComponentSpec extends Specification {
         ])
 
         when:
-        String result = makeRequest("/dimensions/model/values", filters).get(String.class)
+        String result = jerseyTestBinder.makeRequest("/dimensions/model/values", filters).get(String.class)
 
         then:
         GroovyTestUtils.compareJson(result, expectedResponse)
@@ -665,7 +664,7 @@ class DimensionsServletComponentSpec extends Specification {
         String expectedResponse = buildDimensionResultSet([])
 
         when:
-        String result = makeRequest("/dimensions/model/values", conjunctedFilters).get(String.class)
+        String result = jerseyTestBinder.makeRequest("/dimensions/model/values", conjunctedFilters).get(String.class)
 
         then:
         GroovyTestUtils.compareJson(result, expectedResponse)
@@ -680,7 +679,7 @@ class DimensionsServletComponentSpec extends Specification {
         String expectedConjunctedResponse = buildDimensionResultSet([[id: "filterValue1", description: "1or2or3"]])
 
         when:
-        String conjunctedResult = makeRequest("/dimensions/model/values", conjunctedFilters).get(String.class)
+        String conjunctedResult = jerseyTestBinder.makeRequest("/dimensions/model/values", conjunctedFilters).get(String.class)
 
         then:
         GroovyTestUtils.compareJson(conjunctedResult, expectedConjunctedResponse)
@@ -696,7 +695,7 @@ class DimensionsServletComponentSpec extends Specification {
         String expectedConjunctedResponse = buildDimensionResultSet([])
 
         when:
-        String conjunctedResult = makeRequest("/dimensions/model/values", conjunctedFilters).get(String.class)
+        String conjunctedResult = jerseyTestBinder.makeRequest("/dimensions/model/values", conjunctedFilters).get(String.class)
 
         then:
         GroovyTestUtils.compareJson(conjunctedResult, expectedConjunctedResponse)
@@ -711,7 +710,7 @@ class DimensionsServletComponentSpec extends Specification {
         String expectedResponse = buildDimensionResultSet([[id: "filterValue6", description: "4or5or6"]])
 
         when:
-        String result = makeRequest("/dimensions/model/values", filters).get(String.class)
+        String result = jerseyTestBinder.makeRequest("/dimensions/model/values", filters).get(String.class)
 
         then:
         GroovyTestUtils.compareJson(result, expectedResponse)
@@ -726,7 +725,7 @@ class DimensionsServletComponentSpec extends Specification {
         String expectedResponse = buildDimensionResultSet([[id: "filterValue1", description: "1or2or3"]])
 
         when:
-        String result = makeRequest("/dimensions/model/values", filters).get(String.class)
+        String result = jerseyTestBinder.makeRequest("/dimensions/model/values", filters).get(String.class)
 
         then:
         GroovyTestUtils.compareJson(result, expectedResponse)
@@ -744,7 +743,7 @@ class DimensionsServletComponentSpec extends Specification {
         ])
 
         when:
-        String result = makeRequest("/dimensions/model/values", filters).get(String.class)
+        String result = jerseyTestBinder.makeRequest("/dimensions/model/values", filters).get(String.class)
 
         then:
         GroovyTestUtils.compareJson(result, expectedResponse)
@@ -762,7 +761,7 @@ class DimensionsServletComponentSpec extends Specification {
         ])
 
         when:
-        String result = makeRequest("/dimensions/model/values", filters).get(String.class)
+        String result = jerseyTestBinder.makeRequest("/dimensions/model/values", filters).get(String.class)
 
         then:
         GroovyTestUtils.compareJson(result, expectedResponse)
@@ -777,7 +776,7 @@ class DimensionsServletComponentSpec extends Specification {
         String expectedResponse = buildDimensionResultSet([])
 
         when:
-        String result = makeRequest("/dimensions/model/values", filters).get(String.class)
+        String result = jerseyTestBinder.makeRequest("/dimensions/model/values", filters).get(String.class)
 
         then:
         GroovyTestUtils.compareJson(result, expectedResponse)
@@ -819,7 +818,7 @@ class DimensionsServletComponentSpec extends Specification {
         String expectedResponse = buildDimensionResultSet(jsonObjects)
 
         when:
-        String result = makeRequest("/dimensions/model/values", filters).get(String.class)
+        String result = jerseyTestBinder.makeRequest("/dimensions/model/values", filters).get(String.class)
 
         then:
         GroovyTestUtils.compareJson(result, expectedResponse)
@@ -843,7 +842,7 @@ class DimensionsServletComponentSpec extends Specification {
         String expectedResponse = buildDimensionResultSet([])
 
         when:
-        String result = makeRequest("/dimensions/model/values", filters).get(String.class)
+        String result = jerseyTestBinder.makeRequest("/dimensions/model/values", filters).get(String.class)
 
         then:
         GroovyTestUtils.compareJson(result, expectedResponse)
@@ -864,7 +863,7 @@ class DimensionsServletComponentSpec extends Specification {
         String expectedResponse = buildDimensionResultSet([[id: "filterValue8", description: "7or8or9"]])
 
         when:
-        String result = makeRequest("/dimensions/model/values", filters).get(String.class)
+        String result = jerseyTestBinder.makeRequest("/dimensions/model/values", filters).get(String.class)
 
         then:
         GroovyTestUtils.compareJson(result, expectedResponse)
@@ -881,7 +880,7 @@ class DimensionsServletComponentSpec extends Specification {
 
         when: "We send a response for each possible ordering of the filters"
         List<String> conjunctedResults = filters. collect {
-            makeRequest("/dimensions/model/values", it).get(String.class)
+            jerseyTestBinder.makeRequest("/dimensions/model/values", it).get(String.class)
         }
 
         then: "Every ordering returns the same result"
@@ -900,7 +899,7 @@ class DimensionsServletComponentSpec extends Specification {
         Map<String, String> queryParams = [page: 1, perPage: -1]
 
         when: "We send a request"
-        def result = makeRequest("/dimensions/model/values", queryParams)
+        def result = jerseyTestBinder.makeRequest("/dimensions/model/values", queryParams)
 
         then: "We get the exptected response"
         result.head().getStatus() == 400
@@ -911,23 +910,10 @@ class DimensionsServletComponentSpec extends Specification {
         Map<String, String> queryParams = [page: -1, perPage: 3]
 
         when: "We send a request"
-        def result = makeRequest("/dimensions/model/values", queryParams)
+        def result = jerseyTestBinder.makeRequest("/dimensions/model/values", queryParams)
 
         then: "We get the expected response"
         result.head().getStatus() == 400
-    }
-
-    Invocation.Builder makeRequest(String target, LinkedHashMap<String, Object> queryParams) {
-        // Set target of call
-        def httpCall = jtb.getHarness().target(target)
-
-        // Add query params to call
-        queryParams.each { String key, Object value ->
-            httpCall = httpCall.queryParam(key, value)
-        }
-
-        // Make the call
-        httpCall.request()
     }
 
     String buildDimensionResultSet(List<Map<String, String>> objectData) {

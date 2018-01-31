@@ -22,6 +22,7 @@ import com.yahoo.bard.webservice.util.DefaultingDictionary
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 
 import org.joda.time.DateTime
+import org.joda.time.Interval
 import org.joda.time.Period
 
 import spock.lang.Shared
@@ -31,6 +32,10 @@ import java.util.concurrent.ConcurrentSkipListMap
 import java.util.concurrent.atomic.AtomicReference
 
 class SegmentIntervalsHashIdGeneratorSpec extends BaseDataSourceMetadataSpec {
+    @Shared
+    Interval interval1
+    @Shared
+    Interval interval2
     @Shared
     Map<String, SegmentInfo> segmentInfoMap1
     @Shared
@@ -56,15 +61,25 @@ class SegmentIntervalsHashIdGeneratorSpec extends BaseDataSourceMetadataSpec {
     @Shared
     LookbackQuery lookbackQuery
 
+    @Override
+    def childSetupSpec() {
+        tableName = generateTableName()
+        intervals = generateIntervals()
+        segments = generateSegments()
+    }
+
     def setupSpec() {
+        interval1 = intervals.interval1
+        interval2 = intervals.interval2
+
         segmentInfoMap1 = [:] as LinkedHashMap
         segmentInfoMap2 = [:] as LinkedHashMap
         segmentInfoMap3 = [:] as LinkedHashMap
 
-        segmentInfoMap1[segment1.identifier] = new SegmentInfo(segment1)
-        segmentInfoMap1[segment2.identifier] = new SegmentInfo(segment2)
+        segmentInfoMap1[segments.segment1.identifier] = new SegmentInfo(segments.segment1)
+        segmentInfoMap1[segments.segment2.identifier] = new SegmentInfo(segments.segment2)
 
-        segmentInfoMap2[segment3.identifier] = new SegmentInfo(segment3)
+        segmentInfoMap2[segments.segment3.identifier] = new SegmentInfo(segments.segment3)
 
         jtb = new JerseyTestBinder()
         tableDict = jtb.configurationLoader.physicalTableDictionary

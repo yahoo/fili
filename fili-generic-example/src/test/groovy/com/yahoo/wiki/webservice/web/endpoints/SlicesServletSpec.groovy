@@ -20,29 +20,32 @@ import spock.lang.Unroll
 @Timeout(30)
 // Fail test if hangs
 class SlicesServletSpec extends Specification {
-    JerseyTestBinder jtb
+    JerseyTestBinder jerseyTestBinder
     JsonSlurper jsonSlurper = new JsonSlurper(JsonSortStrategy.SORT_BOTH)
     Interval interval = new Interval("2010-01-01/2500-12-31")
 
     def setup() {
         // Create the test web container to test the resources
-        jtb = new WikiJerseyTestBinder(SlicesServlet.class)
+        jerseyTestBinder = new WikiJerseyTestBinder(SlicesServlet.class)
 
-        AvailabilityTestingUtils.populatePhysicalTableCacheIntervals(jtb, interval)
+        AvailabilityTestingUtils.populatePhysicalTableCacheIntervals(jerseyTestBinder, interval)
     }
 
     def cleanup() {
         // Release the test web container
-        jtb.tearDown()
+        jerseyTestBinder.tearDown()
     }
 
     def "The slices are correctly configured, and the slices endpoint returns the appropriate metadata"() {
         setup:
         String sliceNameHour = WIKITICKER.asName()
         String expectedResponse = """{
-            "rows":
-            [
-                {"timeGrain":"hour", "name":"$sliceNameHour", "uri":"http://localhost:${jtb.getHarness().getPort()}/slices/$sliceNameHour"},
+            "rows": [
+                {
+                    "timeGrain":"hour",
+                    "name":"$sliceNameHour",
+                    "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/slices/$sliceNameHour"
+                }
             ]
         }"""
 
@@ -50,7 +53,7 @@ class SlicesServletSpec extends Specification {
         Set expectedTableRows = expectedJsonResult.get("slices") as Set
 
         when: "We send a request"
-        String result = makeRequest("/slices")
+        String result = jerseyTestBinder.makeRequest("/slices").get(String.class)
         Map jsonResult = (jsonSlurper.parseText(result) as Map)
         Set tableRows = jsonResult.get("slices") as Set
 
@@ -65,32 +68,30 @@ class SlicesServletSpec extends Specification {
         String expectedResponse = """{
             "name":"$sliceName",
             "timeGrain":"$granularity",
-            "dimensions":
-            [
+            "dimensions": [
                 ${
-            dimensionNames.collect {
-                """
-                                {
-                                    "name":"$it",
-                                    "factName":"$it",
-                                    "uri":"http://localhost:${jtb.getHarness().getPort()}/dimensions/$it",
-                                    "intervals":["$interval"]
-                                }
-                        """
+                    dimensionNames.collect {
+                    """
+                        {
+                            "name":"$it",
+                            "factName":"$it",
+                            "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/dimensions/$it",
+                            "intervals":["$interval"]
+                        }
+                    """
             }
             .join(',')
         }
             ],
-            "metrics":
-            [
+            "metrics": [
                 ${
-            metricNames.collect {
-                """
-                                {
-                                    "name":"$it",
-                                    "intervals":["$interval"]
-                                }
-                        """
+                    metricNames.collect {
+                    """
+                        {
+                            "name":"$it",
+                            "intervals":["$interval"]
+                        }
+                    """
             }
             .join(',')
         }
@@ -103,7 +104,7 @@ class SlicesServletSpec extends Specification {
         Set expectedMetrics = expectedJsonResult.get("metrics") as Set
 
         when: "We send a request"
-        String result = makeRequest("/slices/$sliceName")
+        String result = jerseyTestBinder.makeRequest("/slices/$sliceName").get(String.class)
         Map jsonResult = jsonSlurper.parseText(result) as Map
         String tableName = jsonResult.get("name").toString()
         Set dimensions = jsonResult.get("dimensions") as Set
@@ -119,13 +120,5 @@ class SlicesServletSpec extends Specification {
         granularity = "hour"
         dimensionNames = ("channel, cityName, comment, countryIsoCode, countryName, isAnonymous, isMinor, isNew, isRobot, isUnpatrolled, metroCode, namespace, page, regionIsoCode, regionName, user").split(',').collect { it.trim() }
         metricNames = "count, added, delta, deleted, user_unique".split(',').collect { it.trim() }
-    }
-
-    String makeRequest(String target) {
-        // Set target of call
-        def httpCall = jtb.getHarness().target(target)
-
-        // Make the call
-        httpCall.request().get(String.class)
     }
 }

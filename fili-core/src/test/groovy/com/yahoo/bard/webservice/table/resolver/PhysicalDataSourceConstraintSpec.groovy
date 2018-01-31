@@ -3,6 +3,7 @@ package com.yahoo.bard.webservice.table.resolver
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
 import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.PhysicalTableSchema
+import com.yahoo.bard.webservice.web.filters.ApiFilters
 
 import spock.lang.Specification
 
@@ -14,6 +15,7 @@ class PhysicalDataSourceConstraintSpec extends Specification {
     DataSourceConstraint dataSourceConstraint
     PhysicalTableSchema physicalTableSchema
     PhysicalDataSourceConstraint physicalDataSourceConstraint
+    ApiFilters apiFilters = new ApiFilters()
 
     def setup() {
         dataSourceConstraint =  new DataSourceConstraint(
@@ -24,7 +26,7 @@ class PhysicalDataSourceConstraintSpec extends Specification {
                 [] as Set,
                 [] as Set,
                 ['columnOne', 'columnTwo', 'columnThree', 'columnFour'] as Set,
-                [:]
+                apiFilters
         )
 
         physicalTableSchema = new PhysicalTableSchema(Mock(ZonedTimeGrain), [new Column('columnOne'), new Column('columnTwo'), new Column('columnThree'), new Column('columnFour')], ['columnOne': 'column_one', 'columnTwo': 'column_two'])

@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn
 import com.yahoo.bard.webservice.druid.model.orderby.SortDirection
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestImpl
+import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 import com.yahoo.bard.webservice.web.endpoints.DataServlet
 
 import spock.lang.Specification
@@ -32,7 +33,9 @@ class DataApiRequestSortSpec extends Specification {
         String expectedMessage = ErrorMessageFormat.DATE_TIME_SORT_VALUE_INVALID.format()
 
         when:
-        new DataApiRequestImpl().generateDateTimeSortColumn(["xyz":SortDirection.DESC, "dateTime":SortDirection.DESC])
+        new TestingDataApiRequestImpl().generateDateTimeSortColumn(
+                ["xyz":SortDirection.DESC, "dateTime":SortDirection.DESC]
+        )
 
         then:
         Exception e = thrown(BadApiRequestException)
@@ -42,7 +45,7 @@ class DataApiRequestSortSpec extends Specification {
     @Unroll
     def "Validate the sort column and direction map from #sortString string"() {
         expect:
-        new DataApiRequestImpl().generateSortColumns(sortString) == expected
+        new TestingDataApiRequestImpl().generateSortColumns(sortString) == expected
 
         where:
         sortString                        | expected
@@ -62,7 +65,7 @@ class DataApiRequestSortSpec extends Specification {
     @Unroll
     def "Generate dateTime sort column from columnDirection map #columnDirection"() {
         expect:
-        new DataApiRequestImpl().generateDateTimeSortColumn(columnDirection) == expected
+        new TestingDataApiRequestImpl().generateDateTimeSortColumn(columnDirection) == expected
 
         where:
         columnDirection                                                                          | expected
@@ -77,7 +80,7 @@ class DataApiRequestSortSpec extends Specification {
     @Unroll
     def "Remove dateTime sort column from columnDirection map #columnDirection"() {
         expect:
-        new DataApiRequestImpl().removeDateTimeSortColumn(columnDirection) == expected
+        new TestingDataApiRequestImpl().removeDateTimeSortColumn(columnDirection) == expected
 
         where:
         columnDirection                                                                          | expected
@@ -92,7 +95,7 @@ class DataApiRequestSortSpec extends Specification {
     @Unroll
     def "Check dateTime column is first in the sort column map #columnDirection "() {
         expect:
-        new DataApiRequestImpl().isDateTimeFirstSortField(columnDirection) == expected
+        new TestingDataApiRequestImpl().isDateTimeFirstSortField(columnDirection) == expected
 
         where:
         columnDirection                                                                          | expected

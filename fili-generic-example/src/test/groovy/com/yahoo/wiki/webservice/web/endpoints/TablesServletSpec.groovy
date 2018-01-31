@@ -59,7 +59,11 @@ class TablesServletSpec extends Specification {
                                     }"""
 
         expect: "The result of the query is as expected"
-        GroovyTestUtils.compareJson(makeRequest("/tables"), expectedResponse, JsonSortStrategy.SORT_BOTH)
+        GroovyTestUtils.compareJson(
+                jerseyTestBinder.makeRequest("/tables").get(String.class),
+                expectedResponse,
+                JsonSortStrategy.SORT_BOTH
+        )
     }
 
     @Unroll
@@ -85,7 +89,11 @@ class TablesServletSpec extends Specification {
                                     }"""
 
         expect: "The request returns the correct JSON result"
-        GroovyTestUtils.compareJson(makeRequest("/tables/$tableName"), expectedResponse, JsonSortStrategy.SORT_BOTH)
+        GroovyTestUtils.compareJson(
+                jerseyTestBinder.makeRequest("/tables/$tableName").get(String.class),
+                expectedResponse,
+                JsonSortStrategy.SORT_BOTH
+        )
 
         where:
         tableName = WikiDruidTableName.WIKITICKER.asName()
@@ -114,6 +122,7 @@ class TablesServletSpec extends Specification {
                                                         "name": "$it",
                                                         "longName": "$it",
                                                         "cardinality": 0,
+                                                        "storageStrategy":"loaded",
                                                         "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/dimensions/$it"
                                                     }""" 
                                                 }
@@ -127,6 +136,7 @@ class TablesServletSpec extends Specification {
                                                         "category": "General",
                                                         "name": "$it",
                                                         "longName": "$it",
+                                                        "type": "number",
                                                         "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/metrics/$it"
                                                     }""" 
                                                 }
@@ -136,7 +146,7 @@ class TablesServletSpec extends Specification {
                                     }"""
 
         when: "We send a request"
-        String result = makeRequest("/tables/$tableName/$granularity")
+        String result = jerseyTestBinder.makeRequest("/tables/$tableName/$granularity").get(String.class)
 
         then: "what we expect"
         GroovyTestUtils.compareJson(result, expectedResponse, JsonSortStrategy.SORT_BOTH)
@@ -144,13 +154,5 @@ class TablesServletSpec extends Specification {
         where:
         tableName = WikiDruidTableName.WIKITICKER.asName()
         granularity = "hour"
-    }
-
-    String makeRequest(String target) {
-        jerseyTestBinder
-                .getHarness()
-                .target(target)
-                .request()
-                .get(String.class)
     }
 }

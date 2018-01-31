@@ -1,6 +1,8 @@
 Configuring Metrics
 ===================
 
+*Read this in other languages: [中文](../translations/zh/configuring-metrics-zh.md).*
+
 Table of Contents
 -----------------
 
@@ -94,7 +96,7 @@ loading tables. The [`WikiDruidMetricName`][wikiDruidMetricName] enum provides a
 ### Building and Loading Metrics ###
 
 Next, you need to write the code that builds the metrics and loads them into the `MetricDictionary` at Fili start up. To
-do so, you need to implement the  [MetricLoader][metricLoader] interface, which has a single method 
+do so, you need to implement the [`MetricLoader`][metricLoader] interface, which has a single method 
 `loadMetricDictionary`.
 
 For example, suppose you want to register the three page view metrics introduced in [Overview](#overview).
@@ -176,6 +178,7 @@ case, defining the new metric is as simple as adding the following line to your
 ```java
    new MetricInstance(NEW_METRIC_NAME, metricMaker, DEPENDENT, METRIC, NAMES)
 ```
+
 and adding `NEW_METRIC_NAME` to your implementation of [ApiMetricName][apiMetricName].
 
 See [Built-in Metrics](built-in-makers) for a list of makers that come with Fili.
@@ -236,7 +239,6 @@ into a single query. This can be accomplished using the [`MetricMaker::getMerged
             .collect(Collectors.toList());
     PostAggregation arithmeticPostAgg = new ArithmeticPostAggregation(metricName, function, operands);
     ```
-
 
 3. **Build the inner query:** Construct the inner query, if the metric requires query nesting. 
 

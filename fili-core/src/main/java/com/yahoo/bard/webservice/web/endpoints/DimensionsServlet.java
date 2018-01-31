@@ -18,9 +18,12 @@ import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.util.StreamUtils;
 import com.yahoo.bard.webservice.web.DimensionsApiRequest;
+import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.RequestValidationException;
+import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.RowLimitReachedException;
+import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequestImpl;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import com.codahale.metrics.annotation.Timed;
@@ -67,6 +70,7 @@ public class DimensionsServlet extends EndpointServlet {
     private final DimensionDictionary dimensionDictionary;
     private final LogicalTableDictionary logicalTableDictionary;
     private final RequestMapper requestMapper;
+    private final ResponseFormatResolver formatResolver;
 
     /**
      * Constructor.
@@ -75,18 +79,21 @@ public class DimensionsServlet extends EndpointServlet {
      * @param logicalTableDictionary  All logical tables
      * @param requestMapper  Mapper to change the API request if needed
      * @param objectMappers  JSON tools
+     * @param formatResolver  The formatResolver for determining correct response format
      */
     @Inject
     public DimensionsServlet(
             DimensionDictionary dimensionDictionary,
             LogicalTableDictionary logicalTableDictionary,
             @Named(DimensionsApiRequest.REQUEST_MAPPER_NAMESPACE) RequestMapper requestMapper,
-            ObjectMappersSuite objectMappers
+            ObjectMappersSuite objectMappers,
+            ResponseFormatResolver formatResolver
     ) {
         super(objectMappers);
         this.dimensionDictionary = dimensionDictionary;
         this.logicalTableDictionary = logicalTableDictionary;
         this.requestMapper = requestMapper;
+        this.formatResolver = formatResolver;
     }
 
     /**
@@ -120,10 +127,10 @@ public class DimensionsServlet extends EndpointServlet {
             RequestLog.startTiming(this);
             RequestLog.record(new DimensionRequest("all", "no"));
 
-            DimensionsApiRequest apiRequest = new DimensionsApiRequest(
+            DimensionsApiRequestImpl apiRequest = new DimensionsApiRequestImpl(
                     null,
                     null,
-                    format,
+                    formatResolver.apply(format, containerRequestContext),
                     perPage,
                     page,
                     dimensionDictionary,
@@ -131,7 +138,7 @@ public class DimensionsServlet extends EndpointServlet {
             );
 
             if (requestMapper != null) {
-                apiRequest = (DimensionsApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
+                apiRequest = (DimensionsApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
             Stream<Map<String, Object>> result = apiRequest.getPage(
@@ -150,7 +157,7 @@ public class DimensionsServlet extends EndpointServlet {
             LOG.debug(e.getMessage(), e);
             responseSender = () -> Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
         } catch (Error | Exception e) {
-            String msg = String.format("Exception processing request: %s", e.getMessage());
+            String msg = ErrorMessageFormat.REQUEST_PROCESSING_EXCEPTION.format(e.getMessage());
             LOG.error(msg, e);
             responseSender = () -> Response.status(Status.BAD_REQUEST).entity(msg).build();
         } finally {
@@ -184,7 +191,7 @@ public class DimensionsServlet extends EndpointServlet {
             RequestLog.startTiming(this);
             RequestLog.record(new DimensionRequest(dimensionName, "no"));
 
-            DimensionsApiRequest apiRequest = new DimensionsApiRequest(
+            DimensionsApiRequestImpl apiRequest = new DimensionsApiRequestImpl(
                     dimensionName,
                     null,
                     null,
@@ -195,7 +202,7 @@ public class DimensionsServlet extends EndpointServlet {
             );
 
             if (requestMapper != null) {
-                apiRequest = (DimensionsApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
+                apiRequest = (DimensionsApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
             Map<String, Object> result = getDimensionFullView(
@@ -211,11 +218,11 @@ public class DimensionsServlet extends EndpointServlet {
             LOG.debug(e.getMessage(), e);
             responseSender = () -> Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
         } catch (JsonProcessingException e) {
-            String msg = String.format("Internal server error. JsonProcessingException : %s", e.getMessage());
+            String msg = ErrorMessageFormat.INTERNAL_SERVER_ERROR_ON_JSON_PROCESSING.format(e.getMessage());
             LOG.error(msg, e);
             responseSender = () -> Response.status(Status.INTERNAL_SERVER_ERROR).entity(msg).build();
         } catch (Error | Exception e) {
-            String msg = String.format("Exception processing request: %s", e.getMessage());
+            String msg = ErrorMessageFormat.REQUEST_PROCESSING_EXCEPTION.format(e.getMessage());
             LOG.info(msg, e);
             responseSender = () -> Response.status(Status.BAD_REQUEST).entity(msg).build();
         } finally {
@@ -272,10 +279,10 @@ public class DimensionsServlet extends EndpointServlet {
             RequestLog.startTiming(this);
             RequestLog.record(new DimensionRequest(dimensionName, "yes"));
 
-            DimensionsApiRequest apiRequest = new DimensionsApiRequest(
+            DimensionsApiRequestImpl apiRequest = new DimensionsApiRequestImpl(
                     dimensionName,
                     filterQuery,
-                    format,
+                    formatResolver.apply(format, containerRequestContext),
                     perPage,
                     page,
                     dimensionDictionary,
@@ -283,7 +290,7 @@ public class DimensionsServlet extends EndpointServlet {
             );
 
             if (requestMapper != null) {
-                apiRequest = (DimensionsApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
+                apiRequest = (DimensionsApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
             // build filtered dimension rows
@@ -327,7 +334,7 @@ public class DimensionsServlet extends EndpointServlet {
             LOG.debug(msg, e);
             responseSender = () -> Response.status(INSUFFICIENT_STORAGE).entity(msg).build();
         } catch (Error | Exception e) {
-            String msg = String.format("Exception processing request: %s", e.getMessage());
+            String msg = ErrorMessageFormat.REQUEST_PROCESSING_EXCEPTION.format(e.getMessage());
             LOG.debug(msg, e);
             responseSender = () -> Response.status(BAD_REQUEST).entity(msg).build();
         } finally {
@@ -369,6 +376,7 @@ public class DimensionsServlet extends EndpointServlet {
         resultRow.put("longName", dimension.getLongName());
         resultRow.put("uri", getDimensionUrl(dimension, uriInfo));
         resultRow.put("cardinality", dimension.getCardinality());
+        resultRow.put("storageStrategy", dimension.getStorageStrategy());
         return resultRow;
     }
 
@@ -394,6 +402,7 @@ public class DimensionsServlet extends EndpointServlet {
         resultRow.put("fields", dimension.getDimensionFields());
         resultRow.put("values", getDimensionValuesUrl(dimension, uriInfo));
         resultRow.put("cardinality", dimension.getCardinality());
+        resultRow.put("storageStrategy", dimension.getStorageStrategy());
         resultRow.put(
                 "tables",
                 TablesServlet.getLogicalTableListSummaryView(

@@ -41,16 +41,16 @@ import java.util.stream.Stream;
  */
 public class ResponseData {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ResponseData.class);
-    private static final Map<Dimension, Map<DimensionField, String>> DIMENSION_FIELD_COLUMN_NAMES = new HashMap<>();
+    protected static final Logger LOG = LoggerFactory.getLogger(ResponseData.class);
+    protected static final Map<Dimension, Map<DimensionField, String>> DIMENSION_FIELD_COLUMN_NAMES = new HashMap<>();
 
-    private final ResultSet resultSet;
-    private final LinkedHashSet<MetricColumn> apiMetricColumns;
-    private final LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> requestedApiDimensionFields;
-    private final SimplifiedIntervalList missingIntervals;
-    private final SimplifiedIntervalList volatileIntervals;
-    private final Pagination pagination;
-    private final Map<String, URI> paginationLinks;
+    protected final ResultSet resultSet;
+    protected final LinkedHashSet<MetricColumn> apiMetricColumns;
+    protected final LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> requestedApiDimensionFields;
+    protected final SimplifiedIntervalList missingIntervals;
+    protected final SimplifiedIntervalList volatileIntervals;
+    protected final Pagination pagination;
+    protected final Map<String, URI> paginationLinks;
 
     /**
      * Constructor.
@@ -153,7 +153,7 @@ public class ResponseData {
      *
      * @return set of metric columns
      */
-    private LinkedHashSet<MetricColumn> generateApiMetricColumns(Set<String> apiMetricColumnNames) {
+    protected LinkedHashSet<MetricColumn> generateApiMetricColumns(Set<String> apiMetricColumnNames) {
         // Get the metric columns from the schema
         Map<String, MetricColumn> metricColumnMap = resultSet.getSchema().getColumns(MetricColumn.class).stream()
                 .collect(StreamUtils.toLinkedDictionary(MetricColumn::getName));
@@ -291,7 +291,7 @@ public class ResponseData {
      *
      * @return The name for the dimension and column as it will appear in the response document
      */
-    private static String getDimensionColumnName(Dimension dimension, DimensionField dimensionField) {
+    protected static String getDimensionColumnName(Dimension dimension, DimensionField dimensionField) {
         Map<DimensionField, String> columnNamesForDimensionFields;
         columnNamesForDimensionFields = DIMENSION_FIELD_COLUMN_NAMES.computeIfAbsent(
                 dimension,
