@@ -758,6 +758,9 @@ Removals:
 
 ### Deprecated:
 
+- [Revert deprecation of getAvailbleInterval with PhysicalDatasourceConstraint](https://github.com/yahoo/fili/pull/621)
+    * The method is needed in order for availability to function correctly, there is a deeper dive and planning required to actually deprecate it in favor of simpler less confusing design.
+
 - [Remove `PhysicalTable::getTableName` to use `getName` instead](https://github.com/yahoo/fili/pull/263)
     * Having more than 1 method for the same concept (ie. what's the name of this physical table) was confusing and not
       very useful.
