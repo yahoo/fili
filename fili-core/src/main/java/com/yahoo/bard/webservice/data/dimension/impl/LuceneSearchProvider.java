@@ -458,7 +458,7 @@ public class LuceneSearchProvider implements SearchProvider {
                 writer.deleteAll();
                 writer.commit();
             } catch (IOException e) {
-                LOG.error(ErrorMessageFormat.FAIL_TO_WIPTE_LUCENE_INDEX_DIR.format(luceneDirectory));
+                LOG.error(ErrorMessageFormat.FAIL_TO_WIPE_LUCENE_INDEX_DIR.format(luceneDirectory));
                 throw new RuntimeException(e);
             }
 

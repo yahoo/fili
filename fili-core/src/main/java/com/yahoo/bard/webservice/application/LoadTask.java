@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.application;
 
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
+import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +19,7 @@ import java.util.concurrent.ScheduledFuture;
  * @param <V>  The type of the result returned by the task associated with this loader.
  */
 public abstract class LoadTask<V> implements Runnable {
+
     private static final Logger LOG = LoggerFactory.getLogger(LoadTask.class);
 
     protected final String loaderName;
@@ -25,6 +27,8 @@ public abstract class LoadTask<V> implements Runnable {
     protected final long period;
     protected final boolean isPeriodic;
     protected ScheduledFuture<?> future;
+
+    private boolean failed = false;
 
     /**
      * Creates a one-off loader.
@@ -50,8 +54,22 @@ public abstract class LoadTask<V> implements Runnable {
         this.isPeriodic = period > 0;
     }
 
+    /**
+     * Internal implementation of {@link LoadTask#run()} task that will be used so that {@link LoadTask#run()} can
+     * add mandatory exception handling.
+     */
+    public abstract void runInner();
+
     @Override
-    public abstract void run();
+    public final void run() {
+        try {
+            runInner();
+        } catch (RuntimeException t) {
+            LOG.error(ErrorMessageFormat.LOAD_TASK_FAILURE.logFormat(getName(), t.getMessage()), t);
+            failed = true;
+            throw t;
+        }
+    };
 
     /**
      * Return the name of this loader.
@@ -156,5 +174,9 @@ public abstract class LoadTask<V> implements Runnable {
         public void invoke(Throwable error) {
             LOG.error("{}: Async request to druid failed:", getName(), error);
         }
+    }
+
+    public boolean isFailed() {
+        return failed;
     }
 }

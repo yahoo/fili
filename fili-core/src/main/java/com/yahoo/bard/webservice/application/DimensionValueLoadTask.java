@@ -59,7 +59,7 @@ public class DimensionValueLoadTask extends LoadTask<Boolean> {
     }
 
     @Override
-    public void run() {
+    public void runInner() {
         dimensionRowProviders.forEach(DimensionValueLoader::load);
         // tell all dimensionRowProviders to load
         lastRunTimestamp.set(DateTime.now());

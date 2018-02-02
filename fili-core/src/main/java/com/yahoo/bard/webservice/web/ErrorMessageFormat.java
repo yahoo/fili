@@ -261,9 +261,12 @@ public enum ErrorMessageFormat implements MessageFormatter {
 
     UNABLE_TO_CREATE_DIR("Unable to create directory %s."),
     UNABLE_TO_DELETE_DIR("Unable to delete directory %s."),
-    FAIL_TO_WIPTE_LUCENE_INDEX_DIR("Failed to wipte Lucene index at directory: %s"),
 
-    REQUEST_PROCESSING_EXCEPTION("Exception processing request: %s")
+    FAIL_TO_WIPE_LUCENE_INDEX_DIR("Failed to wipe Lucene index at directory: %s"),
+
+    REQUEST_PROCESSING_EXCEPTION("Exception processing request: %s"),
+
+    LOAD_TASK_FAILURE("Exception while running %s: %s")
     ;
 
     private final String messageFormat;

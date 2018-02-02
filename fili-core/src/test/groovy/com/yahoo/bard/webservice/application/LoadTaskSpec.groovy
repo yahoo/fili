@@ -5,8 +5,10 @@ package com.yahoo.bard.webservice.application
 import static spock.util.matcher.HamcrestMatchers.closeTo
 import static spock.util.matcher.HamcrestSupport.expect
 
+import com.yahoo.bard.webservice.data.dimension.TimeoutException
 import com.yahoo.bard.webservice.druid.client.FailureCallback
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback
+import com.yahoo.bard.webservice.logging.TestLogAppender
 
 import spock.lang.Ignore
 import spock.lang.Specification
@@ -17,6 +19,8 @@ import java.util.concurrent.TimeUnit
 
 @Timeout(30) // Fail test if hangs
 class LoadTaskSpec extends Specification {
+
+    TestLogAppender logAppender = new TestLogAppender()
 
     // All times are in millis unless specified otherwise
     int expectedDelay = 500
@@ -42,7 +46,7 @@ class LoadTaskSpec extends Specification {
         }
 
         @Override
-        void run() {
+        void runInner() {
             start = System.currentTimeMillis()
             sleep(expectedDuration)
             end = System.currentTimeMillis()
@@ -60,7 +64,7 @@ class LoadTaskSpec extends Specification {
         }
 
         @Override
-        void run() {
+        void runInner() {
             start = System.currentTimeMillis()
             sleep(expectedDuration)
             end = System.currentTimeMillis()
@@ -230,5 +234,31 @@ class LoadTaskSpec extends Specification {
 
         cleanup:
         scheduler.shutdownNow()
+    }
+
+    class FailingTestLoadTask extends LoadTaskSpec.OneOffTestLoadTask {
+
+        public static final String UNIQUE_VALUE_1 = "FailingTestLoadTask.UNIQUE_VALUE_1"
+
+        FailingTestLoadTask(long delay) {
+            super(delay)
+        }
+
+        @Override
+        void runInner() {
+            throw new TimeoutException(UNIQUE_VALUE_1);
+        }
+    }
+
+    def "Test error gets logged on failed test"() {
+        setup: "Instantiate a task scheduler"
+        TaskScheduler scheduler = new TaskScheduler(2)
+        LoadTask<Boolean> loader = new FailingTestLoadTask(expectedDelay)
+        loader.setFuture(scheduler.schedule(loader,1, TimeUnit.MILLISECONDS))
+        Thread.sleep(10)
+
+        expect:
+        loader.failed
+        logAppender.getMessages().find { it.contains(/FailingTestLoadTask.UNIQUE_VALUE_1/) }
     }
 }
