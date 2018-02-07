@@ -85,8 +85,8 @@ class PartitionAvailabilitySpec extends Specification{
         availability1.getDataSourceNames() >> ([name1] as Set)
         availability2.getDataSourceNames() >> ([name2] as Set)
 
-        availability1.getDataSourceNames(_ as DataSourceConstraint) >> ([name1] as Set)
-        availability2.getDataSourceNames(_ as DataSourceConstraint) >> ([name2] as Set)
+        availability1.getDataSourceNames(_ as PhysicalDataSourceConstraint) >> ([name1] as Set)
+        availability2.getDataSourceNames(_ as PhysicalDataSourceConstraint) >> ([name2] as Set)
 
         DataSourceFilter partition1 = Mock(DataSourceFilter)
         DataSourceFilter partition2 = Mock(DataSourceFilter)
@@ -99,7 +99,7 @@ class PartitionAvailabilitySpec extends Specification{
         partitionAvailability = new PartitionAvailability(partitionMap)
 
         expect:
-        partitionAvailability.getDataSourceNames(Mock(DataSourceConstraint)) == [name1] as Set
+        partitionAvailability.getDataSourceNames(Mock(PhysicalDataSourceConstraint)) == [name1] as Set
     }
 
     @Unroll
