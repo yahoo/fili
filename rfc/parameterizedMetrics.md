@@ -29,11 +29,11 @@ metricName(parameterName=value)
 metricName [ '(' parameterName=value [ ',' parameterName=value ]*  ')' ]?
 ```
 
-metricName -> an api metric name which should appear as a resource at the `/v1/metrics/metricName` endpoint.
+**metricName** -> an api metric name which should appear as a resource at the `/v1/metrics/metricName` endpoint.
 
-parameterName -> an identifier for a parameter supported by this metric.  Identifier names should follow the same format rules as api resource identifiers.
+**parameterName** -> an identifier for a parameter supported by this metric.  Identifier names should follow the same format rules as api resource identifiers.
 
-value -> a value to be used for creating a modified version of baseMetric.  URL encoding may be required if some of the characters in the value contain special characters.  Escaping values containing ampersand is mandatory and it may also be necessary to encode values containing comma or parentheses depending on implementation.
+**value** -> a value to be used for creating a modified version of baseMetric.  URL encoding may be required if some of the characters in the value contain special characters.  Escaping values containing ampersand is mandatory and it may also be necessary to encode values containing comma or parentheses depending on implementation.
 
 Values containing characters delimiters such as comma or parantheses must have them nested in other scoping characters such as quotes, square brackets or parantheses.
 
@@ -53,7 +53,7 @@ Unless aliasing is supported and used (see below), responses will use the full s
 
 Example query:
 ```json
-...&amp;metrics=revenue,netRevenue,revenue(currency=USD)
+...&metrics=revenue,netRevenue,revenue(currency=USD)
 ```
 
 Example response:
@@ -81,7 +81,7 @@ Two optional features which may be supported in some fili implementations are 'f
 
 Dynamic aggregation filters, if supported, use the parameter name `filters`. Values will be parsed according to the same rules as the entries in the `filters` query parameter.  The expected behavior of the filters parameter is that rows in the base fact will not be aggregated unless the included filters is true.  This is potentially costly in performance and global filters should always be preferred to dynamic filters, if possible.
 
-The `as` parameter name, if supported, will create an alias for the dynamic metric which will be used in the schema of the response as well as in the having clause of the request.
+The `as` parameter name, if supported, will create an alias for the dynamic metric which will be used in the schema of the response as well as in the having and sort clauses of the request.
 
 
 Aliasing with 'as'
@@ -92,7 +92,7 @@ Aliasing metrics provides a shorthand for the response and for the having clause
 Example request:
 
 ```
-?metrics=users(filters=dim1|id-in['a','b'],as=DimOneInAOrB)&having=DimOneInAOrB-gt[50]
+?metrics=users(filters=dim1|id-in['a','b'],as=DimOneInAOrB)&having=DimOneInAOrB-gt[50]&sort=DimOneInAOrB
 ```
 
 This would create a variation of the standard `users` aggregation which only counted users from records where the dimension `dim1` had values "a" or "b", and would display result rows only which for which this metric had at least 50 users.
@@ -229,3 +229,5 @@ Based on the current requirements, support for anything but the simplest set of 
 **"Duplicate Metric"**: If an 'identical' metric is defined on the metrics list.
 
 **"Unexpected Having Metric"**: If a metric described in the having expression isn't represented in the metrics section.
+
+**"Unexpected Sort Metric"**: If a metric described in the sort expression isn't represented in the metrics section.
