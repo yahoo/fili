@@ -45,4 +45,10 @@ class LookupMetadataLoadTaskSpec extends Specification {
         then:
         lookupLoadTask.getPendingLookups() == ["pendingLookup", "LookupNotInDruid"] as Set
     }
+
+    def "getTiers() separates tiers by comma"() {
+        expect:
+        lookupLoadTask.getTiers("__default,tier1,tier2,tier3") ==
+                (["__default", "tier1", "tier2", "tier3"] as Set)
+    }
 }

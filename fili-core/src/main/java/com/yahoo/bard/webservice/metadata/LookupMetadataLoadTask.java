@@ -14,7 +14,9 @@ import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -23,31 +25,37 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
- * Lookup Load task sends requests to Druid coordinator and returns list of configured lookup statuses in Druid.
+ * Lookup Load task sends requests to Druid coordinator and returns load statuses of lookup metadata in Druid.
  */
 public class LookupMetadataLoadTask extends LoadTask<Boolean> {
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     /**
+     * A comma separated string of lookup tiers.
+     * <p>
+     * See http://druid.io/docs/latest/querying/lookups.html for details on "tier".
+     */
+    private static final String TIERS_KEY = SYSTEM_CONFIG.getPackageVariableName("lookup_tiers");
+    /**
      * Location of lookup statuses on Druid coordinator.
      */
-    public static final String LOOKUP_QUERY = "/lookups/status/__default";
+    private static final String LOOKUP_QUERY_FORMAT = "/lookups/status/%s";
     /**
      * Time between 2 consecutive lookup loading call in milliseconds.
      */
-    public static final String LOOKUP_NORMAL_CHECKING_PERIOD_KEY = SYSTEM_CONFIG.getPackageVariableName(
+    private static final String LOOKUP_NORMAL_CHECKING_PERIOD_KEY = SYSTEM_CONFIG.getPackageVariableName(
             "lookup_normal_checking_period"
     );
     /**
      * Wait on https://github.com/yahoo/fili/issues/619.
      */
-    public static final String LOOKUP_ERROR_CHECKING_PERIOD_KEY = SYSTEM_CONFIG.getPackageVariableName(
+    private static final String LOOKUP_ERROR_CHECKING_PERIOD_KEY = SYSTEM_CONFIG.getPackageVariableName(
             "lookup_error_checking_period"
     );
     /**
      * Parameter specifying the delay before the first run of {@link LookupMetadataLoadTask}, in milliseconds.
      */
-    public static final String INITIAL_LOOKUP_CHECKING_DELAY = SYSTEM_CONFIG.getPackageVariableName(
+    private static final String INITIAL_LOOKUP_CHECKING_DELAY = SYSTEM_CONFIG.getPackageVariableName(
             "initial_lookup_checking_delay"
     );
 
@@ -56,7 +64,10 @@ public class LookupMetadataLoadTask extends LoadTask<Boolean> {
     private final SuccessCallback successCallback;
     private final FailureCallback failureCallback;
     private final HttpErrorCallback errorCallback;
-    private Set<String> pendingLookups;
+    private final Set<String> pendingLookups;
+
+    private Set<String> lookupTiers;
+
 
     /**
      * Constructor.
@@ -76,12 +87,44 @@ public class LookupMetadataLoadTask extends LoadTask<Boolean> {
         this.successCallback = buildLookupSuccessCallback();
         this.failureCallback = getFailureCallback();
         this.errorCallback = getErrorCallback();
+        this.pendingLookups = new HashSet<>();
+        this.lookupTiers = getTiers(SYSTEM_CONFIG.getStringProperty(TIERS_KEY, "__default"));
     }
 
     @Override
     public void run() {
-        // download load statuses of all lookups
-        druidClient.getJsonObject(successCallback, errorCallback, failureCallback, LOOKUP_QUERY);
+        getPendingLookups().clear();
+        // download load statuses of all lookups of each lookup tier
+        lookupTiers.forEach(lookupTier ->
+                druidClient.getJsonObject(
+                        successCallback,
+                        errorCallback,
+                        failureCallback,
+                        String.format(LOOKUP_QUERY_FORMAT, lookupTier)
+                )
+        );
+    }
+
+    /**
+     * Returns a list of configured lookup tiers.
+     * <p>
+     * See http://druid.io/docs/latest/querying/lookups.html for details on "tier".
+     *
+     * @return the list of configured lookup tiers
+     */
+    public Set<String> getLookupTiers() {
+        return lookupTiers;
+    }
+
+    /**
+     * Updates list of configured lookup tiers.
+     * <p>
+     * This method becomes useful when a new look up tier is added at runtime.
+     *
+     * @param lookupTiers  A new list of configured lookup tiers
+     */
+    public void setLookupTiers(Set<String> lookupTiers) {
+        this.lookupTiers = lookupTiers;
     }
 
     /**
@@ -112,13 +155,30 @@ public class LookupMetadataLoadTask extends LoadTask<Boolean> {
                 lookupStatuses.put(entry.getKey(), entry.getValue().get("loaded").asBoolean());
             }
 
-            pendingLookups = dimensionDictionary.findAll().stream()
-                    .filter(dimension -> dimension instanceof LookupDimension)
-                    .map(dimension -> (LookupDimension) dimension)
-                    .map(LookupDimension::getNamespaces)
-                    .flatMap(List::stream)
-                    .filter(namespace -> !lookupStatuses.containsKey(namespace) || !lookupStatuses.get(namespace))
-                    .collect(Collectors.toSet());
+            pendingLookups.addAll(
+                    dimensionDictionary.findAll().stream()
+                            .filter(dimension -> dimension instanceof LookupDimension)
+                            .map(dimension -> (LookupDimension) dimension)
+                            .map(LookupDimension::getNamespaces)
+                            .flatMap(List::stream)
+                            .filter(namespace ->
+                                    !lookupStatuses.containsKey(namespace) || !lookupStatuses.get(namespace)
+                            )
+                            .collect(Collectors.toSet())
+            );
         };
+    }
+
+    /**
+     * Returns a list of lookup tiers from a comma separated string.
+     * <p>
+     * For example, {@code "tier1,tier2,tier3"} becomes {@code ["tier1", "tier2", "tier3"]}.
+     *
+     * @param string  The comma separated string of lookup tiers.
+     *
+     * @return the list of lookup tiers
+     */
+    private static Set<String> getTiers(String string) {
+        return Arrays.stream(string.split(",")).collect(Collectors.toSet());
     }
 }

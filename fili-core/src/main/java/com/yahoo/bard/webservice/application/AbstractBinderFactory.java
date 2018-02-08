@@ -160,7 +160,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     public static final String HEALTH_CHECK_NAME_DATASOURCE_METADATA = "datasource metadata loader";
-    public static final String HEALTH_CHECK_NAME_LOOKUP = "lookup loader";
+    public static final String HEALTH_CHECK_NAME_LOOKUP_METADATA = "lookup metadata loader";
     public static final String HEALTH_CHECK_NAME_DRUID_DIM_LOADER = "druid dimensions loader";
     public static final String HEALTH_CHECK_VERSION = "version";
     public static final String HEALTH_CHECK_NAME_DIMENSION = "dimension check";
@@ -744,7 +744,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      * @param dimensionDictionary  A {@link com.yahoo.bard.webservice.data.dimension.DimensionDictionary} that is used
      * to obtain a list of lookups in Fili.
      *
-     * @return a lookup loader
+     * @return a lookup metadata loader
      */
     protected LookupMetadataLoadTask buildLookupMetaDataLoader(
             DruidWebService webService,
@@ -796,7 +796,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     }
 
     /**
-     * Schedule a lookup loader and register its health check.
+     * Schedule a lookup metadata loader and register its health check.
      *
      * @param healthCheckRegistry  The health check registry to register lookup health checks.
      * @param lookupMetadataLoadTask  The {@link LookupMetadataLoadTask} to use.
@@ -806,7 +806,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
             LookupMetadataLoadTask lookupMetadataLoadTask
     ) {
         scheduleLoader(lookupMetadataLoadTask);
-        healthCheckRegistry.register(HEALTH_CHECK_NAME_LOOKUP, new LookupHealthCheck(lookupMetadataLoadTask));
+        healthCheckRegistry.register(HEALTH_CHECK_NAME_LOOKUP_METADATA, new LookupHealthCheck(lookupMetadataLoadTask));
     }
 
     /**
