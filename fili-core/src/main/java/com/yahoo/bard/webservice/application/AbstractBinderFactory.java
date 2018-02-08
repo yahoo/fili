@@ -16,6 +16,10 @@ import com.yahoo.bard.webservice.application.healthchecks.DataSourceMetadataLoad
 import com.yahoo.bard.webservice.application.healthchecks.DruidDimensionsLoaderHealthCheck;
 import com.yahoo.bard.webservice.application.healthchecks.LookupHealthCheck;
 import com.yahoo.bard.webservice.application.healthchecks.VersionHealthCheck;
+import com.yahoo.bard.webservice.application.metadataViews.LogicalMetricSummaryViewFunction;
+import com.yahoo.bard.webservice.application.metadataViews.LogicalMetricViewFunction;
+import com.yahoo.bard.webservice.application.metadataViews.MetadataViewFunction;
+import com.yahoo.bard.webservice.application.metadataViews.TableSummaryViewFunction;
 import com.yahoo.bard.webservice.async.broadcastchannels.BroadcastChannel;
 import com.yahoo.bard.webservice.async.broadcastchannels.SimpleBroadcastChannel;
 import com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField;
@@ -85,9 +89,6 @@ import com.yahoo.bard.webservice.util.DefaultingDictionary;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.web.CsvResponseWriter;
 import com.yahoo.bard.webservice.web.DataApiRequest;
-import com.yahoo.bard.webservice.web.apirequest.DataApiRequestFactory;
-import com.yahoo.bard.webservice.web.apirequest.DefaultDataApiRequestFactory;
-import com.yahoo.bard.webservice.web.ratelimit.DefaultRateLimiter;
 import com.yahoo.bard.webservice.web.DefaultResponseFormatResolver;
 import com.yahoo.bard.webservice.web.DimensionApiRequestMapper;
 import com.yahoo.bard.webservice.web.DimensionsApiRequest;
@@ -106,11 +107,14 @@ import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.ResponseWriter;
 import com.yahoo.bard.webservice.web.SlicesApiRequest;
 import com.yahoo.bard.webservice.web.TablesApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequestFactory;
+import com.yahoo.bard.webservice.web.apirequest.DefaultDataApiRequestFactory;
 import com.yahoo.bard.webservice.web.apirequest.DefaultHavingApiGenerator;
 import com.yahoo.bard.webservice.web.apirequest.HavingGenerator;
 import com.yahoo.bard.webservice.web.apirequest.PerRequestDictionaryHavingGenerator;
 import com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow;
 import com.yahoo.bard.webservice.web.handlers.workflow.RequestWorkflowProvider;
+import com.yahoo.bard.webservice.web.ratelimit.DefaultRateLimiter;
 import com.yahoo.bard.webservice.web.util.QueryWeightUtil;
 
 import com.codahale.metrics.Gauge;
@@ -201,6 +205,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     );
 
     public static final String SYSTEM_CONFIG_TIMEZONE_KEY = "timezone";
+    public static final String SERIALIZATION_MODULES = "SerializationModules";
 
     private ObjectMappersSuite objectMappers;
 
@@ -398,6 +403,29 @@ public abstract class AbstractBinderFactory implements BinderFactory {
         )).named(JobsApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
     }
 
+    /**
+     * Bind ApiRequest instances to resource scope names.
+     *
+     * @param binder  The binder being used to bind the request mappers.
+     */
+    private void bindSerializerModules(AbstractBinder binder, ResourceDictionaries resourceDictionaries) {
+        Map<String, RequestMapper> serializationModules = new HashMap<>();
+        binder.bind(buildMetadaViewBuilder(resourceDictionaries)).named(SERIALIZATION_MODULES).to(Map.class);
+    }
+
+    /**
+     * Bind ApiRequest instances to resource scope names.
+     *
+     */
+    private Map<String, MetadataViewFunction<?>> buildMetadaViewBuilder(ResourceDictionaries resourceDictionaries) {
+        Map<String, MetadataViewFunction<?>> metadataViewBuilder = new HashMap<>();
+        TableSummaryViewFunction tableSummaryViewFunction = new TableSummaryViewFunction();
+        metadataViewBuilder.put("metrics.view", new LogicalMetricViewFunction(resourceDictionaries.getLogicalDictionary(), tableSummaryViewFunction));
+        metadataViewBuilder.put("tables.summary.view", tableSummaryViewFunction);
+        metadataViewBuilder.put("metrics.summary.view", new LogicalMetricSummaryViewFunction());
+        return metadataViewBuilder;
+
+    }
     /**
      * Initializes the factory that builds druid queries.
      *

@@ -268,7 +268,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                 );
             }
 
-            Map<String, Object> result = getLogicalTableFullView(tablesApiRequestImpl.getTable(), uriInfo);
+            Map<String, Object> result = getLogicalTableFullView(tablesApiRequestImpl.getTable(), containerRequestContext);
             String output = objectMappers.getMapper().writeValueAsString(result);
             LOG.debug("Tables Endpoint Response: {}", output);
             responseSender = () ->  Response.status(Response.Status.OK).entity(output).build();
@@ -363,7 +363,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                 );
             }
 
-            Map<String, Object> result = getLogicalTableFullView(tablesApiRequest, uriInfo);
+            Map<String, Object> result = getLogicalTableFullView(tablesApiRequest, containerRequestContext);
             String output = objectMappers.getMapper().writeValueAsString(result);
             LOG.debug("Tables Endpoint Response: {}", output);
             responseSender = () ->  Response.status(OK).entity(output).build();
@@ -471,10 +471,10 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
      */
     public static Set<Map<String, Object>> getLogicalAll(
             Collection<LogicalTable> logicalTables,
-            UriInfo uriInfo
+            ContainerRequestContext containerRequestContext
     ) {
         return logicalTables.stream()
-                .map(logicalTable -> getLogicalTableFullView(logicalTable, uriInfo))
+                .map(logicalTable -> getLogicalTableFullView(logicalTable, containerRequestContext))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
@@ -509,7 +509,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
      * {@link #getLogicalTableFullView(TablesApiRequestImpl, UriInfo)} instead.
      */
     @Deprecated
-    protected static Map<String, Object> getLogicalTableFullView(LogicalTable logicalTable, UriInfo uriInfo) {
+    protected static Map<String, Object> getLogicalTableFullView(LogicalTable logicalTable, ContainerRequestContext containerRequestContext) {
         Map<String, Object> resultRow = new LinkedHashMap<>();
         resultRow.put("category", logicalTable.getCategory());
         resultRow.put("name", logicalTable.getName());
@@ -519,11 +519,11 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
         resultRow.put("description", logicalTable.getDescription());
         resultRow.put(
                 "dimensions",
-                DimensionsServlet.getDimensionListSummaryView(logicalTable.getDimensions(), uriInfo)
+                DimensionsServlet.getDimensionListSummaryView(logicalTable.getDimensions(), containerRequestContext.getUriInfo())
         );
         resultRow.put(
                 "metrics",
-                MetricsServlet.getLogicalMetricListSummaryView(logicalTable.getLogicalMetrics(), uriInfo)
+                MetricsServlet.getLogicalMetricListSummaryView(logicalTable.getLogicalMetrics(), containerRequestContext)
         );
         resultRow.put(
                 "availableIntervals",
@@ -549,7 +549,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
      */
     protected static Map<String, Object> getLogicalTableFullView(
             TablesApiRequestImpl tablesApiRequest,
-            UriInfo uriInfo
+            ContainerRequestContext containerRequestContext
     ) {
         LogicalTable logicalTable = tablesApiRequest.getTable();
         return Stream.of(
@@ -561,11 +561,11 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                 new SimpleImmutableEntry<>("description", logicalTable.getDescription()),
                 new SimpleImmutableEntry<>(
                         "dimensions",
-                        DimensionsServlet.getDimensionListSummaryView(logicalTable.getDimensions(), uriInfo)
+                        DimensionsServlet.getDimensionListSummaryView(logicalTable.getDimensions(), containerRequestContext.getUriInfo())
                 ),
                 new SimpleImmutableEntry<>(
                         "metrics",
-                        MetricsServlet.getLogicalMetricListSummaryView(logicalTable.getLogicalMetrics(), uriInfo)
+                        MetricsServlet.getLogicalMetricListSummaryView(logicalTable.getLogicalMetrics(), containerRequestContext)
                 ),
                 new SimpleImmutableEntry<>(
                         "availableIntervals",

@@ -5,7 +5,9 @@ package com.yahoo.bard.webservice.web.endpoints;
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.UPDATED_METADATA_COLLECTION_NAMES;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
+import com.yahoo.bard.webservice.application.AbstractBinderFactory;
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
+import com.yahoo.bard.webservice.application.metadataViews.MetadataViewFunction;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.logging.RequestLog;
@@ -20,6 +22,7 @@ import com.yahoo.bard.webservice.web.apirequest.MetricsApiRequestImpl;
 
 import com.codahale.metrics.annotation.Timed;
 
+import org.hibernate.validator.internal.metadata.aggregated.MetaDataBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,6 +66,8 @@ public class MetricsServlet extends EndpointServlet {
     private final RequestMapper requestMapper;
     private final ResponseFormatResolver formatResolver;
 
+    Map<String, MetadataViewFunction<?>> metadataBuilders;
+
     /**
      * Constructor.
      *
@@ -77,6 +82,7 @@ public class MetricsServlet extends EndpointServlet {
             MetricDictionary metricDictionary,
             LogicalTableDictionary logicalTableDictionary,
             @Named(MetricsApiRequest.REQUEST_MAPPER_NAMESPACE) RequestMapper requestMapper,
+            @Named(AbstractBinderFactory.SERIALIZATION_MODULES) Map<String, MetadataViewFunction<?>> metadataBuilders,
             ObjectMappersSuite objectMappers,
             ResponseFormatResolver formatResolver
     ) {
@@ -85,6 +91,7 @@ public class MetricsServlet extends EndpointServlet {
         this.logicalTableDictionary = logicalTableDictionary;
         this.requestMapper = requestMapper;
         this.formatResolver = formatResolver;
+        this.metadataBuilders = metadataBuilders;
     }
 
     /**
@@ -133,7 +140,7 @@ public class MetricsServlet extends EndpointServlet {
             }
 
             Stream<Map<String, String>> result = apiRequest.getPage(
-                    getLogicalMetricListSummaryView(apiRequest.getMetrics(), uriInfo)
+                    getLogicalMetricListSummaryView(apiRequest.getMetrics(), containerRequestContext)
             );
 
             Response response = formatResponse(
@@ -236,10 +243,10 @@ public class MetricsServlet extends EndpointServlet {
      */
     public static Set<Map<String, String>> getLogicalMetricListSummaryView(
             Collection<LogicalMetric> logicalMetrics,
-            UriInfo uriInfo
+            ContainerRequestContext containerRequestContext
     ) {
         return logicalMetrics.stream()
-                .map(logicalMetric -> getLogicalMetricSummaryView(logicalMetric, uriInfo))
+                .map(logicalMetric -> getLogicalMetricSummaryView(logicalMetric, containerRequestContext))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
@@ -251,14 +258,19 @@ public class MetricsServlet extends EndpointServlet {
      *
      * @return Summary view of the logical metric
      */
-    public static Map<String, String> getLogicalMetricSummaryView(LogicalMetric logicalMetric, UriInfo uriInfo) {
+    public Map<String, String> static getLogicalMetricSummaryView(LogicalMetric logicalMetric, ContainerRequestContext containerRequestContext) {
+        /*
         Map<String, String> resultRow = new LinkedHashMap<>();
         resultRow.put("category", logicalMetric.getCategory());
         resultRow.put("name", logicalMetric.getName());
         resultRow.put("longName", logicalMetric.getLongName());
         resultRow.put("type", logicalMetric.getType());
         resultRow.put("uri", getLogicalMetricUrl(logicalMetric, uriInfo));
-        return resultRow;
+
+        return resultRow;*/
+        MetadataViewFunction<LogicalMetric> builder = (MetadataViewFunction<LogicalMetric>) metadataBuilders.get("metrics.summary.view");
+
+        return (Map<String, String>) builder.apply(containerRequestContext, logicalMetric);
     }
 
     /**
