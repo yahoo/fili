@@ -52,7 +52,7 @@ Response schema
 Unless aliasing is supported and used (see below), responses will use the full string of the metric expression as the column name for values resulting from parametrized metric evaluation.
 
 Example query:
-```json
+```
 ...&metrics=revenue,netRevenue,revenue(currency=USD)
 ```
 
@@ -70,7 +70,9 @@ Example response:
       "netRevenue|currency": "CAD",
       "revenue(currency=USD)": "120",
       "revenue(currency=USD)|currency": "USD"
+      
     }
+    ]
 }
 ```
 
@@ -100,11 +102,12 @@ This would create a variation of the standard `users` aggregation which only cou
 Example response:
 ```json
 {
-  "rows": [
-    {
-      "dateTime": "2018-02-01 00:00:00.000",
-      "DimOneInAOrB": "100"
-    }
+    "rows": [
+        {
+            "dateTime": "2018-02-01 00:00:00.000",
+            "DimOneInAOrB": "100"
+        }
+    ]
 }
 ```
 
@@ -133,15 +136,15 @@ Parameterized Metric Metadata
 
 The metrics endpoint (and the corresponding serialization in the fullView format on the tables endpoint) will now contain an optional field for parameters.
 
-```
+```json
 { 
-    name:"grossRevenue",
-    type:"money"
-    parameters: {
-        currency: {  
-            type: dimension, 
-            dimensionName: "currencyUnits",
-            defaultValue:"billing" 
+    "name": "grossRevenue",
+    "type": "money",
+    "parameters": {
+        "currency": {  
+            "type": "dimension", 
+            "dimensionName": "currencyUnits",
+            "defaultValue":"billing" 
         }
     }
 }
@@ -199,9 +202,9 @@ The dimension parameter type:
 
 ```json
 {
-  type: dimension, 
-  dimensionName: [DIMENSION_NAME],
-  defaultValue: [DEFAULT_VALUE] 
+  "type": "dimension", 
+  "dimensionName": "[DIMENSION_NAME]",
+  "defaultValue": "[DEFAULT_VALUE]" 
 }
 ```
 
