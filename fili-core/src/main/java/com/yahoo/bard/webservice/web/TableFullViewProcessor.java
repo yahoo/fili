@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.UriInfo;
 
 /**
@@ -92,16 +93,16 @@ public class TableFullViewProcessor implements TableMetadataFormatter {
      * @return logical table details at grain level with all the associated meta data
      */
     @Override
-    public TableGrainView formatTableGrain(LogicalTable logicalTable, String grain, UriInfo uriInfo) {
+    public TableGrainView formatTableGrain(LogicalTable logicalTable, String grain, ContainerRequestContext containerRequestContext) {
         TableGrainView resultRow = new TableGrainView();
         resultRow.put("name", grain);
         resultRow.put("longName", StringUtils.capitalize(grain));
         resultRow.put("description", "The " + logicalTable.getName() + " " + grain + " grain");
         resultRow.put("retention", logicalTable.getRetention().toString());
-        resultRow.put("dimensions", getDimensionListFullView(logicalTable.getDimensions(), uriInfo));
+        resultRow.put("dimensions", getDimensionListFullView(logicalTable.getDimensions(), containerRequestContext.getUriInfo()));
         resultRow.put(
                 "metrics",
-                MetricsServlet.getLogicalMetricListSummaryView(logicalTable.getLogicalMetrics(), uriInfo)
+                MetricsServlet.getLogicalMetricListSummaryView(logicalTable.getLogicalMetrics(), containerRequestContext)
         );
         return resultRow;
     }
