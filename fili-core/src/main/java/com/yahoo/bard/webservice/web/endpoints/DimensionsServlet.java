@@ -6,7 +6,9 @@ import static com.yahoo.bard.webservice.config.BardFeatureFlag.UPDATED_METADATA_
 import static com.yahoo.bard.webservice.web.ResponseCode.INSUFFICIENT_STORAGE;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
+import com.yahoo.bard.webservice.application.AbstractBinderFactory;
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
+import com.yahoo.bard.webservice.application.metadataViews.MetadataViewProvider;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
@@ -71,6 +73,7 @@ public class DimensionsServlet extends EndpointServlet {
     private final LogicalTableDictionary logicalTableDictionary;
     private final RequestMapper requestMapper;
     private final ResponseFormatResolver formatResolver;
+    private final Map<String, MetadataViewProvider<?>> metadataBuilders;
 
     /**
      * Constructor.
@@ -86,6 +89,7 @@ public class DimensionsServlet extends EndpointServlet {
             DimensionDictionary dimensionDictionary,
             LogicalTableDictionary logicalTableDictionary,
             @Named(DimensionsApiRequest.REQUEST_MAPPER_NAMESPACE) RequestMapper requestMapper,
+            @Named(AbstractBinderFactory.METADATA_VIEW_PROVIDERS) Map<String, MetadataViewProvider<?>> metadataBuilders,
             ObjectMappersSuite objectMappers,
             ResponseFormatResolver formatResolver
     ) {
@@ -93,6 +97,7 @@ public class DimensionsServlet extends EndpointServlet {
         this.dimensionDictionary = dimensionDictionary;
         this.logicalTableDictionary = logicalTableDictionary;
         this.requestMapper = requestMapper;
+        this.metadataBuilders = metadataBuilders;
         this.formatResolver = formatResolver;
     }
 
@@ -142,7 +147,16 @@ public class DimensionsServlet extends EndpointServlet {
             }
 
             Stream<Map<String, Object>> result = apiRequest.getPage(
-                    getDimensionListSummaryView(apiRequest.getDimensions(), uriInfo)
+                    (Set<Map<String, Object>>) apiRequest.getDimensions()
+                        .stream()
+                        .map(dimension ->
+                                (Map<String, Object>) ((MetadataViewProvider<Dimension>) metadataBuilders
+                                        .get("dimensions.summary.view"))
+                                        .apply(
+                                                containerRequestContext, dimension
+                                        )
+                        )
+                        .collect(Collectors.toCollection(LinkedHashSet::new))
             );
 
             Response response = formatResponse(
@@ -205,11 +219,9 @@ public class DimensionsServlet extends EndpointServlet {
                 apiRequest = (DimensionsApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
-            Map<String, Object> result = getDimensionFullView(
-                    apiRequest.getDimension(),
-                    logicalTableDictionary,
-                    uriInfo
-            );
+            Map<String, Object> result = (Map<String, Object>) ((MetadataViewProvider<Dimension>) metadataBuilders
+                    .get("dimensions.full.view"))
+                    .apply(containerRequestContext, apiRequest.getDimension());
 
             String output = objectMappers.getMapper().writeValueAsString(result);
             LOG.debug("Dimension Endpoint Response: {}", output);
@@ -298,6 +310,7 @@ public class DimensionsServlet extends EndpointServlet {
             PaginationParameters paginationParameters = apiRequest
                     .getPaginationParameters()
                     .orElse(apiRequest.getDefaultPagination());
+
             Pagination<DimensionRow> pagedRows = apiRequest.getFilters().isEmpty() ?
                     searchProvider.findAllDimensionRowsPaged(paginationParameters) :
                     searchProvider.findFilteredDimensionRowsPaged(
@@ -342,76 +355,6 @@ public class DimensionsServlet extends EndpointServlet {
         }
 
         return responseSender.get();
-    }
-
-    /**
-     * Get the summary list view of the dimensions.
-     *
-     * @param dimensions  Collection of dimensions to get the summary view for
-     * @param uriInfo  UriInfo of the request
-     *
-     * @return Summary list view of the dimensions
-     */
-    public static LinkedHashSet<Map<String, Object>> getDimensionListSummaryView(
-            Iterable<Dimension> dimensions,
-            final UriInfo uriInfo
-    ) {
-        return Streams.stream(dimensions)
-                .map(dimension -> getDimensionSummaryView(dimension, uriInfo))
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-    }
-
-    /**
-     * Get the summary view of the dimension.
-     *
-     * @param dimension  Dimension to get the view of
-     * @param uriInfo  UriInfo of the request
-     *
-     * @return Summary view of the dimension
-     */
-    public static Map<String, Object> getDimensionSummaryView(Dimension dimension, final UriInfo uriInfo) {
-        Map<String, Object> resultRow = new LinkedHashMap<>();
-        resultRow.put("category", dimension.getCategory());
-        resultRow.put("name", dimension.getApiName());
-        resultRow.put("longName", dimension.getLongName());
-        resultRow.put("uri", getDimensionUrl(dimension, uriInfo));
-        resultRow.put("cardinality", dimension.getCardinality());
-        resultRow.put("storageStrategy", dimension.getStorageStrategy());
-        return resultRow;
-    }
-
-    /**
-     * Get the full view of the dimension.
-     *
-     * @param dimension  Dimension to get the view of
-     * @param logicalTableDictionary  Logical Table Dictionary to look up the logical tables this dimension is on
-     * @param uriInfo  UriInfo of the request
-     *
-     * @return Full view of the dimension
-     */
-    public static Map<String, Object> getDimensionFullView(
-            Dimension dimension,
-            LogicalTableDictionary logicalTableDictionary,
-            final UriInfo uriInfo
-    ) {
-        Map<String, Object> resultRow = new LinkedHashMap<>();
-        resultRow.put("category", dimension.getCategory());
-        resultRow.put("name", dimension.getApiName());
-        resultRow.put("longName", dimension.getLongName());
-        resultRow.put("description", dimension.getDescription());
-        resultRow.put("fields", dimension.getDimensionFields());
-        resultRow.put("values", getDimensionValuesUrl(dimension, uriInfo));
-        resultRow.put("cardinality", dimension.getCardinality());
-        resultRow.put("storageStrategy", dimension.getStorageStrategy());
-        resultRow.put(
-                "tables",
-                null
-//                TablesServlet.getLogicalTableListSummaryView(
-//                        logicalTableDictionary.findByDimension(dimension),
-//                        uriInfo
-//                )
-        );
-        return resultRow;
     }
 
     /**

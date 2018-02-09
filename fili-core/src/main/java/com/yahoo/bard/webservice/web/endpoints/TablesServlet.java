@@ -523,7 +523,8 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
         resultRow.put("description", logicalTable.getDescription());
         resultRow.put(
                 "dimensions",
-                DimensionsServlet.getDimensionListSummaryView(logicalTable.getDimensions(), containerRequestContext.getUriInfo())
+                null
+//                DimensionsServlet.getDimensionListSummaryView(logicalTable.getDimensions(), containerRequestContext.getUriInfo())
         );
         resultRow.put(
                 "metrics",
