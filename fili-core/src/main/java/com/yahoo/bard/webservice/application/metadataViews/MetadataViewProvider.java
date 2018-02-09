@@ -6,7 +6,7 @@ import java.util.function.BiFunction;
 
 import javax.ws.rs.container.ContainerRequestContext;
 
-public interface MetadataViewFunction<T> extends BiFunction<ContainerRequestContext, T, Object> {
+public interface MetadataViewProvider<T> extends BiFunction<ContainerRequestContext, T, Object> {
 
 }
 

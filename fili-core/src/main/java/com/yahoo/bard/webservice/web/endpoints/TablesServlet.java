@@ -10,7 +10,9 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.OK;
 
+import com.yahoo.bard.webservice.application.AbstractBinderFactory;
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
+import com.yahoo.bard.webservice.application.metadataViews.MetadataViewProvider;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.data.time.GranularityParser;
@@ -81,6 +83,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
     private final RequestMapper requestMapper;
     private final GranularityParser granularityParser;
     private final ResponseFormatResolver formatResolver;
+    private final Map<String, MetadataViewProvider<?>> metadataBuilders;
 
     /**
      * Constructor.
@@ -95,6 +98,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
     public TablesServlet(
             ResourceDictionaries resourceDictionaries,
             @Named(TablesApiRequest.REQUEST_MAPPER_NAMESPACE) RequestMapper requestMapper,
+            @Named(AbstractBinderFactory.METADATA_VIEW_PROVIDERS) Map<String, MetadataViewProvider<?>> metadataBuilders,
             ObjectMappersSuite objectMappers,
             GranularityParser granularityParser,
             ResponseFormatResolver formatResolver
@@ -102,6 +106,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
         super(objectMappers);
         this.resourceDictionaries = resourceDictionaries;
         this.requestMapper = requestMapper;
+        this.metadataBuilders = metadataBuilders;
         this.granularityParser = granularityParser;
         this.formatResolver = formatResolver;
     }
@@ -194,7 +199,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             }
 
             Stream<Map<String, String>> result = tablesApiRequestImpl.getPage(
-                    getLogicalTableListSummaryView(tablesApiRequestImpl.getTables(), uriInfo)
+                    getLogicalTableListSummaryView(tablesApiRequestImpl.getTables(), containerRequestContext, (MetadataViewProvider<LogicalTable>) metadataBuilders.get("tables.summary.view"))
             );
 
             Response response = formatResponse(
@@ -427,7 +432,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             TableFullViewProcessor fullViewProcessor = new TableFullViewProcessor();
 
             Stream<TableView> paginatedResult = tablesApiRequestImpl.getPage(
-                    fullViewProcessor.formatTables(tablesApiRequestImpl.getTables(), uriInfo)
+                    fullViewProcessor.formatTables(tablesApiRequestImpl.getTables(), containerRequestContext, metadataBuilders)
             );
             Response response = formatResponse(tablesApiRequestImpl, paginatedResult, "tables", null);
 
@@ -454,10 +459,11 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
      */
     public static Set<Map<String, String>> getLogicalTableListSummaryView(
             Collection<LogicalTable> logicalTables,
-            UriInfo uriInfo
+            ContainerRequestContext containerRequestContext,
+            MetadataViewProvider<LogicalTable> metadataViewProvider
     ) {
         return logicalTables.stream()
-                .map(logicalTable -> getLogicalTableSummaryView(logicalTable, uriInfo))
+                .map(logicalTable -> getLogicalTableSummaryView(logicalTable, containerRequestContext, metadataViewProvider))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
@@ -486,14 +492,12 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
      *
      * @return Summary view of the logical table
      */
-    public static Map<String, String> getLogicalTableSummaryView(LogicalTable logicalTable, UriInfo uriInfo) {
-        Map<String, String> resultRow = new LinkedHashMap<>();
-        resultRow.put("category", logicalTable.getCategory());
-        resultRow.put("name", logicalTable.getName());
-        resultRow.put("longName", logicalTable.getLongName());
-        resultRow.put("granularity", logicalTable.getGranularity().getName());
-        resultRow.put("uri", getLogicalTableUrl(logicalTable, uriInfo));
-        return resultRow;
+    public static Map<String, String> getLogicalTableSummaryView(
+            LogicalTable logicalTable,
+            ContainerRequestContext containerRequestContext,
+            MetadataViewProvider<LogicalTable> metadataViewProvider
+    ) {
+        return (Map<String, String>) metadataViewProvider.apply(containerRequestContext, logicalTable);
     }
 
     /**
@@ -523,7 +527,8 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
         );
         resultRow.put(
                 "metrics",
-                MetricsServlet.getLogicalMetricListSummaryView(logicalTable.getLogicalMetrics(), containerRequestContext)
+                null
+//                MetricsServlet.getLogicalMetricListSummaryView(logicalTable.getLogicalMetrics(), containerRequestContext)
         );
         resultRow.put(
                 "availableIntervals",
@@ -551,48 +556,53 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             TablesApiRequestImpl tablesApiRequest,
             ContainerRequestContext containerRequestContext
     ) {
-        LogicalTable logicalTable = tablesApiRequest.getTable();
-        return Stream.of(
-                new SimpleImmutableEntry<>("category", logicalTable.getCategory()),
-                new SimpleImmutableEntry<>("name", logicalTable.getName()),
-                new SimpleImmutableEntry<>("longName", logicalTable.getLongName()),
-                new SimpleImmutableEntry<>("retention", logicalTable.getRetention().toString()),
-                new SimpleImmutableEntry<>("granularity", logicalTable.getGranularity().getName()),
-                new SimpleImmutableEntry<>("description", logicalTable.getDescription()),
-                new SimpleImmutableEntry<>(
-                        "dimensions",
-                        DimensionsServlet.getDimensionListSummaryView(logicalTable.getDimensions(), containerRequestContext.getUriInfo())
-                ),
-                new SimpleImmutableEntry<>(
-                        "metrics",
-                        MetricsServlet.getLogicalMetricListSummaryView(logicalTable.getLogicalMetrics(), containerRequestContext)
-                ),
-                new SimpleImmutableEntry<>(
-                        "availableIntervals",
-                        TableUtils.getConstrainedLogicalTableAvailability(
-                                logicalTable,
-                                new QueryPlanningConstraint(
-                                        tablesApiRequest.getDimensions(),
-                                        tablesApiRequest.getFilterDimensions(),
-                                        Collections.emptySet(),
-                                        Collections.emptySet(),
-                                        tablesApiRequest.getApiFilters(),
-                                        tablesApiRequest.getTable(),
-                                        Collections.unmodifiableSet(tablesApiRequest.getIntervals()),
-                                        Collections.unmodifiableSet(tablesApiRequest.getLogicalMetrics()),
-                                        tablesApiRequest.getGranularity(),
-                                        tablesApiRequest.getGranularity()
-                                )
-                        )
-                )
-        ).collect(
-                Collectors.toMap(
-                        SimpleImmutableEntry::getKey,
-                        SimpleImmutableEntry::getValue,
-                        (value1OfSameKey, value2OfSameKey) -> value1OfSameKey,
-                        LinkedHashMap::new
-                )
-        );
+//        LogicalTable logicalTable = tablesApiRequest.getTable();
+//        return Stream.of(
+//                new SimpleImmutableEntry<>("category", logicalTable.getCategory()),
+//                new SimpleImmutableEntry<>("name", logicalTable.getName()),
+//                new SimpleImmutableEntry<>("longName", logicalTable.getLongName()),
+//                new SimpleImmutableEntry<>("retention", logicalTable.getRetention().toString()),
+//                new SimpleImmutableEntry<>("granularity", logicalTable.getGranularity().getName()),
+//                new SimpleImmutableEntry<>("description", logicalTable.getDescription()),
+//                new SimpleImmutableEntry<>(
+//                        "dimensions",
+//                        DimensionsServlet.getDimensionListSummaryView(logicalTable.getDimensions(), containerRequestContext.getUriInfo())
+//                ),
+//                new SimpleImmutableEntry<>(
+//                        "metrics",
+//                        MetricsServlet.getLogicalMetricListSummaryView(
+//                                logicalTable.getLogicalMetrics(),
+//                                containerRequestContext,
+//
+//                        )
+//                ),
+//                new SimpleImmutableEntry<>(
+//                        "availableIntervals",
+//                        TableUtils.getConstrainedLogicalTableAvailability(
+//                                logicalTable,
+//                                new QueryPlanningConstraint(
+//                                        tablesApiRequest.getDimensions(),
+//                                        tablesApiRequest.getFilterDimensions(),
+//                                        Collections.emptySet(),
+//                                        Collections.emptySet(),
+//                                        tablesApiRequest.getApiFilters(),
+//                                        tablesApiRequest.getTable(),
+//                                        Collections.unmodifiableSet(tablesApiRequest.getIntervals()),
+//                                        Collections.unmodifiableSet(tablesApiRequest.getLogicalMetrics()),
+//                                        tablesApiRequest.getGranularity(),
+//                                        tablesApiRequest.getGranularity()
+//                                )
+//                        )
+//                )
+//        ).collect(
+//                Collectors.toMap(
+//                        SimpleImmutableEntry::getKey,
+//                        SimpleImmutableEntry::getValue,
+//                        (value1OfSameKey, value2OfSameKey) -> value1OfSameKey,
+//                        LinkedHashMap::new
+//                )
+//        );
+        return null;
     }
 
     /**

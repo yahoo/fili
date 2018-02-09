@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web;
 
+import com.yahoo.bard.webservice.application.metadataViews.MetadataViewProvider;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.web.endpoints.DimensionsServlet;
@@ -32,12 +33,12 @@ public class TableFullViewProcessor implements TableMetadataFormatter {
      * Method to provide full view of the tables which includes grains, metrics and dimensions.
      *
      * @param logicalTables  Set of logical tables
-     * @param uriInfo  Uri information to construct the uri's
+     * @param containerRequestContext  Uri information to construct the uri's
      *
      * @return List of table details with all the associated meta info
      */
     @Override
-    public List<TableView> formatTables(Set<LogicalTable> logicalTables, UriInfo uriInfo) {
+    public List<TableView> formatTables(Set<LogicalTable> logicalTables, ContainerRequestContext containerRequestContext, Map<String, MetadataViewProvider<?>> metadataBuilders) {
 
         //Map to keep meta info of the logical table
         Map<String, TableView> tablesMeta = new HashMap<>();
@@ -49,9 +50,9 @@ public class TableFullViewProcessor implements TableMetadataFormatter {
             List<TableGrainView> grains = grainsData
                     .computeIfAbsent(logicalTable.getName(), (ignore) -> new ArrayList<>());
 
-            grains.add(formatTableGrain(logicalTable, logicalTable.getGranularity().getName(), uriInfo));
+            grains.add(formatTableGrain(logicalTable, logicalTable.getGranularity().getName(), containerRequestContext));
 
-            tablesMeta.computeIfAbsent(logicalTable.getName(), k -> formatTable(logicalTable, uriInfo));
+            tablesMeta.computeIfAbsent(logicalTable.getName(), k -> formatTable(logicalTable, containerRequestContext, (MetadataViewProvider<LogicalTable>) metadataBuilders.get("tables.singletable.view")));
         }
 
         List<TableView> tableViewList = new ArrayList<>();
@@ -74,13 +75,8 @@ public class TableFullViewProcessor implements TableMetadataFormatter {
      * @return  Meta data details of the given table
      */
     @Override
-    public TableView formatTable(LogicalTable logicalTable, UriInfo uriInfo) {
-        TableView resultRow = new TableView();
-        resultRow.put("name", logicalTable.getName());
-        resultRow.put("longName", logicalTable.getLongName());
-        resultRow.put("description", logicalTable.getDescription());
-        resultRow.put("category", logicalTable.getCategory());
-        return resultRow;
+    public TableView formatTable(LogicalTable logicalTable, ContainerRequestContext containerRequestContext, MetadataViewProvider<LogicalTable> tableMetadataViewProvider) {
+        return (TableView) tableMetadataViewProvider.apply(containerRequestContext, logicalTable);
     }
 
     /**
@@ -93,18 +89,23 @@ public class TableFullViewProcessor implements TableMetadataFormatter {
      * @return logical table details at grain level with all the associated meta data
      */
     @Override
-    public TableGrainView formatTableGrain(LogicalTable logicalTable, String grain, ContainerRequestContext containerRequestContext) {
-        TableGrainView resultRow = new TableGrainView();
-        resultRow.put("name", grain);
-        resultRow.put("longName", StringUtils.capitalize(grain));
-        resultRow.put("description", "The " + logicalTable.getName() + " " + grain + " grain");
-        resultRow.put("retention", logicalTable.getRetention().toString());
-        resultRow.put("dimensions", getDimensionListFullView(logicalTable.getDimensions(), containerRequestContext.getUriInfo()));
-        resultRow.put(
-                "metrics",
-                MetricsServlet.getLogicalMetricListSummaryView(logicalTable.getLogicalMetrics(), containerRequestContext)
-        );
-        return resultRow;
+    public TableGrainView formatTableGrain(
+            LogicalTable logicalTable,
+            String grain,
+            ContainerRequestContext containerRequestContext
+    ) {
+//        TableGrainView resultRow = new TableGrainView();
+//        resultRow.put("name", grain);
+//        resultRow.put("longName", StringUtils.capitalize(grain));
+//        resultRow.put("description", "The " + logicalTable.getName() + " " + grain + " grain");
+//        resultRow.put("retention", logicalTable.getRetention().toString());
+//        resultRow.put("dimensions", getDimensionListFullView(logicalTable.getDimensions(), containerRequestContext.getUriInfo()));
+//        resultRow.put(
+//                "metrics",
+//                MetricsServlet.getLogicalMetricListSummaryView(logicalTable.getLogicalMetrics(), containerRequestContext)
+//        );
+//        return resultRow;
+        return null;
     }
 
     /**

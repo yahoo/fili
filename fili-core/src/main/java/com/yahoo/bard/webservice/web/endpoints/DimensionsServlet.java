@@ -405,10 +405,11 @@ public class DimensionsServlet extends EndpointServlet {
         resultRow.put("storageStrategy", dimension.getStorageStrategy());
         resultRow.put(
                 "tables",
-                TablesServlet.getLogicalTableListSummaryView(
-                        logicalTableDictionary.findByDimension(dimension),
-                        uriInfo
-                )
+                null
+//                TablesServlet.getLogicalTableListSummaryView(
+//                        logicalTableDictionary.findByDimension(dimension),
+//                        uriInfo
+//                )
         );
         return resultRow;
     }

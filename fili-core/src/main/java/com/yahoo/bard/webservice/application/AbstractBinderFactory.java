@@ -16,10 +16,11 @@ import com.yahoo.bard.webservice.application.healthchecks.DataSourceMetadataLoad
 import com.yahoo.bard.webservice.application.healthchecks.DruidDimensionsLoaderHealthCheck;
 import com.yahoo.bard.webservice.application.healthchecks.LookupHealthCheck;
 import com.yahoo.bard.webservice.application.healthchecks.VersionHealthCheck;
-import com.yahoo.bard.webservice.application.metadataViews.LogicalMetricSummaryViewFunction;
-import com.yahoo.bard.webservice.application.metadataViews.LogicalMetricViewFunction;
-import com.yahoo.bard.webservice.application.metadataViews.MetadataViewFunction;
-import com.yahoo.bard.webservice.application.metadataViews.TableSummaryViewFunction;
+import com.yahoo.bard.webservice.application.metadataViews.IndividualTableViewProvider;
+import com.yahoo.bard.webservice.application.metadataViews.LogicalMetricSummaryViewProvider;
+import com.yahoo.bard.webservice.application.metadataViews.LogicalMetricViewProvider;
+import com.yahoo.bard.webservice.application.metadataViews.MetadataViewProvider;
+import com.yahoo.bard.webservice.application.metadataViews.TableSummaryViewProvider;
 import com.yahoo.bard.webservice.async.broadcastchannels.BroadcastChannel;
 import com.yahoo.bard.webservice.async.broadcastchannels.SimpleBroadcastChannel;
 import com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField;
@@ -205,7 +206,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     );
 
     public static final String SYSTEM_CONFIG_TIMEZONE_KEY = "timezone";
-    public static final String SERIALIZATION_MODULES = "SerializationModules";
+    public static final String METADATA_VIEW_PROVIDERS = "SerializationModules";
 
     private ObjectMappersSuite objectMappers;
 
@@ -283,6 +284,9 @@ public abstract class AbstractBinderFactory implements BinderFactory {
 
                 // Bind the request mappers
                 bindRequestMappers(this);
+
+                // Bind the metadata view builders
+                bindMetadataViewProviders(this, loader.getDictionaries());
 
                 // Setup end points and back end services
                 setupHealthChecks(healthCheckRegistry, loader.getDimensionDictionary());
@@ -408,21 +412,23 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      *
      * @param binder  The binder being used to bind the request mappers.
      */
-    private void bindSerializerModules(AbstractBinder binder, ResourceDictionaries resourceDictionaries) {
-        Map<String, RequestMapper> serializationModules = new HashMap<>();
-        binder.bind(buildMetadaViewBuilder(resourceDictionaries)).named(SERIALIZATION_MODULES).to(Map.class);
+    private void bindMetadataViewProviders(AbstractBinder binder, ResourceDictionaries resourceDictionaries) {
+        binder.bind(buildMetadaViewBuilder(resourceDictionaries)).named(METADATA_VIEW_PROVIDERS).to(
+                new TypeLiteral<Map<String, MetadataViewProvider>>() { }
+            );
     }
 
     /**
      * Bind ApiRequest instances to resource scope names.
      *
      */
-    private Map<String, MetadataViewFunction<?>> buildMetadaViewBuilder(ResourceDictionaries resourceDictionaries) {
-        Map<String, MetadataViewFunction<?>> metadataViewBuilder = new HashMap<>();
-        TableSummaryViewFunction tableSummaryViewFunction = new TableSummaryViewFunction();
-        metadataViewBuilder.put("metrics.view", new LogicalMetricViewFunction(resourceDictionaries.getLogicalDictionary(), tableSummaryViewFunction));
+    private Map<String, MetadataViewProvider<?>> buildMetadaViewBuilder(ResourceDictionaries resourceDictionaries) {
+        Map<String, MetadataViewProvider<?>> metadataViewBuilder = new HashMap<>();
+        TableSummaryViewProvider tableSummaryViewFunction = new TableSummaryViewProvider();
+        metadataViewBuilder.put("metrics.view", new LogicalMetricViewProvider(resourceDictionaries.getLogicalDictionary(), tableSummaryViewFunction));
         metadataViewBuilder.put("tables.summary.view", tableSummaryViewFunction);
-        metadataViewBuilder.put("metrics.summary.view", new LogicalMetricSummaryViewFunction());
+        metadataViewBuilder.put("metrics.summary.view", new LogicalMetricSummaryViewProvider());
+        metadataViewBuilder.put("tables.singletable.view", new IndividualTableViewProvider());
         return metadataViewBuilder;
 
     }

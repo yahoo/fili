@@ -13,20 +13,21 @@ import java.util.stream.Collectors;
 
 import javax.ws.rs.container.ContainerRequestContext;
 
-public class LogicalMetricViewFunction implements MetadataViewFunction<LogicalMetric> {
+public class LogicalMetricViewProvider implements MetadataViewProvider<LogicalMetric> {
 
     protected final LogicalTableDictionary logicalTableDictionary;
-    protected final MetadataViewFunction<LogicalTable> tableMetadataViewFunction;
+    protected final MetadataViewProvider<LogicalTable> tableMetadataViewProvider;
 
-    public LogicalMetricViewFunction(LogicalTableDictionary logicalTableDictionary, MetadataViewFunction<LogicalTable> tableViewBuilder) {
+    public LogicalMetricViewProvider(
+            LogicalTableDictionary logicalTableDictionary,
+            MetadataViewProvider<LogicalTable> tableViewBuilder
+    ) {
         this.logicalTableDictionary = logicalTableDictionary;
-        this.tableMetadataViewFunction = tableViewBuilder;
+        this.tableMetadataViewProvider = tableViewBuilder;
     }
 
     @Override
-    public Object apply(
-            final ContainerRequestContext containerRequestContext, final LogicalMetric logicalMetric
-    ) {
+    public Object apply(ContainerRequestContext containerRequestContext, LogicalMetric logicalMetric) {
         Map<String, Object> resultRow = new LinkedHashMap<>();
         resultRow.put("category", logicalMetric.getCategory());
         resultRow.put("name", logicalMetric.getName());
@@ -34,7 +35,7 @@ public class LogicalMetricViewFunction implements MetadataViewFunction<LogicalMe
         resultRow.put("description", logicalMetric.getDescription());
 
         List<Object> tableViews = logicalTableDictionary.findByLogicalMetric(logicalMetric).stream()
-                .map(table-> tableMetadataViewFunction.apply(containerRequestContext, table))
+                .map(table-> tableMetadataViewProvider.apply(containerRequestContext, table))
                 .collect(Collectors.toList());
 
         resultRow.put("tables", tableViews);
