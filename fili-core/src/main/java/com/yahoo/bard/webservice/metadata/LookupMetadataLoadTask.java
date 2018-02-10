@@ -35,7 +35,7 @@ public class LookupMetadataLoadTask extends LoadTask<Boolean> {
      * <p>
      * See http://druid.io/docs/latest/querying/lookups.html for details on "tier".
      */
-    private static final String TIERS_KEY = SYSTEM_CONFIG.getPackageVariableName("lookup_tiers");
+    private static final String TIERS_KEY = SYSTEM_CONFIG.getPackageVariableName("druid_registered_lookup_tiers");
     /**
      * Location of lookup statuses on Druid coordinator.
      */
