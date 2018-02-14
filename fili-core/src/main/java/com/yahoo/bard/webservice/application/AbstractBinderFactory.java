@@ -16,9 +16,9 @@ import com.yahoo.bard.webservice.application.healthchecks.DataSourceMetadataLoad
 import com.yahoo.bard.webservice.application.healthchecks.DruidDimensionsLoaderHealthCheck;
 import com.yahoo.bard.webservice.application.healthchecks.LookupHealthCheck;
 import com.yahoo.bard.webservice.application.healthchecks.VersionHealthCheck;
-import com.yahoo.bard.webservice.application.metadataViews.DimensionFieldSummaryViewProvider;
 import com.yahoo.bard.webservice.application.metadataViews.DimensionFullViewProvider;
 import com.yahoo.bard.webservice.application.metadataViews.DimensionSummaryViewProvider;
+import com.yahoo.bard.webservice.application.metadataViews.DimensionSummaryViewWithFieldsProvider;
 import com.yahoo.bard.webservice.application.metadataViews.IndividualTableViewProvider;
 import com.yahoo.bard.webservice.application.metadataViews.LogicalMetricSummaryViewProvider;
 import com.yahoo.bard.webservice.application.metadataViews.LogicalMetricViewProvider;
@@ -209,7 +209,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     );
 
     public static final String SYSTEM_CONFIG_TIMEZONE_KEY = "timezone";
-    public static final String METADATA_VIEW_PROVIDERS = "SerializationModules";
+    public static final String METADATA_VIEW_PROVIDERS = "MetadataViewBuilders";
 
     private ObjectMappersSuite objectMappers;
 
@@ -433,8 +433,8 @@ public abstract class AbstractBinderFactory implements BinderFactory {
         metadataViewBuilder.put("metrics.summary.view", new LogicalMetricSummaryViewProvider());
         metadataViewBuilder.put("tables.singletable.view", new IndividualTableViewProvider());
         metadataViewBuilder.put("dimensions.summary.view", new DimensionSummaryViewProvider());
+        metadataViewBuilder.put("dimensions.summary.withfields.view", new DimensionSummaryViewWithFieldsProvider());
         metadataViewBuilder.put("dimensions.full.view", new DimensionFullViewProvider(resourceDictionaries.getLogicalDictionary(), tableSummaryViewFunction));
-        metadataViewBuilder.put("dimensionfield.summary.view", new DimensionFieldSummaryViewProvider());
         return metadataViewBuilder;
 
     }

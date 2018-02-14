@@ -39,6 +39,8 @@ public class DimensionFullViewProvider implements MetadataViewProvider<Dimension
         resultRow.put("values", getDimensionValuesUrl(dimension, containerRequestContext.getUriInfo()));
         resultRow.put("cardinality", dimension.getCardinality());
         resultRow.put("storageStrategy", dimension.getStorageStrategy());
+
+        //TODO replace this entirely with metadata builder ????
         resultRow.put(
                 "tables",
                 TablesServlet.getLogicalTableListSummaryView(

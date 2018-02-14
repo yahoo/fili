@@ -92,20 +92,25 @@ public class TableFullViewProcessor implements TableMetadataFormatter {
     public TableGrainView formatTableGrain(
             LogicalTable logicalTable,
             String grain,
-            ContainerRequestContext containerRequestContext
+            ContainerRequestContext containerRequestContext,
+            MetadataViewProvider<Dimension> dimensionMetadataViewProvider
     ) {
-//        TableGrainView resultRow = new TableGrainView();
-//        resultRow.put("name", grain);
-//        resultRow.put("longName", StringUtils.capitalize(grain));
-//        resultRow.put("description", "The " + logicalTable.getName() + " " + grain + " grain");
-//        resultRow.put("retention", logicalTable.getRetention().toString());
-//        resultRow.put("dimensions", getDimensionListFullView(logicalTable.getDimensions(), containerRequestContext.getUriInfo()));
+        TableGrainView resultRow = new TableGrainView();
+        resultRow.put("name", grain);
+        resultRow.put("longName", StringUtils.capitalize(grain));
+        resultRow.put("description", "The " + logicalTable.getName() + " " + grain + " grain");
+        resultRow.put("retention", logicalTable.getRetention().toString());
+        resultRow.put("dimensions", getDimensionListFullView(
+                logicalTable.getDimensions(),
+                containerRequestContext,
+                dimensionMetadataViewProvider
+                )
+        );
 //        resultRow.put(
 //                "metrics",
 //                MetricsServlet.getLogicalMetricListSummaryView(logicalTable.getLogicalMetrics(), containerRequestContext)
 //        );
-//        return resultRow;
-        return null;
+        return resultRow;
     }
 
     /**
@@ -116,9 +121,18 @@ public class TableFullViewProcessor implements TableMetadataFormatter {
      *
      * @return Summary list view of the dimensions
      */
-    private Set<Map<String, Object>> getDimensionListFullView(Collection<Dimension> dimensions, UriInfo uriInfo) {
+    private Set<Map<String, Object>> getDimensionListFullView(
+            Collection<Dimension> dimensions,
+            ContainerRequestContext containerRequestContext,
+            MetadataViewProvider<Dimension> dimensionMetadataViewProvider
+    ) {
         return dimensions.stream()
-                .map(dimension -> getDimensionSummaryViewWithFields(dimension, uriInfo))
+                .map(
+                        dimension -> (Map<String, Object>) dimensionMetadataViewProvider.apply(
+                                containerRequestContext,
+                                dimension
+                        )
+                )
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 

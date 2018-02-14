@@ -139,6 +139,7 @@ public class MetricsServlet extends EndpointServlet {
                 apiRequest = (MetricsApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
+            // build the summary view map
             Stream<Map<String, String>> result = apiRequest.getPage(
                     (Set<Map<String, String>>) apiRequest.getMetrics()
                             .stream()
@@ -242,27 +243,27 @@ public class MetricsServlet extends EndpointServlet {
         return responseSender.get();
     }
 
-    /**
-     * Get the summary list view of the logical metrics.
-     *
-     * @param logicalMetrics  Collection of logical metrics to get the summary view for
-     * @param uriInfo  UriInfo of the request
-     *
-     * @return Summary list view of the logical metrics
-     */
-    private Set<Map<String, String>> getLogicalMetricListSummaryView(
-            Collection<LogicalMetric> logicalMetrics,
-            ContainerRequestContext containerRequestContext,
-            MetadataViewProvider<LogicalMetric> metricMetadataViewProvider
-    ) {
-        return logicalMetrics.stream()
-                .map(logicalMetric ->
-                        (Map<String, String>) metricMetadataViewProvider.apply(
-                                containerRequestContext,
-                                logicalMetric)
-                )
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-    }
+//    /**
+//     * Get the summary list view of the logical metrics.
+//     *
+//     * @param logicalMetrics  Collection of logical metrics to get the summary view for
+//     * @param uriInfo  UriInfo of the request
+//     *
+//     * @return Summary list view of the logical metrics
+//     */
+//    private Set<Map<String, String>> getLogicalMetricListSummaryView(
+//            Collection<LogicalMetric> logicalMetrics,
+//            ContainerRequestContext containerRequestContext,
+//            MetadataViewProvider<LogicalMetric> metricMetadataViewProvider
+//    ) {
+//        return logicalMetrics.stream()
+//                .map(logicalMetric ->
+//                        (Map<String, String>) metricMetadataViewProvider.apply(
+//                                containerRequestContext,
+//                                logicalMetric)
+//                )
+//                .collect(Collectors.toCollection(LinkedHashSet::new));
+//    }
 
         /**
          * Get the URL of the logical metric.

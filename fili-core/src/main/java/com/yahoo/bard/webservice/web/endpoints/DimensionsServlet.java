@@ -70,7 +70,6 @@ public class DimensionsServlet extends EndpointServlet {
     private static final Logger LOG = LoggerFactory.getLogger(DimensionsServlet.class);
 
     private final DimensionDictionary dimensionDictionary;
-    private final LogicalTableDictionary logicalTableDictionary;
     private final RequestMapper requestMapper;
     private final ResponseFormatResolver formatResolver;
     private final Map<String, MetadataViewProvider<?>> metadataBuilders;
@@ -87,7 +86,6 @@ public class DimensionsServlet extends EndpointServlet {
     @Inject
     public DimensionsServlet(
             DimensionDictionary dimensionDictionary,
-            LogicalTableDictionary logicalTableDictionary,
             @Named(DimensionsApiRequest.REQUEST_MAPPER_NAMESPACE) RequestMapper requestMapper,
             @Named(AbstractBinderFactory.METADATA_VIEW_PROVIDERS) Map<String, MetadataViewProvider<?>> metadataBuilders,
             ObjectMappersSuite objectMappers,
@@ -95,7 +93,6 @@ public class DimensionsServlet extends EndpointServlet {
     ) {
         super(objectMappers);
         this.dimensionDictionary = dimensionDictionary;
-        this.logicalTableDictionary = logicalTableDictionary;
         this.requestMapper = requestMapper;
         this.metadataBuilders = metadataBuilders;
         this.formatResolver = formatResolver;
@@ -305,6 +302,7 @@ public class DimensionsServlet extends EndpointServlet {
                 apiRequest = (DimensionsApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
+            // TODO try to put this into MetadataViewBuilder, or is this ok to leave for now?
             // build filtered dimension rows
             SearchProvider searchProvider = apiRequest.getDimension().getSearchProvider();
             PaginationParameters paginationParameters = apiRequest

@@ -145,7 +145,6 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
         }
     }
 
-
     /**
      * Get all grain-specific logical tables for a logical table name as a summary list.
      *
@@ -467,22 +466,22 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    /**
-     * Get the summary list view of the logical tables.
-     *
-     * @param logicalTables  Collection of logical tables to get the summary view for
-     * @param uriInfo  UriInfo of the request
-     *
-     * @return Summary list view of the logical tables
-     */
-    public static Set<Map<String, Object>> getLogicalAll(
-            Collection<LogicalTable> logicalTables,
-            ContainerRequestContext containerRequestContext
-    ) {
-        return logicalTables.stream()
-                .map(logicalTable -> getLogicalTableFullView(logicalTable, containerRequestContext))
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-    }
+//    /**
+//     * Get the summary list view of the logical tables.
+//     *
+//     * @param logicalTables  Collection of logical tables to get the summary view for
+//     * @param uriInfo  UriInfo of the request
+//     *
+//     * @return Summary list view of the logical tables
+//     */
+//    public static Set<Map<String, Object>> getLogicalAll(
+//            Collection<LogicalTable> logicalTables,
+//            ContainerRequestContext containerRequestContext
+//    ) {
+//        return logicalTables.stream()
+//                .map(logicalTable -> getLogicalTableFullView(logicalTable, containerRequestContext))
+//                .collect(Collectors.toCollection(LinkedHashSet::new));
+//    }
 
     /**
      * Get the summary view of the logical table.
