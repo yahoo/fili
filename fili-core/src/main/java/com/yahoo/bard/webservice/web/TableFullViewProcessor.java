@@ -2,8 +2,10 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web;
 
+import com.yahoo.bard.webservice.application.metadataViews.DimensionFullViewProvider;
 import com.yahoo.bard.webservice.application.metadataViews.MetadataViewProvider;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.web.endpoints.DimensionsServlet;
 import com.yahoo.bard.webservice.web.endpoints.MetricsServlet;
@@ -50,7 +52,13 @@ public class TableFullViewProcessor implements TableMetadataFormatter {
             List<TableGrainView> grains = grainsData
                     .computeIfAbsent(logicalTable.getName(), (ignore) -> new ArrayList<>());
 
-            grains.add(formatTableGrain(logicalTable, logicalTable.getGranularity().getName(), containerRequestContext));
+            grains.add(formatTableGrain(
+                    logicalTable,
+                    logicalTable.getGranularity().getName(),
+                    containerRequestContext,
+                    (MetadataViewProvider<Dimension>) metadataBuilders.get("dimensions.full.view"),
+                    (MetadataViewProvider<LogicalMetric>) metadataBuilders.get("metrics.summary.view")
+            ));
 
             tablesMeta.computeIfAbsent(logicalTable.getName(), k -> formatTable(logicalTable, containerRequestContext, (MetadataViewProvider<LogicalTable>) metadataBuilders.get("tables.singletable.view")));
         }
@@ -93,7 +101,8 @@ public class TableFullViewProcessor implements TableMetadataFormatter {
             LogicalTable logicalTable,
             String grain,
             ContainerRequestContext containerRequestContext,
-            MetadataViewProvider<Dimension> dimensionMetadataViewProvider
+            MetadataViewProvider<Dimension> dimensionMetadataViewProvider,
+            MetadataViewProvider<LogicalMetric> logicalMetricSummaryMetadataViewProvider
     ) {
         TableGrainView resultRow = new TableGrainView();
         resultRow.put("name", grain);
@@ -106,6 +115,17 @@ public class TableFullViewProcessor implements TableMetadataFormatter {
                 dimensionMetadataViewProvider
                 )
         );
+//        resultRow.put(
+//                "metrics",
+//                logicalTable.getLogicalMetrics()
+//                        .stream()
+//                        .map(logicalMetric -> logicalMetricSummaryMetadataViewProvider.apply(
+//                                containerRequestContext,
+//                                logicalMetric
+//                        ))
+//                        .collect(Collectors.toSet())
+//        );
+
 //        resultRow.put(
 //                "metrics",
 //                MetricsServlet.getLogicalMetricListSummaryView(logicalTable.getLogicalMetrics(), containerRequestContext)
@@ -136,23 +156,23 @@ public class TableFullViewProcessor implements TableMetadataFormatter {
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    /**
-     * Get the summary view of the dimension.
-     *
-     * @param dimension  Dimension to get the view of
-     * @param uriInfo  UriInfo of the request
-     *
-     * @return Summary view of the dimension
-     */
-    private static Map<String, Object> getDimensionSummaryViewWithFields(Dimension dimension, UriInfo uriInfo) {
-        Map<String, Object> resultRow = new LinkedHashMap<>();
-        resultRow.put("category", dimension.getCategory());
-        resultRow.put("name", dimension.getApiName());
-        resultRow.put("longName", dimension.getLongName());
-        resultRow.put("uri", DimensionsServlet.getDimensionUrl(dimension, uriInfo));
-        resultRow.put("cardinality", dimension.getCardinality());
-        resultRow.put("fields", dimension.getDimensionFields());
-        resultRow.put("storageStrategy", dimension.getStorageStrategy());
-        return resultRow;
-    }
+//    /**
+//     * Get the summary view of the dimension.
+//     *
+//     * @param dimension  Dimension to get the view of
+//     * @param uriInfo  UriInfo of the request
+//     *
+//     * @return Summary view of the dimension
+//     */
+//    private static Map<String, Object> getDimensionSummaryViewWithFields(Dimension dimension, UriInfo uriInfo) {
+//        Map<String, Object> resultRow = new LinkedHashMap<>();
+//        resultRow.put("category", dimension.getCategory());
+//        resultRow.put("name", dimension.getApiName());
+//        resultRow.put("longName", dimension.getLongName());
+//        resultRow.put("uri", DimensionsServlet.getDimensionUrl(dimension, uriInfo));
+//        resultRow.put("cardinality", dimension.getCardinality());
+//        resultRow.put("fields", dimension.getDimensionFields());
+//        resultRow.put("storageStrategy", dimension.getStorageStrategy());
+//        return resultRow;
+//    }
 }

@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.web;
 
 import com.yahoo.bard.webservice.application.metadataViews.MetadataViewProvider;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.table.LogicalTable;
 
 import java.util.List;
@@ -50,6 +51,7 @@ public interface TableMetadataFormatter {
             LogicalTable logicalTable,
             String grain,
             ContainerRequestContext containerRequestContext,
-            MetadataViewProvider<Dimension> metadataViewProvider
+            MetadataViewProvider<Dimension> dimensionFullViewProvider,
+            MetadataViewProvider<LogicalMetric> metricSummaryViewProvider
     );
 }
