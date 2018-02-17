@@ -7,7 +7,8 @@ This RFC implements [Github Issue 627](https://github.com/yahoo/fili/issues/627)
 In a composite table, we need to have the underlying tables limit the times in which they participate. 
 
 ## Existing Problem
-If a Druid instance has 2 datasources DS1 and DS2 that have the following availabilities for some metric M:
+If a Druid instance has 2 datasources DS1 and DS2 that have the following availabilities for some metric M, and **they
+are both behind a single composite table**
 
 ```
 +-----+-----------------------+-----------------------+----------+
