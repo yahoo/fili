@@ -41,14 +41,14 @@ Requested Interval is "2018/THE FUTURE" => Intersect: all tables in range (DS1, 
 Redefine the availability of intervals as follows:
 
 Add a "mark" to each partition in `PartitionCompositeTable`. The "mark" indicates a starting instance of time, T, after
-which data can possible be available. All data before T is not considered as missing data.
+which data can possibly be available.
 
 With "mark", the decision on "missing intervals" is the following:
 
 * If there is no data in this interval AND this interval is **before** T => NOT a missing interval; do not include it in
 the availability intersection operation
 
-* If there is no data in this interval AND this interval is **after** T => this IS s missing interval and will be part
+* If there is no data in this interval AND this interval is **after** T => this IS a missing interval and will be part
 of intersection operations
 
 The value of T of each partition will be configured and loaded on start.
@@ -69,7 +69,7 @@ The value of T of each partition will be configured and loaded on start.
     Map<Availability, DataTime>
     ```
     
-    that maps a `PartitionAvailability` to the mart T. Pass this new map to the
+    that maps a `PartitionAvailability` to the mark T. Pass this new map to the
     [construction of `PartitionAvailability`](https://github.com/yahoo/fili/blob/master/fili-core/src/main/java/com/yahoo/bard/webservice/table/PartitionCompositeTable.java#L56-L57)
     
 3. Add a new constructor to `PartitionAvailability` that takes the new map. Use the new map to
