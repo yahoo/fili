@@ -1,4 +1,4 @@
-# Enable union of partition availability
+# Enable PhysicalTable-Specific Time Limit in PartitionCompositeTable
 
 This RFC implements [Github Issue 627](https://github.com/yahoo/fili/issues/627).
 
@@ -21,8 +21,8 @@ If a Druid instance has 2 datasources DS1 and DS2 that have the following availa
 
 Imagine DS2 is a new datasource added to Druid in 2018-01-01. Then DS2 is defined as starting on interval 2018/FUTURE.
 
-If we query M on a groupBy dimension D in year 2017, it is legitimate to expect data from DS1 to be returned. But current behavior is
-[returning a response with no data and missing interval of 2017 notified to client](https://github.com/yahoo/fili/blob/master/fili-core/src/main/java/com/yahoo/bard/webservice/table/availability/PartitionAvailability.java#L92).
+If we query M on a groupBy dimension D in year 2017, it is legitimate to expect data from DS1 to be returned. But
+current behavior is [returning a response with no data and missing interval of 2017 notified to client](https://github.com/yahoo/fili/blob/master/fili-core/src/main/java/com/yahoo/bard/webservice/table/availability/PartitionAvailability.java#L92).
 
 What needs to be fixed is that, instead of returning no data, data of 2017 from DS1 shall be returned.
 
@@ -40,8 +40,8 @@ Requested Interval is "2018/THE FUTURE" => Intersect: all tables in range (DS1, 
 ## Strategy
 Redefine the availability of intervals as follows:
 
-Add a "mark" to each partition in `PartitionCompositeTable`. The "mark" indicates a starting instance of time, T, after
-which data can possibly be available.
+Add a "mark" to each partition in `PartitionCompositeTable`. The "mark" indicates **a starting instance of time, T,
+after which data can possibly be available.**
 
 With "mark", the decision on "missing intervals" is the following:
 
@@ -62,7 +62,7 @@ The easiest implementation with the least amount of additional codes would be th
     Map<TableName, DateTime>
     ```
 
-    that maps name of a Physical Table to it's mark, T. Pass this map to the 
+    that maps name of a Physical Table to it's mark, [T](#strategy). Pass this map to the 
     [construction of `PartitionCompositeTable`](https://github.com/yahoo/fili/blob/master/fili-core/src/main/java/com/yahoo/bard/webservice/data/config/table/DimensionListPartitionTableDefinition.java#L67-L72)
     
 2. Add a new constructor to `PartitionCompositeTable` that uses the map to construct a new map 
