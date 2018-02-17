@@ -53,7 +53,7 @@ of intersection operations
 
 The value of T of each partition will be configured and loaded on start.
 
-### Implementation
+## Implementation
 1. Add a new constructor to `DimensionListPartitionTableDefinition` that takes an additional map
 
     ```java
