@@ -121,6 +121,9 @@
 
         <testngUseDefaultListeners>false</testngUseDefaultListeners>
         <testngReporter>org.testng.reporters.FailedReporter,org.testng.reporters.XMLReporter,org.testng.reporters.JUnitXMLReporter</testngReporter>
+
+        <!-- Code coverage -->
+        <cobertura.maven.plugin.version>2.7</cobertura.maven.plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -654,7 +657,15 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>cobertura-maven-plugin</artifactId>
-                    <version>2.7</version>
+                    <version>${cobertura.maven.plugin.version}</version>
+                    <configuration>
+                        <check/>
+                        <formats>
+                            <format>html</format>
+                            <format>xml</format>
+                        </formats>
+                        <aggregate>true</aggregate>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
