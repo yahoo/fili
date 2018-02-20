@@ -54,35 +54,78 @@ of intersection operations
 
 The value of T of each partition will be configured and loaded on start.
 
+To calculate missing intervals, the idea is to take union of all available intervals and then "subtract" intervals which
+are missing. The formula is to union each partition's difference of what's possibly available and what's actually
+available. Here is an example:
+
+```bash
+DS1:
+ancient         T1                                       latest
+   |............|++++++++++++++++++++++++++++++++...++++++|
+                | <-    I1_defined = I1_available      -> |   
+   
+DS2:
+ancient                T2                                latest
+   |....................|---------+++++++++++++++...++++++|
+                         \__  ___/
+                            \/
+                       missingInterval
+                                  |  <-  I2_available  -> |
+                        | <-       I2_defined          -> |          
+```
+
+What's really missing from the example above is calculated like this:
+
+(`I1_defined` - `I1_available`) UNION (`I2_defined` - `I2_available`) = missingInterval
+
+Note that `I_defined` = T -> timeOfLatestData
+
 ## Implementation
 The easiest implementation with the least amount of additional codes would be the following:
 
-1. Add a new constructor to `DimensionListPartitionTableDefinition` that takes an additional map
+1. Create a sub-class of `DimensionListPartitionTableDefinition` that adds an additional map
 
     ```java
     Map<TableName, DateTime>
     ```
 
-    that maps name of a Physical Table to it's mark, [T](#strategy). Pass this map to the 
-    [construction of `PartitionCompositeTable`](https://github.com/yahoo/fili/blob/master/fili-core/src/main/java/com/yahoo/bard/webservice/data/config/table/DimensionListPartitionTableDefinition.java#L67-L72)
-    
-2. Add a new constructor to `PartitionCompositeTable` that uses the map to construct a new map 
+    that maps name of a Physical Table to it's mark, [T](#strategy).
+
+2. Create a sub-class of `PartitionCompositeTable`. Pass the map in step 1 to it and use the map to construct a new map 
 
     ```java
     Map<Availability, DataTime>
     ```
     
-    that maps a `PartitionAvailability` to the mark T. Pass this new map to the
+    that maps an `Availabiltiy` to the mark T. Pass this new map to the
     [construction of `PartitionAvailability`](https://github.com/yahoo/fili/blob/master/fili-core/src/main/java/com/yahoo/bard/webservice/table/PartitionCompositeTable.java#L56-L57)
     
-3. Add a new constructor to `PartitionAvailability` that takes the new map. Use the new map to
-   [filter availabilities](https://github.com/yahoo/fili/blob/master/fili-core/src/main/java/com/yahoo/bard/webservice/table/availability/PartitionAvailability.java#L76-L79)
+3. Create a sub-class of `PartitionAvailability`. Pass the map in step 2 to it and use the new
+   map (call it "**availabilityToStart**") to
+   [merge availabilities](https://github.com/yahoo/fili/blob/a23cf0412b6b50a7ca7cd718ef9b49cc79343972/fili-core/src/main/java/com/yahoo/bard/webservice/table/availability/PartitionAvailability.java#L89-L93)
+   according to how we calculate "missingInterval" [above](#strategy):
 
     ```java
-    private Stream<Availability> filteredAvailabilities(PhysicalDataSourceConstraint constraint) {
-        return availabilityFilters.entrySet().stream()
-                .filter(entry -> entry.getValue().apply(constraint))
-                .filter(entry -> entry.getKey().getAvailableIntervals().isAfterT())
-                .map(Map.Entry::getKey);
+    private SimplifiedIntervalList mergeAvailabilities(PhysicalDataSourceConstraint constraint) {
+        return filteredAvailabilities(constraint)
+                .map(availability -> availability.getAvailableIntervals(constraint))
+                .reduce(SimplifiedIntervalList::union).orElse(new SimplifiedIntervalList())
+                .subtract(getMissingInterval(constraint));
+    }
+ 
+    private SimplifiedIntervalList getMissingInterval(PhysicalDataSourceConstraint constraint) {
+       return filterAvailabilities(constrant)
+               .map(availability ->
+                       new SimplifiedIntervalList(
+                            Collections.singleton(
+                                 new Interval(
+                                      availabilityToStart.get(availability),
+                                      availability.getAvailableIntervals(constraint).getEnd()
+                                 )
+                            )
+                       ).substract(availability.getAvailableIntervals(constraint)))
+               .reduce(SimplifiedIntervalList::union).orElse(new SimplifiedIntervalList());
     }
     ```
+    
+    Note that `availability.getAvailableIntervals(constraint).getEnd()` returns "[timeOfLatestData](#strategy)"
