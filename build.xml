@@ -1,0 +1,47 @@
+<project>
+    <target name="instrument">
+        <!-- Add all modules that should be included below -->
+        <antcall target="instrumentAModule">
+            <param name="module" value="fili-core"/>
+        </antcall>
+    </target>
+
+    <target name="report" depends="merge">
+        <property name="src.dir" value="src/main/java/"/>
+        <cobertura-report datafile="sum.ser"
+                          format="html"
+                          destdir="./target/report">
+            <!-- Add all modules that should be included below -->
+            <!-- fileset dir="./MODULE_NAME_TO_REPLACE/${src.dir}"/ -->
+            <fileset dir="./fili-core/${src.dir}"/>
+        </cobertura-report>
+    </target>
+
+    <target name="merge">
+        <cobertura-merge datafile="sum.ser">
+            <fileset dir=".">
+                <include name="**/cobertura.ser"/>
+            </fileset>
+        </cobertura-merge>
+    </target>
+
+    <target name="instrumentAModule">
+        <property name="classes.dir" value="target/classes"/>
+        <cobertura-instrument todir="./${module}/${classes.dir}">
+            <fileset dir="./${module}/target/classes">
+                <include name="**/*.class"/>
+            </fileset>
+        </cobertura-instrument>
+    </target>
+
+    <property environment="env"/>
+    <property name="COBERTURA_HOME" value="/Users/jiaqiliu/.m2/repository/org/codehaus/mojo/cobertura-maven-plugin/2.7"/>
+    <property name="cobertura.dir" value="${COBERTURA_HOME}"/>
+    <path id="cobertura.classpath">
+        <fileset dir="${cobertura.dir}">
+            <include name="cobertura*.jar"/>
+            <include name="lib/**/*.jar"/>
+        </fileset>
+    </path>
+    <taskdef classpathref="cobertura.classpath" resource="tasks.properties"/>
+</project>
