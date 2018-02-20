@@ -56,7 +56,7 @@ public class TableFullViewProcessor implements TableMetadataFormatter {
                     logicalTable,
                     logicalTable.getGranularity().getName(),
                     containerRequestContext,
-                    (MetadataViewProvider<Dimension>) metadataBuilders.get("dimensions.full.view"),
+                    (MetadataViewProvider<Dimension>) metadataBuilders.get("dimensions.summary.withfields.view"),
                     (MetadataViewProvider<LogicalMetric>) metadataBuilders.get("metrics.summary.view")
             ));
 
@@ -115,16 +115,16 @@ public class TableFullViewProcessor implements TableMetadataFormatter {
                 dimensionMetadataViewProvider
                 )
         );
-//        resultRow.put(
-//                "metrics",
-//                logicalTable.getLogicalMetrics()
-//                        .stream()
-//                        .map(logicalMetric -> logicalMetricSummaryMetadataViewProvider.apply(
-//                                containerRequestContext,
-//                                logicalMetric
-//                        ))
-//                        .collect(Collectors.toSet())
-//        );
+        resultRow.put(
+                "metrics",
+                logicalTable.getLogicalMetrics()
+                        .stream()
+                        .map(logicalMetric -> logicalMetricSummaryMetadataViewProvider.apply(
+                                containerRequestContext,
+                                logicalMetric
+                        ))
+                        .collect(Collectors.toSet())
+        );
 
 //        resultRow.put(
 //                "metrics",
