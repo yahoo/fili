@@ -13,11 +13,11 @@ import spock.lang.Unroll
 class IntervalPeriodIteratorSpec extends Specification {
 
     def setupSpec() {
-        DateTimeZone.setDefault(DateTimeZone.UTC);
+        DateTimeZone.setDefault(DateTimeZone.UTC)
     }
 
     @Unroll
-    def "boundary at returns Date #expectedMoment with period #period and n #n from interval #baseInterval"() {
+    def "boundary at returns Date #expectedInstant with period #period and n #n from interval #baseInterval"() {
         expect:
         boundaryAtCalculationIsCorrect(baseInterval, period, n, expectedInstant)
 
@@ -65,16 +65,12 @@ class IntervalPeriodIteratorSpec extends Specification {
         "2014/2016"          | "P1Y"  | "2017"           || false
         "2014/2016"          | "P1Y"  | "2015"           || true
 
-        does = expected ? "Does " : "Does not"
+        does = expected ? "Does" : "Does not"
     }
 
     def "Iterator returns hasNext and then finishes"() {
-        given:
-        Period p = new Period("P1Y")
-        Interval base = new Interval("2014/2016")
-
         when:
-        IntervalPeriodIterator underTest = new IntervalPeriodIterator(p, base)
+        IntervalPeriodIterator underTest = getIteratorToTest("P1Y", "2014/2016")
 
         then:
         underTest.hasNext()
