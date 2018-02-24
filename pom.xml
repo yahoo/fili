@@ -84,6 +84,7 @@
         <version.lucene>6.6.0</version.lucene>
         <version.jackson>2.6.2</version.jackson>
         <version.groovy>2.4.5</version.groovy>
+        <version.gmavenplus.plugin>1.6</version.gmavenplus.plugin>
         <version.guava>21.0</version.guava>
         <version.druid.api>0.3.8</version.druid.api>
         <profiles.active>test</profiles.active>
@@ -498,6 +499,13 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
         </dependency>
+
+        <!-- Groovy -->
+        <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-all</artifactId>
+            <version>${version.groovy}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -603,39 +611,19 @@
 
                 <!-- Mandatory plugins for using Spock -->
                 <plugin>
-                    <groupId>org.codehaus.gmaven</groupId>
-                    <artifactId>gmaven-plugin</artifactId>
-                    <version>1.5</version>
-                    <configuration>
-                        <providerSelection>2.0</providerSelection>
-                        <source />
-                    </configuration>
+                    <groupId>org.codehaus.gmavenplus</groupId>
+                    <artifactId>gmavenplus-plugin</artifactId>
+                    <version>${version.gmavenplus.plugin}</version>
                     <executions>
                         <execution>
                             <goals>
+                                <goal>addSources</goal>
+                                <goal>addTestSources</goal>
                                 <goal>compile</goal>
-                                <goal>testCompile</goal>
+                                <goal>compileTests</goal>
                             </goals>
                         </execution>
                     </executions>
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.codehaus.gmaven.runtime</groupId>
-                            <artifactId>gmaven-runtime-2.0</artifactId>
-                            <version>1.5</version>
-                            <exclusions>
-                                <exclusion>
-                                    <groupId>org.codehaus.groovy</groupId>
-                                    <artifactId>groovy-all</artifactId>
-                                </exclusion>
-                            </exclusions>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.codehaus.groovy</groupId>
-                            <artifactId>groovy-all</artifactId>
-                            <version>${version.groovy}</version>
-                        </dependency>
-                    </dependencies>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -723,8 +711,8 @@
 
             <!-- Mandatory plugins for using Spock -->
             <plugin>
-                <groupId>org.codehaus.gmaven</groupId>
-                <artifactId>gmaven-plugin</artifactId>
+                <groupId>org.codehaus.gmavenplus</groupId>
+                <artifactId>gmavenplus-plugin</artifactId>
             </plugin>
 
             <plugin>
