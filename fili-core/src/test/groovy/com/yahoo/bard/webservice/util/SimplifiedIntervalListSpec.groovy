@@ -8,9 +8,7 @@ import org.joda.time.Interval
 
 import spock.lang.Specification
 import spock.lang.Unroll
-/**
- *
- */
+
 class SimplifiedIntervalListSpec extends Specification {
 
     static List<List<Integer>> tinyEvenIntervals
@@ -187,6 +185,5 @@ class SimplifiedIntervalListSpec extends Specification {
         Days.ONE   | [["2015", Days.THREE]]                     | ["2015-01-01", "2015-01-02", "2015-01-03"]
         Days.THREE | [["2015", Days.THREE]]                     | ["2015-01-01"]
         Days.ONE   | [["2015", Days.THREE], ["2013", Days.ONE]] | ["2013", "2015-01-01", "2015-01-02", "2015-01-03"]
-        Days.THREE | [["2015", Days.THREE]]                     | ["2015-01-01"]
     }
 }
