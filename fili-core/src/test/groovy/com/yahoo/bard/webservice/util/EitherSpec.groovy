@@ -5,11 +5,11 @@ package com.yahoo.bard.webservice.util
 import spock.lang.Specification
 import spock.lang.Unroll
 
-public class EitherSpec extends Specification {
+class EitherSpec extends Specification {
 
     @Unroll
     def "A #leftRight Either<String, Integer> wrapping '#value' can be unwrapped into '#value'"() {
-        expect: "We can unwrap an either into the value it wraps"
+        expect: "We can unwrap an Either into the value it wraps"
         unwrap(wrap(value)) == value
 
         where:
@@ -38,8 +38,8 @@ public class EitherSpec extends Specification {
         thrown UnsupportedOperationException
 
         where:
-        leftRight | wrap               | invalidUnwrap || value
-        "left"    | {Either.left(it)}  | {it.right}    || "string"
-        "right"   | {Either.right(it)} | {it.left}     || 5
+        rightLeftValue | leftRight | wrap               | invalidUnwrap || value
+        "right"        | "left"    | {Either.left(it)}  | {it.right}    || "string"
+        "left"         | "right"   | {Either.right(it)} | {it.left}     || 5
     }
 }
