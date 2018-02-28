@@ -17,7 +17,7 @@ class SkippingIntervalPredicateSpec extends Specification {
     }
 
     @Unroll
-    def "skipAhead #comment with #target "() {
+    def "skipAhead #comment with #target"() {
         given:
         SimplifiedIntervalList.SkippingIntervalPredicate subinterval =
                 new SimplifiedIntervalList.SkippingIntervalPredicate(
@@ -29,7 +29,7 @@ class SkippingIntervalPredicateSpec extends Specification {
         Interval expectedNext = expectedNextString == null ? null : new Interval(expectedNextString)
 
         when:
-        subinterval.skipAhead(skipTo);
+        subinterval.skipAhead(skipTo)
 
         then:
         subinterval.activeInterval == expectedNext
@@ -38,7 +38,7 @@ class SkippingIntervalPredicateSpec extends Specification {
         where:
         target       | expectedNextString  |  expectedHasNext  |  comment
         "2021-01-01" | null                |  false            |  "Date beyond end exhausts the iterator"
-        "2011-01-01" | "2015/2017"         |  true             |  "Date before start doesnt change the iterator"
+        "2011-01-01" | "2015/2017"         |  true             |  "Date before start doesn't change the iterator"
         "2015-01-01" | "2015/2017"         |  true             |  "Date doesn't advance on inclusive start"
         "2019-01-01" | "2018/2020"         |  false            |  "Date doesn't advance beyond interval on interior date"
         "2017-01-01" | "2018/2020"         |  false            |  "Date advances on exclusive end"
