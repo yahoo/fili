@@ -19,6 +19,7 @@ public class EnumUtils {
      * @param enumeration  Enum we are getting value by key for (needed due to type erasure)
      *
      * @return The enum value for the key
+     *
      * @throws IllegalArgumentException if this enum type has no constant with the specified name
      */
     public static <T extends Enum<T>, K> T forKey(K key, Map<K, T> mapping, Class<T> enumeration) {
@@ -26,7 +27,9 @@ public class EnumUtils {
         if (t != null) {
             return t;
         }
-        throw new IllegalArgumentException("Not an alternate key for " + enumeration.toString() + ": " + key);
+        throw new IllegalArgumentException(
+                "Not an alternate key for " + enumeration.toString() + ": " + key.toString()
+        );
     }
 
     /**
