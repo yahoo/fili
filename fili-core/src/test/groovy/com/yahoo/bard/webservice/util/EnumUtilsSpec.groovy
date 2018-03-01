@@ -44,6 +44,7 @@ class EnumUtilsSpec extends Specification {
     }
 
     def "check forKey"(){
+        given:
         Map<String, T> mapping = ["1":TestEnum.ONE, "2":TestEnum.TWO]
 
         expect:
@@ -52,6 +53,7 @@ class EnumUtilsSpec extends Specification {
     }
 
     def "check missing forKey"(){
+        given:
         Map<String, T> mapping = ["1":TestEnum.ONE, "2":TestEnum.TWO]
 
         when:

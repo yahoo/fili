@@ -12,7 +12,8 @@ public class EnumUtils {
     /**
      * Boilerplate method to retrieve an enum method via an arbitrary key, rather than just the enum value.
      *
-     * @param <T> Enum we are getting the value by key for
+     * @param <T>  Enum we are getting the value by key for
+     * @param <K>  Type of the key to get the enum value for
      * @param key  Key to get the enum value for
      * @param mapping  Mapping to use to look up the value by key
      * @param enumeration  Enum we are getting value by key for (needed due to type erasure)
@@ -20,6 +21,28 @@ public class EnumUtils {
      * @return The enum value for the key
      * @throws IllegalArgumentException if this enum type has no constant with the specified name
      */
+    public static <T extends Enum<T>, K> T forKey(K key, Map<K, T> mapping, Class<T> enumeration) {
+        T t = mapping.get(key);
+        if (t != null) {
+            return t;
+        }
+        throw new IllegalArgumentException("Not an alternate key for " + enumeration.toString() + ": " + key);
+    }
+
+    /**
+     * Boilerplate method to retrieve an enum method via an arbitrary key, rather than just the enum value.
+     *
+     * @param <T> Enum we are getting the value by key for
+     * @param key  Key to get the enum value for
+     * @param mapping  Mapping to use to look up the value by key
+     * @param enumeration  Enum we are getting value by key for (needed due to type erasure)
+     *
+     * @return The enum value for the key
+     * @throws IllegalArgumentException if this enum type has no constant with the specified name
+     *
+     * @deprecated key type can be generalized. Use {{@link #forKey(Object, Map, Class)} instead
+     */
+    @Deprecated
     public static <T extends Enum<T>> T forKey(String key, Map<String, T> mapping, Class<T> enumeration) {
         T t = mapping.get(key);
         if (t != null) {
@@ -38,7 +61,10 @@ public class EnumUtils {
      *
      * @return The enum value for the key
      * @throws IllegalArgumentException if this enum type has no constant with the specified name
+     *
+     * @deprecated key type can be generalized. Use {{@link #forKey(Object, Map, Class)} instead
      */
+    @Deprecated
     public static <T extends Enum<T>> T forKey(int key, Map<Integer, T> mapping, Class<T> enumeration) {
         T t = mapping.get(key);
         if (t != null) {
