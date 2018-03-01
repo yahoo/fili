@@ -27,9 +27,7 @@ public class EnumUtils {
         if (t != null) {
             return t;
         }
-        throw new IllegalArgumentException(
-                "Not an alternate key for " + enumeration.toString() + ": " + key.toString()
-        );
+        throw new IllegalArgumentException("Not an alternate key for " + enumeration + ": " + key);
     }
 
     /**
