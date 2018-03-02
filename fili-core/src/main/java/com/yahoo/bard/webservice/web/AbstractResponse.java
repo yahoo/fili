@@ -36,6 +36,8 @@ import javax.ws.rs.core.UriInfo;
  */
 public abstract class AbstractResponse<T> implements ResponseStream {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractResponse.class);
+    private static final String PAGE = "page";
+    private static final String PER_PAGE = "perPage";
 
     protected final Stream<T> entries;
     protected final UriInfo uriInfo;
@@ -76,12 +78,12 @@ public abstract class AbstractResponse<T> implements ResponseStream {
     public abstract void write(OutputStream outputStream) throws IOException;
 
     /**
-     * Adds all the required pagination links to the headers and body of the response.
+     * Returns all required pagination links.
      *
      * @param pages  The paginated set of results containing the pages being linked to.
      * @param uriBuilder  The builder for creating the pagination links.
      *
-     * @return The map of metadata for this response
+     * @return the map of metadata for this response
      */
     public static Map<String, Object> addLinks(Pagination<?> pages, UriBuilder uriBuilder) {
         Map<String, URI> bodyLinks = new LinkedHashMap<>();
@@ -110,20 +112,32 @@ public abstract class AbstractResponse<T> implements ResponseStream {
             UriBuilder uriBuilder,
             Map<String, URI> bodyLinks
     ) {
-        link.getPage(pages).ifPresent(page -> addLink(link, page, uriBuilder, bodyLinks));
+        link.getPage(pages).ifPresent(page -> addLink(link, page, pages.getPerPage(), uriBuilder, bodyLinks));
     }
 
     /**
-     * Adds the specified link to the headers and to the map of links that will be added to the body of the response.
+     * Adds the specified link to the map of links that will be added to the body of the response.
      *
-     * @param link  The type of the link being added
+     * @param paginationLink  The type of the link being added
      * @param pageNumber  The page being linked to
-     * @param uriBuilder  The builder for creating the pagination links.
+     * @param perPage  The number of result rows in the page being linked to
+     * @param uriBuilder  The builder for creating the pagination links
      * @param bodyLinks  The map of links that will be added to the body of the response
      */
-    public static void addLink(PaginationLink link, int pageNumber, UriBuilder uriBuilder, Map<String, URI> bodyLinks) {
-        UriBuilder pageLink = uriBuilder.replaceQueryParam("page", pageNumber);
-        bodyLinks.put(link.getBodyName(), pageLink.build());
+    private static void addLink(
+            PaginationLink paginationLink,
+            int pageNumber,
+            int perPage,
+            UriBuilder uriBuilder,
+            Map<String, URI> bodyLinks
+    ) {
+        bodyLinks.put(
+                paginationLink.getBodyName(),
+                uriBuilder
+                        .replaceQueryParam(PAGE, pageNumber)
+                        .replaceQueryParam(PER_PAGE, perPage)
+                        .build()
+        );
     }
 
     /**
@@ -164,7 +178,9 @@ public abstract class AbstractResponse<T> implements ResponseStream {
             MappingResponseProcessor responseProcessor,
             Map<String, URI> bodyLinks
     ) {
-        link.getPage(pages).ifPresent(page -> addLink(link, page, uriBuilder, responseProcessor, bodyLinks));
+        link.getPage(pages).ifPresent(
+                page -> addLink(link, page, pages.getPerPage(), uriBuilder, responseProcessor, bodyLinks)
+        );
     }
 
     /**
@@ -172,6 +188,7 @@ public abstract class AbstractResponse<T> implements ResponseStream {
      *
      * @param link  The type of the link being added
      * @param pageNumber  The page being linked to
+     * @param perPage  The number of result rows in the page being linked to
      * @param uriBuilder  The uri builder to build the links
      * @param responseProcessor  The response processor whose links are being built
      * @param bodyLinks  The map of links that will be added to the body of the response
@@ -179,11 +196,12 @@ public abstract class AbstractResponse<T> implements ResponseStream {
     public static void addLink(
             PaginationLink link,
             int pageNumber,
+            int perPage,
             UriBuilder uriBuilder,
             MappingResponseProcessor responseProcessor,
             Map<String, URI> bodyLinks
     ) {
-        UriBuilder pageLink = uriBuilder.replaceQueryParam("page", pageNumber);
+        UriBuilder pageLink = uriBuilder.replaceQueryParam(PAGE, pageNumber).replaceQueryParam(PER_PAGE, perPage);
         responseProcessor.getHeaders().add(
                 HttpHeaders.LINK,
                 Link.fromUriBuilder(pageLink).rel(link.getHeaderName()).build().toString()

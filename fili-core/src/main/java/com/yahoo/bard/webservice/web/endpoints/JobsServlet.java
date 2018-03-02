@@ -541,7 +541,9 @@ public class JobsServlet extends EndpointServlet {
                 .map(pair -> Utils.withRight(pair, pair.getRight().getAsInt()))
                 .map(pair -> Utils.withRight(
                         pair,
-                        uriInfo.getRequestUriBuilder().replaceQueryParam("page", pair.getRight())
+                        uriInfo.getRequestUriBuilder()
+                                .replaceQueryParam("page", pair.getRight())
+                                .replaceQueryParam("perPage", pages.getPerPage())
                         )
                 )
                 .map(pair -> Utils.withRight(pair, pair.getRight().build()))
