@@ -264,7 +264,7 @@ Current
 ### Fixed:
 
 - [Add Missing perPage Param](https://github.com/yahoo/fili/pull/641)
-    * Pagination Links on the First Page Are Missing perPage Param. This PR fixes this problem.
+    * Pagination links on the first pages are missing perPage param. This PR fixes this problem.
 
 - [Having clause was nesting inward on nested queries resulting in rows that didn't exist being referenced](https://github.com/yahoo/fili/pull/614/files)
 
