@@ -78,7 +78,7 @@ public class DimensionCacheLoaderServlet {
      * Endpoint to update a dimensions lastUpdated field.
      *
      * @param dimensionName  name of the dimension whose lastUpdated is to be modified. (path parameter)
-     * @param json  post data json containing the latUpdated datetime. Expected JSON string:
+     * @param json  post data json containing the lastUpdated datetime. Expected JSON string:
      * <pre><code>
      * {
      *     "name":"{@literal <dimensionName>}",
@@ -199,7 +199,7 @@ public class DimensionCacheLoaderServlet {
                 return Response.status(NOT_FOUND).entity(message).build();
             }
 
-            // extract dimension rows form the post data
+            // extract dimension rows from the post data
             Map<String, LinkedHashSet<LinkedHashMap<String, String>>> rawDimensionRows = mapper.readValue(
                     json,
                     new TypeReference<Map<String, LinkedHashSet<LinkedHashMap<String, String>>>>() { /* Empty class */ }
@@ -324,7 +324,7 @@ public class DimensionCacheLoaderServlet {
     /**
      * Endpoint to update cache status.
      *
-     * @param json  post data json containing the latUpdated datetime.
+     * @param json  post data json containing the lastUpdated datetime.
      * <p>
      * Expected JSON string:
      * <pre><code>
