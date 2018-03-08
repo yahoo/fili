@@ -3,7 +3,6 @@
 package com.yahoo.bard.webservice.table.availability;
 
 import com.yahoo.bard.webservice.data.config.names.DataSourceName;
-import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.table.resolver.DataSourceFilter;
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
@@ -74,7 +73,7 @@ public class PartitionAvailability extends BaseCompositeAvailability implements 
      *
      * @return  A stream of availabilities which participate given the constraint
      */
-    private Stream<Availability> filteredAvailabilities(DataSourceConstraint constraint) {
+    private Stream<Availability> filteredAvailabilities(PhysicalDataSourceConstraint constraint) {
         return availabilityFilters.entrySet().stream()
                 .filter(entry -> entry.getValue().apply(constraint))
                 .map(Map.Entry::getKey);
@@ -87,7 +86,7 @@ public class PartitionAvailability extends BaseCompositeAvailability implements 
      *
      * @return The intervals which are available for the given constraint
      */
-    private SimplifiedIntervalList mergeAvailabilities(DataSourceConstraint constraint) {
+    private SimplifiedIntervalList mergeAvailabilities(PhysicalDataSourceConstraint constraint) {
         return filteredAvailabilities(constraint)
                 .map(availability -> availability.getAvailableIntervals(constraint))
                 .reduce(SimplifiedIntervalList::intersect).orElse(new SimplifiedIntervalList());
@@ -99,7 +98,7 @@ public class PartitionAvailability extends BaseCompositeAvailability implements 
     }
 
     @Override
-    public Set<DataSourceName> getDataSourceNames(DataSourceConstraint constraint) {
+    public Set<DataSourceName> getDataSourceNames(PhysicalDataSourceConstraint constraint) {
         return filteredAvailabilities(constraint)
                 .map(availability -> availability.getDataSourceNames(constraint))
                 .flatMap(Set::stream).collect(Collectors.toSet());

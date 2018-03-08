@@ -10,6 +10,12 @@ Current
 
 ### Added:
 
+- [Implement LookupLoadTask](https://github.com/yahoo/fili/pull/620)
+    * Add capability for Fili to check load statuses of Druid lookups.
+
+- [Extraction Function on selector filter](https://github.com/yahoo/fili/pull/617)
+    * Added extraction function on dimensional filter, defaults to extraction function on dimension if it exists.
+
 - [Implement TimeFormatExtractionFunction](https://github.com/yahoo/fili/pull/611)
     * Enable [`TimeFormatExtractionFunction`](http://druid.io/docs/0.10.1/querying/dimensionspecs.html#time-format-extraction-function)
       in Fili so that API users could interact with Druid using `TimeFormatExtractionFunction` through Fili.
@@ -238,6 +244,9 @@ Current
     * CompletedFuture allows values to be returned when calling `.get` on a future instead of just throwing an exception
 
 ### Deprecated:
+
+- [Extraction Function on selector filter](https://github.com/yahoo/fili/pull/617)
+    * Deprecated `ExtractionFilter` since it is deprecated in druid, use selector filter with extraction function instead
 
 - [Rename filter variables and methods in DataApiRequest](https://github.com/yahoo/fili/pull/507)
     * Deprecated `getFilters` in favor of `getApiFilters` and `getFilter` in favor of `getDruidFilter`
@@ -751,6 +760,9 @@ Removals:
       fields
 
 ### Deprecated:
+
+- [Revert deprecation of getAvailbleInterval with PhysicalDatasourceConstraint](https://github.com/yahoo/fili/pull/621)
+    * The method is needed in order for availability to function correctly, there is a deeper dive and planning required to actually deprecate it in favor of simpler less confusing design.
 
 - [Remove `PhysicalTable::getTableName` to use `getName` instead](https://github.com/yahoo/fili/pull/263)
     * Having more than 1 method for the same concept (ie. what's the name of this physical table) was confusing and not
