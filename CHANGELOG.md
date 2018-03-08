@@ -10,6 +10,9 @@ Current
 
 ### Added:
 
+- [Implement LookupLoadTask](https://github.com/yahoo/fili/pull/620)
+    * Add capability for Fili to check load statuses of Druid lookups.
+
 - [Extraction Function on selector filter](https://github.com/yahoo/fili/pull/617)
     * Added extraction function on dimensional filter, defaults to extraction function on dimension if it exists.
 
