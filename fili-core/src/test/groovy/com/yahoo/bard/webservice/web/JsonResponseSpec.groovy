@@ -23,10 +23,10 @@ class JsonResponseSpec extends Specification {
     static final GString METADATA_BLOCK = """{
                         "pagination": {
                             "paginationLinks": {
-                                "first":"http://localhost:9998/v1/metrics/?page=1",
-                                "last":"http://localhost:9998/v1/metrics/?page=3",
-                                "next":"http://localhost:9998/v1/metrics/?page=3",
-                                "previous":"http://localhost:9998/v1/metrics/?page=1"
+                                "first":"http://localhost:9998/v1/metrics/?perPage=${PER_PAGE}&page=1",
+                                "last":"http://localhost:9998/v1/metrics/?perPage=${PER_PAGE}&page=3",
+                                "next":"http://localhost:9998/v1/metrics/?perPage=${PER_PAGE}&page=3",
+                                "previous":"http://localhost:9998/v1/metrics/?perPage=${PER_PAGE}&page=1"
                             },
                             "currentPage": $PAGE,
                             "rowsPerPage": $PER_PAGE,
