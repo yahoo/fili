@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.responseprocessors;
 
-import static com.yahoo.bard.webservice.config.BardFeatureFlag.CACHEABLE_CHECK;
+import static com.yahoo.bard.webservice.config.BardFeatureFlag.CACHE_PARTIAL_DATA;
 import static com.yahoo.bard.webservice.web.handlers.PartialDataRequestHandler.getPartialIntervalsWithDefault;
 import static com.yahoo.bard.webservice.web.handlers.VolatileDataRequestHandler.getVolatileIntervalsWithDefault;
 
@@ -86,7 +86,7 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
 
     @Override
     public void processResponse(JsonNode json, DruidAggregationQuery<?> druidQuery, LoggingContext metadata) {
-        if (!CACHEABLE_CHECK.isOn() || isCacheable()) {
+        if (!CACHE_PARTIAL_DATA.isOn() || isCacheable()) {
             String valueString = null;
             try {
                 valueString = writer.writeValueAsString(json);

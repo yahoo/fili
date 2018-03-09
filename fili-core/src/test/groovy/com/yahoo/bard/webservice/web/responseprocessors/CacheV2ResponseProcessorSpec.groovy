@@ -3,7 +3,7 @@
 package com.yahoo.bard.webservice.web.responseprocessors
 
 import static com.yahoo.bard.webservice.async.ResponseContextUtils.createResponseContext
-import static com.yahoo.bard.webservice.config.BardFeatureFlag.CACHEABLE_CHECK
+import static com.yahoo.bard.webservice.config.BardFeatureFlag.CACHE_PARTIAL_DATA
 import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys.MISSING_INTERVALS_CONTEXT_KEY
 import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys.VOLATILE_INTERVALS_CONTEXT_KEY
 
@@ -56,17 +56,17 @@ class CacheV2ResponseProcessorSpec extends Specification {
 
     CacheV2ResponseProcessor crp
 
-    boolean cacheableCheckIsOn
+    boolean cache_partial_data
 
     def setup() {
         querySigningService.getSegmentSetId(_) >> Optional.of(1234L)
         segmentId = querySigningService.getSegmentSetId(groupByQuery).get()
         crp = new CacheV2ResponseProcessor(next, cacheKey, dataCache, querySigningService, MAPPER)
-        cacheableCheckIsOn = CACHEABLE_CHECK.isOn()
+        cache_partial_data = CACHE_PARTIAL_DATA.isOn()
     }
 
     def cleanup() {
-        CACHEABLE_CHECK.setOn(cacheableCheckIsOn)
+        CACHE_PARTIAL_DATA.setOn(cache_partial_data)
     }
 
     def "Test Constructor"() {
@@ -113,7 +113,7 @@ class CacheV2ResponseProcessorSpec extends Specification {
 
     def "After error saving to cache, process response continues"() {
         when:
-        CACHEABLE_CHECK.setOn(true)
+        CACHE_PARTIAL_DATA.setOn(true)
         crp.processResponse(json, groupByQuery, null)
 
         then:
@@ -124,7 +124,7 @@ class CacheV2ResponseProcessorSpec extends Specification {
 
     def "After error is not saved to cache, process response continues"() {
         when:
-        CACHEABLE_CHECK.setOn(false)
+        CACHE_PARTIAL_DATA.setOn(false)
         crp.processResponse(json, groupByQuery, null)
 
         then:
@@ -151,84 +151,92 @@ class CacheV2ResponseProcessorSpec extends Specification {
         0 * dataCache.set(*_)
     }
 
-    def "When cacheable_check is turned off, partial data is cached and then continues"() {
-        setup: "we do not check cacheability"
-        CACHEABLE_CHECK.setOn(false)
+    def "When cache_partial_data is turned off, partial data is cached and then continues"() {
+        setup: "always cache partial data"
+        CACHE_PARTIAL_DATA.setOn(false)
 
         when: "we process response"
         crp.processResponse(json, groupByQuery, null)
 
-        then: "query is not checked for cacheability and partial data is cached"
+        then: "partial data is cached"
         0 * next.getResponseContext() >> responseContext
         1 * next.processResponse(json, groupByQuery, null)
         1 * dataCache.set(*_)
     }
 
-    def "When cacheable_check is turned on, partial data is not cached after the cacheable check and then continues"() {
-        setup: "we check cacheability but query is not cacheable"
-        CACHEABLE_CHECK.setOn(true)
+    def "When cache_partial_data is turned on, partial data is not cached and then continues"() {
+        setup: "check if partial data can be cached"
+        CACHE_PARTIAL_DATA.setOn(true)
+
+        and: "given a response that will not be cached based on the check"
         ResponseContext responseContext = createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name) : nonEmptyIntervals])
 
         when: "we process response"
         crp.processResponse(json, groupByQuery, null)
 
-        then: "query is checked for cacheability and partial data is not cached"
+        then: "query is checked and partial data is not cached"
         2 * next.getResponseContext() >> responseContext
         1 * next.processResponse(json, groupByQuery, null)
         0 * dataCache.set(*_)
     }
 
-    def "When cacheable_check is turned on, partial data is cached after the cacheable check and then continues"() {
-        setup: "we check cacheability and query is cacheable"
-        CACHEABLE_CHECK.setOn(true)
+    def "When cache_partial_data is turned on, partial data is cached and then continues"() {
+        setup: "check if partial data can be cached"
+        CACHE_PARTIAL_DATA.setOn(true)
+
+        and: "given a response that will be cached based on the check"
         ResponseContext responseContext = createResponseContext([:])
 
         when: "we process response"
         crp.processResponse(json, groupByQuery, null)
 
-        then: "query is checked for cacheability and partial data is cached"
+        then: "query is checked and partial data is cached"
         2 * next.getResponseContext() >> responseContext
         1 * next.processResponse(json, groupByQuery, null)
         1 * dataCache.set(*_)
     }
 
-    def "When cacheable_check is turned off, volatile data is cached and then continues"() {
-        setup: "we do not check cacheability"
-        CACHEABLE_CHECK.setOn(false)
+    def "When cache_partial_data is turned off, volatile data is cached and then continues"() {
+        setup: "always cache volatile data"
+        CACHE_PARTIAL_DATA.setOn(false)
 
         when: "we process response"
         crp.processResponse(json, groupByQuery, null)
 
-        then: "query is not checked for cacheability and partial data is cached"
-        0 * next.getResponseContext() >> responseContext // isCacheable() is not called
+        then: "volatile data is cached"
+        0 * next.getResponseContext() >> responseContext
         1 * next.processResponse(json, groupByQuery, null)
         1 * dataCache.set(*_)
     }
 
-    def "When cacheable_check is turned on, volatile data is not cached after the cacheable check and then continues"() {
-        setup: "we check cacheability but query is not cacheable"
-        CACHEABLE_CHECK.setOn(true)
+    def "When cache_partial_data is turned on, volatile data is not cached and then continues"() {
+        setup: "check if volatile data can be cached"
+        CACHE_PARTIAL_DATA.setOn(true)
+
+        and: "given a response that will not be cached based on the check"
         ResponseContext responseContext = createResponseContext([(VOLATILE_INTERVALS_CONTEXT_KEY.name) : nonEmptyIntervals])
 
         when: "we process response"
         crp.processResponse(json, groupByQuery, null)
 
-        then: "query is checked for cacheability and partial data is not cached"
-        2 * next.getResponseContext() >> responseContext // isCacheable() is not called
+        then: "query is checked and volatile data is not cached"
+        2 * next.getResponseContext() >> responseContext
         1 * next.processResponse(json, groupByQuery, null)
         0 * dataCache.set(*_)
     }
 
-    def "When cacheable_check is turned on, volatile data is cached after the cacheable check and then continues"() {
-        setup: "we check cacheability and query is cacheable"
-        CACHEABLE_CHECK.setOn(true)
+    def "When cache_partial_data is turned on, volatile data is cached and then continues"() {
+        setup: "check if volatile data can be cached"
+        CACHE_PARTIAL_DATA.setOn(true)
+
+        and: "given a response that will be cached based on the check"
         ResponseContext responseContext = createResponseContext([:])
 
         when: "we process response"
         crp.processResponse(json, groupByQuery, null)
 
-        then: "query is checked for cacheability and partial data is cached"
-        2 * next.getResponseContext() >> responseContext // isCacheable() is not called
+        then: "query is checked and volatile data is cached"
+        2 * next.getResponseContext() >> responseContext
         1 * next.processResponse(json, groupByQuery, null)
         1 * dataCache.set(*_)
     }
