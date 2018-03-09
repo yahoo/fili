@@ -151,94 +151,35 @@ class CacheV2ResponseProcessorSpec extends Specification {
         0 * dataCache.set(*_)
     }
 
-    def "When cache_partial_data is turned off, partial data is cached and then continues"() {
-        setup: "always cache partial data"
-        CACHE_PARTIAL_DATA.setOn(false)
+    @Unroll
+    def "When cache_partial_data is turned #on, #typed data with #simplifiedIntervalList #is cached and then continues"() {
+        setup: "turn on or off cache_partial_data"
+        CACHE_PARTIAL_DATA.setOn(cachePartialData)
 
-        when: "we process response"
+        when: "we process respnse"
         crp.processResponse(json, groupByQuery, null)
 
-        then: "partial data is cached"
-        0 * next.getResponseContext() >> responseContext
+        then: "data cache is handled property and continues"
+        numGetContext * next.getResponseContext() >> createResponseContext(
+                [(MISSING_INTERVALS_CONTEXT_KEY.name): simplifiedIntervalList]
+        )
+        numCache * dataCache.set(*_)
         1 * next.processResponse(json, groupByQuery, null)
-        1 * dataCache.set(*_)
-    }
 
-    def "When cache_partial_data is turned on, partial data is not cached and then continues"() {
-        setup: "check if partial data can be cached"
-        CACHE_PARTIAL_DATA.setOn(true)
+        where:
+        cachePartialData | typed      | simplifiedIntervalList
+        false            | "partial"  | intervals
+        true             | "partial"  | nonEmptyIntervals
+        true             | "partial"  | intervals
+        false            | "volatile" | intervals
+        true             | "volatile" | nonEmptyIntervals
+        true             | "volatile" | intervals
 
-        and: "given a response that will not be cached based on the check"
-        ResponseContext responseContext = createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name) : nonEmptyIntervals])
+        on = cachePartialData ? "on" : "off"
+        is = simplifiedIntervalList.empty ? "is" : "is not"
 
-        when: "we process response"
-        crp.processResponse(json, groupByQuery, null)
-
-        then: "query is checked and partial data is not cached"
-        2 * next.getResponseContext() >> responseContext
-        1 * next.processResponse(json, groupByQuery, null)
-        0 * dataCache.set(*_)
-    }
-
-    def "When cache_partial_data is turned on, partial data is cached and then continues"() {
-        setup: "check if partial data can be cached"
-        CACHE_PARTIAL_DATA.setOn(true)
-
-        and: "given a response that will be cached based on the check"
-        ResponseContext responseContext = createResponseContext([:])
-
-        when: "we process response"
-        crp.processResponse(json, groupByQuery, null)
-
-        then: "query is checked and partial data is cached"
-        2 * next.getResponseContext() >> responseContext
-        1 * next.processResponse(json, groupByQuery, null)
-        1 * dataCache.set(*_)
-    }
-
-    def "When cache_partial_data is turned off, volatile data is cached and then continues"() {
-        setup: "always cache volatile data"
-        CACHE_PARTIAL_DATA.setOn(false)
-
-        when: "we process response"
-        crp.processResponse(json, groupByQuery, null)
-
-        then: "volatile data is cached"
-        0 * next.getResponseContext() >> responseContext
-        1 * next.processResponse(json, groupByQuery, null)
-        1 * dataCache.set(*_)
-    }
-
-    def "When cache_partial_data is turned on, volatile data is not cached and then continues"() {
-        setup: "check if volatile data can be cached"
-        CACHE_PARTIAL_DATA.setOn(true)
-
-        and: "given a response that will not be cached based on the check"
-        ResponseContext responseContext = createResponseContext([(VOLATILE_INTERVALS_CONTEXT_KEY.name) : nonEmptyIntervals])
-
-        when: "we process response"
-        crp.processResponse(json, groupByQuery, null)
-
-        then: "query is checked and volatile data is not cached"
-        2 * next.getResponseContext() >> responseContext
-        1 * next.processResponse(json, groupByQuery, null)
-        0 * dataCache.set(*_)
-    }
-
-    def "When cache_partial_data is turned on, volatile data is cached and then continues"() {
-        setup: "check if volatile data can be cached"
-        CACHE_PARTIAL_DATA.setOn(true)
-
-        and: "given a response that will be cached based on the check"
-        ResponseContext responseContext = createResponseContext([:])
-
-        when: "we process response"
-        crp.processResponse(json, groupByQuery, null)
-
-        then: "query is checked and volatile data is cached"
-        2 * next.getResponseContext() >> responseContext
-        1 * next.processResponse(json, groupByQuery, null)
-        1 * dataCache.set(*_)
+        numGetContext = cachePartialData ? 2 : 0
+        numCache = simplifiedIntervalList.empty ? 1 : 0
     }
 
     def "Overly long data doesn't cache and then continues"() {
