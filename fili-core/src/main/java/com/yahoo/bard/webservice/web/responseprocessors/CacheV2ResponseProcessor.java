@@ -85,33 +85,32 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
 
     @Override
     public void processResponse(JsonNode json, DruidAggregationQuery<?> druidQuery, LoggingContext metadata) {
-        if (isCacheable()) {
-            String valueString = null;
-            try {
-                valueString = writer.writeValueAsString(json);
-                int valueLength = valueString.length();
-                if (valueLength <= maxDruidResponseLengthToCache) {
-                    dataCache.set(
-                            cacheKey,
-                            querySigningService.getSegmentSetId(druidQuery).orElse(null),
-                            valueString
-                    );
-                } else {
-                    LOG.debug(
-                            "Response not cached. Length of {} exceeds max value length of {}",
-                            valueLength,
-                            maxDruidResponseLengthToCache
-                    );
-                }
-            } catch (Exception e) {
-                LOG.warn(
-                        "Unable to cache {}value of size: {}",
-                        valueString == null ? "null " : "",
-                        valueString == null ? "N/A" : valueString.length(),
-                        e
+        String valueString = null;
+        try {
+            valueString = writer.writeValueAsString(json);
+            int valueLength = valueString.length();
+            if (valueLength <= maxDruidResponseLengthToCache) {
+                dataCache.set(
+                        cacheKey,
+                        querySigningService.getSegmentSetId(druidQuery).orElse(null),
+                        valueString
+                );
+            } else {
+                LOG.debug(
+                        "Response not cached. Length of {} exceeds max value length of {}",
+                        valueLength,
+                        maxDruidResponseLengthToCache
                 );
             }
+        } catch (Exception e) {
+            LOG.warn(
+                    "Unable to cache {}value of size: {}",
+                    valueString == null ? "null " : "",
+                    valueString == null ? "N/A" : valueString.length(),
+                    e
+            );
         }
+
         next.processResponse(json, druidQuery, metadata);
     }
 

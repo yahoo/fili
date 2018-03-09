@@ -108,7 +108,7 @@ class CacheV2ResponseProcessorSpec extends Specification {
         crp.processResponse(json, groupByQuery, null)
 
         then:
-        2 * next.getResponseContext() >> responseContext
+        0 * next.getResponseContext() >> responseContext // isCacheable() is not called
         1 * next.processResponse(json, groupByQuery, null)
         1 * dataCache.set(cacheKey, segmentId, '[]') >> { throw new IllegalStateException() }
     }
@@ -131,7 +131,7 @@ class CacheV2ResponseProcessorSpec extends Specification {
         0 * dataCache.set(*_)
     }
 
-    def "Partial data doesn't cache and then continues"() {
+    def "Partial data is cached and then continues"() {
         setup:
         ResponseContext responseContext = createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name) : nonEmptyIntervals])
 
@@ -139,12 +139,12 @@ class CacheV2ResponseProcessorSpec extends Specification {
         crp.processResponse(json, groupByQuery, null)
 
         then:
-        2 * next.getResponseContext() >> responseContext
+        0 * next.getResponseContext() >> responseContext // isCacheable() is not called
         1 * next.processResponse(json, groupByQuery, null)
-        0 * dataCache.set(*_)
+        1 * dataCache.set(*_)
     }
 
-    def "Volatile data doesn't cache and then continues"() {
+    def "Volatile data is cached and then continues"() {
         setup:
         ResponseContext responseContext = createResponseContext([(VOLATILE_INTERVALS_CONTEXT_KEY.name) : nonEmptyIntervals])
 
@@ -152,9 +152,9 @@ class CacheV2ResponseProcessorSpec extends Specification {
         crp.processResponse(json, groupByQuery, null)
 
         then:
-        2 * next.getResponseContext() >> responseContext
+        0 * next.getResponseContext() >> responseContext // isCacheable() is not called
         1 * next.processResponse(json, groupByQuery, null)
-        0 * dataCache.set(*_)
+        1 * dataCache.set(*_)
     }
 
     def "Overly long data doesn't cache and then continues"() {
