@@ -261,6 +261,10 @@ Current
 
 - [Having clause was nesting inward on nested queries resulting in rows that didn't exist being referenced](https://github.com/yahoo/fili/pull/614/files)
 
+- [None show clause was not being respected](https://github.com/yahoo/fili/issues/612)
+    * Changed `ResponseData` and `JsonApiResponseWriter` to suppress columns that don't have associated dimension fields.
+    * Updated tests to reflect none being hidden.
+     
 - [Scoped metric dictionaries and the having clause now work together by default](https://github.com/yahoo/fili/pull/580)
     * Add a new ApiHavingGenerator that builds a temporary metric dictionary from the set of requested metrics(not from globally scoped metric dictionary), and then using those to resolve the having clause.
     * Add a table generating functions in BaseTableLoader that effectively allow the customer to provide a different metric dictionary at lower scope(not from the globally scoped metric dictionary) for use when building each table.

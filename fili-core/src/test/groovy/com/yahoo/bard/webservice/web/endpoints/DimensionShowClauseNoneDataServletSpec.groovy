@@ -15,17 +15,14 @@ class DimensionShowClauseNoneDataServletSpec extends BaseDimensionShowClauseData
             "rows" : [
                 {
                     "dateTime" : "2014-06-02 00:00:00.000",
-                    "color" : "Color1",
                     "width" : 10
                 },
                 {
                     "dateTime" : "2014-06-02 00:00:00.000",
-                    "color" : "Color2",
                     "width" : 11
                 },
                 {
                     "dateTime" : "2014-06-02 00:00:00.000",
-                    "color" : "Color3",
                     "width" : 12
                 }
             ]
