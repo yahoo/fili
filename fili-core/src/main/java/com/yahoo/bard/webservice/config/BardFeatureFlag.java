@@ -10,6 +10,7 @@ public enum BardFeatureFlag implements FeatureFlag {
     @Deprecated DRUID_CACHE("druid_cache_enabled"),
     @Deprecated DRUID_CACHE_V2("druid_cache_v2_enabled"),
     QUERY_SPLIT("query_split_enabled"),
+    CACHEABLE_CHECK("cacheable_check"),
     TOP_N("top_n_enabled"),
     DATA_FILTER_SUBSTRING_OPERATIONS("data_filter_substring_operations_enabled"),
     INTERSECTION_REPORTING("intersection_reporting_enabled"),

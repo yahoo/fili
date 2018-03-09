@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.responseprocessors;
 
+import static com.yahoo.bard.webservice.config.BardFeatureFlag.CACHEABLE_CHECK;
 import static com.yahoo.bard.webservice.web.handlers.PartialDataRequestHandler.getPartialIntervalsWithDefault;
 import static com.yahoo.bard.webservice.web.handlers.VolatileDataRequestHandler.getVolatileIntervalsWithDefault;
 
@@ -85,30 +86,32 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
 
     @Override
     public void processResponse(JsonNode json, DruidAggregationQuery<?> druidQuery, LoggingContext metadata) {
-        String valueString = null;
-        try {
-            valueString = writer.writeValueAsString(json);
-            int valueLength = valueString.length();
-            if (valueLength <= maxDruidResponseLengthToCache) {
-                dataCache.set(
-                        cacheKey,
-                        querySigningService.getSegmentSetId(druidQuery).orElse(null),
-                        valueString
-                );
-            } else {
-                LOG.debug(
-                        "Response not cached. Length of {} exceeds max value length of {}",
-                        valueLength,
-                        maxDruidResponseLengthToCache
+        if (!CACHEABLE_CHECK.isOn() || isCacheable()) {
+            String valueString = null;
+            try {
+                valueString = writer.writeValueAsString(json);
+                int valueLength = valueString.length();
+                if (valueLength <= maxDruidResponseLengthToCache) {
+                    dataCache.set(
+                            cacheKey,
+                            querySigningService.getSegmentSetId(druidQuery).orElse(null),
+                            valueString
+                    );
+                } else {
+                    LOG.debug(
+                            "Response not cached. Length of {} exceeds max value length of {}",
+                            valueLength,
+                            maxDruidResponseLengthToCache
+                    );
+                }
+            } catch (Exception e) {
+                LOG.warn(
+                        "Unable to cache {}value of size: {}",
+                        valueString == null ? "null " : "",
+                        valueString == null ? "N/A" : valueString.length(),
+                        e
                 );
             }
-        } catch (Exception e) {
-            LOG.warn(
-                    "Unable to cache {}value of size: {}",
-                    valueString == null ? "null " : "",
-                    valueString == null ? "N/A" : valueString.length(),
-                    e
-            );
         }
 
         next.processResponse(json, druidQuery, metadata);
