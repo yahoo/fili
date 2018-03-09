@@ -128,6 +128,10 @@ Current
 
 ### Changed:
 
+- [Add config to ignore partial/volatile intervals and cache everything in cache V2](https://github.com/yahoo/fili/pull/645)
+    * In cache V2, user should be able to decide whether partial data or volatile data should be cached or not. This PR
+      adds a config that allows the user to do this.
+
 - [Lift required override on deprecated method in MetricLoader](https://github.com/yahoo/fili/pull/609)
     * Add default implementation to deprecated `loadMetricDictionary` in `MetricLoader` so that downstream projects are
       able to implement the new version without worrying about the deprecated version.

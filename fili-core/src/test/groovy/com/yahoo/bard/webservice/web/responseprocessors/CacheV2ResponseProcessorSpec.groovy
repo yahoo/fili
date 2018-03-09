@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.web.responseprocessors
 
 import static com.yahoo.bard.webservice.async.ResponseContextUtils.createResponseContext
+import static com.yahoo.bard.webservice.config.BardFeatureFlag.CACHE_PARTIAL_DATA
 import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys.MISSING_INTERVALS_CONTEXT_KEY
 import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys.VOLATILE_INTERVALS_CONTEXT_KEY
 
@@ -55,10 +56,17 @@ class CacheV2ResponseProcessorSpec extends Specification {
 
     CacheV2ResponseProcessor crp
 
+    boolean cache_partial_data
+
     def setup() {
         querySigningService.getSegmentSetId(_) >> Optional.of(1234L)
         segmentId = querySigningService.getSegmentSetId(groupByQuery).get()
         crp = new CacheV2ResponseProcessor(next, cacheKey, dataCache, querySigningService, MAPPER)
+        cache_partial_data = CACHE_PARTIAL_DATA.isOn()
+    }
+
+    def cleanup() {
+        CACHE_PARTIAL_DATA.setOn(cache_partial_data)
     }
 
     def "Test Constructor"() {
@@ -105,10 +113,22 @@ class CacheV2ResponseProcessorSpec extends Specification {
 
     def "After error saving to cache, process response continues"() {
         when:
+        CACHE_PARTIAL_DATA.setOn(true)
         crp.processResponse(json, groupByQuery, null)
 
         then:
         2 * next.getResponseContext() >> responseContext
+        1 * next.processResponse(json, groupByQuery, null)
+        1 * dataCache.set(cacheKey, segmentId, '[]') >> { throw new IllegalStateException() }
+    }
+
+    def "After error is not saved to cache, process response continues"() {
+        when:
+        CACHE_PARTIAL_DATA.setOn(false)
+        crp.processResponse(json, groupByQuery, null)
+
+        then:
+        0 * next.getResponseContext() >> responseContext
         1 * next.processResponse(json, groupByQuery, null)
         1 * dataCache.set(cacheKey, segmentId, '[]') >> { throw new IllegalStateException() }
     }
@@ -131,30 +151,35 @@ class CacheV2ResponseProcessorSpec extends Specification {
         0 * dataCache.set(*_)
     }
 
-    def "Partial data doesn't cache and then continues"() {
-        setup:
-        ResponseContext responseContext = createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name) : nonEmptyIntervals])
+    @Unroll
+    def "When cache_partial_data is turned #on, #typed data with #simplifiedIntervalList #is cached and then continues"() {
+        setup: "turn on or off cache_partial_data"
+        CACHE_PARTIAL_DATA.setOn(cachePartialData)
 
-        when:
+        when: "we process respnse"
         crp.processResponse(json, groupByQuery, null)
 
-        then:
-        2 * next.getResponseContext() >> responseContext
+        then: "data cache is handled property and continues"
+        numGetContext * next.getResponseContext() >> createResponseContext(
+                [(MISSING_INTERVALS_CONTEXT_KEY.name): simplifiedIntervalList]
+        )
+        numCache * dataCache.set(*_)
         1 * next.processResponse(json, groupByQuery, null)
-        0 * dataCache.set(*_)
-    }
 
-    def "Volatile data doesn't cache and then continues"() {
-        setup:
-        ResponseContext responseContext = createResponseContext([(VOLATILE_INTERVALS_CONTEXT_KEY.name) : nonEmptyIntervals])
+        where:
+        cachePartialData | typed      | simplifiedIntervalList
+        false            | "partial"  | intervals
+        true             | "partial"  | nonEmptyIntervals
+        true             | "partial"  | intervals
+        false            | "volatile" | intervals
+        true             | "volatile" | nonEmptyIntervals
+        true             | "volatile" | intervals
 
-        when:
-        crp.processResponse(json, groupByQuery, null)
+        on = cachePartialData ? "on" : "off"
+        is = simplifiedIntervalList.empty ? "is" : "is not"
 
-        then:
-        2 * next.getResponseContext() >> responseContext
-        1 * next.processResponse(json, groupByQuery, null)
-        0 * dataCache.set(*_)
+        numGetContext = cachePartialData ? 2 : 0
+        numCache = simplifiedIntervalList.empty ? 1 : 0
     }
 
     def "Overly long data doesn't cache and then continues"() {
