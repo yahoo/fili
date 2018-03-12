@@ -111,26 +111,24 @@ class CacheV2ResponseProcessorSpec extends Specification {
 
     }
 
-    def "After error saving to cache, process response continues"() {
+    @Unroll
+    def "After error #savedToCache, process response continues"() {
         when:
-        CACHE_PARTIAL_DATA.setOn(true)
+        CACHE_PARTIAL_DATA.setOn(cachePartialData)
         crp.processResponse(json, groupByQuery, null)
 
         then:
-        2 * next.getResponseContext() >> responseContext
+        numGetContext * next.getResponseContext() >> responseContext
         1 * next.processResponse(json, groupByQuery, null)
         1 * dataCache.set(cacheKey, segmentId, '[]') >> { throw new IllegalStateException() }
-    }
 
-    def "After error is not saved to cache, process response continues"() {
-        when:
-        CACHE_PARTIAL_DATA.setOn(false)
-        crp.processResponse(json, groupByQuery, null)
+        where:
+        cachePartialData | _
+        true             | _
+        false            | _
 
-        then:
-        0 * next.getResponseContext() >> responseContext
-        1 * next.processResponse(json, groupByQuery, null)
-        1 * dataCache.set(cacheKey, segmentId, '[]') >> { throw new IllegalStateException() }
+        savedToCache = cachePartialData ? "saving to cache" : "not saved to cache"
+        numGetContext = cachePartialData ? 0 : 2
     }
 
     def "After json serialization error of the cache value, process response continues"() {
@@ -168,17 +166,17 @@ class CacheV2ResponseProcessorSpec extends Specification {
 
         where:
         cachePartialData | typed      | simplifiedIntervalList
-        false            | "partial"  | intervals
-        true             | "partial"  | nonEmptyIntervals
         true             | "partial"  | intervals
-        false            | "volatile" | intervals
-        true             | "volatile" | nonEmptyIntervals
+        false            | "partial"  | nonEmptyIntervals
+        false            | "partial"  | intervals
         true             | "volatile" | intervals
+        false            | "volatile" | nonEmptyIntervals
+        false            | "volatile" | intervals
 
         on = cachePartialData ? "on" : "off"
         is = simplifiedIntervalList.empty ? "is" : "is not"
 
-        numGetContext = cachePartialData ? 2 : 0
+        numGetContext = cachePartialData ? 0 : 2
         numCache = simplifiedIntervalList.empty ? 1 : 0
     }
 
