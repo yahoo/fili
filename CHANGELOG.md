@@ -263,6 +263,10 @@ Current
 
 ### Fixed:
 
+- [Fix caching condition](https://github.com/yahoo/fili/pull/647)
+    * We want to cache partial or volatile data when `cache_partial_data` is set to true. This is condition is currently
+      reversed. This PR shall fix it
+
 - [Add Missing perPage Param](https://github.com/yahoo/fili/pull/641)
     * Pagination links on the first pages are missing perPage param. This PR fixes this problem.
 
