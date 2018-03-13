@@ -10,6 +10,33 @@ Current
 
 ### Added:
 
+
+
+### Changed:
+
+
+
+### Deprecated:
+
+
+
+### Fixed:
+
+
+
+### Known Issues:
+
+
+
+### Removed:
+
+
+
+v0.9.128 - 2018/03/13
+---------------------
+
+### Added:
+
 - [Implement LookupLoadTask](https://github.com/yahoo/fili/pull/620)
     * Add capability for Fili to check load statuses of Druid lookups.
 
