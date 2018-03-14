@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.logging;
 /**
  * Interface for log formatter that are meant to facilitate log exploration and data extraction.
  */
+@FunctionalInterface
 public interface LogFormatter {
 
     /**

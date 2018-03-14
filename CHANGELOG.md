@@ -10,6 +10,9 @@ Current
 
 ### Added:
 
+- [Annotate Functional Interface](https://github.com/yahoo/fili/pull/606)
+    * Add `@FunctionalInterface` annotation to all functional interfaces.
+
 - [Implement LookupLoadTask](https://github.com/yahoo/fili/pull/620)
     * Add capability for Fili to check load statuses of Druid lookups.
 

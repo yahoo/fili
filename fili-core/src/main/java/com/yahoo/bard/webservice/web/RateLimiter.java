@@ -9,6 +9,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 /**
  * An object containing the logic to keep track of and limit the amount of requests being made to the webservice.
  */
+@FunctionalInterface
 public interface RateLimiter {
 
     /**

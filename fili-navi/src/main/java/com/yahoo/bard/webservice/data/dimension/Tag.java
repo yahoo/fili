@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 /**
  * Interface for tags used for tagging dimension fields to add additional properties implicitly specified by its name.
  */
+@FunctionalInterface
 public interface Tag {
 
     /**
