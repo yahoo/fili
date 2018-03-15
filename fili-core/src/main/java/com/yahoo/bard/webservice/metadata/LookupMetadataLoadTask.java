@@ -6,13 +6,16 @@ import com.yahoo.bard.webservice.application.LoadTask;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
-import com.yahoo.bard.webservice.data.dimension.impl.LookupDimension;
+import com.yahoo.bard.webservice.data.dimension.impl.RegisteredLookupDimension;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 
 import com.fasterxml.jackson.databind.JsonNode;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -28,6 +31,7 @@ import java.util.stream.Collectors;
  * Lookup Load task sends requests to Druid coordinator and returns load statuses of lookup metadata in Druid.
  */
 public class LookupMetadataLoadTask extends LoadTask<Boolean> {
+    private static final Logger LOG = LoggerFactory.getLogger(LookupMetadataLoadTask.class);
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     /**
@@ -95,14 +99,16 @@ public class LookupMetadataLoadTask extends LoadTask<Boolean> {
     public void run() {
         getPendingLookups().clear();
         // download load statuses of all lookups of each lookup tier
-        lookupTiers.forEach(lookupTier ->
-                druidClient.getJsonObject(
-                        successCallback,
-                        errorCallback,
-                        failureCallback,
-                        String.format(LOOKUP_QUERY_FORMAT, lookupTier)
-                )
-        );
+        lookupTiers.stream()
+                .peek(tier -> LOG.trace("Querying metadata for lookup tier: {}", tier))
+                .forEach(lookupTier -> {
+                    druidClient.getJsonObject(
+                            successCallback,
+                            errorCallback,
+                            failureCallback,
+                            String.format(LOOKUP_QUERY_FORMAT, lookupTier)
+                    );
+                });
     }
 
     /**
@@ -157,13 +163,12 @@ public class LookupMetadataLoadTask extends LoadTask<Boolean> {
 
             pendingLookups.addAll(
                     dimensionDictionary.findAll().stream()
-                            .filter(dimension -> dimension instanceof LookupDimension)
-                            .map(dimension -> (LookupDimension) dimension)
-                            .map(LookupDimension::getNamespaces)
+                            .filter(dimension -> dimension instanceof RegisteredLookupDimension)
+                            .map(dimension -> (RegisteredLookupDimension) dimension)
+                            .map(RegisteredLookupDimension::getLookups)
                             .flatMap(List::stream)
-                            .filter(namespace ->
-                                    !lookupStatuses.containsKey(namespace) || !lookupStatuses.get(namespace)
-                            )
+                            .peek(namespace -> LOG.trace("Checking lookup metadata status for {}", namespace))
+                            .filter(lookup -> !lookupStatuses.containsKey(lookup) || !lookupStatuses.get(lookup))
                             .collect(Collectors.toSet())
             );
         };

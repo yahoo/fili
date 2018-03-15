@@ -3,7 +3,7 @@
 package com.yahoo.bard.webservice.metadata
 
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
-import com.yahoo.bard.webservice.data.dimension.impl.LookupDimension
+import com.yahoo.bard.webservice.data.dimension.impl.RegisteredLookupDimension
 import com.yahoo.bard.webservice.druid.client.DruidWebService
 import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService
 
@@ -12,7 +12,7 @@ import spock.lang.Specification
 class LookupMetadataLoadTaskSpec extends Specification {
     DruidWebService druidClient
 
-    LookupDimension lookupDimension
+    RegisteredLookupDimension lookupDimension
     DimensionDictionary dimensionDictionary
 
     LookupMetadataLoadTask lookupLoadTask
@@ -32,8 +32,8 @@ class LookupMetadataLoadTaskSpec extends Specification {
             """
         }
 
-        lookupDimension = Mock(LookupDimension)
-        lookupDimension.getNamespaces() >> ["loadedLookup", "pendingLookup", "LookupNotInDruid"]
+        lookupDimension = Mock(RegisteredLookupDimension)
+        lookupDimension.getLookups() >> ["loadedLookup", "pendingLookup", "LookupNotInDruid"]
 
         lookupLoadTask = new LookupMetadataLoadTask(druidClient, new DimensionDictionary([lookupDimension] as Set))
     }
