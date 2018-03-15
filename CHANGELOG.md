@@ -266,6 +266,20 @@ Current
 
 ### Fixed:
 
+- [Correct exception message & add missing tests](https://github.com/yahoo/fili/pull/649)
+    * According to Javadoc of 
+      
+        * [`java.util.Map#merge(Object, Object, java.util.function.BiFunction)`](https://docs.oracle.com/javase/8/docs/api/java/util/Map.html#merge-K-V-java.util.function.BiFunction-) and
+        * [`java.util.stream.Collectors#toMap(Function, Function, BinaryOperator)`](https://docs.oracle.com/javase/8/docs/api/java/util/stream/Collectors.html#toMap-java.util.function.Function-java.util.function.Function-java.util.function.BinaryOperator-)
+      
+      The input to the `mergingFunction`/`mergeFunction` is a value, not a key. The exception message of
+      `StreamUtils.throwingMerger` is, therefore, misleading.
+      
+      Some Javadoc of the  `StreamUtils` is also corrected.
+      
+      In addition to correcting the exception message, tests to `StreamUtils` are also missing and, hence, have been
+      added, as well.
+      
 - [Fix lookup metadata loader by pulling the RegisteredLookupDimension](https://github.com/yahoo/fili/pull/651)
     * Lookup Metadata Health Check always return true when some Druid registered lookup are absolutely failing to be
       loaded. Instead of checking load status of `RegisteredLookupDimension`, `RegisteredLookupMetadataLoadTask` is
