@@ -12,7 +12,7 @@ import spock.lang.Specification
 class LookupMetadataLoadTaskSpec extends Specification {
     DruidWebService druidClient
 
-    RegisteredLookupDimension lookupDimension
+    RegisteredLookupDimension registeredLookupDimension
     DimensionDictionary dimensionDictionary
 
     LookupMetadataLoadTask lookupLoadTask
@@ -32,10 +32,10 @@ class LookupMetadataLoadTaskSpec extends Specification {
             """
         }
 
-        lookupDimension = Mock(RegisteredLookupDimension)
-        lookupDimension.getLookups() >> ["loadedLookup", "pendingLookup", "LookupNotInDruid"]
+        registeredLookupDimension = Mock(RegisteredLookupDimension)
+        registeredLookupDimension.getLookups() >> ["loadedLookup", "pendingLookup", "LookupNotInDruid"]
 
-        lookupLoadTask = new LookupMetadataLoadTask(druidClient, new DimensionDictionary([lookupDimension] as Set))
+        lookupLoadTask = new LookupMetadataLoadTask(druidClient, new DimensionDictionary([registeredLookupDimension] as Set))
     }
 
     def "LookupLoadTask, when runs, finds pending lookups"() {
