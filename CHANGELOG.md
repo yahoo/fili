@@ -266,11 +266,14 @@ Current
 
 ### Fixed:
 
+- [Fix lookup metadata loader by pulling the RegisteredLookupDimension](https://github.com/yahoo/fili/pull/651)
+    * Fixes the problem of `LookupMetadataLoadTask` not checking registered lookup load statuses.
+
 - [Fix 'descriptionription' mis-naming in dimension field](https://github.com/yahoo/fili/pull/655)
     * This is caused by a "desc" -> "description" string replacement. A string handling method has been added to
       detect "desc" and transform it to "description". If it already comes with "description", no string transformation
       is made
-    
+
 - [Fix caching condition](https://github.com/yahoo/fili/pull/647)
     * We want to cache partial or volatile data when `cache_partial_data` is set to true. This is condition is currently
       reversed. This PR shall fix it
