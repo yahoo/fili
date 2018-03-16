@@ -30,6 +30,17 @@ class EitherSpec extends Specification {
     }
 
     @Unroll
+    def "A #leftRight Either<String, Integer> #isOrIsNot right"() {
+        expect:
+        wrap(value).isRight() == expectedRightOrNot
+
+        where:
+        leftRight | wrap               | isOrIsNot | value    || expectedRightOrNot
+        "right"   | {Either.right(it)} | "is"      | "string" || true
+        "left"    | {Either.left(it)}  | "is not"  | 5        || false
+    }
+
+    @Unroll
     def "Attempting to get the #rightLeftValue from a #leftRight Either throws UnsupportedOperationException"() {
         when:
         invalidUnwrap(wrap(value))
