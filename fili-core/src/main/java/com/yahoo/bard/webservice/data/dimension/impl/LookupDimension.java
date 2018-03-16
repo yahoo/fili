@@ -23,7 +23,13 @@ import javax.validation.constraints.NotNull;
 
 /**
  * LookupDimension creates a Look up dimension based on the namespace chain.
+ * <p>
+ * This class ONLY applies to the Druid namespace lookup serialization.
+ *
+ * @deprecated There is an intent to refactor this class to be a subclass of
+ * {@link com.yahoo.bard.webservice.data.dimension.impl.RegisteredLookupDimension}.
  */
+@Deprecated
 @JsonSerialize(using = LookupDimensionToDimensionSpec.class)
 public class LookupDimension extends KeyValueStoreDimension implements ExtractionFunctionDimension {
 
