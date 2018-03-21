@@ -267,7 +267,9 @@ Current
 ### Fixed:
 
 - [Fix lookup metadata loader by pulling the RegisteredLookupDimension](https://github.com/yahoo/fili/pull/651)
-    * Fixes the problem of `LookupMetadataLoadTask` not checking registered lookup load statuses.
+    * Lookup Metadata Health Check always return true when some Druid registered lookup are absolutely failing to be
+      loaded. Instead of checking load status of `RegisteredLookupDimension`, `RegisteredLookupMetadataLoadTask` is
+      checking the status of `LookupDimension`. This PR corrects this behavior.
 
 - [Fix 'descriptionription' mis-naming in dimension field](https://github.com/yahoo/fili/pull/655)
     * This is caused by a "desc" -> "description" string replacement. A string handling method has been added to

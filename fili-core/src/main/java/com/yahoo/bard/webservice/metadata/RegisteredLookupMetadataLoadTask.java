@@ -30,8 +30,8 @@ import java.util.stream.Collectors;
 /**
  * Lookup Load task sends requests to Druid coordinator and returns load statuses of lookup metadata in Druid.
  */
-public class LookupMetadataLoadTask extends LoadTask<Boolean> {
-    private static final Logger LOG = LoggerFactory.getLogger(LookupMetadataLoadTask.class);
+public class RegisteredLookupMetadataLoadTask extends LoadTask<Boolean> {
+    private static final Logger LOG = LoggerFactory.getLogger(RegisteredLookupMetadataLoadTask.class);
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     /**
@@ -57,7 +57,7 @@ public class LookupMetadataLoadTask extends LoadTask<Boolean> {
             "lookup_error_checking_period"
     );
     /**
-     * Parameter specifying the delay before the first run of {@link LookupMetadataLoadTask}, in milliseconds.
+     * Parameter specifying the delay before the first run of {@link RegisteredLookupMetadataLoadTask}, in milliseconds.
      */
     private static final String INITIAL_LOOKUP_CHECKING_DELAY = SYSTEM_CONFIG.getPackageVariableName(
             "initial_lookup_checking_delay"
@@ -80,9 +80,9 @@ public class LookupMetadataLoadTask extends LoadTask<Boolean> {
      * @param dimensionDictionary  A {@link com.yahoo.bard.webservice.data.dimension.DimensionDictionary} that is used
      * to obtain a list of lookups in Fili.
      */
-    public LookupMetadataLoadTask(DruidWebService druidClient, DimensionDictionary dimensionDictionary) {
+    public RegisteredLookupMetadataLoadTask(DruidWebService druidClient, DimensionDictionary dimensionDictionary) {
         super(
-                LookupMetadataLoadTask.class.getSimpleName(),
+                RegisteredLookupMetadataLoadTask.class.getSimpleName(),
                 SYSTEM_CONFIG.getLongProperty(INITIAL_LOOKUP_CHECKING_DELAY, 0),
                 SYSTEM_CONFIG.getLongProperty(LOOKUP_NORMAL_CHECKING_PERIOD_KEY, TimeUnit.MINUTES.toMillis(1))
         );

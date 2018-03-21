@@ -9,13 +9,13 @@ import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService
 
 import spock.lang.Specification
 
-class LookupMetadataLoadTaskSpec extends Specification {
+class RegisteredLookupMetadataLoadTaskSpec extends Specification {
     DruidWebService druidClient
 
     RegisteredLookupDimension registeredLookupDimension
     DimensionDictionary dimensionDictionary
 
-    LookupMetadataLoadTask lookupLoadTask
+    RegisteredLookupMetadataLoadTask lookupLoadTask
 
     def setup() {
         druidClient = new TestDruidWebService()
@@ -35,7 +35,7 @@ class LookupMetadataLoadTaskSpec extends Specification {
         registeredLookupDimension = Mock(RegisteredLookupDimension)
         registeredLookupDimension.getLookups() >> ["loadedLookup", "pendingLookup", "LookupNotInDruid"]
 
-        lookupLoadTask = new LookupMetadataLoadTask(druidClient, new DimensionDictionary([registeredLookupDimension] as Set))
+        lookupLoadTask = new RegisteredLookupMetadataLoadTask(druidClient, new DimensionDictionary([registeredLookupDimension] as Set))
     }
 
     def "LookupLoadTask, when runs, finds pending lookups"() {
