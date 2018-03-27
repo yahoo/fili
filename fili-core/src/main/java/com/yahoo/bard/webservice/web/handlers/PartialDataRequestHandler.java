@@ -15,7 +15,10 @@ import com.yahoo.bard.webservice.web.responseprocessors.MappingResponseProcessor
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 
+import org.joda.time.Interval;
+
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Map;
 
 import javax.validation.constraints.NotNull;
@@ -111,9 +114,11 @@ public class PartialDataRequestHandler implements DataRequestHandler {
      * @return the missing intervals from the request or an empty list
      */
     public static SimplifiedIntervalList getPartialIntervalsWithDefault(Map<String, Serializable> context) {
-        return (SimplifiedIntervalList) context.computeIfAbsent(
-                MISSING_INTERVALS_CONTEXT_KEY.getName(),
-                (ignored) -> new SimplifiedIntervalList()
+        return new SimplifiedIntervalList(
+                (Collection<Interval>) context.computeIfAbsent(
+                        MISSING_INTERVALS_CONTEXT_KEY.getName(),
+                        (ignored) -> new SimplifiedIntervalList()
+                )
         );
     }
 }
