@@ -564,7 +564,7 @@ public class KeyValueStoreDimension implements Dimension {
 
     @Override
     public DimensionRow parseDimensionRow(Map<String, String> fieldNameValueMap) {
-        // This rewrite need to be removed once description is normalized in legacy implementations
+        // TODO: This rewrite need to be removed once description is normalized in legacy implementations
         String desc = fieldNameValueMap.remove("description");
         if (desc != null) {
             fieldNameValueMap.put("desc", desc);
