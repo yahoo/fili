@@ -27,8 +27,6 @@ import javax.validation.constraints.NotNull;
  * {@link LookupDimension} is essentially a special case of {@link RegisteredLookupDimension} using namespace. Hence
  * this class ONLY applies to the Druid namespace lookup serialization. See
  * http://druid.io/docs/latest/querying/dimensionspecs.html#lookup-extraction-function for more details.
- * <p>
- * TODO - Change this class to be a subclass of {@link RegisteredLookupDimension}.
  */
 @JsonSerialize(using = LookupDimensionToDimensionSpec.class)
 public class LookupDimension extends KeyValueStoreDimension implements ExtractionFunctionDimension {
