@@ -108,6 +108,9 @@ public class PartialDataRequestHandler implements DataRequestHandler {
 
     /**
      * Return the missing intervals from the context.
+     * <p>
+     * <b>WARNING</b>: A serialization issue may result in the context value being a list but not a
+     * Simplified Interval List. See https://github.com/yahoo/fili/issues/657
      *
      * @param context  The map containing the missing intervals if any
      *
