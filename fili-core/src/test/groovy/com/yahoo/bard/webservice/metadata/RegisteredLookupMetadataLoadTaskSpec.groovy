@@ -3,19 +3,19 @@
 package com.yahoo.bard.webservice.metadata
 
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
-import com.yahoo.bard.webservice.data.dimension.impl.LookupDimension
+import com.yahoo.bard.webservice.data.dimension.impl.RegisteredLookupDimension
 import com.yahoo.bard.webservice.druid.client.DruidWebService
 import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService
 
 import spock.lang.Specification
 
-class LookupMetadataLoadTaskSpec extends Specification {
+class RegisteredLookupMetadataLoadTaskSpec extends Specification {
     DruidWebService druidClient
 
-    LookupDimension lookupDimension
+    RegisteredLookupDimension registeredLookupDimension
     DimensionDictionary dimensionDictionary
 
-    LookupMetadataLoadTask lookupLoadTask
+    RegisteredLookupMetadataLoadTask lookupLoadTask
 
     def setup() {
         druidClient = new TestDruidWebService()
@@ -32,10 +32,10 @@ class LookupMetadataLoadTaskSpec extends Specification {
             """
         }
 
-        lookupDimension = Mock(LookupDimension)
-        lookupDimension.getNamespaces() >> ["loadedLookup", "pendingLookup", "LookupNotInDruid"]
+        registeredLookupDimension = Mock(RegisteredLookupDimension)
+        registeredLookupDimension.getLookups() >> ["loadedLookup", "pendingLookup", "LookupNotInDruid"]
 
-        lookupLoadTask = new LookupMetadataLoadTask(druidClient, new DimensionDictionary([lookupDimension] as Set))
+        lookupLoadTask = new RegisteredLookupMetadataLoadTask(druidClient, new DimensionDictionary([registeredLookupDimension] as Set))
     }
 
     def "LookupLoadTask, when runs, finds pending lookups"() {

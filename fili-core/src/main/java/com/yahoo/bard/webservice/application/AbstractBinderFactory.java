@@ -73,7 +73,7 @@ import com.yahoo.bard.webservice.druid.util.FieldConverters;
 import com.yahoo.bard.webservice.druid.util.SketchFieldConverter;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataLoadTask;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
-import com.yahoo.bard.webservice.metadata.LookupMetadataLoadTask;
+import com.yahoo.bard.webservice.metadata.RegisteredLookupMetadataLoadTask;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
 import com.yahoo.bard.webservice.metadata.RequestedIntervalsFunction;
 import com.yahoo.bard.webservice.metadata.SegmentIntervalsHashIdGenerator;
@@ -746,11 +746,11 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      *
      * @return a lookup metadata loader
      */
-    protected LookupMetadataLoadTask buildLookupMetaDataLoader(
+    protected RegisteredLookupMetadataLoadTask buildLookupMetaDataLoader(
             DruidWebService webService,
             DimensionDictionary dimensionDictionary
     ) {
-        return new LookupMetadataLoadTask(webService, dimensionDictionary);
+        return new RegisteredLookupMetadataLoadTask(webService, dimensionDictionary);
     }
 
     /**
@@ -799,14 +799,15 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      * Schedule a lookup metadata loader and register its health check.
      *
      * @param healthCheckRegistry  The health check registry to register lookup health checks.
-     * @param lookupMetadataLoadTask  The {@link LookupMetadataLoadTask} to use.
+     * @param registeredLookupMetadataLoadTask  The {@link RegisteredLookupMetadataLoadTask} to use.
      */
     protected final void setupLookUpMetadataLoader(
             HealthCheckRegistry healthCheckRegistry,
-            LookupMetadataLoadTask lookupMetadataLoadTask
+            RegisteredLookupMetadataLoadTask registeredLookupMetadataLoadTask
     ) {
-        scheduleLoader(lookupMetadataLoadTask);
-        healthCheckRegistry.register(HEALTH_CHECK_NAME_LOOKUP_METADATA, new LookupHealthCheck(lookupMetadataLoadTask));
+        scheduleLoader(registeredLookupMetadataLoadTask);
+        healthCheckRegistry.register(HEALTH_CHECK_NAME_LOOKUP_METADATA, new LookupHealthCheck(
+                registeredLookupMetadataLoadTask));
     }
 
     /**

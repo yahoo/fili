@@ -23,6 +23,10 @@ import javax.validation.constraints.NotNull;
 
 /**
  * LookupDimension creates a Look up dimension based on the namespace chain.
+ * <p>
+ * {@link LookupDimension} is essentially a special case of {@link RegisteredLookupDimension} using namespace. Hence
+ * this class ONLY applies to the Druid namespace lookup serialization. See
+ * http://druid.io/docs/latest/querying/dimensionspecs.html#lookup-extraction-function for more details.
  */
 @JsonSerialize(using = LookupDimensionToDimensionSpec.class)
 public class LookupDimension extends KeyValueStoreDimension implements ExtractionFunctionDimension {

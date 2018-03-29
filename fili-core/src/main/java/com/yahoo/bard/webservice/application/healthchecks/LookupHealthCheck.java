@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.application.healthchecks;
 
-import com.yahoo.bard.webservice.metadata.LookupMetadataLoadTask;
+import com.yahoo.bard.webservice.metadata.RegisteredLookupMetadataLoadTask;
 
 import com.codahale.metrics.health.HealthCheck;
 
@@ -15,21 +15,21 @@ import javax.inject.Singleton;
  */
 @Singleton
 public class LookupHealthCheck extends HealthCheck {
-    private volatile LookupMetadataLoadTask lookupMetadataLoadTask;
+    private volatile RegisteredLookupMetadataLoadTask registeredLookupMetadataLoadTask;
 
     /**
      * Constructor.
      *
-     * @param lookupMetadataLoadTask  A {@link LookupMetadataLoadTask} that keeps load statuses of
+     * @param registeredLookupMetadataLoadTask  A {@link RegisteredLookupMetadataLoadTask} that keeps load statuses of
      * all Druid lookups
      */
-    public LookupHealthCheck(LookupMetadataLoadTask lookupMetadataLoadTask) {
-        this.lookupMetadataLoadTask = lookupMetadataLoadTask;
+    public LookupHealthCheck(RegisteredLookupMetadataLoadTask registeredLookupMetadataLoadTask) {
+        this.registeredLookupMetadataLoadTask = registeredLookupMetadataLoadTask;
     }
 
     @Override
     public Result check() {
-        Set<String> unloadedLookups = lookupMetadataLoadTask.getPendingLookups();
+        Set<String> unloadedLookups = registeredLookupMetadataLoadTask.getPendingLookups();
         return unloadedLookups.isEmpty()
                 ? Result.healthy("All Druid lookups have been loaded.")
                 : Result.unhealthy("Lookups %s are not loaded.", unloadedLookups);
