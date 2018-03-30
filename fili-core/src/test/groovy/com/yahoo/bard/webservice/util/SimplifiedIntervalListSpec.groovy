@@ -160,6 +160,7 @@ class SimplifiedIntervalListSpec extends Specification {
         tinyEvenIntervals   | []                | tinyEvenIntervals
         []                  | tinyOddIntervals  | []
         []                  | []                | []
+        [[5, 7]]            | [[1, 5], [7, 10]] | [[5, 7]]
     }
 
     @Unroll

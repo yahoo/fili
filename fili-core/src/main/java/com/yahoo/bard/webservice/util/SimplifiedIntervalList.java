@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -368,5 +369,23 @@ public class SimplifiedIntervalList extends LinkedList<Interval> {
                 .map(e -> new IntervalPeriodIterator(readablePeriod, e))
                 .collect(Collectors.toList());
         return IteratorUtils.chainedIterator(periodIterators);
+    }
+
+    /**
+     * Returns an Optional of inner interval with the oldest starting instance.
+     *
+     * @return the Optional of inner interval with the oldest starting instance
+     */
+    public Optional<Interval> getStart() {
+        return stream().min(IntervalStartComparator.INSTANCE);
+    }
+
+    /**
+     * Returns an Optional of inner interval with the latest ending instance.
+     *
+     * @return the Optional of inner interval with the latest ending instance
+     */
+    public Optional<Interval> getEnd() {
+        return stream().max(IntervalEndComparator.INSTANCE);
     }
 }

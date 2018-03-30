@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.availability
 
+import static com.yahoo.bard.webservice.util.DateTimeUtils.EARLIEST_DATETIME
+
 import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.data.config.names.TableName
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
@@ -14,6 +16,8 @@ import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 
 import com.google.common.collect.Sets
 
+import org.apache.commons.collections4.map.DefaultedMap
+import org.joda.time.DateTime
 import org.joda.time.Interval
 
 import spock.lang.Shared
@@ -29,7 +33,7 @@ class PartitionAvailabilitySpec extends Specification{
     public static final String SOURCE2 = 'source2'
     PartitionAvailability partitionAvailability
 
-    ZonedTimeGrain testTimeGrain = ZonedTimeGrainSpec.DAY_UTC
+    private static final DEFAULT_AVAILABILITY_START_DATE = new DefaultedMap<>(EARLIEST_DATETIME)
 
     Availability availability1
     Availability availability2
@@ -60,7 +64,8 @@ class PartitionAvailabilitySpec extends Specification{
         availability2.getDataSourceNames() >> (names2.collect{TableName.of(it)} as Set)
 
         partitionAvailability = new PartitionAvailability(
-                [(availability1): {} as DataSourceFilter, (availability2): {} as DataSourceFilter]
+                [(availability1): {} as DataSourceFilter, (availability2): {} as DataSourceFilter],
+                DEFAULT_AVAILABILITY_START_DATE
         )
 
         expect:
@@ -96,7 +101,7 @@ class PartitionAvailabilitySpec extends Specification{
 
         Map<Availability, DataSourceFilter> partitionMap = [(availability1): partition1, (availability2) : partition2]
 
-        partitionAvailability = new PartitionAvailability(partitionMap)
+        partitionAvailability = new PartitionAvailability(partitionMap, DEFAULT_AVAILABILITY_START_DATE)
 
         expect:
         partitionAvailability.getDataSourceNames(Mock(PhysicalDataSourceConstraint)) == [name1] as Set
@@ -112,7 +117,8 @@ class PartitionAvailabilitySpec extends Specification{
         availability2.getAllAvailableIntervals() >> [(column2): intervallist2.collect{new Interval(it)} as SimplifiedIntervalList]
 
         partitionAvailability = new PartitionAvailability(
-                [(availability1): {true}, (availability2): {true}]
+                [(availability1): {true}, (availability2): {true}],
+                DEFAULT_AVAILABILITY_START_DATE
         )
 
         expect:
@@ -132,6 +138,43 @@ class PartitionAvailabilitySpec extends Specification{
     }
 
     @Unroll
+    def "mergeAvailabilities returns intervals in intersection when intervals have #reason (simple time merge)"() {
+        given:
+
+        availability1.getAvailableIntervals(_ as PhysicalDataSourceConstraint) >> new SimplifiedIntervalList(
+                availableIntervals1.collect{it -> new Interval(it)} as Set
+        )
+        availability2.getAvailableIntervals(_ as PhysicalDataSourceConstraint) >> new SimplifiedIntervalList(
+                availableIntervals2.collect{it -> new Interval(it)} as Set
+        )
+
+        Map<Availability, DateTime> availabilityStartDate = [
+                (availability1): new DateTime(start1),
+                (availability2): new DateTime(start2)
+        ]
+
+        partitionAvailability = new PartitionAvailability(
+                [(availability1): {true} as DataSourceFilter, (availability2): {true} as DataSourceFilter],
+                availabilityStartDate
+        )
+
+        expect:
+        partitionAvailability.mergeAvailabilities(Mock(PhysicalDataSourceConstraint)) == new SimplifiedIntervalList(
+                availableIntervals.collect{it -> new Interval(it)} as Set
+        )
+
+        where:
+        availableIntervals1       | availableIntervals2       | start1            | start2                    | availableIntervals | reason
+        ['2017-01-01/2017-02-01'] | ['2017-01-01/2017-02-01'] | '2016' | '2018'   |['2017-01-01/2017-02-01']  | "full overlap (start/end, start/end)"
+        ['2017-01-01/2017-02-01'] | ['2018-01-01/2018-02-01'] | '2019' | '2019'   | []                        | "0 overlap (-10/-1, 0/10)"
+        ['2017-01-01/2017-02-01'] | ['2018-01-01/2018-02-01'] | '2017' | '2018'   | []                        | "0 overlap (-10/-1, 0/10)"
+        ['2017-01-01/2017-02-01'] | ['2017-02-01/2017-03-01'] | '2019' | '2019'   | []                        | "0 overlap abutting (-10/0, 0/10)"
+        ['2017-01-01/2017-02-01'] | ['2017-02-01/2017-03-01'] | '2017' | '2018'   | ['2017-01-01/2017-02-01'] | "0 overlap abutting (-10/0, 0/10)"
+        ['2017-01-01/2017-02-01'] | ['2017-01-15/2017-03-01'] | '2019' | '2019'   | []                        | "partial front overlap (0/10, 5/15)"
+        ['2017-01-01/2017-02-01'] | ['2017-01-15/2017-03-01'] | '2016' | '2019'   | ['2017-01-01/2017-02-01'] | "partial front overlap (0/10, 5/15)"
+    }
+
+    @Unroll
     def "getAvailableIntervals returns intervals in intersection when intervals have #reason (simple time merge)"() {
         given:
 
@@ -143,7 +186,8 @@ class PartitionAvailabilitySpec extends Specification{
         )
 
         partitionAvailability = new PartitionAvailability(
-                [(availability1): {true} as DataSourceFilter, (availability2): {true} as DataSourceFilter]
+                [(availability1): {true} as DataSourceFilter, (availability2): {true} as DataSourceFilter],
+                DEFAULT_AVAILABILITY_START_DATE
         )
 
         expect:
@@ -188,7 +232,8 @@ class PartitionAvailabilitySpec extends Specification{
                         (early): { partitionsImpacted.contains('early') } as DataSourceFilter,
                         (mid)  : { partitionsImpacted.contains('mid') } as DataSourceFilter,
                         (late) : { partitionsImpacted.contains('late') } as DataSourceFilter
-                ]
+                ],
+                DEFAULT_AVAILABILITY_START_DATE
         )
 
         expect:

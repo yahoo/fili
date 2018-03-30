@@ -27,6 +27,11 @@ import java.util.TreeSet;
  */
 public class DateTimeUtils {
 
+    /**
+     * An instance of the earliest epoch - 1970-01-01T00:00:00Z.
+     */
+    public static final DateTime EARLIEST_DATETIME = new DateTime(0);
+
     private static final Logger LOG = LoggerFactory.getLogger(DateTimeUtils.class);
 
     /**
