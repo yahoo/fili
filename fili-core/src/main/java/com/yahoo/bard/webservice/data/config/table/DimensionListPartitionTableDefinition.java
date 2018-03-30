@@ -55,8 +55,8 @@ import java.util.stream.Collectors;
  * </ul>
  * then the availability is
  * <ul>
- *     <li>Requested Interval is "THE PAST/2018" {@code =>} Intersect: all tables in range (DS1)</li>
- *     <li>Requested Interval is "2018/THE FUTURE" {@code =>} Intersect: all tables in range (DS1, DS2)</li>
+ *     <li>Requested Interval is "THE PAST/2018" {@literal =>} Intersect: all tables in range (DS1)</li>
+ *     <li>Requested Interval is "2018/THE FUTURE" {@literal =>} Intersect: all tables in range (DS1, DS2)</li>
  * </ul>
  * <p>
  * {@link DimensionListPartitionTableDefinition} defines a mark "T" for each participating table in
