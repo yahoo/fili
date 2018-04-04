@@ -4,12 +4,12 @@ package com.yahoo.bard.webservice.application.healthchecks;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
-import com.yahoo.bard.webservice.util.StreamUtils;
 
 import com.codahale.metrics.health.HealthCheck;
 
-import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
@@ -31,20 +31,17 @@ public class AllDimensionsLoadedHealthCheck extends HealthCheck {
 
     @Override
     protected Result check() throws Exception {
-        // Gather information about what has been loaded and what hasn't
-        Map<String, String> dimensionLastUpdated = dimensionDictionary.findAll().stream()
-                .collect(
-                        StreamUtils.toLinkedMap(
-                                Dimension::getApiName,
-                                dim -> dim.getLastUpdated() == null ? "never" : dim.getLastUpdated().toString()
-                        )
-                );
+        // Gather information about what has not been loaded
+        Set<String> notLoaded = dimensionDictionary.findAll().stream()
+                .filter(dim -> dim.getLastUpdated() == null)
+                .map(Dimension::getApiName)
+                .collect(Collectors.toSet());
 
         // Signal health
-        if (dimensionLastUpdated.containsValue("never")) {
-            return Result.unhealthy(String.format("Dimensions have not all been loaded: %s", dimensionLastUpdated));
+        if (notLoaded.isEmpty()) {
+            return Result.healthy("Dimensions have all been loaded");
         } else {
-            return Result.healthy(String.format("Dimensions have all been loaded: %s", dimensionLastUpdated));
+            return Result.unhealthy(String.format("These dimensions have not been loaded: %s", notLoaded));
         }
     }
 
