@@ -4,11 +4,12 @@ package com.yahoo.bard.webservice.application.healthchecks;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
+import com.yahoo.bard.webservice.util.StreamUtils;
 
 import com.codahale.metrics.health.HealthCheck;
 
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
@@ -17,6 +18,11 @@ import javax.validation.constraints.NotNull;
  * HealthCheck that verifies all dimensions have had a lastUpdated time set.
  */
 public class AllDimensionsLoadedHealthCheck extends HealthCheck {
+
+    /**
+     * A filtering string that indicates that a dimension has not been loaded.
+     */
+    private static final String NEVER = "never";
 
     private final DimensionDictionary dimensionDictionary;
 
@@ -31,17 +37,28 @@ public class AllDimensionsLoadedHealthCheck extends HealthCheck {
 
     @Override
     protected Result check() throws Exception {
-        // Gather information about what has not been loaded
-        Set<String> notLoaded = dimensionDictionary.findAll().stream()
-                .filter(dim -> dim.getLastUpdated() == null)
-                .map(Dimension::getApiName)
-                .collect(Collectors.toSet());
+        // Gather information about what has been loaded and what hasn't
+        Map<String, String> dimensionLastUpdated = dimensionDictionary.findAll().stream()
+                .collect(
+                        StreamUtils.toLinkedMap(
+                                Dimension::getApiName,
+                                dim -> dim.getLastUpdated() == null ? NEVER : dim.getLastUpdated().toString()
+                        )
+                );
 
         // Signal health
-        if (notLoaded.isEmpty()) {
-            return Result.healthy("Dimensions have all been loaded");
+        if (dimensionLastUpdated.containsValue(NEVER)) {
+            return Result.unhealthy(
+                    String.format(
+                            "These dimensions have not been loaded: %s",
+                            dimensionLastUpdated.entrySet().stream()
+                                    .filter(entry -> NEVER.equals(entry.getValue()))
+                                    .map(Map.Entry::getKey)
+                                    .collect(Collectors.toSet())
+                    )
+            );
         } else {
-            return Result.unhealthy(String.format("These dimensions have not been loaded: %s", notLoaded));
+            return Result.healthy("Dimensions have all been loaded: %s", dimensionLastUpdated);
         }
     }
 
