@@ -58,7 +58,7 @@ public class AllDimensionsLoadedHealthCheck extends HealthCheck {
                     )
             );
         } else {
-            return Result.healthy("Dimensions have all been loaded: %s", dimensionLastUpdated);
+            return Result.healthy(String.format("Dimensions have all been loaded: %s", dimensionLastUpdated));
         }
     }
 
