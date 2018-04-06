@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.web.endpoints;
 
 import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.REQUEST_WORKFLOW_TIMER;
+
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.GATEWAY_TIMEOUT;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
@@ -52,7 +53,8 @@ import com.yahoo.bard.webservice.web.handlers.DataRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
 import com.yahoo.bard.webservice.web.handlers.RequestHandlerUtils;
 import com.yahoo.bard.webservice.web.handlers.workflow.RequestWorkflowProvider;
-import com.yahoo.bard.webservice.web.responseprocessors.ResultSetResponseProcessor;
+import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
+import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessorFactory;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 
 import com.codahale.metrics.MetricRegistry;
@@ -122,6 +124,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
     private final ObjectMappersSuite objectMappers;
     private final HttpResponseMaker httpResponseMaker;
     private final ResponseFormatResolver formatResolver;
+    private final ResponseProcessorFactory responseProcessorFactory;
 
     private final DataApiRequestFactory dataApiRequestFactory;
 
@@ -153,6 +156,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
      * @param formatResolver  The formatResolver for determining correct response format
      * @param dataApiRequestFactory A factory to build dataApiRequests
      * {@link com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore}
+     * @param responseProcessorFactory  Builds the object that performs post processing on a Druid response
      */
     @Inject
     public DataServlet(
@@ -172,7 +176,8 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             BroadcastChannel<String> preResponseStoredNotifications,
             HttpResponseMaker httpResponseMaker,
             ResponseFormatResolver formatResolver,
-            DataApiRequestFactory dataApiRequestFactory
+            DataApiRequestFactory dataApiRequestFactory,
+            ResponseProcessorFactory responseProcessorFactory
     ) {
         this.resourceDictionaries = resourceDictionaries;
         this.druidQueryBuilder = druidQueryBuilder;
@@ -192,6 +197,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
         this.httpResponseMaker = httpResponseMaker;
         this.formatResolver = formatResolver;
         this.dataApiRequestFactory = dataApiRequestFactory;
+        this.responseProcessorFactory = responseProcessorFactory;
 
         LOG.trace(
                 "Initialized with ResourceDictionaries: {} \n\n" +
@@ -426,7 +432,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
                     httpResponseMaker
             );
 
-            ResultSetResponseProcessor response = new ResultSetResponseProcessor(
+            ResponseProcessor responseProcessor = responseProcessorFactory.build(
                     apiRequest,
                     queryResultsEmitter,
                     druidResponseParser,
@@ -441,7 +447,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
 
             // Process the request
             RequestLog.startTiming(REQUEST_WORKFLOW_TIMER);
-            boolean complete = dataRequestHandler.handleRequest(context, apiRequest, druidQuery, response);
+            boolean complete = dataRequestHandler.handleRequest(context, apiRequest, druidQuery, responseProcessor);
             if (!complete) {
                 throw new IllegalStateException("No request handler accepted request.");
             }

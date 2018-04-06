@@ -73,8 +73,8 @@ import com.yahoo.bard.webservice.druid.util.FieldConverters;
 import com.yahoo.bard.webservice.druid.util.SketchFieldConverter;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataLoadTask;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
-import com.yahoo.bard.webservice.metadata.RegisteredLookupMetadataLoadTask;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
+import com.yahoo.bard.webservice.metadata.RegisteredLookupMetadataLoadTask;
 import com.yahoo.bard.webservice.metadata.RequestedIntervalsFunction;
 import com.yahoo.bard.webservice.metadata.SegmentIntervalsHashIdGenerator;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
@@ -85,9 +85,6 @@ import com.yahoo.bard.webservice.util.DefaultingDictionary;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.web.CsvResponseWriter;
 import com.yahoo.bard.webservice.web.DataApiRequest;
-import com.yahoo.bard.webservice.web.apirequest.DataApiRequestFactory;
-import com.yahoo.bard.webservice.web.apirequest.DefaultDataApiRequestFactory;
-import com.yahoo.bard.webservice.web.ratelimit.DefaultRateLimiter;
 import com.yahoo.bard.webservice.web.DefaultResponseFormatResolver;
 import com.yahoo.bard.webservice.web.DimensionApiRequestMapper;
 import com.yahoo.bard.webservice.web.DimensionsApiRequest;
@@ -106,11 +103,16 @@ import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.ResponseWriter;
 import com.yahoo.bard.webservice.web.SlicesApiRequest;
 import com.yahoo.bard.webservice.web.TablesApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequestFactory;
+import com.yahoo.bard.webservice.web.apirequest.DefaultDataApiRequestFactory;
 import com.yahoo.bard.webservice.web.apirequest.DefaultHavingApiGenerator;
 import com.yahoo.bard.webservice.web.apirequest.HavingGenerator;
 import com.yahoo.bard.webservice.web.apirequest.PerRequestDictionaryHavingGenerator;
 import com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow;
 import com.yahoo.bard.webservice.web.handlers.workflow.RequestWorkflowProvider;
+import com.yahoo.bard.webservice.web.ratelimit.DefaultRateLimiter;
+import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessorFactory;
+import com.yahoo.bard.webservice.web.responseprocessors.ResultSetResponseProcessorFactory;
 import com.yahoo.bard.webservice.web.util.QueryWeightUtil;
 
 import com.codahale.metrics.Gauge;
@@ -338,6 +340,8 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 bind(buildResponseWriter(getMappers())).to(ResponseWriter.class);
 
                 bind(buildResponseFormatResolver()).to(ResponseFormatResolver.class);
+
+                bind(buildResponseProcessorFactory()).to(ResponseProcessorFactory.class);
 
                 bind(buildRateLimiter()).to(RateLimiter.class);
 
@@ -1198,6 +1202,19 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      */
     protected ResponseFormatResolver buildResponseFormatResolver() {
         return new DefaultResponseFormatResolver();
+    }
+
+    /**
+     * Returns the class to bind to {@link ResponseProcessorFactory}.
+     * <p>
+     * The ResponseProcessorFactory allows us to inject a custom {@link
+     * com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor} despite the fact that these processors depend
+     * on objects that are built uniquely for each request.
+     *
+     * @return A class that implements {@link ResponseProcessorFactory}.
+     */
+    protected Class<? extends ResponseProcessorFactory> buildResponseProcessorFactory() {
+        return ResultSetResponseProcessorFactory.class;
     }
 
     /**

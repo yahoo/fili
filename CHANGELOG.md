@@ -131,6 +131,10 @@ Current
 
 ### Changed:
 
+- [ResponseProcessor is now injectable.](https://github.com/yahoo/fili/pull/663)
+    * To add a custom `ResponseProcessor`, implement `ResponseProcessorFactory`, override 
+        `AbstractBinderFactory::buildResponseProcessorFactory` to return your custom `ResponseProcessorFactory.class`. 
+
 - [Add config to ignore partial/volatile intervals and cache everything in cache V2](https://github.com/yahoo/fili/pull/645)
     * In cache V2, user should be able to decide whether partial data or volatile data should be cached or not. This PR
       adds a config that allows the user to do this.
