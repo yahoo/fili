@@ -266,6 +266,9 @@ Current
 
 ### Fixed:
 
+- [Correct exception message & add missing tests](https://github.com/yahoo/fili/pull/649)
+    * Clarified exception message thrown by `StreamUtils.throwingMerger`
+      
 - [Fix lookup metadata loader by pulling the RegisteredLookupDimension](https://github.com/yahoo/fili/pull/651)
     * Lookup Metadata Health Check always return true when some Druid registered lookup are absolutely failing to be
       loaded. Instead of checking load status of `RegisteredLookupDimension`, `RegisteredLookupMetadataLoadTask` is
