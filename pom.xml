@@ -8,7 +8,7 @@
 
     <groupId>com.yahoo.fili</groupId>
     <artifactId>fili-parent-pom</artifactId>
-    <version>0.9-SNAPSHOT</version>
+    <version>0.10-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Fili: parent pom</name>
     <description>Shared dependencies for the Fili libraries</description>
@@ -73,7 +73,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>${project.build.sourceEncoding}</project.reporting.outputEncoding>
 
-        <version.fili>0.9-SNAPSHOT</version.fili>
+        <version.fili>0.10-SNAPSHOT</version.fili>
 
         <version.slf4j>1.7.25</version.slf4j>
         <version.servlet>3.1.0</version.servlet>
