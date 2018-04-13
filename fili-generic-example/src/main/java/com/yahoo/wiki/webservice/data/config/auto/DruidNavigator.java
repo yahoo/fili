@@ -45,7 +45,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
     /**
      * Constructs a DruidNavigator to load datasources from druid.
      *
-     * @param druidWebService The DruidWebService to be used when talking to druid.
+     * @param druidWebService The DruidWebService to be used when talking to druid
      * @param mapper The instance of ObjectMapper.
      */
     public DruidNavigator(DruidWebService druidWebService, ObjectMapper mapper) {
@@ -145,7 +145,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
                 loadTimeGrains(table, dataSegment);
                 loadDataSegment(table, dataSegment);
             });
-            LOG.debug("Loaded table " + table.getName());
+            LOG.debug("Loaded table {}", table.getName());
         }, url);
     }
 
@@ -219,8 +219,8 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      * @param segmentJson The JsonNode containing a time interval.
      */
     private void loadTimeGrains(TableConfig tableConfig, JsonNode segmentJson) {
-        JsonNode timeInterval = segmentJson.get("interval");
-        String[] utcTimes = timeInterval.asText().split("/");
+        String timeInterval = segmentJson.get("interval").asText();
+        String[] utcTimes = timeInterval.split("/");
         Optional<TimeGrain> timeGrain = Optional.empty();
         try {
             if (utcTimes.length == 2) {
@@ -234,32 +234,34 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
         }
 
         if (!timeGrain.isPresent()) {
-            LOG.warn("Couldn't detect timegrain for {}, defaulting to DAY TimeGrain.", timeInterval.asText());
+            LOG.warn("Couldn't detect timegrain for {}, defaulting to DAY TimeGrain.", timeInterval);
         }
         tableConfig.setTimeGrain(timeGrain.orElse(DefaultTimeGrain.DAY));
     }
 
     /**
-     * Send a blocking request to druid. All queries are finished before continuing.
+     * Send a non-blocking request to Druid.
      *
-     * @param successCallback  The callback to be done if the query succeeds.
-     * @param url  The url to send the query to.
+     * @param successCallback  The callback to be done if the query succeeds
+     * @param url  The url to send the query to
      *
      * @return future response for the druid query
      */
     private Future<Response> queryDruid(SuccessCallback successCallback, String url) {
-        LOG.debug("Fetching " + url);
+        LOG.debug("Fetching {}", url);
         return druidWebService.getJsonObject(
                 rootNode -> {
-                    LOG.debug("Succesfully fetched " + url);
+                    LOG.debug("Succesfully fetched {}", url);
                     successCallback.invoke(rootNode);
                 },
                 (statusCode, reasonPhrase, responseBody) -> {
                     LOG.error("HTTPError {} - {} for {}", statusCode, reasonPhrase, url);
-                    throw new RuntimeException("HTTPError " + statusCode + " occurred while contacting druid");
+                    throw new RuntimeException(
+                            String.format("HTTPError %s occurred while contacting Druid", statusCode)
+                    );
                 },
                 (throwable) -> {
-                    LOG.error("Error thrown while fetching " + url + ". " + throwable.getMessage());
+                    LOG.error("Error thrown while fetching {}. {}", url, throwable.getMessage());
                     throw new RuntimeException(throwable);
                 },
                 url

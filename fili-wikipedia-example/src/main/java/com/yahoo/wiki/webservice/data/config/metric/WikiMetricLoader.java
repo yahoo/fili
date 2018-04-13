@@ -6,7 +6,9 @@ import com.yahoo.bard.webservice.data.config.metric.MetricInstance;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.metric.makers.CountMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.DoubleSumMaker;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
+import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.wiki.webservice.data.config.names.WikiApiMetricName;
 import com.yahoo.wiki.webservice.data.config.names.WikiDruidMetricName;
 
@@ -66,24 +68,25 @@ public class WikiMetricLoader implements MetricLoader {
         buildMetricMakers(metricDictionary);
 
         // Metrics that directly aggregate druid fields
-        List<MetricInstance> metrics;
-        metrics = Arrays.asList(
-                new MetricInstance(WikiApiMetricName.COUNT, countMaker),
-                new MetricInstance(WikiApiMetricName.ADDED, doubleSumMaker, WikiDruidMetricName.ADDED),
-                new MetricInstance(WikiApiMetricName.DELETED, doubleSumMaker, WikiDruidMetricName.DELETED),
-                new MetricInstance(WikiApiMetricName.DELTA, doubleSumMaker, WikiDruidMetricName.DELTA)
+        List<MetricInstance> metrics = Arrays.asList(
+                new MetricInstance(new LogicalMetricInfo(WikiApiMetricName.COUNT.asName()), countMaker),
+                new MetricInstance(
+                        new LogicalMetricInfo(WikiApiMetricName.ADDED.asName()),
+                        doubleSumMaker,
+                        WikiDruidMetricName.ADDED
+                ),
+                new MetricInstance(
+                        new LogicalMetricInfo(WikiApiMetricName.DELETED.asName()),
+                        doubleSumMaker,
+                        WikiDruidMetricName.DELETED),
+                new MetricInstance(
+                        new LogicalMetricInfo(WikiApiMetricName.DELTA.asName()),
+                        doubleSumMaker,
+                        WikiDruidMetricName.DELTA
+                )
         );
-        LOG.debug("About to load direct aggregation metrics. Metric dictionary keys: {}", metricDictionary.keySet());
-        addToMetricDictionary(metricDictionary, metrics);
-    }
 
-    /**
-     * Create metrics from instance descriptors and store in the metric dictionary.
-     *
-     * @param metricDictionary  The dictionary to store metrics in
-     * @param metrics  The list of metric descriptors
-     */
-    private void addToMetricDictionary(MetricDictionary metricDictionary, List<MetricInstance> metrics) {
-        metrics.stream().map(MetricInstance::make).forEach(metricDictionary::add);
+        Utils.addToMetricDictionary(metricDictionary, metrics);
+        LOG.debug("About to load direct aggregation metrics. Metric dictionary keys: {}", metricDictionary.keySet());
     }
 }
