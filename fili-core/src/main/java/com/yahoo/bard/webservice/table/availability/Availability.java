@@ -28,13 +28,9 @@ public interface Availability {
      * @param constraint  The constraint to filter data source names.
      *
      * @return A set of names for data sources backing this availability
-     *
-     * @deprecated in order to enforce general data source constraint. Use
-     * {@link #getDataSourceNames(DataSourceConstraint)} instead
      */
-    @Deprecated
     default Set<DataSourceName> getDataSourceNames(PhysicalDataSourceConstraint constraint) {
-        return getDataSourceNames();
+        return getDataSourceNames((DataSourceConstraint) constraint);
     }
 
     /**
@@ -75,11 +71,7 @@ public interface Availability {
      * {@link com.yahoo.bard.webservice.table.Schema} and {@link com.yahoo.bard.webservice.web.ApiFilter}s
      *
      * @return A <tt>SimplifiedIntervalList</tt> of intervals available
-     *
-     * @deprecated in order to enforce general data source constraint. Use
-     * {@link #getAvailableIntervals(DataSourceConstraint)} instread
      */
-    @Deprecated
     default SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint constraint) {
         return getAvailableIntervals();
     }

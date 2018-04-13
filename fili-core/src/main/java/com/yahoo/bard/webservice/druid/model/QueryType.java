@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 /**
  * Types of queries supported by this application.
  */
+@FunctionalInterface
 public interface QueryType {
 
     /**

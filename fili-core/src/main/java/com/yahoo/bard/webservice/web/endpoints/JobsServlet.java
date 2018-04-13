@@ -86,6 +86,8 @@ import javax.ws.rs.core.UriInfo;
 public class JobsServlet extends EndpointServlet {
 
     private static final Logger LOG = LoggerFactory.getLogger(JobsServlet.class);
+    private static final String PAGE = "page";
+    private static final String PER_PAGE = "perPage";
 
     private final ApiJobStore apiJobStore;
     private final RequestMapper requestMapper;
@@ -541,7 +543,9 @@ public class JobsServlet extends EndpointServlet {
                 .map(pair -> Utils.withRight(pair, pair.getRight().getAsInt()))
                 .map(pair -> Utils.withRight(
                         pair,
-                        uriInfo.getRequestUriBuilder().replaceQueryParam("page", pair.getRight())
+                        uriInfo.getRequestUriBuilder()
+                                .replaceQueryParam(PAGE, pair.getRight())
+                                .replaceQueryParam(PER_PAGE, pages.getPerPage())
                         )
                 )
                 .map(pair -> Utils.withRight(pair, pair.getRight().build()))

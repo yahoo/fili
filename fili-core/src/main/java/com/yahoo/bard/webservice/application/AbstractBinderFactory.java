@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.application;
 
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_COORDINATOR_METADATA;
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_DIMENSIONS_LOADER;
+import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_LOOKUP_METADATA;
 import static com.yahoo.bard.webservice.web.handlers.CacheRequestHandler.CACHE_HITS;
 import static com.yahoo.bard.webservice.web.handlers.CacheRequestHandler.CACHE_REQUESTS;
 import static com.yahoo.bard.webservice.web.handlers.DefaultWebServiceHandlerSelector.QUERY_REQUEST_TOTAL;
@@ -13,6 +14,7 @@ import static com.yahoo.bard.webservice.web.handlers.SplitQueryRequestHandler.SP
 import com.yahoo.bard.webservice.application.healthchecks.AllDimensionsLoadedHealthCheck;
 import com.yahoo.bard.webservice.application.healthchecks.DataSourceMetadataLoaderHealthCheck;
 import com.yahoo.bard.webservice.application.healthchecks.DruidDimensionsLoaderHealthCheck;
+import com.yahoo.bard.webservice.application.healthchecks.LookupHealthCheck;
 import com.yahoo.bard.webservice.application.healthchecks.VersionHealthCheck;
 import com.yahoo.bard.webservice.async.broadcastchannels.BroadcastChannel;
 import com.yahoo.bard.webservice.async.broadcastchannels.SimpleBroadcastChannel;
@@ -72,6 +74,7 @@ import com.yahoo.bard.webservice.druid.util.SketchFieldConverter;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataLoadTask;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
+import com.yahoo.bard.webservice.metadata.RegisteredLookupMetadataLoadTask;
 import com.yahoo.bard.webservice.metadata.RequestedIntervalsFunction;
 import com.yahoo.bard.webservice.metadata.SegmentIntervalsHashIdGenerator;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
@@ -82,9 +85,6 @@ import com.yahoo.bard.webservice.util.DefaultingDictionary;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.web.CsvResponseWriter;
 import com.yahoo.bard.webservice.web.DataApiRequest;
-import com.yahoo.bard.webservice.web.apirequest.DataApiRequestFactory;
-import com.yahoo.bard.webservice.web.apirequest.DefaultDataApiRequestFactory;
-import com.yahoo.bard.webservice.web.ratelimit.DefaultRateLimiter;
 import com.yahoo.bard.webservice.web.DefaultResponseFormatResolver;
 import com.yahoo.bard.webservice.web.DimensionApiRequestMapper;
 import com.yahoo.bard.webservice.web.DimensionsApiRequest;
@@ -103,11 +103,16 @@ import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.ResponseWriter;
 import com.yahoo.bard.webservice.web.SlicesApiRequest;
 import com.yahoo.bard.webservice.web.TablesApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequestFactory;
+import com.yahoo.bard.webservice.web.apirequest.DefaultDataApiRequestFactory;
 import com.yahoo.bard.webservice.web.apirequest.DefaultHavingApiGenerator;
 import com.yahoo.bard.webservice.web.apirequest.HavingGenerator;
 import com.yahoo.bard.webservice.web.apirequest.PerRequestDictionaryHavingGenerator;
 import com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow;
 import com.yahoo.bard.webservice.web.handlers.workflow.RequestWorkflowProvider;
+import com.yahoo.bard.webservice.web.ratelimit.DefaultRateLimiter;
+import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessorFactory;
+import com.yahoo.bard.webservice.web.responseprocessors.ResultSetResponseProcessorFactory;
 import com.yahoo.bard.webservice.web.util.QueryWeightUtil;
 
 import com.codahale.metrics.Gauge;
@@ -157,6 +162,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     public static final String HEALTH_CHECK_NAME_DATASOURCE_METADATA = "datasource metadata loader";
+    public static final String HEALTH_CHECK_NAME_LOOKUP_METADATA = "lookup metadata loader";
     public static final String HEALTH_CHECK_NAME_DRUID_DIM_LOADER = "druid dimensions loader";
     public static final String HEALTH_CHECK_VERSION = "version";
     public static final String HEALTH_CHECK_NAME_DIMENSION = "dimension check";
@@ -306,6 +312,13 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                     setupDataSourceMetaData(healthCheckRegistry, dataSourceMetadataLoader);
                 }
 
+                if (DRUID_LOOKUP_METADATA.isOn()) {
+                    setupLookUpMetadataLoader(
+                            healthCheckRegistry,
+                            buildLookupMetaDataLoader(metadataDruidWebService, loader.getDimensionDictionary())
+                    );
+                }
+
                 bind(querySigningService).to(QuerySigningService.class);
 
                 bind(buildJobRowBuilder()).to(JobRowBuilder.class);
@@ -327,6 +340,8 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 bind(buildResponseWriter(getMappers())).to(ResponseWriter.class);
 
                 bind(buildResponseFormatResolver()).to(ResponseFormatResolver.class);
+
+                bind(buildResponseProcessorFactory()).to(ResponseProcessorFactory.class);
 
                 bind(buildRateLimiter()).to(RateLimiter.class);
 
@@ -727,6 +742,22 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     }
 
     /**
+     * Builds a lookup metadata loader.
+     *
+     * @param webService  The web service used by the loader to query druid for lookup statuses.
+     * @param dimensionDictionary  A {@link com.yahoo.bard.webservice.data.dimension.DimensionDictionary} that is used
+     * to obtain a list of lookups in Fili.
+     *
+     * @return a lookup metadata loader
+     */
+    protected RegisteredLookupMetadataLoadTask buildLookupMetaDataLoader(
+            DruidWebService webService,
+            DimensionDictionary dimensionDictionary
+    ) {
+        return new RegisteredLookupMetadataLoadTask(webService, dimensionDictionary);
+    }
+
+    /**
      * Build a DimensionValueLoadTask.
      *
      * @param webService  The web service used by the loader to query dimension values
@@ -766,6 +797,21 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 SEG_LOADER_HC_LAST_RUN_PERIOD_MILLIS
         );
         healthCheckRegistry.register(HEALTH_CHECK_NAME_DATASOURCE_METADATA, dataSourceMetadataLoaderHealthCheck);
+    }
+
+    /**
+     * Schedule a lookup metadata loader and register its health check.
+     *
+     * @param healthCheckRegistry  The health check registry to register lookup health checks.
+     * @param registeredLookupMetadataLoadTask  The {@link RegisteredLookupMetadataLoadTask} to use.
+     */
+    protected final void setupLookUpMetadataLoader(
+            HealthCheckRegistry healthCheckRegistry,
+            RegisteredLookupMetadataLoadTask registeredLookupMetadataLoadTask
+    ) {
+        scheduleLoader(registeredLookupMetadataLoadTask);
+        healthCheckRegistry.register(HEALTH_CHECK_NAME_LOOKUP_METADATA, new LookupHealthCheck(
+                registeredLookupMetadataLoadTask));
     }
 
     /**
@@ -1156,6 +1202,19 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      */
     protected ResponseFormatResolver buildResponseFormatResolver() {
         return new DefaultResponseFormatResolver();
+    }
+
+    /**
+     * Returns the class to bind to {@link ResponseProcessorFactory}.
+     * <p>
+     * The ResponseProcessorFactory allows us to inject a custom {@link
+     * com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor} despite the fact that these processors depend
+     * on objects that are built uniquely for each request.
+     *
+     * @return A class that implements {@link ResponseProcessorFactory}.
+     */
+    protected Class<? extends ResponseProcessorFactory> buildResponseProcessorFactory() {
+        return ResultSetResponseProcessorFactory.class;
     }
 
     /**

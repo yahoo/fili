@@ -10,6 +10,15 @@ Current
 
 ### Added:
 
+- [Annotate Functional Interface](https://github.com/yahoo/fili/pull/606)
+    * Add `@FunctionalInterface` annotation to all functional interfaces.
+
+- [Implement LookupLoadTask](https://github.com/yahoo/fili/pull/620)
+    * Add capability for Fili to check load statuses of Druid lookups.
+
+- [Extraction Function on selector filter](https://github.com/yahoo/fili/pull/617)
+    * Added extraction function on dimensional filter, defaults to extraction function on dimension if it exists.
+
 - [Implement TimeFormatExtractionFunction](https://github.com/yahoo/fili/pull/611)
     * Enable [`TimeFormatExtractionFunction`](http://druid.io/docs/0.10.1/querying/dimensionspecs.html#time-format-extraction-function)
       in Fili so that API users could interact with Druid using `TimeFormatExtractionFunction` through Fili.
@@ -121,6 +130,19 @@ Current
 
 
 ### Changed:
+
+- [Avoid casting to generate SimplifiedIntervalList](https://github.com/yahoo/fili/pull/658)
+    * Some downstream projects generated partial intervals as `ArrayList`, which cannot be cased to
+      `SimplifiedIntervalList` in places like `getPartialIntervalsWithDefault`. The result is a casting exception which
+      crashes downstream applications. Casting is replaced with a explicit `SimplifiedIntervalList` object creation.
+      
+- [ResponseProcessor is now injectable.](https://github.com/yahoo/fili/pull/663)
+    * To add a custom `ResponseProcessor`, implement `ResponseProcessorFactory`, override 
+        `AbstractBinderFactory::buildResponseProcessorFactory` to return your custom `ResponseProcessorFactory.class`. 
+
+- [Add config to ignore partial/volatile intervals and cache everything in cache V2](https://github.com/yahoo/fili/pull/645)
+    * In cache V2, user should be able to decide whether partial data or volatile data should be cached or not. This PR
+      adds a config that allows the user to do this.
 
 - [Lift required override on deprecated method in MetricLoader](https://github.com/yahoo/fili/pull/609)
     * Add default implementation to deprecated `loadMetricDictionary` in `MetricLoader` so that downstream projects are
@@ -239,6 +261,9 @@ Current
 
 ### Deprecated:
 
+- [Extraction Function on selector filter](https://github.com/yahoo/fili/pull/617)
+    * Deprecated `ExtractionFilter` since it is deprecated in druid, use selector filter with extraction function instead
+
 - [Rename filter variables and methods in DataApiRequest](https://github.com/yahoo/fili/pull/507)
     * Deprecated `getFilters` in favor of `getApiFilters` and `getFilter` in favor of `getDruidFilter`
 
@@ -250,6 +275,32 @@ Current
 
 ### Fixed:
 
+- [Correct exception message & add missing tests](https://github.com/yahoo/fili/pull/649)
+    * Clarified exception message thrown by `StreamUtils.throwingMerger`
+      
+- [Fix lookup metadata loader by pulling the RegisteredLookupDimension](https://github.com/yahoo/fili/pull/651)
+    * Lookup Metadata Health Check always return true when some Druid registered lookup are absolutely failing to be
+      loaded. Instead of checking load status of `RegisteredLookupDimension`, `RegisteredLookupMetadataLoadTask` is
+      checking the status of `LookupDimension`. This PR corrects this behavior.
+
+- [Fix 'descriptionription' mis-naming in dimension field](https://github.com/yahoo/fili/pull/655)
+    * This is caused by a "desc" -> "description" string replacement. A string handling method has been added to
+      detect "desc" and transform it to "description". If it already comes with "description", no string transformation
+      is made
+
+- [Fix caching condition](https://github.com/yahoo/fili/pull/647)
+    * We want to cache partial or volatile data when `cache_partial_data` is set to true. This is condition is currently
+      reversed. This PR shall fix it
+
+- [Add Missing perPage Param](https://github.com/yahoo/fili/pull/641)
+    * Pagination links on the first pages are missing perPage param. This PR fixes this problem.
+
+- [Having clause was nesting inward on nested queries resulting in rows that didn't exist being referenced](https://github.com/yahoo/fili/pull/614/files)
+
+- [None show clause was not being respected](https://github.com/yahoo/fili/issues/612)
+    * Changed `ResponseData` and `JsonApiResponseWriter` to suppress columns that don't have associated dimension fields.
+    * Updated tests to reflect none being hidden.
+     
 - [Scoped metric dictionaries and the having clause now work together by default](https://github.com/yahoo/fili/pull/580)
     * Add a new ApiHavingGenerator that builds a temporary metric dictionary from the set of requested metrics(not from globally scoped metric dictionary), and then using those to resolve the having clause.
     * Add a table generating functions in BaseTableLoader that effectively allow the customer to provide a different metric dictionary at lower scope(not from the globally scoped metric dictionary) for use when building each table.
@@ -750,6 +801,9 @@ Removals:
 
 ### Deprecated:
 
+- [Revert deprecation of getAvailbleInterval with PhysicalDatasourceConstraint](https://github.com/yahoo/fili/pull/621)
+    * The method is needed in order for availability to function correctly, there is a deeper dive and planning required to actually deprecate it in favor of simpler less confusing design.
+
 - [Remove `PhysicalTable::getTableName` to use `getName` instead](https://github.com/yahoo/fili/pull/263)
     * Having more than 1 method for the same concept (ie. what's the name of this physical table) was confusing and not
       very useful.
@@ -795,6 +849,10 @@ Removals:
     * When that deprecated class (`LogicalDimensionColumn`) goes away, this constructor will go away as well
 
 ### Fixed:
+
+- [Fix druid partial data and partition table incompatibility](https://github.com/yahoo/fili/pull/615)
+    * Datasource names returned by partition table now contains only datasources that are actually used in the query
+    * Fix the problem where uncovered intervals is given by druid for partition table that fili filtered out
 
 - [Fix the generic example for loading multiple tables](https://github.com/yahoo/fili/pull/309)
     * Loading multiple tables caused it to hang and eventually time out.

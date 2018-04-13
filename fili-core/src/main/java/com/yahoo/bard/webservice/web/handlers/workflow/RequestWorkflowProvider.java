@@ -7,6 +7,7 @@ import com.yahoo.bard.webservice.web.handlers.DataRequestHandler;
 /**
  * Request workflow provider builds a request processing chain for handing druid data requests.
  */
+@FunctionalInterface
 public interface RequestWorkflowProvider {
 
     /**

@@ -10,6 +10,7 @@ import java.io.OutputStream;
  * The interface for objects that write fully-processed ResultSets back to the user. This allows customers to fully
  * customize how they choose to serialize the results from Fili based on the request.
  */
+@FunctionalInterface
 public interface ResponseWriter {
     /**
      * Serializes the ResultSet (pulled from the ResponseData) and any desired metadata and adds it to the specified

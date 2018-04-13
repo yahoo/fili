@@ -11,6 +11,7 @@ import javax.ws.rs.container.ContainerRequestContext;
  * takes the format name string from URI and a ContainerRequestContext object from which the header Accept field is
  * accessible.
  */
+@FunctionalInterface
 public interface ResponseFormatResolver extends BiFunction<String, ContainerRequestContext, String> {
     /**
      * Resolve desirable format from URI and ContainerRequestContext.

@@ -11,10 +11,10 @@ class DimensionShowClauseNoneCsvDataServletSpec extends BaseDimensionShowClauseC
 
     @Override
     String getExpectedApiResponse() {
-        """dateTime,color,width
-          |\"2014-06-02 00:00:00.000\",Color1,10
-          |\"2014-06-02 00:00:00.000\",Color2,11
-          |\"2014-06-02 00:00:00.000\",Color3,12
+        """dateTime,width
+          |\"2014-06-02 00:00:00.000\",10
+          |\"2014-06-02 00:00:00.000\",11
+          |\"2014-06-02 00:00:00.000\",12
           |""".stripMargin()
     }
 }

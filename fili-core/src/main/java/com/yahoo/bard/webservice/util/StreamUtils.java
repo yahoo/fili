@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.util;
 
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TWO_VALUES_OF_THE_SAME_KEY;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -33,7 +35,7 @@ public class StreamUtils {
      * @see Collectors#throwingMerger()
      */
     public static <T> BinaryOperator<T> throwingMerger() {
-        return (u, v) -> { throw new IllegalStateException(String.format("Duplicate key %s", u)); };
+        return (u, v) -> { throw new IllegalStateException(TWO_VALUES_OF_THE_SAME_KEY.format(u, v)); };
     }
 
     /**
@@ -58,8 +60,10 @@ public class StreamUtils {
     }
 
     /**
-     * Return a collector that creates a LinkedHashMap using the given key and value functions.
+     * Return a collector that creates a {@link java.util.Map} using the given key and value functions.
      * This collector assumes the elements being collected are distinct.
+     * <p>
+     * The concrete type of the {@link java.util.Map} being created is given by a {@link java.util.function.Supplier}.
      *
      * @param <S>  Type of the objects being collected
      * @param <K>  Type of the keys
@@ -67,9 +71,10 @@ public class StreamUtils {
      * @param <M>  The type of Map being collected into
      * @param keyMapper  Mapping function for the key
      * @param valueMapper  Mapping function for the value
-     * @param mapSupplier  A function which returns a new, empty Map into which the results will be inserted
+     * @param mapSupplier  A {@link java.util.function.Supplier} which provides a new, empty {@link java.util.Map} into
+     * which the results will be inserted
      *
-     * @return a collector that creates a LinkedHashMap using the given key and value functions.
+     * @return a collector that creates a {@link java.util.Map} using the given key and value functions
      * @throws IllegalStateException if multiple values are associated with the same key
      * @see Collectors#toMap(Function, Function, BinaryOperator, java.util.function.Supplier)
      */
@@ -107,14 +112,17 @@ public class StreamUtils {
      * @param <K>  Type of the keys
      * @param <M>  The type of Map being collected into
      * @param keyMapper  Mapping function for the key
-     * @param mapSupplier  A function which returns a new, empty Map into which the results will be inserted
+     * @param mapSupplier  A {@link java.util.function.Supplier} which provides a new, empty {@link java.util.Map} into
+     * which the results will be inserted
      *
-     * @return a collector that creates a LinkedHashMap dictionary using the given key function.
+     * @return a {@link java.util.stream.Collector} that creates a dictionary using the given
+     * {@link java.util.function.Function key function} and the given {@link java.util.function.Supplier map supplier}
      * @throws IllegalStateException if multiple values are associated with the same key
      * @see Collectors#toMap(Function, Function, BinaryOperator, java.util.function.Supplier)
      */
     public static <S, K, M extends Map<K, S>> Collector<S, ?, M> toDictionary(
-            Function<? super S, ? extends K> keyMapper, Supplier<M> mapSupplier
+            Function<? super S, ? extends K> keyMapper,
+            Supplier<M> mapSupplier
     ) {
         return Collectors.toMap(keyMapper, Function.identity(), StreamUtils.throwingMerger(), mapSupplier);
     }
@@ -173,7 +181,7 @@ public class StreamUtils {
      * @return the new set containing the additional value
      */
     public static <T> Set<T> append(Set<T> set, T value) {
-        HashSet<T> result = new HashSet<T>(set);
+        HashSet<T> result = new HashSet<>(set);
         result.add(value);
         return result;
     }
