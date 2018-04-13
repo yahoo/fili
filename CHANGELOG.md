@@ -131,6 +131,11 @@ Current
 
 ### Changed:
 
+- [Avoid casting to generate SimplifiedIntervalList](https://github.com/yahoo/fili/pull/658)
+    * Some downstream projects generated partial intervals as `ArrayList`, which cannot be cased to
+      `SimplifiedIntervalList` in places like `getPartialIntervalsWithDefault`. The result is a casting exception which
+      crashes downstream applications. Casting is replaced with a explicit `SimplifiedIntervalList` object creation.
+      
 - [ResponseProcessor is now injectable.](https://github.com/yahoo/fili/pull/663)
     * To add a custom `ResponseProcessor`, implement `ResponseProcessorFactory`, override 
         `AbstractBinderFactory::buildResponseProcessorFactory` to return your custom `ResponseProcessorFactory.class`. 
