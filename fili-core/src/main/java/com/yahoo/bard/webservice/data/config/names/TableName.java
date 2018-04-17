@@ -15,14 +15,6 @@ public interface TableName {
     Comparator<TableName> AS_NAME_COMPARATOR = Comparator.comparing(TableName::asName);
 
     /**
-     * Comparator to order TableNames by their asName methods, using the native String comparator.
-     *
-     * @deprecated due to name change. Use AS_NAME_COMPARATOR instead.
-     */
-    @Deprecated
-    Comparator<TableName> COMPARATOR = Comparator.comparing(TableName::asName);
-
-    /**
      * Return a string representation of a table name.
      *
      * @return the name

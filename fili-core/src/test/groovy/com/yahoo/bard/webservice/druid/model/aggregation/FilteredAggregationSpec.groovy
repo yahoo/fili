@@ -8,6 +8,7 @@ import static org.joda.time.DateTimeZone.UTC
 import com.yahoo.bard.webservice.data.config.metric.MetricInstance
 import com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName
+import com.yahoo.bard.webservice.data.config.names.TableName
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
@@ -64,7 +65,7 @@ class FilteredAggregationSpec extends Specification{
         Set<Column> columns = [new DimensionColumn(ageDimension)] as Set
 
         PhysicalTable physicalTable = new StrictPhysicalTable(
-                "NETWORK",
+                TableName.of("NETWORK"),
                 DAY.buildZonedTimeGrain(UTC),
                 columns,
                 [:],

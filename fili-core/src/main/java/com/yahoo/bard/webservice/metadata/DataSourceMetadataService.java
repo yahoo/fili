@@ -3,7 +3,6 @@
 package com.yahoo.bard.webservice.metadata;
 
 import com.yahoo.bard.webservice.data.config.names.DataSourceName;
-import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import com.google.common.collect.ImmutableMap;
@@ -89,20 +88,6 @@ public class DataSourceMetadataService {
             throw new IllegalStateException(message);
         }
         return allSegmentsByColumn.get(dataSourceName).get();
-    }
-
-    /**
-     * Update the information with respect to the segment metadata of a particular data source.
-     * This operation should be atomic per dataSourceName.
-     *
-     * @param table  The physical table to which the metadata are referring to.
-     * @param metadata  The updated datasource metadata.
-     *
-     * @deprecated  Pass the DataSourceName directly, rather than via the PhysicalTable
-     */
-    @Deprecated
-    public void update(PhysicalTable table, DataSourceMetadata metadata) {
-        table.getDataSourceNames().forEach(dataSourceName -> update(dataSourceName, metadata));
     }
 
     /**
