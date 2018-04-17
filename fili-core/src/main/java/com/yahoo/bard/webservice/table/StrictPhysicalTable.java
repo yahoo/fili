@@ -68,41 +68,6 @@ public class StrictPhysicalTable extends SingleDataSourcePhysicalTable {
         );
     }
 
-    /**
-     * Create a strict physical table.
-     * The fact table name will be defaulted to the name and the availability initialized to empty intervals.
-     *
-     * @param name  Name of the physical table as String, also used as fact table name
-     * @param timeGrain  time grain of the table
-     * @param columns The columns for this table
-     * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
-     * @param metadataService  Datasource metadata service containing availability data for the table
-     *
-     * @deprecated Should use constructor with TableName instead of String as table name
-     */
-    @Deprecated
-    private StrictPhysicalTable(
-            @NotNull String name,
-            @NotNull ZonedTimeGrain timeGrain,
-            @NotNull Set<Column> columns,
-            @NotNull Map<String, String> logicalToPhysicalColumnNames,
-            @NotNull DataSourceMetadataService metadataService
-    ) {
-        this(TableName.of(name), timeGrain, columns, logicalToPhysicalColumnNames, metadataService);
-    }
-
-    /**
-     * Get the name of the fact table.
-     *
-     * @return the name of the fact table.
-     *
-     * @deprecated  Use getDataSourceName instead.
-     */
-    @Deprecated
-    public String getFactTableName() {
-        return getDataSourceName().asName();
-    }
-
     @Override
     public String toString() {
         return super.toString() + " datasourceName: " + getDataSourceName();

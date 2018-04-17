@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.table.resolver
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static org.joda.time.DateTimeZone.UTC
 
+import com.yahoo.bard.webservice.data.config.names.TableName
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
@@ -66,7 +67,7 @@ class SchemaPhysicalTableMatcherSpec extends Specification {
         ] as Set
 
         physicalTable = new StrictPhysicalTable(
-                "test table",
+                TableName.of("test table"),
                 DAY.buildZonedTimeGrain(UTC),
                 dimSet.collect {new DimensionColumn(it)}.toSet(),
                 ['dimA':'druidDimA', 'dimCommon': 'druidDimC', 'dimB': 'dimCommon'],
