@@ -188,21 +188,6 @@ public abstract class MetricMaker {
     protected abstract int getDependentMetricsRequired();
 
     /**
-     * Fetch the TemplateDruidQuery of the dependent metric from the Metric Dictionary.
-     *
-     * @param name  Name of the metric to fetch the template druid query from
-     *
-     * @return The template druid query of the metric
-     *
-     * @deprecated Instead get the metric in the calling function and then get the TDQ out only if necessary
-     */
-    @Deprecated
-    protected TemplateDruidQuery getDependentQuery(String name) {
-        LogicalMetric dependentMetric = metrics.get(name);
-        return dependentMetric.getTemplateDruidQuery();
-    }
-
-    /**
      * A helper function returning the resulting aggregation set from merging one or more template druid queries.
      *
      * @param names  Names of the metrics to fetch and merge the aggregation clauses from

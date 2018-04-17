@@ -8,7 +8,6 @@ import com.yahoo.bard.webservice.config.BardFeatureFlag;
 import com.yahoo.bard.webservice.data.PartialDataHandler;
 import com.yahoo.bard.webservice.data.metric.mappers.PartialDataResultSetMapper;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
-import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.responseprocessors.MappingResponseProcessor;
@@ -36,23 +35,6 @@ public class PartialDataRequestHandler implements DataRequestHandler {
     protected final @NotNull DataRequestHandler next;
     protected final @NotNull PartialDataHandler partialDataHandler;
 
-    /**
-     * Wrap the response processor in a partial data check.
-     *
-     * @param next The next request handler to invoke
-     * @param physicalTableDictionary   the repository of slice data
-     * @param partialDataHandler the service to calculate partial data from table availabilities
-     *
-     * @deprecated use constructor {@link #PartialDataRequestHandler(DataRequestHandler, PartialDataHandler)}
-     */
-    @Deprecated
-    public PartialDataRequestHandler(
-            DataRequestHandler next,
-            PhysicalTableDictionary physicalTableDictionary,
-            PartialDataHandler partialDataHandler
-    ) {
-        this(next, partialDataHandler);
-    }
 
     /**
      * Wrap the response processor in a partial data check.
