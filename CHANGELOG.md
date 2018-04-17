@@ -33,7 +33,7 @@ pull request if there was one.
 - [An injection point for customizing the WebLoggingFilter to use during tests](https://github.com/yahoo/fili/pull/749)
     * Extend `JerseyTestBinder` and override `getLoggingFilter`.
 
-- [An injection point for customizing Exception handling]https://github.com/yahoo/fili/pull/742)
+- [An injection point for customizing Exception handling](https://github.com/yahoo/fili/pull/742)
     * Customers can provide their own logic for handling top level Exceptions in
       the `DataServlet` by implementing `DataExceptionHandler`, and any other
       servlet by implementing `MetadataExceptionHandler`.
@@ -58,6 +58,11 @@ pull request if there was one.
 
 - [Add tests to Utils](https://github.com/yahoo/fili/pull/675)
     * Add missing tests to `Utils` class.
+
+### Changed:
+- [Removed deprecations](https://github.com/yahoo/fili/issues/668)
+  * Removed Pagination deprecation
+  * Removed `DataSourceConstraint` deprecation
 
 ### Changed:
 
@@ -142,6 +147,17 @@ pull request if there was one.
 
 
 ### Removed:
+
+- [Removed older deprecated code](https://github.com/yahoo/fili/issues/668)
+    * Removed constructos and getters with clean replacements
+    * Stripped the remaining UI/NonUI code
+    * Cleaned up old schema classes and methods
+    * Removed orphaned metadata response data factory
+    * Removed pre-theta sketch code
+    * Removed deprecated min/max aggregations
+    * Removed loader code for metrics that don't include dimension dictionary
+    * Removed `KeyValueStoreDimension`
+
 
 Current
 -------
