@@ -19,6 +19,7 @@ public interface MetricLoader {
      * @param dimensionDictionary  The dimension dictionary containing loaded dimensions
      */
     default void loadMetricDictionary(MetricDictionary metricDictionary, DimensionDictionary dimensionDictionary) {
+        // This implementation will be removed after a future release
         String message = "loadMetricDictionary(MetricDictionary) is not implemented. It has been deprecated. " +
                 "Implement and use loadMetricDictionary(MetricDictionary, DimensionDictionary) instead.";
         LoggerFactory.getLogger(MetricLoader.class).error(message);
