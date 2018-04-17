@@ -5,8 +5,8 @@ package com.yahoo.bard.webservice.data.metric
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.CountAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleSumAggregation
+import com.yahoo.bard.webservice.druid.model.aggregation.LongMaxAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.LongSumAggregation
-import com.yahoo.bard.webservice.druid.model.aggregation.MaxAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation.ArithmeticPostAggregationFunction
 import com.yahoo.bard.webservice.druid.model.postaggregation.ConstantPostAggregation
@@ -53,7 +53,7 @@ class TemplateDruidQuerySpec extends Specification {
     def "verify query.nest()"() {
         setup:
             Aggregation agg1 = new LongSumAggregation("field1", "field1")
-            Aggregation agg2 = new MaxAggregation("field2", "field2")
+            Aggregation agg2 = new LongMaxAggregation("field2", "field2")
             PostAggregation postagg1 = new FieldAccessorPostAggregation(agg1)
             PostAggregation postagg2 = new FieldAccessorPostAggregation(agg2)
             PostAggregation postagg3 = new ArithmeticPostAggregation("field3", ArithmeticPostAggregationFunction.PLUS,
@@ -74,7 +74,7 @@ class TemplateDruidQuerySpec extends Specification {
     def "verify q1.merge(q2) equals merged"() {
          setup:
             Aggregation q1_agg1 = new LongSumAggregation("field1", "field1")
-            Aggregation q1_agg2 = new MaxAggregation("field2", "field2")
+            Aggregation q1_agg2 = new LongMaxAggregation("field2", "field2")
             Aggregation nested_agg1 = new DoubleSumAggregation("field3", "field3")
             Aggregation q2_agg1 = new LongSumAggregation("foo", "bar")
 
@@ -109,7 +109,7 @@ class TemplateDruidQuerySpec extends Specification {
     def "verify q1.merge(q2) fails for duplicate aggregation names"() {
         setup:
             Aggregation q1_agg1 = new LongSumAggregation("field1", "field1")
-            Aggregation q1_agg2 = new MaxAggregation("field2", "field2")
+            Aggregation q1_agg2 = new LongMaxAggregation("field2", "field2")
             Aggregation nested_agg1 = new DoubleSumAggregation("duplicate", "duplicate")
 
             Aggregation q2_agg1 = new LongSumAggregation("duplicate", "duplicate")
@@ -128,7 +128,7 @@ class TemplateDruidQuerySpec extends Specification {
     def "verify q1.merge(q2) fails for duplicate post aggregation names"() {
         setup:
             Aggregation q1_agg1 = new LongSumAggregation("field1", "field1")
-            Aggregation q1_agg2 = new MaxAggregation("field2", "field2")
+            Aggregation q1_agg2 = new LongMaxAggregation("field2", "field2")
             Aggregation nested_agg1 = new DoubleSumAggregation("field3", "field3")
 
             Aggregation q2_agg1 = new LongSumAggregation("field4", "field4")
