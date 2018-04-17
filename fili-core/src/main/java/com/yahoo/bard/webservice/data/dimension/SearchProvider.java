@@ -47,10 +47,7 @@ public interface SearchProvider {
      *
      * @return Set of dimension rows the Search Provider has in it's indexes
      *
-     * @deprecated  Searching for dimension rows is moving to a paginated version
-     * ({@link #findAllDimensionRowsPaged}) in order to give greater control to the caller.
      */
-    @Deprecated
     default Set<DimensionRow> findAllDimensionRows() {
         return new LinkedHashSet<>(
                 findAllDimensionRowsPaged(PaginationParameters.EVERYTHING_IN_ONE_PAGE).getPageOfData()
@@ -83,11 +80,7 @@ public interface SearchProvider {
      *
      * @return set of dimension row(s)
      *
-     * @deprecated  Searching for filtered dimension rows is moving to a paginated version
-     * ({@link #findFilteredDimensionRowsPaged})
-     * in order to give greater control to the caller.
      */
-    @Deprecated
     default TreeSet<DimensionRow> findFilteredDimensionRows(Set<ApiFilter> filters) {
         return new TreeSet<>(
                 findFilteredDimensionRowsPaged(filters, PaginationParameters.EVERYTHING_IN_ONE_PAGE).getPageOfData()
