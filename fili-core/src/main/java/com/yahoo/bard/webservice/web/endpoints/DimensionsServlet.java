@@ -7,7 +7,6 @@ import static com.yahoo.bard.webservice.config.BardFeatureFlag.UPDATED_METADATA_
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
-import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 import com.yahoo.bard.webservice.exception.MetadataExceptionHandler;
@@ -29,7 +28,6 @@ import com.google.common.collect.Streams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -398,41 +396,6 @@ public class DimensionsServlet extends EndpointServlet {
                         uriInfo
                 )
         );
-        return resultRow;
-    }
-
-    /**
-     * Get the summary list view of the dimension fields.
-     *
-     * @param dimensionFields  Collection of dimension fields to get the summary view for
-     *
-     * @return Summary list view of the dimension fields
-     *
-     * @deprecated should be private, now the internal usage need is gone, will deprecate in case someone is using it
-     */
-    @Deprecated
-    public static Set<Map<String, String>> getDimensionFieldListSummaryView(
-            Collection<DimensionField> dimensionFields
-    ) {
-        return dimensionFields.stream()
-                .map(DimensionsServlet::getDimensionFieldSummaryView)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-    }
-
-    /**
-     * Get the summary view of the DimensionField.
-     *
-     * @param dimensionField  Dimension Field to get the view of
-     *
-     * @return Summary view of the dimension field
-     *
-     * @deprecated should be private, now the internal usage need is gone, will deprecate in case someone is using it
-     */
-    @Deprecated
-    public static Map<String, String> getDimensionFieldSummaryView(DimensionField dimensionField) {
-        Map<String, String> resultRow = new LinkedHashMap<>();
-        resultRow.put("name", dimensionField.getName());
-        resultRow.put("description", dimensionField.getDescription());
         return resultRow;
     }
 
