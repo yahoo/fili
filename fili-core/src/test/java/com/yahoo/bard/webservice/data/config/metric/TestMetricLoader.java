@@ -86,7 +86,7 @@ public class TestMetricLoader implements MetricLoader {
     }
 
     @Override
-    public void loadMetricDictionary(MetricDictionary metricDictionary) {
+    public void loadMetricDictionary(MetricDictionary metricDictionary, DimensionDictionary dimensionDictionary) {
         buildMetricMakers(metricDictionary);
 
         // Metrics that directly aggregate druid fields
