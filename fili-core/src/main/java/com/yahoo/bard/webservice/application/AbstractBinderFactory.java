@@ -1239,22 +1239,6 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     }
 
     /**
-     * Create a DruidWebService for the non-UI connection.
-     * <p>
-     * Provided so subclasses can implement alternative druid web service implementations for the non-UI connection
-     *
-     * @param mapper shared instance of {@link com.fasterxml.jackson.databind.ObjectMapper}
-     *
-     * @return A DruidWebService
-     *
-     * @deprecated removed non-ui webservice, this method is no longer used
-     */
-    @Deprecated
-    protected DruidWebService buildNonUiDruidWebService(ObjectMapper mapper) {
-        return buildDruidWebService(DruidClientConfigHelper.getNonUiServiceConfig(), mapper);
-    }
-
-    /**
      * Create a DruidWebService for metadata.
      *
      * @param mapper shared instance of {@link com.fasterxml.jackson.databind.ObjectMapper}

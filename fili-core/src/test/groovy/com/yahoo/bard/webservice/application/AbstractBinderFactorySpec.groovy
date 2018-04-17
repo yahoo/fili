@@ -15,8 +15,6 @@ import static com.yahoo.bard.webservice.data.config.names.TestApiDimensionName.C
 import static com.yahoo.bard.webservice.data.config.names.TestApiDimensionName.SHAPE
 import static com.yahoo.bard.webservice.data.config.names.TestApiDimensionName.SIZE
 import static com.yahoo.bard.webservice.druid.client.DruidClientConfigHelper.DRUID_COORD_URL_KEY
-import static com.yahoo.bard.webservice.druid.client.DruidClientConfigHelper.NON_UI_DRUID_BROKER_URL_KEY
-import static com.yahoo.bard.webservice.druid.client.DruidClientConfigHelper.UI_DRUID_BROKER_URL_KEY
 
 import com.yahoo.bard.webservice.application.healthchecks.AllDimensionsLoadedHealthCheck
 import com.yahoo.bard.webservice.application.healthchecks.DataSourceMetadataLoaderHealthCheck
@@ -40,6 +38,7 @@ import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder
 import com.yahoo.bard.webservice.data.filterbuilders.DruidInFilterBuilder
 import com.yahoo.bard.webservice.data.filterbuilders.DruidOrFilterBuilder
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
+import com.yahoo.bard.webservice.druid.client.DruidClientConfigHelper
 import com.yahoo.bard.webservice.druid.client.DruidWebService
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataLoadTask
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
@@ -76,8 +75,7 @@ public class AbstractBinderFactorySpec extends Specification {
     @Shared boolean cacheV2Status = DRUID_CACHE_V2.isOn()
     @Shared boolean coordinatorStatus = DRUID_COORDINATOR_METADATA.isOn()
 
-    String oldUiURL
-    String oldNonUiURL
+    String oldURL
     String oldCoordURL
 
     def setupSpec() {
@@ -91,18 +89,11 @@ public class AbstractBinderFactorySpec extends Specification {
         DRUID_CACHE.setOn(false)
         DRUID_COORDINATOR_METADATA.setOn(true)
         try {
-            oldUiURL = systemConfig.getStringProperty(UI_DRUID_BROKER_URL_KEY)
+            oldURL = systemConfig.getStringProperty(DruidClientConfigHelper.DRUID_BROKER_URL_KEY)
         } catch (SystemConfigException e) {
-            oldUiURL = null
+            oldURL = null
         }
-        systemConfig.setProperty(UI_DRUID_BROKER_URL_KEY, "http://localhost:9998/uidruid")
-
-        try {
-            oldNonUiURL = systemConfig.getStringProperty(NON_UI_DRUID_BROKER_URL_KEY)
-        } catch (SystemConfigException e) {
-            oldNonUiURL = null
-        }
-        systemConfig.setProperty(NON_UI_DRUID_BROKER_URL_KEY, "http://localhost:9998/nonuidruid")
+        systemConfig.setProperty(DruidClientConfigHelper.DRUID_BROKER_URL_KEY, "http://localhost:9998/uidruid")
 
         try {
             oldCoordURL = systemConfig.getStringProperty(DRUID_COORD_URL_KEY)
@@ -128,8 +119,7 @@ public class AbstractBinderFactorySpec extends Specification {
         DRUID_COORDINATOR_METADATA.setOn(coordinatorStatus)
         DRUID_CACHE.setOn(cacheStatus)
         DRUID_CACHE_V2.setOn(cacheV2Status)
-        propertyRestore(UI_DRUID_BROKER_URL_KEY, oldUiURL)
-        propertyRestore(NON_UI_DRUID_BROKER_URL_KEY, oldNonUiURL)
+        propertyRestore(DruidClientConfigHelper.DRUID_BROKER_URL_KEY, oldURL)
         propertyRestore(DRUID_COORD_URL_KEY, oldCoordURL)
         binderFactory.shutdownLoaderScheduler()
         HealthCheckRegistryFactory.registry = registry
