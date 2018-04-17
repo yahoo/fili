@@ -13,27 +13,15 @@ import org.slf4j.LoggerFactory;
 public interface MetricLoader {
 
     /**
-     * Load metrics and populate the metric dictionary.
-     *
-     * @param metricDictionary  The dictionary that will be loaded with metrics
-     *
-     * @deprecated in favor of loadMetricDictionary(MetricDictionary, DimensionDictionary)
-     */
-    @Deprecated
-    default void loadMetricDictionary(MetricDictionary metricDictionary) {
-        String message = "loadMetricDictionary(MetricDictionary) is not implemented. It has been deprecated. " +
-                "Implement and use loadMetricDictionary(MetricDictionary, DimensionDictionary) instead.";
-        LoggerFactory.getLogger(MetricLoader.class).error(message);
-        throw new UnsupportedOperationException(message);
-    }
-
-    /**
      * Load metrics and populate the metric dictionary with dimension dictionary for dimension dependent metrics.
      *
      * @param metricDictionary  The dictionary that will be loaded with metrics
      * @param dimensionDictionary  The dimension dictionary containing loaded dimensions
      */
     default void loadMetricDictionary(MetricDictionary metricDictionary, DimensionDictionary dimensionDictionary) {
-        loadMetricDictionary(metricDictionary);
+        String message = "loadMetricDictionary(MetricDictionary) is not implemented. It has been deprecated. " +
+                "Implement and use loadMetricDictionary(MetricDictionary, DimensionDictionary) instead.";
+        LoggerFactory.getLogger(MetricLoader.class).error(message);
+        throw new UnsupportedOperationException(message);
     }
 }
