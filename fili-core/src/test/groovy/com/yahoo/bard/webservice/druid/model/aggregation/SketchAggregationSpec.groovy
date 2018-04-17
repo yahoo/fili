@@ -21,8 +21,6 @@ class SketchAggregationSpec extends Specification {
 
         where:
         originalSketch         | outerSketch            | innerSketch
-        SketchCountAggregation | SketchCountAggregation | SketchMergeAggregation
-        SketchMergeAggregation | SketchMergeAggregation | SketchMergeAggregation
         ThetaSketchAggregation | ThetaSketchAggregation | ThetaSketchAggregation
     }
 
@@ -35,6 +33,6 @@ class SketchAggregationSpec extends Specification {
         aggregation.dependentDimensions.empty
 
         where:
-        baseAggregation << [SketchCountAggregation, SketchMergeAggregation, ThetaSketchAggregation]
+        baseAggregation << [ThetaSketchAggregation]
     }
 }

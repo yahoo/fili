@@ -11,8 +11,6 @@ import static com.yahoo.bard.webservice.sql.builders.PostAggregator.arithmetic
 import static com.yahoo.bard.webservice.sql.builders.PostAggregator.constant
 import static com.yahoo.bard.webservice.sql.builders.PostAggregator.field
 
-import com.yahoo.bard.webservice.druid.model.postaggregation.SketchEstimatePostAggregation
-import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchEstimatePostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchSetOperationPostAggregation
 
@@ -63,7 +61,5 @@ class PostAggregationEvaluatorSpec extends Specification {
         postAgg                                                    | thrownException
         new ThetaSketchEstimatePostAggregation("", null)           | RuntimeException
         new ThetaSketchSetOperationPostAggregation("", null, null) | RuntimeException
-        new SketchSetOperationPostAggregation("", null, null)      | RuntimeException
-        new SketchEstimatePostAggregation("", null)                | RuntimeException
     }
 }

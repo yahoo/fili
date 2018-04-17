@@ -13,12 +13,10 @@ import com.yahoo.bard.webservice.druid.model.aggregation.DoubleSumAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.LongMaxAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.LongMinAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.LongSumAggregation
-import com.yahoo.bard.webservice.druid.model.aggregation.SketchCountAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.ThetaSketchAggregation
 
 import spock.lang.Specification
 import spock.lang.Unroll
-
 /**
  * Tests for raw aggregation makers.
  */
@@ -55,7 +53,6 @@ class RawAggregationMetricMakerImplsSpec extends Specification {
 
         where:
         makerClass     | aggregation
-        SketchCountMaker | new SketchCountAggregation(NAME, FIELD_NAME, 5)
         ThetaSketchMaker | new ThetaSketchAggregation(NAME, FIELD_NAME, 5)
 
     }

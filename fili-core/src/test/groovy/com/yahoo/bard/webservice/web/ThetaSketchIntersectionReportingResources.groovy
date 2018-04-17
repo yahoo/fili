@@ -14,6 +14,7 @@ import com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker
 import com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchSetOperationHelper
 import com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchSetOperationMaker
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName
+import com.yahoo.bard.webservice.data.config.names.TableName
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
@@ -42,7 +43,6 @@ import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.StrictPhysicalTable
 import com.yahoo.bard.webservice.table.TableGroup
-import com.yahoo.bard.webservice.web.apirequest.DataApiRequestImpl
 import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 
 import com.fasterxml.jackson.databind.JsonNode
@@ -50,7 +50,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
 
 import spock.lang.Specification
-
 /**
  * This class is a resource container for intersection report tests.
  */
@@ -163,7 +162,7 @@ class ThetaSketchIntersectionReportingResources extends Specification {
         columns.add(lmc)
 
         PhysicalTable physicalTable = new StrictPhysicalTable(
-                "NETWORK",
+                TableName.of("NETWORK"),
                 DAY.buildZonedTimeGrain(UTC),
                 columns,
                 ["property": "property", "country": "country"],

@@ -98,13 +98,13 @@ class MultipleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServ
       "fieldName": "users",
       "name": "users",
       "size": 16384,
-      "type": "sketchCount"
+      "type": "thetaSketch"
     },
     {
       "fieldName": "otherUsers",
       "name": "otherUsers",
       "size": 16384,
-      "type": "sketchCount"
+      "type": "thetaSketch"
     }
   ],
   "dataSource": {
@@ -124,7 +124,7 @@ class MultipleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServ
           "fieldName": "users",
           "name": "otherUsers",
           "size": 16384,
-          "type": "sketchCount"
+          "type": "thetaSketch"
         },
         {
           "fieldName": "depth",
@@ -216,7 +216,7 @@ class MultipleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServ
             "type": "fieldAccess"
           },
           "name": "users_estimate",
-          "type": "sketchEstimate"
+          "type": "thetaSketchEstimate"
         },
         {
           "field": {
@@ -224,7 +224,7 @@ class MultipleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServ
             "type": "fieldAccess"
           },
           "name": "other_users_estimate",
-          "type": "sketchEstimate"
+          "type": "thetaSketchEstimate"
         },
         {
           "name": "one",
@@ -293,7 +293,7 @@ class MultipleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServ
         "type": "sketchSetOper"
       },
       "name": "foos",
-      "type": "sketchEstimate"
+      "type": "thetaSketchEstimate"
     },
     {
       "fields": [

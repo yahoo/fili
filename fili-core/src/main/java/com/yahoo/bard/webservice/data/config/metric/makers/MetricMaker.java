@@ -12,7 +12,6 @@ import com.yahoo.bard.webservice.druid.model.MetricField;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
-import com.yahoo.bard.webservice.druid.model.postaggregation.SketchEstimatePostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchEstimatePostAggregation;
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier;
 
@@ -321,11 +320,6 @@ public abstract class MetricMaker {
      * @return A post aggregator representing a number field value
      */
     protected static PostAggregation getSketchField(MetricField field) {
-        // SketchEstimatePostAggregations are just wrappers for the actual PostAggregation we want to return
-        if (field instanceof SketchEstimatePostAggregation) {
-            return ((SketchEstimatePostAggregation) field).getField();
-        }
-
         if (field instanceof ThetaSketchEstimatePostAggregation) {
             return ((ThetaSketchEstimatePostAggregation) field).getField();
         }
