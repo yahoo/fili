@@ -9,7 +9,7 @@ import com.yahoo.bard.webservice.data.ResultSetSchema;
 /**
  * NoOp Result set mapper.
  */
-public class NoOpResultSetMapper extends ResultSetMapper implements ColumnMapper {
+public class NoOpResultSetMapper extends ResultSetMapper {
     @Override
     public ResultSet map(ResultSet resultSet) {
         return resultSet;
@@ -23,11 +23,5 @@ public class NoOpResultSetMapper extends ResultSetMapper implements ColumnMapper
     @Override
     protected ResultSetSchema map(ResultSetSchema schema) {
         return schema;
-    }
-
-    @Override
-    @Deprecated
-    public ResultSetMapper withColumnName(String newColumnName) {
-        return this;
     }
 }
