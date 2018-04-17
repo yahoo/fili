@@ -26,7 +26,8 @@ import com.yahoo.bard.webservice.data.config.metric.makers.AggregationAverageMak
 import com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.LongSumMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.RowNumMaker;
-import com.yahoo.bard.webservice.data.config.metric.makers.SketchCountMaker;
+import com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker;
+import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation.ArithmeticPostAggregationFunction;
@@ -47,7 +48,7 @@ public class TestMetricLoader implements MetricLoader {
 
     // Aggregator Makers
     LongSumMaker longSumMaker;
-    SketchCountMaker sketchCountMaker;
+    ThetaSketchMaker sketchMaker;
 
     // Post Aggregator Makers
     ArithmeticMaker productMaker;
@@ -78,7 +79,7 @@ public class TestMetricLoader implements MetricLoader {
     protected void buildMetricMakers(MetricDictionary metricDictionary) {
         // Create the various metric makers
         longSumMaker = new LongSumMaker(metricDictionary);
-        sketchCountMaker = new SketchCountMaker(metricDictionary, sketchSize);
+        sketchMaker = new ThetaSketchMaker(metricDictionary, sketchSize);
         productMaker = new ArithmeticMaker(metricDictionary, ArithmeticPostAggregationFunction.MULTIPLY);
         simpleDailyAverageMaker = new AggregationAverageMaker(metricDictionary, DAY);
         rowNumMaker = new RowNumMaker(metricDictionary);
@@ -94,8 +95,8 @@ public class TestMetricLoader implements MetricLoader {
                 new MetricInstance(A_WIDTH, longSumMaker, WIDTH),
                 new MetricInstance(A_DEPTH, longSumMaker, DEPTH),
                 new MetricInstance(A_LIMBS, longSumMaker, LIMBS),
-                new MetricInstance(A_USERS, sketchCountMaker, USERS),
-                new MetricInstance(A_OTHER_USERS, sketchCountMaker, USERS),
+                new MetricInstance(A_USERS, sketchMaker, USERS),
+                new MetricInstance(A_OTHER_USERS, sketchMaker, USERS),
                 new MetricInstance(A_ROW_NUM, rowNumMaker),
                 new MetricInstance(A_AREA, productMaker, A_HEIGHT, A_WIDTH),
                 new MetricInstance(A_VOLUME, productMaker, A_HEIGHT, A_WIDTH, A_DEPTH),

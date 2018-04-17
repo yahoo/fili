@@ -28,7 +28,7 @@ import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser
 import com.yahoo.bard.webservice.data.volatility.VolatileIntervalsService
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType
-import com.yahoo.bard.webservice.druid.model.aggregation.SketchCountAggregation
+import com.yahoo.bard.webservice.druid.model.aggregation.ThetaSketchAggregation
 import com.yahoo.bard.webservice.table.resolver.DefaultPhysicalTableResolver
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestImpl
@@ -262,7 +262,7 @@ class WeightEvaluationQuerySpec extends Specification {
             getDimensions() >> [d1, d2]
             getDimension() >> d1
             getThreshold() >> Long.MAX_VALUE
-            getAggregations() >> [Stub(SketchCountAggregation)]
+            getAggregations() >> [Stub(ThetaSketchAggregation)]
             getIntervals() >> [new Interval("2014/2016")]
             getGranularity() >> granularity
             getQueryType() >> queryType

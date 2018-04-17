@@ -15,10 +15,10 @@ import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
-import com.yahoo.bard.webservice.druid.model.postaggregation.SketchEstimatePostAggregation
+import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchEstimatePostAggregation
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
 import com.yahoo.bard.webservice.druid.util.FieldConverters
-import com.yahoo.bard.webservice.druid.util.SketchFieldConverter
+import com.yahoo.bard.webservice.druid.util.ThetaSketchFieldConverter
 
 import spock.lang.Shared
 import spock.lang.Specification
@@ -37,7 +37,7 @@ class ArithmeticMakerSpec extends Specification {
     private static final int SKETCH_SIZE = 16000
     //Neither of these relies on a metric dictionary.
     private static final ConstantMaker CONSTANT_MAKER = new ConstantMaker(null)
-    private static final SketchCountMaker SKETCH_COUNT_MAKER = new SketchCountMaker(null, SKETCH_SIZE)
+    private static final ThetaSketchMaker SKETCH_MAKER = new ThetaSketchMaker(null, SKETCH_SIZE)
     private static final OPERATION = ArithmeticPostAggregation.ArithmeticPostAggregationFunction.PLUS
 
     @Shared
@@ -45,7 +45,7 @@ class ArithmeticMakerSpec extends Specification {
 
     def setup() {
         MetricDictionary metricDictionary = new MetricDictionary()
-        FieldConverterSupplier.sketchConverter = new SketchFieldConverter();
+        FieldConverterSupplier.sketchConverter = new ThetaSketchFieldConverter();
 
         ArithmeticMaker divisionMaker = new ArithmeticMaker(
                 metricDictionary,
@@ -116,7 +116,7 @@ class ArithmeticMakerSpec extends Specification {
             //The sketch count is actually an aggregation that we're using like a sketch merge. So we need to
             //create post aggregations that estimate the size of said sketches. We can then sum up those sizes.
             postAggregationsForArithmetic = aggregations.collect(){
-                new SketchEstimatePostAggregation("${it.name}_estimate", new FieldAccessorPostAggregation(it))
+                new ThetaSketchEstimatePostAggregation("${it.name}_estimate", new FieldAccessorPostAggregation(it))
             }
         }
 
@@ -145,7 +145,7 @@ class ArithmeticMakerSpec extends Specification {
 
         where: "We test on 2, 3 and 4 operands using both constants and sketches."
         numOperands << [2, 3, 4] * 2
-        operandMaker << [CONSTANT_MAKER] * 3 + [SKETCH_COUNT_MAKER] * 3
+        operandMaker << [CONSTANT_MAKER] * 3 + [SKETCH_MAKER] * 3
     }
 
     def "ArithmeticMaker supports dependent metrics with nested query"() {
@@ -159,7 +159,7 @@ class ArithmeticMakerSpec extends Specification {
         unRoundedMetric.calculation.class == NoOpResultSetMapper
     }
 
-    def "When a ResultMapper is not passed, it creates the LogicalMetric using the default SketchSetOperationMaker"() {
+    def "When a ResultMapper is not passed, it creates the LogicalMetric using the default ThetaSketchSetOperationMaker"() {
         expect:
         roundedUpMetric.calculation.class == SketchRoundUpMapper
     }
