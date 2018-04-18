@@ -20,16 +20,16 @@ are both behind a single composite table**
 +-----+-----------------------+-----------------------+----------+
 ```
 
-Imagine DS2 is a new datasource added to Druid in 2018-01-01. Then DS2 is defined as starting on interval 2018/FUTURE.
+Imagine DS2 is a new datasource added to Druid in 2018-01-01. Then DS2 data is defined as "available" on 2018-01-01.
 
-If we query M on a groupBy dimension D in year 2017, it is legitimate to expect data from DS1 to be available. But
-current behavior is [2017 data from DS1 is marked as missing](https://github.com/yahoo/fili/blob/master/fili-core/src/main/java/com/yahoo/bard/webservice/table/availability/PartitionAvailability.java#L92).
+If we query M on a groupBy dimension D for data in `2017-01-01/2017-12-31`, it is legitimate to expect data from DS1 to
+be available. But current behavior is [2017 data from DS1 is marked as missing](https://github.com/yahoo/fili/blob/master/fili-core/src/main/java/com/yahoo/bard/webservice/table/availability/PartitionAvailability.java#L92).
 The correct behavior should be that data of 2017 is not marked as missing interval.
 
 A summary of the new behavior is the following:
 
 * If DS1 is included for filter set X and DS2 is also included for filter set X
-* If DS2 is defined as starting on interval 2018/FUTURE
+* If DS2 is defined as starting on 2018-01-01
 
 then the availability is
 
