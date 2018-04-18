@@ -128,6 +128,12 @@ There's a module system for config and modules depending on other modules! There
 the time, look at the time!
 
 
+Documentation
+-------------
+
+More information about Fili can be found at [fili.io](http://fili.io).
+
+
 Contributing [![Developers Google Group](https://img.shields.io/badge/google_group-developers-blue.svg?maxAge=2592000)](https://groups.google.com/forum/#!forum/fili-developers)
 ------------
 
