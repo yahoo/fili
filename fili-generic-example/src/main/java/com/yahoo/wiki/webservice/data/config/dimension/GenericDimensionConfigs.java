@@ -59,7 +59,7 @@ public class GenericDimensionConfigs {
     }
 
     /**
-     * Get all dimension configurations.
+     * Get all dimension configurations of all data sources.
      *
      * @return set of dimension configurations
      */
@@ -76,9 +76,24 @@ public class GenericDimensionConfigs {
      * @param dataSourceConfiguration  The datasource configuration's dimensions to load
      *
      * @return the dimension configurations for this datasource
+     *
+     * @deprecated only the name(a String) of DataSourceConfiguration can resolve its set of DimensionConfigs. There is
+     * no need to pass a heavier DataSourceConfiguration object. Use {@link #getDimensionConfigs(String)} instead.
      */
+    @Deprecated
     public Set<DimensionConfig> getDimensionConfigs(DataSourceConfiguration dataSourceConfiguration) {
         return dataSourceToDimensionConfigs.getOrDefault(dataSourceConfiguration.getName(), Collections.emptySet());
+    }
+
+    /**
+     * Returns all dimension configurations of a particular data source.
+     *
+     * @param dataSourceName  Name of the data source
+     *
+     * @return all dimension configurations of the particular data source
+     */
+    public Set<DimensionConfig> getDimensionConfigs(String dataSourceName) {
+        return dataSourceToDimensionConfigs.getOrDefault(dataSourceName, Collections.emptySet());
     }
 
     /**

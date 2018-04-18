@@ -8,6 +8,7 @@ package com.yahoo.bard.webservice.data.metric.mappers;
  * @deprecated with-like functionality no longer needed because delayed construction is being used instead
  */
 @Deprecated
+@FunctionalInterface
 public interface ColumnMapper {
 
     /**

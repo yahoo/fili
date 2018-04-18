@@ -10,6 +10,7 @@ import java.util.Collection;
  * Physical table resolver selects the best physical table that satisfied a query (if any) from a supply of candidate
  * physical tables.
  */
+@FunctionalInterface
 public interface PhysicalTableResolver {
 
     /**

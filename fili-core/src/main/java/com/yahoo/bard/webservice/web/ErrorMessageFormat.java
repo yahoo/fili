@@ -263,7 +263,9 @@ public enum ErrorMessageFormat implements MessageFormatter {
     UNABLE_TO_DELETE_DIR("Unable to delete directory %s."),
     FAIL_TO_WIPTE_LUCENE_INDEX_DIR("Failed to wipte Lucene index at directory: %s"),
 
-    REQUEST_PROCESSING_EXCEPTION("Exception processing request: %s")
+    REQUEST_PROCESSING_EXCEPTION("Exception processing request: %s"),
+
+    TWO_VALUES_OF_THE_SAME_KEY("Values %s and %s are associated with the same key"),
     ;
 
     private final String messageFormat;

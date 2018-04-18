@@ -107,6 +107,12 @@ public class JsonApiResponseWriter extends JsonAndJsonApiResponseWriter {
             Map<Dimension, Set<Map<DimensionField, String>>> sidecars = new HashMap<>();
             for (DimensionColumn dimensionColumn :
                     responseData.getResultSet().getSchema().getColumns(DimensionColumn.class)) {
+                if (request instanceof DataApiRequest) {
+                    DataApiRequest dataApiRequest = (DataApiRequest) request;
+                    if (dataApiRequest.getDimensionFields().get(dimensionColumn.getDimension()).isEmpty()) {
+                        continue;
+                    }
+                }
                 sidecars.put(dimensionColumn.getDimension(), new LinkedHashSet<>());
             }
 

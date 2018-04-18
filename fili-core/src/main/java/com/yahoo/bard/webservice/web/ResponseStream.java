@@ -7,6 +7,7 @@ import javax.ws.rs.core.StreamingOutput;
 /**
  * An interface for classes that transform response data to a format representation (e.g. JSON, CSV and others).
  */
+@FunctionalInterface
 public interface ResponseStream {
     /**
      * Gets a resource method that can be used to stream this response as an entity.

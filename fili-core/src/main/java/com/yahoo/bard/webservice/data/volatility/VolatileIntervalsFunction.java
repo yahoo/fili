@@ -10,6 +10,7 @@ import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
  * use case for this is data which is being ingested via real time ingestion, and thus which will be replaced later by
  * new historical segments.
  */
+@FunctionalInterface
 public interface VolatileIntervalsFunction {
 
     /**

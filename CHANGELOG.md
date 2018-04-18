@@ -5,10 +5,143 @@ All notable changes to Fili will be documented here. Changes are accumulated as 
 major version. Each change has a link to the pull request that makes the change and to the issue that triggered the
 pull request if there was one.
 
+
+
+### Changed:
+
+
+
+### Deprecated:
+
+
+
+### Fixed:
+
+
+
+### Known Issues:
+
+
+
+### Removed:
+
 Current
 -------
 
+v0.9.137 - 2018/04/13 
+=====
+
+0.9 Highlights
+-------------
+
+### Fili Security Added!
+Release security module for fili data security filters. Created `ChainingRequestMapper`, and a set of mappers for gatekeeping on security roles and whitelisting dimension filters.
+
+Added by @michael-mclawhorn in https://github.com/yahoo/fili/pull/405
+
+### DataApiRequestFactory layer
+Downstream projects now have more flexibility to construct `DataApiRequest` by using injectableFactory. An additional constructor for DataApiRequestImpl unpacks the config resources bundle to make it easier to override dictionaries.
+
+Added by @michael-mclawhorn in https://github.com/yahoo/fili/issues/603
+
+### Make Field Accessor PostAggregation able to reference post aggregations in adddition to aggregations
+Druid allows (but does not protect against ordering) post aggregation trees referencing columns that are also post aggregation trees.  This makes it possible to send such a query by using a field accessor to reference another query expression.  Using this capability may have some risk.
+
+Added by @michael-mclawhorn in https://github.com/yahoo/fili/pull/543
+
+### Etag Cache
+In the more recent versions of druid that are released after February 23rd, 2017. Druid added support for HTTP Etag. By including a If-None-Match header along with a druid query, druid will compute a hash as the etag in a way such that each unique response has a corresponding unique etag, the etag will be included in the header along with the response. In addition, if a query to druid includes the If-None-Match with a etag of the query, druid will check if the etag matches the response of the query, if yes, druid will return a HTTP Status 304 Content Not Modified response to indicate that the response is unchanged and matches the etag received from druid query request header. Otherwise druid will execute the query and respond normally with a new etag attached to the response header.
+
+This new feature is designed by @garyluoex . For more info, visit @garyluoex 's design at https://github.com/yahoo/fili/issues/255
+
+### More robust Lucene Search Provider and Key Value Store
+Lucene Search Provider can re-open in a bug-free way and close more cleanly
+
+Added by @garyluoex in https://github.com/yahoo/fili/pull/551 and https://github.com/yahoo/fili/pull/521
+
+### Extraction Function on selector filter
+Update Fili to accommodate the deprecated `ExtractionFilter` in druid, use selector filter with extraction function instead. Added extraction function on dimensional filter, defaults to extraction function on dimension if it exists.
+
+Added by @garyluoex in https://github.com/yahoo/fili/pull/617
+
+### More controllable RequestLog
+Exposes the `LogInfo` objects stored in the `RequestLog`, via `RequestLog::retrieveAll` making it easier for customers to implement their own scheme for logging the `RequestLog`
+
+Added by @archolewa in https://github.com/yahoo/fili/pull/574
+
+### Druid lookup metadata load status check 
+Fili now supports checking Druid lookup status as one of it's health check. It will be very easy to identify any failed lookups.
+
+Added by @QubitPi in https://github.com/yahoo/fili/pull/620
+
+### Add ability to use custom rate limiting schemes
+While backward compatibility is guaranteed, Fili now allows users to rate limit(with a a new rate limiter) based on different criteria other than the default criteria.
+
+Added by @efronbs in https://github.com/yahoo/fili/pull/591
+
+### Support Time Format Extraction Function in Fili
+Druid [`TimeFormatExtractionFunction`](http://druid.io/docs/0.10.1/querying/dimensionspecs.html#time-format-extraction-function) is added to Fili. API users could interact with Druid using `TimeFormatExtractionFunction` through Fili.
+
+Added by @QubitPi in https://github.com/yahoo/fili/pull/611
+
+### Dimension load strategy indicator
+In order to allow clients to be notified if a dimension's values are browsable and searchable, a [storage strategy metadata](https://github.com/yahoo/fili/blob/master/fili-core/src/main/java/com/yahoo/bard/webservice/data/dimension/metadata/StorageStrategy.java) is added to dimension. A browsable and searchable dimension is denoted by `LOADED`, whereas the opposite is denoted by `NONE`. This will be very useful for UI backed by Fili on sending dimension-related queries.
+
+Added by @michael-mclawhorn, @garyluoex and @QubitPi  in https://github.com/yahoo/fili/pull/575, https://github.com/yahoo/fili/pull/589, https://github.com/yahoo/fili/pull/558, https://github.com/yahoo/fili/pull/578
+
+### Query Split Logging
+Include metrics in logging to allow for better evaluation of the impact of caching for split queries. There used to be only a binary flag (`BardQueryInfo.cached`) that is inconsistently set for split queries. Now 3 new metrics are added
+
+1. Number of split queries satisfied by cache
+2. Number of split queries actually sent to the fact store. (not satisfied by cache)
+3. Number of weight-checked queries
+
+Added by @QubitPi in https://github.com/yahoo/fili/pull/537
+
+### Configurable Metric Long Name
+Logical metric has more config-richness to not just configure metric name, but also metric long name, description, etc. MetricInstance is now created by accepting a LogicalMetricInfo which contains all these fields in addition to metric name.
+
+Added by @QubitPi in https://github.com/yahoo/fili/pull/492
+
+### Search provider can hot-swap index and key value store can hot-swap store location
+[`LuceneSearchProvider`](./fili-core/src/main/java/com/yahoo/bard/webservice/data/dimension/impl/LuceneSearchProvider.java) is able to hot swap index by replacing Lucene index by moving the old index directory to a different location, moving new indexes to a new directory with the same old name, and deleting the old index directory in file system.
+[`KeyValueStore`](fili-core/src/main/java/com/yahoo/bard/webservice/data/dimension/KeyValueStore.java) is also made to support hot-swapping key value store location
+
+Added by @QubitPi in https://github.com/yahoo/fili/pull/522
+
+### Uptime Status Metric
+A metric showing how long Fili has been running is available.
+
+Added by @mpardesh in https://github.com/yahoo/fili/pull/518
+
+### Consolidate UI & Non-UI broker configurations
+`ui_druid_broke` and `non_ui_druid_broker` are not used separately anymore. Instead, a single `druid_broker` replaces the two. For backwards compatibility, Fili checks if `druid_broker` is set. If not, Fili uses `non_ui_druid_broker` and then `ui_druid_broker`
+
+Added by @mpardesh in https://github.com/yahoo/fili/pull/489
+
+Credits
+---------
+
+Thanks to everyone who contributed to this release!
+
+@michael-mclawhorn Michael Mclawhorn
+@garyluoex Gary Luo
+@archolewa Andrew Cholewa
+@QubitPi Jiaqi Liu
+@asifmansoora Asif Mansoor Amanullah
+@efronbs Ben Efron
+@deepakb91 Deepak Babu
+@tarrantzhang Tarrant Zhang
+@kevinhinterlong Kevin Hinterlong
+@mpardesh Monica Pardeshi
+@colemanProjects Neelan Coleman
+@onlinecco 
+@dejan2609 Dejan Stojadinović
+
 ### Added:
+
+- [Annotate Functional Interface](https://github.com/yahoo/fili/pull/606)
+    * Add `@FunctionalInterface` annotation to all functional interfaces.
 
 - [Implement LookupLoadTask](https://github.com/yahoo/fili/pull/620)
     * Add capability for Fili to check load statuses of Druid lookups.
@@ -127,6 +260,19 @@ Current
 
 
 ### Changed:
+
+- [Avoid casting to generate SimplifiedIntervalList](https://github.com/yahoo/fili/pull/658)
+    * Some downstream projects generated partial intervals as `ArrayList`, which cannot be cased to
+      `SimplifiedIntervalList` in places like `getPartialIntervalsWithDefault`. The result is a casting exception which
+      crashes downstream applications. Casting is replaced with a explicit `SimplifiedIntervalList` object creation.
+      
+- [ResponseProcessor is now injectable.](https://github.com/yahoo/fili/pull/663)
+    * To add a custom `ResponseProcessor`, implement `ResponseProcessorFactory`, override 
+        `AbstractBinderFactory::buildResponseProcessorFactory` to return your custom `ResponseProcessorFactory.class`. 
+
+- [Add config to ignore partial/volatile intervals and cache everything in cache V2](https://github.com/yahoo/fili/pull/645)
+    * In cache V2, user should be able to decide whether partial data or volatile data should be cached or not. This PR
+      adds a config that allows the user to do this.
 
 - [Lift required override on deprecated method in MetricLoader](https://github.com/yahoo/fili/pull/609)
     * Add default implementation to deprecated `loadMetricDictionary` in `MetricLoader` so that downstream projects are
@@ -259,8 +405,32 @@ Current
 
 ### Fixed:
 
+- [Correct exception message & add missing tests](https://github.com/yahoo/fili/pull/649)
+    * Clarified exception message thrown by `StreamUtils.throwingMerger`
+      
+- [Fix lookup metadata loader by pulling the RegisteredLookupDimension](https://github.com/yahoo/fili/pull/651)
+    * Lookup Metadata Health Check always return true when some Druid registered lookup are absolutely failing to be
+      loaded. Instead of checking load status of `RegisteredLookupDimension`, `RegisteredLookupMetadataLoadTask` is
+      checking the status of `LookupDimension`. This PR corrects this behavior.
+
+- [Fix 'descriptionription' mis-naming in dimension field](https://github.com/yahoo/fili/pull/655)
+    * This is caused by a "desc" -> "description" string replacement. A string handling method has been added to
+      detect "desc" and transform it to "description". If it already comes with "description", no string transformation
+      is made
+
+- [Fix caching condition](https://github.com/yahoo/fili/pull/647)
+    * We want to cache partial or volatile data when `cache_partial_data` is set to true. This is condition is currently
+      reversed. This PR shall fix it
+
+- [Add Missing perPage Param](https://github.com/yahoo/fili/pull/641)
+    * Pagination links on the first pages are missing perPage param. This PR fixes this problem.
+
 - [Having clause was nesting inward on nested queries resulting in rows that didn't exist being referenced](https://github.com/yahoo/fili/pull/614/files)
 
+- [None show clause was not being respected](https://github.com/yahoo/fili/issues/612)
+    * Changed `ResponseData` and `JsonApiResponseWriter` to suppress columns that don't have associated dimension fields.
+    * Updated tests to reflect none being hidden.
+     
 - [Scoped metric dictionaries and the having clause now work together by default](https://github.com/yahoo/fili/pull/580)
     * Add a new ApiHavingGenerator that builds a temporary metric dictionary from the set of requested metrics(not from globally scoped metric dictionary), and then using those to resolve the having clause.
     * Add a table generating functions in BaseTableLoader that effectively allow the customer to provide a different metric dictionary at lower scope(not from the globally scoped metric dictionary) for use when building each table.
