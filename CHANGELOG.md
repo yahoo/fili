@@ -9,7 +9,10 @@ pull request if there was one.
 
 ### Changed:
 
-
+- [Avoid casting to generate SimplifiedIntervalList](https://github.com/yahoo/fili/pull/677)
+    * Some downstream projects generated partial intervals as `ArrayList`, which cannot be cased to
+      `SimplifiedIntervalList` in places like `getVolatileIntervalsWithDefault`. The result is a casting exception which
+      crashes downstream applications. Casting is replaced with a explicit `SimplifiedIntervalList` object creation.
 
 ### Deprecated:
 
