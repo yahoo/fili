@@ -82,7 +82,7 @@ public class PartitionAvailability extends BaseCompositeAvailability implements 
     /**
      * Intersect the partition availabilities which participate given the constraint.
      *
-     * @param constraint  The filtering constraint
+     * @param constraint  The filtering constrainte
      *
      * @return The intervals which are available for the given constraint
      */
