@@ -20,6 +20,8 @@ pull request if there was one.
 
 ### Fixed:
 
+- [Correct Druid coordinator URL in Wikipedia example](https://github.com/yahoo/fili/pull/683)
+    * Config value for Druid coordinator URL is mis-typed.
 
 
 ### Known Issues:
