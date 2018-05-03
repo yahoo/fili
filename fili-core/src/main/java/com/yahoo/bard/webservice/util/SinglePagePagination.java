@@ -18,7 +18,7 @@ public class SinglePagePagination<T> implements Pagination<T> {
     private final int pageToFetch;
     private final int countPerPage;
     private final int lastPage;
-    private final int totalMatch;
+    private final long totalMatch;
 
     /**
      * Constructor.
@@ -27,6 +27,28 @@ public class SinglePagePagination<T> implements Pagination<T> {
      * @param paginationParameters  The parameters needed for pagination
      * @param totalMatch  The total number of results found. The single page collection is part of these results
      */
+    public SinglePagePagination(List<T> entirePage, PaginationParameters paginationParameters, long totalMatch) {
+        this.pageToFetch = paginationParameters.getPage(entirePage.size());
+        this.countPerPage = paginationParameters.getPerPage();
+        this.totalMatch = totalMatch;
+        this.lastPage = (totalMatch > countPerPage) ? (int) (totalMatch - 1) / countPerPage + 1 : 1;
+
+        if (this.pageToFetch > this.lastPage || this.pageToFetch < FIRST_PAGE) {
+            throw new PageNotFoundException(this.pageToFetch, this.countPerPage, lastPage);
+        }
+        this.pageOfData = entirePage;
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param entirePage  Collection of one page of data
+     * @param paginationParameters  The parameters needed for pagination
+     * @param totalMatch  The total number of results found. The single page collection is part of these results
+     *
+     * @deprecated use {@link #SinglePagePagination(List, PaginationParameters, long)} instead.
+     */
+    @Deprecated
     public SinglePagePagination(List<T> entirePage, PaginationParameters paginationParameters, int totalMatch) {
         this.pageToFetch = paginationParameters.getPage(entirePage.size());
         this.countPerPage = paginationParameters.getPerPage();
@@ -75,7 +97,7 @@ public class SinglePagePagination<T> implements Pagination<T> {
     }
 
     @Override
-    public int getNumResults() {
+    public long getNumResults() {
         return totalMatch;
     }
 }

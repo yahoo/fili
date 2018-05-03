@@ -674,7 +674,7 @@ public class LuceneSearchProvider implements SearchProvider {
         validatePerPage(perPage);
 
         TreeSet<DimensionRow> filteredDimRows;
-        int documentCount;
+        long documentCount;
         initializeIndexSearcher();
         LOG.trace("Lucene Query {}", query);
 

@@ -70,5 +70,5 @@ public interface Pagination<T> extends Serializable {
      *
      * @return The data size
      */
-    int getNumResults();
+    long getNumResults();
 }

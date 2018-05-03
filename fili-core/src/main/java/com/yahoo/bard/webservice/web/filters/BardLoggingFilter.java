@@ -10,7 +10,7 @@ import com.yahoo.bard.webservice.logging.blocks.Epilogue;
 import com.yahoo.bard.webservice.logging.blocks.Preface;
 import com.yahoo.bard.webservice.util.CacheLastObserver;
 
-import org.glassfish.jersey.filter.LoggingFilter;
+import org.glassfish.jersey.logging.LoggingFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,9 +67,9 @@ public class BardLoggingFilter implements ContainerRequestFilter, ContainerRespo
     ClientResponseFilter, WriterInterceptor {
 
     private static final Logger LOG = LoggerFactory.getLogger(BardLoggingFilter.class);
-    private static final String PROPERTY_NANOS = LoggingFilter.class.getName() + ".nanos";
-    private static final String PROPERTY_REQ_LEN = LoggingFilter.class.getName() + ".reqlen";
-    private static final String PROPERTY_OUTPUT_STREAM = LoggingFilter.class.getName() + ".ostream";
+    private static final String PROPERTY_NANOS = LoggingFeature.class.getName() + ".nanos";
+    private static final String PROPERTY_REQ_LEN = LoggingFeature.class.getName() + ".reqlen";
+    private static final String PROPERTY_OUTPUT_STREAM = LoggingFeature.class.getName() + ".ostream";
     private static final Pattern VALID_REQUEST_ID = Pattern.compile("[a-zA-Z0-9+/=\\-_]+");
 
     public static final double MILLISECONDS_PER_NANOSECOND = 1000000.0;

@@ -129,8 +129,25 @@ public class PaginationParameters {
      * @param resultSize  The number of rows in the result set
      *
      * @return The request page number
+     *
+     * @deprecated use {@link #getPage(long)}.
      */
+    @Deprecated
     public int getPage(int resultSize) {
+        if (page == -1) {
+            return resultSize == 0 ? 1 : (int) Math.ceil(((double) resultSize) / perPage);
+        }
+        return page;
+    }
+
+    /**
+     * Returns the requested page number.
+     *
+     * @param resultSize  The number of rows in the result set
+     *
+     * @return The request page number
+     */
+    public int getPage(long resultSize) {
         if (page == -1) {
             return resultSize == 0 ? 1 : (int) Math.ceil(((double) resultSize) / perPage);
         }

@@ -12,7 +12,7 @@ import javax.ws.rs.core.Response;
  */
 public class PageNotFoundException extends RuntimeException {
 
-    private final int page;
+    private final long page;
     private final int rowsPerPage;
     private final int lastPage;
 
@@ -22,6 +22,7 @@ public class PageNotFoundException extends RuntimeException {
      * @param page  Page requested
      * @param rowsPerPage  Page size
      * @param lastPage  Terminal page available
+     *
      */
     public PageNotFoundException(int page, int rowsPerPage, int lastPage) {
         this.page = page;

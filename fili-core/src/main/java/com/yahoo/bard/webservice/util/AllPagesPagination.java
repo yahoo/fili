@@ -94,7 +94,7 @@ public class AllPagesPagination<T> implements Pagination<T> {
     }
 
     @Override
-    public int getNumResults() {
+    public long getNumResults() {
         return collectionSize;
     }
 }

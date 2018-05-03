@@ -9,6 +9,15 @@ pull request if there was one.
 
 ### Changed:
 
+- [Bump dependency versions](https://github.com/yahoo/fili/pull/681)
+    * Jersey 2.24 -> 2.27
+        - [LoggingFilter -> LoggingFeature](https://github.com/swagger-api/swagger-codegen/issues/6715)
+        - [Jersey now defines it's own injection facade, which, when implemented properly, replaces all internal Jersey
+        injection.](https://stackoverflow.com/a/44546979)
+    * Lucene 6.6.0 -> 7.3.0
+        - `TopDocs.totalHits` now returns `long` instead of `int`. `SinglePagePagination` constructor takes `long` as
+           new type for `totalMatch`
+
 - [Avoid casting to generate SimplifiedIntervalList](https://github.com/yahoo/fili/pull/677)
     * Some downstream projects generated partial intervals as `ArrayList`, which cannot be cased to
       `SimplifiedIntervalList` in places like `getVolatileIntervalsWithDefault`. The result is a casting exception which
