@@ -22,6 +22,10 @@ pull request if there was one.
 
 - [Correct Druid coordinator URL in Wikipedia example](https://github.com/yahoo/fili/pull/683)
     * Config value for Druid coordinator URL is mis-typed.
+    
+- [Upgrade codenarc to recognize unused imports in Groovy](https://github.com/yahoo/fili/pull/685)
+    * There are number of unused imports sitting in tests. The cause is an out-dated codenarc version. This PR upgrades
+      the version and removes those unused imports with the new version.
 
 
 ### Known Issues:
