@@ -9,8 +9,8 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.WEEK
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.YEAR
 import static org.joda.time.DateTimeZone.UTC
 
-import com.yahoo.bard.webservice.data.filterbuilders.DefaultDruidFilterBuilder
 import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder
+import com.yahoo.bard.webservice.data.filterbuilders.DruidOrFilterBuilder
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
@@ -61,7 +61,7 @@ class DruidQueryBuilderSpec extends Specification {
     DataApiRequest apiRequest
     LogicalMetric lm1
 
-    static final DruidFilterBuilder FILTER_BUILDER = new DefaultDruidFilterBuilder()
+    static final DruidFilterBuilder FILTER_BUILDER = new DruidOrFilterBuilder()
 
     List<Interval> intervals
 

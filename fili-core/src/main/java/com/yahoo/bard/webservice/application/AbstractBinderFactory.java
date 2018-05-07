@@ -53,7 +53,7 @@ import com.yahoo.bard.webservice.data.config.dimension.TypeAwareDimensionLoader;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
-import com.yahoo.bard.webservice.data.filterbuilders.DefaultDruidFilterBuilder;
+import com.yahoo.bard.webservice.data.filterbuilders.DruidInFilterBuilder;
 import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQueryMerger;
@@ -709,12 +709,13 @@ public abstract class AbstractBinderFactory implements BinderFactory {
 
     /**
      * Creates an object that constructs Druid dimension filters from Bard dimension filters.
-     * Constructs a {@link DefaultDruidFilterBuilder} by default.
+     * <p>
+     * Constructs a {@link DruidInFilterBuilder} by default.
      *
      * @return An object to build Druid filters from API filters
      */
     protected DruidFilterBuilder buildDruidFilterBuilder() {
-        return new DefaultDruidFilterBuilder();
+        return new DruidInFilterBuilder();
     }
 
     /**

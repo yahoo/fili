@@ -22,7 +22,7 @@ import com.yahoo.bard.webservice.data.config.ConfigurationLoader
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
-import com.yahoo.bard.webservice.data.filterbuilders.DefaultDruidFilterBuilder
+import com.yahoo.bard.webservice.data.filterbuilders.DruidOrFilterBuilder
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQueryMerger
 import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser
@@ -79,7 +79,7 @@ class WeightEvaluationQuerySpec extends Specification {
         dataServlet.getMetricDictionary() >> configurationLoader.metricDictionary
         dataServlet.getDimensionDictionary() >> configurationLoader.dimensionDictionary
         dataServlet.getLogicalTableDictionary() >> configurationLoader.logicalTableDictionary
-        dataServlet.getFilterBuilder() >> new DefaultDruidFilterBuilder()
+        dataServlet.getFilterBuilder() >> new DruidOrFilterBuilder()
         dataServlet.getHavingApiGenerator() >> new DefaultHavingApiGenerator(configurationLoader)
         dataServlet.getGranularityParser() >> new StandardGranularityParser()
 

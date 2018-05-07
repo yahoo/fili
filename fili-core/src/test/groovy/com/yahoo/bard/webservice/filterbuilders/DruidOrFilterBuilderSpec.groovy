@@ -8,8 +8,8 @@ import static com.yahoo.bard.webservice.druid.model.filter.Filter.DefaultFilterT
 import static com.yahoo.bard.webservice.druid.model.filter.Filter.DefaultFilterType.SELECTOR
 
 import com.yahoo.bard.webservice.data.QueryBuildingTestingResources
-import com.yahoo.bard.webservice.data.filterbuilders.DefaultDruidFilterBuilder
 import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder
+import com.yahoo.bard.webservice.data.filterbuilders.DruidOrFilterBuilder
 import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.model.filter.NotFilter
 import com.yahoo.bard.webservice.druid.model.filter.OrFilter
@@ -20,7 +20,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
-public class DefaultDruidFilterBuilderSpec extends Specification {
+class DruidOrFilterBuilderSpec extends Specification {
 
     @Shared QueryBuildingTestingResources resources
 
@@ -67,7 +67,7 @@ public class DefaultDruidFilterBuilderSpec extends Specification {
                 ageIdNotin56: ageIdNotin56,
                 ageDescNotin1429: ageDescNotin1429
         ]
-        filterBuilder = new DefaultDruidFilterBuilder()
+        filterBuilder = new DruidOrFilterBuilder()
     }
 
     def "If there are no filters to build, then the the filter builder returns null"(){

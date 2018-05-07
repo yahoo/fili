@@ -8,7 +8,7 @@ package com.yahoo.bard.webservice.exception;
  * Dimensions with extremely large cardinalities could result in such error when user put a "contain" filter on the
  * dimension value. For example, a filter of dimension|id-contains[123], where there are 10,000 ID's starting with 123,
  * could generate 10,000 Druid filters using
- * {@link com.yahoo.bard.webservice.data.filterbuilders.DefaultDruidFilterBuilder}. This giant query shall eventually
+ * {@link com.yahoo.bard.webservice.data.filterbuilders.DruidOrFilterBuilder}. This giant query shall eventually
  * timeout the Druid query and returns the timeout error to API user.
  */
 public class TooManyDruidFiltersException extends RuntimeException {

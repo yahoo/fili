@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * A DefaultDruidFilterBuilder builds a conjunction of disjunctions for each Dimension, where each disjunction
+ * A DruidOrFilterBuilder builds a conjunction of disjunctions for each Dimension, where each disjunction
  * corresponds to a filter term. So, the filter terms on dimension {@code category}:
  * <p>
  * {@code category|id-in[finance,sports],category|desc-contains[baseball]}
@@ -31,8 +31,8 @@ import java.util.Set;
  * <p>
  * Each filter term is resolved independently of the other filter terms.
  */
-public class DefaultDruidFilterBuilder extends ConjunctionDruidFilterBuilder {
-    private static final Logger LOG = LoggerFactory.getLogger(DefaultDruidFilterBuilder.class);
+public class DruidOrFilterBuilder extends ConjunctionDruidFilterBuilder {
+    private static final Logger LOG = LoggerFactory.getLogger(DruidOrFilterBuilder.class);
 
     @Override
     protected Filter buildDimensionFilter(Dimension dimension, Set<ApiFilter> filters)
