@@ -15,6 +15,10 @@ pull request if there was one.
 
 ### Changed:
 
+- [Abort request when too many Druid filters are generated](https://github.com/yahoo/fili/pull/690)
+    * In order to avoid Druid queries with too much filters on high-cardinality dimension, Fili sets a upper limit
+      on the number of filters and aborts requests if the limit is exceeded.
+ 
 - [Class re-organization](https://github.com/yahoo/fili/pull/694)
     * Put `Granularity` interfaces and its implementations in the same package
     * Put `*ApiRequest` interfaces and their implementations in the same package
