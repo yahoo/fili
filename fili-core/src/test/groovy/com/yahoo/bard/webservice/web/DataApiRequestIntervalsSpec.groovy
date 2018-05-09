@@ -28,6 +28,7 @@ import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.joda.time.Interval
+import org.joda.time.Period
 import org.joda.time.format.DateTimeFormatter
 
 import spock.lang.Shared
@@ -135,6 +136,33 @@ class DataApiRequestIntervalsSpec extends Specification {
     }
 
     @Unroll
+    def "P#numPastDays D/current with 'all' granularity generates an interval of past #numPastDays days" () {
+        when: "parse string interval from request"
+        Set intervals = new TestingDataApiRequestImpl().generateIntervals(
+                String.format("P%sD/${TimeMacros.CURRENT.getName()}", numPastDays),
+                apiRequest.generateGranularity("all", granularityParser), dateTimeFormatter
+        )
+        Interval interval = intervals.first()
+        DateTime parsedEnd = DateTime.now()
+        DateTime parsedStart = parsedEnd.minusDays(numPastDays)
+
+        then: "an interval of past days is generated"
+        intervals.size() == 1
+        interval.start.year == parsedStart.year
+        interval.start.monthOfYear == parsedStart.monthOfYear
+        interval.start.dayOfYear == parsedStart.dayOfYear
+        interval.end.year == parsedEnd.year
+        interval.end.monthOfYear == parsedEnd.monthOfYear
+        interval.end.dayOfYear == parsedEnd.dayOfYear
+
+        where:
+        numPastDays | _
+        1           | _
+        2           | _
+        3           | _
+    }
+
+    @Unroll
     def "check parsing interval #intervalString parses to #parsedStart/#parsedStop with the use of time periods"() {
 
         given: "An expected interval"
@@ -153,7 +181,7 @@ class DataApiRequestIntervalsSpec extends Specification {
         ).first() == expectedInterval
 
         where:
-        intervalString                     | name      | parsedStart                                    | parsedStop
+        intervalString                     | name      | parsedStart                                                                                                                                | parsedStop
         "2005-03-25T10:20:30/P3D"          | "day"     | new DateTime(2005, 03, 25, 10, 20, 30, 000)    | new DateTime(2005, 03, 28, 10, 20, 30, 000)
         "P3D/2005-03-25T10:20:30"          | "day"     | new DateTime(2005, 03, 22, 10, 20, 30, 000)    | new DateTime(2005, 03, 25, 10, 20, 30, 000)
         "P1Y2M3D/2005-03-25T10:20:30"      | "day"     | new DateTime(2004, 01, 22, 10, 20, 30, 000)    | new DateTime(2005, 03, 25, 10, 20, 30, 000)
@@ -251,7 +279,6 @@ class DataApiRequestIntervalsSpec extends Specification {
         "P3D/P3D"         | "day" | BadApiRequestException
         "next/next"       | "day" | BadApiRequestException
         "current/current" | "day" | BadApiRequestException
-        "current/P3D"     | "all" | BadApiRequestException
         "P3D/next"        | "all" | BadApiRequestException
     }
 
