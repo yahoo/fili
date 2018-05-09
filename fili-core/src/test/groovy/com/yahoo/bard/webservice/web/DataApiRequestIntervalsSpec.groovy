@@ -163,6 +163,33 @@ class DataApiRequestIntervalsSpec extends Specification {
     }
 
     @Unroll
+    def "current/P#numPastDays D with 'all' granularity generates an interval of #numPastDays days for the future" () {
+        when: "parse string interval from request"
+        Set intervals = new TestingDataApiRequestImpl().generateIntervals(
+                String.format("${TimeMacros.CURRENT.getName()}/P%sD", numPastDays),
+                apiRequest.generateGranularity("all", granularityParser), dateTimeFormatter
+        )
+        Interval interval = intervals.first()
+        DateTime parsedStart = DateTime.now()
+        DateTime parsedEnd = parsedStart.plusDays(numPastDays)
+
+        then: "an interval of days in the future is generated"
+        intervals.size() == 1
+        interval.start.year == parsedStart.year
+        interval.start.monthOfYear == parsedStart.monthOfYear
+        interval.start.dayOfYear == parsedStart.dayOfYear
+        interval.end.year == parsedEnd.year
+        interval.end.monthOfYear == parsedEnd.monthOfYear
+        interval.end.dayOfYear == parsedEnd.dayOfYear
+
+        where:
+        numPastDays | _
+        1           | _
+        2           | _
+        3           | _
+    }
+
+    @Unroll
     def "check parsing interval #intervalString parses to #parsedStart/#parsedStop with the use of time periods"() {
 
         given: "An expected interval"
