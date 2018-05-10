@@ -39,7 +39,7 @@ import com.yahoo.bard.webservice.data.time.TimeGrain
 import com.yahoo.bard.webservice.data.volatility.DefaultingVolatileIntervalsService
 import com.yahoo.bard.webservice.data.volatility.VolatileIntervalsFunction
 import com.yahoo.bard.webservice.data.volatility.VolatileIntervalsService
-import com.yahoo.bard.webservice.druid.model.query.AllGranularity
+import com.yahoo.bard.webservice.data.time.AllGranularity
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService
 import com.yahoo.bard.webservice.table.Column

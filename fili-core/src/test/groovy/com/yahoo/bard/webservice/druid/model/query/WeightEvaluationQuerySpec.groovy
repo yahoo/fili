@@ -24,6 +24,7 @@ import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.filterbuilders.DefaultDruidFilterBuilder
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQueryMerger
+import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser
 import com.yahoo.bard.webservice.data.volatility.VolatileIntervalsService
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType

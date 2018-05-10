@@ -5,9 +5,9 @@ package com.yahoo.bard.webservice.web.handlers;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.EMPTY_INTERVAL_FORMAT;
 
 import com.yahoo.bard.webservice.application.MetricRegistryFactory;
-import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
+import com.yahoo.bard.webservice.data.time.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
-import com.yahoo.bard.webservice.druid.model.query.Granularity;
+import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 import com.yahoo.bard.webservice.web.DataApiRequest;

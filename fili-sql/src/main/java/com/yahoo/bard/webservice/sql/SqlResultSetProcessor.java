@@ -4,7 +4,7 @@ package com.yahoo.bard.webservice.sql;
 
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
-import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
+import com.yahoo.bard.webservice.data.time.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.sql.evaluator.PostAggregationEvaluator;
 import com.yahoo.bard.webservice.sql.helper.SqlTimeConverter;

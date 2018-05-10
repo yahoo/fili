@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.druid.model.query
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
+import com.yahoo.bard.webservice.data.time.AllGranularity
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 

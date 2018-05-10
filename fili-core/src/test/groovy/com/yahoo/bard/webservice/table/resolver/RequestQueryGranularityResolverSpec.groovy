@@ -9,7 +9,7 @@ import static org.joda.time.DateTimeZone.UTC
 
 import com.yahoo.bard.webservice.data.QueryBuildingTestingResources
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
-import com.yahoo.bard.webservice.druid.model.query.Granularity
+import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.web.DataApiRequest
 
 import org.joda.time.Interval

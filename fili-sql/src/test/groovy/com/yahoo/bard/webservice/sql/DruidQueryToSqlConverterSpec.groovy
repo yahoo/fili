@@ -10,7 +10,7 @@ import static com.yahoo.bard.webservice.database.Database.METRO_CODE
 import static com.yahoo.bard.webservice.database.Database.TIME
 import static com.yahoo.bard.webservice.druid.model.orderby.SortDirection.ASC
 import static com.yahoo.bard.webservice.druid.model.orderby.SortDirection.DESC
-import static com.yahoo.bard.webservice.druid.model.query.AllGranularity.INSTANCE
+import static com.yahoo.bard.webservice.data.time.AllGranularity.INSTANCE
 import static com.yahoo.bard.webservice.sql.builders.Aggregator.sum
 import static com.yahoo.bard.webservice.sql.builders.Intervals.interval
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.END
@@ -21,7 +21,7 @@ import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.get
 import com.yahoo.bard.webservice.database.Database
 import com.yahoo.bard.webservice.druid.model.orderby.LimitSpec
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery
-import com.yahoo.bard.webservice.druid.model.query.Granularity
+import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder
 import com.yahoo.bard.webservice.sql.helper.CalciteHelper
