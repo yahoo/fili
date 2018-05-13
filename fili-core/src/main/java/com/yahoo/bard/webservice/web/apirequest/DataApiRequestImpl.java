@@ -44,7 +44,6 @@ import com.yahoo.bard.webservice.util.TableUtils;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.ApiHaving;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
-import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.DimensionFieldSpecifierKeywords;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.FilterOperation;

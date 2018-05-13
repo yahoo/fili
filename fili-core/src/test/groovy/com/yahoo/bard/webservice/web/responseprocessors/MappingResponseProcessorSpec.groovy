@@ -13,7 +13,7 @@ import com.yahoo.bard.webservice.druid.client.FailureCallback
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
-import com.yahoo.bard.webservice.web.DataApiRequest
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 import com.yahoo.bard.webservice.web.JsonResponseWriter
 import com.yahoo.bard.webservice.web.PreResponse
 import com.yahoo.bard.webservice.web.ResponseWriter

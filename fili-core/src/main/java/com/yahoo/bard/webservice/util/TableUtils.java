@@ -7,7 +7,7 @@ import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.resolver.QueryPlanningConstraint;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 
 import java.util.Map;
 import java.util.Set;

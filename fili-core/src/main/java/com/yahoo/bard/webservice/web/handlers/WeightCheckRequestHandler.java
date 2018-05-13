@@ -9,7 +9,7 @@ import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 import com.yahoo.bard.webservice.web.responseprocessors.WeightCheckResponseProcessor;

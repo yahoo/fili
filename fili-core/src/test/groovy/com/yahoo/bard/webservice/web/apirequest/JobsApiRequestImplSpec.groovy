@@ -20,7 +20,6 @@ import com.yahoo.bard.webservice.web.BadApiRequestException
 import com.yahoo.bard.webservice.web.FilterOperation
 import com.yahoo.bard.webservice.web.JobNotFoundException
 import com.yahoo.bard.webservice.web.JobRequestFailedException
-import com.yahoo.bard.webservice.web.JobsApiRequest
 import com.yahoo.bard.webservice.web.PreResponse
 
 import rx.observers.TestSubscriber

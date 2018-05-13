@@ -10,7 +10,7 @@ import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.async.ResponseException;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 
 import org.slf4j.Logger;

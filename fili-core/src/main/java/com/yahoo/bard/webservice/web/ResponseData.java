@@ -15,6 +15,7 @@ import com.yahoo.bard.webservice.util.DateTimeUtils;
 import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.util.StreamUtils;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 
 import org.joda.time.Interval;
 import org.slf4j.Logger;

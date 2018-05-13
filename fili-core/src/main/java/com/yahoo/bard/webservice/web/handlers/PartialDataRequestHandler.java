@@ -10,7 +10,7 @@ import com.yahoo.bard.webservice.data.metric.mappers.PartialDataResultSetMapper;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.responseprocessors.MappingResponseProcessor;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;

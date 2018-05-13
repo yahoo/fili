@@ -73,7 +73,6 @@ public interface ApiRequest {
      */
      long getAsyncAfter();
 
-
     /**
      * Get the response builder associated with this request.
      *

@@ -6,6 +6,7 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_DIMENSION_
 
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

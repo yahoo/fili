@@ -18,7 +18,6 @@ import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
-import com.yahoo.bard.webservice.web.TablesApiRequest;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 

@@ -24,6 +24,7 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchEstimate
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchSetOperationPostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.WithFields;
 import com.yahoo.bard.webservice.table.LogicalTable;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;

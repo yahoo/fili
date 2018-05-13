@@ -25,6 +25,7 @@ import com.yahoo.bard.webservice.util.JsonSlurper
 import com.yahoo.bard.webservice.util.JsonSortStrategy
 import com.yahoo.bard.webservice.util.Pagination
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone

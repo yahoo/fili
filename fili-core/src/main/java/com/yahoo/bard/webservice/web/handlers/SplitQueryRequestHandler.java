@@ -10,7 +10,7 @@ import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.util.IntervalUtils;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 import com.yahoo.bard.webservice.web.responseprocessors.SplitQueryResponseProcessor;
 

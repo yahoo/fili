@@ -30,7 +30,7 @@ import com.yahoo.bard.webservice.table.TableIdentifier;
 import com.yahoo.bard.webservice.table.resolver.NoMatchFoundException;
 import com.yahoo.bard.webservice.table.resolver.PhysicalTableResolver;
 import com.yahoo.bard.webservice.table.resolver.QueryPlanningConstraint;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;

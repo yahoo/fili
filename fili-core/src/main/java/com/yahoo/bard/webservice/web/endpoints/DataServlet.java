@@ -42,7 +42,7 @@ import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.resolver.NoMatchFoundException;
 import com.yahoo.bard.webservice.util.Either;
 import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.PreResponse;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.RequestValidationException;
