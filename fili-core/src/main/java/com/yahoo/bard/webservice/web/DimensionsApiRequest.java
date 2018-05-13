@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.web;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import java.util.LinkedHashSet;
