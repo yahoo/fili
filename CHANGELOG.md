@@ -20,6 +20,9 @@ pull request if there was one.
 
 ### Fixed:
 
+- [Legitimate request having interval of 'P1D/current' with 'all' grain](https://github.com/yahoo/fili/pull/692)
+    * PxD/current should be valid interval with "all" granularity.
+
 - [Correct Druid coordinator URL in Wikipedia example](https://github.com/yahoo/fili/pull/683)
     * Config value for Druid coordinator URL is mis-typed.
 

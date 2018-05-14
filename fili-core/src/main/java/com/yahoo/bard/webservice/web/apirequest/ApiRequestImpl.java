@@ -549,12 +549,17 @@ public abstract class ApiRequestImpl implements ApiRequest {
             String dateText,
             DateTimeFormatter timeFormatter
     ) throws BadApiRequestException {
-        //If granularity is all and dateText is macro, then throw an exception
         TimeMacros macro = TimeMacros.forName(dateText);
         if (macro != null) {
             if (granularity instanceof AllGranularity) {
-                LOG.debug(INVALID_INTERVAL_GRANULARITY.logFormat(macro, dateText));
-                throw new BadApiRequestException(INVALID_INTERVAL_GRANULARITY.format(macro, dateText));
+                if (TimeMacros.CURRENT.equals(macro)) {
+                    // Granularity is "all" and dateText is a macro of TimeMacros.CURRENT, this valid
+                    return DateTime.now();
+                } else {
+                    // Granularity is "all" and dateText is not a macro of TimeMacros.CURRENT, this not valid
+                    LOG.debug(INVALID_INTERVAL_GRANULARITY.logFormat(macro, dateText));
+                    throw new BadApiRequestException(INVALID_INTERVAL_GRANULARITY.format(macro, dateText));
+                }
             }
             return macro.getDateTime(now, (TimeGrain) granularity);
         }
