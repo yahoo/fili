@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.util
 import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.druid.model.query.AbstractDruidAggregationQuery
+import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable
 import com.yahoo.bard.webservice.table.ConstrainedTable
 import com.yahoo.bard.webservice.table.LogicalTable
@@ -152,5 +153,59 @@ class TableUtilsSpec extends  Specification {
 
         then:
         constrainedInterval == SimplifiedIntervalList.simplifyIntervals([constrainedInterval1, constrainedInterval2])
+    }
+
+    def "logicalTableAvailability returns union of all the intervals for the availability"() {
+        given: "two intervals [2017, 2018] and [2018, 2019]"
+        Interval interval1 = new Interval("2017/2018")
+        Interval interval2 = new Interval("2018/2019")
+
+        AvailabilityTestingUtils.TestAvailability availability1 = new AvailabilityTestingUtils.TestAvailability(
+                [Mock(DataSourceName)] as Set,
+                ["availability": [interval1] as Set]
+        )
+        AvailabilityTestingUtils.TestAvailability availability2 = new AvailabilityTestingUtils.TestAvailability(
+                [Mock(DataSourceName)] as Set,
+                ["availability": [interval2] as Set]
+        )
+
+        PhysicalTableSchema physicalTableSchema = Mock(PhysicalTableSchema)
+        physicalTableSchema.getPhysicalColumnName(_ as String) >> ""
+        physicalTableSchema.getColumns() >> Collections.emptySet()
+
+        SimplifiedIntervalList simplifiedIntervalList1 = Mock(SimplifiedIntervalList)
+        SimplifiedIntervalList simplifiedIntervalList2 = Mock(SimplifiedIntervalList)
+
+        Column column1 = Mock(Column)
+        Column column2 = Mock(Column)
+
+        Map<Column, SimplifiedIntervalList> intervalList1 = new HashMap<>()
+        intervalList1.put(column1, simplifiedIntervalList1)
+
+        Map<Column, SimplifiedIntervalList> intervalList2 = new HashMap<>()
+        intervalList2.put(column2, simplifiedIntervalList2)
+
+        ConfigPhysicalTable configPhysicalTable1 = Mock(ConfigPhysicalTable)
+        ConfigPhysicalTable configPhysicalTable2 = Mock(ConfigPhysicalTable)
+        configPhysicalTable1.getAvailability() >> availability1
+        configPhysicalTable1.getAvailableIntervals() >> intervalList1
+        configPhysicalTable2.getAvailableIntervals() >> intervalList2
+        configPhysicalTable2.getAvailability() >> availability2
+        configPhysicalTable1.getSchema() >> physicalTableSchema
+        configPhysicalTable2.getSchema() >> physicalTableSchema
+
+        TableGroup tableGroup = Mock(TableGroup)
+        tableGroup.getPhysicalTables() >> ([configPhysicalTable1, configPhysicalTable2] as Set)
+
+        LogicalTable logicalTable = Mock(LogicalTable)
+        logicalTable.getTableGroup() >> tableGroup
+
+        when:
+        SimplifiedIntervalList intervals = TableUtils.logicalTableAvailability(
+                logicalTable
+        )
+
+        then:
+        intervals == SimplifiedIntervalList.simplifyIntervals([interval1, interval2])
     }
 }

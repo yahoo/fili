@@ -295,7 +295,6 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             LOG.debug(TABLE_UNDEFINED.logFormat(tableName));
             throw new BadApiRequestException(TABLE_UNDEFINED.format(tableName));
         }
-        
         DateTimeFormatter dateTimeFormatter = generateDateTimeFormatter(timeZone);
 
         if (BardFeatureFlag.CURRENT_MACRO_USES_LATEST.isOn()) {

@@ -145,6 +145,9 @@ Thanks to everyone who contributed to this release!
 
 ### Added:
 
+- [Logical Table Availability](https://github.com/yahoo/fili/pull/697)
+    * Added `logicalTableAvailability` to `TableUtils` which returns the union of availabilities for the logical table.
+
 - [Annotate Functional Interface](https://github.com/yahoo/fili/pull/606)
     * Add `@FunctionalInterface` annotation to all functional interfaces.
 

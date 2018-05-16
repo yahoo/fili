@@ -97,9 +97,13 @@ public class TableUtils {
                 .reduce(new SimplifiedIntervalList(), SimplifiedIntervalList::union);
     }
 
-    // TODO Add a test for this
-    // TODO Add a changelog for this
-
+    /**
+     * Returns union of availabilities of the logical table.
+     *
+     * @param logicalTable  The logical table
+     *
+     * @return the union of availabilities of the logical table
+     */
     public static SimplifiedIntervalList logicalTableAvailability(LogicalTable logicalTable) {
         return logicalTable.getTableGroup().getPhysicalTables().stream()
                 .map(PhysicalTable::getAllAvailableIntervals)
