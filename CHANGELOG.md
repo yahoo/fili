@@ -145,6 +145,9 @@ Thanks to everyone who contributed to this release!
 
 ### Added:
 
+- [Implement PhysicalTable-Specific Time Limit in PartitionCompositeTable](https://github.com/yahoo/fili/pull/660)
+    * In a composite table, we need to have the underlying tables limit the times in which they participate.
+
 - [Annotate Functional Interface](https://github.com/yahoo/fili/pull/606)
     * Add `@FunctionalInterface` annotation to all functional interfaces.
 

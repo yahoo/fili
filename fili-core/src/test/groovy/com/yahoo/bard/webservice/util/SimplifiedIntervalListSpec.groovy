@@ -160,6 +160,7 @@ class SimplifiedIntervalListSpec extends Specification {
         tinyEvenIntervals   | []                | tinyEvenIntervals
         []                  | tinyOddIntervals  | []
         []                  | []                | []
+        [[5, 7]]            | [[1, 5], [7, 10]] | [[5, 7]]
     }
 
     @Unroll
@@ -188,5 +189,37 @@ class SimplifiedIntervalListSpec extends Specification {
         Days.THREE | [["2015", Days.THREE]]                     | ["2015-01-01"]
         Days.ONE   | [["2015", Days.THREE], ["2013", Days.ONE]] | ["2013", "2015-01-01", "2015-01-02", "2015-01-03"]
         Days.THREE | [["2015", Days.THREE]]                     | ["2015-01-01"]
+    }
+
+    @Unroll
+    def "#start is the first in #intervals"() {
+        expect:
+        new SimplifiedIntervalList(buildIntervalList(intervals)).getStart() == Optional.of(new Interval(start))
+
+        where:
+        start             | intervals
+        "2018/2019"       | ["2018/2019", "2020/2021", "2022/2023"]
+        "2018-01-01/2019" | ["2018-01-01/2019", "2018-02-01/2019", "2022/2023"]
+    }
+
+    def "Empty start is returned on empty list"() {
+        expect:
+        new SimplifiedIntervalList().start == Optional.empty()
+    }
+
+    @Unroll
+    def "#end is the last in #intervals"() {
+        expect:
+        new SimplifiedIntervalList(buildIntervalList(intervals)).getEnd() == Optional.of(new Interval(end))
+
+        where:
+        end               | intervals
+        "2022/2023"       | ["2018/2019", "2020/2021", "2022/2023"]
+        "2022/2023-12-01" | ["2018/2019", "2022/2023-11-01", "2022/2023-12-01"]
+    }
+
+    def "Empty end is returned on empty list"() {
+        expect:
+        new SimplifiedIntervalList().end == Optional.empty()
     }
 }
