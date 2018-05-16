@@ -3,9 +3,7 @@
 package com.yahoo.bard.webservice.web.endpoints;
 
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.UPDATED_METADATA_COLLECTION_NAMES;
-
 import static java.util.AbstractMap.SimpleImmutableEntry;
-
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -18,9 +16,7 @@ import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.TableRequest;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
-import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.resolver.QueryPlanningConstraint;
-import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.util.TableUtils;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.RequestMapper;
@@ -527,12 +523,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
         );
         resultRow.put(
                 "availableIntervals",
-                logicalTable.getTableGroup().getPhysicalTables().stream()
-                        .map(PhysicalTable::getAllAvailableIntervals)
-                        .map(Map::entrySet)
-                        .flatMap(Set::stream)
-                        .map(Map.Entry::getValue)
-                        .reduce(new SimplifiedIntervalList(), SimplifiedIntervalList::union)
+                TableUtils.logicalTableAvailability(logicalTable)
         );
         return resultRow;
     }
