@@ -9,6 +9,7 @@ import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.resolver.QueryPlanningConstraint;
 import com.yahoo.bard.webservice.web.DataApiRequest;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -93,6 +94,18 @@ public class TableUtils {
         return logicalTable.getTableGroup().getPhysicalTables().stream()
                 .map(physicalTable -> physicalTable.withConstraint(queryPlanningConstraint))
                 .map(PhysicalTable::getAvailableIntervals)
+                .reduce(new SimplifiedIntervalList(), SimplifiedIntervalList::union);
+    }
+
+    // TODO Add a test for this
+    // TODO Add a changelog for this
+
+    public static SimplifiedIntervalList logicalTableAvailability(LogicalTable logicalTable) {
+        return logicalTable.getTableGroup().getPhysicalTables().stream()
+                .map(PhysicalTable::getAllAvailableIntervals)
+                .map(Map::entrySet)
+                .flatMap(Set::stream)
+                .map(Map.Entry::getValue)
                 .reduce(new SimplifiedIntervalList(), SimplifiedIntervalList::union);
     }
 }

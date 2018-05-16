@@ -40,6 +40,7 @@ import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.table.TableIdentifier;
 import com.yahoo.bard.webservice.util.StreamUtils;
+import com.yahoo.bard.webservice.util.TableUtils;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.ApiHaving;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
@@ -294,10 +295,17 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             LOG.debug(TABLE_UNDEFINED.logFormat(tableName));
             throw new BadApiRequestException(TABLE_UNDEFINED.format(tableName));
         }
-
+        
         DateTimeFormatter dateTimeFormatter = generateDateTimeFormatter(timeZone);
 
-        this.intervals = generateIntervals(intervals, this.granularity, dateTimeFormatter);
+        if (BardFeatureFlag.CURRENT_MACRO_USES_LATEST.isOn()) {
+            DateTime firstUnavailableInstant = TableUtils.logicalTableAvailability(getTable()).getLast().getEnd();
+            DateTime adjustedNow =  firstUnavailableInstant.isBeforeNow() ? firstUnavailableInstant : new DateTime();
+
+            this.intervals = generateIntervals(adjustedNow, intervals, this.granularity, dateTimeFormatter);
+        } else {
+            this.intervals = generateIntervals(intervals, this.granularity, dateTimeFormatter);
+        }
 
         this.filterBuilder = druidFilterBuilder;
 
