@@ -173,23 +173,23 @@ class TableUtilsSpec extends  Specification {
         physicalTableSchema.getPhysicalColumnName(_ as String) >> ""
         physicalTableSchema.getColumns() >> Collections.emptySet()
 
-        SimplifiedIntervalList simplifiedIntervalList1 = Mock(SimplifiedIntervalList)
-        SimplifiedIntervalList simplifiedIntervalList2 = Mock(SimplifiedIntervalList)
+        SimplifiedIntervalList simplifiedIntervalList1 = new SimplifiedIntervalList(Arrays.asList(interval1))
+        SimplifiedIntervalList simplifiedIntervalList2 = new SimplifiedIntervalList(Arrays.asList(interval2))
 
         Column column1 = Mock(Column)
         Column column2 = Mock(Column)
 
-        Map<Column, SimplifiedIntervalList> intervalList1 = new HashMap<>()
-        intervalList1.put(column1, simplifiedIntervalList1)
+        Map<Column, SimplifiedIntervalList> intervalMap1 = new HashMap<>()
+        intervalMap1.put(column1, simplifiedIntervalList1)
 
-        Map<Column, SimplifiedIntervalList> intervalList2 = new HashMap<>()
-        intervalList2.put(column2, simplifiedIntervalList2)
+        Map<Column, SimplifiedIntervalList> intervalMap2 = new HashMap<>()
+        intervalMap2.put(column2, simplifiedIntervalList2)
 
         ConfigPhysicalTable configPhysicalTable1 = Mock(ConfigPhysicalTable)
         ConfigPhysicalTable configPhysicalTable2 = Mock(ConfigPhysicalTable)
         configPhysicalTable1.getAvailability() >> availability1
-        configPhysicalTable1.getAvailableIntervals() >> intervalList1
-        configPhysicalTable2.getAvailableIntervals() >> intervalList2
+        configPhysicalTable1.getAllAvailableIntervals() >> intervalMap1
+        configPhysicalTable2.getAllAvailableIntervals() >> intervalMap2
         configPhysicalTable2.getAvailability() >> availability2
         configPhysicalTable1.getSchema() >> physicalTableSchema
         configPhysicalTable2.getSchema() >> physicalTableSchema
