@@ -9,7 +9,7 @@ import com.yahoo.bard.webservice.data.PartialDataHandler
 import com.yahoo.bard.webservice.data.Result
 import com.yahoo.bard.webservice.data.ResultSetSchema
 import com.yahoo.bard.webservice.data.metric.mappers.PartialDataResultSetMapper
-import com.yahoo.bard.webservice.druid.model.query.AllGranularity
+import com.yahoo.bard.webservice.data.time.AllGranularity
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 

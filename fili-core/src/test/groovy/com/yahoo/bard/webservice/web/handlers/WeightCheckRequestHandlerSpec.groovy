@@ -14,7 +14,7 @@ import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.druid.model.query.WeightEvaluationQuery
 import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo
-import com.yahoo.bard.webservice.web.DataApiRequest
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor
 import com.yahoo.bard.webservice.web.responseprocessors.WeightCheckResponseProcessor
 import com.yahoo.bard.webservice.web.util.QueryWeightUtil

@@ -32,7 +32,7 @@ import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.having.Having;
 import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn;
 import com.yahoo.bard.webservice.druid.model.orderby.SortDirection;
-import com.yahoo.bard.webservice.druid.model.query.Granularity;
+import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.TimedPhase;
@@ -40,10 +40,10 @@ import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.table.TableIdentifier;
 import com.yahoo.bard.webservice.util.StreamUtils;
+import com.yahoo.bard.webservice.util.TableUtils;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.ApiHaving;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
-import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.DimensionFieldSpecifierKeywords;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.FilterOperation;
@@ -294,10 +294,16 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             LOG.debug(TABLE_UNDEFINED.logFormat(tableName));
             throw new BadApiRequestException(TABLE_UNDEFINED.format(tableName));
         }
-
         DateTimeFormatter dateTimeFormatter = generateDateTimeFormatter(timeZone);
 
-        this.intervals = generateIntervals(intervals, this.granularity, dateTimeFormatter);
+        if (BardFeatureFlag.CURRENT_MACRO_USES_LATEST.isOn()) {
+            DateTime firstUnavailableInstant = TableUtils.logicalTableAvailability(getTable()).getLast().getEnd();
+            DateTime adjustedNow =  firstUnavailableInstant.isBeforeNow() ? firstUnavailableInstant : new DateTime();
+
+            this.intervals = generateIntervals(adjustedNow, intervals, this.granularity, dateTimeFormatter);
+        } else {
+            this.intervals = generateIntervals(intervals, this.granularity, dateTimeFormatter);
+        }
 
         this.filterBuilder = druidFilterBuilder;
 

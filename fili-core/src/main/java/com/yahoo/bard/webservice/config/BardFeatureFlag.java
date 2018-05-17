@@ -6,6 +6,8 @@ package com.yahoo.bard.webservice.config;
  * Feature flags bind an object to a system configuration name.
  */
 public enum BardFeatureFlag implements FeatureFlag {
+
+    CURRENT_MACRO_USES_LATEST("current_macro_uses_latest"),
     PARTIAL_DATA("partial_data_enabled"),
     @Deprecated DRUID_CACHE("druid_cache_enabled"),
     @Deprecated DRUID_CACHE_V2("druid_cache_v2_enabled"),

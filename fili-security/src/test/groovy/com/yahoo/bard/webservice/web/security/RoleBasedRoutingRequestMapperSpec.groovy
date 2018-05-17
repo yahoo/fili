@@ -4,7 +4,7 @@ package com.yahoo.bard.webservice.web.security
 
 import com.yahoo.bard.webservice.config.SystemConfigProvider
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries
-import com.yahoo.bard.webservice.web.ApiRequest
+import com.yahoo.bard.webservice.web.apirequest.ApiRequest
 import com.yahoo.bard.webservice.web.RequestMapper
 
 import spock.lang.Specification

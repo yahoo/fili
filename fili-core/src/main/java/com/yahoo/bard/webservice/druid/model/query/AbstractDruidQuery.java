@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.Collections;
 
 /**
- * Base class for druid metadata queries.
+ * Base class for druid queries.
  *
  * @param <Q>  Type of AbstractDruidQuery this one extends. This allows the queries to nest their own type.
  */

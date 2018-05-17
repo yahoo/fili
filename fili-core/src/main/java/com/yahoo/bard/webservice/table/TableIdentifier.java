@@ -3,8 +3,8 @@
 package com.yahoo.bard.webservice.table;
 
 import com.yahoo.bard.webservice.data.time.TimeGrain;
-import com.yahoo.bard.webservice.druid.model.query.Granularity;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.data.time.Granularity;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 
 import org.joda.time.ReadablePeriod;
 

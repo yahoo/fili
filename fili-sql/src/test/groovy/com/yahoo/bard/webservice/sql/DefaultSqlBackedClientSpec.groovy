@@ -22,7 +22,7 @@ import static com.yahoo.bard.webservice.database.Database.USER
 import static com.yahoo.bard.webservice.database.Database.WIKITICKER
 import static com.yahoo.bard.webservice.druid.model.orderby.SortDirection.ASC
 import static com.yahoo.bard.webservice.druid.model.orderby.SortDirection.DESC
-import static com.yahoo.bard.webservice.druid.model.query.AllGranularity.INSTANCE
+import static com.yahoo.bard.webservice.data.time.AllGranularity.INSTANCE
 import static com.yahoo.bard.webservice.sql.builders.Aggregator.longMax
 import static com.yahoo.bard.webservice.sql.builders.Aggregator.longMin
 import static com.yahoo.bard.webservice.sql.builders.Aggregator.longSum
@@ -60,7 +60,7 @@ import com.yahoo.bard.webservice.druid.model.having.Having
 import com.yahoo.bard.webservice.druid.model.orderby.LimitSpec
 import com.yahoo.bard.webservice.druid.model.query.AbstractDruidAggregationQuery
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery
-import com.yahoo.bard.webservice.druid.model.query.Granularity
+import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery
 import com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder

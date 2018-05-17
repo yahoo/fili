@@ -15,7 +15,7 @@ import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource;
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource;
 import com.yahoo.bard.webservice.druid.model.orderby.LimitSpec;
-import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
+import com.yahoo.bard.webservice.data.time.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery;
 import com.yahoo.bard.webservice.sql.SqlBackedClient;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;

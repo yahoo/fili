@@ -13,7 +13,7 @@ import com.yahoo.bard.webservice.async.jobs.stores.ApiJobStore
 import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore
 import com.yahoo.bard.webservice.data.ResultSet
 import com.yahoo.bard.webservice.data.ResultSetSchema
-import com.yahoo.bard.webservice.druid.model.query.AllGranularity
+import com.yahoo.bard.webservice.data.time.AllGranularity
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
 import com.yahoo.bard.webservice.util.Either
 import com.yahoo.bard.webservice.web.PreResponse

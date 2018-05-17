@@ -3,7 +3,7 @@
 package com.yahoo.bard.webservice.table.resolver
 
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
-import com.yahoo.bard.webservice.web.DataApiRequest
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 
 import spock.lang.Specification
 

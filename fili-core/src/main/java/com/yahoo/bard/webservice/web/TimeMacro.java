@@ -13,11 +13,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * TimeMacros.
+ * TimeMacro.
  * <p>
  * Time macros are used as substitute for the actual date values
  */
-public enum TimeMacros {
+public enum TimeMacro {
 
     CURRENT("current", new CurrentMacroCalculation()),
     NEXT("next", new NextMacroCalculation());
@@ -25,8 +25,8 @@ public enum TimeMacros {
     private final String macroName;
     private final MacroCalculationStrategies calculation;
 
-    private static final Map<String, TimeMacros> NAMES_TO_VALUES = Arrays.stream(TimeMacros.values())
-            .collect(Collectors.toMap(TimeMacros::name, Function.identity()));
+    private static final Map<String, TimeMacro> NAMES_TO_VALUES = Arrays.stream(TimeMacro.values())
+            .collect(Collectors.toMap(TimeMacro::name, Function.identity()));
 
     /**
      * Constructor.
@@ -34,7 +34,7 @@ public enum TimeMacros {
      * @param macroName  Name of the macro
      * @param calculation  Calculation for the macro
      */
-    TimeMacros(String macroName, MacroCalculationStrategies calculation) {
+    TimeMacro(String macroName, MacroCalculationStrategies calculation) {
         this.macroName = macroName;
         this.calculation = calculation;
     }
@@ -55,7 +55,7 @@ public enum TimeMacros {
      *
      * @return the time macro that matches
      */
-    public static TimeMacros forName(String name) {
+    public static TimeMacro forName(String name) {
         return NAMES_TO_VALUES.get(name.toUpperCase(Locale.ENGLISH));
     }
 

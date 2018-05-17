@@ -9,6 +9,8 @@ import com.yahoo.bard.webservice.data.ResultSet
 import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.util.Pagination
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
+import com.yahoo.bard.webservice.web.apirequest.ApiRequest
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 
 import org.joda.time.DateTime
 

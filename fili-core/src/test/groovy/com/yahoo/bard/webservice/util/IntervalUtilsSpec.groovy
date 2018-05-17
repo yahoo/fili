@@ -9,8 +9,8 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.YEAR
 
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.data.time.TimeGrain
-import com.yahoo.bard.webservice.druid.model.query.AllGranularity
-import com.yahoo.bard.webservice.druid.model.query.Granularity
+import com.yahoo.bard.webservice.data.time.AllGranularity
+import com.yahoo.bard.webservice.data.time.Granularity
 
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
