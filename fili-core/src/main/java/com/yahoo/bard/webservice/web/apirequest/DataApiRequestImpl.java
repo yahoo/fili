@@ -39,6 +39,7 @@ import com.yahoo.bard.webservice.logging.TimedPhase;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.table.TableIdentifier;
+import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.util.StreamUtils;
 import com.yahoo.bard.webservice.util.TableUtils;
 import com.yahoo.bard.webservice.web.ApiFilter;
@@ -297,9 +298,14 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         DateTimeFormatter dateTimeFormatter = generateDateTimeFormatter(timeZone);
 
         if (BardFeatureFlag.CURRENT_MACRO_USES_LATEST.isOn()) {
-            DateTime firstUnavailableInstant = TableUtils.logicalTableAvailability(getTable()).getLast().getEnd();
-            DateTime adjustedNow =  firstUnavailableInstant.isBeforeNow() ? firstUnavailableInstant : new DateTime();
-
+            SimplifiedIntervalList availability =  TableUtils.logicalTableAvailability(getTable());
+            DateTime adjustedNow = new DateTime();
+            if (! availability.isEmpty()) {
+                DateTime firstUnavailable =  availability.getLast().getEnd();
+                if (firstUnavailable.isBeforeNow() ) {
+                    adjustedNow = firstUnavailable;
+                }
+            }
             this.intervals = generateIntervals(adjustedNow, intervals, this.granularity, dateTimeFormatter);
         } else {
             this.intervals = generateIntervals(intervals, this.granularity, dateTimeFormatter);
