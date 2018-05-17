@@ -30,8 +30,8 @@ class UtilsSpec extends Specification {
         given: "a file path without a parent directory"
         String path = TEMP_DIR + "data.txt"
 
-        // make sure parent directory does not exist yet
-        assert ! new File(TEMP_DIR).exists()
+        expect: "parent directory does not exist yet"
+        ! new File(TEMP_DIR).exists()
 
         when: "create a parent for the path"
         Utils.createParentDirectories(path)
@@ -56,16 +56,16 @@ class UtilsSpec extends Specification {
         Files.createDirectory(Paths.get(subDir))
         Files.createFile(Paths.get(subFile))
 
-        // make sure all files and sub-dir exist
-        assert new File(file1).isFile()
-        assert new File(file2).isFile()
-        assert new File(subDir).isDirectory()
-        assert new File(subFile).isFile()
+        expect: "all files and sub-dir exist"
+        new File(file1).isFile()
+        new File(file2).isFile()
+        new File(subDir).isDirectory()
+        new File(subFile).isFile()
 
-        assert new File(file1).exists()
-        assert new File(file2).exists()
-        assert new File(subDir).exists()
-        assert new File(subFile).exists()
+        new File(file1).exists()
+        new File(file2).exists()
+        new File(subDir).exists()
+        new File(subFile).exists()
 
         when: "delete the parent directory"
         Utils.deleteFiles(TEMP_DIR)

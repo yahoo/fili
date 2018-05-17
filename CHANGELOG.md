@@ -5,7 +5,10 @@ All notable changes to Fili will be documented here. Changes are accumulated as 
 major version. Each change has a link to the pull request that makes the change and to the issue that triggered the
 pull request if there was one.
 
+### Added:
 
+- [Add tests to Utils](https://github.com/yahoo/fili/pull/675)
+    * Add missing tests to `Utils` class.
 
 ### Changed:
 
