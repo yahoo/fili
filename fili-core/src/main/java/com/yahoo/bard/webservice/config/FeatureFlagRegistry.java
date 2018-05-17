@@ -41,7 +41,7 @@ public class FeatureFlagRegistry {
      */
     public FeatureFlag forName(String name) throws BadApiRequestException {
         FeatureFlag flag = NAMES_TO_VALUES.get(name.toUpperCase(Locale.ENGLISH));
-        return flag != null ? flag : Utils.<FeatureFlag>insteadThrowRuntime(
+        return flag != null ? flag : Utils.insteadThrowRuntime(
                 new BadApiRequestException("Invalid feature flag: " + name)
         );
     }

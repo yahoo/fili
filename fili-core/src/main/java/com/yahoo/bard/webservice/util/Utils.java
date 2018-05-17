@@ -60,7 +60,7 @@ public class Utils {
      * </pre>
      *
      * @param <E>  The element type for the linked hash set
-     * @param e  the array from which the LinkedHashSet will be built
+     * @param e  The array from which the LinkedHashSet will be built
      *
      * @return a LinkedHashSet view of the specified array
      */
