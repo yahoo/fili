@@ -10,7 +10,7 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
-import com.yahoo.bard.webservice.druid.model.query.Granularity;
+import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.TimedPhase;
 import com.yahoo.bard.webservice.table.LogicalTable;
@@ -18,7 +18,6 @@ import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
-import com.yahoo.bard.webservice.web.TablesApiRequest;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 

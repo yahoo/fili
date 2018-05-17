@@ -14,7 +14,7 @@ import com.yahoo.bard.webservice.table.TableGroup
 import com.yahoo.bard.webservice.table.availability.AvailabilityTestingUtils
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
 import com.yahoo.bard.webservice.table.resolver.QueryPlanningConstraint
-import com.yahoo.bard.webservice.web.DataApiRequest
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 
 import org.joda.time.Interval
 

@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.web.responseprocessors;
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
 import com.yahoo.bard.webservice.data.DruidResponseParser;
 import com.yahoo.bard.webservice.data.HttpResponseMaker;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.PreResponse;
 
 import rx.subjects.Subject;

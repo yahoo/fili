@@ -24,7 +24,7 @@ import com.yahoo.bard.webservice.web.RequestValidationException;
 import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.TableFullViewProcessor;
 import com.yahoo.bard.webservice.web.TableView;
-import com.yahoo.bard.webservice.web.TablesApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.TablesApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.HavingGenerator;
 import com.yahoo.bard.webservice.web.apirequest.TablesApiRequestImpl;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
@@ -501,7 +501,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
      * @return Full view of the logical table
      *
      * @deprecated In order to display constrained data availability in table resource, this method needs to accept a
-     * {@link com.yahoo.bard.webservice.web.TablesApiRequest} as a parameter. Use
+     * {@link TablesApiRequest} as a parameter. Use
      * {@link #getLogicalTableFullView(TablesApiRequestImpl, UriInfo)} instead.
      */
     @Deprecated

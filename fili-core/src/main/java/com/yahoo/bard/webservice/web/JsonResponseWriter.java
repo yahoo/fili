@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.web;
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
 import com.yahoo.bard.webservice.data.Result;
+import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;

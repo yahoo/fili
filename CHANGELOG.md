@@ -9,6 +9,10 @@ pull request if there was one.
 
 ### Changed:
 
+- [Class re-organization](https://github.com/yahoo/fili/pull/694)
+    * Put `Granularity` interfaces and its implementations in the same package
+    * Put `*ApiRequest` interfaces and their implementations in the same package
+
 - [Avoid casting to generate SimplifiedIntervalList](https://github.com/yahoo/fili/pull/677)
     * Some downstream projects generated partial intervals as `ArrayList`, which cannot be cased to
       `SimplifiedIntervalList` in places like `getVolatileIntervalsWithDefault`. The result is a casting exception which

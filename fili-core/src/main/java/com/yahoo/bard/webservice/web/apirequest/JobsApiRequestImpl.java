@@ -11,7 +11,6 @@ import com.yahoo.bard.webservice.web.BadFilterException;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.JobNotFoundException;
 import com.yahoo.bard.webservice.web.JobRequestFailedException;
-import com.yahoo.bard.webservice.web.JobsApiRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

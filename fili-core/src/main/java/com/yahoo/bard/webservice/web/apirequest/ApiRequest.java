@@ -1,10 +1,11 @@
 // Copyright 2016 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.web;
+package com.yahoo.bard.webservice.web.apirequest;
 
 import static com.yahoo.bard.webservice.util.DateTimeFormatterFactory.FULLY_OPTIONAL_DATETIME_FORMATTER;
 
 import com.yahoo.bard.webservice.util.Pagination;
+import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import org.joda.time.DateTimeZone;
@@ -71,7 +72,6 @@ public interface ApiRequest {
      * asynchronous
      */
      long getAsyncAfter();
-
 
     /**
      * Get the response builder associated with this request.

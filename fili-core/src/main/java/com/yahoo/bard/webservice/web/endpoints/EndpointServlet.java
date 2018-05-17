@@ -3,7 +3,7 @@
 package com.yahoo.bard.webservice.web.endpoints;
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
-import com.yahoo.bard.webservice.web.ApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
 import com.yahoo.bard.webservice.web.CsvResponse;
 import com.yahoo.bard.webservice.web.JsonResponse;
 import com.yahoo.bard.webservice.web.util.ResponseFormat;

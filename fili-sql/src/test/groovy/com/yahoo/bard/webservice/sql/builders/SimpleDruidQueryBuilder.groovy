@@ -45,7 +45,7 @@ import com.yahoo.bard.webservice.druid.model.orderby.LimitSpec
 import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn
 import com.yahoo.bard.webservice.druid.model.orderby.SortDirection
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
-import com.yahoo.bard.webservice.druid.model.query.Granularity
+import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery
 import com.yahoo.bard.webservice.metadata.DataSourceMetadata

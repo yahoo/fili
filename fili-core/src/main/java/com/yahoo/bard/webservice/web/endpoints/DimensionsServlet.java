@@ -17,7 +17,7 @@ import com.yahoo.bard.webservice.logging.blocks.DimensionRequest;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.util.StreamUtils;
-import com.yahoo.bard.webservice.web.DimensionsApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequest;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.RequestValidationException;

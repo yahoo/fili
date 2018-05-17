@@ -3,6 +3,8 @@
 package com.yahoo.bard.webservice.web;
 
 
+import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
+
 import java.io.IOException;
 import java.io.OutputStream;
 
