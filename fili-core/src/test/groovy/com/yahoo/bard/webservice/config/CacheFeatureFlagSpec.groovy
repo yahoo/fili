@@ -4,15 +4,16 @@ package com.yahoo.bard.webservice.config
 
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_CACHE
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_CACHE_V2
-import static com.yahoo.bard.webservice.config.CacheFeatureFlag.*
+import static com.yahoo.bard.webservice.config.CacheFeatureFlag.ETAG
+import static com.yahoo.bard.webservice.config.CacheFeatureFlag.LOCAL_SIGNATURE
+import static com.yahoo.bard.webservice.config.CacheFeatureFlag.NONE
+import static com.yahoo.bard.webservice.config.CacheFeatureFlag.TTL
 
 import spock.lang.Specification
 import spock.lang.Unroll
 
 class CacheFeatureFlagSpec extends Specification {
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance()
-    private static final String TTL_CACHE_CONFIG_KEY = SYSTEM_CONFIG.getPackageVariableName("druid_cache_enabled")
-    private static final String LOCAL_SIGNATURE_CACHE_CONFIG_KEY = SYSTEM_CONFIG.getPackageVariableName("druid_cache_v2_enabled")
     private static final String ETAG_CACHE_CONFIG_KEY = SYSTEM_CONFIG.getPackageVariableName("query_response_caching_strategy")
 
     String queryResponseCachingStrategy
@@ -23,10 +24,10 @@ class CacheFeatureFlagSpec extends Specification {
     }
 
     def cleanup() {
-        CacheFeatureFlag.TTL.reset()
-        CacheFeatureFlag.ETAG.reset()
-        CacheFeatureFlag.LOCAL_SIGNATURE.reset()
-        CacheFeatureFlag.NONE.reset()
+        TTL.reset()
+        ETAG.reset()
+        LOCAL_SIGNATURE.reset()
+        NONE.reset()
     }
 
     @Unroll
