@@ -302,7 +302,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             DateTime adjustedNow = new DateTime();
             if (! availability.isEmpty()) {
                 DateTime firstUnavailable =  availability.getLast().getEnd();
-                if (firstUnavailable.isBeforeNow() ) {
+                if (firstUnavailable.isBeforeNow()) {
                     adjustedNow = firstUnavailable;
                 }
             }
