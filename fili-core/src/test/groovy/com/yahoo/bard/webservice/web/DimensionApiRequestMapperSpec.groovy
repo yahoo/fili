@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.web
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries
+import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequest
 import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequestImpl
 import com.yahoo.bard.webservice.web.endpoints.DimensionsServlet
 

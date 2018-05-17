@@ -12,7 +12,7 @@ import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.MetricRequest;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
-import com.yahoo.bard.webservice.web.MetricsApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.MetricsApiRequest;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.RequestValidationException;
 import com.yahoo.bard.webservice.web.ResponseFormatResolver;
@@ -256,6 +256,7 @@ public class MetricsServlet extends EndpointServlet {
         resultRow.put("category", logicalMetric.getCategory());
         resultRow.put("name", logicalMetric.getName());
         resultRow.put("longName", logicalMetric.getLongName());
+        resultRow.put("type", logicalMetric.getType());
         resultRow.put("uri", getLogicalMetricUrl(logicalMetric, uriInfo));
         return resultRow;
     }

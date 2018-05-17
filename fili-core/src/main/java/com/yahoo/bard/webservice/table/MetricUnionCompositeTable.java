@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.table;
 
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
+import com.yahoo.bard.webservice.table.availability.Availability;
 import com.yahoo.bard.webservice.table.availability.MetricUnionAvailability;
 
 import java.util.Map;
@@ -55,13 +56,15 @@ public class MetricUnionCompositeTable extends BaseCompositePhysicalTable {
      * @param physicalTables  A set of PhysicalTables that are put together under this table. The tables shall have
      * zoned time grains that all satisfy the provided timeGrain
      * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
+     * @param availabilitiesToMetricNames  A map of all availabilities to set of metric names
      */
     public MetricUnionCompositeTable(
             @NotNull TableName name,
             @NotNull ZonedTimeGrain timeGrain,
             @NotNull Set<Column> columns,
             @NotNull Set<ConfigPhysicalTable> physicalTables,
-            @NotNull Map<String, String> logicalToPhysicalColumnNames
+            @NotNull Map<String, String> logicalToPhysicalColumnNames,
+            @NotNull Map<Availability, Set<String>> availabilitiesToMetricNames
     ) {
         super(
                 name,
@@ -71,7 +74,7 @@ public class MetricUnionCompositeTable extends BaseCompositePhysicalTable {
                 logicalToPhysicalColumnNames,
                 new MetricUnionAvailability(
                         physicalTables.stream().map(ConfigPhysicalTable::getAvailability).collect(Collectors.toSet()),
-                        columns
+                        availabilitiesToMetricNames
                 )
         );
     }

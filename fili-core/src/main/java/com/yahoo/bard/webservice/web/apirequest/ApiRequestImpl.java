@@ -26,8 +26,8 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.time.GranularityParser;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
-import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
-import com.yahoo.bard.webservice.druid.model.query.Granularity;
+import com.yahoo.bard.webservice.data.time.AllGranularity;
+import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.TimedPhase;
 import com.yahoo.bard.webservice.table.LogicalTable;
@@ -37,14 +37,13 @@ import com.yahoo.bard.webservice.util.AllPagesPagination;
 import com.yahoo.bard.webservice.util.GranularityParseException;
 import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.web.ApiFilter;
-import com.yahoo.bard.webservice.web.ApiRequest;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
 import com.yahoo.bard.webservice.web.BadFilterException;
 import com.yahoo.bard.webservice.web.BadPaginationException;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.FilterOperation;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
-import com.yahoo.bard.webservice.web.TimeMacros;
+import com.yahoo.bard.webservice.web.TimeMacro;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.PaginationLink;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
@@ -386,6 +385,27 @@ public abstract class ApiRequestImpl implements ApiRequest {
             Granularity granularity,
             DateTimeFormatter dateTimeFormatter
     ) throws BadApiRequestException {
+        return generateIntervals(new DateTime(), apiIntervalQuery, granularity, dateTimeFormatter);
+    }
+
+
+    /**
+     * Extracts the set of intervals from the api request.
+     *
+     * @param now The 'now' for which time macros will be relatively calculated
+     * @param apiIntervalQuery  API string containing the intervals in ISO 8601 format, values separated by ','.
+     * @param granularity  The granularity to generate the date based on period or macros.
+     * @param dateTimeFormatter  The formatter to parse date time interval segments
+     *
+     * @return Set of jodatime interval objects.
+     * @throws BadApiRequestException if the requested interval is not found.
+     */
+    protected static Set<Interval> generateIntervals(
+            DateTime now,
+            String apiIntervalQuery,
+            Granularity granularity,
+            DateTimeFormatter dateTimeFormatter
+    ) throws BadApiRequestException {
         try (TimedPhase timer = RequestLog.startTiming("GeneratingIntervals")) {
             Set<Interval> generated = new LinkedHashSet<>();
             if (apiIntervalQuery == null || apiIntervalQuery.equals("")) {
@@ -417,7 +437,6 @@ public abstract class ApiRequestImpl implements ApiRequest {
                     }
 
                     Interval interval;
-                    DateTime now = new DateTime();
                     //If start interval is period, then create new interval with computed end date
                     //possible end interval could be next,current, date
                     if (start.startsWith("P")) {
@@ -458,7 +477,6 @@ public abstract class ApiRequestImpl implements ApiRequest {
             return generated;
         }
     }
-
     /**
      * Generates filter objects on the based on the filter query in the api request.
      *
@@ -550,7 +568,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
             DateTimeFormatter timeFormatter
     ) throws BadApiRequestException {
         //If granularity is all and dateText is macro, then throw an exception
-        TimeMacros macro = TimeMacros.forName(dateText);
+        TimeMacro macro = TimeMacro.forName(dateText);
         if (macro != null) {
             if (granularity instanceof AllGranularity) {
                 LOG.debug(INVALID_INTERVAL_GRANULARITY.logFormat(macro, dateText));

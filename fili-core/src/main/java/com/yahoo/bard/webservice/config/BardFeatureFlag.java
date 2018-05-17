@@ -6,15 +6,19 @@ package com.yahoo.bard.webservice.config;
  * Feature flags bind an object to a system configuration name.
  */
 public enum BardFeatureFlag implements FeatureFlag {
+
+    CURRENT_MACRO_USES_LATEST("current_macro_uses_latest"),
     PARTIAL_DATA("partial_data_enabled"),
     @Deprecated DRUID_CACHE("druid_cache_enabled"),
     @Deprecated DRUID_CACHE_V2("druid_cache_v2_enabled"),
     QUERY_SPLIT("query_split_enabled"),
+    CACHE_PARTIAL_DATA("cache_partial_data"),
     TOP_N("top_n_enabled"),
     DATA_FILTER_SUBSTRING_OPERATIONS("data_filter_substring_operations_enabled"),
     INTERSECTION_REPORTING("intersection_reporting_enabled"),
     UPDATED_METADATA_COLLECTION_NAMES("updated_metadata_collection_names_enabled"),
     DRUID_COORDINATOR_METADATA("druid_coordinator_metadata_enabled"),
+    DRUID_LOOKUP_METADATA("druid_lookup_metadata_enabled"),
     DRUID_DIMENSIONS_LOADER("druid_dimensions_loader_enabled"),
     CASE_SENSITIVE_KEYS("case_sensitive_keys_enabled");
 

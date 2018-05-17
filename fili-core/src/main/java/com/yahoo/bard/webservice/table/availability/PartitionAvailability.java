@@ -2,12 +2,15 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.availability;
 
+import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.table.resolver.DataSourceFilter;
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
@@ -92,6 +95,13 @@ public class PartitionAvailability extends BaseCompositeAvailability implements 
     @Override
     public SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint constraint) {
         return mergeAvailabilities(constraint);
+    }
+
+    @Override
+    public Set<DataSourceName> getDataSourceNames(PhysicalDataSourceConstraint constraint) {
+        return filteredAvailabilities(constraint)
+                .map(availability -> availability.getDataSourceNames(constraint))
+                .flatMap(Set::stream).collect(Collectors.toSet());
     }
 
     @Override

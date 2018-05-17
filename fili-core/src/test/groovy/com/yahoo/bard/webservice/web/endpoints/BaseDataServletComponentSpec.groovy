@@ -263,12 +263,12 @@ abstract class BaseDataServletComponentSpec extends Specification {
      */
     //    def "basic stub test"() {
     //        setup:
-    //        TestDruidWebService druid = jtb.getDruidWebService();
+    //        TestDruidWebService druid = jerseyTestBinder.getDruidWebService();
     //
     //        /* Setup what druid will return */
     //        druid.jsonResponse = "{}"
     //
-    //        jtb.getHarness().target("data/network/week/product")
+    //        jerseyTestBinder.getHarness().target("data/network/week/product")
     //                .queryParam("metrics", "dayAvgPageViews")
     //                .queryParam("dateTime", "2014-06-01%2F2014-06-05")
     //                .request()

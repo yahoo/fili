@@ -7,6 +7,8 @@ import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
+import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -107,6 +109,12 @@ public class JsonApiResponseWriter extends JsonAndJsonApiResponseWriter {
             Map<Dimension, Set<Map<DimensionField, String>>> sidecars = new HashMap<>();
             for (DimensionColumn dimensionColumn :
                     responseData.getResultSet().getSchema().getColumns(DimensionColumn.class)) {
+                if (request instanceof DataApiRequest) {
+                    DataApiRequest dataApiRequest = (DataApiRequest) request;
+                    if (dataApiRequest.getDimensionFields().get(dimensionColumn.getDimension()).isEmpty()) {
+                        continue;
+                    }
+                }
                 sidecars.put(dimensionColumn.getDimension(), new LinkedHashSet<>());
             }
 

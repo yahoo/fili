@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.druid.model.postaggregation;
 /**
  * An interface for post aggregation types.
  */
+@FunctionalInterface
 public interface PostAggregationType {
 
     /**

@@ -18,7 +18,7 @@ import com.yahoo.bard.webservice.druid.model.orderby.LimitSpec;
 import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn;
 import com.yahoo.bard.webservice.druid.model.orderby.TopNMetric;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
-import com.yahoo.bard.webservice.druid.model.query.Granularity;
+import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery;
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery;
 import com.yahoo.bard.webservice.druid.model.query.TopNQuery;
@@ -30,7 +30,7 @@ import com.yahoo.bard.webservice.table.TableIdentifier;
 import com.yahoo.bard.webservice.table.resolver.NoMatchFoundException;
 import com.yahoo.bard.webservice.table.resolver.PhysicalTableResolver;
 import com.yahoo.bard.webservice.table.resolver.QueryPlanningConstraint;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
@@ -211,7 +211,7 @@ public class DruidQueryBuilder {
         } else {
             LOG.trace("Building a multi pass druid groupBy query");
             // Build the inner query without an order by, since we only want to do that at the top level
-            // Sorts don't apply to inner queries and Filters only apply to the innermost query
+            // Sorts and Having don't apply to inner queries and Filters only apply to the innermost query
             GroupByQuery query = buildGroupByQuery(
                     template.getInnerQuery().get(),
                     table,
@@ -219,7 +219,7 @@ public class DruidQueryBuilder {
                     timeZone,
                     groupByDimensions,
                     mergedFilter,
-                    having,
+                    (Having) null,
                     intervals,
                     (LimitSpec) null
             );

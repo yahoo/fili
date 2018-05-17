@@ -14,7 +14,7 @@ import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
 import com.yahoo.bard.webservice.util.Utils;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.responseprocessors.CacheV2ResponseProcessor;
 import com.yahoo.bard.webservice.web.responseprocessors.LoggingContext;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
@@ -100,7 +100,6 @@ public class CacheV2RequestHandler extends BaseDataRequestHandler {
                     ) {
                         try {
                             if (context.getNumberOfOutgoing().decrementAndGet() == 0) {
-                                BardQueryInfo.incrementCountCacheHits();
                                 RequestLog.stopTiming(REQUEST_WORKFLOW_TIMER);
                             }
 
@@ -108,6 +107,7 @@ public class CacheV2RequestHandler extends BaseDataRequestHandler {
                                 RequestLog.startTiming(RESPONSE_WORKFLOW_TIMER);
                             }
                             CACHE_HITS.mark(1);
+                            BardQueryInfo.getBardQueryInfo().incrementCountCacheHits();
                             RequestLog logCtx = RequestLog.dump();
                             nextResponse.processResponse(
                                     mapper.readTree(cacheEntry.getValue()),

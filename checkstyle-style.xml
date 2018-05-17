@@ -13,10 +13,8 @@
             <property name="severity" value="error" />
         </module>
 
-	    <!-- Make the @SuppressWarnings annotations available to Checkstyle -->
-	    <module name="SuppressWarningsHolder" />
-
-        <module name="FileContentsHolder" />
+	<!-- Make the @SuppressWarnings annotations available to Checkstyle -->
+	<module name="SuppressWarningsHolder" />
 
         <module name="ConstantName">
             <property name="severity" value="error" />
@@ -90,6 +88,11 @@
             <property name="severity" value="error" />
             <metadata name="net.sf.eclipsecs.core.comment"
                 value="Need braces for all code blocks." />
+        </module>
+
+        <module name="PackageDeclaration">
+            <property name="severity" value="error"/>
+            <property name="matchDirectoryStructure" value="true"/>
         </module>
 
         <module name="WhitespaceAround">
@@ -263,6 +266,8 @@
             <property name="tokens" value="VARIABLE_DEF"/>
         </module>
 
+        <module name="SuppressionCommentFilter"/>
+
     </module>
 
     <module name="RegexpSingleline">
@@ -292,8 +297,6 @@
         <property name="lineSeparator" value="lf" />
         <metadata name="net.sf.eclipsecs.core.comment" value="Enforce newline at end of file." />
     </module>
-
-    <module name="SuppressionCommentFilter"/>
 
     <module name="RegexpMultiline">
         <metadata name="net.sf.eclipsecs.core.comment" value="Excessive white space" />

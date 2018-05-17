@@ -9,7 +9,7 @@ import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
-import com.yahoo.bard.webservice.druid.model.query.Granularity;
+import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.LogicalTable;
@@ -116,7 +116,7 @@ public abstract class BaseTableLoader implements TableLoader {
     }
 
     /**
-     * Load several logical tables into the logicalDictionary.
+     * Load several logical tables into the logicalDictionary, all with the globally-scoped metric dictionary.
      * <p>
      * Note: This builds the logical tables as well.
      *
@@ -129,12 +129,42 @@ public abstract class BaseTableLoader implements TableLoader {
             Set<? extends Granularity> validGrains,
             ResourceDictionaries dictionaries
     ) {
-        // For every logical table name, group pair
+        loadLogicalTablesWithGranularities(
+                nameGroupMap,
+                validGrains,
+                dictionaries.getLogicalDictionary(),
+                nameGroupMap.keySet().stream()
+                        .collect(Collectors.toMap(Function.identity(), i -> dictionaries.getMetricDictionary()))
+        );
+    }
+
+    /**
+     * Load several logical tables into the logicalDictionary, each with their own scoped metric dictionary.
+     * <p>
+     * Note: This builds the logical tables as well.
+     *
+     * @param nameGroupMap  A map of logical table name to table group information
+     * @param validGrains  The accepted grains for the logical table
+     * @param tableDictionary  The logical table dictionary to be populated
+     * @param scopedMetrics  A mapping from table name to the scoped MetricDictionary to use for that table
+     */
+    public void loadLogicalTablesWithGranularities(
+            Map<String, TableGroup> nameGroupMap,
+            Set<? extends Granularity> validGrains,
+            LogicalTableDictionary tableDictionary,
+            Map<String, MetricDictionary> scopedMetrics
+    ) {
         for (Map.Entry<String, TableGroup> entry : nameGroupMap.entrySet()) {
             String logicalTableName = entry.getKey();
             TableGroup group = entry.getValue();
 
-            loadLogicalTableWithGranularities(logicalTableName, group, validGrains, dictionaries);
+            loadLogicalTableWithGranularities(
+                    logicalTableName,
+                    group,
+                    validGrains,
+                    tableDictionary,
+                    scopedMetrics.get(logicalTableName)
+            );
         }
     }
 
@@ -154,16 +184,39 @@ public abstract class BaseTableLoader implements TableLoader {
             Set<? extends Granularity> validGrains,
             ResourceDictionaries dictionaries
     ) {
-        LogicalTableDictionary logicalDictionary = dictionaries.getLogicalDictionary();
-        MetricDictionary metricDictionary = dictionaries.getMetricDictionary();
+        loadLogicalTableWithGranularities(
+                logicalTableName,
+                nameGroup,
+                validGrains,
+                dictionaries.getLogicalDictionary(),
+                dictionaries.getMetricDictionary()
+        );
+    }
 
+    /**
+     * Load a logical table into the logicalDictionary.
+     * <p>
+     * Note: This builds the logical table as well.
+     *
+     * @param logicalTableName  The logical table name
+     * @param nameGroup  The table group information for the logical table
+     * @param validGrains  The accepted grains for the logical table
+     * @param tableDictionary  The dictionary to load the logical table into
+     * @param metricDictionary  The dictionary to use when looking up metrics for this table
+     */
+    public void loadLogicalTableWithGranularities(
+            String logicalTableName,
+            TableGroup nameGroup,
+            Set<? extends Granularity> validGrains,
+            LogicalTableDictionary tableDictionary,
+            MetricDictionary metricDictionary
+    ) {
         // For every legal grain
         for (Granularity grain : validGrains) {
             // Build the logical table
             LogicalTable logicalTable = new LogicalTable(logicalTableName, grain, nameGroup, metricDictionary);
-
             // Load it into the dictionary
-            logicalDictionary.put(new TableIdentifier(logicalTable), logicalTable);
+            tableDictionary.put(new TableIdentifier(logicalTable), logicalTable);
         }
     }
 
@@ -351,7 +404,7 @@ public abstract class BaseTableLoader implements TableLoader {
     /**
      * Build a logical table, supplying it with a name, grain, table group, and metrics.
      * <p>
-     * Note: This builds a logical table with all valid metrics for the grain of the table
+     * Note: This builds a logical table with all valid metrics for the grain of the table.
      *
      * @param name  The name for this logical table
      * @param granularity  The granularity for this logical table

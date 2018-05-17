@@ -8,7 +8,6 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_UNDEFINED
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
-import com.yahoo.bard.webservice.web.MetricsApiRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -11,7 +11,6 @@ import com.yahoo.bard.webservice.metadata.SegmentInfo
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 import com.yahoo.bard.webservice.web.BadApiRequestException
-import com.yahoo.bard.webservice.web.SlicesApiRequest
 import com.yahoo.bard.webservice.web.endpoints.SlicesServlet
 
 import org.joda.time.DateTime
@@ -24,27 +23,39 @@ import javax.ws.rs.core.UriInfo
 
 class SlicesApiRequestImplSpec extends BaseDataSourceMetadataSpec {
 
-    JerseyTestBinder jtb
-    UriInfo uriInfo = Mock(UriInfo)
-    UriBuilder builder = Mock(UriBuilder)
-    String baseUri = "http://localhost:9998/v1/slices/"
-    DataSourceMetadataService dataSourceMetadataService = new DataSourceMetadataService()
-
     @Shared
     PhysicalTableDictionary fullDictionary
-
     @Shared
-    PhysicalTableDictionary emptyDictionary = new PhysicalTableDictionary()
+    PhysicalTableDictionary emptyDictionary
+
+    JerseyTestBinder jtb
+    UriInfo uriInfo
+    UriBuilder builder
+    String baseUri
+    DataSourceMetadataService dataSourceMetadataService
+
+    @Override
+    def childSetupSpec() {
+        tableName = generateTableName()
+        segments = generateSegments()
+
+        emptyDictionary = new PhysicalTableDictionary()
+    }
 
     def setup() {
+        uriInfo = Mock(UriInfo)
+        builder = Mock(UriBuilder)
+        baseUri = "http://localhost:9998/v1/slices/"
+        dataSourceMetadataService = new DataSourceMetadataService()
+
         jtb = new JerseyTestBinder(SlicesServlet.class)
         fullDictionary = jtb.configurationLoader.physicalTableDictionary
         uriInfo.getBaseUriBuilder() >> builder
         builder.path(_) >> builder
         builder.path(_, _) >> builder
 
-        DataSourceMetadata dataSourceMetadata = new DataSourceMetadata("all_pets", [:], segments)
-        dataSourceMetadataService.update(fullDictionary.get("all_pets").dataSourceNames[0], dataSourceMetadata)
+        DataSourceMetadata dataSourceMetadata = new DataSourceMetadata(tableName, [:], segments.values().toList())
+        dataSourceMetadataService.update(fullDictionary.get(tableName).dataSourceNames[0], dataSourceMetadata)
     }
 
     def cleanup() {

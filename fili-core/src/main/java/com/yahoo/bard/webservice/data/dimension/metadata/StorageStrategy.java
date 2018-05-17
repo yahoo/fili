@@ -2,6 +2,10 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.dimension.metadata;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
+import java.util.Locale;
+
 /**
  * Allows clients to be notified if a dimension's values are browsable and searchable.
  * <p>
@@ -21,8 +25,27 @@ public enum StorageStrategy {
      */
     NONE;
 
+    private final String apiName;
+
+    /**
+     * Constructor.
+     */
+    StorageStrategy() {
+        this.apiName = name().toLowerCase(Locale.ENGLISH);
+    }
+
+    /**
+     * Returns the API name of this StorageStrategy.
+     *
+     * @return the API name of this StorageStrategy
+     */
+    @JsonValue
+    public String getApiName() {
+        return apiName;
+    }
+
     @Override
     public String toString() {
-        return name();
+        return getApiName();
     }
 }

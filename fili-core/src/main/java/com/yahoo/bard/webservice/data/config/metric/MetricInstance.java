@@ -8,6 +8,7 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -94,8 +95,29 @@ public class MetricInstance {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Construct a MetricInstance from FieldNames.
+     *
+     * @param logicalMetricInfo  Logical metric info provider
+     * @param maker  The Metric Maker that creates the actual Logical Metric
+     */
+    public MetricInstance(LogicalMetricInfo logicalMetricInfo, MetricMaker maker) {
+        this.logicalMetricInfo = logicalMetricInfo;
+        this.maker = maker;
+        this.dependencyMetricNames = Collections.emptyList();
+    }
+
     public String getMetricName() {
         return logicalMetricInfo.getName();
+    }
+
+    /**
+     * Returns the LogicalMetricInfo of this MetricInstance.
+     *
+     * @return the LogicalMetricInfo of this MetricInstance
+     */
+    public LogicalMetricInfo getLogicalMetricInfo() {
+        return logicalMetricInfo;
     }
 
     public List<String> getDependencyMetricNames() {

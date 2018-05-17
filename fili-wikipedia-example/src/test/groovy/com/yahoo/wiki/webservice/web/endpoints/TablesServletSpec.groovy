@@ -58,40 +58,48 @@ class TablesServletSpec extends Specification {
                                     }"""
 
         expect: "The result of the query is as expected"
-        GroovyTestUtils.compareJson(makeRequest("/tables"), expectedResponse, JsonSortStrategy.SORT_BOTH)
+        GroovyTestUtils.compareJson(
+                jerseyTestBinder.makeRequest("/tables").get(String.class),
+                expectedResponse,
+                JsonSortStrategy.SORT_BOTH
+        )
     }
 
     @Unroll
     def "Requesting table #tableName gives us the correct details about #tableName"() {
         setup:
         String expectedResponse = """{
-                                        "rows": [
-                                            {
-                                                "category":"General",
-                                                "granularity":"hour",
-                                                "name":"$tableName",
-                                                "longName":"$tableName",
-                                                "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableName/hour"
-                                            },
-                                            {
-                                                "category":"General",
-                                                "granularity":"day",
-                                                "name":"$tableName",
-                                                "longName":"$tableName",
-                                                "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableName/day"
-                                            },
-                                            {
-                                                "category":"General",
-                                                "granularity":"all",
-                                                "name":"$tableName",
-                                                "longName":"$tableName",
-                                                "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableName/all"
-                                            }
-                                        ]
-                                    }"""
+                                         "rows": [
+                                             {
+                                                 "category":"General",
+                                                 "granularity":"hour",
+                                                 "name":"$tableName",
+                                                 "longName":"$tableName",
+                                                 "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableName/hour"
+                                             },
+                                             {
+                                                 "category":"General",
+                                                 "granularity":"day",
+                                                 "name":"$tableName",
+                                                 "longName":"$tableName",
+                                                 "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableName/day"
+                                             },
+                                             {
+                                                 "category":"General",
+                                                 "granularity":"all",
+                                                 "name":"$tableName",
+                                                 "longName":"$tableName",
+                                                 "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableName/all"
+                                             }
+                                         ]
+                                     }"""
 
         expect: "The request returns the correct JSON result"
-        GroovyTestUtils.compareJson(makeRequest("/tables/$tableName"), expectedResponse, JsonSortStrategy.SORT_BOTH)
+        GroovyTestUtils.compareJson(
+                jerseyTestBinder.makeRequest("/tables/$tableName").get(String.class),
+                expectedResponse,
+                JsonSortStrategy.SORT_BOTH
+        )
 
         where:
         tableName = WIKIPEDIA.asName()
@@ -121,7 +129,7 @@ class TablesServletSpec extends Specification {
                                                     "name": "$it",
                                                     "longName": "wiki $it",
                                                     "cardinality": 0,
-                                                    "storageStrategy":"LOADED",
+                                                    "storageStrategy":"loaded",
                                                     "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/dimensions/$it"
                                                     }"""
                                                 }
@@ -135,6 +143,7 @@ class TablesServletSpec extends Specification {
                                                         "category": "General",
                                                         "name": "$it",
                                                         "longName": "$it",
+                                                        "type": "number",
                                                         "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/metrics/$it"
                                                     }"""
                                                 }
@@ -144,7 +153,7 @@ class TablesServletSpec extends Specification {
                                     }"""
 
         when: "We send a request"
-        String result = makeRequest("/tables/$tableName/$granularity")
+        String result = jerseyTestBinder.makeRequest("/tables/$tableName/$granularity").get(String.class)
 
         then: "what we expect"
         GroovyTestUtils.compareJson(result, expectedResponse, JsonSortStrategy.SORT_BOTH)
@@ -152,13 +161,5 @@ class TablesServletSpec extends Specification {
         where:
         tableName = WIKIPEDIA.asName().toLowerCase()
         granularity = "hour"
-    }
-
-    String makeRequest(String target) {
-        // Set target of call
-        def httpCall = jerseyTestBinder.getHarness().target(target)
-
-        // Make the call
-        httpCall.request().get(String.class)
     }
 }

@@ -17,7 +17,7 @@ import com.yahoo.bard.webservice.logging.blocks.DimensionRequest;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.util.StreamUtils;
-import com.yahoo.bard.webservice.web.DimensionsApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequest;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.RequestValidationException;
@@ -311,7 +311,7 @@ public class DimensionsServlet extends EndpointServlet {
                     .map(stream ->
                             stream.collect(
                                     StreamUtils.toLinkedMap(
-                                            entry -> entry.getKey().getName().replace("desc", "description"),
+                                            entry -> getDescriptionKey(entry.getKey().getName()),
                                             Map.Entry::getValue
                                     )
                             )
@@ -478,5 +478,20 @@ public class DimensionsServlet extends EndpointServlet {
                 .path(DimensionsServlet.class, "getDimensionRows")
                 .build(dimension.getApiName())
                 .toASCIIString();
+    }
+
+    /**
+     * If a description dimension fields has a name of "desc", transforms it to "description", otherwise returns the
+     * original without modification.
+     * <p>
+     * TODO: This rewrite need to be removed once description is normalized in legacy implementations, see
+     * {@link com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension#parseDimensionRow(Map)}.
+     *
+     * @param fieldName  The name of the description field name
+     *
+     * @return a description dimension field with name "description"
+     */
+    private static String getDescriptionKey(String fieldName) {
+        return fieldName.contains("description") ? fieldName : fieldName.replace("desc", "description");
     }
 }

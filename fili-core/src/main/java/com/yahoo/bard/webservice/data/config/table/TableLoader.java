@@ -8,6 +8,7 @@ import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
  * Defines the core interactions to load logical tables, physical tables, and table groups into the resource
  * dictionaries.
  */
+@FunctionalInterface
 public interface TableLoader {
 
     /**

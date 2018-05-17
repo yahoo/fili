@@ -20,6 +20,7 @@ public class LogicalMetric {
     private final String longName;
     private final String category;
     private final String description;
+    private final String type;
 
     /**
      * Build a fully specified Logical Metric.
@@ -106,6 +107,7 @@ public class LogicalMetric {
         this.longName = logicalMetricInfo.getLongName();
         this.category = logicalMetricInfo.getCategory();
         this.description = logicalMetricInfo.getDescription();
+        this.type = logicalMetricInfo.getType();
         this.query = templateDruidQuery;
     }
 
@@ -129,6 +131,18 @@ public class LogicalMetric {
         return getTemplateDruidQuery().getMetricField(getName());
     }
 
+    public String getCategory() {
+        return category;
+    }
+
+    public String getLongName() {
+        return longName;
+    }
+
+    public String getType() {
+        return type;
+    }
+
     @Override
     public String toString() {
         return "LogicalMetric{\n" +
@@ -136,14 +150,6 @@ public class LogicalMetric {
                 "templateDruidQuery=" + query + ",\n" +
                 "calculation=" + calculation + "\n" +
                 "}";
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public String getLongName() {
-        return longName;
     }
 
     @Override

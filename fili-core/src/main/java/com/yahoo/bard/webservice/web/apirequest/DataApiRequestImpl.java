@@ -32,17 +32,18 @@ import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.having.Having;
 import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn;
 import com.yahoo.bard.webservice.druid.model.orderby.SortDirection;
-import com.yahoo.bard.webservice.druid.model.query.Granularity;
+import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.TimedPhase;
 import com.yahoo.bard.webservice.table.LogicalTable;
+import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.table.TableIdentifier;
 import com.yahoo.bard.webservice.util.StreamUtils;
+import com.yahoo.bard.webservice.util.TableUtils;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.ApiHaving;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
-import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.DimensionFieldSpecifierKeywords;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.FilterOperation;
@@ -109,6 +110,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
 
     private final Optional<OrderByColumn> dateTimeSort;
 
+
     /**
      * Parses the API request URL and generates the Api Request object.
      *
@@ -174,12 +176,112 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             UriInfo uriInfo,
             BardConfigResources bardConfigResources
     ) throws BadApiRequestException {
+        this(
+                tableName,
+                granularity,
+                dimensions,
+                logicalMetrics,
+                intervals,
+                apiFilters,
+                havings,
+                sorts,
+                count,
+                topN,
+                format,
+                timeZoneId,
+                asyncAfter,
+                perPage,
+                page,
+                uriInfo,
+                bardConfigResources.getDimensionDictionary(),
+                bardConfigResources.getMetricDictionary().getScope(Collections.singletonList(tableName)),
+                bardConfigResources.getLogicalTableDictionary(),
+                bardConfigResources.getSystemTimeZone(),
+                bardConfigResources.getGranularityParser(),
+                bardConfigResources.getFilterBuilder(),
+                bardConfigResources.getHavingApiGenerator()
+        );
+    }
+    /**
+     * Parses the API request URL and generates the Api Request object.
+     *
+     * @param tableName  logical table corresponding to the table name specified in the URL
+     * @param granularity  string time granularity in URL
+     * @param dimensions  single dimension or multiple dimensions separated by '/' in URL
+     * @param logicalMetrics  URL logical metric query string in the format:
+     * <pre>{@code single metric or multiple logical metrics separated by ',' }</pre>
+     * @param intervals  URL intervals query string in the format:
+     * <pre>{@code single interval in ISO 8601 format, multiple values separated by ',' }</pre>
+     * @param apiFilters  URL filter query String in the format:
+     * <pre>{@code
+     * ((field name and operation):((multiple values bounded by [])or(single value))))(followed by , or end of string)
+     * }</pre>
+     * @param havings  URL having query String in the format:<pre>
+     * {@code
+     * ((metric name)-(operation)((values bounded by [])))(followed by , or end of string)
+     * }</pre>
+     * @param sorts  string of sort columns along with sort direction in the format:<pre>
+     * {@code (metricName or dimensionName)|(sortDirection) eg: pageViews|asc }</pre>
+     * @param count  count of number of records to be returned in the response
+     * @param topN  number of first records per time bucket to be returned in the response
+     * @param format  response data format JSON or CSV. Default is JSON.
+     * @param timeZoneId  a joda time zone id
+     * @param asyncAfter  How long the user is willing to wait for a synchronous request in milliseconds
+     * @param perPage  number of rows to display per page of results. If present in the original request,
+     * must be a positive integer. If not present, must be the empty string.
+     * @param page  desired page of results. If present in the original request, must be a positive
+     * integer. If not present, must be the empty string.
+     * @param uriInfo  The URI of the request object.
+     * @param dimensionDictionary  The dimension dictionary for binding dimensions
+     * @param metricDictionary The metric dictionary for binding metrics
+     * @param logicalTableDictionary The table dictionary for binding logical tables
+     * @param systemTimeZone The default time zone for the system
+     * @param granularityParser A tool to process granularities
+     * @param druidFilterBuilder A function to build druid filters from Api Filters
+     * @param havingGenerator A function to create havings
+     *
+     * @throws BadApiRequestException in the following scenarios:
+     * <ol>
+     *     <li>Null or empty table name in the API request.</li>
+     *     <li>Invalid time grain in the API request.</li>
+     *     <li>Invalid dimension in the API request.</li>
+     *     <li>Invalid logical metric in the API request.</li>
+     *     <li>Invalid interval in the API request.</li>
+     *     <li>Invalid filter syntax in the API request.</li>
+     *     <li>Invalid filter dimensions in the API request.</li>
+     *     <li>Invalid having syntax in the API request.</li>
+     *     <li>Invalid having metrics in the API request.</li>
+     *     <li>Pagination parameters in the API request that are not positive integers.</li>
+     * </ol>
+     */
+    public DataApiRequestImpl(
+            String tableName,
+            String granularity,
+            List<PathSegment> dimensions,
+            String logicalMetrics,
+            String intervals,
+            String apiFilters,
+            String havings,
+            String sorts,
+            String count,
+            String topN,
+            String format,
+            String timeZoneId,
+            String asyncAfter,
+            @NotNull String perPage,
+            @NotNull String page,
+            UriInfo uriInfo,
+            DimensionDictionary dimensionDictionary,
+            MetricDictionary metricDictionary,
+            LogicalTableDictionary logicalTableDictionary,
+            DateTimeZone systemTimeZone,
+            GranularityParser granularityParser,
+            DruidFilterBuilder druidFilterBuilder,
+            HavingGenerator havingGenerator
+    ) throws BadApiRequestException {
         super(format, asyncAfter, perPage, page, uriInfo);
 
-        GranularityParser granularityParser = bardConfigResources.getGranularityParser();
-        DimensionDictionary dimensionDictionary = bardConfigResources.getDimensionDictionary();
-
-        timeZone = generateTimeZone(timeZoneId, bardConfigResources.getSystemTimeZone());
+        timeZone = generateTimeZone(timeZoneId, systemTimeZone);
 
         // Time grain must be from allowed interval keywords
         this.granularity = generateGranularity(granularity, timeZone, granularityParser);
@@ -187,23 +289,25 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         TableIdentifier tableId = new TableIdentifier(tableName, this.granularity);
 
         // Logical table must be in the logical table dictionary
-        this.table = bardConfigResources.getLogicalTableDictionary().get(tableId);
+        this.table = logicalTableDictionary.get(tableId);
         if (this.table == null) {
             LOG.debug(TABLE_UNDEFINED.logFormat(tableName));
             throw new BadApiRequestException(TABLE_UNDEFINED.format(tableName));
         }
-
         DateTimeFormatter dateTimeFormatter = generateDateTimeFormatter(timeZone);
 
-        this.intervals = generateIntervals(intervals, this.granularity, dateTimeFormatter);
+        if (BardFeatureFlag.CURRENT_MACRO_USES_LATEST.isOn()) {
+            DateTime firstUnavailableInstant = TableUtils.logicalTableAvailability(getTable()).getLast().getEnd();
+            DateTime adjustedNow =  firstUnavailableInstant.isBeforeNow() ? firstUnavailableInstant : new DateTime();
 
-        this.filterBuilder = bardConfigResources.getFilterBuilder();
+            this.intervals = generateIntervals(adjustedNow, intervals, this.granularity, dateTimeFormatter);
+        } else {
+            this.intervals = generateIntervals(intervals, this.granularity, dateTimeFormatter);
+        }
 
-        this.havingApiGenerator = bardConfigResources.getHavingApiGenerator();
+        this.filterBuilder = druidFilterBuilder;
 
-        MetricDictionary metricDictionary = bardConfigResources
-                .getMetricDictionary()
-                .getScope(Collections.singletonList(tableName));
+        this.havingApiGenerator = havingGenerator;
 
         // At least one logical metric is required
         this.logicalMetrics = generateLogicalMetrics(logicalMetrics, metricDictionary, dimensionDictionary, table);

@@ -117,7 +117,7 @@ dependencies {
 
 The most bleeding-edge version is: [![Bleeding-edge](https://api.bintray.com/packages/yahoo/maven/fili/images/download.svg)](https://bintray.com/yahoo/maven/fili/_latestVersion)
 
-The most recent stable version is: [![Stable](https://img.shields.io/badge/Stable-0.8.69-blue.svg)](https://bintray.com/yahoo/maven/fili/0.8.69)
+The most recent stable version is: [![Stable](https://img.shields.io/badge/Stable-0.9.137-blue.svg)](https://bintray.com/yahoo/maven/fili/0.9.128)
 
 
 Extending
@@ -126,6 +126,12 @@ Extending
 Fili's easy to extend! It has a bunch of hooks already ([`AbstractBinderFactory`](https://github.com/yahoo/fili/blob/master/fili-core/src/main/java/com/yahoo/bard/webservice/application/AbstractBinderFactory.java))! 
 There's a module system for config and modules depending on other modules! There's lots more to say here, but the time
 the time, look at the time!
+
+
+Documentation
+-------------
+
+More information about Fili can be found at [fili.io](http://fili.io).
 
 
 Contributing [![Developers Google Group](https://img.shields.io/badge/google_group-developers-blue.svg?maxAge=2592000)](https://groups.google.com/forum/#!forum/fili-developers)

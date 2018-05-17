@@ -58,9 +58,9 @@ aggregating, as well as filtering of data, and are a critical part of the system
 fields, as well as a collection of possible values for that dimension. These dimension fields and values serve two
 primary purposes: Filtering and Annotating data query results.
 
-All dimensions have an Id property (a natural key) and a Desc property (a human-readable description). Both of these
-fields can be used to filter rows reported on, and both of these fields are included in the data query result set for
-each dimension.
+All dimensions have an Id property (a natural key) and a Description property (a human-readable description). Both of
+these fields can be used to filter rows reported on, and both of these fields are included in the data query result set
+for each dimension.
 
 Get a [list of all dimensions](https://sampleapp.fili.org/v1/dimensions):
 

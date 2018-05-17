@@ -89,12 +89,19 @@ dependencies {
 
 
 扩展
----------
+----
 
 Fili有很强的扩展性，配备了很多hooks([`AbstractBinderFactory`](https://github.com/yahoo/fili/blob/master/fili-core/src/main/java/com/yahoo/bard/webservice/application/AbstractBinderFactory.java))!
 
+
+文档
+----
+
+如果您想进一步学习了解和使用Fili，请参阅官网[fili.io](http://fili.io)。
+
+
 参与开发 [![Developers Google Group](https://img.shields.io/badge/google_group-developers-blue.svg?maxAge=2592000)](https://groups.google.com/forum/#!forum/fili-developers)
-------------
+--------
 
 请参照[CONTRIBUTING](CONTRIBUTING.md)。
 

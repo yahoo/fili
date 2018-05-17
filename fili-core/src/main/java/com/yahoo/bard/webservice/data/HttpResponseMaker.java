@@ -16,7 +16,8 @@ import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.util.Pagination;
-import com.yahoo.bard.webservice.web.ApiRequest;
+import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
+import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
 import com.yahoo.bard.webservice.web.PreResponse;
 import com.yahoo.bard.webservice.web.ResponseData;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
@@ -46,9 +47,9 @@ import javax.ws.rs.core.StreamingOutput;
 @Singleton
 public class HttpResponseMaker {
 
-    private final ObjectMappersSuite objectMappers;
-    private final DimensionDictionary dimensionDictionary;
-    private final ResponseWriter responseWriter;
+    protected final ObjectMappersSuite objectMappers;
+    protected final DimensionDictionary dimensionDictionary;
+    protected final ResponseWriter responseWriter;
 
     /**
      * Class constructor.
@@ -144,7 +145,7 @@ public class HttpResponseMaker {
                                 LinkedHashMap::new
                         ));
 
-        ResponseData responseData = new ResponseData(
+        ResponseData responseData = buildResponseData(
                 resultSet,
                 (LinkedHashSet<String>) responseContext.get(API_METRIC_COLUMN_NAMES.getName()),
                 requestedApiDimensionFields,
@@ -200,6 +201,39 @@ public class HttpResponseMaker {
                 description,
                 druidQuery,
                 objectMappers.getMapper().writer()
+        );
+    }
+
+    /**
+     * Builds a ResponseData object.
+     *
+     * @param resultSet  ResultSet to turn into response
+     * @param apiMetricColumnNames  The names of the logical metrics requested
+     * @param requestedApiDimensionFields  The fields for each dimension that should be shown in the response
+     * @param partialIntervals  intervals over which partial data exists
+     * @param volatileIntervals  intervals over which data is understood as 'best-to-date'
+     * @param pagination  The object containing the pagination information. Null if we are not paginating
+     * @param paginationLinks A mapping from link names to links to be added to the end of the JSON response
+     *
+     * @return a new ResponseData object
+     */
+    protected ResponseData buildResponseData(
+            ResultSet resultSet,
+            LinkedHashSet<String> apiMetricColumnNames,
+            LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> requestedApiDimensionFields,
+            SimplifiedIntervalList partialIntervals,
+            SimplifiedIntervalList volatileIntervals,
+            Pagination pagination,
+            Map<String, URI> paginationLinks
+    ) {
+        return new ResponseData(
+                resultSet,
+                apiMetricColumnNames,
+                requestedApiDimensionFields,
+                partialIntervals,
+                volatileIntervals,
+                pagination,
+                paginationLinks
         );
     }
 }

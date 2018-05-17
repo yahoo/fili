@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.application;
 
+import static javax.ws.rs.client.Invocation.Builder;
+
 import com.yahoo.bard.webservice.data.cache.DataCache;
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
@@ -48,8 +50,10 @@ import ch.qos.logback.classic.LoggerContext;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Application;
 
 /**
@@ -412,5 +416,42 @@ public class JerseyTestBinder {
                     new TestDruidWebService("Test Metadata WS") :
                     new AsyncDruidWebServiceImpl(DruidClientConfigHelper.getMetadataServiceConfig(), mapper);
         }
+    }
+
+    /**
+     * Constructs and sends a request to a specified URL with specified query parameters.
+     * <p>
+     * If the request does not have any query parameters, please use {@link #makeRequest(String)} instead.
+     *
+     * @param target  The specified URL
+     * @param queryParams  The specified query parameters
+     *
+     * @return a request builder which user can use to send different types of requests, such as HTTP HEAD and HTTP GET
+     * methods.
+     */
+    public Builder makeRequest(String target, Map<String, Object> queryParams) {
+        // Set target of call
+        WebTarget httpCall = getHarness().target(target);
+
+        // Add query params to call
+        for (Map.Entry<String, Object> entry : queryParams.entrySet()) {
+            httpCall = httpCall.queryParam(entry.getKey(), entry.getValue());
+        }
+
+        return httpCall.request();
+    }
+
+    /**
+     * Constructs and sends a request to a specified URL.
+     * <p>
+     * If the request has query parameters, please use {@link #makeRequest(String, Map)} instead.
+     *
+     * @param target  The specified URL
+     *
+     * @return a request builder which user can use to send different types of requests, such as HTTP HEAD and HTTP GET
+     * methods.
+     */
+    public Builder makeRequest(String target) {
+        return getHarness().target(target).request();
     }
 }

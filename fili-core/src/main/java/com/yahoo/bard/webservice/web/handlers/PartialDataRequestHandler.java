@@ -10,12 +10,15 @@ import com.yahoo.bard.webservice.data.metric.mappers.PartialDataResultSetMapper;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.responseprocessors.MappingResponseProcessor;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 
+import org.joda.time.Interval;
+
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Map;
 
 import javax.validation.constraints.NotNull;
@@ -105,15 +108,20 @@ public class PartialDataRequestHandler implements DataRequestHandler {
 
     /**
      * Return the missing intervals from the context.
+     * <p>
+     * <b>WARNING</b>: A serialization issue may result in the context value being a list but not a
+     * Simplified Interval List. See https://github.com/yahoo/fili/issues/657
      *
      * @param context  The map containing the missing intervals if any
      *
      * @return the missing intervals from the request or an empty list
      */
     public static SimplifiedIntervalList getPartialIntervalsWithDefault(Map<String, Serializable> context) {
-        return (SimplifiedIntervalList) context.computeIfAbsent(
-                MISSING_INTERVALS_CONTEXT_KEY.getName(),
-                (ignored) -> new SimplifiedIntervalList()
+        return new SimplifiedIntervalList(
+                (Collection<Interval>) context.computeIfAbsent(
+                        MISSING_INTERVALS_CONTEXT_KEY.getName(),
+                        (ignored) -> new SimplifiedIntervalList()
+                )
         );
     }
 }

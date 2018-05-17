@@ -14,6 +14,7 @@ import java.util.function.Function;
  * A SAM that sets up the workflow for shipping query results back to the user, and saving query results for later
  * querying if necessary.
  */
+@FunctionalInterface
 public interface AsynchronousWorkflowsBuilder {
 
     /**

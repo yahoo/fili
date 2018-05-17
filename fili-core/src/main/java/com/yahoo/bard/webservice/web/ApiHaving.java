@@ -9,16 +9,16 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.HAVING_NON_NUMERI
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.HAVING_OPERATOR_INVALID;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
-import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.util.FilterTokenizer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.Collections;
-import java.util.Objects;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -58,7 +58,11 @@ public class ApiHaving {
      *
      * @throws BadHavingException  when having pattern is not matched or when any of its properties are not valid.
      */
-    public ApiHaving(@NotNull String havingQuery, MetricDictionary metricDictionary) throws BadHavingException {
+    public ApiHaving(
+            @NotNull String havingQuery,
+            Map<String, LogicalMetric> metricDictionary
+    ) throws BadHavingException {
+
         LOG.trace("Having query: {} MetricDictionary: {}", havingQuery, metricDictionary);
 
         Matcher tokenizedQuery = QUERY_PATTERN.matcher(havingQuery);
@@ -125,7 +129,7 @@ public class ApiHaving {
      */
     private LogicalMetric extractMetric(
             Matcher tokenizedQuery,
-            MetricDictionary metricDictionary
+            Map<String, LogicalMetric> metricDictionary
     ) throws BadHavingException {
         String metricName = tokenizedQuery.group(1);
         LogicalMetric extractedMetric = metricDictionary.get(metricName);

@@ -6,7 +6,6 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MONTH
 import static org.joda.time.DateTimeZone.UTC
 
-import com.yahoo.bard.webservice.druid.model.query.AllGranularity
 import com.yahoo.bard.webservice.util.GranularityParseException
 import com.yahoo.bard.webservice.web.ErrorMessageFormat
 

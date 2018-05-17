@@ -14,7 +14,7 @@ import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.druid.model.query.WeightEvaluationQuery
 import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo
-import com.yahoo.bard.webservice.web.DataApiRequest
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor
 import com.yahoo.bard.webservice.web.responseprocessors.WeightCheckResponseProcessor
 import com.yahoo.bard.webservice.web.util.QueryWeightUtil
@@ -42,6 +42,8 @@ class WeightCheckRequestHandlerSpec extends Specification {
     GroupByQuery groupByQuery
     ResponseProcessor response
 
+    BardQueryInfo bardQueryInfo
+
     def setup() {
         next = Mock(DataRequestHandler)
         webService = Mock(DruidWebService)
@@ -54,7 +56,7 @@ class WeightCheckRequestHandlerSpec extends Specification {
         groupByQuery = Mock(GroupByQuery)
         groupByQuery.getInnermostQuery() >> groupByQuery
         response = Mock(WeightCheckResponseProcessor)
-        BardQueryInfoUtils.initializeBardQueryInfo()
+        bardQueryInfo = BardQueryInfoUtils.initializeBardQueryInfo()
     }
 
     def cleanup() {
@@ -92,7 +94,7 @@ class WeightCheckRequestHandlerSpec extends Specification {
         handler.handleRequest(context, request, groupByQuery, response)
 
         and:
-        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.WEIGHT_CHECK).get() == 0
+        bardQueryInfo.queryCounter.get(BardQueryInfo.WEIGHT_CHECK).get() == 0
     }
 
     def "Test handleRequest without building callback"() {
@@ -135,7 +137,7 @@ class WeightCheckRequestHandlerSpec extends Specification {
         handler.handleRequest(context, request, groupByQuery, response)
 
         and:
-        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.WEIGHT_CHECK).get() == 1
+        bardQueryInfo.queryCounter.get(BardQueryInfo.WEIGHT_CHECK).get() == 1
     }
 
     def "Test handleRequest without building callback with json error"() {
@@ -176,7 +178,7 @@ class WeightCheckRequestHandlerSpec extends Specification {
         handler.handleRequest(context, request, groupByQuery, response)
 
         and:
-        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.WEIGHT_CHECK).get() == 1
+        bardQueryInfo.queryCounter.get(BardQueryInfo.WEIGHT_CHECK).get() == 1
     }
 
 
@@ -204,7 +206,7 @@ class WeightCheckRequestHandlerSpec extends Specification {
         JsonNode jsonResult = MAPPER.readTree(parser)
 
         expect:
-        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.WEIGHT_CHECK).get() == 0
+        bardQueryInfo.queryCounter.get(BardQueryInfo.WEIGHT_CHECK).get() == 0
 
         when:
         success.invoke(jsonResult)
@@ -213,7 +215,7 @@ class WeightCheckRequestHandlerSpec extends Specification {
         1 * next.handleRequest(context, request, groupByQuery, response)
 
         and:
-        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.WEIGHT_CHECK).get() == 0
+        bardQueryInfo.queryCounter.get(BardQueryInfo.WEIGHT_CHECK).get() == 0
     }
 
     def "Test build and invoke success callback count too high"() {
@@ -241,7 +243,7 @@ class WeightCheckRequestHandlerSpec extends Specification {
         HttpErrorCallback ec = Mock(HttpErrorCallback)
 
         expect:
-        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.WEIGHT_CHECK).get() == 0
+        bardQueryInfo.queryCounter.get(BardQueryInfo.WEIGHT_CHECK).get() == 0
 
         when:
         success.invoke(jsonResult)
@@ -252,7 +254,7 @@ class WeightCheckRequestHandlerSpec extends Specification {
         1 * ec.dispatch(507, _, _)
 
         and:
-        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.WEIGHT_CHECK).get() == 0
+        bardQueryInfo.queryCounter.get(BardQueryInfo.WEIGHT_CHECK).get() == 0
     }
 
     def "Test build and invoke success callback invalid json"() {
@@ -280,7 +282,7 @@ class WeightCheckRequestHandlerSpec extends Specification {
         FailureCallback fc = Mock(FailureCallback)
 
         expect:
-        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.WEIGHT_CHECK).get() == 0
+        bardQueryInfo.queryCounter.get(BardQueryInfo.WEIGHT_CHECK).get() == 0
 
         when:
         success.invoke(jsonResult)
@@ -291,6 +293,6 @@ class WeightCheckRequestHandlerSpec extends Specification {
         1 * fc.dispatch(_)
 
         and:
-        BardQueryInfo.QUERY_COUNTER.get(BardQueryInfo.WEIGHT_CHECK).get() == 0
+        bardQueryInfo.queryCounter.get(BardQueryInfo.WEIGHT_CHECK).get() == 0
     }
 }

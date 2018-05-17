@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.table;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricColumn;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
-import com.yahoo.bard.webservice.druid.model.query.Granularity;
+import com.yahoo.bard.webservice.data.time.Granularity;
 
 import org.joda.time.ReadablePeriod;
 import org.joda.time.Years;

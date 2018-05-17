@@ -23,10 +23,10 @@ import com.yahoo.bard.webservice.util.AllPagesPagination;
 import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.util.StreamUtils;
 import com.yahoo.bard.webservice.util.Utils;
-import com.yahoo.bard.webservice.web.ApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.JobNotFoundException;
-import com.yahoo.bard.webservice.web.JobsApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.JobsApiRequest;
 import com.yahoo.bard.webservice.web.PreResponse;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.RequestValidationException;
@@ -86,6 +86,8 @@ import javax.ws.rs.core.UriInfo;
 public class JobsServlet extends EndpointServlet {
 
     private static final Logger LOG = LoggerFactory.getLogger(JobsServlet.class);
+    private static final String PAGE = "page";
+    private static final String PER_PAGE = "perPage";
 
     private final ApiJobStore apiJobStore;
     private final RequestMapper requestMapper;
@@ -541,7 +543,9 @@ public class JobsServlet extends EndpointServlet {
                 .map(pair -> Utils.withRight(pair, pair.getRight().getAsInt()))
                 .map(pair -> Utils.withRight(
                         pair,
-                        uriInfo.getRequestUriBuilder().replaceQueryParam("page", pair.getRight())
+                        uriInfo.getRequestUriBuilder()
+                                .replaceQueryParam(PAGE, pair.getRight())
+                                .replaceQueryParam(PER_PAGE, pages.getPerPage())
                         )
                 )
                 .map(pair -> Utils.withRight(pair, pair.getRight().build()))
