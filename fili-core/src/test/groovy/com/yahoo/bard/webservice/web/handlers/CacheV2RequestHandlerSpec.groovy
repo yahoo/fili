@@ -12,7 +12,7 @@ import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo
 import com.yahoo.bard.webservice.logging.blocks.BardQueryInfoUtils
 import com.yahoo.bard.webservice.metadata.QuerySigningService
 import com.yahoo.bard.webservice.metadata.SegmentIntervalsHashIdGenerator
-import com.yahoo.bard.webservice.web.DataApiRequest
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 import com.yahoo.bard.webservice.web.RequestUtils
 import com.yahoo.bard.webservice.web.responseprocessors.CacheV2ResponseProcessor
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor

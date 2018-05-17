@@ -8,12 +8,15 @@ import com.yahoo.bard.webservice.data.volatility.VolatileIntervalsService;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.responseprocessors.MappingResponseProcessor;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 
+import org.joda.time.Interval;
+
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Map;
 
 import javax.validation.constraints.NotNull;
@@ -85,9 +88,11 @@ public class VolatileDataRequestHandler implements DataRequestHandler {
      * @return the volatile intervals from the request or an empty list
      */
     public static SimplifiedIntervalList getVolatileIntervalsWithDefault(Map<String, Serializable> context) {
-        return (SimplifiedIntervalList) context.computeIfAbsent(
-                VOLATILE_INTERVALS_CONTEXT_KEY.getName(),
-                (ignored) -> new SimplifiedIntervalList()
+        return new SimplifiedIntervalList(
+                (Collection<Interval>) context.computeIfAbsent(
+                        VOLATILE_INTERVALS_CONTEXT_KEY.getName(),
+                        (ignored) -> new SimplifiedIntervalList()
+                )
         );
     }
 }

@@ -4,7 +4,7 @@ package com.yahoo.bard.webservice.druid.model.dimension.extractionfunction;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-import com.yahoo.bard.webservice.druid.model.query.Granularity;
+import com.yahoo.bard.webservice.data.time.Granularity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -60,7 +60,7 @@ public class TimeFormatExtractionFunction extends ExtractionFunction {
      * @param timeZone  Time zone to use in
      * <a href="http://en.wikipedia.org/wiki/List_of_tz_database_time_zones" target="_blank">IANA tz database format
      * </a>, e.g. Europe/Berlin (this can possibly be different than the aggregation time-zone)
-     * @param granularity  {@link com.yahoo.bard.webservice.druid.model.query.Granularity} to apply before formatting.
+     * @param granularity  {@link Granularity} to apply before formatting.
      * @param asMillis  Boolean value, set to true to treat input strings as millis rather than ISO8601 strings.
      */
     public TimeFormatExtractionFunction(
@@ -119,10 +119,10 @@ public class TimeFormatExtractionFunction extends ExtractionFunction {
     }
 
     /**
-     * Returns {@link com.yahoo.bard.webservice.druid.model.query.Granularity granularity} of this
+     * Returns {@link Granularity granularity} of this
      * {@link TimeFormatExtractionFunction}.
      *
-     * @return the {@link com.yahoo.bard.webservice.druid.model.query.Granularity granularity} of this
+     * @return the {@link Granularity granularity} of this
      * {@link TimeFormatExtractionFunction}
      */
     @JsonProperty(value = "granularity")
@@ -181,12 +181,12 @@ public class TimeFormatExtractionFunction extends ExtractionFunction {
 
     /**
      * Returns a new {@link TimeFormatExtractionFunction} with a specified
-     * {@link com.yahoo.bard.webservice.druid.model.query.Granularity granularity}.
+     * {@link Granularity granularity}.
      *
-     * @param granularity  {@link com.yahoo.bard.webservice.druid.model.query.Granularity} to apply before formatting.
+     * @param granularity  {@link Granularity} to apply before formatting.
      *
      * @return  the new {@link TimeFormatExtractionFunction} with the specified
-     * {@link com.yahoo.bard.webservice.druid.model.query.Granularity granularity}
+     * {@link Granularity granularity}
      */
     public TimeFormatExtractionFunction withGranularity(Granularity granularity) {
         return new TimeFormatExtractionFunction(format, locale, timeZone, granularity, asMillis);

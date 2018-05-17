@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.web.responseprocessors;
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
 import com.yahoo.bard.webservice.data.DruidResponseParser;
 import com.yahoo.bard.webservice.data.HttpResponseMaker;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.PreResponse;
 
 import rx.subjects.Subject;
@@ -21,7 +21,7 @@ public interface ResponseProcessorFactory {
      *
      * @param apiRequest  The current request
      * @param responseEmitter  Generates the response to be processed
-     * @param druidResponseParser  Transforms a druid response into a {@link ResultSet}
+     * @param druidResponseParser  Transforms a druid response into a {@link com.yahoo.bard.webservice.data.ResultSet}
      * @param objectMappers  Dictates how to format
      * @param httpResponseMaker  Crafts an HTTP response to be sent back to the user from a ResultSet or error message
      *

@@ -5,7 +5,6 @@ package com.yahoo.bard.webservice.web.apirequest
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.web.BadApiRequestException
-import com.yahoo.bard.webservice.web.MetricsApiRequest
 import com.yahoo.bard.webservice.web.endpoints.MetricsServlet
 
 import spock.lang.Shared

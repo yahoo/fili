@@ -4,8 +4,8 @@ package com.yahoo.bard.webservice.data.config.names;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
-import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
-import com.yahoo.bard.webservice.druid.model.query.Granularity;
+import com.yahoo.bard.webservice.data.time.AllGranularity;
+import com.yahoo.bard.webservice.data.time.Granularity;
 
 import java.util.Objects;
 

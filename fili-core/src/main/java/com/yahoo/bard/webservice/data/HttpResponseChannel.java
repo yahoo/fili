@@ -6,7 +6,7 @@ import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.RESP
 
 import com.yahoo.bard.webservice.async.ResponseException;
 import com.yahoo.bard.webservice.logging.RequestLog;
-import com.yahoo.bard.webservice.web.ApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
 import com.yahoo.bard.webservice.web.PreResponse;
 
 import org.slf4j.Logger;

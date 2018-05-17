@@ -9,7 +9,14 @@ pull request if there was one.
 
 ### Changed:
 
+- [Class re-organization](https://github.com/yahoo/fili/pull/694)
+    * Put `Granularity` interfaces and its implementations in the same package
+    * Put `*ApiRequest` interfaces and their implementations in the same package
 
+- [Avoid casting to generate SimplifiedIntervalList](https://github.com/yahoo/fili/pull/677)
+    * Some downstream projects generated partial intervals as `ArrayList`, which cannot be cased to
+      `SimplifiedIntervalList` in places like `getVolatileIntervalsWithDefault`. The result is a casting exception which
+      crashes downstream applications. Casting is replaced with a explicit `SimplifiedIntervalList` object creation.
 
 ### Deprecated:
 
@@ -17,6 +24,8 @@ pull request if there was one.
 
 ### Fixed:
 
+- [Correct Druid coordinator URL in Wikipedia example](https://github.com/yahoo/fili/pull/683)
+    * Config value for Druid coordinator URL is mis-typed.
 
 
 ### Known Issues:
@@ -139,6 +148,9 @@ Thanks to everyone who contributed to this release!
 @dejan2609 Dejan Stojadinović
 
 ### Added:
+
+- [Logical Table Availability](https://github.com/yahoo/fili/pull/697)
+    * Added `logicalTableAvailability` to `TableUtils` which returns the union of availabilities for the logical table.
 
 - [Annotate Functional Interface](https://github.com/yahoo/fili/pull/606)
     * Add `@FunctionalInterface` annotation to all functional interfaces.
