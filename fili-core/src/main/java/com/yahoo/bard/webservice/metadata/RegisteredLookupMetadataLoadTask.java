@@ -51,7 +51,7 @@ public class RegisteredLookupMetadataLoadTask extends LoadTask<Boolean> {
             "lookup_normal_checking_period"
     );
     /**
-     * Wait on https://github.com/yahoo/fili/issues/619.
+     * TODO - Wait on https://github.com/yahoo/fili/issues/619.
      */
     private static final String LOOKUP_ERROR_CHECKING_PERIOD_KEY = SYSTEM_CONFIG.getPackageVariableName(
             "lookup_error_checking_period"

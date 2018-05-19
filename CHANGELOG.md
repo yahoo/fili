@@ -7,6 +7,9 @@ pull request if there was one.
 
 ### Added:
 
+- [Add more tests to RegisteredLookupMetadataLoadTask](https://github.com/yahoo/fili/pull/673)
+    * Adds tests to make sure the load tasks can update status correctly.
+
 - [Add tests to Utils](https://github.com/yahoo/fili/pull/675)
     * Add missing tests to `Utils` class.
 
