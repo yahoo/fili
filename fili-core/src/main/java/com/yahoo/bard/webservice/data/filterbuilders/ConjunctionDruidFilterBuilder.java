@@ -39,7 +39,7 @@ public abstract class ConjunctionDruidFilterBuilder implements DruidFilterBuilde
     private static final Logger LOG = LoggerFactory.getLogger(ConjunctionDruidFilterBuilder.class);
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
-    private static final int DEFAULT_MAX_NUM_DRUID_FILTERS = 10;
+    private static final int DEFAULT_MAX_NUM_DRUID_FILTERS = 10000;
     private static final int MAX_NUM_DRUID_FILTERS = SYSTEM_CONFIG.getIntProperty(
             SYSTEM_CONFIG.getPackageVariableName("max_num_druid_filters"),
             DEFAULT_MAX_NUM_DRUID_FILTERS
