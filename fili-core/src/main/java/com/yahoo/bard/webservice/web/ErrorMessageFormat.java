@@ -259,6 +259,12 @@ public enum ErrorMessageFormat implements MessageFormatter {
                                               "%s operator needs %d parameters but found %d"),
     HAVING_OPERATOR_IMPROPER_RANGE("Upper range cannot be less than the lower range for %s operator."),
 
+    TOO_MANY_DRUID_FILTERS(
+            "Too many filtering dimension values found. Request is aborted because it will significantly slows down " +
+                    "or timeout Druid query.",
+            "DruidFilterBuilder generated too many filters. Request is aborted."
+    ),
+
     UNABLE_TO_CREATE_DIR("Unable to create directory %s."),
     UNABLE_TO_DELETE_DIR("Unable to delete directory %s."),
     FAIL_TO_WIPTE_LUCENE_INDEX_DIR("Failed to wipte Lucene index at directory: %s"),

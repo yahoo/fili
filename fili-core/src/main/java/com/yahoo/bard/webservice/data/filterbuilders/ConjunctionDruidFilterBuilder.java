@@ -2,6 +2,10 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.filterbuilders;
 
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TOO_MANY_DRUID_FILTERS;
+
+import com.yahoo.bard.webservice.config.SystemConfig;
+import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
 import com.yahoo.bard.webservice.data.dimension.DimensionRowNotFoundException;
@@ -11,6 +15,7 @@ import com.yahoo.bard.webservice.druid.model.filter.AndFilter;
 import com.yahoo.bard.webservice.druid.model.filter.ExtractionFilter;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter;
+import com.yahoo.bard.webservice.exception.TooManyDruidFiltersException;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 
@@ -30,7 +35,15 @@ import java.util.stream.Collectors;
  * each dimension being filtered on.
  */
 public abstract class ConjunctionDruidFilterBuilder implements DruidFilterBuilder {
+
     private static final Logger LOG = LoggerFactory.getLogger(ConjunctionDruidFilterBuilder.class);
+    private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+
+    private static final int DEFAULT_MAX_NUM_DRUID_FILTERS = 10000;
+    private static final int MAX_NUM_DRUID_FILTERS = SYSTEM_CONFIG.getIntProperty(
+            SYSTEM_CONFIG.getPackageVariableName("max_num_druid_filters"),
+            DEFAULT_MAX_NUM_DRUID_FILTERS
+    );
 
     @Override
     public Filter buildFilters(Map<Dimension, Set<ApiFilter>> filterMap) throws DimensionRowNotFoundException {
@@ -52,6 +65,12 @@ public abstract class ConjunctionDruidFilterBuilder implements DruidFilterBuilde
         }
 
         AndFilter newFilter = new AndFilter(dimensionFilters);
+
+        if (newFilter.getFields().size() > MAX_NUM_DRUID_FILTERS) {
+            LOG.error(TOO_MANY_DRUID_FILTERS.logFormat());
+            throw new TooManyDruidFiltersException(TOO_MANY_DRUID_FILTERS.format());
+        }
+
         LOG.trace("Filter: {}", newFilter);
         return newFilter;
     }
@@ -88,6 +107,7 @@ public abstract class ConjunctionDruidFilterBuilder implements DruidFilterBuilde
             LOG.debug(msg);
             throw new DimensionRowNotFoundException(msg);
         }
+
         return rows;
     }
 
