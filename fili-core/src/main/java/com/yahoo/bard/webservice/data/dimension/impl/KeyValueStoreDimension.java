@@ -595,29 +595,6 @@ public class KeyValueStoreDimension implements Dimension {
         return isAggregatable;
     }
 
-    /**
-     * Constructs a new KeyValueStoreDimension with specified
-     * {@link com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy}.
-     *
-     * @param storageStrategy  The specified StorageStrategy
-     *
-     * @return the new KeyValueStoreDimension with the specified StorageStrategy
-     */
-    public KeyValueStoreDimension withStorageStrategy(StorageStrategy storageStrategy) {
-        return new KeyValueStoreDimension(
-                apiName,
-                longName,
-                category,
-                description,
-                dimensionFields,
-                keyValueStore,
-                searchProvider,
-                defaultDimensionFields,
-                isAggregatable,
-                storageStrategy
-        );
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) { return true; }

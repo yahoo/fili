@@ -11,7 +11,7 @@ import java.util.Map;
 public class MapStoreManager {
 
     // Hold singleton instances by name
-    private static final Map<String, MapStore> MAP_STORES = new HashMap<>();
+    protected static final Map<String, MapStore> MAP_STORES = new HashMap<>();
 
     /**
      * Factory for singleton instances by name.

@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.data.dimension;
 
 import com.yahoo.bard.webservice.util.StreamUtils;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -15,6 +16,21 @@ import javax.validation.constraints.NotNull;
 public class DimensionRow extends LinkedHashMap<DimensionField, String> implements Comparable<DimensionRow> {
 
     private final String keyValue;
+
+
+    /**
+     * Build a dimension row with a key field value and a map of field values.
+     *
+     * @param key  the keyField for this row
+     * @param dimensionValue  the value for the key
+     */
+    public DimensionRow(@NotNull DimensionField key, String dimensionValue) {
+        super(Collections.singletonMap(key, dimensionValue));
+        if (key == null) {
+            throw new IllegalArgumentException("Missing key " + key);
+        }
+        this.keyValue = dimensionValue;
+    }
 
     /**
      * Build a dimension row with a key field value and a map of field values.
