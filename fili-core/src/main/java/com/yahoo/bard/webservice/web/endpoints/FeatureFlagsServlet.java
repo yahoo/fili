@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -34,10 +33,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 /**
  * Web service endpoint to return the current status of feature flags.
@@ -70,10 +69,9 @@ public class FeatureFlagsServlet extends EndpointServlet {
          * @param format  Format of the request
          * @param perPage  How many items to show per page
          * @param page  Which page to show
-         * @param uriInfo  URL information about the request
          */
-        FeatureFlagApiRequest(String format, String perPage, String page, UriInfo uriInfo) {
-            super(format, perPage, page, uriInfo);
+        FeatureFlagApiRequest(String format, String perPage, String page) {
+            super(format, perPage, page);
         }
     }
 
@@ -102,7 +100,7 @@ public class FeatureFlagsServlet extends EndpointServlet {
      * @param perPage the number per page to return
      * @param page the page to start from
      * @param format the format to use
-     * @param uriInfo the injected UriInfo
+     * @param containerRequestContext the request context needed to process responses
      *
      * @return Response Format:
      * <pre><code>
@@ -123,24 +121,27 @@ public class FeatureFlagsServlet extends EndpointServlet {
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @QueryParam("format") String format,
-            @Context UriInfo uriInfo
+            @Context ContainerRequestContext containerRequestContext
     ) {
         Supplier<Response> responseSender;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new FeatureFlagRequest("all"));
 
-            FeatureFlagApiRequest apiRequest = new FeatureFlagApiRequest(format, perPage, page, uriInfo);
+            FeatureFlagApiRequest apiRequest = new FeatureFlagApiRequest(
+                    format,
+                    perPage,
+                    page
+            );
 
             List<FeatureFlagEntry> status = flags.getValues().stream()
                     .map(flag -> new FeatureFlagEntry(flag.getName(), flag.isOn()))
                     .collect(Collectors.toList());
 
-            Stream<FeatureFlagEntry> result = apiRequest.getPage(status);
-
-            Response response = formatResponse(
+            Response response = paginateAndFormatResponse(
                     apiRequest,
-                    result,
+                    containerRequestContext,
+                    status,
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "feature flags" : "rows",
                     Arrays.asList("name", "value")
             );
@@ -162,7 +163,6 @@ public class FeatureFlagsServlet extends EndpointServlet {
      *
      * @param flagName The feature flag
      * @param format  The format to return results in
-     * @param uriInfo  The injected UriInfo
      *
      * @return Response Format:
      * <pre><code>
@@ -180,15 +180,12 @@ public class FeatureFlagsServlet extends EndpointServlet {
     @Path("/{flagName}")
     public Response getFeatureFlagStatus(
             @PathParam("flagName") String flagName,
-            @QueryParam("format") String format,
-            @Context UriInfo uriInfo
+            @QueryParam("format") String format
     ) {
         Supplier<Response> responseSender;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new FeatureFlagRequest(flagName));
-
-            FeatureFlagApiRequest apiRequest = new FeatureFlagApiRequest(format, "", "", uriInfo);
 
             FeatureFlag flag = flags.forName(flagName);
             FeatureFlagEntry status = new FeatureFlagEntry(flag.getName(), flag.isOn());

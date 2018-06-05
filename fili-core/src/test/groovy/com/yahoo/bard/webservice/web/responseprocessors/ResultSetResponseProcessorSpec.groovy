@@ -34,7 +34,7 @@ import com.yahoo.bard.webservice.table.Schema
 import com.yahoo.bard.webservice.table.TableTestUtils
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 import com.yahoo.bard.webservice.web.JsonResponseWriter
-import com.yahoo.bard.webservice.web.ResponseFormatType
+import com.yahoo.bard.webservice.web.DefaultResponseFormatType
 import com.yahoo.bard.webservice.web.ResponseWriter
 
 import com.fasterxml.jackson.databind.JsonNode
@@ -48,6 +48,7 @@ import rx.subjects.Subject
 import spock.lang.Specification
 
 import javax.ws.rs.container.AsyncResponse
+import javax.ws.rs.container.ContainerRequestContext
 import javax.ws.rs.core.MultivaluedMap
 import javax.ws.rs.core.PathSegment
 import javax.ws.rs.core.Response
@@ -66,6 +67,7 @@ class ResultSetResponseProcessorSpec extends Specification {
     HttpResponseChannel httpResponseChannel
     Subject responseEmitter
     DruidResponseParser druidResponseParser
+    ContainerRequestContext containerRequestContext
     UriInfo uriInfo
     PathSegment pathSegment
     MultivaluedMap paramMap
@@ -89,13 +91,19 @@ class ResultSetResponseProcessorSpec extends Specification {
         AsyncResponse asyncResponse = Mock(AsyncResponse)
         apiRequest = Mock(DataApiRequest)
         druidResponseParser = Mock(DruidResponseParser)
+        containerRequestContext = Mock(ContainerRequestContext)
         uriInfo = Mock(UriInfo)
         pathSegment = Mock(PathSegment)
         paramMap = Mock(MultivaluedMap)
         responseWriter = new JsonResponseWriter(MAPPERS)
 
         httpResponseMaker =  new HttpResponseMaker(MAPPERS, Mock(DimensionDictionary), responseWriter)
-        httpResponseChannel = new HttpResponseChannel(asyncResponse, apiRequest, httpResponseMaker);
+        httpResponseChannel = new HttpResponseChannel(
+                asyncResponse,
+                apiRequest,
+                containerRequestContext,
+                httpResponseMaker
+        );
         responseEmitter = PublishSubject.create()
         responseEmitter.subscribe(httpResponseChannel)
 
@@ -111,8 +119,8 @@ class ResultSetResponseProcessorSpec extends Specification {
         Set<LogicalMetric> metricSet = [lm1] as Set
         apiRequest.getLogicalMetrics() >> metricSet
         apiRequest.getGranularity() >> DAY
-        apiRequest.getFormat() >> ResponseFormatType.JSON
-        apiRequest.getUriInfo() >> uriInfo
+        apiRequest.getFormat() >> DefaultResponseFormatType.JSON
+        containerRequestContext.getUriInfo() >> uriInfo
 
         List<Dimension> dimensions = new ArrayList<Dimension>()
         List<Aggregation> aggregations = new ArrayList<Dimension>()

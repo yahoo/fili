@@ -4,13 +4,14 @@ package com.yahoo.bard.webservice.web.util;
 
 import java.util.stream.Collectors;
 
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.UriInfo;
 
 /**
  * A utility class for sharing Response logic between metadata and data endpoints.
  */
-public class ResponseFormat {
+public class ResponseUtils {
     /**
      * This method will get the path segments and the interval (if it is part of the request) from the apiRequest and
      * create a content-disposition header value with a proposed filename in the following format.
@@ -21,11 +22,12 @@ public class ResponseFormat {
      * ["dimensions", "datasource", "dim1"], then the result would be
      * "attachment; filename=dimensions-datasource-dim1.csv".
      *
-     * @param uriInfo  UriInfo of the request
+     * @param containerRequestContext  the state of the container for building response headers
      *
      * @return A content disposition header telling the browser the name of the CSV file to be downloaded
      */
-    public static String getCsvContentDispositionValue(UriInfo uriInfo) {
+    public String getCsvContentDispositionValue(ContainerRequestContext containerRequestContext) {
+        UriInfo uriInfo = containerRequestContext.getUriInfo();
         String uriPath = uriInfo.getPathSegments().stream()
                 .map(PathSegment::getPath)
                 .collect(Collectors.joining("-"));

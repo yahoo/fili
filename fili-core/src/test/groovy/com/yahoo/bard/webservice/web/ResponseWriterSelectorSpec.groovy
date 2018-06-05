@@ -58,16 +58,16 @@ class ResponseWriterSelectorSpec extends Specification {
 
         where:
         typeName  | writer                | type
-        "JSON"    | JsonResponseWriter    | ResponseFormatType.JSON
-        "CSV"     | CsvResponseWriter     | ResponseFormatType.CSV
-        "JsonApi" | JsonApiResponseWriter | ResponseFormatType.JSONAPI
+        "JSON"    | JsonResponseWriter    | DefaultResponseFormatType.JSON
+        "CSV"     | CsvResponseWriter     | DefaultResponseFormatType.CSV
+        "JsonApi" | JsonApiResponseWriter | DefaultResponseFormatType.JSONAPI
     }
 
 
     def "test selector selecting correct writer for customized type"() {
         setup:
-        apiRequest.getFormat() >> ResponseFormatType.DEBUG
-        filiResponseWriterSelector.addWriter(ResponseFormatType.DEBUG, debugWriter)
+        apiRequest.getFormat() >> DefaultResponseFormatType.DEBUG
+        filiResponseWriterSelector.addWriter(DefaultResponseFormatType.DEBUG, debugWriter)
         ResponseWriter actualWriter = filiResponseWriterSelector.select(apiRequest).get()
 
         expect:

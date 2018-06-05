@@ -18,7 +18,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 /**
  * Tables API Request. Such an API Request binds, validates, and models the parts of a request to the tables endpoint.
@@ -87,8 +86,6 @@ public interface TablesApiRequest extends ApiRequest {
     TablesApiRequest withFormat(ResponseFormatType format);
 
     TablesApiRequest withPaginationParameters(Optional<PaginationParameters> paginationParameters);
-
-    TablesApiRequest withUriInfo(UriInfo uriInfo);
 
     TablesApiRequest withBuilder(Response.ResponseBuilder builder);
 

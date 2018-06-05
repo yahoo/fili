@@ -24,7 +24,7 @@ import com.yahoo.bard.webservice.table.TableGroup
 import com.yahoo.bard.webservice.util.IntervalUtils
 import com.yahoo.bard.webservice.web.BadApiRequestException
 import com.yahoo.bard.webservice.web.ErrorMessageFormat
-import com.yahoo.bard.webservice.web.ResponseFormatType
+import com.yahoo.bard.webservice.web.DefaultResponseFormatType
 import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 
 import org.joda.time.DateTime
@@ -89,10 +89,10 @@ class ApiRequestSpec extends Specification {
         responseFormat == expectedFormat
 
         where:
-        responseFormat          | expectedFormat
-        ResponseFormatType.JSON | new TestingDataApiRequestImpl().generateAcceptFormat(null)
-        ResponseFormatType.JSON | new TestingDataApiRequestImpl().generateAcceptFormat("json")
-        ResponseFormatType.CSV  | new TestingDataApiRequestImpl().generateAcceptFormat("csv")
+        responseFormat                 | expectedFormat
+        DefaultResponseFormatType.JSON | new TestingDataApiRequestImpl().generateAcceptFormat(null)
+        DefaultResponseFormatType.JSON | new TestingDataApiRequestImpl().generateAcceptFormat("json")
+        DefaultResponseFormatType.CSV  | new TestingDataApiRequestImpl().generateAcceptFormat("csv")
     }
 
     def "check invalid parsing generateFormat"() {

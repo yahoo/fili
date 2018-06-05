@@ -25,11 +25,13 @@ import rx.subjects.Subject
 import spock.lang.Specification
 
 import javax.ws.rs.container.AsyncResponse
+import javax.ws.rs.container.ContainerRequestContext
 
 class MappingResponseProcessorSpec extends Specification{
 
     GroupByQuery groupByQuery
     DataApiRequest apiRequest
+    ContainerRequestContext containerRequestContext
     ObjectMappersSuite objectMappers
     Subject<PreResponse, PreResponse> mappingResponseChannel
     ResponseWriter responseWriter
@@ -44,6 +46,7 @@ class MappingResponseProcessorSpec extends Specification{
         HttpResponseChannel httpResponseChannel = new HttpResponseChannel(
                 asyncResponse,
                 apiRequest,
+                containerRequestContext,
                 new HttpResponseMaker(objectMappers, Mock(DimensionDictionary), responseWriter)
         )
         mappingResponseChannel = PublishSubject.create()

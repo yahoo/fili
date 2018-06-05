@@ -7,10 +7,10 @@ import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.having.Having;
 import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn;
-import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.ApiHaving;
@@ -29,7 +29,6 @@ import java.util.OptionalInt;
 import java.util.Set;
 
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 /**
  * DataApiRequest Request binds, validates, and models the parts of a request to the data endpoint.
@@ -180,8 +179,6 @@ import javax.ws.rs.core.UriInfo;
     DataApiRequestImpl withFormat(ResponseFormatType format);
 
     DataApiRequestImpl withPaginationParameters(Optional<PaginationParameters> paginationParameters);
-
-    DataApiRequestImpl withUriInfo(UriInfo uriInfo);
 
     DataApiRequestImpl withBuilder(Response.ResponseBuilder builder);
 

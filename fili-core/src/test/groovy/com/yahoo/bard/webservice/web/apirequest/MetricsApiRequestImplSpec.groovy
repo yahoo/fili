@@ -33,12 +33,11 @@ class MetricsApiRequestImplSpec extends Specification {
     def "check api request construction for the top level endpoint (all tables)"() {
         when:
         MetricsApiRequestImpl apiRequest = new MetricsApiRequestImpl(
-                null,
-                null,
-                "",
-                "",
-                fullDictionary,
-                null
+                null,  // metricName
+                null,  // format
+                "",  // perPage
+                "",  // page
+                fullDictionary
         )
 
         then:
@@ -52,11 +51,10 @@ class MetricsApiRequestImplSpec extends Specification {
         when:
         MetricsApiRequestImpl apiRequest = new MetricsApiRequestImpl(
                 name,
-                null,
-                "",
-                "",
-                fullDictionary,
-                null
+                null,  // format
+                "",  // perPage
+                "",  // page
+                fullDictionary
         )
 
         then:
@@ -68,11 +66,10 @@ class MetricsApiRequestImplSpec extends Specification {
         when:
         new MetricsApiRequestImpl(
                 name,
-                null,
-                "",
-                "",
-                dictionary,
-                null
+                null,  // format
+                "",  // perPage
+                "",  // page
+                dictionary
         )
 
         then:

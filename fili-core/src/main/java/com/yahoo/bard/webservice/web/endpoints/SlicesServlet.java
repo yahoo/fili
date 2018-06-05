@@ -20,9 +20,7 @@ import com.codahale.metrics.annotation.Timed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -88,7 +86,6 @@ public class SlicesServlet extends EndpointServlet {
      * @param perPage  number of values to return per page
      * @param page  the page to start from
      * @param format  The name of the output format type
-     * @param uriInfo  UriInfo of the request
      * @param containerRequestContext  The context of data provided by the Jersey container for this request
 
      * @return OK(200) else Bad Request(400) Response format:
@@ -109,10 +106,10 @@ public class SlicesServlet extends EndpointServlet {
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @QueryParam("format") String format,
-            @Context UriInfo uriInfo,
-            @Context final ContainerRequestContext containerRequestContext
+            @Context ContainerRequestContext containerRequestContext
     ) {
         SlicesApiRequest apiRequest = null;
+        UriInfo uriInfo = containerRequestContext.getUriInfo();
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new SliceRequest("all"));
@@ -131,11 +128,10 @@ public class SlicesServlet extends EndpointServlet {
                 apiRequest = (SlicesApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
-            Stream<Map<String, String>> result = apiRequest.getPage(apiRequest.getSlices());
-
-            Response response = formatResponse(
+            Response response = paginateAndFormatResponse(
                     apiRequest,
-                    result,
+                    containerRequestContext,
+                    apiRequest.getSlices(),
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "slices" : "rows",
                     null
             );
@@ -157,7 +153,6 @@ public class SlicesServlet extends EndpointServlet {
      * Endpoint to get all the dimensions and metrics serviced by a druid slice.
      *
      * @param sliceName  Physical table name
-     * @param uriInfo  UriInfo of the request
      * @param containerRequestContext  The context of data provided by the Jersey container for this request
      *
      * @return OK(200) else Bad Request(400). Response format:
@@ -184,7 +179,6 @@ public class SlicesServlet extends EndpointServlet {
     @Path("/{sliceName}")
     public Response getSliceBySliceName(
             @PathParam("sliceName") String sliceName,
-            @Context UriInfo uriInfo,
             @Context final ContainerRequestContext containerRequestContext
     ) {
         SlicesApiRequestImpl apiRequest = null;
@@ -199,7 +193,7 @@ public class SlicesServlet extends EndpointServlet {
                     "",
                     physicalTableDictionary,
                     dataSourceMetadataService,
-                    uriInfo
+                    containerRequestContext.getUriInfo()
             );
 
             if (requestMapper != null) {

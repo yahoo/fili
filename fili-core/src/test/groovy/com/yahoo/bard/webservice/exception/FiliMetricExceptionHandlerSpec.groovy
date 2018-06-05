@@ -37,8 +37,7 @@ class FiliMetricExceptionHandlerSpec extends Specification {
                 "json",
                 "",
                 "",
-                dictionary,
-                null
+                dictionary
         ))
     }
 

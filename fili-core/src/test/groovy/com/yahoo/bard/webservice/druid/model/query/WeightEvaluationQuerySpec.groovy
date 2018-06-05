@@ -122,7 +122,6 @@ class WeightEvaluationQuerySpec extends Specification {
                 null, //asyncAfter
                 "", //perPage
                 "", //page
-                null, //uriInfo
                 dataServlet
         )
 
@@ -151,7 +150,6 @@ class WeightEvaluationQuerySpec extends Specification {
                 null, //asyncAfter
                 "", //perPage
                 "", //page
-                null, //uriInfo
                 dataServlet
         )
 
@@ -179,7 +177,6 @@ class WeightEvaluationQuerySpec extends Specification {
                 null, //asyncAfter
                 "", //perPage
                 "", //page
-                null, //uriInfo
                 dataServlet
         )
 
@@ -207,7 +204,6 @@ class WeightEvaluationQuerySpec extends Specification {
                 null, //asyncAfter
                 "", //perPage
                 "", //page
-                null, //uriInfo
                 dataServlet
         )
 
