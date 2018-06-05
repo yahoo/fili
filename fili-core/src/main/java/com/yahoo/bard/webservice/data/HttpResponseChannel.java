@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import rx.Observer;
 
 import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 
 /**
@@ -27,23 +28,27 @@ public class HttpResponseChannel implements Observer<PreResponse> {
     private final AsyncResponse asyncResponse;
     private final HttpResponseMaker httpResponseMaker;
     private final ApiRequest apiRequest;
+    private final ContainerRequestContext containerRequestContext;
 
     /**
      * Constructor.
      *
      * @param asyncResponse  An async response that we can use to respond asynchronously
      * @param apiRequest  Api request object with all the associated info with it
+     * @param containerRequestContext The container for jersey request processing objects
      * @param httpResponseMaker  Helper class instance to prepare the response object
      *
      */
     public HttpResponseChannel(
             AsyncResponse asyncResponse,
             ApiRequest apiRequest,
+            ContainerRequestContext containerRequestContext,
             HttpResponseMaker httpResponseMaker
     ) {
         this.asyncResponse = asyncResponse;
         this.httpResponseMaker = httpResponseMaker;
         this.apiRequest = apiRequest;
+        this.containerRequestContext = containerRequestContext;
     }
 
     @Override
@@ -80,7 +85,7 @@ public class HttpResponseChannel implements Observer<PreResponse> {
 
     @Override
     public void onNext(PreResponse preResponse) {
-        publishResponse(httpResponseMaker.buildResponse(preResponse, apiRequest));
+        publishResponse(httpResponseMaker.buildResponse(preResponse, apiRequest, containerRequestContext));
     }
 
     /**

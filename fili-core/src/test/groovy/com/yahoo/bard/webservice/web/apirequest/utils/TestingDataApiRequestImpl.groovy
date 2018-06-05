@@ -2,28 +2,30 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest.utils
 
-import static javax.ws.rs.core.Response.Status.OK
-
+import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.filterbuilders.DefaultDruidFilterBuilder
+import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
+import com.yahoo.bard.webservice.table.LogicalTable
+import com.yahoo.bard.webservice.web.ResponseFormatType
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestImpl
+import com.yahoo.bard.webservice.web.filters.ApiFilters
+import com.yahoo.bard.webservice.web.util.PaginationParameters
 
-import javax.ws.rs.core.Response
+import org.joda.time.Interval
 
 class TestingDataApiRequestImpl extends DataApiRequestImpl {
     TestingDataApiRequestImpl() {
         super(
-                null,
-                null,
-                null,
-                Response.status(OK),
-                null,
+                (ResponseFormatType) null,
+                (Optional<PaginationParameters>) null,
+                (LogicalTable) null,
                 DefaultTimeGrain.DAY,
-                [] as Set,
+                (Set<Dimension>) [] as Set,
                 null,
-                [] as Set,
-                [] as Set,
-                [:],
+                (Set<LogicalMetric>) [] as Set,
+                (Set<Interval>) [] as Set,
+                (ApiFilters) [:],
                 null,
                 null,
                 null,

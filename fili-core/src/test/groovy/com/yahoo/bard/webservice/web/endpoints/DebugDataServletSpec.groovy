@@ -93,7 +93,7 @@ class DebugDataServletSpec extends Specification {
                 "queryType": "groupBy",
                 "context": {}
               },
-              "reason": "DEBUG",
+              "reason": "debug",
               "status": 200,
               "statusName": "OK"
             }"""

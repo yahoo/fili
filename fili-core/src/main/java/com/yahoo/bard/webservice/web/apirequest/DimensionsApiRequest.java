@@ -12,7 +12,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 /**
  * Dimensions API Request. Such an API Request binds, validates, and models the parts of a request to the dimensions
@@ -26,8 +25,6 @@ public interface DimensionsApiRequest extends ApiRequest {
     DimensionsApiRequest withFormat(ResponseFormatType format);
 
     DimensionsApiRequest withPaginationParameters(Optional<PaginationParameters> paginationParameters);
-
-    DimensionsApiRequest withUriInfo(UriInfo uriInfo);
 
     DimensionsApiRequest withBuilder(Response.ResponseBuilder builder);
 

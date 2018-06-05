@@ -4,19 +4,13 @@ package com.yahoo.bard.webservice.web.apirequest;
 
 import static com.yahoo.bard.webservice.util.DateTimeFormatterFactory.FULLY_OPTIONAL_DATETIME_FORMATTER;
 
-import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormatter;
 
-import java.util.Collection;
 import java.util.Optional;
-import java.util.stream.Stream;
-
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 /**
  * Interface offering default implementations for the common components of API request objects.
@@ -51,21 +45,6 @@ public interface ApiRequest {
      Optional<PaginationParameters> getPaginationParameters();
 
     /**
-     * Get the uri info.
-     *
-     * @return The uri info of this API request
-     */
-     UriInfo getUriInfo();
-
-    /**
-     * Get the pagination object associated with this request.
-     * This object has valid contents after a call to {@link #getPage}
-     *
-     * @return The pagination object.
-     */
-     Pagination<?> getPagination();
-
-    /**
      * Returns how long the user is willing to wait before a request should go asynchronous.
      *
      * @return The maximum number of milliseconds the request is allowed to take before going from synchronous to
@@ -74,42 +53,9 @@ public interface ApiRequest {
      long getAsyncAfter();
 
     /**
-     * Get the response builder associated with this request.
-     *
-     * @return The response builder.
-     */
-     Response.ResponseBuilder getBuilder();
-
-    /**
      * Get the default pagination parameters for this type of API request.
      *
      * @return The uri info of this type of API request
      */
      PaginationParameters getDefaultPagination();
-
-
-    /**
-     * Add links to the response builder and return a stream with the requested page from the raw data.
-     *
-     * @param <T>  The type of the collection elements
-     * @param data  The data to be paginated.
-     *
-     * @return A stream corresponding to the requested page.
-     *
-     * @deprecated Pagination is moving to a Stream and pushing creation of the page to a more general
-     * method ({@link #getPage(Pagination)}) to allow for more flexibility
-     * in how pagination is done.
-     */
-    @Deprecated
-     <T> Stream<T> getPage(Collection<T> data);
-
-    /**
-     * Add links to the response builder and return a stream with the requested page from the raw data.
-     *
-     * @param <T>  The type of the collection elements
-     * @param pagination  The pagination object
-     *
-     * @return A stream corresponding to the requested page.
-     */
-     <T> Stream<T> getPage(Pagination<T> pagination);
 }

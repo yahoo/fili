@@ -17,7 +17,7 @@ import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 import com.yahoo.bard.webservice.web.JsonResponseWriter
 import com.yahoo.bard.webservice.web.PreResponse
-import com.yahoo.bard.webservice.web.ResponseFormatType
+import com.yahoo.bard.webservice.web.DefaultResponseFormatType
 import com.yahoo.bard.webservice.web.ResponseWriter
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext
 import com.yahoo.bard.webservice.web.responseprocessors.ResultSetResponseProcessor
@@ -28,6 +28,7 @@ import rx.subjects.Subject
 import spock.lang.Specification
 
 import javax.ws.rs.container.AsyncResponse
+import javax.ws.rs.container.ContainerRequestContext
 import javax.ws.rs.core.HttpHeaders
 import javax.ws.rs.core.MultivaluedMap
 import javax.ws.rs.core.PathSegment
@@ -49,10 +50,12 @@ class HttpResponseMakerSpec extends Specification {
     Subject<PreResponse, PreResponse> responseEmitter
     HttpResponseMaker httpResponseMaker
     ResponseWriter responseWriter
+    ContainerRequestContext containerRequestContext
 
     def setup() {
         apiRequest = Mock(DataApiRequest)
         druidResponseParser = Mock(DruidResponseParser)
+        containerRequestContext = Mock(ContainerRequestContext)
         uriInfo = Mock(UriInfo)
         pathSegment = Mock(PathSegment)
         paramMap = Mock(MultivaluedMap)
@@ -60,9 +63,12 @@ class HttpResponseMakerSpec extends Specification {
         Dimension dim1 = Mock(Dimension)
         responseWriter = new JsonResponseWriter(MAPPERS)
 
+        containerRequestContext.getUriInfo() >> uriInfo
+
         httpResponseChannel = new HttpResponseChannel(
                 Mock(AsyncResponse),
                 apiRequest,
+                containerRequestContext,
                 new HttpResponseMaker(MAPPERS, dimensionDictionary, responseWriter)
         )
 
@@ -85,8 +91,8 @@ class HttpResponseMakerSpec extends Specification {
 
         apiRequest.getLogicalMetrics() >> metricSet
         apiRequest.getGranularity() >> DAY
-        apiRequest.getFormat() >> ResponseFormatType.JSON
-        apiRequest.getUriInfo() >> uriInfo
+        apiRequest.getFormat() >> DefaultResponseFormatType.JSON
+        containerRequestContext.getUriInfo() >> uriInfo
 
         ResultSetSchema schema = new ResultSetSchema(DAY, [new MetricColumn("lm1")] as Set)
         resultSet = Mock(ResultSet)
@@ -116,7 +122,7 @@ class HttpResponseMakerSpec extends Specification {
         PreResponse preResponse = new PreResponse(resultSet, responseContext)
 
         when:
-        Response actual = httpResponseMaker.buildResponse(preResponse, apiRequest)
+        Response actual = httpResponseMaker.buildResponse(preResponse, apiRequest, containerRequestContext)
 
         then:
         actual.getStatus() == 200
@@ -131,21 +137,21 @@ class HttpResponseMakerSpec extends Specification {
         PreResponse preResponse = new PreResponse(resultSet, responseContext)
 
         when: "The Response is built"
-        Response actual = httpResponseMaker.buildResponse(preResponse, apiRequest)
+        Response actual = httpResponseMaker.buildResponse(preResponse, apiRequest, containerRequestContext)
 
         then: "The header is set correctly"
         actual.getHeaderString(HttpHeaders.CONTENT_TYPE) == "text/csv; charset=utf-8"
         actual.getHeaderString(HttpHeaders.CONTENT_DISPOSITION) == "attachment; filename=theMockPath_a_b__c_d.csv"
 
         and: "Mock override: A CSV-formatted request"
-        apiRequest.getFormat() >> ResponseFormatType.CSV
+        apiRequest.getFormat() >> DefaultResponseFormatType.CSV
     }
 
     def "createResponseBuilder() returns a non-null ResponseBuilder"() {
 
         when:
         Response.ResponseBuilder responseBuilder
-        responseBuilder = httpResponseMaker.createResponseBuilder(resultSet, responseContext, apiRequest)
+        responseBuilder = httpResponseMaker.createResponseBuilder(resultSet, responseContext, apiRequest, containerRequestContext)
 
         then:
         responseBuilder != null

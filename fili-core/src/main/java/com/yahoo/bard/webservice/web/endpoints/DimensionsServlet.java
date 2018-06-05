@@ -20,6 +20,7 @@ import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequestImpl;
+import com.yahoo.bard.webservice.web.apirequest.ResponsePaginator;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import com.codahale.metrics.annotation.Timed;
@@ -103,7 +104,7 @@ public class DimensionsServlet extends EndpointServlet {
      * @param page  the page to start from
      * @param format  the format to use for the response
      * @param uriInfo  UriInfo of the request
-     * @param requestContext  The context of data provided by the Jersey container for this request
+     * @param containerRequestContext  The context of data provided by the Jersey container for this request
      *
      * @return The list of dimensions
      * <pre><code>
@@ -120,7 +121,7 @@ public class DimensionsServlet extends EndpointServlet {
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @QueryParam("format") String format,
             @Context final UriInfo uriInfo,
-            @Context final ContainerRequestContext requestContext
+            @Context final ContainerRequestContext containerRequestContext
     ) {
         DimensionsApiRequest apiRequest = null;
         try {
@@ -130,24 +131,20 @@ public class DimensionsServlet extends EndpointServlet {
             apiRequest = new DimensionsApiRequestImpl(
                     null,
                     null,
-                    formatResolver.apply(format, requestContext),
+                    formatResolver.apply(format, containerRequestContext),
                     perPage,
                     page,
-                    dimensionDictionary,
-                    uriInfo
+                    dimensionDictionary
             );
 
             if (requestMapper != null) {
-                apiRequest = (DimensionsApiRequestImpl) requestMapper.apply(apiRequest, requestContext);
+                apiRequest = (DimensionsApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
-            Stream<Map<String, Object>> result = apiRequest.getPage(
-                    getDimensionListSummaryView(apiRequest.getDimensions(), uriInfo)
-            );
-
-            Response response = formatResponse(
+            Response response = paginateAndFormatResponse(
                     apiRequest,
-                    result,
+                    containerRequestContext,
+                    getDimensionListSummaryView(apiRequest.getDimensions(), uriInfo),
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "dimensions" : "rows",
                     null
             );
@@ -157,7 +154,7 @@ public class DimensionsServlet extends EndpointServlet {
             return exceptionHandler.handleThrowable(
                     t,
                     Optional.ofNullable(apiRequest),
-                    requestContext
+                    containerRequestContext
             );
         } finally {
             RequestLog.stopTiming(this);
@@ -195,8 +192,7 @@ public class DimensionsServlet extends EndpointServlet {
                     null,
                     "",
                     "",
-                    dimensionDictionary,
-                    uriInfo
+                    dimensionDictionary
             );
 
             if (requestMapper != null) {
@@ -279,8 +275,7 @@ public class DimensionsServlet extends EndpointServlet {
                     formatResolver.apply(format, containerRequestContext),
                     perPage,
                     page,
-                    dimensionDictionary,
-                    uriInfo
+                    dimensionDictionary
             );
 
             if (requestMapper != null) {
@@ -292,6 +287,7 @@ public class DimensionsServlet extends EndpointServlet {
             PaginationParameters paginationParameters = apiRequest
                     .getPaginationParameters()
                     .orElse(apiRequest.getDefaultPagination());
+
             Pagination<DimensionRow> pagedRows = apiRequest.getFilters().isEmpty() ?
                     searchProvider.findAllDimensionRowsPaged(paginationParameters) :
                     searchProvider.findFilteredDimensionRowsPaged(
@@ -299,7 +295,9 @@ public class DimensionsServlet extends EndpointServlet {
                             paginationParameters
                     );
 
-            Stream<Map<String, String>> rows = apiRequest.getPage(pagedRows)
+            Response.ResponseBuilder builder = Response.status(Response.Status.OK);
+
+            Stream<Map<String, String>> rows = ResponsePaginator.paginate(builder, pagedRows, uriInfo)
                     .map(DimensionRow::entrySet)
                     .map(Set::stream)
                     .map(stream ->
@@ -313,6 +311,9 @@ public class DimensionsServlet extends EndpointServlet {
 
             Response response = formatResponse(
                     apiRequest,
+                    builder,
+                    pagedRows,
+                    containerRequestContext,
                     rows,
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "dimensions" : "rows",
                     null

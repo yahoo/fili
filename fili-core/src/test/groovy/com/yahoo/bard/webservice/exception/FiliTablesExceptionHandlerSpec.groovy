@@ -2,17 +2,19 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.exception
 
-import com.fasterxml.jackson.core.JsonProcessingException
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.TableGroup
+import com.yahoo.bard.webservice.web.DefaultResponseFormatType
 import com.yahoo.bard.webservice.web.ErrorMessageFormat
 import com.yahoo.bard.webservice.web.RequestValidationException
-import com.yahoo.bard.webservice.web.ResponseFormatType
 import com.yahoo.bard.webservice.web.apirequest.TablesApiRequest
 import com.yahoo.bard.webservice.web.apirequest.TablesApiRequestImpl
 import com.yahoo.bard.webservice.web.filters.ApiFilters
+
+import com.fasterxml.jackson.core.JsonProcessingException
+
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -23,10 +25,8 @@ class FiliTablesExceptionHandlerSpec extends Specification {
     FiliTablesExceptionHandler tablesExceptionHandler = new FiliTablesExceptionHandler()
 
     Optional<TablesApiRequest> request = Optional.of(new TablesApiRequestImpl(
-            ResponseFormatType.JSON,
+            DefaultResponseFormatType.JSON,
             Optional.empty(),
-            null,
-            null,
             [] as Set,
             new LogicalTable(
                     "table",

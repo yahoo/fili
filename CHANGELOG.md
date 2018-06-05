@@ -38,6 +38,18 @@ pull request if there was one.
 
 ### Changed:
 
+- [Moved ResponseFormatType from Singleton enum to interface with enum impl](https://github.com/yahoo/fili/issues/711)
+    * Refactored ResponseFormatType to allow expansion via additional interface implementors
+    * Replaced equality based matching with 'accepts' model
+
+- [Restructured Report Building out of ApiRequest](https://github.com/yahoo/fili/issues/711)
+    * Pushed UriInfo used to produce `PaginationMapper` into `RequestContext`
+    * Renamed 'getPage' to 'paginate' and refactored off `ApiRequest` and into `PageLinkBuilder`
+    * Moved pagination mostly out of individual servlet classes and into `EndpointServlet`
+    * Initialized per request `Response.ResponseBuilder` in EndpointServlet rather than `ApiRequestImpl` constructor
+    * Simplified injected classes that took both `UrlInfo` and `ContainerRequestContext` to get the one from inside the other.
+    * Pushed entire container request context to content disposition building code (prelude to https://github.com/yahoo/fili/issues/709 )
+
 - [Change `BaseCompositePhysicalTable` into a concrete class](https://github.com/yahoo/fili/pull/745)
     * Currently `BaseCompositePhysicalTable` is an abstract class, though it has all of the functionality for a simple composite physical table. Changed to a concrete class to allow for simple composite table behavior with requiring an extension.
     * Two simple implementations of `BaseCompositePhysicalTable`, `PartitionCompositeTable` and `MetricUnionCompositeTable` are now deprecated. Instead, the availabilities for these tables should be created directly and passed in to `BaseCompositePhysicalTable`.  
@@ -71,6 +83,9 @@ pull request if there was one.
       crashes downstream applications. Casting is replaced with a explicit `SimplifiedIntervalList` object creation.
 
 ### Deprecated:
+
+- [Undeprecated pagination by collection](https://github.com/yahoo/fili/issues/711)
+    * Since we seem to be in no hurry to switch to heavier reliance on streams. (also renamed paginate and moved to `PageLinkBuilder`)
 
 - [Deprecate `PartitionCompositeTable` and `MetricUnionCompositeTable`](https://github.com/yahoo/fili/pull/745)
     * Two simple implementations of `BaseCompositePhysicalTable` (`PartitionCompositeTable` and `MetricUnionCompositeTable`) are now deprecated. Instead, the availabilities for these tables should be created directly and passed in to `BaseCompositePhysicalTable`.  

@@ -72,7 +72,7 @@ public class SlicesApiRequestImpl extends ApiRequestImpl implements SlicesApiReq
             DataSourceMetadataService dataSourceMetadataService,
             UriInfo uriInfo
     ) throws BadApiRequestException {
-        super(format, perPage, page, uriInfo);
+        super(format, perPage, page);
         this.slices = generateSlices(tableDictionary, uriInfo);
 
         this.slice = sliceName != null ? generateSlice(
@@ -94,7 +94,7 @@ public class SlicesApiRequestImpl extends ApiRequestImpl implements SlicesApiReq
      * Generates the set of all available slices.
      *
      * @param tableDictionary  Physical table dictionary contains the map of valid table names to table objects.
-     * @param uriInfo  The URI of the request object.
+     * @param uriInfo  The URI info for the request object.
      *
      * @return Set of slice objects.
      * @throws BadApiRequestException if the physical table dictionary is empty.

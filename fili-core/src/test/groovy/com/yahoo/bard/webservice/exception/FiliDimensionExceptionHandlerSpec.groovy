@@ -33,8 +33,7 @@ class FiliDimensionExceptionHandlerSpec extends Specification {
             "json",
             "",
             "",
-            new DimensionDictionary([dimension] as Set),
-            null
+            new DimensionDictionary([dimension] as Set)
     ))
 
     @Unroll
