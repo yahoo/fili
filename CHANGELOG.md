@@ -26,6 +26,10 @@ pull request if there was one.
 
 ### Changed:
 
+- [Let DimensionApiRequestMapper throw RequestValidationException instead of BadApiRequestException](https://github.com/yahoo/fili/pull/715)
+    * `DimensionApiRequestMapper.apply()` is made to obey the interfact contract by throwing
+      `RequestValidationException` instead of ``BadApiRequestException``
+
 - [Inject customizable extraction functions to RegisteredLookupDimension](https://github.com/yahoo/fili/pull/724)
     * Instead of injecting registered lookup names, we inject registered lookup extraction functions for lookup
       dimension so that downstream projects can configure all fields of registered lookup extraction functions.
