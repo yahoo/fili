@@ -27,7 +27,7 @@ pull request if there was one.
 ### Changed:
 
 - [Let DimensionApiRequestMapper throw RequestValidationException instead of BadApiRequestException](https://github.com/yahoo/fili/pull/715)
-    * `DimensionApiRequestMapper.apply()` is made to obey the interfact contract by throwing
+    * `DimensionApiRequestMapper.apply()` is made to obey the interface contract by throwing
       `RequestValidationException` instead of ``BadApiRequestException``
 
 - [Inject customizable extraction functions to RegisteredLookupDimension](https://github.com/yahoo/fili/pull/724)
