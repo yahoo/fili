@@ -5,9 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.io.IOException;
 import java.util.*;
+import java.io.File;
 
 /**
  * Loads a single dimension config json file and builds DimensionConfigs into a dimension dictionary.
@@ -34,13 +36,13 @@ public class ExternalDimensionConfigLoader {
      *
      * @return Templates parsed from the external file
      */
-    public WikiDimensionConfig loadDimensionConfigs(URL externalConfigFileURL) {
+    public WikiDimensionConfig loadDimensionConfigs(File externalConfigFile) {
         try {
-            JsonNode dimensionConfigurator = objectMapper.readTree(externalConfigFileURL);
+            JsonNode dimensionConfigurator = objectMapper.readTree(externalConfigFile);
             return objectMapper.convertValue(dimensionConfigurator, WikiDimensionConfig.class);
         } catch (IOException exception) {
             String message = "Could not parse due to invalid schema in external dimension config file located at " +
-                    "url: " + externalConfigFileURL.getPath();
+                    "url: " + externalConfigFile.getPath();
             throw new RuntimeException(message, exception);
         }
     }
@@ -50,9 +52,12 @@ public class ExternalDimensionConfigLoader {
      *
      * @return a string of the url to the external config file
      */
-    public URL getExternalConfigFileURL() {
-        URL url = getClass().getResource("DimensionConfigTemplateSample.json");
-        return url;
+    public File getExternalConfigFile() {
+
+        File targetFile = new File("DimensionConfigTemplateSample.json");
+
+        return targetFile;
+
     }
 
 }

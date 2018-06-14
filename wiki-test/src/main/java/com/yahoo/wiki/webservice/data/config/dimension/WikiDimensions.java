@@ -41,7 +41,7 @@ public class WikiDimensions {
     public WikiDimensions() {
 
         ExternalDimensionConfigLoader dimensionConfigLoader = new ExternalDimensionConfigLoader(new ObjectMapper());
-        WikiDimensionConfig wikiDimensionConfig = dimensionConfigLoader.loadDimensionConfigs(dimensionConfigLoader.getExternalConfigFileURL());
+        WikiDimensionConfig wikiDimensionConfig = dimensionConfigLoader.loadDimensionConfigs(dimensionConfigLoader.getExternalConfigFile());
 
         this.dimensionConfigs = Collections.unmodifiableSet(
                 wikiDimensionConfig.getDimensions().stream()

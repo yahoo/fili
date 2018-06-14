@@ -9,7 +9,7 @@
         <version>0.10-SNAPSHOT</version>
     </parent>
 
-    <artifactId>fili-wikipedia-example</artifactId>
+    <artifactId>wiki-test</artifactId>
     <packaging>war</packaging>
     <name>Fili: Wikipedia Example</name>
     <description>Fili Wikipedia Example serves as a standalone sample implementation using core Fili services to stand
@@ -88,18 +88,8 @@
         </dependency>
 
         <dependency>
-            <groupId>com.fasterxml.jackson.module</groupId>
-            <artifactId>jackson-module-parameter-names</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jdk8</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
 
     </dependencies>

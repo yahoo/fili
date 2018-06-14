@@ -20,6 +20,7 @@
         <module>fili-wikipedia-example</module>
         <module>fili-generic-example</module>
         <module>fili-sql</module>
+        <module>wiki-test</module>
     </modules>
 
     <organization>

@@ -72,8 +72,7 @@ public class WikiTableLoader extends BaseTableLoader {
     private void configureSample(WikiDimensions wikiDimensions) {
 
         ExternalDimensionConfigLoader dimensionConfigLoader = new ExternalDimensionConfigLoader(new ObjectMapper());
-        WikiDimensionConfig wikiDimensionConfig = dimensionConfigLoader.loadDimensionConfigs(dimensionConfigLoader.getExternalConfigFileURL());
-
+        WikiDimensionConfig wikiDimensionConfig = dimensionConfigLoader.loadDimensionConfigs(dimensionConfigLoader.getExternalConfigFile());
 
         // Dimensions
         Set<DimensionConfig> dimsBasefactDruidTableName = wikiDimensions.getDimensionConfigurationsByConfigInfo(
