@@ -1,0 +1,161 @@
+{
+  "fieldSets": {
+    "default": [
+      {
+        "name": "ID",
+        "description": "Dimension ID",
+        "tags": [
+          "primaryKey"
+        ]
+      },
+      {
+        "name": "DESC",
+        "description": "Dimension description"
+      }
+    ],
+    "field for COUNTRY": [
+      {
+        "name": "ID",
+        "description": "Geolocation Code",
+        "tags": [
+          "primaryKey",
+          "geoType"
+        ]
+      },
+      {
+        "name": "DESC",
+        "description": "Dimension description"
+      },
+      {
+        "name": "county",
+        "description": "County of location"
+      },
+      {
+        "name": "state",
+        "description": "State of location"
+      }
+    ],
+    "field for PAGE": [
+      {
+        "name": "ID",
+        "description": "Page Id",
+        "tags": [
+          "primaryKey"
+        ]
+      },
+      {
+        "name": "DESC",
+        "description": "Dimension description"
+      }
+    ]
+  },
+  "dimensions": [
+    {
+      "apiName": "COMMENT",
+      "longName": "wiki comment",
+      "description": "Comment for the edit to the wiki page"
+    },
+    {
+      "apiName": "COUNTRY_ISO_CODE",
+      "longName": "wiki countryIsoCode",
+      "description": "Iso Code of the country to which the wiki page belongs",
+      "fields": "field for COUNTRY"
+    },
+    {
+      "apiName": "REGION_ISO_CODE",
+      "longName": "wiki regionIsoCode",
+      "description": "Iso Code of the region to which the wiki page belongs",
+      "fields": "default"
+    },
+    {
+      "apiName": "PAGE",
+      "longName": "wiki page",
+      "description": "Page is a document that is suitable for World Wide Web and web browsers",
+      "fields": "field for PAGE"
+    },
+    {
+      "apiName": "USER",
+      "longName": "wiki user",
+      "description": "User is a person who generally use or own wiki services",
+      "fields": [
+        {
+          "name": "ID",
+          "description": "User Id",
+          "tags": [
+            "primaryKey"
+          ]
+        },
+        {
+          "name": "DESC",
+          "description": "Dimension description"
+        },
+        {
+          "name": "AGE",
+          "description": "Age of user"
+        },
+        {
+          "name": "SEX",
+          "description": "Sex of user"
+        }
+      ]
+    },
+    {
+      "apiName": "IS_UNPATROLLED",
+      "longName": "wiki isUnpatrolled",
+      "description": "Unpatrolled are class of pages that are not been patrolled",
+      "fields": "field not in field set(should be default)"
+    },
+    {
+      "apiName": "IS_NEW",
+      "longName": "wiki isNew",
+      "description": "New Page is the first page that is created in wiki"
+    },
+    {
+      "apiName": "IS_ROBOT",
+      "longName": "wiki isRobot",
+      "description": "Robot is an tool that carries out repetitive and mundane tasks"
+    },
+    {
+      "apiName": "IS_ANONYMOUS",
+      "longName": "wiki isAnonymous",
+      "description": "Anonymous are individual or entity whose identity is unknown"
+    },
+    {
+      "apiName": "IS_MINOR",
+      "longName": "wiki isMinor",
+      "description": "Minor is a person who is legally considered a minor"
+    },
+    {
+      "apiName": "NAMESPACE",
+      "longName": "wiki namespace",
+      "description": "Namespace is a set of wiki pages that begins with a reserved word"
+    },
+    {
+      "apiName": "CHANNEL",
+      "longName": "wiki channel",
+      "description": "Channel is a set of wiki pages on a certain channel"
+    },
+    {
+      "apiName": "COUNTRY_NAME",
+      "longName": "wiki countryName",
+      "description": "Name of the Country to which the wiki page belongs"
+    },
+    {
+      "apiName": "REGION_NAME",
+      "longName": "wiki regionName",
+      "description": "Name of the Region to which the wiki page belongs"
+    },
+    {
+      "apiName": "METRO_CODE",
+      "longName": "wiki metroCode",
+      "description": "Metro Code to which the wiki page belongs"
+    },
+    {
+      "apiName": "CITY_NAME",
+      "longName": "wiki cityName",
+      "description": "Name of the City to which the wiki page belongs"
+    }
+  ]
+}
+
+

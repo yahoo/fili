@@ -152,6 +152,7 @@ class TablesServletSpec extends Specification {
                                         ]
                                     }"""
 
+
         when: "We send a request"
         String result = jerseyTestBinder.makeRequest("/tables/$tableName/$granularity").get(String.class)
 
@@ -161,6 +162,6 @@ class TablesServletSpec extends Specification {
         where:
         tableName = WIKIPEDIA.asName().toLowerCase()
         granularity = "hour"
-    }
 
+    }
 }
