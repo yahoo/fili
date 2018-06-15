@@ -33,7 +33,8 @@ public class WikiDimensionTemplate extends Template implements DimensionConfigAP
     /**
      * Constructor.
      */
-    public WikiDimensionTemplate() { }
+    public WikiDimensionTemplate() {
+    }
 
     /**
      * Set dimensions info.
@@ -59,7 +60,9 @@ public class WikiDimensionTemplate extends Template implements DimensionConfigAP
     }
 
     @Override
-    public void setFields(WikiDimensionField fields) {this.fields = fields;}
+    public void setFields(WikiDimensionField fields) {
+        this.fields = fields;
+    }
 
     /**
      * Get dimensions info.

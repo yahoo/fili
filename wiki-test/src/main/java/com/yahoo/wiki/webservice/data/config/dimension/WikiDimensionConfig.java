@@ -17,7 +17,8 @@ public class WikiDimensionConfig extends Template {
     /**
      * Constructor.
      */
-    public WikiDimensionConfig() { }
+    public WikiDimensionConfig() {
+    }
 
     /**
      * Set dimensions configuration info.
@@ -33,7 +34,9 @@ public class WikiDimensionConfig extends Template {
     /**
      * Get dimensions configuration info.
      */
-    public HashMap<String, LinkedHashSet<WikiDimensionFieldTemplate>> getFieldSets() { return this.fieldSets; }
+    public HashMap<String, LinkedHashSet<WikiDimensionFieldTemplate>> getFieldSets() {
+        return this.fieldSets;
+    }
 
     public LinkedHashSet<WikiDimensionTemplate> getDimensions() {
         return this.dimensions;

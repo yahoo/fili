@@ -9,7 +9,7 @@ import com.yahoo.wiki.webservice.data.config.Template;
 import java.util.LinkedList;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class WikiDimensionFieldTemplate extends Template implements DimensionField  {
+public class WikiDimensionFieldTemplate extends Template implements DimensionField {
 
     @JsonProperty("name")
     private String name;
@@ -23,7 +23,8 @@ public class WikiDimensionFieldTemplate extends Template implements DimensionFie
     /**
      * Constructor.
      */
-    public WikiDimensionFieldTemplate() { }
+    public WikiDimensionFieldTemplate() {
+    }
 
     /**
      * Set dimensions info.
@@ -44,14 +45,18 @@ public class WikiDimensionFieldTemplate extends Template implements DimensionFie
      * Get dimensions info.
      */
     @Override
-    public String getName() { return EnumUtils.camelCase(this.name); }
+    public String getName() {
+        return EnumUtils.camelCase(this.name);
+    }
 
     @Override
     public String getDescription() {
         return this.description;
     }
 
-    public LinkedList<String> getTags() { return this.tags; }
+    public LinkedList<String> getTags() {
+        return this.tags;
+    }
 
     @Override
     public String toString() {

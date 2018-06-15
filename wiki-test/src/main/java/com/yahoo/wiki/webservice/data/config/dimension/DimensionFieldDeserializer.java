@@ -22,14 +22,15 @@ public class DimensionFieldDeserializer extends JsonDeserializer<WikiDimensionFi
     public WikiDimensionField deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
         WikiDimensionField wikiDimensionField = new WikiDimensionField();
 
-        if(jp.getCurrentToken() == JsonToken.VALUE_STRING) {
+        if (jp.getCurrentToken() == JsonToken.VALUE_STRING) {
             wikiDimensionField.setFieldName(jp.getText());
         } else {
             ObjectCodec oc = jp.getCodec();
             ObjectMapper objectMapper = new ObjectMapper();
 
             JsonNode node = oc.readTree(jp);
-            LinkedHashSet<WikiDimensionFieldTemplate> list = objectMapper.convertValue(node, new TypeReference<LinkedHashSet<WikiDimensionFieldTemplate>>(){ });
+            LinkedHashSet<WikiDimensionFieldTemplate> list = objectMapper.convertValue(node, new TypeReference<LinkedHashSet<WikiDimensionFieldTemplate>>() {
+            });
             wikiDimensionField.setFieldList(list);
         }
         return wikiDimensionField;

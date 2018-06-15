@@ -20,7 +20,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- *
  * Hold all the dimension configurations for the sample Bard instance.
  */
 public class WikiDimensions {
@@ -34,21 +33,21 @@ public class WikiDimensions {
     public WikiDimensions() {
 
         ExternalConfigLoader dimensionConfigLoader = new ExternalConfigLoader(new ObjectMapper());
-        WikiDimensionConfig wikiDimensionConfig = (WikiDimensionConfig)dimensionConfigLoader.loadDimensionConfigs("DimensionConfigTemplateSample.json", WikiDimensionConfig.class);
+        WikiDimensionConfig wikiDimensionConfig = (WikiDimensionConfig) dimensionConfigLoader.loadDimensionConfigs("DimensionConfigTemplateSample.json", WikiDimensionConfig.class);
 
         this.dimensionConfigs = Collections.unmodifiableSet(
                 wikiDimensionConfig.getDimensions().stream()
                         .map(
-                            dimensionName -> new DefaultKeyValueStoreDimensionConfig(
-                                    dimensionName,
-                                    dimensionName.asName(),
-                                    dimensionName.getDescription(),
-                                    dimensionName.getLongName(),
-                                    dimensionName.getCategory(),
-                                    dimensionName.resolveFields(wikiDimensionConfig.getFieldSets()),
-                                    getDefaultKeyValueStore(dimensionName),
-                                    getDefaultSearchProvider(dimensionName)
-                            )
+                                dimensionName -> new DefaultKeyValueStoreDimensionConfig(
+                                        dimensionName,
+                                        dimensionName.asName(),
+                                        dimensionName.getDescription(),
+                                        dimensionName.getLongName(),
+                                        dimensionName.getCategory(),
+                                        dimensionName.resolveFields(wikiDimensionConfig.getFieldSets()),
+                                        getDefaultKeyValueStore(dimensionName),
+                                        getDefaultSearchProvider(dimensionName)
+                                )
                         )
                         .collect(Collectors.toSet())
         );
@@ -71,14 +70,13 @@ public class WikiDimensions {
     /**
      * Get dimension configurations provided the dimension api name.
      *
-     * @param dimensionNames  Names for dimensions by api names
-     *
+     * @param dimensionNames Names for dimensions by api names
      * @return set of dimension configurations
      */
     public LinkedHashSet<DimensionConfig> getDimensionConfigurationsByConfigInfo(
             LinkedHashSet<WikiDimensionTemplate> dimensionNames
     ) {
-        return  dimensionNames.stream()
+        return dimensionNames.stream()
                 .map(WikiDimensionTemplate::asName)
                 .map(wikiApiDimensionNameToConfig::get)
                 .collect(Collectors.toCollection(LinkedHashSet<DimensionConfig>::new));
@@ -87,8 +85,7 @@ public class WikiDimensions {
     /**
      * Lazily provide a KeyValueStore for this store name.
      *
-     * @param storeName  the name for the key value store
-     *
+     * @param storeName the name for the key value store
      * @return A KeyValueStore instance
      */
     private KeyValueStore getDefaultKeyValueStore(WikiDimensionTemplate storeName) {
@@ -98,9 +95,8 @@ public class WikiDimensions {
     /**
      * Lazily create a Scanning Search Provider for this provider name.
      *
-     * @param providerName  The name of the dimension's indexes
-     *
-     * @return  A Scanning Search Provider for the provider name.
+     * @param providerName The name of the dimension's indexes
+     * @return A Scanning Search Provider for the provider name.
      */
     private SearchProvider getDefaultSearchProvider(WikiDimensionTemplate providerName) {
         return ScanSearchProviderManager.getInstance(providerName.asName());

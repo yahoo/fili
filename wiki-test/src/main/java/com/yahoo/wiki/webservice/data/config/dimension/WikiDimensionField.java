@@ -6,7 +6,7 @@ import java.util.LinkedHashSet;
  * Contains field name and a list of field template
  * For DimensionFieldDeserializer
  */
-public class WikiDimensionField{
+public class WikiDimensionField {
 
     private String fieldName;
     private LinkedHashSet<WikiDimensionFieldTemplate> fieldList;
@@ -14,7 +14,8 @@ public class WikiDimensionField{
     /**
      * Constructor.
      */
-    WikiDimensionField() {}
+    WikiDimensionField() {
+    }
 
     /**
      * Set field info
@@ -22,6 +23,7 @@ public class WikiDimensionField{
     public void setFieldName(String name) {
         this.fieldName = name;
     }
+
     public void setFieldList(LinkedHashSet<WikiDimensionFieldTemplate> list) {
         this.fieldList = list;
     }
@@ -29,7 +31,10 @@ public class WikiDimensionField{
     /**
      * Get field info
      */
-    public String getFieldName() {return this.fieldName;}
+    public String getFieldName() {
+        return this.fieldName;
+    }
+
     public LinkedHashSet<WikiDimensionFieldTemplate> getFieldList() {
         return fieldList;
     }
