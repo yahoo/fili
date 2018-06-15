@@ -18,7 +18,7 @@ import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.bard.webservice.util.Utils;
-import com.yahoo.wiki.webservice.data.config.dimension.ExternalDimensionConfigLoader;
+import com.yahoo.wiki.webservice.data.config.ExternalConfigLoader;
 import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensionConfig;
 import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensions;
 import com.yahoo.wiki.webservice.data.config.names.WikiApiMetricName;
@@ -29,7 +29,6 @@ import com.yahoo.wiki.webservice.data.config.names.WikiLogicalTableName;
 import org.joda.time.DateTimeZone;
 
 import java.util.EnumMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -71,8 +70,8 @@ public class WikiTableLoader extends BaseTableLoader {
      */
     private void configureSample(WikiDimensions wikiDimensions) {
 
-        ExternalDimensionConfigLoader dimensionConfigLoader = new ExternalDimensionConfigLoader(new ObjectMapper());
-        WikiDimensionConfig wikiDimensionConfig = dimensionConfigLoader.loadDimensionConfigs(dimensionConfigLoader.getExternalConfigFile());
+        ExternalConfigLoader dimensionConfigLoader = new ExternalConfigLoader(new ObjectMapper());
+        WikiDimensionConfig wikiDimensionConfig = (WikiDimensionConfig)dimensionConfigLoader.loadDimensionConfigs("DimensionConfigTemplateSample.json", WikiDimensionConfig.class);
 
         // Dimensions
         Set<DimensionConfig> dimsBasefactDruidTableName = wikiDimensions.getDimensionConfigurationsByConfigInfo(

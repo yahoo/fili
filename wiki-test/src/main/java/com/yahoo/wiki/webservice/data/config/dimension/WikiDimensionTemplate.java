@@ -6,13 +6,14 @@ import com.yahoo.bard.webservice.data.dimension.*;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.yahoo.bard.webservice.util.EnumUtils;
 import com.yahoo.bard.webservice.util.Utils;
+import com.yahoo.wiki.webservice.data.config.Template;
 
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class WikiDimensionTemplate implements DimensionConfigAPI {
+public class WikiDimensionTemplate extends Template implements DimensionConfigAPI {
 
     @JsonProperty("apiName")
     private String apiName;

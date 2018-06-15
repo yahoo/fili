@@ -2,18 +2,15 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.dimension;
 
-import com.yahoo.bard.webservice.config.SystemConfig;
-import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.config.dimension.DefaultKeyValueStoreDimensionConfig;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
-import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager;
 import com.yahoo.bard.webservice.util.StreamUtils;
-import com.yahoo.bard.webservice.util.Utils;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.yahoo.wiki.webservice.data.config.ExternalConfigLoader;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -28,10 +25,6 @@ import java.util.stream.Collectors;
  */
 public class WikiDimensions {
 
-    private final SystemConfig systemConfig = SystemConfigProvider.getInstance();
-
-    private final String defaultDimensionBackendKey = systemConfig.getPackageVariableName("dimension_backend");
-
     private final Set<DimensionConfig> dimensionConfigs;
     private final LinkedHashMap<String, DimensionConfig> wikiApiDimensionNameToConfig;
 
@@ -40,8 +33,8 @@ public class WikiDimensions {
      */
     public WikiDimensions() {
 
-        ExternalDimensionConfigLoader dimensionConfigLoader = new ExternalDimensionConfigLoader(new ObjectMapper());
-        WikiDimensionConfig wikiDimensionConfig = dimensionConfigLoader.loadDimensionConfigs(dimensionConfigLoader.getExternalConfigFile());
+        ExternalConfigLoader dimensionConfigLoader = new ExternalConfigLoader(new ObjectMapper());
+        WikiDimensionConfig wikiDimensionConfig = (WikiDimensionConfig)dimensionConfigLoader.loadDimensionConfigs("DimensionConfigTemplateSample.json", WikiDimensionConfig.class);
 
         this.dimensionConfigs = Collections.unmodifiableSet(
                 wikiDimensionConfig.getDimensions().stream()
@@ -64,7 +57,6 @@ public class WikiDimensions {
                 StreamUtils.toLinkedMap(DimensionConfig::getApiName, Function.identity())
         );
 
-
     }
 
     /**
@@ -86,12 +78,10 @@ public class WikiDimensions {
     public LinkedHashSet<DimensionConfig> getDimensionConfigurationsByConfigInfo(
             LinkedHashSet<WikiDimensionTemplate> dimensionNames
     ) {
-
         return  dimensionNames.stream()
                 .map(WikiDimensionTemplate::asName)
                 .map(wikiApiDimensionNameToConfig::get)
                 .collect(Collectors.toCollection(LinkedHashSet<DimensionConfig>::new));
-
     }
 
     /**

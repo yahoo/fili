@@ -4,11 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.util.EnumUtils;
+import com.yahoo.wiki.webservice.data.config.Template;
 
 import java.util.LinkedList;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class WikiDimensionFieldTemplate implements DimensionField {
+public class WikiDimensionFieldTemplate extends Template implements DimensionField  {
 
     @JsonProperty("name")
     private String name;

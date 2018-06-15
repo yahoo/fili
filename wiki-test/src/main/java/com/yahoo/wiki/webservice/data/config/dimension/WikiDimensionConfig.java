@@ -1,11 +1,12 @@
 package com.yahoo.wiki.webservice.data.config.dimension;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.yahoo.wiki.webservice.data.config.Template;
 
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 
-public class WikiDimensionConfig {
+public class WikiDimensionConfig extends Template {
 
     @JsonProperty("fieldSets")
     private HashMap<String, LinkedHashSet<WikiDimensionFieldTemplate>> fieldSets;
