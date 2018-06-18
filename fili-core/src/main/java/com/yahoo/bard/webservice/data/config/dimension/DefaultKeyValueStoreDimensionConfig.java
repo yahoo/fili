@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.data.config.names.DimensionName;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
+import com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy;
 
 import java.util.LinkedHashSet;
 import javax.validation.constraints.NotNull;
@@ -24,6 +25,7 @@ public class DefaultKeyValueStoreDimensionConfig implements DimensionConfig {
     private final LinkedHashSet<DimensionField> defaultDimensionFields;
     private final KeyValueStore keyValueStore;
     private final SearchProvider searchProvider;
+    private final StorageStrategy storageStrategy;
 
     /**
      * Construct a DefaultKeyValueStoreDimensionConfig instance from dimension name, dimension fields and
@@ -59,6 +61,7 @@ public class DefaultKeyValueStoreDimensionConfig implements DimensionConfig {
       this.defaultDimensionFields = defaultDimensionFields;
       this.keyValueStore = keyValueStore;
       this.searchProvider = searchProvider;
+      this.storageStrategy = StorageStrategy.LOADED;
     }
 
   /**
@@ -140,5 +143,10 @@ public class DefaultKeyValueStoreDimensionConfig implements DimensionConfig {
   @Override
   public SearchProvider getSearchProvider() {
     return searchProvider;
+  }
+
+  @Override
+  public StorageStrategy getStorageStrategy() {
+      return storageStrategy;
   }
 }
