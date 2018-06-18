@@ -3,19 +3,22 @@
     [
       {
         "apiName" : "COUNT",
-        "maker" : "count"
+        "maker" : "CountMaker"
       },
       {
         "apiName" : "ADDED",
-        "maker" : "added"
+        "maker" : "DoubleSumMaker",
+        "dependencyMetricNames" : ["ADDED"]
       },
       {
         "apiName" : "DELTA",
-        "maker" : "delta"
+        "maker" : "DoubleSumMaker",
+        "dependencyMetricNames" : ["DELTA"]
       },
       {
         "apiName" : "DELETED",
-        "maker" : "deleted"
+        "maker" : "DoubleSumMaker",
+        "dependencyMetricNames" : ["DELETED"]
       }
     ]
 }
