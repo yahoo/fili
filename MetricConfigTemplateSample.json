@@ -1,0 +1,23 @@
+{
+  "metrics" :
+    [
+      {
+        "apiName" : "COUNT",
+        "maker" : "count"
+      },
+      {
+        "apiName" : "ADDED",
+        "maker" : "added"
+      },
+      {
+        "apiName" : "DELTA",
+        "maker" : "delta"
+      },
+      {
+        "apiName" : "DELETED",
+        "maker" : "deleted"
+      }
+    ]
+}
+
+

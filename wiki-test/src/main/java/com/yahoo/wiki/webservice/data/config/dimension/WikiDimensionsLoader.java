@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 /**
  * Hold all the dimension configurations for the sample Bard instance.
  */
-public class WikiDimensions {
+public class WikiDimensionsLoader {
 
     private final Set<DimensionConfig> dimensionConfigs;
     private final LinkedHashMap<String, DimensionConfig> wikiApiDimensionNameToConfig;
@@ -30,10 +30,10 @@ public class WikiDimensions {
     /**
      * Construct the dimension configurations.
      */
-    public WikiDimensions() {
+    public WikiDimensionsLoader() {
 
         ExternalConfigLoader dimensionConfigLoader = new ExternalConfigLoader(new ObjectMapper());
-        WikiDimensionConfig wikiDimensionConfig = (WikiDimensionConfig) dimensionConfigLoader.loadDimensionConfigs("DimensionConfigTemplateSample.json", WikiDimensionConfig.class);
+        WikiDimensionConfigTemplate wikiDimensionConfig = (WikiDimensionConfigTemplate) dimensionConfigLoader.parseExternalFile("DimensionConfigTemplateSample.json", WikiDimensionConfigTemplate.class);
 
         this.dimensionConfigs = Collections.unmodifiableSet(
                 wikiDimensionConfig.getDimensions().stream()

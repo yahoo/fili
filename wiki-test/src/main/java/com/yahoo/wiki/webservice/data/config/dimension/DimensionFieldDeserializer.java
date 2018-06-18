@@ -1,7 +1,6 @@
 package com.yahoo.wiki.webservice.data.config.dimension;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -16,11 +15,11 @@ import java.util.LinkedHashSet;
 /**
  * Deserialize dimension fields
  */
-public class DimensionFieldDeserializer extends JsonDeserializer<WikiDimensionField> {
+public class DimensionFieldDeserializer extends JsonDeserializer<WikiDimensionFieldConfigTemplate> {
 
     @Override
-    public WikiDimensionField deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-        WikiDimensionField wikiDimensionField = new WikiDimensionField();
+    public WikiDimensionFieldConfigTemplate deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
+        WikiDimensionFieldConfigTemplate wikiDimensionField = new WikiDimensionFieldConfigTemplate();
 
         if (jp.getCurrentToken() == JsonToken.VALUE_STRING) {
             wikiDimensionField.setFieldName(jp.getText());
@@ -29,7 +28,7 @@ public class DimensionFieldDeserializer extends JsonDeserializer<WikiDimensionFi
             ObjectMapper objectMapper = new ObjectMapper();
 
             JsonNode node = oc.readTree(jp);
-            LinkedHashSet<WikiDimensionFieldTemplate> list = objectMapper.convertValue(node, new TypeReference<LinkedHashSet<WikiDimensionFieldTemplate>>() {
+            LinkedHashSet<WikiDimensionFieldSetsTemplate> list = objectMapper.convertValue(node, new TypeReference<LinkedHashSet<WikiDimensionFieldSetsTemplate>>() {
             });
             wikiDimensionField.setFieldList(list);
         }

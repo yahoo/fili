@@ -6,7 +6,7 @@ import com.yahoo.bard.webservice.application.AbstractBinderFactory;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
-import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensions;
+import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensionsLoader;
 import com.yahoo.wiki.webservice.data.config.metric.WikiMetricLoader;
 import com.yahoo.wiki.webservice.data.config.table.WikiTableLoader;
 
@@ -24,7 +24,7 @@ public class WikiBinderFactory extends AbstractBinderFactory {
 
     @Override
     protected LinkedHashSet<DimensionConfig> getDimensionConfigurations() {
-        return new LinkedHashSet<>(new WikiDimensions().getAllDimensionConfigurations());
+        return new LinkedHashSet<>(new WikiDimensionsLoader().getAllDimensionConfigurations());
     }
 
     @Override

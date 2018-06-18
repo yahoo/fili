@@ -2,8 +2,6 @@ package com.yahoo.wiki.webservice.data.config.dimension;
 
 import com.yahoo.bard.webservice.data.config.names.DimensionName;
 
-import java.util.LinkedHashSet;
-
 public interface DimensionConfigAPI extends DimensionName {
 
     /**
@@ -17,7 +15,7 @@ public interface DimensionConfigAPI extends DimensionName {
 
     void setCategory(String category);
 
-    void setFields(WikiDimensionField fields);
+    void setFields(WikiDimensionFieldConfigTemplate fields);
 
     /**
      * Get dimensions info.
@@ -30,6 +28,6 @@ public interface DimensionConfigAPI extends DimensionName {
 
     String getCategory();
 
-    WikiDimensionField getFields();
+    WikiDimensionFieldConfigTemplate getFields();
 
 }

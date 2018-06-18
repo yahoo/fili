@@ -1,0 +1,26 @@
+{
+  "metrics" :
+    [
+      {
+        "apiName" : "COUNT",
+        "maker" : "CountMaker"
+      },
+      {
+        "apiName" : "ADDED",
+        "maker" : "DoubleSumMaker",
+        "dependencyMetricNames" : ["ADDED"]
+      },
+      {
+        "apiName" : "DELTA",
+        "maker" : "DoubleSumMaker",
+        "dependencyMetricNames" : ["DELTA"]
+      },
+      {
+        "apiName" : "DELETED",
+        "maker" : "DoubleSumMaker",
+        "dependencyMetricNames" : ["DELETED"]
+      }
+    ]
+}
+
+

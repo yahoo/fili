@@ -62,6 +62,20 @@ public class MetricInstance {
     }
 
     /**
+     * Construct a MetricInstance from Strings with a list of dependencyMetricNames.
+     *
+     * @param logicalMetricInfo  Logical metric info provider
+     * @param maker  The Metric Maker that creates the actual Logical Metric
+     * @param dependencyMetricNames  The names of metrics either in the dictionary or raw druid metrics that this
+     * Logical Metric depends on
+     */
+    public MetricInstance(LogicalMetricInfo logicalMetricInfo, MetricMaker maker, List<String> dependencyMetricNames) {
+        this.logicalMetricInfo = logicalMetricInfo;
+        this.maker = maker;
+        this.dependencyMetricNames = dependencyMetricNames;
+    }
+
+    /**
      * Construct a MetricInstance from FieldNames with a list of dependencyFields.
      *
      * @param metricName  The name of the Logical Metric when it's in the metric dictionary

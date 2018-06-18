@@ -15,7 +15,7 @@ import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.table.LogicalTableDictionary
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 import com.yahoo.bard.webservice.table.TableIdentifier
-import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensions
+import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensionsLoader
 import com.yahoo.wiki.webservice.data.config.metric.WikiMetricLoader
 import com.yahoo.wiki.webservice.data.config.table.WikiTableLoader
 
@@ -32,7 +32,7 @@ class ConfigurationLoadTaskSpec extends Specification {
     @Shared PhysicalTableDictionary physicalTableDictionary
 
     def setupSpec() {
-        LinkedHashSet<DimensionConfig> dimensions = new WikiDimensions().getAllDimensionConfigurations();
+        LinkedHashSet<DimensionConfig> dimensions = new WikiDimensionsLoader().getAllDimensionConfigurations();
         loader = new ConfigurationLoader(
                 new TypeAwareDimensionLoader(dimensions),
                 new WikiMetricLoader(),

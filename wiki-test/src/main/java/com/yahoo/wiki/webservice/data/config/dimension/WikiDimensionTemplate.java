@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.yahoo.bard.webservice.data.dimension.*;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.yahoo.bard.webservice.util.EnumUtils;
-import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.wiki.webservice.data.config.Template;
 
 import java.util.HashMap;
@@ -28,7 +27,7 @@ public class WikiDimensionTemplate extends Template implements DimensionConfigAP
     private String category;
 
     @JsonDeserialize(using = DimensionFieldDeserializer.class)
-    private WikiDimensionField fields;
+    private WikiDimensionFieldConfigTemplate fields;
 
     /**
      * Constructor.
@@ -60,7 +59,7 @@ public class WikiDimensionTemplate extends Template implements DimensionConfigAP
     }
 
     @Override
-    public void setFields(WikiDimensionField fields) {
+    public void setFields(WikiDimensionFieldConfigTemplate fields) {
         this.fields = fields;
     }
 
@@ -102,7 +101,7 @@ public class WikiDimensionTemplate extends Template implements DimensionConfigAP
     }
 
     @Override
-    public WikiDimensionField getFields() {
+    public WikiDimensionFieldConfigTemplate getFields() {
         return this.fields;
     }
 
@@ -114,7 +113,7 @@ public class WikiDimensionTemplate extends Template implements DimensionConfigAP
     /**
      * Parse fields info.
      */
-    public LinkedHashSet<DimensionField> resolveFields(HashMap<String, LinkedHashSet<WikiDimensionFieldTemplate>> fieldSet) {
+    public LinkedHashSet<DimensionField> resolveFields(HashMap<String, LinkedHashSet<WikiDimensionFieldSetsTemplate>> fieldSet) {
 
         // specific fields
         if (this.fields != null && this.fields.getFieldList() != null) {
@@ -123,7 +122,7 @@ public class WikiDimensionTemplate extends Template implements DimensionConfigAP
 
         // default fields
         else if (this.fields == null || (this.fields.getFieldName() == null && this.fields.getFieldList() == null)) {
-            this.fields = new WikiDimensionField();
+            this.fields = new WikiDimensionFieldConfigTemplate();
             this.fields.setFieldName("Default");
             this.fields.setFieldList(fieldSet.get("default"));
         }
@@ -135,7 +134,7 @@ public class WikiDimensionTemplate extends Template implements DimensionConfigAP
 
         // others -> default
         else {
-            this.fields = new WikiDimensionField();
+            this.fields = new WikiDimensionFieldConfigTemplate();
             this.fields.setFieldName("Default");
             this.fields.setFieldList(fieldSet.get("default"));
         }

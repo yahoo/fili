@@ -6,10 +6,10 @@ import com.yahoo.wiki.webservice.data.config.Template;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 
-public class WikiDimensionConfig extends Template {
+public class WikiDimensionConfigTemplate extends Template {
 
     @JsonProperty("fieldSets")
-    private HashMap<String, LinkedHashSet<WikiDimensionFieldTemplate>> fieldSets;
+    private HashMap<String, LinkedHashSet<WikiDimensionFieldSetsTemplate>> fieldSets;
 
     @JsonProperty("dimensions")
     private LinkedHashSet<WikiDimensionTemplate> dimensions;
@@ -17,13 +17,13 @@ public class WikiDimensionConfig extends Template {
     /**
      * Constructor.
      */
-    public WikiDimensionConfig() {
+    public WikiDimensionConfigTemplate() {
     }
 
     /**
      * Set dimensions configuration info.
      */
-    public void setFields(HashMap<String, LinkedHashSet<WikiDimensionFieldTemplate>> fieldSets) {
+    public void setFields(HashMap<String, LinkedHashSet<WikiDimensionFieldSetsTemplate>> fieldSets) {
         this.fieldSets = fieldSets;
     }
 
@@ -34,7 +34,7 @@ public class WikiDimensionConfig extends Template {
     /**
      * Get dimensions configuration info.
      */
-    public HashMap<String, LinkedHashSet<WikiDimensionFieldTemplate>> getFieldSets() {
+    public HashMap<String, LinkedHashSet<WikiDimensionFieldSetsTemplate>> getFieldSets() {
         return this.fieldSets;
     }
 

@@ -2,13 +2,18 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.metric;
 
+import com.codahale.metrics.Metric;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yahoo.bard.webservice.data.config.metric.MetricInstance;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.metric.makers.CountMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.DoubleSumMaker;
+import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.util.Utils;
+import com.yahoo.wiki.webservice.data.config.ExternalConfigLoader;
+import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensionConfigTemplate;
 import com.yahoo.wiki.webservice.data.config.names.WikiApiMetricName;
 import com.yahoo.wiki.webservice.data.config.names.WikiDruidMetricName;
 
@@ -17,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Load the Wiki-specific metrics. Currently only loads primitive makers that are considered built-in to Fili,
@@ -63,28 +69,34 @@ public class WikiMetricLoader implements MetricLoader {
         doubleSumMaker = new DoubleSumMaker(metricDictionary);
     }
 
+    /**
+     * Select and return a Metric Maker by it's name
+     *
+     * @param metricMakerName  Metric Maker's name
+     *
+     * @return a specific Metric Maker
+     */
+    protected MetricMaker selectMetricMakersByName(String metricMakerName) {
+        if (metricMakerName.equals("CountMaker")) return countMaker;
+        else if (metricMakerName.equals("DoubleSumMaker")) return doubleSumMaker;
+        return null;
+    }
+
     @Override
     public void loadMetricDictionary(MetricDictionary metricDictionary) {
         buildMetricMakers(metricDictionary);
 
+        ExternalConfigLoader metricConfigLoader = new ExternalConfigLoader(new ObjectMapper());
+        WikiMetricConfigTemplate wikiMetricConfig = (WikiMetricConfigTemplate) metricConfigLoader.parseExternalFile("MetricConfigTemplateSample.json", WikiMetricConfigTemplate.class);
+
         // Metrics that directly aggregate druid fields
-        List<MetricInstance> metrics = Arrays.asList(
-                new MetricInstance(new LogicalMetricInfo(WikiApiMetricName.COUNT.asName()), countMaker),
-                new MetricInstance(
-                        new LogicalMetricInfo(WikiApiMetricName.ADDED.asName()),
-                        doubleSumMaker,
-                        WikiDruidMetricName.ADDED
-                ),
-                new MetricInstance(
-                        new LogicalMetricInfo(WikiApiMetricName.DELETED.asName()),
-                        doubleSumMaker,
-                        WikiDruidMetricName.DELETED),
-                new MetricInstance(
-                        new LogicalMetricInfo(WikiApiMetricName.DELTA.asName()),
-                        doubleSumMaker,
-                        WikiDruidMetricName.DELTA
+        List<MetricInstance> metrics = wikiMetricConfig.getMetrics().stream().map(
+                metricName -> new MetricInstance(
+                        new LogicalMetricInfo(metricName.asName()),
+                        selectMetricMakersByName(metricName.getMakerName()),
+                        metricName.getDependencyMetricNames()
                 )
-        );
+        ).collect(Collectors.toList());
 
         Utils.addToMetricDictionary(metricDictionary, metrics);
         LOG.debug("About to load direct aggregation metrics. Metric dictionary keys: {}", metricDictionary.keySet());

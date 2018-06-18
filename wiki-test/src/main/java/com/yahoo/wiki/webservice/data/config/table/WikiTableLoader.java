@@ -19,8 +19,8 @@ import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.wiki.webservice.data.config.ExternalConfigLoader;
-import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensionConfig;
-import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensions;
+import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensionConfigTemplate;
+import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensionsLoader;
 import com.yahoo.wiki.webservice.data.config.names.WikiApiMetricName;
 import com.yahoo.wiki.webservice.data.config.names.WikiDruidMetricName;
 import com.yahoo.wiki.webservice.data.config.names.WikiDruidTableName;
@@ -58,7 +58,7 @@ public class WikiTableLoader extends BaseTableLoader {
     public WikiTableLoader(DataSourceMetadataService metadataService) {
         super(metadataService);
 
-        WikiDimensions wikiDimensions = new WikiDimensions();
+        WikiDimensionsLoader wikiDimensions = new WikiDimensionsLoader();
 
         configureSample(wikiDimensions);
     }
@@ -68,10 +68,10 @@ public class WikiTableLoader extends BaseTableLoader {
      *
      * @param wikiDimensions  The dimensions to load into test tables.
      */
-    private void configureSample(WikiDimensions wikiDimensions) {
+    private void configureSample(WikiDimensionsLoader wikiDimensions) {
 
         ExternalConfigLoader dimensionConfigLoader = new ExternalConfigLoader(new ObjectMapper());
-        WikiDimensionConfig wikiDimensionConfig = (WikiDimensionConfig)dimensionConfigLoader.loadDimensionConfigs("DimensionConfigTemplateSample.json", WikiDimensionConfig.class);
+        WikiDimensionConfigTemplate wikiDimensionConfig = (WikiDimensionConfigTemplate)dimensionConfigLoader.parseExternalFile("DimensionConfigTemplateSample.json", WikiDimensionConfigTemplate.class);
 
         // Dimensions
         Set<DimensionConfig> dimsBasefactDruidTableName = wikiDimensions.getDimensionConfigurationsByConfigInfo(

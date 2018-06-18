@@ -9,7 +9,7 @@ import com.yahoo.wiki.webservice.data.config.Template;
 import java.util.LinkedList;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class WikiDimensionFieldTemplate extends Template implements DimensionField {
+public class WikiDimensionFieldSetsTemplate extends Template implements DimensionField {
 
     @JsonProperty("name")
     private String name;
@@ -23,7 +23,7 @@ public class WikiDimensionFieldTemplate extends Template implements DimensionFie
     /**
      * Constructor.
      */
-    public WikiDimensionFieldTemplate() {
+    public WikiDimensionFieldSetsTemplate() {
     }
 
     /**

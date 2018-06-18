@@ -1,20 +1,22 @@
 package com.yahoo.wiki.webservice.data.config.dimension;
 
+import com.yahoo.wiki.webservice.data.config.Template;
+
 import java.util.LinkedHashSet;
 
 /**
  * Contains field name and a list of field template
  * For DimensionFieldDeserializer
  */
-public class WikiDimensionField {
+public class WikiDimensionFieldConfigTemplate extends Template {
 
     private String fieldName;
-    private LinkedHashSet<WikiDimensionFieldTemplate> fieldList;
+    private LinkedHashSet<WikiDimensionFieldSetsTemplate> fieldList;
 
     /**
      * Constructor.
      */
-    WikiDimensionField() {
+    WikiDimensionFieldConfigTemplate() {
     }
 
     /**
@@ -24,7 +26,7 @@ public class WikiDimensionField {
         this.fieldName = name;
     }
 
-    public void setFieldList(LinkedHashSet<WikiDimensionFieldTemplate> list) {
+    public void setFieldList(LinkedHashSet<WikiDimensionFieldSetsTemplate> list) {
         this.fieldList = list;
     }
 
@@ -35,7 +37,7 @@ public class WikiDimensionField {
         return this.fieldName;
     }
 
-    public LinkedHashSet<WikiDimensionFieldTemplate> getFieldList() {
+    public LinkedHashSet<WikiDimensionFieldSetsTemplate> getFieldList() {
         return fieldList;
     }
 }
