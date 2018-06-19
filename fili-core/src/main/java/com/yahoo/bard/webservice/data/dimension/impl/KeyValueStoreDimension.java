@@ -312,7 +312,7 @@ public class KeyValueStoreDimension implements Dimension {
                 dimensionConfig.getSearchProvider(),
                 dimensionConfig.getDefaultDimensionFields(),
                 dimensionConfig.isAggregatable(),
-                StorageStrategy.LOADED
+                dimensionConfig.getStorageStrategy()
         );
     }
 

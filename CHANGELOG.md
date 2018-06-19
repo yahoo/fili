@@ -7,6 +7,10 @@ pull request if there was one.
 
 ### Added:
 
+- [Add storageStrategy as a field of the DimensionConfig class](https://github.com/yahoo/fili/issues/718)
+    * Adds getStorageStrategy as a field of the dimensionConfig class.
+    * Passes the storage strategy to the KeyValueStoreDimension Constructor
+
 - [Add more tests to RegisteredLookupMetadataLoadTask](https://github.com/yahoo/fili/pull/673)
     * Adds tests to make sure the load tasks can update status correctly.
 
