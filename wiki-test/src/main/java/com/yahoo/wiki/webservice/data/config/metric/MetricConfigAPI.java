@@ -1,11 +1,11 @@
 package com.yahoo.wiki.webservice.data.config.metric;
 
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
-import com.yahoo.bard.webservice.data.time.TimeGrain;
-
 import java.util.List;
-import java.util.Locale;
 
+/**
+ * Wiki metric config API
+ */
 public interface MetricConfigAPI extends ApiMetricName {
 
     /**

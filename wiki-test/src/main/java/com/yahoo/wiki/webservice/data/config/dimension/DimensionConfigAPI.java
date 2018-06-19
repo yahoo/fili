@@ -2,6 +2,9 @@ package com.yahoo.wiki.webservice.data.config.dimension;
 
 import com.yahoo.bard.webservice.data.config.names.DimensionName;
 
+/**
+ * Wiki dimension config API
+ */
 public interface DimensionConfigAPI extends DimensionName {
 
     /**

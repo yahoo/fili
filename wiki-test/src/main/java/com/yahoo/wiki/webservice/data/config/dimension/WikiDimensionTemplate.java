@@ -11,6 +11,9 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 
+/**
+ * Wiki dimension template
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class WikiDimensionTemplate extends Template implements DimensionConfigAPI {
 
@@ -111,11 +114,19 @@ public class WikiDimensionTemplate extends Template implements DimensionConfigAP
     }
 
     /**
-     * Parse fields info.
+     * Parse fields info based on dimension's "field" key word
+     *
+     * If "field list is no empty", use fields in field list
+     * If "no field list" and "field has a name", map name in fieldSetInfo to get a field list
+     * If "no field list" and "no field name", use default field list in fieldSetInfo
+     *
+     * @param fieldSetInfo a map from fieldset's name to fieldset
+     *
+     * @return LinkedHashSet<DimensionField> a list of dimension field for this dimension
      */
-    public LinkedHashSet<DimensionField> resolveFields(HashMap<String, LinkedHashSet<WikiDimensionFieldSetsTemplate>> fieldSet) {
+    public LinkedHashSet<DimensionField> resolveFields(HashMap<String, LinkedHashSet<WikiDimensionFieldSetsTemplate>> fieldSetInfo) {
 
-        // specific fields
+        // if specific fields
         if (this.fields != null && this.fields.getFieldList() != null) {
             this.fields.setFieldName("Specific");
         }
@@ -124,19 +135,19 @@ public class WikiDimensionTemplate extends Template implements DimensionConfigAP
         else if (this.fields == null || (this.fields.getFieldName() == null && this.fields.getFieldList() == null)) {
             this.fields = new WikiDimensionFieldConfigTemplate();
             this.fields.setFieldName("Default");
-            this.fields.setFieldList(fieldSet.get("default"));
+            this.fields.setFieldList(fieldSetInfo.get("default"));
         }
 
         // named fields
-        else if (fieldSet.containsKey(this.fields.getFieldName())) {
-            this.fields.setFieldList(fieldSet.get(this.fields.getFieldName()));
+        else if (fieldSetInfo.containsKey(this.fields.getFieldName())) {
+            this.fields.setFieldList(fieldSetInfo.get(this.fields.getFieldName()));
         }
 
         // others -> default
         else {
             this.fields = new WikiDimensionFieldConfigTemplate();
             this.fields.setFieldName("Default");
-            this.fields.setFieldList(fieldSet.get("default"));
+            this.fields.setFieldList(fieldSetInfo.get("default"));
         }
 
         return new LinkedHashSet<>(this.fields.getFieldList());

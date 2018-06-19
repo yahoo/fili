@@ -9,6 +9,9 @@ import com.yahoo.wiki.webservice.data.config.Template;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Wiki metric template
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class WikiMetricTemplate extends Template implements MetricConfigAPI {
 
@@ -72,7 +75,7 @@ public class WikiMetricTemplate extends Template implements MetricConfigAPI {
     @Override
     public void setDependencyMetricNames(List<String> dependencyMetricNames){
         this.dependencyMetricNames = dependencyMetricNames;
-    };
+    }
 
     /**
      * Get metrics info.
@@ -104,7 +107,7 @@ public class WikiMetricTemplate extends Template implements MetricConfigAPI {
     public List<String> getDependencyMetricNames(){
         if (dependencyMetricNames == null) return Collections.emptyList();
         return dependencyMetricNames.stream().map(name -> EnumUtils.camelCase(name)).collect(Collectors.toList());
-    };
+    }
 
     @Override
     public String toString() {

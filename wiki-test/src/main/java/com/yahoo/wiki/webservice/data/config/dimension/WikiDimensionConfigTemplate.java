@@ -6,6 +6,9 @@ import com.yahoo.wiki.webservice.data.config.Template;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 
+/**
+ * Wiki dimension config template
+ */
 public class WikiDimensionConfigTemplate extends Template {
 
     @JsonProperty("fieldSets")
