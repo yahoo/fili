@@ -11,7 +11,7 @@
 
     <artifactId>wiki-test</artifactId>
     <packaging>war</packaging>
-    <name>Fili: Wikipedia Example</name>
+    <name>Fili: Wiki Test</name>
     <description>Fili Wikipedia Example serves as a standalone sample implementation using core Fili services to stand
         in front of the Druid wiki tutorial
     </description>
