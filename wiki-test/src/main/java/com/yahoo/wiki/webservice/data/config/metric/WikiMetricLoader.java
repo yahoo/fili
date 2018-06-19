@@ -6,11 +6,13 @@ import com.codahale.metrics.Metric;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yahoo.bard.webservice.data.config.metric.MetricInstance;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
+import com.yahoo.bard.webservice.data.config.metric.makers.AggregationAverageMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.CountMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.DoubleSumMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
+import com.yahoo.bard.webservice.data.time.ZonelessTimeGrain;
 import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.wiki.webservice.data.config.ExternalConfigLoader;
 import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensionConfigTemplate;
@@ -20,6 +22,7 @@ import com.yahoo.wiki.webservice.data.config.names.WikiDruidMetricName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -39,8 +42,7 @@ public class WikiMetricLoader implements MetricLoader {
 
     final int sketchSize;
 
-    CountMaker countMaker;
-    DoubleSumMaker doubleSumMaker;
+    MetricMakerDictionary metricMakerDictionary;
 
     /**
      * Constructs a WikiMetricLoader using the default sketch size.
@@ -59,42 +61,51 @@ public class WikiMetricLoader implements MetricLoader {
     }
 
     /**
-     * (Re)Initialize the metric makers with the given metric dictionary.
-     *
-     * @param metricDictionary  Metric dictionary to use for generating the metric makers.
+     * (Re)Initialize the metric makers dictionary
      */
-    protected void buildMetricMakers(MetricDictionary metricDictionary) {
+    protected void buildMetricMakersDictionary(MetricDictionary metricDictionary) {
         // Create the various metric makers
-        countMaker = new CountMaker(metricDictionary);
-        doubleSumMaker = new DoubleSumMaker(metricDictionary);
+        metricMakerDictionary = new MetricMakerDictionary(true);
     }
 
     /**
-     * Select and return a Metric Maker by it's name
+     * Select and return a Metric Maker by it's name.
      *
      * @param metricMakerName  Metric Maker's name
-     *
-     * @return a specific Metric Maker
+     * @param metricDictionary  Metric Dictionary
+     * @return a specific Metric Maker Instance
      */
-    protected MetricMaker selectMetricMakersByName(String metricMakerName) {
-        if (metricMakerName.equals("CountMaker")) return countMaker;
-        else if (metricMakerName.equals("DoubleSumMaker")) return doubleSumMaker;
+    protected MetricMaker selectMetricMakersByName(String metricMakerName, MetricDictionary metricDictionary) {
+
+        try {
+            Class<? extends MetricMaker> metricMakerType = this.metricMakerDictionary.findByName(metricMakerName);
+            return metricMakerType.getDeclaredConstructor(MetricDictionary.class).newInstance(metricDictionary);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+
         return null;
     }
 
     @Override
     public void loadMetricDictionary(MetricDictionary metricDictionary) {
-        buildMetricMakers(metricDictionary);
+
+        buildMetricMakersDictionary(metricDictionary);
 
         ExternalConfigLoader metricConfigLoader = new ExternalConfigLoader(new ObjectMapper());
         WikiMetricConfigTemplate wikiMetricConfig = (WikiMetricConfigTemplate) metricConfigLoader.parseExternalFile("MetricConfigTemplateSample.json", WikiMetricConfigTemplate.class);
 
-        // Metrics that directly aggregate druid fields
         List<MetricInstance> metrics = wikiMetricConfig.getMetrics().stream().map(
-                metricName -> new MetricInstance(
-                        new LogicalMetricInfo(metricName.asName()),
-                        selectMetricMakersByName(metricName.getMakerName()),
-                        metricName.getDependencyMetricNames()
+                metric -> new MetricInstance(
+                        new LogicalMetricInfo(metric.asName(), metric.getLongName(), metric.getDescription()),
+                        selectMetricMakersByName(metric.getMakerName(), metricDictionary),
+                        metric.getDependencyMetricNames()
                 )
         ).collect(Collectors.toList());
 

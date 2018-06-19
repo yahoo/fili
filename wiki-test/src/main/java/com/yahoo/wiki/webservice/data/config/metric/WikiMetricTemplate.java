@@ -2,18 +2,12 @@ package com.yahoo.wiki.webservice.data.config.metric;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.util.EnumUtils;
 import com.yahoo.wiki.webservice.data.config.Template;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.stream.Collectors;
-
-import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class WikiMetricTemplate extends Template implements MetricConfigAPI {
@@ -21,8 +15,14 @@ public class WikiMetricTemplate extends Template implements MetricConfigAPI {
     @JsonProperty("apiName")
     private String apiName;
 
+    @JsonProperty("longName")
+    private String longName;
+
     @JsonProperty("maker")
     private String makerName;
+
+    @JsonProperty("description")
+    private String description;
 
     @JsonProperty("dependencyMetricNames")
     private List<String> dependencyMetricNames;
@@ -55,8 +55,18 @@ public class WikiMetricTemplate extends Template implements MetricConfigAPI {
     }
 
     @Override
+    public void setLongName(String longName) {
+        this.longName = longName;
+    }
+
+    @Override
     public void setMakerName(String makerName) {
         this.makerName = makerName;
+    }
+
+    @Override
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override
@@ -73,8 +83,21 @@ public class WikiMetricTemplate extends Template implements MetricConfigAPI {
     }
 
     @Override
+    public String getLongName() {
+        if (Objects.isNull(longName)) {
+            return getApiName();
+        }
+        return EnumUtils.camelCase(longName);
+    }
+
+    @Override
     public String getMakerName() {
-        return makerName;
+        return makerName.toLowerCase();
+    }
+
+    @Override
+    public String getDescription() {
+        return description;
     }
 
     @Override

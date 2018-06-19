@@ -13,14 +13,23 @@ public interface MetricConfigAPI extends ApiMetricName {
      */
     void setApiName(String apiName);
 
+    void setLongName(String longName);
+
     void setMakerName(String makerName);
+
+    void setDescription(String description);
 
     void setDependencyMetricNames(List<String> dependencyMetricNames);
 
     /**
      * Get metrics info.
      */
+
+    String getLongName();
+
     String getMakerName();
+
+    String getDescription();
 
     List<String> getDependencyMetricNames();
 }

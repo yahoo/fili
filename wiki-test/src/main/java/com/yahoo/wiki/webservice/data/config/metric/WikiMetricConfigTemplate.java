@@ -6,6 +6,9 @@ import com.yahoo.wiki.webservice.data.config.Template;
 
 import java.util.LinkedHashSet;
 
+/**
+ * Metric Config template.
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class WikiMetricConfigTemplate extends Template {
 
