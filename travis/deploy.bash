@@ -40,7 +40,7 @@ fi
 export FILI_TEST_LIST=a,2,bc,234
 
 # We're not on a release tag, so build and test the code
-mvn verify
+mvn -X verify
 MAVEN_RETURN_CODE=$?
 if [[ ${MAVEN_RETURN_CODE} -ne 0 ]]; then
     echo "ERROR Maven verify did not succeed."
