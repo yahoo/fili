@@ -1,11 +1,18 @@
 package com.yahoo.wiki.webservice.data.config.metric;
 
 import com.yahoo.bard.webservice.data.config.metric.makers.*;
+import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
+import com.yahoo.bard.webservice.data.metric.MetricDictionary;
+import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter;
+import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation;
+import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationPostAggFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
 import java.util.*;
+
+import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY;
 
 /**
  * MetricMaker dictionary.
@@ -18,7 +25,7 @@ public class MetricMakerDictionary {
     /**
      * Maps for Metric Maker names to Metric Makers.
      */
-    private final LinkedHashMap<String, Class<? extends MetricMaker>> nameToMetricMaker;
+    private final LinkedHashMap<String, MetricMaker> nameToMetricMaker;
 
     /**
      * Constructor
@@ -27,34 +34,43 @@ public class MetricMakerDictionary {
         nameToMetricMaker = new LinkedHashMap<>();
     }
 
-    public MetricMakerDictionary(boolean useDefault) {
+    public MetricMakerDictionary(boolean useDefault, MetricDictionary metricDictionary) {
         nameToMetricMaker = new LinkedHashMap<>();
         if (!useDefault) return;
 
-        add(AggregationAverageMaker.class);
-        add(ArithmeticMaker.class);
-        add(CardinalityMaker.class);
-        add(ConstantMaker.class);
-        add(CountMaker.class);
-        add(DoubleMaxMaker.class);
-        add(DoubleMinMaker.class);
-        add(DoubleSumMaker.class);
-        add(FilteredAggregationMaker.class);
-        add(LongMaxMaker.class);
-        add(LongMinMaker.class);
-        add(LongSumMaker.class);
-        add(MaxMaker.class);
-        add(MinMaker.class);
-        add(RawAggregationMetricMaker.class);
-        add(RowNumMaker.class);
-        add(SketchCountMaker.class);
-        add(SketchSetOperationMaker.class);
-        add(ThetaSketchMaker.class);
-        add(ThetaSketchSetOperationMaker.class);
+        add(new AggregationAverageMaker(metricDictionary, DAY));
+        add(new CardinalityMaker(metricDictionary, new DimensionDictionary(),true));
+        add(new ConstantMaker(metricDictionary));
+        add(new CountMaker(metricDictionary));
+        add(new DoubleMaxMaker(metricDictionary));
+        add(new DoubleMinMaker(metricDictionary));
+        add(new DoubleSumMaker(metricDictionary));
+        add(new FilteredAggregationMaker(metricDictionary, new SelectorFilter(null, "1")));
+        add(new LongMaxMaker(metricDictionary));
+        add(new LongMinMaker(metricDictionary));
+        add(new LongSumMaker(metricDictionary));
+        add(new MaxMaker(metricDictionary));
+        add(new MinMaker(metricDictionary));
+        add(new RowNumMaker(metricDictionary));
 
+        add(new SketchCountMaker(metricDictionary, 16000));
+        add(new ThetaSketchMaker(metricDictionary, 16384));
+
+        nameToMetricMaker.put("arithmeticplus", new ArithmeticMaker(metricDictionary, ArithmeticPostAggregation.ArithmeticPostAggregationFunction.PLUS));
+        nameToMetricMaker.put("arithmeticminus", new ArithmeticMaker(metricDictionary, ArithmeticPostAggregation.ArithmeticPostAggregationFunction.MINUS));
+        nameToMetricMaker.put("arithmeticmultiply", new ArithmeticMaker(metricDictionary, ArithmeticPostAggregation.ArithmeticPostAggregationFunction.MULTIPLY));
+        nameToMetricMaker.put("arithmeticdivide", new ArithmeticMaker(metricDictionary, ArithmeticPostAggregation.ArithmeticPostAggregationFunction.DIVIDE));
+
+        nameToMetricMaker.put("sketchsetoperationnot", new SketchSetOperationMaker(metricDictionary, SketchSetOperationPostAggFunction.NOT));
+        nameToMetricMaker.put("sketchsetoperationintersect", new SketchSetOperationMaker(metricDictionary, SketchSetOperationPostAggFunction.INTERSECT));
+        nameToMetricMaker.put("sketchsetoperationunion", new SketchSetOperationMaker(metricDictionary, SketchSetOperationPostAggFunction.UNION));
+
+        nameToMetricMaker.put("thetasketchsetoperationnot", new ThetaSketchSetOperationMaker(metricDictionary, SketchSetOperationPostAggFunction.NOT));
+        nameToMetricMaker.put("thetasketchsetoperationsect", new ThetaSketchSetOperationMaker(metricDictionary, SketchSetOperationPostAggFunction.INTERSECT));
+        nameToMetricMaker.put("thetasketchsetoperationunion", new ThetaSketchSetOperationMaker(metricDictionary, SketchSetOperationPostAggFunction.UNION));
     }
 
-    public MetricMakerDictionary(Set<Class<? extends MetricMaker>> metricMakers) {
+    public MetricMakerDictionary(Set<MetricMaker> metricMakers) {
         this();
         addAll(metricMakers);
     }
@@ -66,7 +82,7 @@ public class MetricMakerDictionary {
      *
      * @return the first Metric Maker found (if exists)
      */
-    public Class<? extends MetricMaker> findByName(String metricMakerName) {
+    public MetricMaker findByName(String metricMakerName) {
         return nameToMetricMaker.get(metricMakerName);
     }
 
@@ -75,7 +91,7 @@ public class MetricMakerDictionary {
      *
      * @return a set of Metric Makers
      */
-    public Set<Class<? extends MetricMaker>> findAll() {
+    public Set<MetricMaker> findAll() {
         return Collections.unmodifiableSet(new HashSet<>(nameToMetricMaker.values()));
     }
 
@@ -87,12 +103,12 @@ public class MetricMakerDictionary {
      * @return <tt>true</tt> if the dictionary did not already contain the specified Metric Maker
      * @see Set#add(Object)
      */
-    public boolean add(Class<? extends MetricMaker> metricMaker) {
-        String makerName = metricMaker.getSimpleName().replace("Maker","").toLowerCase();
+    public boolean add(MetricMaker metricMaker) {
+        String makerName = metricMaker.getClass().getSimpleName().replace("Maker","").toLowerCase();
         if (nameToMetricMaker.containsKey(makerName)) {
             return false;
         }
-        Class<? extends MetricMaker> metricMakers = nameToMetricMaker.put(makerName, metricMaker);
+        MetricMaker metricMakers = nameToMetricMaker.put(makerName, metricMaker);
         if (metricMakers != null) {
             // should never happen unless multiple loaders are running in race-condition
             ConcurrentModificationException e = new ConcurrentModificationException();
@@ -110,9 +126,9 @@ public class MetricMakerDictionary {
      * @return <tt>true</tt> if the dictionary changed as a result of the call
      * @see Set#addAll(Collection)
      */
-    public boolean addAll(Collection<Class<? extends MetricMaker>> metricMakers) {
+    public boolean addAll(Collection<MetricMaker> metricMakers) {
         boolean flag = false;
-        for (Class<? extends MetricMaker> metricMaker : metricMakers) {
+        for (MetricMaker metricMaker : metricMakers) {
             flag = add(metricMaker) || flag;
         }
         return flag;

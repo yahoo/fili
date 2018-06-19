@@ -40,9 +40,9 @@ public class WikiMetricLoader implements MetricLoader {
     public static final int DEFAULT_KILOBYTES_PER_SKETCH = 16;
     public static final int DEFAULT_SKETCH_SIZE_IN_BYTES = DEFAULT_KILOBYTES_PER_SKETCH * BYTES_PER_KILOBYTE;
 
-    final int sketchSize;
+    public static MetricMakerDictionary metricMakerDictionary;
 
-    MetricMakerDictionary metricMakerDictionary;
+    final int sketchSize;
 
     /**
      * Constructs a WikiMetricLoader using the default sketch size.
@@ -61,36 +61,22 @@ public class WikiMetricLoader implements MetricLoader {
     }
 
     /**
-     * (Re)Initialize the metric makers dictionary
+     * (Re)Initialize the Metric Makers dictionary
      */
     protected void buildMetricMakersDictionary(MetricDictionary metricDictionary) {
         // Create the various metric makers
-        metricMakerDictionary = new MetricMakerDictionary(true);
+        metricMakerDictionary = new MetricMakerDictionary(true, metricDictionary);
     }
 
     /**
      * Select and return a Metric Maker by it's name.
      *
      * @param metricMakerName  Metric Maker's name
-     * @param metricDictionary  Metric Dictionary
+     *
      * @return a specific Metric Maker Instance
      */
-    protected MetricMaker selectMetricMakersByName(String metricMakerName, MetricDictionary metricDictionary) {
-
-        try {
-            Class<? extends MetricMaker> metricMakerType = this.metricMakerDictionary.findByName(metricMakerName);
-            return metricMakerType.getDeclaredConstructor(MetricDictionary.class).newInstance(metricDictionary);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        }
-
-        return null;
+    protected MetricMaker selectMetricMakersByName(String metricMakerName) {
+        return metricMakerDictionary.findByName(metricMakerName);
     }
 
     @Override
@@ -104,7 +90,7 @@ public class WikiMetricLoader implements MetricLoader {
         List<MetricInstance> metrics = wikiMetricConfig.getMetrics().stream().map(
                 metric -> new MetricInstance(
                         new LogicalMetricInfo(metric.asName(), metric.getLongName(), metric.getDescription()),
-                        selectMetricMakersByName(metric.getMakerName(), metricDictionary),
+                        selectMetricMakersByName(metric.getMakerName()),
                         metric.getDependencyMetricNames()
                 )
         ).collect(Collectors.toList());
