@@ -1,13 +1,14 @@
+// Copyright 2018 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.io.IOException;
 import java.io.File;
 
 /**
- * Parse External Config from json file
+ * Parse External Config from json file.
  */
 public class ExternalConfigLoader {
 
@@ -16,7 +17,7 @@ public class ExternalConfigLoader {
     /**
      * Constructor.
      *
-     * @param objectMapper a mapper to deserialize configurations
+     * @param objectMapper a mapper to deserialize external configurations
      */
     public ExternalConfigLoader(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
@@ -31,8 +32,8 @@ public class ExternalConfigLoader {
      */
     public Template parseExternalFile(String externalConfigFilePath, Class<?> template) {
         try {
-            File ConfigFile = new File(externalConfigFilePath);
-            JsonNode configurator = objectMapper.readTree(ConfigFile);
+            File configFile = new File(externalConfigFilePath);
+            JsonNode configurator = objectMapper.readTree(configFile);
             return (Template) objectMapper.convertValue(configurator, template);
         } catch (IOException exception) {
             String message = "Could not parse due to invalid schema in external config file located at " +
@@ -40,6 +41,4 @@ public class ExternalConfigLoader {
             throw new RuntimeException(message, exception);
         }
     }
-
 }
-

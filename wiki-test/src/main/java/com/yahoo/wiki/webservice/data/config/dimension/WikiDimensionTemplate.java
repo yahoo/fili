@@ -1,3 +1,5 @@
+// Copyright 2018 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.dimension;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -12,7 +14,7 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 
 /**
- * Wiki dimension template
+ * Wiki dimension template.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class WikiDimensionTemplate extends Template implements DimensionConfigAPI {
@@ -114,17 +116,17 @@ public class WikiDimensionTemplate extends Template implements DimensionConfigAP
     }
 
     /**
-     * Parse fields info based on dimension's "field" key word
-     *
+     * Parse fields info based on dimension's "field" key word.
+     * <p>
      * If "field list is no empty", use fields in field list
      * If "no field list" and "field has a name", map name in fieldSetInfo to get a field list
      * If "no field list" and "no field name", use default field list in fieldSetInfo
      *
      * @param fieldSetInfo a map from fieldset's name to fieldset
-     *
-     * @return LinkedHashSet<DimensionField> a list of dimension field for this dimension
+     * @return a set of dimension field for this dimension
      */
-    public LinkedHashSet<DimensionField> resolveFields(HashMap<String, LinkedHashSet<WikiDimensionFieldSetsTemplate>> fieldSetInfo) {
+    public LinkedHashSet<DimensionField> resolveFields(HashMap<String,
+            LinkedHashSet<WikiDimensionFieldSetsTemplate>> fieldSetInfo) {
 
         // if specific fields
         if (this.fields != null && this.fields.getFieldList() != null) {
@@ -151,7 +153,5 @@ public class WikiDimensionTemplate extends Template implements DimensionConfigAP
         }
 
         return new LinkedHashSet<>(this.fields.getFieldList());
-
     }
-
 }

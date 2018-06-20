@@ -1,4 +1,4 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2018 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.application;
 
@@ -19,12 +19,17 @@ public class WikiBinderFactory extends AbstractBinderFactory {
 
     @Override
     protected MetricLoader getMetricLoader() {
-        return new WikiMetricLoader(super.getMappers().getMapper(), super.getConfigurationLoader().getDimensionDictionary());
+        return new WikiMetricLoader(super.getMappers().getMapper(),
+                super.getConfigurationLoader().getDimensionDictionary());
     }
 
     @Override
     protected LinkedHashSet<DimensionConfig> getDimensionConfigurations() {
-        return new LinkedHashSet<>(new WikiDimensionsLoader(super.getMappers().getMapper()).getAllDimensionConfigurations());
+        return new LinkedHashSet<>(
+                new WikiDimensionsLoader(
+                        super.getMappers().getMapper()
+                ).getAllDimensionConfigurations()
+        );
     }
 
     @Override

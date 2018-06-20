@@ -9,7 +9,7 @@ import com.yahoo.bard.webservice.util.EnumUtils;
 /**
  * Hold all the Wikipedia API dimension names.
  */
-public enum WikiApiDimensionConfigInfo implements DimensionName{
+public enum WikiApiDimensionConfigInfo implements DimensionName {
     COMMENT("Comment for the edit to the wiki page", "wiki comment"),
     COUNTRY_ISO_CODE("Iso Code of the country to which the wiki page belongs ", "wiki countryIsoCode"),
     REGION_ISO_CODE("Iso Code of the region to which the wiki page belongs ", "wiki regionIsoCode"),

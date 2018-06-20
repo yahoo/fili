@@ -34,8 +34,8 @@ public enum WikiApiMetricName implements ApiMetricName {
     /**
      * Create a Wiki Metric descriptor with a fixed set of satisfying grains.
      *
-     * @param apiName  The api name for the metric.
-     * @param satisfyingGrains  The grains that satisfy this metric.
+     * @param apiName          The api name for the metric.
+     * @param satisfyingGrains The grains that satisfy this metric.
      */
     WikiApiMetricName(String apiName, TimeGrain... satisfyingGrains) {
         // to camelCase

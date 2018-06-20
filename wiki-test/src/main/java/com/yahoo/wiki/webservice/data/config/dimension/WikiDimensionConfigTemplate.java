@@ -1,3 +1,5 @@
+// Copyright 2018 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.dimension;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -7,7 +9,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 
 /**
- * Wiki dimension config template
+ * Wiki dimension config template.
  */
 public class WikiDimensionConfigTemplate extends Template {
 
@@ -25,17 +27,26 @@ public class WikiDimensionConfigTemplate extends Template {
 
     /**
      * Set dimensions configuration info.
+     *
+     * @param fieldSets a map from fieldset name to fieldset
      */
     public void setFields(HashMap<String, LinkedHashSet<WikiDimensionFieldSetsTemplate>> fieldSets) {
         this.fieldSets = fieldSets;
     }
 
+    /**
+     * Set dimensions info.
+     *
+     * @param dimensions a set of dimensions
+     */
     public void setDimensions(LinkedHashSet<WikiDimensionTemplate> dimensions) {
         this.dimensions = dimensions;
     }
 
     /**
      * Get dimensions configuration info.
+     *
+     * @return a map from fieldset name to fieldset
      */
     public HashMap<String, LinkedHashSet<WikiDimensionFieldSetsTemplate>> getFieldSets() {
         return this.fieldSets;
@@ -44,6 +55,4 @@ public class WikiDimensionConfigTemplate extends Template {
     public LinkedHashSet<WikiDimensionTemplate> getDimensions() {
         return this.dimensions;
     }
-
-
 }

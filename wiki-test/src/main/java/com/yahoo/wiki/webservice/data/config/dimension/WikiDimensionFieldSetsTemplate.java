@@ -1,3 +1,5 @@
+// Copyright 2018 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.dimension;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -8,6 +10,9 @@ import com.yahoo.wiki.webservice.data.config.Template;
 
 import java.util.LinkedList;
 
+/**
+ * Dimension field set template.
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class WikiDimensionFieldSetsTemplate extends Template implements DimensionField {
 
@@ -27,23 +32,32 @@ public class WikiDimensionFieldSetsTemplate extends Template implements Dimensio
     }
 
     /**
-     * Set dimensions info.
+     * Set dimensions name.
+     *
+     * @param name dimension name
      */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * Set dimensions description.
+     *
+     * @param description dimension description
+     */
     public void setDescription(String description) {
         this.description = description;
     }
 
+    /**
+     * Set dimensions tags.
+     *
+     * @param tags a set of dimension tags
+     */
     public void setTags(LinkedList<String> tags) {
         this.tags = new LinkedList<>(tags);
     }
 
-    /**
-     * Get dimensions info.
-     */
     @Override
     public String getName() {
         return EnumUtils.camelCase(this.name);
@@ -54,6 +68,11 @@ public class WikiDimensionFieldSetsTemplate extends Template implements Dimensio
         return this.description;
     }
 
+    /**
+     * Get dimensions tags.
+     *
+     * @return a set of dimension tags
+     */
     public LinkedList<String> getTags() {
         return this.tags;
     }
@@ -62,5 +81,4 @@ public class WikiDimensionFieldSetsTemplate extends Template implements Dimensio
     public String toString() {
         return EnumUtils.camelCase(this.getName());
     }
-
 }

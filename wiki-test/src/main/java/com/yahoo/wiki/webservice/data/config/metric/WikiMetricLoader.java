@@ -38,37 +38,37 @@ public class WikiMetricLoader implements MetricLoader {
     final int sketchSize;
 
     /**
-     * Constructs a WikiMetricLoader using the default sketch size.
+     * Constructs a WikiMetricLoader.
      */
     public WikiMetricLoader() {
-        this(new ObjectMapper(), DEFAULT_SKETCH_SIZE_IN_BYTES, null);
+        this(new ObjectMapper(), DEFAULT_SKETCH_SIZE_IN_BYTES, dimensionDictionary);
     }
 
     /**
-     * Constructs a WikiMetricLoader using the default sketch size.
+     * Constructs a WikiMetricLoader using the default sketch size and default dimensionDictionary.
      *
-     * @param objectMapper  Object mapper for json parse
+     * @param objectMapper Object mapper for json parse
      */
     public WikiMetricLoader(ObjectMapper objectMapper) {
-        this(objectMapper, DEFAULT_SKETCH_SIZE_IN_BYTES, null);
+        this(objectMapper, DEFAULT_SKETCH_SIZE_IN_BYTES, dimensionDictionary);
     }
 
     /**
-     * Constructs a WikiMetricLoader using the given sketch size.
+     * Constructs a WikiMetricLoader using the given sketch size and given dimensionDictionary.
      *
-     * @param objectMapper  Object mapper for json parse
-     * @param dimensionDictionary  dimension dictionary
+     * @param objectMapper        Object mapper for json parse
+     * @param dimensionDictionary dimension dictionary
      */
     public WikiMetricLoader(ObjectMapper objectMapper, DimensionDictionary dimensionDictionary) {
         this(objectMapper, DEFAULT_SKETCH_SIZE_IN_BYTES, dimensionDictionary);
     }
 
     /**
-     * Constructs a WikiMetricLoader using the given sketch size.
+     * Constructs a WikiMetricLoader using the given objectMapper, given sketch size and given dimensionDictionary.
      *
-     * @param objectMapper  Object mapper for json parse
-     * @param sketchSize  Sketch size, in number of bytes, to use for sketch operations
-     * @param dimensionDictionary  dimension dictionary
+     * @param objectMapper        Object mapper for json parse
+     * @param sketchSize          Sketch size, in number of bytes, to use for sketch operations
+     * @param dimensionDictionary Dimension dictionary
      */
     public WikiMetricLoader(ObjectMapper objectMapper, int sketchSize, DimensionDictionary dimensionDictionary) {
         this.objectMapper = objectMapper;
@@ -77,7 +77,9 @@ public class WikiMetricLoader implements MetricLoader {
     }
 
     /**
-     * (Re)Initialize the Metric Makers dictionary
+     * (Re)Initialize the Metric Makers dictionary.
+     *
+     * @param metricDictionary metric dictionary
      */
     protected void buildMetricMakersDictionary(MetricDictionary metricDictionary) {
         metricMakerDictionary = new MetricMakerDictionary(true, metricDictionary, sketchSize, dimensionDictionary);
@@ -86,8 +88,7 @@ public class WikiMetricLoader implements MetricLoader {
     /**
      * Select and return a Metric Maker by it's name.
      *
-     * @param metricMakerName  Metric Maker's name
-     *
+     * @param metricMakerName Metric Maker's name
      * @return a specific Metric Maker Instance
      */
     protected MetricMaker selectMetricMakersByName(String metricMakerName) {
@@ -100,7 +101,10 @@ public class WikiMetricLoader implements MetricLoader {
         buildMetricMakersDictionary(metricDictionary);
 
         ExternalConfigLoader metricConfigLoader = new ExternalConfigLoader(objectMapper);
-        WikiMetricConfigTemplate wikiMetricConfig = (WikiMetricConfigTemplate) metricConfigLoader.parseExternalFile("MetricConfigTemplateSample.json", WikiMetricConfigTemplate.class);
+        WikiMetricConfigTemplate wikiMetricConfig = (WikiMetricConfigTemplate)
+                metricConfigLoader.parseExternalFile("MetricConfigTemplateSample.json",
+                        WikiMetricConfigTemplate.class
+                );
 
         List<MetricInstance> metrics = wikiMetricConfig.getMetrics().stream().map(
                 metric -> new MetricInstance(

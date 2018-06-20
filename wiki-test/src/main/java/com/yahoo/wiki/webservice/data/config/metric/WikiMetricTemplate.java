@@ -1,3 +1,5 @@
+// Copyright 2018 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.metric;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -10,7 +12,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Wiki metric template
+ * Wiki metric template.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class WikiMetricTemplate extends Template implements MetricConfigAPI {
@@ -33,15 +35,16 @@ public class WikiMetricTemplate extends Template implements MetricConfigAPI {
     private List<TimeGrain> satisfyingGrains;
 
     /**
-     * Constructor
+     * Constructor.
      */
-    WikiMetricTemplate() { }
+    WikiMetricTemplate() {
+    }
 
     /**
      * Create a Wiki Metric descriptor with a fixed set of satisfying grains.
      *
-     * @param apiName  The api name for the metric.
-     * @param satisfyingGrains  The grains that satisfy this metric.
+     * @param apiName          The api name for the metric.
+     * @param satisfyingGrains The grains that satisfy this metric.
      */
     WikiMetricTemplate(String apiName, TimeGrain... satisfyingGrains) {
         // to camelCase
@@ -73,7 +76,7 @@ public class WikiMetricTemplate extends Template implements MetricConfigAPI {
     }
 
     @Override
-    public void setDependencyMetricNames(List<String> dependencyMetricNames){
+    public void setDependencyMetricNames(List<String> dependencyMetricNames) {
         this.dependencyMetricNames = dependencyMetricNames;
     }
 
@@ -95,7 +98,7 @@ public class WikiMetricTemplate extends Template implements MetricConfigAPI {
 
     @Override
     public String getMakerName() {
-        return makerName.toLowerCase();
+        return makerName.toLowerCase(Locale.ENGLISH);
     }
 
     @Override
@@ -104,8 +107,10 @@ public class WikiMetricTemplate extends Template implements MetricConfigAPI {
     }
 
     @Override
-    public List<String> getDependencyMetricNames(){
-        if (dependencyMetricNames == null) return Collections.emptyList();
+    public List<String> getDependencyMetricNames() {
+        if (dependencyMetricNames == null) {
+            return Collections.emptyList();
+        }
         return dependencyMetricNames.stream().map(name -> EnumUtils.camelCase(name)).collect(Collectors.toList());
     }
 
@@ -124,5 +129,4 @@ public class WikiMetricTemplate extends Template implements MetricConfigAPI {
         // As long as the satisfying grains of this metric satisfy the requested grain
         return satisfyingGrains.stream().anyMatch(grain::satisfiedBy);
     }
-
 }

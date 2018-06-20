@@ -1,4 +1,4 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2018 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.dimension;
 
@@ -29,7 +29,7 @@ public class WikiDimensionsLoader {
     private static ObjectMapper objectMapper;
 
     /**
-     * Constructor
+     * Constructor.
      */
     public WikiDimensionsLoader() {
         this(new ObjectMapper());
@@ -37,13 +37,18 @@ public class WikiDimensionsLoader {
 
     /**
      * Construct the dimension configurations.
+     *
+     * @param objectMapper objectMapper for external file parse
      */
     public WikiDimensionsLoader(ObjectMapper objectMapper) {
 
         this.objectMapper = objectMapper;
 
         ExternalConfigLoader dimensionConfigLoader = new ExternalConfigLoader(objectMapper);
-        WikiDimensionConfigTemplate wikiDimensionConfig = (WikiDimensionConfigTemplate) dimensionConfigLoader.parseExternalFile("DimensionConfigTemplateSample.json", WikiDimensionConfigTemplate.class);
+        WikiDimensionConfigTemplate wikiDimensionConfig =
+                (WikiDimensionConfigTemplate) dimensionConfigLoader.parseExternalFile(
+                        "DimensionConfigTemplateSample.json",
+                        WikiDimensionConfigTemplate.class);
 
         this.dimensionConfigs = Collections.unmodifiableSet(
                 wikiDimensionConfig.getDimensions().stream()
@@ -111,5 +116,4 @@ public class WikiDimensionsLoader {
     private SearchProvider getDefaultSearchProvider(WikiDimensionTemplate providerName) {
         return ScanSearchProviderManager.getInstance(providerName.asName());
     }
-
 }

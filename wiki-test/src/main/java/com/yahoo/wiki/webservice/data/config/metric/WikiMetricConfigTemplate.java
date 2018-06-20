@@ -1,3 +1,5 @@
+// Copyright 2018 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.metric;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -22,7 +24,9 @@ public class WikiMetricConfigTemplate extends Template {
     }
 
     /**
-     * Set metrics info.
+     * Set metrics configuration info.
+     *
+     * @param metrics a list of metrics
      */
     public void setMetrics(LinkedHashSet<WikiMetricTemplate> metrics) {
         this.metrics = metrics;
@@ -30,6 +34,8 @@ public class WikiMetricConfigTemplate extends Template {
 
     /**
      * Get metrics configuration info.
+     *
+     * @return a list of metrics
      */
     public LinkedHashSet<WikiMetricTemplate> getMetrics() {
         return this.metrics;
