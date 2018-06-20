@@ -2,28 +2,19 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.metric;
 
-import com.codahale.metrics.Metric;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yahoo.bard.webservice.data.config.metric.MetricInstance;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
-import com.yahoo.bard.webservice.data.config.metric.makers.AggregationAverageMaker;
-import com.yahoo.bard.webservice.data.config.metric.makers.CountMaker;
-import com.yahoo.bard.webservice.data.config.metric.makers.DoubleSumMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker;
+import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
-import com.yahoo.bard.webservice.data.time.ZonelessTimeGrain;
 import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.wiki.webservice.data.config.ExternalConfigLoader;
-import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensionConfigTemplate;
-import com.yahoo.wiki.webservice.data.config.names.WikiApiMetricName;
-import com.yahoo.wiki.webservice.data.config.names.WikiDruidMetricName;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,7 +31,9 @@ public class WikiMetricLoader implements MetricLoader {
     public static final int DEFAULT_KILOBYTES_PER_SKETCH = 16;
     public static final int DEFAULT_SKETCH_SIZE_IN_BYTES = DEFAULT_KILOBYTES_PER_SKETCH * BYTES_PER_KILOBYTE;
 
-    public static MetricMakerDictionary metricMakerDictionary;
+    private static MetricMakerDictionary metricMakerDictionary;
+    private static ObjectMapper objectMapper;
+    private static DimensionDictionary dimensionDictionary;
 
     final int sketchSize;
 
@@ -48,24 +41,46 @@ public class WikiMetricLoader implements MetricLoader {
      * Constructs a WikiMetricLoader using the default sketch size.
      */
     public WikiMetricLoader() {
-        this(DEFAULT_SKETCH_SIZE_IN_BYTES);
+        this(new ObjectMapper(), DEFAULT_SKETCH_SIZE_IN_BYTES, null);
+    }
+
+    /**
+     * Constructs a WikiMetricLoader using the default sketch size.
+     *
+     * @param objectMapper  Object mapper for json parse
+     */
+    public WikiMetricLoader(ObjectMapper objectMapper) {
+        this(objectMapper, DEFAULT_SKETCH_SIZE_IN_BYTES, null);
     }
 
     /**
      * Constructs a WikiMetricLoader using the given sketch size.
      *
-     * @param sketchSize  Sketch size, in number of bytes, to use for sketch operations
+     * @param objectMapper  Object mapper for json parse
+     * @param dimensionDictionary  dimension dictionary
      */
-    public WikiMetricLoader(int sketchSize) {
+    public WikiMetricLoader(ObjectMapper objectMapper, DimensionDictionary dimensionDictionary) {
+        this(objectMapper, DEFAULT_SKETCH_SIZE_IN_BYTES, dimensionDictionary);
+    }
+
+    /**
+     * Constructs a WikiMetricLoader using the given sketch size.
+     *
+     * @param objectMapper  Object mapper for json parse
+     * @param sketchSize  Sketch size, in number of bytes, to use for sketch operations
+     * @param dimensionDictionary  dimension dictionary
+     */
+    public WikiMetricLoader(ObjectMapper objectMapper, int sketchSize, DimensionDictionary dimensionDictionary) {
+        this.objectMapper = objectMapper;
         this.sketchSize = sketchSize;
+        this.dimensionDictionary = dimensionDictionary;
     }
 
     /**
      * (Re)Initialize the Metric Makers dictionary
      */
     protected void buildMetricMakersDictionary(MetricDictionary metricDictionary) {
-        // Create the various metric makers
-        metricMakerDictionary = new MetricMakerDictionary(true, metricDictionary);
+        metricMakerDictionary = new MetricMakerDictionary(true, metricDictionary, sketchSize, dimensionDictionary);
     }
 
     /**
@@ -84,7 +99,7 @@ public class WikiMetricLoader implements MetricLoader {
 
         buildMetricMakersDictionary(metricDictionary);
 
-        ExternalConfigLoader metricConfigLoader = new ExternalConfigLoader(new ObjectMapper());
+        ExternalConfigLoader metricConfigLoader = new ExternalConfigLoader(objectMapper);
         WikiMetricConfigTemplate wikiMetricConfig = (WikiMetricConfigTemplate) metricConfigLoader.parseExternalFile("MetricConfigTemplateSample.json", WikiMetricConfigTemplate.class);
 
         List<MetricInstance> metrics = wikiMetricConfig.getMetrics().stream().map(

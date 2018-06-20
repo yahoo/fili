@@ -3,7 +3,6 @@ package com.yahoo.wiki.webservice.data.config.metric;
 import com.yahoo.bard.webservice.data.config.metric.makers.*;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
-import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter;
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationPostAggFunction;
 import org.slf4j.Logger;
@@ -34,18 +33,17 @@ public class MetricMakerDictionary {
         nameToMetricMaker = new LinkedHashMap<>();
     }
 
-    public MetricMakerDictionary(boolean useDefault, MetricDictionary metricDictionary) {
+    public MetricMakerDictionary(boolean useDefault, MetricDictionary metricDictionary, int sketchSize, DimensionDictionary dimensionDictionary) {
         nameToMetricMaker = new LinkedHashMap<>();
         if (!useDefault) return;
 
         add(new AggregationAverageMaker(metricDictionary, DAY));
-        add(new CardinalityMaker(metricDictionary, new DimensionDictionary(),true));
+        add(new CardinalityMaker(metricDictionary, dimensionDictionary,true));
         add(new ConstantMaker(metricDictionary));
         add(new CountMaker(metricDictionary));
         add(new DoubleMaxMaker(metricDictionary));
         add(new DoubleMinMaker(metricDictionary));
         add(new DoubleSumMaker(metricDictionary));
-        add(new FilteredAggregationMaker(metricDictionary, new SelectorFilter(null, "1")));
         add(new LongMaxMaker(metricDictionary));
         add(new LongMinMaker(metricDictionary));
         add(new LongSumMaker(metricDictionary));
@@ -53,8 +51,8 @@ public class MetricMakerDictionary {
         add(new MinMaker(metricDictionary));
         add(new RowNumMaker(metricDictionary));
 
-        add(new SketchCountMaker(metricDictionary, 16000));
-        add(new ThetaSketchMaker(metricDictionary, 16384));
+        add(new SketchCountMaker(metricDictionary, sketchSize));
+        add(new ThetaSketchMaker(metricDictionary, sketchSize));
 
         nameToMetricMaker.put("arithmeticplus", new ArithmeticMaker(metricDictionary, ArithmeticPostAggregation.ArithmeticPostAggregationFunction.PLUS));
         nameToMetricMaker.put("arithmeticminus", new ArithmeticMaker(metricDictionary, ArithmeticPostAggregation.ArithmeticPostAggregationFunction.MINUS));

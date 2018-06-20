@@ -26,13 +26,23 @@ public class WikiDimensionsLoader {
 
     private final Set<DimensionConfig> dimensionConfigs;
     private final LinkedHashMap<String, DimensionConfig> wikiApiDimensionNameToConfig;
+    private static ObjectMapper objectMapper;
+
+    /**
+     * Constructor
+     */
+    public WikiDimensionsLoader() {
+        this(new ObjectMapper());
+    }
 
     /**
      * Construct the dimension configurations.
      */
-    public WikiDimensionsLoader() {
+    public WikiDimensionsLoader(ObjectMapper objectMapper) {
 
-        ExternalConfigLoader dimensionConfigLoader = new ExternalConfigLoader(new ObjectMapper());
+        this.objectMapper = objectMapper;
+
+        ExternalConfigLoader dimensionConfigLoader = new ExternalConfigLoader(objectMapper);
         WikiDimensionConfigTemplate wikiDimensionConfig = (WikiDimensionConfigTemplate) dimensionConfigLoader.parseExternalFile("DimensionConfigTemplateSample.json", WikiDimensionConfigTemplate.class);
 
         this.dimensionConfigs = Collections.unmodifiableSet(

@@ -19,12 +19,12 @@ public class WikiBinderFactory extends AbstractBinderFactory {
 
     @Override
     protected MetricLoader getMetricLoader() {
-        return new WikiMetricLoader();
+        return new WikiMetricLoader(super.getMappers().getMapper(), super.getConfigurationLoader().getDimensionDictionary());
     }
 
     @Override
     protected LinkedHashSet<DimensionConfig> getDimensionConfigurations() {
-        return new LinkedHashSet<>(new WikiDimensionsLoader().getAllDimensionConfigurations());
+        return new LinkedHashSet<>(new WikiDimensionsLoader(super.getMappers().getMapper()).getAllDimensionConfigurations());
     }
 
     @Override
