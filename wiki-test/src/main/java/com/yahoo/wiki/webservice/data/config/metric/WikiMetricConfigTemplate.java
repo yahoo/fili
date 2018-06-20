@@ -10,6 +10,16 @@ import java.util.LinkedHashSet;
 
 /**
  * Metric Config template.
+ *
+ * An example:
+ *
+ * {
+ *   "metrics" :
+ *     [
+ *       -> a list of metrics deserialize by WikiMetricTemplate
+ *     ]
+ * }
+ *
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class WikiMetricConfigTemplate extends Template {

@@ -32,16 +32,15 @@ public class WikiMetricLoader implements MetricLoader {
     public static final int DEFAULT_SKETCH_SIZE_IN_BYTES = DEFAULT_KILOBYTES_PER_SKETCH * BYTES_PER_KILOBYTE;
 
     private static MetricMakerDictionary metricMakerDictionary;
-    private static ObjectMapper objectMapper;
     private static DimensionDictionary dimensionDictionary;
-
-    final int sketchSize;
+    private final ObjectMapper objectMapper;
+    private final int sketchSize;
 
     /**
      * Constructs a WikiMetricLoader.
      */
     public WikiMetricLoader() {
-        this(new ObjectMapper(), DEFAULT_SKETCH_SIZE_IN_BYTES, dimensionDictionary);
+        this(new ObjectMapper(), DEFAULT_SKETCH_SIZE_IN_BYTES);
     }
 
     /**
@@ -50,29 +49,26 @@ public class WikiMetricLoader implements MetricLoader {
      * @param objectMapper Object mapper for json parse
      */
     public WikiMetricLoader(ObjectMapper objectMapper) {
-        this(objectMapper, DEFAULT_SKETCH_SIZE_IN_BYTES, dimensionDictionary);
+        this(objectMapper, DEFAULT_SKETCH_SIZE_IN_BYTES);
     }
 
     /**
      * Constructs a WikiMetricLoader using the given sketch size and given dimensionDictionary.
      *
-     * @param objectMapper        Object mapper for json parse
-     * @param dimensionDictionary dimension dictionary
+     * @param objectMapper Object mapper for json parse
+     * @param sketchSize   Sketch size
      */
-    public WikiMetricLoader(ObjectMapper objectMapper, DimensionDictionary dimensionDictionary) {
-        this(objectMapper, DEFAULT_SKETCH_SIZE_IN_BYTES, dimensionDictionary);
+    public WikiMetricLoader(ObjectMapper objectMapper, int sketchSize) {
+        this.objectMapper = objectMapper;
+        this.sketchSize = sketchSize;
     }
 
     /**
-     * Constructs a WikiMetricLoader using the given objectMapper, given sketch size and given dimensionDictionary.
+     * Set dimension dictionary.
      *
-     * @param objectMapper        Object mapper for json parse
-     * @param sketchSize          Sketch size, in number of bytes, to use for sketch operations
      * @param dimensionDictionary Dimension dictionary
      */
-    public WikiMetricLoader(ObjectMapper objectMapper, int sketchSize, DimensionDictionary dimensionDictionary) {
-        this.objectMapper = objectMapper;
-        this.sketchSize = sketchSize;
+    public void setDimensionDictionary(DimensionDictionary dimensionDictionary) {
         this.dimensionDictionary = dimensionDictionary;
     }
 
@@ -82,7 +78,7 @@ public class WikiMetricLoader implements MetricLoader {
      * @param metricDictionary metric dictionary
      */
     protected void buildMetricMakersDictionary(MetricDictionary metricDictionary) {
-        metricMakerDictionary = new MetricMakerDictionary(true, metricDictionary, sketchSize, dimensionDictionary);
+        this.metricMakerDictionary = new MetricMakerDictionary(true, metricDictionary, sketchSize, dimensionDictionary);
     }
 
     /**

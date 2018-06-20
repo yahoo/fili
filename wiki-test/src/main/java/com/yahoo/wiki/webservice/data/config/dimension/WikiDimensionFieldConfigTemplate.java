@@ -9,6 +9,10 @@ import java.util.LinkedHashSet;
 /**
  * Contains field name and a list of field template.
  * For DimensionFieldDeserializer
+ *
+ * field name: "xxx"
+ * field list: [field A, field B, field C]
+ *
  */
 public class WikiDimensionFieldConfigTemplate extends Template {
 

@@ -12,6 +12,18 @@ import java.util.LinkedHashSet;
 
 /**
  * Wiki dimension config template.
+ *
+ * An example:
+ *
+ * {
+ *   "fieldSets": {
+ *   -> a list of fieldset deserialize by WikiDimensionFieldSetsTemplate
+ *     },
+ *   "dimensions": [
+ *   -> a list of dimensions deserialize by ikiDimensionTemplate
+ *     ]
+ * }
+ *
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class WikiDimensionConfigTemplate extends Template {
@@ -38,7 +50,7 @@ public class WikiDimensionConfigTemplate extends Template {
     }
 
     /**
-     * Set dimensions configuration info.
+     * Set field configuration info.
      *
      * @param fieldSets a map from fieldset name to fieldset
      */
@@ -56,7 +68,7 @@ public class WikiDimensionConfigTemplate extends Template {
     }
 
     /**
-     * Get dimensions configuration info.
+     * Get field configuration info.
      *
      * @return a map from fieldset name to fieldset
      */
@@ -64,6 +76,11 @@ public class WikiDimensionConfigTemplate extends Template {
         return this.fieldSets;
     }
 
+    /**
+     * Get dimensions configuration info.
+     *
+     * @return a set of dimensions
+     */
     public LinkedHashSet<WikiDimensionTemplate> getDimensions() {
         return this.dimensions;
     }

@@ -13,6 +13,17 @@ import java.util.LinkedList;
 
 /**
  * Dimension field set template.
+ *
+ * An example:
+ *
+ *       {
+ *         "name": "ID",
+ *         "description": "Dimension ID",
+ *         "tags": [
+ *           "primaryKey"
+ *         ]
+ *       }
+ *
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class WikiDimensionFieldSetsTemplate extends Template implements DimensionField {

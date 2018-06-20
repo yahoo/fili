@@ -17,6 +17,8 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY;
 
 /**
  * Metric maker dictionary.
+ *
+ * metric maker name -> metric maker instance
  */
 @Singleton
 public class MetricMakerDictionary {

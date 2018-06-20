@@ -4,6 +4,7 @@ package com.yahoo.wiki.webservice.data.config;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.IOException;
 import java.io.File;
 
@@ -27,7 +28,7 @@ public class ExternalConfigLoader {
      * Parse the external file into corresponding templates.
      *
      * @param externalConfigFilePath The external file's url containing the external config information
-     * @param template The external config template type
+     * @param template               The external config template type
      * @return Template instance parsed from the external file
      */
     public Template parseExternalFile(String externalConfigFilePath, Class<?> template) {
@@ -38,7 +39,7 @@ public class ExternalConfigLoader {
         } catch (IOException exception) {
             String message = "Could not parse due to invalid schema in external config file located at " +
                     "url: " + externalConfigFilePath;
-            throw new RuntimeException(message, exception);
+            throw new IllegalStateException(message, exception);
         }
     }
 }

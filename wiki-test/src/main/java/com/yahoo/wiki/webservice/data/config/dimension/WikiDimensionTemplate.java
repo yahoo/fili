@@ -16,6 +16,16 @@ import java.util.Objects;
 
 /**
  * Wiki dimension template.
+ *
+ * An example:
+ *
+ *     {
+ *       "apiName": "REGION_ISO_CODE",
+ *       "longName": "wiki regionIsoCode",
+ *       "description": "Iso Code of the region to which the wiki page belongs",
+ *       "fields": "default"
+ *     }
+ *
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class WikiDimensionTemplate extends Template implements DimensionConfigAPI {

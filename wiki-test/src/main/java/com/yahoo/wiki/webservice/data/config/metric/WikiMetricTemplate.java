@@ -13,6 +13,17 @@ import java.util.stream.Collectors;
 
 /**
  * Wiki metric template.
+ *
+ * An example:
+ *
+ *       {
+ *         "apiName" : "ADDED",
+ *         "longName" : "ADDED",
+ *         "description" : "Description for added",
+ *         "maker" : "DoubleSum",
+ *         "dependencyMetricNames" : ["ADDED"]
+ *       }
+ *
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class WikiMetricTemplate extends Template implements MetricConfigAPI {
