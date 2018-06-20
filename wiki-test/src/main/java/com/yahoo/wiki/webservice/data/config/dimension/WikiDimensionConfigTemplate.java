@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.dimension;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.yahoo.wiki.webservice.data.config.Template;
 
@@ -11,6 +13,7 @@ import java.util.LinkedHashSet;
 /**
  * Wiki dimension config template.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class WikiDimensionConfigTemplate extends Template {
 
     @JsonProperty("fieldSets")
@@ -20,9 +23,18 @@ public class WikiDimensionConfigTemplate extends Template {
     private LinkedHashSet<WikiDimensionTemplate> dimensions;
 
     /**
-     * Constructor.
+     * Constructor used by json parser.
+     *
+     * @param fieldSets  json property fieldSets
+     * @param dimensions json property dimensions
      */
-    public WikiDimensionConfigTemplate() {
+    @JsonCreator
+    public WikiDimensionConfigTemplate(
+           @JsonProperty("fieldSets") HashMap<String, LinkedHashSet<WikiDimensionFieldSetsTemplate>> fieldSets,
+           @JsonProperty("dimensions") LinkedHashSet<WikiDimensionTemplate> dimensions
+    ) {
+        setFields(fieldSets);
+        setDimensions(dimensions);
     }
 
     /**

@@ -35,9 +35,26 @@ public class WikiMetricTemplate extends Template implements MetricConfigAPI {
     private List<TimeGrain> satisfyingGrains;
 
     /**
-     * Constructor.
+     * Constructor used by json parser.
+     *
+     * @param apiName               json property apiName
+     * @param longName              json property longName
+     * @param makerName             json property makerName
+     * @param description           json property description
+     * @param dependencyMetricNames json property dependencyMetricNames
      */
-    WikiMetricTemplate() {
+    WikiMetricTemplate(
+            @JsonProperty("apiName") String apiName,
+            @JsonProperty("longName") String longName,
+            @JsonProperty("maker") String makerName,
+            @JsonProperty("description") String description,
+            @JsonProperty("dependencyMetricNames") List<String> dependencyMetricNames
+    ) {
+        setApiName(apiName);
+        setLongName(longName);
+        setMakerName(makerName);
+        setDescription(description);
+        setDependencyMetricNames(dependencyMetricNames);
     }
 
     /**

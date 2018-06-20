@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.dimension;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
@@ -26,9 +27,21 @@ public class WikiDimensionFieldSetsTemplate extends Template implements Dimensio
     private LinkedList<String> tags;
 
     /**
-     * Constructor.
+     * Constructor used by json parser.
+     *
+     * @param name        json property name
+     * @param description json property description
+     * @param tags        json property tags
      */
-    public WikiDimensionFieldSetsTemplate() {
+    @JsonCreator
+    public WikiDimensionFieldSetsTemplate(
+            @JsonProperty("name") String name,
+            @JsonProperty("description") String description,
+            @JsonProperty("tags") LinkedList<String> tags
+    ) {
+        setName(name);
+        setDescription(description);
+        setTags(tags);
     }
 
     /**
@@ -55,7 +68,7 @@ public class WikiDimensionFieldSetsTemplate extends Template implements Dimensio
      * @param tags a set of dimension tags
      */
     public void setTags(LinkedList<String> tags) {
-        this.tags = new LinkedList<>(tags);
+        if (tags != null) { this.tags = new LinkedList<>(tags); }
     }
 
     @Override

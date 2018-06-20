@@ -16,12 +16,6 @@ public class WikiDimensionFieldConfigTemplate extends Template {
     private LinkedHashSet<WikiDimensionFieldSetsTemplate> fieldList;
 
     /**
-     * Constructor.
-     */
-    WikiDimensionFieldConfigTemplate() {
-    }
-
-    /**
      * Set fieldset name.
      *
      * @param name fieldset name

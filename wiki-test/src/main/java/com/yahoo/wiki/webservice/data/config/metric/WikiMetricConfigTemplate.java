@@ -18,9 +18,12 @@ public class WikiMetricConfigTemplate extends Template {
     private LinkedHashSet<WikiMetricTemplate> metrics;
 
     /**
-     * Constructor.
+     * Constructor used by json parser.
+     *
+     * @param metrics  json property metrics
      */
-    public WikiMetricConfigTemplate() {
+    public WikiMetricConfigTemplate(@JsonProperty("metrics") LinkedHashSet<WikiMetricTemplate> metrics) {
+        setMetrics(metrics);
     }
 
     /**

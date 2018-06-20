@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.dimension;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.yahoo.bard.webservice.data.dimension.*;
@@ -32,12 +33,31 @@ public class WikiDimensionTemplate extends Template implements DimensionConfigAP
     private String category;
 
     @JsonDeserialize(using = DimensionFieldDeserializer.class)
+    @JsonProperty("fields")
     private WikiDimensionFieldConfigTemplate fields;
 
     /**
-     * Constructor.
+     * Constructor used by json parser.
+     *
+     * @param apiName     json property apiName
+     * @param description json property description
+     * @param longName    json property longName
+     * @param category    json property categor
+     * @param fields      json property fields deserialize by DimensionFieldDeserializer
      */
-    public WikiDimensionTemplate() {
+    @JsonCreator
+    public WikiDimensionTemplate(
+            @JsonProperty("apiName") String apiName,
+            @JsonProperty("description") String description,
+            @JsonProperty("longName") String longName,
+            @JsonProperty("category") String category,
+            @JsonProperty("fields") WikiDimensionFieldConfigTemplate fields
+    ) {
+        setApiName(apiName);
+        setDescription(description);
+        setLongName(longName);
+        setCategory(category);
+        setFields(fields);
     }
 
     /**
@@ -134,7 +154,7 @@ public class WikiDimensionTemplate extends Template implements DimensionConfigAP
         }
 
         // default fields
-        else if (this.fields == null || (this.fields.getFieldName() == null && this.fields.getFieldList() == null)) {
+        else if (this.fields == null || this.fields.getFieldName() == null && this.fields.getFieldList() == null) {
             this.fields = new WikiDimensionFieldConfigTemplate();
             this.fields.setFieldName("Default");
             this.fields.setFieldList(fieldSetInfo.get("default"));

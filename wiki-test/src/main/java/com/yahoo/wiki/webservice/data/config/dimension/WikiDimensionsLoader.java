@@ -26,7 +26,6 @@ public class WikiDimensionsLoader {
 
     private final Set<DimensionConfig> dimensionConfigs;
     private final LinkedHashMap<String, DimensionConfig> wikiApiDimensionNameToConfig;
-    private static ObjectMapper objectMapper;
 
     /**
      * Constructor.
@@ -41,8 +40,6 @@ public class WikiDimensionsLoader {
      * @param objectMapper objectMapper for external file parse
      */
     public WikiDimensionsLoader(ObjectMapper objectMapper) {
-
-        this.objectMapper = objectMapper;
 
         ExternalConfigLoader dimensionConfigLoader = new ExternalConfigLoader(objectMapper);
         WikiDimensionConfigTemplate wikiDimensionConfig =
