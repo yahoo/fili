@@ -9,7 +9,18 @@ import java.util.regex.Pattern;
 
 /**
  * Regular Expression ExtractionFunction that returns the first matching group for the given regular expression.
- * If there is no match, it returns the dimension value as is
+ * <p>
+ * If there is no match, it returns the dimension value as is. The actual serialized extraction function will be
+ * <pre>
+ * {@code
+ *     {
+ *         "type": "regex",
+ *         "expr": <regular_expression>
+ *     }
+ * }
+ * </pre>
+ * <b>Note that the {@code index}, {@code replaceMissingValue}, and {@code replaceMissingValueWith} are using default
+ * values and are not included in the serialization<b>.
  */
 public class RegularExpressionExtractionFunction extends ExtractionFunction {
     private final Pattern pattern;
@@ -24,6 +35,11 @@ public class RegularExpressionExtractionFunction extends ExtractionFunction {
         this.pattern = pattern;
     }
 
+    /**
+     * Returns the regex pattern of this extraction function, i.e. the value of {@code expr}.
+     *
+     * @return the regex pattern of this extraction function
+     */
     @JsonProperty(value = "expr")
     public Pattern getPattern() {
         return pattern;
@@ -54,5 +70,18 @@ public class RegularExpressionExtractionFunction extends ExtractionFunction {
         return super.equals(obj) &&
                 (pattern == null ? other.pattern == null : other.pattern != null && Objects.equals(pattern.pattern(), other.pattern.pattern()));
         // CHECKSTYLE:ON
+    }
+
+    /**
+     * Returns the string representation of this extraction function.
+     * <p>
+     * The format of the string is "RegexExtractionFunction{pattern=XXX}", where XXX is the string representation of
+     * the regex pattern of this extraction function.
+     *
+     * @return the string representation of this extraction function
+     */
+    @Override
+    public String toString() {
+        return String.format("RegularExpressionExtractionFunction{pattern=%s}", getPattern().pattern());
     }
 }
