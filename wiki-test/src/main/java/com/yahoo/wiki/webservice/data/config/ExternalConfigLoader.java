@@ -13,7 +13,7 @@ import java.io.File;
  */
 public class ExternalConfigLoader {
 
-    private static ObjectMapper objectMapper;
+    private ObjectMapper objectMapper;
 
     /**
      * Constructor.
@@ -32,7 +32,7 @@ public class ExternalConfigLoader {
      * @param <T>                    The external config template type
      * @return Template instance parsed from the external file
      */
-    public static <T> T parseExternalFile(String externalConfigFilePath, Class<T> template) {
+    public <T> T parseExternalFile(String externalConfigFilePath, Class<T> template) {
         try {
             File configFile = new File(externalConfigFilePath);
             JsonNode configurator = objectMapper.readTree(configFile);
