@@ -3,6 +3,8 @@
 package com.yahoo.bard.webservice.data.config.dimension;
 
 import com.yahoo.bard.webservice.data.config.names.TestApiDimensionName;
+import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction;
+import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.RegisteredLookupExtractionFunction;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,12 +43,16 @@ public class TestRegisteredLookupDimensions extends TestDimensions {
      *
      * @return list of lookups for the look up
      */
-    private List<String> dimensionLookups(String dimensionName) {
+    private List<ExtractionFunction> dimensionLookups(String dimensionName) {
         switch (dimensionName) {
             case "BREED":
-                return Arrays.asList("BREED__SPECIES", "BREED__OTHER", "BREED__COLOR");
+                return Arrays.asList(
+                        new RegisteredLookupExtractionFunction("BREED__SPECIES"),
+                        new RegisteredLookupExtractionFunction("BREED__OTHER"),
+                        new RegisteredLookupExtractionFunction("BREED__COLOR")
+                );
             case "SPECIES":
-                return Arrays.asList("SPECIES__BREED");
+                return Collections.singletonList(new RegisteredLookupExtractionFunction("SPECIES__BREED"));
             default:
                 return Collections.emptyList();
         }

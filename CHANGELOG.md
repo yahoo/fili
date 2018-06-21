@@ -22,6 +22,10 @@ pull request if there was one.
 
 ### Changed:
 
+- [Inject customizable extraction functions to RegisteredLookupDimension](https://github.com/yahoo/fili/pull/724)
+    * Change injecting registered lookup names to injecting registered lookup extraction function for lookup dimension
+      so that downstream projects can configure all fields of registered lookup extraction function.
+
 - [Abort request when too many Druid filters are generated](https://github.com/yahoo/fili/pull/690)
     * In order to avoid Druid queries with too much filters on high-cardinality dimension, Fili sets a upper limit
       on the number of filters and aborts requests if the limit is exceeded.
