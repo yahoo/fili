@@ -70,9 +70,7 @@ public class RegisteredLookupDimension extends KeyValueStoreDimension implements
 
         RegisteredLookupDimension that = (RegisteredLookupDimension) o;
 
-        return
-                super.equals(that) &&
-                        Objects.equals(getExtractionFunction(), that.getExtractionFunction());
+        return super.equals(that) && Objects.equals(getExtractionFunction(), that.getExtractionFunction());
     }
 
     @Override
@@ -83,7 +81,7 @@ public class RegisteredLookupDimension extends KeyValueStoreDimension implements
     /**
      * Returns a string representation of this dimension.
      * <p>
-     * The format of the string is "RegisteredLookupDimension{apiName=XXX, registeredLookupExtractionFns=YYY", where
+     * The format of the string is "RegisteredLookupDimension{apiName=XXX, registeredLookupExtractionFns=YYY}", where
      * XXX is the Webservice API name of this dimension, and YYY the list of registered lookup extraction functions of
      * this dimension. Note that there is a single space separating the two values after each comma. The API name is
      * surrounded by a pair of single quotes.
