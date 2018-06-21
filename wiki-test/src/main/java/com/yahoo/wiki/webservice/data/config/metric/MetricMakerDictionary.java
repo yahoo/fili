@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
+
 import java.util.*;
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY;
@@ -40,7 +41,6 @@ public class MetricMakerDictionary {
     /**
      * Constructor, initial all maker name -> maker instance in dictionary.
      *
-     * @param useDefault          initial default metric maker dictionary
      * @param metricDictionary    metric dictionary as parameter for makers
      * @param sketchSize          sketch size as parameter for makers
      * @param dimensionDictionary dimension dictionary as parameter for makers
@@ -48,13 +48,10 @@ public class MetricMakerDictionary {
      *                            Todo: add parameter configuration info in external config file
      *                            Todo: and parse into Metric Maker Dictionary
      */
-    public MetricMakerDictionary(boolean useDefault, MetricDictionary metricDictionary,
+    public MetricMakerDictionary(MetricDictionary metricDictionary,
                                  int sketchSize, DimensionDictionary dimensionDictionary) {
 
         nameToMetricMaker = new LinkedHashMap<>();
-        if (!useDefault) {
-            return;
-        }
 
         add(new AggregationAverageMaker(metricDictionary, DAY));
         add(new CardinalityMaker(metricDictionary, dimensionDictionary, true));
@@ -158,7 +155,6 @@ public class MetricMakerDictionary {
      *
      * @param metricMaker element to add to dictionary
      * @return <tt>true</tt> if the dictionary did not already contain the specified metric maker
-     * @see Set#add(Object)
      */
     public boolean add(MetricMaker metricMaker) {
         String makerName = metricMaker.getClass().getSimpleName().replace("Maker", "").toLowerCase(Locale.ENGLISH);
@@ -180,7 +176,6 @@ public class MetricMakerDictionary {
      *
      * @param metricMakers collection of metric makers to add
      * @return <tt>true</tt> if the dictionary changed as a result of the call
-     * @see Set#addAll(Collection)
      */
     public boolean addAll(Collection<MetricMaker> metricMakers) {
         boolean flag = false;

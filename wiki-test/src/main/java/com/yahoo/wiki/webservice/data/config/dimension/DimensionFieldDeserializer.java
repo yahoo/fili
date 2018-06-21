@@ -16,6 +16,24 @@ import java.util.LinkedHashSet;
 
 /**
  * Deserialize dimension fields.
+ * <p>
+ * If a dimension has "field" keyword, it may be either a string like:
+ *
+ *     fields: "A"
+ *
+ * or a field list:
+ *
+ *     fields: [
+ *          {
+ *              "name" : "fieldA"
+ *          },
+ *          {
+ *              "name" : "fieldB"
+ *          }
+ *     ]
+ *
+ * This deserializer can distinguish these two cases and set field info into WikiDimensionFieldConfigTemplate
+ *
  */
 public class DimensionFieldDeserializer extends JsonDeserializer<WikiDimensionFieldConfigTemplate> {
 

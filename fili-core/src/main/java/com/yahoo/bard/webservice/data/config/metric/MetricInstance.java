@@ -9,6 +9,7 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -72,7 +73,7 @@ public class MetricInstance {
     public MetricInstance(LogicalMetricInfo logicalMetricInfo, MetricMaker maker, List<String> dependencyMetricNames) {
         this.logicalMetricInfo = logicalMetricInfo;
         this.maker = maker;
-        this.dependencyMetricNames = dependencyMetricNames;
+        this.dependencyMetricNames = Arrays.asList(dependencyMetricNames.toArray(new String[dependencyMetricNames.size()]));
     }
 
     /**

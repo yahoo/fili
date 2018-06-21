@@ -12,41 +12,6 @@ import java.util.List;
 public interface MetricConfigAPI extends ApiMetricName {
 
     /**
-     * Set metrics' api name.
-     *
-     * @param apiName metric's apiName
-     */
-    void setApiName(String apiName);
-
-    /**
-     * Set metrics' long name.
-     *
-     * @param longName metric's longName
-     */
-    void setLongName(String longName);
-
-    /**
-     * Set metrics' maker Name.
-     *
-     * @param makerName metric's maker Name
-     */
-    void setMakerName(String makerName);
-
-    /**
-     * Set metrics' Description.
-     *
-     * @param description metric's description
-     */
-    void setDescription(String description);
-
-    /**
-     * Set metrics' dependency Metrics.
-     *
-     * @param dependencyMetricNames metric's dependency metric names
-     */
-    void setDependencyMetricNames(List<String> dependencyMetricNames);
-
-    /**
      * Get metrics' long name.
      *
      * @return metrics' long name

@@ -71,7 +71,7 @@ public class WikiTableLoader extends BaseTableLoader {
     private void configureSample(WikiDimensionsLoader wikiDimensions) {
 
         ExternalConfigLoader dimensionConfigLoader = new ExternalConfigLoader(new ObjectMapper());
-        WikiDimensionConfigTemplate wikiDimensionConfig = (WikiDimensionConfigTemplate)
+        WikiDimensionConfigTemplate wikiDimensionConfig =
                 dimensionConfigLoader.parseExternalFile("DimensionConfigTemplateSample.json",
                         WikiDimensionConfigTemplate.class
                 );

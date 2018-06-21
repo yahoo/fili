@@ -5,31 +5,30 @@ package com.yahoo.wiki.webservice.data.config.dimension;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.yahoo.wiki.webservice.data.config.Template;
 
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 
 /**
  * Wiki dimension config template.
- *
+ * <p>
  * An example:
- *
- * {
- *   "fieldSets": {
- *   -> a list of fieldset deserialize by WikiDimensionFieldSetsTemplate
- *     },
- *   "dimensions": [
- *   -> a list of dimensions deserialize by ikiDimensionTemplate
- *     ]
- * }
- *
+ * <p>
+ *      {
+ *          "fieldSets": {
+ *              -> a list of fieldset deserialize by WikiDimensionFieldSetsTemplate
+ *          },
+ *          "dimensions": [
+ *              -> a list of dimensions deserialize by ikiDimensionTemplate
+ *          ]
+ *      }
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class WikiDimensionConfigTemplate extends Template {
+public class WikiDimensionConfigTemplate {
 
     @JsonProperty("fieldSets")
-    private HashMap<String, LinkedHashSet<WikiDimensionFieldSetsTemplate>> fieldSets;
+    private HashMap<String, LinkedHashSet<WikiDimensionFieldSetsTemplate>> fieldDictionary;
 
     @JsonProperty("dimensions")
     private LinkedHashSet<WikiDimensionTemplate> dimensions;
@@ -37,34 +36,16 @@ public class WikiDimensionConfigTemplate extends Template {
     /**
      * Constructor used by json parser.
      *
-     * @param fieldSets  json property fieldSets
+     * @param fieldDictionary  json property fieldSets
      * @param dimensions json property dimensions
      */
     @JsonCreator
     public WikiDimensionConfigTemplate(
-           @JsonProperty("fieldSets") HashMap<String, LinkedHashSet<WikiDimensionFieldSetsTemplate>> fieldSets,
-           @JsonProperty("dimensions") LinkedHashSet<WikiDimensionTemplate> dimensions
+            @JsonProperty("fieldSets") HashMap<String, LinkedHashSet<WikiDimensionFieldSetsTemplate>> fieldDictionary,
+            @JsonProperty("dimensions") LinkedHashSet<WikiDimensionTemplate> dimensions
     ) {
-        setFields(fieldSets);
-        setDimensions(dimensions);
-    }
-
-    /**
-     * Set field configuration info.
-     *
-     * @param fieldSets a map from fieldset name to fieldset
-     */
-    public void setFields(HashMap<String, LinkedHashSet<WikiDimensionFieldSetsTemplate>> fieldSets) {
-        this.fieldSets = fieldSets;
-    }
-
-    /**
-     * Set dimensions info.
-     *
-     * @param dimensions a set of dimensions
-     */
-    public void setDimensions(LinkedHashSet<WikiDimensionTemplate> dimensions) {
-        this.dimensions = dimensions;
+        this.fieldDictionary = (Objects.isNull(fieldDictionary) ? null : new HashMap<>(fieldDictionary));
+        this.dimensions = (Objects.isNull(dimensions) ? null : new LinkedHashSet<>(dimensions));
     }
 
     /**
@@ -73,7 +54,7 @@ public class WikiDimensionConfigTemplate extends Template {
      * @return a map from fieldset name to fieldset
      */
     public HashMap<String, LinkedHashSet<WikiDimensionFieldSetsTemplate>> getFieldSets() {
-        return this.fieldSets;
+        return this.fieldDictionary;
     }
 
     /**

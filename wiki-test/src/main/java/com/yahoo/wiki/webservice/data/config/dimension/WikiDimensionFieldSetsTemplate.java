@@ -7,26 +7,26 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.util.EnumUtils;
-import com.yahoo.wiki.webservice.data.config.Template;
 
+import javax.validation.constraints.NotNull;
 import java.util.LinkedList;
+import java.util.Objects;
 
 /**
  * Dimension field set template.
- *
+ * <p>
  * An example:
- *
- *       {
- *         "name": "ID",
- *         "description": "Dimension ID",
- *         "tags": [
- *           "primaryKey"
- *         ]
- *       }
- *
+ * <p>
+ *      {
+ *          "name": "ID",
+ *          "description": "Dimension ID",
+ *          "tags": [
+ *              "primaryKey"
+ *          ]
+ *      }
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class WikiDimensionFieldSetsTemplate extends Template implements DimensionField {
+public class WikiDimensionFieldSetsTemplate implements DimensionField {
 
     @JsonProperty("name")
     private String name;
@@ -46,45 +46,18 @@ public class WikiDimensionFieldSetsTemplate extends Template implements Dimensio
      */
     @JsonCreator
     public WikiDimensionFieldSetsTemplate(
-            @JsonProperty("name") String name,
+            @NotNull @JsonProperty("name") String name,
             @JsonProperty("description") String description,
             @JsonProperty("tags") LinkedList<String> tags
     ) {
-        setName(name);
-        setDescription(description);
-        setTags(tags);
-    }
-
-    /**
-     * Set dimensions name.
-     *
-     * @param name dimension name
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    /**
-     * Set dimensions description.
-     *
-     * @param description dimension description
-     */
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    /**
-     * Set dimensions tags.
-     *
-     * @param tags a set of dimension tags
-     */
-    public void setTags(LinkedList<String> tags) {
-        if (tags != null) { this.tags = new LinkedList<>(tags); }
+        this.name = EnumUtils.camelCase(name);
+        this.description = (Objects.isNull(description) ? "" : description);
+        this.tags = (Objects.isNull(tags) ? null : new LinkedList<>(tags));
     }
 
     @Override
     public String getName() {
-        return EnumUtils.camelCase(this.name);
+        return this.name;
     }
 
     @Override
@@ -103,6 +76,6 @@ public class WikiDimensionFieldSetsTemplate extends Template implements Dimensio
 
     @Override
     public String toString() {
-        return EnumUtils.camelCase(this.getName());
+        return this.name;
     }
 }

@@ -3,46 +3,15 @@
 package com.yahoo.wiki.webservice.data.config.dimension;
 
 import com.yahoo.bard.webservice.data.config.names.DimensionName;
+import com.yahoo.bard.webservice.data.dimension.DimensionField;
+
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 
 /**
  * Wiki dimension config API.
  */
 public interface DimensionConfigAPI extends DimensionName {
-
-    /**
-     * Set dimensions api name.
-     *
-     * @param apiName dimension api name
-     */
-    void setApiName(String apiName);
-
-    /**
-     * Set dimensions long name.
-     *
-     * @param longName dimension long name
-     */
-    void setLongName(String longName);
-
-    /**
-     * Set dimensions description.
-     *
-     * @param description dimension description
-     */
-    void setDescription(String description);
-
-    /**
-     * Set dimensions category.
-     *
-     * @param category dimension category
-     */
-    void setCategory(String category);
-
-    /**
-     * Set dimensions fields.
-     *
-     * @param fields dimension fields
-     */
-    void setFields(WikiDimensionFieldConfigTemplate fields);
 
     /**
      * Get dimensions api name.
@@ -75,8 +44,10 @@ public interface DimensionConfigAPI extends DimensionName {
     /**
      * Get dimensions fields.
      *
-     * @return dimension field
+     * @param fieldDictionary a map from fieldset's name to fieldset
+     * @return a list of dimension field
      */
-    WikiDimensionFieldConfigTemplate getFields();
+    LinkedHashSet<DimensionField> getFields(HashMap<String,
+            LinkedHashSet<WikiDimensionFieldSetsTemplate>> fieldDictionary);
 
 }

@@ -43,7 +43,7 @@ public class WikiDimensionsLoader {
 
         ExternalConfigLoader dimensionConfigLoader = new ExternalConfigLoader(objectMapper);
         WikiDimensionConfigTemplate wikiDimensionConfig =
-                (WikiDimensionConfigTemplate) dimensionConfigLoader.parseExternalFile(
+                dimensionConfigLoader.parseExternalFile(
                         "DimensionConfigTemplateSample.json",
                         WikiDimensionConfigTemplate.class);
 
@@ -56,7 +56,7 @@ public class WikiDimensionsLoader {
                                         dimensionName.getDescription(),
                                         dimensionName.getLongName(),
                                         dimensionName.getCategory(),
-                                        dimensionName.resolveFields(wikiDimensionConfig.getFieldSets()),
+                                        dimensionName.getFields(wikiDimensionConfig.getFieldSets()),
                                         getDefaultKeyValueStore(dimensionName),
                                         getDefaultSearchProvider(dimensionName)
                                 )

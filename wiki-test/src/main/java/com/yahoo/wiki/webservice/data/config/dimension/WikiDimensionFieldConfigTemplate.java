@@ -2,19 +2,16 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.dimension;
 
-import com.yahoo.wiki.webservice.data.config.Template;
-
 import java.util.LinkedHashSet;
 
 /**
  * Contains field name and a list of field template.
  * For DimensionFieldDeserializer
- *
- * field name: "xxx"
- * field list: [field A, field B, field C]
- *
+ * <p>
+ *        field name: "xxx"
+ *        field list: [field A, field B, field C]
  */
-public class WikiDimensionFieldConfigTemplate extends Template {
+public class WikiDimensionFieldConfigTemplate {
 
     private String fieldName;
     private LinkedHashSet<WikiDimensionFieldSetsTemplate> fieldList;

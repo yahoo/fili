@@ -78,7 +78,7 @@ public class WikiMetricLoader implements MetricLoader {
      * @param metricDictionary metric dictionary
      */
     protected void buildMetricMakersDictionary(MetricDictionary metricDictionary) {
-        this.metricMakerDictionary = new MetricMakerDictionary(true, metricDictionary, sketchSize, dimensionDictionary);
+        this.metricMakerDictionary = new MetricMakerDictionary(metricDictionary, sketchSize, dimensionDictionary);
     }
 
     /**
@@ -97,7 +97,7 @@ public class WikiMetricLoader implements MetricLoader {
         buildMetricMakersDictionary(metricDictionary);
 
         ExternalConfigLoader metricConfigLoader = new ExternalConfigLoader(objectMapper);
-        WikiMetricConfigTemplate wikiMetricConfig = (WikiMetricConfigTemplate)
+        WikiMetricConfigTemplate wikiMetricConfig =
                 metricConfigLoader.parseExternalFile("MetricConfigTemplateSample.json",
                         WikiMetricConfigTemplate.class
                 );

@@ -13,7 +13,7 @@ import java.io.File;
  */
 public class ExternalConfigLoader {
 
-    private final ObjectMapper objectMapper;
+    private static ObjectMapper objectMapper;
 
     /**
      * Constructor.
@@ -29,13 +29,14 @@ public class ExternalConfigLoader {
      *
      * @param externalConfigFilePath The external file's url containing the external config information
      * @param template               The external config template type
+     * @param <T>                    The external config template type
      * @return Template instance parsed from the external file
      */
-    public Template parseExternalFile(String externalConfigFilePath, Class<?> template) {
+    public static <T> T parseExternalFile(String externalConfigFilePath, Class<T> template) {
         try {
             File configFile = new File(externalConfigFilePath);
             JsonNode configurator = objectMapper.readTree(configFile);
-            return (Template) objectMapper.convertValue(configurator, template);
+            return objectMapper.convertValue(configurator, template);
         } catch (IOException exception) {
             String message = "Could not parse due to invalid schema in external config file located at " +
                     "url: " + externalConfigFilePath;

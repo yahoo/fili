@@ -4,25 +4,24 @@ package com.yahoo.wiki.webservice.data.config.metric;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.yahoo.wiki.webservice.data.config.Template;
 
 import java.util.LinkedHashSet;
+import java.util.Objects;
 
 /**
  * Metric Config template.
- *
+ * <p>
  * An example:
  *
- * {
- *   "metrics" :
- *     [
- *       -> a list of metrics deserialize by WikiMetricTemplate
- *     ]
- * }
- *
+ *       {
+ *          "metrics" :
+ *              [
+ *                  -> a list of metrics deserialize by WikiMetricTemplate
+ *              ]
+ *       }
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class WikiMetricConfigTemplate extends Template {
+public class WikiMetricConfigTemplate {
 
     @JsonProperty("metrics")
     private LinkedHashSet<WikiMetricTemplate> metrics;
@@ -30,19 +29,10 @@ public class WikiMetricConfigTemplate extends Template {
     /**
      * Constructor used by json parser.
      *
-     * @param metrics  json property metrics
+     * @param metrics json property metrics
      */
     public WikiMetricConfigTemplate(@JsonProperty("metrics") LinkedHashSet<WikiMetricTemplate> metrics) {
-        setMetrics(metrics);
-    }
-
-    /**
-     * Set metrics configuration info.
-     *
-     * @param metrics a list of metrics
-     */
-    public void setMetrics(LinkedHashSet<WikiMetricTemplate> metrics) {
-        this.metrics = metrics;
+        this.metrics = (Objects.isNull(metrics) ? new LinkedHashSet<>() : new LinkedHashSet<>(metrics));
     }
 
     /**

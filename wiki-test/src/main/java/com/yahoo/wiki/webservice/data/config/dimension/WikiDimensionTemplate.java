@@ -8,27 +8,26 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.yahoo.bard.webservice.data.dimension.*;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.yahoo.bard.webservice.util.EnumUtils;
-import com.yahoo.wiki.webservice.data.config.Template;
 
+import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 
 /**
  * Wiki dimension template.
- *
+ * <p>
  * An example:
- *
- *     {
- *       "apiName": "REGION_ISO_CODE",
- *       "longName": "wiki regionIsoCode",
- *       "description": "Iso Code of the region to which the wiki page belongs",
- *       "fields": "default"
- *     }
- *
+ * <p>
+ *      {
+ *          "apiName": "REGION_ISO_CODE",
+ *          "longName": "wiki regionIsoCode",
+ *          "description": "Iso Code of the region to which the wiki page belongs",
+ *          "fields": "default"
+ *      }
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class WikiDimensionTemplate extends Template implements DimensionConfigAPI {
+public class WikiDimensionTemplate implements DimensionConfigAPI {
 
     @JsonProperty("apiName")
     private String apiName;
@@ -52,50 +51,22 @@ public class WikiDimensionTemplate extends Template implements DimensionConfigAP
      * @param apiName     json property apiName
      * @param description json property description
      * @param longName    json property longName
-     * @param category    json property categor
+     * @param category    json property category
      * @param fields      json property fields deserialize by DimensionFieldDeserializer
      */
     @JsonCreator
     public WikiDimensionTemplate(
-            @JsonProperty("apiName") String apiName,
+            @NotNull @JsonProperty("apiName") String apiName,
             @JsonProperty("description") String description,
             @JsonProperty("longName") String longName,
             @JsonProperty("category") String category,
             @JsonProperty("fields") WikiDimensionFieldConfigTemplate fields
     ) {
-        setApiName(apiName);
-        setDescription(description);
-        setLongName(longName);
-        setCategory(category);
-        setFields(fields);
-    }
-
-    /**
-     * Set dimensions info.
-     */
-    @Override
-    public void setApiName(String apiName) {
-        this.apiName = apiName;
-    }
-
-    @Override
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    @Override
-    public void setLongName(String longName) {
-        this.longName = longName;
-    }
-
-    @Override
-    public void setCategory(String category) {
-        this.category = category;
-    }
-
-    @Override
-    public void setFields(WikiDimensionFieldConfigTemplate fields) {
-        this.fields = fields;
+        this.apiName = EnumUtils.camelCase(apiName);
+        this.description = (Objects.isNull(description) ? "" : description);
+        this.longName = (Objects.isNull(longName) ? EnumUtils.camelCase(apiName) : longName);
+        this.category = (Objects.isNull(category) ? Dimension.DEFAULT_CATEGORY : category);
+        this.fields = (Objects.isNull(fields) ? null : fields);
     }
 
     /**
@@ -103,46 +74,39 @@ public class WikiDimensionTemplate extends Template implements DimensionConfigAP
      */
     @Override
     public String getApiName() {
-        return apiName;
+        return this.apiName;
     }
 
     @Override
     public String getDescription() {
-        if (Objects.isNull(description)) {
-            return "";
-        }
-        return description;
+        return this.description;
     }
 
     @Override
     public String getLongName() {
-        if (Objects.isNull(longName)) {
-            return getApiName();
-        }
-        return longName;
+        return this.longName;
     }
 
     @Override
     public String getCategory() {
-        if (Objects.isNull(category)) {
-            return Dimension.DEFAULT_CATEGORY;
-        }
-        return category;
+        return this.category;
     }
 
     @Override
     public String asName() {
-        return EnumUtils.camelCase(this.apiName);
-    }
-
-    @Override
-    public WikiDimensionFieldConfigTemplate getFields() {
-        return this.fields;
+        return this.apiName;
     }
 
     @Override
     public String toString() {
         return this.asName();
+    }
+
+    @Override
+    public LinkedHashSet<DimensionField> getFields(HashMap<String,
+            LinkedHashSet<WikiDimensionFieldSetsTemplate>> fieldDictionary) {
+        resolveFields(fieldDictionary);
+        return new LinkedHashSet<>(this.fields.getFieldList());
     }
 
     /**
@@ -152,11 +116,10 @@ public class WikiDimensionTemplate extends Template implements DimensionConfigAP
      * If "no field list" and "field has a name", map name in fieldSetInfo to get a field list
      * If "no field list" and "no field name", use default field list in fieldSetInfo
      *
-     * @param fieldSetInfo a map from fieldset's name to fieldset
-     * @return a set of dimension field for this dimension
+     * @param fieldDictionary a map from fieldset's name to fieldset
      */
-    public LinkedHashSet<DimensionField> resolveFields(HashMap<String,
-            LinkedHashSet<WikiDimensionFieldSetsTemplate>> fieldSetInfo) {
+    private void resolveFields(HashMap<String,
+            LinkedHashSet<WikiDimensionFieldSetsTemplate>> fieldDictionary) {
 
         // if specific fields
         if (this.fields != null && this.fields.getFieldList() != null) {
@@ -167,21 +130,19 @@ public class WikiDimensionTemplate extends Template implements DimensionConfigAP
         else if (this.fields == null || this.fields.getFieldName() == null && this.fields.getFieldList() == null) {
             this.fields = new WikiDimensionFieldConfigTemplate();
             this.fields.setFieldName("Default");
-            this.fields.setFieldList(fieldSetInfo.get("default"));
+            this.fields.setFieldList(fieldDictionary.get("default"));
         }
 
         // named fields
-        else if (fieldSetInfo.containsKey(this.fields.getFieldName())) {
-            this.fields.setFieldList(fieldSetInfo.get(this.fields.getFieldName()));
+        else if (fieldDictionary.containsKey(this.fields.getFieldName())) {
+            this.fields.setFieldList(fieldDictionary.get(this.fields.getFieldName()));
         }
 
         // others -> default
         else {
             this.fields = new WikiDimensionFieldConfigTemplate();
             this.fields.setFieldName("Default");
-            this.fields.setFieldList(fieldSetInfo.get("default"));
+            this.fields.setFieldList(fieldDictionary.get("default"));
         }
-
-        return new LinkedHashSet<>(this.fields.getFieldList());
     }
 }
