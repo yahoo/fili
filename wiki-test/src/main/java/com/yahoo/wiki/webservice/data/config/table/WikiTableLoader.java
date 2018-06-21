@@ -5,7 +5,6 @@ package com.yahoo.wiki.webservice.data.config.table;
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY;
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
@@ -18,8 +17,6 @@ import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.bard.webservice.util.Utils;
-import com.yahoo.wiki.webservice.data.config.ExternalConfigLoader;
-import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensionConfigTemplate;
 import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensionsLoader;
 import com.yahoo.wiki.webservice.data.config.names.WikiApiMetricName;
 import com.yahoo.wiki.webservice.data.config.names.WikiDruidMetricName;
@@ -70,16 +67,8 @@ public class WikiTableLoader extends BaseTableLoader {
      */
     private void configureSample(WikiDimensionsLoader wikiDimensions) {
 
-        ExternalConfigLoader dimensionConfigLoader = new ExternalConfigLoader(new ObjectMapper());
-        WikiDimensionConfigTemplate wikiDimensionConfig =
-                dimensionConfigLoader.parseExternalFile("DimensionConfigTemplateSample.json",
-                        WikiDimensionConfigTemplate.class
-                );
-
         // Dimensions
-        Set<DimensionConfig> dimsBasefactDruidTableName = wikiDimensions.getDimensionConfigurationsByConfigInfo(
-                wikiDimensionConfig.getDimensions()
-        );
+        Set<DimensionConfig> dimsBasefactDruidTableName = wikiDimensions.getDimensionConfigurationsByConfigInfo();
 
         druidMetricNames.put(
                 WikiLogicalTableName.WIKIPEDIA,

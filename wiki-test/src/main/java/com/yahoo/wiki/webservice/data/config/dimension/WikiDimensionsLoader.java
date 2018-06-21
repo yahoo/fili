@@ -82,16 +82,10 @@ public class WikiDimensionsLoader {
     /**
      * Get dimension configurations provided the dimension api name.
      *
-     * @param dimensionNames Names for dimensions by api names
      * @return set of dimension configurations
      */
-    public LinkedHashSet<DimensionConfig> getDimensionConfigurationsByConfigInfo(
-            LinkedHashSet<WikiDimensionTemplate> dimensionNames
-    ) {
-        return dimensionNames.stream()
-                .map(WikiDimensionTemplate::asName)
-                .map(wikiApiDimensionNameToConfig::get)
-                .collect(Collectors.toCollection(LinkedHashSet<DimensionConfig>::new));
+    public LinkedHashSet<DimensionConfig> getDimensionConfigurationsByConfigInfo() {
+        return new LinkedHashSet<>(dimensionConfigs);
     }
 
     /**
