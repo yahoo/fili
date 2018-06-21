@@ -2,7 +2,9 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric;
 
+import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper;
+import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.druid.model.MetricField;
 
 import java.util.Objects;
@@ -10,7 +12,7 @@ import java.util.Objects;
 /**
  * A LogicalMetric is a set of its TemplateQueries, Mapper, and its name.
  */
-public class LogicalMetric {
+public class LogicalMetric implements ApiMetricName {
 
     public static final String DEFAULT_CATEGORY = "General";
 
@@ -169,5 +171,20 @@ public class LogicalMetric {
     @Override
     public int hashCode() {
         return Objects.hash(query, calculation, name, longName, category, description);
+    }
+
+    @Override
+    public String asName() {
+        return getName();
+    }
+
+    @Override
+    public boolean isValidFor(TimeGrain grain) {
+        return true;
+    }
+
+    @Override
+    public String getApiName() {
+        return getName();
     }
 }

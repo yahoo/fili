@@ -32,7 +32,6 @@ public class WikiMetricLoader implements MetricLoader {
     public static final int DEFAULT_SKETCH_SIZE_IN_BYTES = DEFAULT_KILOBYTES_PER_SKETCH * BYTES_PER_KILOBYTE;
 
     private static MetricMakerDictionary metricMakerDictionary;
-    private static DimensionDictionary dimensionDictionary;
     private final ObjectMapper objectMapper;
     private final int sketchSize;
 
@@ -64,20 +63,13 @@ public class WikiMetricLoader implements MetricLoader {
     }
 
     /**
-     * Set dimension dictionary.
-     *
-     * @param dimensionDictionary Dimension dictionary
-     */
-    public void setDimensionDictionary(DimensionDictionary dimensionDictionary) {
-        this.dimensionDictionary = dimensionDictionary;
-    }
-
-    /**
      * (Re)Initialize the Metric Makers dictionary.
      *
-     * @param metricDictionary metric dictionary
+     * @param metricDictionary    The dictionary that will be loaded with metrics
+     * @param dimensionDictionary The dimension dictionary containing loaded dimensions
      */
-    protected void buildMetricMakersDictionary(MetricDictionary metricDictionary) {
+    protected void buildMetricMakersDictionary(MetricDictionary metricDictionary,
+                                               DimensionDictionary dimensionDictionary) {
         this.metricMakerDictionary = new MetricMakerDictionary(metricDictionary, sketchSize, dimensionDictionary);
     }
 
@@ -92,9 +84,9 @@ public class WikiMetricLoader implements MetricLoader {
     }
 
     @Override
-    public void loadMetricDictionary(MetricDictionary metricDictionary) {
+    public void loadMetricDictionary(MetricDictionary metricDictionary, DimensionDictionary dimensionDictionary) {
 
-        buildMetricMakersDictionary(metricDictionary);
+        buildMetricMakersDictionary(metricDictionary, dimensionDictionary);
 
         ExternalConfigLoader metricConfigLoader = new ExternalConfigLoader(objectMapper);
         WikiMetricConfigTemplate wikiMetricConfig =

@@ -12,22 +12,20 @@ import com.yahoo.bard.webservice.data.config.names.FieldName;
 import com.yahoo.bard.webservice.data.config.table.BaseTableLoader;
 import com.yahoo.bard.webservice.data.config.table.ConcretePhysicalTableDefinition;
 import com.yahoo.bard.webservice.data.config.table.PhysicalTableDefinition;
+import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.time.AllGranularity;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensionsLoader;
-import com.yahoo.wiki.webservice.data.config.names.WikiApiMetricName;
-import com.yahoo.wiki.webservice.data.config.names.WikiDruidMetricName;
 import com.yahoo.wiki.webservice.data.config.names.WikiDruidTableName;
 import com.yahoo.wiki.webservice.data.config.names.WikiLogicalTableName;
 
 import org.joda.time.DateTimeZone;
 
-import java.util.EnumMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Load the Wikipedia-specific table configuration.
@@ -54,30 +52,34 @@ public class WikiTableLoader extends BaseTableLoader {
      */
     public WikiTableLoader(DataSourceMetadataService metadataService) {
         super(metadataService);
-
-        WikiDimensionsLoader wikiDimensions = new WikiDimensionsLoader();
-
-        configureSample(wikiDimensions);
     }
 
     /**
      * Set up the tables for this table loader.
      *
      * @param wikiDimensions  The dimensions to load into test tables.
+     * @param metricDictionary  The dictionary to use when looking up metrics for this table
      */
-    private void configureSample(WikiDimensionsLoader wikiDimensions) {
+    private void configureSample(WikiDimensionsLoader wikiDimensions, MetricDictionary metricDictionary) {
 
         // Dimensions
         Set<DimensionConfig> dimsBasefactDruidTableName = wikiDimensions.getDimensionConfigurationsByConfigInfo();
+        LinkedHashSet<FieldName> druidMetrics = new LinkedHashSet<>();
+        LinkedHashSet<ApiMetricName> apiMetrics = new LinkedHashSet<>();
+
+        for (LogicalMetric metric : metricDictionary.values()) {
+            druidMetrics.add(metric);
+            apiMetrics.add(metric);
+        }
 
         druidMetricNames.put(
                 WikiLogicalTableName.WIKIPEDIA,
-                Utils.<FieldName>asLinkedHashSet(WikiDruidMetricName.values())
+                druidMetrics
         );
 
         apiMetricNames.put(
                 WikiLogicalTableName.WIKIPEDIA,
-                Utils.<ApiMetricName>asLinkedHashSet(WikiApiMetricName.values())
+                apiMetrics
         );
 
         // Physical Tables
@@ -97,6 +99,9 @@ public class WikiTableLoader extends BaseTableLoader {
 
     @Override
     public void loadTableDictionary(ResourceDictionaries dictionaries) {
+
+        configureSample(new WikiDimensionsLoader(), dictionaries.metric);
+
         for (WikiLogicalTableName table : WikiLogicalTableName.values()) {
             TableGroup tableGroup = buildDimensionSpanningTableGroup(
                     apiMetricNames.get(table),
