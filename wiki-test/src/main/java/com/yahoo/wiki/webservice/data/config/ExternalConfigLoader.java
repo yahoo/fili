@@ -13,7 +13,7 @@ import java.io.File;
  */
 public class ExternalConfigLoader {
 
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
     /**
      * Constructor.

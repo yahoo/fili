@@ -27,13 +27,13 @@ import java.util.Objects;
 public class WikiTableConfigTemplate {
 
     @JsonProperty("name")
-    private String name;
+    private final String name;
 
     @JsonProperty("druidTable")
-    private WikiTableInfoTemplate druidTable;
+    private final WikiTableInfoTemplate druidTable;
 
     @JsonProperty("logicalTable")
-    private WikiTableInfoTemplate logicalTable;
+    private final WikiTableInfoTemplate logicalTable;
 
     /**
      * Constructor used by json parser.

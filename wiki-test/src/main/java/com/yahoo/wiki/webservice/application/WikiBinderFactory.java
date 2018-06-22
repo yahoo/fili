@@ -19,8 +19,7 @@ public class WikiBinderFactory extends AbstractBinderFactory {
 
     @Override
     protected MetricLoader getMetricLoader() {
-        WikiMetricLoader wikiMetricLoader = new WikiMetricLoader(super.getMappers().getMapper());
-        return wikiMetricLoader;
+        return new WikiMetricLoader(super.getMappers().getMapper());
     }
 
     @Override

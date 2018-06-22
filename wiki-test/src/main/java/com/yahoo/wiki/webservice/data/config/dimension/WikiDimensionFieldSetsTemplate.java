@@ -29,13 +29,13 @@ import java.util.Objects;
 public class WikiDimensionFieldSetsTemplate implements DimensionField {
 
     @JsonProperty("name")
-    private String name;
+    private final String name;
 
     @JsonProperty("description")
-    private String description;
+    private final String description;
 
     @JsonProperty("tags")
-    private LinkedList<String> tags;
+    private final LinkedList<String> tags;
 
     /**
      * Constructor used by json parser.

@@ -25,7 +25,7 @@ import java.util.Objects;
 public class WikiTableSetTemplate {
 
     @JsonProperty("tables")
-    private LinkedHashSet<WikiTableConfigTemplate> tables;
+    private final LinkedHashSet<WikiTableConfigTemplate> tables;
 
     /**
      * Constructor used by json parser.

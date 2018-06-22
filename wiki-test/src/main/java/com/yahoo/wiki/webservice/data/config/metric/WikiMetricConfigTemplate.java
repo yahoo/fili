@@ -24,7 +24,7 @@ import java.util.Objects;
 public class WikiMetricConfigTemplate {
 
     @JsonProperty("metrics")
-    private LinkedHashSet<WikiMetricTemplate> metrics;
+    private final LinkedHashSet<WikiMetricTemplate> metrics;
 
     /**
      * Constructor used by json parser.

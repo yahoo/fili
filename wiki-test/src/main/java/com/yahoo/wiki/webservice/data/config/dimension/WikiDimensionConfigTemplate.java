@@ -28,10 +28,10 @@ import java.util.Objects;
 public class WikiDimensionConfigTemplate {
 
     @JsonProperty("fieldSets")
-    private HashMap<String, LinkedHashSet<WikiDimensionFieldSetsTemplate>> fieldDictionary;
+    private final HashMap<String, LinkedHashSet<WikiDimensionFieldSetsTemplate>> fieldDictionary;
 
     @JsonProperty("dimensions")
-    private LinkedHashSet<WikiDimensionTemplate> dimensions;
+    private final LinkedHashSet<WikiDimensionTemplate> dimensions;
 
     /**
      * Constructor used by json parser.

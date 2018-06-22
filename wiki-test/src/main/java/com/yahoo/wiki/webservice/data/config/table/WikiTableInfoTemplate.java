@@ -30,10 +30,10 @@ import java.util.stream.Collectors;
 public class WikiTableInfoTemplate implements TableName {
 
     @JsonProperty("name")
-    private String name;
+    private final String name;
 
     @JsonProperty("metrics")
-    private List<String> metrics;
+    private final List<String> metrics;
 
     /**
      * Constructor used by json parser.
@@ -51,7 +51,6 @@ public class WikiTableInfoTemplate implements TableName {
                 Collections.emptyList() : metrics.stream()
                 .map(metric -> EnumUtils.camelCase(metric))
                 .collect(Collectors.toList()));
-        ;
     }
 
     /**
