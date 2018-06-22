@@ -1,0 +1,27 @@
+{
+  "tables": [
+    {
+      "name" : "WIKI_TEST",
+      "druidTable": {
+        "name": "WIKITICKER",
+        "metrics": [
+          "COUNT",
+          "ADDED",
+          "DELTA",
+          "DELETED"
+        ]
+      },
+      "logicalTable": {
+        "name": "WIKIPEDIA",
+        "metrics": [
+          "COUNT",
+          "ADDED",
+          "DELTA",
+          "DELETED"
+        ]
+      }
+    }
+  ]
+}
+
+

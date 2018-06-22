@@ -19,7 +19,7 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY;
 /**
  * Metric maker dictionary.
  *
- * metric maker name -> metric maker instance
+ * map metric maker name to metric maker instance
  */
 @Singleton
 public class MetricMakerDictionary {
@@ -39,7 +39,7 @@ public class MetricMakerDictionary {
     }
 
     /**
-     * Constructor, initial all maker name -> maker instance in dictionary.
+     * Constructor, initial map from all maker names to maker instances in dictionary.
      *
      * @param metricDictionary    metric dictionary as parameter for makers
      * @param sketchSize          sketch size as parameter for makers
@@ -122,7 +122,7 @@ public class MetricMakerDictionary {
     }
 
     /**
-     * Constructor, initial all maker name -> maker instance in dictionary.
+     * Constructor, initial all map from all maker names to maker instances in dictionary.
      *
      * @param metricMakers a set of metric makers
      */

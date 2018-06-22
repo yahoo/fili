@@ -16,7 +16,7 @@ import java.util.Objects;
  *       {
  *          "metrics" :
  *              [
- *                  -> a list of metrics deserialize by WikiMetricTemplate
+ *                  a list of metrics deserialize by WikiMetricTemplate
  *              ]
  *       }
  */

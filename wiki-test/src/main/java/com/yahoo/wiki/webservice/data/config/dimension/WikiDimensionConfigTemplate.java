@@ -17,10 +17,10 @@ import java.util.Objects;
  * <p>
  *      {
  *          "fieldSets": {
- *              -> a list of fieldset deserialize by WikiDimensionFieldSetsTemplate
+ *              a list of fieldset deserialize by WikiDimensionFieldSetsTemplate
  *          },
  *          "dimensions": [
- *              -> a list of dimensions deserialize by ikiDimensionTemplate
+ *              a list of dimensions deserialize by ikiDimensionTemplate
  *          ]
  *      }
  */

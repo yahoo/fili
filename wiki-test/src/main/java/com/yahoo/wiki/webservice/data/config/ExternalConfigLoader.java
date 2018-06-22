@@ -38,7 +38,7 @@ public class ExternalConfigLoader {
             JsonNode configurator = objectMapper.readTree(configFile);
             return objectMapper.convertValue(configurator, template);
         } catch (IOException exception) {
-            String message = "Could not parse due to invalid schema in external config file located at " +
+            String message = "Could not find external config file located at " +
                     "url: " + externalConfigFilePath;
             throw new IllegalStateException(message, exception);
         }

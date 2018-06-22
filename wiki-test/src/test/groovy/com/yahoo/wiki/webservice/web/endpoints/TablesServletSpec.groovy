@@ -2,8 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.web.endpoints
 
-import static com.yahoo.wiki.webservice.data.config.names.WikiLogicalTableName.WIKIPEDIA
-
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.util.JsonSortStrategy
@@ -30,7 +28,7 @@ class TablesServletSpec extends Specification {
 
     def "print the details of all the tables in the Druid instance"() {
         setup:
-        String tableName = WIKIPEDIA.asName()
+        String tableName = "wikipedia"
         String expectedResponse = """{
                                         "rows": [
                                             {
@@ -102,7 +100,7 @@ class TablesServletSpec extends Specification {
         )
 
         where:
-        tableName = WIKIPEDIA.asName()
+        tableName = "wikipedia"
     }
 
     //This test is a sample of how we test various table endpoints at differing granularities
@@ -160,7 +158,7 @@ class TablesServletSpec extends Specification {
         GroovyTestUtils.compareJson(result, expectedResponse, JsonSortStrategy.SORT_BOTH)
 
         where:
-        tableName = WIKIPEDIA.asName().toLowerCase()
+        tableName = "wikipedia"
         granularity = "hour"
 
     }

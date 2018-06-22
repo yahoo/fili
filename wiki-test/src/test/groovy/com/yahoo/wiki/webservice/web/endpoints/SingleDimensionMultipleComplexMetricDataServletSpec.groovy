@@ -8,8 +8,6 @@ import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.web.endpoints.BaseDataServletComponentSpec
 import com.yahoo.bard.webservice.web.endpoints.DataServlet
 import com.yahoo.wiki.webservice.application.WikiJerseyTestBinder
-import com.yahoo.wiki.webservice.data.config.names.WikiDruidTableName
-import com.yahoo.wiki.webservice.data.config.names.WikiLogicalTableName
 
 class SingleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServletComponentSpec {
 
@@ -30,7 +28,7 @@ class SingleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServle
 
     @Override
     String getTarget() {
-        return "data/${WikiLogicalTableName.WIKIPEDIA.asName()}/hour/${"page"}"
+        return "data/wikipedia/hour/${"page"}"
     }
 
     @Override
@@ -106,7 +104,7 @@ class SingleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServle
           ],
           "context": {},
           "dataSource": {
-            "name": "${WikiDruidTableName.WIKITICKER.asName()}",
+            "name": "wikiticker",
             "type": "table"
           },
           "dimensions": [

@@ -13,7 +13,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yahoo.wiki.webservice.data.config.ExternalConfigLoader;
 
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.function.Function;
@@ -25,7 +24,6 @@ import java.util.stream.Collectors;
 public class WikiDimensionsLoader {
 
     private final Set<DimensionConfig> dimensionConfigs;
-    private final LinkedHashMap<String, DimensionConfig> wikiApiDimensionNameToConfig;
 
     /**
      * Constructor.
@@ -64,7 +62,7 @@ public class WikiDimensionsLoader {
                         .collect(Collectors.toSet())
         );
 
-        wikiApiDimensionNameToConfig = dimensionConfigs.stream().collect(
+        dimensionConfigs.stream().collect(
                 StreamUtils.toLinkedMap(DimensionConfig::getApiName, Function.identity())
         );
 
