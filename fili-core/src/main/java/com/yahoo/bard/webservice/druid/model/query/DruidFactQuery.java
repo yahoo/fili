@@ -16,7 +16,7 @@ import java.util.Optional;
 /**
  * Common interface for Druid Fact Query classes.
  *
- * @param <Q> class that extends DruidQuery
+ * @param <Q> class that implements DruidFactQuery
  */
 public interface DruidFactQuery<Q extends DruidFactQuery<? super Q>> extends DruidQuery<Q> {
 
