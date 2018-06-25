@@ -7,6 +7,10 @@ pull request if there was one.
 
 ### Added:
 
+- [Add support for "case_sensitive" attribute in FragmentSearchQuerySpec](https://github.com/yahoo/fili/pull/727)
+    * Enable `FragmentSearchQuerySpec` to accept an argument for `case_sensitive` so that API users can configure this
+      attribute for JSON serialization through Fili.
+
 - [Add storageStrategy as a field of the DimensionConfig class](https://github.com/yahoo/fili/issues/718)
     * Adds getStorageStrategy as a field of the dimensionConfig class.
     * Passes the storage strategy to the KeyValueStoreDimension Constructor
