@@ -7,6 +7,10 @@ pull request if there was one.
 
 ### Added:
 
+- [Add specs for InsensitiveContainsSearchQuerySpec & RegexSearchQuerySpec](https://github.com/yahoo/fili/pull/732)
+    * `RegexSearchQuerySpec` and `InsensitiveContainsSearchQuerySpec` have no dedicated test specs. This PR adds tests
+      for them.
+
 - [Add storageStrategy as a field of the DimensionConfig class](https://github.com/yahoo/fili/issues/718)
     * Adds getStorageStrategy as a field of the dimensionConfig class.
     * Passes the storage strategy to the KeyValueStoreDimension Constructor
