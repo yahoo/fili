@@ -31,8 +31,8 @@ public class MetricMakerDictionary {
      */
     private final LinkedHashMap<String, MetricMaker> nameToMetricMaker;
 
-    private MetricDictionary metricDictionary = null;
-    private DimensionDictionary dimensionDictionary = null;
+    private MetricDictionary metricDictionary;
+    private DimensionDictionary dimensionDictionary;
 
     /**
      * Constructor.
