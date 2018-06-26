@@ -29,20 +29,12 @@ import java.util.Objects;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class WikiDimensionTemplate implements DimensionConfigAPI {
 
-    @JsonProperty("apiName")
     private final String apiName;
-
-    @JsonProperty("description")
     private final String description;
-
-    @JsonProperty("longName")
     private final String longName;
-
-    @JsonProperty("category")
     private final String category;
 
     @JsonDeserialize(using = DimensionFieldDeserializer.class)
-    @JsonProperty("fields")
     private WikiDimensionFieldConfigTemplate fields;
 
     /**

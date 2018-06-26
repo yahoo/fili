@@ -179,7 +179,7 @@ public class LogicalMetric implements ApiMetricName {
     }
 
     @Override
-    public boolean isValidFor(TimeGrain grain) {
+    public boolean isValidFor(TimeGrain granularity) {
         return true;
     }
 

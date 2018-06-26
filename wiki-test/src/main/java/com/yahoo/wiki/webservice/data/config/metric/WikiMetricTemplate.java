@@ -27,22 +27,11 @@ import java.util.stream.Collectors;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class WikiMetricTemplate implements MetricConfigAPI {
 
-    @JsonProperty("apiName")
     private final String apiName;
-
-    @JsonProperty("longName")
     private final String longName;
-
-    @JsonProperty("maker")
     private final String makerName;
-
-    @JsonProperty("description")
     private final String description;
-
-    @JsonProperty("dependencyMetricNames")
     private final List<String> dependencyMetricNames;
-
-    @JsonProperty("satisfyingGrains")
     private final List<TimeGrain> satisfyingGrains;
 
     /**

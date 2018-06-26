@@ -12,9 +12,7 @@ import com.yahoo.bard.webservice.util.StreamUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yahoo.wiki.webservice.data.config.ExternalConfigLoader;
 
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -78,12 +76,16 @@ public class WikiDimensionsLoader {
     }
 
     /**
-     * Get dimension configurations provided the dimension api name.
+     * Get dimension configurations dictionary.
      *
-     * @return set of dimension configurations
+     * @return a map from dimension name to dimension configurations
      */
-    public LinkedHashSet<DimensionConfig> getDimensionConfigurationsByConfigInfo() {
-        return new LinkedHashSet<>(dimensionConfigs);
+    public Map<String, DimensionConfig> getDimensionConfigurations() {
+        Map<String, DimensionConfig> dimensionConfigMap = new HashMap<>();
+        for (DimensionConfig dimensionConfig : dimensionConfigs) {
+            dimensionConfigMap.put(dimensionConfig.getApiName(), dimensionConfig);
+        }
+        return dimensionConfigMap;
     }
 
     /**

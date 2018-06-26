@@ -27,13 +27,8 @@ import java.util.Objects;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class WikiMetricMakerTemplate {
 
-    @JsonProperty("name")
     private final String name;
-
-    @JsonProperty("class")
     private final String classPath;
-
-    @JsonProperty("params")
     private final Map<String, String> parameters;
 
     /**

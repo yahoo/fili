@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.LinkedHashSet;
 import java.util.Objects;
 
 /**
@@ -15,68 +16,50 @@ import java.util.Objects;
  * <p>
  *      {
  *          "name" : "WIKI_TEST",
- *          "druidTable": {
- *              WikiTableInfoTemplate
+ *          "physicalTables": {
+ *              WikiPhysicalTableInfoTemplate
  *          },
- *          "logicalTable": {
- *              WikiTableInfoTemplate
+ *          "logicalTables": {
+ *              WikiLogicalTableInfoTemplate
  *          }
  *      }
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class WikiTableConfigTemplate {
 
-    @JsonProperty("name")
-    private final String name;
-
-    @JsonProperty("druidTable")
-    private final WikiTableInfoTemplate druidTable;
-
-    @JsonProperty("logicalTable")
-    private final WikiTableInfoTemplate logicalTable;
+    private final LinkedHashSet<WikiPhysicalTableInfoTemplate> physicalTables;
+    private final LinkedHashSet<WikiLogicalTableInfoTemplate> logicalTables;
 
     /**
      * Constructor used by json parser.
      *
-     * @param name         json property name
-     * @param druidTable   json property druidTable
-     * @param logicalTable json property logicalTable
+     * @param physicalTables   json property druidTables
+     * @param logicalTables json property logicalTables
      */
     @JsonCreator
     public WikiTableConfigTemplate(
-            @JsonProperty("name") String name,
-            @JsonProperty("druidTable") WikiTableInfoTemplate druidTable,
-            @JsonProperty("logicalTable") WikiTableInfoTemplate logicalTable
+            @JsonProperty("druidTables") LinkedHashSet<WikiPhysicalTableInfoTemplate> physicalTables,
+            @JsonProperty("logicalTables") LinkedHashSet<WikiLogicalTableInfoTemplate> logicalTables
     ) {
-        this.name = (Objects.isNull(name) ? "" : name);
-        this.druidTable = (Objects.isNull(druidTable) ? null : druidTable);
-        this.logicalTable = (Objects.isNull(logicalTable) ? null : logicalTable);
+        this.physicalTables = (Objects.isNull(physicalTables) ? null : physicalTables);
+        this.logicalTables = (Objects.isNull(logicalTables) ? null : logicalTables);
     }
 
     /**
-     * Get table name.
-     *
-     * @return table's name
-     */
-    public String getName() {
-        return this.name;
-    }
-
-    /**
-     * Get druid table.
+     * Get physical table set.
      *
      * @return druid table info
      */
-    public WikiTableInfoTemplate getDruidTable() {
-        return this.druidTable;
+    public LinkedHashSet<WikiPhysicalTableInfoTemplate> getPhysicalTables() {
+        return this.physicalTables;
     }
 
     /**
-     * Get logical table.
+     * Get logical table set.
      *
      * @return logical table info
      */
-    public WikiTableInfoTemplate getLogicalTable() {
-        return this.logicalTable;
+    public LinkedHashSet<WikiLogicalTableInfoTemplate> getLogicalTables() {
+        return this.logicalTables;
     }
 }

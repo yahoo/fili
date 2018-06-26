@@ -27,10 +27,7 @@ import java.util.Objects;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class WikiDimensionConfigTemplate {
 
-    @JsonProperty("fieldSets")
     private final HashMap<String, LinkedHashSet<WikiDimensionFieldSetsTemplate>> fieldDictionary;
-
-    @JsonProperty("dimensions")
     private final LinkedHashSet<WikiDimensionTemplate> dimensions;
 
     /**

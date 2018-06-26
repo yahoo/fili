@@ -27,10 +27,7 @@ import java.util.Objects;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class WikiMetricConfigTemplate {
 
-    @JsonProperty("makers")
     private final LinkedHashSet<WikiMetricMakerTemplate> makers;
-
-    @JsonProperty("metrics")
     private final LinkedHashSet<WikiMetricTemplate> metrics;
 
     /**

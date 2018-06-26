@@ -28,13 +28,8 @@ import java.util.Objects;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class WikiDimensionFieldSetsTemplate implements DimensionField {
 
-    @JsonProperty("name")
     private final String name;
-
-    @JsonProperty("description")
     private final String description;
-
-    @JsonProperty("tags")
     private final LinkedList<String> tags;
 
     /**

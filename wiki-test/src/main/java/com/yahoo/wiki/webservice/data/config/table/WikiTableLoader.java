@@ -2,9 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.table;
 
-import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY;
-import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
@@ -15,17 +12,17 @@ import com.yahoo.bard.webservice.data.config.table.BaseTableLoader;
 import com.yahoo.bard.webservice.data.config.table.ConcretePhysicalTableDefinition;
 import com.yahoo.bard.webservice.data.config.table.PhysicalTableDefinition;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
-import com.yahoo.bard.webservice.data.time.AllGranularity;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.TableGroup;
-import com.yahoo.bard.webservice.util.Utils;
+import com.yahoo.bard.webservice.util.EnumUtils;
 import com.yahoo.wiki.webservice.data.config.ExternalConfigLoader;
 import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensionsLoader;
 
 import org.joda.time.DateTimeZone;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Load the Wikipedia-specific table configuration.
@@ -45,6 +42,8 @@ public class WikiTableLoader extends BaseTableLoader {
     private final Map<TableName, Set<PhysicalTableDefinition>> tableDefinitions =
             new HashMap<>();
 
+    private final Map<String, WikiPhysicalTableInfoTemplate> physicalTableDictionary = new HashMap<>();
+
     /**
      * Constructor.
      *
@@ -59,48 +58,90 @@ public class WikiTableLoader extends BaseTableLoader {
      *
      * @param wikiDimensions   The dimensions to load into test tables
      * @param metricDictionary The dictionary to use when looking up metrics for this table
-     * @param tables           a set of tables
+     * @param physicalTables   a set of physical tables
+     * @param logicalTables    a set of logical tables
      */
     private void configureSample(WikiDimensionsLoader wikiDimensions, MetricDictionary metricDictionary,
-                                 LinkedHashSet<WikiTableConfigTemplate> tables) {
+                                 LinkedHashSet<WikiPhysicalTableInfoTemplate> physicalTables,
+                                 LinkedHashSet<WikiLogicalTableInfoTemplate> logicalTables
+    ) {
 
-        // Dimensions
-        Set<DimensionConfig> dimsBasefactDruidTableName = wikiDimensions.getDimensionConfigurationsByConfigInfo();
+        // Map from dimension name to dimension configuration
+        Map<String, DimensionConfig> dimensions = wikiDimensions.getDimensionConfigurations();
 
-        for (WikiTableConfigTemplate table : tables) {
+        // Map from physical table's name to physical table
+        for (WikiPhysicalTableInfoTemplate physicalTable : physicalTables) {
+            physicalTableDictionary.put(physicalTable.getName(), physicalTable);
+        }
+
+        // For each logical table:
+        // - Update tableDefinitions (logicalTable to physical table group)
+        // - Update validGrains (logicalTable to all possible Granularities)
+        // - Update apiMetricNames (logicalTable to apiMetrics)
+        // - Update druidMetricNames (logicalTable to druidMetrics)
+        for (WikiLogicalTableInfoTemplate logicalTable : logicalTables) {
 
             LinkedHashSet<FieldName> druidMetrics = new LinkedHashSet<>();
             LinkedHashSet<ApiMetricName> apiMetrics = new LinkedHashSet<>();
+            Set<PhysicalTableDefinition> samplePhysicalTableDefinition = new LinkedHashSet<>();
 
-            for (String metric : table.getDruidTable().getMetrics()) {
-                druidMetrics.add(metricDictionary.get(metric));
+            // For each physical table this logical table depends on:
+            // - Add physicalMetrics to druidMetrics
+            // - Make samplePhysicalTableDefinition
+            // (From physical table's name, ZonedTimeGrain, physicalMetrics and dimensions)
+            for (String physicalTableName : logicalTable.getPhysicalTables()) {
+
+                // Get physical table through physical table's name
+                WikiPhysicalTableInfoTemplate physicalTable = physicalTableDictionary
+                        .get(EnumUtils.camelCase(physicalTableName));
+
+                // Metrics for this physical table
+                Set<FieldName> physicalMetrics = physicalTable
+                        .getMetrics()
+                        .stream()
+                        .map(
+                                metricName -> metricDictionary.get(metricName)
+                        )
+                        .collect(Collectors.toSet());
+
+                // Dimensions for this physical table
+                Set<DimensionConfig> dimensionSet = physicalTable.getDimensions().stream().map(
+                        dimension -> dimensions.get(dimension)
+                ).collect(Collectors.toSet());
+
+                // Make a sample physical table definition
+                samplePhysicalTableDefinition.add(
+                        new ConcretePhysicalTableDefinition(
+                                physicalTable,
+                                physicalTable.getGranularity().buildZonedTimeGrain(DateTimeZone.UTC),
+                                physicalMetrics,
+                                dimensionSet
+                        )
+                );
+
+                // Add all physical metrics to druidMetrics
+                druidMetrics.addAll(physicalMetrics);
             }
-            for (String metric : table.getLogicalTable().getMetrics()) {
-                apiMetrics.add(metricDictionary.get(metric));
-            }
 
-            druidMetricNames.put(
-                    table.getDruidTable(),
-                    druidMetrics
-            );
+            // Update tableDefinitions and validGrains
+            tableDefinitions.put(logicalTable, samplePhysicalTableDefinition);
+            validGrains.put(logicalTable, logicalTable.getGranularities());
 
+            // Add all api metrics to apiMetrics
+            apiMetrics.addAll(logicalTable.getApiMetrics().stream().map(
+                    apiMetricNames -> metricDictionary.get(apiMetricNames)
+            ).collect(Collectors.toList()));
+
+            // Update apiMetricNames and druidMetricNames
             apiMetricNames.put(
-                    table.getLogicalTable(),
+                    logicalTable,
                     apiMetrics
             );
 
-            Set<PhysicalTableDefinition> samplePhysicalTableDefinition = Utils.asLinkedHashSet(
-                    new ConcretePhysicalTableDefinition(
-                            table.getDruidTable(),
-                            HOUR.buildZonedTimeGrain(DateTimeZone.UTC),
-                            druidMetricNames.get(table.getDruidTable()),
-                            dimsBasefactDruidTableName
-                    )
+            druidMetricNames.put(
+                    logicalTable,
+                    druidMetrics
             );
-
-            tableDefinitions.put(table.getLogicalTable(), samplePhysicalTableDefinition);
-            validGrains.put(table.getLogicalTable(), Utils.asLinkedHashSet(HOUR, DAY, AllGranularity.INSTANCE));
-
         }
     }
 
@@ -108,25 +149,26 @@ public class WikiTableLoader extends BaseTableLoader {
     public void loadTableDictionary(ResourceDictionaries dictionaries) {
 
         ExternalConfigLoader tableConfigLoader = new ExternalConfigLoader(new ObjectMapper());
-        WikiTableSetTemplate wikiTableSetTemplate =
+        WikiTableConfigTemplate wikiTableConfigTemplate =
                 tableConfigLoader.parseExternalFile(
                         "TableConfigTemplateSample.json",
-                        WikiTableSetTemplate.class);
+                        WikiTableConfigTemplate.class);
 
-        LinkedHashSet<WikiTableConfigTemplate> tables = wikiTableSetTemplate.getTables();
+        LinkedHashSet<WikiPhysicalTableInfoTemplate> physicalTables = wikiTableConfigTemplate.getPhysicalTables();
+        LinkedHashSet<WikiLogicalTableInfoTemplate> logicalTables = wikiTableConfigTemplate.getLogicalTables();
 
-        configureSample(new WikiDimensionsLoader(), dictionaries.metric, tables);
+        configureSample(new WikiDimensionsLoader(), dictionaries.metric, physicalTables, logicalTables);
 
-        for (WikiTableConfigTemplate table : tables) {
+        for (WikiLogicalTableInfoTemplate table : logicalTables) {
             TableGroup tableGroup = buildDimensionSpanningTableGroup(
-                    apiMetricNames.get(table.getLogicalTable()),
-                    druidMetricNames.get(table.getLogicalTable()),
-                    tableDefinitions.get(table.getLogicalTable()),
+                    apiMetricNames.get(table),
+                    druidMetricNames.get(table),
+                    tableDefinitions.get(table),
                     dictionaries
             );
             Set<Granularity> validGranularities =
-                    validGrains.get(table.getLogicalTable());
-            loadLogicalTableWithGranularities(table.getLogicalTable().getName(),
+                    validGrains.get(table);
+            loadLogicalTableWithGranularities(table.getName(),
                     tableGroup, validGranularities, dictionaries);
         }
 

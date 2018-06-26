@@ -1,25 +1,49 @@
 {
-  "tables": [
+  "physicalTables": [
     {
-      "name" : "WIKI_TEST",
-      "druidTable": {
-        "name": "WIKITICKER",
-        "metrics": [
-          "COUNT",
-          "ADDED",
-          "DELTA",
-          "DELETED"
-        ]
-      },
-      "logicalTable": {
-        "name": "WIKIPEDIA",
-        "metrics": [
-          "COUNT",
-          "ADDED",
-          "DELTA",
-          "DELETED"
-        ]
-      }
+      "name": "WIKITICKER",
+      "description": "",
+      "metrics": [
+        "count",
+        "added",
+        "delta",
+        "deleted"
+      ],
+      "dimensions": [
+        "COMMENT",
+        "COUNTRY_ISO_CODE",
+        "REGION_ISO_CODE",
+        "PAGE",
+        "USER",
+        "IS_UNPATROLLED",
+        "IS_NEW",
+        "IS_ROBOT",
+        "IS_ANONYMOUS",
+        "IS_MINOR",
+        "NAMESPACE",
+        "CHANNEL",
+        "COUNTRY_NAME",
+        "REGION_NAME",
+        "METRO_CODE",
+        "CITY_NAME"
+      ],
+      "granularity": "HOUR"
+    }
+  ],
+  "logicalTables": [
+    {
+      "name": "WIKIPEDIA",
+      "description": "WIKIPEDIA",
+      "apiMetricNames": [
+        "count",
+        "added",
+        "delta",
+        "deleted"
+      ],
+      "physicalTables": [
+        "WIKITICKER"
+      ],
+      "granularity": ["ALL", "HOUR", "DAY"]
     }
   ]
 }

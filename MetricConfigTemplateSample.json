@@ -1,32 +1,69 @@
 {
-  "metrics" :
-    [
-      {
-        "apiName" : "COUNT",
-        "longName" : "COUNT",
-        "description" : "Description for count",
-        "maker" : "Count"
-      },
-      {
-        "apiName" : "ADDED",
-        "longName" : "ADDED",
-        "description" : "Description for added",
-        "maker" : "DoubleSum",
-        "dependencyMetricNames" : ["ADDED"]
-      },
-      {
-        "apiName" : "DELTA",
-        "description" : "Description for delta",
-        "maker" : "DoubleSum",
-        "dependencyMetricNames" : ["DELTA"]
-      },
-      {
-        "apiName" : "DELETED",
-        "description" : "Description for deleted",
-        "maker" : "DoubleSum",
-        "dependencyMetricNames" : ["DELETED"]
+  "makers": [
+    {
+      "name": "aggregateAverage",
+      "class": "com.yahoo.bard.webservice.data.config.metric.makers.AggregationAverageMaker",
+      "params": {
+        "innerGrain": "DAY"
       }
-    ]
+    },
+    {
+      "name": "bigThetaSketch",
+      "class": "com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker",
+      "params": {
+        "sketchSize": "4096"
+      }
+    },
+    {
+      "name": "count",
+      "class": "com.yahoo.bard.webservice.data.config.metric.makers.CountMaker"
+    },
+    {
+      "name": "doubleSum",
+      "class": "com.yahoo.bard.webservice.data.config.metric.makers.DoubleSumMaker"
+    }
+  ],
+  "metrics": [
+    {
+      "apiName": "COUNT",
+      "longName": "COUNT",
+      "description": "Description for count",
+      "maker": "count"
+    },
+    {
+      "apiName": "ADDED",
+      "longName": "ADDED",
+      "description": "Description for added",
+      "maker": "doubleSum",
+      "dependencyMetricNames": [
+        "ADDED"
+      ]
+    },
+    {
+      "apiName": "DELTA",
+      "description": "Description for delta",
+      "maker": "doubleSum",
+      "dependencyMetricNames": [
+        "DELTA"
+      ]
+    },
+    {
+      "apiName": "DELETED",
+      "description": "Description for deleted",
+      "maker": "doubleSum",
+      "dependencyMetricNames": [
+        "DELETED"
+      ]
+    },
+    {
+      "apiName": "TEST",
+      "description": "Description for test",
+      "maker": "aggregateAverage",
+      "dependencyMetricNames": [
+        "DELETED"
+      ]
+    }
+  ]
 }
 
 
