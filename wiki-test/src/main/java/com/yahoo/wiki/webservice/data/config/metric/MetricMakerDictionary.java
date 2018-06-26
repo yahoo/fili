@@ -5,20 +5,20 @@ package com.yahoo.wiki.webservice.data.config.metric;
 import com.yahoo.bard.webservice.data.config.metric.makers.*;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
-import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation;
-import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationPostAggFunction;
+import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.DefaultParameterNameDiscoverer;
 
 import javax.inject.Singleton;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-
-import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY;
+import java.util.stream.IntStream;
 
 /**
  * Metric maker dictionary.
- *
+ * <p>
  * map metric maker name to metric maker instance
  */
 @Singleton
@@ -31,6 +31,9 @@ public class MetricMakerDictionary {
      */
     private final LinkedHashMap<String, MetricMaker> nameToMetricMaker;
 
+    private MetricDictionary metricDictionary = null;
+    private DimensionDictionary dimensionDictionary = null;
+
     /**
      * Constructor.
      */
@@ -41,94 +44,44 @@ public class MetricMakerDictionary {
     /**
      * Constructor, initial map from all maker names to maker instances in dictionary.
      *
+     * @param metricMakers        a list of metric makers
      * @param metricDictionary    metric dictionary as parameter for makers
-     * @param sketchSize          sketch size as parameter for makers
      * @param dimensionDictionary dimension dictionary as parameter for makers
-     *                            <p>
-     *                            Todo: add parameter configuration info in external config file
-     *                            Todo: and parse into Metric Maker Dictionary
      */
-    public MetricMakerDictionary(MetricDictionary metricDictionary,
-                                 int sketchSize, DimensionDictionary dimensionDictionary) {
+    public MetricMakerDictionary(LinkedHashSet<WikiMetricMakerTemplate> metricMakers,
+                                 MetricDictionary metricDictionary,
+                                 DimensionDictionary dimensionDictionary) {
 
-        nameToMetricMaker = new LinkedHashMap<>();
+        this.nameToMetricMaker = new LinkedHashMap<>();
+        this.metricDictionary = metricDictionary;
+        this.dimensionDictionary = dimensionDictionary;
 
-        add(new AggregationAverageMaker(metricDictionary, DAY));
-        add(new CardinalityMaker(metricDictionary, dimensionDictionary, true));
-        add(new ConstantMaker(metricDictionary));
-        add(new CountMaker(metricDictionary));
-        add(new DoubleMaxMaker(metricDictionary));
-        add(new DoubleMinMaker(metricDictionary));
-        add(new DoubleSumMaker(metricDictionary));
-        add(new LongMaxMaker(metricDictionary));
-        add(new LongMinMaker(metricDictionary));
-        add(new LongSumMaker(metricDictionary));
-        add(new MaxMaker(metricDictionary));
-        add(new MinMaker(metricDictionary));
-        add(new RowNumMaker(metricDictionary));
+        for (WikiMetricMakerTemplate maker : metricMakers) {
 
-        add(new SketchCountMaker(metricDictionary, sketchSize));
-        add(new ThetaSketchMaker(metricDictionary, sketchSize));
+            try {
+                Class<?> makerClass = Class.forName(maker.getClassPath());
+                Class<?>[] params = makerClass.getDeclaredConstructors()[0].getParameterTypes();
 
-        nameToMetricMaker.put("arithmeticplus",
-                new ArithmeticMaker(metricDictionary,
-                        ArithmeticPostAggregation.ArithmeticPostAggregationFunction.PLUS
-                ));
+                DefaultParameterNameDiscoverer discoverer = new DefaultParameterNameDiscoverer();
+                String[] parameterNames = discoverer.getParameterNames(makerClass.getDeclaredConstructors()[0]);
 
-        nameToMetricMaker.put("arithmeticminus",
-                new ArithmeticMaker(metricDictionary,
-                        ArithmeticPostAggregation.ArithmeticPostAggregationFunction.MINUS
-                ));
+                Object[] args = IntStream.range(0, params.length)
+                        .mapToObj(i -> parseParams(params[i].getSimpleName(), parameterNames[i], maker))
+                        .toArray();
 
-        nameToMetricMaker.put("arithmeticmultiply",
-                new ArithmeticMaker(metricDictionary,
-                        ArithmeticPostAggregation.ArithmeticPostAggregationFunction.MULTIPLY
-                ));
+                add(maker.getName(), (MetricMaker) makerClass.getConstructors()[0].newInstance(args));
 
-        nameToMetricMaker.put("arithmeticdivide",
-                new ArithmeticMaker(metricDictionary,
-                        ArithmeticPostAggregation.ArithmeticPostAggregationFunction.DIVIDE
-                ));
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        }
 
-        nameToMetricMaker.put("sketchsetoperationnot",
-                new SketchSetOperationMaker(metricDictionary,
-                        SketchSetOperationPostAggFunction.NOT
-                ));
-
-        nameToMetricMaker.put("sketchsetoperationintersect",
-                new SketchSetOperationMaker(metricDictionary,
-                        SketchSetOperationPostAggFunction.INTERSECT
-                ));
-
-        nameToMetricMaker.put("sketchsetoperationunion",
-                new SketchSetOperationMaker(metricDictionary,
-                        SketchSetOperationPostAggFunction.UNION
-                ));
-
-        nameToMetricMaker.put("thetasketchsetoperationnot",
-                new ThetaSketchSetOperationMaker(metricDictionary,
-                        SketchSetOperationPostAggFunction.NOT
-                ));
-
-        nameToMetricMaker.put("thetasketchsetoperationsect",
-                new ThetaSketchSetOperationMaker(metricDictionary,
-                        SketchSetOperationPostAggFunction.INTERSECT
-                ));
-
-        nameToMetricMaker.put("thetasketchsetoperationunion",
-                new ThetaSketchSetOperationMaker(metricDictionary,
-                        SketchSetOperationPostAggFunction.UNION
-                ));
-    }
-
-    /**
-     * Constructor, initial all map from all maker names to maker instances in dictionary.
-     *
-     * @param metricMakers a set of metric makers
-     */
-    public MetricMakerDictionary(Set<MetricMaker> metricMakers) {
-        this();
-        addAll(metricMakers);
     }
 
     /**
@@ -138,7 +91,7 @@ public class MetricMakerDictionary {
      * @return the first metric maker found (if exists)
      */
     public MetricMaker findByName(String metricMakerName) {
-        return nameToMetricMaker.get(metricMakerName);
+        return nameToMetricMaker.get(metricMakerName.toLowerCase(Locale.ENGLISH));
     }
 
     /**
@@ -153,15 +106,15 @@ public class MetricMakerDictionary {
     /**
      * Adds the specified element to the dictionary if it is not already present.
      *
-     * @param metricMaker element to add to dictionary
+     * @param name        key to add to dictionary
+     * @param metricMaker value to add to dictionary
      * @return <tt>true</tt> if the dictionary did not already contain the specified metric maker
      */
-    public boolean add(MetricMaker metricMaker) {
-        String makerName = metricMaker.getClass().getSimpleName().replace("Maker", "").toLowerCase(Locale.ENGLISH);
-        if (nameToMetricMaker.containsKey(makerName)) {
+    public boolean add(String name, MetricMaker metricMaker) {
+        if (nameToMetricMaker.containsKey(name.toLowerCase(Locale.ENGLISH))) {
             return false;
         }
-        MetricMaker metricMakers = nameToMetricMaker.put(makerName, metricMaker);
+        MetricMaker metricMakers = nameToMetricMaker.put(name.toLowerCase(Locale.ENGLISH), metricMaker);
         if (metricMakers != null) {
             // should never happen unless multiple loaders are running in race-condition
             ConcurrentModificationException e = new ConcurrentModificationException();
@@ -180,7 +133,7 @@ public class MetricMakerDictionary {
     public boolean addAll(Collection<MetricMaker> metricMakers) {
         boolean flag = false;
         for (MetricMaker metricMaker : metricMakers) {
-            flag = add(metricMaker) || flag;
+            flag = add(metricMaker.toString(), metricMaker) || flag;
         }
         return flag;
     }
@@ -205,5 +158,32 @@ public class MetricMakerDictionary {
             return nameToMetricMaker.equals(that.nameToMetricMaker);
         }
         return false;
+    }
+
+    /**
+     * Parse parameters for maker's constructor based on parameter's name and type.
+     *
+     * @param paramType type of the parameter in maker's constructor
+     * @param paramName name of the parameter in maker's constructor
+     * @param maker     the maker template used to find parameter's value by name
+     * @return the value of parameter (can be any type)
+     */
+    private Object parseParams(String paramType, String paramName, WikiMetricMakerTemplate maker) {
+        if (paramType.equals("MetricDictionary")) {
+            return metricDictionary;
+        }
+        if (paramType.equals("DimensionDictionary")) {
+            return dimensionDictionary;
+        }
+        if (paramType.equals("ZonelessTimeGrain")) {
+            return DefaultTimeGrain.valueOf(maker.getParams().get(paramName));
+        }
+        if (paramType.equals("int")) {
+            return Integer.parseInt(maker.getParams().get(paramName));
+        }
+        if (paramType.equals("double")) {
+            return Double.parseDouble(maker.getParams().get(paramName));
+        }
+        return null;
     }
 }

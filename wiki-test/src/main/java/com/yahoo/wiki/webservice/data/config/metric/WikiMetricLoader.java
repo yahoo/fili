@@ -15,6 +15,7 @@ import com.yahoo.wiki.webservice.data.config.ExternalConfigLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -65,12 +66,14 @@ public class WikiMetricLoader implements MetricLoader {
     /**
      * (Re)Initialize the Metric Makers dictionary.
      *
+     * @param metricMakers        The configuration of metric makers
      * @param metricDictionary    The dictionary that will be loaded with metrics
      * @param dimensionDictionary The dimension dictionary containing loaded dimensions
      */
-    protected void buildMetricMakersDictionary(MetricDictionary metricDictionary,
+    protected void buildMetricMakersDictionary(LinkedHashSet<WikiMetricMakerTemplate> metricMakers,
+                                               MetricDictionary metricDictionary,
                                                DimensionDictionary dimensionDictionary) {
-        this.metricMakerDictionary = new MetricMakerDictionary(metricDictionary, sketchSize, dimensionDictionary);
+        metricMakerDictionary = new MetricMakerDictionary(metricMakers, metricDictionary, dimensionDictionary);
     }
 
     /**
@@ -86,13 +89,13 @@ public class WikiMetricLoader implements MetricLoader {
     @Override
     public void loadMetricDictionary(MetricDictionary metricDictionary, DimensionDictionary dimensionDictionary) {
 
-        buildMetricMakersDictionary(metricDictionary, dimensionDictionary);
-
         ExternalConfigLoader metricConfigLoader = new ExternalConfigLoader(objectMapper);
         WikiMetricConfigTemplate wikiMetricConfig =
                 metricConfigLoader.parseExternalFile("MetricConfigTemplateSample.json",
                         WikiMetricConfigTemplate.class
                 );
+
+        buildMetricMakersDictionary(wikiMetricConfig.getMakers(), metricDictionary, dimensionDictionary);
 
         List<MetricInstance> metrics = wikiMetricConfig.getMetrics().stream().map(
                 metric -> new MetricInstance(

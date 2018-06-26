@@ -59,7 +59,7 @@ public class WikiTableLoader extends BaseTableLoader {
      *
      * @param wikiDimensions   The dimensions to load into test tables
      * @param metricDictionary The dictionary to use when looking up metrics for this table
-     * @param tables a set of tables
+     * @param tables           a set of tables
      */
     private void configureSample(WikiDimensionsLoader wikiDimensions, MetricDictionary metricDictionary,
                                  LinkedHashSet<WikiTableConfigTemplate> tables) {
@@ -107,9 +107,9 @@ public class WikiTableLoader extends BaseTableLoader {
     @Override
     public void loadTableDictionary(ResourceDictionaries dictionaries) {
 
-        ExternalConfigLoader dimensionConfigLoader = new ExternalConfigLoader(new ObjectMapper());
+        ExternalConfigLoader tableConfigLoader = new ExternalConfigLoader(new ObjectMapper());
         WikiTableSetTemplate wikiTableSetTemplate =
-                dimensionConfigLoader.parseExternalFile(
+                tableConfigLoader.parseExternalFile(
                         "TableConfigTemplateSample.json",
                         WikiTableSetTemplate.class);
 

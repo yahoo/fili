@@ -14,6 +14,10 @@ import java.util.Objects;
  * An example:
  *
  *       {
+ *          "makers" :
+ *              [
+ *                  a list of metrics makers deserialize by WikiMetricMakerTemplate
+ *              ]
  *          "metrics" :
  *              [
  *                  a list of metrics deserialize by WikiMetricTemplate
@@ -23,16 +27,33 @@ import java.util.Objects;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class WikiMetricConfigTemplate {
 
+    @JsonProperty("makers")
+    private final LinkedHashSet<WikiMetricMakerTemplate> makers;
+
     @JsonProperty("metrics")
     private final LinkedHashSet<WikiMetricTemplate> metrics;
 
     /**
      * Constructor used by json parser.
      *
+     * @param makers  json property makers
      * @param metrics json property metrics
      */
-    public WikiMetricConfigTemplate(@JsonProperty("metrics") LinkedHashSet<WikiMetricTemplate> metrics) {
+    public WikiMetricConfigTemplate(
+            @JsonProperty("makers") LinkedHashSet<WikiMetricMakerTemplate> makers,
+            @JsonProperty("metrics") LinkedHashSet<WikiMetricTemplate> metrics
+    ) {
+        this.makers = (Objects.isNull(makers) ? new LinkedHashSet<>() : new LinkedHashSet<>(makers));
         this.metrics = (Objects.isNull(metrics) ? new LinkedHashSet<>() : new LinkedHashSet<>(metrics));
+    }
+
+    /**
+     * Get metrics makers configuration info.
+     *
+     * @return a list of metrics makers
+     */
+    public LinkedHashSet<WikiMetricMakerTemplate> getMakers() {
+        return this.makers;
     }
 
     /**
