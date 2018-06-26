@@ -169,19 +169,19 @@ public class MetricMakerDictionary {
      * @return the value of parameter (can be any type)
      */
     private Object parseParams(String paramType, String paramName, WikiMetricMakerTemplate maker) {
-        if (paramType.equals("MetricDictionary")) {
+        if ("MetricDictionary".equals(paramType)) {
             return metricDictionary;
         }
-        if (paramType.equals("DimensionDictionary")) {
+        if ("DimensionDictionary".equals(paramType)) {
             return dimensionDictionary;
         }
-        if (paramType.equals("ZonelessTimeGrain")) {
+        if ("ZonelessTimeGrain".equals(paramType)) {
             return DefaultTimeGrain.valueOf(maker.getParams().get(paramName));
         }
-        if (paramType.equals("int")) {
+        if ("int".equals(paramType)) {
             return Integer.parseInt(maker.getParams().get(paramName));
         }
-        if (paramType.equals("double")) {
+        if ("double".equals(paramType)) {
             return Double.parseDouble(maker.getParams().get(paramName));
         }
         return null;

@@ -34,13 +34,12 @@ public class WikiMetricLoader implements MetricLoader {
 
     private static MetricMakerDictionary metricMakerDictionary;
     private final ObjectMapper objectMapper;
-    private final int sketchSize;
 
     /**
      * Constructs a WikiMetricLoader.
      */
     public WikiMetricLoader() {
-        this(new ObjectMapper(), DEFAULT_SKETCH_SIZE_IN_BYTES);
+        this(new ObjectMapper());
     }
 
     /**
@@ -49,18 +48,7 @@ public class WikiMetricLoader implements MetricLoader {
      * @param objectMapper Object mapper for json parse
      */
     public WikiMetricLoader(ObjectMapper objectMapper) {
-        this(objectMapper, DEFAULT_SKETCH_SIZE_IN_BYTES);
-    }
-
-    /**
-     * Constructs a WikiMetricLoader using the given sketch size and given dimensionDictionary.
-     *
-     * @param objectMapper Object mapper for json parse
-     * @param sketchSize   Sketch size
-     */
-    public WikiMetricLoader(ObjectMapper objectMapper, int sketchSize) {
         this.objectMapper = objectMapper;
-        this.sketchSize = sketchSize;
     }
 
     /**

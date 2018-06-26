@@ -68,7 +68,7 @@ public class WikiLogicalTableInfoTemplate implements TableName {
         this.physicalTables = (Objects.isNull(physicalTables) ? new ArrayList<>() : physicalTables);
         this.granularities = granularities.stream()
                 .map(granularity ->
-                        granularity.equals("ALL") ?
+                        "ALL".equals(granularity) ?
                                 AllGranularity.INSTANCE : DefaultTimeGrain.valueOf(granularity))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
