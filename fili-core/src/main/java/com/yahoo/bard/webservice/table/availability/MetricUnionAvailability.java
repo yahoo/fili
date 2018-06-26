@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.table.availability;
 
 import com.google.common.collect.ImmutableSet;
 import com.yahoo.bard.webservice.data.config.names.DataSourceName;
+import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
@@ -11,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.AbstractMap;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
@@ -58,7 +60,7 @@ import javax.validation.constraints.NotNull;
  * +----------------------+------------------+
  * |  [metric2]           |  [2016/2017-03]  |
  * +----------------------+------------------+
- * |  [metric1, metric2]  | [2017/2018]      |
+ * |  [metric1, metric2]  | [2017/2017-03]   |
  * +----------------------+------------------+
  * |  [metric1, metric3]  |  []              |
  * +-------------------+---------------------+
@@ -74,22 +76,21 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
     /**
      * Constructor.
      *
-     * @param availabilities  A set of <tt>Availabilities</tt> whose Dimension schemas are (typically) the same and
-     * the Metric columns are unique(i.e. no overlap) on every availability
-     * @param availabilitiesToMetricNames  A map of all availabilities to set of metric names
-     * will respond with
+     * @param availabilities  A set of {@code Availabilities} whose Dimension schemas are (typically) the same and the
+     * Metric columns are unique(i.e. no overlap) on every availability
+     * @param availabilitiesToMetricNames  A map of Availability to its set of metric names that this Availability will
+     * respond with
      */
     public MetricUnionAvailability(
             @NotNull Set<Availability> availabilities,
             @NotNull Map<Availability, Set<String>> availabilitiesToMetricNames
     ) {
         super(availabilities.stream());
-        metricNames = availabilitiesToMetricNames.values()
+        this.metricNames = availabilitiesToMetricNames.values()
                 .stream()
                 .flatMap(Set::stream)
                 .collect(Collectors.collectingAndThen(Collectors.toSet(), ImmutableSet::copyOf));
-
-        this.availabilitiesToMetricNames = availabilitiesToMetricNames;
+        this.availabilitiesToMetricNames = Collections.unmodifiableMap(availabilitiesToMetricNames);
 
         // validate metric uniqueness such that
         // each table's underlying datasource schema don't have repeated metric column
@@ -111,14 +112,38 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
                 .flatMap(Set::stream)
                 .collect(Collectors.toSet());
 
-        // If the table is configured with a column that is not supported by the underlying data sources
-        if (!constraint.getMetricNames().stream().allMatch(dataSourceMetricNames::contains)) {
+        if (hasUnconfiguredMetric(constraint, dataSourceMetricNames)) {
             return new SimplifiedIntervalList();
         }
 
         return constructSubConstraint(constraint).entrySet().stream()
                 .map(entry -> entry.getKey().getAvailableIntervals(entry.getValue()))
                 .reduce(SimplifiedIntervalList::intersect).orElse(new SimplifiedIntervalList());
+    }
+
+    /**
+     * Returns a map of Availability to its set of metric names that this Availability will respond with.
+     *
+     * @return a mapping from Availability to its responsible set of metric names
+     */
+    public Map<Availability, Set<String>> getAvailabilitiesToMetricNames() {
+        return availabilitiesToMetricNames;
+    }
+
+    /**
+     * Returns true if the query constraint asks for metric column that does not exist in configured metric columns.
+     *
+     * @param constraint  A query constraint that contains collection of requested metric columns
+     * @param configured A set of metric columns that are configured and available
+     *
+     * @return true if the query constraint asks for metric column that does not exist in configured metric columns
+     *
+     * @throws NullPointerException if either the constraint or set of configured metric names is {@code null}
+     */
+    protected static boolean hasUnconfiguredMetric(DataSourceConstraint constraint, Set<String> configured) {
+        Objects.requireNonNull(configured);
+        Objects.requireNonNull(configured);
+        return !constraint.getMetricNames().stream().allMatch(configured::contains);
     }
 
     /**
@@ -137,17 +162,15 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
     }
 
     /**
-     * Given a <tt>DataSourceConstraint</tt> - DSC1, construct a map from each availability, A, in this MetricUnion to
-     * its <tt>DataSourceConstraint</tt>, DSC2.
+     * Returns a map from participating Availabilities to their column constrains intersected with a query constraint.
      * <p>
-     * DSC2 is constructed as the intersection of metric columns between DSC1 and
-     * A's available metric columns. There are cases in which the intersection is empty; this method filters out
-     * map entries that maps to <tt>DataSourceConstraint</tt> with empty set of metric names.
+     * Each Availabilities new column constrains will be the intersection of their original columns and the constrained
+     * columns from the query.
      *
      * @param constraint  The data constraint whose contained metric columns will be intersected with availabilities'
      * metric columns
      *
-     * @return A map from <tt>Availability</tt> to <tt>DataSourceConstraint</tt> with non-empty metric names
+     * @return A map from Availability to DataSourceConstraint with non-empty metric names
      */
     private Map<Availability, PhysicalDataSourceConstraint> constructSubConstraint(
             PhysicalDataSourceConstraint constraint

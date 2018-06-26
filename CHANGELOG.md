@@ -7,6 +7,14 @@ pull request if there was one.
 
 ### Added:
 
+- [Implement "left-union" for MetricUnionCompositeTable](https://github.com/yahoo/fili/pull/736)
+    * A new "left-union" `Availability` called **`MetricLeftUnionAvailability`** is implemented.
+      `MetricLeftUnionAvailability` behaves the same as `MetricUnionAvailability` except that the coalesced available
+      intervals on this availability is determined by a single participating `Availability`, instead of all
+      participating `Availabilities` as in `MetricUnionAvailability`. 
+    * `MetricUnionCompositeTable` now have options(2 constructors) of being backed by either `MetricUnionAvailability`
+      or `MetricLeftUnionAvailability`
+
 - [Add specs for InsensitiveContainsSearchQuerySpec & RegexSearchQuerySpec](https://github.com/yahoo/fili/pull/732)
     * `RegexSearchQuerySpec` and `InsensitiveContainsSearchQuerySpec` have no dedicated test specs. This PR adds tests
       for them.

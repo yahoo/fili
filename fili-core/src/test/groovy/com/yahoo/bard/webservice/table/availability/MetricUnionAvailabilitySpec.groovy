@@ -99,6 +99,27 @@ class MetricUnionAvailabilitySpec extends Specification {
     }
 
     @Unroll
+    def "#constraintColumns #has unconfigured metric columns in #configuredMetricColumns"() {
+        given: "a constraint specifying constrained columns"
+        DataSourceConstraint constraint = Mock(DataSourceConstraint)
+        constraint.getMetricNames() >> (constraintColumns as Set)
+
+        expect: "unconfigured metric columns are identified"
+        MetricUnionAvailability.hasUnconfiguredMetric(constraint, configuredMetricColumns as Set) == hasUnconfiguredCol
+
+        where:
+        constraintColumns      | configuredMetricColumns || hasUnconfiguredCol
+        []                     | []                      || false
+        ["metric1", "metric2"] | ["metric1", "metric2"]  || false
+        ["metric1", "metric2"] | []                      || true
+        []                     | ["metric1", "metric2"]  || false
+        ["metric1"]            | ["metric1", "metric2"]  || false
+        ["metric1", "metric2"] | ["metric1"]             || true
+
+        has = hasUnconfiguredCol ? "has" : "do not have"
+    }
+
+    @Unroll
     def "isMetricUnique returns true if and only if metric is unique across all data sources in the case of #caseDescription"() {
         expect:
         expected == MetricUnionAvailability.isMetricUnique(
