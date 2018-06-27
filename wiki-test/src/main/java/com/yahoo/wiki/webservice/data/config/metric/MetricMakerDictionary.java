@@ -72,13 +72,13 @@ public class MetricMakerDictionary {
                 add(maker.getName(), (MetricMaker) makerClass.getConstructors()[0].newInstance(args));
 
             } catch (ClassNotFoundException e) {
-                e.printStackTrace();
+                LOG.error("Cannot find class: " + maker.getClassPath(), e);
             } catch (IllegalAccessException e) {
-                e.printStackTrace();
+                LOG.error("The constructor of maker's class is inaccessible", e);
             } catch (InstantiationException e) {
-                e.printStackTrace();
+                LOG.error("The constructor of maker's class is inaccessible", e);
             } catch (InvocationTargetException e) {
-                e.printStackTrace();
+                LOG.error(e.getCause().getMessage(), e);
             }
         }
 
