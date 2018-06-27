@@ -57,16 +57,16 @@ public interface Dimension {
     DateTime getLastUpdated();
 
     /**
-     * Getter for dimension fields.
+     * Returns all dimension fields of this dimension.
      *
-     * @return Set of dimension fields
+     * @return all dimension fields of this dimension
      */
     LinkedHashSet<DimensionField> getDimensionFields();
 
     /**
-     * Getter for default dimension fields.
+     * Returns the default dimension fields to be shown in the response.
      *
-     * @return Set of dimension fields
+     * @return the default dimension fields to be shown in the response
      */
     LinkedHashSet<DimensionField> getDefaultDimensionFields();
 

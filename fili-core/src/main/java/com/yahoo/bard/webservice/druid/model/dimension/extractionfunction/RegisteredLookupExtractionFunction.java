@@ -8,6 +8,7 @@ import java.util.Objects;
  * RegisteredLookup ExtractionFunction that maps dimension values to some corresponding pre-defined values in druid.
  */
 public class RegisteredLookupExtractionFunction extends ExtractionFunction {
+
     private final String lookup;
     private final Boolean retainMissingValue;
     private final String replaceMissingValueWith;
@@ -15,16 +16,19 @@ public class RegisteredLookupExtractionFunction extends ExtractionFunction {
     private final Boolean optimize;
 
     /**
-     * Constructor.
+     * Constructs a new {@code RegisteredLookupExtractionFunction} with the specified function attributes.
      *
-     * @param lookup  lookup's name specified by the user
-     * @param retainMissingValue  when true: returns original dimension value if mapping is not found, also note that
-     * replaceMissingValueWith must be null or empty string, when false: missing values are treated as missing
-     * @param replaceMissingValueWith  replaces dimension values not found in mapping with this value and
-     * retainMissingValue must be false if this value is not null or is not empty string
-     * @param injective  set to true to apply some optimization given that mapping is one-to-one,
-     * may cause undefined behavior if retainMissingValue is false and injective is true
-     * @param optimize  set to false to turn off rewriting extraction filter as selector filters
+     * @param lookup  Name of the lookup
+     * @param retainMissingValue  A flag indicating whether or not the original dimension value is returned if lookup
+     * mapping is not found for a dimension value. It is illegal to set retainMissingValue = true and also specify a
+     * replaceMissingValueWith
+     * @param replaceMissingValueWith  The default lookup value if lookup mapping is not found for a dimension value.
+     * Setting this to "" has the same effect as setting it to null or omitting the property. It is illegal to set
+     * retainMissingValue = true and also specify a replaceMissingValueWith
+     * @param injective  A flag indicating whether or not to apply some optimization for aggregation query involving
+     * lookups given that mapping is one-to-one, may cause undefined behavior if retainMissingValue is false and
+     * injective is true
+     * @param optimize  A flag indicating whether or not to allow optimization of lookup based extraction filter
      */
     public RegisteredLookupExtractionFunction(
             String lookup,
@@ -42,31 +46,65 @@ public class RegisteredLookupExtractionFunction extends ExtractionFunction {
     }
 
     /**
-     * Convenience Constructor,
-     * defaults: retainMissingValue=false, replaceMissingValueWith=null, injective=false, optimize=true.
+     * Constructs a new {@code RegisteredLookupExtractionFunction} with the specified lookup name.
+     * <p>
+     * This constructor initializes the following dimension specs to their default values
+     * <ul>
+     *     <li> retainMissingValue=false
+     *     <li> replaceMissingValueWith="Unknown {@code <lookup>}"
+     *     <li> injective=false
+     *     <li> optimize=true
+     * </ul>
      *
      * @param lookup  lookup property specified by the user
      */
     public RegisteredLookupExtractionFunction(String lookup) {
-        this(lookup, false, null, false, true);
+        this(lookup, false, String.format("Unknown %s", lookup), false, true);
     }
 
+    /**
+     * Returns the name of this lookup.
+     *
+     * @return the name of this lookup
+     */
     public String getLookup() {
         return lookup;
     }
 
+    /**
+     * Returns the flag indicating whether or not the original dimension value is returned if lookup mapping is not
+     * found for a dimension value.
+     *
+     * @return the flag indicating whether or not the original dimension value is returned if lookup mapping is not
+     * found for a dimension value
+     */
     public Boolean getRetainMissingValue() {
         return retainMissingValue;
     }
 
+    /**
+     * Returns the default lookup value if lookup mapping is not found for a dimension value.
+     *
+     * @return the default lookup value if lookup mapping is not found for a dimension value
+     */
     public String getReplaceMissingValueWith() {
         return replaceMissingValueWith;
     }
 
+    /**
+     * Returns the flag indicating whether or not to apply some optimization for aggregation query involving lookups.
+     *
+     * @return the flag indicating whether or not to apply some optimization for aggregation query involving lookups
+     */
     public Boolean getInjective() {
         return injective;
     }
 
+    /**
+     * Returns the flag indicating whether or not to allow optimization of lookup based extraction filter.
+     *
+     * @return the flag indicating whether or not to allow optimization of lookup based extraction filter
+     */
     public Boolean getOptimize() {
         return optimize;
     }
@@ -117,5 +155,30 @@ public class RegisteredLookupExtractionFunction extends ExtractionFunction {
                 Objects.equals(replaceMissingValueWith, other.replaceMissingValueWith) &&
                 Objects.equals(injective, other.injective) &&
                 Objects.equals(optimize, other.optimize);
+    }
+
+    /**
+     * Returns a string representation of this extraction function.
+     * <p>
+     * The format of the string is "RegisteredLookupExtractionFunction{type=A, lookup='B', retainMissingValue=C,
+     * replaceMissingValueWith='D', injective=E, optimize=F}", where values (A - E) are given by {@link #getType()},
+     * {@link #getLookup()}, {@link #getRetainMissingValue()}, {@link #getReplaceMissingValueWith()},
+     * {@link #getInjective()}, {@link #getOptimize()}, respectively. Note that there is a single space separating each
+     * value after a comma. The lookup name and the default lookup value are surrounded by pairs of single quotes.
+     *
+     * @return the string representation of this extraction function
+     */
+    @Override
+    public String toString() {
+        return String.format(
+                "RegisteredLookupExtractionFunction{type=%s, lookup='%s', retainMissingValue=%s, " +
+                        "replaceMissingValueWith='%s', injective=%s, optimize=%s}",
+                getType(),
+                getLookup(),
+                getRetainMissingValue(),
+                getReplaceMissingValueWith(),
+                getInjective(),
+                getOptimize()
+        );
     }
 }

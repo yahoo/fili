@@ -11,6 +11,7 @@ import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
+import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.RegisteredLookupExtractionFunction;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -165,8 +166,11 @@ public class RegisteredLookupMetadataLoadTask extends LoadTask<Boolean> {
                     dimensionDictionary.findAll().stream()
                             .filter(dimension -> dimension instanceof RegisteredLookupDimension)
                             .map(dimension -> (RegisteredLookupDimension) dimension)
-                            .map(RegisteredLookupDimension::getLookups)
+                            .map(RegisteredLookupDimension::getRegisteredLookupExtractionFns)
                             .flatMap(List::stream)
+                            .map(extractionFunction ->
+                                    ((RegisteredLookupExtractionFunction) extractionFunction).getLookup()
+                            )
                             .peek(namespace -> LOG.trace("Checking lookup metadata status for {}", namespace))
                             .filter(lookup -> !lookupStatuses.containsKey(lookup) || !lookupStatuses.get(lookup))
                             .collect(Collectors.toSet())
