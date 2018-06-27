@@ -14,6 +14,7 @@ import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrainSpec
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.availability.Availability
+import com.yahoo.bard.webservice.table.availability.MetricUnionAvailability
 
 import spock.lang.Shared
 import spock.lang.Specification
@@ -194,8 +195,15 @@ class MetricUnionCompositeTableDefinitionSpec extends Specification {
         Map<Availability, Set<String>> availabilitiesToMetricNames = tableMap.collectEntries {
             [physicalTableDictionary.get(it.key).availability, new HashSet<String>(it.value)]
         }
-        MetricUnionCompositeTable expectedPhysicalTable = new MetricUnionCompositeTable(name, timeGrain, [dimensionColumn, metricColumn1, metricColumn2] as Set, [table1, table2] as Set, logicalToPhysicalNames, availabilitiesToMetricNames)
 
+        BaseCompositePhysicalTable expectedPhysicalTable = new BaseCompositePhysicalTable(
+                name,
+                timeGrain,
+                [dimensionColumn, metricColumn1, metricColumn2] as Set,
+                [table1, table2] as Set,
+                logicalToPhysicalNames,
+                MetricUnionAvailability.build([table1, table2] as Set, availabilitiesToMetricNames)
+        )
         MetricUnionCompositeTableDefinition metricUnionCompositeTableDefinition = new MetricUnionCompositeTableDefinition(name, timeGrain, [apiMetricName1, apiMetricName2] as Set, dependantTables, [dimensionConfig] as Set)
 
         when:

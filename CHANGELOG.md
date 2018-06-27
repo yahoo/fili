@@ -7,13 +7,16 @@ pull request if there was one.
 
 ### Added:
 
-- [Implement "left-union" for MetricUnionCompositeTable](https://github.com/yahoo/fili/pull/736)
+- [Implement "left-union" MetricUnionAvailability](https://github.com/yahoo/fili/pull/736)
     * A new "left-union" `Availability` called **`MetricLeftUnionAvailability`** is implemented.
       `MetricLeftUnionAvailability` behaves the same as `MetricUnionAvailability` except that the coalesced available
       intervals on this availability is determined by a single participating `Availability`, instead of all
       participating `Availabilities` as in `MetricUnionAvailability`. 
-    * `MetricUnionCompositeTable` now have options(2 constructors) of being backed by either `MetricUnionAvailability`
-      or `MetricLeftUnionAvailability`
+    * Added a builder method to `MetricUnionAvailability` and `MetricLeftUnionAvailability` to save on needing to 
+    add additional table classes.
+
+- [Added builder method for MetricUnionAvailability and MetricLeftUnionAvailabi](https://github.com/yahoo/fili/pull/736)
+
 
 - [Add specs for InsensitiveContainsSearchQuerySpec & RegexSearchQuerySpec](https://github.com/yahoo/fili/pull/732)
     * `RegexSearchQuerySpec` and `InsensitiveContainsSearchQuerySpec` have no dedicated test specs. This PR adds tests
@@ -57,6 +60,9 @@ pull request if there was one.
 
 ### Deprecated:
 
+- [Deprecated MetricUnionCompositeTable](https://github.com/yahoo/fili/pull/736)
+    * All it was doing was constructing `MetricUnionAvailability`
+    * Instead added a helper method to build `MetricUnionAvailability` directly.
 
 
 ### Fixed:

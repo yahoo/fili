@@ -5,9 +5,9 @@ package com.yahoo.bard.webservice.table;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.table.availability.Availability;
-import com.yahoo.bard.webservice.table.availability.MetricLeftUnionAvailability;
 import com.yahoo.bard.webservice.table.availability.MetricUnionAvailability;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -45,7 +45,10 @@ import javax.validation.constraints.NotNull;
  * {@link MetricUnionAvailability}.
  *
  * @see MetricUnionAvailability
+ *
+ * @deprecated Build BaseCompositePhysicalTable with {@link MetricUnionAvailability#build(Collection, Map)}
  */
+@Deprecated
 public class MetricUnionCompositeTable extends BaseCompositePhysicalTable {
 
     /**
@@ -74,42 +77,6 @@ public class MetricUnionCompositeTable extends BaseCompositePhysicalTable {
                 physicalTables,
                 logicalToPhysicalColumnNames,
                 new MetricUnionAvailability(
-                        physicalTables.stream().map(ConfigPhysicalTable::getAvailability).collect(Collectors.toSet()),
-                        availabilitiesToMetricNames
-                )
-        );
-    }
-
-    /**
-     * Constructor.
-     *
-     * @param name  Name that represents set of fact table names joined together
-     * @param timeGrain  The time grain of the table. The time grain has to satisfy all grains of the tables
-     * @param columns  The columns for this table
-     * @param physicalTables  A set of PhysicalTables that are put together under this table. The tables shall have
-     * zoned time grains that all satisfy the provided timeGrain
-     * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
-     * @param representativeAvailability  A single source availability that represents the coalesced data availability
-     * of this composite table.
-     * @param availabilitiesToMetricNames  A map of all availabilities to set of metric names
-     */
-    public MetricUnionCompositeTable(
-            @NotNull TableName name,
-            @NotNull ZonedTimeGrain timeGrain,
-            @NotNull Set<Column> columns,
-            @NotNull Set<ConfigPhysicalTable> physicalTables,
-            @NotNull Map<String, String> logicalToPhysicalColumnNames,
-            @NotNull Availability representativeAvailability,
-            @NotNull Map<Availability, Set<String>> availabilitiesToMetricNames
-    ) {
-        super(
-                name,
-                timeGrain,
-                columns,
-                physicalTables,
-                logicalToPhysicalColumnNames,
-                new MetricLeftUnionAvailability(
-                        representativeAvailability,
                         physicalTables.stream().map(ConfigPhysicalTable::getAvailability).collect(Collectors.toSet()),
                         availabilitiesToMetricNames
                 )

@@ -9,11 +9,12 @@ import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
+import com.yahoo.bard.webservice.table.BaseCompositePhysicalTable;
 import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
-import com.yahoo.bard.webservice.table.MetricUnionCompositeTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 import com.yahoo.bard.webservice.table.Table;
+import com.yahoo.bard.webservice.table.availability.MetricUnionAvailability;
 import com.yahoo.bard.webservice.util.Utils;
 
 import com.google.common.collect.ImmutableMap;
@@ -101,14 +102,18 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
         try {
             Map<ConfigPhysicalTable, Set<String>> tableMetricNamesMap = getTableToMetricsMap(dictionaries);
             validateDependentMetrics(tableMetricNamesMap);
-            return new MetricUnionCompositeTable(
+            return new BaseCompositePhysicalTable(
                     getName(),
                     getTimeGrain(),
                     buildColumns(dictionaries.getDimensionDictionary()),
                     tableMetricNamesMap.keySet(),
                     getLogicalToPhysicalNames(),
-                    tableMetricNamesMap.entrySet().stream()
-                            .collect(Collectors.toMap(entry -> entry.getKey().getAvailability(), Map.Entry::getValue))
+                    MetricUnionAvailability.build(
+                            tableMetricNamesMap.keySet(), tableMetricNamesMap.entrySet().stream()
+                                    .collect(Collectors.toMap(
+                                            entry -> entry.getKey().getAvailability(),
+                                            Map.Entry::getValue
+                                    )))
             );
         } catch (IllegalArgumentException e) {
             String message = String.format(VALIDATION_ERROR_FORMAT, e.getMessage());

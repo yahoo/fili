@@ -2,12 +2,15 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.availability;
 
+import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
@@ -36,7 +39,7 @@ public class MetricLeftUnionAvailability extends MetricUnionAvailability {
      * respond with
      */
     public MetricLeftUnionAvailability(
-            @NotNull final Availability representativeAvailability,
+            @NotNull Availability representativeAvailability,
             @NotNull Set<Availability> availabilities,
             @NotNull Map<Availability, Set<String>> availabilitiesToMetricNames
     ) {
@@ -53,13 +56,43 @@ public class MetricLeftUnionAvailability extends MetricUnionAvailability {
             return new SimplifiedIntervalList();
         }
 
+        Collection<String> representativeColumns = representativeAvailability.getAllAvailableIntervals().keySet();
+
+        Set<String> filteredMetricNames = dataSourceMetricNames.stream()
+                .filter(name -> representativeColumns.contains(name))
+                .collect(Collectors.toSet());
+
         return representativeAvailability.getAvailableIntervals(
-                constraint.withMetricIntersection(dataSourceMetricNames)
+                constraint.withMetricIntersection(filteredMetricNames)
         );
     }
 
     @Override
     public SimplifiedIntervalList getAvailableIntervals() {
         return representativeAvailability.getAvailableIntervals();
+    }
+
+
+    /**
+     * Produce a metric left union availability.
+     *
+     * @param representativeAvailability  The availability used for aggregate availability checks. (replaces
+     * intersection of all)
+     * @param physicalTables  The physical tables to source metrics and dimensions from.
+     * @param availabilitiesToMetricNames  The map of availabilities to the metric columns in the union schema.
+     *
+     * @return A metric union availability decorated with an official aggregate.
+     */
+
+    public static MetricLeftUnionAvailability build(
+            @NotNull Availability representativeAvailability,
+            @NotNull Collection<ConfigPhysicalTable> physicalTables,
+            @NotNull Map<Availability, Set<String>> availabilitiesToMetricNames
+    ) {
+        return new MetricLeftUnionAvailability(
+                representativeAvailability,
+                physicalTables.stream().map(ConfigPhysicalTable::getAvailability).collect(Collectors.toSet()),
+                availabilitiesToMetricNames
+        );
     }
 }
