@@ -1,7 +1,7 @@
 {
   "physicalTables": [
     {
-      "name": "WIKITICKER",
+      "name": "wikiticker",
       "description": "",
       "metrics": [
         "count",
@@ -28,6 +28,19 @@
         "CITY_NAME"
       ],
       "granularity": "HOUR"
+    },
+    {
+      "name": "physicalTableTester",
+      "description": "",
+      "metrics": [
+        "count",
+        "added"
+      ],
+      "dimensions": [
+        "COMMENT",
+        "COUNTRY_ISO_CODE"
+      ],
+      "granularity": "DAY"
     }
   ],
   "logicalTables": [
@@ -38,12 +51,29 @@
         "count",
         "added",
         "delta",
-        "deleted"
+        "deleted",
+        "metricTesterTwo"
       ],
       "physicalTables": [
-        "WIKITICKER"
+        "wikiticker", "physicalTableTester"
       ],
       "granularity": ["ALL", "HOUR", "DAY"]
+    },
+    {
+      "name": "logicalTableTester",
+      "description": "logicalTableTester",
+      "apiMetricNames": [
+        "count",
+        "added",
+        "delta",
+        "deleted",
+        "bigThetaSketch",
+        "metricTesterOne"
+      ],
+      "physicalTables": [
+        "physicalTableTester"
+      ],
+      "granularity": ["HOUR", "DAY"]
     }
   ]
 }

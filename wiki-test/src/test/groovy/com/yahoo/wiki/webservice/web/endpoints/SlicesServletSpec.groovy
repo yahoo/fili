@@ -35,11 +35,13 @@ class SlicesServletSpec extends Specification {
 
     def "The slices are correctly configured, and the slices endpoint returns the appropriate metadata"() {
         setup:
-        String sliceNameHour = "wikiticker"
+        String sliceNameOne = "wikiticker"
+        String sliceNameTwo = "physicaltabletester"
         String expectedResponse = """{
             "rows":
             [
-                {"timeGrain":"hour", "name":"$sliceNameHour", "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/slices/$sliceNameHour"},
+                {"timeGrain":"hour", "name":"$sliceNameOne", "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/slices/$sliceNameOne"},
+                {"timeGrain":"day", "name":"$sliceNameTwo", "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/slices/$sliceNameTwo"}
             ]
         }"""
 
@@ -59,13 +61,44 @@ class SlicesServletSpec extends Specification {
     @Unroll
     def "The slice endpoint returns the correct data on #sliceName at granularity #granularity"() {
         setup:
-        String expectedResponse = """{
-            "name":"$sliceName",
-            "timeGrain":"$granularity",
+        String expectedResponseOne = """{
+            "name":"$sliceNameOne",
+            "timeGrain":"$granularityOne",
             "dimensions":
             [
                 ${
-                    dimensionNames.collect {"""
+            dimensionNamesOne.collect {"""
+                        {
+                            "name":"$it",
+                            "factName": "$it",
+                            "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/dimensions/$it",
+                            "intervals":["$interval"]
+                        }
+                    """}
+            .join(',')
+        }
+            ],
+            "metrics":
+            [
+                ${
+            metricNamesOne.collect {"""
+                        {
+                            "name":"$it",
+                            "intervals":["$interval"]
+                        }
+                    """}
+            .join(',')
+        }
+            ]
+        }"""
+
+        String expectedResponseTwo = """{
+            "name":"$sliceNameTwo",
+            "timeGrain":"$granularityTwo",
+            "dimensions":
+            [
+                ${
+                    dimensionNamesTwo.collect {"""
                         {
                             "name":"$it",
                             "factName": "$it",
@@ -79,7 +112,7 @@ class SlicesServletSpec extends Specification {
             "metrics":
             [
                 ${
-                    metricNames.collect {"""
+                    metricNamesTwo.collect {"""
                         {
                             "name":"$it",
                             "intervals":["$interval"]
@@ -90,28 +123,49 @@ class SlicesServletSpec extends Specification {
             ]
         }"""
 
-        Map expectedJsonResult = jsonSlurper.parseText(expectedResponse) as Map
-        String expectedTableName = expectedJsonResult.get("name").toString()
-        Set expectedDimensions = expectedJsonResult.get("dimensions") as Set
-        Set expectedMetrics = expectedJsonResult.get("metrics") as Set
+        Map expectedJsonResultOne  = jsonSlurper.parseText(expectedResponseOne) as Map
+        String expectedTableNameOne  = expectedJsonResultOne.get("name").toString()
+        Set expectedDimensionsOne  = expectedJsonResultOne.get("dimensions") as Set
+        Set expectedMetricsOne  = expectedJsonResultOne.get("metrics") as Set
+
+        Map expectedJsonResultTwo  = jsonSlurper.parseText(expectedResponseTwo) as Map
+        String expectedTableNameTwo  = expectedJsonResultTwo.get("name").toString()
+        Set expectedDimensionsTwo  = expectedJsonResultTwo.get("dimensions") as Set
+        Set expectedMetricsTwo  = expectedJsonResultTwo.get("metrics") as Set
 
         when: "We send a request"
-        String result = jerseyTestBinder.makeRequest("/slices/$sliceName").get(String.class)
-        Map jsonResult = jsonSlurper.parseText(result) as Map
-        String tableName = jsonResult.get("name").toString()
-        Set dimensions = jsonResult.get("dimensions") as Set
-        Set metrics = jsonResult.get("metrics") as Set
+
+        String resultOne  = jerseyTestBinder.makeRequest("/slices/$sliceNameOne").get(String.class)
+        Map jsonResultOne  = jsonSlurper.parseText(resultOne) as Map
+        String tableNameOne  = jsonResultOne.get("name").toString()
+        Set dimensionsOne  = jsonResultOne.get("dimensions") as Set
+        Set metricsOne = jsonResultOne.get("metrics") as Set
+
+        String resultTwo  = jerseyTestBinder.makeRequest("/slices/$sliceNameTwo").get(String.class)
+        Map jsonResultTwo  = jsonSlurper.parseText(resultTwo) as Map
+        String tableNameTwo  = jsonResultTwo .get("name").toString()
+        Set dimensionsTwo  = jsonResultTwo .get("dimensions") as Set
+        Set metricsTwo = jsonResultTwo .get("metrics") as Set
 
         then: "what we expect"
-        tableName == expectedTableName
-        dimensions == expectedDimensions
-        metrics == expectedMetrics
+        tableNameOne == expectedTableNameOne
+        dimensionsOne  == expectedDimensionsOne
+        metricsOne  == expectedMetricsOne
+
+        tableNameTwo == expectedTableNameTwo
+        dimensionsTwo  == expectedDimensionsTwo
+        metricsTwo  == expectedMetricsTwo
 
         where:
-        sliceName = "wikiticker"
-        granularity = "hour"
-        dimensionNames = ("comment, countryIsoCode, regionIsoCode, page, user, isUnpatrolled, isNew, isRobot, isAnonymous," +
+        sliceNameOne = "wikiticker"
+        granularityOne = "hour"
+        dimensionNamesOne = ("comment, countryIsoCode, regionIsoCode, page, user, isUnpatrolled, isNew, isRobot, isAnonymous," +
                 " isMinor, namespace, channel, countryName, regionName, metroCode, cityName").split(',').collect { it.trim()}
-        metricNames = "count, added, delta, deleted".split(',').collect {it.trim()}
+        metricNamesOne = "count, added, delta, deleted".split(',').collect {it.trim()}
+
+        sliceNameTwo = "physicaltabletester"
+        granularityTwo = "day"
+        dimensionNamesTwo = ("comment, countryIsoCode").split(',').collect { it.trim()}
+        metricNamesTwo = "count, added".split(',').collect {it.trim()}
     }
 }

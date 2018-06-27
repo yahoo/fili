@@ -28,29 +28,44 @@ class TablesServletSpec extends Specification {
 
     def "print the details of all the tables in the Druid instance"() {
         setup:
-        String tableName = "wikipedia"
+        String tableNameOne = "wikipedia"
+        String tableNameTwo = "logicaltabletester"
         String expectedResponse = """{
                                         "rows": [
                                             {
                                                     "category":"General",
                                                     "granularity":"hour",
-                                                    "name":"$tableName",
-                                                    "longName":"$tableName",
-                                                    "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableName/hour"
+                                                    "name":"$tableNameOne",
+                                                    "longName":"$tableNameOne",
+                                                    "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableNameOne/hour"
                                             },
                                             {
                                                     "category":"General",
                                                     "granularity":"day",
-                                                    "name":"$tableName",
-                                                    "longName":"$tableName",
-                                                    "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableName/day"
+                                                    "name":"$tableNameOne",
+                                                    "longName":"$tableNameOne",
+                                                    "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableNameOne/day"
                                             },
                                             {
                                                     "category":"General",
                                                     "granularity":"all",
-                                                    "name":"$tableName",
-                                                    "longName":"$tableName",
-                                                    "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableName/all"
+                                                    "name":"$tableNameOne",
+                                                    "longName":"$tableNameOne",
+                                                    "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableNameOne/all"
+                                            },
+                                                                                        {
+                                                    "category":"General",
+                                                    "granularity":"hour",
+                                                    "name":"$tableNameTwo",
+                                                    "longName":"$tableNameTwo",
+                                                    "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableNameTwo/hour"
+                                            },
+                                            {
+                                                    "category":"General",
+                                                    "granularity":"day",
+                                                    "name":"$tableNameTwo",
+                                                    "longName":"$tableNameTwo",
+                                                    "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableNameTwo/day"
                                             }
                                         ]
                                     }"""
@@ -66,62 +81,127 @@ class TablesServletSpec extends Specification {
     @Unroll
     def "Requesting table #tableName gives us the correct details about #tableName"() {
         setup:
-        String expectedResponse = """{
+        String expectedResponseOne = """{
                                          "rows": [
                                              {
                                                  "category":"General",
                                                  "granularity":"hour",
-                                                 "name":"$tableName",
-                                                 "longName":"$tableName",
-                                                 "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableName/hour"
+                                                 "name":"$tableNameOne",
+                                                 "longName":"$tableNameOne",
+                                                 "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableNameOne/hour"
                                              },
                                              {
                                                  "category":"General",
                                                  "granularity":"day",
-                                                 "name":"$tableName",
-                                                 "longName":"$tableName",
-                                                 "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableName/day"
+                                                 "name":"$tableNameOne",
+                                                 "longName":"$tableNameOne",
+                                                 "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableNameOne/day"
                                              },
                                              {
                                                  "category":"General",
                                                  "granularity":"all",
-                                                 "name":"$tableName",
-                                                 "longName":"$tableName",
-                                                 "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableName/all"
+                                                 "name":"$tableNameOne",
+                                                 "longName":"$tableNameOne",
+                                                 "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableNameOne/all"
+                                             }
+                                         ]
+                                     }"""
+        String expectedResponseTwo = """{
+                                         "rows": [
+                                             {
+                                                 "category":"General",
+                                                 "granularity":"hour",
+                                                 "name":"$tableNameTwo",
+                                                 "longName":"$tableNameTwo",
+                                                 "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableNameTwo/hour"
+                                             },
+                                             {
+                                                 "category":"General",
+                                                 "granularity":"day",
+                                                 "name":"$tableNameTwo",
+                                                 "longName":"$tableNameTwo",
+                                                 "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableNameTwo/day"
                                              }
                                          ]
                                      }"""
 
         expect: "The request returns the correct JSON result"
         GroovyTestUtils.compareJson(
-                jerseyTestBinder.makeRequest("/tables/$tableName").get(String.class),
-                expectedResponse,
+                jerseyTestBinder.makeRequest("/tables/$tableNameOne").get(String.class),
+                expectedResponseOne,
+                JsonSortStrategy.SORT_BOTH
+        )
+
+        GroovyTestUtils.compareJson(
+                jerseyTestBinder.makeRequest("/tables/$tableNameTwo").get(String.class),
+                expectedResponseTwo,
                 JsonSortStrategy.SORT_BOTH
         )
 
         where:
-        tableName = "wikipedia"
+        tableNameOne = "wikipedia"
+        tableNameTwo = "logicaltabletester"
     }
 
     //This test is a sample of how we test various table endpoints at differing granularities
     @Unroll
     def "Querying for table #tableName at granularity #granularity returns that table's information"() {
         setup:
-        List<String> dimensionNames = ("comment, countryIsoCode, regionIsoCode, page, user, isUnpatrolled, isNew, isRobot, isAnonymous," +
+        List<String> dimensionNamesOne = ("comment, countryIsoCode, regionIsoCode, page, user, isUnpatrolled, isNew, isRobot, isAnonymous," +
                 " isMinor, namespace, channel, countryName, regionName, metroCode, cityName").split(',').collect { it.trim()}
+        List<String> metricNamesOne = "count, added, delta, deleted, metrictestertwo".split(',').collect{ it.trim()}
+        List<String> dimensionNamesTwo = ("comment, countryIsoCode").split(',').collect { it.trim()}
+        List<String> metricNamesTwo = "count, added, delta, deleted, bigthetasketch, metrictesterone".split(',').collect{ it.trim()}
 
-        List<String> metricNames = "count, added, delta, deleted".split(',').collect{ it.trim()}
-        String expectedResponse = """{
+        String expectedResponseOne = """{
                                         "availableIntervals":[],
-                                        "name":"$tableName",
-                                        "longName":"$tableName",
-                                        "granularity":"hour",
+                                        "name":"$tableNameOne",
+                                        "longName":"$tableNameOne",
+                                        "granularity":"day",
                                         "category": "General",
                                         "retention": "P1Y",
-                                        "description": "$tableName",
+                                        "description": "$tableNameOne",
+                                        "dimensions": [
+                                            ${dimensionNamesOne.collect { 
+                                                    """{
+                                                    "category": "General",
+                                                    "name": "$it",
+                                                    "longName": "wiki $it",
+                                                    "cardinality": 0,
+                                                    "storageStrategy":"loaded",
+                                                    "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/dimensions/$it"
+                                                    }""" 
+                                                }
+                                                .join(',')
+                                            }
+                                        ],
+                                        "metrics": [
+                                            ${
+                                                metricNamesOne.collect {
+                                                    """{
+                                                        "category": "General",
+                                                        "name": "$it",
+                                                        "longName": "$it",
+                                                        "type": "number",
+                                                        "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/metrics/$it"
+                                                    }""" 
+                                                }
+                                                .join(',')
+                                            }
+                                        ]
+                                    }"""
+
+        String expectedResponseTwo = """{
+                                        "availableIntervals":[],
+                                        "name":"$tableNameTwo",
+                                        "longName":"$tableNameTwo",
+                                        "granularity":"day",
+                                        "category": "General",
+                                        "retention": "P1Y",
+                                        "description": "$tableNameTwo",
                                         "dimensions": [
                                             ${
-                                                dimensionNames.collect {
+                                                dimensionNamesTwo.collect {
                                                     """{
                                                     "category": "General",
                                                     "name": "$it",
@@ -136,7 +216,7 @@ class TablesServletSpec extends Specification {
                                         ],
                                         "metrics": [
                                             ${
-                                                metricNames.collect {
+                                                metricNamesTwo.collect {
                                                     """{
                                                         "category": "General",
                                                         "name": "$it",
@@ -152,14 +232,17 @@ class TablesServletSpec extends Specification {
 
 
         when: "We send a request"
-        String result = jerseyTestBinder.makeRequest("/tables/$tableName/$granularity").get(String.class)
+        String resultOne = jerseyTestBinder.makeRequest("/tables/$tableNameOne/$granularity").get(String.class)
+        String resultTwo = jerseyTestBinder.makeRequest("/tables/$tableNameTwo/$granularity").get(String.class)
 
         then: "what we expect"
-        GroovyTestUtils.compareJson(result, expectedResponse, JsonSortStrategy.SORT_BOTH)
+        GroovyTestUtils.compareJson(resultOne, expectedResponseOne, JsonSortStrategy.SORT_BOTH)
+        GroovyTestUtils.compareJson(resultTwo, expectedResponseTwo, JsonSortStrategy.SORT_BOTH)
 
         where:
-        tableName = "wikipedia"
-        granularity = "hour"
+        tableNameOne= "wikipedia"
+        tableNameTwo= "logicaltabletester"
+        granularity = "DAY"
 
     }
 }

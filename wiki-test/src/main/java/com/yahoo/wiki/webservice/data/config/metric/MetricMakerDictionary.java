@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.data.config.metric.makers.*;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
+import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.DefaultParameterNameDiscoverer;
@@ -177,6 +178,11 @@ public class MetricMakerDictionary {
         }
         if ("ZonelessTimeGrain".equals(paramType)) {
             return DefaultTimeGrain.valueOf(maker.getParams().get(paramName));
+        }
+        if ("ArithmeticPostAggregationFunction".equals(paramType)) {
+            return ArithmeticPostAggregation
+                    .ArithmeticPostAggregationFunction
+                    .valueOf(maker.getParams().get(paramName));
         }
         if ("int".equals(paramType)) {
             return Integer.parseInt(maker.getParams().get(paramName));

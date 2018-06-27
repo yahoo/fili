@@ -42,7 +42,7 @@ class SingleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServle
             "metrics" : [
                     "${"count"}",
                     "${"added"}",
-                    "${"delta"}",
+                    "${"delta"}"
             ],
             "dateTime": [
                 "2014-06-02%2F2014-06-09"

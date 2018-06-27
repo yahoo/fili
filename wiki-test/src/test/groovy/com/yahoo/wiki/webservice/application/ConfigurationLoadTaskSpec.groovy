@@ -79,5 +79,6 @@ class ConfigurationLoadTaskSpec extends Specification {
     def "test fetching of physicalTable by its name"() {
         expect: "fetched table has the same name as that requested"
         physicalTableDictionary.get("wikiticker").getName() == "wikiticker"
+        physicalTableDictionary.get("physicaltabletester").getName() == "physicaltabletester"
     }
 }
