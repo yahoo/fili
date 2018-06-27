@@ -18,9 +18,9 @@ public interface RegisteredLookupDimensionConfig extends DimensionConfig {
     }
 
     /**
-     * Returns a list of extraction function for the lookup dimension values.
+     * Returns a list of extraction functions for the lookup dimension values.
      *
-     * @return the list of extraction function for the lookup dimension values
+     * @return the list of extraction functions for the lookup dimension values
      */
     List<ExtractionFunction> getRegisteredLookupExtractionFns();
 }
