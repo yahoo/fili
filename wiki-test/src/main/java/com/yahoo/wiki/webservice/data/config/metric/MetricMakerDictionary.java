@@ -13,6 +13,7 @@ import org.springframework.core.DefaultParameterNameDiscoverer;
 
 import javax.inject.Singleton;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.IntStream;
@@ -60,17 +61,39 @@ public class MetricMakerDictionary {
         for (WikiMetricMakerTemplate maker : metricMakers) {
 
             try {
+
                 Class<?> makerClass = Class.forName(maker.getClassPath());
-                Class<?>[] params = makerClass.getDeclaredConstructors()[0].getParameterTypes();
-
                 DefaultParameterNameDiscoverer discoverer = new DefaultParameterNameDiscoverer();
-                String[] parameterNames = discoverer.getParameterNames(makerClass.getDeclaredConstructors()[0]);
+                Constructor<?> constructor = null;
 
-                Object[] args = IntStream.range(0, params.length)
-                        .mapToObj(i -> parseParams(params[i].getSimpleName(), parameterNames[i], maker))
+                // find appropriate constructor
+                for (Constructor<?> candidateConstructor : makerClass.getDeclaredConstructors()) {
+                    Class<?>[] pTypes = candidateConstructor.getParameterTypes();
+                    String[] pNames = discoverer.getParameterNames(candidateConstructor);
+                    int index = pTypes.length - 1;
+                    while (index >= 0) {
+                        if ("MetricDictionary".equals(pTypes[index].getSimpleName())
+                                || "DimensionDictionary".equals(pTypes[index].getSimpleName())
+                                || maker.getParams().containsKey(pNames[index])) {
+                            index--;
+                        }
+                        else {
+                            break;
+                        }
+                    }
+                    if (index == -1) {
+                        constructor = candidateConstructor;
+                    }
+                }
+
+                Class<?>[] paramsTypes = constructor.getParameterTypes();
+                String[] paramsNames = discoverer.getParameterNames(constructor);
+
+                Object[] args = IntStream.range(0, paramsTypes.length)
+                        .mapToObj(i -> parseParams(paramsTypes[i].getSimpleName(), paramsNames[i], maker))
                         .toArray();
 
-                add(maker.getName(), (MetricMaker) makerClass.getConstructors()[0].newInstance(args));
+                add(maker.getName(), (MetricMaker) constructor.newInstance(args));
 
             } catch (ClassNotFoundException e) {
                 LOG.error("Cannot find class: " + maker.getClassPath(), e);
