@@ -15,6 +15,13 @@
       }
     },
     {
+      "name": "arithmeticPlus",
+      "class": "com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker",
+      "params": {
+        "function": "PLUS"
+      }
+    },
+    {
       "name": "count",
       "class": "com.yahoo.bard.webservice.data.config.metric.makers.CountMaker"
     },
@@ -56,11 +63,43 @@
       ]
     },
     {
-      "apiName": "TEST",
+      "apiName": "logicalAdded",
       "description": "Description for test",
-      "maker": "aggregateAverage",
+      "maker": "doubleSum",
       "dependencyMetricNames": [
-        "DELETED"
+        "added"
+      ]
+    },
+    {
+      "apiName": "logicalDeleted",
+      "description": "Description for test",
+      "maker": "doubleSum",
+      "dependencyMetricNames": [
+        "deleted"
+      ]
+    },
+    {
+      "apiName": "bigThetaSketch",
+      "description": "Description for bigThetaSketch",
+      "maker": "bigThetaSketch",
+      "dependencyMetricNames": [
+        "delta"
+      ]
+    },
+    {
+      "apiName": "metricTesterOne",
+      "description": "Plus logical added metric and logical deleted metric.",
+      "maker": "arithmeticPlus",
+      "dependencyMetricNames": [
+        "logicalAdded", "logicalDeleted"
+      ]
+    },
+    {
+      "apiName": "metricTesterTwo",
+      "description": "Plus physical added metric and physical deleted metric.",
+      "maker": "arithmeticPlus",
+      "dependencyMetricNames": [
+        "added", "deleted"
       ]
     }
   ]
