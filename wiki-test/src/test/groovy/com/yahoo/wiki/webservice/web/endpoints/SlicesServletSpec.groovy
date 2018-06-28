@@ -161,10 +161,10 @@ class SlicesServletSpec extends Specification {
         granularityOne = "hour"
         dimensionNamesOne = ("comment, countryIsoCode, regionIsoCode, page, user, isUnpatrolled, isNew, isRobot, isAnonymous," +
                 " isMinor, namespace, channel, countryName, regionName, metroCode, cityName").split(',').collect { it.trim()}
-        metricNamesOne = "count, added, delta, deleted".split(',').collect {it.trim()}
+        metricNamesOne = "added, delta, deleted".split(',').collect {it.trim()}
 
         sliceNameTwo = "physicaltabletester"
-        granularityTwo = "day"
+        granularityTwo = "hour"
         dimensionNamesTwo = ("comment, countryIsoCode").split(',').collect { it.trim()}
         metricNamesTwo = "count, added".split(',').collect {it.trim()}
     }

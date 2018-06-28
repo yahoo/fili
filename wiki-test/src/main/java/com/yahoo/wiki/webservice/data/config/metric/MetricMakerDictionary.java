@@ -207,6 +207,9 @@ public class MetricMakerDictionary {
                     .ArithmeticPostAggregationFunction
                     .valueOf(maker.getParams().get(paramName));
         }
+        if ("boolean".equals(paramType)) {
+            return Boolean.parseBoolean(maker.getParams().get(paramName));
+        }
         if ("int".equals(paramType)) {
             return Integer.parseInt(maker.getParams().get(paramName));
         }

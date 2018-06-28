@@ -4,7 +4,6 @@
       "name": "wikiticker",
       "description": "",
       "metrics": [
-        "count",
         "added",
         "delta",
         "deleted"
@@ -40,7 +39,7 @@
         "COMMENT",
         "COUNTRY_ISO_CODE"
       ],
-      "granularity": "DAY"
+      "granularity": "HOUR"
     }
   ],
   "logicalTables": [
@@ -51,29 +50,71 @@
         "count",
         "added",
         "delta",
-        "deleted",
-        "metricTesterTwo"
+        "deleted"
       ],
       "physicalTables": [
-        "wikiticker", "physicalTableTester"
+        "wikiticker"
       ],
       "granularity": ["ALL", "HOUR", "DAY"]
     },
     {
-      "name": "logicalTableTester",
-      "description": "logicalTableTester",
+      "name": "logicalTableTesterOne",
+      "description": "Logical table depends on wikiticker.",
       "apiMetricNames": [
         "count",
         "added",
         "delta",
         "deleted",
-        "bigThetaSketch",
-        "metricTesterOne"
+        "averageAddedPerHour",
+        "averageDeletedPerHour",
+        "plusAvgAddedDeleted",
+        "MinusAddedDelta",
+        "cardOnPage",
+        "bigThetaSketch"
+      ],
+      "physicalTables": [
+        "wikiticker"
+      ],
+      "granularity": ["ALL", "HOUR", "DAY"]
+    },
+    {
+      "name": "logicalTableTesterTwo",
+      "description": "Logical table depends on wikiticker and physicalTableTester",
+      "apiMetricNames": [
+        "count",
+        "added",
+        "delta",
+        "deleted",
+        "averageAddedPerHour",
+        "averageDeletedPerHour",
+        "plusAvgAddedDeleted",
+        "MinusAddedDelta",
+        "cardOnPage",
+        "bigThetaSketch"
+      ],
+      "physicalTables": [
+        "wikiticker", "physicalTableTester"
+      ],
+      "granularity": ["HOUR"]
+    },
+    {
+      "name": "logicalTableTesterThree",
+      "description": "Logical table depends on physicalTableTester, should return missing interval message.",
+      "apiMetricNames": [
+        "count",
+        "added",
+        "delta",
+        "deleted",
+        "averageAddedPerHour",
+        "averageDeletedPerHour",
+        "plusAvgAddedDeleted",
+        "MinusAddedDelta",
+        "bigThetaSketch"
       ],
       "physicalTables": [
         "physicalTableTester"
       ],
-      "granularity": ["HOUR", "DAY"]
+      "granularity": ["HOUR"]
     }
   ]
 }

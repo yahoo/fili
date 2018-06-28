@@ -29,9 +29,18 @@ class TablesServletSpec extends Specification {
     def "print the details of all the tables in the Druid instance"() {
         setup:
         String tableNameOne = "wikipedia"
-        String tableNameTwo = "logicaltabletester"
+        String tableNameTwo = "logicaltabletesterone"
+        String tableNameThree = "logicaltabletestertwo"
+        String tableNameFour = "logicaltabletesterthree"
         String expectedResponse = """{
                                         "rows": [
+                                            {
+                                                    "category":"General",
+                                                    "granularity":"all",
+                                                    "name":"$tableNameOne",
+                                                    "longName":"$tableNameOne",
+                                                    "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableNameOne/all"
+                                            },
                                             {
                                                     "category":"General",
                                                     "granularity":"hour",
@@ -49,11 +58,11 @@ class TablesServletSpec extends Specification {
                                             {
                                                     "category":"General",
                                                     "granularity":"all",
-                                                    "name":"$tableNameOne",
-                                                    "longName":"$tableNameOne",
-                                                    "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableNameOne/all"
+                                                    "name":"$tableNameTwo",
+                                                    "longName":"$tableNameTwo",
+                                                    "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableNameTwo/all"
                                             },
-                                                                                        {
+                                            {
                                                     "category":"General",
                                                     "granularity":"hour",
                                                     "name":"$tableNameTwo",
@@ -66,6 +75,20 @@ class TablesServletSpec extends Specification {
                                                     "name":"$tableNameTwo",
                                                     "longName":"$tableNameTwo",
                                                     "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableNameTwo/day"
+                                            },
+                                            {
+                                                    "category":"General",
+                                                    "granularity":"hour",
+                                                    "name":"$tableNameThree",
+                                                    "longName":"$tableNameThree",
+                                                    "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableNameThree/hour"
+                                            },
+                                            {
+                                                    "category":"General",
+                                                    "granularity":"hour",
+                                                    "name":"$tableNameFour",
+                                                    "longName":"$tableNameFour",
+                                                    "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableNameFour/hour"
                                             }
                                         ]
                                     }"""
@@ -121,6 +144,37 @@ class TablesServletSpec extends Specification {
                                                  "name":"$tableNameTwo",
                                                  "longName":"$tableNameTwo",
                                                  "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableNameTwo/day"
+                                             },
+                                             {
+                                                 "category":"General",
+                                                 "granularity":"all",
+                                                 "name":"$tableNameTwo",
+                                                 "longName":"$tableNameTwo",
+                                                 "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableNameTwo/all"
+                                             }
+                                         ]
+                                     }"""
+
+        String expectedResponseThree = """{
+                                         "rows": [
+                                             {
+                                                 "category":"General",
+                                                 "granularity":"hour",
+                                                 "name":"$tableNameThree",
+                                                 "longName":"$tableNameThree",
+                                                 "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableNameThree/hour"
+                                             }
+                                         ]
+                                     }"""
+
+        String expectedResponseFour = """{
+                                         "rows": [
+                                             {
+                                                 "category":"General",
+                                                 "granularity":"hour",
+                                                 "name":"$tableNameFour",
+                                                 "longName":"$tableNameFour",
+                                                 "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/tables/$tableNameFour/hour"
                                              }
                                          ]
                                      }"""
@@ -138,9 +192,23 @@ class TablesServletSpec extends Specification {
                 JsonSortStrategy.SORT_BOTH
         )
 
+        GroovyTestUtils.compareJson(
+                jerseyTestBinder.makeRequest("/tables/$tableNameThree").get(String.class),
+                expectedResponseThree,
+                JsonSortStrategy.SORT_BOTH
+        )
+
+        GroovyTestUtils.compareJson(
+                jerseyTestBinder.makeRequest("/tables/$tableNameFour").get(String.class),
+                expectedResponseFour,
+                JsonSortStrategy.SORT_BOTH
+        )
+
         where:
         tableNameOne = "wikipedia"
-        tableNameTwo = "logicaltabletester"
+        tableNameTwo = "logicaltabletesterone"
+        tableNameThree = "logicaltabletestertwo"
+        tableNameFour = "logicaltabletesterthree"
     }
 
     //This test is a sample of how we test various table endpoints at differing granularities
@@ -149,15 +217,17 @@ class TablesServletSpec extends Specification {
         setup:
         List<String> dimensionNamesOne = ("comment, countryIsoCode, regionIsoCode, page, user, isUnpatrolled, isNew, isRobot, isAnonymous," +
                 " isMinor, namespace, channel, countryName, regionName, metroCode, cityName").split(',').collect { it.trim()}
-        List<String> metricNamesOne = "count, added, delta, deleted, metrictestertwo".split(',').collect{ it.trim()}
-        List<String> dimensionNamesTwo = ("comment, countryIsoCode").split(',').collect { it.trim()}
-        List<String> metricNamesTwo = "count, added, delta, deleted, bigthetasketch, metrictesterone".split(',').collect{ it.trim()}
+        List<String> metricNamesOne = ("count, added, delta, deleted").split(',').collect{ it.trim()}
+        List<String> dimensionNamesTwo = ("comment, countryIsoCode, regionIsoCode, page, user, isUnpatrolled, isNew, isRobot, isAnonymous," +
+                " isMinor, namespace, channel, countryName, regionName, metroCode, cityName").split(',').collect { it.trim()}
+        List<String> metricNamesTwo = ("count, added, delta, deleted, averageaddedperhour, averagedeletedperhour," +
+                "plusavgaddeddeleted, minusaddeddelta, cardonpage, bigthetasketch").split(',').collect{ it.trim()}
 
         String expectedResponseOne = """{
                                         "availableIntervals":[],
                                         "name":"$tableNameOne",
                                         "longName":"$tableNameOne",
-                                        "granularity":"day",
+                                        "granularity":"hour",
                                         "category": "General",
                                         "retention": "P1Y",
                                         "description": "$tableNameOne",
@@ -195,7 +265,7 @@ class TablesServletSpec extends Specification {
                                         "availableIntervals":[],
                                         "name":"$tableNameTwo",
                                         "longName":"$tableNameTwo",
-                                        "granularity":"day",
+                                        "granularity":"hour",
                                         "category": "General",
                                         "retention": "P1Y",
                                         "description": "$tableNameTwo",
@@ -241,8 +311,8 @@ class TablesServletSpec extends Specification {
 
         where:
         tableNameOne= "wikipedia"
-        tableNameTwo= "logicaltabletester"
-        granularity = "DAY"
+        tableNameTwo= "logicaltabletesterone"
+        granularity = "HOUR"
 
     }
 }

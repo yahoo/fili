@@ -1,17 +1,10 @@
 {
   "makers": [
     {
-      "name": "aggregateAverage",
+      "name": "aggregateAverageByHour",
       "class": "com.yahoo.bard.webservice.data.config.metric.makers.AggregationAverageMaker",
       "params": {
-        "innerGrain": "DAY"
-      }
-    },
-    {
-      "name": "bigThetaSketch",
-      "class": "com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker",
-      "params": {
-        "sketchSize": "4096"
+        "innerGrain": "HOUR"
       }
     },
     {
@@ -22,12 +15,41 @@
       }
     },
     {
-      "name": "count",
-      "class": "com.yahoo.bard.webservice.data.config.metric.makers.CountMaker"
+      "name": "arithmeticMinus",
+      "class": "com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker",
+      "params": {
+        "function": "MINUS"
+      }
+    },
+    {
+      "name": "cardinalByRow",
+      "class": "com.yahoo.bard.webservice.data.config.metric.makers.CardinalityMaker",
+      "params": {
+        "byRow": "true"
+      }
+    },
+    {
+      "name": "constant",
+      "class": "com.yahoo.bard.webservice.data.config.metric.makers.ConstantMaker"
+    },
+    {
+      "name": "longSum",
+      "class": "com.yahoo.bard.webservice.data.config.metric.makers.LongSumMaker"
     },
     {
       "name": "doubleSum",
       "class": "com.yahoo.bard.webservice.data.config.metric.makers.DoubleSumMaker"
+    },
+    {
+      "name": "bigThetaSketch",
+      "class": "com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker",
+      "params": {
+        "sketchSize": "4096"
+      }
+    },
+    {
+      "name": "count",
+      "class": "com.yahoo.bard.webservice.data.config.metric.makers.CountMaker"
     }
   ],
   "metrics": [
@@ -63,43 +85,51 @@
       ]
     },
     {
-      "apiName": "logicalAdded",
-      "description": "Description for test",
-      "maker": "doubleSum",
+      "apiName": "averageAddedPerHour",
+      "description": "Calculate average added records by hour.",
+      "maker": "aggregateAverageByHour",
       "dependencyMetricNames": [
         "added"
       ]
     },
     {
-      "apiName": "logicalDeleted",
-      "description": "Description for test",
-      "maker": "doubleSum",
+      "apiName": "averageDeletedPerHour",
+      "description": "Calculate average deleted records by hour.",
+      "maker": "aggregateAverageByHour",
       "dependencyMetricNames": [
         "deleted"
       ]
     },
     {
+      "apiName": "plusAvgAddedDeleted",
+      "description": "Calculate average added plus average deleted per hour.",
+      "maker": "arithmeticPlus",
+      "dependencyMetricNames": [
+        "averageAddedPerHour", "averageDeletedPerHour"
+      ]
+    },
+    {
+      "apiName": "MinusAddedDelta",
+      "description": "Calculate added minus delta per hour.",
+      "maker": "arithmeticMinus",
+      "dependencyMetricNames": [
+        "added", "delta"
+      ]
+    },
+    {
+      "apiName": "cardOnPage",
+      "description": "Generate cardinal rows on added.",
+      "maker": "cardinalByRow",
+      "dependencyMetricNames": [
+        "page"
+      ]
+    },
+    {
       "apiName": "bigThetaSketch",
-      "description": "Description for bigThetaSketch",
+      "description": "Calculate theta sketch on delta.",
       "maker": "bigThetaSketch",
       "dependencyMetricNames": [
-        "delta"
-      ]
-    },
-    {
-      "apiName": "metricTesterOne",
-      "description": "Plus logical added metric and logical deleted metric.",
-      "maker": "arithmeticPlus",
-      "dependencyMetricNames": [
-        "logicalAdded", "logicalDeleted"
-      ]
-    },
-    {
-      "apiName": "metricTesterTwo",
-      "description": "Plus physical added metric and physical deleted metric.",
-      "maker": "arithmeticPlus",
-      "dependencyMetricNames": [
-        "added", "deleted"
+        "page"
       ]
     }
   ]
