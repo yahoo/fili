@@ -7,6 +7,10 @@ pull request if there was one.
 
 ### Added:
 
+- [Add specs for InsensitiveContainsSearchQuerySpec & RegexSearchQuerySpec](https://github.com/yahoo/fili/pull/732)
+    * `RegexSearchQuerySpec` and `InsensitiveContainsSearchQuerySpec` have no dedicated test specs. This PR adds tests
+      for them.
+
 - [Implement ContainsSearchQuerySpec](https://github.com/yahoo/fili/pull/730)
     * Adds serialization for `ContainsSearchQuerySpec` so that Fili API users can use that through Fili.
 
