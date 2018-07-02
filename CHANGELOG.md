@@ -17,7 +17,6 @@ pull request if there was one.
 
 - [Added builder method for MetricUnionAvailability and MetricLeftUnionAvailabi](https://github.com/yahoo/fili/pull/736)
 
-
 - [Add specs for InsensitiveContainsSearchQuerySpec & RegexSearchQuerySpec](https://github.com/yahoo/fili/pull/732)
     * `RegexSearchQuerySpec` and `InsensitiveContainsSearchQuerySpec` have no dedicated test specs. This PR adds tests
       for them.
