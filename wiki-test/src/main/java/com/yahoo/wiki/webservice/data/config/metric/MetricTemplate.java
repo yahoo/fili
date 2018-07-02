@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  *      }
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class WikiMetricTemplate implements MetricConfigAPI {
+public class MetricTemplate implements MetricConfigAPI {
 
     private final String apiName;
     private final String longName;
@@ -44,7 +44,7 @@ public class WikiMetricTemplate implements MetricConfigAPI {
      * @param dependencyMetricNames json property dependencyMetricNames
      * @param satisfyingGrains      json property satisfyingGrains
      */
-    WikiMetricTemplate(
+    MetricTemplate(
             @NotNull @JsonProperty("apiName") String apiName,
             @JsonProperty("longName") String longName,
             @JsonProperty("maker") String makerName,

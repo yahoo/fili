@@ -24,31 +24,42 @@ import java.util.stream.Collectors;
  * such as the LongSumMaker for performing the longSum aggregation, and the divisionMaker, which performs division
  * of two other metrics.
  */
-public class WikiMetricLoader implements MetricLoader {
+public class MetricsLoader implements MetricLoader {
 
-    private static final Logger LOG = LoggerFactory.getLogger(WikiMetricLoader.class);
-
-    public static final int BYTES_PER_KILOBYTE = 1024;
-    public static final int DEFAULT_KILOBYTES_PER_SKETCH = 16;
-    public static final int DEFAULT_SKETCH_SIZE_IN_BYTES = DEFAULT_KILOBYTES_PER_SKETCH * BYTES_PER_KILOBYTE;
+    private static final Logger LOG = LoggerFactory.getLogger(MetricLoader.class);
 
     private static MetricMakerDictionary metricMakerDictionary;
-    private final ObjectMapper objectMapper;
+    private static ExternalConfigLoader metricConfigLoader;
+    private static String metricConfigFilePath;
 
     /**
-     * Constructs a WikiMetricLoader.
+     * Constructor using the default external configuration loader
+     * and default external configuration file path.
      */
-    public WikiMetricLoader() {
-        this(new ObjectMapper());
+    public MetricsLoader() {
+        this(new ExternalConfigLoader(new ObjectMapper()),
+                "MetricConfigTemplateSample.json");
     }
 
     /**
-     * Constructs a WikiMetricLoader using the default sketch size and default dimensionDictionary.
+     * Constructor using the default external configuration file path.
      *
-     * @param objectMapper Object mapper for json parse
+     * @param externalConfigFilePath The external file's url containing the external config information
      */
-    public WikiMetricLoader(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
+    public MetricsLoader(String externalConfigFilePath) {
+        this(new ExternalConfigLoader(new ObjectMapper()),
+                externalConfigFilePath);
+    }
+
+    /**
+     * Constructs a MetricLoader.
+     *
+     * @param metricConfigLoader The external configuration loader for loading metrics
+     * @param externalConfigFilePath The external file's url containing the external config information
+     */
+    public MetricsLoader(ExternalConfigLoader metricConfigLoader, String externalConfigFilePath) {
+        this.metricConfigLoader = metricConfigLoader;
+        this.metricConfigFilePath = externalConfigFilePath;
     }
 
     /**
@@ -58,7 +69,7 @@ public class WikiMetricLoader implements MetricLoader {
      * @param metricDictionary    The dictionary that will be loaded with metrics
      * @param dimensionDictionary The dimension dictionary containing loaded dimensions
      */
-    protected void buildMetricMakersDictionary(LinkedHashSet<WikiMetricMakerTemplate> metricMakers,
+    protected void buildMetricMakersDictionary(LinkedHashSet<MetricMakerTemplate> metricMakers,
                                                MetricDictionary metricDictionary,
                                                DimensionDictionary dimensionDictionary) {
         metricMakerDictionary = new MetricMakerDictionary(metricMakers, metricDictionary, dimensionDictionary);
@@ -77,15 +88,14 @@ public class WikiMetricLoader implements MetricLoader {
     @Override
     public void loadMetricDictionary(MetricDictionary metricDictionary, DimensionDictionary dimensionDictionary) {
 
-        ExternalConfigLoader metricConfigLoader = new ExternalConfigLoader(objectMapper);
-        WikiMetricConfigTemplate wikiMetricConfig =
-                metricConfigLoader.parseExternalFile("MetricConfigTemplateSample.json",
-                        WikiMetricConfigTemplate.class
+        MetricConfigTemplate metricConfig =
+                metricConfigLoader.parseExternalFile(metricConfigFilePath,
+                        MetricConfigTemplate.class
                 );
 
-        buildMetricMakersDictionary(wikiMetricConfig.getMakers(), metricDictionary, dimensionDictionary);
+        buildMetricMakersDictionary(metricConfig.getMakers(), metricDictionary, dimensionDictionary);
 
-        List<MetricInstance> metrics = wikiMetricConfig.getMetrics().stream().map(
+        List<MetricInstance> metrics = metricConfig.getMetrics().stream().map(
                 metric -> new MetricInstance(
                         new LogicalMetricInfo(metric.asName(), metric.getLongName(), metric.getDescription()),
                         selectMetricMakersByName(metric.getMakerName()),

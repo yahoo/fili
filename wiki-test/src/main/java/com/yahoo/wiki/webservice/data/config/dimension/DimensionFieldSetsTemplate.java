@@ -26,7 +26,7 @@ import java.util.Objects;
  *      }
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class WikiDimensionFieldSetsTemplate implements DimensionField {
+public class DimensionFieldSetsTemplate implements DimensionField {
 
     private final String name;
     private final String description;
@@ -40,7 +40,7 @@ public class WikiDimensionFieldSetsTemplate implements DimensionField {
      * @param tags        json property tags
      */
     @JsonCreator
-    public WikiDimensionFieldSetsTemplate(
+    public DimensionFieldSetsTemplate(
             @NotNull @JsonProperty("name") String name,
             @JsonProperty("description") String description,
             @JsonProperty("tags") LinkedList<String> tags

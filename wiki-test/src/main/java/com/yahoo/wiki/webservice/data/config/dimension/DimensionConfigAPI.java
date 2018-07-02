@@ -48,6 +48,6 @@ public interface DimensionConfigAPI extends DimensionName {
      * @return a list of dimension field
      */
     LinkedHashSet<DimensionField> getFields(HashMap<String,
-            LinkedHashSet<WikiDimensionFieldSetsTemplate>> fieldDictionary);
+            LinkedHashSet<DimensionFieldSetsTemplate>> fieldDictionary);
 
 }

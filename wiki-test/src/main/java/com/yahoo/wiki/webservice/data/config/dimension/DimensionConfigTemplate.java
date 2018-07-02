@@ -25,10 +25,10 @@ import java.util.Objects;
  *      }
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class WikiDimensionConfigTemplate {
+public class DimensionConfigTemplate {
 
-    private final HashMap<String, LinkedHashSet<WikiDimensionFieldSetsTemplate>> fieldDictionary;
-    private final LinkedHashSet<WikiDimensionTemplate> dimensions;
+    private final HashMap<String, LinkedHashSet<DimensionFieldSetsTemplate>> fieldDictionary;
+    private final LinkedHashSet<DimensionTemplate> dimensions;
 
     /**
      * Constructor used by json parser.
@@ -37,9 +37,9 @@ public class WikiDimensionConfigTemplate {
      * @param dimensions json property dimensions
      */
     @JsonCreator
-    public WikiDimensionConfigTemplate(
-            @JsonProperty("fieldSets") HashMap<String, LinkedHashSet<WikiDimensionFieldSetsTemplate>> fieldDictionary,
-            @JsonProperty("dimensions") LinkedHashSet<WikiDimensionTemplate> dimensions
+    public DimensionConfigTemplate(
+            @JsonProperty("fieldSets") HashMap<String, LinkedHashSet<DimensionFieldSetsTemplate>> fieldDictionary,
+            @JsonProperty("dimensions") LinkedHashSet<DimensionTemplate> dimensions
     ) {
         this.fieldDictionary = (Objects.isNull(fieldDictionary) ? null : new HashMap<>(fieldDictionary));
         this.dimensions = (Objects.isNull(dimensions) ? null : new LinkedHashSet<>(dimensions));
@@ -50,7 +50,7 @@ public class WikiDimensionConfigTemplate {
      *
      * @return a map from fieldset name to fieldset
      */
-    public HashMap<String, LinkedHashSet<WikiDimensionFieldSetsTemplate>> getFieldSets() {
+    public HashMap<String, LinkedHashSet<DimensionFieldSetsTemplate>> getFieldSets() {
         return this.fieldDictionary;
     }
 
@@ -59,7 +59,7 @@ public class WikiDimensionConfigTemplate {
      *
      * @return a set of dimensions
      */
-    public LinkedHashSet<WikiDimensionTemplate> getDimensions() {
+    public LinkedHashSet<DimensionTemplate> getDimensions() {
         return this.dimensions;
     }
 }

@@ -7,7 +7,7 @@ import com.yahoo.bard.webservice.table.availability.AvailabilityTestingUtils
 import com.yahoo.bard.webservice.util.JsonSlurper
 import com.yahoo.bard.webservice.util.JsonSortStrategy
 import com.yahoo.bard.webservice.web.endpoints.SlicesServlet
-import com.yahoo.wiki.webservice.application.WikiJerseyTestBinder
+import com.yahoo.wiki.webservice.application.LuthierJerseyTestBinder
 
 import org.joda.time.Interval
 
@@ -23,7 +23,7 @@ class SlicesServletSpec extends Specification {
 
     def setup() {
         // Create the test web container to test the resources
-        jerseyTestBinder = new WikiJerseyTestBinder(SlicesServlet.class)
+        jerseyTestBinder = new LuthierJerseyTestBinder(SlicesServlet.class)
 
         AvailabilityTestingUtils.populatePhysicalTableCacheIntervals(jerseyTestBinder, interval)
     }

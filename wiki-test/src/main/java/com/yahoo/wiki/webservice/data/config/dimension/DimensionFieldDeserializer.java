@@ -35,32 +35,32 @@ import java.util.LinkedHashSet;
  * This deserializer can distinguish these two cases and set field info into WikiDimensionFieldConfigTemplate
  *
  */
-public class DimensionFieldDeserializer extends JsonDeserializer<WikiDimensionFieldConfigTemplate> {
+public class DimensionFieldDeserializer extends JsonDeserializer<DimensionFieldConfigTemplate> {
 
     /**
      * Deserialize dimension field configuration.
      *
      * @param jp   Json parser to parse json
      * @param ctxt Deserialization context
-     * @return wiki dimension filed info (an instance of WikiDimensionFieldConfigTemplate)
+     * @return dimension filed info (an instance of WikiDimensionFieldConfigTemplate)
      * @throws IOException when json file not found or read exception occurs
      */
     @Override
-    public WikiDimensionFieldConfigTemplate deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
-        WikiDimensionFieldConfigTemplate wikiDimensionField = new WikiDimensionFieldConfigTemplate();
+    public DimensionFieldConfigTemplate deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
+        DimensionFieldConfigTemplate dimensionField = new DimensionFieldConfigTemplate();
 
         if (jp.getCurrentToken() == JsonToken.VALUE_STRING) {
             // if field is a string, set field name to this string
-            wikiDimensionField.setFieldName(jp.getText());
+            dimensionField.setFieldName(jp.getText());
         } else {
             ObjectCodec oc = jp.getCodec();
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode node = oc.readTree(jp);
             // if field is a list, set field list to this list
-            LinkedHashSet<WikiDimensionFieldSetsTemplate> list = objectMapper.convertValue(node,
-                    new TypeReference<LinkedHashSet<WikiDimensionFieldSetsTemplate>>() { });
-            wikiDimensionField.setFieldList(list);
+            LinkedHashSet<DimensionFieldSetsTemplate> list = objectMapper.convertValue(node,
+                    new TypeReference<LinkedHashSet<DimensionFieldSetsTemplate>>() { });
+            dimensionField.setFieldList(list);
         }
-        return wikiDimensionField;
+        return dimensionField;
     }
 }

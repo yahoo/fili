@@ -17,7 +17,7 @@ import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.bard.webservice.util.EnumUtils;
 import com.yahoo.wiki.webservice.data.config.ExternalConfigLoader;
-import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensionsLoader;
+import com.yahoo.wiki.webservice.data.config.dimension.DimensionsLoader;
 
 import org.joda.time.DateTimeZone;
 
@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 /**
  * Load the Wikipedia-specific table configuration.
  */
-public class WikiTableLoader extends BaseTableLoader {
+public class TablesLoader extends BaseTableLoader {
 
     private final Map<TableName, Set<Granularity>> validGrains =
             new HashMap<>();
@@ -42,35 +42,60 @@ public class WikiTableLoader extends BaseTableLoader {
     private final Map<TableName, Set<PhysicalTableDefinition>> tableDefinitions =
             new HashMap<>();
 
-    private final Map<String, WikiPhysicalTableInfoTemplate> physicalTableDictionary = new HashMap<>();
+    private final Map<String, PhysicalTableInfoTemplate> physicalTableDictionary = new HashMap<>();
+
+    private static ExternalConfigLoader tableConfigLoader;
+    private static String tableConfigFilePath;
 
     /**
-     * Constructor.
+     * Constructor using the default external configuration loader.
+     * and default external configuration file path.
      *
      * @param metadataService Service containing the segment data for constructing tables
      */
-    public WikiTableLoader(DataSourceMetadataService metadataService) {
+    public TablesLoader(DataSourceMetadataService metadataService) {
         super(metadataService);
+    }
+
+    /**
+     * Set up external configuration file path and external configuration loader.
+     *
+     * @param externalConfigFilePath The external file's url containing the external config information
+     */
+    public void setUp(String externalConfigFilePath) {
+        setUp(new ExternalConfigLoader(new ObjectMapper()), externalConfigFilePath);
+    }
+
+    /**
+     * Set up external configuration file path and external configuration loader.
+     *
+     * @param tableConfigLoader The external configuration loader for loading tables
+     * @param externalConfigFilePath The external file's url containing the external config information
+     */
+    public void setUp(ExternalConfigLoader tableConfigLoader,
+                      String externalConfigFilePath) {
+        this.tableConfigLoader = tableConfigLoader;
+        this.tableConfigFilePath = externalConfigFilePath;
     }
 
     /**
      * Set up the tables for this table loader.
      *
-     * @param wikiDimensions   The dimensions to load into test tables
+     * @param dimensionsLoader   The dimensions to load into test tables
      * @param metricDictionary The dictionary to use when looking up metrics for this table
      * @param physicalTables   a set of physical tables
      * @param logicalTables    a set of logical tables
      */
-    private void configureSample(WikiDimensionsLoader wikiDimensions, MetricDictionary metricDictionary,
-                                 LinkedHashSet<WikiPhysicalTableInfoTemplate> physicalTables,
-                                 LinkedHashSet<WikiLogicalTableInfoTemplate> logicalTables
+    private void configureSample(DimensionsLoader dimensionsLoader, MetricDictionary metricDictionary,
+                                 LinkedHashSet<PhysicalTableInfoTemplate> physicalTables,
+                                 LinkedHashSet<LogicalTableInfoTemplate> logicalTables
     ) {
 
         // Map from dimension name to dimension configuration
-        Map<String, DimensionConfig> dimensions = wikiDimensions.getDimensionConfigurations();
+        Map<String, DimensionConfig> dimensions = dimensionsLoader.getDimensionConfigurations();
 
         // Map from physical table's name to physical table
-        for (WikiPhysicalTableInfoTemplate physicalTable : physicalTables) {
+        for (PhysicalTableInfoTemplate physicalTable : physicalTables) {
             physicalTableDictionary.put(physicalTable.getName(), physicalTable);
         }
 
@@ -79,11 +104,11 @@ public class WikiTableLoader extends BaseTableLoader {
         // - Update validGrains (logicalTable to all possible Granularities)
         // - Update apiMetricNames (logicalTable to apiMetrics)
         // - Update druidMetricNames (logicalTable to druidMetrics)
-        for (WikiLogicalTableInfoTemplate logicalTable : logicalTables) {
+        for (LogicalTableInfoTemplate logicalTable : logicalTables) {
 
             LinkedHashSet<FieldName> druidMetrics = new LinkedHashSet<>();
             LinkedHashSet<ApiMetricName> apiMetrics = new LinkedHashSet<>();
-            Set<PhysicalTableDefinition> samplePhysicalTableDefinition = new LinkedHashSet<>();
+            Set<PhysicalTableDefinition> physicalTableDefinition = new LinkedHashSet<>();
 
             // For each physical table this logical table depends on:
             // - Add physicalMetrics to druidMetrics
@@ -92,7 +117,7 @@ public class WikiTableLoader extends BaseTableLoader {
             for (String physicalTableName : logicalTable.getPhysicalTables()) {
 
                 // Get physical table through physical table's name
-                WikiPhysicalTableInfoTemplate physicalTable = physicalTableDictionary
+                PhysicalTableInfoTemplate physicalTable = physicalTableDictionary
                         .get(EnumUtils.camelCase(physicalTableName));
 
                 // Metrics for this physical table
@@ -110,7 +135,7 @@ public class WikiTableLoader extends BaseTableLoader {
                 ).collect(Collectors.toSet());
 
                 // Make a sample physical table definition
-                samplePhysicalTableDefinition.add(
+                physicalTableDefinition.add(
                         new ConcretePhysicalTableDefinition(
                                 physicalTable,
                                 physicalTable.getGranularity().buildZonedTimeGrain(DateTimeZone.UTC),
@@ -124,7 +149,7 @@ public class WikiTableLoader extends BaseTableLoader {
             }
 
             // Update tableDefinitions and validGrains
-            tableDefinitions.put(logicalTable, samplePhysicalTableDefinition);
+            tableDefinitions.put(logicalTable, physicalTableDefinition);
             validGrains.put(logicalTable, logicalTable.getGranularities());
 
             // Add all api metrics to apiMetrics
@@ -148,18 +173,17 @@ public class WikiTableLoader extends BaseTableLoader {
     @Override
     public void loadTableDictionary(ResourceDictionaries dictionaries) {
 
-        ExternalConfigLoader tableConfigLoader = new ExternalConfigLoader(new ObjectMapper());
-        WikiTableConfigTemplate wikiTableConfigTemplate =
+        TableConfigTemplate tableConfigTemplate =
                 tableConfigLoader.parseExternalFile(
-                        "TableConfigTemplateSample.json",
-                        WikiTableConfigTemplate.class);
+                        tableConfigFilePath,
+                        TableConfigTemplate.class);
 
-        LinkedHashSet<WikiPhysicalTableInfoTemplate> physicalTables = wikiTableConfigTemplate.getPhysicalTables();
-        LinkedHashSet<WikiLogicalTableInfoTemplate> logicalTables = wikiTableConfigTemplate.getLogicalTables();
+        LinkedHashSet<PhysicalTableInfoTemplate> physicalTables = tableConfigTemplate.getPhysicalTables();
+        LinkedHashSet<LogicalTableInfoTemplate> logicalTables = tableConfigTemplate.getLogicalTables();
 
-        configureSample(new WikiDimensionsLoader(), dictionaries.metric, physicalTables, logicalTables);
+        configureSample(new DimensionsLoader(), dictionaries.metric, physicalTables, logicalTables);
 
-        for (WikiLogicalTableInfoTemplate table : logicalTables) {
+        for (LogicalTableInfoTemplate table : logicalTables) {
             TableGroup tableGroup = buildDimensionSpanningTableGroup(
                     apiMetricNames.get(table),
                     druidMetricNames.get(table),

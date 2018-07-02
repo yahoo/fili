@@ -6,7 +6,7 @@ import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.util.JsonSortStrategy
 import com.yahoo.bard.webservice.web.endpoints.TablesServlet
-import com.yahoo.wiki.webservice.application.WikiJerseyTestBinder
+import com.yahoo.wiki.webservice.application.LuthierJerseyTestBinder
 
 import spock.lang.Specification
 import spock.lang.Timeout
@@ -18,7 +18,7 @@ class TablesServletSpec extends Specification {
 
     def setup() {
         // Create the test web container to test the resources
-        jerseyTestBinder = new WikiJerseyTestBinder(TablesServlet.class)
+        jerseyTestBinder = new LuthierJerseyTestBinder(TablesServlet.class)
     }
 
     def cleanup() {

@@ -11,10 +11,10 @@ import java.util.LinkedHashSet;
  *        field name: "xxx"
  *        field list: [field A, field B, field C]
  */
-public class WikiDimensionFieldConfigTemplate {
+public class DimensionFieldConfigTemplate {
 
     private String fieldName;
-    private LinkedHashSet<WikiDimensionFieldSetsTemplate> fieldList;
+    private LinkedHashSet<DimensionFieldSetsTemplate> fieldList;
 
     /**
      * Set fieldset name.
@@ -30,7 +30,7 @@ public class WikiDimensionFieldConfigTemplate {
      *
      * @param list a list of field
      */
-    public void setFieldList(LinkedHashSet<WikiDimensionFieldSetsTemplate> list) {
+    public void setFieldList(LinkedHashSet<DimensionFieldSetsTemplate> list) {
         this.fieldList = list;
     }
 
@@ -48,7 +48,7 @@ public class WikiDimensionFieldConfigTemplate {
      *
      * @return a list of field
      */
-    public LinkedHashSet<WikiDimensionFieldSetsTemplate> getFieldList() {
+    public LinkedHashSet<DimensionFieldSetsTemplate> getFieldList() {
         return fieldList;
     }
 }

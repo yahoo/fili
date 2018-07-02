@@ -17,18 +17,18 @@ import java.util.Objects;
  *      {
  *          "name" : "WIKI_TEST",
  *          "physicalTables": {
- *              WikiPhysicalTableInfoTemplate
+ *              PhysicalTableInfoTemplate
  *          },
  *          "logicalTables": {
- *              WikiLogicalTableInfoTemplate
+ *              LogicalTableInfoTemplate
  *          }
  *      }
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class WikiTableConfigTemplate {
+public class TableConfigTemplate {
 
-    private final LinkedHashSet<WikiPhysicalTableInfoTemplate> physicalTables;
-    private final LinkedHashSet<WikiLogicalTableInfoTemplate> logicalTables;
+    private final LinkedHashSet<PhysicalTableInfoTemplate> physicalTables;
+    private final LinkedHashSet<LogicalTableInfoTemplate> logicalTables;
 
     /**
      * Constructor used by json parser.
@@ -37,9 +37,9 @@ public class WikiTableConfigTemplate {
      * @param logicalTables json property logicalTables
      */
     @JsonCreator
-    public WikiTableConfigTemplate(
-            @JsonProperty("druidTables") LinkedHashSet<WikiPhysicalTableInfoTemplate> physicalTables,
-            @JsonProperty("logicalTables") LinkedHashSet<WikiLogicalTableInfoTemplate> logicalTables
+    public TableConfigTemplate(
+            @JsonProperty("druidTables") LinkedHashSet<PhysicalTableInfoTemplate> physicalTables,
+            @JsonProperty("logicalTables") LinkedHashSet<LogicalTableInfoTemplate> logicalTables
     ) {
         this.physicalTables = (Objects.isNull(physicalTables) ? null : physicalTables);
         this.logicalTables = (Objects.isNull(logicalTables) ? null : logicalTables);
@@ -50,7 +50,7 @@ public class WikiTableConfigTemplate {
      *
      * @return druid table info
      */
-    public LinkedHashSet<WikiPhysicalTableInfoTemplate> getPhysicalTables() {
+    public LinkedHashSet<PhysicalTableInfoTemplate> getPhysicalTables() {
         return this.physicalTables;
     }
 
@@ -59,7 +59,7 @@ public class WikiTableConfigTemplate {
      *
      * @return logical table info
      */
-    public LinkedHashSet<WikiLogicalTableInfoTemplate> getLogicalTables() {
+    public LinkedHashSet<LogicalTableInfoTemplate> getLogicalTables() {
         return this.logicalTables;
     }
 }

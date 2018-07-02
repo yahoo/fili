@@ -19,32 +19,45 @@ import java.util.stream.Collectors;
 /**
  * Hold all the dimension configurations for the sample Bard instance.
  */
-public class WikiDimensionsLoader {
+public class DimensionsLoader {
 
     private final Set<DimensionConfig> dimensionConfigs;
 
     /**
-     * Constructor.
+     * Constructor using the default external configuration loader
+     * and default external configuration file path.
      */
-    public WikiDimensionsLoader() {
-        this(new ObjectMapper());
+    public DimensionsLoader() {
+        this(new ExternalConfigLoader(new ObjectMapper()),
+                "DimensionConfigTemplateSample.json");
+    }
+
+    /**
+     * Constructor using the default external configuration file path.
+     *
+     * @param dimensionConfigFilePath The external file's url containing the external config information
+     */
+    public DimensionsLoader(String dimensionConfigFilePath) {
+        this(new ExternalConfigLoader(new ObjectMapper()),
+                dimensionConfigFilePath);
     }
 
     /**
      * Construct the dimension configurations.
      *
-     * @param objectMapper objectMapper for external file parse
+     * @param dimensionConfigLoader   The external configuration loader for loading dimensions
+     * @param dimensionConfigFilePath The external file's url containing the external config information
      */
-    public WikiDimensionsLoader(ObjectMapper objectMapper) {
+    public DimensionsLoader(ExternalConfigLoader dimensionConfigLoader,
+                            String dimensionConfigFilePath) {
 
-        ExternalConfigLoader dimensionConfigLoader = new ExternalConfigLoader(objectMapper);
-        WikiDimensionConfigTemplate wikiDimensionConfig =
+        DimensionConfigTemplate dimensionConfig =
                 dimensionConfigLoader.parseExternalFile(
-                        "DimensionConfigTemplateSample.json",
-                        WikiDimensionConfigTemplate.class);
+                        dimensionConfigFilePath,
+                        DimensionConfigTemplate.class);
 
         this.dimensionConfigs = Collections.unmodifiableSet(
-                wikiDimensionConfig.getDimensions().stream()
+                dimensionConfig.getDimensions().stream()
                         .map(
                                 dimensionName -> new DefaultKeyValueStoreDimensionConfig(
                                         dimensionName,
@@ -52,7 +65,7 @@ public class WikiDimensionsLoader {
                                         dimensionName.getDescription(),
                                         dimensionName.getLongName(),
                                         dimensionName.getCategory(),
-                                        dimensionName.getFields(wikiDimensionConfig.getFieldSets()),
+                                        dimensionName.getFields(dimensionConfig.getFieldSets()),
                                         getDefaultKeyValueStore(dimensionName),
                                         getDefaultSearchProvider(dimensionName)
                                 )
@@ -94,7 +107,7 @@ public class WikiDimensionsLoader {
      * @param storeName the name for the key value store
      * @return A KeyValueStore instance
      */
-    private KeyValueStore getDefaultKeyValueStore(WikiDimensionTemplate storeName) {
+    private KeyValueStore getDefaultKeyValueStore(DimensionTemplate storeName) {
         return MapStoreManager.getInstance(storeName.asName());
     }
 
@@ -104,7 +117,7 @@ public class WikiDimensionsLoader {
      * @param providerName The name of the dimension's indexes
      * @return A Scanning Search Provider for the provider name.
      */
-    private SearchProvider getDefaultSearchProvider(WikiDimensionTemplate providerName) {
+    private SearchProvider getDefaultSearchProvider(DimensionTemplate providerName) {
         return ScanSearchProviderManager.getInstance(providerName.asName());
     }
 }

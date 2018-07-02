@@ -13,9 +13,9 @@ import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.table.LogicalTableDictionary
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 import com.yahoo.bard.webservice.table.TableIdentifier
-import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensionsLoader
-import com.yahoo.wiki.webservice.data.config.metric.WikiMetricLoader
-import com.yahoo.wiki.webservice.data.config.table.WikiTableLoader
+import com.yahoo.wiki.webservice.data.config.dimension.DimensionsLoader
+import com.yahoo.wiki.webservice.data.config.metric.MetricsLoader
+import com.yahoo.wiki.webservice.data.config.table.TablesLoader
 
 import spock.lang.Shared
 import spock.lang.Specification
@@ -30,12 +30,26 @@ class ConfigurationLoadTaskSpec extends Specification {
     @Shared PhysicalTableDictionary physicalTableDictionary
 
     def setupSpec() {
-        LinkedHashSet<DimensionConfig> dimensions = new WikiDimensionsLoader().getAllDimensionConfigurations();
+
+        final DIMENSION_EXTERNAL_CONFIG_FILE_PATH  = "DimensionConfigTemplateSample.json"
+        final METRIC_EXTERNAL_CONFIG_FILE_PATH  =  "MetricConfigTemplateSample.json"
+        final TABLE_EXTERNAL_CONFIG_FILE_PATH  =  "TableConfigTemplateSample.json"
+
+        LinkedHashSet<DimensionConfig> dimensions = new DimensionsLoader(
+                DIMENSION_EXTERNAL_CONFIG_FILE_PATH
+        ).getAllDimensionConfigurations()
+
+        TablesLoader tablesLoader = new TablesLoader()
+        tablesLoader.setUp(TABLE_EXTERNAL_CONFIG_FILE_PATH)
+
         loader = new ConfigurationLoader(
                 new TypeAwareDimensionLoader(dimensions),
-                new WikiMetricLoader(),
-                new WikiTableLoader()
+                new MetricsLoader(
+                        METRIC_EXTERNAL_CONFIG_FILE_PATH
+                ),
+                tablesLoader
         )
+
         loader.load()
 
         dimensionDictionary = loader.getDimensionDictionary()

@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
  *      }
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class WikiPhysicalTableInfoTemplate implements TableName {
+public class PhysicalTableInfoTemplate implements TableName {
 
     private final String name;
     private final String description;
@@ -52,7 +52,7 @@ public class WikiPhysicalTableInfoTemplate implements TableName {
      * @param granularity json property granularity
      */
     @JsonCreator
-    public WikiPhysicalTableInfoTemplate(
+    public PhysicalTableInfoTemplate(
             @NotNull @JsonProperty("name") String name,
             @JsonProperty("description") String description,
             @JsonProperty("metrics") List<String> metrics,

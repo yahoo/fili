@@ -50,7 +50,7 @@ public class MetricMakerDictionary {
      * @param metricDictionary    metric dictionary as parameter for makers
      * @param dimensionDictionary dimension dictionary as parameter for makers
      */
-    public MetricMakerDictionary(LinkedHashSet<WikiMetricMakerTemplate> metricMakers,
+    public MetricMakerDictionary(LinkedHashSet<MetricMakerTemplate> metricMakers,
                                  MetricDictionary metricDictionary,
                                  DimensionDictionary dimensionDictionary) {
 
@@ -58,7 +58,7 @@ public class MetricMakerDictionary {
         this.metricDictionary = metricDictionary;
         this.dimensionDictionary = dimensionDictionary;
 
-        for (WikiMetricMakerTemplate maker : metricMakers) {
+        for (MetricMakerTemplate maker : metricMakers) {
 
             try {
 
@@ -192,7 +192,7 @@ public class MetricMakerDictionary {
      * @param maker     the maker template used to find parameter's value by name
      * @return the value of parameter (can be any type)
      */
-    private Object parseParams(String paramType, String paramName, WikiMetricMakerTemplate maker) {
+    private Object parseParams(String paramType, String paramName, MetricMakerTemplate maker) {
         if ("MetricDictionary".equals(paramType)) {
             return metricDictionary;
         }

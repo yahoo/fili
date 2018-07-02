@@ -7,7 +7,7 @@ import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.web.endpoints.BaseDataServletComponentSpec
 import com.yahoo.bard.webservice.web.endpoints.DataServlet
-import com.yahoo.wiki.webservice.application.WikiJerseyTestBinder
+import com.yahoo.wiki.webservice.application.LuthierJerseyTestBinder
 
 class SingleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServletComponentSpec {
 
@@ -33,7 +33,7 @@ class SingleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServle
 
     @Override
     JerseyTestBinder buildTestBinder() {
-        new WikiJerseyTestBinder(getResourceClasses())
+        new LuthierJerseyTestBinder(getResourceClasses())
     }
 
     @Override

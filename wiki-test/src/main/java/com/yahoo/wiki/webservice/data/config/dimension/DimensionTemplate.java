@@ -15,7 +15,7 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 
 /**
- * Wiki dimension template.
+ * Dimension template.
  * <p>
  * An example:
  * <p>
@@ -27,7 +27,7 @@ import java.util.Objects;
  *      }
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class WikiDimensionTemplate implements DimensionConfigAPI {
+public class DimensionTemplate implements DimensionConfigAPI {
 
     private final String apiName;
     private final String description;
@@ -35,7 +35,7 @@ public class WikiDimensionTemplate implements DimensionConfigAPI {
     private final String category;
 
     @JsonDeserialize(using = DimensionFieldDeserializer.class)
-    private WikiDimensionFieldConfigTemplate fields;
+    private DimensionFieldConfigTemplate fields;
 
     /**
      * Constructor used by json parser.
@@ -47,12 +47,12 @@ public class WikiDimensionTemplate implements DimensionConfigAPI {
      * @param fields      json property fields deserialize by DimensionFieldDeserializer
      */
     @JsonCreator
-    public WikiDimensionTemplate(
+    public DimensionTemplate(
             @NotNull @JsonProperty("apiName") String apiName,
             @JsonProperty("description") String description,
             @JsonProperty("longName") String longName,
             @JsonProperty("category") String category,
-            @JsonProperty("fields") WikiDimensionFieldConfigTemplate fields
+            @JsonProperty("fields") DimensionFieldConfigTemplate fields
     ) {
         this.apiName = EnumUtils.camelCase(apiName);
         this.description = (Objects.isNull(description) ? "" : description);
@@ -96,7 +96,7 @@ public class WikiDimensionTemplate implements DimensionConfigAPI {
 
     @Override
     public LinkedHashSet<DimensionField> getFields(HashMap<String,
-            LinkedHashSet<WikiDimensionFieldSetsTemplate>> fieldDictionary) {
+            LinkedHashSet<DimensionFieldSetsTemplate>> fieldDictionary) {
         resolveFields(fieldDictionary);
         return new LinkedHashSet<>(this.fields.getFieldList());
     }
@@ -111,7 +111,7 @@ public class WikiDimensionTemplate implements DimensionConfigAPI {
      * @param fieldDictionary a map from fieldset's name to fieldset
      */
     private void resolveFields(HashMap<String,
-            LinkedHashSet<WikiDimensionFieldSetsTemplate>> fieldDictionary) {
+            LinkedHashSet<DimensionFieldSetsTemplate>> fieldDictionary) {
 
         // if specific fields
         if (this.fields != null && this.fields.getFieldList() != null) {
@@ -120,7 +120,7 @@ public class WikiDimensionTemplate implements DimensionConfigAPI {
 
         // default fields
         else if (this.fields == null || this.fields.getFieldName() == null && this.fields.getFieldList() == null) {
-            this.fields = new WikiDimensionFieldConfigTemplate();
+            this.fields = new DimensionFieldConfigTemplate();
             this.fields.setFieldName("Default");
             this.fields.setFieldList(fieldDictionary.get("default"));
         }
@@ -132,7 +132,7 @@ public class WikiDimensionTemplate implements DimensionConfigAPI {
 
         // others -> default
         else {
-            this.fields = new WikiDimensionFieldConfigTemplate();
+            this.fields = new DimensionFieldConfigTemplate();
             this.fields.setFieldName("Default");
             this.fields.setFieldList(fieldDictionary.get("default"));
         }

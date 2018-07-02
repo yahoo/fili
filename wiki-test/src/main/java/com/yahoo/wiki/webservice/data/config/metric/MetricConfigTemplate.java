@@ -16,19 +16,19 @@ import java.util.Objects;
  *       {
  *          "makers" :
  *              [
- *                  a list of metrics makers deserialize by WikiMetricMakerTemplate
+ *                  a list of metrics makers deserialize by MetricMakerTemplate
  *              ]
  *          "metrics" :
  *              [
- *                  a list of metrics deserialize by WikiMetricTemplate
+ *                  a list of metrics deserialize by MetricTemplate
  *              ]
  *       }
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class WikiMetricConfigTemplate {
+public class MetricConfigTemplate {
 
-    private final LinkedHashSet<WikiMetricMakerTemplate> makers;
-    private final LinkedHashSet<WikiMetricTemplate> metrics;
+    private final LinkedHashSet<MetricMakerTemplate> makers;
+    private final LinkedHashSet<MetricTemplate> metrics;
 
     /**
      * Constructor used by json parser.
@@ -36,9 +36,9 @@ public class WikiMetricConfigTemplate {
      * @param makers  json property makers
      * @param metrics json property metrics
      */
-    public WikiMetricConfigTemplate(
-            @JsonProperty("makers") LinkedHashSet<WikiMetricMakerTemplate> makers,
-            @JsonProperty("metrics") LinkedHashSet<WikiMetricTemplate> metrics
+    public MetricConfigTemplate(
+            @JsonProperty("makers") LinkedHashSet<MetricMakerTemplate> makers,
+            @JsonProperty("metrics") LinkedHashSet<MetricTemplate> metrics
     ) {
         this.makers = (Objects.isNull(makers) ? new LinkedHashSet<>() : new LinkedHashSet<>(makers));
         this.metrics = (Objects.isNull(metrics) ? new LinkedHashSet<>() : new LinkedHashSet<>(metrics));
@@ -49,7 +49,7 @@ public class WikiMetricConfigTemplate {
      *
      * @return a list of metrics makers
      */
-    public LinkedHashSet<WikiMetricMakerTemplate> getMakers() {
+    public LinkedHashSet<MetricMakerTemplate> getMakers() {
         return this.makers;
     }
 
@@ -58,7 +58,7 @@ public class WikiMetricConfigTemplate {
      *
      * @return a list of metrics
      */
-    public LinkedHashSet<WikiMetricTemplate> getMetrics() {
+    public LinkedHashSet<MetricTemplate> getMetrics() {
         return this.metrics;
     }
 }

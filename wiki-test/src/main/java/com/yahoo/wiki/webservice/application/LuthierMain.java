@@ -5,7 +5,7 @@ package com.yahoo.wiki.webservice.application;
 import com.yahoo.bard.webservice.application.HealthCheckServletContextListener;
 import com.yahoo.bard.webservice.application.MetricServletContextListener;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
-import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensionsLoader;
+import com.yahoo.wiki.webservice.data.config.dimension.DimensionsLoader;
 
 import com.codahale.metrics.servlet.InstrumentedFilter;
 import com.codahale.metrics.servlets.AdminServlet;
@@ -35,8 +35,8 @@ import javax.servlet.DispatcherType;
 /**
  * Launch Bard in Embedded Jetty.
  */
-public class WikiMain {
-    private static final Logger LOG = LoggerFactory.getLogger(WikiMain.class);
+public class LuthierMain {
+    private static final Logger LOG = LoggerFactory.getLogger(LuthierMain.class);
 
     /**
      * Makes the dimensions passthrough.
@@ -55,7 +55,7 @@ public class WikiMain {
      */
     private static void markDimensionCacheHealthy(int port) throws IOException {
         AsyncHttpClient asyncHttpClient = new DefaultAsyncHttpClient();
-        for (DimensionConfig dimensionConfig : new WikiDimensionsLoader().getAllDimensionConfigurations()) {
+        for (DimensionConfig dimensionConfig : new DimensionsLoader().getAllDimensionConfigurations()) {
             String dimension = dimensionConfig.getApiName();
             BoundRequestBuilder boundRequestBuilder = asyncHttpClient.preparePost("http://localhost:" + port +
                     "/v1/cache/dimensions/" + dimension)
