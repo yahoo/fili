@@ -44,8 +44,8 @@ public class TablesLoader extends BaseTableLoader {
 
     private final Map<String, PhysicalTableInfoTemplate> physicalTableDictionary = new HashMap<>();
 
-    private static ExternalConfigLoader tableConfigLoader;
-    private static String tableConfigFilePath;
+    private ExternalConfigLoader tableConfigLoader;
+    private String tableConfigFilePath;
 
     /**
      * Constructor using the default external configuration loader.

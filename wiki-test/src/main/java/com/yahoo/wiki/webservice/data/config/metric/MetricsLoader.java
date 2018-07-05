@@ -29,8 +29,8 @@ public class MetricsLoader implements MetricLoader {
     private static final Logger LOG = LoggerFactory.getLogger(MetricLoader.class);
 
     private static MetricMakerDictionary metricMakerDictionary;
-    private static ExternalConfigLoader metricConfigLoader;
-    private static String metricConfigFilePath;
+    private ExternalConfigLoader metricConfigLoader;
+    private String metricConfigFilePath;
 
     /**
      * Constructor using the default external configuration loader

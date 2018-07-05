@@ -18,10 +18,11 @@ import java.util.LinkedHashSet;
  */
 public class LuthierBinderFactory extends AbstractBinderFactory {
 
+    String path = System.getProperty("user.dir");
 
-    private static final String DIMENSION_EXTERNAL_CONFIG_FILE_PATH  = "DimensionConfigTemplateSample.json";
-    private static final String METRIC_EXTERNAL_CONFIG_FILE_PATH  =  "MetricConfigTemplateSample.json";
-    private static final String TABLE_EXTERNAL_CONFIG_FILE_PATH  =  "TableConfigTemplateSample.json";
+    private final String dimensionExternalConfigFilePath  = path + "/config/DimensionConfigTemplate.json";
+    private final String metricExternalConfigFilePath  =  path + "/config/MetricConfigTemplate.json";
+    private final String tableExternalConfigFilePath  =  path + "/config/TableConfigTemplate.json";
 
     private static ExternalConfigLoader externalConfigLoader = new ExternalConfigLoader(new ObjectMapper());
 
@@ -29,7 +30,7 @@ public class LuthierBinderFactory extends AbstractBinderFactory {
     protected MetricLoader getMetricLoader() {
         return new MetricsLoader(
                 externalConfigLoader,
-                METRIC_EXTERNAL_CONFIG_FILE_PATH
+                metricExternalConfigFilePath
                 );
     }
 
@@ -38,7 +39,7 @@ public class LuthierBinderFactory extends AbstractBinderFactory {
         return new LinkedHashSet<>(
                 new DimensionsLoader(
                         externalConfigLoader,
-                        DIMENSION_EXTERNAL_CONFIG_FILE_PATH
+                        dimensionExternalConfigFilePath
                 ).getAllDimensionConfigurations()
         );
     }
@@ -47,7 +48,8 @@ public class LuthierBinderFactory extends AbstractBinderFactory {
     protected com.yahoo.bard.webservice.data.config.table.TableLoader getTableLoader() {
         TablesLoader tablesLoader = new TablesLoader(getDataSourceMetadataService());
         tablesLoader.setUp(externalConfigLoader,
-                TABLE_EXTERNAL_CONFIG_FILE_PATH);
+                tableExternalConfigFilePath
+        );
         return tablesLoader;
     }
 }

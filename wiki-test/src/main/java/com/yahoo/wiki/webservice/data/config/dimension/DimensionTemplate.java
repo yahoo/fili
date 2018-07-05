@@ -98,6 +98,9 @@ public class DimensionTemplate implements DimensionConfigAPI {
     public LinkedHashSet<DimensionField> getFields(HashMap<String,
             LinkedHashSet<DimensionFieldSetsTemplate>> fieldDictionary) {
         resolveFields(fieldDictionary);
+        if (this.fields.getFieldList() == null) {
+            return new LinkedHashSet<>();
+        }
         return new LinkedHashSet<>(this.fields.getFieldList());
     }
 
@@ -112,6 +115,10 @@ public class DimensionTemplate implements DimensionConfigAPI {
      */
     private void resolveFields(HashMap<String,
             LinkedHashSet<DimensionFieldSetsTemplate>> fieldDictionary) {
+
+        if (fieldDictionary == null) {
+            return;
+        }
 
         // if specific fields
         if (this.fields != null && this.fields.getFieldList() != null) {
