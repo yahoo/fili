@@ -66,6 +66,24 @@ class MetricUnionAvailabilitySpec extends Specification {
         availabilitiesToMetricNames = new HashMap<>()
     }
 
+    def "Build method produces the same instance by constructor"() {
+        given:
+        availability1.getAllAvailableIntervals() >> [:]
+        availability2.getAllAvailableIntervals() >> [:]
+
+        availabilitiesToMetricNames.put(availability1, [metric1] as Set)
+        availabilitiesToMetricNames.put(availability2, [metric2] as Set)
+
+        MetricUnionAvailability availabilityByContr = new MetricUnionAvailability(
+                physicalTables.availability as Set,
+                availabilitiesToMetricNames
+        )
+        MetricUnionAvailability availabilityByBuild = MetricUnionAvailability.build(physicalTables, availabilitiesToMetricNames)
+
+        expect:
+        availabilityByBuild == availabilityByContr
+    }
+
     def "Metric columns are initialized by fetching columns from availabilities, not from physical tables"() {
         given:
         availability1.getAllAvailableIntervals() >> [(metric1): []]
@@ -150,8 +168,12 @@ class MetricUnionAvailabilitySpec extends Specification {
         metricUnionAvailability = new MetricUnionAvailability(physicalTables.availability as Set, availabilitiesToMetricNames)
 
         then:
-        RuntimeException exception = thrown()
-        exception.message.startsWith("Metric columns must be unique across the metric union data sources, but duplicate was found across the following data sources: source1, source2")
+        Exception exception = thrown()
+        exception instanceof IllegalArgumentException
+        exception.message.startsWith(
+                "Metric columns must be unique across the metric union data sources, " +
+                        "but duplicate was found across the following data sources: source1, source2"
+        )
     }
 
     def "getDataSourceNames returns sources from availabilities not from physical tables"() {
@@ -226,8 +248,8 @@ class MetricUnionAvailabilitySpec extends Specification {
         PhysicalDataSourceConstraint physicalDataSourceConstraint = new PhysicalDataSourceConstraint(dataSourceConstraint, [metric1, metric2, 'ignored2'] as Set)
 
         expect:
-        metricUnionAvailability.constructSubConstraint(physicalDataSourceConstraint).get(availability1).getMetricNames() == [metric1] as Set
-        metricUnionAvailability.constructSubConstraint(physicalDataSourceConstraint).get(availability2).getMetricNames() == [metric2] as Set
+        metricUnionAvailability.constructSubConstraint(availabilitiesToMetricNames, physicalDataSourceConstraint).get(availability1).getMetricNames() == [metric1] as Set
+        metricUnionAvailability.constructSubConstraint(availabilitiesToMetricNames, physicalDataSourceConstraint).get(availability2).getMetricNames() == [metric2] as Set
     }
 
     @Unroll
@@ -263,6 +285,9 @@ class MetricUnionAvailabilitySpec extends Specification {
 
         expect:
         metricUnionAvailability.getAvailableIntervals(physicalDataSourceConstraint) == new SimplifiedIntervalList(
+                availableIntervals.collect{it -> new Interval(it)} as Set
+        )
+        metricUnionAvailability.getAvailableIntervals(availabilitiesToMetricNames, physicalDataSourceConstraint) == new SimplifiedIntervalList(
                 availableIntervals.collect{it -> new Interval(it)} as Set
         )
 
@@ -312,5 +337,52 @@ class MetricUnionAvailabilitySpec extends Specification {
 
         expect:
         metricUnionAvailability.getAvailableIntervals(physicalDataSourceConstraint) == new SimplifiedIntervalList()
+        metricUnionAvailability.getAvailableIntervals(availabilitiesToMetricNames, physicalDataSourceConstraint) == new SimplifiedIntervalList()
+    }
+
+    def "Published references to internal states are immutable"() {
+        given: "a MetricUnionAvailability instance"
+        availability1.getAllAvailableIntervals() >> [(metric1): ['2018-01-01/2018-02-01']]
+        availability2.getAllAvailableIntervals() >> [(metric2): ['2018-01-01/2018-02-01']]
+
+        availabilitiesToMetricNames.put(availability1, [metric1] as Set)
+        availabilitiesToMetricNames.put(availability2, [metric2] as Set)
+
+        availability1.getAvailableIntervals(_ as PhysicalDataSourceConstraint) >> new SimplifiedIntervalList(
+                [new Interval('2018-01-01/2018-02-01')]
+        )
+        availability2.getAvailableIntervals(_ as PhysicalDataSourceConstraint) >> new SimplifiedIntervalList(
+                [new Interval('2018-01-01/2018-02-01')]
+        )
+
+        metricUnionAvailability = new MetricUnionAvailability(physicalTables.availability as Set, availabilitiesToMetricNames)
+
+        when: "we try to mutate metrics"
+        metricUnionAvailability.getMetricNames().add("someMetric")
+
+        then: "error is thrown"
+        Exception exception = thrown()
+        exception instanceof UnsupportedOperationException
+
+        when: "we try to mutate availability->metircs map"
+        metricUnionAvailability.getAvailabilitiesToMetricNames().put(Mock(Availability), [] as Set)
+
+        then: "error is thrown"
+        exception = thrown()
+        exception instanceof UnsupportedOperationException
+    }
+
+    def "Data sources names in logging messages are comma separated"() {
+        given:
+        availability1.getAllAvailableIntervals() >> [:]
+        availability2.getAllAvailableIntervals() >> [:]
+
+        availabilitiesToMetricNames.put(availability1, [metric1] as Set)
+        availabilitiesToMetricNames.put(availability2, [metric2] as Set)
+
+        metricUnionAvailability = new MetricUnionAvailability(physicalTables.availability as Set, availabilitiesToMetricNames)
+
+        expect:
+        metricUnionAvailability.getDataSourceNamesAsString() == "source1, source2"
     }
 }

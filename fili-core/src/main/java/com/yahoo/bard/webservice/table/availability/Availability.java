@@ -63,7 +63,6 @@ public interface Availability {
     }
 
     /**
-     *
      * Fetch a {@link SimplifiedIntervalList} representing the coalesced available intervals on this availability as
      * filtered by the {@link PhysicalDataSourceConstraint}.
      *

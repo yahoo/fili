@@ -109,11 +109,13 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
                     tableMetricNamesMap.keySet(),
                     getLogicalToPhysicalNames(),
                     MetricUnionAvailability.build(
-                            tableMetricNamesMap.keySet(), tableMetricNamesMap.entrySet().stream()
+                            tableMetricNamesMap.keySet(),
+                            tableMetricNamesMap.entrySet().stream()
                                     .collect(Collectors.toMap(
                                             entry -> entry.getKey().getAvailability(),
                                             Map.Entry::getValue
-                                    )))
+                                    ))
+                    )
             );
         } catch (IllegalArgumentException e) {
             String message = String.format(VALIDATION_ERROR_FORMAT, e.getMessage());

@@ -66,6 +66,29 @@ class MetricLeftUnionAvailabilitySpec extends Specification {
         availabilitiesToMetricNames = new HashMap<>()
     }
 
+    def "Build method produces the same instance by constructor"() {
+        given:
+        representativeAvailability.getAllAvailableIntervals() >> [:]
+        availability2.getAllAvailableIntervals() >> [:]
+
+        availabilitiesToMetricNames.put(representativeAvailability, [metric1] as Set)
+        availabilitiesToMetricNames.put(availability2, [metric2] as Set)
+
+        MetricLeftUnionAvailability availabilityByContr = new MetricLeftUnionAvailability(
+                [representativeAvailability] as Set,
+                physicalTables.availability as Set,
+                availabilitiesToMetricNames
+        )
+        MetricLeftUnionAvailability availabilityByBuild = MetricLeftUnionAvailability.build(
+                [representativeAvailability] as Set,
+                physicalTables,
+                availabilitiesToMetricNames
+        )
+
+        expect:
+        availabilityByBuild == availabilityByContr
+    }
+
     @Unroll
     def "getAvailableIntervals returns the intersection of requested columns when available intervals have #reason"() {
         given:
@@ -83,7 +106,7 @@ class MetricLeftUnionAvailabilitySpec extends Specification {
         )
 
         metricLeftUnionAvailability = new MetricLeftUnionAvailability(
-                representativeAvailability,
+                [representativeAvailability] as Set,
                 physicalTables.availability as Set,
                 availabilitiesToMetricNames
         )
@@ -136,7 +159,7 @@ class MetricLeftUnionAvailabilitySpec extends Specification {
         )
 
         metricLeftUnionAvailability = new MetricLeftUnionAvailability(
-                representativeAvailability,
+                [representativeAvailability] as Set,
                 physicalTables.availability as Set,
                 availabilitiesToMetricNames
         )
@@ -161,6 +184,26 @@ class MetricLeftUnionAvailabilitySpec extends Specification {
         metricLeftUnionAvailability.getAvailableIntervals(physicalDataSourceConstraint) == new SimplifiedIntervalList()
     }
 
+    def "Only representative availability is considered for available interval calculation"() {
+        given:
+        representativeAvailability.getAllAvailableIntervals() >> [:]
+        availability2.getAllAvailableIntervals() >> [:]
+
+        availabilitiesToMetricNames.put(representativeAvailability, [metric1] as Set)
+        availabilitiesToMetricNames.put(availability2, [metric2] as Set)
+
+        metricLeftUnionAvailability = new MetricLeftUnionAvailability(
+                [representativeAvailability] as Set,
+                physicalTables.availability as Set,
+                availabilitiesToMetricNames
+        )
+
+        expect:
+        metricLeftUnionAvailability.getRepresentativeAvailabilitiesToMetricNames() == [
+                (representativeAvailability): [metric1] as Set
+        ]
+    }
+
     def "getAvailableIntervals() returns available intervals of representative availability"() {
         setup:
         representativeAvailability.getAllAvailableIntervals() >> [(metric1): []]
@@ -177,7 +220,7 @@ class MetricLeftUnionAvailabilitySpec extends Specification {
         )
 
         metricLeftUnionAvailability = new MetricLeftUnionAvailability(
-                representativeAvailability,
+                [representativeAvailability] as Set,
                 physicalTables.availability as Set,
                 availabilitiesToMetricNames
         )
@@ -186,5 +229,70 @@ class MetricLeftUnionAvailabilitySpec extends Specification {
         metricLeftUnionAvailability.getAvailableIntervals() == new SimplifiedIntervalList(
                 [new Interval('2018-01-01/2018-02-01')]
         )
+    }
+
+    def "Published references to internal states are immutable"() {
+        given:
+        representativeAvailability.getAllAvailableIntervals() >> [:]
+        availability2.getAllAvailableIntervals() >> [:]
+
+        availabilitiesToMetricNames.put(representativeAvailability, [metric1] as Set)
+        availabilitiesToMetricNames.put(availability2, [metric2] as Set)
+
+        metricLeftUnionAvailability = new MetricLeftUnionAvailability(
+                [representativeAvailability] as Set,
+                physicalTables.availability as Set,
+                availabilitiesToMetricNames
+        )
+
+        when:
+        metricLeftUnionAvailability.getRepresentativeAvailabilities().add(_ as Availability)
+
+        then:
+        Exception exception = thrown()
+        exception instanceof UnsupportedOperationException
+    }
+
+    def "toString matches Javadoc description"() {
+        given:
+        representativeAvailability.getAllAvailableIntervals() >> [:]
+        representativeAvailability.toString() >> "representativeAvailability"
+        availability2.getAllAvailableIntervals() >> [:]
+
+        availabilitiesToMetricNames.put(representativeAvailability, [metric1] as Set)
+        availabilitiesToMetricNames.put(availability2, [metric2] as Set)
+
+        metricLeftUnionAvailability = new MetricLeftUnionAvailability(
+                [representativeAvailability] as Set,
+                physicalTables.availability as Set,
+                availabilitiesToMetricNames
+        )
+
+        expect:
+        metricLeftUnionAvailability.toString() ==
+                "MetricLeftUnionAvailability{representativeAvailabilities=[representativeAvailability]}"
+    }
+
+    def "Left availabilities that are not known to have been configured is considered being missed out"() {
+        given:
+        Availability missedOut = Mock(Availability) {toString() >> "missedOut"}
+
+        representativeAvailability.getAllAvailableIntervals() >> [:]
+        availability2.getAllAvailableIntervals() >> [:]
+
+        availabilitiesToMetricNames.put(representativeAvailability, [metric1] as Set)
+        availabilitiesToMetricNames.put(availability2, [metric2] as Set)
+
+        when:
+        metricLeftUnionAvailability = new MetricLeftUnionAvailability(
+                [representativeAvailability, missedOut] as Set,
+                physicalTables.availability as Set,
+                availabilitiesToMetricNames
+        )
+
+        then:
+        Exception exception = thrown()
+        exception instanceof IllegalArgumentException
+        exception.message == "'[missedOut]' have not been configured in table"
     }
 }
