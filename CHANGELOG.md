@@ -13,7 +13,11 @@ pull request if there was one.
       intervals on this availability is determined by a single participating `Availability`, instead of all
       participating `Availabilities` as in `MetricUnionAvailability`. 
     * Added a builder method to `MetricUnionAvailability` and `MetricLeftUnionAvailability` to save on needing to 
-    add additional table classes.
+      add additional table classes.
+    
+- [Implement "pure left-union" Availability](https://github.com/yahoo/fili/pull/736)
+    * A new "pure left-union" `Availability` called **`MetricPureLeftUnionAvailability`** is implemented. For the
+      details of this Availability, please refer to the class description/Javadoc of it
 
 - [Added builder method for MetricUnionAvailability and MetricLeftUnionAvailabi](https://github.com/yahoo/fili/pull/736)
 

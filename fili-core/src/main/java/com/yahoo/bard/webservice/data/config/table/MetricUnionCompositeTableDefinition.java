@@ -111,10 +111,12 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
                     MetricUnionAvailability.build(
                             tableMetricNamesMap.keySet(),
                             tableMetricNamesMap.entrySet().stream()
-                                    .collect(Collectors.toMap(
-                                            entry -> entry.getKey().getAvailability(),
-                                            Map.Entry::getValue
-                                    ))
+                                    .collect(
+                                            Collectors.toMap(
+                                                    entry -> entry.getKey().getAvailability(),
+                                                    Map.Entry::getValue
+                                            )
+                                    )
                     )
             );
         } catch (IllegalArgumentException e) {
@@ -209,14 +211,17 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
         // Construct a map of tables to the metrics for that table
         return tables.stream()
                 .collect(
-                        Collectors.collectingAndThen(Collectors.toMap(
-                                Function.identity(),
-                                (ConfigPhysicalTable physicalTable) ->
-                                        Sets.intersection(
-                                                physicalTable.getSchema().getMetricColumnNames(),
-                                                metricNames
-                                        )
-                        ), ImmutableMap::copyOf)
+                        Collectors.collectingAndThen(
+                                Collectors.toMap(
+                                        Function.identity(),
+                                        (ConfigPhysicalTable physicalTable) ->
+                                                Sets.intersection(
+                                                        physicalTable.getSchema().getMetricColumnNames(),
+                                                        metricNames
+                                                )
+                                ),
+                                ImmutableMap::copyOf
+                        )
                 );
     }
 }

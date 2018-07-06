@@ -7,12 +7,12 @@ import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -74,7 +74,7 @@ public class MetricLeftUnionAvailability extends MetricUnionAvailability {
             @NotNull Map<Availability, Set<String>> availabilitiesToMetricNames
     ) {
         super(availabilities, availabilitiesToMetricNames);
-        this.representativeAvailabilities = Collections.unmodifiableSet(representativeAvailabilities);
+        this.representativeAvailabilities = ImmutableSet.copyOf(representativeAvailabilities);
         validateLeftAvailabilities();
     }
 
@@ -142,7 +142,7 @@ public class MetricLeftUnionAvailability extends MetricUnionAvailability {
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
-                .add("representativeAvailabilities", representativeAvailabilities)
+                .add("representativeAvailabilities", getRepresentativeAvailabilities())
                 .toString();
     }
 

@@ -7,6 +7,7 @@ import java.util.Comparator;
 /**
  * Marker interface for objects that can be treated as a data source name in druid.
  */
+@FunctionalInterface
 public interface DataSourceName {
 
     /**

@@ -8,6 +8,7 @@ import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
 import org.slf4j.Logger;
@@ -16,7 +17,9 @@ import org.slf4j.LoggerFactory;
 import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -140,10 +143,10 @@ public class MetricUnionAvailability extends BaseCompositeAvailability {
 
     @Override
     public String toString() {
-        return String.format("MetricUnionAvailability with data source names: [%s] and Configured metric columns: %s",
-                getDataSourceNamesAsString(),
-                getMetricNames()
-        );
+        return MoreObjects.toStringHelper(this)
+                .add("metricNames", getMetricNames())
+                .add("availabilitiesToMetricNames", getAvailabilitiesToMetricNames())
+                .toString();
     }
 
     @Override
@@ -153,8 +156,14 @@ public class MetricUnionAvailability extends BaseCompositeAvailability {
         }
         if (obj instanceof MetricUnionAvailability) {
             MetricUnionAvailability that = (MetricUnionAvailability) obj;
-            return Objects.equals(metricNames, that.metricNames)
-                    && Objects.equals(availabilitiesToMetricNames, that.availabilitiesToMetricNames);
+            return Objects.equals(
+                    new LinkedHashSet<>(getMetricNames()), // bound to a concrete type for ClassScanner
+                    new LinkedHashSet<>(that.getMetricNames())
+            ) &&
+                    Objects.equals(
+                            new HashMap<>(getAvailabilitiesToMetricNames()),
+                            new HashMap<>(that.getAvailabilitiesToMetricNames())
+                    );
         }
         return false;
     }

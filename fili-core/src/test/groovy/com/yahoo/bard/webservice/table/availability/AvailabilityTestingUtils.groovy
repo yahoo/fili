@@ -24,6 +24,21 @@ import java.util.stream.Stream
  */
 class AvailabilityTestingUtils extends Specification {
 
+    /**
+     * Returns a list of time intervals by converting a collection of their string representations.
+     * <p>
+     * The String formats are described by {@link org.joda.time.format.ISODateTimeFormat#dateTimeParser()} and
+     * {@link org.joda.time.format.ISOPeriodFormat#standard()}, and may be 'datetime/datetime', 'datetime/period' or
+     * 'period/datetime'.
+     *
+     * @param intervals  The collection of string time-intervals
+     *
+     * @return the list of time interval objects
+     */
+    static List<Interval> parseIntervals(Collection<String> intervals) {
+        intervals.collect {it -> new Interval(it)}
+    }
+
     static class TestAvailability implements Availability {
         final Set<DataSourceName> sourceDataSourceNames
         final Map<String, Set<Interval>> intervals
