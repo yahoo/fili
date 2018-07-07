@@ -14,9 +14,6 @@ import com.yahoo.bard.webservice.web.filters.ApiFilters
 import spock.lang.Specification
 import spock.lang.Unroll
 
-/**
- * Test for metric left-union availability behavior.
- */
 class MetricPureLeftUnionAvailabilitySpec extends Specification {
     Availability representativeAvailability
     Availability nonRepresentativeAvailability
@@ -90,12 +87,12 @@ class MetricPureLeftUnionAvailabilitySpec extends Specification {
         availabilityByBuild == availabilityByContr
     }
 
-    def "Without constraint, Availability returns immutable datasources of representative Availability only"() {
+    def "Without constraint, Availability returns immutable datasources of all participating Availabilities"() {
         when: "datasources are requested"
         Set<DataSourceName> dataSourceNames = metricPureLeftUnionAvailability.getDataSourceNames()
 
         then: "datasources are only associated with the representative availability"
-        dataSourceNames == [DataSourceName.of("source1")] as Set
+        dataSourceNames.collect {it -> it.asName()} == ["source1", "source2"]
 
         when: "when we try to mutate the datasources"
         dataSourceNames.add(DataSourceName.of("hack"))
@@ -105,19 +102,19 @@ class MetricPureLeftUnionAvailabilitySpec extends Specification {
         exception instanceof UnsupportedOperationException
     }
 
-    def "With constraint, Availability returns constrained datasources of representative Availability only"() {
+    def "With constraint, Availability returns constrained immutable datasources of all participating Availabilities"() {
         given: "a constraint"
         DataSourceConstraint constraint = Mock(DataSourceConstraint)
 
         and: "the constraint filters out all datasources in representative availability but keeps a datasource in non-representative availability"
-        representativeAvailability.getDataSourceNames(constraint) >> ([] as Set)
-        nonRepresentativeAvailability.getDataSourceNames(constraint) >> ([DataSourceName.of("source2")] as Set)
+        representativeAvailability.getDataSourceNames(constraint) >> ([DataSourceName.of("constrainedSource1")] as Set)
+        nonRepresentativeAvailability.getDataSourceNames(constraint) >> ([DataSourceName.of("constrainedSource2")] as Set)
 
         when: "datasources are requested"
         Set<DataSourceName> dataSourceNames = metricPureLeftUnionAvailability.getDataSourceNames(constraint)
 
         then: "datasources are only associated with the representative availability"
-        dataSourceNames == [] as Set
+        dataSourceNames.collect {it -> it.asName()} == ["constrainedSource1", "constrainedSource2"]
 
         when: "when we try to mutate the datasources"
         dataSourceNames.add(DataSourceName.of("hack"))
@@ -254,10 +251,17 @@ class MetricPureLeftUnionAvailabilitySpec extends Specification {
     def "toString matches Javadoc description"() {
         given: "toString spec of representative availability"
         representativeAvailability.toString() >> "representativeAvailability"
+        nonRepresentativeAvailability.toString() >> "nonRepresentativeAvailability"
 
         expect: "Availability prints to have the same format described in toString() Javadoc of this Availability"
         metricPureLeftUnionAvailability.toString() ==
-                "MetricPureLeftUnionAvailability{representativeAvailabilities=[representativeAvailability]}"
+                """
+                MetricPureLeftUnionAvailability{
+                        allAvailabilities=[representativeAvailability, nonRepresentativeAvailability], 
+                        dataSources=[source1, source2], 
+                        representativeAvailabilities=[representativeAvailability]
+                }
+                """.replaceAll( /\n\s*/, "" );
     }
 
     @Unroll

@@ -27,7 +27,9 @@ public abstract class BaseCompositeAvailability implements Availability {
     protected BaseCompositeAvailability(Stream<Availability> availabilityStream) {
         sourceAvailabilities = StreamUtils.toUnmodifiableSet(availabilityStream);
         dataSourcesNames = StreamUtils.toUnmodifiableSet(
-                sourceAvailabilities.stream().map(Availability::getDataSourceNames).flatMap(Set::stream)
+                sourceAvailabilities.stream()
+                        .map(Availability::getDataSourceNames)
+                        .flatMap(Set::stream)
         );
     }
 

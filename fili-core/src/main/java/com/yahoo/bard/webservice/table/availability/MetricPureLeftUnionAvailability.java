@@ -7,15 +7,16 @@ import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
+import com.yahoo.bard.webservice.util.StreamUtils;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -26,14 +27,14 @@ import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 
 /**
- * A extension of {@link BaseCompositeAvailability} which describes a union of source availabilities backing the
- * <b>same datasource schema</b> and intersected on time available for required columns.
+ * A extension of {@link BaseCompositeAvailability} which describes a union of source Availabilities backing tables
+ * having <b>the same schemas</b>; the Availabilities intersected on time available for required columns.
  * <p>
- * The coalesced available intervals of this {@code Availability} is determined by a subset of participating
+ * The coalesced available intervals of this {@code Availability} is determined by a subset of its participating
  * {@code Availabilities} which we call "<b>representative Availabilities</b>"
  * <p>
- * For example, with three source availabilities with the following same metric(dimension columns also have to be the
- * same, but we are not showing them here):
+ * For example, with three source availabilities backing the following same metric columns(dimension columns also have
+ * to be the same, but we are not showing them here):
  * <pre>
  * {@code
  * Source Availability 1:
@@ -76,11 +77,11 @@ public class MetricPureLeftUnionAvailability extends BaseCompositeAvailability {
      * This method calls {@link #MetricPureLeftUnionAvailability(Set, Set, Map)}.
      *
      * @param representativeAvailabilities  A set of participating Availabilities that determines the coalesced
-     * available intervals of this entire MetricLeftUnionAvailability
+     * available intervals of this entire MetricPureLeftUnionAvailability
      * @param physicalTables  The physical tables to source availabilities from
      * @param availabilitiesToColumns  The map of availabilities to the metric columns in the union schema
      *
-     * @return A metric union availability decorated with an official aggregate.
+     * @return a metric union availability decorated with an official aggregate.
      */
     public static MetricPureLeftUnionAvailability build(
             @NotNull Set<Availability> representativeAvailabilities,
@@ -109,31 +110,20 @@ public class MetricPureLeftUnionAvailability extends BaseCompositeAvailability {
     ) {
         super(availabilities.stream());
         validateColumns(availabilitiesToColumns);
+        MetricLeftUnionAvailability.validateLeftAvailabilities(representativeAvailabilities, availabilities);
         this.representativeAvailabilities = ImmutableSet.copyOf(representativeAvailabilities);
     }
 
-    @Override
-    public Set<DataSourceName> getDataSourceNames() {
-        return getRepresentativeAvailabilities().stream()
-                .map(Availability::getDataSourceNames)
-                .flatMap(Set::stream)
-                .collect(
-                        Collectors.collectingAndThen(
-                                Collectors.toCollection(LinkedHashSet::new),
-                                Collections::unmodifiableSet
-                        )
-                );
-    }
-
+    // TODO - consider moving this to BaseCompositeAvailability
     @Override
     public Set<DataSourceName> getDataSourceNames(DataSourceConstraint constraint) {
-        return getRepresentativeAvailabilities().stream()
+        return getAllSourceAvailabilities()
                 .map(availability -> availability.getDataSourceNames(constraint))
                 .flatMap(Set::stream)
                 .collect(
                         Collectors.collectingAndThen(
                                 Collectors.toCollection(LinkedHashSet::new),
-                                Collections::unmodifiableSet
+                                ImmutableSet::copyOf
                         )
                 );
     }
@@ -151,7 +141,7 @@ public class MetricPureLeftUnionAvailability extends BaseCompositeAvailability {
                                         Map.Entry::getValue,
                                         (value1, value2) -> SimplifiedIntervalList.simplifyIntervals(value1, value2)
                                 ),
-                                Collections::unmodifiableMap
+                                ImmutableMap::copyOf
                         )
                 );
     }
@@ -193,6 +183,8 @@ public class MetricPureLeftUnionAvailability extends BaseCompositeAvailability {
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
+                .add("allAvailabilities", StreamUtils.toUnmodifiableSet(getAllSourceAvailabilities()))
+                .add("dataSources", getDataSourceNames())
                 .add("representativeAvailabilities", getRepresentativeAvailabilities())
                 .toString();
     }
@@ -218,7 +210,7 @@ public class MetricPureLeftUnionAvailability extends BaseCompositeAvailability {
     }
 
     /**
-     * Validates columns from multiple datasources.
+     * Validates columns backing each Availability.
      * <p>
      * The validation makes sure that
      * <ul>
@@ -226,7 +218,7 @@ public class MetricPureLeftUnionAvailability extends BaseCompositeAvailability {
      *     <li> all datasources have exactly the same column set
      * </ul>
      *
-     * @param availabilitiesToColumns The map of availabilities to the metric columns in the union schema.
+     * @param availabilitiesToColumns  The map of availabilities to the metric columns in the union schema.
      *
      * @throws IllegalArgumentException if at least one datasource has empty column set or not all datasources have
      * exactly the same column set
@@ -249,24 +241,24 @@ public class MetricPureLeftUnionAvailability extends BaseCompositeAvailability {
     }
 
     /**
-     * Returns true if at least one datasource has empty column set.
+     * Returns true if at least one {@code Availability} is backed by empty column set.
      *
-     * @param availabilitiesToColumns  The map of availabilities to the metric columns in the union schema
+     * @param availabilitiesToColumns  The map of all availabilities to the metric columns in the union schema
      *
-     * @return true if at least one datasource has empty column set
+     * @return true if at least one {@code Availability} is backed by empty column set
      */
-    private static boolean hasEmptyColSet(Map<Availability, Set<String>> availabilitiesToColumns) {
+    protected static boolean hasEmptyColSet(Map<Availability, Set<String>> availabilitiesToColumns) {
         return availabilitiesToColumns.values().stream().anyMatch(Set::isEmpty);
     }
 
     /**
-     * Returns true if not all datasources have exactly the same column set.
+     * Returns true if not all Availabilities are backed by the same column set.
      *
-     * @param availabilitiesToColumns  The map of availabilities to the metric columns in the union schema
+     * @param availabilitiesToColumns  The map of all availabilities to the metric columns in the union schema
      *
-     * @return true if not all datasources have exactly the same column set
+     * @return true if not all Availabilities are backed by the same column set
      */
-    private static boolean hasDifferentColSet(Map<Availability, Set<String>> availabilitiesToColumns) {
+    protected static boolean hasDifferentColSet(Map<Availability, Set<String>> availabilitiesToColumns) {
         return new HashSet<>(availabilitiesToColumns.values()).size() > 1;
     }
 }

@@ -196,7 +196,7 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
      *
      * @param dictionaries  The ResourceDictionaries from which the tables are to be retrieved
      *
-     * @return A map from <tt>Availability</tt> to set of <tt>MetricColumn</tt>
+     * @return A map from {@code Availability} to set of {@code MetricColumn}
      */
     public Map<ConfigPhysicalTable, Set<String>> getTableToMetricsMap(ResourceDictionaries dictionaries) {
         Set<Column> columns = buildColumns(dictionaries.getDimensionDictionary());

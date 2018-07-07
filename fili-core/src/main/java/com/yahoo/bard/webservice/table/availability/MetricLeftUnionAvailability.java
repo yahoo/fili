@@ -1,4 +1,4 @@
-// Copyright 2017 Yahoo Inc.
+// Copyright 2018 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.availability;
 
@@ -21,14 +21,58 @@ import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 
 /**
- * An implementation of {@code Availability} which describes a union of source availabilities, filtered by required
- * metrics and then intersected on time available for required columns associated with a single participating
- * {@code Availability}.
+ * An extension of {@code MetricUnionAvailability} which describes a union of source availabilities determined by its
+ * subset of "representative availabilities" (see below).
  * <p>
  * {@code MetricLeftUnionAvailability} behaves the same as {@code MetricUnionAvailability} except that the coalesced
- * available intervals on this availability is determined by a single participating {@code Availability}, instead of
- * all participating {@code Availabilities} as in {@code MetricUnionAvailability}. We call this single
+ * available intervals on this availability is determined by a subset of participating {@code Availabilities}, instead
+ * of all participating {@code Availabilities} as in {@code MetricUnionAvailability}. We call this single
  * {@code Availability} as "representative" Availability.
+ * <p>
+ * For example, with three source availabilities with the following metric availability:
+ * <pre>
+ * {@code
+ * Source Availability 1:
+ * +---------------+
+ * |  metric1      |
+ * +---------------+
+ * |  [2017/2018]  |
+ * +---------------+
+ *
+ * Source Availability 2:
+ * +------------------+
+ * |  metric2         |
+ * +------------------+
+ * |  [2016/2017-03]  |
+ * +------------------+
+ *
+ * Source Availability 3:
+ * +-----------+
+ * |  metric3  |
+ * +-----------+
+ * |  None     |
+ * +-----------+
+ * }
+ * </pre>
+ * If the representative Availabilities are Availabilities 1 {@literal &} 2, Then the available intervals for the
+ * following sets of metrics required by a constraint are:
+ * <pre>
+ * +----------------------+------------------+
+ * |  Requested metrics   |  Available       |
+ * +----------------------+------------------+
+ * |  [metric1]           |  [2017/2018]     |
+ * +----------------------+------------------+
+ * |  [metric2]           |  [2016/2017-03]  |
+ * +----------------------+------------------+
+ * |  [metric1, metric2]  | [2017/2017-03]   |
+ * +----------------------+------------------+
+ * |  [metric1, metric3]  |  [2017/2018]     |
+ * +-------------------+---------------------+
+ * </pre>
+ * Note that only the intervals from Availabilities 1 {@literal &} 2 are considered and intersected; the Availability 3
+ * is not involved in the intersection operation.
+ * <p>
+ * This class is thread-safe.
  */
 public class MetricLeftUnionAvailability extends MetricUnionAvailability {
 
@@ -38,13 +82,15 @@ public class MetricLeftUnionAvailability extends MetricUnionAvailability {
 
     /**
      * Produce a metric left union availability.
+     * <p>
+     * This method calls {@link #MetricLeftUnionAvailability(Set, Set, Map)}.
      *
      * @param representativeAvailabilities  The availability used for aggregate availability checks. (replaces
      * intersection of all)
      * @param physicalTables  The physical tables to source metrics and dimensions from.
      * @param availabilitiesToMetricNames  The map of availabilities to the metric columns in the union schema.
      *
-     * @return A metric union availability decorated with an official aggregate.
+     * @return a metric union availability decorated with an official aggregate.
      */
     public static MetricLeftUnionAvailability build(
             @NotNull Set<Availability> representativeAvailabilities,
@@ -74,29 +120,13 @@ public class MetricLeftUnionAvailability extends MetricUnionAvailability {
             @NotNull Map<Availability, Set<String>> availabilitiesToMetricNames
     ) {
         super(availabilities, availabilitiesToMetricNames);
+        validateLeftAvailabilities(representativeAvailabilities, availabilities);
         this.representativeAvailabilities = ImmutableSet.copyOf(representativeAvailabilities);
-        validateLeftAvailabilities();
     }
 
     @Override
     public SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint constraint) {
         return getAvailableIntervals(getRepresentativeAvailabilitiesToMetricNames(), constraint);
-    }
-
-    /**
-     * Returns a map of Availability to its set of metric names that this Availability will respond with.
-     *
-     * @return a mapping from Availability to its responsible set of metric names
-     */
-    private Map<Availability, Set<String>> getRepresentativeAvailabilitiesToMetricNames() {
-        return getAvailabilitiesToMetricNames().entrySet().stream()
-                .filter(entry -> getRepresentativeAvailabilities().contains(entry.getKey()))
-                .collect(
-                        Collectors.toMap(
-                                Map.Entry::getKey,
-                                Map.Entry::getValue
-                        )
-                );
     }
 
     @Override
@@ -117,11 +147,17 @@ public class MetricLeftUnionAvailability extends MetricUnionAvailability {
     }
 
     @Override
-    public boolean equals(final Object o) {
-        if (this == o) { return true; }
-        if (!(o instanceof MetricLeftUnionAvailability)) { return false; }
-        if (!super.equals(o)) { return false; }
-        final MetricLeftUnionAvailability that = (MetricLeftUnionAvailability) o;
+    public boolean equals(final Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof MetricLeftUnionAvailability)) {
+            return false;
+        }
+        if (!super.equals(other)) {
+            return false;
+        }
+        final MetricLeftUnionAvailability that = (MetricLeftUnionAvailability) other;
         return Objects.equals(getRepresentativeAvailabilities(), that.getRepresentativeAvailabilities());
     }
 
@@ -147,10 +183,19 @@ public class MetricLeftUnionAvailability extends MetricUnionAvailability {
     }
 
     /**
-     * This method must be called after {@link #representativeAvailabilities} has been initialized.
+     * Validates to make sure that each representative Availability belongs to a configured table.
+     *
+     * @throws IllegalArgumentException if there is at least one representative Availability that does not belong to any
+     * configured tables
      */
-    protected void validateLeftAvailabilities() {
-        Set<Availability> missedOutAvailabilities = getMissedOutAvailabilities();
+    protected static void validateLeftAvailabilities(
+            Set<Availability> representativeAvailabilities,
+            Set<Availability> availabilities
+    ) {
+        Set<Availability> missedOutAvailabilities = getMissedOutAvailabilities(
+                representativeAvailabilities,
+                availabilities
+        );
         if (!missedOutAvailabilities.isEmpty()) {
             String message = String.format("'%s' have not been configured in table", missedOutAvailabilities);
             LOG.error(message);
@@ -158,9 +203,46 @@ public class MetricLeftUnionAvailability extends MetricUnionAvailability {
         }
     }
 
-    private Set<Availability> getMissedOutAvailabilities() {
-        return getRepresentativeAvailabilities().stream()
-                .filter(availability -> !getRepresentativeAvailabilitiesToMetricNames().containsKey(availability))
+    /**
+     * Returns a subset of representative Availabilities that do not belong to any configured tables.
+     * <p>
+     * For example, if there are 3 Availabilities each of which belongs to a configure table:
+     * <ul>
+     *     <li> Availability1
+     *     <li> Availability2
+     *     <li> Availability3
+     * </ul>
+     * If the representative Availabilities are "Availability1", "Availability2", the method returns an empty set. If
+     * the representative Availabilities are "Availability1", "Availability2, Availability4", this method returns a set
+     * of single element - "Availability4"
+     *
+     * @param representativeAvailabilities  The set of representative Availabilities to be checked
+     * @param availabilities  A set that contains Availabilities of all configured tables
+     *
+     * @return the subset of representative Availabilities that do not belong to any configured tables
+     */
+    private static Set<Availability> getMissedOutAvailabilities(
+            Set<Availability> representativeAvailabilities,
+            Set<Availability> availabilities
+    ) {
+        return representativeAvailabilities.stream()
+                .filter(availability -> !availabilities.contains(availability))
                 .collect(Collectors.toSet());
+    }
+
+    /**
+     * Returns a map of representative Availability to its set of metric names that this Availability will respond with.
+     *
+     * @return a mapping from representative Availability to its responsible set of metric names
+     */
+    private Map<Availability, Set<String>> getRepresentativeAvailabilitiesToMetricNames() {
+        return getAvailabilitiesToMetricNames().entrySet().stream()
+                .filter(entry -> getRepresentativeAvailabilities().contains(entry.getKey()))
+                .collect(
+                        Collectors.toMap(
+                                Map.Entry::getKey,
+                                Map.Entry::getValue
+                        )
+                );
     }
 }

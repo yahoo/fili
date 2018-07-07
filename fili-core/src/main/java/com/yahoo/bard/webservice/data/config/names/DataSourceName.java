@@ -6,6 +6,8 @@ import java.util.Comparator;
 
 /**
  * Marker interface for objects that can be treated as a data source name in druid.
+ * <p>
+ * This is a {@link java.util.function functional interface} whose functional method is {@link #asName()}.
  */
 @FunctionalInterface
 public interface DataSourceName {

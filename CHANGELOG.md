@@ -7,19 +7,18 @@ pull request if there was one.
 
 ### Added:
 
-- [Implement "left-union" MetricUnionAvailability](https://github.com/yahoo/fili/pull/736)
-    * A new "left-union" `Availability` called **`MetricLeftUnionAvailability`** is implemented.
-      `MetricLeftUnionAvailability` behaves the same as `MetricUnionAvailability` except that the coalesced available
-      intervals on this availability is determined by a single participating `Availability`, instead of all
-      participating `Availabilities` as in `MetricUnionAvailability`. 
+- [Implement `MetricPureLeftUnionAvailability`](https://github.com/yahoo/fili/pull/736)
+    * `MetricPureLeftUnionAvailability` requires participating `Availabilities` to have the same set of metric columns.
+       The coalesced available intervals on this availability is determined by a subset of participating
+       `Availabilities`, instead of all participating `Availabilities`.
+    * Added a builder method to `MetricPureLeftUnionAvailability` to save on needing to add additional table classes.
+
+- [Implement `MetricLeftUnionAvailability`](https://github.com/yahoo/fili/pull/736)
+    * `MetricLeftUnionAvailability` behaves the same as `MetricUnionAvailability` except that the coalesced available
+      intervals on this availability is determined by a subset of participating `Availabilities`, instead of all
+      participating `Availabilities`. 
     * Added a builder method to `MetricUnionAvailability` and `MetricLeftUnionAvailability` to save on needing to 
       add additional table classes.
-    
-- [Implement "pure left-union" Availability](https://github.com/yahoo/fili/pull/736)
-    * A new "pure left-union" `Availability` called **`MetricPureLeftUnionAvailability`** is implemented. For the
-      details of this Availability, please refer to the class description/Javadoc of it
-
-- [Added builder method for MetricUnionAvailability and MetricLeftUnionAvailabi](https://github.com/yahoo/fili/pull/736)
 
 - [Add specs for InsensitiveContainsSearchQuerySpec & RegexSearchQuerySpec](https://github.com/yahoo/fili/pull/732)
     * `RegexSearchQuerySpec` and `InsensitiveContainsSearchQuerySpec` have no dedicated test specs. This PR adds tests
@@ -60,6 +59,7 @@ pull request if there was one.
     * Some downstream projects generated partial intervals as `ArrayList`, which cannot be cased to
       `SimplifiedIntervalList` in places like `getVolatileIntervalsWithDefault`. The result is a casting exception which
       crashes downstream applications. Casting is replaced with a explicit `SimplifiedIntervalList` object creation.
+
 
 ### Deprecated:
 
