@@ -3,13 +3,10 @@
 package com.yahoo.bard.webservice.table.availability
 
 import com.yahoo.bard.webservice.data.config.names.DataSourceName
-import com.yahoo.bard.webservice.data.metric.MetricColumn
-import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
-import com.yahoo.bard.webservice.web.filters.ApiFilters
 
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -20,17 +17,9 @@ class MetricPureLeftUnionAvailabilitySpec extends Specification {
 
     String metric
 
-    Column metricColumn1
-    Column metricColumn2
-
-    ConfigPhysicalTable physicalTable1
-    ConfigPhysicalTable physicalTable2
-
     Set<ConfigPhysicalTable> physicalTables
 
     MetricPureLeftUnionAvailability metricPureLeftUnionAvailability
-
-    ApiFilters apiFilters
 
     Map<Availability, Set<String>> availabilitiesToMetricNames
 
@@ -43,23 +32,15 @@ class MetricPureLeftUnionAvailabilitySpec extends Specification {
 
         metric = 'metric'
 
-        metricColumn1 = new MetricColumn(metric)
-        metricColumn2 = new MetricColumn(metric)
+        physicalTables = [
+                Mock(ConfigPhysicalTable) {getAvailability() >> representativeAvailability},
+                Mock(ConfigPhysicalTable) {getAvailability() >> nonRepresentativeAvailability}
+        ] as Set
 
-        physicalTable1 = Mock(ConfigPhysicalTable)
-        physicalTable2 = Mock(ConfigPhysicalTable)
-
-        physicalTable1.getAvailability() >> representativeAvailability
-        physicalTable2.getAvailability() >> nonRepresentativeAvailability
-
-        physicalTables = [physicalTable1, physicalTable2] as Set
-
-        apiFilters = new ApiFilters()
-
-        availabilitiesToMetricNames = new HashMap<>()
-
-        availabilitiesToMetricNames.put(representativeAvailability, [metric] as Set)
-        availabilitiesToMetricNames.put(nonRepresentativeAvailability, [metric] as Set)
+        availabilitiesToMetricNames = [
+                (representativeAvailability): [metric] as Set,
+                (nonRepresentativeAvailability): [metric] as Set
+        ]
 
         metricPureLeftUnionAvailability = new MetricPureLeftUnionAvailability(
                 [representativeAvailability] as Set,
