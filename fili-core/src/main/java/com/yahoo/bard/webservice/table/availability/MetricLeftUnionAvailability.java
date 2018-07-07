@@ -185,6 +185,9 @@ public class MetricLeftUnionAvailability extends MetricUnionAvailability {
     /**
      * Validates to make sure that each representative Availability belongs to a configured table.
      *
+     * @param representativeAvailabilities  The set of representative Availabilities to be checked
+     * @param availabilities  A set that contains Availabilities of all configured tables
+     *
      * @throws IllegalArgumentException if there is at least one representative Availability that does not belong to any
      * configured tables
      */
