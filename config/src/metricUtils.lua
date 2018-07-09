@@ -9,7 +9,6 @@
 local M = {
     cache_makers = {}
 }
-local u = require("src/utils")
 
 function M.add_makers(makers, t)
     for name, maker in pairs(makers) do
@@ -66,26 +65,6 @@ function M.generate_metrics(metrics)
             dependencyMetricNames = metric.dependencies or metric[4]
         })
     end
-    -- sort metrics to make sure all dependency metrics of a metric defined before this metric
-    table.sort(t, function(a, b)
---        return a.apiName < b.apiName
-        if a.dependencyMetricNames ~= nil then
-            for i,d in pairs(a.dependencyMetricNames) do
-                if d:lower() == b.apiName:lower() then
-                    return false
-                end
-            end
-        end
-        if b.dependencyMetricNames ~= nil then
-            for i,d in pairs(b.dependencyMetricNames) do
-                if d:lower() == a.apiName:lower() then
-                    return true
-                end
-            end
-        end
-        return a.apiName < b.apiName
-        end
-    )
     return t
 end
 

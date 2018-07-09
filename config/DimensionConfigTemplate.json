@@ -1,1 +1,273 @@
-{"dimensions":[{"description":"Name of the City to which the wiki page belongs","apiName":"CITY_NAME","fields":[{"tags":["primaryKey"],"name":"ID"},{"name":"DESC"}],"longName":"wiki cityName"},{"description":"Metro Code to which the wiki page belongs","apiName":"METRO_CODE","fields":[{"tags":["primaryKey"],"name":"ID"},{"name":"DESC"}],"longName":"wiki metroCode"},{"description":"Name of the Region to which the wiki page belongs","apiName":"REGION_NAME","fields":[{"tags":["primaryKey"],"name":"ID"},{"name":"DESC"}],"longName":"wiki regionName"},{"description":"User is a person who generally use or own wiki services","apiName":"USER","fields":[{"tags":["primaryKey"],"name":"ID"},{"name":"DESC"},{"name":"AGE"},{"name":"SEX"}],"longName":"wiki user"},{"description":"Unpatrolled are class of pages that are not been patrolled","apiName":"IS_UNPATROLLED","fields":[{"tags":["primaryKey"],"name":"ID"},{"name":"DESC"}],"longName":"wiki isUnpatrolled"},{"description":"New Page is the first page that is created in wiki","apiName":"IS_NEW","fields":[{"tags":["primaryKey"],"name":"ID"},{"name":"DESC"}],"longName":"wiki isNew"},{"description":"Page is a document that is suitable for World Wide Web and web browsers","apiName":"PAGE","fields":[{"tags":["primaryKey"],"name":"ID"},{"name":"DESC"}],"longName":"wiki page"},{"description":"Name of the Country to which the wiki page belongs","apiName":"COUNTRY_NAME","fields":[{"tags":["primaryKey"],"name":"ID"},{"name":"DESC"}],"longName":"wiki countryName"},{"description":"Namespace is a set of wiki pages that begins with a reserved word","apiName":"NAMESPACE","fields":[{"tags":["primaryKey"],"name":"ID"},{"name":"DESC"}],"longName":"wiki namespace"},{"description":"Minor is a person who is legally considered a minor","apiName":"IS_MINOR","fields":[{"tags":["primaryKey"],"name":"ID"},{"name":"DESC"}],"longName":"wiki isMinor"},{"description":"Robot is an tool that carries out repetitive and mundane tasks","apiName":"IS_ROBOT","fields":[{"tags":["primaryKey"],"name":"ID"},{"name":"DESC"}],"longName":"wiki isRobot"},{"category":"General","description":"Iso Code of the country to which the wiki page belongs","apiName":"COUNTRY_ISO_CODE","fields":[{"tags":["primaryKey"],"name":"ID"},{"name":"DESC"},{"name":"COUNTY"},{"name":"STATE"}],"longName":"wiki countryIsoCode"},{"description":"Iso Code of the region to which the wiki page belongs","apiName":"REGION_ISO_CODE","fields":[{"tags":["primaryKey"],"name":"ID"},{"name":"DESC"}],"longName":"wiki regionIsoCode"},{"description":"Channel is a set of wiki pages on a certain channel","apiName":"CHANNEL","fields":[{"tags":["primaryKey"],"name":"ID"},{"name":"DESC"}],"longName":"wiki channel"},{"description":"Comment for the edit to the wiki page","apiName":"COMMENT","fields":[{"tags":["primaryKey"],"name":"ID"},{"name":"DESC"}],"longName":"wiki comment"},{"description":"Anonymous are individual or entity whose identity is unknown","apiName":"IS_ANONYMOUS","fields":[{"tags":["primaryKey"],"name":"ID"},{"name":"DESC"}],"longName":"wiki isAnonymous"}]}
+{
+  "dimensions": [
+    {
+      "description": "Name of the City to which the wiki page belongs",
+      "apiName": "CITY_NAME",
+      "fields": [
+        {
+          "tags": [
+            "primaryKey"
+          ],
+          "name": "ID"
+        },
+        {
+          "name": "DESC"
+        }
+      ],
+      "longName": "wiki cityName"
+    },
+    {
+      "description": "Metro Code to which the wiki page belongs",
+      "apiName": "METRO_CODE",
+      "fields": [
+        {
+          "tags": [
+            "primaryKey"
+          ],
+          "name": "ID"
+        },
+        {
+          "name": "DESC"
+        }
+      ],
+      "longName": "wiki metroCode"
+    },
+    {
+      "description": "Name of the Region to which the wiki page belongs",
+      "apiName": "REGION_NAME",
+      "fields": [
+        {
+          "tags": [
+            "primaryKey"
+          ],
+          "name": "ID"
+        },
+        {
+          "name": "DESC"
+        }
+      ],
+      "longName": "wiki regionName"
+    },
+    {
+      "description": "User is a person who generally use or own wiki services",
+      "apiName": "USER",
+      "fields": [
+        {
+          "tags": [
+            "primaryKey"
+          ],
+          "name": "ID"
+        },
+        {
+          "name": "DESC"
+        },
+        {
+          "name": "AGE"
+        },
+        {
+          "name": "SEX"
+        }
+      ],
+      "longName": "wiki user"
+    },
+    {
+      "description": "Unpatrolled are class of pages that are not been patrolled",
+      "apiName": "IS_UNPATROLLED",
+      "fields": [
+        {
+          "tags": [
+            "primaryKey"
+          ],
+          "name": "ID"
+        },
+        {
+          "name": "DESC"
+        }
+      ],
+      "longName": "wiki isUnpatrolled"
+    },
+    {
+      "description": "New Page is the first page that is created in wiki",
+      "apiName": "IS_NEW",
+      "fields": [
+        {
+          "tags": [
+            "primaryKey"
+          ],
+          "name": "ID"
+        },
+        {
+          "name": "DESC"
+        }
+      ],
+      "longName": "wiki isNew"
+    },
+    {
+      "description": "Page is a document that is suitable for World Wide Web and web browsers",
+      "apiName": "PAGE",
+      "fields": [
+        {
+          "tags": [
+            "primaryKey"
+          ],
+          "name": "ID"
+        },
+        {
+          "name": "DESC"
+        }
+      ],
+      "longName": "wiki page"
+    },
+    {
+      "description": "Name of the Country to which the wiki page belongs",
+      "apiName": "COUNTRY_NAME",
+      "fields": [
+        {
+          "tags": [
+            "primaryKey"
+          ],
+          "name": "ID"
+        },
+        {
+          "name": "DESC"
+        }
+      ],
+      "longName": "wiki countryName"
+    },
+    {
+      "description": "Namespace is a set of wiki pages that begins with a reserved word",
+      "apiName": "NAMESPACE",
+      "fields": [
+        {
+          "tags": [
+            "primaryKey"
+          ],
+          "name": "ID"
+        },
+        {
+          "name": "DESC"
+        }
+      ],
+      "longName": "wiki namespace"
+    },
+    {
+      "description": "Minor is a person who is legally considered a minor",
+      "apiName": "IS_MINOR",
+      "fields": [
+        {
+          "tags": [
+            "primaryKey"
+          ],
+          "name": "ID"
+        },
+        {
+          "name": "DESC"
+        }
+      ],
+      "longName": "wiki isMinor"
+    },
+    {
+      "description": "Robot is an tool that carries out repetitive and mundane tasks",
+      "apiName": "IS_ROBOT",
+      "fields": [
+        {
+          "tags": [
+            "primaryKey"
+          ],
+          "name": "ID"
+        },
+        {
+          "name": "DESC"
+        }
+      ],
+      "longName": "wiki isRobot"
+    },
+    {
+      "category": "General",
+      "description": "Iso Code of the country to which the wiki page belongs",
+      "apiName": "COUNTRY_ISO_CODE",
+      "fields": [
+        {
+          "tags": [
+            "primaryKey"
+          ],
+          "name": "ID"
+        },
+        {
+          "name": "DESC"
+        },
+        {
+          "name": "COUNTY"
+        },
+        {
+          "name": "STATE"
+        }
+      ],
+      "longName": "wiki countryIsoCode"
+    },
+    {
+      "description": "Iso Code of the region to which the wiki page belongs",
+      "apiName": "REGION_ISO_CODE",
+      "fields": [
+        {
+          "tags": [
+            "primaryKey"
+          ],
+          "name": "ID"
+        },
+        {
+          "name": "DESC"
+        }
+      ],
+      "longName": "wiki regionIsoCode"
+    },
+    {
+      "description": "Channel is a set of wiki pages on a certain channel",
+      "apiName": "CHANNEL",
+      "fields": [
+        {
+          "tags": [
+            "primaryKey"
+          ],
+          "name": "ID"
+        },
+        {
+          "name": "DESC"
+        }
+      ],
+      "longName": "wiki channel"
+    },
+    {
+      "description": "Comment for the edit to the wiki page",
+      "apiName": "COMMENT",
+      "fields": [
+        {
+          "tags": [
+            "primaryKey"
+          ],
+          "name": "ID"
+        },
+        {
+          "name": "DESC"
+        }
+      ],
+      "longName": "wiki comment"
+    },
+    {
+      "description": "Anonymous are individual or entity whose identity is unknown",
+      "apiName": "IS_ANONYMOUS",
+      "fields": [
+        {
+          "tags": [
+            "primaryKey"
+          ],
+          "name": "ID"
+        },
+        {
+          "name": "DESC"
+        }
+      ],
+      "longName": "wiki isAnonymous"
+    }
+  ]
+}

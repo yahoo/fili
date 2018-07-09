@@ -1,193 +1,193 @@
 {
+  "metrics": [
+    {
+      "maker": "doubleSum",
+      "apiName": "ADDED",
+      "longName": "ADDED",
+      "dependencyMetricNames": [
+        "ADDED"
+      ]
+    },
+    {
+      "maker": "count",
+      "apiName": "COUNT",
+      "longName": "COUNT"
+    },
+    {
+      "maker": "aggregateAveragebyHour",
+      "apiName": "averageAddedPerHour",
+      "longName": "averageAddedPerHour",
+      "dependencyMetricNames": [
+        "added"
+      ]
+    },
+    {
+      "maker": "arithmeticPLUS",
+      "apiName": "plusAvgAddedDeleted",
+      "longName": "plusAvgAddedDeleted",
+      "dependencyMetricNames": [
+        "averageAddedPerHour",
+        "averageDeletedPerHour"
+      ]
+    },
+    {
+      "maker": "com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker.sketchSize.4096",
+      "apiName": "inlineMakerMetric",
+      "longName": "inlineMakerMetric",
+      "dependencyMetricNames": [
+        "page"
+      ]
+    },
+    {
+      "maker": "ThetaSketchBig",
+      "apiName": "bigThetaSketch",
+      "longName": "bigThetaSketch",
+      "dependencyMetricNames": [
+        "page"
+      ]
+    },
+    {
+      "maker": "aggregateAveragebyHour",
+      "apiName": "averageDeletedPerHour",
+      "longName": "averageDeletedPerHour",
+      "dependencyMetricNames": [
+        "deleted"
+      ]
+    },
+    {
+      "maker": "doubleSum",
+      "apiName": "DELTA",
+      "longName": "DELTA",
+      "dependencyMetricNames": [
+        "DELTA"
+      ]
+    },
+    {
+      "maker": "cardinalbyRow",
+      "apiName": "cardOnPage",
+      "longName": "cardOnPage",
+      "dependencyMetricNames": [
+        "page"
+      ]
+    },
+    {
+      "maker": "arithmeticMINUS",
+      "apiName": "MinusAddedDelta",
+      "longName": "MinusAddedDelta",
+      "dependencyMetricNames": [
+        "added",
+        "delta"
+      ]
+    },
+    {
+      "maker": "doubleSum",
+      "apiName": "DELETED",
+      "longName": "DELETED",
+      "dependencyMetricNames": [
+        "DELETED"
+      ]
+    }
+  ],
   "makers": [
     {
-      "name": "longSum",
-      "class": "com.yahoo.bard.webservice.data.config.metric.makers.LongSumMaker"
-    },
-    {
-      "name": "doubleSum",
-      "class": "com.yahoo.bard.webservice.data.config.metric.makers.DoubleSumMaker"
-    },
-    {
-      "name": "ThetaSketchBig",
-      "params": {
-        "sketchSize": "4096"
-      },
-      "class": "com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker"
-    },
-    {
       "name": "aggregateAveragebyHour",
+      "class": "com.yahoo.bard.webservice.data.config.metric.makers.AggregationAverageMaker",
       "params": {
         "innerGrain": "HOUR"
-      },
-      "class": "com.yahoo.bard.webservice.data.config.metric.makers.AggregationAverageMaker"
+      }
+    },
+    {
+      "name": "arithmeticMULTIPLY",
+      "class": "com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker",
+      "params": {
+        "function": "MULTIPLY"
+      }
+    },
+    {
+      "name": "arithmeticDIVIDE",
+      "class": "com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker",
+      "params": {
+        "function": "DIVIDE"
+      }
     },
     {
       "name": "arithmeticMINUS",
+      "class": "com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker",
       "params": {
         "function": "MINUS"
-      },
-      "class": "com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker"
-    },
-    {
-      "name": "cardinalbyColumn",
-      "params": {
-        "byRow": "false"
-      },
-      "class": "com.yahoo.bard.webservice.data.config.metric.makers.CardinalityMaker"
+      }
     },
     {
       "name": "com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker.sketchSize.4096",
+      "class": "com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker",
       "params": {
         "sketchSize": "4096"
-      },
-      "class": "com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker"
+      }
     },
     {
-      "name": "aggregateAveragebyDay",
+      "name": "ThetaSketchSmall",
+      "class": "com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker",
       "params": {
-        "innerGrain": "DAY"
-      },
-      "class": "com.yahoo.bard.webservice.data.config.metric.makers.AggregationAverageMaker"
+        "sketchSize": "1024"
+      }
     },
     {
       "name": "ThetaSketchMedium",
+      "class": "com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker",
       "params": {
         "sketchSize": "2048"
-      },
-      "class": "com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker"
+      }
+    },
+    {
+      "name": "aggregateAveragebyDay",
+      "class": "com.yahoo.bard.webservice.data.config.metric.makers.AggregationAverageMaker",
+      "params": {
+        "innerGrain": "DAY"
+      }
+    },
+    {
+      "name": "cardinalbyColumn",
+      "class": "com.yahoo.bard.webservice.data.config.metric.makers.CardinalityMaker",
+      "params": {
+        "byRow": "false"
+      }
+    },
+    {
+      "name": "cardinalbyRow",
+      "class": "com.yahoo.bard.webservice.data.config.metric.makers.CardinalityMaker",
+      "params": {
+        "byRow": "true"
+      }
+    },
+    {
+      "name": "ThetaSketchBig",
+      "class": "com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker",
+      "params": {
+        "sketchSize": "4096"
+      }
     },
     {
       "name": "arithmeticPLUS",
+      "class": "com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker",
       "params": {
         "function": "PLUS"
-      },
-      "class": "com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker"
+      }
     },
     {
       "name": "count",
       "class": "com.yahoo.bard.webservice.data.config.metric.makers.CountMaker"
     },
     {
-      "name": "ThetaSketchSmall",
-      "params": {
-        "sketchSize": "1024"
-      },
-      "class": "com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker"
-    },
-    {
-      "name": "arithmeticMULTIPLY",
-      "params": {
-        "function": "MULTIPLY"
-      },
-      "class": "com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker"
-    },
-    {
-      "name": "arithmeticDIVIDE",
-      "params": {
-        "function": "DIVIDE"
-      },
-      "class": "com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker"
+      "name": "doubleSum",
+      "class": "com.yahoo.bard.webservice.data.config.metric.makers.DoubleSumMaker"
     },
     {
       "name": "constant",
       "class": "com.yahoo.bard.webservice.data.config.metric.makers.ConstantMaker"
     },
     {
-      "name": "cardinalbyRow",
-      "params": {
-        "byRow": "true"
-      },
-      "class": "com.yahoo.bard.webservice.data.config.metric.makers.CardinalityMaker"
-    }
-  ],
-  "metrics": [
-    {
-      "apiName": "ADDED",
-      "dependencyMetricNames": [
-        "ADDED"
-      ],
-      "longName": "ADDED",
-      "maker": "doubleSum"
-    },
-    {
-      "apiName": "COUNT",
-      "longName": "COUNT",
-      "maker": "count"
-    },
-    {
-      "apiName": "DELETED",
-      "dependencyMetricNames": [
-        "DELETED"
-      ],
-      "longName": "DELETED",
-      "maker": "doubleSum"
-    },
-    {
-      "apiName": "DELTA",
-      "dependencyMetricNames": [
-        "DELTA"
-      ],
-      "longName": "DELTA",
-      "maker": "doubleSum"
-    },
-    {
-      "apiName": "MinusAddedDelta",
-      "dependencyMetricNames": [
-        "added",
-        "delta"
-      ],
-      "longName": "MinusAddedDelta",
-      "maker": "arithmeticMINUS"
-    },
-    {
-      "apiName": "averageAddedPerHour",
-      "dependencyMetricNames": [
-        "added"
-      ],
-      "longName": "averageAddedPerHour",
-      "maker": "aggregateAveragebyHour"
-    },
-    {
-      "apiName": "averageDeletedPerHour",
-      "dependencyMetricNames": [
-        "deleted"
-      ],
-      "longName": "averageDeletedPerHour",
-      "maker": "aggregateAveragebyHour"
-    },
-    {
-      "apiName": "bigThetaSketch",
-      "dependencyMetricNames": [
-        "page"
-      ],
-      "longName": "bigThetaSketch",
-      "maker": "ThetaSketchBig"
-    },
-    {
-      "apiName": "cardOnPage",
-      "dependencyMetricNames": [
-        "page"
-      ],
-      "longName": "cardOnPage",
-      "maker": "cardinalbyRow"
-    },
-    {
-      "apiName": "inlineMakerMetric",
-      "dependencyMetricNames": [
-        "page"
-      ],
-      "longName": "inlineMakerMetric",
-      "maker": "com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker.sketchSize.4096"
-    },
-    {
-      "apiName": "plusAvgAddedDeleted",
-      "dependencyMetricNames": [
-        "averageAddedPerHour",
-        "averageDeletedPerHour"
-      ],
-      "longName": "plusAvgAddedDeleted",
-      "maker": "arithmeticPLUS"
+      "name": "longSum",
+      "class": "com.yahoo.bard.webservice.data.config.metric.makers.LongSumMaker"
     }
   ]
 }

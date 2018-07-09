@@ -47,10 +47,13 @@ DEFAULT = {
     }
 }
 
+
+-- table name = {description, metrics, dimensions, granuality}
 PHYSICALTABLES = {
     wikiticker = {nil, {"added", "delta", "deleted"}, DEFAULT.ALL_DIM, "HOUR"}
 }
 
+-- table name = {description, metrics, dimensions, granuality, physicaltable}
 LOGICALTABLES = {
     WIKIPEDIA = {nil, {"count", "added", "delta", "deleted"}, DEFAULT.ALL_DIM, {"ALL", "HOUR", "DAY"}, {"wikiticker"}},
     logicalTableTesterOne = {nil, DEFAULT.ALL_METRICS, DEFAULT.ALL_DIM, {"ALL", "HOUR", "DAY"}, {"wikiticker"}}

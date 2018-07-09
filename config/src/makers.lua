@@ -8,6 +8,7 @@
 
 local utils = require("src/metricUtils")
 local parser = require("src/jsonParser")
+local u = require("src/utils")
 
 local M = {
     makers = {},
@@ -73,6 +74,8 @@ M.metrics = utils.generate_metrics(
         inlineMakerMetric = {nil, nil, {DEFAULT.CLASS .. "ThetaSketchMaker", {sketchSize = "4096"}}, {"page"}}
     }
 )
+
+u.print_table(M.metrics)
 
 utils.add_makers(utils.cache_makers, maker_dict)
 utils.clean_cache_makers()
