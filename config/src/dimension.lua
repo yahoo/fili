@@ -6,8 +6,8 @@
 -- To change this template use File | Settings | File Templates.
 --
 
-local utils = require("src/dimensionUtils")
-local parser = require("src/jsonParser")
+local utils = require("utils/dimensionUtils")
+local parser = require("utils/jsonParser")
 
 local M = {
     dimensions = {}
@@ -45,6 +45,6 @@ DIMENSIONS = {
 }
 
 utils.add_dimensions(DIMENSIONS, M.dimensions)
-parser.save("DimensionConfigTemplate.json", M)
+parser.save("../DimensionConfigTemplate.json", M)
 
 return M

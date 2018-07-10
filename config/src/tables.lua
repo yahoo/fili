@@ -6,8 +6,8 @@
 -- To change this template use File | Settings | File Templates.
 --
 
-local utils = require("src/tableUtils")
-local parser = require("src/jsonParser")
+local utils = require("utils/tableUtils")
+local parser = require("utils/jsonParser")
 
 local M = {
     physicalTables = {},
@@ -62,4 +62,4 @@ LOGICALTABLES = {
 utils.add_phy_tables(PHYSICALTABLES, M.physicalTables)
 utils.add_log_tables(LOGICALTABLES, M.logicalTables)
 
-parser.save("TableConfigTemplate.json", M)
+parser.save("../TableConfigTemplate.json", M)

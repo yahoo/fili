@@ -39,7 +39,7 @@ function f(...)
     for index, name in pairs(args) do
         table.insert(fields, { name = name })
     end
-    return table.unpack(fields)
+    return unpack(fields)
 end
 
 return M

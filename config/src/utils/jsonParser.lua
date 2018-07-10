@@ -5,7 +5,7 @@
 -- Time: 3:06 PM
 -- To change this template use File | Settings | File Templates.
 --
-local Json = require("src/json")
+local Json = require("../lib/json")
 
 local JsonTable = {}
 

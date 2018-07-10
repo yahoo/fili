@@ -33,7 +33,7 @@ end
 function M.generate_makers(makers)
     local t = {}
     for name, maker in pairs(makers) do
-        local m = M.generate_maker(name, table.unpack(maker))
+        local m = M.generate_maker(name, unpack(maker))
         for name, value in pairs(m) do
             t[name] = value
         end

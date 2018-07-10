@@ -6,9 +6,9 @@
 -- To change this template use File | Settings | File Templates.
 --
 
-local utils = require("src/metricUtils")
-local parser = require("src/jsonParser")
-local u = require("src/utils")
+local utils = require("utils/metricUtils")
+local parser = require("utils/jsonParser")
+local u = require("utils/utils")
 
 local M = {
     makers = {},
@@ -81,7 +81,7 @@ utils.add_makers(utils.cache_makers, maker_dict)
 utils.clean_cache_makers()
 
 utils.add_all_makers(maker_dict, M.makers)
-parser.save("MetricConfigTemplate.json", M)
+parser.save("../MetricConfigTemplate.json", M)
 
 return M
 

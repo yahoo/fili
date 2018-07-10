@@ -25,7 +25,7 @@ function M.add_log_tables(tables, t)
         table.insert(t, {
             name = name,
             description = logical_table[1] or logical_table.description,
-            metrics = logical_table[2] or logical_table.metrics,
+            apiMetricNames = logical_table[2] or logical_table.metrics,
             dimensions = logical_table[3] or logical_table.dimensions,
             granularity = logical_table[4] or logical_table.granularity,
             physicalTables = logical_table[5] or logical_table.physical_tables
