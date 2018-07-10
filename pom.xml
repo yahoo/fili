@@ -16,11 +16,13 @@
         <module>fili-core</module>
         <module>fili-navi</module>
         <module>fili-security</module>
+        <module>luthier</module>
         <module>fili</module>
         <module>fili-wikipedia-example</module>
         <module>fili-generic-example</module>
         <module>fili-sql</module>
-        <module>wiki-test</module>
+        <module>wiki-example-copy</module>
+
     </modules>
 
     <organization>
