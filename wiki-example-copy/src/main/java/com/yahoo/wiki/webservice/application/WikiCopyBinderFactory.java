@@ -19,7 +19,7 @@ import java.util.LinkedHashSet;
  */
 public class WikiCopyBinderFactory extends AbstractBinderFactory {
 
-    private final String externalConfigFilePath  = System.getProperty("user.dir") + "/wiki-example-copy/config/";
+    private final String externalConfigFilePath  = System.getProperty("user.dir") + "/config/";
 
     private static ExternalConfigLoader externalConfigLoader = new ExternalConfigLoader(new ObjectMapper());
 
