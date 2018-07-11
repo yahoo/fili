@@ -19,10 +19,7 @@ import java.util.LinkedHashSet;
  */
 public class LuthierJerseyTestBinder extends JerseyTestBinder {
 
-    private static final String DIMENSION_EXTERNAL_CONFIG_FILE_PATH  = "DimensionConfigTemplateSample.json";
-    private static final String METRIC_EXTERNAL_CONFIG_FILE_PATH  =  "MetricConfigTemplateSample.json";
-    private static final String TABLE_EXTERNAL_CONFIG_FILE_PATH  =  "TableConfigTemplateSample.json";
-
+    private static final String EXTERNAL_CONFIG_FILE_PATH = "src/test/resources/";
     private static ExternalConfigLoader externalConfigLoader = new ExternalConfigLoader(new ObjectMapper());
 
     /**
@@ -48,7 +45,7 @@ public class LuthierJerseyTestBinder extends JerseyTestBinder {
     public LinkedHashSet<DimensionConfig> getDimensionConfiguration() {
         return new LinkedHashSet<>(new DimensionsLoader(
                 externalConfigLoader,
-                DIMENSION_EXTERNAL_CONFIG_FILE_PATH
+                EXTERNAL_CONFIG_FILE_PATH
         ).getAllDimensionConfigurations());
     }
 
@@ -56,7 +53,7 @@ public class LuthierJerseyTestBinder extends JerseyTestBinder {
     public MetricLoader getMetricLoader() {
         return new MetricsLoader(
                 externalConfigLoader,
-                METRIC_EXTERNAL_CONFIG_FILE_PATH
+                EXTERNAL_CONFIG_FILE_PATH
         );
     }
 
@@ -64,7 +61,7 @@ public class LuthierJerseyTestBinder extends JerseyTestBinder {
     public com.yahoo.bard.webservice.data.config.table.TableLoader getTableLoader() {
         TablesLoader tablesLoader = new TablesLoader(new TestDataSourceMetadataService());
         tablesLoader.setUp(externalConfigLoader,
-                TABLE_EXTERNAL_CONFIG_FILE_PATH);
+                EXTERNAL_CONFIG_FILE_PATH);
         return tablesLoader;
     }
 }

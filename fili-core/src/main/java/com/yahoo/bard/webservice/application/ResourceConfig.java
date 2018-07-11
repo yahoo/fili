@@ -20,7 +20,7 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 
 /**
- * The resource configuration for the bard web applications, especially core filters.
+ * The resource configuration for the bard web application, especially core filters.
  */
 public class ResourceConfig extends org.glassfish.jersey.server.ResourceConfig {
 

@@ -32,7 +32,7 @@ public class DimensionsLoader {
      */
     public DimensionsLoader() {
         this(new ExternalConfigLoader(new ObjectMapper()),
-                "DimensionConfigTemplateSample.json");
+                "config/");
     }
 
     /**
@@ -56,7 +56,7 @@ public class DimensionsLoader {
 
         DimensionConfigTemplate dimensionConfig =
                 dimensionConfigLoader.parseExternalFile(
-                        dimensionConfigFilePath,
+                        dimensionConfigFilePath + "DimensionConfig.json",
                         DimensionConfigTemplate.class);
 
         this.dimensionConfigs = Collections.unmodifiableSet(

@@ -19,11 +19,7 @@ import java.util.LinkedHashSet;
  */
 public class WikiCopyBinderFactory extends AbstractBinderFactory {
 
-    String path = System.getProperty("user.dir");
-
-    private final String dimensionExternalConfigFilePath  = path + "/config/DimensionConfigTemplate.json";
-    private final String metricExternalConfigFilePath  =  path + "/config/MetricConfigTemplate.json";
-    private final String tableExternalConfigFilePath  =  path + "/config/TableConfigTemplate.json";
+    private final String externalConfigFilePath  = System.getProperty("user.dir") + "/wiki-example-copy/config/";
 
     private static ExternalConfigLoader externalConfigLoader = new ExternalConfigLoader(new ObjectMapper());
 
@@ -31,7 +27,7 @@ public class WikiCopyBinderFactory extends AbstractBinderFactory {
     protected MetricLoader getMetricLoader() {
         return new MetricsLoader(
                 externalConfigLoader,
-                metricExternalConfigFilePath
+                externalConfigFilePath
         );
     }
 
@@ -40,7 +36,7 @@ public class WikiCopyBinderFactory extends AbstractBinderFactory {
         return new LinkedHashSet<>(
                 new DimensionsLoader(
                         externalConfigLoader,
-                        dimensionExternalConfigFilePath
+                        externalConfigFilePath
                 ).getAllDimensionConfigurations()
         );
     }
@@ -49,7 +45,7 @@ public class WikiCopyBinderFactory extends AbstractBinderFactory {
     protected TableLoader getTableLoader() {
         TablesLoader tablesLoader = new TablesLoader(getDataSourceMetadataService());
         tablesLoader.setUp(externalConfigLoader,
-                tableExternalConfigFilePath
+                externalConfigFilePath
         );
         return tablesLoader;
     }

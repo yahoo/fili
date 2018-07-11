@@ -4,8 +4,8 @@ package com.yahoo.luthier.webservice.data.config.metric;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import javax.validation.constraints.NotNull;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;

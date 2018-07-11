@@ -20,9 +20,7 @@ import java.util.LinkedHashSet;
  */
 public class WikiCopyJerseyTestBinder extends JerseyTestBinder {
 
-    private static final String DIMENSION_EXTERNAL_CONFIG_FILE_PATH  = "DimensionConfigTemplateSample.json";
-    private static final String METRIC_EXTERNAL_CONFIG_FILE_PATH  =  "MetricConfigTemplateSample.json";
-    private static final String TABLE_EXTERNAL_CONFIG_FILE_PATH  =  "TableConfigTemplateSample.json";
+    private final String externalConfigFilePath  = System.getProperty("user.dir") + "/config/";
 
     private static ExternalConfigLoader externalConfigLoader = new ExternalConfigLoader(new ObjectMapper());
 
@@ -49,7 +47,7 @@ public class WikiCopyJerseyTestBinder extends JerseyTestBinder {
     public LinkedHashSet<DimensionConfig> getDimensionConfiguration() {
         return new LinkedHashSet<>(new DimensionsLoader(
                 externalConfigLoader,
-                DIMENSION_EXTERNAL_CONFIG_FILE_PATH
+                externalConfigFilePath
         ).getAllDimensionConfigurations());
     }
 
@@ -57,7 +55,7 @@ public class WikiCopyJerseyTestBinder extends JerseyTestBinder {
     public MetricLoader getMetricLoader() {
         return new MetricsLoader(
                 externalConfigLoader,
-                METRIC_EXTERNAL_CONFIG_FILE_PATH
+                externalConfigFilePath
         );
     }
 
@@ -65,7 +63,7 @@ public class WikiCopyJerseyTestBinder extends JerseyTestBinder {
     public TableLoader getTableLoader() {
         TablesLoader tablesLoader = new TablesLoader(new TestDataSourceMetadataService());
         tablesLoader.setUp(externalConfigLoader,
-                TABLE_EXTERNAL_CONFIG_FILE_PATH);
+                externalConfigFilePath);
         return tablesLoader;
     }
 }

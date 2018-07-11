@@ -48,26 +48,6 @@
             <type>test-jar</type>
         </dependency>
 
-        <!-- Servlet API -->
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-        </dependency>
-
-        <!-- Jersey -->
-        <dependency>
-            <groupId>org.glassfish.jersey.containers</groupId>
-            <artifactId>jersey-container-servlet</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-common</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-server</artifactId>
-        </dependency>
-
         <!-- Test -->
         <dependency>
             <groupId>org.glassfish.jersey.test-framework</groupId>
@@ -80,12 +60,7 @@
             <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
         </dependency>
 
-        <!-- Jetty Servlet Support -->
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-servlet</artifactId>
-        </dependency>
-
+        <!-- Json -->
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jdk8</artifactId>
@@ -93,46 +68,4 @@
 
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>1</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <exec executable="/bin/sh">
-                                    <env key="BUILD_NUMBER" value="${project.build}" />
-                                    <arg value="-c" />
-                                    <arg
-                                            value="echo ${project.version}.${BUILD_NUMBER:=0} | sed -e s/-SNAPSHOT//g &gt; target/buildVersion" />
-                                </exec>
-                            </target>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>1.1</version>
-                <executions>
-                    <execution><goals><goal>java</goal></goals></execution>
-                </executions>
-                <!--<configuration>-->
-                    <!--<mainClass>com.yahoo.bard.webservice.application.LuthierMain</mainClass>-->
-                <!--</configuration>-->
-            </plugin>
-        </plugins>
-    </build>
 </project>

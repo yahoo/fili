@@ -29,7 +29,7 @@ public class MetricsLoader implements MetricLoader {
 
     private static MetricMakerDictionary metricMakerDictionary;
     private ExternalConfigLoader metricConfigLoader;
-    private String metricConfigFilePath;
+    private String externalConfigFilePath;
 
     /**
      * Constructor using the default external configuration loader
@@ -37,7 +37,7 @@ public class MetricsLoader implements MetricLoader {
      */
     public MetricsLoader() {
         this(new ExternalConfigLoader(new ObjectMapper()),
-                "MetricConfigTemplateSample.json");
+                "config/");
     }
 
     /**
@@ -58,7 +58,7 @@ public class MetricsLoader implements MetricLoader {
      */
     public MetricsLoader(ExternalConfigLoader metricConfigLoader, String externalConfigFilePath) {
         this.metricConfigLoader = metricConfigLoader;
-        this.metricConfigFilePath = externalConfigFilePath;
+        this.externalConfigFilePath = externalConfigFilePath;
     }
 
     /**
@@ -88,7 +88,7 @@ public class MetricsLoader implements MetricLoader {
     public void loadMetricDictionary(MetricDictionary metricDictionary, DimensionDictionary dimensionDictionary) {
 
         MetricConfigTemplate metricConfig =
-                metricConfigLoader.parseExternalFile(metricConfigFilePath,
+                metricConfigLoader.parseExternalFile(externalConfigFilePath + "MetricConfig.json",
                         MetricConfigTemplate.class
                 );
 

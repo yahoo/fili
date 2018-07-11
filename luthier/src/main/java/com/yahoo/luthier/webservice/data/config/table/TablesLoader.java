@@ -47,7 +47,7 @@ public class TablesLoader extends BaseTableLoader {
     private final Map<String, PhysicalTableInfoTemplate> physicalTableDictionary = new HashMap<>();
 
     private ExternalConfigLoader tableConfigLoader;
-    private String tableConfigFilePath;
+    private String externalConfigFilePath;
 
     /**
      * Constructor using the default external configuration loader.
@@ -77,7 +77,7 @@ public class TablesLoader extends BaseTableLoader {
     public void setUp(ExternalConfigLoader tableConfigLoader,
                       String externalConfigFilePath) {
         this.tableConfigLoader = tableConfigLoader;
-        this.tableConfigFilePath = externalConfigFilePath;
+        this.externalConfigFilePath = externalConfigFilePath;
     }
 
     /**
@@ -177,13 +177,14 @@ public class TablesLoader extends BaseTableLoader {
 
         TableConfigTemplate tableConfigTemplate =
                 tableConfigLoader.parseExternalFile(
-                        tableConfigFilePath,
+                        externalConfigFilePath + "TableConfig.json",
                         TableConfigTemplate.class);
 
         LinkedHashSet<PhysicalTableInfoTemplate> physicalTables = tableConfigTemplate.getPhysicalTables();
         LinkedHashSet<LogicalTableInfoTemplate> logicalTables = tableConfigTemplate.getLogicalTables();
 
-        configureSample(new DimensionsLoader(), dictionaries.metric, physicalTables, logicalTables);
+        configureSample(new DimensionsLoader(externalConfigFilePath),
+                dictionaries.metric, physicalTables, logicalTables);
 
         for (LogicalTableInfoTemplate table : logicalTables) {
             TableGroup tableGroup = buildDimensionSpanningTableGroup(

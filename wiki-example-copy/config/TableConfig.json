@@ -1,0 +1,109 @@
+{
+  "physicalTables": [
+    {
+      "name": "wikiticker",
+      "granularity": "HOUR",
+      "metrics": [
+        "added",
+        "delta",
+        "deleted"
+      ],
+      "dimensions": [
+        "COMMENT",
+        "COUNTRY_ISO_CODE",
+        "REGION_ISO_CODE",
+        "PAGE",
+        "USER",
+        "IS_UNPATROLLED",
+        "IS_NEW",
+        "IS_ROBOT",
+        "IS_ANONYMOUS",
+        "IS_MINOR",
+        "NAMESPACE",
+        "CHANNEL",
+        "COUNTRY_NAME",
+        "REGION_NAME",
+        "METRO_CODE",
+        "CITY_NAME"
+      ]
+    }
+  ],
+  "logicalTables": [
+    {
+      "name": "WIKIPEDIA",
+      "granularity": [
+        "ALL",
+        "HOUR",
+        "DAY"
+      ],
+      "physicalTables": [
+        "wikiticker"
+      ],
+      "dimensions": [
+        "COMMENT",
+        "COUNTRY_ISO_CODE",
+        "REGION_ISO_CODE",
+        "PAGE",
+        "USER",
+        "IS_UNPATROLLED",
+        "IS_NEW",
+        "IS_ROBOT",
+        "IS_ANONYMOUS",
+        "IS_MINOR",
+        "NAMESPACE",
+        "CHANNEL",
+        "COUNTRY_NAME",
+        "REGION_NAME",
+        "METRO_CODE",
+        "CITY_NAME"
+      ],
+      "apiMetricNames": [
+        "count",
+        "added",
+        "delta",
+        "deleted"
+      ]
+    },
+    {
+      "name": "logicalTableTesterOne",
+      "granularity": [
+        "ALL",
+        "HOUR",
+        "DAY"
+      ],
+      "physicalTables": [
+        "wikiticker"
+      ],
+      "dimensions": [
+        "COMMENT",
+        "COUNTRY_ISO_CODE",
+        "REGION_ISO_CODE",
+        "PAGE",
+        "USER",
+        "IS_UNPATROLLED",
+        "IS_NEW",
+        "IS_ROBOT",
+        "IS_ANONYMOUS",
+        "IS_MINOR",
+        "NAMESPACE",
+        "CHANNEL",
+        "COUNTRY_NAME",
+        "REGION_NAME",
+        "METRO_CODE",
+        "CITY_NAME"
+      ],
+      "apiMetricNames": [
+        "count",
+        "added",
+        "delta",
+        "deleted",
+        "averageAddedPerHour",
+        "averageDeletedPerHour",
+        "plusAvgAddedDeleted",
+        "MinusAddedDelta",
+        "cardOnPage",
+        "bigThetaSketch"
+      ]
+    }
+  ]
+}
