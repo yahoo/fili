@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.druid.util;
 
 import com.yahoo.bard.webservice.druid.model.MetricField;
+import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.aggregation.SketchAggregation;
 import com.yahoo.bard.webservice.druid.model.aggregation.ThetaSketchAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation;
@@ -30,21 +31,45 @@ public class ThetaSketchFieldConverter implements FieldConverters {
         return new ThetaSketchAggregation(candidate.getName(), candidate.getFieldName(), candidate.getSize());
     }
 
-   @Override
-    public ThetaSketchEstimatePostAggregation asSketchEstimate(SketchAggregation candidate) {
+    /**
+     * Get the candidate Aggregation as a SketchEstimatePostAggregation.
+     *
+     * @param candidate  Aggregation to "convert"
+     *
+     * @return The Aggregation as a SketchEstimatePostAggregation
+     */
+    public ThetaSketchEstimatePostAggregation asSketchEstimate(Aggregation candidate) {
         String name = candidate.getName() + "_estimate";
         PostAggregation field = new FieldAccessorPostAggregation(candidate);
         return new ThetaSketchEstimatePostAggregation(name, field);
+    }
+
+    /**
+     * Get the PostAggregation as a SketchEstimatePostAggregation.
+     *
+     * @param postAggregation  PostAggregation to "convert"
+     *
+     * @return The PostAggregation as a SketchEstimatePostAggregation
+     */
+    public ThetaSketchEstimatePostAggregation asSketchEstimate(PostAggregation postAggregation) {
+        String name = postAggregation.getName() + "_estimate";
+        return new ThetaSketchEstimatePostAggregation(name, postAggregation);
     }
 
     @Override
     public FuzzySetPostAggregation asSketchEstimate(MetricField field) {
         if (field.isSketch()) {
             if (field instanceof PostAggregation) {
-                PostAggregation pa = (PostAggregation) field;
-                return new ThetaSketchEstimatePostAggregation(field.getName() + "_estimate", pa);
+                return asSketchEstimate((PostAggregation) field);
             }
-            return asSketchEstimate((SketchAggregation) field);
+            else if (field instanceof Aggregation) {
+                return asSketchEstimate((Aggregation) field);
+            } else {
+                String message = "Given metric field " + field.toString() + " is neither a type of " +
+                        "PostAggregation nor Aggregation";
+                LOG.error(message);
+                throw new IllegalArgumentException(message);
+            }
         }
         String message = "Given metric field " + field.toString() + " isn't sketch";
         LOG.error(message);

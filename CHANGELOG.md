@@ -30,6 +30,10 @@ pull request if there was one.
 
 ### Changed:
 
+- [Making Custom Sketch operations possible in PostAggreations](https://github.com/yahoo/fili/issues/740)
+    * Removed `FuzzySetPostAggregation asSketchEstimate(SketchAggregation candidate)` method from `FieldConverters` interface.
+    * Added `ThetaSketchEstimatePostAggregation asSketchEstimate(Aggregation candidate)` and `ThetaSketchEstimatePostAggregation asSketchEstimate(PostAggregation postAggregation)` to the class `ThetaSketchFieldConverter`.  
+
 - [Let DimensionApiRequestMapper throw RequestValidationException instead of BadApiRequestException](https://github.com/yahoo/fili/pull/715)
     * `DimensionApiRequestMapper.apply()` is made to obey the interface contract by throwing
       `RequestValidationException` instead of ``BadApiRequestException``
