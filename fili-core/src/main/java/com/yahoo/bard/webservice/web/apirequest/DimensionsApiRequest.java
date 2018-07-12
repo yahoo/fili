@@ -20,6 +20,7 @@ import javax.ws.rs.core.UriInfo;
  */
 public interface DimensionsApiRequest extends ApiRequest {
     String REQUEST_MAPPER_NAMESPACE = "dimensionsApiRequestMapper";
+    String EXCEPTION_HANDLER_NAMESPACE = "dimensionsApiRequestExceptionHandler";
 
     // CHECKSTYLE:OFF
     DimensionsApiRequest withFormat(ResponseFormatType format);

@@ -11,6 +11,7 @@ import java.util.Set;
  */
 public interface MetricsApiRequest extends ApiRequest {
     String REQUEST_MAPPER_NAMESPACE = "metricsApiRequestMapper";
+    String EXCEPTION_HANDLER_NAMESPACE = "metricsExceptionHandler";
 
     /**
      * Returns a set of all available metrics.

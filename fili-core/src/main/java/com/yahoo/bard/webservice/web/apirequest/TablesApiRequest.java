@@ -25,6 +25,7 @@ import javax.ws.rs.core.UriInfo;
  */
 public interface TablesApiRequest extends ApiRequest {
     String REQUEST_MAPPER_NAMESPACE = "tablesApiRequestMapper";
+    String EXCEPTION_HANDLER_NAMESPACE = "tablesApiRequestExceptionHandler";
 
     /**
      * Returns a set of LogicalTables associated with a table API request.

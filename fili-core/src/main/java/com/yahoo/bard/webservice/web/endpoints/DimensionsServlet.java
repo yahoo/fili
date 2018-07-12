@@ -3,8 +3,6 @@
 package com.yahoo.bard.webservice.web.endpoints;
 
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.UPDATED_METADATA_COLLECTION_NAMES;
-import static com.yahoo.bard.webservice.web.ResponseCode.INSUFFICIENT_STORAGE;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
@@ -12,22 +10,19 @@ import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
+import com.yahoo.bard.webservice.exception.MetadataExceptionHandler;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.DimensionRequest;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.util.StreamUtils;
-import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequest;
-import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.RequestMapper;
-import com.yahoo.bard.webservice.web.RequestValidationException;
 import com.yahoo.bard.webservice.web.ResponseFormatResolver;
-import com.yahoo.bard.webservice.web.RowLimitReachedException;
+import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequestImpl;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import com.codahale.metrics.annotation.Timed;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Streams;
 
 import org.slf4j.Logger;
@@ -37,6 +32,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -71,6 +67,7 @@ public class DimensionsServlet extends EndpointServlet {
     private final LogicalTableDictionary logicalTableDictionary;
     private final RequestMapper requestMapper;
     private final ResponseFormatResolver formatResolver;
+    private final MetadataExceptionHandler exceptionHandler;
 
     /**
      * Constructor.
@@ -80,6 +77,7 @@ public class DimensionsServlet extends EndpointServlet {
      * @param requestMapper  Mapper to change the API request if needed
      * @param objectMappers  JSON tools
      * @param formatResolver  The formatResolver for determining correct response format
+     * @param exceptionHandler  Injection point for handling response exceptions
      */
     @Inject
     public DimensionsServlet(
@@ -87,13 +85,15 @@ public class DimensionsServlet extends EndpointServlet {
             LogicalTableDictionary logicalTableDictionary,
             @Named(DimensionsApiRequest.REQUEST_MAPPER_NAMESPACE) RequestMapper requestMapper,
             ObjectMappersSuite objectMappers,
-            ResponseFormatResolver formatResolver
+            ResponseFormatResolver formatResolver,
+            @Named(DimensionsApiRequest.EXCEPTION_HANDLER_NAMESPACE) MetadataExceptionHandler exceptionHandler
     ) {
         super(objectMappers);
         this.dimensionDictionary = dimensionDictionary;
         this.logicalTableDictionary = logicalTableDictionary;
         this.requestMapper = requestMapper;
         this.formatResolver = formatResolver;
+        this.exceptionHandler = exceptionHandler;
     }
 
     /**
@@ -103,7 +103,7 @@ public class DimensionsServlet extends EndpointServlet {
      * @param page  the page to start from
      * @param format  the format to use for the response
      * @param uriInfo  UriInfo of the request
-     * @param containerRequestContext  The context of data provided by the Jersey container for this request
+     * @param requestContext  The context of data provided by the Jersey container for this request
      *
      * @return The list of dimensions
      * <pre><code>
@@ -120,17 +120,17 @@ public class DimensionsServlet extends EndpointServlet {
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @QueryParam("format") String format,
             @Context final UriInfo uriInfo,
-            @Context final ContainerRequestContext containerRequestContext
+            @Context final ContainerRequestContext requestContext
     ) {
-        Supplier<Response> responseSender;
+        DimensionsApiRequest apiRequest = null;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new DimensionRequest("all", "no"));
 
-            DimensionsApiRequestImpl apiRequest = new DimensionsApiRequestImpl(
+            apiRequest = new DimensionsApiRequestImpl(
                     null,
                     null,
-                    formatResolver.apply(format, containerRequestContext),
+                    formatResolver.apply(format, requestContext),
                     perPage,
                     page,
                     dimensionDictionary,
@@ -138,7 +138,7 @@ public class DimensionsServlet extends EndpointServlet {
             );
 
             if (requestMapper != null) {
-                apiRequest = (DimensionsApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
+                apiRequest = (DimensionsApiRequestImpl) requestMapper.apply(apiRequest, requestContext);
             }
 
             Stream<Map<String, Object>> result = apiRequest.getPage(
@@ -152,19 +152,18 @@ public class DimensionsServlet extends EndpointServlet {
                     null
             );
             LOG.debug("Dimensions Endpoint Response: {}", response.getEntity());
-            responseSender = () -> response;
-        } catch (RequestValidationException e) {
-            LOG.debug(e.getMessage(), e);
-            responseSender = () -> Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
-        } catch (Error | Exception e) {
-            String msg = ErrorMessageFormat.REQUEST_PROCESSING_EXCEPTION.format(e.getMessage());
-            LOG.error(msg, e);
-            responseSender = () -> Response.status(Status.BAD_REQUEST).entity(msg).build();
+            return response;
+        } catch (Throwable t) {
+            return exceptionHandler.handleThrowable(
+                    t,
+                    Optional.ofNullable(apiRequest),
+                    uriInfo,
+                    requestContext,
+                    ""
+            );
         } finally {
             RequestLog.stopTiming(this);
         }
-
-        return responseSender.get();
     }
 
     /**
@@ -187,11 +186,12 @@ public class DimensionsServlet extends EndpointServlet {
             @Context final ContainerRequestContext containerRequestContext
     ) {
         Supplier<Response> responseSender;
+        DimensionsApiRequest apiRequest = null;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new DimensionRequest(dimensionName, "no"));
 
-            DimensionsApiRequestImpl apiRequest = new DimensionsApiRequestImpl(
+            apiRequest = new DimensionsApiRequestImpl(
                     dimensionName,
                     null,
                     null,
@@ -214,17 +214,14 @@ public class DimensionsServlet extends EndpointServlet {
             String output = objectMappers.getMapper().writeValueAsString(result);
             LOG.debug("Dimension Endpoint Response: {}", output);
             responseSender = () -> Response.status(Status.OK).entity(output).build();
-        } catch (RequestValidationException e) {
-            LOG.debug(e.getMessage(), e);
-            responseSender = () -> Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
-        } catch (JsonProcessingException e) {
-            String msg = ErrorMessageFormat.INTERNAL_SERVER_ERROR_ON_JSON_PROCESSING.format(e.getMessage());
-            LOG.error(msg, e);
-            responseSender = () -> Response.status(Status.INTERNAL_SERVER_ERROR).entity(msg).build();
-        } catch (Error | Exception e) {
-            String msg = ErrorMessageFormat.REQUEST_PROCESSING_EXCEPTION.format(e.getMessage());
-            LOG.info(msg, e);
-            responseSender = () -> Response.status(Status.BAD_REQUEST).entity(msg).build();
+        } catch (Throwable t) {
+            return exceptionHandler.handleThrowable(
+                    t,
+                    Optional.ofNullable(apiRequest),
+                    uriInfo,
+                    containerRequestContext,
+                    dimensionName
+            );
         } finally {
             RequestLog.stopTiming(this);
         }
@@ -275,11 +272,12 @@ public class DimensionsServlet extends EndpointServlet {
             @Context final ContainerRequestContext containerRequestContext
     ) {
         Supplier<Response> responseSender;
+        DimensionsApiRequest apiRequest = null;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new DimensionRequest(dimensionName, "yes"));
 
-            DimensionsApiRequestImpl apiRequest = new DimensionsApiRequestImpl(
+            apiRequest = new DimensionsApiRequestImpl(
                     dimensionName,
                     filterQuery,
                     formatResolver.apply(format, containerRequestContext),
@@ -325,23 +323,18 @@ public class DimensionsServlet extends EndpointServlet {
             );
 
             LOG.debug("Dimension Value Endpoint Response: {}", response.getEntity());
-            responseSender = () -> response;
-        } catch (RequestValidationException e) {
-            LOG.debug(e.getMessage(), e);
-            responseSender = () -> Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
-        } catch (RowLimitReachedException e) {
-            String msg = String.format("Row limit exceeded for dimension %s: %s", dimensionName, e.getMessage());
-            LOG.debug(msg, e);
-            responseSender = () -> Response.status(INSUFFICIENT_STORAGE).entity(msg).build();
-        } catch (Error | Exception e) {
-            String msg = ErrorMessageFormat.REQUEST_PROCESSING_EXCEPTION.format(e.getMessage());
-            LOG.debug(msg, e);
-            responseSender = () -> Response.status(BAD_REQUEST).entity(msg).build();
+            return response;
+        } catch (Throwable t) {
+            return exceptionHandler.handleThrowable(
+                    t,
+                    Optional.ofNullable(apiRequest),
+                    uriInfo,
+                    containerRequestContext,
+                    dimensionName
+            );
         } finally {
             RequestLog.stopTiming(this);
         }
-
-        return responseSender.get();
     }
 
     /**
