@@ -99,7 +99,8 @@ import javax.ws.rs.core.UriInfo;
  */
 @Path("data")
 @Singleton
-public class DataServlet extends CORSPreflightServlet implements BardConfigResources {
+public class
+DataServlet extends CORSPreflightServlet implements BardConfigResources {
     private static final Logger LOG = LoggerFactory.getLogger(DataServlet.class);
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 

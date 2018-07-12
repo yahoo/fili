@@ -2,16 +2,24 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.availability;
 
-import com.google.common.collect.ImmutableSet;
 import com.yahoo.bard.webservice.data.config.names.DataSourceName;
+import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
+import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
+
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.AbstractMap;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -58,13 +66,13 @@ import javax.validation.constraints.NotNull;
  * +----------------------+------------------+
  * |  [metric2]           |  [2016/2017-03]  |
  * +----------------------+------------------+
- * |  [metric1, metric2]  | [2017/2018]      |
+ * |  [metric1, metric2]  | [2017/2017-03]   |
  * +----------------------+------------------+
  * |  [metric1, metric3]  |  []              |
  * +-------------------+---------------------+
  * </pre>
  */
-public class MetricUnionAvailability extends BaseCompositeAvailability implements Availability {
+public class MetricUnionAvailability extends BaseCompositeAvailability {
 
     private static final Logger LOG = LoggerFactory.getLogger(MetricUnionAvailability.class);
 
@@ -72,84 +80,156 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
     private final Map<Availability, Set<String>> availabilitiesToMetricNames;
 
     /**
+     * Produce a metric union availability.
+     *
+     * @param physicalTables  The physical tables to source metrics and dimensions from.
+     * @param availabilitiesToMetricNames  The map of availabilities to the metric columns in the union schema.
+     *
+     * @return A metric union availability decorated with an official aggregate.
+     */
+    public static MetricUnionAvailability build(
+            @NotNull Collection<ConfigPhysicalTable> physicalTables,
+            @NotNull Map<Availability, Set<String>> availabilitiesToMetricNames
+    ) {
+        return new MetricUnionAvailability(
+                physicalTables.stream().map(ConfigPhysicalTable::getAvailability).collect(Collectors.toSet()),
+                availabilitiesToMetricNames
+        );
+    }
+
+    /**
      * Constructor.
      *
-     * @param availabilities  A set of <tt>Availabilities</tt> whose Dimension schemas are (typically) the same and
-     * the Metric columns are unique(i.e. no overlap) on every availability
-     * @param availabilitiesToMetricNames  A map of all availabilities to set of metric names
-     * will respond with
+     * @param availabilities  A set of {@code Availabilities} whose Dimension schemas are (typically) the same and the
+     * Metric columns are unique(i.e. no overlap) on every availability
+     * @param availabilitiesToMetricNames  A map of Availability to its set of metric names that this Availability will
+     * respond with
      */
     public MetricUnionAvailability(
             @NotNull Set<Availability> availabilities,
             @NotNull Map<Availability, Set<String>> availabilitiesToMetricNames
     ) {
         super(availabilities.stream());
-        metricNames = availabilitiesToMetricNames.values()
+        this.metricNames = availabilitiesToMetricNames.values()
                 .stream()
                 .flatMap(Set::stream)
                 .collect(Collectors.collectingAndThen(Collectors.toSet(), ImmutableSet::copyOf));
-
-        this.availabilitiesToMetricNames = availabilitiesToMetricNames;
-
-        // validate metric uniqueness such that
-        // each table's underlying datasource schema don't have repeated metric column
-        if (!isMetricUnique(availabilitiesToMetricNames)) {
-                String message = String.format(
-                        "Metric columns must be unique across the metric union data sources, but duplicate was found " +
-                                "across the following data sources: %s",
-                        getDataSourceNames().stream().map(DataSourceName::asName).collect(Collectors.joining(", "))
-                );
-                LOG.error(message);
-                throw new RuntimeException(message);
-        }
+        this.availabilitiesToMetricNames = Collections.unmodifiableMap(availabilitiesToMetricNames);
+        validateMetrics(this.availabilitiesToMetricNames);
     }
 
     @Override
     public SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint constraint) {
+        return getAvailableIntervals(availabilitiesToMetricNames, constraint);
+    }
 
+    /**
+     * Returns an immutable set of all metric names that this {@code Availability} responds with.
+     *
+     * @return the immutable set of all metric names of this {@code Availability}
+     */
+    public Set<String> getMetricNames() {
+        return metricNames;
+    }
+
+    /**
+     * Returns an immutable map of Availability to its set of metric names that this Availability will respond with.
+     *
+     * @return an immutable mapping from Availability to its responsible set of metric names
+     */
+    public Map<Availability, Set<String>> getAvailabilitiesToMetricNames() {
+        return availabilitiesToMetricNames;
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("metricNames", getMetricNames())
+                .add("availabilitiesToMetricNames", getAvailabilitiesToMetricNames())
+                .toString();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof MetricUnionAvailability) {
+            MetricUnionAvailability that = (MetricUnionAvailability) obj;
+            return Objects.equals(
+                    new LinkedHashSet<>(getMetricNames()), // bound to a concrete type for ClassScanner
+                    new LinkedHashSet<>(that.getMetricNames())
+            ) &&
+                    Objects.equals(
+                            new HashMap<>(getAvailabilitiesToMetricNames()),
+                            new HashMap<>(that.getAvailabilitiesToMetricNames())
+                    );
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(metricNames, availabilitiesToMetricNames);
+    }
+
+    /**
+     * Returns a {@code SimplifiedIntervalList} representing the coalesced available intervals on this availability as
+     * filtered by the {@code PhysicalDataSourceConstraint}.
+     *
+     * @param availabilitiesToMetricNames  A map of all underlying availabilities to its set of metric names that those
+     * availabilities will respond with
+     * @param constraint  A query constraint
+     *
+     * @return A {@code SimplifiedIntervalList} of intervals available
+     */
+    protected static SimplifiedIntervalList getAvailableIntervals(
+            Map<Availability, Set<String>> availabilitiesToMetricNames,
+            PhysicalDataSourceConstraint constraint
+    ) {
         Set<String> dataSourceMetricNames = availabilitiesToMetricNames.values().stream()
                 .flatMap(Set::stream)
                 .collect(Collectors.toSet());
 
-        // If the table is configured with a column that is not supported by the underlying data sources
-        if (!constraint.getMetricNames().stream().allMatch(dataSourceMetricNames::contains)) {
+        if (hasUnconfiguredMetric(constraint, dataSourceMetricNames)) {
             return new SimplifiedIntervalList();
         }
 
-        return constructSubConstraint(constraint).entrySet().stream()
+        return constructSubConstraint(availabilitiesToMetricNames, constraint).entrySet().stream()
                 .map(entry -> entry.getKey().getAvailableIntervals(entry.getValue()))
                 .reduce(SimplifiedIntervalList::intersect).orElse(new SimplifiedIntervalList());
     }
 
     /**
-     * Validates whether the metric columns are unique across each of the underlying datasource.
+     * Returns true if the query constraint asks for metric column that does not exist in configured metric columns.
      *
-     * @param availabilityToMetricNames  A map from <tt>Availability</tt> to set of <tt>MetricColumn</tt>
-     * contained in that <tt>Availability</tt>
+     * @param constraint  A query constraint that contains collection of requested metric columns
+     * @param configured A set of metric columns that are configured and available
      *
-     * @return true if metric is unique across data sources, false otherwise
+     * @return true if the query constraint asks for metric column that does not exist in configured metric columns
+     *
+     * @throws NullPointerException if either the constraint or set of configured metric names is {@code null}
      */
-    private static boolean isMetricUnique(Map<Availability, Set<String>> availabilityToMetricNames) {
-        Set<String> uniqueMetrics = new HashSet<>();
-        return availabilityToMetricNames.values().stream()
-                .flatMap(Set::stream)
-                .allMatch(uniqueMetrics::add);
+    protected static boolean hasUnconfiguredMetric(DataSourceConstraint constraint, Set<String> configured) {
+        return !constraint.getMetricNames().stream()
+                .allMatch(configured::contains);
     }
 
     /**
-     * Given a <tt>DataSourceConstraint</tt> - DSC1, construct a map from each availability, A, in this MetricUnion to
-     * its <tt>DataSourceConstraint</tt>, DSC2.
+     * Returns a map from participating Availabilities to their column constrains intersected with a query constraint.
      * <p>
-     * DSC2 is constructed as the intersection of metric columns between DSC1 and
-     * A's available metric columns. There are cases in which the intersection is empty; this method filters out
-     * map entries that maps to <tt>DataSourceConstraint</tt> with empty set of metric names.
+     * Each Availabilities new column constrains will be the intersection of their original columns and the constrained
+     * columns from the query.
      *
+     * @param availabilitiesToMetricNames  A map of all underlying availabilities to its set of metric names that those
+     * availabilities will respond with
      * @param constraint  The data constraint whose contained metric columns will be intersected with availabilities'
      * metric columns
      *
-     * @return A map from <tt>Availability</tt> to <tt>DataSourceConstraint</tt> with non-empty metric names
+     * @return A map from Availability to DataSourceConstraint with non-empty metric names
      */
-    private Map<Availability, PhysicalDataSourceConstraint> constructSubConstraint(
+    protected static Map<Availability, PhysicalDataSourceConstraint> constructSubConstraint(
+            Map<Availability, Set<String>> availabilitiesToMetricNames,
             PhysicalDataSourceConstraint constraint
     ) {
         return availabilitiesToMetricNames.entrySet().stream()
@@ -163,31 +243,48 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    @Override
-    public String toString() {
-        return String.format("MetricUnionAvailability with data source names: [%s] and Configured metric columns: %s",
-                getDataSourceNames().stream()
-                        .map(DataSourceName::asName)
-                        .collect(Collectors.joining(", ")),
-                metricNames
-        );
+    /**
+     * Validates that underlying datasource table schemas do not have repeated metric columns.
+     * <p>
+     * This method cannot be called before availability datasources are initialized (see {@link #getDataSourceNames()}).
+     *
+     * @param availabilitiesToMetricNames  A map of Availability to its set of metric names that will be validated
+     *
+     * @throws IllegalArgumentException if repeated metric columns are found
+     */
+    private void validateMetrics(Map<Availability, Set<String>> availabilitiesToMetricNames) {
+        if (!isMetricUnique(availabilitiesToMetricNames)) {
+            String message = String.format(
+                    "Metric columns must be unique across the metric union data sources, but duplicate was found " +
+                            "across the following data sources: %s",
+                    getDataSourceNamesAsString()
+            );
+            LOG.error(message);
+            throw new IllegalArgumentException(message);
+        }
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj instanceof MetricUnionAvailability) {
-            MetricUnionAvailability that = (MetricUnionAvailability) obj;
-            return Objects.equals(metricNames, that.metricNames)
-                    && Objects.equals(availabilitiesToMetricNames, that.availabilitiesToMetricNames);
-        }
-        return false;
+    /**
+     * Validates whether the metric columns are unique across each of the underlying datasource.
+     *
+     * @param availabilityToMetricNames  A map from {@code Availability} to set of {@code MetricColumn} contained in
+     * that {@code Availability}
+     *
+     * @return true if metric is unique across data sources, false otherwise
+     */
+    private static boolean isMetricUnique(Map<Availability, Set<String>> availabilityToMetricNames) {
+        Set<String> uniqueMetrics = new HashSet<>();
+        return availabilityToMetricNames.values().stream()
+                .flatMap(Set::stream)
+                .allMatch(uniqueMetrics::add);
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(metricNames, availabilitiesToMetricNames);
+    /**
+     * Returns the names of all data sources backing this availability in a single comma-separated string.
+     *
+     * @return the string representation of all all data sources backing this availability
+     */
+    private String getDataSourceNamesAsString() {
+        return getDataSourceNames().stream().map(DataSourceName::asName).collect(Collectors.joining(", "));
     }
 }
