@@ -10,6 +10,7 @@ import java.util.Locale;
  * Enum for specifying the type of SearchQuerySpec.
  */
 public enum DefaultSearchQueryType implements SearchQueryType {
+    CONTAINS,
     FRAGMENT,
     INSENSITIVE_CONTAINS,
     REGEX;

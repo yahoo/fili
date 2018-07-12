@@ -154,7 +154,7 @@ public enum ErrorMessageFormat implements MessageFormatter {
     ),
     LOG_UNABLE_TO_DESERIALIZE("Unable to deserialize results for job %s from %s"),
 
-    RESOURCE_RETRIEVAL_FAILURE("Unable to retrieve the resource for given resource name: %s."),
+    RESOURCE_RETRIEVAL_FAILURE("Unable to retrieve the resource for given resource name: %s. Info: %s"),
     RESOURCE_STORAGE_FAILURE("Unable to store the resource for resource name %s. %s"),
     RESOURCE_DELETION_FAILURE("Unable to delete the resource for resource name %s. %s"),
 

@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.data.config.dimension;
 
 import com.yahoo.bard.webservice.data.dimension.impl.RegisteredLookupDimension;
+import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction;
 
 import java.util.List;
 
@@ -17,9 +18,9 @@ public interface RegisteredLookupDimensionConfig extends DimensionConfig {
     }
 
     /**
-     * Returns a list of lookups used to configure the Lookup dimension.
+     * Returns a list of extraction functions for the lookup dimension values.
      *
-     * @return List of lookups
+     * @return the list of extraction functions for the lookup dimension values
      */
-    List<String> getLookups();
+    List<ExtractionFunction> getRegisteredLookupExtractionFns();
 }
