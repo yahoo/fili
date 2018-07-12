@@ -1,15 +1,23 @@
---
--- Created by IntelliJ IDEA.
--- User: ylin08
--- Date: 7/3/18
--- Time: 1:50 PM
--- To change this template use File | Settings | File Templates.
---
+-- Copyright 2018 Yahoo Inc.
+-- Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
+
+local utils = require("utils/utils")
+
+--- a module provides util functions for metrics and makers config.
+-- @module metricUtils
 
 local M = {
     cache_makers = {}
 }
 
+-------------------------------------------------------------------------------
+-- Makers
+-------------------------------------------------------------------------------
+
+--- Parse a group of config makers and add them into a table.
+--
+-- @param makers  A group of makers
+-- @param t  The table for storing makers
 function M.add_makers(makers, t)
     for name, maker in pairs(makers) do
         t[name] = {
@@ -20,7 +28,11 @@ function M.add_makers(makers, t)
     end
 end
 
-function M.add_all_makers(makers, t)
+--- Insert a group of makers into a table.
+--
+-- @param makers  A group of makers
+-- @param t  The table for storing makers
+function M.insert_makers_into_table(makers, t)
     for name, maker in pairs(makers) do
         table.insert(t, {
             name = name,
@@ -30,10 +42,14 @@ function M.add_all_makers(makers, t)
     end
 end
 
+--- Generate a set of complex makers.
+--
+-- @param makers  A set of complex makers' config
+-- @return t  The table for storing makers
 function M.generate_makers(makers)
     local t = {}
     for name, maker in pairs(makers) do
-        local m = M.generate_maker(name, unpack(maker))
+        local m = M.generate_maker(name, table.unpack(maker))
         for name, value in pairs(m) do
             t[name] = value
         end
@@ -41,34 +57,96 @@ function M.generate_makers(makers)
     return t
 end
 
+--- Generate a group of complex makers based on one maker's config.
+--  maker's config example:
+--  makerName = {
+--    classPath,
+--    {paramA = {AOne, ATwo}, paramB = {BOne, BTwo}},
+--    {paramA = {suffixAOne, suffixATwo}, paramB = {suffixBOne, suffixBTwo}}
+--  }
+--  this config can be generated to a maker group contains four makers:
+--  (1) makerNamesuffixAOnesuffixBOne = {class = classPath, params = {paramA = AOne, paramB = BOne}}
+--  (2) makerNamesuffixAOnesuffixBTwo = {class = classPath, params = {paramA = AOne, paramB = BTwo}}
+--  (3) makerNamesuffixATwosuffixBOne = {class = classPath, params = {paramA = ATwo, paramB = BOne}}
+--  (4) makerNamesuffixATwosuffixBTwo = {class = classPath, params = {paramA = ATwo, paramB = BTwo}}
+--
+-- @param baseName The prefix name for these makers
+-- @param baseClass  The class path for these makers
+-- @param params All posible parameters for these makers
+-- @param suffix The suffix name for these makers
+-- @return a group of generated makers
 function M.generate_maker(baseName, baseClass, params, suffix)
-    local makers = {}
-    for para_type, para_value in pairs(params) do
-        for index, value in pairs(para_value) do
-            makers[baseName .. suffix[para_type][index]] = {
-                class = baseClass,
-                params = {[string.gsub(para_type,"^_","")] = value}
-            }
-        end
+
+    local makers, p, s, n, i_n, r = {}, {}, {}, {}, {}, {}
+
+    for param_name, param_value in pairs(params) do
+        local ss = string.gsub(param_name,"^_","")
+        table.insert(p, param_value)
+        table.insert(n, ss)
+        i_n[ss] = #n
     end
+    for param_name, suffix_value in pairs(suffix) do
+        local ss = string.gsub(param_name,"^_","")
+        s[i_n[ss]] = suffix_value
+    end
+
+    cartesian_calculator(p, s, n, 1, r, {}, "")
+
+    for index, maker_info in pairs(r) do
+        makers[baseName .. maker_info.suffix] = {
+            class = baseClass,
+            params = maker_info.params
+        }
+    end
+
     return makers
 end
 
-function M.generate_metrics(metrics)
-    local t = {}
-    for name, metric in pairs(metrics) do
-        table.insert(t, {
-            apiName = metric.name or name,
-            longName = metric.longName or metric[1] or name,
-            description = metric.description or metric[2] or metric.longName,
-            maker = metric.maker or metric[3].name or M.generate_maker_name(metric[3]),
-            dependencyMetricNames = metric.dependencies or metric[4]
-        })
-    end
-    return t
+--- Clean maker cache
+function M.clean_cache_makers()
+    M.cache_makers = {}
 end
 
-function M.generate_maker_name(maker)
+--- Calculate the combinations of all parameters and store parameters combinations
+-- and corresponding suffix into result.
+--
+-- @param params a list of parameters' value
+-- @param suffix a list of suffix
+-- @param names a list of parameters' name
+-- @param start_index start index for recursion
+-- @param result a table to store the result
+-- @param p_c a subset of parameters for recursion purpose
+-- @param s_c a subset of suffix for recursion purpose
+--
+-- generate a list of parameters combination:
+-- e.g. {
+--         {params = {paramA = AOne, paramB = BOne, paramC = COne},
+--         suffix = suffixAOnesuffixBOnesuffixCOne},
+--         ...
+--      }
+function cartesian_calculator(params, suffix, names, start_index, result, p_c, s_c)
+    if (start_index == #params + 1) then do
+        table.insert(result, {params = utils.clone(p_c), suffix = s_c})
+        return
+    end
+    end
+    for index, value in pairs(params[start_index]) do
+        p_c[names[start_index]] = value
+        cartesian_calculator(params, suffix, names, start_index + 1,
+            result, p_c, s_c .. suffix[start_index][index])
+    end
+end
+
+--- Generate a maker name for an inline maker,
+-- (store generated maker into cache)
+-- for example, inline maker:
+--    {classpath, {paramsA = A, paramsB = B}}
+-- would be generated as:
+-- classpath.paramsA.A.paramsB.B
+--
+-- @param maker An inline maker defined in metric's config
+-- @return A name for this maker
+function generate_maker_name(maker)
     local name = maker[1]
     for key, val in pairs(maker[2]) do
         name = name.."."..key
@@ -78,8 +156,28 @@ function M.generate_maker_name(maker)
     return name
 end
 
-function M.clean_cache_makers()
-    M.cache_makers = {}
+-------------------------------------------------------------------------------
+-- Metrics
+-------------------------------------------------------------------------------
+
+--- Generate a set of metrics based on metric's config.
+--
+-- @param metrics  A set of metric config
+-- @return A list of metrics
+function M.generate_metrics(metrics)
+    local t = {}
+    for name, metric in pairs(metrics) do
+        table.insert(t, {
+            apiName = metric.name or name,
+            longName = metric.longName or metric[1] or name,
+            description = metric.description or metric[2] or metric.longName,
+            maker = metric.maker or metric[3].name or generate_maker_name(metric[3]),
+            dependencyMetricNames = metric.dependencies or metric[4]
+        })
+    end
+    return t
 end
+
+
 
 return M

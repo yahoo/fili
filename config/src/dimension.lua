@@ -1,10 +1,5 @@
---
--- Created by IntelliJ IDEA.
--- User: ylin08
--- Date: 7/3/18
--- Time: 3:20 PM
--- To change this template use File | Settings | File Templates.
---
+-- Copyright 2018 Yahoo Inc.
+-- Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 
 local utils = require("utils/dimensionUtils")
 local parser = require("utils/jsonParser")
@@ -13,9 +8,17 @@ local M = {
     dimensions = {}
 }
 
+-------------------------------------------------------------------------------
+-- Default
+-------------------------------------------------------------------------------
+
 DEFAULT = {
     CATEGORY = "General"
 }
+
+-------------------------------------------------------------------------------
+-- FieldSets
+-------------------------------------------------------------------------------
 
 -- fieldSet name = {pk(field as primary key), f(other fields)}
 FIELDSETS = {
@@ -23,6 +26,10 @@ FIELDSETS = {
     COUNTRY = { pk "ID", f("DESC", "COUNTY", "STATE") },
     PAGE = { pk "ID", f "DESC" }
 }
+
+-------------------------------------------------------------------------------
+-- Dimensions
+-------------------------------------------------------------------------------
 
 -- dimension name = {longName, description, fields, categories}
 DIMENSIONS = {

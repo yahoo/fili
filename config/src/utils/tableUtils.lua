@@ -1,13 +1,15 @@
---
--- Created by IntelliJ IDEA.
--- User: ylin08
--- Date: 7/5/18
--- Time: 5:06 PM
--- To change this template use File | Settings | File Templates.
---
+-- Copyright 2018 Yahoo Inc.
+-- Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
+
+--- a module provides util functions for table config.
+-- @module tableUtils
 
 local M = {}
 
+--- Parse a group of physical tables config and add them into a table.
+--
+-- @param tables  A group of physical tables
+-- @param t  The table for storing physical tables
 function M.add_phy_tables(tables, t)
     for name, physical_table in pairs(tables) do
         table.insert(t, {
@@ -20,6 +22,10 @@ function M.add_phy_tables(tables, t)
     end
 end
 
+--- Parse a group of logical tables config and add them into a table.
+--
+-- @param tables  A group of logical tables
+-- @param t  The table for storing logical tables
 function M.add_log_tables(tables, t)
     for name, logical_table in pairs(tables) do
         table.insert(t, {

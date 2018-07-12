@@ -1,10 +1,5 @@
---
--- Created by IntelliJ IDEA.
--- User: ylin08
--- Date: 7/5/18
--- Time: 4:52 PM
--- To change this template use File | Settings | File Templates.
---
+-- Copyright 2018 Yahoo Inc.
+-- Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 
 local utils = require("utils/tableUtils")
 local parser = require("utils/jsonParser")
@@ -13,6 +8,10 @@ local M = {
     physicalTables = {},
     logicalTables = {}
 }
+
+-------------------------------------------------------------------------------
+-- Default
+-------------------------------------------------------------------------------
 
 DEFAULT = {
     ALL_DIM = {
@@ -47,11 +46,18 @@ DEFAULT = {
     }
 }
 
+-------------------------------------------------------------------------------
+-- Physical Tables
+-------------------------------------------------------------------------------
 
 -- table name = {description, metrics, dimensions, granuality}
 PHYSICALTABLES = {
     wikiticker = {nil, {"added", "delta", "deleted"}, DEFAULT.ALL_DIM, "HOUR"}
 }
+
+-------------------------------------------------------------------------------
+-- Logical Tables
+-------------------------------------------------------------------------------
 
 -- table name = {description, metrics, dimensions, granuality, physicaltable}
 LOGICALTABLES = {

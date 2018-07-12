@@ -1,14 +1,18 @@
---
--- Created by IntelliJ IDEA.
--- User: ylin08
--- Date: 7/2/18
--- Time: 3:06 PM
--- To change this template use File | Settings | File Templates.
---
+-- Copyright 2018 Yahoo Inc.
+-- Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
+
 local Json = require("../lib/json")
+
+--- a module provides functions to parse json file or object.
+-- @module jsonParser
 
 local JsonTable = {}
 
+--- Save a lua table to a json file.
+--
+-- @param filepath  A file for saving json
+-- @param table A lua table to be saved as json file
+-- @return the lua table
 JsonTable.save = function(filepath, table)
     local file = io.open(filepath, "w")
 
@@ -22,6 +26,10 @@ JsonTable.save = function(filepath, table)
     end
 end
 
+--- Load json file into a lua table.
+--
+-- @param filepath  A file for loading json
+-- @return a lua table parsed from json file
 JsonTable.load = function(filepath)
     local file = io.open(filepath, "r" )
 
