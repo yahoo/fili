@@ -7,6 +7,10 @@ pull request if there was one.
 
 ### Added:
 
+- [Add support for "case_sensitive" attribute in FragmentSearchQuerySpec](https://github.com/yahoo/fili/pull/727)
+    * Enable `FragmentSearchQuerySpec` to accept an argument for `case_sensitive` so that API users can configure this
+      attribute for JSON serialization through Fili.
+
 - [Add specs for InsensitiveContainsSearchQuerySpec & RegexSearchQuerySpec](https://github.com/yahoo/fili/pull/732)
     * `RegexSearchQuerySpec` and `InsensitiveContainsSearchQuerySpec` have no dedicated test specs. This PR adds tests
       for them.
