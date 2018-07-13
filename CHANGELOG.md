@@ -30,6 +30,10 @@ pull request if there was one.
 
 ### Changed:
 
+- [Making Custom Sketch operations possible in PostAggreations](https://github.com/yahoo/fili/issues/740)    
+    * Added `PostAggregation` and `Aggregation` instance check in `asSketchEstimate(MetricField field)` method of the class `ThetaSketchFieldConverter`.
+    * `FieldAccessorPostAggregation` is called only for `Aggregation` and not for `PostAggregation`. 
+
 - [Let DimensionApiRequestMapper throw RequestValidationException instead of BadApiRequestException](https://github.com/yahoo/fili/pull/715)
     * `DimensionApiRequestMapper.apply()` is made to obey the interface contract by throwing
       `RequestValidationException` instead of ``BadApiRequestException``

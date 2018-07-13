@@ -36,6 +36,7 @@ public interface FieldConverters {
      *
      * @return The SketchAggregation as a SketchEstimatePostAggregation
      */
+    @Deprecated
     FuzzySetPostAggregation asSketchEstimate(SketchAggregation candidate);
 
     /**
