@@ -30,6 +30,16 @@ public interface FieldConverters {
     SketchAggregation asInnerSketch(SketchAggregation candidate);
 
     /**
+     * Get the candidate SketchAggregation as a SketchEstimatePostAggregation.
+     *
+     * @param candidate  SketchAggregation to "convert"
+     *
+     * @return The SketchAggregation as a SketchEstimatePostAggregation
+     */
+    @Deprecated
+    FuzzySetPostAggregation asSketchEstimate(SketchAggregation candidate);
+
+    /**
      * Get the candidate MetricField as a PostAggregation.
      *
      * @param field  Metric field which can be aggregate or post aggregate

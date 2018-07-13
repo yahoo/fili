@@ -2,6 +2,10 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.metric.makers
 
+import com.sun.javaws.exceptions.InvalidArgumentException
+import com.yahoo.bard.webservice.data.dimension.Dimension
+import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchEstimatePostAggregation
+
 import static com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker.INCORRECT_NUMBER_OF_DEPS_FORMAT
 import static com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation.ArithmeticPostAggregationFunction.MULTIPLY
 import static com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationPostAggFunction.UNION
@@ -44,9 +48,11 @@ class MetricMakerSpec extends Specification {
     static LogicalMetric longSumMetric
     static PostAggregation longSumFieldAccessor
     static LogicalMetric squareMetric
+    static MetricField squareMetricWithSketch
     static PostAggregation number
 
     static LogicalMetric sketchAggregationMetric
+    static LogicalMetric sketchPostAggregationMetric
     static PostAggregation sketchFieldAccessor
     static LogicalMetric sketchEstimateMetric
     static LogicalMetric sketchUnionMetric
@@ -56,6 +62,27 @@ class MetricMakerSpec extends Specification {
 
     MetricMaker maker = getMakerInstance()
 
+    class NonSketchPostAggreationWithSketchType implements MetricField {
+        @Override
+        boolean isSketch() {
+            return true
+        }
+
+        @Override
+        Set<Dimension> getDependentDimensions() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        String getName() {
+            return null
+        }
+
+        @Override
+        boolean isFloatingPoint() {
+            return false
+        }
+    }
     def setupSpec() {
 
         String sketchName = "all_users"
@@ -83,10 +110,12 @@ class MetricMakerSpec extends Specification {
 
         // Theta Sketches
         Aggregation sketchAggregation = new ThetaSketchAggregation(sketchName, "columnName", 16000)
+        PostAggregation postAggregation = new ThetaSketchEstimatePostAggregation(sketchName, square)
         queryTemplate = new TemplateDruidQuery([sketchAggregation] as Set, [] as Set)
         sketchAggregationMetric = new LogicalMetric(queryTemplate, new SketchRoundUpMapper(sketchAggregation.name), sketchAggregation.name)
+        sketchPostAggregationMetric = new LogicalMetric(queryTemplate, new SketchRoundUpMapper(postAggregation.name), postAggregation.name)
 
-        PostAggregation sketchEstimateAggregation = CONVERTER.asSketchEstimate(sketchAggregation)
+        PostAggregation sketchEstimateAggregation = CONVERTER.asSketchEstimate((MetricField)sketchAggregation)
 
         sketchFieldAccessor = sketchEstimateAggregation.getField()
 
@@ -104,6 +133,8 @@ class MetricMakerSpec extends Specification {
         PostAggregation sketchSetEstimate = CONVERTER.asSketchEstimate(sketchSetAggregation)
         queryTemplate = new TemplateDruidQuery([sketchAggregation] as Set, [sketchSetEstimate] as Set)
         sketchUnionEstimateMetric = new LogicalMetric(queryTemplate, new SketchRoundUpMapper(sketchSetEstimate.name), sketchSetEstimate.name)
+
+        squareMetricWithSketch = new NonSketchPostAggreationWithSketchType()
     }
 
     def cleanupSpec() {
@@ -200,14 +231,26 @@ class MetricMakerSpec extends Specification {
         MetricMaker.getNumericField(fromMetric.metricField) == expected
 
         where:
-        fromMetric                | expected
-        constantMetric            | constantMetric.metricField
-        squareMetric              | squareMetric.metricField
-        longSumMetric             | longSumFieldAccessor
-        sketchEstimateMetric      | sketchEstimateMetric.metricField
-        sketchAggregationMetric   | sketchEstimateMetric.metricField
-        sketchUnionMetric         | sketchUnionEstimateMetric.metricField
-        sketchUnionEstimateMetric | sketchUnionEstimateMetric.metricField
+        fromMetric                   | expected
+        constantMetric               | constantMetric.metricField
+        squareMetric                 | squareMetric.metricField
+        longSumMetric                | longSumFieldAccessor
+        sketchEstimateMetric         | sketchEstimateMetric.metricField
+        sketchAggregationMetric      | sketchEstimateMetric.metricField
+        sketchPostAggregationMetric  | sketchEstimateMetric.metricField
+        sketchUnionMetric            | sketchUnionEstimateMetric.metricField
+        sketchUnionEstimateMetric    | sketchUnionEstimateMetric.metricField
+    }
+
+    @Unroll
+    def "asSketchEstimate() throws IllegalArgumentException for sketch type which is neither a type of PostAggregation nor Aggregation"() {
+        when:
+        CONVERTER.asSketchEstimate(squareMetricWithSketch)
+
+        then:
+        final IllegalArgumentException exception = thrown()
+        exception.message == 'Given metric field ' + squareMetricWithSketch + ' is neither a type of PostAggregation nor Aggregation'
+
     }
 
     @Unroll

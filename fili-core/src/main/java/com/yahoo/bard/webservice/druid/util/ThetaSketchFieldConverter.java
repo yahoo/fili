@@ -31,48 +31,32 @@ public class ThetaSketchFieldConverter implements FieldConverters {
         return new ThetaSketchAggregation(candidate.getName(), candidate.getFieldName(), candidate.getSize());
     }
 
-    /**
-     * Get the candidate Aggregation as a SketchEstimatePostAggregation.
-     *
-     * @param candidate  Aggregation to "convert"
-     *
-     * @return The Aggregation as a SketchEstimatePostAggregation
-     */
-    public ThetaSketchEstimatePostAggregation asSketchEstimate(Aggregation candidate) {
+    @Override
+    public ThetaSketchEstimatePostAggregation asSketchEstimate(SketchAggregation candidate) {
         String name = candidate.getName() + "_estimate";
         PostAggregation field = new FieldAccessorPostAggregation(candidate);
         return new ThetaSketchEstimatePostAggregation(name, field);
     }
 
-    /**
-     * Get the PostAggregation as a SketchEstimatePostAggregation.
-     *
-     * @param postAggregation  PostAggregation to "convert"
-     *
-     * @return The PostAggregation as a SketchEstimatePostAggregation
-     */
-    public ThetaSketchEstimatePostAggregation asSketchEstimate(PostAggregation postAggregation) {
-        String name = postAggregation.getName() + "_estimate";
-        return new ThetaSketchEstimatePostAggregation(name, postAggregation);
-    }
-
     @Override
     public FuzzySetPostAggregation asSketchEstimate(MetricField field) {
-        if (field.isSketch()) {
-            if (field instanceof PostAggregation) {
-                return asSketchEstimate((PostAggregation) field);
-            }
-            else if (field instanceof Aggregation) {
-                return asSketchEstimate((Aggregation) field);
-            } else {
-                String message = "Given metric field " + field.toString() + " is neither a type of " +
-                        "PostAggregation nor Aggregation";
-                LOG.error(message);
-                throw new IllegalArgumentException(message);
-            }
+        if (!field.isSketch()) {
+            String message = String.format("Given metric field %s isn't sketch", field.toString());
+            LOG.error(message);
+            throw new IllegalArgumentException(message);
         }
-        String message = "Given metric field " + field.toString() + " isn't sketch";
-        LOG.error(message);
-        throw new IllegalArgumentException(message);
+
+        if (field instanceof PostAggregation) {
+            return new ThetaSketchEstimatePostAggregation(field.getName() + "_estimate", (PostAggregation) field);
+        }
+        else if (field instanceof Aggregation) {
+            PostAggregation postAggregation = new FieldAccessorPostAggregation(field);
+            return new ThetaSketchEstimatePostAggregation(field.getName() + "_estimate", postAggregation);
+        } else {
+            String message = String.format("Given metric field %s is neither a type of PostAggregation " +
+                    "nor Aggregation", field.toString());
+            LOG.error(message);
+            throw new IllegalArgumentException(message);
+        }
     }
 }

@@ -35,13 +35,7 @@ public class SketchFieldConverter implements FieldConverters {
         return new SketchMergeAggregation(candidate.getName(), candidate.getFieldName(), candidate.getSize());
     }
 
-    /**
-     * Get the candidate PostAggregation as a SketchEstimatePostAggregation.
-     *
-     * @param candidate  PostAggregation to "convert"
-     *
-     * @return The PostAggregation as a SketchEstimatePostAggregation
-     */
+    @Override
     public SketchEstimatePostAggregation asSketchEstimate(SketchAggregation candidate) {
         String name = candidate.getName() + "_estimate";
         PostAggregation field = new FieldAccessorPostAggregation(candidate);
