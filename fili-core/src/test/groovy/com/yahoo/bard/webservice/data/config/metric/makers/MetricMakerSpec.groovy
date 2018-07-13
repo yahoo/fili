@@ -2,14 +2,11 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.metric.makers
 
-import com.sun.javaws.exceptions.InvalidArgumentException
-import com.yahoo.bard.webservice.data.dimension.Dimension
-import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchEstimatePostAggregation
-
 import static com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker.INCORRECT_NUMBER_OF_DEPS_FORMAT
 import static com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation.ArithmeticPostAggregationFunction.MULTIPLY
 import static com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationPostAggFunction.UNION
 
+import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
@@ -24,6 +21,7 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggre
 import com.yahoo.bard.webservice.druid.model.postaggregation.ConstantPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
+import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchEstimatePostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchSetOperationPostAggregation
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
 import com.yahoo.bard.webservice.druid.util.FieldConverters
@@ -62,27 +60,6 @@ class MetricMakerSpec extends Specification {
 
     MetricMaker maker = getMakerInstance()
 
-    class NonSketchPostAggreationWithSketchType implements MetricField {
-        @Override
-        boolean isSketch() {
-            return true
-        }
-
-        @Override
-        Set<Dimension> getDependentDimensions() {
-            return Collections.emptySet();
-        }
-
-        @Override
-        String getName() {
-            return null
-        }
-
-        @Override
-        boolean isFloatingPoint() {
-            return false
-        }
-    }
     def setupSpec() {
 
         String sketchName = "all_users"
@@ -134,7 +111,27 @@ class MetricMakerSpec extends Specification {
         queryTemplate = new TemplateDruidQuery([sketchAggregation] as Set, [sketchSetEstimate] as Set)
         sketchUnionEstimateMetric = new LogicalMetric(queryTemplate, new SketchRoundUpMapper(sketchSetEstimate.name), sketchSetEstimate.name)
 
-        squareMetricWithSketch = new NonSketchPostAggreationWithSketchType()
+        squareMetricWithSketch = new MetricField() {
+            @Override
+            String getName() {
+                return null
+            }
+
+            @Override
+            boolean isSketch() {
+                return true
+            }
+
+            @Override
+            boolean isFloatingPoint() {
+                return false
+            }
+
+            @Override
+            Set<Dimension> getDependentDimensions() {
+                return null
+            }
+        }
     }
 
     def cleanupSpec() {
@@ -250,7 +247,6 @@ class MetricMakerSpec extends Specification {
         then:
         final IllegalArgumentException exception = thrown()
         exception.message == 'Given metric field ' + squareMetricWithSketch + ' is neither a type of PostAggregation nor Aggregation'
-
     }
 
     @Unroll

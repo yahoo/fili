@@ -48,8 +48,7 @@ public class ThetaSketchFieldConverter implements FieldConverters {
 
         if (field instanceof PostAggregation) {
             return new ThetaSketchEstimatePostAggregation(field.getName() + "_estimate", (PostAggregation) field);
-        }
-        else if (field instanceof Aggregation) {
+        } else if (field instanceof Aggregation) {
             PostAggregation postAggregation = new FieldAccessorPostAggregation(field);
             return new ThetaSketchEstimatePostAggregation(field.getName() + "_estimate", postAggregation);
         } else {
