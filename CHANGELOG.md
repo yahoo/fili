@@ -7,6 +7,13 @@ pull request if there was one.
 
 ### Added:
 
+- [Add specs for InsensitiveContainsSearchQuerySpec & RegexSearchQuerySpec](https://github.com/yahoo/fili/pull/732)
+    * `RegexSearchQuerySpec` and `InsensitiveContainsSearchQuerySpec` have no dedicated test specs. This PR adds tests
+      for them.
+
+- [Implement ContainsSearchQuerySpec](https://github.com/yahoo/fili/pull/730)
+    * Adds serialization for `ContainsSearchQuerySpec` so that Fili API users can use that through Fili.
+
 - [Add storageStrategy as a field of the DimensionConfig class](https://github.com/yahoo/fili/issues/718)
     * Adds getStorageStrategy as a field of the dimensionConfig class.
     * Passes the storage strategy to the KeyValueStoreDimension Constructor
@@ -18,6 +25,14 @@ pull request if there was one.
     * Add missing tests to `Utils` class.
 
 ### Changed:
+
+- [Let DimensionApiRequestMapper throw RequestValidationException instead of BadApiRequestException](https://github.com/yahoo/fili/pull/715)
+    * `DimensionApiRequestMapper.apply()` is made to obey the interface contract by throwing
+      `RequestValidationException` instead of ``BadApiRequestException``
+
+- [Inject customizable extraction functions to RegisteredLookupDimension](https://github.com/yahoo/fili/pull/724)
+    * Instead of injecting registered lookup names, we inject registered lookup extraction functions for lookup
+      dimension so that downstream projects can configure all fields of registered lookup extraction functions.
 
 - [Abort request when too many Druid filters are generated](https://github.com/yahoo/fili/pull/690)
     * In order to avoid Druid queries with too much filters on high-cardinality dimension, Fili sets a upper limit

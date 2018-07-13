@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.metadata
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.dimension.impl.RegisteredLookupDimension
 import com.yahoo.bard.webservice.druid.client.DruidWebService
+import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.RegisteredLookupExtractionFunction
 import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService
 
 import spock.lang.Specification
@@ -34,7 +35,10 @@ class RegisteredLookupMetadataLoadTaskSpec extends Specification {
         }
 
         and: "Given a load task that looks at lookups existing in Druid"
-        dimension.getLookups() >> ["loadedLookup", "pendingLookup"]
+        dimension.getRegisteredLookupExtractionFns() >> [
+                new RegisteredLookupExtractionFunction("loadedLookup"),
+                new RegisteredLookupExtractionFunction("pendingLookup")
+        ]
 
         RegisteredLookupMetadataLoadTask lookupLoadTask = new RegisteredLookupMetadataLoadTask(
                 druidClient,
@@ -64,7 +68,10 @@ class RegisteredLookupMetadataLoadTaskSpec extends Specification {
         }
 
         and: "Given a load task that looks at lookups existing in Druid"
-        dimension.getLookups() >> ["loadedLookup", "pendingLookup"]
+        dimension.getRegisteredLookupExtractionFns() >> [
+                new RegisteredLookupExtractionFunction("loadedLookup"),
+                new RegisteredLookupExtractionFunction("pendingLookup")
+        ]
 
         RegisteredLookupMetadataLoadTask lookupLoadTask = new RegisteredLookupMetadataLoadTask(
                 druidClient,
@@ -131,7 +138,9 @@ class RegisteredLookupMetadataLoadTaskSpec extends Specification {
         }
 
         and: "Load task is asking for a lookup that's not configured in Druid"
-        dimension.getLookups() >> ["LookupNotInDruid"]
+        dimension.getRegisteredLookupExtractionFns() >> [
+                new RegisteredLookupExtractionFunction("LookupNotInDruid")
+        ]
         RegisteredLookupMetadataLoadTask lookupLoadTask = new RegisteredLookupMetadataLoadTask(
                 druidClient,
                 new DimensionDictionary([dimension] as Set)
