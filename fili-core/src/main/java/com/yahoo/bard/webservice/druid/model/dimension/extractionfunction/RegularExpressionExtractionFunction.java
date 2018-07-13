@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
  * }
  * </pre>
  * <b>Note that the {@code index}, {@code replaceMissingValue}, and {@code replaceMissingValueWith} are using default
- * values and are not included in the serialization<b>.
+ * values and are not included in the serialization</b>.
  */
 public class RegularExpressionExtractionFunction extends ExtractionFunction {
     private final Pattern pattern;
@@ -82,6 +82,6 @@ public class RegularExpressionExtractionFunction extends ExtractionFunction {
      */
     @Override
     public String toString() {
-        return String.format("RegularExpressionExtractionFunction{pattern=%s}", getPattern().pattern());
+        return String.format("RegularExpressionExtractionFunction{pattern=%s}", getPattern());
     }
 }

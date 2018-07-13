@@ -78,6 +78,6 @@ public class PartialExtractionFunction extends ExtractionFunction {
      */
     @Override
     public String toString() {
-        return String.format("PartialExtractionFunction{pattern=%s}", getPattern().pattern());
+        return String.format("PartialExtractionFunction{pattern=%s}", getPattern());
     }
 }
