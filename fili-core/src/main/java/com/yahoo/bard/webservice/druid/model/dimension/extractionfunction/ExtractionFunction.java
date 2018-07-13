@@ -31,7 +31,19 @@ public abstract class ExtractionFunction {
      * Enumeration of possible extraction function types.
      */
     public enum DefaultExtractionFunctionType implements ExtractionFunctionType {
+
+        /**
+         * Regular expression extraction function.
+         * <p>
+         * See {@link RegularExpressionExtractionFunction}.
+         */
         REGEX,
+
+        /**
+         * Partial extraction function.
+         * <p>
+         * See {@link PartialExtractionFunction}.
+         */
         PARTIAL,
         SEARCH_QUERY,
         TIME_FORMAT,
@@ -39,6 +51,8 @@ public abstract class ExtractionFunction {
         JAVASCRIPT,
         CASCADE,
         LOOKUP,
+
+
         REGISTERED_LOOKUP
         ;
 

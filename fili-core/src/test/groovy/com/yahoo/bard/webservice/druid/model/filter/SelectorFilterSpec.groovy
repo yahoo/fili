@@ -85,7 +85,7 @@ class SelectorFilterSpec extends Specification {
         objectMapper.readTree(serializedFilter).get("filter") == objectMapper.readTree(expectedSerialization)
     }
 
-    def "Serialization of dimension with lookups overriden is correct"() {
+    def "Serialization of dimension with lookups overridden is correct"() {
         given:
         SelectorFilter filter = new SelectorFilter(
                 dimension,
