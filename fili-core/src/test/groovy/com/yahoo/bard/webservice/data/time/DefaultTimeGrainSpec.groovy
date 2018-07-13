@@ -29,14 +29,14 @@ class DefaultTimeGrainSpec extends Specification {
         GroovyTestUtils.compareJson(MAPPER.writeValueAsString(timeGrain), expectedJson)
 
         where:
-        timeGrain | expectedJson
-        MONTH   | '{"type":"period","period":"P1M"}'
-        DAY     | '{"type":"period","period":"P1D"}'
-        YEAR    | '{"type":"period","period":"P1Y"}'
-        WEEK    | '{"type":"period","period":"P1W"}'
-        HOUR    | '{"type":"period","period":"PT1H"}'
-        MINUTE  | '{"type":"period","period":"PT1M"}'
-        QUARTER | '{"type":"period","period":"P3M"}'
+        timeGrain || expectedJson
+        MONTH     || '{"type":"period","period":"P1M"}'
+        DAY       || '{"type":"period","period":"P1D"}'
+        YEAR      || '{"type":"period","period":"P1Y"}'
+        WEEK      || '{"type":"period","period":"P1W"}'
+        HOUR      || '{"type":"period","period":"PT1H"}'
+        MINUTE    || '{"type":"period","period":"PT1M"}'
+        QUARTER   || '{"type":"period","period":"P3M"}'
     }
 
     @Unroll

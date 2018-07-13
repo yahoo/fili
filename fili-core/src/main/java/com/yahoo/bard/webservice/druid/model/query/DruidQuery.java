@@ -12,7 +12,7 @@ import java.util.Optional;
 /**
  * Common interface for Druid Query classes.
  *
- * @param <Q> class that extends DruidQuery
+ * @param <Q> class that implements DruidQuery
  */
 public interface DruidQuery<Q extends DruidQuery<? super Q>> {
 
