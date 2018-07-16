@@ -158,8 +158,7 @@ public class DimensionsServlet extends EndpointServlet {
                     t,
                     Optional.ofNullable(apiRequest),
                     uriInfo,
-                    requestContext,
-                    ""
+                    requestContext
             );
         } finally {
             RequestLog.stopTiming(this);
@@ -219,8 +218,7 @@ public class DimensionsServlet extends EndpointServlet {
                     t,
                     Optional.ofNullable(apiRequest),
                     uriInfo,
-                    containerRequestContext,
-                    dimensionName
+                    containerRequestContext
             );
         } finally {
             RequestLog.stopTiming(this);
@@ -329,8 +327,7 @@ public class DimensionsServlet extends EndpointServlet {
                     t,
                     Optional.ofNullable(apiRequest),
                     uriInfo,
-                    containerRequestContext,
-                    dimensionName
+                    containerRequestContext
             );
         } finally {
             RequestLog.stopTiming(this);

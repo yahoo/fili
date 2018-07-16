@@ -198,8 +198,7 @@ public class JobsServlet extends EndpointServlet {
                     t,
                     Optional.ofNullable(apiRequest),
                     uriInfo,
-                    containerRequestContext,
-                    ""
+                    containerRequestContext
             ));
         } finally {
             RequestLog.stopTiming(this);
@@ -251,8 +250,7 @@ public class JobsServlet extends EndpointServlet {
                     t,
                     Optional.ofNullable(apiRequest),
                     uriInfo,
-                    containerRequestContext,
-                    ""
+                    containerRequestContext
             ));
         } finally {
             RequestLog.stopTiming(this);
@@ -332,8 +330,7 @@ public class JobsServlet extends EndpointServlet {
                     t,
                     Optional.ofNullable(apiRequest),
                     uriInfo,
-                    containerRequestContext,
-                    ""
+                    containerRequestContext
             ));
         } finally {
             RequestLog.stopTiming(this);

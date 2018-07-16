@@ -147,8 +147,7 @@ public class SlicesServlet extends EndpointServlet {
                     t,
                     Optional.ofNullable(apiRequest),
                     uriInfo,
-                    containerRequestContext,
-                    ""
+                    containerRequestContext
             );
         } finally {
             RequestLog.stopTiming(this);
@@ -216,8 +215,7 @@ public class SlicesServlet extends EndpointServlet {
                     t,
                     Optional.ofNullable(apiRequest),
                     uriInfo,
-                    containerRequestContext,
-                    sliceName
+                    containerRequestContext
             );
         } finally {
             RequestLog.stopTiming(this);

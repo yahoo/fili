@@ -2,8 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.exception;
 
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.RequestValidationException;
 import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
@@ -27,10 +25,9 @@ public class FiliSlicesExceptionHandler implements MetadataExceptionHandler {
     @Override
     public Response handleThrowable(
             Throwable e,
-            Optional<ApiRequest> request,
+            Optional<? extends ApiRequest> request,
             UriInfo uriInfo,
-            ContainerRequestContext requestContext,
-            String metadataEntityName
+            ContainerRequestContext requestContext
     ) {
         if (e instanceof RequestValidationException) {
             LOG.debug(e.getMessage(), e);
@@ -39,11 +36,11 @@ public class FiliSlicesExceptionHandler implements MetadataExceptionHandler {
         } else if (e instanceof IOException) {
             String msg = String.format("Internal server error. IOException : %s", e.getMessage());
             LOG.error(msg, e);
-            return Response.status(INTERNAL_SERVER_ERROR).entity(msg).build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(msg).build();
         } else {
             String msg = ErrorMessageFormat.REQUEST_PROCESSING_EXCEPTION.format(e.getMessage());
             LOG.info(msg, e);
-            return Response.status(INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
         }
     }
 }

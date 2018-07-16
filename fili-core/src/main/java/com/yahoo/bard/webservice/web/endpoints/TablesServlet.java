@@ -207,8 +207,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                     t,
                     Optional.ofNullable(tablesApiRequestImpl),
                     uriInfo,
-                    containerRequestContext,
-                    tableName
+                    containerRequestContext
             );
         } finally {
             RequestLog.stopTiming(this);
@@ -273,8 +272,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                     t,
                     Optional.ofNullable(tablesApiRequestImpl),
                     uriInfo,
-                    containerRequestContext,
-                    tableName
+                    containerRequestContext
             );
         } finally {
             RequestLog.stopTiming(this);
@@ -363,8 +361,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                     t,
                     Optional.ofNullable(tablesApiRequest),
                     uriInfo,
-                    containerRequestContext,
-                    tableName
+                    containerRequestContext
             );
         } finally {
             RequestLog.stopTiming(this);
@@ -424,8 +421,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                     t,
                     Optional.ofNullable(tablesApiRequestImpl),
                     uriInfo,
-                    containerRequestContext,
-                    ""
+                    containerRequestContext
             );
         } finally {
             RequestLog.stopTiming(this);

@@ -14,7 +14,7 @@ import javax.ws.rs.core.UriInfo;
 
 /**
  * Allows a customer to inject custom code for handling Exceptions in Fili's DataServlet.
- *
+ * <p>
  * For example, customers may want to return 500's for some custom exceptions, or return
  * an empty set when dimension rows are not found.
  */
@@ -35,7 +35,7 @@ public interface DataExceptionHandler {
     void handleException(
         Throwable e,
         AsyncResponse asyncResponse,
-        Optional<DataApiRequest> apiRequest,
+        Optional<? extends DataApiRequest> apiRequest,
         ContainerRequestContext containerRequestContext,
         UriInfo uriInfo,
         ObjectWriter writer

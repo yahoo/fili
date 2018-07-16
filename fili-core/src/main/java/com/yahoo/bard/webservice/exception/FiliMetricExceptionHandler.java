@@ -27,10 +27,9 @@ public class FiliMetricExceptionHandler implements MetadataExceptionHandler {
     @Override
     public Response handleThrowable(
             Throwable e,
-            Optional<ApiRequest> request,
+            Optional<? extends ApiRequest> request,
             UriInfo uriInfo,
-            ContainerRequestContext requestContext,
-            String metadataEntityName
+            ContainerRequestContext requestContext
     ) {
         if (e instanceof RequestValidationException) {
             LOG.debug(e.getMessage(), e);

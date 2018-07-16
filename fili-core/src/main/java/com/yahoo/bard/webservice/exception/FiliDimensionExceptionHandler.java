@@ -10,6 +10,7 @@ import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.RequestValidationException;
 import com.yahoo.bard.webservice.web.RowLimitReachedException;
 import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -32,17 +33,21 @@ public class FiliDimensionExceptionHandler implements MetadataExceptionHandler {
     @Override
     public Response handleThrowable(
         Throwable e,
-        Optional<ApiRequest> request,
+        Optional<? extends ApiRequest> request,
         UriInfo uriInfo,
-        ContainerRequestContext requestContext,
-        String metadataEntityName
+        ContainerRequestContext requestContext
     ) {
         if (e instanceof RequestValidationException) {
             LOG.debug(e.getMessage(), e);
             RequestValidationException rve = (RequestValidationException) e;
             return Response.status(rve.getStatus()).entity(rve.getErrorHttpMsg()).build();
         } else if (e instanceof RowLimitReachedException) {
-            String msg = String.format("Row limit exceeded for dimension %s: %s", metadataEntityName, e.getMessage());
+            DimensionsApiRequest dimensionRequest = (DimensionsApiRequest) request.get();
+            String msg = String.format(
+                "Row limit exceeded for dimension %s: %s",
+                dimensionRequest.getDimension(),
+                e.getMessage()
+            );
             LOG.debug(msg, e);
             return Response.status(INSUFFICIENT_STORAGE).entity(msg).build();
         } else if (e instanceof JsonProcessingException) {

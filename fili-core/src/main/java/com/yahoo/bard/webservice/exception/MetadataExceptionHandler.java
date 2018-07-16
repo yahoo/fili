@@ -27,15 +27,13 @@ public interface MetadataExceptionHandler {
      * during request construction
      * @param uriInfo  The URI of the request
      * @param requestContext  HTTP request context for the request
-     * @param metadataEntityName  The name of the metadata entity (dimension, metric, etc) being accessed
      *
      * @return The Response to send to the user
      */
     Response handleThrowable(
             Throwable e,
-            Optional<ApiRequest> request,
+            Optional<? extends ApiRequest> request,
             UriInfo uriInfo,
-            ContainerRequestContext requestContext,
-            String metadataEntityName
+            ContainerRequestContext requestContext
     );
 }

@@ -43,7 +43,7 @@ public class FiliDataExceptionHandler implements DataExceptionHandler {
     public void handleException(
         Throwable e,
         AsyncResponse asyncResponse,
-        Optional<DataApiRequest> apiRequest,
+        Optional<? extends DataApiRequest> apiRequest,
         ContainerRequestContext containerRequestContext,
         UriInfo uriInfo,
         ObjectWriter writer
