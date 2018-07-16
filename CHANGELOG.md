@@ -30,6 +30,9 @@ pull request if there was one.
 
 ### Changed:
 
+- [Change availability behavior on BasePhysicalTable](https://github.com/yahoo/fili/pull/743)
+    * Currently `BasePhysicalTable` overrides `getAvailableIntervals(constraint)` and `getAllAvailableIntervals()`, and defers this behavior to its availability. This PR changes `BasePhysicalTable` to also override `getAvailableIntervals()` and defer to its availability.  
+
 - [Making Custom Sketch operations possible in PostAggreations](https://github.com/yahoo/fili/issues/740)    
     * Added `PostAggregation` and `Aggregation` instance check in `asSketchEstimate(MetricField field)` method of the class `ThetaSketchFieldConverter`.
     * `FieldAccessorPostAggregation` is called only for `Aggregation` and not for `PostAggregation`. 
@@ -60,9 +63,6 @@ pull request if there was one.
 
 
 ### Fixed:
-
-- [Fix incorrect availability behavior on BasePhysicalTable](https://github.com/yahoo/fili/pull/743)
-    * Currently `BasePhysicalTable` overrides `getAvailableIntervals(constraint)` and `getAllAvailableIntervals()`, and defers this behavior to its availability. This PR fixes this by having `BasePhysicalTable` also override `getAvailableIntervals()` and defer to its availability.  
 
 - [Fix generate intervals logic when availability is empty](https://github.com/yahoo/fili/pull/702)
     * Logic to generate intervals when `CURRENT_MACRO_USES_LATEST` flag is turned on has a bug. The code throws `NoSuchElementException` when the table has no availabilities. This PR fixes the bug by checking if the availability of the underlying table is empty.
