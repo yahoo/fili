@@ -30,6 +30,9 @@ pull request if there was one.
 
 ### Changed:
 
+- [Change `BaseCompositePhysicalTable` into a concrete class]()
+    * Currently `BaseCompositePhysicalTable` is an abstract class, though it has all of the functionality for a simple composite physical table. Changed to a concrete class to allow for simple composite table behavior with requiring an extension.  
+
 - [Change availability behavior on BasePhysicalTable](https://github.com/yahoo/fili/pull/743)
     * Currently `BasePhysicalTable` overrides `getAvailableIntervals(constraint)` and `getAllAvailableIntervals()`, and defers this behavior to its availability. This PR changes `BasePhysicalTable` to also override `getAvailableIntervals()` and defer to its availability.  
 
