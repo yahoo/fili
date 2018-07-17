@@ -30,7 +30,7 @@ pull request if there was one.
 
 ### Changed:
 
-- [Change `BaseCompositePhysicalTable` into a concrete class]()
+- [Change `BaseCompositePhysicalTable` into a concrete class](https://github.com/yahoo/fili/pull/745)
     * Currently `BaseCompositePhysicalTable` is an abstract class, though it has all of the functionality for a simple composite physical table. Changed to a concrete class to allow for simple composite table behavior with requiring an extension.  
 
 - [Change availability behavior on BasePhysicalTable](https://github.com/yahoo/fili/pull/743)

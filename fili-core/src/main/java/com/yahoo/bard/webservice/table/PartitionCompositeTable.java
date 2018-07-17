@@ -16,7 +16,13 @@ import javax.validation.constraints.NotNull;
 
 /**
  * An implementation of {@link PhysicalTable} backed by {@link PartitionAvailability} availability.
+ *
+ * @deprecated This class is essentially a {@link BaseCompositePhysicalTable} that builds a
+ * {@link PartitionAvailability}.  Instead of using this class, we should put a builder on {@link PartitionAvailability}
+ * and just have the definition call the builder and create a {@link BaseCompositePhysicalTable}, to which we pass the
+ * {@link PartitionAvailability}.
  */
+@Deprecated
 public class PartitionCompositeTable extends BaseCompositePhysicalTable {
 
     /**
