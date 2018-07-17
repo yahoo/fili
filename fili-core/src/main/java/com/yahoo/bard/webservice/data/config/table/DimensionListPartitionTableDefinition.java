@@ -10,8 +10,9 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
+import com.yahoo.bard.webservice.table.BaseCompositePhysicalTable;
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
-import com.yahoo.bard.webservice.table.PartitionCompositeTable;
+import com.yahoo.bard.webservice.table.availability.PartitionAvailability;
 import com.yahoo.bard.webservice.table.resolver.DataSourceFilter;
 import com.yahoo.bard.webservice.table.resolver.DimensionIdFilter;
 
@@ -64,12 +65,13 @@ public class DimensionListPartitionTableDefinition extends PhysicalTableDefiniti
                         ))
                 ));
 
-        return new PartitionCompositeTable(
+        return new BaseCompositePhysicalTable(
                 getName(),
                 getTimeGrain(),
                 buildColumns(dictionaries.getDimensionDictionary()),
+                availabilityFilters.keySet(),
                 getLogicalToPhysicalNames(),
-                availabilityFilters
+                PartitionAvailability.build(availabilityFilters)
         );
     }
 
