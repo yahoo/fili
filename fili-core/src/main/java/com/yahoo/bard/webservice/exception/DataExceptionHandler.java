@@ -35,7 +35,7 @@ public interface DataExceptionHandler {
     void handleException(
         Throwable e,
         AsyncResponse asyncResponse,
-        Optional<? extends DataApiRequest> apiRequest,
+        Optional<DataApiRequest> apiRequest,
         ContainerRequestContext containerRequestContext,
         UriInfo uriInfo,
         ObjectWriter writer

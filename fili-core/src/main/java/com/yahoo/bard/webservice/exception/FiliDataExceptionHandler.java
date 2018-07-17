@@ -25,9 +25,8 @@ import javax.ws.rs.core.UriInfo;
 
 /**
  * The default implementation of {@link DataExceptionHandler}.
- *
+ * <p>
  * This class handles the following cases:
- *
  * <ol>
  * <li> RequestValidationException - builds an error response and returns the HTTP status stored in the
  *  exception
@@ -43,7 +42,7 @@ public class FiliDataExceptionHandler implements DataExceptionHandler {
     public void handleException(
         Throwable e,
         AsyncResponse asyncResponse,
-        Optional<? extends DataApiRequest> apiRequest,
+        Optional<DataApiRequest> apiRequest,
         ContainerRequestContext containerRequestContext,
         UriInfo uriInfo,
         ObjectWriter writer
