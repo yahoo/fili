@@ -30,7 +30,7 @@ pull request if there was one.
 
 ### Changed:
 
-- [Change `BaseCompositePhysicalTable` into a concrete class and deprecate now unneeded classes](https://github.com/yahoo/fili/pull/745)
+- [Change `BaseCompositePhysicalTable` into a concrete class](https://github.com/yahoo/fili/pull/745)
     * Currently `BaseCompositePhysicalTable` is an abstract class, though it has all of the functionality for a simple composite physical table. Changed to a concrete class to allow for simple composite table behavior with requiring an extension.
     * Two simple implementations of `BaseCompositePhysicalTable`, `PartitionCompositeTable` and `MetricUnionCompositeTable` are now deprecated. Instead, the availabilities for these tables should be created directly and passed in to `BaseCompositePhysicalTable`.  
 
@@ -64,6 +64,8 @@ pull request if there was one.
 
 ### Deprecated:
 
+- [Deprecate `PartitionCompositeTable` and `MetricUnionCompositeTable`](https://github.com/yahoo/fili/pull/745)
+    * Two simple implementations of `BaseCompositePhysicalTable` (`PartitionCompositeTable` and `MetricUnionCompositeTable`) are now deprecated. Instead, the availabilities for these tables should be created directly and passed in to `BaseCompositePhysicalTable`.  
 
 
 ### Fixed:
