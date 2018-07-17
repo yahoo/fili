@@ -7,6 +7,9 @@ pull request if there was one.
 
 ### Added:
 
+- [Move off BaseCompositePhysicalTable inheritance usage](https://github.com/yahoo/fili/issues/747)
+    * Added a builder method to `MetricUnionAvailability` to save on needing to add additional table classes.
+
 - [Add support for "case_sensitive" attribute in FragmentSearchQuerySpec](https://github.com/yahoo/fili/pull/727)
     * Enable `FragmentSearchQuerySpec` to accept an argument for `case_sensitive` so that API users can configure this
       attribute for JSON serialization through Fili.
@@ -66,7 +69,6 @@ pull request if there was one.
 
 - [Deprecate `PartitionCompositeTable` and `MetricUnionCompositeTable`](https://github.com/yahoo/fili/pull/745)
     * Two simple implementations of `BaseCompositePhysicalTable` (`PartitionCompositeTable` and `MetricUnionCompositeTable`) are now deprecated. Instead, the availabilities for these tables should be created directly and passed in to `BaseCompositePhysicalTable`.  
-
 
 ### Fixed:
 
