@@ -89,6 +89,7 @@ import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.PathSegment;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 /**
@@ -464,7 +465,17 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             // Generally, it's expected that implementations of `ExceptionHandler` will resume
             // the response in every case. This exists so that if someone writes a buggy handler
             // that fails to resume the response, they at least get *something* back.
-            asyncResponse.resume(RequestHandlerUtils.makeErrorResponse(BAD_REQUEST, e, writer));
+            if (!asyncResponse.isDone()) {
+                asyncResponse.resume(
+                    RequestHandlerUtils.makeErrorResponse(
+                        Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),
+                        e.getClass().getName(),
+                        "Failed to handle the following error.",
+                        null,
+                        writer
+                    )
+                );
+            }
         }
     }
 
