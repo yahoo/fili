@@ -44,7 +44,13 @@ import javax.validation.constraints.NotNull;
  * {@link MetricUnionAvailability}.
  *
  * @see MetricUnionAvailability
+ *
+ * @deprecated This class is essentially just a {@link BaseCompositePhysicalTable} that builds a
+ * {@link MetricUnionAvailability}. Instead of using this class, we should put a builder on
+ * {@link MetricUnionAvailability} and just have the definition call the builder and create a
+ * {@link BaseCompositePhysicalTable}, to which we pass the {@link MetricUnionAvailability}.
  */
+@Deprecated
 public class MetricUnionCompositeTable extends BaseCompositePhysicalTable {
 
     /**
