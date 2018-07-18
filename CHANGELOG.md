@@ -7,6 +7,11 @@ pull request if there was one.
 
 ### Added:
 
+- [An injection point for customizing Exception handling]https://github.com/yahoo/fili/pull/742)
+    * Customers can provide their own logic for handling top level Exceptions in
+      the `DataServlet` by implementing `DataExceptionHandler`, and any other
+      servlet by implementing `MetadataExceptionHandler`.
+
 - [Add support for "case_sensitive" attribute in FragmentSearchQuerySpec](https://github.com/yahoo/fili/pull/727)
     * Enable `FragmentSearchQuerySpec` to accept an argument for `case_sensitive` so that API users can configure this
       attribute for JSON serialization through Fili.

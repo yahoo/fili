@@ -2,7 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.endpoints;
 
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -17,23 +16,21 @@ import com.yahoo.bard.webservice.data.HttpResponseChannel;
 import com.yahoo.bard.webservice.data.HttpResponseMaker;
 import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.ResultSet;
+import com.yahoo.bard.webservice.exception.MetadataExceptionHandler;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.JobRequest;
 import com.yahoo.bard.webservice.util.AllPagesPagination;
 import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.util.StreamUtils;
 import com.yahoo.bard.webservice.util.Utils;
-import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
-import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.JobNotFoundException;
-import com.yahoo.bard.webservice.web.apirequest.JobsApiRequest;
 import com.yahoo.bard.webservice.web.PreResponse;
 import com.yahoo.bard.webservice.web.RequestMapper;
-import com.yahoo.bard.webservice.web.RequestValidationException;
 import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
+import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.JobsApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.JobsApiRequestImpl;
-import com.yahoo.bard.webservice.web.handlers.RequestHandlerUtils;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys;
 import com.yahoo.bard.webservice.web.util.PaginationLink;
@@ -52,7 +49,6 @@ import rx.Observable;
 import rx.exceptions.Exceptions;
 import rx.observables.ConnectableObservable;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
@@ -97,6 +93,7 @@ public class JobsServlet extends EndpointServlet {
     private final ObjectWriter writer;
     private final HttpResponseMaker httpResponseMaker;
     private final ResponseFormatResolver formatResolver;
+    private final MetadataExceptionHandler exceptionHandler;
 
     /**
      * Constructor.
@@ -108,6 +105,7 @@ public class JobsServlet extends EndpointServlet {
      * @param requestMapper  Mapper for changing the API request
      * @param httpResponseMaker  The factory for building HTTP responses
      * @param formatResolver  The formatResolver for determining correct response format
+     * @param exceptionHandler  Injection point for handling response exceptions
      */
     @Inject
     public JobsServlet(
@@ -118,7 +116,8 @@ public class JobsServlet extends EndpointServlet {
             BroadcastChannel<String> broadcastChannel,
             @Named(JobsApiRequest.REQUEST_MAPPER_NAMESPACE) RequestMapper requestMapper,
             HttpResponseMaker httpResponseMaker,
-            ResponseFormatResolver formatResolver
+            ResponseFormatResolver formatResolver,
+            @Named(JobsApiRequest.EXCEPTION_HANDLER_NAMESPACE) MetadataExceptionHandler exceptionHandler
     ) {
         super(objectMappers);
         this.requestMapper = requestMapper;
@@ -129,6 +128,7 @@ public class JobsServlet extends EndpointServlet {
         this.writer = objectMappers.getMapper().writer();
         this.httpResponseMaker = httpResponseMaker;
         this.formatResolver = formatResolver;
+        this.exceptionHandler = exceptionHandler;
     }
 
     /**
@@ -156,11 +156,12 @@ public class JobsServlet extends EndpointServlet {
             @Suspended AsyncResponse asyncResponse
     ) {
         Observable<Response> observableResponse;
+    JobsApiRequestImpl apiRequest = null;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new JobRequest("all"));
 
-            JobsApiRequestImpl apiRequest = new JobsApiRequestImpl(
+            apiRequest = new JobsApiRequestImpl(
                     format,
                     null, //asyncAfter is null so it behaves like a synchronous request
                     perPage,
@@ -192,17 +193,16 @@ public class JobsServlet extends EndpointServlet {
                     .map(result -> formatResponse(jobsApiRequest, result, "jobs", null))
                     .defaultIfEmpty(getResponse("{}"))
                     .onErrorReturn(this::getErrorResponse);
-        } catch (RequestValidationException e) {
-            LOG.debug(e.getMessage(), e);
-            observableResponse = Observable.just(RequestHandlerUtils.makeErrorResponse(e.getStatus(), e, writer));
-        } catch (Error | Exception e) {
-            String msg = ErrorMessageFormat.REQUEST_PROCESSING_EXCEPTION.format(e.getMessage());
-            LOG.info(msg, e);
-            observableResponse = Observable.just(Response.status(INTERNAL_SERVER_ERROR).entity(e.getMessage()).build());
+        } catch (Throwable t) {
+            observableResponse = Observable.just(exceptionHandler.handleThrowable(
+                    t,
+                    Optional.ofNullable(apiRequest),
+                    uriInfo,
+                    containerRequestContext
+            ));
         } finally {
             RequestLog.stopTiming(this);
         }
-
         observableResponse.subscribe(asyncResponse::resume);
     }
 
@@ -224,10 +224,11 @@ public class JobsServlet extends EndpointServlet {
             @Suspended AsyncResponse asyncResponse
     ) {
         Observable<Response> observableResponse;
+        JobsApiRequestImpl apiRequest = null;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new JobRequest(ticket));
-            JobsApiRequestImpl apiRequest = new JobsApiRequestImpl(
+            apiRequest = new JobsApiRequestImpl(
                     ResponseFormatType.JSON.toString(),
                     null,
                     "",
@@ -244,12 +245,13 @@ public class JobsServlet extends EndpointServlet {
 
             observableResponse = handleJobResponse(ticket, apiRequest);
 
-        } catch (RequestValidationException e) {
-            LOG.debug(e.getMessage(), e);
-            observableResponse = Observable.just(RequestHandlerUtils.makeErrorResponse(e.getStatus(), e, writer));
-        } catch (IOException | IllegalStateException e) {
-            LOG.debug("Bad request exception : {}", e);
-            observableResponse = Observable.just(RequestHandlerUtils.makeErrorResponse(BAD_REQUEST, e, writer));
+        } catch (Throwable t) {
+            observableResponse = Observable.just(exceptionHandler.handleThrowable(
+                    t,
+                    Optional.ofNullable(apiRequest),
+                    uriInfo,
+                    containerRequestContext
+            ));
         } finally {
             RequestLog.stopTiming(this);
         }
@@ -284,11 +286,12 @@ public class JobsServlet extends EndpointServlet {
             @Suspended AsyncResponse asyncResponse
     ) {
         Observable<Response> observableResponse;
+        JobsApiRequestImpl apiRequest = null;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new JobRequest(ticket));
 
-            JobsApiRequestImpl apiRequest = new JobsApiRequestImpl(
+            apiRequest = new JobsApiRequestImpl(
                     format,
                     asyncAfter,
                     perPage,
@@ -322,12 +325,13 @@ public class JobsServlet extends EndpointServlet {
                     .toBlocking()
                     .single();
 
-        } catch (RequestValidationException e) {
-            LOG.debug(e.getMessage(), e);
-            observableResponse = Observable.just(RequestHandlerUtils.makeErrorResponse(e.getStatus(), e, writer));
-        } catch (Error | Exception e) {
-            LOG.debug("Exception processing request", e);
-            observableResponse = Observable.just(Response.status(INTERNAL_SERVER_ERROR).entity(e.getMessage()).build());
+        } catch (Throwable t) {
+            observableResponse = Observable.just(exceptionHandler.handleThrowable(
+                    t,
+                    Optional.ofNullable(apiRequest),
+                    uriInfo,
+                    containerRequestContext
+            ));
         } finally {
             RequestLog.stopTiming(this);
         }

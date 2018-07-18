@@ -10,6 +10,7 @@ import java.util.Set;
  */
 public interface SlicesApiRequest extends ApiRequest {
     String REQUEST_MAPPER_NAMESPACE = "slicesApiRequestMapper";
+    String EXCEPTION_HANDLER_NAMESPACE = "exceptionHandler";
 
     /**
      * Returns a set of all available slices.

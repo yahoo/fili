@@ -71,6 +71,14 @@ import com.yahoo.bard.webservice.druid.model.query.LookbackQuery;
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier;
 import com.yahoo.bard.webservice.druid.util.FieldConverters;
 import com.yahoo.bard.webservice.druid.util.SketchFieldConverter;
+import com.yahoo.bard.webservice.exception.DataExceptionHandler;
+import com.yahoo.bard.webservice.exception.FiliDataExceptionHandler;
+import com.yahoo.bard.webservice.exception.FiliDimensionExceptionHandler;
+import com.yahoo.bard.webservice.exception.FiliJobsExceptionHandler;
+import com.yahoo.bard.webservice.exception.FiliMetricExceptionHandler;
+import com.yahoo.bard.webservice.exception.FiliSlicesExceptionHandler;
+import com.yahoo.bard.webservice.exception.FiliTablesExceptionHandler;
+import com.yahoo.bard.webservice.exception.MetadataExceptionHandler;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataLoadTask;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
@@ -84,30 +92,30 @@ import com.yahoo.bard.webservice.table.resolver.PhysicalTableResolver;
 import com.yahoo.bard.webservice.util.DefaultingDictionary;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.web.CsvResponseWriter;
-import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.DefaultResponseFormatResolver;
 import com.yahoo.bard.webservice.web.DimensionApiRequestMapper;
-import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequest;
 import com.yahoo.bard.webservice.web.FiliResponseWriter;
 import com.yahoo.bard.webservice.web.FiliResponseWriterSelector;
 import com.yahoo.bard.webservice.web.FilteredSketchMetricsHelper;
-import com.yahoo.bard.webservice.web.apirequest.JobsApiRequest;
 import com.yahoo.bard.webservice.web.JsonApiResponseWriter;
 import com.yahoo.bard.webservice.web.JsonResponseWriter;
-import com.yahoo.bard.webservice.web.apirequest.MetricsApiRequest;
 import com.yahoo.bard.webservice.web.MetricsFilterSetBuilder;
 import com.yahoo.bard.webservice.web.NoOpRequestMapper;
 import com.yahoo.bard.webservice.web.RateLimiter;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.ResponseWriter;
-import com.yahoo.bard.webservice.web.apirequest.SlicesApiRequest;
-import com.yahoo.bard.webservice.web.apirequest.TablesApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestFactory;
 import com.yahoo.bard.webservice.web.apirequest.DefaultDataApiRequestFactory;
 import com.yahoo.bard.webservice.web.apirequest.DefaultHavingApiGenerator;
+import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.JobsApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.MetricsApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.PerRequestDictionaryHavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.SlicesApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.TablesApiRequest;
 import com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow;
 import com.yahoo.bard.webservice.web.handlers.workflow.RequestWorkflowProvider;
 import com.yahoo.bard.webservice.web.ratelimit.DefaultRateLimiter;
@@ -345,6 +353,10 @@ public abstract class AbstractBinderFactory implements BinderFactory {
 
                 bind(buildRateLimiter()).to(RateLimiter.class);
 
+                bind(getDataExceptionHandler()).to(DataExceptionHandler.class);
+
+                bindExceptionHandlers(this);
+
                 if (DRUID_DIMENSIONS_LOADER.isOn()) {
                     DimensionValueLoadTask dimensionLoader = buildDruidDimensionsLoader(
                             druidWebService,
@@ -356,12 +368,66 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 if (SYSTEM_CONFIG.getBooleanProperty(DEPRECATED_PERMISSIVE_AVAILABILITY_FLAG, false)) {
                     LOG.warn(
                             "Permissive column availability feature flag is no longer supported, please use " +
-                                    "PermissivePhysicalTable to enable permissive column availability.");
+                                    "PermissivePhysicalTable to enable permissive column availability."
+                    );
                 }
                 // Call post-binding hook to allow for additional binding
                 afterBinding(this);
             }
+
         };
+    }
+
+    /**
+     * Binds all the exception handlers to the specified binder.
+     *
+     * @param binder  The binder to bind the exception handlers to
+     */
+    protected void bindExceptionHandlers(AbstractBinder binder) {
+        binder.bind(getDimensionExceptionHandler())
+                .named(DimensionsApiRequest.EXCEPTION_HANDLER_NAMESPACE)
+                .to(MetadataExceptionHandler.class);
+
+        binder.bind(getMetricsExceptionHandler())
+                .named(MetricsApiRequest.EXCEPTION_HANDLER_NAMESPACE)
+                .to(MetadataExceptionHandler.class);
+
+        binder.bind(getTablesExceptionHandler())
+                .named(TablesApiRequest.EXCEPTION_HANDLER_NAMESPACE)
+                .to(MetadataExceptionHandler.class);
+
+        binder.bind(getSlicesExceptionHandler())
+                .named(SlicesApiRequest.EXCEPTION_HANDLER_NAMESPACE)
+                .to(MetadataExceptionHandler.class);
+
+        binder.bind(getJobsExceptionHandler())
+                .named(JobsApiRequest.EXCEPTION_HANDLER_NAMESPACE)
+                .to(MetadataExceptionHandler.class);
+
+    }
+
+    protected Class<? extends MetadataExceptionHandler> getDimensionExceptionHandler() {
+        return FiliDimensionExceptionHandler.class;
+    }
+
+    protected Class<? extends MetadataExceptionHandler> getMetricsExceptionHandler() {
+        return FiliMetricExceptionHandler.class;
+    }
+
+    protected Class<? extends MetadataExceptionHandler> getSlicesExceptionHandler() {
+        return FiliSlicesExceptionHandler.class;
+    }
+
+    protected Class<? extends MetadataExceptionHandler> getTablesExceptionHandler() {
+        return FiliTablesExceptionHandler.class;
+    }
+
+    protected Class<? extends MetadataExceptionHandler> getJobsExceptionHandler() {
+        return FiliJobsExceptionHandler.class;
+    }
+
+    protected Class<? extends DataExceptionHandler> getDataExceptionHandler() {
+        return FiliDataExceptionHandler.class;
     }
 
     /**
