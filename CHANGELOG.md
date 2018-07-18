@@ -7,6 +7,9 @@ pull request if there was one.
 
 ### Added:
 
+-- [An injection point for customizing the WebLoggingFilter to use during tests](https://github.com/yahoo/fili/pull/749)
+    * Extend `JerseyTestBinder` and override `getLoggingFilter`.
+
 - [An injection point for customizing Exception handling]https://github.com/yahoo/fili/pull/742)
     * Customers can provide their own logic for handling top level Exceptions in
       the `DataServlet` by implementing `DataExceptionHandler`, and any other

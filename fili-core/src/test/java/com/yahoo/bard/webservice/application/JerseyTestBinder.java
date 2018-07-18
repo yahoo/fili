@@ -27,6 +27,7 @@ import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService;
 import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService;
 import com.yahoo.bard.webservice.web.FilteredSketchMetricsHelper;
 import com.yahoo.bard.webservice.web.MetricsFilterSetBuilder;
+import com.yahoo.bard.webservice.web.filters.BardLoggingFilter;
 import com.yahoo.bard.webservice.web.filters.TestLogWrapperFilter;
 
 import com.codahale.metrics.jersey2.InstrumentedResourceMethodApplicationListener;
@@ -136,7 +137,7 @@ public class JerseyTestBinder {
         // Order matters. First check if BardLoggingFilter is requested
         boolean skipWrapper = false;
         for (Class<?> cls : resourceClasses) {
-            if (cls.getSimpleName().equals("BardLoggingFilter")) {
+            if (cls.getSimpleName().equals(BardLoggingFilter.class.getSimpleName())) {
                 skipWrapper = true;
             }
         }
@@ -146,7 +147,7 @@ public class JerseyTestBinder {
         if (skipWrapper) {
             this.config.registerClasses(resourceClasses);
         } else {
-            this.config.register(TestLogWrapperFilter.class, 1);
+            this.config.register(getLoggingFilter(), 1);
             // Now register the requested classes
             for (Class<?> cls : resourceClasses) {
                 this.config.register(cls, 5);
@@ -172,6 +173,16 @@ public class JerseyTestBinder {
         if (doStart) {
             start();
         }
+    }
+
+    /**
+     * Allows a customer to customize which logging filter to use during testing if the `BardLoggingFilter` is not
+     * explicitly specified.
+     *
+     * @return The Class the customer is using as a LoggingFilter
+     */
+    protected Class<?> getLoggingFilter() {
+        return TestLogWrapperFilter.class;
     }
 
     /**
