@@ -3,11 +3,11 @@
 package com.yahoo.luthier.webservice.web.endpoints
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
-import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.web.endpoints.BaseDataServletComponentSpec
 import com.yahoo.bard.webservice.web.endpoints.DataServlet
 import com.yahoo.luthier.webservice.application.LuthierJerseyTestBinder
+import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 
 class SingleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServletComponentSpec {
 

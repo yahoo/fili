@@ -7,10 +7,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.validation.constraints.NotNull;
+
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.util.EnumUtils;
 
-import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -27,37 +28,37 @@ import java.util.Objects;
  *      }
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class DimensionFieldSetsTemplate implements DimensionField {
+public class DefaultDimensionFieldInfoTemplate implements DimensionFieldInfoTemplate {
 
     private final String name;
     private final String description;
-    private final LinkedList<String> tags;
+    private final List<String> tags;
 
     /**
      * Constructor used by json parser.
      *
-     * @param name        json property name
+     * @param name json property name
      * @param description json property description
-     * @param tags        json property tags
+     * @param tags json property tags
      */
     @JsonCreator
-    public DimensionFieldSetsTemplate(
+    public DefaultDimensionFieldInfoTemplate(
             @NotNull @JsonProperty("name") String name,
             @JsonProperty("description") String description,
-            @JsonProperty("tags") LinkedList<String> tags
+            @JsonProperty("tags") List<String> tags
     ) {
         this.name = EnumUtils.camelCase(name);
         this.description = (Objects.isNull(description) ? "" : description);
-        this.tags = (Objects.isNull(tags) ? null : new LinkedList<>(tags));
+        this.tags = tags;
     }
 
     @Override
-    public String getName() {
+    public String getFieldName() {
         return this.name;
     }
 
     @Override
-    public String getDescription() {
+    public String getFieldDescription() {
         return this.description;
     }
 
@@ -66,12 +67,25 @@ public class DimensionFieldSetsTemplate implements DimensionField {
      *
      * @return a set of dimension tags
      */
-    public LinkedList<String> getTags() {
+    public List<String> getTags() {
         return this.tags;
     }
 
     @Override
-    public String toString() {
-        return this.name;
+    public DimensionField build() {
+        return new DimensionField() {
+            @Override
+            public String getName() {
+                return getFieldName();
+            }
+            @Override
+            public String getDescription() {
+                return getFieldDescription();
+            }
+            @Override
+            public String toString() {
+                return this.getName();
+            }
+        };
     }
 }

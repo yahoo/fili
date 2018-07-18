@@ -1,8 +1,8 @@
 -- Copyright 2018 Yahoo Inc.
 -- Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 
-local utils = require("utils/dimensionUtils")
-local parser = require("utils/jsonParser")
+local parser = require("utils.jsonParser")
+local dimension_utils = require("utils.dimensionUtils")
 
 local M = {
     dimensions = {}
@@ -22,9 +22,9 @@ DEFAULT = {
 
 -- fieldSet name = {pk(field as primary key), f(other fields)}
 FIELDSETS = {
-    DEFAULT = { pk "ID", f "DESC" },
-    COUNTRY = { pk "ID", f("DESC", "COUNTY", "STATE") },
-    PAGE = { pk "ID", f "DESC" }
+    DEFAULT = { pk "ID", field "DESC" },
+    COUNTRY = { pk "ID", field ("DESC", "COUNTY", "STATE")},
+    PAGE = { pk "ID", field "DESC" }
 }
 
 -------------------------------------------------------------------------------
@@ -37,7 +37,7 @@ DIMENSIONS = {
     COUNTRY_ISO_CODE = { "wiki countryIsoCode", "Iso Code of the country to which the wiki page belongs", FIELDSETS.COUNTRY, DEFAULT.CATEGORY },
     REGION_ISO_CODE = { "wiki regionIsoCode", "Iso Code of the region to which the wiki page belongs", FIELDSETS.DEFAULT, nil },
     PAGE = { "wiki page", "Page is a document that is suitable for World Wide Web and web browsers", FIELDSETS.PAGE, nil },
-    USER = { "wiki user", "User is a person who generally use or own wiki services", { pk "ID", f("DESC", "AGE", "SEX") }, nil },
+    USER = { "wiki user", "User is a person who generally use or own wiki services", { pk "ID", field("DESC", "AGE", "SEX") }, nil },
     IS_UNPATROLLED = {"wiki isUnpatrolled", "Unpatrolled are class of pages that are not been patrolled", FIELDSETS.DEFAULT, nil},
     IS_NEW = {"wiki isNew", "New Page is the first page that is created in wiki", FIELDSETS.DEFAULT, nil},
     IS_ROBOT = {"wiki isRobot", "Robot is an tool that carries out repetitive and mundane tasks", FIELDSETS.DEFAULT, nil},
@@ -51,7 +51,7 @@ DIMENSIONS = {
     CITY_NAME = {"wiki cityName", "Name of the City to which the wiki page belongs", FIELDSETS.DEFAULT, nil}
 }
 
-utils.add_dimensions(DIMENSIONS, M.dimensions)
+dimension_utils.add_dimensions(DIMENSIONS, M.dimensions)
 parser.save("../DimensionConfig.json", M)
 
 return M

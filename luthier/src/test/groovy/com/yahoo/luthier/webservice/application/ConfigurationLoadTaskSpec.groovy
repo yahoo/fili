@@ -13,7 +13,7 @@ import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.table.LogicalTableDictionary
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 import com.yahoo.bard.webservice.table.TableIdentifier
-import com.yahoo.luthier.webservice.data.config.dimension.DimensionsLoader
+import com.yahoo.luthier.webservice.data.config.dimension.ExternalDimensionsLoader
 import com.yahoo.luthier.webservice.data.config.metric.MetricsLoader
 import com.yahoo.luthier.webservice.data.config.table.TablesLoader
 
@@ -33,7 +33,7 @@ class ConfigurationLoadTaskSpec extends Specification {
 
         final EXTERNAL_CONFIG_FILE_PATH  = "src/test/resources/"
 
-        LinkedHashSet<DimensionConfig> dimensions = new DimensionsLoader(
+        LinkedHashSet<DimensionConfig> dimensions = new ExternalDimensionsLoader(
                 EXTERNAL_CONFIG_FILE_PATH
         ).getAllDimensionConfigurations()
 

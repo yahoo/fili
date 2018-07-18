@@ -13,7 +13,7 @@ import java.io.IOException;
  */
 public class ExternalConfigLoader {
 
-    private final ObjectMapper objectMapper;
+    private ObjectMapper objectMapper;
 
     /**
      * Constructor.
@@ -21,15 +21,26 @@ public class ExternalConfigLoader {
      * @param objectMapper a mapper to deserialize external configurations
      */
     public ExternalConfigLoader(ObjectMapper objectMapper) {
+
         this.objectMapper = objectMapper;
+    }
+
+    /**
+     * Get object mapper.
+     *
+     * @return The object mapper.
+     */
+    public ObjectMapper getObjectMapper() {
+
+        return this.objectMapper;
     }
 
     /**
      * Parse the external file into corresponding templates.
      *
      * @param externalConfigFilePath The external file's url containing the external config information
-     * @param template               The external config template type
-     * @param <T>                    The external config template type
+     * @param template The external config template type
+     * @param <T> The external config template
      * @return Template instance parsed from the external file
      */
     public <T> T parseExternalFile(String externalConfigFilePath, Class<T> template) {

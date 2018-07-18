@@ -35,19 +35,23 @@ import java.util.LinkedHashSet;
  * This deserializer can distinguish these two cases and set field info into WikiDimensionFieldConfigTemplate
  *
  */
-public class DimensionFieldDeserializer extends JsonDeserializer<DimensionFieldConfigTemplate> {
+public class DefaultDimensionFieldDeserializer extends JsonDeserializer<DefaultDimensionFieldListTemplate> {
 
     /**
      * Deserialize dimension field configuration.
      *
-     * @param jp   Json parser to parse json
+     * @param jp Json parser to parse json
      * @param ctxt Deserialization context
      * @return dimension filed info (an instance of WikiDimensionFieldConfigTemplate)
      * @throws IOException when json file not found or read exception occurs
      */
     @Override
-    public DimensionFieldConfigTemplate deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
-        DimensionFieldConfigTemplate dimensionField = new DimensionFieldConfigTemplate();
+    public DefaultDimensionFieldListTemplate deserialize(
+            JsonParser jp,
+            DeserializationContext ctxt
+    ) throws IOException {
+
+        DefaultDimensionFieldListTemplate dimensionField = new DefaultDimensionFieldListTemplate();
 
         if (jp.getCurrentToken() == JsonToken.VALUE_STRING) {
             // if field is a string, set field name to this string
@@ -57,10 +61,11 @@ public class DimensionFieldDeserializer extends JsonDeserializer<DimensionFieldC
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode node = oc.readTree(jp);
             // if field is a list, set field list to this list
-            LinkedHashSet<DimensionFieldSetsTemplate> list = objectMapper.convertValue(node,
-                    new TypeReference<LinkedHashSet<DimensionFieldSetsTemplate>>() { });
+            LinkedHashSet<DimensionFieldInfoTemplate> list = objectMapper.convertValue(node,
+                    new TypeReference<LinkedHashSet<DefaultDimensionFieldInfoTemplate>>() { });
             dimensionField.setFieldList(list);
         }
+
         return dimensionField;
     }
 }

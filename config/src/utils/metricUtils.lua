@@ -1,7 +1,7 @@
 -- Copyright 2018 Yahoo Inc.
 -- Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 
-local utils = require("utils/utils")
+local utils = require("utils.utils")
 
 --- a module provides util functions for metrics and makers config.
 -- @module metricUtils
@@ -49,7 +49,7 @@ end
 function M.generate_makers(makers)
     local t = {}
     for name, maker in pairs(makers) do
-        local m = M.generate_maker(name, table.unpack(maker))
+        local m = M.generate_maker(name, maker[1], maker[2])
         for name, value in pairs(m) do
             t[name] = value
         end
@@ -61,8 +61,8 @@ end
 --  maker's config example:
 --  makerName = {
 --    classPath,
---    {paramA = {AOne, ATwo}, paramB = {BOne, BTwo}},
---    {paramA = {suffixAOne, suffixATwo}, paramB = {suffixBOne, suffixBTwo}}
+--    {paramA = {AOne, ATwo}, {suffixAOne, suffixATwo}},
+--    {paramB = {BOne, BTwo}, {suffixBOne, suffixBTwo}}
 --  }
 --  this config can be generated to a maker group contains four makers:
 --  (1) makerNamesuffixAOnesuffixBOne = {class = classPath, params = {paramA = AOne, paramB = BOne}}
@@ -72,12 +72,17 @@ end
 --
 -- @param baseName The prefix name for these makers
 -- @param baseClass  The class path for these makers
--- @param params All posible parameters for these makers
--- @param suffix The suffix name for these makers
+-- @param params_and_suffix All posible parameters and suffixes for these makers
 -- @return a group of generated makers
-function M.generate_maker(baseName, baseClass, params, suffix)
+function M.generate_maker(baseName, baseClass, params_and_suffix)
 
     local makers, p, s, n, i_n, r = {}, {}, {}, {}, {}, {}
+    local params, suffix = {}, {}
+
+    for name, value in pairs(params_and_suffix) do
+        params[name] = value[1]
+        suffix[name] = value[2]
+    end
 
     for param_name, param_value in pairs(params) do
         local ss = string.gsub(param_name,"^_","")
@@ -177,7 +182,5 @@ function M.generate_metrics(metrics)
     end
     return t
 end
-
-
 
 return M

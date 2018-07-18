@@ -1,7 +1,7 @@
 -- Copyright 2018 Yahoo Inc.
 -- Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 
-local Json = require("../lib/json")
+local Json = require("lib.json")
 
 --- a module provides functions to parse json file or object.
 -- @module jsonParser

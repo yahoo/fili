@@ -19,9 +19,7 @@ M.print_table = function(table, indentLevel)
         return
     end
 
-    for i = 0, indentLevel do
-        indentStr = indentStr.."\t"
-    end
+    indentStr = indentStr .. string.rep("\t", indentLevel)
 
     for index,value in pairs(table) do
         if type(value) == "table" then
@@ -57,4 +55,3 @@ M.clone = function(table)
 end
 
 return M
-

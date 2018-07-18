@@ -17,7 +17,7 @@ import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.bard.webservice.util.EnumUtils;
 import com.yahoo.luthier.webservice.data.config.ExternalConfigLoader;
-import com.yahoo.luthier.webservice.data.config.dimension.DimensionsLoader;
+import com.yahoo.luthier.webservice.data.config.dimension.ExternalDimensionsLoader;
 import org.joda.time.DateTimeZone;
 
 import java.util.HashMap;
@@ -83,18 +83,18 @@ public class TablesLoader extends BaseTableLoader {
     /**
      * Set up the tables for this table loader.
      *
-     * @param dimensionsLoader   The dimensions to load into test tables
+     * @param externalDimensionsLoader   The dimensions to load into test tables
      * @param metricDictionary The dictionary to use when looking up metrics for this table
      * @param physicalTables   a set of physical tables
      * @param logicalTables    a set of logical tables
      */
-    private void configureSample(DimensionsLoader dimensionsLoader, MetricDictionary metricDictionary,
+    private void configureSample(ExternalDimensionsLoader externalDimensionsLoader, MetricDictionary metricDictionary,
                                  LinkedHashSet<PhysicalTableInfoTemplate> physicalTables,
                                  LinkedHashSet<LogicalTableInfoTemplate> logicalTables
     ) {
 
         // Map from dimension name to dimension configuration
-        Map<String, DimensionConfig> dimensions = dimensionsLoader.getDimensionConfigurations();
+        Map<String, DimensionConfig> dimensions = externalDimensionsLoader.getDimensionConfigurations();
 
         // Map from physical table's name to physical table
         for (PhysicalTableInfoTemplate physicalTable : physicalTables) {
@@ -183,7 +183,7 @@ public class TablesLoader extends BaseTableLoader {
         LinkedHashSet<PhysicalTableInfoTemplate> physicalTables = tableConfigTemplate.getPhysicalTables();
         LinkedHashSet<LogicalTableInfoTemplate> logicalTables = tableConfigTemplate.getLogicalTables();
 
-        configureSample(new DimensionsLoader(externalConfigFilePath),
+        configureSample(new ExternalDimensionsLoader(externalConfigFilePath),
                 dictionaries.metric, physicalTables, logicalTables);
 
         for (LogicalTableInfoTemplate table : logicalTables) {

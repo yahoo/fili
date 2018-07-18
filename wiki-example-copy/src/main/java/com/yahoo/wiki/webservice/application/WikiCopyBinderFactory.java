@@ -8,7 +8,7 @@ import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
 import com.yahoo.luthier.webservice.data.config.ExternalConfigLoader;
-import com.yahoo.luthier.webservice.data.config.dimension.DimensionsLoader;
+import com.yahoo.luthier.webservice.data.config.dimension.ExternalDimensionsLoader;
 import com.yahoo.luthier.webservice.data.config.metric.MetricsLoader;
 import com.yahoo.luthier.webservice.data.config.table.TablesLoader;
 
@@ -34,7 +34,7 @@ public class WikiCopyBinderFactory extends AbstractBinderFactory {
     @Override
     protected LinkedHashSet<DimensionConfig> getDimensionConfigurations() {
         return new LinkedHashSet<>(
-                new DimensionsLoader(
+                new ExternalDimensionsLoader(
                         externalConfigLoader,
                         externalConfigFilePath
                 ).getAllDimensionConfigurations()

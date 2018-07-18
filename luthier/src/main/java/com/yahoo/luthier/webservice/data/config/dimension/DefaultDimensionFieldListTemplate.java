@@ -11,44 +11,28 @@ import java.util.LinkedHashSet;
  *        field name: "xxx"
  *        field list: [field A, field B, field C]
  */
-public class DimensionFieldConfigTemplate {
+public class DefaultDimensionFieldListTemplate implements DimensionFieldListTemplate {
 
     private String fieldName;
-    private LinkedHashSet<DimensionFieldSetsTemplate> fieldList;
+    private LinkedHashSet<DimensionFieldInfoTemplate> fieldList;
 
-    /**
-     * Set fieldset name.
-     *
-     * @param name fieldset name
-     */
+    @Override
     public void setFieldName(String name) {
         this.fieldName = name;
     }
 
-    /**
-     * Set field list.
-     *
-     * @param list a list of field
-     */
-    public void setFieldList(LinkedHashSet<DimensionFieldSetsTemplate> list) {
+    @Override
+    public void setFieldList(LinkedHashSet<DimensionFieldInfoTemplate> list) {
         this.fieldList = list;
     }
 
-    /**
-     * Get fieldset name.
-     *
-     * @return fieldset name
-     */
+    @Override
     public String getFieldName() {
         return this.fieldName;
     }
 
-    /**
-     * Get field list.
-     *
-     * @return a list of field
-     */
-    public LinkedHashSet<DimensionFieldSetsTemplate> getFieldList() {
+    @Override
+    public LinkedHashSet<DimensionFieldInfoTemplate> getFieldList() {
         return fieldList;
     }
 }

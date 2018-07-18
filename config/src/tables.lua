@@ -1,8 +1,8 @@
 -- Copyright 2018 Yahoo Inc.
 -- Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 
-local utils = require("utils/tableUtils")
-local parser = require("utils/jsonParser")
+local parser = require("utils.jsonParser")
+local table_utils = require("utils.tableUtils")
 
 local M = {
     physicalTables = {},
@@ -65,7 +65,7 @@ LOGICALTABLES = {
     logicalTableTesterOne = {nil, DEFAULT.ALL_METRICS, DEFAULT.ALL_DIM, {"ALL", "HOUR", "DAY"}, {"wikiticker"}}
 }
 
-utils.add_phy_tables(PHYSICALTABLES, M.physicalTables)
-utils.add_log_tables(LOGICALTABLES, M.logicalTables)
+table_utils.add_phy_tables(PHYSICALTABLES, M.physicalTables)
+table_utils.add_log_tables(LOGICALTABLES, M.logicalTables)
 
 parser.save("../TableConfig.json", M)

@@ -1,9 +1,10 @@
 -- Copyright 2018 Yahoo Inc.
 -- Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 
-local utils = require("utils/metricUtils")
-local parser = require("utils/jsonParser")
-local u = require("utils/utils")
+local metrics_utils = require("utils.metricUtils")
+local parser = require("utils.jsonParser")
+
+
 
 local M = {
     makers = {},
@@ -17,7 +18,7 @@ local maker_dict = {}
 -------------------------------------------------------------------------------
 
 DEFAULT = {
-    CLASS = "com.yahoo.bard.webservice.data.config.metric.makers."
+    CLASS_BASE_PATH = "com.yahoo.bard.webservice.data.config.metric.makers."
 }
 
 -------------------------------------------------------------------------------
@@ -26,47 +27,43 @@ DEFAULT = {
 
 -- makerName = {classPath, parameters}
 DEFAULT_MAKERS = {
-    count = {DEFAULT.CLASS .. "CountMaker"},
-    constant = {DEFAULT.CLASS .. "ConstantMaker"},
-    longSum = {DEFAULT.CLASS .. "LongSumMaker"},
-    doubleSum = {DEFAULT.CLASS .. "DoubleSumMaker"}
+    count = {DEFAULT.CLASS_BASE_PATH .. "CountMaker"},
+    constant = {DEFAULT.CLASS_BASE_PATH .. "ConstantMaker"},
+    longSum = {DEFAULT.CLASS_BASE_PATH .. "LongSumMaker"},
+    doubleSum = {DEFAULT.CLASS_BASE_PATH .. "DoubleSumMaker"}
 }
 
--- makerName = {classPath, parameters, suffix}
-COMPLEX_MAKERS = utils.generate_makers(
+-- makerName = {classPath, {parameter's name = {parameters, suffix}}}
+COMPLEX_MAKERS = metrics_utils.generate_makers(
     {
         arithmetic = {
-            DEFAULT.CLASS .. "ArithmeticMaker",
-            {_function = {"PLUS","MINUS","MULTIPLY","DIVIDE"}},
-            {_function = {"PLUS", "MINUS","MULTIPLY","DIVIDE"}}
+            DEFAULT.CLASS_BASE_PATH .. "ArithmeticMaker",
+            {_function = {{"PLUS","MINUS","MULTIPLY","DIVIDE"}, {"PLUS", "MINUS","MULTIPLY","DIVIDE"}}}
         },
         aggregateAverage = {
-            DEFAULT.CLASS .. "AggregationAverageMaker",
-            {innerGrain = {"HOUR", "DAY"}},
-            {innerGrain = {"byHour", "byDay"}}
+            DEFAULT.CLASS_BASE_PATH .. "AggregationAverageMaker",
+            {innerGrain = {{"HOUR", "DAY"}, {"byHour", "byDay"}}}
         },
         cardinal = {
-            DEFAULT.CLASS .. "CardinalityMaker",
-            {byRow = {"true", "false"}},
-            {byRow = {"byRow", "byColumn"}}
+            DEFAULT.CLASS_BASE_PATH .. "CardinalityMaker",
+            {byRow = {{"true", "false"}, {"byRow", "byColumn"}}}
         },
         ThetaSketch = {
-            DEFAULT.CLASS .. "ThetaSketchMaker",
-            {sketchSize= {"4096", "2048", "1024"}},
-            {sketchSize = {"Big", "Medium", "Small"}}
+            DEFAULT.CLASS_BASE_PATH .. "ThetaSketchMaker",
+            {sketchSize= {{"4096", "2048", "1024"}, {"Big", "Medium", "Small"}}}
         }
     }
 )
 
-utils.add_makers(DEFAULT_MAKERS, maker_dict)
-utils.add_makers(COMPLEX_MAKERS, maker_dict)
+metrics_utils.add_makers(DEFAULT_MAKERS, maker_dict)
+metrics_utils.add_makers(COMPLEX_MAKERS, maker_dict)
 
 -------------------------------------------------------------------------------
 -- Metrics
 -------------------------------------------------------------------------------
 
 -- metric's name = {longName, description, maker, dependency metrics}
-M.metrics = utils.generate_metrics(
+M.metrics = metrics_utils.generate_metrics(
     {
         COUNT = {nil, nil, maker_dict.count, nil},
         ADDED = {nil, nil, maker_dict.doubleSum, {"ADDED"}},
@@ -78,15 +75,14 @@ M.metrics = utils.generate_metrics(
         MinusAddedDelta = {nil, nil, maker_dict.arithmeticMINUS, {"added", "delta"}},
         cardOnPage = {nil, nil, maker_dict.cardinalbyRow, {"page"}},
         bigThetaSketch = {nil, nil, maker_dict.ThetaSketchBig, {"page"}},
-        inlineMakerMetric = {nil, nil, {DEFAULT.CLASS .. "ThetaSketchMaker", {sketchSize = "4096"}}, {"page"}}
+        inlineMakerMetric = {nil, nil, {DEFAULT.CLASS_BASE_PATH .. "ThetaSketchMaker", {sketchSize = "4096"}}, {"page"}}
     }
 )
 
-utils.add_makers(utils.cache_makers, maker_dict)
-utils.clean_cache_makers()
+metrics_utils.add_makers(metrics_utils.cache_makers, maker_dict)
+metrics_utils.clean_cache_makers()
 
-utils.insert_makers_into_table(maker_dict, M.makers)
+metrics_utils.insert_makers_into_table(maker_dict, M.makers)
 parser.save("../MetricConfig.json", M)
 
 return M
-

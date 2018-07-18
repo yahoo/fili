@@ -40,4 +40,3 @@ function M.add_log_tables(tables, t)
 end
 
 return M
-

@@ -42,13 +42,13 @@ end
 --
 -- @param ...  a set of fields
 -- @return a set of formatted field without tags
-function f(...)
+function field(...)
     local args = { ... }
     local fields = {}
     for index, name in pairs(args) do
         table.insert(fields, { name = name })
     end
-    return unpack(fields)
+    return table.unpack(fields)
 end
 
 return M

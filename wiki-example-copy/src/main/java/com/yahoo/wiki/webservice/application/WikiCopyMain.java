@@ -7,7 +7,7 @@ import com.codahale.metrics.servlets.AdminServlet;
 import com.yahoo.bard.webservice.application.HealthCheckServletContextListener;
 import com.yahoo.bard.webservice.application.MetricServletContextListener;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
-import com.yahoo.luthier.webservice.data.config.dimension.DimensionsLoader;
+import com.yahoo.luthier.webservice.data.config.dimension.ExternalDimensionsLoader;
 import org.asynchttpclient.*;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
@@ -48,7 +48,7 @@ public class WikiCopyMain {
      */
     private static void markDimensionCacheHealthy(int port) throws IOException {
         AsyncHttpClient asyncHttpClient = new DefaultAsyncHttpClient();
-        for (DimensionConfig dimensionConfig : new DimensionsLoader().getAllDimensionConfigurations()) {
+        for (DimensionConfig dimensionConfig : new ExternalDimensionsLoader().getAllDimensionConfigurations()) {
             String dimension = dimensionConfig.getApiName();
             BoundRequestBuilder boundRequestBuilder = asyncHttpClient.preparePost("http://localhost:" + port +
                     "/v1/cache/dimensions/" + dimension)
