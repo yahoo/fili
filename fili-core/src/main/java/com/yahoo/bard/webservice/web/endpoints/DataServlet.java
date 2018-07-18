@@ -4,8 +4,6 @@ package com.yahoo.bard.webservice.web.endpoints;
 
 import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.REQUEST_WORKFLOW_TIMER;
 
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-
 import com.yahoo.bard.webservice.application.MetricRegistryFactory;
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
 import com.yahoo.bard.webservice.async.MetadataHttpResponseChannel;
@@ -454,7 +452,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
                 throw new IllegalStateException("No request handler accepted request.");
             }
         } catch (Throwable e) {
-            exceptionHandler.handleException(
+            exceptionHandler.handleThrowable(
                 e,
                 asyncResponse,
                 Optional.ofNullable(apiRequest),

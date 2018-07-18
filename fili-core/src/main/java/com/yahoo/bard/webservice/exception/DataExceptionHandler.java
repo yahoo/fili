@@ -32,7 +32,7 @@ public interface DataExceptionHandler {
      * @param uriInfo  URiInfo of the request
      * @param writer  A tool for serializing JSON
      */
-    void handleException(
+    void handleThrowable(
         Throwable e,
         AsyncResponse asyncResponse,
         Optional<DataApiRequest> apiRequest,

@@ -39,13 +39,13 @@ public class FiliDataExceptionHandler implements DataExceptionHandler {
     private static final Logger LOG = LoggerFactory.getLogger(FiliDataExceptionHandler.class);
 
     @Override
-    public void handleException(
-        Throwable e,
-        AsyncResponse asyncResponse,
-        Optional<DataApiRequest> apiRequest,
-        ContainerRequestContext containerRequestContext,
-        UriInfo uriInfo,
-        ObjectWriter writer
+    public void handleThrowable(
+            Throwable e,
+            AsyncResponse asyncResponse,
+            Optional<DataApiRequest> apiRequest,
+            ContainerRequestContext containerRequestContext,
+            UriInfo uriInfo,
+            ObjectWriter writer
     ) {
         if (e instanceof RequestValidationException) {
             LOG.debug(e.getMessage(), e);
