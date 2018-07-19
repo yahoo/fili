@@ -9,7 +9,7 @@ import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService;
 import com.yahoo.luthier.webservice.data.config.ExternalConfigLoader;
 import com.yahoo.luthier.webservice.data.config.dimension.ExternalDimensionsLoader;
 import com.yahoo.luthier.webservice.data.config.metric.ExternalMetricsLoader;
-import com.yahoo.luthier.webservice.data.config.table.TablesLoader;
+import com.yahoo.luthier.webservice.data.config.table.ExternalTableLoader;
 
 import java.util.LinkedHashSet;
 
@@ -20,6 +20,7 @@ public class LuthierJerseyTestBinder extends JerseyTestBinder {
 
     private static final String EXTERNAL_CONFIG_FILE_PATH = "src/test/resources/";
     private static ExternalConfigLoader externalConfigLoader = new ExternalConfigLoader();
+    private ExternalDimensionsLoader externalDimensionsLoader;
 
     /**
      * Constructor.
@@ -42,10 +43,11 @@ public class LuthierJerseyTestBinder extends JerseyTestBinder {
 
     @Override
     public LinkedHashSet<DimensionConfig> getDimensionConfiguration() {
-        return new LinkedHashSet<>(new ExternalDimensionsLoader(
+        this.externalDimensionsLoader = new ExternalDimensionsLoader(
                 externalConfigLoader,
                 EXTERNAL_CONFIG_FILE_PATH
-        ).getAllDimensionConfigurations());
+        );
+        return new LinkedHashSet<>(externalDimensionsLoader.getAllDimensionConfigurations());
     }
 
     @Override
@@ -58,9 +60,11 @@ public class LuthierJerseyTestBinder extends JerseyTestBinder {
 
     @Override
     public com.yahoo.bard.webservice.data.config.table.TableLoader getTableLoader() {
-        TablesLoader tablesLoader = new TablesLoader(new TestDataSourceMetadataService());
-        tablesLoader.setUp(externalConfigLoader,
-                EXTERNAL_CONFIG_FILE_PATH);
-        return tablesLoader;
+        return new ExternalTableLoader(
+                new TestDataSourceMetadataService(),
+                externalDimensionsLoader,
+                externalConfigLoader,
+                EXTERNAL_CONFIG_FILE_PATH
+        );
     }
 }

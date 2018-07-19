@@ -9,7 +9,6 @@ import com.yahoo.bard.webservice.util.EnumUtils;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -51,9 +50,9 @@ public class DefaultMetricTemplate implements MetricTemplate {
             @JsonProperty("description") String description,
             @JsonProperty("dependencyMetricNames") List<String> dependencyMetricNames
     ) {
-        this.apiName = apiName.toLowerCase(Locale.ENGLISH);
+        this.apiName = EnumUtils.camelCase(apiName);
         this.longName = (Objects.isNull(longName) ? EnumUtils.camelCase(apiName) : EnumUtils.camelCase(longName));
-        this.makerName = makerName.toLowerCase(Locale.ENGLISH);
+        this.makerName = EnumUtils.camelCase(makerName);
         this.description = (Objects.isNull(description) ? "" : description);
         this.dependencyMetricNames = (Objects.isNull(dependencyMetricNames) ?
                 Collections.emptyList() : dependencyMetricNames.stream()
@@ -88,6 +87,6 @@ public class DefaultMetricTemplate implements MetricTemplate {
 
     @Override
     public String toString() {
-        return this.getApiName().toLowerCase(Locale.ENGLISH);
+        return getApiName();
     }
 }

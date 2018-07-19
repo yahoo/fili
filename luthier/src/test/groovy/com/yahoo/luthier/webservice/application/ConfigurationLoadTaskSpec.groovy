@@ -5,6 +5,7 @@ package com.yahoo.luthier.webservice.application
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR
 
+import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig
 import com.yahoo.bard.webservice.data.config.dimension.TypeAwareDimensionLoader
@@ -15,7 +16,8 @@ import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 import com.yahoo.bard.webservice.table.TableIdentifier
 import com.yahoo.luthier.webservice.data.config.dimension.ExternalDimensionsLoader
 import com.yahoo.luthier.webservice.data.config.metric.ExternalMetricsLoader
-import com.yahoo.luthier.webservice.data.config.table.TablesLoader
+import com.yahoo.luthier.webservice.data.config.table.ExternalTableLoader
+import com.yahoo.luthier.webservice.data.config.ExternalConfigLoader
 
 import spock.lang.Shared
 import spock.lang.Specification
@@ -32,17 +34,26 @@ class ConfigurationLoadTaskSpec extends Specification {
     def setupSpec() {
 
         final EXTERNAL_CONFIG_FILE_PATH  = "src/test/resources/"
+        final ExternalConfigLoader externalConfigLoader = new ExternalConfigLoader()
 
-        LinkedHashSet<DimensionConfig> dimensions = new ExternalDimensionsLoader(
+        ExternalDimensionsLoader externalDimensionsLoader = new ExternalDimensionsLoader(
+                externalConfigLoader,
                 EXTERNAL_CONFIG_FILE_PATH
-        ).getAllDimensionConfigurations()
+        )
 
-        TablesLoader tablesLoader = new TablesLoader()
-        tablesLoader.setUp(EXTERNAL_CONFIG_FILE_PATH)
+        LinkedHashSet<DimensionConfig> dimensions = externalDimensionsLoader.getAllDimensionConfigurations()
+
+        ExternalTableLoader tablesLoader = new ExternalTableLoader(
+                new TestDataSourceMetadataService(),
+                externalDimensionsLoader,
+                externalConfigLoader,
+                EXTERNAL_CONFIG_FILE_PATH
+        )
 
         loader = new ConfigurationLoader(
                 new TypeAwareDimensionLoader(dimensions),
                 new ExternalMetricsLoader(
+                        externalConfigLoader,
                         EXTERNAL_CONFIG_FILE_PATH
                 ),
                 tablesLoader

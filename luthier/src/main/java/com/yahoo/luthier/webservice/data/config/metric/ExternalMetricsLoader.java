@@ -31,25 +31,6 @@ public class ExternalMetricsLoader implements MetricLoader {
     private String externalConfigFilePath;
 
     /**
-     * Constructor using the default external configuration loader
-     * and default external configuration file path.
-     */
-    public ExternalMetricsLoader() {
-        this(new ExternalConfigLoader(),
-                "config/");
-    }
-
-    /**
-     * Constructor using the default external configuration file path.
-     *
-     * @param externalConfigFilePath The external file's url containing the external config information
-     */
-    public ExternalMetricsLoader(String externalConfigFilePath) {
-        this(new ExternalConfigLoader(),
-                externalConfigFilePath);
-    }
-
-    /**
      * Constructs a MetricLoader.
      *
      * @param metricConfigLoader The external configuration loader for loading metrics
@@ -136,17 +117,16 @@ public class ExternalMetricsLoader implements MetricLoader {
         Queue<String> queue = new LinkedList<>();
         LinkedHashSet<MetricTemplate> result = new LinkedHashSet<>();
 
-        metrics.stream()
-                .forEach(metric -> {
+        metrics.forEach(metric -> {
                     map.put(metric.getApiName(), metric);
                     inDegree.put(metric.getApiName(), 0);
                 });
 
-        metrics.stream().forEach(
+        metrics.forEach(
                 metric -> metric.getDependencyMetricNames().stream()
                         .filter(dependency ->
-                                map.containsKey(dependency.toLowerCase(Locale.ENGLISH)) &&
-                                        !dependency.toLowerCase(Locale.ENGLISH).equals(metric.getApiName()))
+                                map.containsKey(dependency) &&
+                                        !dependency.equals(metric.getApiName()))
                         .forEach(dependency -> {
                             dependencyMetrics.computeIfAbsent(dependency, d -> new LinkedList<>())
                                     .add(metric.getApiName());
@@ -163,12 +143,12 @@ public class ExternalMetricsLoader implements MetricLoader {
             if (!dependencyMetrics.containsKey(head)) {
                 continue;
             }
-            for (String dependency : dependencyMetrics.get(head)) {
+            dependencyMetrics.get(head).forEach(dependency -> {
                 inDegree.put(dependency, inDegree.get(dependency) - 1);
                 if (inDegree.get(dependency) == 0) {
                     queue.offer(dependency);
                 }
-            }
+            });
         }
 
         return result;

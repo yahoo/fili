@@ -25,25 +25,6 @@ public class ExternalDimensionsLoader {
     private final Set<DimensionConfig> dimensionConfigs;
 
     /**
-     * Constructor using the default external configuration loader
-     * and default external configuration file path.
-     */
-    public ExternalDimensionsLoader() {
-        this(new ExternalConfigLoader(),
-                "config/");
-    }
-
-    /**
-     * Constructor using the default external configuration file path.
-     *
-     * @param dimensionConfigFilePath The external file's url containing the external config information
-     */
-    public ExternalDimensionsLoader(String dimensionConfigFilePath) {
-        this(new ExternalConfigLoader(),
-                dimensionConfigFilePath);
-    }
-
-    /**
      * Construct the dimension configurations.
      *
      * @param dimensionConfigLoader The external configuration loader for loading dimensions

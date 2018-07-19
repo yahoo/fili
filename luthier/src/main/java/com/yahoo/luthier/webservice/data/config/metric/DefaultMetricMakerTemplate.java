@@ -4,6 +4,8 @@ package com.yahoo.luthier.webservice.data.config.metric;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableMap;
+
 import javax.validation.constraints.NotNull;
 
 import java.util.Map;
@@ -43,7 +45,7 @@ public class DefaultMetricMakerTemplate implements MetricMakerTemplate {
     ) {
         this.name = name;
         this.classPath = classPath;
-        this.parameters = parameters;
+        this.parameters = ImmutableMap.copyOf(parameters);
     }
 
     /**

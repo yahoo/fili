@@ -4,6 +4,7 @@ package com.yahoo.luthier.webservice.data.config.metric;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableSet;
 
 import java.util.*;
 
@@ -39,8 +40,8 @@ public class DefaultExternalMetricConfigTemplate implements ExternalMetricConfig
             @JsonProperty("makers") Set<MetricMakerTemplate> makers,
             @JsonProperty("metrics") Set<MetricTemplate> metrics
     ) {
-        this.makers = makers;
-        this.metrics = metrics;
+        this.makers = ImmutableSet.copyOf(makers);
+        this.metrics = ImmutableSet.copyOf(metrics);
     }
 
     @Override

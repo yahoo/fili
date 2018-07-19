@@ -7,6 +7,7 @@ import com.codahale.metrics.servlets.AdminServlet;
 import com.yahoo.bard.webservice.application.HealthCheckServletContextListener;
 import com.yahoo.bard.webservice.application.MetricServletContextListener;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
+import com.yahoo.luthier.webservice.data.config.ExternalConfigLoader;
 import com.yahoo.luthier.webservice.data.config.dimension.ExternalDimensionsLoader;
 import org.asynchttpclient.*;
 import org.eclipse.jetty.server.Handler;
@@ -30,6 +31,8 @@ import java.util.concurrent.ExecutionException;
  */
 public class WikiCopyMain {
     private static final Logger LOG = LoggerFactory.getLogger(WikiCopyMain.class);
+    private static final String EXTERNAL_CONFIG_FILE_PATH  = System.getProperty("user.dir") + "/config/";
+    private static ExternalConfigLoader externalConfigLoader = new ExternalConfigLoader();
 
     /**
      * Makes the dimensions passthrough.
@@ -48,7 +51,10 @@ public class WikiCopyMain {
      */
     private static void markDimensionCacheHealthy(int port) throws IOException {
         AsyncHttpClient asyncHttpClient = new DefaultAsyncHttpClient();
-        for (DimensionConfig dimensionConfig : new ExternalDimensionsLoader().getAllDimensionConfigurations()) {
+        for (DimensionConfig dimensionConfig : new ExternalDimensionsLoader(
+                externalConfigLoader,
+                EXTERNAL_CONFIG_FILE_PATH
+        ).getAllDimensionConfigurations()) {
             String dimension = dimensionConfig.getApiName();
             BoundRequestBuilder boundRequestBuilder = asyncHttpClient.preparePost("http://localhost:" + port +
                     "/v1/cache/dimensions/" + dimension)

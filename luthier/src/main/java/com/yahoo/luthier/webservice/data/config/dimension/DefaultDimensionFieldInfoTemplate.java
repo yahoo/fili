@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.validation.constraints.NotNull;
 
+import com.google.common.collect.ImmutableList;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.util.EnumUtils;
 
@@ -49,7 +50,7 @@ public class DefaultDimensionFieldInfoTemplate implements DimensionFieldInfoTemp
     ) {
         this.name = EnumUtils.camelCase(name);
         this.description = (Objects.isNull(description) ? "" : description);
-        this.tags = tags;
+        this.tags = ImmutableList.copyOf(tags);
     }
 
     @Override

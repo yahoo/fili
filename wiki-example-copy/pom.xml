@@ -94,6 +94,11 @@
             <version>0.10-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>com.yahoo.fili</groupId>
+            <artifactId>fili-core</artifactId>
+            <version>0.10-SNAPSHOT</version>
+        </dependency>
 
     </dependencies>
 

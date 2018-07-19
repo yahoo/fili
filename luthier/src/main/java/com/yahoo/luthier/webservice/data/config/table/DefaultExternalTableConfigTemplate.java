@@ -5,9 +5,9 @@ package com.yahoo.luthier.webservice.data.config.table;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableSet;
 
-import java.util.LinkedHashSet;
-import java.util.Objects;
+import java.util.Set;
 
 /**
  * Table configuration template.
@@ -25,10 +25,10 @@ import java.util.Objects;
  *      }
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TableConfigTemplate {
+public class DefaultExternalTableConfigTemplate implements ExternalTableConfigTemplate {
 
-    private final LinkedHashSet<PhysicalTableInfoTemplate> physicalTables;
-    private final LinkedHashSet<LogicalTableInfoTemplate> logicalTables;
+    private final Set<PhysicalTableInfoTemplate> physicalTables;
+    private final Set<LogicalTableInfoTemplate> logicalTables;
 
     /**
      * Constructor used by json parser.
@@ -37,29 +37,21 @@ public class TableConfigTemplate {
      * @param logicalTables json property logicalTables
      */
     @JsonCreator
-    public TableConfigTemplate(
-            @JsonProperty("druidTables") LinkedHashSet<PhysicalTableInfoTemplate> physicalTables,
-            @JsonProperty("logicalTables") LinkedHashSet<LogicalTableInfoTemplate> logicalTables
+    public DefaultExternalTableConfigTemplate(
+            @JsonProperty("physicalTables") Set<PhysicalTableInfoTemplate> physicalTables,
+            @JsonProperty("logicalTables") Set<LogicalTableInfoTemplate> logicalTables
     ) {
-        this.physicalTables = (Objects.isNull(physicalTables) ? null : physicalTables);
-        this.logicalTables = (Objects.isNull(logicalTables) ? null : logicalTables);
+        this.physicalTables = ImmutableSet.copyOf(physicalTables);
+        this.logicalTables = ImmutableSet.copyOf(logicalTables);
     }
 
-    /**
-     * Get physical table set.
-     *
-     * @return druid table info
-     */
-    public LinkedHashSet<PhysicalTableInfoTemplate> getPhysicalTables() {
+    @Override
+    public Set<PhysicalTableInfoTemplate> getPhysicalTables() {
         return this.physicalTables;
     }
 
-    /**
-     * Get logical table set.
-     *
-     * @return logical table info
-     */
-    public LinkedHashSet<LogicalTableInfoTemplate> getLogicalTables() {
+    @Override
+    public Set<LogicalTableInfoTemplate> getLogicalTables() {
         return this.logicalTables;
     }
 }

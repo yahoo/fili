@@ -37,13 +37,6 @@ public class MetricMakerDictionary {
     private DimensionDictionary dimensionDictionary;
 
     /**
-     * Constructor.
-     */
-    public MetricMakerDictionary() {
-        nameToMetricMaker = new LinkedHashMap<>();
-    }
-
-    /**
      * Constructor, initial map from all maker names to maker instances in dictionary.
      *
      * @param metricMakers        a list of metric makers
@@ -58,13 +51,12 @@ public class MetricMakerDictionary {
         this.metricDictionary = metricDictionary;
         this.dimensionDictionary = dimensionDictionary;
 
-        for (MetricMakerTemplate maker : metricMakers) {
+        metricMakers.forEach(maker -> {
 
             try {
-
                 Class<?> makerClass = Class.forName(maker.getClassPath());
                 DefaultParameterNameDiscoverer discoverer = new DefaultParameterNameDiscoverer();
-                Constructor<?> constructor = null;
+                Constructor<?> selectedConstructor = null;
 
                 // find appropriate constructor
                 for (Constructor<?> candidateConstructor : makerClass.getDeclaredConstructors()) {
@@ -76,37 +68,36 @@ public class MetricMakerDictionary {
                                 || "DimensionDictionary".equals(pTypes[index].getSimpleName())
                                 || maker.getParams().containsKey(pNames[index])) {
                             index--;
-                        }
-                        else {
+                        } else {
                             break;
                         }
                     }
+                    // if all parameters except MetricDictionary and DimensionDictionary
+                    // in this candidate constructor appears in config file, set the selected constructor
+                    // to this candidate constructor
+                    // (have to make sure that constructor with more parameters be checked earlier)
                     if (index == -1) {
-                        constructor = candidateConstructor;
+                        selectedConstructor = candidateConstructor;
+                        break;
                     }
                 }
 
-                assert constructor != null;
-                Class<?>[] paramsTypes = constructor.getParameterTypes();
-                String[] paramsNames = discoverer.getParameterNames(constructor);
+                assert selectedConstructor != null;
+                Class<?>[] paramsTypes = selectedConstructor.getParameterTypes();
+                String[] paramsNames = discoverer.getParameterNames(selectedConstructor);
 
                 Object[] args = IntStream.range(0, paramsTypes.length)
                         .mapToObj(i -> parseParams(paramsTypes[i].getSimpleName(), paramsNames[i], maker))
                         .toArray();
 
-                add(maker.getName(), (MetricMaker) constructor.newInstance(args));
+                add(maker.getName(), (MetricMaker) selectedConstructor.newInstance(args));
 
-            } catch (ClassNotFoundException e) {
-                LOG.error("Cannot find class: " + maker.getClassPath(), e);
-            } catch (IllegalAccessException e) {
-                LOG.error("The constructor of maker's class is inaccessible", e);
-            } catch (InstantiationException e) {
+            } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
                 LOG.error("The constructor of maker's class is inaccessible", e);
             } catch (InvocationTargetException e) {
                 LOG.error(e.getCause().getMessage(), e);
             }
-        }
-
+        });
     }
 
     /**
