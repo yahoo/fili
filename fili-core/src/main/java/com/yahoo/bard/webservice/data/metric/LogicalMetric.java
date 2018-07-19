@@ -170,5 +170,4 @@ public class LogicalMetric {
     public int hashCode() {
         return Objects.hash(query, calculation, name, longName, category, description);
     }
-
 }
