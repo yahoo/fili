@@ -18,7 +18,6 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 /**
  * Handles exceptions for the JobsServlet.
@@ -42,7 +41,6 @@ public class FiliJobsExceptionHandler implements MetadataExceptionHandler {
     public Response handleThrowable(
             Throwable e,
             Optional<? extends ApiRequest> request,
-            UriInfo uriInfo,
             ContainerRequestContext requestContext
     ) {
         if (e instanceof RequestValidationException) {

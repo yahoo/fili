@@ -14,7 +14,6 @@ import java.util.Optional;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 /**
  * Default handler of Slices servlet errors.
@@ -26,7 +25,6 @@ public class FiliSlicesExceptionHandler implements MetadataExceptionHandler {
     public Response handleThrowable(
             Throwable e,
             Optional<? extends ApiRequest> request,
-            UriInfo uriInfo,
             ContainerRequestContext requestContext
     ) {
         if (e instanceof RequestValidationException) {

@@ -157,7 +157,6 @@ public class DimensionsServlet extends EndpointServlet {
             return exceptionHandler.handleThrowable(
                     t,
                     Optional.ofNullable(apiRequest),
-                    uriInfo,
                     requestContext
             );
         } finally {
@@ -217,7 +216,6 @@ public class DimensionsServlet extends EndpointServlet {
             return exceptionHandler.handleThrowable(
                     t,
                     Optional.ofNullable(apiRequest),
-                    uriInfo,
                     containerRequestContext
             );
         } finally {
@@ -326,7 +324,6 @@ public class DimensionsServlet extends EndpointServlet {
             return exceptionHandler.handleThrowable(
                     t,
                     Optional.ofNullable(apiRequest),
-                    uriInfo,
                     containerRequestContext
             );
         } finally {

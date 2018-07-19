@@ -43,7 +43,7 @@ class FiliDimensionExceptionHandlerSpec extends Specification {
         RequestValidationException exception = new RequestValidationException(status, "Error", "Error")
 
         when:
-        Response response = dimensionExceptionHandler.handleThrowable(exception, request, null, null)
+        Response response = dimensionExceptionHandler.handleThrowable(exception, request, null)
 
         then:
         response.status == status.statusCode
@@ -58,7 +58,7 @@ class FiliDimensionExceptionHandlerSpec extends Specification {
         RowLimitReachedException exception = new RowLimitReachedException("RowLimit")
 
         when:
-        Response response = dimensionExceptionHandler.handleThrowable(exception, request, null, null)
+        Response response = dimensionExceptionHandler.handleThrowable(exception, request, null)
 
         then:
         response.status == ResponseCode.INSUFFICIENT_STORAGE.statusCode
@@ -70,7 +70,7 @@ class FiliDimensionExceptionHandlerSpec extends Specification {
         JsonProcessingException exception = new JsonProcessingException("JsonError")
 
         when:
-        Response response = dimensionExceptionHandler.handleThrowable(exception, request, null, null)
+        Response response = dimensionExceptionHandler.handleThrowable(exception, request, null)
 
         then:
         response.status == Response.Status.INTERNAL_SERVER_ERROR.statusCode
@@ -82,7 +82,7 @@ class FiliDimensionExceptionHandlerSpec extends Specification {
         Throwable throwable = new Throwable("Throw")
 
         when:
-        Response response = dimensionExceptionHandler.handleThrowable(throwable, request, null, null)
+        Response response = dimensionExceptionHandler.handleThrowable(throwable, request, null)
 
         then:
         response.status == Response.Status.BAD_REQUEST.statusCode

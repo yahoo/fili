@@ -206,7 +206,6 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             return exceptionHandler.handleThrowable(
                     t,
                     Optional.ofNullable(tablesApiRequestImpl),
-                    uriInfo,
                     containerRequestContext
             );
         } finally {
@@ -271,7 +270,6 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             return exceptionHandler.handleThrowable(
                     t,
                     Optional.ofNullable(tablesApiRequestImpl),
-                    uriInfo,
                     containerRequestContext
             );
         } finally {
@@ -360,7 +358,6 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             return exceptionHandler.handleThrowable(
                     t,
                     Optional.ofNullable(tablesApiRequest),
-                    uriInfo,
                     containerRequestContext
             );
         } finally {
@@ -420,7 +417,6 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             return exceptionHandler.handleThrowable(
                     t,
                     Optional.ofNullable(tablesApiRequestImpl),
-                    uriInfo,
                     containerRequestContext
             );
         } finally {

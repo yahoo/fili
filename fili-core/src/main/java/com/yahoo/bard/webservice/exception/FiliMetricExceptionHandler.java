@@ -16,7 +16,6 @@ import java.util.Optional;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 /**
  * Default handler for exceptions in the MetricServlet.
@@ -28,7 +27,6 @@ public class FiliMetricExceptionHandler implements MetadataExceptionHandler {
     public Response handleThrowable(
             Throwable e,
             Optional<? extends ApiRequest> request,
-            UriInfo uriInfo,
             ContainerRequestContext requestContext
     ) {
         if (e instanceof RequestValidationException) {

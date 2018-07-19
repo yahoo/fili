@@ -49,7 +49,7 @@ class FiliMetricExceptionHandlerSpec extends Specification {
         RequestValidationException exception = new RequestValidationException(status, "Error", "Error")
 
         when:
-        Response response = metricsExceptionHandler.handleThrowable(exception, request, null, null)
+        Response response = metricsExceptionHandler.handleThrowable(exception, request, null)
 
         then:
         response.status == status.statusCode
@@ -64,7 +64,7 @@ class FiliMetricExceptionHandlerSpec extends Specification {
         IOException exception = new IOException("IOException")
 
         when:
-        Response response = metricsExceptionHandler.handleThrowable(exception, request, null, null)
+        Response response = metricsExceptionHandler.handleThrowable(exception, request, null)
 
         then:
         response.status == Response.Status.INTERNAL_SERVER_ERROR.statusCode
@@ -76,7 +76,7 @@ class FiliMetricExceptionHandlerSpec extends Specification {
         Throwable throwable = new Throwable("Throw")
 
         when:
-        Response response = metricsExceptionHandler.handleThrowable(throwable, request, null, null)
+        Response response = metricsExceptionHandler.handleThrowable(throwable, request, null)
 
         then:
         response.status == Response.Status.BAD_REQUEST.statusCode

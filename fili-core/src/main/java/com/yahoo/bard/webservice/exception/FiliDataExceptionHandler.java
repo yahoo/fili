@@ -21,7 +21,6 @@ import java.util.Optional;
 
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.UriInfo;
 
 /**
  * The default implementation of {@link DataExceptionHandler}.
@@ -44,7 +43,6 @@ public class FiliDataExceptionHandler implements DataExceptionHandler {
             AsyncResponse asyncResponse,
             Optional<DataApiRequest> apiRequest,
             ContainerRequestContext containerRequestContext,
-            UriInfo uriInfo,
             ObjectWriter writer
     ) {
         if (e instanceof RequestValidationException) {
