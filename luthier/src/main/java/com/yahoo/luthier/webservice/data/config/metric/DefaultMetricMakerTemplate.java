@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import javax.validation.constraints.NotNull;
 
 import java.util.Map;
+import java.util.Objects;
 
 
 /**
@@ -45,7 +46,7 @@ public class DefaultMetricMakerTemplate implements MetricMakerTemplate {
     ) {
         this.name = name;
         this.classPath = classPath;
-        this.parameters = ImmutableMap.copyOf(parameters);
+        this.parameters = (Objects.isNull(parameters) ? null : ImmutableMap.copyOf(parameters));;
     }
 
     /**

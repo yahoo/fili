@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSet;
 
+import java.util.Collections;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -41,8 +43,10 @@ public class DefaultExternalTableConfigTemplate implements ExternalTableConfigTe
             @JsonProperty("physicalTables") Set<PhysicalTableInfoTemplate> physicalTables,
             @JsonProperty("logicalTables") Set<LogicalTableInfoTemplate> logicalTables
     ) {
-        this.physicalTables = ImmutableSet.copyOf(physicalTables);
-        this.logicalTables = ImmutableSet.copyOf(logicalTables);
+        this.physicalTables = Objects.isNull(physicalTables) ? Collections.emptySet() :
+                ImmutableSet.copyOf(physicalTables);
+        this.logicalTables = Objects.isNull(logicalTables) ? Collections.emptySet() :
+                ImmutableSet.copyOf(logicalTables);
     }
 
     @Override

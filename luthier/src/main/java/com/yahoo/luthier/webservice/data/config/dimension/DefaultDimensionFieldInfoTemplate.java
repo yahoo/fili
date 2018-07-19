@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableList;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.util.EnumUtils;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -50,7 +51,7 @@ public class DefaultDimensionFieldInfoTemplate implements DimensionFieldInfoTemp
     ) {
         this.name = EnumUtils.camelCase(name);
         this.description = (Objects.isNull(description) ? "" : description);
-        this.tags = ImmutableList.copyOf(tags);
+        this.tags = (Objects.isNull(tags) ? Collections.emptyList() : ImmutableList.copyOf(tags));
     }
 
     @Override
