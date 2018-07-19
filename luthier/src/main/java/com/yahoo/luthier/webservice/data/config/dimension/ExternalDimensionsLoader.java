@@ -29,7 +29,7 @@ public class ExternalDimensionsLoader {
      * and default external configuration file path.
      */
     public ExternalDimensionsLoader() {
-        this(new ExternalConfigLoader(new ObjectMapper()),
+        this(new ExternalConfigLoader(),
                 "config/");
     }
 
@@ -39,7 +39,7 @@ public class ExternalDimensionsLoader {
      * @param dimensionConfigFilePath The external file's url containing the external config information
      */
     public ExternalDimensionsLoader(String dimensionConfigFilePath) {
-        this(new ExternalConfigLoader(new ObjectMapper()),
+        this(new ExternalConfigLoader(),
                 dimensionConfigFilePath);
     }
 
@@ -55,12 +55,12 @@ public class ExternalDimensionsLoader {
     ) {
 
         JodaModule jodaModule = bindTemplates();
-        dimensionConfigLoader.getObjectMapper().registerModule(jodaModule);
+        ObjectMapper objectMapper = new ObjectMapper().registerModule(jodaModule);
 
         ExternalDimensionConfigTemplate dimensionConfig =
                 dimensionConfigLoader.parseExternalFile(
                         dimensionConfigFilePath + "DimensionConfig.json",
-                        ExternalDimensionConfigTemplate.class);
+                        ExternalDimensionConfigTemplate.class, objectMapper);
 
         this.dimensionConfigs = Collections.unmodifiableSet(
                 dimensionConfig.getDimensions().stream()

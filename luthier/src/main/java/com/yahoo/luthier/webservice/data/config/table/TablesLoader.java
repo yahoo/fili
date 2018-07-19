@@ -65,7 +65,7 @@ public class TablesLoader extends BaseTableLoader {
      * @param externalConfigFilePath The external file's url containing the external config information
      */
     public void setUp(String externalConfigFilePath) {
-        setUp(new ExternalConfigLoader(new ObjectMapper()), externalConfigFilePath);
+        setUp(new ExternalConfigLoader(), externalConfigFilePath);
     }
 
     /**
@@ -126,15 +126,14 @@ public class TablesLoader extends BaseTableLoader {
                 Set<FieldName> physicalMetrics = physicalTable
                         .getMetrics()
                         .stream()
-                        .map(
-                                metricName -> metricDictionary.get(metricName)
-                        )
+                        .map(ApiMetricName::of)
                         .collect(Collectors.toSet());
 
                 // Dimensions for this physical table
-                Set<DimensionConfig> dimensionSet = physicalTable.getDimensions().stream().map(
-                        dimension -> dimensions.get(dimension)
-                ).collect(Collectors.toSet());
+                Set<DimensionConfig> dimensionSet = physicalTable
+                        .getDimensions().stream()
+                        .map(dimensions::get)
+                        .collect(Collectors.toSet());
 
                 // Make a sample physical table definition
                 physicalTableDefinition.add(
@@ -155,9 +154,9 @@ public class TablesLoader extends BaseTableLoader {
             validGrains.put(logicalTable, logicalTable.getGranularities());
 
             // Add all api metrics to apiMetrics
-            apiMetrics.addAll(logicalTable.getApiMetrics().stream().map(
-                    apiMetricNames -> metricDictionary.get(apiMetricNames)
-            ).collect(Collectors.toList()));
+            apiMetrics.addAll(logicalTable.getApiMetrics().stream()
+                    .map(ApiMetricName::of)
+                    .collect(Collectors.toList()));
 
             // Update apiMetricNames and druidMetricNames
             apiMetricNames.put(
@@ -178,7 +177,7 @@ public class TablesLoader extends BaseTableLoader {
         TableConfigTemplate tableConfigTemplate =
                 tableConfigLoader.parseExternalFile(
                         externalConfigFilePath + "TableConfig.json",
-                        TableConfigTemplate.class);
+                        TableConfigTemplate.class, new ObjectMapper());
 
         LinkedHashSet<PhysicalTableInfoTemplate> physicalTables = tableConfigTemplate.getPhysicalTables();
         LinkedHashSet<LogicalTableInfoTemplate> logicalTables = tableConfigTemplate.getLogicalTables();

@@ -14,7 +14,7 @@ import com.yahoo.bard.webservice.table.LogicalTableDictionary
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 import com.yahoo.bard.webservice.table.TableIdentifier
 import com.yahoo.luthier.webservice.data.config.dimension.ExternalDimensionsLoader
-import com.yahoo.luthier.webservice.data.config.metric.MetricsLoader
+import com.yahoo.luthier.webservice.data.config.metric.ExternalMetricsLoader
 import com.yahoo.luthier.webservice.data.config.table.TablesLoader
 
 import spock.lang.Shared
@@ -42,7 +42,7 @@ class ConfigurationLoadTaskSpec extends Specification {
 
         loader = new ConfigurationLoader(
                 new TypeAwareDimensionLoader(dimensions),
-                new MetricsLoader(
+                new ExternalMetricsLoader(
                         EXTERNAL_CONFIG_FILE_PATH
                 ),
                 tablesLoader

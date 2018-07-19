@@ -2,110 +2,46 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.luthier.webservice.data.config.metric;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import javax.validation.constraints.NotNull;
-import com.yahoo.bard.webservice.data.time.TimeGrain;
-import com.yahoo.bard.webservice.util.EnumUtils;
-
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
 
 /**
- * Wiki metric template.
- * <p>
- * An example:
- * <p>
- *      {
- *          "apiName" : "ADDED",
- *          "longName" : "ADDED",
- *          "description" : "Description for added",
- *          "maker" : "DoubleSum",
- *          "dependencyMetricNames" : ["ADDED"]
- *      }
+ * Metric Template.
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class MetricTemplate implements MetricConfigAPI {
-
-    private final String apiName;
-    private final String longName;
-    private final String makerName;
-    private final String description;
-    private final List<String> dependencyMetricNames;
-    private final List<TimeGrain> satisfyingGrains;
+public interface MetricTemplate {
 
     /**
-     * Constructor used by json parser.
+     * Get metrics' api name.
      *
-     * @param apiName               json property apiName
-     * @param longName              json property longName
-     * @param makerName             json property makerName
-     * @param description           json property description
-     * @param dependencyMetricNames json property dependencyMetricNames
-     * @param satisfyingGrains      json property satisfyingGrains
+     * @return metrics' api name
      */
-    MetricTemplate(
-            @NotNull @JsonProperty("apiName") String apiName,
-            @JsonProperty("longName") String longName,
-            @JsonProperty("maker") String makerName,
-            @JsonProperty("description") String description,
-            @JsonProperty("dependencyMetricNames") List<String> dependencyMetricNames,
-            @JsonProperty("satisfyingGrains") List<TimeGrain> satisfyingGrains
-    ) {
-        this.apiName = apiName.toLowerCase(Locale.ENGLISH);
-        this.longName = (Objects.isNull(longName) ? EnumUtils.camelCase(apiName) : EnumUtils.camelCase(longName));
-        this.makerName = makerName.toLowerCase(Locale.ENGLISH);
-        this.description = (Objects.isNull(description) ? "" : description);
-        this.dependencyMetricNames = (Objects.isNull(dependencyMetricNames) ?
-                Collections.emptyList() : dependencyMetricNames.stream()
-                        .map(name -> EnumUtils.camelCase(name))
-                        .collect(Collectors.toList()));
-        this.satisfyingGrains = (Objects.isNull(satisfyingGrains) ?
-                Collections.emptyList() :
-                Arrays.asList(satisfyingGrains.toArray(new TimeGrain[satisfyingGrains.size()])));
-    }
+    String getApiName();
 
     /**
-     * Get metrics info.
+     * Get metrics' long name.
+     *
+     * @return metrics' long name
      */
-    @Override
-    public String getApiName() {
-        return this.apiName;
-    }
+    String getLongName();
 
-    @Override
-    public String getLongName() {
-        return this.longName;
-    }
+    /**
+     * Get metrics' maker name.
+     *
+     * @return metrics' maker name
+     */
+    String getMakerName();
 
-    @Override
-    public String getMakerName() {
-        return this.makerName;
-    }
+    /**
+     * Get metrics' description.
+     *
+     * @return metrics' description
+     */
+    String getDescription();
 
-    @Override
-    public String getDescription() {
-        return this.description;
-    }
+    /**
+     * Get metrics' dependency metric names.
+     *
+     * @return metrics' dependency metric names
+     */
+    List<String> getDependencyMetricNames();
 
-    @Override
-    public List<String> getDependencyMetricNames() {
-        return this.dependencyMetricNames;
-    }
-
-    @Override
-    public String toString() {
-        return this.getApiName().toLowerCase(Locale.ENGLISH);
-    }
-
-    @Override
-    public String asName() {
-        return this.getApiName();
-    }
-
-    @Override
-    public boolean isValidFor(TimeGrain grain) {
-        // As long as the satisfying grains of this metric satisfy the requested grain
-        return satisfyingGrains.stream().anyMatch(grain::satisfiedBy);
-    }
 }

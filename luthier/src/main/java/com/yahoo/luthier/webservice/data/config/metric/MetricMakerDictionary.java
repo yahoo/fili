@@ -50,7 +50,7 @@ public class MetricMakerDictionary {
      * @param metricDictionary    metric dictionary as parameter for makers
      * @param dimensionDictionary dimension dictionary as parameter for makers
      */
-    public MetricMakerDictionary(LinkedHashSet<MetricMakerTemplate> metricMakers,
+    public MetricMakerDictionary(Set<MetricMakerTemplate> metricMakers,
                                  MetricDictionary metricDictionary,
                                  DimensionDictionary dimensionDictionary) {
 
@@ -86,6 +86,7 @@ public class MetricMakerDictionary {
                     }
                 }
 
+                assert constructor != null;
                 Class<?>[] paramsTypes = constructor.getParameterTypes();
                 String[] paramsNames = discoverer.getParameterNames(constructor);
 
