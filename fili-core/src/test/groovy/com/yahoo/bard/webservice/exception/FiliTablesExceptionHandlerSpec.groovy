@@ -47,7 +47,7 @@ class FiliTablesExceptionHandlerSpec extends Specification {
         RequestValidationException exception = new RequestValidationException(status, "Error", "Error")
 
         when:
-        Response response = tablesExceptionHandler.handleThrowable(exception, request, null, null)
+        Response response = tablesExceptionHandler.handleThrowable(exception, request, null)
 
         then:
         response.status == status.statusCode
@@ -62,7 +62,7 @@ class FiliTablesExceptionHandlerSpec extends Specification {
         JsonProcessingException exception = new JsonProcessingException("JsonError")
 
         when:
-        Response response = tablesExceptionHandler.handleThrowable(exception, request, null, null)
+        Response response = tablesExceptionHandler.handleThrowable(exception, request, null)
 
         then:
         response.status == Response.Status.INTERNAL_SERVER_ERROR.statusCode
@@ -74,7 +74,7 @@ class FiliTablesExceptionHandlerSpec extends Specification {
         Throwable throwable = new Throwable("Throw")
 
         when:
-        Response response = tablesExceptionHandler.handleThrowable(throwable, request, null, null)
+        Response response = tablesExceptionHandler.handleThrowable(throwable, request, null)
 
         then:
         response.status == Response.Status.BAD_REQUEST.statusCode

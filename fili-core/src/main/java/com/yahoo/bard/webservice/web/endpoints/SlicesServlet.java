@@ -146,7 +146,6 @@ public class SlicesServlet extends EndpointServlet {
             return exceptionHandler.handleThrowable(
                     t,
                     Optional.ofNullable(apiRequest),
-                    uriInfo,
                     containerRequestContext
             );
         } finally {
@@ -214,7 +213,6 @@ public class SlicesServlet extends EndpointServlet {
             return exceptionHandler.handleThrowable(
                     t,
                     Optional.ofNullable(apiRequest),
-                    uriInfo,
                     containerRequestContext
             );
         } finally {

@@ -457,7 +457,6 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
                 asyncResponse,
                 Optional.ofNullable(apiRequest),
                 containerRequestContext,
-                uriInfo,
                 writer
             );
             // Generally, it's expected that implementations of `ExceptionHandler` will resume

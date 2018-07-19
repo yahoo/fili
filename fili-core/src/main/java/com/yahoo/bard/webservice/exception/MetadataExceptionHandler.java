@@ -8,7 +8,6 @@ import java.util.Optional;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 /**
  * Like {@link DataExceptionHandler}, but handles the metadata endpoints.
@@ -25,7 +24,6 @@ public interface MetadataExceptionHandler {
      * @param e  The throwable to generate a Response for
      * @param request  The bean containing the parsed request, may be empty if an exception was thrown
      * during request construction
-     * @param uriInfo  The URI of the request
      * @param requestContext  HTTP request context for the request
      *
      * @return The Response to send to the user
@@ -33,7 +31,6 @@ public interface MetadataExceptionHandler {
     Response handleThrowable(
             Throwable e,
             Optional<? extends ApiRequest> request,
-            UriInfo uriInfo,
             ContainerRequestContext requestContext
     );
 }

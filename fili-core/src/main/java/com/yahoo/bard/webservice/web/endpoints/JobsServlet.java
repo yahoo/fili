@@ -197,7 +197,6 @@ public class JobsServlet extends EndpointServlet {
             observableResponse = Observable.just(exceptionHandler.handleThrowable(
                     t,
                     Optional.ofNullable(apiRequest),
-                    uriInfo,
                     containerRequestContext
             ));
         } finally {
@@ -249,7 +248,6 @@ public class JobsServlet extends EndpointServlet {
             observableResponse = Observable.just(exceptionHandler.handleThrowable(
                     t,
                     Optional.ofNullable(apiRequest),
-                    uriInfo,
                     containerRequestContext
             ));
         } finally {
@@ -329,7 +327,6 @@ public class JobsServlet extends EndpointServlet {
             observableResponse = Observable.just(exceptionHandler.handleThrowable(
                     t,
                     Optional.ofNullable(apiRequest),
-                    uriInfo,
                     containerRequestContext
             ));
         } finally {

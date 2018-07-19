@@ -17,7 +17,6 @@ import java.util.Optional;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 /**
  * Handles exceptions in the TablesEndpoint.
@@ -29,7 +28,6 @@ public class FiliTablesExceptionHandler implements MetadataExceptionHandler {
     public Response handleThrowable(
             Throwable e,
             Optional<? extends ApiRequest> request,
-            UriInfo uriInfo,
             ContainerRequestContext requestContext
     ) {
         if (e instanceof RequestValidationException) {

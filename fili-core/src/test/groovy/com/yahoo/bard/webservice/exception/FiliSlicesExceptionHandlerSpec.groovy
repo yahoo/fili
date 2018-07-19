@@ -22,7 +22,7 @@ class FiliSlicesExceptionHandlerSpec extends Specification {
         RequestValidationException exception = new RequestValidationException(status, "Error", "Error")
 
         when:
-        Response response = slicesExceptionHandler.handleThrowable(exception, request, null, null)
+        Response response = slicesExceptionHandler.handleThrowable(exception, request, null)
 
         then:
         response.status == status.statusCode
@@ -37,7 +37,7 @@ class FiliSlicesExceptionHandlerSpec extends Specification {
         IOException exception = new IOException("IOException")
 
         when:
-        Response response = slicesExceptionHandler.handleThrowable(exception, request, null, null)
+        Response response = slicesExceptionHandler.handleThrowable(exception, request, null)
 
         then:
         response.status == Response.Status.INTERNAL_SERVER_ERROR.statusCode
@@ -49,7 +49,7 @@ class FiliSlicesExceptionHandlerSpec extends Specification {
         Throwable throwable = new Throwable("Throw")
 
         when:
-        Response response = slicesExceptionHandler.handleThrowable(throwable, request, null, null)
+        Response response = slicesExceptionHandler.handleThrowable(throwable, request, null)
 
         then:
         response.status == Response.Status.INTERNAL_SERVER_ERROR.statusCode

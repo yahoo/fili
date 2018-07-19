@@ -10,7 +10,6 @@ import java.util.Optional;
 
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.UriInfo;
 
 /**
  * Allows a customer to inject custom code for handling Exceptions in Fili's DataServlet.
@@ -29,7 +28,6 @@ public interface DataExceptionHandler {
      * @param apiRequest  A bean containing parsed information about the request, note that
      * this won't exist if an exception was thrown while constructing the request
      * @param containerRequestContext  HTTP request context
-     * @param uriInfo  URiInfo of the request
      * @param writer  A tool for serializing JSON
      */
     void handleThrowable(
@@ -37,7 +35,6 @@ public interface DataExceptionHandler {
         AsyncResponse asyncResponse,
         Optional<DataApiRequest> apiRequest,
         ContainerRequestContext containerRequestContext,
-        UriInfo uriInfo,
         ObjectWriter writer
     );
 }

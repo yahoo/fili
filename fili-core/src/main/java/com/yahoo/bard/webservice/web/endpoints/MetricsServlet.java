@@ -151,7 +151,6 @@ public class MetricsServlet extends EndpointServlet {
             return exceptionHandler.handleThrowable(
                     t,
                     Optional.ofNullable(apiRequest),
-                    uriInfo,
                     containerRequestContext
             );
         } finally {
@@ -210,7 +209,6 @@ public class MetricsServlet extends EndpointServlet {
             return exceptionHandler.handleThrowable(
                     t,
                     Optional.ofNullable(apiRequest),
-                    uriInfo,
                     containerRequestContext
             );
         } finally {

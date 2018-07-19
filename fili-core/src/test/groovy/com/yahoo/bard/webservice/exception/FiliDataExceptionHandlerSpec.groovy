@@ -39,7 +39,7 @@ class FiliDataExceptionHandlerSpec extends Specification {
         and: "A mock AsyncResponse to resume"
 
         when: "We handle the exception"
-        dataExceptionHandler.handleThrowable(exception, response, Optional.empty(), null, null, writer)
+        dataExceptionHandler.handleThrowable(exception, response, Optional.empty(), null,  writer)
 
         then: "The response is resumed"
         1 * response.resume(_) >> {
@@ -56,7 +56,7 @@ class FiliDataExceptionHandlerSpec extends Specification {
         NoMatchFoundException exception = new NoMatchFoundException("NoMatch")
 
         when:
-        dataExceptionHandler.handleThrowable(exception, response, Optional.empty(), null, null, writer)
+        dataExceptionHandler.handleThrowable(exception, response, Optional.empty(), null,  writer)
 
         then:
         1 * response.resume(_) >> {
@@ -71,7 +71,7 @@ class FiliDataExceptionHandlerSpec extends Specification {
         TimeoutException exception = new TimeoutException("Timeout")
 
         when:
-        dataExceptionHandler.handleThrowable(exception, response, Optional.empty(), null, null, writer)
+        dataExceptionHandler.handleThrowable(exception, response, Optional.empty(), null,  writer)
 
         then:
         1 * response.resume(_) >> {
@@ -86,7 +86,7 @@ class FiliDataExceptionHandlerSpec extends Specification {
         Throwable throwable = new Throwable("Throw")
 
         when:
-        dataExceptionHandler.handleThrowable(throwable, response, Optional.empty(), null, null, writer)
+        dataExceptionHandler.handleThrowable(throwable, response, Optional.empty(), null,  writer)
 
         then:
         1 * response.resume(_) >> {

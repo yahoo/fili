@@ -42,7 +42,7 @@ class FiliJobsExceptionHandlerSpec extends Specification {
         RequestValidationException exception = new RequestValidationException(status, "Error", "Error")
 
         when:
-        Response response = jobsExceptionHandler.handleThrowable(exception, request, null, null)
+        Response response = jobsExceptionHandler.handleThrowable(exception, request, null)
 
         then:
         response.status == status.statusCode
@@ -57,7 +57,7 @@ class FiliJobsExceptionHandlerSpec extends Specification {
         Throwable throwable = new Throwable("Throw")
 
         when:
-        Response response = jobsExceptionHandler.handleThrowable(throwable, request, null, null)
+        Response response = jobsExceptionHandler.handleThrowable(throwable, request, null)
 
         then:
         response.status == Response.Status.INTERNAL_SERVER_ERROR.statusCode
