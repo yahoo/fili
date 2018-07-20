@@ -46,7 +46,7 @@ public class DefaultMetricMakerTemplate implements MetricMakerTemplate {
     ) {
         this.name = name;
         this.classPath = classPath;
-        this.parameters = (Objects.isNull(parameters) ? null : ImmutableMap.copyOf(parameters));;
+        this.parameters = (Objects.isNull(parameters) ? null : ImmutableMap.copyOf(parameters));
     }
 
     /**
