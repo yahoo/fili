@@ -6,7 +6,6 @@ import com.yahoo.bard.webservice.application.AbstractBinderFactory;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
-import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.luthier.webservice.data.config.ExternalConfigLoader;
 import com.yahoo.luthier.webservice.data.config.dimension.ExternalDimensionsLoader;
 import com.yahoo.luthier.webservice.data.config.metric.ExternalMetricsLoader;
@@ -43,7 +42,7 @@ public class WikiCopyBinderFactory extends AbstractBinderFactory {
     @Override
     protected TableLoader getTableLoader() {
         return new ExternalTableLoader(
-                new DataSourceMetadataService(),
+                getDataSourceMetadataService(),
                 externalDimensionsLoader,
                 externalConfigLoader,
                 EXTERNAL_CONFIG_FILE_PATH
