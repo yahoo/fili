@@ -23,6 +23,7 @@ import org.joda.time.Interval;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -150,7 +151,7 @@ import javax.ws.rs.core.Response;
      *
      * @return A set of intervals
      */
-     Set<Interval> getIntervals();
+     List<Interval> getIntervals();
 
     /**
      * The filters for this ApiRequest, grouped by dimensions.
@@ -186,14 +187,14 @@ import javax.ws.rs.core.Response;
 
     DataApiRequestImpl withGranularity(Granularity granularity);
 
-    DataApiRequestImpl withDimensions(Set<Dimension> dimensions);
+    DataApiRequestImpl withDimensions(LinkedHashSet<Dimension> dimensions);
 
     DataApiRequestImpl withPerDimensionFields(LinkedHashMap<Dimension,
             LinkedHashSet<DimensionField>> perDimensionFields);
 
-    DataApiRequestImpl withLogicalMetrics(Set<LogicalMetric> logicalMetrics);
+    DataApiRequestImpl withLogicalMetrics(LinkedHashSet<LogicalMetric> logicalMetrics);
 
-    DataApiRequestImpl withIntervals(Set<Interval> intervals);
+    DataApiRequestImpl withIntervals(List<Interval> intervals);
 
     DataApiRequestImpl withFilters(ApiFilters filters);
 

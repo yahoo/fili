@@ -91,10 +91,10 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
 
     private final Granularity granularity;
 
-    private final Set<Dimension> dimensions;
+    private final LinkedHashSet<Dimension> dimensions;
     private final LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> perDimensionFields;
-    private final Set<LogicalMetric> logicalMetrics;
-    private final Set<Interval> intervals;
+    private final LinkedHashSet<LogicalMetric> logicalMetrics;
+    private final List<Interval> intervals;
     private final ApiFilters apiFilters;
     private final Map<LogicalMetric, Set<ApiHaving>> havings;
     private final Having having;
@@ -423,10 +423,10 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             Optional<PaginationParameters> paginationParameters,
             LogicalTable table,
             Granularity granularity,
-            Set<Dimension> dimensions,
+            LinkedHashSet<Dimension> dimensions,
             LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> perDimensionFields,
-            Set<LogicalMetric> logicalMetrics,
-            Set<Interval> intervals,
+            LinkedHashSet<LogicalMetric> logicalMetrics,
+            List<Interval> intervals,
             ApiFilters apiFilters,
             Map<LogicalMetric, Set<ApiHaving>> havings,
             Having having,
@@ -945,7 +945,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     }
 
     @Override
-    public DataApiRequestImpl withDimensions(Set<Dimension> dimensions) {
+    public DataApiRequestImpl withDimensions(LinkedHashSet<Dimension> dimensions) {
         return new DataApiRequestImpl(format, paginationParameters, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, filterBuilder, havingApiGenerator, dateTimeSort);
     }
 
@@ -955,12 +955,12 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     }
 
     @Override
-    public DataApiRequestImpl withLogicalMetrics(Set<LogicalMetric> logicalMetrics) {
+    public DataApiRequestImpl withLogicalMetrics(LinkedHashSet<LogicalMetric> logicalMetrics) {
         return new DataApiRequestImpl(format, paginationParameters, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, filterBuilder, havingApiGenerator, dateTimeSort);
     }
 
     @Override
-    public DataApiRequestImpl withIntervals(Set<Interval> intervals) {
+    public DataApiRequestImpl withIntervals(List<Interval> intervals) {
         return new DataApiRequestImpl(format, paginationParameters, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, filterBuilder, havingApiGenerator, dateTimeSort);
     }
 
@@ -1047,7 +1047,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     }
 
     @Override
-    public Set<Interval> getIntervals() {
+    public List<Interval> getIntervals() {
         return this.intervals;
     }
 

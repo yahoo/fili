@@ -65,7 +65,7 @@ class TableUtilsSpec extends  Specification {
         request.filterDimensions >> filterDimensions
         query.metricDimensions >> metricFilterDimensions
         query.getDependentFieldNames() >> new HashSet<String>()
-        expected = expected as Set
+        expected = expected as LinkedHashSet
 
         expect:
         TableUtils.getColumnNames(request, query) == expected
@@ -87,10 +87,10 @@ class TableUtilsSpec extends  Specification {
         request.dimensions >> ds1
         request.filterDimensions >> ds1
         query.metricDimensions >> ds1
-        query.dependentFieldNames >> ([metric1, metric2, metric3] as Set)
+        query.dependentFieldNames >> ([metric1, metric2, metric3] as LinkedHashSet)
 
         expect:
-        TableUtils.getColumnNames(request, query) == [d1Name, metric1, metric2, metric3] as Set
+        TableUtils.getColumnNames(request, query) == [d1Name, metric1, metric2, metric3] as LinkedHashSet
     }
 
     def "metric name correctly is correctly represented as logicalName" () {
@@ -98,10 +98,10 @@ class TableUtilsSpec extends  Specification {
         request.dimensions >> []
         request.filterDimensions >> []
         query.metricDimensions >> []
-        query.dependentFieldNames >> ([metric1] as Set)
+        query.dependentFieldNames >> ([metric1] as LinkedHashSet)
 
         expect:
-        TableUtils.getColumnNames(request, query) == [metric1] as Set
+        TableUtils.getColumnNames(request, query) == [metric1] as LinkedHashSet
     }
 
     def "getConstrainedLogicalTableAvailability returns intervals constrained by availability"() {
@@ -112,12 +112,12 @@ class TableUtilsSpec extends  Specification {
         Interval constrainedInterval2 = new Interval("2019/2020")   // [2019, 2020,     ]
 
         AvailabilityTestingUtils.TestAvailability availability1 = new AvailabilityTestingUtils.TestAvailability(
-                [Mock(DataSourceName)] as Set,
-                ["availability": [unconstrainedInterval1] as Set]
+                [Mock(DataSourceName)] as LinkedHashSet,
+                ["availability": [unconstrainedInterval1] as LinkedHashSet]
         )
         AvailabilityTestingUtils.TestAvailability availability2 = new AvailabilityTestingUtils.TestAvailability(
-                [Mock(DataSourceName)] as Set,
-                ["availability": [unconstrainedInterval2] as Set]
+                [Mock(DataSourceName)] as LinkedHashSet,
+                ["availability": [unconstrainedInterval2] as LinkedHashSet]
         )
 
         PhysicalTableSchema physicalTableSchema = Mock(PhysicalTableSchema)
@@ -132,7 +132,7 @@ class TableUtilsSpec extends  Specification {
         configPhysicalTable2.getSchema() >> physicalTableSchema
 
         QueryPlanningConstraint queryPlanningConstraint = Mock(QueryPlanningConstraint)
-        queryPlanningConstraint.intervals >> ([constrainedInterval1, constrainedInterval2] as Set)
+        queryPlanningConstraint.intervals >> [constrainedInterval1, constrainedInterval2]
 
         ConstrainedTable constrainedTable1 = new ConstrainedTable(configPhysicalTable1, queryPlanningConstraint)
         ConstrainedTable constrainedTable2 = new ConstrainedTable(configPhysicalTable2, queryPlanningConstraint)
@@ -161,12 +161,12 @@ class TableUtilsSpec extends  Specification {
         Interval interval2 = new Interval("2018/2019")
 
         AvailabilityTestingUtils.TestAvailability availability1 = new AvailabilityTestingUtils.TestAvailability(
-                [Mock(DataSourceName)] as Set,
                 ["availability": [interval1] as Set]
+                [Mock(DataSourceName)] as LinkedHashSet,
         )
         AvailabilityTestingUtils.TestAvailability availability2 = new AvailabilityTestingUtils.TestAvailability(
-                [Mock(DataSourceName)] as Set,
                 ["availability": [interval2] as Set]
+                [Mock(DataSourceName)] as LinkedHashSet,
         )
 
         PhysicalTableSchema physicalTableSchema = Mock(PhysicalTableSchema)
@@ -195,7 +195,7 @@ class TableUtilsSpec extends  Specification {
         configPhysicalTable2.getSchema() >> physicalTableSchema
 
         TableGroup tableGroup = Mock(TableGroup)
-        tableGroup.getPhysicalTables() >> ([configPhysicalTable1, configPhysicalTable2] as Set)
+        tableGroup.getPhysicalTables() >> ([configPhysicalTable1, configPhysicalTable2] as LinkedHashSet)
 
         LogicalTable logicalTable = Mock(LogicalTable)
         logicalTable.getTableGroup() >> tableGroup

@@ -38,7 +38,7 @@ import javax.ws.rs.core.UriInfo;
 public class SlicesApiRequestImpl extends ApiRequestImpl implements SlicesApiRequest {
     private static final Logger LOG = LoggerFactory.getLogger(SlicesApiRequestImpl.class);
 
-    private final Set<Map<String, String>> slices;
+    private final LinkedHashSet<Map<String, String>> slices;
     private final Map<String, Object> slice;
 
     /**
@@ -99,14 +99,16 @@ public class SlicesApiRequestImpl extends ApiRequestImpl implements SlicesApiReq
      * @return Set of slice objects.
      * @throws BadApiRequestException if the physical table dictionary is empty.
      */
-    protected Set<Map<String, String>> generateSlices(PhysicalTableDictionary tableDictionary, UriInfo uriInfo)
-            throws BadApiRequestException {
+    protected LinkedHashSet<Map<String, String>> generateSlices(
+            PhysicalTableDictionary tableDictionary,
+            UriInfo uriInfo
+    ) throws BadApiRequestException {
         if (tableDictionary.isEmpty()) {
             String msg = EMPTY_DICTIONARY.logFormat("Slices cannot be found. Physical Table");
             throw new BadApiRequestException(msg);
         }
 
-        Set<Map<String, String>> generated = tableDictionary.entrySet().stream()
+        LinkedHashSet<Map<String, String>> generated = tableDictionary.entrySet().stream()
                 .map(
                         e -> {
                             Map<String, String> res = new LinkedHashMap<>();
@@ -214,7 +216,7 @@ public class SlicesApiRequestImpl extends ApiRequestImpl implements SlicesApiReq
     }
 
     @Override
-    public Set<Map<String, String>> getSlices() {
+    public LinkedHashSet<Map<String, String>> getSlices() {
         return this.slices;
     }
 
