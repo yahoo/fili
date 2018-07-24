@@ -13,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.LinkedHashSet;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
@@ -24,7 +23,7 @@ import javax.validation.constraints.NotNull;
 public class MetricsApiRequestImpl extends ApiRequestImpl implements MetricsApiRequest {
     private static final Logger LOG = LoggerFactory.getLogger(MetricsApiRequestImpl.class);
 
-    private final Set<LogicalMetric> metrics;
+    private final LinkedHashSet<LogicalMetric> metrics;
 
     /**
      * Parses the API request URL and generates the Api Request object.
@@ -74,9 +73,9 @@ public class MetricsApiRequestImpl extends ApiRequestImpl implements MetricsApiR
      * @return Set of metric objects.
      * @throws BadApiRequestException if an invalid metric is requested or the metric dictionary is empty.
      */
-    protected Set<LogicalMetric> generateMetrics(String metricName, MetricDictionary metricDictionary)
+    protected LinkedHashSet<LogicalMetric> generateMetrics(String metricName, MetricDictionary metricDictionary)
             throws BadApiRequestException {
-        Set<LogicalMetric> generated = metricDictionary.values().stream()
+        LinkedHashSet<LogicalMetric> generated = metricDictionary.values().stream()
                 .filter(logicalMetric -> metricName == null || metricName.equals(logicalMetric.getName()))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
@@ -96,7 +95,7 @@ public class MetricsApiRequestImpl extends ApiRequestImpl implements MetricsApiR
     }
 
     @Override
-    public Set<LogicalMetric> getMetrics() {
+    public LinkedHashSet<LogicalMetric> getMetrics() {
         return this.metrics;
     }
 

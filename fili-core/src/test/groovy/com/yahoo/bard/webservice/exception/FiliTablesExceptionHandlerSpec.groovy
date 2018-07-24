@@ -27,16 +27,16 @@ class FiliTablesExceptionHandlerSpec extends Specification {
     Optional<TablesApiRequest> request = Optional.of(new TablesApiRequestImpl(
             DefaultResponseFormatType.JSON,
             Optional.empty(),
-            [] as Set,
+            [] as LinkedHashSet,
             new LogicalTable(
                     "table",
                     DefaultTimeGrain.DAY,
                     new TableGroup([] as LinkedHashSet, [] as Set), Stub(MetricDictionary)
             ),
             DefaultTimeGrain.DAY,
-            [] as Set,
-            [] as Set,
-            [] as Set,
+            [] as LinkedHashSet,
+            [] as LinkedHashSet,
+            [], // intervals
             new ApiFilters()
     ))
 

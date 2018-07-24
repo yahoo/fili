@@ -13,6 +13,8 @@ import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import org.joda.time.Interval;
 
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -73,7 +75,7 @@ public interface TablesApiRequest extends ApiRequest {
      *
      * @return the intervals for this query
      */
-    Set<Interval> getIntervals();
+    List<Interval> getIntervals();
 
     /**
      * Returns the logical metrics requested in this query.
@@ -89,19 +91,17 @@ public interface TablesApiRequest extends ApiRequest {
 
     TablesApiRequest withBuilder(Response.ResponseBuilder builder);
 
-    TablesApiRequest withTables(Set<LogicalTable> tables);
+    TablesApiRequest withTables(LinkedHashSet<LogicalTable> tables);
 
     TablesApiRequest withTable(LogicalTable table);
 
-    TablesApiRequest withGranularity(Set<LogicalTable> tables);
+    TablesApiRequest withGranularity(Granularity tables);
 
-    TablesApiRequest withTables(Granularity granularity);
+    TablesApiRequest withDimensions(LinkedHashSet<Dimension> dimensions);
 
-    TablesApiRequest withDimensions(Set<Dimension> dimensions);
+    TablesApiRequest withMetrics(LinkedHashSet<LogicalMetric> metrics);
 
-    TablesApiRequest withMetrics(Set<LogicalMetric> metrics);
-
-    TablesApiRequest withIntervals(Set<Interval> intervals);
+    TablesApiRequest withIntervals(List<Interval> intervals);
 
     TablesApiRequest withFilters(Map<Dimension, Set<ApiFilter>> filters);
     // CHECKSTYLE:ON

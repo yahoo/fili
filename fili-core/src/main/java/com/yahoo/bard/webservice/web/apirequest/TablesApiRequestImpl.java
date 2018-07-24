@@ -47,12 +47,12 @@ import javax.ws.rs.core.Response;
 public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiRequest {
     private static final Logger LOG = LoggerFactory.getLogger(TablesApiRequestImpl.class);
 
-    private final Set<LogicalTable> tables;
+    private final LinkedHashSet<LogicalTable> tables;
     private final LogicalTable table;
     private final Granularity granularity;
-    private final Set<Dimension> dimensions;
-    private final Set<LogicalMetric> logicalMetrics;
-    private final Set<Interval> intervals;
+    private final List<Interval> intervals;
+    private final LinkedHashSet<Dimension> dimensions;
+    private final LinkedHashSet<LogicalMetric> logicalMetrics;
     private final ApiFilters apiFilters;
 
     /**
@@ -96,9 +96,9 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
             this.granularity = null;
         }
 
-        dimensions = Collections.emptySet();
-        logicalMetrics = Collections.emptySet();
-        intervals = Collections.emptySet();
+        intervals = Collections.emptyList();
+        dimensions = new LinkedHashSet<>();
+        logicalMetrics = new LinkedHashSet<>();
         apiFilters = new ApiFilters(Collections.emptyMap());
 
         LOG.debug(
@@ -235,12 +235,12 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
     private TablesApiRequestImpl(
             ResponseFormatType format,
             Optional<PaginationParameters> paginationParameters,
-            Set<LogicalTable> tables,
+            LinkedHashSet<LogicalTable> tables,
             LogicalTable table,
             Granularity granularity,
-            Set<Dimension> dimensions,
-            Set<LogicalMetric> metrics,
-            Set<Interval> intervals,
+            LinkedHashSet<Dimension> dimensions,
+            LinkedHashSet<LogicalMetric> metrics,
+            List<Interval> intervals,
             ApiFilters filters
     ) {
         super(format, SYNCHRONOUS_ASYNC_AFTER_VALUE, paginationParameters);
@@ -263,9 +263,9 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
      * @return Set of logical table objects.
      * @throws BadApiRequestException if an invalid table is requested or the logical table dictionary is empty.
      */
-    protected Set<LogicalTable> generateTables(String tableName, LogicalTableDictionary tableDictionary)
+    protected LinkedHashSet<LogicalTable> generateTables(String tableName, LogicalTableDictionary tableDictionary)
             throws BadApiRequestException {
-        Set<LogicalTable> generated = tableDictionary.values().stream()
+        LinkedHashSet<LogicalTable> generated = tableDictionary.values().stream()
                 .filter(logicalTable -> tableName == null || tableName.equals(logicalTable.getName()))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
@@ -360,7 +360,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
     }
 
     @Override
-    public Set<Interval> getIntervals() {
+    public List<Interval> getIntervals() {
         return intervals;
     }
 
@@ -386,7 +386,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
     }
 
     @Override
-    public TablesApiRequest withTables(Set<LogicalTable> tables) {
+    public TablesApiRequest withTables(LinkedHashSet<LogicalTable> tables) {
         return new TablesApiRequestImpl(format, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
     }
 
@@ -394,28 +394,25 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         return new TablesApiRequestImpl(format, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
     }
 
+
     @Override
-    public TablesApiRequest withGranularity(Set<LogicalTable> tables) {
+    public TablesApiRequest withMetrics(LinkedHashSet<LogicalMetric> logicalMetrics) {
         return new TablesApiRequestImpl(format, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
     }
 
     @Override
-    public TablesApiRequest withTables(Granularity granularity) {
+    public TablesApiRequest withGranularity(Granularity granularity) {
         return new TablesApiRequestImpl(format, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
     }
 
     @Override
-    public TablesApiRequest withDimensions(Set<Dimension> dimensions) {
+    public TablesApiRequest withDimensions(LinkedHashSet<Dimension> dimensions) {
         return new TablesApiRequestImpl(format, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
     }
 
-    @Override
-    public TablesApiRequest withMetrics(Set<LogicalMetric> logicalMetrics) {
-        return new TablesApiRequestImpl(format, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
-    }
 
     @Override
-    public TablesApiRequest withIntervals(Set<Interval> intervals) {
+    public TablesApiRequest withIntervals(List<Interval> intervals) {
         return new TablesApiRequestImpl(format, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
     }
 

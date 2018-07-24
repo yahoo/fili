@@ -358,7 +358,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
      * @return Set of jodatime interval objects.
      * @throws BadApiRequestException if the requested interval is not found.
      */
-    protected static Set<Interval> generateIntervals(
+    protected static List<Interval> generateIntervals(
             String apiIntervalQuery,
             Granularity granularity,
             DateTimeFormatter dateTimeFormatter
@@ -378,14 +378,14 @@ public abstract class ApiRequestImpl implements ApiRequest {
      * @return Set of jodatime interval objects.
      * @throws BadApiRequestException if the requested interval is not found.
      */
-    protected static Set<Interval> generateIntervals(
+    protected static List<Interval> generateIntervals(
             DateTime now,
             String apiIntervalQuery,
             Granularity granularity,
             DateTimeFormatter dateTimeFormatter
     ) throws BadApiRequestException {
         try (TimedPhase timer = RequestLog.startTiming("GeneratingIntervals")) {
-            Set<Interval> generated = new LinkedHashSet<>();
+            List<Interval> generated = new ArrayList<>();
             if (apiIntervalQuery == null || apiIntervalQuery.equals("")) {
                 LOG.debug(INTERVAL_MISSING.logFormat());
                 throw new BadApiRequestException(INTERVAL_MISSING.format());
@@ -589,7 +589,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
      */
     protected static void validateTimeAlignment(
             Granularity granularity,
-            Set<Interval> intervals
+            List<Interval> intervals
     ) throws BadApiRequestException {
         if (! granularity.accepts(intervals)) {
             String alignmentDescription = granularity.getAlignmentDescription();
