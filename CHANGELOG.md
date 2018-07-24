@@ -38,6 +38,10 @@ pull request if there was one.
 
 ### Changed:
 
+- [Change to ordered data structures for ApiRequestImpls](https://github.com/yahoo/fili/issues/753)
+    * Change Set<foo> to LinkedHashSet<foo> in most ApiRequestImpl getters
+    * Change Set<Interval> to List<Interval> in ApiRequests
+    
 - [Moved ResponseFormatType from Singleton enum to interface with enum impl](https://github.com/yahoo/fili/issues/711)
     * Refactored ResponseFormatType to allow expansion via additional interface implementors
     * Replaced equality based matching with 'accepts' model

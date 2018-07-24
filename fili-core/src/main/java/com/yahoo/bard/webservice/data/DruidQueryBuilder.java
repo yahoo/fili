@@ -37,6 +37,7 @@ import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -176,7 +177,7 @@ public class DruidQueryBuilder {
             Set<Dimension> groupByDimensions,
             Filter filter,
             Having having,
-            Set<Interval> intervals,
+            List<Interval> intervals,
             LimitSpec druidOrderBy
     ) {
         LOG.trace(
@@ -279,7 +280,7 @@ public class DruidQueryBuilder {
             DateTimeZone timeZone,
             Set<Dimension> groupByDimension,
             Filter filter,
-            Set<Interval> intervals,
+            List<Interval> intervals,
             TopNMetric metricSpec,
             int topN
     ) {
@@ -345,7 +346,7 @@ public class DruidQueryBuilder {
             Granularity granularity,
             DateTimeZone timeZone,
             Filter filter,
-            Set<Interval> intervals
+            List<Interval> intervals
     ) {
         LOG.trace(
                 "Building druid timeseries query with following parameters \n" +

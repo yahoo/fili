@@ -518,8 +518,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
                 if (!generated.containsKey(dim)) {
                     generated.put(dim, new LinkedHashSet<>());
                 }
-                Set<ApiFilter> filterSet = generated.get(dim);
-                filterSet.add(newFilter);
+                generated.get(dim).add(newFilter);
             }
             LOG.trace("Generated map of filters: {}", generated);
 

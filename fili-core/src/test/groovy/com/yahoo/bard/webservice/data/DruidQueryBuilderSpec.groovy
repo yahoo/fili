@@ -63,7 +63,7 @@ class DruidQueryBuilderSpec extends Specification {
 
     static final DruidFilterBuilder FILTER_BUILDER = new DefaultDruidFilterBuilder()
 
-    Set<Interval> intervals
+    List<Interval> intervals
 
     def staticInitialize() {
         resources = new QueryBuildingTestingResources()
@@ -153,7 +153,7 @@ class DruidQueryBuilderSpec extends Specification {
                 [] as Set,
                 filter,
                 (Having) null,
-                [] as Set,
+                [],
                 limitSpec
         )
 
@@ -172,7 +172,7 @@ class DruidQueryBuilderSpec extends Specification {
                 [] as Set,
                 filter,
                 (Having) null,
-                [] as Set,
+                [] as List,
                 limitSpec
         )
 
@@ -195,7 +195,7 @@ class DruidQueryBuilderSpec extends Specification {
                 UTC,
                 dimension,
                 filter,
-                [] as Set,
+                [],
                 topNMetric,
                 topN
         )
@@ -214,7 +214,7 @@ class DruidQueryBuilderSpec extends Specification {
                 granularity,
                 UTC,
                 filter,
-                [] as Set
+                []
         )
 
         then:
@@ -250,7 +250,7 @@ class DruidQueryBuilderSpec extends Specification {
                 [] as Set,
                 filter,
                 (Having) null,
-                [] as Set,
+                [],
                 limitSpec
         )
 
@@ -269,7 +269,7 @@ class DruidQueryBuilderSpec extends Specification {
                 UTC,
                 [] as Set,
                 filter, (Having) null,
-                [] as Set,
+                [],
                 limitSpec
         )
         GroupByQuery dq2 = dq1.dataSource.getQuery().get()
@@ -293,7 +293,7 @@ class DruidQueryBuilderSpec extends Specification {
                 [] as Set,
                 filter,
                 (Having) null,
-                [] as Set,
+                [],
                 limitSpec
         )
         dq2 = dq1.dataSource.getQuery().get()

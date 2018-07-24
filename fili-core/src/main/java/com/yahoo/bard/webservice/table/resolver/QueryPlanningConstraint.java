@@ -14,6 +14,7 @@ import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import org.joda.time.Interval;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -26,7 +27,7 @@ import javax.validation.constraints.NotNull;
 public class QueryPlanningConstraint extends DataSourceConstraint {
 
     private final LogicalTable logicalTable;
-    private final Set<Interval> intervals;
+    private final List<Interval> intervals;
     private final Set<LogicalMetric> logicalMetrics;
     private final Granularity minimumGranularity;
     private final Granularity requestGranularity;
@@ -53,7 +54,7 @@ public class QueryPlanningConstraint extends DataSourceConstraint {
             Set<String> metricNames,
             ApiFilters apiFilters,
             LogicalTable logicalTable,
-            Set<Interval> intervals,
+            List<Interval> intervals,
             Set<LogicalMetric> logicalMetrics,
             Granularity minimumGranularity,
             Granularity requestGranularity
@@ -80,7 +81,7 @@ public class QueryPlanningConstraint extends DataSourceConstraint {
         super(dataApiRequest, templateDruidQuery);
 
         this.logicalTable = dataApiRequest.getTable();
-        this.intervals = Collections.unmodifiableSet(dataApiRequest.getIntervals());
+        this.intervals = Collections.unmodifiableList(dataApiRequest.getIntervals());
         this.logicalMetrics = Collections.unmodifiableSet(dataApiRequest.getLogicalMetrics());
         this.minimumGranularity = new RequestQueryGranularityResolver().apply(dataApiRequest, templateDruidQuery);
         this.requestGranularity = dataApiRequest.getGranularity();
@@ -101,7 +102,7 @@ public class QueryPlanningConstraint extends DataSourceConstraint {
                 tablesApiRequest.getApiFilters()
         );
         this.logicalTable = tablesApiRequest.getTable();
-        this.intervals = Collections.unmodifiableSet(tablesApiRequest.getIntervals());
+        this.intervals = Collections.unmodifiableList(tablesApiRequest.getIntervals());
         this.logicalMetrics = Collections.unmodifiableSet(tablesApiRequest.getLogicalMetrics());
         this.minimumGranularity = tablesApiRequest.getGranularity();
         this.requestGranularity = tablesApiRequest.getGranularity();
@@ -112,7 +113,7 @@ public class QueryPlanningConstraint extends DataSourceConstraint {
         return logicalTable;
     }
 
-    public Set<Interval> getIntervals() {
+    public List<Interval> getIntervals() {
         return intervals;
     }
 

@@ -170,7 +170,7 @@ class ApiRequestSpec extends Specification {
         DateTimeFormatter dateTimeFormatter = FULLY_OPTIONAL_DATETIME_FORMATTER
 
         DateTimeZone dateTimeZone = DateTimeZone.forID(zone)
-        Set<Interval> intervals = TestingDataApiRequestImpl.generateIntervals(
+        List<Interval> intervals = TestingDataApiRequestImpl.generateIntervals(
                 intervalString,
                 DAY,
                 dateTimeFormatter.withZone(dateTimeZone)

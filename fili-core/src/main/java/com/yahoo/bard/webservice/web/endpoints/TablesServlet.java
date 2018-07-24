@@ -546,7 +546,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                                         Collections.emptySet(),
                                         tablesApiRequest.getApiFilters(),
                                         tablesApiRequest.getTable(),
-                                        Collections.unmodifiableSet(tablesApiRequest.getIntervals()),
+                                        Collections.unmodifiableList(tablesApiRequest.getIntervals()),
                                         Collections.unmodifiableSet(tablesApiRequest.getLogicalMetrics()),
                                         tablesApiRequest.getGranularity(),
                                         tablesApiRequest.getGranularity()
