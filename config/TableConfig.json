@@ -1,61 +1,32 @@
 {
-  "physicalTables": [
-    {
-      "name": "wikiticker",
-      "granularity": "HOUR",
-      "metrics": [
-        "added",
-        "delta",
-        "deleted"
-      ],
-      "dimensions": [
-        "COMMENT",
-        "COUNTRY_ISO_CODE",
-        "REGION_ISO_CODE",
-        "PAGE",
-        "USER",
-        "IS_UNPATROLLED",
-        "IS_NEW",
-        "IS_ROBOT",
-        "IS_ANONYMOUS",
-        "IS_MINOR",
-        "NAMESPACE",
-        "CHANNEL",
-        "COUNTRY_NAME",
-        "REGION_NAME",
-        "METRO_CODE",
-        "CITY_NAME"
-      ]
-    }
-  ],
   "logicalTables": [
     {
+      "physicalTables": [
+        "wikiticker"
+      ],
       "name": "WIKIPEDIA",
+      "dimensions": [
+        "comment",
+        "countryIsoCode",
+        "regionIsoCode",
+        "page",
+        "user",
+        "isUnpatrolled",
+        "isNew",
+        "isRobot",
+        "isAnonymous",
+        "isMinor",
+        "namespace",
+        "channel",
+        "countryName",
+        "regionName",
+        "metroCode",
+        "cityName"
+      ],
       "granularity": [
         "ALL",
         "HOUR",
         "DAY"
-      ],
-      "physicalTables": [
-        "wikiticker"
-      ],
-      "dimensions": [
-        "COMMENT",
-        "COUNTRY_ISO_CODE",
-        "REGION_ISO_CODE",
-        "PAGE",
-        "USER",
-        "IS_UNPATROLLED",
-        "IS_NEW",
-        "IS_ROBOT",
-        "IS_ANONYMOUS",
-        "IS_MINOR",
-        "NAMESPACE",
-        "CHANNEL",
-        "COUNTRY_NAME",
-        "REGION_NAME",
-        "METRO_CODE",
-        "CITY_NAME"
       ],
       "apiMetricNames": [
         "count",
@@ -65,32 +36,32 @@
       ]
     },
     {
+      "physicalTables": [
+        "wikiticker"
+      ],
       "name": "logicalTableTesterOne",
+      "dimensions": [
+        "comment",
+        "countryIsoCode",
+        "regionIsoCode",
+        "page",
+        "user",
+        "isUnpatrolled",
+        "isNew",
+        "isRobot",
+        "isAnonymous",
+        "isMinor",
+        "namespace",
+        "channel",
+        "countryName",
+        "regionName",
+        "metroCode",
+        "cityName"
+      ],
       "granularity": [
         "ALL",
         "HOUR",
         "DAY"
-      ],
-      "physicalTables": [
-        "wikiticker"
-      ],
-      "dimensions": [
-        "COMMENT",
-        "COUNTRY_ISO_CODE",
-        "REGION_ISO_CODE",
-        "PAGE",
-        "USER",
-        "IS_UNPATROLLED",
-        "IS_NEW",
-        "IS_ROBOT",
-        "IS_ANONYMOUS",
-        "IS_MINOR",
-        "NAMESPACE",
-        "CHANNEL",
-        "COUNTRY_NAME",
-        "REGION_NAME",
-        "METRO_CODE",
-        "CITY_NAME"
       ],
       "apiMetricNames": [
         "count",
@@ -104,6 +75,35 @@
         "cardOnPage",
         "bigThetaSketch"
       ]
+    }
+  ],
+  "physicalTables": [
+    {
+      "metrics": [
+        "added",
+        "delta",
+        "deleted"
+      ],
+      "name": "wikiticker",
+      "dimensions": [
+        "comment",
+        "countryIsoCode",
+        "regionIsoCode",
+        "page",
+        "user",
+        "isUnpatrolled",
+        "isNew",
+        "isRobot",
+        "isAnonymous",
+        "isMinor",
+        "namespace",
+        "channel",
+        "countryName",
+        "regionName",
+        "metroCode",
+        "cityName"
+      ],
+      "granularity": "HOUR"
     }
   ]
 }

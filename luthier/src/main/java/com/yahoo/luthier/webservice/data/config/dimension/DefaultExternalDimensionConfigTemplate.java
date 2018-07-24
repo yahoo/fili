@@ -25,7 +25,7 @@ import java.util.*;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DefaultExternalDimensionConfigTemplate implements ExternalDimensionConfigTemplate {
 
-    private final Map<String, LinkedHashSet<DimensionFieldInfoTemplate>> fieldDictionary;
+    private final Map<String, List<DimensionFieldInfoTemplate>> fieldDictionary;
     private final Set<DimensionTemplate> dimensions;
 
     /**
@@ -36,7 +36,7 @@ public class DefaultExternalDimensionConfigTemplate implements ExternalDimension
      */
     @JsonCreator
     public DefaultExternalDimensionConfigTemplate(
-            @JsonProperty("fieldSets") Map<String, LinkedHashSet<DimensionFieldInfoTemplate>> fieldDictionary,
+            @JsonProperty("fieldSets") Map<String, List<DimensionFieldInfoTemplate>> fieldDictionary,
             @JsonProperty("dimensions") Set<DimensionTemplate> dimensions
     ) {
         this.fieldDictionary = fieldDictionary;
@@ -44,7 +44,7 @@ public class DefaultExternalDimensionConfigTemplate implements ExternalDimension
     }
 
     @Override
-    public Map<String, LinkedHashSet<DimensionFieldInfoTemplate>> getFieldSets() {
+    public Map<String, List<DimensionFieldInfoTemplate>> getFieldSets() {
         return this.fieldDictionary;
     }
 

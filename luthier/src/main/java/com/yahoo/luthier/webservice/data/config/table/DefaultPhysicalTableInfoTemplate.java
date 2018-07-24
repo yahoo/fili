@@ -67,10 +67,7 @@ public class DefaultPhysicalTableInfoTemplate implements PhysicalTableInfoTempla
                 Collections.emptyList() : metrics.stream()
                 .map(EnumUtils::camelCase)
                 .collect(Collectors.toList()));
-        this.dimensions = (Objects.isNull(dimensions) ?
-                Collections.emptyList() : dimensions.stream()
-                .map(EnumUtils::camelCase)
-                .collect(Collectors.toList()));
+        this.dimensions = !Objects.isNull(dimensions) ? dimensions : Collections.emptyList();
         this.granularity = (Objects.isNull(granularity) ?
                 DefaultTimeGrain.HOUR : DefaultTimeGrain.valueOf(granularity));
     }

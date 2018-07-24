@@ -4,7 +4,7 @@ package com.yahoo.luthier.webservice.data.config.dimension;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
-import com.yahoo.bard.webservice.data.config.dimension.DefaultKeyValueStoreDimensionConfig;
+
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager;
@@ -45,18 +45,7 @@ public class ExternalDimensionsLoader {
 
         this.dimensionConfigs = Collections.unmodifiableSet(
                 dimensionConfig.getDimensions().stream()
-                        .map(
-                                dimensionName -> new DefaultKeyValueStoreDimensionConfig(
-                                        dimensionName.build(),
-                                        dimensionName.getApiName(),
-                                        dimensionName.getDescription(),
-                                        dimensionName.getLongName(),
-                                        dimensionName.getCategory(),
-                                        dimensionName.getFields(dimensionConfig.getFieldSets()),
-                                        getDefaultKeyValueStore(dimensionName),
-                                        getDefaultSearchProvider(dimensionName)
-                                )
-                        )
+                        .map(dimension -> dimension.build(dimensionConfig.getFieldSets()))
                         .collect(Collectors.toSet())
         );
 
@@ -89,26 +78,6 @@ public class ExternalDimensionsLoader {
     }
 
     /**
-     * Lazily provide a KeyValueStore for this store name.
-     *
-     * @param storeName the name for the key value store
-     * @return A KeyValueStore instance
-     */
-    private KeyValueStore getDefaultKeyValueStore(DimensionTemplate storeName) {
-        return MapStoreManager.getInstance(storeName.getApiName());
-    }
-
-    /**
-     * Lazily create a Scanning Search Provider for this provider name.
-     *
-     * @param providerName The name of the dimension's indexes
-     * @return A Scanning Search Provider for the provider name.
-     */
-    private SearchProvider getDefaultSearchProvider(DimensionTemplate providerName) {
-        return ScanSearchProviderManager.getInstance(providerName.getApiName());
-    }
-
-    /**
      * Templates and deserializers binder.
      *
      * @return A Joda Module contains binding information.
@@ -124,7 +93,7 @@ public class ExternalDimensionsLoader {
         jodaModule.addAbstractTypeMapping(DimensionFieldListTemplate.class,
                 DefaultDimensionFieldListTemplate.class);
         jodaModule.addDeserializer(DefaultDimensionFieldListTemplate.class,
-                new DefaultDimensionFieldDeserializer());
+                DefaultDimensionFieldInfoTemplate.deserializer());
         return jodaModule;
     }
 }

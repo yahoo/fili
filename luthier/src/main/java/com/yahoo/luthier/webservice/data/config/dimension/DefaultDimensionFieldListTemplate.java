@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.luthier.webservice.data.config.dimension;
 
-import java.util.LinkedHashSet;
+import java.util.List;
 
 /**
  * Contains field name and a list of field template.
@@ -14,7 +14,7 @@ import java.util.LinkedHashSet;
 public class DefaultDimensionFieldListTemplate implements DimensionFieldListTemplate {
 
     private String fieldName;
-    private LinkedHashSet<DimensionFieldInfoTemplate> fieldList;
+    private List<DimensionFieldInfoTemplate> fieldList;
 
     @Override
     public void setFieldName(String name) {
@@ -22,7 +22,8 @@ public class DefaultDimensionFieldListTemplate implements DimensionFieldListTemp
     }
 
     @Override
-    public void setFieldList(LinkedHashSet<DimensionFieldInfoTemplate> list) {
+    public void setFieldList(List<DimensionFieldInfoTemplate> list) {
+        sortFields(list);
         this.fieldList = list;
     }
 
@@ -32,7 +33,7 @@ public class DefaultDimensionFieldListTemplate implements DimensionFieldListTemp
     }
 
     @Override
-    public LinkedHashSet<DimensionFieldInfoTemplate> getFieldList() {
+    public List<DimensionFieldInfoTemplate> getFieldList() {
         return fieldList;
     }
 }

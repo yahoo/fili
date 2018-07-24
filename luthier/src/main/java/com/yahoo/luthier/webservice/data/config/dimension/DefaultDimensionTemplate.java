@@ -8,9 +8,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.validation.constraints.NotNull;
 
+import com.yahoo.bard.webservice.data.config.dimension.DefaultKeyValueStoreDimensionConfig;
+import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.names.DimensionName;
-import com.yahoo.bard.webservice.data.dimension.Dimension;
-import com.yahoo.bard.webservice.data.dimension.DimensionField;
+import com.yahoo.bard.webservice.data.dimension.*;
+import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager;
 import com.yahoo.bard.webservice.util.EnumUtils;
 
 import java.util.*;
@@ -54,9 +56,9 @@ public class DefaultDimensionTemplate implements DimensionTemplate {
             @JsonProperty("category") String category,
             @JsonProperty("fields") DimensionFieldListTemplate fields
     ) {
-        this.apiName = EnumUtils.camelCase(apiName);
+        this.apiName = apiName;
         this.description = (Objects.isNull(description) ? "" : description);
-        this.longName = (Objects.isNull(longName) ? EnumUtils.camelCase(apiName) : longName);
+        this.longName = (Objects.isNull(longName) ? apiName : longName);
         this.category = (Objects.isNull(category) ? Dimension.DEFAULT_CATEGORY : category);
         this.fields = fields;
     }
@@ -91,7 +93,7 @@ public class DefaultDimensionTemplate implements DimensionTemplate {
 
     @Override
     public LinkedHashSet<DimensionField> getFields(
-            Map<String, LinkedHashSet<DimensionFieldInfoTemplate>> fieldDictionary
+            Map<String, List<DimensionFieldInfoTemplate>> fieldDictionary
     ) {
         resolveFields(fieldDictionary);
         if (this.fields.getFieldList() == null) {
@@ -103,8 +105,35 @@ public class DefaultDimensionTemplate implements DimensionTemplate {
     }
 
     @Override
-    public DimensionName build() {
-        return this::getApiName;
+    public DimensionConfig build(Map<String, List<DimensionFieldInfoTemplate>> fieldSet) {
+        return new DefaultKeyValueStoreDimensionConfig(
+                () -> (getApiName()),
+                getApiName(),
+                getDescription(),
+                getLongName(),
+                getCategory(),
+                getFields(fieldSet),
+                getDefaultKeyValueStore(),
+                getDefaultSearchProvider()
+        );
+    }
+
+    /**
+     * Lazily provide a KeyValueStore for this store name.
+     *
+     * @return A KeyValueStore instance
+     */
+    private KeyValueStore getDefaultKeyValueStore() {
+        return MapStoreManager.getInstance(getApiName());
+    }
+
+    /**
+     * Lazily create a Scanning Search Provider for this provider name.
+     *
+     * @return A Scanning Search Provider for the provider name.
+     */
+    private SearchProvider getDefaultSearchProvider() {
+        return ScanSearchProviderManager.getInstance(getApiName());
     }
 
     /**
@@ -117,7 +146,7 @@ public class DefaultDimensionTemplate implements DimensionTemplate {
      * @param fieldDictionary a map from fieldset's name to fieldset
      */
     private void resolveFields(
-            Map<String, LinkedHashSet<DimensionFieldInfoTemplate>> fieldDictionary
+            Map<String, List<DimensionFieldInfoTemplate>> fieldDictionary
     ) {
 
         if (fieldDictionary == null) {

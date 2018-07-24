@@ -15,22 +15,22 @@ local M = {
 
 DEFAULT = {
     ALL_DIM = {
-        "COMMENT",
-        "COUNTRY_ISO_CODE",
-        "REGION_ISO_CODE",
-        "PAGE",
-        "USER",
-        "IS_UNPATROLLED",
-        "IS_NEW",
-        "IS_ROBOT",
-        "IS_ANONYMOUS",
-        "IS_MINOR",
-        "NAMESPACE",
-        "CHANNEL",
-        "COUNTRY_NAME",
-        "REGION_NAME",
-        "METRO_CODE",
-        "CITY_NAME"
+        "comment",
+        "countryIsoCode",
+        "regionIsoCode",
+        "page",
+        "user",
+        "isUnpatrolled",
+        "isNew",
+        "isRobot",
+        "isAnonymous",
+        "isMinor",
+        "namespace",
+        "channel",
+        "countryName",
+        "regionName",
+        "metroCode",
+        "cityName"
     },
     ALL_METRICS ={
         "count",

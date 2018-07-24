@@ -2,10 +2,11 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.luthier.webservice.data.config.dimension;
 
-import com.yahoo.bard.webservice.data.config.names.DimensionName;
+import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -45,16 +46,17 @@ public interface DimensionTemplate {
      * Get dimensions fields.
      *
      * @param fieldDictionary a map from fieldset's name to fieldset
+     *
      * @return a list of dimension field
      */
     LinkedHashSet<DimensionField> getFields(Map<String,
-            LinkedHashSet<DimensionFieldInfoTemplate>> fieldDictionary);
+                List<DimensionFieldInfoTemplate>> fieldDictionary);
 
     /**
-     * Build a dimensionName instance.
+     * Build a dimensionConfig instance.
      *
-     * @return a dimensionName instance
+     * @return a dimensionConfig instance
      */
-    DimensionName build();
+    DimensionConfig build(Map<String, List<DimensionFieldInfoTemplate>> fieldSet);
 
 }
