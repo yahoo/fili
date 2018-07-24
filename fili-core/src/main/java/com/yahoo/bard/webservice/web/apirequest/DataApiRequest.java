@@ -196,6 +196,12 @@ import javax.ws.rs.core.Response;
 
     DataApiRequestImpl withIntervals(List<Interval> intervals);
 
+    @Deprecated
+    /**
+     * @deprecated Use @see{{@link #withIntervals(List)}}
+     */
+    DataApiRequestImpl withIntervals(Set<Interval> intervals);
+
     DataApiRequestImpl withFilters(ApiFilters filters);
 
     DataApiRequestImpl withHavings(Map<LogicalMetric, Set<ApiHaving>> havings);

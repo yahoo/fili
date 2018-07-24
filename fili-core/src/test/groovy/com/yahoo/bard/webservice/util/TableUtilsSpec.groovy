@@ -161,12 +161,12 @@ class TableUtilsSpec extends  Specification {
         Interval interval2 = new Interval("2018/2019")
 
         AvailabilityTestingUtils.TestAvailability availability1 = new AvailabilityTestingUtils.TestAvailability(
-                ["availability": [interval1] as Set]
                 [Mock(DataSourceName)] as LinkedHashSet,
+                ["availability": [interval1]]
         )
         AvailabilityTestingUtils.TestAvailability availability2 = new AvailabilityTestingUtils.TestAvailability(
-                ["availability": [interval2] as Set]
                 [Mock(DataSourceName)] as LinkedHashSet,
+                ["availability": [interval2]]
         )
 
         PhysicalTableSchema physicalTableSchema = Mock(PhysicalTableSchema)

@@ -28,7 +28,7 @@ public class DataRequest implements LogInfo {
     protected final String resource = "data";
     protected final String table;
     protected final String timeGrain;
-    protected final Set<Interval> intervals;
+    protected final List<Interval> intervals;
     protected final int numBuckets;
 
     protected final List<Filter> filters;
@@ -53,7 +53,7 @@ public class DataRequest implements LogInfo {
      */
     public DataRequest(
             LogicalTable table,
-            Set<Interval> intervals,
+            List<Interval> intervals,
             Collection<Set<ApiFilter>> filterSuperSet,
             Set<LogicalMetric> metricSet,
             Set<Dimension> groupByDimensionsSet,

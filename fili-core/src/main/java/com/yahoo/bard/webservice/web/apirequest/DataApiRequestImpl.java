@@ -964,6 +964,13 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         return new DataApiRequestImpl(format, paginationParameters, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, filterBuilder, havingApiGenerator, dateTimeSort);
     }
 
+
+    @Deprecated
+    public DataApiRequestImpl withIntervals(Set<Interval> intervals) {
+        return new DataApiRequestImpl(format, paginationParameters, table, granularity, dimensions, perDimensionFields, logicalMetrics, new ArrayList<>(intervals), apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, filterBuilder, havingApiGenerator, dateTimeSort);
+    }
+
+
     @Override
     public DataApiRequestImpl withFilters(ApiFilters apiFilters) {
         return new DataApiRequestImpl(format, paginationParameters, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, filterBuilder, havingApiGenerator, dateTimeSort);

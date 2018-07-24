@@ -405,12 +405,15 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         return new TablesApiRequestImpl(format, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
     }
 
-    @Override
     public TablesApiRequest withDimensions(LinkedHashSet<Dimension> dimensions) {
         return new TablesApiRequestImpl(format, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
     }
 
-
+    @Override
+    @Deprecated
+    public TablesApiRequest withIntervals(Set<Interval> intervals) {
+            return new TablesApiRequestImpl(format, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, new ArrayList<>(intervals), apiFilters);
+    }
     @Override
     public TablesApiRequest withIntervals(List<Interval> intervals) {
         return new TablesApiRequestImpl(format, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);

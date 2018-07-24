@@ -103,6 +103,12 @@ public interface TablesApiRequest extends ApiRequest {
 
     TablesApiRequest withIntervals(List<Interval> intervals);
 
+    @Deprecated
+    /**
+     * @deprecated Use {@link #withIntervals(List)}
+     */
+    TablesApiRequest withIntervals(Set<Interval> intervals);
+
     TablesApiRequest withFilters(Map<Dimension, Set<ApiFilter>> filters);
     // CHECKSTYLE:ON
 }
