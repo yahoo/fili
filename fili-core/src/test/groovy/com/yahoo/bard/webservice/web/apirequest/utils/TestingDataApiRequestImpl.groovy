@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest.utils
 
+import com.yahoo.bard.webservice.data.filterbuilders.DefaultDruidFilterBuilder
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.druid.model.having.Having
 import com.yahoo.bard.webservice.table.LogicalTable
@@ -31,7 +32,7 @@ class TestingDataApiRequestImpl extends DataApiRequestImpl {
                 0,  // topN
                 Long.MAX_VALUE, // asynchAfter
                 (DateTimeZone) null,
-                null, // DateTimeSort
+                new DefaultDruidFilterBuilder(),
                 null,
                 Optional.empty()
         )
