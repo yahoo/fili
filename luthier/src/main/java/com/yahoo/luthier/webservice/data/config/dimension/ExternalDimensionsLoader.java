@@ -6,10 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
-import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
-import com.yahoo.bard.webservice.data.dimension.MapStoreManager;
-import com.yahoo.bard.webservice.data.dimension.SearchProvider;
-import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager;
 import com.yahoo.bard.webservice.util.StreamUtils;
 import com.yahoo.luthier.webservice.data.config.ExternalConfigLoader;
 

@@ -10,10 +10,8 @@ import javax.validation.constraints.NotNull;
 
 import com.yahoo.bard.webservice.data.config.dimension.DefaultKeyValueStoreDimensionConfig;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
-import com.yahoo.bard.webservice.data.config.names.DimensionName;
 import com.yahoo.bard.webservice.data.dimension.*;
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager;
-import com.yahoo.bard.webservice.util.EnumUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;

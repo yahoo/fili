@@ -90,7 +90,7 @@ public class DefaultDimensionFieldInfoTemplate implements DimensionFieldInfoTemp
      */
     @Override
     public Set<? extends Tag> getTags() {
-        return this.tags.stream().map(tag -> (Tag)() -> (tag)).collect(Collectors.toSet());
+        return this.tags.stream().map(tag -> (Tag) () -> (tag)).collect(Collectors.toSet());
     }
 
     @Override

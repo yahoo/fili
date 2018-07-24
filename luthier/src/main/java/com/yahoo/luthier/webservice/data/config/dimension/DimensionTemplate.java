@@ -55,6 +55,8 @@ public interface DimensionTemplate {
     /**
      * Build a dimensionConfig instance.
      *
+     * @param fieldSet fieldSet dictionary
+     *
      * @return a dimensionConfig instance
      */
     DimensionConfig build(Map<String, List<DimensionFieldInfoTemplate>> fieldSet);
