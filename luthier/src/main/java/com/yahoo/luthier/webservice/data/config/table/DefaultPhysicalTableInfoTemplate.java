@@ -13,7 +13,6 @@ import javax.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * Wiki physical table information template.
@@ -63,10 +62,8 @@ public class DefaultPhysicalTableInfoTemplate implements PhysicalTableInfoTempla
     ) {
         this.name = EnumUtils.camelCase(name);
         this.description = (Objects.isNull(description) ? "" : description);
-        this.metrics = (Objects.isNull(metrics) ?
-                Collections.emptyList() : metrics.stream()
-                .map(EnumUtils::camelCase)
-                .collect(Collectors.toList()));
+        this.metrics = !Objects.isNull(metrics) ?
+                metrics : Collections.emptyList();
         this.dimensions = !Objects.isNull(dimensions) ? dimensions : Collections.emptyList();
         this.granularity = (Objects.isNull(granularity) ?
                 DefaultTimeGrain.HOUR : DefaultTimeGrain.valueOf(granularity));

@@ -22,6 +22,7 @@
         <module>fili-generic-example</module>
         <module>fili-sql</module>
         <module>wiki-example-copy</module>
+        <module>SlurperConfig</module>
 
     </modules>
 

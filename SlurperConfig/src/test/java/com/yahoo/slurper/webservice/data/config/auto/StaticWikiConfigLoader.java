@@ -1,3 +1,5 @@
+// Copyright 2018 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.slurper.webservice.data.config.auto;
 
 import com.yahoo.bard.webservice.data.config.names.TableName;
@@ -13,6 +15,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
+/**
+ * Static configuration for Wikipedia.
+ */
 public class StaticWikiConfigLoader implements Supplier<List<? extends DataSourceConfiguration>> {
 
     public static DataSourceConfiguration getWikiDruidConfig() {

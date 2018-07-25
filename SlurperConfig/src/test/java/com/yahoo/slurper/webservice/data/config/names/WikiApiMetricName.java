@@ -1,3 +1,5 @@
+// Copyright 2018 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.slurper.webservice.data.config.names;
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR;
@@ -10,6 +12,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Hold the list of API metric names.
+ */
 public enum WikiApiMetricName implements ApiMetricName  {
     COUNT,
     ADDED,

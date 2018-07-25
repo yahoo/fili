@@ -10,7 +10,6 @@ import com.yahoo.bard.webservice.util.EnumUtils;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * Wiki metric template.
@@ -50,14 +49,12 @@ public class DefaultMetricTemplate implements MetricTemplate {
             @JsonProperty("description") String description,
             @JsonProperty("dependencyMetricNames") List<String> dependencyMetricNames
     ) {
-        this.apiName = EnumUtils.camelCase(apiName);
-        this.longName = (Objects.isNull(longName) ? EnumUtils.camelCase(apiName) : EnumUtils.camelCase(longName));
+        this.apiName = apiName;
+        this.longName = (Objects.isNull(longName) ? apiName : longName);
         this.makerName = EnumUtils.camelCase(makerName);
         this.description = (Objects.isNull(description) ? "" : description);
-        this.dependencyMetricNames = (Objects.isNull(dependencyMetricNames) ?
-                Collections.emptyList() : dependencyMetricNames.stream()
-                        .map(EnumUtils::camelCase)
-                        .collect(Collectors.toList()));
+        this.dependencyMetricNames = Objects.isNull(dependencyMetricNames) ?
+                Collections.emptyList() : dependencyMetricNames;
     }
 
     @Override

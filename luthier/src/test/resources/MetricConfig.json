@@ -2,16 +2,16 @@
   "metrics": [
     {
       "maker": "doubleSum",
-      "apiName": "ADDED",
-      "longName": "ADDED",
+      "apiName": "added",
+      "longName": "added",
       "dependencyMetricNames": [
-        "ADDED"
+        "added"
       ]
     },
     {
       "maker": "count",
-      "apiName": "COUNT",
-      "longName": "COUNT"
+      "apiName": "count",
+      "longName": "count"
     },
     {
       "maker": "aggregateAveragebyHour",
@@ -56,10 +56,10 @@
     },
     {
       "maker": "doubleSum",
-      "apiName": "DELTA",
-      "longName": "DELTA",
+      "apiName": "delta",
+      "longName": "delta",
       "dependencyMetricNames": [
-        "DELTA"
+        "delta"
       ]
     },
     {
@@ -81,10 +81,10 @@
     },
     {
       "maker": "doubleSum",
-      "apiName": "DELETED",
-      "longName": "DELETED",
+      "apiName": "deleted",
+      "longName": "deleted",
       "dependencyMetricNames": [
-        "DELETED"
+        "deleted"
       ]
     }
   ],

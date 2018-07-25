@@ -1,9 +1,14 @@
+// Copyright 2018 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.slurper.webservice.data.config.names;
 
 import com.yahoo.bard.webservice.data.config.names.FieldName;
 
 import java.util.Locale;
 
+/**
+ * Hold the list of raw Druid metric names.
+ */
 public enum WikiDruidMetricName implements FieldName {
     COUNT,
     ADDED,

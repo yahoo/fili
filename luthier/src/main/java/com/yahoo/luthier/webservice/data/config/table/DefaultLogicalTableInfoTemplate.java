@@ -60,10 +60,8 @@ public class DefaultLogicalTableInfoTemplate implements LogicalTableInfoTemplate
     ) {
         this.name = EnumUtils.camelCase(name);
         this.description = (Objects.isNull(description) ? "" : description);
-        this.apiMetrics = (Objects.isNull(apiMetrics) ?
-                Collections.emptyList() : apiMetrics.stream()
-                .map(EnumUtils::camelCase)
-                .collect(Collectors.toList()));
+        this.apiMetrics = Objects.isNull(apiMetrics) ?
+                Collections.emptyList() : apiMetrics;
         this.physicalTables = (Objects.isNull(physicalTables) ?
                 Collections.emptyList() : physicalTables.stream()
                 .map(EnumUtils::camelCase)

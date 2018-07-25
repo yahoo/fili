@@ -220,8 +220,8 @@ class TablesServletSpec extends Specification {
         List<String> metricNamesOne = ("count, added, delta, deleted").split(',').collect{ it.trim()}
         List<String> dimensionNamesTwo = ("comment, countryIsoCode, regionIsoCode, page, user, isUnpatrolled, isNew, isRobot, isAnonymous," +
                 " isMinor, namespace, channel, countryName, regionName, metroCode, cityName").split(',').collect { it.trim()}
-        List<String> metricNamesTwo = ("count, added, delta, deleted, averageaddedperhour, averagedeletedperhour," +
-                "plusavgaddeddeleted, minusaddeddelta, cardonpage, bigthetasketch").split(',').collect{ it.trim()}
+        List<String> metricNamesTwo = ("count, added, delta, deleted, averageAddedPerHour, averageDeletedPerHour," +
+                "plusAvgAddedDeleted, MinusAddedDelta, cardOnPage, bigThetaSketch").split(',').collect{ it.trim()}
 
         String expectedResponseOne = """{
                                         "availableIntervals":[],

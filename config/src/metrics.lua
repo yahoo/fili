@@ -65,10 +65,10 @@ metrics_utils.add_makers(COMPLEX_MAKERS, maker_dict)
 -- metric's name = {longName, description, maker, dependency metrics}
 M.metrics = metrics_utils.generate_metrics(
     {
-        COUNT = {nil, nil, maker_dict.count, nil},
-        ADDED = {nil, nil, maker_dict.doubleSum, {"ADDED"}},
-        DELTA = {nil, nil, maker_dict.doubleSum, {"DELTA"}},
-        DELETED = {nil, nil, maker_dict.doubleSum, {"DELETED"}},
+        count = {nil, nil, maker_dict.count, nil},
+        added = {nil, nil, maker_dict.doubleSum, {"added"}},
+        delta = {nil, nil, maker_dict.doubleSum, {"delta"}},
+        deleted = {nil, nil, maker_dict.doubleSum, {"deleted"}},
         averageAddedPerHour = {nil, nil, maker_dict.aggregateAveragebyHour, {"added"}},
         averageDeletedPerHour = {nil, nil, maker_dict.aggregateAveragebyHour, {"deleted"}},
         plusAvgAddedDeleted = {nil, nil, maker_dict.arithmeticPLUS, {"averageAddedPerHour", "averageDeletedPerHour"}},

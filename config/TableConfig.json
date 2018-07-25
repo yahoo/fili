@@ -1,45 +1,14 @@
 {
-  "logicalTables": [
+  "physicalTables": [
     {
-      "physicalTables": [
-        "wikiticker"
-      ],
-      "name": "WIKIPEDIA",
-      "dimensions": [
-        "comment",
-        "countryIsoCode",
-        "regionIsoCode",
-        "page",
-        "user",
-        "isUnpatrolled",
-        "isNew",
-        "isRobot",
-        "isAnonymous",
-        "isMinor",
-        "namespace",
-        "channel",
-        "countryName",
-        "regionName",
-        "metroCode",
-        "cityName"
-      ],
-      "granularity": [
-        "ALL",
-        "HOUR",
-        "DAY"
-      ],
-      "apiMetricNames": [
-        "count",
+      "metrics": [
         "added",
         "delta",
-        "deleted"
-      ]
-    },
-    {
-      "physicalTables": [
-        "wikiticker"
+        "deleted",
+        "count"
       ],
-      "name": "logicalTableTesterOne",
+      "name": "wikiticker",
+      "granularity": "HOUR",
       "dimensions": [
         "comment",
         "countryIsoCode",
@@ -57,6 +26,14 @@
         "regionName",
         "metroCode",
         "cityName"
+      ]
+    }
+  ],
+  "logicalTables": [
+    {
+      "name": "logicalTableTesterOne",
+      "physicalTables": [
+        "wikiticker"
       ],
       "granularity": [
         "ALL",
@@ -74,17 +51,7 @@
         "MinusAddedDelta",
         "cardOnPage",
         "bigThetaSketch"
-      ]
-    }
-  ],
-  "physicalTables": [
-    {
-      "metrics": [
-        "added",
-        "delta",
-        "deleted"
       ],
-      "name": "wikiticker",
       "dimensions": [
         "comment",
         "countryIsoCode",
@@ -102,8 +69,42 @@
         "regionName",
         "metroCode",
         "cityName"
+      ]
+    },
+    {
+      "name": "WIKIPEDIA",
+      "physicalTables": [
+        "wikiticker"
       ],
-      "granularity": "HOUR"
+      "granularity": [
+        "ALL",
+        "HOUR",
+        "DAY"
+      ],
+      "apiMetricNames": [
+        "count",
+        "added",
+        "delta",
+        "deleted"
+      ],
+      "dimensions": [
+        "comment",
+        "countryIsoCode",
+        "regionIsoCode",
+        "page",
+        "user",
+        "isUnpatrolled",
+        "isNew",
+        "isRobot",
+        "isAnonymous",
+        "isMinor",
+        "namespace",
+        "channel",
+        "countryName",
+        "regionName",
+        "metroCode",
+        "cityName"
+      ]
     }
   ]
 }
