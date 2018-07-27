@@ -6,19 +6,24 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR
 import static com.yahoo.slurper.webservice.data.config.names.WikiDruidTableName.WIKITICKER
 
+import com.yahoo.bard.webservice.data.config.dimension.TypeAwareDimensionLoader
+import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig
-import com.yahoo.bard.webservice.data.config.dimension.KeyValueStoreDimensionLoader
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
-import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.LogicalTableDictionary
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 import com.yahoo.bard.webservice.table.TableIdentifier
+import com.yahoo.luthier.webservice.data.config.ExternalConfigLoader
+import com.yahoo.luthier.webservice.data.config.dimension.ExternalDimensionsLoader
+import com.yahoo.luthier.webservice.data.config.metric.ExternalMetricsLoader
+import com.yahoo.luthier.webservice.data.config.table.ExternalTableLoader
+import com.yahoo.slurper.webservice.data.config.dimension.DimensionSerializer
+import com.yahoo.slurper.webservice.data.config.metric.MetricSerializer
+import com.yahoo.slurper.webservice.data.config.table.TableSerializer
 import com.yahoo.slurper.webservice.data.config.auto.StaticWikiConfigLoader
-import com.yahoo.slurper.webservice.data.config.dimension.GenericDimensionConfigs
-import com.yahoo.slurper.webservice.data.config.metric.GenericMetricLoader
-import com.yahoo.slurper.webservice.data.config.table.GenericTableLoader
+import com.fasterxml.jackson.databind.ObjectMapper
 
 import spock.lang.Shared
 import spock.lang.Specification
@@ -34,13 +39,54 @@ class ConfigurationLoadTaskSpec extends Specification {
 
     def setupSpec() {
         StaticWikiConfigLoader wikiConfigLoader = new StaticWikiConfigLoader()
-        GenericDimensionConfigs genericDimensions = new GenericDimensionConfigs(wikiConfigLoader)
-        LinkedHashSet<DimensionConfig> dimensions = genericDimensions.
-                getAllDimensionConfigurations()
+
+        final EXTERNAL_CONFIG_FILE_PATH  = "src/test/resources/"
+        final ExternalConfigLoader externalConfigLoader = new ExternalConfigLoader()
+
+        DimensionSerializer dimensionSerializer = new DimensionSerializer(new ObjectMapper());
+
+        dimensionSerializer
+                .setConfig(wikiConfigLoader)
+                .setPath( EXTERNAL_CONFIG_FILE_PATH)
+                .parseToJson()
+
+        MetricSerializer metricSerializer = new MetricSerializer(new ObjectMapper());
+
+        metricSerializer
+                .setConfig(wikiConfigLoader)
+                .setPath(EXTERNAL_CONFIG_FILE_PATH)
+                .parseToJson()
+
+        TableSerializer TableSerializer = new TableSerializer(new ObjectMapper());
+
+        TableSerializer
+                .setDimensions(dimensionSerializer)
+                .setMetrics(metricSerializer)
+                .setConfig(wikiConfigLoader)
+                .setPath(EXTERNAL_CONFIG_FILE_PATH)
+                .parseToJson()
+
+        ExternalDimensionsLoader externalDimensionsLoader = new ExternalDimensionsLoader(
+                externalConfigLoader,
+                EXTERNAL_CONFIG_FILE_PATH
+        )
+
+        LinkedHashSet<DimensionConfig> dimensions = externalDimensionsLoader.getAllDimensionConfigurations()
+
+        ExternalTableLoader tablesLoader = new ExternalTableLoader(
+                new TestDataSourceMetadataService(),
+                externalDimensionsLoader,
+                externalConfigLoader,
+                EXTERNAL_CONFIG_FILE_PATH
+        )
+
         loader = new ConfigurationLoader(
-                new KeyValueStoreDimensionLoader(dimensions),
-                new GenericMetricLoader(wikiConfigLoader),
-                new GenericTableLoader(wikiConfigLoader, genericDimensions, new DataSourceMetadataService())
+                new TypeAwareDimensionLoader(dimensions),
+                new ExternalMetricsLoader(
+                        externalConfigLoader,
+                        EXTERNAL_CONFIG_FILE_PATH
+                ),
+                tablesLoader
         )
         loader.load()
 

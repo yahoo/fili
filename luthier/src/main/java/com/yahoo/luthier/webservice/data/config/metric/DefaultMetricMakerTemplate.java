@@ -41,7 +41,7 @@ public class DefaultMetricMakerTemplate implements MetricMakerTemplate {
      */
     public DefaultMetricMakerTemplate(
             @NotNull @JsonProperty("name") String name,
-            @NotNull @JsonProperty("class") String classPath,
+            @NotNull @JsonProperty("classPath") String classPath,
             @JsonProperty("params") Map<String, String> parameters
     ) {
         this.name = name;

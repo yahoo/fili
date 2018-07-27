@@ -1,12 +1,15 @@
 // Copyright 2018 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.slurper.webservice;
+package com.yahoo.slurper.webservice.data.config.dimension;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yahoo.bard.webservice.data.config.dimension.DefaultDimensionField;
+import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
+import com.yahoo.bard.webservice.metadata.DataSourceMetadata;
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.util.Utils;
-import com.yahoo.slurper.webservice.data.config.DimensionObject;
+import com.yahoo.slurper.webservice.ExternalConfigSerializer;
 import com.yahoo.slurper.webservice.data.config.auto.DataSourceConfiguration;
 
 import java.util.*;
@@ -19,6 +22,8 @@ import java.util.stream.Collectors;
 public class DimensionSerializer extends ExternalConfigSerializer {
 
     private Map<String, Set<DimensionObject>> config = new HashMap<>();
+    private Map<String, Set<String>> tableToDimensionNames = new HashMap<>();
+    private DataSourceMetadataService metadataService;
     private String path;
 
     /**
@@ -31,7 +36,7 @@ public class DimensionSerializer extends ExternalConfigSerializer {
     }
 
     /**
-     * Constructor.
+     * Set dimension configs into config for parsing to json.
      *
      * @param configLoader Supplies DataSourceConfigurations to build the dimensions from.
      *
@@ -40,6 +45,10 @@ public class DimensionSerializer extends ExternalConfigSerializer {
     public DimensionSerializer setConfig(
             Supplier<List<? extends DataSourceConfiguration>> configLoader
     ) {
+
+        config.put("dimensions", new HashSet<>());
+        metadataService = new DataSourceMetadataService();
+
         configLoader.get()
                 .forEach(dataSourceConfiguration -> {
                     Set<DimensionObject> dimensionObjects = dataSourceConfiguration.getDimensions().stream()
@@ -56,7 +65,24 @@ public class DimensionSerializer extends ExternalConfigSerializer {
                                             Collectors.toSet(),
                                             Collections::unmodifiableSet
                                     ));
-                    config.put("dimensions", dimensionObjects);
+
+                    tableToDimensionNames.put(
+                            dataSourceConfiguration.getTableName().asName(),
+                            dimensionObjects.stream()
+                                    .map(DimensionObject::getApiName)
+                            .collect(Collectors.toSet())
+                            );
+
+                    metadataService.update(
+                            DataSourceName.of(dataSourceConfiguration.getName()),
+                            new DataSourceMetadata(
+                                    dataSourceConfiguration.getName(),
+                                    Collections.emptyMap(),
+                                    dataSourceConfiguration.getDataSegments()
+                            )
+                    );
+
+                    config.get("dimensions").addAll(dimensionObjects);
                 });
 
         return this;
@@ -70,8 +96,19 @@ public class DimensionSerializer extends ExternalConfigSerializer {
      * @return DimensionSerializer
      */
     public DimensionSerializer setPath(String path) {
-        this.path = path;
+        this.path = path + "DimensionConfig.json";
         return this;
+    }
+
+    /**
+     * Returns all dimension configurations of a particular data source.
+     *
+     * @param dataSourceName  Name of the data source
+     *
+     * @return all dimension names of the particular data source
+     */
+    public Set<String> getDimensionConfigs(String dataSourceName) {
+        return tableToDimensionNames.getOrDefault(dataSourceName, Collections.emptySet());
     }
 
     /**
@@ -80,6 +117,15 @@ public class DimensionSerializer extends ExternalConfigSerializer {
      */
     public void parseToJson() {
         super.parse(config, path);
+    }
+
+    /**
+     * Get metaDataService.
+     *
+     * @return metaDataService
+     */
+    public DataSourceMetadataService getMetadataService() {
+        return metadataService;
     }
 
     /**

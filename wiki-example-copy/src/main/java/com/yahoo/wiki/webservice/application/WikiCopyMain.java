@@ -31,7 +31,7 @@ import java.util.concurrent.ExecutionException;
  */
 public class WikiCopyMain {
     private static final Logger LOG = LoggerFactory.getLogger(WikiCopyMain.class);
-    private static final String EXTERNAL_CONFIG_FILE_PATH  = System.getProperty("user.dir") + "/config/";
+    private static final String EXTERNAL_CONFIG_FILE_PATH  = System.getProperty("user.dir") + "/config/external/";
     private static ExternalConfigLoader externalConfigLoader = new ExternalConfigLoader();
 
     /**

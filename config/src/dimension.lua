@@ -52,6 +52,6 @@ DIMENSIONS = {
 }
 
 dimension_utils.add_dimensions(DIMENSIONS, M.dimensions)
-parser.save("../DimensionConfig.json", M)
+parser.save("../external/DimensionConfig.json", M)
 
 return M

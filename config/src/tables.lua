@@ -14,7 +14,7 @@ local M = {
 -------------------------------------------------------------------------------
 
 DEFAULT = {
-    ALL_DIM = {
+    WIKI_DIM = {
         "comment",
         "countryIsoCode",
         "regionIsoCode",
@@ -31,6 +31,21 @@ DEFAULT = {
         "regionName",
         "metroCode",
         "cityName"
+    },
+    AIR_DIM = {
+        "PT08.S2(NMHC)",
+        "PT08.S4(NO2)",
+        "NO2(GT)",
+        "C6H6(GT)",
+        "PT08.S1(CO)",
+        "NOx(GT)",
+        "RH",
+        "AH",
+        "NMHC(GT)",
+        "T",
+        "PT08.S3(NOx)",
+        "PT08.S5(O3)",
+        "CO(GT)"
     },
     ALL_METRICS ={
         "count",
@@ -52,7 +67,8 @@ DEFAULT = {
 
 -- table name = {description, metrics, dimensions, granuality}
 PHYSICALTABLES = {
-    wikiticker = {nil, {"added", "delta", "deleted"}, DEFAULT.ALL_DIM, "HOUR"}
+    wikiticker = {nil, {"added", "delta", "deleted"}, DEFAULT.WIKI_DIM, "HOUR" },
+    air = {nil, {"CO", "NO2", "Temp", "relativeHumidity", "absoluteHumidity"}, DEFAULT.AIR_DIM, "HOUR" }
 }
 
 -------------------------------------------------------------------------------
@@ -61,11 +77,12 @@ PHYSICALTABLES = {
 
 -- table name = {description, metrics, dimensions, granuality, physicaltable}
 LOGICALTABLES = {
-    WIKIPEDIA = {nil, {"count", "added", "delta", "deleted"}, DEFAULT.ALL_DIM, {"ALL", "HOUR", "DAY"}, {"wikiticker"}},
-    logicalTableTesterOne = {nil, DEFAULT.ALL_METRICS, DEFAULT.ALL_DIM, {"ALL", "HOUR", "DAY"}, {"wikiticker"}}
+    WIKIPEDIA = {nil, {"count", "added", "delta", "deleted"}, DEFAULT.WIKI_DIM, {"ALL", "HOUR", "DAY"}, {"wikiticker"}},
+    logicalTableTesterOne = {nil, DEFAULT.ALL_METRICS, DEFAULT.WIKI_DIM, {"ALL", "HOUR", "DAY"}, {"wikiticker"}},
+    air_logical = {nil, {"COM", "NO2M", "Temp", "AHM", "RHM"}, DEFAULT.AIR_DIM, {"ALL", "HOUR", "DAY"}, {"air"}}
 }
 
 table_utils.add_phy_tables(PHYSICALTABLES, M.physicalTables)
 table_utils.add_log_tables(LOGICALTABLES, M.logicalTables)
 
-parser.save("../TableConfig.json", M)
+parser.save("../external/TableConfig.json", M)

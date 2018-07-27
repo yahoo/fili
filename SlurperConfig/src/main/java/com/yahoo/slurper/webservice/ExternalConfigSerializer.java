@@ -19,7 +19,7 @@ public class ExternalConfigSerializer {
      *
      * @param mapper object mapper
      */
-    ExternalConfigSerializer(ObjectMapper mapper) {
+    public ExternalConfigSerializer(ObjectMapper mapper) {
         this.objectMapper = mapper;
     }
 

@@ -7,12 +7,14 @@ import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
+import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.data.config.names.FieldName;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.config.table.BaseTableLoader;
 import com.yahoo.bard.webservice.data.config.table.ConcretePhysicalTableDefinition;
 import com.yahoo.bard.webservice.data.config.table.PhysicalTableDefinition;
 import com.yahoo.bard.webservice.data.time.Granularity;
+import com.yahoo.bard.webservice.metadata.DataSourceMetadata;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.luthier.webservice.data.config.ExternalConfigLoader;
@@ -137,6 +139,7 @@ public class ExternalTableLoader extends BaseTableLoader {
 
                 // Add all physical metrics to druidMetrics
                 druidMetrics.addAll(physicalMetrics);
+
             });
 
             // Update tableDefinitions and validGrains

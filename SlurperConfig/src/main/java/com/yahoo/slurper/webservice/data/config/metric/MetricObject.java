@@ -1,6 +1,8 @@
 // Copyright 2018 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.slurper.webservice.data.config;
+package com.yahoo.slurper.webservice.data.config.metric;
+
+import com.yahoo.slurper.webservice.data.config.JsonObject;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -8,7 +10,7 @@ import java.util.List;
 /**
  * Metric object for parsing to json.
  */
-public class MetricObject {
+public class MetricObject extends JsonObject {
 
     private final String apiName;
     private final String longName;
@@ -27,7 +29,7 @@ public class MetricObject {
     public MetricObject(
             @NotNull String apiName,
             String longName,
-            String maker,
+            @NotNull String maker,
             List<String> dependencyMetricNames
     )  {
         this.apiName = apiName;
@@ -56,9 +58,9 @@ public class MetricObject {
     }
 
     /**
-     * Get the maker.
+     * Get the maker this metric depends on.
      *
-     * @return maker
+     * @return maker this metric depends on
      */
     public String getMaker() {
         return maker;

@@ -22,7 +22,7 @@ function M.add_makers(makers, t)
     for name, maker in pairs(makers) do
         t[name] = {
             name = maker.name or name,
-            class = maker.class or maker[1],
+            classPath = maker.classPath or maker[1],
             params = maker.params or maker[2]
         }
     end
@@ -36,7 +36,7 @@ function M.insert_makers_into_table(makers, t)
     for name, maker in pairs(makers) do
         table.insert(t, {
             name = name,
-            class = maker.class,
+            classPath = maker.classPath,
             params = maker.params
         })
     end
@@ -99,7 +99,7 @@ function M.generate_maker(baseName, baseClass, params_and_suffix)
 
     for index, maker_info in pairs(r) do
         makers[baseName .. maker_info.suffix] = {
-            class = baseClass,
+            classPath = baseClass,
             params = maker_info.params
         }
     end
@@ -157,7 +157,7 @@ function generate_maker_name(maker)
         name = name.."."..key
         name = name.."."..val
     end
-    M.cache_makers[name] = {class = maker[1], params = maker[2]}
+    M.cache_makers[name] = {classPath = maker[1], params = maker[2]}
     return name
 end
 

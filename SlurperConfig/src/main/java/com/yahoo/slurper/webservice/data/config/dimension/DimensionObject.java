@@ -1,8 +1,9 @@
 // Copyright 2018 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.slurper.webservice.data.config;
+package com.yahoo.slurper.webservice.data.config.dimension;
 
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
+import com.yahoo.slurper.webservice.data.config.JsonObject;
 
 import javax.validation.constraints.NotNull;
 import java.util.LinkedHashSet;
@@ -10,7 +11,7 @@ import java.util.LinkedHashSet;
 /**
  * Dimension object for parsing to json.
  */
-public class DimensionObject {
+public class DimensionObject extends JsonObject {
 
     private final String apiName;
     private final String physicalName;

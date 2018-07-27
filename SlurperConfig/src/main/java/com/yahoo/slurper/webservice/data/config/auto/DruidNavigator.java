@@ -65,7 +65,6 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
             loadAllDatasources();
             LOG.info("Loading all datasources");
         }
-
         return tableConfigurations;
     }
 

@@ -99,6 +99,11 @@
             <artifactId>fili-core</artifactId>
             <version>0.10-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>org.asynchttpclient</groupId>
+            <artifactId>async-http-client</artifactId>
+            <version>2.0.24</version>
+        </dependency>
 
     </dependencies>
 

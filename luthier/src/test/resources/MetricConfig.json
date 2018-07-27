@@ -91,103 +91,103 @@
   "makers": [
     {
       "name": "aggregateAveragebyHour",
-      "class": "com.yahoo.bard.webservice.data.config.metric.makers.AggregationAverageMaker",
+      "classPath": "com.yahoo.bard.webservice.data.config.metric.makers.AggregationAverageMaker",
       "params": {
         "innerGrain": "HOUR"
       }
     },
     {
       "name": "arithmeticMULTIPLY",
-      "class": "com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker",
+      "classPath": "com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker",
       "params": {
         "function": "MULTIPLY"
       }
     },
     {
       "name": "arithmeticDIVIDE",
-      "class": "com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker",
+      "classPath": "com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker",
       "params": {
         "function": "DIVIDE"
       }
     },
     {
       "name": "arithmeticMINUS",
-      "class": "com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker",
+      "classPath": "com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker",
       "params": {
         "function": "MINUS"
       }
     },
     {
       "name": "com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker.sketchSize.4096",
-      "class": "com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker",
+      "classPath": "com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker",
       "params": {
         "sketchSize": "4096"
       }
     },
     {
       "name": "ThetaSketchSmall",
-      "class": "com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker",
+      "classPath": "com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker",
       "params": {
         "sketchSize": "1024"
       }
     },
     {
       "name": "ThetaSketchMedium",
-      "class": "com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker",
+      "classPath": "com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker",
       "params": {
         "sketchSize": "2048"
       }
     },
     {
       "name": "aggregateAveragebyDay",
-      "class": "com.yahoo.bard.webservice.data.config.metric.makers.AggregationAverageMaker",
+      "classPath": "com.yahoo.bard.webservice.data.config.metric.makers.AggregationAverageMaker",
       "params": {
         "innerGrain": "DAY"
       }
     },
     {
       "name": "cardinalbyColumn",
-      "class": "com.yahoo.bard.webservice.data.config.metric.makers.CardinalityMaker",
+      "classPath": "com.yahoo.bard.webservice.data.config.metric.makers.CardinalityMaker",
       "params": {
         "byRow": "false"
       }
     },
     {
       "name": "cardinalbyRow",
-      "class": "com.yahoo.bard.webservice.data.config.metric.makers.CardinalityMaker",
+      "classPath": "com.yahoo.bard.webservice.data.config.metric.makers.CardinalityMaker",
       "params": {
         "byRow": "true"
       }
     },
     {
       "name": "ThetaSketchBig",
-      "class": "com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker",
+      "classPath": "com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker",
       "params": {
         "sketchSize": "4096"
       }
     },
     {
       "name": "arithmeticPLUS",
-      "class": "com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker",
+      "classPath": "com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker",
       "params": {
         "function": "PLUS"
       }
     },
     {
       "name": "count",
-      "class": "com.yahoo.bard.webservice.data.config.metric.makers.CountMaker"
+      "classPath": "com.yahoo.bard.webservice.data.config.metric.makers.CountMaker"
     },
     {
       "name": "doubleSum",
-      "class": "com.yahoo.bard.webservice.data.config.metric.makers.DoubleSumMaker"
+      "classPath": "com.yahoo.bard.webservice.data.config.metric.makers.DoubleSumMaker"
     },
     {
       "name": "constant",
-      "class": "com.yahoo.bard.webservice.data.config.metric.makers.ConstantMaker"
+      "classPath": "com.yahoo.bard.webservice.data.config.metric.makers.ConstantMaker"
     },
     {
       "name": "longSum",
-      "class": "com.yahoo.bard.webservice.data.config.metric.makers.LongSumMaker"
+      "classPath": "com.yahoo.bard.webservice.data.config.metric.makers.LongSumMaker"
     }
   ]
 }
