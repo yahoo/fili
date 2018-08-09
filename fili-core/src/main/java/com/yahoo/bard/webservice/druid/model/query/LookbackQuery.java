@@ -266,7 +266,20 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
 
     @Override
     public LookbackQuery withIntervals(Collection<Interval> intervals) {
-        return withDataSource(new QueryDataSource(getInnerQueryUnchecked().withIntervals(intervals)));
+        return new LookbackQuery(
+                new QueryDataSource(getInnerQueryUnchecked().withIntervals(intervals)),
+                granularity,
+                filter,
+                aggregations,
+                postAggregations,
+                intervals,
+                context,
+                true,
+                lookbackOffsets,
+                lookbackPrefixes,
+                having,
+                limitSpec
+        );
     }
 
     @Override

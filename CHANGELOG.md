@@ -38,6 +38,9 @@ pull request if there was one.
 
 ### Changed:
 
+- [Bumping query id inside withIntervals of LookBackQuery](https://github.com/yahoo/fili/issues/756)
+    * Returning a new `LookBackQuery` with `doFork` set to `true` which bumps query id inside `withIntervals` method.
+
 - [Change to ordered data structures for ApiRequestImpls](https://github.com/yahoo/fili/issues/753)
     * Change Set<foo> to LinkedHashSet<foo> in most ApiRequestImpl getters
     * Change Set<Interval> to List<Interval> in ApiRequests
