@@ -7,7 +7,7 @@ pull request if there was one.
 
 ### Added:
 
-- [Bumping query id inside withIntervals of LookBackQuery](https://github.com/yahoo/fili/issues/756)
+- [Adding withDoFork to LookBackQuery](https://github.com/yahoo/fili/issues/756)
     * Added `withDoFork` to `LookBackQuery` class.    
     
 -- [An injection point for customizing the WebLoggingFilter to use during tests](https://github.com/yahoo/fili/pull/749)
