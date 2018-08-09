@@ -7,6 +7,9 @@ pull request if there was one.
 
 ### Added:
 
+- [Bumping query id inside withIntervals of LookBackQuery](https://github.com/yahoo/fili/issues/756)
+    * Added `withDoFork` to `LookBackQuery` class.    
+    
 -- [An injection point for customizing the WebLoggingFilter to use during tests](https://github.com/yahoo/fili/pull/749)
     * Extend `JerseyTestBinder` and override `getLoggingFilter`.
 
@@ -37,9 +40,6 @@ pull request if there was one.
     * Add missing tests to `Utils` class.
 
 ### Changed:
-
-- [Bumping query id inside withIntervals of LookBackQuery](https://github.com/yahoo/fili/issues/756)
-    * Returning a new `LookBackQuery` with `doFork` set to `true` which bumps query id inside `withIntervals` method.
 
 - [Change to ordered data structures for ApiRequestImpls](https://github.com/yahoo/fili/issues/753)
     * Change Set<foo> to LinkedHashSet<foo> in most ApiRequestImpl getters
