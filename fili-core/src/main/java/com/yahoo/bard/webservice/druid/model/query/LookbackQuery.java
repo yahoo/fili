@@ -310,6 +310,10 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
     public LookbackQuery withLookbackOffsets(List<Period> lookbackOffsets) {
         return new LookbackQuery(dataSource, granularity, filter, aggregations, postAggregations, intervals, context, false, lookbackOffsets, lookbackPrefixes, having, limitSpec);
     }
+
+    public LookbackQuery withDoFork(boolean doFork) {
+        return new LookbackQuery(dataSource, granularity, filter, aggregations, postAggregations, intervals, context, doFork, lookbackOffsets, lookbackPrefixes, having, limitSpec);
+    }
     // CHECKSTYLE:ON
 
     /**

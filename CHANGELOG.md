@@ -7,6 +7,9 @@ pull request if there was one.
 
 ### Added:
 
+- [Adding withDoFork to LookBackQuery](https://github.com/yahoo/fili/issues/756)
+    * Added `withDoFork` to `LookBackQuery` class.    
+    
 -- [An injection point for customizing the WebLoggingFilter to use during tests](https://github.com/yahoo/fili/pull/749)
     * Extend `JerseyTestBinder` and override `getLoggingFilter`.
 
