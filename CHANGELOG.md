@@ -7,6 +7,10 @@ pull request if there was one.
 
 ### Added:
 
+- [Move off BaseCompositePhysicalTable inheritance usage](https://github.com/yahoo/fili/pull/748)
+    * Added builder methods to `MetricUnionAvailability` and `PartitionAvailability` to save on needing to add
+      additional table classes.
+
 - [Adding withDoFork to LookBackQuery](https://github.com/yahoo/fili/issues/756)
     * Added `withDoFork` to `LookBackQuery` class.    
     
@@ -96,7 +100,6 @@ pull request if there was one.
 
 - [Deprecate `PartitionCompositeTable` and `MetricUnionCompositeTable`](https://github.com/yahoo/fili/pull/745)
     * Two simple implementations of `BaseCompositePhysicalTable` (`PartitionCompositeTable` and `MetricUnionCompositeTable`) are now deprecated. Instead, the availabilities for these tables should be created directly and passed in to `BaseCompositePhysicalTable`.  
-
 
 ### Fixed:
 
