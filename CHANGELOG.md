@@ -7,7 +7,7 @@ pull request if there was one.
 
 ### Added:
 
-- [Move off BaseCompositePhysicalTable inheritance usage](https://github.com/yahoo/fili/issues/747)
+- [Move off BaseCompositePhysicalTable inheritance usage](https://github.com/yahoo/fili/pull/748)
     * Added builder methods to `MetricUnionAvailability` and `PartitionAvailability` to save on needing to add
       additional table classes.
 
