@@ -3,39 +3,34 @@
 package com.yahoo.bard.webservice.web.endpoints;
 
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.UPDATED_METADATA_COLLECTION_NAMES;
-import static java.util.AbstractMap.SimpleImmutableEntry;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.OK;
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.data.time.GranularityParser;
+import com.yahoo.bard.webservice.exception.MetadataExceptionHandler;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.TableRequest;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.table.resolver.QueryPlanningConstraint;
 import com.yahoo.bard.webservice.util.TableUtils;
-import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.RequestMapper;
-import com.yahoo.bard.webservice.web.RequestValidationException;
 import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.TableFullViewProcessor;
-import com.yahoo.bard.webservice.web.TableView;
-import com.yahoo.bard.webservice.web.apirequest.TablesApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.TablesApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.TablesApiRequestImpl;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 
 import com.codahale.metrics.annotation.Timed;
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -43,8 +38,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -77,6 +72,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
     private final RequestMapper requestMapper;
     private final GranularityParser granularityParser;
     private final ResponseFormatResolver formatResolver;
+    private final MetadataExceptionHandler exceptionHandler;
 
     /**
      * Constructor.
@@ -86,6 +82,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
      * @param objectMappers  JSON tools
      * @param granularityParser  Helper for parsing granularities
      * @param formatResolver  The formatResolver for determining correct response format
+     * @param exceptionHandler  Injection point for handling response exceptions
      */
     @Inject
     public TablesServlet(
@@ -93,13 +90,15 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             @Named(TablesApiRequest.REQUEST_MAPPER_NAMESPACE) RequestMapper requestMapper,
             ObjectMappersSuite objectMappers,
             GranularityParser granularityParser,
-            ResponseFormatResolver formatResolver
+            ResponseFormatResolver formatResolver,
+            @Named(TablesApiRequest.EXCEPTION_HANDLER_NAMESPACE) MetadataExceptionHandler exceptionHandler
     ) {
         super(objectMappers);
         this.resourceDictionaries = resourceDictionaries;
         this.requestMapper = requestMapper;
         this.granularityParser = granularityParser;
         this.formatResolver = formatResolver;
+        this.exceptionHandler = exceptionHandler;
     }
 
     /**
@@ -132,7 +131,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
         if (format != null && format.toLowerCase(Locale.ENGLISH).equals("fullview")) {
             return getTablesFullView(perPage, page, uriInfo, containerRequestContext);
         } else {
-            return getTable(null, perPage, page, format, uriInfo, containerRequestContext);
+            return getTable(null, perPage, page, format, containerRequestContext);
         }
     }
 
@@ -144,7 +143,6 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
      * @param perPage  number of values to return per page
      * @param page  the page to start from
      * @param format  The name of the output format type
-     * @param uriInfo  UriInfo of the request
      * @param containerRequestContext  The context of data provided by the Jersey container for this request
      *
      * @return The list of grain-specific logical tables
@@ -164,21 +162,20 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @QueryParam("format") String format,
-            @Context UriInfo uriInfo,
             @Context final ContainerRequestContext containerRequestContext
     ) {
-        Supplier<Response> responseSender;
+        TablesApiRequestImpl tablesApiRequestImpl = null;
+        UriInfo uriInfo = containerRequestContext.getUriInfo();
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new TableRequest(tableName != null ? tableName : "all", "all"));
 
-            TablesApiRequestImpl tablesApiRequestImpl = new TablesApiRequestImpl(
+            tablesApiRequestImpl = new TablesApiRequestImpl(
                     tableName,
                     null,
                     formatResolver.apply(format, containerRequestContext),
                     perPage,
                     page,
-                    uriInfo,
                     this
             );
 
@@ -189,42 +186,35 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                 );
             }
 
-            Stream<Map<String, String>> result = tablesApiRequestImpl.getPage(
-                    getLogicalTableListSummaryView(tablesApiRequestImpl.getTables(), uriInfo)
-            );
-
-            Response response = formatResponse(
+            Response response = paginateAndFormatResponse(
                     tablesApiRequestImpl,
-                    result,
+                    containerRequestContext,
+                    getLogicalTableListSummaryView(tablesApiRequestImpl.getTables(), uriInfo),
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "tables" : "rows",
                     null
             );
             LOG.debug("Tables Endpoint Response: {}", response.getEntity());
-            responseSender = () -> response;
-        } catch (RequestValidationException e) {
-            LOG.debug(e.getMessage(), e);
-            responseSender = () -> Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
-        } catch (Error | Exception e) {
-            String msg = ErrorMessageFormat.REQUEST_PROCESSING_EXCEPTION.format(e.getMessage());
-            LOG.info(msg, e);
-            responseSender = () -> Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
+            return response;
+        } catch (Throwable t) {
+            return exceptionHandler.handleThrowable(
+                    t,
+                    Optional.ofNullable(tablesApiRequestImpl),
+                    containerRequestContext
+            );
         } finally {
             RequestLog.stopTiming(this);
         }
-
-        return responseSender.get();
     }
 
     /**
      * Get <b>unconstrained</b> logical table details for a grain-specific logical table.
      * <p>
      * See {@link
-     * #getTableByGrainAndConstraint(String, String, List, String, String, String, UriInfo, ContainerRequestContext)}
+     * #getTableByGrainAndConstraint(String, String, List, String, String, String, ContainerRequestContext)}
      * for getting <b>constrained</b> logical table details
      *
      * @param tableName  Logical table name (part of the logical table ID)
      * @param grain  Logical table grain (part of the logical table ID)
-     * @param uriInfo  UriInfo of the request
      * @param containerRequestContext  The context of data provided by the Jersey container for this request
      *
      * @return The grain-specific logical table
@@ -239,21 +229,20 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
     public Response getTableByGrain(
             @PathParam("tableName") String tableName,
             @PathParam("granularity") String grain,
-            @Context UriInfo uriInfo,
             @Context final ContainerRequestContext containerRequestContext
     ) {
-        Supplier<Response> responseSender;
+        TablesApiRequestImpl tablesApiRequestImpl = null;
+        UriInfo uriInfo = containerRequestContext.getUriInfo();
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new TableRequest(tableName, grain));
 
-            TablesApiRequestImpl tablesApiRequestImpl = new TablesApiRequestImpl(
+            tablesApiRequestImpl = new TablesApiRequestImpl(
                     tableName,
                     grain,
                     null,
                     "",
                     "",
-                    uriInfo,
                     this
             );
 
@@ -267,23 +256,16 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             Map<String, Object> result = getLogicalTableFullView(tablesApiRequestImpl.getTable(), uriInfo);
             String output = objectMappers.getMapper().writeValueAsString(result);
             LOG.debug("Tables Endpoint Response: {}", output);
-            responseSender = () ->  Response.status(Response.Status.OK).entity(output).build();
-        } catch (RequestValidationException e) {
-            LOG.debug(e.getMessage(), e);
-            responseSender = () ->   Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
-        } catch (JsonProcessingException e) {
-            String msg = ErrorMessageFormat.INTERNAL_SERVER_ERROR_ON_JSON_PROCESSING.format(e.getMessage());
-            LOG.error(msg, e);
-            responseSender = () -> Response.status(INTERNAL_SERVER_ERROR).entity(msg).build();
-        } catch (Error | Exception e) {
-            String msg = ErrorMessageFormat.REQUEST_PROCESSING_EXCEPTION.format(e.getMessage());
-            LOG.info(msg, e);
-            responseSender = () -> Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
+            return Response.status(Response.Status.OK).entity(output).build();
+        } catch (Throwable t) {
+            return exceptionHandler.handleThrowable(
+                    t,
+                    Optional.ofNullable(tablesApiRequestImpl),
+                    containerRequestContext
+            );
         } finally {
             RequestLog.stopTiming(this);
         }
-
-        return responseSender.get();
     }
 
     /**
@@ -311,7 +293,6 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
      * @param metrics  Requested list of metrics (e.g. myMetric)
      * @param intervals  Requested list of intervals. This is a required
      * @param filters  Requested list of filters (e.g. dim3|id-in[foo,bar])
-     * @param uriInfo  UriInfo of the request
      * @param containerRequestContext  The context of data provided by the Jersey container for this request
      *
      * @return The grain-specific logical table
@@ -329,21 +310,19 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             @QueryParam("metrics") String metrics,
             @QueryParam("dateTime") String intervals,
             @QueryParam("filters") String filters,
-            @Context UriInfo uriInfo,
             @Context final ContainerRequestContext containerRequestContext
     ) {
-        Supplier<Response> responseSender;
+        TablesApiRequestImpl tablesApiRequest = null;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new TableRequest(tableName, granularity));
 
-            TablesApiRequestImpl tablesApiRequest = new TablesApiRequestImpl(
+            tablesApiRequest = new TablesApiRequestImpl(
                     tableName,
                     granularity,
                     null,
                     "",
                     "",
-                    uriInfo,
                     this,
                     dimensions,
                     metrics,
@@ -359,26 +338,22 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                 );
             }
 
-            Map<String, Object> result = getLogicalTableFullView(tablesApiRequest, uriInfo);
+            Map<String, Object> result = getLogicalTableFullView(
+                    tablesApiRequest,
+                    containerRequestContext.getUriInfo()
+            );
             String output = objectMappers.getMapper().writeValueAsString(result);
             LOG.debug("Tables Endpoint Response: {}", output);
-            responseSender = () ->  Response.status(OK).entity(output).build();
-        } catch (RequestValidationException exception) {
-            LOG.debug(exception.getMessage(), exception);
-            responseSender = () ->   Response.status(exception.getStatus()).entity(exception.getErrorHttpMsg()).build();
-        } catch (JsonProcessingException exception) {
-            String message = ErrorMessageFormat.INTERNAL_SERVER_ERROR_ON_JSON_PROCESSING.format(exception.getMessage());
-            LOG.error(message, exception);
-            responseSender = () -> Response.status(INTERNAL_SERVER_ERROR).entity(message).build();
-        } catch (Error | Exception exception) {
-            String message = ErrorMessageFormat.REQUEST_PROCESSING_EXCEPTION.format(exception.getMessage());
-            LOG.info(message, exception);
-            responseSender = () -> Response.status(BAD_REQUEST).entity(message).build();
+            return Response.status(OK).entity(output).build();
+        } catch (Throwable t) {
+            return exceptionHandler.handleThrowable(
+                    t,
+                    Optional.ofNullable(tablesApiRequest),
+                    containerRequestContext
+            );
         } finally {
             RequestLog.stopTiming(this);
         }
-
-        return responseSender.get();
     }
 
     /**
@@ -398,18 +373,17 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             @Context UriInfo uriInfo,
             @Context final ContainerRequestContext containerRequestContext
     ) {
-        Supplier<Response> responseSender;
+        TablesApiRequestImpl tablesApiRequestImpl = null;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new TableRequest("all", "all"));
 
-            TablesApiRequestImpl tablesApiRequestImpl = new TablesApiRequestImpl(
+            tablesApiRequestImpl = new TablesApiRequestImpl(
                     null,
                     null,
                     null,
                     perPage,
                     page,
-                    uriInfo,
                     this
             );
 
@@ -422,22 +396,25 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
 
             TableFullViewProcessor fullViewProcessor = new TableFullViewProcessor();
 
-            Stream<TableView> paginatedResult = tablesApiRequestImpl.getPage(
-                    fullViewProcessor.formatTables(tablesApiRequestImpl.getTables(), uriInfo)
+            Response response = paginateAndFormatResponse(
+                    tablesApiRequestImpl,
+                    containerRequestContext,
+                    fullViewProcessor.formatTables(tablesApiRequestImpl.getTables(), uriInfo),
+                    "tables",
+                    null
             );
-            Response response = formatResponse(tablesApiRequestImpl, paginatedResult, "tables", null);
 
             LOG.debug("Tables Endpoint Response: {}", response.getEntity());
-            responseSender = () -> response;
-        } catch (Error | Exception e) {
-            String msg = ErrorMessageFormat.REQUEST_PROCESSING_EXCEPTION.format(e.getMessage());
-            LOG.info(msg, e);
-            responseSender = () -> Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
+            return response;
+        } catch (Throwable t) {
+            return exceptionHandler.handleThrowable(
+                    t,
+                    Optional.ofNullable(tablesApiRequestImpl),
+                    containerRequestContext
+            );
         } finally {
             RequestLog.stopTiming(this);
         }
-
-        return responseSender.get();
     }
 
     /**
@@ -569,7 +546,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                                         Collections.emptySet(),
                                         tablesApiRequest.getApiFilters(),
                                         tablesApiRequest.getTable(),
-                                        Collections.unmodifiableSet(tablesApiRequest.getIntervals()),
+                                        Collections.unmodifiableList(tablesApiRequest.getIntervals()),
                                         Collections.unmodifiableSet(tablesApiRequest.getLogicalMetrics()),
                                         tablesApiRequest.getGranularity(),
                                         tablesApiRequest.getGranularity()

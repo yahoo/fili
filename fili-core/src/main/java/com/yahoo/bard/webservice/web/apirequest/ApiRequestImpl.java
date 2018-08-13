@@ -24,10 +24,10 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
-import com.yahoo.bard.webservice.data.time.GranularityParser;
-import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.data.time.AllGranularity;
 import com.yahoo.bard.webservice.data.time.Granularity;
+import com.yahoo.bard.webservice.data.time.GranularityParser;
+import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.TimedPhase;
 import com.yahoo.bard.webservice.table.LogicalTable;
@@ -35,17 +35,16 @@ import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.table.TableIdentifier;
 import com.yahoo.bard.webservice.util.AllPagesPagination;
 import com.yahoo.bard.webservice.util.GranularityParseException;
-import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
 import com.yahoo.bard.webservice.web.BadFilterException;
 import com.yahoo.bard.webservice.web.BadPaginationException;
+import com.yahoo.bard.webservice.web.DefaultResponseFormatType;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.FilterOperation;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.TimeMacro;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
-import com.yahoo.bard.webservice.web.util.PaginationLink;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import org.joda.time.DateTime;
@@ -68,15 +67,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Link;
 import javax.ws.rs.core.PathSegment;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
 
 /**
  * API Request. Abstract class offering default implementations for the common components of API request objects.
@@ -99,9 +92,6 @@ public abstract class ApiRequestImpl implements ApiRequest {
 
     protected final ResponseFormatType format;
     protected final Optional<PaginationParameters> paginationParameters;
-    protected final UriInfo uriInfo;
-    protected final Response.ResponseBuilder builder;
-    protected Pagination<?> pagination;
     protected final long asyncAfter;
 
     /**
@@ -114,7 +104,6 @@ public abstract class ApiRequestImpl implements ApiRequest {
      * positive integer. If not present, must be the empty string.
      * @param page  desired page of results. If present in the original request, must be a positive integer. If not
      * present, must be the empty string.
-     * @param uriInfo  The URI of the request object.
      *
      * @throws BadApiRequestException if pagination parameters in the API request are not positive integers.
      */
@@ -122,13 +111,10 @@ public abstract class ApiRequestImpl implements ApiRequest {
             String format,
             String asyncAfter,
             @NotNull String perPage,
-            @NotNull String page,
-            UriInfo uriInfo
+            @NotNull String page
     ) throws BadApiRequestException {
-        this.uriInfo = uriInfo;
         this.format = generateAcceptFormat(format);
         this.paginationParameters = generatePaginationParameters(perPage, page);
-        this.builder = Response.status(Response.Status.OK);
         this.asyncAfter = generateAsyncAfter(
                 asyncAfter == null ?
                         SYSTEM_CONFIG.getStringProperty(SYSTEM_CONFIG.getPackageVariableName("default_asyncAfter")) :
@@ -145,17 +131,15 @@ public abstract class ApiRequestImpl implements ApiRequest {
      * positive integer. If not present, must be the empty string.
      * @param page  desired page of results. If present in the original request, must be a positive integer. If not
      * present, must be the empty string.
-     * @param uriInfo  The URI of the request object.
      *
      * @throws BadApiRequestException if pagination parameters in the API request are not positive integers.
      */
     public ApiRequestImpl(
             String format,
             @NotNull String perPage,
-            @NotNull String page,
-            UriInfo uriInfo
+            @NotNull String page
     ) throws BadApiRequestException {
-        this(format, SYNCHRONOUS_REQUEST_FLAG, perPage, page, uriInfo);
+        this(format, SYNCHRONOUS_REQUEST_FLAG, perPage, page);
     }
 
     /**
@@ -164,21 +148,15 @@ public abstract class ApiRequestImpl implements ApiRequest {
      * @param format  The format of the response
      * @param asyncAfter  How long the user is willing to wait for a synchronous request, in milliseconds
      * @param paginationParameters  The parameters used to describe pagination
-     * @param uriInfo  The uri details
-     * @param builder  The response builder for this request
      */
     protected ApiRequestImpl(
             ResponseFormatType format,
             long asyncAfter,
-            Optional<PaginationParameters> paginationParameters,
-            UriInfo uriInfo,
-            Response.ResponseBuilder builder
+            Optional<PaginationParameters> paginationParameters
     ) {
         this.format = format;
         this.asyncAfter = asyncAfter;
         this.paginationParameters = paginationParameters;
-        this.uriInfo = uriInfo;
-        this.builder = builder;
     }
 
     /**
@@ -380,7 +358,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
      * @return Set of jodatime interval objects.
      * @throws BadApiRequestException if the requested interval is not found.
      */
-    protected static Set<Interval> generateIntervals(
+    protected static List<Interval> generateIntervals(
             String apiIntervalQuery,
             Granularity granularity,
             DateTimeFormatter dateTimeFormatter
@@ -400,14 +378,14 @@ public abstract class ApiRequestImpl implements ApiRequest {
      * @return Set of jodatime interval objects.
      * @throws BadApiRequestException if the requested interval is not found.
      */
-    protected static Set<Interval> generateIntervals(
+    protected static List<Interval> generateIntervals(
             DateTime now,
             String apiIntervalQuery,
             Granularity granularity,
             DateTimeFormatter dateTimeFormatter
     ) throws BadApiRequestException {
         try (TimedPhase timer = RequestLog.startTiming("GeneratingIntervals")) {
-            Set<Interval> generated = new LinkedHashSet<>();
+            List<Interval> generated = new ArrayList<>();
             if (apiIntervalQuery == null || apiIntervalQuery.equals("")) {
                 LOG.debug(INTERVAL_MISSING.logFormat());
                 throw new BadApiRequestException(INTERVAL_MISSING.format());
@@ -540,8 +518,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
                 if (!generated.containsKey(dim)) {
                     generated.put(dim, new LinkedHashSet<>());
                 }
-                Set<ApiFilter> filterSet = generated.get(dim);
-                filterSet.add(newFilter);
+                generated.get(dim).add(newFilter);
             }
             LOG.trace("Generated map of filters: {}", generated);
 
@@ -611,7 +588,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
      */
     protected static void validateTimeAlignment(
             Granularity granularity,
-            Set<Interval> intervals
+            List<Interval> intervals
     ) throws BadApiRequestException {
         if (! granularity.accepts(intervals)) {
             String alignmentDescription = granularity.getAlignmentDescription();
@@ -630,8 +607,8 @@ public abstract class ApiRequestImpl implements ApiRequest {
     protected ResponseFormatType generateAcceptFormat(String format) throws BadApiRequestException {
         try {
             return format == null ?
-                    ResponseFormatType.JSON :
-                    ResponseFormatType.valueOf(format.toUpperCase(Locale.ENGLISH));
+                    DefaultResponseFormatType.JSON :
+                    DefaultResponseFormatType.valueOf(format.toUpperCase(Locale.ENGLISH));
         } catch (IllegalArgumentException e) {
             LOG.error(ACCEPT_FORMAT_INVALID.logFormat(format), e);
             throw new BadApiRequestException(ACCEPT_FORMAT_INVALID.format(format));
@@ -698,84 +675,13 @@ public abstract class ApiRequestImpl implements ApiRequest {
     }
 
     @Override
-    public UriInfo getUriInfo() {
-        return uriInfo;
-    }
-
-    @Override
-    public Pagination<?> getPagination() {
-        return pagination;
-    }
-
-    @Override
     public long getAsyncAfter() {
         return asyncAfter;
     }
 
     @Override
-    public Response.ResponseBuilder getBuilder() {
-        return builder;
-    }
-
-    @Override
     public PaginationParameters getDefaultPagination() {
         return DEFAULT_PAGINATION;
-    }
-
-    /**
-     * Add page links to the header of the response builder.
-     *
-     * @param link  The type of the link to add.
-     * @param pages  The paginated set of results containing the pages being linked to.
-     */
-    protected void addPageLink(PaginationLink link, Pagination<?> pages) {
-        link.getPage(pages).ifPresent(page -> addPageLink(link, page));
-    }
-
-    /**
-     * Add page links to the header of the response builder.
-     *
-     * @param link  The type of the link to add.
-     * @param pageNumber  Number of the page to add the link for.
-     */
-    protected void addPageLink(PaginationLink link, int pageNumber) {
-        UriBuilder uriBuilder = uriInfo.getRequestUriBuilder().replaceQueryParam("page", pageNumber);
-        builder.header(HttpHeaders.LINK, Link.fromUriBuilder(uriBuilder).rel(link.getHeaderName()).build());
-    }
-
-    /**
-     * Add links to the response builder and return a stream with the requested page from the raw data.
-     *
-     * @param <T>  The type of the collection elements
-     * @param data  The data to be paginated.
-     *
-     * @return A stream corresponding to the requested page.
-     *
-     * @deprecated Pagination is moving to a Stream and pushing creation of the page to a more general
-     * method ({@link #getPage(Pagination)}) to allow for more flexibility
-     * in how pagination is done.
-     */
-    @Deprecated
-    @Override
-    public <T> Stream<T> getPage(Collection<T> data) {
-        return getPage(new AllPagesPagination<>(data, getPaginationParameters().orElse(getDefaultPagination())));
-    }
-
-    /**
-     * Add links to the response builder and return a stream with the requested page from the raw data.
-     *
-     * @param <T>  The type of the collection elements
-     * @param pagination  The pagination object
-     *
-     * @return A stream corresponding to the requested page.
-     */
-    @Override
-    public <T> Stream<T> getPage(Pagination<T> pagination) {
-        this.pagination = pagination;
-
-        Arrays.stream(PaginationLink.values()).forEachOrdered(link -> addPageLink(link, pagination));
-
-        return pagination.getPageOfData().stream();
     }
 
     /**

@@ -4,20 +4,21 @@ package com.yahoo.bard.webservice.web.apirequest;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 
-import java.util.Set;
+import java.util.LinkedHashSet;
 
 /**
  * Metrics API Request. Such an API Request binds, validates, and models the parts of a request to the tables endpoint.
  */
 public interface MetricsApiRequest extends ApiRequest {
     String REQUEST_MAPPER_NAMESPACE = "metricsApiRequestMapper";
+    String EXCEPTION_HANDLER_NAMESPACE = "metricsExceptionHandler";
 
     /**
      * Returns a set of all available metrics.
      *
      * @return the set of all available metrics
      */
-    Set<LogicalMetric> getMetrics();
+    LinkedHashSet<LogicalMetric> getMetrics();
 
     /**
      * Returns an available metric.

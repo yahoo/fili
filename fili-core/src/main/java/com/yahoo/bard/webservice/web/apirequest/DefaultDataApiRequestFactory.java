@@ -7,7 +7,6 @@ import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import java.util.List;
 
 import javax.ws.rs.core.PathSegment;
-import javax.ws.rs.core.UriInfo;
 
 /**
  * An implementation of DataApiRequestFactory that does not modify the initial parameters at all.
@@ -31,7 +30,6 @@ public class DefaultDataApiRequestFactory implements DataApiRequestFactory {
             String asyncAfter,
             String perPage,
             String page,
-            UriInfo uriInfo,
             BardConfigResources bardConfigResources
     ) {
         return new DataApiRequestImpl(
@@ -50,7 +48,6 @@ public class DefaultDataApiRequestFactory implements DataApiRequestFactory {
                 asyncAfter,
                 perPage,
                 page,
-                uriInfo,
                 bardConfigResources
         );
     }

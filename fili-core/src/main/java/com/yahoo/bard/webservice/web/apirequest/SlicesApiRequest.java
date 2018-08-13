@@ -2,21 +2,22 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest;
 
+import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Slices API Request. Such an API Request binds, validates, and models the parts of a request to the slices endpoint.
  */
 public interface SlicesApiRequest extends ApiRequest {
     String REQUEST_MAPPER_NAMESPACE = "slicesApiRequestMapper";
+    String EXCEPTION_HANDLER_NAMESPACE = "exceptionHandler";
 
     /**
      * Returns a set of all available slices.
      *
      * @return the set of all available slices
      */
-    Set<Map<String, String>> getSlices();
+    LinkedHashSet<Map<String, String>> getSlices();
 
     /**
      * Returns a slice object.

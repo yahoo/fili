@@ -7,4 +7,5 @@ package com.yahoo.bard.webservice.web.apirequest;
  */
 public interface JobsApiRequest extends ApiRequest {
     String REQUEST_MAPPER_NAMESPACE = "jobsApiRequestMapper";
+    String EXCEPTION_HANDLER_NAMESPACE = "jobsApiRequestExceptionHandler";
 }

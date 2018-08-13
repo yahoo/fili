@@ -12,6 +12,7 @@ import com.yahoo.bard.webservice.async.jobs.payloads.JobPayloadBuilder
 import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore
 import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseTestingUtils
 import com.yahoo.bard.webservice.async.broadcastchannels.SimpleBroadcastChannel
+import com.yahoo.bard.webservice.exception.FiliJobsExceptionHandler
 import com.yahoo.bard.webservice.web.JsonResponseWriter
 import com.yahoo.bard.webservice.web.PreResponse
 import com.yahoo.bard.webservice.web.RequestMapper
@@ -79,7 +80,8 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
                 broadcastChannel,
                 requestMapper,
                 httpResponseMaker,
-                formatResolver
+                formatResolver,
+                new FiliJobsExceptionHandler(objectMappersSuite)
         )
 
         //Mocked objects for interaction testing
@@ -93,7 +95,8 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
                 broadcastChannel,
                 requestMapper,
                 httpResponseMaker,
-                formatResolver
+                formatResolver,
+                new FiliJobsExceptionHandler(objectMappersSuite)
         )
     }
 

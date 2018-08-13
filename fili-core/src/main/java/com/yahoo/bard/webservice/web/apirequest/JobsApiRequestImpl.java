@@ -34,6 +34,7 @@ public class JobsApiRequestImpl extends ApiRequestImpl implements JobsApiRequest
     private final JobPayloadBuilder jobPayloadBuilder;
     private final ApiJobStore apiJobStore;
     private final String filters;
+    private final UriInfo uriInfo;
 
     /**
      * Parses the API request URL and generates the Api Request object.
@@ -62,7 +63,8 @@ public class JobsApiRequestImpl extends ApiRequestImpl implements JobsApiRequest
             JobPayloadBuilder jobPayloadBuilder,
             ApiJobStore apiJobStore
     ) {
-        super(format, asyncAfter, perPage, page, uriInfo);
+        super(format, asyncAfter, perPage, page);
+        this.uriInfo = uriInfo;
         this.jobPayloadBuilder = jobPayloadBuilder;
         this.apiJobStore = apiJobStore;
         this.filters = filters;

@@ -8,7 +8,7 @@ import spock.lang.Unroll
 
 import javax.ws.rs.container.ContainerRequestContext
 
-class DefaultResponseFormatResolverSpec extends Specification {
+class DefaultResponseUtilsResolverSpec extends Specification {
 
     @Shared
     ResponseFormatResolver resolver = new DefaultResponseFormatResolver()

@@ -43,7 +43,7 @@ class FiliResponseWriterSpec extends ResponseWriterSpec {
             }"""
 
         and: "The format type for serialization"
-        apiRequest.getFormat() >> ResponseFormatType.JSON
+        apiRequest.getFormat() >> DefaultResponseFormatType.JSON
 
         when: "Serialize the data with FiliResponseWriter"
         filiResponseWriter.write(apiRequest,response,os)
@@ -64,7 +64,7 @@ class FiliResponseWriterSpec extends ResponseWriterSpec {
 """
 
         and: "The format type for serialization"
-        apiRequest.getFormat() >> ResponseFormatType.CSV
+        apiRequest.getFormat() >> DefaultResponseFormatType.CSV
 
         when: "Serialize the data with FiliResponseWriter "
         filiResponseWriter.write(apiRequest,response,os)
@@ -130,7 +130,7 @@ class FiliResponseWriterSpec extends ResponseWriterSpec {
         }"""
 
         and: "The format type for serialization"
-        apiRequest.getFormat() >> ResponseFormatType.JSONAPI
+        apiRequest.getFormat() >> DefaultResponseFormatType.JSONAPI
 
         when: "Serialize the data with FiliResponseWriter "
         FiliResponseWriter filiResponseWriter = new FiliResponseWriter(new FiliResponseWriterSelector(
