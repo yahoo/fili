@@ -103,6 +103,9 @@ pull request if there was one.
 
 ### Fixed:
 
+- [Fix GroovyTestUtils json parsing](https://github.com/yahoo/fili/pull/760)
+    * Properly handles json parsing failures and non-JSON expected strings.
+
 - [Fix generate intervals logic when availability is empty](https://github.com/yahoo/fili/pull/702)
     * Logic to generate intervals when `CURRENT_MACRO_USES_LATEST` flag is turned on has a bug. The code throws `NoSuchElementException` when the table has no availabilities. This PR fixes the bug by checking if the availability of the underlying table is empty.
 - [Correct Druid coordinator URL in Wikipedia example](https://github.com/yahoo/fili/pull/683)
