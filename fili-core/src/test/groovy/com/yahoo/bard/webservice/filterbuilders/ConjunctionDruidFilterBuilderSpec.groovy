@@ -74,15 +74,15 @@ class ConjunctionDruidFilterBuilderSpec extends Specification {
     }
 
     @Unroll
-    def "#filters get splitted into positive (#left) and negative (#right) filters in the case of #description"() {
+    def "#filters get split into positive (#left) and negative (#right) filters in the case of #description"() {
         when: "filters are splitted"
-        Pair<Set<ApiFilter>, Set<ApiFilter>> splittedFilters = filterBuilder.splitApiFilters(
+        Pair<Set<ApiFilter>, Set<ApiFilter>> splitFilters = filterBuilder.splitApiFilters(
                 filters.collect { apiFilters[it] } as Set
         )
 
         then: "positive filters come out in left of pair; negative filters, which are negated as well, come out in right of pair"
-        splittedFilters.getLeft() == left.collect { apiFilters[it] } as Set
-        splittedFilters.getRight() == right.collect { apiFilters[it] } as Set
+        splitFilters.getLeft() == left.collect { apiFilters[it] } as Set
+        splitFilters.getRight() == right.collect { apiFilters[it] } as Set
 
         where:
         filters                              | description                               || left                            | right

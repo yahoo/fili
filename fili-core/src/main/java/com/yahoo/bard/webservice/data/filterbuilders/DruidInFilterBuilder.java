@@ -56,9 +56,9 @@ public class DruidInFilterBuilder extends ConjunctionDruidFilterBuilder {
         LOG.trace("Building dimension filter using dimension: {} \n\n and set of filter: {}", dimension, filters);
 
         // split ApiFilters into two groups: positive filters & negative filters
-        Pair<Set<ApiFilter>, Set<ApiFilter>> splittedFilters = splitApiFilters(filters);
-        Set<ApiFilter> positiveFilters = splittedFilters.getLeft();
-        Set<ApiFilter> negativeFilters = negateNegativeFilters(splittedFilters.getRight());
+        Pair<Set<ApiFilter>, Set<ApiFilter>> positiveAndNegativeSplitFilters = splitApiFilters(filters);
+        Set<ApiFilter> positiveFilters = positiveAndNegativeSplitFilters.getLeft();
+        Set<ApiFilter> negativeFilters = negateNegativeFilters(positiveAndNegativeSplitFilters.getRight());
 
         // search for matched values of the positive filter by sending all of the filters down to search provider once
         List<String> inValues = positiveFilters.isEmpty()
@@ -71,7 +71,7 @@ public class DruidInFilterBuilder extends ConjunctionDruidFilterBuilder {
                     try {
                         return getFilteredDimensionRowValues(dimension, Collections.singleton(apiFilter));
                     } catch (DimensionRowNotFoundException exception) {
-                        throw new RuntimeException(exception);
+                        throw new IllegalStateException(exception);
                     }
                 })
                 .flatMap(List::stream)
