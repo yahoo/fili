@@ -51,7 +51,6 @@ class DataServletTimezoneSpec extends Specification {
                     "fieldName" : "limbs",
                     "type" : "longSum"
                 } ],
-                "postAggregations" : [ ],
                 "intervals" : [ "%s" ],
                 "granularity" : {
                     "type" : "period",

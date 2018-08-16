@@ -88,7 +88,6 @@ class TimeSeriesQuerySpec extends Specification {
             $vars.filter
             "context":$vars.context,
             "aggregations":$vars.aggregations,
-            "postAggregations":$vars.postAggregations,
             "intervals":$vars.intervals
         }
         """

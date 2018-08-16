@@ -149,11 +149,22 @@ class LookbackQuerySpec extends Specification {
         vars.context = vars.context ?
                 /{"queryId":"dummy100",$vars.context}/ :
                 /{"queryId": "dummy100"}/
-        vars.postAggregations = vars.postAggregations ?: "[]"
         vars.lookbackOffsets = vars.lookbackOffsets ?: [""" "P-1D" """]
         String lookback = /"lookbackPrefixes": $vars.lookbackPrefixes,/
+        vars.postAggregations = vars.postAggregations ?: "[]"
         vars.lookbackPrefixes = vars.lookbackPrefixes != null ? lookback : ""
 
+        vars.postAggregations == [] ?
+        """
+            {
+                "queryType":"$vars.queryType",
+                "dataSource":$vars.dataSource,
+                "context":$vars.context,
+                $vars.lookbackPrefixes
+                
+                "lookbackOffsets":$vars.lookbackOffsets
+            }
+        """.replaceAll(/\s/, "") :
         """
             {
                 "queryType":"$vars.queryType",
@@ -163,7 +174,7 @@ class LookbackQuerySpec extends Specification {
                 "postAggregations":$vars.postAggregations,
                 "lookbackOffsets":$vars.lookbackOffsets
             }
-        """
+        """.replaceAll(/\s/, "")
     }
 
     def "check Lookback query with Timeseries datasource serialization"() {

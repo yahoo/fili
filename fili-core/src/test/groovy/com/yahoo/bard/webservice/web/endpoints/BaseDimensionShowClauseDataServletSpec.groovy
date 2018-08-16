@@ -46,7 +46,6 @@ abstract class BaseDimensionShowClauseDataServletSpec extends BaseDataServletCom
             "aggregations": [
                 { "name": "width", "fieldName": "width", "type": "longSum" }
             ],
-            "postAggregations": [],
             "context": {}
         }"""
     }

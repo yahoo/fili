@@ -33,7 +33,7 @@ public abstract class AbstractDruidAggregationQuery<Q extends AbstractDruidAggre
     // At least one is needed
     protected final Collection<Aggregation> aggregations;
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     protected final Collection<PostAggregation> postAggregations;
 
     /**

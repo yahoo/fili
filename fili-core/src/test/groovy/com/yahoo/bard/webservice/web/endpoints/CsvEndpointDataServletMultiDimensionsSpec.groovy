@@ -72,7 +72,6 @@ class CsvEndpointDataServletMultiDimensionsSpec extends BaseDataServletComponent
                     "type": "longSum"
                 }
             ],
-            "postAggregations": [],
             "context": {}
         }"""
     }
