@@ -115,7 +115,6 @@ class TopNMultipleDimensionsDataServletSpec extends BaseDataServletComponentSpec
                 "aggregations": [
                     { "name": "width", "fieldName": "width", "type": "longSum" }
                 ],
-                "postAggregations": [],
                 "limitSpec": {
                     "type": "default",
                     "columns": [

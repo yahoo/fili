@@ -107,7 +107,6 @@ class TopNDataServletSpec extends BaseDataServletComponentSpec {
             "aggregations": [
                 { "name": "width", "fieldName": "width", "type": "longSum" }
             ],
-            "postAggregations": [],
             "context": {}
         }"""
     }

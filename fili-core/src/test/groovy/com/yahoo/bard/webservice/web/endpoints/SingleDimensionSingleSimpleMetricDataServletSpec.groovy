@@ -75,7 +75,6 @@ class SingleDimensionSingleSimpleMetricDataServletSpec extends BaseDataServletCo
               "aggregations": [
                     { "name": "width", "fieldName": "width", "type": "longSum" }
               ],
-              "postAggregations": [],
               "context": {}
             }"""
     }

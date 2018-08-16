@@ -69,7 +69,6 @@ class NullDimensionIDDruidResponseDataServletSpec extends BaseDataServletCompone
               "aggregations": [
                     { "name": "width", "fieldName": "width", "type": "longSum" }
               ],
-              "postAggregations": [],
               "context": {}
             }"""
     }

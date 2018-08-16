@@ -88,7 +88,6 @@ public class RequestHandlerUtils {
      *         "aggregations" : [
      *             { "name" : "pageViews", "fieldName" : "other_page_views", "type" : "longSum" }
      *         ],
-     *         "postAggregations" : [ ],
      *         "intervals" : [ "2014-06-01T00:00:00.000Z/2014-06-01T00:00:00.000Z" ],
      *         "granularity" : { "type" : "period", "period" : "P1W" }
      *     }

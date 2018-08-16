@@ -89,7 +89,6 @@ class DebugDataServletSpec extends Specification {
                 "intervals": [
                   "2014-06-02T00:00:00.000Z/2014-06-03T00:00:00.000Z"
                 ],
-                "postAggregations": [],
                 "queryType": "groupBy",
                 "context": {}
               },

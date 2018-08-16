@@ -100,7 +100,6 @@ class TopNQuerySpec extends Specification {
                 "granularity":$vars.granularity,
                 $vars.filter
                 "aggregations":$vars.aggregations,
-                "postAggregations":$vars.postAggregations,
                 "intervals":$vars.intervals,
                 "context":$vars.context
             }""").replaceAll(/\s/, "")

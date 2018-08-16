@@ -72,7 +72,6 @@ class NonNumericMetricSpec extends BaseDataServletComponentSpec {
                         "type": "longMin"
                     }
                 ],
-                "postAggregations": [],
                 "context": {}
             }"""
     }

@@ -77,7 +77,6 @@ import java.util.List;
  *        "type": "longSum"
  *      }
  *    ],
- *    "postAggregations": [],
  *    "intervals": [
  *      "2014-09-01T00:00:00.000Z/2014-09-30T00:00:00.000Z"
  *    ],
