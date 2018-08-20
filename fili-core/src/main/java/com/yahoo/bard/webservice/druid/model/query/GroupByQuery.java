@@ -48,8 +48,8 @@ public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
      * @param intervals  The intervals
      * @param limitSpec  The limit specification
      * @param context  The context
-     * @param doFork  true to fork a new context and bump up the query id, or false to create an exact copy of the
-     * context.
+     * @param incrementQueryId  true to fork a new context and bump up the query id, or false to create an exact copy
+     * of the context.
      */
     protected GroupByQuery(
             DataSource dataSource,
@@ -62,7 +62,7 @@ public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
             Collection<Interval> intervals,
             LimitSpec limitSpec,
             QueryContext context,
-            boolean doFork
+            boolean incrementQueryId
     ) {
         super(
                 DefaultQueryType.GROUP_BY,
@@ -74,7 +74,7 @@ public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
                 postAggregations,
                 intervals,
                 context,
-                doFork
+                incrementQueryId
         );
 
         this.having = having;
