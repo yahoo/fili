@@ -2,38 +2,39 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest.utils
 
-import static javax.ws.rs.core.Response.Status.OK
-
 import com.yahoo.bard.webservice.data.filterbuilders.DefaultDruidFilterBuilder
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
+import com.yahoo.bard.webservice.druid.model.having.Having
+import com.yahoo.bard.webservice.table.LogicalTable
+import com.yahoo.bard.webservice.web.ResponseFormatType
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestImpl
+import com.yahoo.bard.webservice.web.filters.ApiFilters
+import com.yahoo.bard.webservice.web.util.PaginationParameters
 
-import javax.ws.rs.core.Response
+import org.joda.time.DateTimeZone
 
 class TestingDataApiRequestImpl extends DataApiRequestImpl {
     TestingDataApiRequestImpl() {
         super(
-                null,
-                null,
-                null,
-                Response.status(OK),
-                null,
+                (ResponseFormatType) null,
+                (Optional<PaginationParameters>) null,
+                (LogicalTable) null,
                 DefaultTimeGrain.DAY,
-                [] as Set,
-                null,
-                [] as Set,
-                [] as Set,
-                [:],
-                null,
-                null,
-                null,
-                0,
-                0,
-                Long.MAX_VALUE,
-                null,
+                [] as LinkedHashSet, // Dimensions
+                null, // perDimensionFields
+                [] as LinkedHashSet,  // LogicalMetrics
+                [], // Intervals
+                (ApiFilters) null,
+                [:], // Havings
+                (Having) null,
+                null, // sorts
+                0, // count
+                0,  // topN
+                Long.MAX_VALUE, // asynchAfter
+                (DateTimeZone) null,
                 new DefaultDruidFilterBuilder(),
                 null,
-                null
+                Optional.empty()
         )
     }
 }

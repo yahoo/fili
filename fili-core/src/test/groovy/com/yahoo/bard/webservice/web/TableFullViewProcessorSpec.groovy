@@ -44,7 +44,14 @@ class TableFullViewProcessorSpec extends Specification {
 
         TablesServlet tablesServlet = Mock(TablesServlet)
         tablesServlet.getLogicalTableDictionary() >> fullDictionary
-        TablesApiRequestImpl tablesApiRequestImpl = new TablesApiRequestImpl(null, null, null, "", "", null, tablesServlet)
+        TablesApiRequestImpl tablesApiRequestImpl = new TablesApiRequestImpl(
+                null,  // tableName
+                null,  // granularity
+                null,  // format
+                "",  // perPage
+                "",  // page
+                tablesServlet
+        )
         Set<LogicalTable> logicalTableSet = tablesApiRequestImpl.getTables();
 
         petsShapesTables= new HashSet<>()

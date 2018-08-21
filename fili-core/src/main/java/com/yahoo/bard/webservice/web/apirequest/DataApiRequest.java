@@ -7,10 +7,10 @@ import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.having.Having;
 import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn;
-import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.ApiHaving;
@@ -23,13 +23,13 @@ import org.joda.time.Interval;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 /**
  * DataApiRequest Request binds, validates, and models the parts of a request to the data endpoint.
@@ -151,7 +151,7 @@ import javax.ws.rs.core.UriInfo;
      *
      * @return A set of intervals
      */
-     Set<Interval> getIntervals();
+     List<Interval> getIntervals();
 
     /**
      * The filters for this ApiRequest, grouped by dimensions.
@@ -181,21 +181,25 @@ import javax.ws.rs.core.UriInfo;
 
     DataApiRequestImpl withPaginationParameters(Optional<PaginationParameters> paginationParameters);
 
-    DataApiRequestImpl withUriInfo(UriInfo uriInfo);
-
     DataApiRequestImpl withBuilder(Response.ResponseBuilder builder);
 
     DataApiRequestImpl withTable(LogicalTable table);
 
     DataApiRequestImpl withGranularity(Granularity granularity);
 
-    DataApiRequestImpl withDimensions(Set<Dimension> dimensions);
+    DataApiRequestImpl withDimensions(LinkedHashSet<Dimension> dimensions);
 
     DataApiRequestImpl withPerDimensionFields(LinkedHashMap<Dimension,
             LinkedHashSet<DimensionField>> perDimensionFields);
 
-    DataApiRequestImpl withLogicalMetrics(Set<LogicalMetric> logicalMetrics);
+    DataApiRequestImpl withLogicalMetrics(LinkedHashSet<LogicalMetric> logicalMetrics);
 
+    DataApiRequestImpl withIntervals(List<Interval> intervals);
+
+    @Deprecated
+    /**
+     * @deprecated Use @see{{@link #withIntervals(List)}}
+     */
     DataApiRequestImpl withIntervals(Set<Interval> intervals);
 
     DataApiRequestImpl withFilters(ApiFilters filters);

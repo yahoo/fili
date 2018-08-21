@@ -50,7 +50,6 @@ class SlicesApiRequestImplSpec extends BaseDataSourceMetadataSpec {
 
         jtb = new JerseyTestBinder(SlicesServlet.class)
         fullDictionary = jtb.configurationLoader.physicalTableDictionary
-        uriInfo.getBaseUriBuilder() >> builder
         builder.path(_) >> builder
         builder.path(_, _) >> builder
 
@@ -67,6 +66,7 @@ class SlicesApiRequestImplSpec extends BaseDataSourceMetadataSpec {
         builder.build(_) >> { List<List<String>> args ->
             new URI(baseUri + args[0][0])
         }
+        uriInfo.getBaseUriBuilder() >> builder
 
         Set<Map<String, String>> expected = fullDictionary.collect {
             [
@@ -100,6 +100,9 @@ class SlicesApiRequestImplSpec extends BaseDataSourceMetadataSpec {
         builder.build(_) >> { List<List<String>> args ->
             new URI(uri + args[0][0])
         }
+
+        uriInfo.getBaseUriBuilder() >> builder
+        uriInfo.getRequestUriBuilder() >> builder
 
         Set<Map<String, Object>> dimensionsResult = [] as LinkedHashSet
         Set<Map<String, Object>> metricsResult = [] as LinkedHashSet
@@ -152,6 +155,8 @@ class SlicesApiRequestImplSpec extends BaseDataSourceMetadataSpec {
         builder.build(_) >> { List<List<String>> args ->
             new URI(baseUri + args[0][0])
         }
+
+        uriInfo.getBaseUriBuilder() >> builder
 
         when:
         new SlicesApiRequestImpl(

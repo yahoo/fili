@@ -14,7 +14,6 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.FuzzySetPostAggrega
 import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationPostAggFunction
 import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationPostAggregation
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
-import com.yahoo.bard.webservice.web.apirequest.DataApiRequestImpl
 import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 
 import spock.lang.Specification

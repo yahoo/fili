@@ -43,8 +43,8 @@ public abstract class AbstractDruidFactQuery<Q extends AbstractDruidFactQuery<? 
      * @param filter  The filter
      * @param intervals  The intervals
      * @param context  The context
-     * @param doFork  true to fork a new context and bump up the query id, or false to create an exact copy of the
-     * context.
+     * @param incrementQueryId  true to fork a new context and bump up the query id, or false to create an exact copy
+     * of the context.
      */
     protected AbstractDruidFactQuery(
             QueryType queryType,
@@ -53,9 +53,9 @@ public abstract class AbstractDruidFactQuery<Q extends AbstractDruidFactQuery<? 
             Filter filter,
             Collection<Interval> intervals,
             QueryContext context,
-            boolean doFork
+            boolean incrementQueryId
     ) {
-        super(queryType, dataSource, context, doFork);
+        super(queryType, dataSource, context, incrementQueryId);
         this.granularity = granularity;
         this.filter = filter;
         this.intervals = Collections.unmodifiableCollection(intervals);

@@ -34,13 +34,12 @@ class DimensionsApiRequestImplSpec extends Specification {
     def "check api request construction for the top level endpoint (all dimensions)"() {
         when:
         DimensionsApiRequestImpl apiRequest = new DimensionsApiRequestImpl(
-                null,
-                null,
-                null,
-                "",
-                "",
-                fullDictionary,
-                null
+                null, // dimensions
+                null, // filters
+                null,  //format
+                "",  // Per Page
+                "",   // Page
+                fullDictionary
         )
 
         then:
@@ -54,12 +53,11 @@ class DimensionsApiRequestImplSpec extends Specification {
         when:
         DimensionsApiRequestImpl apiRequest = new DimensionsApiRequestImpl(
                 name,
-                null,
-                null,
-                "",
-                "",
-                fullDictionary,
-                null
+                null, // filters
+                null, // format
+                "",  // Per page
+                "",  // Page
+                fullDictionary
         )
 
         then:
@@ -76,11 +74,10 @@ class DimensionsApiRequestImplSpec extends Specification {
         DimensionsApiRequestImpl apiRequest = new DimensionsApiRequestImpl(
                 name,
                 filterString,
-                null,
-                "",
-                "",
-                fullDictionary,
-                null
+                null,       //format
+                "",       //perPAge
+                "",          // Page
+                fullDictionary
         )
 
         then:
@@ -94,11 +91,10 @@ class DimensionsApiRequestImplSpec extends Specification {
         new DimensionsApiRequestImpl(
                 name,
                 filter,
-                null,
-                "",
-                "",
-                dictionary,
-                null
+                null,   // format
+                "",   // per page
+                "", // page
+                dictionary
         )
 
         then:

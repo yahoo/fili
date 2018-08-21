@@ -967,7 +967,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "color",
                       "name": "color",
-                      "storageStrategy":"loaded",                       
+                      "storageStrategy":"none",                       
                       "fields": [
                         {
                           "description":"Blue pigment",
@@ -1176,7 +1176,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "color",
                       "name": "color",
-                      "storageStrategy":"loaded",                       
+                      "storageStrategy":"none",                       
                       "fields": [
                         {
                           "description":"Blue pigment",
@@ -1371,7 +1371,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "color",
                       "name": "color",
-                      "storageStrategy":"loaded",                       
+                      "storageStrategy":"none",                       
                       "fields": [
                         {
                           "description":"Blue pigment",
@@ -1580,7 +1580,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "color",
                       "name": "color",
-                      "storageStrategy":"loaded",                       
+                      "storageStrategy":"none",                       
                       "fields": [
                         {
                           "description":"Blue pigment",

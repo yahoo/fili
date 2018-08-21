@@ -37,13 +37,12 @@ class DimensionApiRequestMapperSpec extends Specification {
                 null,
                 "",
                 "",
-                resourceDictionaries.getDimensionDictionary(),
-                null
+                resourceDictionaries.getDimensionDictionary()
         )
         dimensionApiRequestMapper.apply(apiRequest, Mock(ContainerRequestContext))
 
         then:
-        e = thrown(BadApiRequestException)
+        e = thrown(RequestValidationException)
         e.getMessage().matches("Filter.*not match dimension.*")
 
         when:
@@ -53,13 +52,12 @@ class DimensionApiRequestMapperSpec extends Specification {
                 null,
                 "",
                 "",
-                resourceDictionaries.getDimensionDictionary(),
-                null
+                resourceDictionaries.getDimensionDictionary()
         )
         dimensionApiRequestMapper.apply(apiRequest, Mock(ContainerRequestContext))
 
         then:
-        e = thrown(BadApiRequestException)
+        e = thrown(RequestValidationException)
         e.getMessage().matches("Filter.*not match dimension.*")
 
         when:
@@ -69,8 +67,7 @@ class DimensionApiRequestMapperSpec extends Specification {
                 null,
                 "",
                 "",
-                resourceDictionaries.getDimensionDictionary(),
-                null
+                resourceDictionaries.getDimensionDictionary()
         )
         mappedDimensionApiRequest = dimensionApiRequestMapper.apply(apiRequest, Mock(ContainerRequestContext))
 

@@ -60,7 +60,7 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
      * @param postAggregations  Post-aggregation operation trees for the query
      * @param context  Query context
      * @param intervals  Query intervals
-     * @param doFork  If the query should track it's forks or not
+     * @param incrementQueryId  If the query should track it's forks or not
      * @param lookbackOffsets  Set of period offsets
      * @param lookbackPrefixes  Set of prefixes for the lookback queries (should match the lookbackOffsets)
      * @param having  Having clause to apply to the result query
@@ -74,7 +74,7 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
             Collection<PostAggregation> postAggregations,
             Collection<Interval> intervals,
             QueryContext context,
-            boolean doFork,
+            boolean incrementQueryId,
             Collection<Period> lookbackOffsets,
             Collection<String> lookbackPrefixes,
             Having having,
@@ -90,7 +90,7 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
                 postAggregations,
                 intervals,
                 context,
-                doFork
+                incrementQueryId
         );
 
         this.having = having;
@@ -266,7 +266,20 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
 
     @Override
     public LookbackQuery withIntervals(Collection<Interval> intervals) {
-        return withDataSource(new QueryDataSource(getInnerQueryUnchecked().withIntervals(intervals)));
+        return new LookbackQuery(
+                new QueryDataSource(getInnerQueryUnchecked().withIntervals(intervals)),
+                granularity,
+                filter,
+                aggregations,
+                postAggregations,
+                intervals,
+                context,
+                true,
+                lookbackOffsets,
+                lookbackPrefixes,
+                having,
+                limitSpec
+        );
     }
 
     @Override
@@ -310,6 +323,7 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
     public LookbackQuery withLookbackOffsets(List<Period> lookbackOffsets) {
         return new LookbackQuery(dataSource, granularity, filter, aggregations, postAggregations, intervals, context, false, lookbackOffsets, lookbackPrefixes, having, limitSpec);
     }
+
     // CHECKSTYLE:ON
 
     /**

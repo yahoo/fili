@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.web.handlers
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
-import com.yahoo.bard.webservice.web.ResponseFormatType
+import com.yahoo.bard.webservice.web.DefaultResponseFormatType
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor
 
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -15,7 +15,7 @@ import spock.lang.Specification
 
 class DebugRequestHandlerSpec extends Specification {
 
-    static List<ResponseFormatType> debuggingFormats = [ResponseFormatType.DEBUG]
+    static List<DefaultResponseFormatType> debuggingFormats = [DefaultResponseFormatType.DEBUG]
 
     DataRequestHandler next = Mock(DataRequestHandler)
     ObjectMapper mapper = Mock(ObjectMapper)
@@ -49,7 +49,7 @@ class DebugRequestHandlerSpec extends Specification {
         1 * next.handleRequest(context, request, groupByQuery, response)
 
         where:
-        formatType << ResponseFormatType.values().grep{ it != ResponseFormatType.DEBUG}
+        formatType << DefaultResponseFormatType.values().grep{ it != DefaultResponseFormatType.DEBUG}
     }
 
     def "Test debug request calls back with message"() {
@@ -61,8 +61,8 @@ class DebugRequestHandlerSpec extends Specification {
 
         then:
         1 * response.getErrorCallback(groupByQuery) >> ec
-        2 * request.getFormat() >> ResponseFormatType.DEBUG
+        2 * request.getFormat() >> DefaultResponseFormatType.DEBUG
         0 * next.handleRequest(_, _, _, _)
-        1 * ec.dispatch(200, ResponseFormatType.DEBUG.name(), "DEBUG")
+        1 * ec.dispatch(200, (DefaultResponseFormatType.DEBUG.toString()), "DEBUG")
     }
 }

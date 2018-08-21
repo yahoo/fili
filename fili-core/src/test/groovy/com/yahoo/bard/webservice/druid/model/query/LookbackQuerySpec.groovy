@@ -252,4 +252,20 @@ class LookbackQuerySpec extends Specification {
         multipleIntervalSingleLookbackOffset  | [INTERVAL_1, INTERVAL_2, INTERVAL_0]
         multipleIntervalMultipleLookbackOffset| [INTERVAL_1, INTERVAL_2, INTERVAL_3, INTERVAL_4, INTERVAL_0]
     }
+
+    def "check if query id gets incremented inside withIntervals"() {
+        LookbackQuery lookbackQuery = defaultQuery(
+                postAggregations: postAggregation,
+                lookbackPrefixes: ["lookback_days_","lookback_weeks_"],
+                lookbackOffsets: [Period.days(-1), Period.weeks(-1)]
+        )
+        singleIntervalMultipleLookbackOffset = lookbackQuery.withIntervals(Arrays.asList(INTERVAL_1))
+        multipleIntervalMultipleLookbackOffset = lookbackQuery.withIntervals(Arrays.asList(INTERVAL_2, INTERVAL_3))
+
+        expect:
+        lookbackQuery.getContext().getQueryId() == "dummy100_1"
+        singleIntervalMultipleLookbackOffset.getContext().getQueryId() == "dummy100_2"
+        multipleIntervalMultipleLookbackOffset.getContext().getQueryId() == "dummy100_3"
+
+    }
 }

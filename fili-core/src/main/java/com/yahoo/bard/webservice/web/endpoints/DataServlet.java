@@ -4,10 +4,6 @@ package com.yahoo.bard.webservice.web.endpoints;
 
 import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.REQUEST_WORKFLOW_TIMER;
 
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.GATEWAY_TIMEOUT;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-
 import com.yahoo.bard.webservice.application.MetricRegistryFactory;
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
 import com.yahoo.bard.webservice.async.MetadataHttpResponseChannel;
@@ -25,7 +21,6 @@ import com.yahoo.bard.webservice.data.HttpResponseChannel;
 import com.yahoo.bard.webservice.data.HttpResponseMaker;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
-import com.yahoo.bard.webservice.data.dimension.TimeoutException;
 import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
@@ -33,20 +28,19 @@ import com.yahoo.bard.webservice.data.metric.TemplateDruidQueryMerger;
 import com.yahoo.bard.webservice.data.time.GranularityParser;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
+import com.yahoo.bard.webservice.exception.DataExceptionHandler;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.TimedPhase;
 import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
 import com.yahoo.bard.webservice.logging.blocks.DataRequest;
 import com.yahoo.bard.webservice.logging.blocks.DruidFilterInfo;
 import com.yahoo.bard.webservice.table.LogicalTable;
-import com.yahoo.bard.webservice.table.resolver.NoMatchFoundException;
 import com.yahoo.bard.webservice.util.Either;
-import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
-import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.PreResponse;
 import com.yahoo.bard.webservice.web.RequestMapper;
-import com.yahoo.bard.webservice.web.RequestValidationException;
 import com.yahoo.bard.webservice.web.ResponseFormatResolver;
+import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestFactory;
 import com.yahoo.bard.webservice.web.apirequest.HavingGenerator;
 import com.yahoo.bard.webservice.web.handlers.DataRequestHandler;
@@ -73,6 +67,7 @@ import rx.subjects.Subject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -92,6 +87,7 @@ import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.PathSegment;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 /**
@@ -134,6 +130,8 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             "UTC"
     ));
 
+    private final DataExceptionHandler exceptionHandler;
+
     /**
      * Constructor.
      *
@@ -157,6 +155,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
      * @param dataApiRequestFactory A factory to build dataApiRequests
      * {@link com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore}
      * @param responseProcessorFactory  Builds the object that performs post processing on a Druid response
+     * @param exceptionHandler  Injects custom logic for handling exceptions thrown during request processing
      */
     @Inject
     public DataServlet(
@@ -177,7 +176,8 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             HttpResponseMaker httpResponseMaker,
             ResponseFormatResolver formatResolver,
             DataApiRequestFactory dataApiRequestFactory,
-            ResponseProcessorFactory responseProcessorFactory
+            ResponseProcessorFactory responseProcessorFactory,
+            DataExceptionHandler exceptionHandler
     ) {
         this.resourceDictionaries = resourceDictionaries;
         this.druidQueryBuilder = druidQueryBuilder;
@@ -198,6 +198,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
         this.formatResolver = formatResolver;
         this.dataApiRequestFactory = dataApiRequestFactory;
         this.responseProcessorFactory = responseProcessorFactory;
+        this.exceptionHandler = exceptionHandler;
 
         LOG.trace(
                 "Initialized with ResourceDictionaries: {} \n\n" +
@@ -373,10 +374,9 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             @DefaultValue("true") @NotNull @QueryParam("_cache") Boolean readCache,
             @Suspended final AsyncResponse asyncResponse
     ) {
+        DataApiRequest apiRequest = null;
         try {
-            DataApiRequest apiRequest;
             try (TimedPhase timer = RequestLog.startTiming("DataApiRequest")) {
-
                 apiRequest = dataApiRequestFactory.buildApiRequest(
                         tableName,
                         timeGrain,
@@ -393,7 +393,6 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
                         asyncAfter,
                         perPage,
                         page,
-                        uriInfo,
                         this
                 );
             }
@@ -451,18 +450,28 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             if (!complete) {
                 throw new IllegalStateException("No request handler accepted request.");
             }
-        } catch (RequestValidationException e) {
-            LOG.debug(e.getMessage(), e);
-            asyncResponse.resume(RequestHandlerUtils.makeErrorResponse(e.getStatus(), e, writer));
-        } catch (NoMatchFoundException e) {
-            LOG.info("Exception processing request", e);
-            asyncResponse.resume(RequestHandlerUtils.makeErrorResponse(INTERNAL_SERVER_ERROR, e, writer));
-        } catch (TimeoutException e) {
-            LOG.info("Exception processing request", e);
-            asyncResponse.resume(RequestHandlerUtils.makeErrorResponse(GATEWAY_TIMEOUT, e, writer));
-        } catch (Error | Exception e) {
-            LOG.info("Exception processing request", e);
-            asyncResponse.resume(RequestHandlerUtils.makeErrorResponse(BAD_REQUEST, e, writer));
+        } catch (Throwable e) {
+            exceptionHandler.handleThrowable(
+                e,
+                asyncResponse,
+                Optional.ofNullable(apiRequest),
+                containerRequestContext,
+                writer
+            );
+            // Generally, it's expected that implementations of `ExceptionHandler` will resume
+            // the response in every case. This exists so that if someone writes a buggy handler
+            // that fails to resume the response, they at least get *something* back.
+            if (!asyncResponse.isDone()) {
+                asyncResponse.resume(
+                    RequestHandlerUtils.makeErrorResponse(
+                        Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),
+                        e.getClass().getName(),
+                        "Failed to handle the following error.",
+                        null,
+                        writer
+                    )
+                );
+            }
         }
     }
 
@@ -482,7 +491,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             AsyncResponse asyncResponse,
             HttpResponseMaker httpResponseMaker
     ) {
-        UriInfo uriInfo = apiRequest.getUriInfo();
+        UriInfo uriInfo = containerRequestContext.getUriInfo();
         long asyncAfter = apiRequest.getAsyncAfter();
         JobRow jobMetadata = jobRowBuilder.buildJobRow(uriInfo, containerRequestContext);
 
@@ -522,6 +531,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
                 new HttpResponseChannel(
                         asyncResponse,
                         apiRequest,
+                        containerRequestContext,
                         httpResponseMaker
                 )
         );

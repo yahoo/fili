@@ -13,7 +13,7 @@ class JsonApiResponseWriterSpec extends ResponseWriterSpec {
     @Unroll
     def "JSONApi response is correct for a known result set with link names #linkNames"() {
         setup:
-        apiRequest.getFormat() >> ResponseFormatType.JSONAPI
+        apiRequest.getFormat() >> DefaultResponseFormatType.JSONAPI
         formattedDateTime = dateTime.toString(getDefaultFormat())
         GString metaBlock = """{
                         "pagination": {

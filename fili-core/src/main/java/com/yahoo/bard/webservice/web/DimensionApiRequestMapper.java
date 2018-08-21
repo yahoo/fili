@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.web;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_DIMENSION_MISMATCH;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
@@ -59,7 +60,7 @@ public class DimensionApiRequestMapper extends RequestMapper<DimensionsApiReques
                     msg = FILTER_DIMENSION_MISMATCH.logFormat(filterDimension.getApiName(), "set");
                 }
                 LOG.error(msg);
-                throw new BadApiRequestException(msg);
+                throw new RequestValidationException(BAD_REQUEST, msg, msg);
             }
         }
 

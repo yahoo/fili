@@ -8,7 +8,6 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.PathSegment;
-import javax.ws.rs.core.UriInfo;
 
 /**
  * Layer of injection to provide preprocessing of BardConfig in response to request parameters and transformation of
@@ -38,7 +37,6 @@ public interface DataApiRequestFactory {
      * must be a positive integer. If not present, must be the empty string.
      * @param page  desired page of results. If present in the original request, must be a positive
      * integer. If not present, must be the empty string.
-     * @param uriInfo  The URI of the request object.
      * @param bardConfigResources  The configuration resources used to build this api request
      *
      * @return A DataApiRequestImpl instance
@@ -59,7 +57,6 @@ public interface DataApiRequestFactory {
             String asyncAfter,
             @NotNull String perPage,
             @NotNull String page,
-            UriInfo uriInfo,
             BardConfigResources bardConfigResources
     );
 }

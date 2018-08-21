@@ -5,10 +5,90 @@ All notable changes to Fili will be documented here. Changes are accumulated as 
 major version. Each change has a link to the pull request that makes the change and to the issue that triggered the
 pull request if there was one.
 
+### Added:
 
+- [Move off BaseCompositePhysicalTable inheritance usage](https://github.com/yahoo/fili/pull/748)
+    * Added builder methods to `MetricUnionAvailability` and `PartitionAvailability` to save on needing to add
+      additional table classes.
+
+- [Adding withDoFork to LookBackQuery](https://github.com/yahoo/fili/issues/756)
+    * Added `withDoFork` to `LookBackQuery` class.    
+    
+-- [An injection point for customizing the WebLoggingFilter to use during tests](https://github.com/yahoo/fili/pull/749)
+    * Extend `JerseyTestBinder` and override `getLoggingFilter`.
+
+- [An injection point for customizing Exception handling]https://github.com/yahoo/fili/pull/742)
+    * Customers can provide their own logic for handling top level Exceptions in
+      the `DataServlet` by implementing `DataExceptionHandler`, and any other
+      servlet by implementing `MetadataExceptionHandler`.
+
+- [Add support for "case_sensitive" attribute in FragmentSearchQuerySpec](https://github.com/yahoo/fili/pull/727)
+    * Enable `FragmentSearchQuerySpec` to accept an argument for `case_sensitive` so that API users can configure this
+      attribute for JSON serialization through Fili.
+
+- [Add specs for InsensitiveContainsSearchQuerySpec & RegexSearchQuerySpec](https://github.com/yahoo/fili/pull/732)
+    * `RegexSearchQuerySpec` and `InsensitiveContainsSearchQuerySpec` have no dedicated test specs. This PR adds tests
+      for them.
+
+- [Implement ContainsSearchQuerySpec](https://github.com/yahoo/fili/pull/730)
+    * Adds serialization for `ContainsSearchQuerySpec` so that Fili API users can use that through Fili.
+
+- [Add storageStrategy as a field of the DimensionConfig class](https://github.com/yahoo/fili/issues/718)
+    * Adds getStorageStrategy as a field of the dimensionConfig class.
+    * Passes the storage strategy to the KeyValueStoreDimension Constructor
+
+- [Add more tests to RegisteredLookupMetadataLoadTask](https://github.com/yahoo/fili/pull/673)
+    * Adds tests to make sure the load tasks can update status correctly.
+
+- [Add tests to Utils](https://github.com/yahoo/fili/pull/675)
+    * Add missing tests to `Utils` class.
 
 ### Changed:
 
+- [Bumping query id inside withIntervals of LookBackQuery](https://github.com/yahoo/fili/issues/756)
+    * Returning a new `LookBackQuery` with `doFork` set to `true` which bumps query id inside `withIntervals` method.
+    * Renamed every occurrence of `doFork` to `incrementQueryId`.
+    * Removed `withDoFork` from `LookBackQuery` class.
+     
+- [Change to ordered data structures for ApiRequestImpls](https://github.com/yahoo/fili/issues/753)
+    * Change Set<foo> to LinkedHashSet<foo> in most ApiRequestImpl getters
+    * Change Set<Interval> to List<Interval> in ApiRequests
+    
+- [Moved ResponseFormatType from Singleton enum to interface with enum impl](https://github.com/yahoo/fili/issues/711)
+    * Refactored ResponseFormatType to allow expansion via additional interface implementors
+    * Replaced equality based matching with 'accepts' model
+
+- [Restructured Report Building out of ApiRequest](https://github.com/yahoo/fili/issues/711)
+    * Pushed UriInfo used to produce `PaginationMapper` into `RequestContext`
+    * Renamed 'getPage' to 'paginate' and refactored off `ApiRequest` and into `PageLinkBuilder`
+    * Moved pagination mostly out of individual servlet classes and into `EndpointServlet`
+    * Initialized per request `Response.ResponseBuilder` in EndpointServlet rather than `ApiRequestImpl` constructor
+    * Simplified injected classes that took both `UrlInfo` and `ContainerRequestContext` to get the one from inside the other.
+    * Pushed entire container request context to content disposition building code (prelude to https://github.com/yahoo/fili/issues/709 )
+
+- [Change `BaseCompositePhysicalTable` into a concrete class](https://github.com/yahoo/fili/pull/745)
+    * Currently `BaseCompositePhysicalTable` is an abstract class, though it has all of the functionality for a simple composite physical table. Changed to a concrete class to allow for simple composite table behavior with requiring an extension.
+    * Two simple implementations of `BaseCompositePhysicalTable`, `PartitionCompositeTable` and `MetricUnionCompositeTable` are now deprecated. Instead, the availabilities for these tables should be created directly and passed in to `BaseCompositePhysicalTable`.  
+
+- [Change availability behavior on BasePhysicalTable](https://github.com/yahoo/fili/pull/743)
+    * Currently `BasePhysicalTable` overrides `getAvailableIntervals(constraint)` and `getAllAvailableIntervals()`, and defers this behavior to its availability. This PR changes `BasePhysicalTable` to also override `getAvailableIntervals()` and defer to its availability.  
+
+- [Making Custom Sketch operations possible in PostAggreations](https://github.com/yahoo/fili/issues/740)    
+    * Added `PostAggregation` and `Aggregation` instance check in `asSketchEstimate(MetricField field)` method of the class `ThetaSketchFieldConverter`.
+    * `FieldAccessorPostAggregation` is called only for `Aggregation` and not for `PostAggregation`. 
+
+- [Let DimensionApiRequestMapper throw RequestValidationException instead of BadApiRequestException](https://github.com/yahoo/fili/pull/715)
+    * `DimensionApiRequestMapper.apply()` is made to obey the interface contract by throwing
+      `RequestValidationException` instead of ``BadApiRequestException``
+
+- [Inject customizable extraction functions to RegisteredLookupDimension](https://github.com/yahoo/fili/pull/724)
+    * Instead of injecting registered lookup names, we inject registered lookup extraction functions for lookup
+      dimension so that downstream projects can configure all fields of registered lookup extraction functions.
+
+- [Abort request when too many Druid filters are generated](https://github.com/yahoo/fili/pull/690)
+    * In order to avoid Druid queries with too much filters on high-cardinality dimension, Fili sets a upper limit
+      on the number of filters and aborts requests if the limit is exceeded.
+ 
 - [Class re-organization](https://github.com/yahoo/fili/pull/694)
     * Put `Granularity` interfaces and its implementations in the same package
     * Put `*ApiRequest` interfaces and their implementations in the same package
@@ -20,12 +100,25 @@ pull request if there was one.
 
 ### Deprecated:
 
+- [Undeprecated pagination by collection](https://github.com/yahoo/fili/issues/711)
+    * Since we seem to be in no hurry to switch to heavier reliance on streams. (also renamed paginate and moved to `PageLinkBuilder`)
 
+- [Deprecate `PartitionCompositeTable` and `MetricUnionCompositeTable`](https://github.com/yahoo/fili/pull/745)
+    * Two simple implementations of `BaseCompositePhysicalTable` (`PartitionCompositeTable` and `MetricUnionCompositeTable`) are now deprecated. Instead, the availabilities for these tables should be created directly and passed in to `BaseCompositePhysicalTable`.  
 
 ### Fixed:
 
+- [Fix GroovyTestUtils json parsing](https://github.com/yahoo/fili/pull/760)
+    * Properly handles json parsing failures and non-JSON expected strings.
+
+- [Fix generate intervals logic when availability is empty](https://github.com/yahoo/fili/pull/702)
+    * Logic to generate intervals when `CURRENT_MACRO_USES_LATEST` flag is turned on has a bug. The code throws `NoSuchElementException` when the table has no availabilities. This PR fixes the bug by checking if the availability of the underlying table is empty.
 - [Correct Druid coordinator URL in Wikipedia example](https://github.com/yahoo/fili/pull/683)
     * Config value for Druid coordinator URL is mis-typed.
+    
+- [Upgrade codenarc to recognize unused imports in Groovy](https://github.com/yahoo/fili/pull/685)
+    * There are number of unused imports sitting in tests. The cause is an out-dated codenarc version. This PR upgrades
+      the version and removes those unused imports with the new version.
 
 
 ### Known Issues:
@@ -149,8 +242,10 @@ Thanks to everyone who contributed to this release!
 
 ### Added:
 
-- [Logical Table Availability](https://github.com/yahoo/fili/pull/697)
-    * Added `logicalTableAvailability` to `TableUtils` which returns the union of availabilities for the logical table.
+- [Latest Time Macro](https://github.com/yahoo/fili/pull/697)
+    * Added `logicalTableAvailability` to `TableUtils` which returns the union of intervals for the logical table.
+    * Added `now` parameter to `generateIntervals` for which time macros will be relatively calculated.
+    * Added `CURRENT_MACRO_USES_LATEST` flag which when turned on uses the first unavailable availability to generate the intervals. 
 
 - [Annotate Functional Interface](https://github.com/yahoo/fili/pull/606)
     * Add `@FunctionalInterface` annotation to all functional interfaces.

@@ -16,11 +16,11 @@ public class TimeBoundaryQuery extends AbstractDruidQuery<TimeBoundaryQuery>
      *
      * @param dataSource  The datasource
      * @param context  The context
-     * @param doFork  true to fork a new context and bump up the query id, or false to create an exact copy of the
-     * context.
+     * @param incrementQueryId  true to fork a new context and bump up the query id, or false to create an exact copy
+     * of the context.
      */
-    protected TimeBoundaryQuery(DataSource dataSource, QueryContext context, boolean doFork) {
-        super(DefaultQueryType.TIME_BOUNDARY, dataSource, context, doFork);
+    protected TimeBoundaryQuery(DataSource dataSource, QueryContext context, boolean incrementQueryId) {
+        super(DefaultQueryType.TIME_BOUNDARY, dataSource, context, incrementQueryId);
     }
 
     /**

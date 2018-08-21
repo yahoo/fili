@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 /**
  * Dimension API Request Implementation binds, validates, and models the parts of a request to the dimension endpoint.
@@ -52,7 +51,6 @@ public class DimensionsApiRequestImpl extends ApiRequestImpl implements Dimensio
      * @param page  desired page of results. If present in the original request, must be a positive
      * integer. If not present, must be the empty string.
      * @param dimensionDictionary  cache containing all the valid dimension objects.
-     * @param uriInfo  The URI of the request object.
      *
      * @throws BadApiRequestException is thrown in the following scenarios:
      * <ol>
@@ -68,10 +66,9 @@ public class DimensionsApiRequestImpl extends ApiRequestImpl implements Dimensio
             String format,
             @NotNull String perPage,
             @NotNull String page,
-            DimensionDictionary dimensionDictionary,
-            UriInfo uriInfo
+            DimensionDictionary dimensionDictionary
     ) throws BadApiRequestException {
-        super(format, perPage, page, uriInfo);
+        super(format, perPage, page);
 
         // Zero or more grouping dimensions may be specified
         this.dimensions = generateDimensions(dimension, dimensionDictionary);
@@ -93,20 +90,16 @@ public class DimensionsApiRequestImpl extends ApiRequestImpl implements Dimensio
      *
      * @param format  Format of the request
      * @param paginationParameters  Pagination info for the request
-     * @param uriInfo  URI info
-     * @param builder  A response builder for the request
      * @param dimensions  Desired dimensions of the request
      * @param filters  Filters applied to the request
      */
     private DimensionsApiRequestImpl(
             ResponseFormatType format,
             Optional<PaginationParameters> paginationParameters,
-            UriInfo uriInfo,
-            Response.ResponseBuilder builder,
             Iterable<Dimension> dimensions,
             Iterable<ApiFilter> filters
     ) {
-        super(format, SYNCHRONOUS_ASYNC_AFTER_VALUE, paginationParameters, uriInfo, builder);
+        super(format, SYNCHRONOUS_ASYNC_AFTER_VALUE, paginationParameters);
         this.dimensions = Sets.newLinkedHashSet(dimensions);
         this.filters = Sets.newLinkedHashSet(filters);
     }
@@ -188,32 +181,27 @@ public class DimensionsApiRequestImpl extends ApiRequestImpl implements Dimensio
 
     @Override
     public DimensionsApiRequest withFormat(ResponseFormatType format) {
-        return new DimensionsApiRequestImpl(format, paginationParameters, uriInfo, builder, dimensions, filters);
+        return new DimensionsApiRequestImpl(format, paginationParameters, dimensions, filters);
     }
 
     @Override
     public DimensionsApiRequest withPaginationParameters(Optional<PaginationParameters> paginationParameters) {
-        return new DimensionsApiRequestImpl(format, paginationParameters, uriInfo, builder, dimensions, filters);
-    }
-
-    @Override
-    public DimensionsApiRequest withUriInfo(UriInfo uriInfo) {
-        return new DimensionsApiRequestImpl(format, paginationParameters, uriInfo, builder, dimensions, filters);
+        return new DimensionsApiRequestImpl(format, paginationParameters, dimensions, filters);
     }
 
     @Override
     public DimensionsApiRequest withBuilder(Response.ResponseBuilder builder) {
-        return new DimensionsApiRequestImpl(format, paginationParameters, uriInfo, builder, dimensions, filters);
+        return new DimensionsApiRequestImpl(format, paginationParameters, dimensions, filters);
     }
 
     @Override
     public DimensionsApiRequest withDimensions(LinkedHashSet<Dimension> dimensions) {
-        return new DimensionsApiRequestImpl(format, paginationParameters, uriInfo, builder, dimensions, filters);
+        return new DimensionsApiRequestImpl(format, paginationParameters, dimensions, filters);
     }
 
     @Override
     public DimensionsApiRequest withFilters(Set<ApiFilter> filters) {
-        return new DimensionsApiRequestImpl(format, paginationParameters, uriInfo, builder, dimensions, filters);
+        return new DimensionsApiRequestImpl(format, paginationParameters, dimensions, filters);
     }
 
     @Override

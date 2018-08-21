@@ -11,6 +11,7 @@ import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
+import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.RegisteredLookupExtractionFunction;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -51,7 +52,7 @@ public class RegisteredLookupMetadataLoadTask extends LoadTask<Boolean> {
             "lookup_normal_checking_period"
     );
     /**
-     * Wait on https://github.com/yahoo/fili/issues/619.
+     * TODO - Wait on https://github.com/yahoo/fili/issues/619.
      */
     private static final String LOOKUP_ERROR_CHECKING_PERIOD_KEY = SYSTEM_CONFIG.getPackageVariableName(
             "lookup_error_checking_period"
@@ -165,8 +166,11 @@ public class RegisteredLookupMetadataLoadTask extends LoadTask<Boolean> {
                     dimensionDictionary.findAll().stream()
                             .filter(dimension -> dimension instanceof RegisteredLookupDimension)
                             .map(dimension -> (RegisteredLookupDimension) dimension)
-                            .map(RegisteredLookupDimension::getLookups)
+                            .map(RegisteredLookupDimension::getRegisteredLookupExtractionFns)
                             .flatMap(List::stream)
+                            .map(extractionFunction ->
+                                    ((RegisteredLookupExtractionFunction) extractionFunction).getLookup()
+                            )
                             .peek(namespace -> LOG.trace("Checking lookup metadata status for {}", namespace))
                             .filter(lookup -> !lookupStatuses.containsKey(lookup) || !lookupStatuses.get(lookup))
                             .collect(Collectors.toSet())

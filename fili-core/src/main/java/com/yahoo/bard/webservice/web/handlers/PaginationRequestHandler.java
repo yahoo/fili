@@ -46,7 +46,7 @@ public class PaginationRequestHandler implements DataRequestHandler {
                     new PaginationMapper(
                             paginationParameters,
                             mappingResponse,
-                            request.getUriInfo().getRequestUriBuilder()
+                            context.getUriBuilder()
                     )
             );
         }

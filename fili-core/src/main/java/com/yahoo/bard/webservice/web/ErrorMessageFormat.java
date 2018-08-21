@@ -154,7 +154,7 @@ public enum ErrorMessageFormat implements MessageFormatter {
     ),
     LOG_UNABLE_TO_DESERIALIZE("Unable to deserialize results for job %s from %s"),
 
-    RESOURCE_RETRIEVAL_FAILURE("Unable to retrieve the resource for given resource name: %s."),
+    RESOURCE_RETRIEVAL_FAILURE("Unable to retrieve the resource for given resource name: %s. Info: %s"),
     RESOURCE_STORAGE_FAILURE("Unable to store the resource for resource name %s. %s"),
     RESOURCE_DELETION_FAILURE("Unable to delete the resource for resource name %s. %s"),
 
@@ -258,6 +258,12 @@ public enum ErrorMessageFormat implements MessageFormatter {
     HAVING_OPERATOR_WRONG_NUMBER_OF_PARAMETERS("Wrong number of parameters provided for %s operator. " +
                                               "%s operator needs %d parameters but found %d"),
     HAVING_OPERATOR_IMPROPER_RANGE("Upper range cannot be less than the lower range for %s operator."),
+
+    TOO_MANY_DRUID_FILTERS(
+            "Too many filtering dimension values found. Request is aborted because it will significantly slows down " +
+                    "or timeout Druid query.",
+            "DruidFilterBuilder generated too many filters. Request is aborted."
+    ),
 
     UNABLE_TO_CREATE_DIR("Unable to create directory %s."),
     UNABLE_TO_DELETE_DIR("Unable to delete directory %s."),

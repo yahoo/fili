@@ -3,17 +3,14 @@
 package com.yahoo.bard.webservice.web.endpoints;
 
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.UPDATED_METADATA_COLLECTION_NAMES;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
+import com.yahoo.bard.webservice.exception.MetadataExceptionHandler;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.SliceRequest;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
-import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.RequestMapper;
-import com.yahoo.bard.webservice.web.RequestValidationException;
 import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.apirequest.SlicesApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.SlicesApiRequestImpl;
@@ -23,10 +20,7 @@ import com.codahale.metrics.annotation.Timed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
+import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -57,6 +51,7 @@ public class SlicesServlet extends EndpointServlet {
     private final PhysicalTableDictionary physicalTableDictionary;
     private final RequestMapper requestMapper;
     private final ResponseFormatResolver formatResolver;
+    private final MetadataExceptionHandler exceptionHandler;
 
     /**
      * Constructor.
@@ -66,6 +61,7 @@ public class SlicesServlet extends EndpointServlet {
      * @param dataSourceMetadataService  The data source metadata provider
      * @param objectMappers  JSON tools
      * @param formatResolver  The formatResolver for determining correct response format
+     * @param exceptionHandler  Injection point for handling response exceptions
      */
     @Inject
     public SlicesServlet(
@@ -73,13 +69,15 @@ public class SlicesServlet extends EndpointServlet {
             @Named(SlicesApiRequest.REQUEST_MAPPER_NAMESPACE) RequestMapper requestMapper,
             DataSourceMetadataService dataSourceMetadataService,
             ObjectMappersSuite objectMappers,
-            ResponseFormatResolver formatResolver
+            ResponseFormatResolver formatResolver,
+            @Named(SlicesApiRequest.EXCEPTION_HANDLER_NAMESPACE) MetadataExceptionHandler exceptionHandler
     ) {
         super(objectMappers);
         this.physicalTableDictionary = physicalTableDictionary;
         this.requestMapper = requestMapper;
         this.dataSourceMetadataService = dataSourceMetadataService;
         this.formatResolver = formatResolver;
+        this.exceptionHandler = exceptionHandler;
     }
 
     /**
@@ -88,7 +86,6 @@ public class SlicesServlet extends EndpointServlet {
      * @param perPage  number of values to return per page
      * @param page  the page to start from
      * @param format  The name of the output format type
-     * @param uriInfo  UriInfo of the request
      * @param containerRequestContext  The context of data provided by the Jersey container for this request
 
      * @return OK(200) else Bad Request(400) Response format:
@@ -109,15 +106,15 @@ public class SlicesServlet extends EndpointServlet {
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @QueryParam("format") String format,
-            @Context UriInfo uriInfo,
-            @Context final ContainerRequestContext containerRequestContext
+            @Context ContainerRequestContext containerRequestContext
     ) {
-        Supplier<Response> responseSender;
+        SlicesApiRequest apiRequest = null;
+        UriInfo uriInfo = containerRequestContext.getUriInfo();
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new SliceRequest("all"));
 
-            SlicesApiRequestImpl apiRequest = new SlicesApiRequestImpl(
+            apiRequest = new SlicesApiRequestImpl(
                     null,
                     formatResolver.apply(format, containerRequestContext),
                     perPage,
@@ -131,40 +128,31 @@ public class SlicesServlet extends EndpointServlet {
                 apiRequest = (SlicesApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
-            Stream<Map<String, String>> result = apiRequest.getPage(apiRequest.getSlices());
-
-            Response response = formatResponse(
+            Response response = paginateAndFormatResponse(
                     apiRequest,
-                    result,
+                    containerRequestContext,
+                    apiRequest.getSlices(),
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "slices" : "rows",
                     null
             );
 
             LOG.debug("Slice Endpoint Response: {}", response.getEntity());
-            responseSender = () -> response;
-        } catch (RequestValidationException e) {
-            LOG.debug(e.getMessage(), e);
-            responseSender = () -> Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
-        } catch (IOException e) {
-            String msg = String.format("Internal server error. IOException : %s", e.getMessage());
-            LOG.error(msg, e);
-            responseSender = () -> Response.status(INTERNAL_SERVER_ERROR).entity(msg).build();
-        } catch (Error | Exception e) {
-            String msg = ErrorMessageFormat.REQUEST_PROCESSING_EXCEPTION.format(e.getMessage());
-            LOG.info(msg, e);
-            responseSender = () -> Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
+            return response;
+        } catch (Throwable t) {
+            return exceptionHandler.handleThrowable(
+                    t,
+                    Optional.ofNullable(apiRequest),
+                    containerRequestContext
+            );
         } finally {
             RequestLog.stopTiming(this);
         }
-
-        return responseSender.get();
     }
 
     /**
      * Endpoint to get all the dimensions and metrics serviced by a druid slice.
      *
      * @param sliceName  Physical table name
-     * @param uriInfo  UriInfo of the request
      * @param containerRequestContext  The context of data provided by the Jersey container for this request
      *
      * @return OK(200) else Bad Request(400). Response format:
@@ -191,22 +179,21 @@ public class SlicesServlet extends EndpointServlet {
     @Path("/{sliceName}")
     public Response getSliceBySliceName(
             @PathParam("sliceName") String sliceName,
-            @Context UriInfo uriInfo,
             @Context final ContainerRequestContext containerRequestContext
     ) {
-        Supplier<Response> responseSender;
+        SlicesApiRequestImpl apiRequest = null;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new SliceRequest(sliceName));
 
-            SlicesApiRequestImpl apiRequest = new SlicesApiRequestImpl(
+            apiRequest = new SlicesApiRequestImpl(
                     sliceName,
                     null,
                     "",
                     "",
                     physicalTableDictionary,
                     dataSourceMetadataService,
-                    uriInfo
+                    containerRequestContext.getUriInfo()
             );
 
             if (requestMapper != null) {
@@ -215,18 +202,16 @@ public class SlicesServlet extends EndpointServlet {
 
             String output = objectMappers.getMapper().writeValueAsString(apiRequest.getSlice());
             LOG.debug("Slice Endpoint Response: {}", output);
-            responseSender = () -> Response.status(Response.Status.OK).entity(output).build();
-        } catch (RequestValidationException e) {
-            LOG.debug(e.getMessage(), e);
-            responseSender = () -> Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
-        } catch (IOException | IllegalStateException e) {
-            LOG.debug("Bad request exception : {}", e);
-            responseSender = () -> Response.status(BAD_REQUEST).entity("Exception: " + e.getMessage()).build();
+            return Response.status(Response.Status.OK).entity(output).build();
+        } catch (Throwable t) {
+            return exceptionHandler.handleThrowable(
+                    t,
+                    Optional.ofNullable(apiRequest),
+                    containerRequestContext
+            );
         } finally {
             RequestLog.stopTiming(this);
         }
-
-        return responseSender.get();
     }
 
     /**

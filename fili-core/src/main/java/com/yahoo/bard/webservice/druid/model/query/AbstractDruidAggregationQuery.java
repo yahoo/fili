@@ -48,8 +48,8 @@ public abstract class AbstractDruidAggregationQuery<Q extends AbstractDruidAggre
      * @param postAggregations  The post-aggregations
      * @param intervals  The intervals
      * @param context  The context
-     * @param doFork  true to fork a new context and bump up the query id, or false to create an exact copy of the
-     * context.
+     * @param incrementQueryId  true to fork a new context and bump up the query id, or false to create an exact copy
+     * of the context.
      */
     protected AbstractDruidAggregationQuery(
             QueryType queryType,
@@ -61,9 +61,9 @@ public abstract class AbstractDruidAggregationQuery<Q extends AbstractDruidAggre
             Collection<PostAggregation> postAggregations,
             Collection<Interval> intervals,
             QueryContext context,
-            boolean doFork
+            boolean incrementQueryId
     ) {
-        super(queryType, dataSource, granularity, filter, intervals, context, doFork);
+        super(queryType, dataSource, granularity, filter, intervals, context, incrementQueryId);
         this.dimensions = dimensions != null ? Collections.unmodifiableCollection(dimensions) : null;
         this.aggregations = aggregations != null ? new LinkedHashSet<>(aggregations) : null;
         this.postAggregations = postAggregations != null ? new LinkedHashSet<>(postAggregations) : null;

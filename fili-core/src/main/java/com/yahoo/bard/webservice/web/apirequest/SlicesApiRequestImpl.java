@@ -38,7 +38,7 @@ import javax.ws.rs.core.UriInfo;
 public class SlicesApiRequestImpl extends ApiRequestImpl implements SlicesApiRequest {
     private static final Logger LOG = LoggerFactory.getLogger(SlicesApiRequestImpl.class);
 
-    private final Set<Map<String, String>> slices;
+    private final LinkedHashSet<Map<String, String>> slices;
     private final Map<String, Object> slice;
 
     /**
@@ -72,7 +72,7 @@ public class SlicesApiRequestImpl extends ApiRequestImpl implements SlicesApiReq
             DataSourceMetadataService dataSourceMetadataService,
             UriInfo uriInfo
     ) throws BadApiRequestException {
-        super(format, perPage, page, uriInfo);
+        super(format, perPage, page);
         this.slices = generateSlices(tableDictionary, uriInfo);
 
         this.slice = sliceName != null ? generateSlice(
@@ -94,19 +94,21 @@ public class SlicesApiRequestImpl extends ApiRequestImpl implements SlicesApiReq
      * Generates the set of all available slices.
      *
      * @param tableDictionary  Physical table dictionary contains the map of valid table names to table objects.
-     * @param uriInfo  The URI of the request object.
+     * @param uriInfo  The URI info for the request object.
      *
      * @return Set of slice objects.
      * @throws BadApiRequestException if the physical table dictionary is empty.
      */
-    protected Set<Map<String, String>> generateSlices(PhysicalTableDictionary tableDictionary, UriInfo uriInfo)
-            throws BadApiRequestException {
+    protected LinkedHashSet<Map<String, String>> generateSlices(
+            PhysicalTableDictionary tableDictionary,
+            UriInfo uriInfo
+    ) throws BadApiRequestException {
         if (tableDictionary.isEmpty()) {
             String msg = EMPTY_DICTIONARY.logFormat("Slices cannot be found. Physical Table");
             throw new BadApiRequestException(msg);
         }
 
-        Set<Map<String, String>> generated = tableDictionary.entrySet().stream()
+        LinkedHashSet<Map<String, String>> generated = tableDictionary.entrySet().stream()
                 .map(
                         e -> {
                             Map<String, String> res = new LinkedHashMap<>();
@@ -214,7 +216,7 @@ public class SlicesApiRequestImpl extends ApiRequestImpl implements SlicesApiReq
     }
 
     @Override
-    public Set<Map<String, String>> getSlices() {
+    public LinkedHashSet<Map<String, String>> getSlices() {
         return this.slices;
     }
 

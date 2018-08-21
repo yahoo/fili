@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.table.availability;
 
 import com.yahoo.bard.webservice.data.config.names.DataSourceName;
+import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.resolver.DataSourceFilter;
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
@@ -102,6 +103,24 @@ public class PartitionAvailability extends BaseCompositeAvailability implements 
         return filteredAvailabilities(constraint)
                 .map(availability -> availability.getDataSourceNames(constraint))
                 .flatMap(Set::stream).collect(Collectors.toSet());
+    }
+
+    /**
+     * Build a PartitionAvailability based on a map of table based filters.
+     *
+     * @param dataSourceFilterMap  A map of part tables to filters
+     *
+     * @return  The availability describing the partition
+     */
+    public static PartitionAvailability build(Map<ConfigPhysicalTable, DataSourceFilter> dataSourceFilterMap) {
+        return new PartitionAvailability(dataSourceFilterMap.entrySet().stream()
+                .collect(
+                        Collectors.toMap(
+                                entry -> entry.getKey().getAvailability(),
+                                Map.Entry::getValue
+                        )
+                )
+        );
     }
 
     @Override

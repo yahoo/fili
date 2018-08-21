@@ -2,15 +2,18 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.availability;
 
-import com.google.common.collect.ImmutableSet;
 import com.yahoo.bard.webservice.data.config.names.DataSourceName;
+import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
+
+import com.google.common.collect.ImmutableSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.AbstractMap;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
@@ -161,6 +164,25 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
                 )
                 .filter(entry -> !entry.getValue().getMetricNames().isEmpty())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    /**
+     * Produce a metric union availability.
+     *
+     * @param physicalTables  The physical tables to source metrics and dimensions from.
+     * @param availabilitiesToMetricNames  The map of availabilities to the metric columns in the union schema.
+     *
+     * @return A metric union availability decorated with an official aggregate.
+     */
+
+    public static MetricUnionAvailability build(
+            @NotNull Collection<ConfigPhysicalTable> physicalTables,
+            @NotNull Map<Availability, Set<String>> availabilitiesToMetricNames
+    ) {
+        return new MetricUnionAvailability(
+                physicalTables.stream().map(ConfigPhysicalTable::getAvailability).collect(Collectors.toSet()),
+                availabilitiesToMetricNames
+        );
     }
 
     @Override

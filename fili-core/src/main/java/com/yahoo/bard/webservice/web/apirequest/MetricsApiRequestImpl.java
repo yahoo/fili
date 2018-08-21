@@ -13,11 +13,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.LinkedHashSet;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.core.UriInfo;
 
 /**
  * Metrics API Request Implementation binds, validates, and models the parts of a request to the metrics endpoint.
@@ -25,7 +23,7 @@ import javax.ws.rs.core.UriInfo;
 public class MetricsApiRequestImpl extends ApiRequestImpl implements MetricsApiRequest {
     private static final Logger LOG = LoggerFactory.getLogger(MetricsApiRequestImpl.class);
 
-    private final Set<LogicalMetric> metrics;
+    private final LinkedHashSet<LogicalMetric> metrics;
 
     /**
      * Parses the API request URL and generates the Api Request object.
@@ -40,7 +38,6 @@ public class MetricsApiRequestImpl extends ApiRequestImpl implements MetricsApiR
      * @param page  desired page of results. If present in the original request, must be a positive
      * integer. If not present, must be the empty string.
      * @param metricDictionary  cache containing all the valid metric objects.
-     * @param uriInfo  The URI of the request object.
      *
      * @throws BadApiRequestException is thrown in the following scenarios:
      * <ol>
@@ -53,10 +50,9 @@ public class MetricsApiRequestImpl extends ApiRequestImpl implements MetricsApiR
             String format,
             @NotNull String perPage,
             @NotNull String page,
-            MetricDictionary metricDictionary,
-            UriInfo uriInfo
+            MetricDictionary metricDictionary
     ) throws BadApiRequestException {
-        super(format, perPage, page, uriInfo);
+        super(format, perPage, page);
 
         this.metrics = generateMetrics(metricName, metricDictionary);
 
@@ -77,9 +73,9 @@ public class MetricsApiRequestImpl extends ApiRequestImpl implements MetricsApiR
      * @return Set of metric objects.
      * @throws BadApiRequestException if an invalid metric is requested or the metric dictionary is empty.
      */
-    protected Set<LogicalMetric> generateMetrics(String metricName, MetricDictionary metricDictionary)
+    protected LinkedHashSet<LogicalMetric> generateMetrics(String metricName, MetricDictionary metricDictionary)
             throws BadApiRequestException {
-        Set<LogicalMetric> generated = metricDictionary.values().stream()
+        LinkedHashSet<LogicalMetric> generated = metricDictionary.values().stream()
                 .filter(logicalMetric -> metricName == null || metricName.equals(logicalMetric.getName()))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
@@ -99,7 +95,7 @@ public class MetricsApiRequestImpl extends ApiRequestImpl implements MetricsApiR
     }
 
     @Override
-    public Set<LogicalMetric> getMetrics() {
+    public LinkedHashSet<LogicalMetric> getMetrics() {
         return this.metrics;
     }
 

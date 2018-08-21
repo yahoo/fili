@@ -11,7 +11,7 @@ import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Set;
+import java.util.List;
 
 /**
  * Tests whether a physical table aligns with the request time and period.
@@ -24,7 +24,7 @@ public class TimeAlignmentPhysicalTableMatcher implements PhysicalTableMatcher {
 
     private final IsTableAligned isTableAligned;
     private final String logicalTableName;
-    private final Set<Interval> requestIntervals;
+    private final List<Interval> requestIntervals;
 
     /**
      * Stores the request table name and intervals and creates a predicate to test a physical table based on request

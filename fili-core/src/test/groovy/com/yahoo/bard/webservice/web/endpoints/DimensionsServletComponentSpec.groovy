@@ -78,7 +78,7 @@ class DimensionsServletComponentSpec extends Specification {
         String expectedResponse = """{
                                          "dimensions":
                                          [
-                                             {"category": "General", "name": "color", "longName": "color", "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/dimensions/color", "cardinality": 0, "storageStrategy":"loaded"},
+                                             {"category": "General", "name": "color", "longName": "color", "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/dimensions/color", "cardinality": 0, "storageStrategy":"none"},
                                              {"category": "General", "name": "shape", "longName": "shape", "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/dimensions/shape", "cardinality": 38, "storageStrategy":"loaded"},
                                              {"category": "General", "name": "size", "longName": "size", "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/dimensions/size", "cardinality": 0, "storageStrategy":"loaded"},
                                              {"category": "General", "name": "model", "longName": "model", "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/dimensions/model", "cardinality": 21, "storageStrategy":"loaded"},
