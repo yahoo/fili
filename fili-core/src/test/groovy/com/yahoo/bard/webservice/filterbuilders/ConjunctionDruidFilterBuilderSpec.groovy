@@ -132,7 +132,7 @@ class ConjunctionDruidFilterBuilderSpec extends Specification {
     }
 
     @Unroll
-    def "getFilteredDimensionRows resolves #filters on dimension 'ageBracket' into #dimensionrowValues"() {
+    def "getFilteredDimensionRowValues resolves #filters on dimension 'ageBracket' into #dimensionrowValues"() {
         expect:
         Set<ApiFilter> filtersUnderTest = filters.collect { apiFilters[it] }
         filterBuilder.getFilteredDimensionRowValues(resources.d3, filtersUnderTest) == dimensionrowValues

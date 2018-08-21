@@ -58,7 +58,7 @@ public class DruidInFilterBuilder extends ConjunctionDruidFilterBuilder {
         // split ApiFilters into two groups: positive filters & negative filters
         Pair<Set<ApiFilter>, Set<ApiFilter>> positiveAndNegativeSplitFilters = splitApiFilters(filters);
         Set<ApiFilter> positiveFilters = positiveAndNegativeSplitFilters.getLeft();
-        Set<ApiFilter> negativeFilters = negateNegativeFilters(positiveAndNegativeSplitFilters.getRight());
+        Set<ApiFilter> negatedNegativeFilters = negateNegativeFilters(positiveAndNegativeSplitFilters.getRight());
 
         // search for matched values of the positive filter by sending all of the filters down to search provider once
         List<String> inValues = positiveFilters.isEmpty()
@@ -66,7 +66,7 @@ public class DruidInFilterBuilder extends ConjunctionDruidFilterBuilder {
                 : getFilteredDimensionRowValues(dimension, positiveFilters);
 
         // search for matched values of the negative filter by sending each filter down to search provider one-by-one
-        List<String> notInValues = negativeFilters.stream()
+        List<String> notInValues = negatedNegativeFilters.stream()
                 .map(apiFilter -> {
                     try {
                         return getFilteredDimensionRowValues(dimension, Collections.singleton(apiFilter));
