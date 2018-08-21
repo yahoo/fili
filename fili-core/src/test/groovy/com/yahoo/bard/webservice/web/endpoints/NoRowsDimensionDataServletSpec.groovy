@@ -60,7 +60,6 @@ class NoRowsDimensionDataServletSpec extends BaseDataServletComponentSpec {
             "aggregations": [
                 { "name": "width", "fieldName": "width", "type": "longSum" }
             ],
-            "postAggregations": [],
             "context": {}
         }"""
     }

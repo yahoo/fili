@@ -108,7 +108,6 @@ class TopNWithHavingDataServletSpec extends BaseDataServletComponentSpec {
                     { "name": "width", "fieldName": "width", "type": "longSum" },
                     { "name": "height", "fieldName": "height", "type": "longSum" }
                 ],
-                "postAggregations": [],
                 "having": {
                     "havingSpecs": [
                         {

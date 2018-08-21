@@ -89,7 +89,6 @@ class MultipleMetricHavingDataServletSpec extends BaseDataServletComponentSpec {
             "intervals": [
                 "2014-06-02T00:00:00.000Z/2014-06-09T00:00:00.000Z"
             ],
-            "postAggregations": [],
             "queryType": "groupBy",
             "context": {}
         }"""

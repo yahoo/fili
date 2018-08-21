@@ -152,6 +152,19 @@ class GroupByQuerySpec extends Specification {
         vars.postAggregations = vars.postAggregations ?: "[]"
         vars.intervals = vars.intervals ?: "[]"
 
+        vars.postAggregations == "[]" ?
+        """
+        {
+            "queryType":"$vars.queryType",
+            "dataSource":$vars.dataSource,
+            "granularity":$vars.granularity,
+            "dimensions":$vars.dimensions,
+            $vars.filter
+            "aggregations":$vars.aggregations,
+            "intervals":$vars.intervals,
+            "context":$vars.context
+        }
+        """ :
         """
         {
             "queryType":"$vars.queryType",

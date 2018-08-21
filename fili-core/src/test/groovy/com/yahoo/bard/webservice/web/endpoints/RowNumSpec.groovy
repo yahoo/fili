@@ -51,7 +51,6 @@ class RowNumSpec extends BaseDataServletComponentSpec {
                         "type": "longSum"
                     }
                 ],
-                "postAggregations": [],
                 "intervals": ["2014-06-02T00:00:00.000Z/2014-06-30T00:00:00.000Z"],
                 "limitSpec": {
                     "type": "default",

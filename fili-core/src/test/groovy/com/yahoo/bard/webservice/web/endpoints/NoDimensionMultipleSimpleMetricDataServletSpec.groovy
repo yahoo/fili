@@ -39,7 +39,6 @@ class NoDimensionMultipleSimpleMetricDataServletSpec extends BaseDataServletComp
                   "fieldName" : "width",
                   "type" : "longSum"
               } ],
-              "postAggregations" : [],
               "intervals" : [ "2014-06-02T00:00:00.000Z/2014-06-04T00:00:00.000Z" ],
               "granularity": ${getTimeGrainString()},
               "context": {}

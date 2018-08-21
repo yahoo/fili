@@ -118,7 +118,6 @@ class RequestUtils {
             },
             "dimensions": [],
             "aggregations": [],
-            "postAggregations": [],
             "intervals": [],
             "granularity": {
               "type": "period",

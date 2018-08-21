@@ -79,8 +79,7 @@ class VolatilityTableSelectionSpec extends BaseDataServletComponentSpec {
                             "fieldName": "limbs",
                             "type": "longSum"
                         }
-                ],
-                "postAggregations": []
+                ]
             }
         """
     }

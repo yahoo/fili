@@ -84,7 +84,6 @@ class ErrorDataServletSpec extends Specification {
         "fieldName" : "depth",
         "type" : "longSum"
     } ],
-    "postAggregations" : [],
     "intervals" : [ "2014-09-01T00:00:00.000Z/2014-09-08T00:00:00.000Z" ],
     "granularity": ${BaseDataServletComponentSpec.getTimeGrainString("week")},
     "context" : {
