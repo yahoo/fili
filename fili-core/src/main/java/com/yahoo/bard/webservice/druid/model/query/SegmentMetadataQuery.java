@@ -27,16 +27,16 @@ public class SegmentMetadataQuery extends AbstractDruidQuery<SegmentMetadataQuer
      * @param dataSource  The datasource
      * @param intervals  The intervals
      * @param context  The context
-     * @param doFork  true to fork a new context and bump up the query id, or false to create an exact copy of the
-     * context.
+     * @param incrementQueryId  true to fork a new context and bump up the query id, or false to create an exact copy
+     * of the context.
      */
     protected SegmentMetadataQuery(
             DataSource dataSource,
             Collection<Interval> intervals,
             QueryContext context,
-            boolean doFork
+            boolean incrementQueryId
     ) {
-        super(DefaultQueryType.SEGMENT_METADATA, dataSource, context, doFork);
+        super(DefaultQueryType.SEGMENT_METADATA, dataSource, context, incrementQueryId);
         this.intervals = Collections.unmodifiableCollection(intervals);
     }
 
