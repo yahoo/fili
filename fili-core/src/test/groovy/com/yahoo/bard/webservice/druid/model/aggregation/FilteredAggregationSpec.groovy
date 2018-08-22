@@ -15,7 +15,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
-import com.yahoo.bard.webservice.data.filterbuilders.DefaultDruidFilterBuilder
+import com.yahoo.bard.webservice.data.filterbuilders.DruidOrFilterBuilder
 import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
@@ -86,7 +86,7 @@ class FilteredAggregationSpec extends Specification{
 
         Set<ApiFilter> filterSet = [new ApiFilter("age|id-in[114,125]", dimensionDictionary)] as Set
 
-        DruidFilterBuilder filterBuilder = new DefaultDruidFilterBuilder()
+        DruidFilterBuilder filterBuilder = new DruidOrFilterBuilder()
         filter1  = filterBuilder.buildFilters([(ageDimension): filterSet])
 
         filter2 = filterBuilder.buildFilters(

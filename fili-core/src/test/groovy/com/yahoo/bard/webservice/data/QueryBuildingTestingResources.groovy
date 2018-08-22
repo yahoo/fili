@@ -55,7 +55,7 @@ import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 import org.joda.time.DateTimeZone
 import org.joda.time.Interval
 
-public class QueryBuildingTestingResources {
+class QueryBuildingTestingResources {
 
     // Aggregatable dimensions, numbered for identification
     public Dimension d1, d2, d3, d4, d5
@@ -101,11 +101,11 @@ public class QueryBuildingTestingResources {
 
     public DataSourceMetadataService metadataService
 
-    public QueryBuildingTestingResources() {
+    QueryBuildingTestingResources() {
         init()
     }
 
-    public QueryBuildingTestingResources init() {
+    QueryBuildingTestingResources init() {
 
         DateTimeZone.setDefault(UTC)
         def ages = ["1": "0-10", "2": "11-14", "3": "14-29", "4": "30-40", "5": "41-59", "6": "60+"]

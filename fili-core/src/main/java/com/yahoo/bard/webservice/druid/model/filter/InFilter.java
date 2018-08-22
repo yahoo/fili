@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.druid.model.filter;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -32,7 +33,7 @@ public class InFilter extends DimensionalFilter<InFilter> {
      */
     public InFilter(Dimension dimension, @NotNull List<String> values) {
         super(dimension, DefaultFilterType.IN);
-        this.values = values;
+        this.values = new ArrayList<>(values);
     }
 
     //CHECKSTYLE:OFF

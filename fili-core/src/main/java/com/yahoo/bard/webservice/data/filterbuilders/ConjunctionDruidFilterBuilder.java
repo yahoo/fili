@@ -18,11 +18,17 @@ import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter;
 import com.yahoo.bard.webservice.exception.TooManyDruidFiltersException;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
+import com.yahoo.bard.webservice.web.FilterOperation;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -44,6 +50,8 @@ public abstract class ConjunctionDruidFilterBuilder implements DruidFilterBuilde
             SYSTEM_CONFIG.getPackageVariableName("max_num_druid_filters"),
             DEFAULT_MAX_NUM_DRUID_FILTERS
     );
+
+    private static final String NON_NEGATIVE_FILTER_ERROR_FORMAT = "Negating a non-negative filter - '%s'";
 
     @Override
     public Filter buildFilters(Map<Dimension, Set<ApiFilter>> filterMap) throws DimensionRowNotFoundException {
@@ -89,6 +97,84 @@ public abstract class ConjunctionDruidFilterBuilder implements DruidFilterBuilde
             throws DimensionRowNotFoundException;
 
     /**
+     * Splits a set of {@link ApiFilter}s into two groups of positive and negative filters.
+     * <p>
+     * An {@link ApiFilter} is defined to be positive if its filter operation is one of
+     * <ul>
+     *     <li> {@link FilterOperation#in}
+     *     <li> {@link FilterOperation#startswith}
+     *     <li> {@link FilterOperation#contains}
+     *     <li> {@link FilterOperation#eq}
+     * </ul>
+     * An {@link ApiFilter} is defined to be negative if its filter operation is {@link FilterOperation#notin}.
+     *
+     * @param filters  A set of API filters that are to be splitted
+     *
+     * @return a pair whose left is positive filter and whose right is negative filers
+     */
+    protected static Pair<Set<ApiFilter>, Set<ApiFilter>> splitApiFilters(Set<ApiFilter> filters) {
+        Set<ApiFilter> positiveFilters = new HashSet<>();
+        Set<ApiFilter> negativeFilters = new HashSet<>();
+
+        for (ApiFilter filter : filters) {
+            if (FilterOperation.notin.equals(filter.getOperation())) {
+                // this is a negative filter
+                negativeFilters.add(filter);
+            } else {
+                // this is a positive filter
+                positiveFilters.add(filter);
+            }
+        }
+
+        return new ImmutablePair<>(
+                Collections.unmodifiableSet(positiveFilters),
+                Collections.unmodifiableSet(negativeFilters)
+        );
+    }
+
+    /**
+     * Negates a collection of negative filters, i.e. {@link FilterOperation#notin} {@code =>}
+     * {@link FilterOperation#in}, and returns a stream of the negated filters.
+     * <p>
+     * This method throws {@link IllegalArgumentException} if any one of the filter collection passed in is not a
+     * negative filter, i.e. {@link FilterOperation#notin}.
+     *
+     * @param negativeFilters  The collection of filters to be negated
+     *
+     * @return a stream of the negated filters
+     */
+    protected static Set<ApiFilter> negateNegativeFilters(Collection<ApiFilter> negativeFilters) {
+        return negativeFilters.stream()
+                // TODO - refactor this and next map when more than 1 not* FilterOperations are supported.
+                .peek(filter -> {
+                    if (!FilterOperation.notin.equals(filter.getOperation())) {
+                        String message = String.format(NON_NEGATIVE_FILTER_ERROR_FORMAT, filter);
+                        LOG.error(message);
+                        throw new IllegalArgumentException(message);
+                    }
+                })
+                .map(filter -> filter.withOperation(FilterOperation.in))
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * Resolves a set of ApiFilters into a list of dimension row values that need to be filtered in Druid.
+     *
+     * @param dimension  The dimension being filtered
+     * @param filters  The filters being applied to the {@code dimension}
+     *
+     * @return A list of dimension row values that Druid needs to filter on
+     *
+     * @throws DimensionRowNotFoundException if the filters filter out all dimension rows
+     */
+    protected static List<String> getFilteredDimensionRowValues(Dimension dimension, Set<ApiFilter> filters)
+            throws DimensionRowNotFoundException {
+        return getFilteredDimensionRows(dimension, filters).stream()
+                .map(DimensionRow::getKeyValue)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Resolves a set of ApiFilters into a list of dimension rows that need to be filtered in Druid.
      *
      * @param dimension  The dimension being filtered
@@ -98,7 +184,7 @@ public abstract class ConjunctionDruidFilterBuilder implements DruidFilterBuilde
      *
      * @throws DimensionRowNotFoundException if the filters filter out all dimension rows
      */
-    protected Set<DimensionRow> getFilteredDimensionRows(Dimension dimension, Set<ApiFilter> filters)
+    protected static Set<DimensionRow> getFilteredDimensionRows(Dimension dimension, Set<ApiFilter> filters)
             throws DimensionRowNotFoundException {
         Set<DimensionRow> rows = dimension.getSearchProvider().findFilteredDimensionRows(filters);
 
@@ -119,7 +205,7 @@ public abstract class ConjunctionDruidFilterBuilder implements DruidFilterBuilde
      *
      * @return a list of Druid selector filters
      */
-    protected List<Filter> buildSelectorFilters(Dimension dimension, Set<DimensionRow> rows) {
+    protected static List<Filter> buildSelectorFilters(Dimension dimension, Set<DimensionRow> rows) {
 
         Function<DimensionRow, Filter> filterBuilder = row -> new SelectorFilter(
                 dimension,
@@ -142,7 +228,7 @@ public abstract class ConjunctionDruidFilterBuilder implements DruidFilterBuilde
         final Function<DimensionRow, Filter> finalFilterBuilder = filterBuilder;
 
         return rows.stream()
-                    .map(row -> finalFilterBuilder.apply(row))
-                    .collect(Collectors.toList());
+                .map(row -> finalFilterBuilder.apply(row))
+                .collect(Collectors.toList());
     }
 }
