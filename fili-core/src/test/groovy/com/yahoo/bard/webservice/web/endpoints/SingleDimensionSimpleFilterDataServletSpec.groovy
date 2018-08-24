@@ -64,9 +64,14 @@ class SingleDimensionSimpleFilterDataServletSpec extends BaseDataServletComponen
                 "model"
             ],
             "filter": {
-                "type": "in",
-                "dimension": "model",
-                "values": ["Model1"]  
+                "fields": [
+                    {
+                        "dimension": "model",
+                        "type": "selector",
+                        "value": "Model1"
+                    }
+                ],
+                "type": "or"
             },
             "aggregations": [
                 { "name": "width", "fieldName": "width", "type": "longSum" }

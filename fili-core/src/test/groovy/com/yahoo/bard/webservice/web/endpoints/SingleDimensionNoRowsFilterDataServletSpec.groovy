@@ -75,9 +75,29 @@ class SingleDimensionNoRowsFilterDataServletSpec extends BaseDataServletComponen
                 "model"
             ],
             "filter": {
-                "type": "in",
-                "dimension": "misc",
-                "values": ["other1", "other2Desc"]
+                "fields": [
+                    {
+                        "fields": [
+                            {
+                                "dimension": "misc",
+                                "type": "selector",
+                                "value": "other1"
+                            }
+                        ],
+                        "type": "or"
+                    },
+                    {
+                        "fields": [
+                            {
+                                "dimension": "misc",
+                                "type": "selector",
+                                "value": "other2Desc"
+                            }
+                        ],
+                        "type": "or"
+                    }
+                ],
+                "type": "and"
             },
             "aggregations": [
                 { "name": "width", "fieldName": "width", "type": "longSum" }

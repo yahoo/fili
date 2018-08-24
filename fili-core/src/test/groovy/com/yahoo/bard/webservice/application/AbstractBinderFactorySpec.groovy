@@ -6,6 +6,7 @@ import static com.yahoo.bard.webservice.application.AbstractBinderFactory.HEALTH
 import static com.yahoo.bard.webservice.application.AbstractBinderFactory.HEALTH_CHECK_NAME_DIMENSION
 import static com.yahoo.bard.webservice.application.AbstractBinderFactory.HEALTH_CHECK_NAME_DRUID_DIM_LOADER
 import static com.yahoo.bard.webservice.application.AbstractBinderFactory.HEALTH_CHECK_VERSION
+import static com.yahoo.bard.webservice.config.BardFeatureFlag.DEFAULT_IN_FILTER
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_CACHE
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_CACHE_V2
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_COORDINATOR_METADATA
@@ -35,6 +36,9 @@ import com.yahoo.bard.webservice.data.config.dimension.TypeAwareDimensionLoader
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader
 import com.yahoo.bard.webservice.data.config.table.TableLoader
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
+import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder
+import com.yahoo.bard.webservice.data.filterbuilders.DruidInFilterBuilder
+import com.yahoo.bard.webservice.data.filterbuilders.DruidOrFilterBuilder
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.druid.client.DruidWebService
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataLoadTask
@@ -403,5 +407,35 @@ public class AbstractBinderFactorySpec extends Specification {
         cl.dimensionLoader instanceof TypeAwareDimensionLoader
         cl.metricLoader == metricLoader
         cl.tableLoader == tableLoader
+    }
+
+    def "Test if buildDruidFilterBuilder returns the correct filter based on the DEFAULT_IN_FILTER flag "() {
+        setup:
+        DEFAULT_IN_FILTER.setOn(shouldEnable)
+        AbstractBinderFactory abstractBinderFactory = new AbstractBinderFactory() {
+            @Override
+            protected MetricLoader getMetricLoader() {
+                return null
+            }
+
+            @Override
+            protected Set<DimensionConfig> getDimensionConfigurations() {
+                return null
+            }
+
+            @Override
+            protected TableLoader getTableLoader() {
+                return null
+            }
+        }
+        DruidFilterBuilder druidFilterBuilder = abstractBinderFactory.buildDruidFilterBuilder()
+
+        expect:
+        filterBuilder.isInstance(druidFilterBuilder)
+
+        where:
+        shouldEnable | filterBuilder
+        true         | DruidInFilterBuilder
+        false        | DruidOrFilterBuilder
     }
 }
