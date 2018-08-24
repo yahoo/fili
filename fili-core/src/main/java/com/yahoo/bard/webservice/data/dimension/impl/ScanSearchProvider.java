@@ -372,6 +372,7 @@ public class ScanSearchProvider implements SearchProvider, FilterDimensionRows {
      * @return  All ordered dimension rows that belongs to a requested page
      */
     private TreeSet<DimensionRow> getAllOrderedDimensionRows() {
+
         return getDimRowIndexes().stream()
                 .map(keyValueStore::get)
                 .filter(Objects::nonNull)

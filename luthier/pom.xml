@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.yahoo.fili</groupId>
+        <artifactId>fili-parent-pom</artifactId>
+        <version>0.10-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>luthier</artifactId>
+    <packaging>jar</packaging>
+    <name>Fili: Luthier</name>
+    <description>Luthier supports making fili external configuration through Lua
+    </description>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+
+        <checkstyle.config.location>../checkstyle-style.xml</checkstyle.config.location>
+        <checkstyle.suppressions.location>../checkstyle-suppressions.xml</checkstyle.suppressions.location>
+
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.yahoo.fili</groupId>
+            <artifactId>fili</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.yahoo.fili</groupId>
+            <artifactId>fili-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.yahoo.fili</groupId>
+            <artifactId>fili-core</artifactId>
+            <type>test-jar</type>
+        </dependency>
+
+        <!-- Test -->
+        <dependency>
+            <groupId>org.glassfish.jersey.test-framework</groupId>
+            <artifactId>jersey-test-framework-core</artifactId>
+        </dependency>
+
+        <!-- Jersey Test 'grizzly' container -->
+        <dependency>
+            <groupId>org.glassfish.jersey.test-framework.providers</groupId>
+            <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
+        </dependency>
+
+        <!-- Json -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jdk8</artifactId>
+        </dependency>
+
+    </dependencies>
+
+</project>

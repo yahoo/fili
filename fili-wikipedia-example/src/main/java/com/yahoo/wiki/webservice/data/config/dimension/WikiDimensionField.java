@@ -8,7 +8,7 @@ import com.yahoo.bard.webservice.util.EnumUtils;
 /**
  * DimensionField enum.
  */
-public enum WikiDimensionField implements DimensionField {
+public enum  WikiDimensionField implements DimensionField {
     ID("Dimension ID"),
     DESC("Dimension Description");
 
