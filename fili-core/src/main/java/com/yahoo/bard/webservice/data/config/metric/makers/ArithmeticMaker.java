@@ -82,11 +82,7 @@ public class ArithmeticMaker extends MetricMaker {
      * @param function  The arithmetic operation performed by the LogicalMetrics constructed by this maker
      */
     public ArithmeticMaker(MetricDictionary metricDictionary, ArithmeticPostAggregationFunction function) {
-        this(
-                metricDictionary,
-                function,
-                NO_OP_MAP_PROVIDER
-        );
+        this(metricDictionary, function, NO_OP_MAP_PROVIDER);
     }
 
     @Override

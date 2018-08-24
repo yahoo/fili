@@ -104,8 +104,7 @@
                                 <exec executable="/bin/sh">
                                     <env key="BUILD_NUMBER" value="${project.build}" />
                                     <arg value="-c" />
-                                    <arg
-                                        value="echo ${project.version}.${BUILD_NUMBER:=0} | sed -e s/-SNAPSHOT//g &gt; target/buildVersion" />
+                                    <arg value="echo ${project.version}.${BUILD_NUMBER:=0} | sed -e s/-SNAPSHOT//g &gt; target/buildVersion" />
                                 </exec>
                             </target>
                         </configuration>

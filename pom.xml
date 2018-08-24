@@ -16,13 +16,18 @@
         <module>fili-core</module>
         <module>fili-navi</module>
         <module>fili-security</module>
+        <module>luthier</module>
         <module>fili</module>
         <module>fili-wikipedia-example</module>
         <module>fili-generic-example</module>
         <module>fili-sql</module>
+        <module>wiki-example-copy</module>
+        <module>SlurperConfig</module>
+
     </modules>
 
     <organization>
+
         <name>Yahoo! Inc.</name>
         <url>http://www.yahoo.com/</url>
     </organization>

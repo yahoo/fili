@@ -162,4 +162,5 @@ class TablesServletSpec extends Specification {
         tableName = WIKIPEDIA.asName().toLowerCase()
         granularity = "hour"
     }
+
 }

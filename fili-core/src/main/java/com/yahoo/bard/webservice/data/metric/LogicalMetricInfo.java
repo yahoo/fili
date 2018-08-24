@@ -36,7 +36,7 @@ public class LogicalMetricInfo {
     }
 
     /**
-     * Constructor. Builds a fully specified Logical Metric Info.
+     * Constructor. Builds a fully specified Logical Metric Info with default type.
      *
      * @param name  Name of the metric
      * @param longName  Long name of the metric
@@ -49,7 +49,8 @@ public class LogicalMetricInfo {
 
     /**
      * Constructor.
-     * Builds a partially specified Logical Metric Info.
+     * Builds a partially specified Logical Metric Info with default long name,
+     * default category, default description and default type.
      *
      * @param name  Name of the metric
      */
@@ -59,13 +60,26 @@ public class LogicalMetricInfo {
 
     /**
      * Constructor.
-     * Builds a partially specified Logical Metric Info.
+     * Builds a partially specified Logical Metric Info with default category,
+     * default description and default type.
      *
      * @param name  Name of the metric
      * @param longName  Long name of the metric
      */
     public LogicalMetricInfo(String name, String longName) {
         this(name, longName, LogicalMetric.DEFAULT_CATEGORY, name, TYPE_DEFAULT);
+    }
+
+    /**
+     * Constructor.
+     * Builds a partially specified Logical Metric Info with default category and default type.
+     *
+     * @param name  Name of the metric
+     * @param longName  Long name of the metric
+     * @param description  Description of the metric
+     */
+    public LogicalMetricInfo(String name, String longName, String description) {
+        this(name, longName, LogicalMetric.DEFAULT_CATEGORY, description, TYPE_DEFAULT);
     }
 
     /**

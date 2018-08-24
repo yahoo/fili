@@ -1,0 +1,144 @@
+{
+  "metrics": [
+    {
+      "maker": "one",
+      "apiName": "ma",
+      "dependencyMetricNames": [
+        "ma", "mb"
+      ]
+    },
+    {
+      "maker": "two",
+      "apiName": "mb",
+      "dependencyMetricNames": [
+        "mb"
+      ]
+    },
+    {
+      "maker": "three",
+      "apiName": "mc",
+      "dependencyMetricNames": [
+        "mb"
+      ]
+    },
+    {
+      "maker": "four",
+      "apiName": "md",
+      "dependencyMetricNames": [
+        "ma"
+      ]
+    },
+    {
+      "maker": "five",
+      "apiName": "me",
+      "dependencyMetricNames": [
+        "ma", "mb"
+      ]
+    },
+    {
+      "maker": "six",
+      "apiName": "mf",
+      "dependencyMetricNames": [
+        "mb", "me"
+      ]
+    },
+    {
+      "maker": "seven",
+      "apiName": "mg",
+      "dependencyMetricNames": [
+        "ma", "mb", "md"
+      ]
+    },
+    {
+      "maker": "one",
+      "apiName": "mh",
+      "dependencyMetricNames": [
+        "md", "mg"
+      ]
+    },
+    {
+      "maker": "two",
+      "apiName": "mi",
+      "dependencyMetricNames": [
+        "md", "mg", "mc"
+      ]
+    },
+    {
+      "maker": "three",
+      "apiName": "mj",
+      "dependencyMetricNames": [
+        "mb", "mh"
+      ]
+    },
+    {
+      "maker": "four",
+      "apiName": "mk",
+      "dependencyMetricNames": [
+        "mk", "mj"
+      ]
+    }
+  ],
+  "makers": [
+    {
+      "name": "one",
+      "classPath": "com.yahoo.luthier.webservice.application.MakerTester",
+      "params": {
+        "intParam": "1",
+        "stringParam": "str"
+      }
+    },
+    {
+      "name": "two",
+      "classPath": "com.yahoo.luthier.webservice.application.MakerTester",
+      "params": {
+        "intParam": "1"
+      }
+    },
+    {
+      "name": "three",
+      "classPath": "com.yahoo.luthier.webservice.application.MakerTester",
+      "params": {
+        "charParam": "1",
+        "functionParam": "PLUS"
+      }
+    },
+    {
+      "name": "four",
+      "classPath": "com.yahoo.luthier.webservice.application.MakerTester",
+      "params": {
+        "timeParam": "HOUR",
+        "booleanParam": "TRUE"
+      }
+    },
+    {
+      "name": "five",
+      "classPath": "com.yahoo.luthier.webservice.application.MakerTester",
+      "params": {
+        "listParam": [
+          "1", "2", "3"
+        ]
+      }
+    },
+    {
+      "name": "six",
+      "classPath": "com.yahoo.luthier.webservice.application.MakerTester",
+      "params": {
+        "listParam": ["1", "2", "3"],
+        "mapStringToIntParam": {
+          "a" : "1",
+          "b" : "2"
+        }
+      }
+    },
+    {
+      "name": "seven",
+      "classPath": "com.yahoo.luthier.webservice.application.MakerTester",
+      "params": {
+        "mapIntToSetParam": {
+          "a" : ["1", "2", "3"],
+          "b" : ["4", "5", "6"]
+        }
+      }
+    }
+  ]
+}
