@@ -20,7 +20,8 @@ public enum BardFeatureFlag implements FeatureFlag {
     DRUID_COORDINATOR_METADATA("druid_coordinator_metadata_enabled"),
     DRUID_LOOKUP_METADATA("druid_lookup_metadata_enabled"),
     DRUID_DIMENSIONS_LOADER("druid_dimensions_loader_enabled"),
-    CASE_SENSITIVE_KEYS("case_sensitive_keys_enabled");
+    CASE_SENSITIVE_KEYS("case_sensitive_keys_enabled"),
+    DEFAULT_IN_FILTER("default_in_filter_enabled");
 
     static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 

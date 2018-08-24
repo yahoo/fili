@@ -55,6 +55,7 @@ import com.yahoo.bard.webservice.data.config.table.TableLoader;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.filterbuilders.DruidInFilterBuilder;
 import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder;
+import com.yahoo.bard.webservice.data.filterbuilders.DruidOrFilterBuilder;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQueryMerger;
 import com.yahoo.bard.webservice.data.time.GranularityDictionary;
@@ -715,7 +716,11 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      * @return An object to build Druid filters from API filters
      */
     protected DruidFilterBuilder buildDruidFilterBuilder() {
-        return new DruidInFilterBuilder();
+        if (BardFeatureFlag.DEFAULT_IN_FILTER.isOn()) {
+            return new DruidInFilterBuilder();
+        } else {
+            return new DruidOrFilterBuilder();
+        }
     }
 
     /**

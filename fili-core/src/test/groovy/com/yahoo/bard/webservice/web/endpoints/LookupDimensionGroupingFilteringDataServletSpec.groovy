@@ -119,60 +119,106 @@ class LookupDimensionGroupingFilteringDataServletSpec extends BaseDataServletCom
             "filter": {
                 "fields": [
                     {
-                        "type": "in",
-                        "dimension":"sex",
-                        "values":["sex1","sex2"]
+                        "fields": [
+                            { "dimension": "sex",
+                                "type": "selector",
+                                "value": "sex1"
+                            },
+                            {
+                                "dimension": "sex", "type": "selector", "value": "sex2"
+                            }
+                        ],
+                        "type": "or"
                     },
                     {
-                        "type": "in",
-                        "dimension": "breed",
-                        "values": ["breed1", "breed2"],
-                        "extractionFn": {
-                            "extractionFns": [
-                                {
-                                    "injective": false,
-                                    "lookup":
+                        "fields": [
+                            {
+                                "dimension": "breed",
+                                "extractionFn": {
+                                    "extractionFns": [
                                         {
-                                            "namespace": "NAMESPACE1",
-                                            "type": "namespace"
+                                            "injective": false,
+                                            "lookup":
+                                                {
+                                                    "namespace": "NAMESPACE1",
+                                                    "type": "namespace"
+                                                },
+                                            "optimize": true,
+                                            "replaceMissingValueWith": "Unknown NAMESPACE1",
+                                            "retainMissingValue": false,
+                                            "type": "lookup"
                                         },
-                                    "optimize": true,
-                                    "replaceMissingValueWith": "Unknown NAMESPACE1",
-                                    "retainMissingValue": false,
-                                    "type": "lookup"
+                                        {
+                                            "injective": false,
+                                            "lookup": {
+                                                "namespace": "NAMESPACE2",
+                                                "type": "namespace"
+                                            },
+                                            "optimize": true,
+                                            "replaceMissingValueWith": "Unknown NAMESPACE2",
+                                            "retainMissingValue": false,
+                                            "type": "lookup"
+                                        }
+                                    ],
+                                    "type": "cascade"
                                 },
-                                {
-                                    "injective": false,
-                                    "lookup": {
-                                        "namespace": "NAMESPACE2",
-                                        "type": "namespace"
-                                    },
-                                    "optimize": true,
-                                    "replaceMissingValueWith": "Unknown NAMESPACE2",
-                                    "retainMissingValue": false,
-                                    "type": "lookup"
-                                }
-                            ],
-                            "type": "cascade"
-                        }
+                                "type": "extraction",
+                                "value": "breed1"
+                            },
+                            {
+                                "dimension": "breed",
+                                "extractionFn": {
+                                    "extractionFns": [
+                                        {
+                                            "injective": false,
+                                            "lookup": {
+                                                "namespace": "NAMESPACE1",
+                                                "type": "namespace"
+                                            },
+                                            "optimize": true,
+                                            "replaceMissingValueWith": "Unknown NAMESPACE1",
+                                            "retainMissingValue": false,
+                                            "type": "lookup"
+                                        },
+                                        {
+                                            "injective": false,
+                                            "lookup": {
+                                                "namespace": "NAMESPACE2",
+                                                "type": "namespace" },
+                                                "optimize": true,
+                                                "replaceMissingValueWith": "Unknown NAMESPACE2",
+                                                "retainMissingValue": false,
+                                                "type": "lookup"
+                                        }
+                                    ],
+                                    "type": "cascade"
+                                },
+                                "type": "extraction",
+                                "value": "breed2"
+                            }
+                        ], "type": "or"
                     },
                     {
                         "field": {
-                            "dimension": "class",
-                            "extractionFn": {
-                                "injective": false,
-                                "lookup": {
-                                    "namespace": "NAMESPACE1",
-                                    "type": "namespace"
-                                },
-                                "optimize": true,
-                                "replaceMissingValueWith": "Unknown NAMESPACE1",
-                                "retainMissingValue": false,
-                                "type": "lookup"
-                            },
-                            "type": "extraction",
-                            "values": ["species3"],
-                            "type": "in"
+                            "fields": [
+                                {
+                                    "dimension": "class",
+                                    "extractionFn": {
+                                        "injective": false,
+                                        "lookup": {
+                                            "namespace": "NAMESPACE1",
+                                            "type": "namespace"
+                                        },
+                                        "optimize": true,
+                                        "replaceMissingValueWith": "Unknown NAMESPACE1",
+                                        "retainMissingValue": false,
+                                        "type": "lookup"
+                                    },
+                                    "type": "extraction",
+                                    "value": "species3"
+                                }
+                            ],
+                            "type": "or"
                         },
                         "type": "not"
                     }
