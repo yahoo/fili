@@ -17,6 +17,8 @@ import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.luthier.webservice.data.config.ExternalConfigLoader;
 import com.yahoo.luthier.webservice.data.config.dimension.ExternalDimensionsLoader;
 
+import com.yahoo.luthier.webservice.data.config.table.PhysicalTableInfoTemplate;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -72,8 +74,9 @@ public class ExternalTableLoader extends BaseTableLoader {
      * @param physicalTables   a set of physical tables
      * @param logicalTables    a set of logical tables
      */
-    private void configureTables(Set<PhysicalTableInfoTemplate> physicalTables,
-                                 Set<LogicalTableInfoTemplate> logicalTables
+    private void configureTables(
+            Set<PhysicalTableInfoTemplate> physicalTables,
+            Set<LogicalTableInfoTemplate> logicalTables
     ) {
 
         // Map from dimension name to dimension configuration
@@ -133,10 +136,10 @@ public class ExternalTableLoader extends BaseTableLoader {
         JodaModule jodaModule = bindTemplates();
         ObjectMapper objectMapper = new ObjectMapper().registerModule(jodaModule);
 
-        ExternalTableConfigTemplate tableConfig =
-                tableConfigLoader.parseExternalFile(
-                        externalConfigFilePath + "TableConfig.json",
-                        ExternalTableConfigTemplate.class, objectMapper);
+        ExternalTableConfigTemplate tableConfig = tableConfigLoader.parseExternalFile(
+            externalConfigFilePath + "TableConfig.json",
+            ExternalTableConfigTemplate.class, objectMapper
+        );
 
         Set<PhysicalTableInfoTemplate> physicalTables = tableConfig.getPhysicalTables();
         Set<LogicalTableInfoTemplate> logicalTables = tableConfig.getLogicalTables();
@@ -145,11 +148,14 @@ public class ExternalTableLoader extends BaseTableLoader {
 
         logicalTables.forEach(table -> {
             TableName tableName = TableName.of(table.getName());
+        Set<TableName> physicalTableNames = tableDefinitions.get(tableName).stream()
+                .map(PhysicalTableDefinition::getName)
+                .collect(Collectors.toSet());
             TableGroup tableGroup = buildDimensionSpanningTableGroup(
-                    apiMetricNames.get(tableName),
-                    druidMetricNames.get(tableName),
+                    physicalTableNames,
                     tableDefinitions.get(tableName),
-                    dictionaries
+                    dictionaries,
+                    apiMetricNames.get(tableName)
             );
             loadLogicalTableWithGranularities(table.getName(),
                     tableGroup, validGrains.get(tableName), dictionaries);

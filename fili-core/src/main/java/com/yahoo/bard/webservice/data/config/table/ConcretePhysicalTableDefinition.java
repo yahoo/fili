@@ -40,11 +40,11 @@ public class ConcretePhysicalTableDefinition extends PhysicalTableDefinition {
     /**
      * Define a physical table with provided logical to physical column name mappings.
      *
-     * @param name                   The table name
-     * @param timeGrain              The zoned time grain
-     * @param metricNames            The Set of metric names on the table
-     * @param dimensionConfigs       The dimension configurations
-     * @param logicalToPhysicalNames A map from logical column names to physical column names
+     * @param name  The table name
+     * @param timeGrain  The zoned time grain
+     * @param metricNames  The Set of metric names on the table
+     * @param dimensionConfigs  The dimension configurations
+     * @param logicalToPhysicalNames  A map from logical column names to physical column names
      */
     public ConcretePhysicalTableDefinition(
             TableName name,

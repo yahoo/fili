@@ -56,8 +56,8 @@ public class DefaultLogicalTableInfoTemplate implements LogicalTableInfoTemplate
     public DefaultLogicalTableInfoTemplate(
             @NotNull @JsonProperty("name") String name,
             @JsonProperty("description") String description,
-            @JsonProperty("apiMetricNames") Set<String> apiMetrics,
-            @JsonProperty("physicalTables") Set<String> physicalTables,
+            @JsonProperty("metrics") Set<String> apiMetrics,
+            @JsonProperty("physicaltables") Set<String> physicalTables,
             @JsonProperty("granularity") Set<String> granularities
     ) {
         this.name = EnumUtils.camelCase(name);
