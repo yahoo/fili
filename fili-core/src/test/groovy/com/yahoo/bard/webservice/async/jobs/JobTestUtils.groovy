@@ -21,12 +21,12 @@ import org.joda.time.DateTimeZone
  * JobRows, and JobFields.
  */
 class JobTestUtils {
-    static final String JOB_TICKET_DATA = "123"
-    static final String QUERY_DATA = "https://host:port/v1/data/table/grain?metrics=metric"
-    static final String STATUS_DATA = DefaultJobStatus.PENDING.getName()
-    static final String DATE_CREATED_DATA = new DateTime(2016, 4, 29, 0, 0, DateTimeZone.UTC).toString()
-    static final String DATE_UPDATED_DATA = new DateTime(2016, 4, 30, 0, 0, DateTimeZone.UTC).toString()
-    static final String USER_ID_DATA = "A man with a plan"
+    public static final String JOB_TICKET_DATA = "123"
+    public static final String QUERY_DATA = "https://host:port/v1/data/table/grain?metrics=metric"
+    public static final String STATUS_DATA = DefaultJobStatus.PENDING.getName()
+    public static final String DATE_CREATED_DATA = new DateTime(2016, 4, 29, 0, 0, DateTimeZone.UTC).toString()
+    public static final String DATE_UPDATED_DATA = new DateTime(2016, 4, 30, 0, 0, DateTimeZone.UTC).toString()
+    public static final String USER_ID_DATA = "A man with a plan"
 
     /**
      * Builds a job row with the specified metadata, and provides a default value for any fields in
