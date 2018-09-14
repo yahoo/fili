@@ -11,8 +11,6 @@ import com.yahoo.bard.webservice.druid.model.filter.Filter
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import java.lang.invoke.MethodHandleImpl.BindCaller.T
-
 class EnumUtilsSpec extends Specification {
 
     final static enum TestEnum {
@@ -44,7 +42,7 @@ class EnumUtilsSpec extends Specification {
     }
 
     def "check forKey"(){
-        Map<String, T> mapping = ["1":TestEnum.ONE, "2":TestEnum.TWO]
+        Map<String, TestEnum> mapping = ["1":TestEnum.ONE, "2":TestEnum.TWO]
 
         expect:
         TestEnum.ONE == EnumUtils.forKey("1", mapping, TestEnum.class)
@@ -52,7 +50,7 @@ class EnumUtilsSpec extends Specification {
     }
 
     def "check missing forKey"(){
-        Map<String, T> mapping = ["1":TestEnum.ONE, "2":TestEnum.TWO]
+        Map<String, TestEnum> mapping = ["1":TestEnum.ONE, "2":TestEnum.TWO]
 
         when:
         EnumUtils.forKey("THIS_IS_A_TEST", mapping, TestEnum.class)

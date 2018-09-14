@@ -33,7 +33,7 @@ public abstract class MetricMaker {
     public static final Function<String, ResultSetMapper> NO_OP_MAP_PROVIDER = (ignore) -> NO_OP_MAPPER;
 
     private static final String SKETCH_REQUIRED_FORMAT = "Field must be a sketch: %s but is: %s";
-    private static final String INCORRECT_NUMBER_OF_DEPS_FORMAT = "%s got %d of %d expected metrics";
+    static final String INCORRECT_NUMBER_OF_DEPS_FORMAT = "%s got %d of %d expected metrics";
     private static final String MISSING_DEP_FORMAT = "Dependent metric %s is not in the metric dictionary";
 
     /**

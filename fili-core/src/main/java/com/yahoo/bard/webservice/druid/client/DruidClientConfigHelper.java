@@ -30,13 +30,13 @@ public class DruidClientConfigHelper {
     /**
      * The url for the broker vip which serves all queries.
      */
-    private static final String DRUID_BROKER_URL_KEY =
+    public static final String DRUID_BROKER_URL_KEY =
             SYSTEM_CONFIG.getPackageVariableName("druid_broker");
 
     /**
      * The url for the coordinator vip which serves low latency queries.
      */
-    private static final String DRUID_COORD_URL_KEY =
+    public static final String DRUID_COORD_URL_KEY =
             SYSTEM_CONFIG.getPackageVariableName("druid_coord");
     /**
      * The timeout setting for all queries.
