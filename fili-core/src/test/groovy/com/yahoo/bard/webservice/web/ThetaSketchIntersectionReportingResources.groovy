@@ -31,6 +31,7 @@ import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.FilteredAggregation
 import com.yahoo.bard.webservice.druid.model.filter.Filter
+import com.yahoo.bard.webservice.druid.model.filter.InFilter
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationPostAggFunction
@@ -176,6 +177,9 @@ class ThetaSketchIntersectionReportingResources extends Specification {
         ArrayNode metricJsonObjArray = mapper.readTree("[{\"filter\":{\"AND\":\"country|id-in[US,IN],property|id-in[114,125]\"},\"name\":\"foo\"},{\"filter\":{},\"name\":\"pageviews\"}]")
         JsonNode jsonobject = metricJsonObjArray.get(0)
         filterObj = jsonobject.get("filter")
+
+        InFilter inFilter2 = new InFilter(countryDim, ["US", "IN"])
+        filter = new InFilter(countryDim, ["US", "IN"])
 
         fooPostAggregation = foos.make().templateDruidQuery.getPostAggregations().first()
 

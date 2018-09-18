@@ -15,7 +15,7 @@ import com.yahoo.bard.webservice.druid.model.filter.NotFilter
 import com.yahoo.bard.webservice.druid.model.filter.OrFilter
 import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter
 import com.yahoo.bard.webservice.web.ApiFilter
-import com.yahoo.bard.webservice.web.ApiFilterGenerator
+import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders
 
 import spock.lang.Shared
 import spock.lang.Specification
@@ -29,6 +29,7 @@ class DruidOrFilterBuilderSpec extends Specification {
     Map apiFilters
     Map druidFilters
     DruidFilterBuilder filterBuilder
+    FilterBinders filterBinders = FilterBinders.INSTANCE
 
     def setupSpec() {
         resources = new QueryBuildingTestingResources()
@@ -42,7 +43,7 @@ class DruidOrFilterBuilderSpec extends Specification {
 
         apiFilters = [:]
         filterSpecs.each {
-            apiFilters.put(it.key, ApiFilterGenerator.build(it.value, resources.dimensionDictionary))
+            apiFilters.put(it.key, filterBinders.generateApiFilter(it.value, resources.dimensionDictionary))
         }
 
         Filter ageIdEq1234 = new OrFilter([
@@ -79,7 +80,7 @@ class DruidOrFilterBuilderSpec extends Specification {
     @Unroll
     def "#filterString is a #outerFilterType-filter on #selectorDimension, with #orFilterSize or-clauses"() {
         setup:
-        ApiFilter filter = ApiFilterGenerator.build(filterString, resources.dimensionDictionary)
+        ApiFilter filter = filterBinders.generateApiFilter(filterString, resources.dimensionDictionary)
 
         when: "We build a single selector filter"
         //resources.d3 is the ageBracket dimension.

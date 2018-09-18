@@ -16,6 +16,7 @@ import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.TableGroup
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
+import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders
 import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 
 import org.joda.time.DateTime
@@ -81,7 +82,7 @@ class AggregatabilityValidationSpec extends Specification {
         setup:
         DataApiRequest apiRequest = new TestingDataApiRequestImpl()
         Set<Dimension> dims = apiRequest.generateDimensions(aggDims + nonAggDims, dimensionDict)
-        Map<Dimension, Set<ApiFilter>> filters = apiRequest.generateFilters(filterString, table, dimensionDict)
+        Map<Dimension, Set<ApiFilter>> filters = FilterBinders.INSTANCE.generateFilters(filterString, table, dimensionDict)
 
         when:
         apiRequest.validateAggregatability(dims, filters)
@@ -167,7 +168,7 @@ class AggregatabilityValidationSpec extends Specification {
         setup:
         DataApiRequest apiRequest = new TestingDataApiRequestImpl()
         Set<Dimension> dims = apiRequest.generateDimensions(aggDims + nonAggDims, dimensionDict)
-        Map<Dimension, Set<ApiFilter>> filters = apiRequest.generateFilters(filterString, table, dimensionDict)
+        Map<Dimension, Set<ApiFilter>> filters = FilterBinders.INSTANCE.generateFilters(filterString, table, dimensionDict)
 
         when:
         apiRequest.validateAggregatability(dims, filters)

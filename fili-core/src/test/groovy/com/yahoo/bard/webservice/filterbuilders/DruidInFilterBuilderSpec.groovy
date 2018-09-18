@@ -13,7 +13,7 @@ import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.model.filter.InFilter
 import com.yahoo.bard.webservice.druid.model.filter.NotFilter
 import com.yahoo.bard.webservice.web.ApiFilter
-import com.yahoo.bard.webservice.web.ApiFilterGenerator
+import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders
 
 import spock.lang.Shared
 import spock.lang.Specification
@@ -27,6 +27,7 @@ class DruidInFilterBuilderSpec extends Specification {
     Map apiFilters
     Map druidFilters
     DruidFilterBuilder filterBuilder
+    FilterBinders filterBinders = FilterBinders.INSTANCE
 
     def setupSpec() {
         resources = new QueryBuildingTestingResources()
@@ -40,7 +41,7 @@ class DruidInFilterBuilderSpec extends Specification {
 
         apiFilters = [:]
         filterSpecs.each {
-            apiFilters.put(it.key, ApiFilterGenerator.build(it.value, resources.dimensionDictionary))
+            apiFilters.put(it.key, filterBinders.generateApiFilter(it.value, resources.dimensionDictionary))
         }
 
         Filter ageIdEq1234 = new InFilter(resources.d3, ["1", "2", "3", "4"])
@@ -74,7 +75,7 @@ class DruidInFilterBuilderSpec extends Specification {
     @Unroll
     def "#filterString is a #outerFilterType-filter on #dimension, with values = #values"() {
         setup: "Init. API filters"
-        ApiFilter filter = ApiFilterGenerator.build(filterString, resources.dimensionDictionary)
+        ApiFilter filter = filterBinders.generateApiFilter(filterString, resources.dimensionDictionary)
 
         when: "We build a single in-filter"
         //resources.d3 is the ageBracket dimension.
@@ -87,10 +88,10 @@ class DruidInFilterBuilderSpec extends Specification {
         outerFilter.type == outerFilterType
         if (outerFilterType == NOT) {
             assert outerFilter.getField().getDimension() == resources.dimensionDictionary.findByApiName(dimension)
-            assert outerFilter.getField().getValues() == values
+            assert outerFilter.getField().getValues() == values as TreeSet
         } else {
             assert outerFilter.getDimension() == resources.dimensionDictionary.findByApiName(dimension)
-            assert outerFilter.getValues() == values
+            assert outerFilter.getValues() == values as TreeSet
         }
 
         where:

@@ -51,14 +51,12 @@ import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.MetricParser;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders;
-import com.yahoo.bard.webservice.web.apirequest.binders.FilterGenerator;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.sun.org.apache.xalan.internal.xsltc.compiler.util.FilterGenerator;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -82,7 +80,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.HEAD;
 import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.Response;
 
@@ -112,11 +109,8 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
 
     private final DruidFilterBuilder filterBuilder;
     private final HavingGenerator havingApiGenerator;
-    private final FilterGenerator filterGenerator = FilterBinders::generateFilters;
 
-    private final Optional<OrderByColumn> dateTimeSort;
-
-
+    FilterGenerator filterGenerator = FilterBinders.INSTANCE::generateFilters;
     /**
      * Parses the API request URL and generates the Api Request object.
      *
@@ -930,9 +924,12 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * Get a filter generator binder for writing ApiFilters.
      *
      * @return  An implementation of FilterGenerator.
+     *
+     * @deprecated Remove when removing {@link #generateFilters(String, LogicalTable, DimensionDictionary)}
      */
+    @Deprecated
     protected FilterGenerator getFilterGenerator() {
-        return FilterBinders::generateFilters;
+        return filterGenerator;
     }
 
     // CHECKSTYLE:OFF
@@ -1081,10 +1078,11 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     }
 
     @Override
+    @Deprecated
     public Map<Dimension, Set<ApiFilter>> generateFilters(
             final String filterQuery, final LogicalTable table, final DimensionDictionary dimensionDictionary
     ) {
-        return filterGenerator.generate(filterQuery, table, dimensionDictionary);
+        return getFilterGenerator().generate(filterQuery, table, dimensionDictionary);
     }
 
     /**
