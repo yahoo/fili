@@ -51,11 +51,4 @@ public interface ApiRequest {
      * asynchronous
      */
      long getAsyncAfter();
-
-    /**
-     * Get the default pagination parameters for this type of API request.
-     *
-     * @return The uri info of this type of API request
-     */
-     PaginationParameters getDefaultPagination();
 }

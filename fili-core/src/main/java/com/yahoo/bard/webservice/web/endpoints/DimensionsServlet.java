@@ -17,6 +17,7 @@ import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.util.StreamUtils;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.ResponseFormatResolver;
+import com.yahoo.bard.webservice.web.apirequest.ApiRequestImpl;
 import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequestImpl;
 import com.yahoo.bard.webservice.web.apirequest.ResponsePaginator;
@@ -288,7 +289,7 @@ public class DimensionsServlet extends EndpointServlet {
             SearchProvider searchProvider = apiRequest.getDimension().getSearchProvider();
             PaginationParameters paginationParameters = apiRequest
                     .getPaginationParameters()
-                    .orElse(apiRequest.getDefaultPagination());
+                    .orElse(ApiRequestImpl.getDefaultPagination());
 
             Pagination<DimensionRow> pagedRows = getPagedRows(apiRequest, searchProvider, paginationParameters);
             Response.ResponseBuilder builder = Response.status(Response.Status.OK);
