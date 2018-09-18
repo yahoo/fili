@@ -94,8 +94,11 @@ import javax.ws.rs.core.Response;
      * A filter builder (remove).
      *
      * @return a filter builder.
+     *
+     * @deprecated use {@link com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders#INSTANCE} if possible
      */
-     DruidFilterBuilder getFilterBuilder();
+    @Deprecated
+    DruidFilterBuilder getFilterBuilder();
 
     /**
      * An optional sorting predicate for the time column.
@@ -109,7 +112,9 @@ import javax.ws.rs.core.Response;
      *
      * @return A set of dimensions
      */
-     Set<Dimension> getFilterDimensions();
+     default Set<Dimension> getFilterDimensions() {
+         return getApiFilters().keySet();
+     }
 
     /**
      * The logical table for this request.
@@ -160,7 +165,7 @@ import javax.ws.rs.core.Response;
      */
      ApiFilters getApiFilters();
 
-     /**
+    /**
      * Generates filter objects on the based on the filter query in the api request.
      *
      * @param filterQuery  Expects a URL filter query String in the format:
@@ -169,8 +174,8 @@ import javax.ws.rs.core.Response;
      * @param dimensionDictionary  DimensionDictionary
      *
      * @return Set of filter objects.
-     * @deprecated Use getFilterGenerator.generate instead
-    */
+     * @deprecated Use FilterBinders.INSTANCE::generateFilters as an alternative
+     */
     @Deprecated
     Map<Dimension, Set<ApiFilter>> generateFilters(
             String filterQuery,
@@ -208,7 +213,7 @@ import javax.ws.rs.core.Response;
 
     DataApiRequest withHavings(Map<LogicalMetric, Set<ApiHaving>> havings);
 
-    DataApiRequestImpl withSorts(LinkedHashSet<OrderByColumn> sorts);
+    DataApiRequest withSorts(LinkedHashSet<OrderByColumn> sorts);
 
     DataApiRequest withTimeSort(Optional<OrderByColumn> timeSort);
 

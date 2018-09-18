@@ -610,7 +610,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      * @return An instance of MetricsFilterSetBuilder
      */
     protected MetricsFilterSetBuilder initializeMetricsFilterSetBuilder() {
-        return new FilteredThetaSketchMetricsHelper();
+        return new FilteredThetaSketchMetricsHelper(buildDruidFilterBuilder());
     }
 
     /**

@@ -27,9 +27,9 @@ import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.StrictPhysicalTable
 import com.yahoo.bard.webservice.web.ApiFilter
-import com.yahoo.bard.webservice.web.ApiFilterGenerator
 import com.yahoo.bard.webservice.web.FilteredThetaSketchMetricsHelper
 import com.yahoo.bard.webservice.web.MetricsFilterSetBuilder
+import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders
 
 import spock.lang.Specification
 
@@ -44,6 +44,8 @@ class FilteredAggregationSpec extends Specification{
     KeyValueStoreDimension ageDimension
     KeyValueStoreDimension genderDimension
     static MetricsFilterSetBuilder oldBuilder = FieldConverterSupplier.metricsFilterSetBuilder
+
+    FilterBinders filterBinders = FilterBinders.INSTANCE
 
     def setupSpec() {
         FieldConverterSupplier.metricsFilterSetBuilder = new FilteredThetaSketchMetricsHelper()
@@ -86,13 +88,13 @@ class FilteredAggregationSpec extends Specification{
 
         LogicalMetric logicalMetric = new LogicalMetric(null, null, filtered_metric_name)
 
-        Set<ApiFilter> filterSet = [ApiFilterGenerator.build("age|id-in[114,125]", dimensionDictionary)] as Set
+        Set<ApiFilter> filterSet = [filterBinders.generateApiFilter("age|id-in[114,125]", dimensionDictionary)] as Set
 
         DruidFilterBuilder filterBuilder = new DruidOrFilterBuilder()
         filter1  = filterBuilder.buildFilters([(ageDimension): filterSet])
 
         filter2 = filterBuilder.buildFilters(
-                [(ageDimension): [ApiFilterGenerator.build("age|id-in[114]", dimensionDictionary)] as Set]
+                [(ageDimension): [filterBinders.generateApiFilter("age|id-in[114]", dimensionDictionary)] as Set]
         )
 
         filteredAgg = new FilteredAggregation("FOO_NO_BAR-114_127", metricAgg, filter1)

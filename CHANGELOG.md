@@ -88,6 +88,9 @@ pull request if there was one.
 
 ### Changed:
 
+- [Made In Filter use sorted Set to support reliable equality](https://github.com/yahoo/fili/issues/780)
+    * In filter tested in unstable ways.  Since order doesn't matter, switched to a canonically ordered set.
+
 - [Make ConjunctionDruidFilterBuilder's protected helper methods instance methods](https://github.com/yahoo/fili/issues/792)
 
 - [Widen access privileges to suppress IDE warnings](https://github.com/yahoo/fili/issues/785)
@@ -103,6 +106,7 @@ pull request if there was one.
 
 - [Corrected generality on with methods](https://github.com/yahoo/fili/issues/773)
    * Changed `DataApiRequest` methods to not refer to the implementation classes.
+   * Added getGeneratorFilter (to replace 'generate') to `DataApiRequest` (yes this contradicts the item above, but this is a transitional change.)
 
 - [Extract logic for getting pagination of dimension rows](https://github.com/yahoo/fili/issues/782)
     * Extract the logic in `DimensionsServlet` to get pagination of dimension rows into a protected function.
@@ -177,6 +181,12 @@ pull request if there was one.
 - [ApiFilter constructor from filter query string was removed when it should have been deprecated](https://github.com/yahoo/fili/issues/794)
     * Constructor using filter query string is restored and calls the `ApiFilterGenerator.build()` to construct itself from the string.
 
+- [Fix equality on Filtered Metrics](https://github.com/yahoo/fili/issues/780)
+    * ThetaSketchIntersection had a bug where it wasn't collecting dependant metrics from InFilters
+
+- [Fix equality on Filtered Metrics](https://github.com/yahoo/fili/issues/780)
+    * Filtered metrics should take filter values into account for equals and hashcode
+
 - [Fix name change in test logical metrics that breaks downstream tests](https://github.com/yahoo/fili/issues/786)
     * Change test logical metric generation to use `LogicalMetricInfo` constructor which takes both long name and description.
 
@@ -195,6 +205,8 @@ pull request if there was one.
 
 ### Removed:
 
+- [Removed dependency on ApiFilter in ThetaSketchMetricsHelder](https://github.com/yahoo/fili/issues/780)
+    * Instead injecting dependency on creation (with defaulting constructor)
 
 - [Removed deprecated code references](https://github.com/yahoo/fili/issues/780)
     * Renamed keys from `BardLoggingFilter` properties off deprecated refence class (this was an artifact from a bad rename)
@@ -456,9 +468,6 @@ Thanks to everyone who contributed to this release!
 
 
 ### Changed:
-
-- [Corrected generality on with methods](https://github.com/yahoo/fili/issues/773)
-   * Changed `DataApiRequest` methods to not refer to the implementation classes.
 
 - [Avoid casting to generate SimplifiedIntervalList](https://github.com/yahoo/fili/pull/658)
     * Some downstream projects generated partial intervals as `ArrayList`, which cannot be cased to

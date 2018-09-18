@@ -13,6 +13,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -23,6 +24,7 @@ import javax.validation.constraints.NotNull;
  * FilteredAggregation wraps aggregation with the associated filter.
  */
 public class FilteredAggregation extends Aggregation {
+
     private final Filter filter;
     private final Aggregation aggregation;
 
@@ -149,5 +151,28 @@ public class FilteredAggregation extends Aggregation {
     @Override
     public boolean isFloatingPoint() {
         return aggregation.isFloatingPoint();
+    }
+
+    @Override
+    public String toString() {
+        return "Aggregation{type=" + getType() + ", name=" + getName() + ", fieldName=" + getFieldName() + ", " +
+                "filter=" + filter + "}";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) { return true; }
+        if (!(o instanceof FilteredAggregation)) { return false; }
+
+        FilteredAggregation that = (FilteredAggregation) o;
+
+        return
+                super.equals(that) &&
+                        Objects.equals(filter, that.filter);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getName(), getFieldName(), getType(), getFilter());
     }
 }

@@ -8,12 +8,15 @@ import com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchSetOperati
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionRowNotFoundException;
+import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder;
+import com.yahoo.bard.webservice.data.filterbuilders.DruidInFilterBuilder;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.aggregation.FilteredAggregation;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
+import com.yahoo.bard.webservice.druid.model.filter.InFilter;
 import com.yahoo.bard.webservice.druid.model.filter.MultiClauseFilter;
 import com.yahoo.bard.webservice.druid.model.filter.NotFilter;
 import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter;
@@ -51,7 +54,27 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
     private static final Logger LOG = LoggerFactory.getLogger(FilteredThetaSketchMetricsHelper.class);
     private static final String ALPHANUMERIC_REGEX = "[^a-zA-Z0-9]";
 
-    FilterGenerator filterGenerator = FilterBinders::generateFilters;
+    protected FilterGenerator filterGenerator = FilterBinders.INSTANCE::generateFilters;
+    protected DruidFilterBuilder filterBuilder;
+
+    /**
+     * Constructor.
+     *
+     * Default implementation using the InFilterBuilder
+     */
+    public FilteredThetaSketchMetricsHelper() {
+        this(new DruidInFilterBuilder());
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param druidFilterBuilder  The druid filter builder used when creating filtered metrics.
+     */
+    public FilteredThetaSketchMetricsHelper(DruidFilterBuilder druidFilterBuilder) {
+        filterBuilder = druidFilterBuilder;
+    }
+
 
     @Override
     public void validateDuplicateMetrics(ArrayNode metricsJsonArray) {
@@ -416,7 +439,7 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
                     table,
                     dimensionDictionary
             );
-            filterHashMap.put(generateMetricName(aFilter), apiRequest.getFilterBuilder().buildFilters(metricFilter));
+            filterHashMap.put(generateMetricName(aFilter), filterBuilder.buildFilters(metricFilter));
         }
 
         for (Map.Entry<String, Filter> entry: filterHashMap.entrySet()) {
@@ -443,11 +466,12 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
 
     @Override
     public Set<Dimension> gatherFilterDimensions(Filter filter, Set<Dimension> dimensions) {
-
         if (filter instanceof SelectorFilter) {
             dimensions.add(((SelectorFilter) filter).getDimension());
+        } else if (filter instanceof InFilter) {
+            dimensions.add(((InFilter) filter).getDimension());
         } else if (filter instanceof MultiClauseFilter) {
-            for (Filter multiclauseFilter: ((MultiClauseFilter) filter).getFields()) {
+            for (Filter multiclauseFilter : ((MultiClauseFilter) filter).getFields()) {
                 gatherFilterDimensions(multiclauseFilter, dimensions);
             }
         } else if (filter instanceof NotFilter) {

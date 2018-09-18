@@ -8,10 +8,10 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.EMPTY_DICTIONARY;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.web.ApiFilter;
-import com.yahoo.bard.webservice.web.ApiFilterGenerator;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
 import com.yahoo.bard.webservice.web.BadFilterException;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
+import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import com.google.common.collect.Sets;
@@ -160,14 +160,13 @@ public class DimensionsApiRequestImpl extends ApiRequestImpl implements Dimensio
         if (filterQuery == null || "".equals(filterQuery)) {
             return generated;
         }
-
         // split on '],' to get list of filters
         List<String> apiFilters = Arrays.asList(filterQuery.split(COMMA_AFTER_BRACKET_PATTERN));
 
         for (String apiFilter : apiFilters) {
             ApiFilter newFilter;
             try {
-                newFilter = ApiFilterGenerator.build(apiFilter, dimensionDictionary);
+                newFilter = generateFilter(apiFilter, dimensionDictionary);
             } catch (BadFilterException filterException) {
                 // bad response if filter dimensions do not match requested dimension
                 throw new BadApiRequestException(filterException.getMessage(), filterException);
@@ -178,6 +177,22 @@ public class DimensionsApiRequestImpl extends ApiRequestImpl implements Dimensio
 
         LOG.trace("Generated set of filters: {}", generated);
         return generated;
+    }
+
+    /**
+     * Parses the URL filter Query and generates the ApiFilter object.
+     *
+     * @param apiFilter  Expects a URL filter query String in the format:
+     * <code>(dimension name)|(field name)-(operation)[?(value or comma separated values)]?</code>
+     * @param dimensionDictionary  cache containing all the valid dimension objects.
+     *
+     * @return the ApiFilter
+     * @throws BadFilterException Exception when filter pattern is not matched or when any of its properties are not
+     * valid.
+     */
+    protected ApiFilter generateFilter(String apiFilter, DimensionDictionary dimensionDictionary)
+            throws BadFilterException {
+        return FilterBinders.INSTANCE.generateApiFilter(apiFilter, dimensionDictionary);
     }
 
     @Override

@@ -9,6 +9,7 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.WEEK
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.YEAR
 import static org.joda.time.DateTimeZone.UTC
 
+import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder
 import com.yahoo.bard.webservice.data.filterbuilders.DruidOrFilterBuilder
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
@@ -35,9 +36,10 @@ import com.yahoo.bard.webservice.table.ConstrainedTable
 import com.yahoo.bard.webservice.table.TableTestUtils
 import com.yahoo.bard.webservice.table.resolver.DefaultPhysicalTableResolver
 import com.yahoo.bard.webservice.web.ApiFilter
-import com.yahoo.bard.webservice.web.ApiFilterGenerator
 import com.yahoo.bard.webservice.web.ApiHaving
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
+import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders
+import com.yahoo.bard.webservice.web.filters.ApiFilters
 
 import org.joda.time.DateTime
 import org.joda.time.Hours
@@ -54,6 +56,7 @@ class DruidQueryBuilderSpec extends Specification {
     @Shared DruidQueryBuilder builder
 
     @Shared Map filterSpecs
+    @Shared Map<String, ApiFilter> apiFiltersByName
     @Shared Map apiFilters
     @Shared Map druidFilters
     @Shared boolean topNStatus
@@ -73,6 +76,8 @@ class DruidQueryBuilderSpec extends Specification {
     static final DruidFilterBuilder FILTER_BUILDER = new DruidOrFilterBuilder()
 
     List<Interval> intervals
+    static FilterBinders filterBinders = FilterBinders.INSTANCE
+
 
     def staticInitialize() {
         resources = new QueryBuildingTestingResources()
@@ -90,10 +95,10 @@ class DruidQueryBuilderSpec extends Specification {
                 abdne1429: "ageBracket|desc-notin[14-29]"
         ]
 
-        apiFilters = [:]
-        filterSpecs.each {
-            apiFilters.put(it.key, ApiFilterGenerator.build(it.value as String, resources.dimensionDictionary))
-        }
+
+        apiFiltersByName = (filterSpecs.collectEntries {
+            [(it.key): filterBinders.generateApiFilter(it.value as String, resources.dimensionDictionary)]
+        } ) as Map<String, ApiFilter>
 
         druidFilters = [:]
         apiFilters.each {
@@ -128,6 +133,9 @@ class DruidQueryBuilderSpec extends Specification {
         apiRequest.getGranularity() >> HOUR.buildZonedTimeGrain(UTC)
         apiRequest.getTimeZone() >> UTC
         apiRequest.getDimensions() >> ([resources.d1] as Set)
+        ApiFilters apiFilters = new ApiFilters(
+                apiFiltersByName.collectEntries {[(resources.d3): [it.value] as Set]} as Map<Dimension, Set<ApiFilter>>
+        )
         apiRequest.getApiFilters() >> apiFilters
         apiRequest.getLogicalMetrics() >> ([lm1] as Set)
         apiRequest.getIntervals() >> intervals
@@ -139,7 +147,7 @@ class DruidQueryBuilderSpec extends Specification {
 
     def "Test recursive buildQueryMethods"() {
         setup:
-        Set apiSet = (["abie1234", "abde1129"].collect() { apiFilters.get(it) }) as Set
+        Set apiSet = (["abie1234", "abde1129"].collect() { apiFiltersByName.get(it) }) as Set
         ConstrainedTable table = TableTestUtils.buildTable(
                 "tab1",
                 DAY.buildZonedTimeGrain(UTC),
@@ -240,7 +248,7 @@ class DruidQueryBuilderSpec extends Specification {
         initDefault(apiRequest)
 
         when:
-        Set apiSet = (["abie1234", "abde1129"].collect() { apiFilters.get(it) }) as Set
+        Set apiSet = (["abie1234", "abde1129"].collect() { apiFiltersByName.get(it) }) as Set
         ConstrainedTable table = TableTestUtils.buildTable(
                 "tab1",
                 DAY.buildZonedTimeGrain(UTC),

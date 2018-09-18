@@ -1,6 +1,7 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.web
+package com.yahoo.bard.webservice.web.apirequest.binders
+
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
@@ -8,18 +9,23 @@ import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
+import com.yahoo.bard.webservice.web.ApiFilter
+import com.yahoo.bard.webservice.web.BadFilterException
+import com.yahoo.bard.webservice.web.DefaultFilterOperation
 
 import org.joda.time.DateTime
 
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class ApiFilterGeneratorSpec extends Specification {
+class FilterBindersSpec extends Specification {
 
     DimensionDictionary dimStore
     Dimension dimension1
     Dimension dimension2
     Dimension dimension3
+
+    FilterBinders filterBinders = FilterBinders.INSTANCE
 
     def setup() {
         LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>()
@@ -49,7 +55,7 @@ class ApiFilterGeneratorSpec extends Specification {
         String query = dimension + '|' + field + '-' + op + values
 
         when:
-        ApiFilter filter = ApiFilterGenerator.build(query, dimStore)
+        ApiFilter filter = filterBinders.generateApiFilter(query, dimStore)
 
         then:
         filter.getDimension()?.getApiName() == dimension
@@ -84,7 +90,7 @@ class ApiFilterGeneratorSpec extends Specification {
         String query = dimension + '|' + field + '-' + op + values
 
         when:
-        ApiFilter filter = ApiFilterGenerator.build(query, dimStore)
+        ApiFilter filter = filterBinders.generateApiFilter(query, dimStore)
 
         then:
         filter.getDimension()?.getApiName() == dimension
@@ -108,7 +114,7 @@ class ApiFilterGeneratorSpec extends Specification {
     def "Bad filter #filter throws #exception.simpleName because #reason"() {
 
         when:
-        ApiFilterGenerator.build(filter, dimStore)
+        filterBinders.generateApiFilter(filter, dimStore)
 
         then:
         thrown exception
@@ -154,7 +160,7 @@ class ApiFilterGeneratorSpec extends Specification {
         String query = 'dimension1|id-eq[foobar]'
 
         when:
-        ApiFilter filter = ApiFilterGenerator.build(query, dimStore)
+        ApiFilter filter = filterBinders.generateApiFilter(query, dimStore)
 
         then:
         filter.toString() == 'dimension1|id-eq[foobar]'

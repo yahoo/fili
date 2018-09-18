@@ -13,7 +13,7 @@ import com.yahoo.bard.webservice.data.filterbuilders.ConjunctionDruidFilterBuild
 import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter
 import com.yahoo.bard.webservice.web.ApiFilter
-import com.yahoo.bard.webservice.web.ApiFilterGenerator
+import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders
 
 import org.apache.commons.lang3.tuple.Pair
 
@@ -27,6 +27,8 @@ class ConjunctionDruidFilterBuilderSpec extends Specification {
 
     ConjunctionDruidFilterBuilder filterBuilder
     Map<String, ApiFilter> apiFilters
+
+    FilterBinders filterBinders = FilterBinders.INSTANCE
 
     def setupSpec() {
         resources = new QueryBuildingTestingResources()
@@ -52,7 +54,9 @@ class ConjunctionDruidFilterBuilderSpec extends Specification {
                 ageDescIn1429:    "ageBracket|desc-in[14-29]" // used to represent the negation of "ageDescNotin1429"
 
         ]
-        apiFilters = filterSpecs.collectEntries {[(it.key): ApiFilterGenerator.build(it.value, resources.dimensionDictionary)]}
+        apiFilters = filterSpecs.collectEntries {
+            [(it.key): filterBinders.generateApiFilter(it.value, resources.dimensionDictionary)]
+        }
     }
 
     def "If there are no filters to build, then the the filter builder returns null"(){

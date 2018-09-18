@@ -82,4 +82,9 @@ public class SelectorFilter extends DimensionalFilter {
                 super.equals(obj) &&
                 Objects.equals(value, other.value);
     }
+
+    @Override
+    public String toString() {
+        return "Filter{ type=" + getType() + ", dimension=" + getDimension() + ", value=" + getValue() + "}";
+    }
 }

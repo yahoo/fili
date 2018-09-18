@@ -4,10 +4,10 @@ package com.yahoo.bard.webservice.druid.model.filter;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.TreeSet;
 
 import javax.validation.constraints.NotNull;
 
@@ -23,7 +23,7 @@ import javax.validation.constraints.NotNull;
  */
 public class InFilter extends DimensionalFilter<InFilter> {
 
-    private final List<String> values;
+    private final TreeSet<String> values;
 
     /**
      * Constructor.
@@ -31,9 +31,9 @@ public class InFilter extends DimensionalFilter<InFilter> {
      * @param dimension  The dimension to perform an in filter on
      * @param values  The values to filter on
      */
-    public InFilter(Dimension dimension, @NotNull List<String> values) {
+    public InFilter(Dimension dimension, @NotNull Collection<String> values) {
         super(dimension, DefaultFilterType.IN);
-        this.values = new ArrayList<>(values);
+        this.values = new TreeSet<>(values);
     }
 
     //CHECKSTYLE:OFF
@@ -48,12 +48,12 @@ public class InFilter extends DimensionalFilter<InFilter> {
     //CHECKSTYLE:ON
 
     /**
-     * Return the list of values to filter on.
+     * Return the set of values to filter on.
      *
-     * @return The list of values to filter on
+     * @return The set of values to filter on
      */
-    public List<String> getValues() {
-        return Collections.unmodifiableList(values);
+    public TreeSet<String> getValues() {
+        return new TreeSet(values);
     }
 
     @Override
@@ -69,5 +69,10 @@ public class InFilter extends DimensionalFilter<InFilter> {
         InFilter inFilter = (InFilter) o;
 
         return super.equals(inFilter) && Objects.equals(values, inFilter.values);
+    }
+
+    @Override
+    public String toString() {
+        return "Filter{ type=" + getType() + ", dimension=" + getDimension() + ", value=" + getValues() + "}";
     }
 }
