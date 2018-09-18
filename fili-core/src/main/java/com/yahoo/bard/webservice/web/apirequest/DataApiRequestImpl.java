@@ -50,6 +50,8 @@ import com.yahoo.bard.webservice.web.DimensionFieldSpecifierKeywords;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.MetricParser;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
+import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders;
+import com.yahoo.bard.webservice.web.apirequest.binders.FilterGenerator;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
@@ -110,6 +112,8 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
 
     private final DruidFilterBuilder filterBuilder;
     private final HavingGenerator havingApiGenerator;
+    private final FilterGenerator filterGenerator = FilterBinders::generateFilters;
+
     private final Optional<OrderByColumn> dateTimeSort;
 
 
@@ -323,7 +327,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         this.perDimensionFields = generateDimensionFields(dimensions, dimensionDictionary);
 
         // Zero or more filtering dimensions may be referenced
-        this.apiFilters = getFilterGenerator().generate(apiFilters, table, dimensionDictionary);
+        this.apiFilters = filterGenerator.generate(apiFilters, table, dimensionDictionary);
 
         validateRequestDimensions(this.apiFilters.keySet(), this.table);
 
@@ -1080,7 +1084,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     public Map<Dimension, Set<ApiFilter>> generateFilters(
             final String filterQuery, final LogicalTable table, final DimensionDictionary dimensionDictionary
     ) {
-        return getFilterGenerator().generate(filterQuery, table, dimensionDictionary);
+        return filterGenerator.generate(filterQuery, table, dimensionDictionary);
     }
 
     /**
