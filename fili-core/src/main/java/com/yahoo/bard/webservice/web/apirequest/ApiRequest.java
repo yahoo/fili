@@ -50,5 +50,5 @@ public interface ApiRequest {
      * @return The maximum number of milliseconds the request is allowed to take before going from synchronous to
      * asynchronous
      */
-     long getAsyncAfter();
+     Long getAsyncAfter();
 }

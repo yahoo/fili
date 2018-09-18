@@ -680,7 +680,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
     }
 
     @Override
-    public long getAsyncAfter() {
+    public Long getAsyncAfter() {
         return asyncAfter;
     }
 
