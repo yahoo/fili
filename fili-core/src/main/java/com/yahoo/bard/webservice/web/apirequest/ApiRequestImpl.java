@@ -684,8 +684,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
         return asyncAfter;
     }
 
-    @Override
-    public PaginationParameters getDefaultPagination() {
+    public static PaginationParameters getDefaultPagination() {
         return DEFAULT_PAGINATION;
     }
 

@@ -10,6 +10,7 @@ import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.web.CsvResponse;
 import com.yahoo.bard.webservice.web.JsonResponse;
 import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.ApiRequestImpl;
 import com.yahoo.bard.webservice.web.apirequest.ResponsePaginator;
 import com.yahoo.bard.webservice.web.util.ResponseUtils;
 
@@ -139,7 +140,7 @@ public abstract class EndpointServlet {
 
         Pagination<T> pagination = new AllPagesPagination<>(
                 rows,
-                apiRequest.getPaginationParameters().orElse(apiRequest.getDefaultPagination())
+                apiRequest.getPaginationParameters().orElse(ApiRequestImpl.getDefaultPagination())
         );
 
         Response.ResponseBuilder builder = responseBuilderSupplier.get();
