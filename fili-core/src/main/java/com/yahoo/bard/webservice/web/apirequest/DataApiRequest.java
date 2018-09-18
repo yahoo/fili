@@ -160,7 +160,7 @@ import javax.ws.rs.core.Response;
      */
      ApiFilters getApiFilters();
 
-    /**
+     /**
      * Generates filter objects on the based on the filter query in the api request.
      *
      * @param filterQuery  Expects a URL filter query String in the format:
@@ -169,7 +169,9 @@ import javax.ws.rs.core.Response;
      * @param dimensionDictionary  DimensionDictionary
      *
      * @return Set of filter objects.
-     */
+     * @deprecated Use getFilterGenerator.generate instead
+    */
+    @Deprecated
     Map<Dimension, Set<ApiFilter>> generateFilters(
             String filterQuery,
             LogicalTable table,

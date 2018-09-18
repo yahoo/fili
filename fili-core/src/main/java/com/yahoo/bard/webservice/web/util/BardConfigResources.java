@@ -24,7 +24,6 @@ public interface BardConfigResources {
      */
     ResourceDictionaries getResourceDictionaries();
 
-
     /**
      * A parser for string to granularities.
      *
@@ -70,7 +69,6 @@ public interface BardConfigResources {
     default MetricDictionary getMetricDictionary() {
         return getResourceDictionaries().getMetricDictionary();
     }
-
 
     /**
      * The dictionary of logical tables.

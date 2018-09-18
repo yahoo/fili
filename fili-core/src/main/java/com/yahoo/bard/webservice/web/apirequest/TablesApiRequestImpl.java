@@ -18,6 +18,8 @@ import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
+import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders;
+import com.yahoo.bard.webservice.web.apirequest.binders.FilterGenerator;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
@@ -193,7 +195,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         validateTimeAlignment(this.granularity, this.intervals);
 
         // parse filters
-        this.apiFilters = generateFilters(filters, table, dimensionDictionary);
+        this.apiFilters = getFilterGenerator().generate(filters, table, dimensionDictionary);
         validateRequestDimensions(getFilterDimensions(), this.table);
 
         LOG.debug(
@@ -219,6 +221,10 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
                                 )
                         )
         );
+    }
+
+    private FilterGenerator getFilterGenerator() {
+        return FilterBinders::generateFilters;
     }
 
     /**
