@@ -992,6 +992,11 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     }
 
     @Override
+    public DataApiRequestImpl withTimeSort(Optional<OrderByColumn> timeSort) {
+        return new DataApiRequestImpl(format, paginationParameters, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, filterBuilder, havingApiGenerator, timeSort);
+    }
+
+    @Override
     public DataApiRequestImpl withCount(int count) {
         return new DataApiRequestImpl(format, paginationParameters, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, filterBuilder, havingApiGenerator, dateTimeSort);
     }
