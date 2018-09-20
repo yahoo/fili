@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.table.resolver;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.util.StreamUtils;
 import com.yahoo.bard.webservice.web.ApiFilter;
-import com.yahoo.bard.webservice.web.FilterOperation;
+import com.yahoo.bard.webservice.web.DefaultFilterOperation;
 
 import java.util.AbstractMap;
 import java.util.Map;
@@ -33,7 +33,12 @@ public class DimensionIdFilter implements DataSourceFilter {
         dimensionKeySelectFilters = dimensionMappingValues.entrySet().stream()
                 .map(entry -> new AbstractMap.SimpleEntry<>(
                         entry.getKey(),
-                        new ApiFilter(entry.getKey(), entry.getKey().getKey(), FilterOperation.in, entry.getValue())
+                        new ApiFilter(
+                                entry.getKey(),
+                                entry.getKey().getKey(),
+                                DefaultFilterOperation.in,
+                                entry.getValue()
+                        )
                 ))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }

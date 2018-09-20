@@ -2,16 +2,16 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.security
 
-import static com.yahoo.bard.webservice.web.FilterOperation.notin
+import static com.yahoo.bard.webservice.web.DefaultFilterOperation.notin
 
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.web.ApiFilter
-import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 import com.yahoo.bard.webservice.web.FilterOperation
 import com.yahoo.bard.webservice.web.RequestMapper
 import com.yahoo.bard.webservice.web.RequestValidationException
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 
 import spock.lang.Shared
 import spock.lang.Specification
@@ -30,8 +30,18 @@ class RoleDimensionApiFilterRequestMapperSpec extends Specification {
     @Shared DimensionField dimensionField = Mock(DimensionField)
     @Shared FilterOperation operation = notin
 
-    @Shared ApiFilter mergedAFilter = new ApiFilter(filterDimension, dimensionField, operation, (["1", "2", "a"] as Set))
-    @Shared ApiFilter mergedABFilter = new ApiFilter(filterDimension, dimensionField, operation, (["1", "2", "3", "a"] as Set))
+    @Shared ApiFilter mergedAFilter = new ApiFilter(
+            filterDimension,
+            dimensionField,
+            operation,
+            (["1", "2", "a"] as Set)
+    )
+    @Shared ApiFilter mergedABFilter = new ApiFilter(
+            filterDimension,
+            dimensionField,
+            operation,
+            (["1", "2", "3", "a"] as Set)
+    )
 
     ApiFilter security1 = Mock(ApiFilter)
     ApiFilter security2 = Mock(ApiFilter)
@@ -39,7 +49,6 @@ class RoleDimensionApiFilterRequestMapperSpec extends Specification {
 
     ApiFilter requestFilterInDimension = Mock(ApiFilter)
     ApiFilter requestFilterNotInDimension = Mock(ApiFilter)
-
 
 
     Map<Dimension, Set<ApiFilter>> requestFilters = [(filterDimension)   : ([requestFilterInDimension] as Set),
@@ -93,14 +102,24 @@ class RoleDimensionApiFilterRequestMapperSpec extends Specification {
         roleNames                | built
         (["A"] as Set)           | new ApiFilter(filterDimension, dimensionField, operation, (["1", "2"] as Set))
         (["B"] as Set)           | new ApiFilter(filterDimension, dimensionField, operation, (["3"] as Set))
-        (["A", "B"] as Set)      | new ApiFilter(filterDimension, dimensionField, operation, (["1", "2", "3"] as Set))
-        (["A", "B", "C"] as Set) | new ApiFilter(filterDimension, dimensionField, operation, (["1", "2", "3"] as Set))
+        (["A", "B"] as Set)      | new ApiFilter(
+                filterDimension,
+                dimensionField,
+                operation,
+                (["1", "2", "3"] as Set)
+        )
+        (["A", "B", "C"] as Set) | new ApiFilter(
+                filterDimension,
+                dimensionField,
+                operation,
+                (["1", "2", "3"] as Set)
+        )
     }
 
     def "Test mergeSecurityFilters merges on matching dimension and not other dimensions"() {
         setup:
         Map<Dimension, Set<ApiFilter>> expected = [(filterDimension)   : ([mergedAFilter] as Set),
-                                                   (nonFilterDimension): ([requestFilterNotInDimension] as Set)]
+                                                          (nonFilterDimension): ([requestFilterNotInDimension] as Set)]
 
         expect:
         mapper.mergeSecurityFilters(requestFilters, securitySetRoleA) == expected
@@ -134,7 +153,7 @@ class RoleDimensionApiFilterRequestMapperSpec extends Specification {
         filterOne | filterTwo | mergedFilters
         [filterDimension, dimensionField, notin, ["a", "b"] as Set] | [filterDimension, dimensionField, notin, ["a", "c"] as Set] |
                 [[filterDimension, dimensionField, notin, ["a", "b", "c"] as Set]]
-        [filterDimension, dimensionField, notin, ["a", "b"] as Set] | [nonFilterDimension, dimensionField, notin, ["a", "c"]  as Set] |
+        [filterDimension, dimensionField, notin, ["a", "b"] as Set] | [nonFilterDimension, dimensionField, notin, ["a", "c"] as Set] |
                 [
                         [filterDimension, dimensionField, notin, ["a", "b"] as Set],
                         [nonFilterDimension, dimensionField, notin, ["a", "c"] as Set]

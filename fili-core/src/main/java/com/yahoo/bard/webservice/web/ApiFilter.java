@@ -28,10 +28,10 @@ import java.util.stream.Stream;
 import javax.validation.constraints.NotNull;
 
 /**
- * ApiFilter object.
+ * ApiFilter object. Represents the different pieces of data in the filter clause of a Fili Api Query.
  */
 public class ApiFilter {
-    private static final Logger LOG = LoggerFactory.getLogger(ApiFilter.class);
+//    private static final Logger LOG = LoggerFactory.getLogger(ApiFilter.class);
 
     private final Dimension dimension;
     private final DimensionField dimensionField;
@@ -58,139 +58,84 @@ public class ApiFilter {
         this.values = Collections.unmodifiableSet(values);
     }
 
-    @SuppressWarnings("checkstyle:javadocmethod")
-    public ApiFilter withDimension(@NotNull Dimension dimension) {
-        return new ApiFilter(dimension, dimensionField, operation, values);
-    }
-
-    @SuppressWarnings("checkstyle:javadocmethod")
-    public ApiFilter withDimensionField(@NotNull DimensionField dimensionField) {
-        return new ApiFilter(dimension, dimensionField, operation, values);
-    }
-
-    @SuppressWarnings("checkstyle:javadocmethod")
-    public ApiFilter withOperation(@NotNull FilterOperation operation) {
-        return new ApiFilter(dimension, dimensionField, operation, values);
-    }
-
-    @SuppressWarnings("checkstyle:javadocmethod")
-    public ApiFilter withValues(@NotNull Set<String> values) {
+    /**
+     * Creates a new ApiFilter based on this ApiFilter, except with the new dimension replacing this ApiFilter's
+     * dimension.
+     *
+     * @param dimension The new dimension to use in the new ApiFilter.
+     * @return the new ApiFilter object.
+     */
+    public ApiFilter withDimension(Dimension dimension) {
         return new ApiFilter(dimension, dimensionField, operation, values);
     }
 
     /**
-     * Parses the URL filter Query and generates the ApiFilter object.
+     * Creates a new ApiFilter based on this ApiFilter, except with the new DimensionField replacing this ApiFilter's
+     * DimensionField.
      *
-     * @param filterQuery  Expects a URL filter query String in the format:
-     * <p>
-     * <code>(dimension name)|(field name)-(operation)[?(value or comma separated values)]?</code>
-     *
-     * @param dimensionDictionary  cache containing all the valid dimension objects.
-     *
-     * @throws BadFilterException Exception when filter pattern is not matched or when any of its properties are not
-     * valid.
+     * @param dimensionField The new DimensionField to use in the new ApiFilter.
+     * @return the new ApiFilter object.
      */
-    public ApiFilter(
-            @NotNull String filterQuery,
-            DimensionDictionary dimensionDictionary
-    ) throws BadFilterException {
-        LOG.trace("Filter query: {}\n\n DimensionDictionary: {}", filterQuery, dimensionDictionary);
-
-        /*  url filter query pattern:  (dimension name)|(field name)-(operation)[?(value or comma separated values)]?
-         *
-         *  e.g.    locale|name-in[US,India]
-         *          locale|id-eq[5]
-         *
-         *          dimension name: locale      locale
-         *          field name:     name        id
-         *          operation:      in          eq
-         *          values:         US,India    5
-         */
-        Pattern pattern = Pattern.compile("([^\\|]+)\\|([^-]+)-([^\\[]+)\\[([^\\]]+)\\]?");
-        Matcher matcher = pattern.matcher(filterQuery);
-
-        // if pattern match found, extract values else throw exception
-        if (!matcher.matches()) {
-            LOG.debug(FILTER_INVALID.logFormat(filterQuery));
-            throw new BadFilterException(FILTER_INVALID.format(filterQuery));
-        }
-
-        try {
-            // Extract filter dimension form the filter query.
-            String filterDimensionName = matcher.group(1);
-            this.dimension = dimensionDictionary.findByApiName(filterDimensionName);
-
-            // If no filter dimension is found in dimension dictionary throw exception.
-            if (dimension == null) {
-                LOG.debug(FILTER_DIMENSION_UNDEFINED.logFormat(filterDimensionName));
-                throw new BadFilterException(FILTER_DIMENSION_UNDEFINED.format(filterDimensionName));
-            }
-
-            String dimensionFieldName = matcher.group(2);
-            try {
-                this.dimensionField = this.dimension.getFieldByName(dimensionFieldName);
-            } catch (IllegalArgumentException ignored) {
-                LOG.debug(FILTER_FIELD_NOT_IN_DIMENSIONS.logFormat(dimensionFieldName, filterDimensionName));
-                throw new BadFilterException(
-                        FILTER_FIELD_NOT_IN_DIMENSIONS.format(dimensionFieldName, filterDimensionName)
-                );
-            }
-            String operationName = matcher.group(3);
-            try {
-                this.operation = FilterOperation.valueOf(operationName);
-            } catch (IllegalArgumentException ignored) {
-                LOG.debug(FILTER_OPERATOR_INVALID.logFormat(operationName));
-                throw new BadFilterException(FILTER_OPERATOR_INVALID.format(operationName));
-            }
-
-            // replaceAll takes care of any leading ['s or trailing ]'s which might mess up this.values
-            this.values = new LinkedHashSet<>(
-                    FilterTokenizer.split(
-                            matcher.group(4)
-                                    .replaceAll("\\[", "")
-                                    .replaceAll("\\]", "")
-                                    .trim()
-                    )
-            );
-        } catch (IllegalArgumentException e) {
-            LOG.debug(FILTER_ERROR.logFormat(filterQuery, e.getMessage()), e);
-            throw new BadFilterException(FILTER_ERROR.format(filterQuery, e.getMessage()), e);
-        }
+    public ApiFilter withDimensionField(DimensionField dimensionField) {
+        return new ApiFilter(dimension, dimensionField, operation, values);
     }
 
+    /**
+     * Creates a new ApiFilter based on this ApiFilter, except with the new FilterOperation replacing this ApiFilter's
+     * FilterOperation.
+     *
+     * @param operation The new operation to use in the new ApiFilter.
+     * @return the new ApiFilter object.
+     */
+    public ApiFilter withOperation(FilterOperation operation) {
+        return new ApiFilter(dimension, dimensionField, operation, values);
+    }
+
+    /**
+     * Creates a new ApiFilter based on this ApiFilter, except with the new set of filter values replacing this
+     * ApiFilter's filter values.
+     *
+     * @param values The new set of values to use in the new ApiFilter.
+     * @return the new ApiFilter object.
+     */
+    public ApiFilter withValues(Set<String> values) {
+        return new ApiFilter(dimension, dimensionField, operation, values);
+    }
+
+    /**
+     * Getter for this ApiFilter's dimension.
+     *
+     * @return the Dimension
+     */
     public Dimension getDimension() {
         return this.dimension;
     }
 
+    /**
+     * Getter for this ApiFilter's DimensionField.
+     *
+     * @return the DimensionField
+     */
     public DimensionField getDimensionField() {
         return this.dimensionField;
     }
 
+    /**
+     * Getter for this ApiFilter's FilterOperation.
+     *
+     * @return the operation
+     */
     public FilterOperation getOperation() {
         return this.operation;
     }
 
+    /**
+     * Getter for this ApiFilter's set of filter values.
+     *
+     * @return the set of values
+     */
     public Set<String> getValues() {
         return this.values;
-    }
-
-    /**
-     * Take two Api filters which differ only by value sets and union their value sets.
-     *
-     * @param one  The first ApiFilter
-     * @param two  The second ApiFilter
-     *
-     * @return an ApiFilter with the union of values
-     */
-    public static ApiFilter union(ApiFilter one, ApiFilter two) {
-        if (Objects.equals(one.getDimension(), two.getDimension())
-                && Objects.equals(one.getDimensionField(), two.getDimensionField())
-                && Objects.equals(one.getOperation(), two.getOperation())
-                ) {
-            Set values = Stream.concat(one.getValues().stream(), two.getValues().stream()).collect(Collectors.toSet());
-            return one.withValues(values);
-        }
-        throw new IllegalArgumentException(String.format("Unmergable ApiFilters  '%s' and '%s'", one, two));
     }
 
     @Override
@@ -202,9 +147,9 @@ public class ApiFilter {
 
         return
                 Objects.equals(dimension, apiFilter.dimension) &&
-                Objects.equals(dimensionField, apiFilter.dimensionField) &&
-                Objects.equals(operation, apiFilter.operation) &&
-                Objects.equals(values, apiFilter.values);
+                        Objects.equals(dimensionField, apiFilter.dimensionField) &&
+                        Objects.equals(operation, apiFilter.operation) &&
+                        Objects.equals(values, apiFilter.values);
     }
 
     @Override

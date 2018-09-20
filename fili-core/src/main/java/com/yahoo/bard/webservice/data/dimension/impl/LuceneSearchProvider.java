@@ -18,7 +18,9 @@ import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.util.SinglePagePagination;
 import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.bard.webservice.web.ApiFilter;
+import com.yahoo.bard.webservice.web.DefaultFilterOperation;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
+import com.yahoo.bard.webservice.web.FilterOperation;
 import com.yahoo.bard.webservice.web.PageNotFoundException;
 import com.yahoo.bard.webservice.web.RowLimitReachedException;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
@@ -616,8 +618,17 @@ public class LuceneSearchProvider implements SearchProvider {
         BooleanQuery.Builder filterQueryBuilder = new BooleanQuery.Builder();
         boolean hasPositive = false;
         for (ApiFilter filter : filters) {
+            FilterOperation op = filter.getOperation();
+            if (!(op instanceof DefaultFilterOperation)) {
+                LOG.error("Illegal Filter operation : {}, only default filter ops supported", filter.getOperation());
+                throw new IllegalArgumentException(
+                        "Only supports default filter operations: in, notin, startswith, contains, eq"
+                );
+            }
+            DefaultFilterOperation defaultFilterOp = (DefaultFilterOperation) op;
+
             String luceneFieldName = DimensionStoreKeyUtils.getColumnKey(filter.getDimensionField().getName());
-            switch (filter.getOperation()) {
+            switch (defaultFilterOp) {
                 case eq:
                     // fall through on purpose since eq and in have the same functionality
                 case in:
