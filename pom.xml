@@ -79,8 +79,9 @@
         <version.metrics>3.2.2</version.metrics>
         <version.logback>1.2.3</version.logback>
         <version.lucene>6.6.0</version.lucene>
-        <version.jackson>2.6.2</version.jackson>
         <version.groovy>2.4.15</version.groovy>
+        <version.jackson>2.9.5</version.jackson>
+
         <version.gmavenplus.plugin>1.6</version.gmavenplus.plugin>
         <version.guava>21.0</version.guava>
         <version.druid.api>0.3.8</version.druid.api>
