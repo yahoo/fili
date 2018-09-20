@@ -177,46 +177,48 @@ import javax.ws.rs.core.Response;
     );
 
     // CHECKSTYLE:OFF
-    DataApiRequestImpl withFormat(ResponseFormatType format);
+    DataApiRequest withFormat(ResponseFormatType format);
 
-    DataApiRequestImpl withPaginationParameters(Optional<PaginationParameters> paginationParameters);
+    DataApiRequest withPaginationParameters(Optional<PaginationParameters> paginationParameters);
 
-    DataApiRequestImpl withBuilder(Response.ResponseBuilder builder);
+    DataApiRequest withBuilder(Response.ResponseBuilder builder);
 
-    DataApiRequestImpl withTable(LogicalTable table);
+    DataApiRequest withTable(LogicalTable table);
 
-    DataApiRequestImpl withGranularity(Granularity granularity);
+    DataApiRequest withGranularity(Granularity granularity);
 
-    DataApiRequestImpl withDimensions(LinkedHashSet<Dimension> dimensions);
+    DataApiRequest withDimensions(LinkedHashSet<Dimension> dimensions);
 
-    DataApiRequestImpl withPerDimensionFields(LinkedHashMap<Dimension,
+    DataApiRequest withPerDimensionFields(LinkedHashMap<Dimension,
             LinkedHashSet<DimensionField>> perDimensionFields);
 
-    DataApiRequestImpl withLogicalMetrics(LinkedHashSet<LogicalMetric> logicalMetrics);
+    DataApiRequest withLogicalMetrics(LinkedHashSet<LogicalMetric> logicalMetrics);
 
-    DataApiRequestImpl withIntervals(List<Interval> intervals);
+    DataApiRequest withIntervals(List<Interval> intervals);
 
     @Deprecated
     /**
      * @deprecated Use @see{{@link #withIntervals(List)}}
      */
-    DataApiRequestImpl withIntervals(Set<Interval> intervals);
+    DataApiRequest withIntervals(Set<Interval> intervals);
 
-    DataApiRequestImpl withFilters(ApiFilters filters);
+    DataApiRequest withFilters(ApiFilters filters);
 
-    DataApiRequestImpl withHavings(Map<LogicalMetric, Set<ApiHaving>> havings);
+    DataApiRequest withHavings(Map<LogicalMetric, Set<ApiHaving>> havings);
 
-    DataApiRequestImpl withHaving(Having having);
+    DataApiRequest withHaving(Having having);
 
-    DataApiRequestImpl withSorts(LinkedHashSet<OrderByColumn> sorts);
+    DataApiRequest withSorts(LinkedHashSet<OrderByColumn> sorts);
 
-    DataApiRequestImpl withCount(int count);
+    DataApiRequest withTimeSort(Optional<OrderByColumn> timeSort);
 
-    DataApiRequestImpl withTopN(int topN);
+    DataApiRequest withCount(int count);
 
-    DataApiRequestImpl withAsyncAfter(long asyncAfter);
+    DataApiRequest withTopN(int topN);
 
-    DataApiRequestImpl withTimeZone(DateTimeZone timeZone);
+    DataApiRequest withAsyncAfter(long asyncAfter);
 
-    DataApiRequestImpl withFilterBuilder(DruidFilterBuilder filterBuilder);
+    DataApiRequest withTimeZone(DateTimeZone timeZone);
+
+    DataApiRequest withFilterBuilder(DruidFilterBuilder filterBuilder);
 }

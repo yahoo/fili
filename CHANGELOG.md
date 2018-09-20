@@ -258,6 +258,8 @@ Thanks to everyone who contributed to this release!
 
 ### Added:
 
+- [Added with method for timesort to DataApiRequest](https://github.com/yahoo/fili/issues/773)
+
 - [Latest Time Macro](https://github.com/yahoo/fili/pull/697)
     * Added `logicalTableAvailability` to `TableUtils` which returns the union of intervals for the logical table.
     * Added `now` parameter to `generateIntervals` for which time macros will be relatively calculated.
@@ -383,6 +385,9 @@ Thanks to everyone who contributed to this release!
 
 
 ### Changed:
+
+- [Corrected generality on with methods](https://github.com/yahoo/fili/issues/773)
+   * Changed `DataApiRequest` methods to not refer to the implementation classes.
 
 - [Avoid casting to generate SimplifiedIntervalList](https://github.com/yahoo/fili/pull/658)
     * Some downstream projects generated partial intervals as `ArrayList`, which cannot be cased to
