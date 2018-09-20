@@ -44,6 +44,12 @@ Current
 - [Filter Code now intersects security constraints instead of unioning with requests](https://github.com/yahoo/fili/issues/812)
     * Switched to ensure security and request filters don't merge but instead intersect
 
+- [Bump Jackson version to patch vulnerability](https://github.com/yahoo/fili/issues/770)
+    * Bumped dependency version to 2.9.5 
+    * Made serialization order more specific in several classes
+    * Fixed bad format in error message
+    * Moved tests off of serialization of `SimplifiedIntervalList`.  That's turning out to be hard to solve.
+
 ### Known Issues:
 
 ### Added:

@@ -3,11 +3,13 @@
 package com.yahoo.bard.webservice.data.dimension;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 /**
  * Dimension field.
  */
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
+@JsonPropertyOrder({"name", "description"})
 public interface DimensionField {
 
     /**
