@@ -34,7 +34,9 @@ import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.ConstrainedTable
 import com.yahoo.bard.webservice.table.TableTestUtils
 import com.yahoo.bard.webservice.table.resolver.DefaultPhysicalTableResolver
+
 import com.yahoo.bard.webservice.web.ApiFilter
+import com.yahoo.bard.webservice.web.ApiFilterGenerator
 import com.yahoo.bard.webservice.web.ApiHaving
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 
@@ -91,7 +93,7 @@ class DruidQueryBuilderSpec extends Specification {
 
         apiFilters = [:]
         filterSpecs.each {
-            apiFilters.put(it.key, new ApiFilter(it.value as String, resources.dimensionDictionary))
+            apiFilters.put(it.key, ApiFilterGenerator.build(it.value as String, resources.dimensionDictionary))
         }
 
         druidFilters = [:]

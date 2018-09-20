@@ -12,7 +12,9 @@ import com.yahoo.bard.webservice.data.dimension.DimensionRowNotFoundException
 import com.yahoo.bard.webservice.data.filterbuilders.ConjunctionDruidFilterBuilder
 import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter
+
 import com.yahoo.bard.webservice.web.ApiFilter
+import com.yahoo.bard.webservice.web.ApiFilterGenerator
 
 import org.apache.commons.lang3.tuple.Pair
 
@@ -51,7 +53,7 @@ class ConjunctionDruidFilterBuilderSpec extends Specification {
                 ageDescIn1429:    "ageBracket|desc-in[14-29]" // used to represent the negation of "ageDescNotin1429"
 
         ]
-        apiFilters = filterSpecs.collectEntries {[(it.key): new ApiFilter(it.value, resources.dimensionDictionary)]}
+        apiFilters = filterSpecs.collectEntries {[(it.key): ApiFilterGenerator.build(it.value, resources.dimensionDictionary)]}
     }
 
     def "If there are no filters to build, then the the filter builder returns null"(){

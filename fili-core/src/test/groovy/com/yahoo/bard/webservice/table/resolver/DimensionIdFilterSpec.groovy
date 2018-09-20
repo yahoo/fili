@@ -5,8 +5,9 @@ package com.yahoo.bard.webservice.table.resolver
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.SearchProvider
+
 import com.yahoo.bard.webservice.web.ApiFilter
-import com.yahoo.bard.webservice.web.FilterOperation
+import com.yahoo.bard.webservice.web.DefaultFilterOperation
 
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -38,7 +39,7 @@ class DimensionIdFilterSpec extends Specification {
         DimensionField keyField = dimension.getKey()
 
         and: "a search provider expecting concatenated api filters"
-        ApiFilter constraintApiFilter = new ApiFilter(dimension, keyField, FilterOperation.in, ["a"] as Set)
+        ApiFilter constraintApiFilter = new ApiFilter(dimension, keyField, DefaultFilterOperation.in, ["a"] as Set)
         Set<ApiFilter> expectedSearchApiFilters = [dimensionIdApiFilter, constraintApiFilter] as HashSet
 
         1 * searchProvider.hasAnyRows(expectedSearchApiFilters) >> true
@@ -83,7 +84,7 @@ class DimensionIdFilterSpec extends Specification {
             }
         }
 
-        ApiFilter expectedApiFilter = new ApiFilter(dimension, dimension.getKey(), FilterOperation.in, values)
+        ApiFilter expectedApiFilter = new ApiFilter(dimension, dimension.getKey(), DefaultFilterOperation.in, values)
         DimensionIdFilter dimensionIdFilter = new DimensionIdFilter([(dimension): values])
 
         [dimension, searchProvider, expectedApiFilter, dimensionIdFilter]
@@ -131,7 +132,7 @@ class DimensionIdFilterSpec extends Specification {
     }
 
     def addFilterOnDimension(Dimension dimension, Map<Dimension, Set<ApiFilter>> constraints, values = ["a"] as Set) {
-        ApiFilter apiFilter = new ApiFilter(dimension, dimension.key, FilterOperation.in, values)
+        ApiFilter apiFilter = new ApiFilter(dimension, dimension.key, DefaultFilterOperation.in, values)
         constraints.put(dimension, [apiFilter] as Set)
     }
 }

@@ -7,6 +7,11 @@ pull request if there was one.
 
 ### Added:
 
+- [Add interfance to FilterOperation for easy extension](https://github.com/yahoo/fili/issues/771)
+    * Changed existing version of `FilterOperation` to `DefaulFilterOperation` and made `FilterOperation` into an interface
+    * Changed existing version of `ApiFilter` to `DefaultApiFilter` and made `ApiFilter` into an interface
+    * Changed code that depended on the concrete versions of those interfaces to be dependent on the new interfaces instead.   
+
 - [Wrapping DruidInFilterBuilder as default filter builder under a feature flag ](https://github.com/yahoo/fili/issues/765)
     * Added `DEFAULT_IN_FILTER` feature flag.
     * If `DEFAULT_IN_FILTER` feature flag is enabled, then `DruidInFilterBuilder` will be used as the default druid
