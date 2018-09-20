@@ -286,13 +286,7 @@ public class DimensionsServlet extends EndpointServlet {
                     .getPaginationParameters()
                     .orElse(apiRequest.getDefaultPagination());
 
-            Pagination<DimensionRow> pagedRows = apiRequest.getFilters().isEmpty() ?
-                    searchProvider.findAllDimensionRowsPaged(paginationParameters) :
-                    searchProvider.findFilteredDimensionRowsPaged(
-                            apiRequest.getFilters(),
-                            paginationParameters
-                    );
-
+            Pagination<DimensionRow> pagedRows = getPagedRows(apiRequest, searchProvider, paginationParameters);
             Response.ResponseBuilder builder = Response.status(Response.Status.OK);
 
             Stream<Map<String, String>> rows = ResponsePaginator.paginate(builder, pagedRows, uriInfo)
@@ -328,6 +322,27 @@ public class DimensionsServlet extends EndpointServlet {
         } finally {
             RequestLog.stopTiming(this);
         }
+    }
+
+    /***
+     * Get the pagination of dimension rows.
+     *
+     * @param apiRequest The apiRequest
+     * @param searchProvider The searchProvider
+     * @param paginationParameters The pagination parameters
+     * @return pagination of dimensionRow
+     */
+    protected Pagination<DimensionRow> getPagedRows(
+            DimensionsApiRequest apiRequest,
+            SearchProvider searchProvider,
+            PaginationParameters paginationParameters
+    ) {
+        return apiRequest.getFilters().isEmpty() ?
+                searchProvider.findAllDimensionRowsPaged(paginationParameters) :
+                searchProvider.findFilteredDimensionRowsPaged(
+                        apiRequest.getFilters(),
+                        paginationParameters
+                );
     }
 
     /**
