@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.data.config.metric.makers
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
@@ -58,6 +59,6 @@ class ThetaSketchSetOperationMakerSpec extends Specification {
         allUsers.each { maker.metrics.add(it) }
 
         expect:
-        maker.make(METRIC_NAME, allUsers*.getName()) == metric
+        maker.make(new LogicalMetricInfo(METRIC_NAME), allUsers*.getName()) == metric
     }
 }

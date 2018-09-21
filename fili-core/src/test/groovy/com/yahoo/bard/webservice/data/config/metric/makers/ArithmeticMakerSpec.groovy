@@ -6,6 +6,7 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
 import com.yahoo.bard.webservice.data.config.metric.MetricInstance
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
@@ -141,7 +142,7 @@ class ArithmeticMakerSpec extends Specification {
         operands.each{maker.metrics.add(it)}
 
         expect:
-        maker.make(metricName, operands*.name) == expectedMetric
+        maker.make(new LogicalMetricInfo(metricName), operands*.name) == expectedMetric
 
         where: "We test on 2, 3 and 4 operands using both constants and sketches."
         numOperands << [2, 3, 4] * 2

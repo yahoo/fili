@@ -196,7 +196,7 @@ class MetricMakerSpec extends Specification {
         dependentMetricNames.add(badName)
 
         when:
-        maker.make(METRIC_NAME, dependentMetricNames)
+        maker.make(new LogicalMetricInfo(METRIC_NAME), dependentMetricNames)
 
         then:
         Exception exception = thrown(IllegalArgumentException)
@@ -210,7 +210,7 @@ class MetricMakerSpec extends Specification {
         dictionary.putAll(makeEmptyMetrics(dependentMetricNames))
 
         when:
-        getMakerInstance().make(METRIC_NAME, dependentMetricNames.subList(0, DEPENDENT_METRICS + adjustment))
+        getMakerInstance().make(new LogicalMetricInfo(METRIC_NAME), dependentMetricNames.subList(0, DEPENDENT_METRICS + adjustment))
 
         then:
         Exception exception = thrown(IllegalArgumentException)

@@ -12,8 +12,10 @@ import static org.joda.time.DateTimeZone.UTC
 import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder
 import com.yahoo.bard.webservice.data.filterbuilders.DruidOrFilterBuilder
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
+import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
 import com.yahoo.bard.webservice.data.volatility.DefaultingVolatileIntervalsService
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType
@@ -59,7 +61,13 @@ class DruidQueryBuilderSpec extends Specification {
     LimitSpec limitSpec
     TopNMetric topNMetric
     DataApiRequest apiRequest
+
+    TemplateDruidQuery tdq = Mock(TemplateDruidQuery)
     LogicalMetric lm1
+    static LogicalMetricInfo lmi1 = new LogicalMetricInfo("m1")
+    static LogicalMetricInfo lmi2 = new LogicalMetricInfo("m2")
+
+    LogicalMetricInfo m1LogicalMetric = new LogicalMetricInfo("lm1")
 
     static final DruidFilterBuilder FILTER_BUILDER = new DruidOrFilterBuilder()
 
@@ -91,8 +99,8 @@ class DruidQueryBuilderSpec extends Specification {
             druidFilters.put(it.key, FILTER_BUILDER.buildFilters([(resources.d3): [it.value as ApiFilter] as Set]))
         }
 
-        LogicalMetric metric = new LogicalMetric(null, null, "m1")
-        Set<OrderByColumn> orderByColumns = [new OrderByColumn(metric, SortDirection.DESC)]
+        LogicalMetric metric = new LogicalMetric(tdq, null, (LogicalMetricInfo) lmi1)
+        LinkedHashSet<OrderByColumn> orderByColumns = [new OrderByColumn(metric, SortDirection.DESC)]
         limitSpec = new LimitSpec(orderByColumns)
         topNMetric = new TopNMetric("m1", SortDirection.DESC)
     }
@@ -113,7 +121,7 @@ class DruidQueryBuilderSpec extends Specification {
     }
 
     def initDefault(DataApiRequest apiRequest) {
-        lm1 = new LogicalMetric(resources.simpleTemplateQuery, new NoOpResultSetMapper(), "lm1", null)
+        lm1 = new LogicalMetric(resources.simpleTemplateQuery, new NoOpResultSetMapper(), m1LogicalMetric)
 
         apiRequest.getTable() >> resources.lt12
         apiRequest.getGranularity() >> HOUR.buildZonedTimeGrain(UTC)
@@ -328,7 +336,10 @@ class DruidQueryBuilderSpec extends Specification {
         apiRequest = Mock(DataApiRequest)
 
         apiRequest.getTopN() >> OptionalInt.of(5)
-        apiRequest.getSorts() >> ([new OrderByColumn(new LogicalMetric(null, null, "m1"), SortDirection.DESC)] as Set)
+        apiRequest.getSorts() >> ([new OrderByColumn(
+                new LogicalMetric(null, null, lmi1),
+                SortDirection.DESC
+        )] as Set)
         apiRequest.getHavings() >> havingMap
         apiRequest.getHaving() >> { DruidHavingBuilder.buildHavings(havingMap) }
 
@@ -352,7 +363,7 @@ class DruidQueryBuilderSpec extends Specification {
         apiRequest = Mock(DataApiRequest)
         apiRequest.dimensions >> ([resources.d1, resources.d2] as Set)
         apiRequest.topN >> OptionalInt.of(5)
-        apiRequest.sorts >> ([new OrderByColumn(new LogicalMetric(null, null, "m1"), SortDirection.DESC)] as Set)
+        apiRequest.sorts >> ([new OrderByColumn(new LogicalMetric(null, null, (LogicalMetricInfo) lmi1), SortDirection.DESC)] as Set)
 
         initDefault(apiRequest)
 
@@ -368,8 +379,22 @@ class DruidQueryBuilderSpec extends Specification {
         apiRequest = Mock(DataApiRequest)
         apiRequest.topN >> OptionalInt.of(5)
         apiRequest.sorts >> ([
-                new OrderByColumn(new LogicalMetric(null, null, "m1"), SortDirection.DESC),
-                new OrderByColumn(new LogicalMetric(null, null, "m2"), SortDirection.ASC)
+                new OrderByColumn(
+                        new LogicalMetric(
+                                (TemplateDruidQuery) null,
+                                (ResultSetMapper) null,
+                                (LogicalMetricInfo) lmi1
+                        ),
+                        SortDirection.DESC
+                ),
+                new OrderByColumn(
+                        new LogicalMetric(
+                                (TemplateDruidQuery) null,
+                                (ResultSetMapper) null,
+                                (LogicalMetricInfo) lmi2
+                        ),
+                        SortDirection.ASC
+                )
         ] as Set)
 
         initDefault(apiRequest)
@@ -387,8 +412,8 @@ class DruidQueryBuilderSpec extends Specification {
         apiRequest.dimensions >> ([resources.d1, resources.d2] as Set)
         apiRequest.topN >> OptionalInt.of(5)
         apiRequest.sorts >> ([
-                new OrderByColumn(new LogicalMetric(null, null, "m1"), SortDirection.ASC),
-                new OrderByColumn(new LogicalMetric(null, null, "m2"), SortDirection.DESC)
+                new OrderByColumn(new LogicalMetric(tdq, null, lmi1), SortDirection.ASC),
+                new OrderByColumn(new LogicalMetric(tdq, null, lmi2), SortDirection.DESC)
         ] as Set)
 
         initDefault(apiRequest)
@@ -433,8 +458,8 @@ class DruidQueryBuilderSpec extends Specification {
         apiRequest.sorts >> {
             nSorts > 1 ?
                     [
-                            new OrderByColumn(new LogicalMetric(null, null, "m1"), SortDirection.DESC),
-                            new OrderByColumn(new LogicalMetric(null, null, "m2"), SortDirection.ASC)
+                            new OrderByColumn(new LogicalMetric(tdq, null, lmi1), SortDirection.DESC),
+                            new OrderByColumn(new LogicalMetric(tdq, null, lmi2), SortDirection.ASC)
                     ] as Set :
                     [new OrderByColumn(new LogicalMetric(null, null, "m1"), SortDirection.DESC)] as Set
         }

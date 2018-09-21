@@ -144,7 +144,7 @@ public abstract class MetricMaker {
      * @return The new logicalMetric
      */
     public LogicalMetric make(String metricName, String dependentMetric) {
-        return this.make(metricName, Collections.singletonList(dependentMetric));
+        return this.make(new LogicalMetricInfo(metricName), Collections.singletonList(dependentMetric));
     }
 
     /**
