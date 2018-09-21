@@ -11,10 +11,10 @@ import com.fasterxml.jackson.databind.ObjectMapper
 
 import spock.lang.Shared
 import spock.lang.Timeout
-
 /**
  * Checks that all of the table/grain pairs have the dimensions and columns expected.
  */
+@spock.lang.Ignore
 @Timeout(30)    // Fail test if hangs
 class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
 
