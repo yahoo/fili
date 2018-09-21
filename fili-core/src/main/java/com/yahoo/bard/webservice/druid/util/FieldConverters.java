@@ -36,7 +36,6 @@ public interface FieldConverters {
      *
      * @return The SketchAggregation as a ThetaSketchEstimatePostAggregation
      */
-    @Deprecated
     FuzzySetPostAggregation asSketchEstimate(SketchAggregation candidate);
 
     /**

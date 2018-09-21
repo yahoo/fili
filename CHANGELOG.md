@@ -10,6 +10,17 @@ Current
 
 ### Changed:
 
+- [Removed deprecations in maker classes](https://github.com/yahoo/fili/issues/778)
+    * Add `LogicalMetricInfo` conversion method on ApiMetricField class
+    * Moved all tests and internal uses onto LMI based construction
+    * Removed calls to deprecated Sketch utility methods
+    * Removed unused RowNumMapper non-LMI implementation
+    * Undeprecated needed sketch utility method
+
+- [Eliminate String based metric creation](https://github.com/yahoo/fili/issues/778)
+    * Add `LogicalMetricInfo` conversion method on ApiMetricField class
+    * Moved all tests and internal uses onto LMI based construction
+
 ### Deprecated:
 
 ### Removed:
@@ -161,12 +172,6 @@ select filters)
 - [Removed deprecations](https://github.com/yahoo/fili/issues/668)
   * Removed Pagination deprecation
   * Removed `DataSourceConstraint` deprecation
-
-### Changed:
-
-- [Eliminate String based metric creation](https://github.com/yahoo/fili/issues/778)
-    * Add `LogicalMetricInfo` conversion method on ApiMetricField class
-    * Moved all tests and internal uses onto LMI based construction
 
 - [Bumping query id inside withIntervals of LookBackQuery](https://github.com/yahoo/fili/issues/756)
     * Returning a new `LookBackQuery` with `doFork` set to `true` which bumps query id inside `withIntervals` method.

@@ -29,15 +29,6 @@ public class RowNumMaker extends MetricMaker {
     }
 
     @Override
-    protected LogicalMetric makeInner(String metricName, List<String> dependentMetrics) {
-        return new LogicalMetric(
-                null,
-                ROW_NUM_MAPPER,
-                new LogicalMetricInfo(metricName, metricName, DEFAULT_DESCRIPTION)
-        );
-    }
-
-    @Override
     protected LogicalMetric makeInner(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics) {
         return new LogicalMetric(
                 null,
