@@ -5,6 +5,56 @@ All notable changes to Fili will be documented here. Changes are accumulated as 
 major version. Each change has a link to the pull request that makes the change and to the issue that triggered the
 pull request if there was one.
 
+Current
+-------
+
+### Changed:
+
+### Deprecated:
+
+### Removed:
+
+### Fixed:
+
+### Known Issues:
+
+### Added:
+
+v0.10.48 - 2018/10/04
+=====
+
+0.10 Highlights
+-------------
+
+### Extensibility improvements
+
+A number of classes which were either not extensible or very difficult to extend have been restructured.  
+
+Response building, extraction functions, Web logging and Exception handling in DataServlet are now injectable.  
+
+### Extensive deprecation cleanup
+
+A lot of tech debt has been paid down in the form of removing deprecated code and moving code off deprecated methods.
+Old sketch support has been retired in favor of the official community open source version: 
+(https://datasketches.github.io/docs/Theta/ThetaSketchFramework.html) 
+
+Some deprecations have been removed because the migration path off of those deprecated methods seemed less useful
+than simply supporting the older (simpler) contract.
+
+### General cleanup
+
+Some packages have been rationalized together or apart.  Some concrete classes became interfaces and vice-versa.
+
+### Externalizing filter building code
+
+Generating `ApiFilters` and Druid `Filter`s has been externalized to make it easier to reimplement with non-Regular 
+Expression solutions.
+
+### Supporting Druid in-filters
+
+A general performance improvement by implementing the in filter in druid (as opposed to long chains of single value 
+select filters)
+
 ### Added:
 
 - [Sorting JSON objects before caching](https://github.com/yahoo/fili/issues/795)
@@ -51,9 +101,6 @@ pull request if there was one.
     * Added builder methods to `MetricUnionAvailability` and `PartitionAvailability` to save on needing to add
       additional table classes.
 
-- [Adding withDoFork to LookBackQuery](https://github.com/yahoo/fili/issues/756)
-    * Added `withDoFork` to `LookBackQuery` class.    
-    
 - [An injection point for customizing the WebLoggingFilter to use during tests](https://github.com/yahoo/fili/pull/749)
     * Extend `JerseyTestBinder` and override `getLoggingFilter`.
 
@@ -195,6 +242,7 @@ pull request if there was one.
 
 - [Fix generate intervals logic when availability is empty](https://github.com/yahoo/fili/pull/702)
     * Logic to generate intervals when `CURRENT_MACRO_USES_LATEST` flag is turned on has a bug. The code throws `NoSuchElementException` when the table has no availabilities. This PR fixes the bug by checking if the availability of the underlying table is empty.
+
 - [Correct Druid coordinator URL in Wikipedia example](https://github.com/yahoo/fili/pull/683)
     * Config value for Druid coordinator URL is mis-typed.
     
@@ -202,11 +250,13 @@ pull request if there was one.
     * There are number of unused imports sitting in tests. The cause is an out-dated codenarc version. This PR upgrades
       the version and removes those unused imports with the new version.
 
-
-### Removed:
+- [Adding withDoFork to LookBackQuery](https://github.com/yahoo/fili/issues/756)
+    * Added `withDoFork` to `LookBackQuery` class.
+    * Fixes failure of Lookback query to correctly do context forking under query split    
 
 - [Removed dependency on ApiFilter in ThetaSketchMetricsHelder](https://github.com/yahoo/fili/issues/780)
     * Instead injecting dependency on creation (with defaulting constructor)
+
 
 - [Removed deprecated code references](https://github.com/yahoo/fili/issues/780)
     * Renamed keys from `BardLoggingFilter` properties off deprecated refence class (this was an artifact from a bad rename)
@@ -223,11 +273,6 @@ pull request if there was one.
 
 ### Known Issues:
 
-
-
-
-Current
--------
 
 v0.9.137 - 2018/04/13 
 =====
