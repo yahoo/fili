@@ -162,6 +162,12 @@ select filters)
   * Removed Pagination deprecation
   * Removed `DataSourceConstraint` deprecation
 
+### Changed:
+
+- [Eliminate String based metric creation](https://github.com/yahoo/fili/issues/778)
+    * Add `LogicalMetricInfo` conversion method on ApiMetricField class
+    * Moved all tests and internal uses onto LMI based construction
+
 - [Bumping query id inside withIntervals of LookBackQuery](https://github.com/yahoo/fili/issues/756)
     * Returning a new `LookBackQuery` with `doFork` set to `true` which bumps query id inside `withIntervals` method.
     * Renamed every occurrence of `doFork` to `incrementQueryId`.
