@@ -18,7 +18,7 @@ public class LogicalMetric {
 
     private final TemplateDruidQuery query;
     private final ResultSetMapper calculation;
-    LogicalMetricInfo logicalMetricInfo;
+    protected LogicalMetricInfo logicalMetricInfo;
 
     /**
      * Build a fully specified Logical Metric.
