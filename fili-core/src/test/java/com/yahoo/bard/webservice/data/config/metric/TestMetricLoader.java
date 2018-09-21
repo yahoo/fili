@@ -44,16 +44,16 @@ public class TestMetricLoader implements MetricLoader {
     public static final int DEFAULT_KILOBYTES_PER_SKETCH = 16;
     public static final int DEFAULT_SKETCH_SIZE_IN_BYTES = DEFAULT_KILOBYTES_PER_SKETCH * BYTES_PER_KILOBYTE;
 
-    final int sketchSize;
+    public int sketchSize;
 
     // Aggregator Makers
-    LongSumMaker longSumMaker;
-    ThetaSketchMaker sketchMaker;
+    public LongSumMaker longSumMaker;
+    public ThetaSketchMaker sketchMaker;
 
     // Post Aggregator Makers
-    ArithmeticMaker productMaker;
-    AggregationAverageMaker simpleDailyAverageMaker;
-    RowNumMaker rowNumMaker;
+    public ArithmeticMaker productMaker;
+    public AggregationAverageMaker simpleDailyAverageMaker;
+    public RowNumMaker rowNumMaker;
 
     /**
      * Constructs a TestMetricLoader using the default sketch size.
