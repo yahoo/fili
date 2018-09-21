@@ -12,6 +12,7 @@ import static com.yahoo.bard.webservice.data.config.names.TestApiMetricName.A_ST
 import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.ResultSetSchema;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper;
@@ -52,8 +53,7 @@ public class NonNumericMetrics {
                             Collections.emptySet()
                     ),
                     new StringMetricMapper(),
-                    A_STRING_METRIC.getApiName(),
-                    "ImAStringISwear"
+                    new LogicalMetricInfo(A_STRING_METRIC.getApiName(), "ImAStringISwear")
             ),
             new LogicalMetric(
                     new TemplateDruidQuery(
@@ -64,8 +64,7 @@ public class NonNumericMetrics {
                             Collections.emptySet()
                     ),
                     new BooleanMetricMapper(),
-                    A_BOOLEAN_METRIC.getApiName(),
-                    "ImBooleanISwear"
+                    new LogicalMetricInfo(A_BOOLEAN_METRIC.getApiName(), "ImBooleanISwear")
             ),
             new LogicalMetric(
                     new TemplateDruidQuery(
@@ -75,8 +74,7 @@ public class NonNumericMetrics {
                             Collections.emptySet()
                     ),
                     new JsonNodeMetricMapper(),
-                    A_JSON_NODE_METRIC.getApiName(),
-                    "ImAJsonNodeISwear"
+                    new LogicalMetricInfo(A_JSON_NODE_METRIC.getApiName(), "ImAJsonNodeISwear")
             ),
             new LogicalMetric(
                     new TemplateDruidQuery(
@@ -87,8 +85,7 @@ public class NonNumericMetrics {
                             Collections.emptySet()
                     ),
                     new NullMetricMapper(),
-                    A_NULL_METRIC.getApiName(),
-                    "ImNullISwear"
+                    new LogicalMetricInfo(A_NULL_METRIC.getApiName(), "ImNullISwear")
             )
         );
     }
