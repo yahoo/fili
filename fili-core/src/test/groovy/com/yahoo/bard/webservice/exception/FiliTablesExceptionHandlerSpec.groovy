@@ -31,7 +31,7 @@ class FiliTablesExceptionHandlerSpec extends Specification {
             new LogicalTable(
                     "table",
                     DefaultTimeGrain.DAY,
-                    new TableGroup([] as LinkedHashSet, [] as Set), Stub(MetricDictionary)
+                    new TableGroup([] as LinkedHashSet, [] as Set, [] as Set), Stub(MetricDictionary)
             ),
             DefaultTimeGrain.DAY,
             [] as LinkedHashSet,
