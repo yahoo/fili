@@ -142,11 +142,11 @@ pull request if there was one.
       the version and removes those unused imports with the new version.
 
 
-### Known Issues:
-
-
-
 ### Removed:
+
+
+- [Removed deprecated code references](https://github.com/yahoo/fili/issues/780)
+    * Renamed keys from `BardLoggingFilter` properties off deprecated refence class (this was an artifact from a bad rename)
 
 - [Removed older deprecated code](https://github.com/yahoo/fili/issues/668)
     * Removed constructos and getters with clean replacements
@@ -157,6 +157,10 @@ pull request if there was one.
     * Removed deprecated min/max aggregations
     * Removed loader code for metrics that don't include dimension dictionary
     * Removed `KeyValueStoreDimension`
+
+### Known Issues:
+
+
 
 
 Current
