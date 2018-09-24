@@ -92,6 +92,18 @@ pull request if there was one.
 
 - [Widen access privileges to suppress IDE warnings](https://github.com/yahoo/fili/issues/785)
 
+- [Corrected generality on with methods](https://github.com/yahoo/fili/issues/773)
+   * Changed `DataApiRequest` methods to not refer to the implementation classes.
+
+- [Cleaned up ApiRequest contracts](https://github.com/yahoo/fili/issues/775)
+    * `DataApiRequest` default implementation of getting dimension filters
+    * Aync after nullable (to indicate unconfigured as opposed to explicitly zero)
+    * DefaultPagination removed from ApiRequest interface (ApiRequest should not be a service provider)
+    * Moved filter generation into an explicit class, defaulted implementations in subclasses using extensible methods.    
+
+- [Corrected generality on with methods](https://github.com/yahoo/fili/issues/773)
+   * Changed `DataApiRequest` methods to not refer to the implementation classes.
+
 - [Extract logic for getting pagination of dimension rows](https://github.com/yahoo/fili/issues/782)
     * Extract the logic in `DimensionsServlet` to get pagination of dimension rows into a protected function.
 
@@ -679,6 +691,10 @@ Thanks to everyone who contributed to this release!
 
 
 ### Removed:
+
+- [Removed withHaving that was on DataApiRequest as a Bug](https://github.com/yahoo/fili/issues/775)
+    * withHaving was incorrectly implemented in DataApiRequest.  It should not have been added at all
+    and had no behavioral impact except to rebuild the object without changes.
 
 - [Remove testing constructor of *ApiRequestImpl](https://github.com/yahoo/fili/pull/559)
     * It is a better practice to separate testing code with implementation. All testing constructors of the following

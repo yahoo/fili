@@ -22,6 +22,8 @@ import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
+import com.sun.org.apache.xalan.internal.xsltc.compiler.util.FilterGenerator;
+
 import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -217,6 +219,15 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
                                 )
                         )
         );
+    }
+
+    /**
+     * Get a filter generator binder for writing ApiFilters.
+     *
+     * @return  An implementation of FilterGenerator.
+     */
+    protected FilterGenerator getFilterGenerator() {
+        return FilterBinders::generateFilters;
     }
 
     /**
