@@ -61,7 +61,7 @@ pull request if there was one.
 
 ### Changed:
 
-- [Extract logic for getting pagination of dimension rows](https://github.com/yahoo/fili/pulls/777)
+- [Extract logic for getting pagination of dimension rows](https://github.com/yahoo/fili/issues/782)
     * Extract the logic in `DimensionsServlet` to get pagination of dimension rows into a protected function.
 
 - [Removed deprecations](https://github.com/yahoo/fili/issues/668)

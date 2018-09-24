@@ -333,7 +333,6 @@ public class DimensionsServlet extends EndpointServlet {
      * <p>
      * if there is filter in API request, then apply the filter to the querying dimension rows, otherwise returns all
      * dimension rows.
-     * </p>
      *
      * @param apiRequest  The apiRequest
      * @param searchProvider  The searchProvider
