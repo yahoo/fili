@@ -56,6 +56,7 @@ import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.sun.org.apache.xalan.internal.xsltc.compiler.util.FilterGenerator;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -79,6 +80,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
+import javax.ws.rs.HEAD;
 import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.Response;
 
@@ -99,15 +101,15 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     private final Map<LogicalMetric, Set<ApiHaving>> havings;
     private final Having having;
     private final LinkedHashSet<OrderByColumn> sorts;
+    private final Optional<OrderByColumn> dateTimeSort;
+
     private final int count;
     private final int topN;
 
     private final DateTimeZone timeZone;
 
     private final DruidFilterBuilder filterBuilder;
-
     private final HavingGenerator havingApiGenerator;
-
     private final Optional<OrderByColumn> dateTimeSort;
 
 
@@ -321,7 +323,8 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         this.perDimensionFields = generateDimensionFields(dimensions, dimensionDictionary);
 
         // Zero or more filtering dimensions may be referenced
-        this.apiFilters = generateFilters(apiFilters, table, dimensionDictionary);
+        this.apiFilters = getFilterGenerator().generate(apiFilters, table, dimensionDictionary);
+
         validateRequestDimensions(this.apiFilters.keySet(), this.table);
 
         // Zero or more having queries may be referenced
@@ -919,6 +922,15 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         }
     }
 
+    /**
+     * Get a filter generator binder for writing ApiFilters.
+     *
+     * @return  An implementation of FilterGenerator.
+     */
+    protected FilterGenerator getFilterGenerator() {
+        return FilterBinders::generateFilters;
+    }
+
     // CHECKSTYLE:OFF
     @Override
     public DataApiRequestImpl withFormat(ResponseFormatType format) {
@@ -979,11 +991,6 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
 
     @Override
     public DataApiRequestImpl withHavings(Map<LogicalMetric, Set<ApiHaving>> havings) {
-        return new DataApiRequestImpl(format, paginationParameters, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, filterBuilder, havingApiGenerator, dateTimeSort);
-    }
-
-    @Override
-    public DataApiRequestImpl withHaving(Having having) {
         return new DataApiRequestImpl(format, paginationParameters, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, filterBuilder, havingApiGenerator, dateTimeSort);
     }
 
@@ -1067,6 +1074,13 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     @Override
     public ApiFilters getApiFilters() {
         return this.apiFilters;
+    }
+
+    @Override
+    public Map<Dimension, Set<ApiFilter>> generateFilters(
+            final String filterQuery, final LogicalTable table, final DimensionDictionary dimensionDictionary
+    ) {
+        return getFilterGenerator().generate(filterQuery, table, dimensionDictionary);
     }
 
     /**

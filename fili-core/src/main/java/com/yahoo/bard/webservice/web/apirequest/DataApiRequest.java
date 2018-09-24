@@ -206,9 +206,7 @@ import javax.ws.rs.core.Response;
 
     DataApiRequest withHavings(Map<LogicalMetric, Set<ApiHaving>> havings);
 
-    DataApiRequest withHaving(Having having);
-
-    DataApiRequest withSorts(LinkedHashSet<OrderByColumn> sorts);
+    DataApiRequestImpl withSorts(LinkedHashSet<OrderByColumn> sorts);
 
     DataApiRequest withTimeSort(Optional<OrderByColumn> timeSort);
 
