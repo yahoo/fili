@@ -222,6 +222,10 @@ public class DimensionsServlet extends EndpointServlet {
     /**
      * Endpoint to get values of a dimension.
      *
+     * This implementation calls an overridable method {@link #getPagedRows(DimensionsApiRequest, SearchProvider,
+     * PaginationParameters)}, which fetch pagination of dimension rows.
+     *
+     *
      * @param dimensionName  The dimension
      * @param filterQuery  The filters
      * @param page  The page number
@@ -326,11 +330,16 @@ public class DimensionsServlet extends EndpointServlet {
 
     /***
      * Get the pagination of dimension rows.
+     * <p>
+     * if there is filter in API request, then apply the filter to the querying dimension rows, otherwise returns all
+     * dimension rows.
+     * </p>
      *
-     * @param apiRequest The apiRequest
-     * @param searchProvider The searchProvider
-     * @param paginationParameters The pagination parameters
-     * @return pagination of dimensionRow
+     * @param apiRequest  The apiRequest
+     * @param searchProvider  The searchProvider
+     * @param paginationParameters  The pagination parameters
+     *
+     * @return Pagination of dimensionRow
      */
     protected Pagination<DimensionRow> getPagedRows(
             DimensionsApiRequest apiRequest,

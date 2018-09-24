@@ -6,6 +6,7 @@ major version. Each change has a link to the pull request that makes the change 
 pull request if there was one.
 
 ### Added:
+
 - [Wrapping DruidInFilterBuilder as default filter builder under a feature flag ](https://github.com/yahoo/fili/issues/765)
     * Added `DEFAULT_IN_FILTER` feature flag.
     * If `DEFAULT_IN_FILTER` feature flag is enabled, then `DruidInFilterBuilder` will be used as the default druid
