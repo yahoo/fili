@@ -17,7 +17,7 @@ pull request if there was one.
     * `ApiFilter` constructor using filter clause from API request moved to factory as static `build` method.
     * `ApiFilter` union method moved to factory.  
 
-- [Add interfance to FilterOperation for easy extension](https://github.com/yahoo/fili/issues/771)
+- [Add interface to FilterOperation for easy extension](https://github.com/yahoo/fili/issues/771)
     * Changed existing version of `FilterOperation` to `DefaulFilterOperation` and made `FilterOperation` into an interface.
     * Changed code that depended on the enum to be dependent on the new interfaces instead.   
 
