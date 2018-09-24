@@ -222,6 +222,10 @@ public class DimensionsServlet extends EndpointServlet {
     /**
      * Endpoint to get values of a dimension.
      *
+     * This implementation calls an overridable method {@link #getPagedRows(DimensionsApiRequest, SearchProvider,
+     * PaginationParameters)}, which fetch pagination of dimension rows.
+     *
+     *
      * @param dimensionName  The dimension
      * @param filterQuery  The filters
      * @param page  The page number
@@ -286,13 +290,7 @@ public class DimensionsServlet extends EndpointServlet {
                     .getPaginationParameters()
                     .orElse(apiRequest.getDefaultPagination());
 
-            Pagination<DimensionRow> pagedRows = apiRequest.getFilters().isEmpty() ?
-                    searchProvider.findAllDimensionRowsPaged(paginationParameters) :
-                    searchProvider.findFilteredDimensionRowsPaged(
-                            apiRequest.getFilters(),
-                            paginationParameters
-                    );
-
+            Pagination<DimensionRow> pagedRows = getPagedRows(apiRequest, searchProvider, paginationParameters);
             Response.ResponseBuilder builder = Response.status(Response.Status.OK);
 
             Stream<Map<String, String>> rows = ResponsePaginator.paginate(builder, pagedRows, uriInfo)
@@ -328,6 +326,31 @@ public class DimensionsServlet extends EndpointServlet {
         } finally {
             RequestLog.stopTiming(this);
         }
+    }
+
+    /***
+     * Get the pagination of dimension rows.
+     * <p>
+     * if there is filter in API request, then apply the filter to the querying dimension rows, otherwise returns all
+     * dimension rows.
+     *
+     * @param apiRequest  The apiRequest
+     * @param searchProvider  The searchProvider
+     * @param paginationParameters  The pagination parameters
+     *
+     * @return Pagination of dimensionRow
+     */
+    protected Pagination<DimensionRow> getPagedRows(
+            DimensionsApiRequest apiRequest,
+            SearchProvider searchProvider,
+            PaginationParameters paginationParameters
+    ) {
+        return apiRequest.getFilters().isEmpty() ?
+                searchProvider.findAllDimensionRowsPaged(paginationParameters) :
+                searchProvider.findFilteredDimensionRowsPaged(
+                        apiRequest.getFilters(),
+                        paginationParameters
+                );
     }
 
     /**

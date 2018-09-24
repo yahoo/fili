@@ -69,11 +69,13 @@ pull request if there was one.
     * Add missing tests to `Utils` class.
 
 ### Changed:
+
+- [Extract logic for getting pagination of dimension rows](https://github.com/yahoo/fili/issues/782)
+    * Extract the logic in `DimensionsServlet` to get pagination of dimension rows into a protected function.
+
 - [Removed deprecations](https://github.com/yahoo/fili/issues/668)
   * Removed Pagination deprecation
   * Removed `DataSourceConstraint` deprecation
-
-### Changed:
 
 - [Bumping query id inside withIntervals of LookBackQuery](https://github.com/yahoo/fili/issues/756)
     * Returning a new `LookBackQuery` with `doFork` set to `true` which bumps query id inside `withIntervals` method.
