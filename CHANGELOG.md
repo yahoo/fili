@@ -7,6 +7,11 @@ pull request if there was one.
 
 ### Added:
 
+- [HttpResponseMaker header building made extendable](https://github.com/yahoo/fili/issues/783)
+    * Added `buildAndAddResponseHeaders` method in `HttpResponseMaker` which handles building and adding headers to a 
+    response builder. This logic was moved from `createResponseBuilder`.
+    * Made `createResponseBuilder` method protected to open up the class to be more extendable.
+
 - [Wrapping DruidInFilterBuilder as default filter builder under a feature flag ](https://github.com/yahoo/fili/issues/765)
     * Added `DEFAULT_IN_FILTER` feature flag.
     * If `DEFAULT_IN_FILTER` feature flag is enabled, then `DruidInFilterBuilder` will be used as the default druid
