@@ -13,6 +13,7 @@ import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.model.filter.InFilter
 import com.yahoo.bard.webservice.druid.model.filter.NotFilter
 import com.yahoo.bard.webservice.web.ApiFilter
+import com.yahoo.bard.webservice.web.ApiFilterGenerator
 
 import spock.lang.Shared
 import spock.lang.Specification
@@ -39,7 +40,7 @@ class DruidInFilterBuilderSpec extends Specification {
 
         apiFilters = [:]
         filterSpecs.each {
-            apiFilters.put(it.key, new ApiFilter(it.value, resources.dimensionDictionary))
+            apiFilters.put(it.key, ApiFilterGenerator.build(it.value, resources.dimensionDictionary))
         }
 
         Filter ageIdEq1234 = new InFilter(resources.d3, ["1", "2", "3", "4"])
@@ -73,7 +74,7 @@ class DruidInFilterBuilderSpec extends Specification {
     @Unroll
     def "#filterString is a #outerFilterType-filter on #dimension, with values = #values"() {
         setup: "Init. API filters"
-        ApiFilter filter = new ApiFilter(filterString, resources.dimensionDictionary)
+        ApiFilter filter = ApiFilterGenerator.build(filterString, resources.dimensionDictionary)
 
         when: "We build a single in-filter"
         //resources.d3 is the ageBracket dimension.

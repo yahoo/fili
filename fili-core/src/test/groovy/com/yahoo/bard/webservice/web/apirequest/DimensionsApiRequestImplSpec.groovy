@@ -4,8 +4,9 @@ package com.yahoo.bard.webservice.web.apirequest
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
-import com.yahoo.bard.webservice.web.ApiFilter
+import com.yahoo.bard.webservice.web.ApiFilterGenerator
 import com.yahoo.bard.webservice.web.BadApiRequestException
+import com.yahoo.bard.webservice.web.ApiFilter
 import com.yahoo.bard.webservice.web.endpoints.DimensionsServlet
 
 import spock.lang.Shared
@@ -68,7 +69,7 @@ class DimensionsApiRequestImplSpec extends Specification {
         setup:
         String name = "color"
         String filterString = "color|desc-in[color]"
-        ApiFilter expectedFilter = new ApiFilter(filterString, fullDictionary)
+        ApiFilter expectedFilter = ApiFilterGenerator.build(filterString, fullDictionary)
 
         when:
         DimensionsApiRequestImpl apiRequest = new DimensionsApiRequestImpl(

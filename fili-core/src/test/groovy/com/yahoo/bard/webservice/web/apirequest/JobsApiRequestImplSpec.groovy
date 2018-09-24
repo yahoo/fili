@@ -17,7 +17,7 @@ import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore
 import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseTestingUtils
 import com.yahoo.bard.webservice.async.broadcastchannels.SimpleBroadcastChannel
 import com.yahoo.bard.webservice.web.BadApiRequestException
-import com.yahoo.bard.webservice.web.FilterOperation
+import com.yahoo.bard.webservice.web.DefaultFilterOperation
 import com.yahoo.bard.webservice.web.JobNotFoundException
 import com.yahoo.bard.webservice.web.JobRequestFailedException
 import com.yahoo.bard.webservice.web.PreResponse
@@ -157,7 +157,7 @@ class JobsApiRequestImplSpec extends Specification {
         filters.size() == 1
         JobRowFilter filter = filters[0]
         filter.jobField?.name == "userId"
-        filter.operation == FilterOperation.valueOf("eq")
+        filter.operation == DefaultFilterOperation.valueOf("eq")
         filter.values == ["foo"] as Set
     }
 
@@ -173,12 +173,12 @@ class JobsApiRequestImplSpec extends Specification {
 
         JobRowFilter filter1 = filters[0]
         filter1.jobField?.name == "userId"
-        filter1.operation == FilterOperation.valueOf("eq")
+        filter1.operation == DefaultFilterOperation.valueOf("eq")
         filter1.values == ["foo"] as Set
 
         JobRowFilter filter2 = filters[1]
         filter2.jobField?.name == "status"
-        filter2.operation == FilterOperation.valueOf("eq")
+        filter2.operation == DefaultFilterOperation.valueOf("eq")
         filter2.values == ["success"] as Set
     }
 

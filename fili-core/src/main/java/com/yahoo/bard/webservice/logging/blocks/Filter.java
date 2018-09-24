@@ -25,7 +25,7 @@ public class Filter implements LogInfo, Comparable<Filter> {
     public Filter(ApiFilter filter) {
         this.dimension = filter.getDimension().getApiName();
         this.field = filter.getDimensionField().getName();
-        this.operator = filter.getOperation().name();
+        this.operator = filter.getOperation().getName();
         this.numberOfValues = filter.getValues().size();
     }
 

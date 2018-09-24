@@ -36,11 +36,13 @@ import com.yahoo.bard.webservice.table.TableIdentifier;
 import com.yahoo.bard.webservice.util.AllPagesPagination;
 import com.yahoo.bard.webservice.util.GranularityParseException;
 import com.yahoo.bard.webservice.web.ApiFilter;
+import com.yahoo.bard.webservice.web.ApiFilterGenerator;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
 import com.yahoo.bard.webservice.web.BadFilterException;
 import com.yahoo.bard.webservice.web.BadPaginationException;
 import com.yahoo.bard.webservice.web.DefaultResponseFormatType;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
+import com.yahoo.bard.webservice.web.DefaultFilterOperation;
 import com.yahoo.bard.webservice.web.FilterOperation;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.TimeMacro;
@@ -455,6 +457,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
             return generated;
         }
     }
+
     /**
      * Generates filter objects on the based on the filter query in the api request.
      *
@@ -488,10 +491,10 @@ public abstract class ApiRequestImpl implements ApiRequest {
             for (String apiFilter : apiFilters) {
                 ApiFilter newFilter;
                 try {
-                    newFilter = new ApiFilter(apiFilter, dimensionDictionary);
+                    newFilter = ApiFilterGenerator.build(apiFilter, dimensionDictionary);
 
                     // If there is a logical table and the filter is not part of it, throw exception.
-                    if (! table.getDimensions().contains(newFilter.getDimension())) {
+                    if (!table.getDimensions().contains(newFilter.getDimension())) {
                         String filterDimensionName = newFilter.getDimension().getApiName();
                         LOG.debug(FILTER_DIMENSION_NOT_IN_TABLE.logFormat(filterDimensionName, table));
                         throw new BadFilterException(
@@ -505,8 +508,9 @@ public abstract class ApiRequestImpl implements ApiRequest {
 
                 if (!BardFeatureFlag.DATA_FILTER_SUBSTRING_OPERATIONS.isOn()) {
                     FilterOperation filterOperation = newFilter.getOperation();
-                    if (filterOperation.equals(FilterOperation.startswith)
-                            || filterOperation.equals(FilterOperation.contains)
+
+                    if (filterOperation.equals(DefaultFilterOperation.startswith)
+                            || filterOperation.equals(DefaultFilterOperation.contains)
                             ) {
                         throw new BadApiRequestException(
                                 ErrorMessageFormat.FILTER_SUBSTRING_OPERATIONS_DISABLED.format()
@@ -590,12 +594,13 @@ public abstract class ApiRequestImpl implements ApiRequest {
             Granularity granularity,
             List<Interval> intervals
     ) throws BadApiRequestException {
-        if (! granularity.accepts(intervals)) {
+        if (!granularity.accepts(intervals)) {
             String alignmentDescription = granularity.getAlignmentDescription();
             LOG.debug(TIME_ALIGNMENT.logFormat(intervals, granularity, alignmentDescription));
             throw new BadApiRequestException(TIME_ALIGNMENT.format(intervals, granularity, alignmentDescription));
         }
     }
+
     /**
      * Generates the format in which the response data is expected.
      *
@@ -717,7 +722,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
                     asyncAfterString.equals(ASYNCHRONOUS_REQUEST_FLAG) ?
                             ASYNCHRONOUS_ASYNC_AFTER_VALUE :
                             Long.parseLong(asyncAfterString);
-        }  catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {
             LOG.debug(INVALID_ASYNC_AFTER.logFormat(asyncAfterString), e);
             throw new BadApiRequestException(INVALID_ASYNC_AFTER.format(asyncAfterString), e);
         }

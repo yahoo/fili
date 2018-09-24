@@ -18,7 +18,7 @@ import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter;
 import com.yahoo.bard.webservice.exception.TooManyDruidFiltersException;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
-import com.yahoo.bard.webservice.web.FilterOperation;
+import com.yahoo.bard.webservice.web.DefaultFilterOperation;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -101,12 +101,13 @@ public abstract class ConjunctionDruidFilterBuilder implements DruidFilterBuilde
      * <p>
      * An {@link ApiFilter} is defined to be positive if its filter operation is one of
      * <ul>
-     *     <li> {@link FilterOperation#in}
-     *     <li> {@link FilterOperation#startswith}
-     *     <li> {@link FilterOperation#contains}
-     *     <li> {@link FilterOperation#eq}
+     *     <li> {@link DefaultFilterOperation#in}
+     *     <li> {@link DefaultFilterOperation#startswith}
+     *     <li> {@link DefaultFilterOperation#contains}
+     *     <li> {@link DefaultFilterOperation#eq}
      * </ul>
-     * An {@link ApiFilter} is defined to be negative if its filter operation is {@link FilterOperation#notin}.
+     * An {@link ApiFilter} is defined to be negative if its filter operation is
+     * {@link DefaultFilterOperation#notin}.
      *
      * @param filters  A set of API filters that are to be splitted
      *
@@ -117,7 +118,7 @@ public abstract class ConjunctionDruidFilterBuilder implements DruidFilterBuilde
         Set<ApiFilter> negativeFilters = new HashSet<>();
 
         for (ApiFilter filter : filters) {
-            if (FilterOperation.notin.equals(filter.getOperation())) {
+            if (DefaultFilterOperation.notin.equals(filter.getOperation())) {
                 // this is a negative filter
                 negativeFilters.add(filter);
             } else {
@@ -133,11 +134,11 @@ public abstract class ConjunctionDruidFilterBuilder implements DruidFilterBuilde
     }
 
     /**
-     * Negates a collection of negative filters, i.e. {@link FilterOperation#notin} {@code =>}
-     * {@link FilterOperation#in}, and returns a stream of the negated filters.
+     * Negates a collection of negative filters, i.e. {@link DefaultFilterOperation#notin} {@code =>}
+     * {@link DefaultFilterOperation#in}, and returns a stream of the negated filters.
      * <p>
      * This method throws {@link IllegalArgumentException} if any one of the filter collection passed in is not a
-     * negative filter, i.e. {@link FilterOperation#notin}.
+     * negative filter, i.e. {@link DefaultFilterOperation#notin}.
      *
      * @param negativeFilters  The collection of filters to be negated
      *
@@ -147,13 +148,13 @@ public abstract class ConjunctionDruidFilterBuilder implements DruidFilterBuilde
         return negativeFilters.stream()
                 // TODO - refactor this and next map when more than 1 not* FilterOperations are supported.
                 .peek(filter -> {
-                    if (!FilterOperation.notin.equals(filter.getOperation())) {
+                    if (!DefaultFilterOperation.notin.equals(filter.getOperation())) {
                         String message = String.format(NON_NEGATIVE_FILTER_ERROR_FORMAT, filter);
                         LOG.error(message);
                         throw new IllegalArgumentException(message);
                     }
                 })
-                .map(filter -> filter.withOperation(FilterOperation.in))
+                .map(filter -> filter.withOperation(DefaultFilterOperation.in))
                 .collect(Collectors.toSet());
     }
 

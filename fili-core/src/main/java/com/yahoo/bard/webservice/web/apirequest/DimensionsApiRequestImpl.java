@@ -7,9 +7,10 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.EMPTY_DICTIONARY;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
-import com.yahoo.bard.webservice.web.ApiFilter;
+import com.yahoo.bard.webservice.web.ApiFilterGenerator;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
 import com.yahoo.bard.webservice.web.BadFilterException;
+import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
@@ -166,7 +167,7 @@ public class DimensionsApiRequestImpl extends ApiRequestImpl implements Dimensio
         for (String apiFilter : apiFilters) {
             ApiFilter newFilter;
             try {
-                newFilter = new ApiFilter(apiFilter, dimensionDictionary);
+                newFilter = ApiFilterGenerator.build(apiFilter, dimensionDictionary);
             } catch (BadFilterException filterException) {
                 // bad response if filter dimensions do not match requested dimension
                 throw new BadApiRequestException(filterException.getMessage(), filterException);
