@@ -2,36 +2,17 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web;
 
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_DIMENSION_UNDEFINED;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_ERROR;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_FIELD_NOT_IN_DIMENSIONS;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_INVALID;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_OPERATOR_INVALID;
-
 import com.yahoo.bard.webservice.data.dimension.Dimension;
-import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
-import com.yahoo.bard.webservice.util.FilterTokenizer;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.validation.constraints.NotNull;
 
 /**
  * ApiFilter object. Represents the different pieces of data in the filter clause of a Fili Api Query.
  */
 public class ApiFilter {
-//    private static final Logger LOG = LoggerFactory.getLogger(ApiFilter.class);
 
     private final Dimension dimension;
     private final DimensionField dimensionField;
