@@ -8,7 +8,7 @@ import static com.yahoo.wiki.webservice.data.config.names.WikiDruidTableName.WIK
 
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig
-import com.yahoo.bard.webservice.data.config.dimension.KeyValueStoreDimensionLoader
+import com.yahoo.bard.webservice.data.config.dimension.TypeAwareDimensionLoader
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
@@ -38,7 +38,7 @@ class ConfigurationLoadTaskSpec extends Specification {
         LinkedHashSet<DimensionConfig> dimensions = genericDimensions.
                 getAllDimensionConfigurations()
         loader = new ConfigurationLoader(
-                new KeyValueStoreDimensionLoader(dimensions),
+                new TypeAwareDimensionLoader(dimensions),
                 new GenericMetricLoader(wikiConfigLoader),
                 new GenericTableLoader(wikiConfigLoader, genericDimensions, new DataSourceMetadataService())
         )

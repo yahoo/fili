@@ -45,9 +45,9 @@ import com.yahoo.bard.webservice.util.TableUtils;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.ApiHaving;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
+import com.yahoo.bard.webservice.web.DefaultFilterOperation;
 import com.yahoo.bard.webservice.web.DimensionFieldSpecifierKeywords;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
-import com.yahoo.bard.webservice.web.FilterOperation;
 import com.yahoo.bard.webservice.web.MetricParser;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
@@ -640,8 +640,9 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      *
      * @throws BadApiRequestException if a the request violates aggregatability constraints of dimensions.
      */
-    protected void validateAggregatability(Set<Dimension> apiDimensions, Map<Dimension, Set<ApiFilter>> apiFilters)
-            throws BadApiRequestException {
+    protected void validateAggregatability(
+            Set<Dimension> apiDimensions, Map<Dimension, Set<ApiFilter>> apiFilters
+    ) throws BadApiRequestException {
         // The set of non-aggregatable dimensions requested as group by dimensions
         Set<Dimension> nonAggGroupByDimensions = apiDimensions.stream()
                 .filter(StreamUtils.not(Dimension::isAggregatable))
@@ -683,8 +684,8 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                 !apiFilter.getDimensionField().equals(apiFilter.getDimension().getKey()) ||
                         apiFilter.getValues().size() != 1 ||
                         !(
-                                apiFilter.getOperation().equals(FilterOperation.in) ||
-                                        apiFilter.getOperation().equals(FilterOperation.eq)
+                                apiFilter.getOperation().equals(DefaultFilterOperation.in) ||
+                                        apiFilter.getOperation().equals(DefaultFilterOperation.eq)
                         );
     }
 

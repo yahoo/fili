@@ -53,19 +53,6 @@ public class FieldAccessorPostAggregation extends PostAggregation {
      * Retrieve the MetricField column which this field accesses.
      *
      * @return An aggregation or post-aggregation referenced by this post aggregator.
-     *
-     * @deprecated Use getMetricField instead
-     */
-    @JsonIgnore
-    @Deprecated
-    public MetricField getAggregation() {
-        return metricField;
-    }
-
-    /**
-     * Retrieve the MetricField column which this field accesses.
-     *
-     * @return An aggregation or post-aggregation referenced by this post aggregator.
      */
     @JsonIgnore
     public MetricField getMetricField() {

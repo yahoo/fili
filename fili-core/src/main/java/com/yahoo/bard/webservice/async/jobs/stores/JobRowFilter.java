@@ -11,6 +11,7 @@ import com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField;
 import com.yahoo.bard.webservice.async.jobs.jobrows.JobField;
 import com.yahoo.bard.webservice.util.FilterTokenizer;
 import com.yahoo.bard.webservice.web.BadFilterException;
+import com.yahoo.bard.webservice.web.DefaultFilterOperation;
 import com.yahoo.bard.webservice.web.FilterOperation;
 
 import org.slf4j.Logger;
@@ -165,7 +166,7 @@ public class JobRowFilter {
     private FilterOperation extractOperation(Matcher tokenizedQuery) throws BadFilterException {
         String operationName = tokenizedQuery.group(2);
         try {
-            return FilterOperation.valueOf(operationName);
+            return DefaultFilterOperation.valueOf(operationName);
         } catch (IllegalArgumentException ignored) {
             LOG.debug(FILTER_OPERATOR_INVALID.logFormat(operationName));
             throw new BadFilterException(FILTER_OPERATOR_INVALID.format(operationName));

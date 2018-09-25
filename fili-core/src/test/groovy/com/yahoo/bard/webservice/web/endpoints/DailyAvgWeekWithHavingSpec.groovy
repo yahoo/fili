@@ -36,7 +36,7 @@ class DailyAvgWeekWithHavingSpec extends DailyAvgWeekSpec {
                                 "fieldName": "users",
                                 "name": "users",
                                 "size": 16384,
-                                "type": "sketchMerge"
+                                "type": "thetaSketch"
                             }
                     ],
                     "dataSource": {
@@ -53,7 +53,7 @@ class DailyAvgWeekWithHavingSpec extends DailyAvgWeekSpec {
                                 "type": "fieldAccess"
                             },
                                 "name": "users_estimate",
-                                "type": "sketchEstimate"
+                                "type": "thetaSketchEstimate"
                             },
                             {
                                 "name": "one",

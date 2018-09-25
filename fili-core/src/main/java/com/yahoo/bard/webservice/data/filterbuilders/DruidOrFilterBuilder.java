@@ -9,7 +9,7 @@ import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.filter.NotFilter;
 import com.yahoo.bard.webservice.druid.model.filter.OrFilter;
 import com.yahoo.bard.webservice.web.ApiFilter;
-import com.yahoo.bard.webservice.web.FilterOperation;
+import com.yahoo.bard.webservice.web.DefaultFilterOperation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,8 +42,8 @@ public class DruidOrFilterBuilder extends ConjunctionDruidFilterBuilder {
         List<Filter> orFilters = new ArrayList<>();
         for (ApiFilter filter : filters) {
             ApiFilter normalizedFilter = filter;
-            if (normalizedFilter.getOperation().equals(FilterOperation.notin)) {
-                normalizedFilter = filter.withOperation(FilterOperation.in);
+            if (normalizedFilter.getOperation().equals(DefaultFilterOperation.notin)) {
+                normalizedFilter = filter.withOperation(DefaultFilterOperation.in);
             }
             Filter disjunction = new OrFilter(buildSelectorFilters(
                     dimension,

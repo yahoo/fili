@@ -13,7 +13,7 @@ import org.joda.time.DateTime
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class ApiFilterSpec extends Specification {
+class ApiFilterGeneratorSpec extends Specification {
 
     DimensionDictionary dimStore
     Dimension dimension1
@@ -48,12 +48,12 @@ class ApiFilterSpec extends Specification {
         String query = dimension + '|' + field + '-' + op + values
 
         when:
-        ApiFilter filter = new ApiFilter(query, dimStore)
+        ApiFilter filter = ApiFilterGenerator.build(query, dimStore)
 
         then:
         filter.getDimension()?.getApiName() == dimension
         filter.getDimensionField() == filter.getDimension()?.getFieldByName(field)
-        filter.getOperation() == FilterOperation.valueOf(op)
+        filter.getOperation() == DefaultFilterOperation.valueOf(op)
         filter.getValues() == expected as Set
 
         where:
@@ -83,12 +83,12 @@ class ApiFilterSpec extends Specification {
         String query = dimension + '|' + field + '-' + op + values
 
         when:
-        ApiFilter filter = new ApiFilter(query, dimStore)
+        ApiFilter filter = ApiFilterGenerator.build(query, dimStore)
 
         then:
         filter.getDimension()?.getApiName() == dimension
         filter.getDimensionField() == filter.getDimension()?.getFieldByName(field)
-        filter.getOperation() == FilterOperation.valueOf(op)
+        filter.getOperation() == DefaultFilterOperation.valueOf(op)
         filter.getValues() == expected as Set
 
         where:
@@ -107,7 +107,7 @@ class ApiFilterSpec extends Specification {
     def "Bad filter #filter throws #exception.simpleName because #reason"() {
 
         when:
-        new ApiFilter(filter, dimStore)
+        ApiFilterGenerator.build(filter, dimStore)
 
         then:
         thrown exception
@@ -153,7 +153,7 @@ class ApiFilterSpec extends Specification {
         String query = 'dimension1|id-eq[foobar]'
 
         when:
-        ApiFilter filter = new ApiFilter(query, dimStore)
+        ApiFilter filter = ApiFilterGenerator.build(query, dimStore)
 
         then:
         filter.toString() == 'dimension1|id-eq[foobar]'

@@ -21,11 +21,11 @@ import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.impl.AsyncDruidWebServiceImpl;
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier;
 import com.yahoo.bard.webservice.druid.util.FieldConverters;
-import com.yahoo.bard.webservice.druid.util.SketchFieldConverter;
+import com.yahoo.bard.webservice.druid.util.ThetaSketchFieldConverter;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
 import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService;
 import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService;
-import com.yahoo.bard.webservice.web.FilteredSketchMetricsHelper;
+import com.yahoo.bard.webservice.web.FilteredThetaSketchMetricsHelper;
 import com.yahoo.bard.webservice.web.MetricsFilterSetBuilder;
 import com.yahoo.bard.webservice.web.filters.BardLoggingFilter;
 import com.yahoo.bard.webservice.web.filters.TestLogWrapperFilter;
@@ -292,21 +292,21 @@ public class JerseyTestBinder {
     }
 
     /**
-     * Initialize the field converter. By default it is SketchFieldConverter
+     * Initialize the field converter. By default it is ThetaSketchFieldConverter
      *
-     * @return An instance of SketchFieldConverter
+     * @return An instance of FieldConverters
      */
     protected FieldConverters initializeSketchConverter() {
-        return new SketchFieldConverter();
+        return new ThetaSketchFieldConverter();
     }
 
     /**
-     * Initialize the FilteredMetricsHelper. By default it is FilteredSketchMetricsHelper
+     * Initialize the MetricsFilterSetBuilder. By default it is FilteredThetaSketchMetricsHelper
      *
-     * @return An instance of FilteredSketchMetricsHelper
+     * @return An instance of MetricsFilterSetBuilder
      */
     protected MetricsFilterSetBuilder initializeMetricsFilterSetBuilder() {
-        return new FilteredSketchMetricsHelper();
+        return new FilteredThetaSketchMetricsHelper();
     }
 
     public ConfigurationLoader getConfigurationLoader() {

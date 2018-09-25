@@ -8,6 +8,7 @@ import static org.joda.time.DateTimeZone.UTC
 import com.yahoo.bard.webservice.data.config.metric.MetricInstance
 import com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName
+import com.yahoo.bard.webservice.data.config.names.TableName
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
@@ -26,6 +27,7 @@ import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.StrictPhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.web.ApiFilter
+import com.yahoo.bard.webservice.web.ApiFilterGenerator
 import com.yahoo.bard.webservice.web.FilteredThetaSketchMetricsHelper
 import com.yahoo.bard.webservice.web.MetricsFilterSetBuilder
 
@@ -64,7 +66,7 @@ class FilteredAggregationSpec extends Specification{
         Set<Column> columns = [new DimensionColumn(ageDimension)] as Set
 
         PhysicalTable physicalTable = new StrictPhysicalTable(
-                "NETWORK",
+                TableName.of("NETWORK"),
                 DAY.buildZonedTimeGrain(UTC),
                 columns,
                 [:],
@@ -84,13 +86,13 @@ class FilteredAggregationSpec extends Specification{
 
         LogicalMetric logicalMetric = new LogicalMetric(null, null, filtered_metric_name)
 
-        Set<ApiFilter> filterSet = [new ApiFilter("age|id-in[114,125]", dimensionDictionary)] as Set
+        Set<ApiFilter> filterSet = [ApiFilterGenerator.build("age|id-in[114,125]", dimensionDictionary)] as Set
 
         DruidFilterBuilder filterBuilder = new DruidOrFilterBuilder()
         filter1  = filterBuilder.buildFilters([(ageDimension): filterSet])
 
         filter2 = filterBuilder.buildFilters(
-                [(ageDimension): [new ApiFilter("age|id-in[114]", dimensionDictionary)] as Set]
+                [(ageDimension): [ApiFilterGenerator.build("age|id-in[114]", dimensionDictionary)] as Set]
         )
 
         filteredAgg = new FilteredAggregation("FOO_NO_BAR-114_127", metricAgg, filter1)

@@ -54,22 +54,22 @@ class NonNumericMetricSpec extends BaseDataServletComponentSpec {
                     {
                         "fieldName": "height",
                         "name":"${A_STRING_METRIC.asName()}",
-                        "type": "min"
+                        "type": "longMin"
                     },
                     {
                         "fieldName": "height",
                         "name":"${A_NULL_METRIC.asName()}",
-                        "type": "min"
+                        "type": "longMin"
                     },
                     {
                         "fieldName": "height",
                         "name":"${A_JSON_NODE_METRIC.asName()}",
-                        "type": "min"
+                        "type": "longMin"
                     },
                     {
                         "fieldName": "height",
                         "name":"${A_BOOLEAN_METRIC.asName()}",
-                        "type": "min"
+                        "type": "longMin"
                     }
                 ],
                 "postAggregations": [],

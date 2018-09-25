@@ -2,11 +2,12 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.async.jobs.stores;
 
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_OPERATOR_INVALID;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_JOBFIELD_UNDEFINED;
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_OPERATOR_INVALID;
 
 import com.yahoo.bard.webservice.async.jobs.jobrows.JobField;
 import com.yahoo.bard.webservice.async.jobs.jobrows.JobRow;
+import com.yahoo.bard.webservice.web.DefaultFilterOperation;
 import com.yahoo.bard.webservice.web.FilterOperation;
 
 import org.slf4j.Logger;
@@ -108,8 +109,15 @@ public class HashJobStore implements ApiJobStore {
         }
 
         String actualValue = jobRow.get(filterJobField);
+        if (!(filterOperation instanceof DefaultFilterOperation)) {
+            LOG.debug("Only default filter operations permitted in this class; " +
+                    FILTER_OPERATOR_INVALID.logFormat(filterOperation));
+            throw new IllegalArgumentException("Only default filter operations permitted in this class; " +
+                    FILTER_OPERATOR_INVALID.format(filterOperation));
+        }
 
-        switch (filterOperation) {
+        DefaultFilterOperation defaultFilterOperation = (DefaultFilterOperation) filterOperation;
+        switch (defaultFilterOperation) {
             case notin:
                 return !filterValues.contains(actualValue);
             case startswith:
@@ -120,8 +128,8 @@ public class HashJobStore implements ApiJobStore {
             case eq:
                 return filterValues.contains(actualValue);
             default:
-                LOG.debug(FILTER_OPERATOR_INVALID.logFormat(filterOperation));
-                throw new IllegalArgumentException(FILTER_OPERATOR_INVALID.format(filterOperation));
+                LOG.debug(FILTER_OPERATOR_INVALID.logFormat(defaultFilterOperation));
+                throw new IllegalArgumentException(FILTER_OPERATOR_INVALID.format(defaultFilterOperation));
         }
     }
 }

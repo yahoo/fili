@@ -53,8 +53,8 @@ import com.yahoo.bard.webservice.data.config.dimension.TypeAwareDimensionLoader;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
-import com.yahoo.bard.webservice.data.filterbuilders.DruidInFilterBuilder;
 import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder;
+import com.yahoo.bard.webservice.data.filterbuilders.DruidInFilterBuilder;
 import com.yahoo.bard.webservice.data.filterbuilders.DruidOrFilterBuilder;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQueryMerger;
@@ -71,7 +71,7 @@ import com.yahoo.bard.webservice.druid.client.impl.HeaderNestingJsonBuilderStrat
 import com.yahoo.bard.webservice.druid.model.query.LookbackQuery;
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier;
 import com.yahoo.bard.webservice.druid.util.FieldConverters;
-import com.yahoo.bard.webservice.druid.util.SketchFieldConverter;
+import com.yahoo.bard.webservice.druid.util.ThetaSketchFieldConverter;
 import com.yahoo.bard.webservice.exception.DataExceptionHandler;
 import com.yahoo.bard.webservice.exception.FiliDataExceptionHandler;
 import com.yahoo.bard.webservice.exception.FiliDimensionExceptionHandler;
@@ -97,7 +97,7 @@ import com.yahoo.bard.webservice.web.DefaultResponseFormatResolver;
 import com.yahoo.bard.webservice.web.DimensionApiRequestMapper;
 import com.yahoo.bard.webservice.web.FiliResponseWriter;
 import com.yahoo.bard.webservice.web.FiliResponseWriterSelector;
-import com.yahoo.bard.webservice.web.FilteredSketchMetricsHelper;
+import com.yahoo.bard.webservice.web.FilteredThetaSketchMetricsHelper;
 import com.yahoo.bard.webservice.web.JsonApiResponseWriter;
 import com.yahoo.bard.webservice.web.JsonResponseWriter;
 import com.yahoo.bard.webservice.web.MetricsFilterSetBuilder;
@@ -601,16 +601,16 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      * @return An instance of SketchFieldConverter
      */
     protected FieldConverters initializeSketchConverter() {
-        return new SketchFieldConverter();
+        return new ThetaSketchFieldConverter();
     }
 
     /**
-     * Initialize the FilteredMetricsHelper. By default it is FilteredSketchMetricsHelper
+     * Initialize the MetricsFilterSetBuilder. By default it is MetricsFilterSetBuilder
      *
-     * @return An instance of FilteredSketchMetricsHelper
+     * @return An instance of MetricsFilterSetBuilder
      */
     protected MetricsFilterSetBuilder initializeMetricsFilterSetBuilder() {
-        return new FilteredSketchMetricsHelper();
+        return new FilteredThetaSketchMetricsHelper();
     }
 
     /**
@@ -1236,22 +1236,6 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      */
     protected DruidWebService buildDruidWebService(ObjectMapper mapper) {
         return buildDruidWebService(DruidClientConfigHelper.getServiceConfig(), mapper);
-    }
-
-    /**
-     * Create a DruidWebService for the non-UI connection.
-     * <p>
-     * Provided so subclasses can implement alternative druid web service implementations for the non-UI connection
-     *
-     * @param mapper shared instance of {@link com.fasterxml.jackson.databind.ObjectMapper}
-     *
-     * @return A DruidWebService
-     *
-     * @deprecated removed non-ui webservice, this method is no longer used
-     */
-    @Deprecated
-    protected DruidWebService buildNonUiDruidWebService(ObjectMapper mapper) {
-        return buildDruidWebService(DruidClientConfigHelper.getNonUiServiceConfig(), mapper);
     }
 
     /**

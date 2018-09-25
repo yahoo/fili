@@ -243,7 +243,7 @@ public class ClassScanner {
         }
 
         // Exhausted all constructors, give up
-        throw (InstantiationException) new InstantiationException().initCause(cause);
+        throw (InstantiationException) new InstantiationException(cause.getMessage()).initCause(cause);
     }
 
     /**
@@ -401,7 +401,7 @@ public class ClassScanner {
      * @param cls  The class to associate with the object
      * @param value  The value being cached
      */
-    private void putInArgumentValueCache(Class cls, Object value) {
+    public void putInArgumentValueCache(Class cls, Object value) {
         argumentValueCache.put(cls, value);
     }
 }

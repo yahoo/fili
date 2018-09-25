@@ -14,8 +14,7 @@ class AggregationSpec extends Specification {
 
     def setupSpec() {
         baseAggregations = [DoubleSumAggregation, DoubleMaxAggregation, DoubleMinAggregation,
-                            LongSumAggregation, LongMaxAggregation, LongMinAggregation,
-                            MaxAggregation, MinAggregation]
+                            LongSumAggregation, LongMaxAggregation, LongMinAggregation]
     }
 
     @Unroll

@@ -6,7 +6,6 @@ import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
 import org.slf4j.Logger;
@@ -76,64 +75,6 @@ public class ResponseException extends Exception {
                 error,
                 writer
         );
-    }
-
-    /**
-     * Class constructor with throwable and other parameters.
-     *
-     * @param statusType  Status type of the response
-     * @param druidQuery  The druid query being processed
-     * @param error  Exception object with error details
-     *
-     * @deprecated In order to ensure correct serialization of the Druid Query, an ObjectWriter with all appropriate
-     * configuration should be passed in to the constructor
-     */
-    @Deprecated
-    public ResponseException(Response.StatusType statusType, DruidAggregationQuery<?> druidQuery, Throwable error) {
-        this(
-                statusType.getStatusCode(),
-                ErrorUtils.getReason(error),
-                ErrorUtils.getDescription(error),
-                druidQuery,
-                error
-        );
-    }
-
-    /**
-     * Class constructor with all the parameters to prepare the error response by considering error object as null.
-     *
-     * @param statusCode  Http status code for the error
-     * @param reason  Reason for the error
-     * @param description  Description for the error
-     * @param druidQuery  The druid query being processed
-     * @deprecated In order to ensure correct serialization of the Druid Query, an ObjectWriter with all appropriate
-     * configuration should be passed in to the constructor
-     */
-    @Deprecated
-    public ResponseException(int statusCode, String reason, String description, DruidQuery<?> druidQuery) {
-        this(statusCode, reason, description, druidQuery, null);
-    }
-
-    /**
-     * Class constructor with all the parameters to prepare the error response.
-     *
-     * @param statusCode  Http status code for the error
-     * @param reason  Reason for the error
-     * @param description  Description for the error
-     * @param druidQuery  The druid query being processed
-     * @param cause  Exception object with error details
-     * @deprecated In order to ensure correct serialization of the Druid Query, an ObjectWriter with all appropriate
-     * configuration should be passed in to the constructor
-     */
-    @Deprecated
-    public ResponseException(
-            int statusCode,
-            String reason,
-            String description,
-            DruidQuery<?> druidQuery,
-            Throwable cause
-    ) {
-        this(statusCode, reason, description, druidQuery, cause, new ObjectMapper().writer());
     }
 
     /**

@@ -18,7 +18,8 @@ import com.yahoo.bard.webservice.data.dimension.SearchProvider
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.util.Pagination
 import com.yahoo.bard.webservice.web.ApiFilter
-import com.yahoo.bard.webservice.web.FilterOperation
+import com.yahoo.bard.webservice.web.ApiFilterGenerator
+import com.yahoo.bard.webservice.web.DefaultFilterOperation
 import com.yahoo.bard.webservice.web.util.PaginationParameters
 
 import org.joda.time.DateTime
@@ -472,13 +473,13 @@ abstract class SearchProviderSpec<T extends SearchProvider> extends Specificatio
         ApiFilter oldDescription = new ApiFilter(
                 keyValueStoreDimension,
                 DESC,
-                FilterOperation.eq,
+                DefaultFilterOperation.eq,
                 ["this is a raptor"] as Set
         )
         ApiFilter newDescription = new ApiFilter(
                 keyValueStoreDimension,
                 DESC,
-                FilterOperation.eq,
+                DefaultFilterOperation.eq,
                 ["this is a new raptor"] as Set
         )
 
@@ -561,7 +562,7 @@ abstract class SearchProviderSpec<T extends SearchProvider> extends Specificatio
     abstract boolean indicesHaveBeenCleared()
 
     ApiFilter buildFilter(String filterQuery) {
-        new ApiFilter(filterQuery, spaceIdDictionary)
+        return ApiFilterGenerator.build(filterQuery, spaceIdDictionary)
     }
 
     def "findAllDimensionRowsPaged and findFilteredDimensionRowsPaged paginates results correctly"() {

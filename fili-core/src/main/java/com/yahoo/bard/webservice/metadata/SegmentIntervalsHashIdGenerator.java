@@ -6,7 +6,6 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DRUID_METADATA_SE
 
 import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
-import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 import com.yahoo.bard.webservice.util.DefaultingDictionary;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
@@ -42,25 +41,6 @@ public class SegmentIntervalsHashIdGenerator implements QuerySigningService<Long
     /**
      * Build a SegmentIntervalsHashIdGenerator that generates a segmentId using the provided signingFunctions.
      *
-     * @param physicalTableDictionary  The dictionary of the physical tables
-     * @param dataSourceMetadataService  A Service to get information about segment metadata
-     * @param requestedIntervalsQueryExtractionFunctions  Maps a Class to the Function that should be used to compute
-     * requestedIntervals for a given query
-     *
-     * @deprecated  phyiscalTableDictionary is not used
-     */
-    @Deprecated
-    public SegmentIntervalsHashIdGenerator(
-            PhysicalTableDictionary physicalTableDictionary,
-            DataSourceMetadataService dataSourceMetadataService,
-            Map<Class, RequestedIntervalsFunction> requestedIntervalsQueryExtractionFunctions
-    ) {
-        this(dataSourceMetadataService, requestedIntervalsQueryExtractionFunctions);
-    }
-
-    /**
-     * Build a SegmentIntervalsHashIdGenerator that generates a segmentId using the provided signingFunctions.
-     *
      * @param dataSourceMetadataService  A Service to get information about segment metadata
      * @param requestedIntervalsQueryExtractionFunctions  Maps a Class to the Function that should be used to compute
      * requestedIntervals for a given query
@@ -71,23 +51,6 @@ public class SegmentIntervalsHashIdGenerator implements QuerySigningService<Long
     ) {
         this.dataSourceMetadataService = dataSourceMetadataService;
         this.requestedIntervalsQueryExtractionFunctions = requestedIntervalsQueryExtractionFunctions;
-    }
-
-    /**
-     * Build a SegmentIntervalsHashIdGenerator that uses the raw simplified intervals of a druidAggregationQuery to
-     * create a segmentId.
-     *
-     * @param physicalTableDictionary The dictionary of the physical tables
-     * @param dataSourceMetadataService A Service to get information about segment metadata
-     *
-     * @deprecated  phyiscalTableDictionary is not used
-     */
-    @Deprecated
-    public SegmentIntervalsHashIdGenerator(
-            PhysicalTableDictionary physicalTableDictionary,
-            DataSourceMetadataService dataSourceMetadataService
-    ) {
-        this(dataSourceMetadataService);
     }
 
     /**

@@ -9,6 +9,7 @@ import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.filter.InFilter;
 import com.yahoo.bard.webservice.druid.model.filter.NotFilter;
 import com.yahoo.bard.webservice.web.ApiFilter;
+import com.yahoo.bard.webservice.web.DefaultFilterOperation;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -28,12 +29,12 @@ import java.util.stream.Collectors;
  *     <li>
  *         positive filters whose API filter operations are one of the following:
  *         <ul>
- *             <li> {@link com.yahoo.bard.webservice.web.FilterOperation#in}
- *             <li> {@link com.yahoo.bard.webservice.web.FilterOperation#startswith}
- *             <li> {@link com.yahoo.bard.webservice.web.FilterOperation#contains}
- *             <li> {@link com.yahoo.bard.webservice.web.FilterOperation#eq}
+ *             <li> {@link DefaultFilterOperation#in}
+ *             <li> {@link DefaultFilterOperation#startswith}
+ *             <li> {@link DefaultFilterOperation#contains}
+ *             <li> {@link DefaultFilterOperation#eq}
  *         </ul>
- *     <li> negative filters whose API filter operation is {@link com.yahoo.bard.webservice.web.FilterOperation#notin}
+ *     <li> negative filters whose API filter operation is {@link DefaultFilterOperation#notin}
  * </ol>
  * Dimension row values matching the positive API filters are grouped in the single in-filter. Those values matching the
  * negative API filters are grouped in the other in-filter wrapped in the not-filter.
@@ -58,7 +59,8 @@ public class DruidInFilterBuilder extends ConjunctionDruidFilterBuilder {
         // split ApiFilters into two groups: positive filters & negative filters
         Pair<Set<ApiFilter>, Set<ApiFilter>> positiveAndNegativeSplitFilters = splitApiFilters(filters);
         Set<ApiFilter> positiveFilters = positiveAndNegativeSplitFilters.getLeft();
-        Set<ApiFilter> negatedNegativeFilters = negateNegativeFilters(positiveAndNegativeSplitFilters.getRight());
+        Set<ApiFilter> negatedNegativeFilters =
+                negateNegativeFilters(positiveAndNegativeSplitFilters.getRight());
 
         // search for matched values of the positive filter by sending all of the filters down to search provider once
         List<String> inValues = positiveFilters.isEmpty()

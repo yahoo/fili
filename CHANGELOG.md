@@ -7,6 +7,15 @@ pull request if there was one.
 
 ### Added:
 
+- [Add factory for build ApiFilter objects](https://github.com/yahoo/fili/issues/771)
+    * `ApiFilter` changed into a simple value object.
+    * `ApiFilter` constructor using filter clause from API request moved to factory as static `build` method.
+    * `ApiFilter` union method moved to factory.  
+
+- [Add interfance to FilterOperation for easy extension](https://github.com/yahoo/fili/issues/771)
+    * Changed existing version of `FilterOperation` to `DefaulFilterOperation` and made `FilterOperation` into an interface.
+    * Changed code that depended on the enum to be dependent on the new interfaces instead.   
+
 - [Wrapping DruidInFilterBuilder as default filter builder under a feature flag ](https://github.com/yahoo/fili/issues/765)
     * Added `DEFAULT_IN_FILTER` feature flag.
     * If `DEFAULT_IN_FILTER` feature flag is enabled, then `DruidInFilterBuilder` will be used as the default druid
@@ -33,7 +42,7 @@ pull request if there was one.
 - [An injection point for customizing the WebLoggingFilter to use during tests](https://github.com/yahoo/fili/pull/749)
     * Extend `JerseyTestBinder` and override `getLoggingFilter`.
 
-- [An injection point for customizing Exception handling]https://github.com/yahoo/fili/pull/742)
+- [An injection point for customizing Exception handling](https://github.com/yahoo/fili/pull/742)
     * Customers can provide their own logic for handling top level Exceptions in
       the `DataServlet` by implementing `DataExceptionHandler`, and any other
       servlet by implementing `MetadataExceptionHandler`.
@@ -60,6 +69,13 @@ pull request if there was one.
     * Add missing tests to `Utils` class.
 
 ### Changed:
+
+- [Extract logic for getting pagination of dimension rows](https://github.com/yahoo/fili/issues/782)
+    * Extract the logic in `DimensionsServlet` to get pagination of dimension rows into a protected function.
+
+- [Removed deprecations](https://github.com/yahoo/fili/issues/668)
+  * Removed Pagination deprecation
+  * Removed `DataSourceConstraint` deprecation
 
 - [Bumping query id inside withIntervals of LookBackQuery](https://github.com/yahoo/fili/issues/756)
     * Returning a new `LookBackQuery` with `doFork` set to `true` which bumps query id inside `withIntervals` method.
@@ -137,11 +153,26 @@ pull request if there was one.
       the version and removes those unused imports with the new version.
 
 
+### Removed:
+
+
+- [Removed deprecated code references](https://github.com/yahoo/fili/issues/780)
+    * Renamed keys from `BardLoggingFilter` properties off deprecated refence class (this was an artifact from a bad rename)
+
+- [Removed older deprecated code](https://github.com/yahoo/fili/issues/668)
+    * Removed constructos and getters with clean replacements
+    * Stripped the remaining UI/NonUI code
+    * Cleaned up old schema classes and methods
+    * Removed orphaned metadata response data factory
+    * Removed pre-theta sketch code
+    * Removed deprecated min/max aggregations
+    * Removed loader code for metrics that don't include dimension dictionary
+    * Removed `KeyValueStoreDimension`
+
 ### Known Issues:
 
 
 
-### Removed:
 
 Current
 -------

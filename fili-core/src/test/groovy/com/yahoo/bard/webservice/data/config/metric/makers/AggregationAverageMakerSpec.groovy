@@ -11,15 +11,14 @@ import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
 import com.yahoo.bard.webservice.data.time.TimeGrain
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleSumAggregation
-import com.yahoo.bard.webservice.druid.model.aggregation.SketchCountAggregation
-import com.yahoo.bard.webservice.druid.model.aggregation.SketchMergeAggregation
+import com.yahoo.bard.webservice.druid.model.aggregation.ThetaSketchAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
-import com.yahoo.bard.webservice.druid.model.postaggregation.SketchEstimatePostAggregation
+import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchEstimatePostAggregation
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
 import com.yahoo.bard.webservice.druid.util.FieldConverters
-import com.yahoo.bard.webservice.druid.util.SketchFieldConverter
+import com.yahoo.bard.webservice.druid.util.ThetaSketchFieldConverter
 
 import spock.lang.Shared
 import spock.lang.Specification
@@ -38,9 +37,9 @@ class AggregationAverageMakerSpec extends Specification{
     Aggregation sketchMerge
 
     def setup(){
-        sketchMerge = new SketchMergeAggregation(NAME, NAME, SKETCH_SIZE)
+        sketchMerge = new ThetaSketchAggregation(NAME, NAME, SKETCH_SIZE)
         //Initializing the Sketch field converter
-        FieldConverterSupplier.sketchConverter = new SketchFieldConverter();
+        FieldConverterSupplier.sketchConverter = new ThetaSketchFieldConverter();
     }
 
     def cleanupSpec() {
@@ -49,7 +48,7 @@ class AggregationAverageMakerSpec extends Specification{
 
     def "Build a correct LogicalMetric when passed a sketch count aggregation."(){
         given: "a logical metric for counting the number of users each day"
-        Aggregation userSketchCount = new SketchCountAggregation(NAME, NAME, 16000)
+        Aggregation userSketchCount = new ThetaSketchAggregation(NAME, NAME, 16000)
         TemplateDruidQuery sketchQuery = new TemplateDruidQuery(
                 [userSketchCount] as Set,
                 [] as Set
@@ -63,7 +62,7 @@ class AggregationAverageMakerSpec extends Specification{
 
         and: """a test-specific inner post aggregation and the expected metric. The test-specific inner post aggregation
                 estimates the size of userSketchCount."""
-        PostAggregation sketchEstimate = new SketchEstimatePostAggregation(
+        PostAggregation sketchEstimate = new ThetaSketchEstimatePostAggregation(
                 ESTIMATE_NAME,
                 new FieldAccessorPostAggregation(userSketchCount)
         )
@@ -76,7 +75,7 @@ class AggregationAverageMakerSpec extends Specification{
     def "Build a correct LogicalMetric when passed a sketch merge and sketch estimate"(){
         given: """A logical metric for counting the number of users each day, using a sketch merge and sketch
             estimate rather than a sketch count."""
-        PostAggregation sketchEstimate = new SketchEstimatePostAggregation(
+        PostAggregation sketchEstimate = new ThetaSketchEstimatePostAggregation(
                 ESTIMATE_NAME,
                 new FieldAccessorPostAggregation(sketchMerge)
         )
@@ -100,7 +99,7 @@ class AggregationAverageMakerSpec extends Specification{
 
     def "Build a correct LogicalMetric when passed only a sketch merge."(){
         given: "A Logical Metric containing only a sketch estimate"
-        Aggregation sketchMerge = new SketchMergeAggregation(NAME, NAME, SKETCH_SIZE)
+        Aggregation sketchMerge = new ThetaSketchAggregation(NAME, NAME, SKETCH_SIZE)
         TemplateDruidQuery sketchEstimateQuery = new TemplateDruidQuery(
                 [sketchMerge] as Set,
                 [] as Set
@@ -113,7 +112,7 @@ class AggregationAverageMakerSpec extends Specification{
 
         and: """the expected metric. Note that a sketch estimate is expected to be added automatically by the
                 AggregationAverageMaker."""
-        PostAggregation sketchEstimate = new SketchEstimatePostAggregation(
+        PostAggregation sketchEstimate = new ThetaSketchEstimatePostAggregation(
                 ESTIMATE_NAME,
                 new FieldAccessorPostAggregation(sketchMerge)
         )

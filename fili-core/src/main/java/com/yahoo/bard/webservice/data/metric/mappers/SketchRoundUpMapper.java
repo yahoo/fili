@@ -15,7 +15,7 @@ import java.util.Objects;
  * Mapper to round floating point values to their ceiling. If a metric is null, the original result is passed along
  * unmodified.
  */
-public class SketchRoundUpMapper extends ResultSetMapper implements ColumnMapper {
+public class SketchRoundUpMapper extends ResultSetMapper {
 
     String columnName;
 
@@ -58,12 +58,6 @@ public class SketchRoundUpMapper extends ResultSetMapper implements ColumnMapper
     @Override
     protected ResultSetSchema map(ResultSetSchema schema) {
         return schema;
-    }
-
-    @Override
-    @Deprecated
-    public ResultSetMapper withColumnName(String newColumnName) {
-        return new SketchRoundUpMapper(newColumnName);
     }
 
     @Override

@@ -11,7 +11,7 @@ import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.RedisStoreManager
 import com.yahoo.bard.webservice.data.dimension.SearchProvider
 import com.yahoo.bard.webservice.web.ApiFilter
-import com.yahoo.bard.webservice.web.FilterOperation
+import com.yahoo.bard.webservice.web.DefaultFilterOperation
 
 import org.joda.time.DateTime
 
@@ -122,7 +122,7 @@ class KeyValueStoreDimensionSpec extends Specification {
         Set<ApiFilter> expectedFilters = [new ApiFilter(
                 kvsDimension,
                 BardDimensionField.ID,
-                FilterOperation.in,
+                DefaultFilterOperation.in,
                 ["row6"] as Set
         )] as Set
 
