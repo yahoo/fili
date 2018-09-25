@@ -1,4 +1,4 @@
-// Copyright 2017 Yahoo Inc.
+// Copyright 2018 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.security;
 
@@ -45,8 +45,8 @@ public class RoleBasedTableValidatorRequestMapper<T extends DataApiRequest> exte
             throws RequestValidationException {
         SecurityContext securityContext = context.getSecurityContext();
         if (!securityRules.getOrDefault(request.getTable().getName(), (ignored -> true)).test(securityContext)) {
-            throw new RequestValidationException(Response.Status.FORBIDDEN, "Formatted string that makes sense",
-                    "User message");
+            throw new RequestValidationException(Response.Status.FORBIDDEN, "Permission Denied",
+                    "Request cannot be completed as you do not have enough permission");
         }
         return request;
     }
