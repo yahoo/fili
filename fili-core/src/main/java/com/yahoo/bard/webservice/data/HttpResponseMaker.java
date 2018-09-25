@@ -134,7 +134,7 @@ public class HttpResponseMaker {
      *
      * @return Build response with requested format and associated meta data info.
      */
-    private ResponseBuilder createResponseBuilder(
+    protected ResponseBuilder createResponseBuilder(
             ResultSet resultSet,
             ResponseContext responseContext,
             ApiRequest apiRequest,
@@ -187,20 +187,13 @@ public class HttpResponseMaker {
             responseWriter.write(apiRequest, responseData, outputStream);
         };
 
-        // pass stream handler as response
+//      pass stream handler as response
         ResponseBuilder rspBuilder = javax.ws.rs.core.Response.ok(stream);
-
-        if (CSV.accepts(responseFormatType)) {
-            return rspBuilder
-                    .header(HttpHeaders.CONTENT_TYPE, "text/csv; charset=utf-8")
-                    .header(
-                            HttpHeaders.CONTENT_DISPOSITION,
-                            responseUtils.getCsvContentDispositionValue(containerRequestContext)
-                    );
-        } else {
-            return rspBuilder
-                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON + "; charset=utf-8");
-        }
+        return buildAndAddResponseHeaders(
+                rspBuilder,
+                responseFormatType,
+                containerRequestContext
+        );
     }
 
     /**
@@ -259,5 +252,31 @@ public class HttpResponseMaker {
                 pagination,
                 paginationLinks
         );
+    }
+
+    /**
+     * Builds the headers for the response and gives them to the provided response builder to be added to the response.
+     *
+     * @param rspBuilder  ResponseBuilder that handles adding the headers to the response
+     * @param responseFormatType  The type of the response
+     * @param containerRequestContext  The request context
+     * @return the response builder that has had the headers added
+     */
+    protected ResponseBuilder buildAndAddResponseHeaders(
+            ResponseBuilder rspBuilder,
+            ResponseFormatType responseFormatType,
+            ContainerRequestContext containerRequestContext
+    ) {
+        if (CSV.accepts(responseFormatType)) {
+            return rspBuilder
+                    .header(HttpHeaders.CONTENT_TYPE, "text/csv; charset=utf-8")
+                    .header(
+                            HttpHeaders.CONTENT_DISPOSITION,
+                            responseUtils.getCsvContentDispositionValue(containerRequestContext)
+                    );
+        } else {
+            return rspBuilder
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON + "; charset=utf-8");
+        }
     }
 }
