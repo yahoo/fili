@@ -145,6 +145,9 @@ pull request if there was one.
 
 ### Fixed:
 
+- [Fix name change in test logical metrics that breaks downstream tests](https://github.com/yahoo/fili/issues/786)
+    * Change test logical metric generation to use `LogicalMetricInfo` constructor which takes both long name and description.
+
 - [Fix GroovyTestUtils json parsing](https://github.com/yahoo/fili/pull/760)
     * Properly handles json parsing failures and non-JSON expected strings.
 
