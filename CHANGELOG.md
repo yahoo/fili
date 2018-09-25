@@ -7,12 +7,17 @@ pull request if there was one.
 
 ### Added:
 
+- [HttpResponseMaker header building made extendable](https://github.com/yahoo/fili/issues/783)
+    * Added `buildAndAddResponseHeaders` method in `HttpResponseMaker` which handles building and adding headers to a 
+    response builder. This logic was moved from `createResponseBuilder`.
+    * Made `createResponseBuilder` method protected to open up the class to be more extendable.
+    
 - [Add factory for build ApiFilter objects](https://github.com/yahoo/fili/issues/771)
     * `ApiFilter` changed into a simple value object.
     * `ApiFilter` constructor using filter clause from API request moved to factory as static `build` method.
     * `ApiFilter` union method moved to factory.  
 
-- [Add interfance to FilterOperation for easy extension](https://github.com/yahoo/fili/issues/771)
+- [Add interface to FilterOperation for easy extension](https://github.com/yahoo/fili/issues/771)
     * Changed existing version of `FilterOperation` to `DefaulFilterOperation` and made `FilterOperation` into an interface.
     * Changed code that depended on the enum to be dependent on the new interfaces instead.   
 
