@@ -53,7 +53,11 @@ public class NonNumericMetrics {
                             Collections.emptySet()
                     ),
                     new StringMetricMapper(),
-                    new LogicalMetricInfo(A_STRING_METRIC.getApiName(), "ImAStringISwear")
+                    new LogicalMetricInfo(
+                            A_STRING_METRIC.getApiName(),
+                            A_STRING_METRIC.getApiName(),
+                            "ImAStringISwear"
+                    )
             ),
             new LogicalMetric(
                     new TemplateDruidQuery(
@@ -64,7 +68,10 @@ public class NonNumericMetrics {
                             Collections.emptySet()
                     ),
                     new BooleanMetricMapper(),
-                    new LogicalMetricInfo(A_BOOLEAN_METRIC.getApiName(), "ImBooleanISwear")
+                    new LogicalMetricInfo(
+                            A_BOOLEAN_METRIC.getApiName(),
+                            A_BOOLEAN_METRIC.getApiName(),
+                            "ImBooleanISwear")
             ),
             new LogicalMetric(
                     new TemplateDruidQuery(
@@ -74,7 +81,11 @@ public class NonNumericMetrics {
                             Collections.emptySet()
                     ),
                     new JsonNodeMetricMapper(),
-                    new LogicalMetricInfo(A_JSON_NODE_METRIC.getApiName(), "ImAJsonNodeISwear")
+                    new LogicalMetricInfo(
+                            A_JSON_NODE_METRIC.getApiName(),
+                            A_JSON_NODE_METRIC.getApiName(),
+                            "ImAJsonNodeISwear"
+                    )
             ),
             new LogicalMetric(
                     new TemplateDruidQuery(
@@ -85,7 +96,11 @@ public class NonNumericMetrics {
                             Collections.emptySet()
                     ),
                     new NullMetricMapper(),
-                    new LogicalMetricInfo(A_NULL_METRIC.getApiName(), "ImNullISwear")
+                    new LogicalMetricInfo(
+                            A_NULL_METRIC.getApiName(),
+                            A_NULL_METRIC.getApiName(),
+                            "ImNullISwear"
+                    )
             )
         );
     }
