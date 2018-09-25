@@ -7,6 +7,10 @@ pull request if there was one.
 
 ### Added:
 
+- [Enforce role based security for incoming API requests](https://github.com/yahoo/fili/issues/788)
+    * Added `RoleBasedTableValidatorRequestMapper` class which checks if a user's role satisfies the predicates defined
+      for a logical table.
+
 - [HttpResponseMaker header building made extendable](https://github.com/yahoo/fili/issues/783)
     * Added `buildAndAddResponseHeaders` method in `HttpResponseMaker` which handles building and adding headers to a 
     response builder. This logic was moved from `createResponseBuilder`.
