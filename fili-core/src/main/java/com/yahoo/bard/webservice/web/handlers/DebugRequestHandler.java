@@ -3,8 +3,8 @@
 package com.yahoo.bard.webservice.web.handlers;
 
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
-import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.DefaultResponseFormatType;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;

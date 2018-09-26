@@ -3,9 +3,9 @@
 package com.yahoo.bard.webservice.data.config.names;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
-import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.data.time.AllGranularity;
 import com.yahoo.bard.webservice.data.time.Granularity;
+import com.yahoo.bard.webservice.data.time.TimeGrain;
 
 import java.util.Objects;
 

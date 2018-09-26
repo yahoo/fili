@@ -2,6 +2,9 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data;
 
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.HAVING_OPERATOR_IMPROPER_RANGE;
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.HAVING_OPERATOR_WRONG_NUMBER_OF_PARAMETERS;
+
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.druid.model.having.AndHaving;
 import com.yahoo.bard.webservice.druid.model.having.Having;
@@ -14,16 +17,12 @@ import com.yahoo.bard.webservice.web.HavingOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Set;
-import java.util.Map;
 import java.util.Arrays;
-
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
-
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.HAVING_OPERATOR_IMPROPER_RANGE;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.HAVING_OPERATOR_WRONG_NUMBER_OF_PARAMETERS;
 
 /**
  * Class to hold static methods to build druid query model objects from ApiHaving.

@@ -5,8 +5,8 @@ package com.yahoo.bard.webservice.druid.model.dimension.extractionfunction;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Collections;
-import java.util.Objects;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Cascade ExtractionFunction that chains an array of ExtractionFunctions to be executed in array index order.

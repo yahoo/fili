@@ -5,7 +5,6 @@ package com.yahoo.bard.webservice.data.cache;
 import com.yahoo.bard.webservice.config.SystemConfigException;
 
 import org.asynchttpclient.util.Base64;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -3,7 +3,6 @@
 package com.yahoo.bard.webservice.exception;
 
 import static com.yahoo.bard.webservice.web.ResponseCode.INSUFFICIENT_STORAGE;
-
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
