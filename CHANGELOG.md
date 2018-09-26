@@ -153,6 +153,9 @@ pull request if there was one.
 
 ### Fixed:
 
+- [ApiFilter constructor from filter query string was removed when it should have been deprecated](https://github.com/yahoo/fili/issues/794)
+    * Constructor using filter query string is restored and calls the `ApiFilterGenerator.build()` to construct itself from the string.
+
 - [Fix name change in test logical metrics that breaks downstream tests](https://github.com/yahoo/fili/issues/786)
     * Change test logical metric generation to use `LogicalMetricInfo` constructor which takes both long name and description.
 
