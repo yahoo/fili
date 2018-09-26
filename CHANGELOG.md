@@ -79,6 +79,8 @@ pull request if there was one.
 
 ### Changed:
 
+- [Make ConjunctionDruidFilterBuilder's protected helper methods instance methods](https://github.com/yahoo/fili/issues/792)
+
 - [Widen access privileges to suppress IDE warnings](https://github.com/yahoo/fili/issues/785)
 
 - [Extract logic for getting pagination of dimension rows](https://github.com/yahoo/fili/issues/782)
