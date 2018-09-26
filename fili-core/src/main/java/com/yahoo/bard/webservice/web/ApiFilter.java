@@ -3,11 +3,14 @@
 package com.yahoo.bard.webservice.web;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * ApiFilter object. Represents the different pieces of data in the filter clause of a Fili Api Query.
@@ -39,6 +42,28 @@ public class ApiFilter {
         this.values = Collections.unmodifiableSet(values);
     }
 
+    /**
+     * Constructor.
+     *
+     * Parses the URL filter Query and generates the ApiFilter object.
+     *
+     * @param filterQuery  Expects a URL filter query String in the format:
+     * <code>(dimension name)|(field name)-(operation)[?(value or comma separated values)]?</code>
+     * @param dimensionDictionary  cache containing all the valid dimension objects.
+     *
+     * @throws BadFilterException Exception when filter pattern is not matched or when any of its properties are not
+     * @deprecated use {@link ApiFilterGenerator} build method instead
+     */
+    public ApiFilter(
+            @NotNull String filterQuery,
+            DimensionDictionary dimensionDictionary
+    ) throws BadFilterException {
+        ApiFilter filter = ApiFilterGenerator.build(filterQuery, dimensionDictionary);
+        this.dimension = filter.getDimension();
+        this.dimensionField = filter.getDimensionField();
+        this.operation = filter.getOperation();
+        this.values = Collections.unmodifiableSet(filter.getValues());
+    }
     /**
      * Creates a new ApiFilter based on this ApiFilter, except with the new dimension replacing this ApiFilter's
      * dimension.
