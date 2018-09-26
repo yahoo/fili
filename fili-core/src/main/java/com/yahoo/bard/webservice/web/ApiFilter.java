@@ -54,6 +54,7 @@ public class ApiFilter {
      * @throws BadFilterException Exception when filter pattern is not matched or when any of its properties are not
      * @deprecated use {@link ApiFilterGenerator} build method instead
      */
+    @Deprecated
     public ApiFilter(
             @NotNull String filterQuery,
             DimensionDictionary dimensionDictionary
