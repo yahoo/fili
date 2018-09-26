@@ -113,7 +113,7 @@ public abstract class ConjunctionDruidFilterBuilder implements DruidFilterBuilde
      *
      * @return a pair whose left is positive filter and whose right is negative filers
      */
-    protected static Pair<Set<ApiFilter>, Set<ApiFilter>> splitApiFilters(Set<ApiFilter> filters) {
+    protected Pair<Set<ApiFilter>, Set<ApiFilter>> splitApiFilters(Set<ApiFilter> filters) {
         Set<ApiFilter> positiveFilters = new HashSet<>();
         Set<ApiFilter> negativeFilters = new HashSet<>();
 
@@ -144,7 +144,7 @@ public abstract class ConjunctionDruidFilterBuilder implements DruidFilterBuilde
      *
      * @return a stream of the negated filters
      */
-    protected static Set<ApiFilter> negateNegativeFilters(Collection<ApiFilter> negativeFilters) {
+    protected Set<ApiFilter> negateNegativeFilters(Collection<ApiFilter> negativeFilters) {
         return negativeFilters.stream()
                 // TODO - refactor this and next map when more than 1 not* FilterOperations are supported.
                 .peek(filter -> {
@@ -168,7 +168,7 @@ public abstract class ConjunctionDruidFilterBuilder implements DruidFilterBuilde
      *
      * @throws DimensionRowNotFoundException if the filters filter out all dimension rows
      */
-    protected static List<String> getFilteredDimensionRowValues(Dimension dimension, Set<ApiFilter> filters)
+    protected List<String> getFilteredDimensionRowValues(Dimension dimension, Set<ApiFilter> filters)
             throws DimensionRowNotFoundException {
         return getFilteredDimensionRows(dimension, filters).stream()
                 .map(DimensionRow::getKeyValue)
@@ -185,7 +185,7 @@ public abstract class ConjunctionDruidFilterBuilder implements DruidFilterBuilde
      *
      * @throws DimensionRowNotFoundException if the filters filter out all dimension rows
      */
-    protected static Set<DimensionRow> getFilteredDimensionRows(Dimension dimension, Set<ApiFilter> filters)
+    protected Set<DimensionRow> getFilteredDimensionRows(Dimension dimension, Set<ApiFilter> filters)
             throws DimensionRowNotFoundException {
         Set<DimensionRow> rows = dimension.getSearchProvider().findFilteredDimensionRows(filters);
 
@@ -206,7 +206,7 @@ public abstract class ConjunctionDruidFilterBuilder implements DruidFilterBuilde
      *
      * @return a list of Druid selector filters
      */
-    protected static List<Filter> buildSelectorFilters(Dimension dimension, Set<DimensionRow> rows) {
+    protected List<Filter> buildSelectorFilters(Dimension dimension, Set<DimensionRow> rows) {
 
         Function<DimensionRow, Filter> filterBuilder = row -> new SelectorFilter(
                 dimension,

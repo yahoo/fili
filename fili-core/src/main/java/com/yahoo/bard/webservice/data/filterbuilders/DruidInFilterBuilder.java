@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
  * negative API filters are grouped in the other in-filter wrapped in the not-filter.
  * <p>
  * For example, suppose a dimension {@code D} has dimension rows {@code 1}, {@code 2}, {@code 3}, {@code 4}, {@code 5}.
- * A filter clause in in a request like {@code D|id-in[1, 2],D|id-notin[4, 5]} results in an and-filter by
+ * A filter clause in a request like {@code D|id-in[1, 2],D|id-notin[4, 5]} results in an and-filter by
  * {@code DruidInFilterBuilder}: {@code AND(IN(1, 2), NOT(IN(4, 5)))}. This and-filter is a conjunction of a in-filter
  * and another in-filter wrapped in a not-filter.
  * <p>
