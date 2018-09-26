@@ -2,11 +2,11 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.async.jobs
 
+import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField.DATE_CREATED
+import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField.DATE_UPDATED
 import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField.JOB_TICKET
 import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField.QUERY
 import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField.STATUS
-import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField.DATE_CREATED
-import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField.DATE_UPDATED
 import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField.USER_ID
 
 import com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobStatus

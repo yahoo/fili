@@ -2,13 +2,13 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.handlers
 
+import static com.yahoo.bard.webservice.data.time.AllGranularity.INSTANCE
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MONTH
-import static com.yahoo.bard.webservice.data.time.AllGranularity.INSTANCE
 
+import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
-import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor

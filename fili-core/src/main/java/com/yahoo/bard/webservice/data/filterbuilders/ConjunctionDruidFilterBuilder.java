@@ -17,8 +17,8 @@ import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter;
 import com.yahoo.bard.webservice.exception.TooManyDruidFiltersException;
 import com.yahoo.bard.webservice.web.ApiFilter;
-import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.DefaultFilterOperation;
+import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;

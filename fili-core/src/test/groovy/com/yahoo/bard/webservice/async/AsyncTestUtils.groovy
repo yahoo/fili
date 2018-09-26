@@ -8,7 +8,6 @@ import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField.STATU
 import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField.USER_ID
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
-
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.util.JsonSlurper
 

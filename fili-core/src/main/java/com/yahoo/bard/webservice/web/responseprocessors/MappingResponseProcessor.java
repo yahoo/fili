@@ -3,15 +3,15 @@
 package com.yahoo.bard.webservice.web.responseprocessors;
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
+import com.yahoo.bard.webservice.async.ResponseException;
 import com.yahoo.bard.webservice.data.ResultSet;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
-import com.yahoo.bard.webservice.async.ResponseException;
-import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

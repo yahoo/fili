@@ -11,12 +11,12 @@ import static org.joda.time.DateTimeZone.UTC
 import com.yahoo.bard.webservice.data.PartialDataHandler
 import com.yahoo.bard.webservice.data.QueryBuildingTestingResources
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
+import com.yahoo.bard.webservice.data.time.AllGranularity
+import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.data.time.GranularityParser
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser
 import com.yahoo.bard.webservice.data.time.ZonelessTimeGrain
 import com.yahoo.bard.webservice.data.volatility.DefaultingVolatileIntervalsService
-import com.yahoo.bard.webservice.data.time.AllGranularity
-import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 

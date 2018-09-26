@@ -4,9 +4,9 @@ package com.yahoo.bard.webservice.web.apirequest
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
+import com.yahoo.bard.webservice.web.ApiFilter
 import com.yahoo.bard.webservice.web.ApiFilterGenerator
 import com.yahoo.bard.webservice.web.BadApiRequestException
-import com.yahoo.bard.webservice.web.ApiFilter
 import com.yahoo.bard.webservice.web.endpoints.DimensionsServlet
 
 import spock.lang.Shared

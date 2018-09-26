@@ -7,6 +7,7 @@ import com.yahoo.bard.webservice.util.JsonSlurper
 import com.yahoo.bard.webservice.web.RequestValidationException
 import com.yahoo.bard.webservice.web.apirequest.JobsApiRequest
 import com.yahoo.bard.webservice.web.apirequest.JobsApiRequestImpl
+
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll

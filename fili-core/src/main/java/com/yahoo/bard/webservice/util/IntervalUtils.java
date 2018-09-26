@@ -4,9 +4,9 @@ package com.yahoo.bard.webservice.util;
 
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
+import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
-import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.table.resolver.GranularityComparator;
 
 import org.joda.time.DateTime;

@@ -12,6 +12,7 @@ import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField.USER_
 import org.joda.time.DateTime
 
 import spock.lang.Specification
+
 import java.security.Principal
 import java.time.Clock
 import java.time.Instant

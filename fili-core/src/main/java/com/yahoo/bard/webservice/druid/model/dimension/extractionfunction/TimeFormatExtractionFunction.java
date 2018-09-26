@@ -2,11 +2,10 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.dimension.extractionfunction;
 
-import static com.fasterxml.jackson.annotation.JsonInclude.Include;
-
 import com.yahoo.bard.webservice.data.time.Granularity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.joda.time.DateTimeZone;

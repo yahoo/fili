@@ -19,15 +19,15 @@ import com.yahoo.bard.webservice.data.config.table.TestTableLoader
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
+import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.data.time.TimeGrain
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.LongSumAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.ThetaSketchAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation
-import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation.ArithmeticPostAggregationFunction
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
-import com.yahoo.bard.webservice.data.time.Granularity
+import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation.ArithmeticPostAggregationFunction
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
 import com.yahoo.bard.webservice.druid.util.FieldConverters
 import com.yahoo.bard.webservice.druid.util.ThetaSketchFieldConverter

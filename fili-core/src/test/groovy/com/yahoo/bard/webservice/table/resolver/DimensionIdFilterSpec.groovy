@@ -5,7 +5,6 @@ package com.yahoo.bard.webservice.table.resolver
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.SearchProvider
-
 import com.yahoo.bard.webservice.web.ApiFilter
 import com.yahoo.bard.webservice.web.DefaultFilterOperation
 

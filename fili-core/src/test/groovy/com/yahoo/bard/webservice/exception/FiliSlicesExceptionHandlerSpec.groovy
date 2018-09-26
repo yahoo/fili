@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.exception
 
 import com.yahoo.bard.webservice.web.RequestValidationException
 import com.yahoo.bard.webservice.web.apirequest.SlicesApiRequest
+
 import spock.lang.Specification
 import spock.lang.Unroll
 

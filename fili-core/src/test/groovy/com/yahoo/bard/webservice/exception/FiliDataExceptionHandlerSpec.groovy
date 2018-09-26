@@ -2,12 +2,14 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.exception
 
-import com.fasterxml.jackson.databind.ObjectWriter
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.data.dimension.TimeoutException
 import com.yahoo.bard.webservice.table.resolver.NoMatchFoundException
 import com.yahoo.bard.webservice.util.JsonSlurper
 import com.yahoo.bard.webservice.web.RequestValidationException
+
+import com.fasterxml.jackson.databind.ObjectWriter
+
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll

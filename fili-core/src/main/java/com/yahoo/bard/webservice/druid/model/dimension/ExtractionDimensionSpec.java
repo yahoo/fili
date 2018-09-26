@@ -2,9 +2,9 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.dimension;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Objects;
 
