@@ -4,7 +4,9 @@ package com.yahoo.bard.webservice.data.dimension
 
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
+
 import org.joda.time.DateTime
+
 import spock.lang.Specification
 
 class DimensionDictionarySpec extends Specification {

@@ -34,7 +34,6 @@ import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.ConstrainedTable
 import com.yahoo.bard.webservice.table.TableTestUtils
 import com.yahoo.bard.webservice.table.resolver.DefaultPhysicalTableResolver
-
 import com.yahoo.bard.webservice.web.ApiFilter
 import com.yahoo.bard.webservice.web.ApiFilterGenerator
 import com.yahoo.bard.webservice.web.ApiHaving

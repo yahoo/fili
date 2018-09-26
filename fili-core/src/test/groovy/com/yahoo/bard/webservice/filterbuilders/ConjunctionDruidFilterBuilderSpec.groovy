@@ -12,7 +12,6 @@ import com.yahoo.bard.webservice.data.dimension.DimensionRowNotFoundException
 import com.yahoo.bard.webservice.data.filterbuilders.ConjunctionDruidFilterBuilder
 import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter
-
 import com.yahoo.bard.webservice.web.ApiFilter
 import com.yahoo.bard.webservice.web.ApiFilterGenerator
 

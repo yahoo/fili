@@ -23,8 +23,8 @@ import com.yahoo.bard.webservice.druid.client.FailureCallback
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
 import com.yahoo.bard.webservice.util.GroovyTestUtils
-import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 import com.yahoo.bard.webservice.web.PageNotFoundException
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 import com.yahoo.bard.webservice.web.responseprocessors.LoggingContext
 import com.yahoo.bard.webservice.web.responseprocessors.MappingResponseProcessor
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys

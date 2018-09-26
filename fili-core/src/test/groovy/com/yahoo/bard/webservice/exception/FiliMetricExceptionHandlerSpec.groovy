@@ -11,6 +11,7 @@ import com.yahoo.bard.webservice.web.ErrorMessageFormat
 import com.yahoo.bard.webservice.web.RequestValidationException
 import com.yahoo.bard.webservice.web.apirequest.MetricsApiRequest
 import com.yahoo.bard.webservice.web.apirequest.MetricsApiRequestImpl
+
 import spock.lang.Specification
 import spock.lang.Unroll
 

@@ -2,22 +2,26 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.filters
 
-import com.google.common.reflect.ClassPath
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.web.PATCH
 import com.yahoo.bard.webservice.web.endpoints.TestFilterServlet
+
+import com.google.common.reflect.ClassPath
+
 import org.apache.commons.lang3.text.WordUtils
+
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
+import java.lang.reflect.Method
+
+import javax.servlet.ServletContext
 import javax.ws.rs.DELETE
 import javax.ws.rs.GET
 import javax.ws.rs.POST
 import javax.ws.rs.Path
 import javax.ws.rs.QueryParam
-import java.lang.reflect.Method
-import javax.servlet.ServletContext
 
 class QueryParameterNormalizationFilterSpec extends Specification {
 

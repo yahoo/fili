@@ -6,9 +6,9 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MONTH
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.YEAR
 
-import com.yahoo.bard.webservice.data.time.TimeGrain
 import com.yahoo.bard.webservice.data.time.AllGranularity
 import com.yahoo.bard.webservice.data.time.Granularity
+import com.yahoo.bard.webservice.data.time.TimeGrain
 
 import org.joda.time.DateTimeZone
 import org.joda.time.Interval

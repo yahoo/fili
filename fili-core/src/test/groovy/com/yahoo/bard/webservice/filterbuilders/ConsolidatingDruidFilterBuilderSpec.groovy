@@ -2,20 +2,19 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.filterbuilders
 
-import static com.yahoo.bard.webservice.druid.model.filter.Filter.DefaultFilterType.NOT
 import static com.yahoo.bard.webservice.druid.model.filter.Filter.DefaultFilterType.AND
+import static com.yahoo.bard.webservice.druid.model.filter.Filter.DefaultFilterType.NOT
 import static com.yahoo.bard.webservice.druid.model.filter.Filter.DefaultFilterType.OR
 import static com.yahoo.bard.webservice.druid.model.filter.Filter.DefaultFilterType.SELECTOR
 
 import com.yahoo.bard.webservice.data.QueryBuildingTestingResources
-import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder
 import com.yahoo.bard.webservice.data.filterbuilders.ConsolidatingDruidFilterBuilder
+import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder
 import com.yahoo.bard.webservice.druid.model.filter.AndFilter
 import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.model.filter.NotFilter
 import com.yahoo.bard.webservice.druid.model.filter.OrFilter
 import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter
-
 import com.yahoo.bard.webservice.web.ApiFilter
 import com.yahoo.bard.webservice.web.ApiFilterGenerator
 
