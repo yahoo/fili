@@ -134,7 +134,7 @@ public class EtagCacheRequestHandler extends BaseDataRequestHandler {
      */
     private String getKey(DruidAggregationQuery<?> druidQuery) throws JsonProcessingException {
         JsonNode root = mapper.valueToTree(druidQuery);
-        Utils.omitField(root, "context", mapper);
+        Utils.canonicalize(root, mapper, false);
         return writer.writeValueAsString(root);
     }
 }

@@ -21,6 +21,8 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.TreeMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -148,7 +150,11 @@ public class Utils {
      * @param node The root of the tree of json nodes.
      * @param fieldName The name of the node to be omitted.
      * @param mapper  The object mapper that creates and empty node.
+     *
+     * @deprecated  Should avoid this method and instead use {@link #canonicalize(JsonNode, ObjectMapper, boolean)}
+     * which preserves JSON object ordering that guarantees consistent hash values.
      */
+    @Deprecated
     public static void omitField(JsonNode node, String fieldName, ObjectMapper mapper) {
         if (node.has("context")) {
             ((ObjectNode) node).replace(fieldName, mapper.createObjectNode());
@@ -156,6 +162,40 @@ public class Utils {
 
         for (JsonNode child : node) {
             omitField(child, fieldName, mapper);
+        }
+    }
+
+    /**
+     * Given a JsonObjectNode, order the fields and recursively and replace context blocks with empty nodes.
+     *
+     * This method is recursive.
+     *
+     * @param node  The root of the tree of json nodes.
+     * @param mapper  The object mapper that creates and empty node.
+     * @param preserveContext  Boolean indicating whether context should be omitted.
+     */
+    public static void canonicalize(JsonNode node, ObjectMapper mapper, boolean preserveContext) {
+        if (node.isObject()) {
+            ObjectNode objectNode = ((ObjectNode) node);
+
+            if (objectNode.has("context") && !preserveContext) {
+                objectNode.replace("context", mapper.createObjectNode());
+            }
+
+            Iterator<Map.Entry<String, JsonNode>> iterator = objectNode.fields();
+            // collect and sort the entries
+            TreeMap<String, JsonNode> fieldMap = new TreeMap<>();
+            while (iterator.hasNext()) {
+                Map.Entry<String, JsonNode> entry = iterator.next();
+                fieldMap.put(entry.getKey(), entry.getValue());
+                // canonicalize all child nodes
+                canonicalize(entry.getValue(), mapper, preserveContext);
+            }
+            // remove the existing entries
+            objectNode.removeAll();
+
+            // replace the entries in sorted order
+            objectNode.setAll(fieldMap);
         }
     }
 
