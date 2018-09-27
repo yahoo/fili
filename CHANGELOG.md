@@ -7,6 +7,12 @@ pull request if there was one.
 
 ### Added:
 
+- [Sorting JSON objects before caching](https://github.com/yahoo/fili/issues/795)
+    * Added `canonicalize` method in `Utils` class which sorts the `JSON` objects of druid query before hashing so that
+      hash values are consistent.
+    * `canonicalize` takes a boolean parameter `preserveContext` which determines if context has to be omitted.
+    * Deprecated `omitField` method in `Utils` class.
+
 - [Enforce role based security for incoming API requests](https://github.com/yahoo/fili/issues/788)
     * Added `RoleBasedTableValidatorRequestMapper` class which checks if a user's role satisfies the predicates defined
       for a logical table.

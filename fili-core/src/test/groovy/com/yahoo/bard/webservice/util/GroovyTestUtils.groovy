@@ -48,8 +48,8 @@ abstract class GroovyTestUtils extends Specification {
             JsonNode actualRoot = MAPPER.readTree(actual);
             JsonNode expectedRoot = MAPPER.readTree(expected);
 
-            Utils.omitField(actualRoot, "context", MAPPER);
-            Utils.omitField(expectedRoot, "context", MAPPER);
+            Utils.canonicalize(actualRoot, MAPPER, false);
+            Utils.canonicalize(expectedRoot, MAPPER, false);
 
             def actualProcessed = MAPPER.writer().withDefaultPrettyPrinter().writeValueAsString(actualRoot);
             def expectedProcessed = MAPPER.writer().withDefaultPrettyPrinter().writeValueAsString(expectedRoot);
