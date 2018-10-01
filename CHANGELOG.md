@@ -83,6 +83,9 @@ pull request if there was one.
 - [Add tests to Utils](https://github.com/yahoo/fili/pull/675)
     * Add missing tests to `Utils` class.
 
+- [Enable Druid Bound-filter in Fili](https://github.com/yahoo/fili/pull/797)
+    * Added `BoundFilter` class to support Druid Bound-filter
+
 ### Changed:
 
 - [Make ConjunctionDruidFilterBuilder's protected helper methods instance methods](https://github.com/yahoo/fili/issues/792)
