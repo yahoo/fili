@@ -8,7 +8,6 @@ import com.yahoo.bard.webservice.util.EnumUtils;
 
 import javax.validation.constraints.Null;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Bound filters supports filtering on ranges of dimension values.
@@ -33,6 +32,11 @@ public class BoundFilter extends DimensionalFilter<BoundFilter> {
             this.orderingType = EnumUtils.enumJsonName(this);
         }
 
+        /**
+         * Get the JSON representation of this class.
+         *
+         * @return the JSON representation.
+         */
         @JsonValue
         public String toJson() {
             return orderingType;
@@ -90,7 +94,7 @@ public class BoundFilter extends DimensionalFilter<BoundFilter> {
     public Ordering getOrdering() {
         return this.ordering;
     }
-    
+
     //CHECKSTYLE:OFF
     @Override
     public BoundFilter withDimension(Dimension dimension) {
