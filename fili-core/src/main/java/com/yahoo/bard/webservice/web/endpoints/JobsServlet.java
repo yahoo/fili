@@ -184,7 +184,7 @@ public class JobsServlet extends EndpointServlet {
                     jobsApiRequest.getAllPagesPaginationFactory(
                             jobsApiRequest.getPaginationParameters()
                                     .orElse(
-                                            ApiRequestImpl.getDefaultPagination()
+                                            ApiRequestImpl.DEFAULT_PAGINATION
                                     )
                     );
 

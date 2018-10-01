@@ -85,7 +85,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
             SYSTEM_CONFIG.getPackageVariableName("default_per_page")
     );
     private static final int DEFAULT_PAGE = 1;
-    private static final PaginationParameters DEFAULT_PAGINATION = new PaginationParameters(
+    public static final PaginationParameters DEFAULT_PAGINATION = new PaginationParameters(
             DEFAULT_PER_PAGE,
             DEFAULT_PAGE
     );
@@ -684,7 +684,8 @@ public abstract class ApiRequestImpl implements ApiRequest {
         return asyncAfter;
     }
 
-    public static PaginationParameters getDefaultPagination() {
+    @Deprecated
+    public PaginationParameters getDefaultPagination() {
         return DEFAULT_PAGINATION;
     }
 

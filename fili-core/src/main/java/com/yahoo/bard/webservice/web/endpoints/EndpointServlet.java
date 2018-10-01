@@ -140,7 +140,7 @@ public abstract class EndpointServlet {
 
         Pagination<T> pagination = new AllPagesPagination<>(
                 rows,
-                apiRequest.getPaginationParameters().orElse(ApiRequestImpl.getDefaultPagination())
+                apiRequest.getPaginationParameters().orElse(ApiRequestImpl.DEFAULT_PAGINATION)
         );
 
         Response.ResponseBuilder builder = responseBuilderSupplier.get();
