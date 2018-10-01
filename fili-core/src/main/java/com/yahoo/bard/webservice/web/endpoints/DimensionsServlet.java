@@ -289,7 +289,7 @@ public class DimensionsServlet extends EndpointServlet {
             SearchProvider searchProvider = apiRequest.getDimension().getSearchProvider();
             PaginationParameters paginationParameters = apiRequest
                     .getPaginationParameters()
-                    .orElse(ApiRequestImpl.getDefaultPagination());
+                    .orElse(ApiRequestImpl.DEFAULT_PAGINATION);
 
             Pagination<DimensionRow> pagedRows = getPagedRows(apiRequest, searchProvider, paginationParameters);
             Response.ResponseBuilder builder = Response.status(Response.Status.OK);
