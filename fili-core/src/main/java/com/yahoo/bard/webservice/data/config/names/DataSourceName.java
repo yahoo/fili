@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.data.config.names;
 import java.util.Comparator;
 
 /**
- * Marker interface for objects that can be treated as a data source name in druid.
+ * Interface for objects that can be treated as a data source name in Druid.
  */
 public interface DataSourceName {
 
@@ -22,12 +22,13 @@ public interface DataSourceName {
     String asName();
 
     /**
-     * Wrap a string in an anonymous instance of TableName.
+     * Wrap a string in an anonymous instance of {@code DataSourceName}.
+     * <p>
      * Rather than make heavy use of this, instead make a class.
      *
-     * @param name   The name being wrapped
+     * @param name  The name being wrapped
      *
-     * @return an anonymous subclass instance of TableName
+     * @return an anonymous subclass instance of {@code DataSourceName}
      */
     static DataSourceName of(String name) {
         return new DataSourceName() {

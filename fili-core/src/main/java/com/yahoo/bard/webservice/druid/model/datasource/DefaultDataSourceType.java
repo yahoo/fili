@@ -4,8 +4,6 @@ package com.yahoo.bard.webservice.druid.model.datasource;
 
 import com.yahoo.bard.webservice.util.EnumUtils;
 
-import com.fasterxml.jackson.annotation.JsonValue;
-
 /**
  * Legal data source types in Druid.
  */
@@ -29,7 +27,7 @@ public enum DefaultDataSourceType implements DataSourceType {
      *
      * @return the json representation of the DataSourceType.
      */
-    @JsonValue
+    @Override
     public String toJson() {
         return jsonName;
     }

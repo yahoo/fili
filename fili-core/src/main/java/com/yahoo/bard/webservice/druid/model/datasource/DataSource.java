@@ -67,7 +67,9 @@ public abstract class DataSource {
     }
 
     /**
-     * Get the query that defines the data source. Empty queries become null for serialization.
+     * Get the query that defines the data source.
+     * <p>
+     * Empty queries become null for serialization.
      *
      * @return the serializable version of the query.
      */
