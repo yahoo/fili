@@ -15,7 +15,7 @@ import javax.validation.constraints.NotNull;
  * Fili model of the Druid In Filter: http://druid.io/docs/0.9.1.1/querying/filters.html.
  * <p>
  * An In Filter is a generalization of the {@link SelectorFilter}. Rather than filtering on a specific value for a
- * specific diimension, the In Filter takes a list of values. A dimension satisfies the In Filter iff its value is
+ * specific dimension, the In Filter takes a list of values. A dimension satisfies the In Filter iff its value is
  * contained in the specified list. It is logically equivalent to an {@link OrFilter} wrapped around a collection of
  * {@link SelectorFilter}.
  * <p>
