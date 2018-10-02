@@ -79,7 +79,7 @@ class BoundFilterSpec extends Specification {
 
     }
 
-    def "Checking serialization of null values"() {
+    def "Null values are omitted when serializing"() {
         given:
         BoundFilter filter = new BoundFilter(dimension, null, null, null, null, null);
         druidQuery.getFilter() >> filter
@@ -89,7 +89,7 @@ class BoundFilterSpec extends Specification {
         objectMapper.readTree(serializedFilter).get("filter") == objectMapper.readTree(expectedSerialization)
     }
 
-    def "Checking the functioning of Bound Filter"() {
+    def "Sample values to the Bound Filter serialize correctly"() {
         given:
         BoundFilter filter = new BoundFilter(
                 dimension,
@@ -106,7 +106,7 @@ class BoundFilterSpec extends Specification {
         objectMapper.readTree(serializedFilter).get("filter") == objectMapper.readTree(expectedSerializationBoundFilter)
     }
 
-    def "Checking the functioning of nestWith()"() {
+    def "With methods makes updating copies"() {
         given:
         BoundFilter filter = new BoundFilter(
                 dimension,
@@ -116,8 +116,14 @@ class BoundFilterSpec extends Specification {
                 null,
                 null
         )
-        BoundFilter fil2 = filter.withLowerBound("10.0").withUpperBound("13.0").withUpperBoundStrict(false).withLowerBoundStrict(true).withOrdering(Ordering.NUMERIC)
-        druidQuery.getFilter() >> fil2
+        BoundFilter withFilters =
+                filter
+                    .withLowerBound("10.0")
+                    .withUpperBound("13.0")
+                    .withUpperBoundStrict(false)
+                    .withLowerBoundStrict(true)
+                    .withOrdering(Ordering.NUMERIC)
+        druidQuery.getFilter() >> withFilters
         String serializedFilter = objectMapper.writeValueAsString(druidQuery)
 
         expect:

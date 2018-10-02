@@ -14,9 +14,44 @@ public class BoundFilter extends DimensionalFilter<BoundFilter> {
 
     private final String lower;
     private final String upper;
+    /**
+     * <p>If true, performs exclusive lower bound (less than); else performs inclusive lower bound (less than equal to)
+     * by default.</p>
+     */
     private final Boolean lowerStrict;
+    /**
+     * <p>If true, performs exclusive upper bound (greater than); else performs inclusive upper bound (greater than
+     * equal to) by default.</p>
+     */
     private final Boolean upperStrict;
+    /**
+     * <p>
+     *     Specifies the sorting order to be specified to the DRUID Filter Query. The default sorting order is
+     *     <b>Lexicographic</b>
+     *     @see <a href="http://druid.io/docs/latest/querying/sorting-orders.html">Sorting orders</a>
+     * </p>
+     */
     private final Ordering ordering;
+
+    /**
+     * Constructor.
+     *
+     * @param dimension The druid dimension to be filtered
+     * @param lower The lower bound of the dimension value to be filtered (Optional)
+     * @param upper The upper bound of the dimension value to be filtered (Optional)
+     */
+    public BoundFilter (
+            Dimension dimension,
+            String lower,
+            String upper
+    ) {
+        super(dimension, DefaultFilterType.BOUND);
+        this.lower = lower;
+        this.upper = upper;
+        this.lowerStrict = null;
+        this.upperStrict = null;
+        this.ordering = null;
+    }
 
     /**
      * Constructor.
@@ -93,13 +128,29 @@ public class BoundFilter extends DimensionalFilter<BoundFilter> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), DefaultFilterType.BOUND);
+        return Objects.hash(
+                super.hashCode(),
+                DefaultFilterType.BOUND,
+                lower,
+                upper,
+                lowerStrict,
+                upperStrict,
+                ordering
+        );
     }
 
     @Override
     public boolean equals(Object obj) {
         if (this == obj) { return true; }
         if (obj == null || getClass() != obj.getClass()) { return false; }
-        return super.equals(obj);
+        BoundFilter other = (BoundFilter) obj;
+
+        return  super.equals(obj) &&
+                Objects.equals(lower, other.lower) &&
+                Objects.equals(upper, other.upper) &&
+                Objects.equals(lowerStrict, other.lowerStrict) &&
+                Objects.equals(upperStrict, other.upperStrict) &&
+                Objects.equals(ordering, other.ordering)
+        ;
     }
 }
