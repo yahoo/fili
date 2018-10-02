@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.druid.model.filter
 
 import com.yahoo.bard.webservice.data.dimension.impl.LookupDimension
+import com.yahoo.bard.webservice.druid.model.Ordering
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.RegisteredLookupExtractionFunction
@@ -96,9 +97,27 @@ class BoundFilterSpec extends Specification {
                 "13.0",
                 true,
                 false,
-                BoundFilter.Ordering.NUMERIC
+                Ordering.NUMERIC
         )
         druidQuery.getFilter() >> filter
+        String serializedFilter = objectMapper.writeValueAsString(druidQuery)
+
+        expect:
+        objectMapper.readTree(serializedFilter).get("filter") == objectMapper.readTree(expectedSerializationBoundFilter)
+    }
+
+    def "Checking the functioning of nestWith()"() {
+        given:
+        BoundFilter filter = new BoundFilter(
+                dimension,
+                null,
+                null,
+                null,
+                null,
+                null
+        )
+        BoundFilter fil2 = filter.withLowerBound("10.0").withUpperBound("13.0").withUpperBoundStrict(false).withLowerBoundStrict(true).withOrdering(Ordering.NUMERIC)
+        druidQuery.getFilter() >> fil2
         String serializedFilter = objectMapper.writeValueAsString(druidQuery)
 
         expect:
