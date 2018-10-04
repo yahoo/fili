@@ -86,8 +86,6 @@ class FilteredAggregationSpec extends Specification{
         genderDependentMetricAgg.withName(_) >> genderDependentMetricAgg
         genderDependentMetricAgg.withFieldName(_) >> genderDependentMetricAgg
 
-        LogicalMetric logicalMetric = new LogicalMetric(null, null, filtered_metric_name)
-
         Set<ApiFilter> filterSet = [filterBinders.generateApiFilter("age|id-in[114,125]", dimensionDictionary)] as Set
 
         DruidFilterBuilder filterBuilder = new DruidOrFilterBuilder()

@@ -46,10 +46,10 @@ import javax.validation.constraints.NotNull;
  * This utility class captures default implementations for binding and validating API models for filtering requests.
  */
 public class FilterBinders {
-    private static final Logger LOG = LoggerFactory.getLogger(ApiRequestImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FilterBinders.class);
 
     protected static final String COMMA_AFTER_BRACKET_PATTERN = "(?<=]),";
-    private static final Pattern FILTER_PATTERN = Pattern.compile("([^\\|]+)\\|([^-]+)-([^\\[]+)\\[([^\\]]+)\\]?");
+    protected static Pattern API_FILTER_PATTERN = Pattern.compile("([^\\|]+)\\|([^-]+)-([^\\[]+)\\[([^\\]]+)\\]?");
 
     public static final FilterBinders INSTANCE = new FilterBinders();
 
@@ -126,7 +126,6 @@ public class FilterBinders {
         }
     }
 
-
     /**
      * Parses the URL filter Query and generates the ApiFilter object.
      *
@@ -143,7 +142,6 @@ public class FilterBinders {
             DimensionDictionary dimensionDictionary
     ) throws BadFilterException {
         LOG.trace("Filter query: {}\n\n DimensionDictionary: {}", filterQuery, dimensionDictionary);
-
         /*  url filter query pattern:  (dimension name)|(field name)-(operation)[?(value or comma separated values)]?
          *
          *  e.g.    locale|name-in[US,India]
@@ -156,9 +154,10 @@ public class FilterBinders {
          */
         ApiFilter inProgressApiFilter = new ApiFilter(null, null, null, new HashSet<>());
 
-        Matcher matcher = FILTER_PATTERN.matcher(filterQuery);
+        Matcher matcher = API_FILTER_PATTERN.matcher(filterQuery);
 
         // if pattern match found, extract values else throw exception
+
         if (!matcher.matches()) {
             LOG.debug(FILTER_INVALID.logFormat(filterQuery));
             throw new BadFilterException(FILTER_INVALID.format(filterQuery));

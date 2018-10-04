@@ -456,7 +456,7 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
 
    @Override
     public String generateMetricName(String filterString) {
-        return filterString.replace("|", "_").replace("-", "_").replace(",", "_").replace("]", "").replace("[", "_");
+       return filterString.replace("|", "_").replace("-", "_").replace(",", "_").replace("]", "").replace("[", "_");
     }
 
     @Override
