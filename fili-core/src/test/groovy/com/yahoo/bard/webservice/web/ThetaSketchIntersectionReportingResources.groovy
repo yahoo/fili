@@ -49,6 +49,7 @@ import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
+import com.google.common.collect.Lists
 
 import spock.lang.Specification
 /**
@@ -177,8 +178,8 @@ class ThetaSketchIntersectionReportingResources extends Specification {
         ArrayNode metricJsonObjArray = mapper.readTree("[{\"filter\":{\"AND\":\"country|id-in[US,IN],property|id-in[114,125]\"},\"name\":\"foo\"},{\"filter\":{},\"name\":\"pageviews\"}]")
         JsonNode jsonobject = metricJsonObjArray.get(0)
         filterObj = jsonobject.get("filter")
+        filter = new InFilter(countryDim, Lists.asList("US", "IN"))
 
-        InFilter inFilter2 = new InFilter(countryDim, ["US", "IN"])
         filter = new InFilter(countryDim, ["US", "IN"])
 
         fooPostAggregation = foos.make().templateDruidQuery.getPostAggregations().first()
