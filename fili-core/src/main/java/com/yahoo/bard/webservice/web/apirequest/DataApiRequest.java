@@ -168,6 +168,17 @@ public interface DataApiRequest extends ApiRequest {
      */
     Having getDruidHaving();
 
+    /**
+     *  The fact model having (should probably remove this).
+     *
+     * @return A fact model having
+     *
+     * @deprecated Use {@link #getDruidHaving()}
+     */
+    default Having getHaving() {
+        return getDruidHaving();
+    }
+
     // Builder methods
 
      /**
