@@ -148,7 +148,7 @@ public class DruidQueryBuilder {
                         request.getTimeZone(),
                         request.getDimensions(),
                         request.getDruidFilter(),
-                        request.getHaving(),
+                        request.getDruidHaving(),
                         request.getIntervals(),
                         druidOrderBy
                 );
@@ -394,7 +394,7 @@ public class DruidQueryBuilder {
                 apiRequest.getSorts().size() == 1 &&
                 !templateDruidQuery.isNested() &&
                 BardFeatureFlag.TOP_N.isOn() &&
-                apiRequest.getHaving() == null;
+                apiRequest.getDruidHaving() == null;
     }
 
     /**
@@ -410,6 +410,6 @@ public class DruidQueryBuilder {
                 !templateDruidQuery.isNested() &&
                 apiRequest.getSorts().isEmpty() &&
                 !apiRequest.getCount().isPresent() &&
-                apiRequest.getHaving() == null;
+                apiRequest.getDruidHaving() == null;
     }
 }
