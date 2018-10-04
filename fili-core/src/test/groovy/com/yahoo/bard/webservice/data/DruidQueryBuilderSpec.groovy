@@ -49,7 +49,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class DruidQueryBuilderSpec extends Specification {
+public class DruidQueryBuilderSpec extends Specification {
 
     @Shared QueryBuildingTestingResources resources
     @Shared DefaultPhysicalTableResolver resolver
@@ -57,8 +57,7 @@ class DruidQueryBuilderSpec extends Specification {
 
     @Shared Map filterSpecs
     @Shared Map<String, ApiFilter> apiFiltersByName
-    @Shared Map apiFilters
-    @Shared Map druidFilters
+
     @Shared boolean topNStatus
     @Shared ApiHaving having
 
