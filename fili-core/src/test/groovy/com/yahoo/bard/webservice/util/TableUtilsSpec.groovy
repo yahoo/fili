@@ -15,13 +15,13 @@ import com.yahoo.bard.webservice.table.availability.AvailabilityTestingUtils
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
 import com.yahoo.bard.webservice.table.resolver.QueryPlanningConstraint
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
+import com.yahoo.bard.webservice.web.filters.ApiFilters
 
 import org.joda.time.Interval
 
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
-
 /**
  * Table Utils methods encapsulate business logic around how columns are pulled from queries and requests
  */
@@ -62,7 +62,7 @@ class TableUtilsSpec extends  Specification {
     def "With #requestDimensions, #filterDimensions, #metricFilterDimensions dimension names are: #expected  "() {
         setup:
         request.dimensions >> requestDimensions
-        request.filterDimensions >> filterDimensions
+        request.getApiFilters() >> new ApiFilters(filterDimensions.collectEntries {[(it): [] as Set]});
         query.metricDimensions >> metricFilterDimensions
         query.getDependentFieldNames() >> new HashSet<String>()
         expected = expected as LinkedHashSet
@@ -85,7 +85,7 @@ class TableUtilsSpec extends  Specification {
     def "Metric columns are returned "() {
         setup:
         request.dimensions >> ds1
-        request.filterDimensions >> ds1
+        request.getApiFilters() >> new ApiFilters(ds1.collectEntries {[(it): [] as Set]});
         query.metricDimensions >> ds1
         query.dependentFieldNames >> ([metric1, metric2, metric3] as LinkedHashSet)
 
@@ -96,7 +96,7 @@ class TableUtilsSpec extends  Specification {
     def "metric name correctly is correctly represented as logicalName" () {
         setup:
         request.dimensions >> []
-        request.filterDimensions >> []
+        request.getApiFilters() >> new ApiFilters()
         query.metricDimensions >> []
         query.dependentFieldNames >> ([metric1] as LinkedHashSet)
 
