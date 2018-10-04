@@ -74,7 +74,7 @@ public class TableUtils {
     public static Stream<Dimension> getDimensions(DataApiRequest request, DruidAggregationQuery<?> query) {
         return Stream.of(
                 request.getDimensions().stream(),
-                request.getFilterDimensions().stream(),
+                request.getApiFilters().keySet().stream(),
                 query.getMetricDimensions().stream()
         ).flatMap(Function.identity());
     }
