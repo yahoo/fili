@@ -19,9 +19,7 @@ import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -37,6 +35,8 @@ public class DimensionsApiRequestImpl extends ApiRequestImpl implements Dimensio
 
     private final LinkedHashSet<Dimension> dimensions;
     private final LinkedHashSet<ApiFilter> filters;
+
+    protected FilterBinders filterBinders = FilterBinders.INSTANCE;
 
     /**
      * Parses the API request URL and generates the Api Request object.
@@ -161,7 +161,7 @@ public class DimensionsApiRequestImpl extends ApiRequestImpl implements Dimensio
             return generated;
         }
         // split on '],' to get list of filters
-        List<String> apiFilters = Arrays.asList(filterQuery.split(COMMA_AFTER_BRACKET_PATTERN));
+        String[] apiFilters = filterQuery.split(COMMA_AFTER_BRACKET_PATTERN);
 
         for (String apiFilter : apiFilters) {
             ApiFilter newFilter;

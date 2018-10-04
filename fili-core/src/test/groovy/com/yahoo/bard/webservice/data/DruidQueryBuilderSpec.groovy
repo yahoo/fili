@@ -72,7 +72,7 @@ public class DruidQueryBuilderSpec extends Specification {
 
     LogicalMetricInfo m1LogicalMetric = new LogicalMetricInfo("lm1")
 
-    static final DruidFilterBuilder FILTER_BUILDER = new DruidOrFilterBuilder()
+    static final DruidFilterBuilder DRUID_FILTER_BUILDER = new DruidOrFilterBuilder()
 
     List<Interval> intervals
     static FilterBinders filterBinders = FilterBinders.INSTANCE
@@ -94,15 +94,9 @@ public class DruidQueryBuilderSpec extends Specification {
                 abdne1429: "ageBracket|desc-notin[14-29]"
         ]
 
-
         apiFiltersByName = (filterSpecs.collectEntries {
             [(it.key): filterBinders.generateApiFilter(it.value as String, resources.dimensionDictionary)]
         } ) as Map<String, ApiFilter>
-
-        druidFilters = [:]
-        apiFilters.each {
-            druidFilters.put(it.key, FILTER_BUILDER.buildFilters([(resources.d3): [it.value as ApiFilter] as Set]))
-        }
 
         LogicalMetric metric = new LogicalMetric(tdq, null, (LogicalMetricInfo) lmi1)
         LinkedHashSet<OrderByColumn> orderByColumns = [new OrderByColumn(metric, SortDirection.DESC)]
@@ -138,7 +132,6 @@ public class DruidQueryBuilderSpec extends Specification {
         apiRequest.getApiFilters() >> apiFilters
         apiRequest.getLogicalMetrics() >> ([lm1] as Set)
         apiRequest.getIntervals() >> intervals
-        apiRequest.getFilterDimensions() >> []
         apiRequest.getTopN() >> OptionalInt.empty()
         apiRequest.getSorts() >> ([] as Set)
         apiRequest.getCount() >> OptionalInt.empty()
@@ -146,7 +139,8 @@ public class DruidQueryBuilderSpec extends Specification {
 
     def "Test recursive buildQueryMethods"() {
         setup:
-        Set apiSet = (["abie1234", "abde1129"].collect() { apiFiltersByName.get(it) }) as Set
+        Set<ApiFilters> apiSet = (["abie1234", "abde1129"].collect() { apiFiltersByName.get(it) }) as Set
+
         ConstrainedTable table = TableTestUtils.buildTable(
                 "tab1",
                 DAY.buildZonedTimeGrain(UTC),
@@ -154,7 +148,7 @@ public class DruidQueryBuilderSpec extends Specification {
                 [:],
                 Mock(DataSourceMetadataService)
         )
-        Filter filter = FILTER_BUILDER.buildFilters([(resources.d3): apiSet])
+        Filter druidFilter = DRUID_FILTER_BUILDER.buildFilters([(resources.d3): apiSet])
         ZonedTimeGrain granularity = WEEK.buildZonedTimeGrain(UTC)
         Set dimension = [resources.d1] as Set
         topNMetric = new TopNMetric("m1", SortDirection.DESC)
@@ -167,14 +161,14 @@ public class DruidQueryBuilderSpec extends Specification {
                 granularity,
                 UTC,
                 [] as Set,
-                filter,
+                druidFilter,
                 (Having) null,
                 [],
                 limitSpec
         )
 
         then:
-        dq?.filter == filter
+        dq?.filter == druidFilter
         dq.dataSource.type == DefaultDataSourceType.TABLE
         dq.dataSource.name == table.name
         granularity.withZone(UTC)
@@ -186,7 +180,7 @@ public class DruidQueryBuilderSpec extends Specification {
                 granularity,
                 UTC,
                 [] as Set,
-                filter,
+                druidFilter,
                 (Having) null,
                 [] as List,
                 limitSpec
@@ -198,7 +192,7 @@ public class DruidQueryBuilderSpec extends Specification {
         dq1.granularity == granularity.withZone(UTC)
 
         GroupByQuery dq2 = dq1.dataSource.getQuery().get()
-        dq2.filter == filter
+        dq2.filter == druidFilter
         dq2.dataSource.type == DefaultDataSourceType.TABLE
         dq2.dataSource.name == table.name
         dq2.granularity == granularity.withZone(UTC)
@@ -210,7 +204,7 @@ public class DruidQueryBuilderSpec extends Specification {
                 granularity,
                 UTC,
                 dimension,
-                filter,
+                druidFilter,
                 [],
                 topNMetric,
                 topN
@@ -218,7 +212,7 @@ public class DruidQueryBuilderSpec extends Specification {
 
         then:
         topNQuery != null
-        topNQuery.filter == filter
+        topNQuery.filter == druidFilter
         topNQuery.dataSource.type == DefaultDataSourceType.TABLE
         topNQuery.dataSource.name == table.name
         topNQuery.granularity == granularity.withZone(UTC)
@@ -229,13 +223,13 @@ public class DruidQueryBuilderSpec extends Specification {
                 table,
                 granularity,
                 UTC,
-                filter,
+                druidFilter,
                 []
         )
 
         then:
         timeseriesQuery != null
-        timeseriesQuery.filter == filter
+        timeseriesQuery.filter == druidFilter
         timeseriesQuery.dataSource.type == DefaultDataSourceType.TABLE
         timeseriesQuery.dataSource.name == table.name
         timeseriesQuery.granularity == granularity.withZone(UTC)
@@ -255,7 +249,7 @@ public class DruidQueryBuilderSpec extends Specification {
                 [:],
                 Mock(DataSourceMetadataService)
         )
-        Filter filter = FILTER_BUILDER.buildFilters([(resources.d3): apiSet])
+        Filter filter = DRUID_FILTER_BUILDER.buildFilters([(resources.d3): apiSet])
         ZonedTimeGrain granularity = YEAR.buildZonedTimeGrain(UTC)
         TemplateDruidQuery simpleQuery = resources.simpleTemplateWithGrainQuery
         GroupByQuery dq = builder.buildGroupByQuery(
@@ -349,7 +343,7 @@ public class DruidQueryBuilderSpec extends Specification {
                 SortDirection.DESC
         )] as Set)
         apiRequest.getHavings() >> havingMap
-        apiRequest.getHaving() >> { DruidHavingBuilder.buildHavings(havingMap) }
+        apiRequest.getDruidHaving() >> { DruidHavingBuilder.buildHavings(havingMap) }
 
         initDefault(apiRequest)
 
@@ -371,7 +365,10 @@ public class DruidQueryBuilderSpec extends Specification {
         apiRequest = Mock(DataApiRequest)
         apiRequest.dimensions >> ([resources.d1, resources.d2] as Set)
         apiRequest.topN >> OptionalInt.of(5)
-        apiRequest.sorts >> ([new OrderByColumn(new LogicalMetric(null, null, (LogicalMetricInfo) lmi1), SortDirection.DESC)] as Set)
+        apiRequest.sorts >> ([new OrderByColumn(
+                new LogicalMetric(null, null, (LogicalMetricInfo) lmi1),
+                SortDirection.DESC
+        )] as Set)
 
         initDefault(apiRequest)
 
@@ -440,7 +437,7 @@ public class DruidQueryBuilderSpec extends Specification {
         apiRequest.dimensions >> ([] as Set)
         apiRequest.logicalMetrics >> ([resources.m1] as Set)
         apiRequest.havings >> havingMap
-        apiRequest.having >> { DruidHavingBuilder.buildHavings(havingMap) }
+        apiRequest.druidHaving >> { DruidHavingBuilder.buildHavings(havingMap) }
 
         initDefault(apiRequest)
 
@@ -472,7 +469,7 @@ public class DruidQueryBuilderSpec extends Specification {
                     [new OrderByColumn(new LogicalMetric(null, null, "m1"), SortDirection.DESC)] as Set
         }
         apiRequest.havings >> havingMap
-        apiRequest.having >> { DruidHavingBuilder.buildHavings(havingMap) }
+        apiRequest.druidHaving >> { DruidHavingBuilder.buildHavings(havingMap) }
 
         initDefault(apiRequest)
 
@@ -509,7 +506,7 @@ public class DruidQueryBuilderSpec extends Specification {
                     [] as Set
         }
         apiRequest.havings >> havingMap
-        apiRequest.having >> { DruidHavingBuilder.buildHavings(havingMap) }
+        apiRequest.druidHaving >> { DruidHavingBuilder.buildHavings(havingMap) }
 
         initDefault(apiRequest)
 
