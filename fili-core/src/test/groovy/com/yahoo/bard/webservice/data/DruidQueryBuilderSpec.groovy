@@ -20,6 +20,7 @@ import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
 import com.yahoo.bard.webservice.data.volatility.DefaultingVolatileIntervalsService
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType
+import com.yahoo.bard.webservice.druid.model.builders.DefaultDruidHavingBuilder
 import com.yahoo.bard.webservice.druid.model.datasource.DefaultDataSourceType
 import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.model.having.Having
@@ -343,7 +344,7 @@ public class DruidQueryBuilderSpec extends Specification {
                 SortDirection.DESC
         )] as Set)
         apiRequest.getHavings() >> havingMap
-        apiRequest.getDruidHaving() >> { DruidHavingBuilder.buildHavings(havingMap) }
+        apiRequest.getQueryHaving() >> { DefaultDruidHavingBuilder.INSTANCE.buildHavings(havingMap) }
 
         initDefault(apiRequest)
 
@@ -355,7 +356,7 @@ public class DruidQueryBuilderSpec extends Specification {
 
         where:
         queryType                 | havingMap                         | topNDruid | isIsNot
-        DefaultQueryType.TOP_N    | null                              | "topN"    | "is not"
+        DefaultQueryType.TOP_N    | [:]                               | "topN"    | "is not"
         DefaultQueryType.GROUP_BY | [(resources.m1): [having] as Set] | "groupBy" | "is"
 
     }
@@ -437,7 +438,7 @@ public class DruidQueryBuilderSpec extends Specification {
         apiRequest.dimensions >> ([] as Set)
         apiRequest.logicalMetrics >> ([resources.m1] as Set)
         apiRequest.havings >> havingMap
-        apiRequest.druidHaving >> { DruidHavingBuilder.buildHavings(havingMap) }
+        apiRequest.queryHaving >> { DefaultDruidHavingBuilder.INSTANCE.buildHavings(havingMap) }
 
         initDefault(apiRequest)
 
@@ -449,7 +450,7 @@ public class DruidQueryBuilderSpec extends Specification {
 
         where:
         queryType                   | havingMap                         | tsDruid      | isIsNot
-        DefaultQueryType.TIMESERIES | null                              | "timeSeries" | "is not"
+        DefaultQueryType.TIMESERIES | [:]                               | "timeSeries" | "is not"
         DefaultQueryType.GROUP_BY   | [(resources.m1): [having] as Set] | "groupBy"    | "is"
     }
 
@@ -469,7 +470,7 @@ public class DruidQueryBuilderSpec extends Specification {
                     [new OrderByColumn(new LogicalMetric(null, null, "m1"), SortDirection.DESC)] as Set
         }
         apiRequest.havings >> havingMap
-        apiRequest.druidHaving >> { DruidHavingBuilder.buildHavings(havingMap) }
+        apiRequest.queryHaving >> { DefaultDruidHavingBuilder.INSTANCE.buildHavings(havingMap) }
 
         initDefault(apiRequest)
 
@@ -485,12 +486,12 @@ public class DruidQueryBuilderSpec extends Specification {
 
         where:
         queryType                 | havingMap                         | nDims | nested | nSorts | flag  | query
-        DefaultQueryType.TOP_N    | null                              | 1     | false  | 1      | true  | "topN"
+        DefaultQueryType.TOP_N    | [:]                               | 1     | false  | 1      | true  | "topN"
         DefaultQueryType.GROUP_BY | [(resources.m1): [having] as Set] | 1     | false  | 1      | true  | "groupBy"
-        DefaultQueryType.GROUP_BY | null                              | 2     | false  | 1      | true  | "groupBy"
-        DefaultQueryType.GROUP_BY | null                              | 1     | true   | 1      | true  | "groupBy"
-        DefaultQueryType.GROUP_BY | null                              | 1     | false  | 2      | true  | "groupBy"
-        DefaultQueryType.GROUP_BY | null                              | 1     | false  | 1      | false | "groupBy"
+        DefaultQueryType.GROUP_BY | [:]                               | 2     | false  | 1      | true  | "groupBy"
+        DefaultQueryType.GROUP_BY | [:]                               | 1     | true   | 1      | true  | "groupBy"
+        DefaultQueryType.GROUP_BY | [:]                               | 1     | false  | 2      | true  | "groupBy"
+        DefaultQueryType.GROUP_BY | [:]                               | 1     | false  | 1      | false | "groupBy"
     }
 
     @Unroll
@@ -506,7 +507,7 @@ public class DruidQueryBuilderSpec extends Specification {
                     [] as Set
         }
         apiRequest.havings >> havingMap
-        apiRequest.druidHaving >> { DruidHavingBuilder.buildHavings(havingMap) }
+        apiRequest.queryHaving >> { DefaultDruidHavingBuilder.INSTANCE.buildHavings(havingMap) }
 
         initDefault(apiRequest)
 
@@ -520,10 +521,10 @@ public class DruidQueryBuilderSpec extends Specification {
 
         where:
         queryType                   | havingMap                         | nDims | nested | nSorts | query
-        DefaultQueryType.TIMESERIES | null                              | 0     | false  | 0      | "timeSeries"
+        DefaultQueryType.TIMESERIES | [:]                               | 0     | false  | 0      | "timeSeries"
         DefaultQueryType.GROUP_BY   | [(resources.m1): [having] as Set] | 0     | false  | 0      | "groupBy"
-        DefaultQueryType.GROUP_BY   | null                              | 1     | false  | 0      | "groupBy"
-        DefaultQueryType.GROUP_BY   | null                              | 0     | true   | 0      | "groupBy"
-        DefaultQueryType.GROUP_BY   | null                              | 0     | false  | 1      | "groupBy"
+        DefaultQueryType.GROUP_BY   | [:]                               | 1     | false  | 0      | "groupBy"
+        DefaultQueryType.GROUP_BY   | [:]                               | 0     | true   | 0      | "groupBy"
+        DefaultQueryType.GROUP_BY   | [:]                               | 0     | false  | 1      | "groupBy"
     }
 }

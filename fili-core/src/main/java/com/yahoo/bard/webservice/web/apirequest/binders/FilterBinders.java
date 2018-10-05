@@ -23,7 +23,6 @@ import com.yahoo.bard.webservice.web.BadFilterException;
 import com.yahoo.bard.webservice.web.DefaultFilterOperation;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.FilterOperation;
-import com.yahoo.bard.webservice.web.apirequest.ApiRequestImpl;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 
 import org.slf4j.Logger;
