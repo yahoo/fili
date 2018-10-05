@@ -39,7 +39,12 @@ class DimensionToDefaultDimensionSpecSpec extends Specification {
         objectMapper = new ObjectMappersSuite().getMapper()
         resources = new QueryBuildingTestingResources()
         DefaultPhysicalTableResolver resolver = new DefaultPhysicalTableResolver(new PartialDataHandler(), new DefaultingVolatileIntervalsService())
-        builder = new DruidQueryBuilder(resources.logicalDictionary, resolver)
+        builder = new DruidQueryBuilder(
+                resources.logicalDictionary,
+                resolver,
+                resources.druidFilterBuilder,
+                resources.druidHavingBuilder
+        )
         apiRequest = Mock(DataApiRequest)
         LogicalMetric lm1 = new LogicalMetric(resources.simpleTemplateQuery, new NoOpResultSetMapper(), "lm1", null)
 

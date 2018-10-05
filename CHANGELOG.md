@@ -42,26 +42,33 @@ Current
 - [RoleDimensionApiFilterRequestMapper preserves the order of insertion of ApiFilter values](https://github.com/yahoo/fili/pull/807)
     * Changed `unionMergeFilterValues()` to be order cognizant for `ApiFilter` values.
 
-- [Cleanup DataApiRequestImpl and Builders]()
+- [Cleanup DataApiRequestImpl and Builders](https://github.com/yahoo/fili/issues/803)
   * Moved to ordered bind/validate semantics.
   * Created interface for druid having building and moved existing builder
   * Moved `DruidQueryBuilder` off of apiRequest.getDruidHavings to use apiRequest.getHavings().isEmpty()
   * Moved generators into the binders subpackage of web.apirequest
 
-- [Refactored DruidHavingBuilder]()  
+- [Refactored DruidHavingBuilder](https://github.com/yahoo/fili/issues/803)  
    * Moved DruidHavingBuilder to new package
    * Made static methods into instance methods, with a default instance
    * Created a factory interface
+   * Injected DruidHavingBuilder into QueryBuilder
 
-- [Refactored DruidFilterBuilders]()  
+- [Refactored DruidFilterBuilders](https://github.com/yahoo/fili/issues/803)  
    * Moved DruidFilterBuilder and clients to new package
 
+- [Removed deprecations in maker classes](https://github.com/yahoo/fili/issues/778)
+    * Add `LogicalMetricInfo` conversion method on ApiMetricField class
+    * Moved all tests and internal uses onto LMI based construction
+    * Removed calls to deprecated Sketch utility methods
+    * Removed unused RowNumMapper non-LMI implementation
+    * Undeprecated needed sketch utility method
+
+- [Eliminate String based metric creation](https://github.com/yahoo/fili/issues/778)
+    * Add `LogicalMetricInfo` conversion method on ApiMetricField class
+    * Moved all tests and internal uses onto LMI based construction
 
 ### Deprecated:
-
-- [DataApiRequest property renames]()
-  * `DataApiRequest` getHaving -> getQueryHaving
-  * `DataApiRequest` getDruidFilter -> getQueryFilter
 
 ### Removed:
 
@@ -90,6 +97,10 @@ Current
 
 - [ApiRequest.getApiDruidFilters() must now not be null]()
 
+- [DataApiRequest property renames](https://github.com/yahoo/fili/issues/803)
+  * `DataApiRequest` getHaving -> getQueryHaving
+  * `DataApiRequest` getDruidFilter -> getQueryFilter
+  * Deprecate old paths
 
 - [Additional healthcheck logging on healthchck failure on data request](https://github.com/yahoo/fili/pull/809)
     * Added user, request url, and timestamp to healthcheck error message on data request.

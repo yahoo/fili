@@ -158,8 +158,10 @@ public interface DataApiRequest extends ApiRequest {
      * The Druid filters are built (an expensive operation) every time this method is called. Use it judiciously.
      *
      * @return the filter used in the Query Model
-     * @deprecated Build query filters outside the API Request using
+     *
+     * @deprecated Build query filters outside the API Request using FilterBuilders
      */
+    @Deprecated
     Filter getQueryFilter();
 
     /**
@@ -175,10 +177,13 @@ public interface DataApiRequest extends ApiRequest {
     }
 
     /**
-     *  The fact model having (should probably remove this).
+     * The fact model having (should probably remove this).
      *
-     *  @return A fact model having
+     * @return A fact model having
+     *
+     * @deprecated Query builders should have responsibility for building Having
      */
+    @Deprecated
     Having getQueryHaving();
 
     /**
@@ -193,6 +198,16 @@ public interface DataApiRequest extends ApiRequest {
     }
 
     // Builder methods
+
+    /**
+     *  Get the filter builder tool for downstream filter building.
+     *
+     * @return A favtory for building filters.
+     *
+     * @deprecated Current client should provide their own filter builders.
+     */
+    @Deprecated
+    DruidFilterBuilder getFilterBuilder();
 
      /**
      * Generates filter objects on the based on the filter query in the api request.
@@ -211,16 +226,6 @@ public interface DataApiRequest extends ApiRequest {
             LogicalTable table,
             DimensionDictionary dimensionDictionary
     );
-
-    /**
-     *  Get the filter builder tool for downstream filter building.
-     *
-     * @return A favtory for building filters.
-     *
-     * @deprecated Current client should provide their own filter builders.
-     */
-    @Deprecated
-    DruidFilterBuilder getFilterBuilder();
 
     // CHECKSTYLE:OFF
 
@@ -274,8 +279,10 @@ public interface DataApiRequest extends ApiRequest {
 
     // Builder with methods
 
+    @Deprecated
     DataApiRequest withBuilder(Response.ResponseBuilder builder);
 
+    @Deprecated
     DataApiRequest withFilterBuilder(DruidFilterBuilder filterBuilder);
 
     // CHECKSTYLE:ON

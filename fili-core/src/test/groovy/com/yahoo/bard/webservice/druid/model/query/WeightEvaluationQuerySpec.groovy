@@ -22,6 +22,8 @@ import com.yahoo.bard.webservice.data.config.ConfigurationLoader
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
+import com.yahoo.bard.webservice.druid.model.builders.DefaultDruidHavingBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidInFilterBuilder
 import com.yahoo.bard.webservice.druid.model.builders.DruidOrFilterBuilder
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQueryMerger
 import com.yahoo.bard.webservice.data.time.Granularity
@@ -85,7 +87,9 @@ class WeightEvaluationQuerySpec extends Specification {
 
         builder = new DruidQueryBuilder(
                 jtb.configurationLoader.logicalTableDictionary,
-                new DefaultPhysicalTableResolver((PartialDataHandler) null, (VolatileIntervalsService) null)
+                new DefaultPhysicalTableResolver((PartialDataHandler) null, (VolatileIntervalsService) null),
+                new DruidInFilterBuilder(),
+                new DefaultDruidHavingBuilder()
         )
 
         Map emptyMap = new MultivaluedHashMap<>()

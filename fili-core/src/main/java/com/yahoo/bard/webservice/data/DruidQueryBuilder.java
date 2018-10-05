@@ -9,6 +9,8 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionRowNotFoundException;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.time.Granularity;
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
+import com.yahoo.bard.webservice.druid.model.builders.DruidHavingBuilder;
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource;
 import com.yahoo.bard.webservice.druid.model.datasource.QueryDataSource;
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource;
@@ -52,17 +54,28 @@ public class DruidQueryBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(DruidQueryBuilder.class);
     protected final LogicalTableDictionary tableDictionary;
     protected final PhysicalTableResolver resolver;
+    protected final DruidFilterBuilder druidFilterBuilder;
+    protected final DruidHavingBuilder druidHavingBuilder;
 
     /**
      * Constructor.
      *
      * @param tableDictionary  Dictionary of logical tables used to look up table groups
      * @param resolver  Strategy for resolving the physical table
+     * @param druidFilterBuilder  A factory methods for druid filters
+     * @param druidHavingBuilder  A factory methods for druid havings
      */
     @Inject
-    public DruidQueryBuilder(LogicalTableDictionary tableDictionary, PhysicalTableResolver resolver) {
+    public DruidQueryBuilder(
+            LogicalTableDictionary tableDictionary,
+            PhysicalTableResolver resolver,
+            DruidFilterBuilder druidFilterBuilder,
+            DruidHavingBuilder druidHavingBuilder
+    ) {
         this.tableDictionary = tableDictionary;
         this.resolver = resolver;
+        this.druidFilterBuilder = druidFilterBuilder;
+        this.druidHavingBuilder = druidHavingBuilder;
         LOG.trace("Table dictionary: {} \nPhysical table resolver: {}", tableDictionary, resolver);
     }
 
@@ -119,6 +132,7 @@ public class DruidQueryBuilder {
         // Resolve the table from the the group, the combined dimensions in request, and template time grain
         QueryPlanningConstraint constraint = new QueryPlanningConstraint(request, template);
         ConstrainedTable table = resolver.resolve(group.getPhysicalTables(), constraint).withConstraint(constraint);
+        Filter filter = druidFilterBuilder.buildFilters(request.getApiFilters());
 
         return druidTopNMetric != null ?
             buildTopNQuery(
@@ -127,7 +141,7 @@ public class DruidQueryBuilder {
                     request.getGranularity(),
                     request.getTimeZone(),
                     request.getDimensions(),
-                    request.getQueryFilter(),
+                    filter,
                     request.getIntervals(),
                     druidTopNMetric,
                     request.getTopN().getAsInt()
@@ -138,7 +152,7 @@ public class DruidQueryBuilder {
                         table,
                         request.getGranularity(),
                         request.getTimeZone(),
-                        request.getQueryFilter(),
+                        filter,
                         request.getIntervals()
                 ) :
                 buildGroupByQuery(
@@ -147,8 +161,8 @@ public class DruidQueryBuilder {
                         request.getGranularity(),
                         request.getTimeZone(),
                         request.getDimensions(),
-                        request.getQueryFilter(),
-                        request.getQueryHaving(),
+                        filter,
+                        druidHavingBuilder.buildHavings(request.getHavings()),
                         request.getIntervals(),
                         druidOrderBy
                 );
