@@ -8,6 +8,8 @@ pull request if there was one.
 Current
 -------
 
+### Added:
+
 ### Changed:
 
 - [Removed deprecations in maker classes](https://github.com/yahoo/fili/issues/778)
@@ -21,7 +23,22 @@ Current
     * Add `LogicalMetricInfo` conversion method on ApiMetricField class
     * Moved all tests and internal uses onto LMI based construction
 
+- [Cleanup DataApiRequestImpl and Builders]()
+  * Moved to ordered bind/validate semantics.
+  * Created interface for druid having building and moved existing builder
+  * Moved `DruidQueryBuilder` off of apiRequest.getDruidHavings to use apiRequest.getHavings().isEmpty()
+
+- [Refactored DruidHavingBuilder]()  
+   * Moved DruidHavingBuilder to new package
+   * Made static methods into instance methods, with a default instance
+   * Created a factory interface
+
+
 ### Deprecated:
+
+- [DataApiRequest property renames]()
+  * `DataApiRequest` getHaving -> getQueryHaving
+  * `DataApiRequest` getDruidFilter -> getQueryFilter
 
 ### Removed:
 
@@ -29,7 +46,10 @@ Current
 
 ### Known Issues:
 
-### Added:
+## Contract changes:
+
+- [ApiRequest.getApiDruidFilters() must now not be null]()
+
 
 - [Fili can now route to one of several Druid webservices based on custom routing logic](https://github.com/yahoo/fili/pull/759)
     * This allows customers to put Fili in front of multiple Druid clusters, and
