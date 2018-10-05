@@ -37,18 +37,18 @@ public class DefaultDruidHavingBuilder implements DruidHavingBuilder {
     /**
      * Build a having model that ANDs together having queries for each of the metrics.
      *
-     * @param metricMap  A map of logical metric to the set of havings for that metric
+     * @param apiHavingMap  A map of logical metric to the set of havings for that metric
      *
      * @return The having clause to appear in the Druid query. Returns null if the metricMap is empty or null.
      */
     @Override
-    public Having buildHavings(Map<LogicalMetric, Set<ApiHaving>> metricMap) {
+    public Having buildHavings(Map<LogicalMetric, Set<ApiHaving>> apiHavingMap) {
         // return null when no metrics are specified in the API
-        if (metricMap == null || metricMap.isEmpty()) {
+        if (apiHavingMap == null || apiHavingMap.isEmpty()) {
             return null;
         }
 
-        List<Having> havings = metricMap.entrySet().stream()
+        List<Having> havings = apiHavingMap.entrySet().stream()
                 .map(entry -> buildMetricHaving(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
         // for a single having just return the entry

@@ -85,7 +85,9 @@ public class DruidQueryBuilderSpec extends Specification {
 
         builder = new DruidQueryBuilder(
                 resources.logicalDictionary,
-                resolver
+                resolver,
+                resources.druidFilterBuilder,
+                resources.druidHavingBuilder
         )
 
         filterSpecs = [
@@ -343,8 +345,7 @@ public class DruidQueryBuilderSpec extends Specification {
                 new LogicalMetric(null, null, lmi1),
                 SortDirection.DESC
         )] as Set)
-        apiRequest.getHavings() >> havingMap
-        apiRequest.getQueryHaving() >> { DefaultDruidHavingBuilder.INSTANCE.buildHavings(havingMap) }
+        apiRequest.havings >> havingMap
 
         initDefault(apiRequest)
 
