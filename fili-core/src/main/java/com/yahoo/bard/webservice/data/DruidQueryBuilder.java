@@ -127,7 +127,7 @@ public class DruidQueryBuilder {
                     request.getGranularity(),
                     request.getTimeZone(),
                     request.getDimensions(),
-                    request.getDruidFilter(),
+                    request.getQueryFilter(),
                     request.getIntervals(),
                     druidTopNMetric,
                     request.getTopN().getAsInt()
@@ -138,7 +138,7 @@ public class DruidQueryBuilder {
                         table,
                         request.getGranularity(),
                         request.getTimeZone(),
-                        request.getDruidFilter(),
+                        request.getQueryFilter(),
                         request.getIntervals()
                 ) :
                 buildGroupByQuery(
@@ -147,8 +147,8 @@ public class DruidQueryBuilder {
                         request.getGranularity(),
                         request.getTimeZone(),
                         request.getDimensions(),
-                        request.getDruidFilter(),
-                        request.getDruidHaving(),
+                        request.getQueryFilter(),
+                        request.getQueryHaving(),
                         request.getIntervals(),
                         druidOrderBy
                 );
@@ -394,7 +394,7 @@ public class DruidQueryBuilder {
                 apiRequest.getSorts().size() == 1 &&
                 !templateDruidQuery.isNested() &&
                 BardFeatureFlag.TOP_N.isOn() &&
-                apiRequest.getDruidHaving() == null;
+                apiRequest.getHavings().isEmpty();
     }
 
     /**
@@ -410,6 +410,6 @@ public class DruidQueryBuilder {
                 !templateDruidQuery.isNested() &&
                 apiRequest.getSorts().isEmpty() &&
                 !apiRequest.getCount().isPresent() &&
-                apiRequest.getDruidHaving() == null;
+                apiRequest.getHavings().isEmpty();
     }
 }
