@@ -46,6 +46,7 @@ Current
   * Moved to ordered bind/validate semantics.
   * Created interface for druid having building and moved existing builder
   * Moved `DruidQueryBuilder` off of apiRequest.getDruidHavings to use apiRequest.getHavings().isEmpty()
+  * Moved generators into the binders subpackage of web.apirequest
 
 - [Refactored DruidHavingBuilder]()  
    * Moved DruidHavingBuilder to new package
