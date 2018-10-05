@@ -157,26 +157,38 @@ public interface DataApiRequest extends ApiRequest {
      * <p>
      * The Druid filters are built (an expensive operation) every time this method is called. Use it judiciously.
      *
+     * @return the filter used in the Query Model
+     */
+    Filter getQueryFilter();
+
+    /**
+     * Builds and returns the Druid filters from this request's {@link ApiFilter}s.
+     * <p>
+     * The Druid filters are built (an expensive operation) every time this method is called. Use it judiciously.
+     *
      * @return the Druid filter
      */
-    Filter getDruidFilter();
+    @Deprecated
+    default Filter getDruidFilter() {
+        return getQueryFilter();
+    }
 
     /**
      *  The fact model having (should probably remove this).
      *
      *  @return A fact model having
      */
-    Having getDruidHaving();
+    Having getQueryHaving();
 
     /**
      *  The fact model having (should probably remove this).
      *
      * @return A fact model having
      *
-     * @deprecated Use {@link #getDruidHaving()}
+     * @deprecated Use {@link #getQueryHaving()}
      */
     default Having getHaving() {
-        return getDruidHaving();
+        return getQueryHaving();
     }
 
     // Builder methods

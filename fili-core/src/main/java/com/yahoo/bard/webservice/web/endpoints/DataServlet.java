@@ -441,7 +441,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
 
             try (TimedPhase timer = RequestLog.startTiming("logRequestMetrics")) {
                 logRequestMetrics(apiRequest, readCache, druidQuery);
-                RequestLog.record(new DruidFilterInfo(apiRequest.getDruidFilter()));
+                RequestLog.record(new DruidFilterInfo(druidQuery.getFilter()));
             }
 
             // Process the request
