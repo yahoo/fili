@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.web.apirequest;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
-import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder;
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
@@ -158,6 +158,7 @@ public interface DataApiRequest extends ApiRequest {
      * The Druid filters are built (an expensive operation) every time this method is called. Use it judiciously.
      *
      * @return the filter used in the Query Model
+     * @deprecated Build query filters outside the API Request using
      */
     Filter getQueryFilter();
 

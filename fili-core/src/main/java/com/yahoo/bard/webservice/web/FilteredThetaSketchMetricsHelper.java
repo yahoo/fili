@@ -8,13 +8,13 @@ import com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchSetOperati
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.FilterBuilderException;
-import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder;
-import com.yahoo.bard.webservice.data.filterbuilders.DruidInFilterBuilder;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.aggregation.FilteredAggregation;
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
+import com.yahoo.bard.webservice.druid.model.builders.DruidInFilterBuilder;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.filter.InFilter;
 import com.yahoo.bard.webservice.druid.model.filter.MultiClauseFilter;
