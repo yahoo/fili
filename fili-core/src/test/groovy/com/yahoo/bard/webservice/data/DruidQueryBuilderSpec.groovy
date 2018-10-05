@@ -10,8 +10,8 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.YEAR
 import static org.joda.time.DateTimeZone.UTC
 
 import com.yahoo.bard.webservice.data.dimension.Dimension
-import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder
-import com.yahoo.bard.webservice.data.filterbuilders.DruidOrFilterBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidOrFilterBuilder
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery

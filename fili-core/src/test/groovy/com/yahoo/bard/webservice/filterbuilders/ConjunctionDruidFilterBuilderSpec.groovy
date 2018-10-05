@@ -9,7 +9,7 @@ import com.yahoo.bard.webservice.data.QueryBuildingTestingResources
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionRow
 import com.yahoo.bard.webservice.data.dimension.DimensionRowNotFoundException
-import com.yahoo.bard.webservice.data.filterbuilders.ConjunctionDruidFilterBuilder
+import com.yahoo.bard.webservice.druid.model.builders.ConjunctionDruidFilterBuilder
 import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter
 import com.yahoo.bard.webservice.web.ApiFilter

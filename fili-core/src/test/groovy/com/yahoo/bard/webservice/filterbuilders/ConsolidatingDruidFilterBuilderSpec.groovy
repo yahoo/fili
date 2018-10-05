@@ -8,8 +8,8 @@ import static com.yahoo.bard.webservice.druid.model.filter.Filter.DefaultFilterT
 import static com.yahoo.bard.webservice.druid.model.filter.Filter.DefaultFilterType.SELECTOR
 
 import com.yahoo.bard.webservice.data.QueryBuildingTestingResources
-import com.yahoo.bard.webservice.data.filterbuilders.ConsolidatingDruidFilterBuilder
-import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder
+import com.yahoo.bard.webservice.druid.model.builders.ConsolidatingDruidFilterBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder
 import com.yahoo.bard.webservice.druid.model.filter.AndFilter
 import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.model.filter.NotFilter

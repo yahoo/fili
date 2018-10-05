@@ -34,9 +34,9 @@ import com.yahoo.bard.webservice.data.config.dimension.TypeAwareDimensionLoader
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader
 import com.yahoo.bard.webservice.data.config.table.TableLoader
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
-import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder
-import com.yahoo.bard.webservice.data.filterbuilders.DruidInFilterBuilder
-import com.yahoo.bard.webservice.data.filterbuilders.DruidOrFilterBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidInFilterBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidOrFilterBuilder
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.druid.client.DruidClientConfigHelper
 import com.yahoo.bard.webservice.druid.client.DruidWebService
