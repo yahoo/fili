@@ -1,6 +1,6 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.data;
+package com.yahoo.bard.webservice.druid.model.builders;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.HAVING_OPERATOR_IMPROPER_RANGE;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.HAVING_OPERATOR_WRONG_NUMBER_OF_PARAMETERS;
@@ -27,9 +27,13 @@ import java.util.stream.Collectors;
 /**
  * Class to hold static methods to build druid query model objects from ApiHaving.
  */
-public class DruidHavingBuilder {
-    private static final Logger LOG = LoggerFactory.getLogger(DruidHavingBuilder.class);
+public class DefaultDruidHavingBuilder implements DruidHavingBuilder {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultDruidHavingBuilder.class);
     private static final int HAVING_RANGE_PARAM_LENGTH = 2;
+
+    public static DefaultDruidHavingBuilder INSTANCE = new DefaultDruidHavingBuilder();
+
     /**
      * Build a having model that ANDs together having queries for each of the metrics.
      *
@@ -37,7 +41,8 @@ public class DruidHavingBuilder {
      *
      * @return The having clause to appear in the Druid query. Returns null if the metricMap is empty or null.
      */
-    public static Having buildHavings(Map<LogicalMetric, Set<ApiHaving>> metricMap) {
+    @Override
+    public Having buildHavings(Map<LogicalMetric, Set<ApiHaving>> metricMap) {
         // return null when no metrics are specified in the API
         if (metricMap == null || metricMap.isEmpty()) {
             return null;
@@ -60,7 +65,7 @@ public class DruidHavingBuilder {
      *
      * @return A druid query having object representing the having clause on a given metric
      */
-    public static Having buildMetricHaving(LogicalMetric metric, Set<ApiHaving> havings) {
+    public Having buildMetricHaving(LogicalMetric metric, Set<ApiHaving> havings) {
         LOG.trace("Building metric having using metric: {} \n\n and set of queries: {}", metric, havings);
         List<Having> orHavings = havings.stream()
                 .map(having -> buildHaving(metric, having))
@@ -78,7 +83,7 @@ public class DruidHavingBuilder {
      *
      * @return A single having representing the API Filter
      */
-    public static Having buildHaving(LogicalMetric metric, ApiHaving having) {
+    public Having buildHaving(LogicalMetric metric, ApiHaving having) {
         LOG.trace("Building having using metric: {} and API Having: {}", metric, having);
 
         HavingOperation operation = having.getOperation();

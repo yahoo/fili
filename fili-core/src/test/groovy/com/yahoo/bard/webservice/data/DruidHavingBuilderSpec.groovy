@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.data
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.druid.model.builders.DefaultDruidHavingBuilder
 import com.yahoo.bard.webservice.druid.model.having.Having
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.web.ApiHaving
@@ -26,7 +27,7 @@ public class DruidHavingBuilderSpec extends Specification {
 
     def "No havings returns null"() {
         expect:
-        DruidHavingBuilder.buildHavings([:]) == null
+        DefaultDruidHavingBuilder.INSTANCE.buildHavings([:]) == null
     }
 
     @Unroll
@@ -34,7 +35,7 @@ public class DruidHavingBuilderSpec extends Specification {
 
         setup:
         ApiHaving apiHaving = new ApiHaving(havingString, resources.metricDictionary)
-        Having having = DruidHavingBuilder.buildHaving(metric, apiHaving)
+        Having having = DefaultDruidHavingBuilder.INSTANCE.buildHaving(metric, apiHaving)
 
         expect:
         GroovyTestUtils.compareJson(MAPPER.writer().writeValueAsString(having), expectedJson)
@@ -125,7 +126,7 @@ public class DruidHavingBuilderSpec extends Specification {
             }
         }
 
-        Having having = DruidHavingBuilder.buildHavings(metricMap)
+        Having having = DefaultDruidHavingBuilder.INSTANCE.buildHavings(metricMap)
 
         String expectedJson = """{
                                    "type": "and",
