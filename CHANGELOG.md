@@ -144,24 +144,21 @@ Current
 
 - [Update Redison dependencies](https://github.com/yahoo/fili/issues/836)
 
-- [Cleanup DataApiRequestImpl and Builders]()
+- [Cleanup DataApiRequestImpl and Builders](https://github.com/yahoo/fili/issues/803)
   * Moved to ordered bind/validate semantics.
   * Created interface for druid having building and moved existing builder
   * Moved `DruidQueryBuilder` off of apiRequest.getDruidHavings to use apiRequest.getHavings().isEmpty()
 
-- [Refactored DruidHavingBuilder]()  
+- [Refactored DruidHavingBuilder](https://github.com/yahoo/fili/issues/803)  
    * Moved DruidHavingBuilder to new package
    * Made static methods into instance methods, with a default instance
    * Created a factory interface
+   * Injected DruidHavingBuilder into QueryBuilder
 
-- [Refactored DruidFilterBuilders]()  
+- [Refactored DruidFilterBuilders](https://github.com/yahoo/fili/issues/803)  
    * Moved DruidFilterBuilder and clients to new package
 
 ### Deprecated:
-
-- [DataApiRequest property renames]()
-  * `DataApiRequest` getHaving -> getQueryHaving
-  * `DataApiRequest` getDruidFilter -> getQueryFilter
 
 ### Removed:
 
