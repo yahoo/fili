@@ -17,9 +17,9 @@ public interface DruidHavingBuilder {
     /**
      * Build a having model that ANDs together having queries for each of the metrics.
      *
-     * @param metricMap  A map of logical metric to the set of havings for that metric
+     * @param apiHavingMap  A data api request with a bound ApiHavings clause
      *
      * @return The having clause to appear in the Druid query. Returns null if the metricMap is empty or null.
      */
-    Having buildHavings(Map<LogicalMetric, Set<ApiHaving>> metricMap);
+    Having buildHavings(Map<LogicalMetric, Set<ApiHaving>> apiHavingMap);
 }
