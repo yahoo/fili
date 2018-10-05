@@ -210,6 +210,7 @@ public interface DataApiRequest extends ApiRequest {
             LogicalTable table,
             DimensionDictionary dimensionDictionary
     );
+
     /**
      *  Get the filter builder tool for downstream filter building.
      *
@@ -270,13 +271,11 @@ public interface DataApiRequest extends ApiRequest {
 
     DataApiRequest withAsyncAfter(long asyncAfter);
 
-    // Binder methods
+    // Builder with methods
 
     DataApiRequest withBuilder(Response.ResponseBuilder builder);
 
     DataApiRequest withFilterBuilder(DruidFilterBuilder filterBuilder);
-
-    DruidFilterBuilder getDruidFilterBuilder();
 
     // CHECKSTYLE:ON
 }
