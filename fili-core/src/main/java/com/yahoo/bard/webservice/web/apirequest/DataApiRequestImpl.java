@@ -523,12 +523,11 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         this.dateTimeSort = bindDateTimeSortColumn(sortColumnDirection).orElse(null);
 
         // Requested sort on metrics - optional, can be empty Set
-        this.sorts = bindToColumnDirectionMap(
+        this.sorts = bindSorts(
                 removeDateTimeSortColumn(sortColumnDirection),
                 logicalMetrics, metricDictionary
         );
         validateSortColumns(sorts, dateTimeSort, sortsRequest, logicalMetrics, metricDictionary);
-
 
         // Overall requested number of rows in the response. Ignores grouping in time buckets.
         this.count = bindCount(countRequest);
@@ -1142,7 +1141,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @return a Set of OrderByColumn
      * @throws BadApiRequestException if the sort clause is invalid.
      */
-    protected LinkedHashSet<OrderByColumn> bindToColumnDirectionMap(
+    protected LinkedHashSet<OrderByColumn> bindSorts(
             Map<String, SortDirection> sortDirectionMap,
             Set<LogicalMetric> logicalMetrics,
             MetricDictionary metricDictionary
@@ -1260,6 +1259,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             throw new BadApiRequestException(INTEGER_INVALID.logFormat(countRequest, "count"));
         }
     }
+
     /**
      * Bind the top N bucket size (if any).
      *
@@ -1270,6 +1270,8 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     protected int bindTopN(String topNRequest) {
         return generateInteger(topNRequest, "topN");
     }
+
+    // Binders and Validators complete
 
     /**
      * Confirm the top N bucket size (if any) is valid.
@@ -1736,7 +1738,6 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, Optional.ofNullable(dateTimeSort), timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, filterBuilder);
     }
 
-    // TODO
     @Override
     public DataApiRequestImpl withTimeSort(Optional<OrderByColumn> timeSort) {
         return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, Optional.ofNullable(dateTimeSort), timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, filterBuilder);
