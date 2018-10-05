@@ -8,6 +8,8 @@ pull request if there was one.
 Current
 -------
 
+### Added:
+
 ### Changed:
 - [Added config property for SSL cipher suites](https://github.com/yahoo/fili/issues/831)
 
@@ -45,7 +47,22 @@ Current
 - [RoleDimensionApiFilterRequestMapper preserves the order of insertion of ApiFilter values](https://github.com/yahoo/fili/pull/807)
     * Changed `unionMergeFilterValues()` to be order cognizant for `ApiFilter` values.
 
+- [Cleanup DataApiRequestImpl and Builders]()
+  * Moved to ordered bind/validate semantics.
+  * Created interface for druid having building and moved existing builder
+  * Moved `DruidQueryBuilder` off of apiRequest.getDruidHavings to use apiRequest.getHavings().isEmpty()
+
+- [Refactored DruidHavingBuilder]()  
+   * Moved DruidHavingBuilder to new package
+   * Made static methods into instance methods, with a default instance
+   * Created a factory interface
+
+
 ### Deprecated:
+
+- [DataApiRequest property renames]()
+  * `DataApiRequest` getHaving -> getQueryHaving
+  * `DataApiRequest` getDruidFilter -> getQueryFilter
 
 ### Removed:
 
@@ -70,7 +87,10 @@ Current
 
 ### Known Issues:
 
-### Added:
+## Contract changes:
+
+- [ApiRequest.getApiDruidFilters() must now not be null]()
+
 
 - [Additional healthcheck logging on healthchck failure on data request](https://github.com/yahoo/fili/pull/809)
     * Added user, request url, and timestamp to healthcheck error message on data request.
