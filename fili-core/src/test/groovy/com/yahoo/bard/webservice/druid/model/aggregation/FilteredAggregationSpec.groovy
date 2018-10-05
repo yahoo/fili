@@ -16,8 +16,8 @@ import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
-import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder
-import com.yahoo.bard.webservice.data.filterbuilders.DruidOrFilterBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidOrFilterBuilder
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.druid.model.filter.Filter

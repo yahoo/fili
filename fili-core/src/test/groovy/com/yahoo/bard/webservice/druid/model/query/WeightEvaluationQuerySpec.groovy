@@ -22,7 +22,7 @@ import com.yahoo.bard.webservice.data.config.ConfigurationLoader
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
-import com.yahoo.bard.webservice.data.filterbuilders.DruidOrFilterBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidOrFilterBuilder
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQueryMerger
 import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser
