@@ -154,6 +154,9 @@ Current
    * Made static methods into instance methods, with a default instance
    * Created a factory interface
 
+- [Refactored DruidFilterBuilders]()  
+   * Moved DruidFilterBuilder and clients to new package
+
 ### Deprecated:
 
 - [DataApiRequest property renames]()
