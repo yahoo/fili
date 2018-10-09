@@ -10,6 +10,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,6 +41,11 @@ import javax.ws.rs.core.MultivaluedMap;
 public class Utils {
 
     /**
+     * Logger.
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(Utils.class);
+
+    /**
      * A strategy that deletes a directory.
      */
     private static final FileVisitor<Path> DELETE_VISITOR = new SimpleFileVisitor<Path>() {
@@ -53,7 +60,6 @@ public class Utils {
             Files.delete(dir);
             return FileVisitResult.CONTINUE;
         }
-
     };
 
     /**
@@ -114,6 +120,7 @@ public class Utils {
 
         // do nothing if there is nothing to delete
         if (!Files.exists(file)) {
+            LOG.trace(String.format("'%s' does not exist. Nothing is deleted", path));
             return;
         }
 
