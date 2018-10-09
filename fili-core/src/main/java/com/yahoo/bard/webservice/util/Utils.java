@@ -10,10 +10,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -36,6 +39,29 @@ import javax.ws.rs.core.MultivaluedMap;
  * Utils.
  */
 public class Utils {
+
+    /**
+     * Logger.
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(Utils.class);
+
+    /**
+     * A strategy that deletes a directory.
+     */
+    private static final FileVisitor<Path> DELETE_VISITOR = new SimpleFileVisitor<Path>() {
+        @Override
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            Files.delete(file);
+            return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+            Files.delete(dir);
+            return FileVisitResult.CONTINUE;
+        }
+    };
+
     /**
      * Given a collection of objects which share the same super class, return the subset of objects that share a common
      * sub class.
@@ -90,23 +116,16 @@ public class Utils {
      * @param path  The pathname
      */
     public static void deleteFiles(String path) {
-        Path directory = Paths.get(path);
+        Path file = Paths.get(path);
+
+        // do nothing if there is nothing to delete
+        if (!Files.exists(file)) {
+            LOG.trace(String.format("'%s' does not exist. Nothing is deleted", path));
+            return;
+        }
 
         try {
-            Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    Files.delete(file);
-                    return FileVisitResult.CONTINUE;
-                }
-
-                @Override
-                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                    Files.delete(dir);
-                    return FileVisitResult.CONTINUE;
-                }
-
-            });
+            Files.walkFileTree(file, DELETE_VISITOR);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

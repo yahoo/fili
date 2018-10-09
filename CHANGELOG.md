@@ -273,6 +273,9 @@ select filters)
 
 ### Known Issues:
 
+- [Improved deletion on non-existing path](https://github.com/yahoo/fili/pull/802)
+    * If path does not exist, do not run deletion on that path
+
 
 v0.9.137 - 2018/04/13 
 =====
