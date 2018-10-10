@@ -126,14 +126,12 @@ public class AggregationAverageMaker extends MetricMaker {
      * @return A template query representing the inner aggregation
      */
     private TemplateDruidQuery buildInnerQuery(MetricField sourceMetric, TemplateDruidQuery innerDependentQuery) {
-        Set<Aggregation> newInnerAggregations = convertSketchesToSketchMerges(innerDependentQuery.getAggregations());
-
         Set<PostAggregation> newInnerPostAggregations = (sourceMetric instanceof PostAggregation) ?
                 ImmutableSet.of((PostAggregation) sourceMetric) :
                 Collections.emptySet();
 
         // Build the inner query with the new aggregations and with the count
-        return innerDependentQuery.withAggregations(newInnerAggregations)
+        return innerDependentQuery.withAggregations(innerDependentQuery.getAggregations())
                 .withPostAggregations(newInnerPostAggregations)
                 .merge(buildTimeGrainCounterQuery());
     }

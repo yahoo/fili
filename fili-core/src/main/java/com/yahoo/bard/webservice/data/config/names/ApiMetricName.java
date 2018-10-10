@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.data.config.names;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.time.AllGranularity;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
@@ -113,5 +114,14 @@ public interface ApiMetricName extends FieldName {
                 return name.hashCode();
             }
         };
+    }
+
+    /**
+     * Provide a logical metric info view on this object.
+     *
+     * @return A Logical Metric Info based for this metric name.
+     */
+    default LogicalMetricInfo asLogicalMetricInfo() {
+        return new LogicalMetricInfo(asName());
     }
 }

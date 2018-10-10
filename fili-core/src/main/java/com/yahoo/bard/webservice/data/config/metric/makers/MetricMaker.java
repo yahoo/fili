@@ -277,7 +277,7 @@ public abstract class MetricMaker {
      *
      * @return A post aggregator representing a number field value
      *
-     * @deprecated use the static version {@link #getSketchField(MetricField)} by preference
+     * @deprecated use the static version {@link MetricMaker#getSketchField(MetricField)} by preference
      */
     @Deprecated
     protected PostAggregation getSketchField(String fieldName) {

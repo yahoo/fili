@@ -27,6 +27,8 @@ import com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.LongSumMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.RowNumMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker;
+import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
+import com.yahoo.bard.webservice.data.config.names.FieldName;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
@@ -91,13 +93,13 @@ public class TestMetricLoader implements MetricLoader {
 
         // Metrics that directly aggregate druid fields
         List<MetricInstance> metrics = Arrays.asList(
-                new MetricInstance(A_HEIGHT, longSumMaker, HEIGHT),
+                new MetricInstance((ApiMetricName) A_HEIGHT, longSumMaker, HEIGHT),
                 new MetricInstance(A_WIDTH, longSumMaker, WIDTH),
                 new MetricInstance(A_DEPTH, longSumMaker, DEPTH),
                 new MetricInstance(A_LIMBS, longSumMaker, LIMBS),
                 new MetricInstance(A_USERS, sketchMaker, USERS),
                 new MetricInstance(A_OTHER_USERS, sketchMaker, USERS),
-                new MetricInstance(A_ROW_NUM, rowNumMaker),
+                new MetricInstance(A_ROW_NUM, rowNumMaker, new FieldName[] {}),
                 new MetricInstance(A_AREA, productMaker, A_HEIGHT, A_WIDTH),
                 new MetricInstance(A_VOLUME, productMaker, A_HEIGHT, A_WIDTH, A_DEPTH),
                 new MetricInstance(A_DAY_AVG_USERS, simpleDailyAverageMaker, A_USERS),
