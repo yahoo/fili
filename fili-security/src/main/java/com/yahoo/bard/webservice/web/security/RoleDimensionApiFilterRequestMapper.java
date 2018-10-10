@@ -147,11 +147,11 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
      */
     protected Set<ApiFilter> buildSecurityFilters(final SecurityContext securityContext) {
         return unionMergeFilterValues(
-                    roleApiFilters.keySet().stream()
-                            .filter(securityContext::isUserInRole)
-                            .map(roleApiFilters::get)
-                            .flatMap(Set::stream)
-            );
+                roleApiFilters.keySet().stream()
+                        .filter(securityContext::isUserInRole)
+                        .map(roleApiFilters::get)
+                        .flatMap(Set::stream)
+        );
     }
 
     /**
@@ -164,7 +164,7 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
     protected static Set<ApiFilter> unionMergeFilterValues(Stream<ApiFilter> filterStream) {
 
         Function<ApiFilter, Triple<Dimension, DimensionField, FilterOperation>> filterGroupingIdentity = filter ->
-            new ImmutableTriple<>(filter.getDimension(), filter.getDimensionField(), filter.getOperation());
+                new ImmutableTriple<>(filter.getDimension(), filter.getDimensionField(), filter.getOperation());
 
         Map<Triple<Dimension, DimensionField, FilterOperation>, Set<String>> filterMap =
                 filterStream.collect(Collectors.groupingBy(

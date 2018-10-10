@@ -99,6 +99,32 @@ public class BoundFilter extends DimensionalFilter<BoundFilter> {
         return this.ordering;
     }
 
+    /**
+     * Returns a BoundFilter with upper bound value specified.
+     *
+     * @param dimension The druid dimension to be filtered
+     * @param value The bound value to be used
+     * @param inclusive A boolean that indicates whether to include the bounds or not
+     *
+     * @return BoundFilter with upper bound
+     */
+    public static BoundFilter buildUpperBoundFilter(Dimension dimension, String value, Boolean inclusive) {
+        return new BoundFilter(dimension, null, value, null, !inclusive, null);
+    }
+
+    /**
+     * Returns a BoundFilter with lower bound value specified.
+     *
+     * @param dimension The druid dimension to be filtered
+     * @param value The bound value to be used
+     * @param inclusive A boolean that indicates whether to include the bounds or not
+     *
+     * @return BoundFilter with lower bound
+     */
+    public static BoundFilter buildLowerBoundFilter(Dimension dimension, String value, Boolean inclusive) {
+        return new BoundFilter(dimension, value, null, !inclusive, null, null);
+    }
+
     //CHECKSTYLE:OFF
     @Override
     public BoundFilter withDimension(Dimension dimension) {

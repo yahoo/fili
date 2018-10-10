@@ -57,4 +57,9 @@ class StreamUtilsSpec extends Specification {
         expect:
         StreamUtils.setMerge([1, 2, 3] as Set, [4, 5, 6] as Set) == [1, 2, 3, 4, 5, 6] as Set
     }
+
+    def "Merging returns an ordered set containing two sets"() {
+        expect:
+        StreamUtils.orderedSetMerge([1,2,7] as LinkedHashSet, [3,6,9] as LinkedHashSet) == [1,2,7,3,6,9] as Set
+    }
 }
