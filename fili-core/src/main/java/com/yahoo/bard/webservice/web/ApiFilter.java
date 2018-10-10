@@ -1,4 +1,4 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2018 Oath Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web;
 
@@ -6,7 +6,11 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -20,7 +24,7 @@ public class ApiFilter {
     private final Dimension dimension;
     private final DimensionField dimensionField;
     private final FilterOperation operation;
-    private final Set<String> values;
+    private final List<String> values;
 
     /**
      * Constructor.
@@ -31,15 +35,15 @@ public class ApiFilter {
      * @param values  The values the filter uses when operating
      */
     public ApiFilter(
-            Dimension dimension,
+            @NotNull Dimension dimension,
             DimensionField dimensionField,
             FilterOperation operation,
-            Set<String> values
+            Collection<String> values
     ) {
         this.dimension = dimension;
         this.dimensionField = dimensionField;
         this.operation = operation;
-        this.values = Collections.unmodifiableSet(values);
+        this.values = Collections.unmodifiableList(new ArrayList<>(values)) ;
     }
 
     /**
@@ -63,8 +67,9 @@ public class ApiFilter {
         this.dimension = filter.getDimension();
         this.dimensionField = filter.getDimensionField();
         this.operation = filter.getOperation();
-        this.values = Collections.unmodifiableSet(filter.getValues());
+        this.values = filter.getValuesList();
     }
+
     /**
      * Creates a new ApiFilter based on this ApiFilter, except with the new dimension replacing this ApiFilter's
      * dimension.
@@ -102,10 +107,12 @@ public class ApiFilter {
      * Creates a new ApiFilter based on this ApiFilter, except with the new set of filter values replacing this
      * ApiFilter's filter values.
      *
-     * @param values The new set of values to use in the new ApiFilter.
-     * @return the new ApiFilter object.
+     * @param values The new set of values to use in the new ApiFilter
+     *
+     * @return the new ApiFilter object
      */
-    public ApiFilter withValues(Set<String> values) {
+
+    public ApiFilter withValues(Collection<String> values) {
         return new ApiFilter(dimension, dimensionField, operation, values);
     }
 
@@ -142,6 +149,15 @@ public class ApiFilter {
      * @return the set of values
      */
     public Set<String> getValues() {
+        return new LinkedHashSet<>(this.values);
+    }
+
+    /**
+     * Getter for this ApiFilter's set of filter values.
+     *
+     * @return the list of values
+     */
+    public List<String> getValuesList() {
         return this.values;
     }
 

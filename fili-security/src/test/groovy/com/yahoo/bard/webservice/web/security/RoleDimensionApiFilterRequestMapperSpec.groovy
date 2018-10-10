@@ -168,4 +168,5 @@ class RoleDimensionApiFilterRequestMapperSpec extends Specification {
                         [nonFilterDimension, dimensionField, notin, ["a", "c"] as Set]
                 ]
     }
+    
 }

@@ -10,7 +10,12 @@ public enum DefaultFilterOperation implements FilterOperation {
     notin,
     startswith,
     contains,
-    eq
+    eq,
+    lt,
+    lte,
+    gt,
+    gte,
+    between // The lower bound is inclusive and the upper bound is exclusive. (so it is gte and lt operators together)
     ;
 
     @Override

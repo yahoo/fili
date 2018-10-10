@@ -20,6 +20,13 @@ Current
 - [Eliminate String based metric creation](https://github.com/yahoo/fili/issues/778)
     * Add `LogicalMetricInfo` conversion method on ApiMetricField class
     * Moved all tests and internal uses onto LMI based construction
+    
+- [ApiFilter allows preserving the insertion order of filter values](https://github.com/yahoo/fili/pull/807)
+    * `Constructor` and `withValues()` method's argument changed from `Set` to `Collection`.
+    * Added `getValueList()` to return the original ordered filter values.
+    
+- [RoleDimensionApiFilterRequestMapper preserves the order of insertion of ApiFilter values](https://github.com/yahoo/fili/pull/807)
+    * Changed `unionMergeFilterValues()` to be order cognizant for `ApiFilter` values.
 
 ### Deprecated:
 
@@ -43,8 +50,16 @@ Current
     * We introduce a new interface `DruidWebServiceSelector` that wraps the 
         routing logic, and pass an instance to the AsyncWebServiceRequestHandler
         for it to use.
+        
+- [Add Druid Bound filter support to Fili](https://github.com/yahoo/fili/pull/807)
+    * Added the `DruidBoundFilter` class to support the Bound Filter supported by Druid.
+    
+- [Add static Factory build methods for BoundFilter](https://github.com/yahoo/fili/pull/807)
+    * Added static factory methods for building `lowerBound`, `upperBound`, `strictLowerBound` and `strictUpperBound`
+        Bound filters.
 
-
+- [Add insertion order aware method for Stream Utils](https://github.com/yahoo/fili/pull/807)
+    * Added `orderedSetMerge` that merges 2 sets in the order provided.
 
 v0.10.48 - 2018/10/04
 =====

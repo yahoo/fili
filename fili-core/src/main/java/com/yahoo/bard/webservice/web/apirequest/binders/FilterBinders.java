@@ -30,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -154,7 +153,7 @@ public class FilterBinders {
          *          operation:      in          eq
          *          values:         US,India    5
          */
-        ApiFilter inProgressApiFilter = new ApiFilter(null, null, null, new HashSet<>());
+        ApiFilter inProgressApiFilter = new ApiFilter(null, null, null, new LinkedHashSet<>());
 
         Matcher matcher = FILTER_PATTERN.matcher(filterQuery);
 
@@ -196,7 +195,7 @@ public class FilterBinders {
             }
 
             // replaceAll takes care of any leading ['s or trailing ]'s which might mess up this.values
-            Set<String> values = new LinkedHashSet<>(
+            LinkedHashSet<String> values = new LinkedHashSet<>(
                     FilterTokenizer.split(
                             matcher.group(4)
                                     .replaceAll("\\[", "")
