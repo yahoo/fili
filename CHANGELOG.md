@@ -32,8 +32,8 @@ Current
 ### Added:
 
 - [Adding dimension datatypes](https://github.com/yahoo/fili/issues/805)
-    * Add interface `DimensionDatatype` for representing dimension types, and a default set of datatypes in the enum 
-    `DefaultDimensionDatatype`.
+    * Add interface `DimensionDatatype` for representing dimension types, and a default set of datatypes: `TextDimensionDatatype`,
+    `NumberDimensionDatatype`, `DateDimensionDatatype`.
     * Datatypes are attached to a dimension through the `TypedDimension` interface and all fields of the dimension are 
     treated as that datatype.
 
