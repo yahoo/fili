@@ -31,6 +31,12 @@ Current
 
 ### Added:
 
+- [Adding dimension datatypes](https://github.com/yahoo/fili/issues/805)
+    * Add interface `DimensionDatatype` for representing dimension types, and a default set of datatypes in the enum 
+    `DefaultDimensionDatatype`.
+    * Datatypes are attached to a dimension through the `TypedDimension` interface and all fields of the dimension are 
+    treated as that datatype.
+
 - [Fili can now route to one of several Druid webservices based on custom routing logic](https://github.com/yahoo/fili/pull/759)
     * This allows customers to put Fili in front of multiple Druid clusters, and
         then use custom logic to decide which cluster to query for each request.
