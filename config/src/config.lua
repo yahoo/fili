@@ -13,25 +13,17 @@ local dimensionUtils = require("utils.dimensionUtils")
 local metricsUtils = require("utils.metricUtils")
 local tableUtils = require("utils.tableUtils")
 
---[[
 -- dimensions returns dimension configuration keyed on name.
---]]
 local dimensions = require("dimensions")
---[[
 -- metrics returns metric configuration keyed on name.
---]]
 local metrics = require("metrics")
---[[
 -- tables returns a table containing two keys:
 --  physical - A table of physical table configuration keyed on name
 --  logical - A table of logical table configuration keyed on name
---]]
 local tables = require("tables")
 
 local dimensionConfig = dimensionUtils.build_dimensions_config(dimensions)
-
 local metricConfig = metricsUtils.build_metric_config(metrics)
-
 local tableConfig = tableUtils.build_table_config(tables)
 
 parser.save("../external/DimensionConfig.json", dimensionConfig)

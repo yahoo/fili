@@ -20,7 +20,7 @@ local M = {}
 -- @param metrics  A set of metric config
 -- @return A list of metrics
 function M.build_metric_config(metrics)
-    local metrics = {}
+    local configuration = {}
     for name, metric in pairs(metrics) do
         local copy = misc.shallow_copy(metric)
         copy.apiName = copy.apiName or name
@@ -29,9 +29,9 @@ function M.build_metric_config(metrics)
         copy.dependencyMetricNames = copy.druidMetric 
             and {copy.druidMetric} 
             or copy.dependencies
-        table.insert(metrics, copy)
+        table.insert(configuration, copy)
     end
-    return metrics 
+    return configuration 
 end
 
 return M

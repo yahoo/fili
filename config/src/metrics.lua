@@ -1,13 +1,13 @@
 -- Copyright 2018 Yahoo Inc.
--- Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
+-- Licensed under the terms of the Apache license. Please see LICENSE.md file 
+-- distributed with this work for terms.
 
 --[[
-This is where we define the metrics for Fili. Metrics in Fili are
-effectively formulas (for example, formulas of aggregations and
-post-aggregations that we send down to Druid). These formulas are constructed
-by taking Makers (which, for the purposes of configuration, can be thought of
-as operators and operands, i.e. bits of formulas) and combining them to create
-metrics.
+This is where we define the metrics for Fili. Metrics are effectively
+formulas (for example, formulas of aggregations and post-aggregations that we
+send down to Druid). These formulas are constructed by taking Makers (which,
+for the purposes of configuration, can be thought of as operators and operands,
+i.e. bits of formulas) and combining them to create metrics.
 
 For example, the ArithmeticMaker defines the operators +, -, /, so you
 can think of the ArithmeticMaker as defining the bits _ + _, _ - _, _ * _,

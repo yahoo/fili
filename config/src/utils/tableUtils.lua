@@ -6,13 +6,13 @@
 
 local M = {}
 
-local misc = require 'util/misc'
+local misc = require 'utils./misc'
 
 -------------------------------------------------------------------------------
 -- Build Config
 -------------------------------------------------------------------------------
 
---- Add physical table configs and logical table configs into table t.
+--- Add physical table configs and logical table configs into a configuration.
 --
 -- @param tables A table containing two keys: 
 --  physical - A table of physical table configuration, keyed on name
@@ -38,7 +38,7 @@ function M.build_table_config(tables)
         copy.description = copy.description or name
         table.insert(configuration.logical, copy)
     end
-    return t
+    return configuration
 end
 
 return M

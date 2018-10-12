@@ -6,14 +6,14 @@ local Json = require("lib.json")
 --- a module provides functions to parse json file or object.
 -- @module jsonParser
 
-local JsonTable = {}
+local M = {}
 
 --- Save a lua table to a json file.
 --
 -- @param filepath  A file for saving json
 -- @param table A lua table to be saved as json file
 -- @return the lua table
-JsonTable.save = function(filepath, table)
+function M.save(filepath, table)
     local file = io.open(filepath, "w")
 
     if file then
@@ -30,16 +30,16 @@ end
 --
 -- @param filepath  A file for loading json
 -- @return a lua table parsed from json file
-JsonTable.load = function(filepath)
+function M.load(filepath)
     local file = io.open(filepath, "r" )
 
     if file then
         local contents = file:read( "*a" )
-        JsonTable = Json.decode(contents);
+        M = Json.decode(contents);
         io.close( file )
-        return JsonTable
+        return M
     end
     return nil
 end
 
-return JsonTable
+return M
