@@ -288,7 +288,7 @@ public class ResponseData {
      *
      * @return The name for the dimension and column as it will appear in the response document
      */
-    protected static String getDimensionColumnName(Dimension dimension, DimensionField dimensionField) {
+    public static String getDimensionColumnName(Dimension dimension, DimensionField dimensionField) {
         Map<DimensionField, String> columnNamesForDimensionFields;
         columnNamesForDimensionFields = DIMENSION_FIELD_COLUMN_NAMES.computeIfAbsent(
                 dimension,
