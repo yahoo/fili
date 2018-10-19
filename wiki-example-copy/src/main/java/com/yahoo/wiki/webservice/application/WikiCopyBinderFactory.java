@@ -24,18 +24,12 @@ public class WikiCopyBinderFactory extends AbstractBinderFactory {
 
     @Override
     protected MetricLoader getMetricLoader() {
-        return new ExternalMetricsLoader(
-                externalConfigLoader,
-                EXTERNAL_CONFIG_FILE_PATH
-        );
+        return new ExternalMetricsLoader(externalConfigLoader, EXTERNAL_CONFIG_FILE_PATH);
     }
 
     @Override
     protected LinkedHashSet<DimensionConfig> getDimensionConfigurations() {
-        this.externalDimensionsLoader = new ExternalDimensionsLoader(
-                externalConfigLoader,
-                EXTERNAL_CONFIG_FILE_PATH
-        );
+        this.externalDimensionsLoader = new ExternalDimensionsLoader(externalConfigLoader, EXTERNAL_CONFIG_FILE_PATH);
         return new LinkedHashSet<>(externalDimensionsLoader.getAllDimensionConfigurations());
     }
 

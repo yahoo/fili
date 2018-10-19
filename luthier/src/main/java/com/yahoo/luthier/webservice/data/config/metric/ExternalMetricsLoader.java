@@ -48,8 +48,10 @@ public class ExternalMetricsLoader implements MetricLoader {
         ObjectMapper objectMapper = new ObjectMapper().registerModule(jodaModule);
 
         ExternalMetricConfigTemplate metricConfig =
-                metricConfigLoader.parseExternalFile(externalConfigFilePath + "MetricConfig.json",
-                        ExternalMetricConfigTemplate.class, objectMapper
+                metricConfigLoader.parseExternalFile(
+                        externalConfigFilePath + "MetricConfig.json",
+                        ExternalMetricConfigTemplate.class,
+                        objectMapper
                 );
 
         buildMetricMakersDictionary(metricConfig.getMakers(), metricDictionary, dimensionDictionary);
@@ -86,18 +88,21 @@ public class ExternalMetricsLoader implements MetricLoader {
      */
     private JodaModule bindTemplates() {
         JodaModule jodaModule = new JodaModule();
-        jodaModule.addAbstractTypeMapping(ExternalMetricConfigTemplate.class,
-                DefaultExternalMetricConfigTemplate.class);
-        jodaModule.addAbstractTypeMapping(MetricMakerTemplate.class,
-                DefaultMetricMakerTemplate.class);
-        jodaModule.addAbstractTypeMapping(MetricTemplate.class,
-                DefaultMetricTemplate.class);
+        jodaModule.addAbstractTypeMapping(
+                ExternalMetricConfigTemplate.class,
+                DefaultExternalMetricConfigTemplate.class
+        );
+        jodaModule.addAbstractTypeMapping(MetricMakerTemplate.class, DefaultMetricMakerTemplate.class);
+        jodaModule.addAbstractTypeMapping(MetricTemplate.class, DefaultMetricTemplate.class);
         return jodaModule;
     }
 
     /**
-     * Sort metrics by topological order,
-     * make sure a metric's dependency metrics order before this metric.
+     * Sort metrics by topological order.
+     *
+     * Metrics are topologically sorted iff a metric's dependencent metrics appear before it. So, suppose 
+     * metric A depends on metrics B, C, and metric B depends on metric C. Then, the list [A, B, C] is NOT 
+     * topologically sorted, but [C, B, A] is.
      *
      * @param metrics a list of unsorted metrics
      * @return a list of sorted metrics
