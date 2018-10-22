@@ -2,7 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.filters;
 
-import com.yahoo.bard.webservice.application.AbstractBinderFactory;
 import com.yahoo.bard.webservice.application.HealthCheckRegistryFactory;
 import com.yahoo.bard.webservice.logging.RequestLog;
 
@@ -42,21 +41,27 @@ public class HealthCheckFilter implements ContainerRequestFilter {
             // See if we have any unhealthy checks
             Map<String, Result> unhealthyChecks = getUnhealthy();
             if (!unhealthyChecks.keySet().isEmpty()) {
-                if (unhealthyChecks.keySet().contains(AbstractBinderFactory.HEALTH_CHECK_NAME_LOOKUP_METADATA)) {
-                    StringBuilder debugMsgBuilder = new StringBuilder();
-                    if (requestContext.getSecurityContext().getUserPrincipal() != null) {
-                        String user = requestContext.getSecurityContext().getUserPrincipal().getName();
-                        debugMsgBuilder.append("User=").append(user).append("\t");
-                    }
-                    debugMsgBuilder.append(renderUri(requestContext.getUriInfo().getRequestUri())).append("\t");
+                StringBuilder debugMsgBuilder = new StringBuilder();
+                if (requestContext.getSecurityContext().getUserPrincipal() != null) {
+                    String user = requestContext.getSecurityContext().getUserPrincipal().getName();
+                    debugMsgBuilder.append("User=").append(user).append("\n");
                 }
+                debugMsgBuilder.append(renderUri(requestContext.getUriInfo().getRequestUri())).append("\n");
+
+                debugMsgBuilder.append("Timestamp: ");
+                debugMsgBuilder.append(java.time.Clock.systemUTC().instant().toString());
+                debugMsgBuilder.append("\n");
 
                 unhealthyChecks.entrySet()
-                        .forEach(entry -> LOG.error("Healthcheck '{}' failed: {}", entry.getKey(), entry.getValue()));
+                        .forEach(entry -> {
+                            LOG.error("Healthcheck '{}' failed: {}", entry.getKey(), entry.getValue());
+                            LOG.error(debugMsgBuilder.toString());
+                        });
                 RequestLog.stopTiming(this);
+                debugMsgBuilder.insert(0, "Service is unhealthy. At least 1 healthcheck is failing\n");
                 requestContext.abortWith(
                         Response.status(Status.SERVICE_UNAVAILABLE)
-                                .entity("Service is unhealthy. At least 1 healthcheck is failing")
+                                .entity(debugMsgBuilder)
                                 .build()
                 );
                 return;
@@ -76,6 +81,13 @@ public class HealthCheckFilter implements ContainerRequestFilter {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
+    /**
+     * Render the URI as a string.
+     *
+     * @param uri The URI to render
+     *
+     * @return A String representation of the URI
+     */
     protected String renderUri(URI uri) {
         return uri.toASCIIString();
     }
