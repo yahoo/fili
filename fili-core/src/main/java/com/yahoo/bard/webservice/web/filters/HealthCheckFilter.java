@@ -62,7 +62,7 @@ public class HealthCheckFilter implements ContainerRequestFilter {
                 debugMsgBuilder.insert(0, "Service is unhealthy. At least 1 healthcheck is failing\n");
                 requestContext.abortWith(
                         Response.status(Status.SERVICE_UNAVAILABLE)
-                                .entity(debugMsgBuilder)
+                                .entity(debugMsgBuilder.toString())
                                 .build()
                 );
                 return;
