@@ -55,8 +55,9 @@ public class HealthCheckFilter implements ContainerRequestFilter {
                 unhealthyChecks.entrySet()
                         .forEach(entry -> {
                             LOG.error("Healthcheck '{}' failed: {}", entry.getKey(), entry.getValue());
-                            LOG.error(debugMsgBuilder.toString());
                         });
+                LOG.error(debugMsgBuilder.toString());
+
                 RequestLog.stopTiming(this);
                 debugMsgBuilder.insert(0, "Service is unhealthy. At least 1 healthcheck is failing\n");
                 requestContext.abortWith(
