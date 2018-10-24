@@ -40,24 +40,9 @@ public class HealthCheckFilter implements ContainerRequestFilter {
         if (path.startsWith("/v1/data") || path.startsWith("/data")) {
             // See if we have any unhealthy checks
             Map<String, Result> unhealthyChecks = getUnhealthy();
+            StringBuilder debugMsgBuilder = builderErrorResponseBody(requestContext);
             if (!unhealthyChecks.keySet().isEmpty()) {
-                StringBuilder debugMsgBuilder = new StringBuilder();
-                if (requestContext.getSecurityContext().getUserPrincipal() != null) {
-                    String user = requestContext.getSecurityContext().getUserPrincipal().getName();
-                    debugMsgBuilder.append("User=").append(user).append("\n");
-                }
-                debugMsgBuilder.append("Timestamp: ")
-                        .append(java.time.Clock.systemUTC().instant().toString())
-                        .append(System.lineSeparator());
-
-                debugMsgBuilder.append("Request ID: ")
-                    .append(RequestLog.getId())
-                    .append(System.lineSeparator());
-
-                unhealthyChecks.entrySet()
-                        .forEach(entry -> {
-                            LOG.error("Healthcheck '{}' failed: {}", entry.getKey(), entry.getValue());
-                        });
+                unhealthyChecks.forEach((key, value) -> LOG.error("Healthcheck '{}' failed: {}", key, value));
 
                 RequestLog.stopTiming(this);
                 debugMsgBuilder.insert(0, "Service is unhealthy. At least 1 healthcheck is failing\n");
@@ -84,13 +69,27 @@ public class HealthCheckFilter implements ContainerRequestFilter {
     }
 
     /**
-     * Render the URI as a string.
+     * Gathers some interesting data from the request and builds a string out of it.
      *
-     * @param uri The URI to render
-     *
-     * @return A String representation of the URI
+     * @param requestContext The request context. Contains info we want to log
+     * @return the StringBuilder containing our logging info
      */
-    protected String renderUri(URI uri) {
-        return uri.toASCIIString();
+    protected StringBuilder builderErrorResponseBody(ContainerRequestContext requestContext) {
+        StringBuilder debugMsgBuilder = new StringBuilder();
+        if (requestContext.getSecurityContext().getUserPrincipal() != null) {
+            String user = requestContext.getSecurityContext().getUserPrincipal().getName();
+            debugMsgBuilder.append("User=")
+                    .append(user)
+                    .append(System.lineSeparator());
+        }
+        debugMsgBuilder.append("Timestamp: ")
+                .append(java.time.Clock.systemUTC().instant().toString())
+                .append(System.lineSeparator());
+
+        debugMsgBuilder.append("Request ID: ")
+                .append(RequestLog.getId())
+                .append(System.lineSeparator());
+
+        return debugMsgBuilder;
     }
 }

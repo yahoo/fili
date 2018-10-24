@@ -12,11 +12,20 @@ import com.yahoo.bard.webservice.web.endpoints.DimensionCacheLoaderServlet
 import com.codahale.metrics.health.HealthCheck
 import com.codahale.metrics.health.HealthCheckRegistry
 
+import org.joda.time.format.ISODateTimeFormat
+
 import spock.lang.Specification
 import spock.lang.Timeout
+import sun.security.util.SecurityConstants
+
+import java.security.Principal
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 import javax.ws.rs.ServiceUnavailableException
+import javax.ws.rs.container.ContainerRequestContext
 import javax.ws.rs.core.Response.Status
+import javax.ws.rs.core.SecurityContext
 
 @Timeout(30)    // Fail test if hangs
 class HealthCheckFilterSpec extends Specification {
@@ -107,6 +116,44 @@ class HealthCheckFilterSpec extends Specification {
         jtb.getHarness().target("cache/cacheStatus")
                 .request()
                 .get(String.class)
+    }
+
+    def "error response contains all desired information"() {
+        setup:
+        HealthCheckFilter filter = new HealthCheckFilter()
+        ContainerRequestContext requestContext = Mock(ContainerRequestContext)
+        SecurityContext securityContext = Mock(SecurityContext)
+        requestContext.getSecurityContext() >> securityContext
+
+        when:
+        StringBuilder builder = filter.builderErrorResponseBody(requestContext)
+        String[] result = builder.toString().split("\n")
+
+        then:
+        result.length == 2
+        result[0].startsWith("Timestamp: ")
+        result[1].startsWith("Request ID: ")
+        result[1].split("Request ID: ")[1].length() > 0
+
+        when:
+        // check valid datetime, this seems like best way to parse the string
+        ISODateTimeFormat.dateTime().parseDateTime(result[0].split("Timestamp: ")[1])
+
+        then:
+        noExceptionThrown()
+
+        when:
+        Principal userPrincipal = Mock(Principal)
+        userPrincipal.getName() >> "testName"
+        securityContext.getUserPrincipal() >> userPrincipal
+        builder = filter.builderErrorResponseBody(requestContext)
+        result = builder.toString().split("\n")
+
+        then:
+        result.length == 3
+        result[0] == "User=testName"
+
+
     }
 
     private static void cleanHealthCheckRegistry(HealthCheckRegistry registry) {
