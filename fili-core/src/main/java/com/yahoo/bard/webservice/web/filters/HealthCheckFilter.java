@@ -46,17 +46,18 @@ public class HealthCheckFilter implements ContainerRequestFilter {
                     String user = requestContext.getSecurityContext().getUserPrincipal().getName();
                     debugMsgBuilder.append("User=").append(user).append("\n");
                 }
-                debugMsgBuilder.append(renderUri(requestContext.getUriInfo().getRequestUri())).append("\n");
+                debugMsgBuilder.append("Timestamp: ")
+                        .append(java.time.Clock.systemUTC().instant().toString())
+                        .append(System.lineSeparator());
 
-                debugMsgBuilder.append("Timestamp: ");
-                debugMsgBuilder.append(java.time.Clock.systemUTC().instant().toString());
-                debugMsgBuilder.append("\n");
+                debugMsgBuilder.append("Request ID: ")
+                    .append(RequestLog.getId())
+                    .append(System.lineSeparator());
 
                 unhealthyChecks.entrySet()
                         .forEach(entry -> {
                             LOG.error("Healthcheck '{}' failed: {}", entry.getKey(), entry.getValue());
                         });
-                LOG.error(debugMsgBuilder.toString());
 
                 RequestLog.stopTiming(this);
                 debugMsgBuilder.insert(0, "Service is unhealthy. At least 1 healthcheck is failing\n");
