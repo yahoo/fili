@@ -314,16 +314,18 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         validateApiHavings(havingsRequest, havings);
 
         //Using the LinkedHashMap to preserve the sort order
-        LinkedHashMap<String, SortDirection> sortColumnDirection = bindSortColumns(sortsRequest);
+        LinkedHashMap<String, SortDirection> sortColumnDirection = bindToColumnDirectionMap(sortsRequest);
 
         //Requested sort on dateTime column
         this.dateTimeSort = bindDateTimeSortColumn(sortColumnDirection).orElse(null);
 
         // Requested sort on metrics - optional, can be empty Set
-        this.sorts = bindSortColumns(
+        this.sorts = bindToColumnDirectionMap(
                 removeDateTimeSortColumn(sortColumnDirection),
                 logicalMetrics, metricDictionary
         );
+        validateSortColumns(sorts, dateTimeSort, sortsRequest, logicalMetrics, metricDictionary);
+
 
         // Overall requested number of rows in the response. Ignores grouping in time buckets.
         this.count = bindCount(countRequest);
@@ -612,7 +614,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             LogicalTable logicalTable,
             DimensionDictionary dimensionDictionary
     ) throws BadApiRequestException {
-        ;
+        // Extend to implement validation
     }
 
     /**
@@ -737,6 +739,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             LogicalTable logicalTable,
             DimensionDictionary dimensionDictionary
     ) throws BadApiRequestException {
+        // Extend to implement validation
     }
 
     /**
@@ -778,7 +781,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      *
      * @return LinkedHashMap of columns and their direction. Using LinkedHashMap to preserve the order
      */
-    protected LinkedHashMap<String, SortDirection> bindSortColumns(String sorts) {
+    protected LinkedHashMap<String, SortDirection> bindToColumnDirectionMap(String sorts) {
         LinkedHashMap<String, SortDirection> sortDirectionMap = new LinkedHashMap<>();
 
         if (sorts != null && !sorts.isEmpty()) {
@@ -786,8 +789,9 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                     .map(e -> Arrays.asList(e.split("\\|")))
                     .forEach(e -> sortDirectionMap.put(e.get(0), getSortDirection(e)));
             return sortDirectionMap;
+        } else {
+            return null;
         }
-        return null;
     }
 
     /**
@@ -800,7 +804,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @return a Set of OrderByColumn
      * @throws BadApiRequestException if the sort clause is invalid.
      */
-    protected LinkedHashSet<OrderByColumn> bindSortColumns(
+    protected LinkedHashSet<OrderByColumn> bindToColumnDirectionMap(
             Map<String, SortDirection> sortDirectionMap,
             Set<LogicalMetric> logicalMetrics,
             MetricDictionary metricDictionary
@@ -873,6 +877,26 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             return Optional.empty();
         }
     }
+
+    /**
+     * Validation for sort columns.
+     *
+     * @param sorts  The set of sort columns
+     * @param dateTimeSort  The sort on the date time column
+     * @param sortsRequest  The original text parsed into sorts
+     * @param logicalMetrics  The supply of metrics for sort columns
+     * @param metricDictionary  The dictionary of metrics being sorted
+     */
+    protected void validateSortColumns(
+            LinkedHashSet<OrderByColumn> sorts,
+            OrderByColumn dateTimeSort,
+            String sortsRequest,
+            LinkedHashSet<LogicalMetric> logicalMetrics,
+            MetricDictionary metricDictionary
+    ) {
+        // Extend this to validate
+    }
+
 
     /**
      * Bind the user request row limit, if any.

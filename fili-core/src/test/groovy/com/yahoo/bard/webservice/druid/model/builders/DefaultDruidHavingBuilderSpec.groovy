@@ -1,10 +1,10 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2017 Oath Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.data
+package com.yahoo.bard.webservice.druid.model.builders
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
+import com.yahoo.bard.webservice.data.QueryBuildingTestingResources
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
-import com.yahoo.bard.webservice.druid.model.builders.DefaultDruidHavingBuilder
 import com.yahoo.bard.webservice.druid.model.having.Having
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.web.ApiHaving
@@ -15,19 +15,24 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
-public class DruidHavingBuilderSpec extends Specification {
+public class DefaultDruidHavingBuilderSpec extends Specification {
 
     @Shared QueryBuildingTestingResources resources
 
     private static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
+    DefaultDruidHavingBuilder druidHavingBuilder
 
     def setupSpec() {
         resources = new QueryBuildingTestingResources()
     }
 
+    def setup() {
+        druidHavingBuilder = DefaultDruidHavingBuilder.INSTANCE
+    }
+
     def "No havings returns null"() {
         expect:
-        DefaultDruidHavingBuilder.INSTANCE.buildHavings([:]) == null
+        druidHavingBuilder.buildHavings([:]) == null
     }
 
     @Unroll
@@ -35,7 +40,7 @@ public class DruidHavingBuilderSpec extends Specification {
 
         setup:
         ApiHaving apiHaving = new ApiHaving(havingString, resources.metricDictionary)
-        Having having = DefaultDruidHavingBuilder.INSTANCE.buildHaving(metric, apiHaving)
+        Having having = druidHavingBuilder.buildHaving(metric, apiHaving)
 
         expect:
         GroovyTestUtils.compareJson(MAPPER.writer().writeValueAsString(having), expectedJson)
@@ -126,7 +131,7 @@ public class DruidHavingBuilderSpec extends Specification {
             }
         }
 
-        Having having = DefaultDruidHavingBuilder.INSTANCE.buildHavings(metricMap)
+        Having having = druidHavingBuilder.buildHavings(metricMap)
 
         String expectedJson = """{
                                    "type": "and",

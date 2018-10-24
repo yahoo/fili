@@ -44,7 +44,7 @@ class DataApiRequestSortSpec extends Specification {
     @Unroll
     def "Validate the sort column and direction map from #sortString string"() {
         expect:
-        new TestingDataApiRequestImpl().bindSortColumns(sortString) == expected
+        new TestingDataApiRequestImpl().bindToColumnDirectionMap(sortString) == expected
 
         where:
         sortString                        | expected

@@ -47,7 +47,8 @@ public class FilterBinders {
     private static final Logger LOG = LoggerFactory.getLogger(FilterBinders.class);
 
     protected static final String COMMA_AFTER_BRACKET_PATTERN = "(?<=]),";
-    protected static Pattern API_FILTER_PATTERN = Pattern.compile("([^\\|]+)\\|([^-]+)-([^\\[]+)\\[([^\\]]+)\\]?");
+    protected static final Pattern API_FILTER_PATTERN =
+            Pattern.compile("([^\\|]+)\\|([^-]+)-([^\\[]+)\\[([^\\]]+)\\]?");
 
     public static final FilterBinders INSTANCE = new FilterBinders();
 
