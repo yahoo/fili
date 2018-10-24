@@ -152,8 +152,6 @@ class HealthCheckFilterSpec extends Specification {
         then:
         result.length == 3
         result[0] == "User=testName"
-
-
     }
 
     private static void cleanHealthCheckRegistry(HealthCheckRegistry registry) {
