@@ -6,7 +6,7 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TOP_N_UNSORTED;
 
 import com.yahoo.bard.webservice.config.BardFeatureFlag;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
-import com.yahoo.bard.webservice.data.dimension.DimensionRowNotFoundException;
+import com.yahoo.bard.webservice.data.dimension.FilterBuilderException;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
@@ -86,13 +86,13 @@ public class DruidQueryBuilder {
      * @param template  TemplateDruidQuery to build out the query with
      *
      * @return a DruidAggregationQuery
-     * @throws DimensionRowNotFoundException if the filters filter out all dimension rows
+     * @throws FilterBuilderException if filters cannot be built or resolve to no rows
      * @throws NoMatchFoundException if no PhysicalTable satisfies this request
      */
     public DruidAggregationQuery<?> buildQuery(
             DataApiRequest request,
             TemplateDruidQuery template
-    ) throws DimensionRowNotFoundException, NoMatchFoundException {
+    ) throws FilterBuilderException, NoMatchFoundException {
 
         LOG.trace("Building druid query with DataApiRequest: {} and TemplateDruidQuery: {}", request, template);
 

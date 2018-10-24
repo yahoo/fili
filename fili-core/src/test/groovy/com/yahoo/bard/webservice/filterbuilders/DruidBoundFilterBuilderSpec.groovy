@@ -7,7 +7,7 @@ import static com.yahoo.bard.webservice.druid.model.filter.Filter.DefaultFilterT
 
 import com.yahoo.bard.webservice.data.QueryBuildingTestingResources
 import com.yahoo.bard.webservice.data.filterbuilders.DruidBoundFilterBuilder
-import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder
 import com.yahoo.bard.webservice.druid.model.filter.BoundFilter
 import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.web.ApiFilter
