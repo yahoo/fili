@@ -27,6 +27,9 @@ Current
 
 ### Fixed:
 
+- [Filter Code now intersects security constraints instead of unioning with requests](https://github.com/yahoo/fili/issues/812)
+    * Switched to ensure security and request filters don't merge but instead intersect
+
 ### Known Issues:
 
 ### Added:

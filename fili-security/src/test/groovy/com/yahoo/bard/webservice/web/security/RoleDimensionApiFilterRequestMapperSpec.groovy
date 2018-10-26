@@ -8,10 +8,13 @@ import com.yahoo.bard.webservice.data.config.ResourceDictionaries
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.web.ApiFilter
+import com.yahoo.bard.webservice.web.DefaultFilterOperation
 import com.yahoo.bard.webservice.web.FilterOperation
 import com.yahoo.bard.webservice.web.RequestMapper
 import com.yahoo.bard.webservice.web.RequestValidationException
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
+
+import com.google.common.collect.Sets
 
 import spock.lang.Shared
 import spock.lang.Specification
@@ -28,64 +31,76 @@ class RoleDimensionApiFilterRequestMapperSpec extends Specification {
     @Shared Dimension filterDimension = Mock(Dimension)
     @Shared Dimension nonFilterDimension = Mock(Dimension)
     @Shared DimensionField dimensionField = Mock(DimensionField)
-    @Shared FilterOperation operation = notin
+    @Shared FilterOperation in_op = DefaultFilterOperation.in
+    @Shared FilterOperation notin_op = notin
 
     @Shared ApiFilter mergedAFilter = new ApiFilter(
             filterDimension,
             dimensionField,
-            operation,
-            (["1", "2", "a"] as Set)
+            in_op,
+            (["1", "2"] as Set)
     )
     @Shared ApiFilter mergedABFilter = new ApiFilter(
             filterDimension,
             dimensionField,
-            operation,
-            (["1", "2", "3", "a"] as Set)
+            in_op,
+            (["1", "2", "3"] as Set)
     )
 
-    ApiFilter security1 = Mock(ApiFilter)
-    ApiFilter security2 = Mock(ApiFilter)
-    ApiFilter security3 = Mock(ApiFilter)
+    ApiFilter security1
+    ApiFilter security2
+    ApiFilter security3
 
-    ApiFilter requestFilterInDimension = Mock(ApiFilter)
-    ApiFilter requestFilterNotInDimension = Mock(ApiFilter)
+    ApiFilter requestFilterInDimension
+    ApiFilter requestFilterNotInDimension
 
 
-    Map<Dimension, Set<ApiFilter>> requestFilters = [(filterDimension)   : ([requestFilterInDimension] as Set),
-                                                     (nonFilterDimension): ([requestFilterNotInDimension] as Set)]
+    Map<Dimension, Set<ApiFilter>> requestFilters
 
-    Set<ApiFilter> securitySetRoleA = [security1, security2] as Set
-    Set<ApiFilter> securitySetRoleB = [security3] as Set
+    Set<ApiFilter> securitySetRoleA
+    Set<ApiFilter> securitySetRoleB
 
-    Map<String, Set<ApiFilter>> roles = [A: securitySetRoleA, B: securitySetRoleB]
+    Map<String, Set<ApiFilter>> roles
     RequestMapper<DataApiRequest> next = Mock(RequestMapper)
 
     ResourceDictionaries dictionaries = Mock(ResourceDictionaries)
 
 
-    RoleDimensionApiFilterRequestMapper mapper = new RoleDimensionApiFilterRequestMapper(
-            dictionaries,
-            filterDimension,
-            roles,
-            next
-    )
+    RoleDimensionApiFilterRequestMapper mapper
 
     UserPrincipal userPrincipal = Mock(UserPrincipal)
     SecurityContext securityContext = Mock(SecurityContext)
     ContainerRequestContext context = Mock(ContainerRequestContext)
 
+    def setupSpec() {
+        filterDimension.getApiName() >> "filterDimension"
+        nonFilterDimension.getApiName() >> "nonFilterDimension"
+        dimensionField.toString() >> "fieldId"
+    }
     def setup() {
-        context.getSecurityContext() >> securityContext
-        [security1, security2, security3, requestFilterInDimension].each {
-            it.getDimension() >> filterDimension
-            it.getDimensionField() >> dimensionField
-            it.operation >> operation
-        }
 
-        security1.getValues() >> (["1"] as Set)
-        security2.getValues() >> (["2"] as Set)
-        security3.getValues() >> (["3"] as Set)
-        requestFilterInDimension.getValues() >> (["a"] as Set)
+        requestFilterNotInDimension = new ApiFilter(nonFilterDimension, dimensionField, notin_op, (["z"] as Set))
+
+        security1 = new ApiFilter(filterDimension, dimensionField, in_op, (["1"] as Set))
+        security2 = new ApiFilter(filterDimension, dimensionField, in_op, (["2"] as Set))
+        security3 = new ApiFilter(filterDimension, dimensionField, in_op, (["3"] as Set))
+        requestFilterInDimension = new ApiFilter(filterDimension, dimensionField, in_op, (["a", "1"] as Set))
+
+        context.getSecurityContext() >> securityContext
+        securitySetRoleA = [security1, security2] as Set
+        securitySetRoleB = [security3] as Set
+
+        roles = [A: securitySetRoleA, B: securitySetRoleB]
+
+        mapper = new RoleDimensionApiFilterRequestMapper(
+                dictionaries,
+                filterDimension,
+                roles,
+                next
+        )
+        requestFilters = [(filterDimension)   : ([requestFilterInDimension] as Set),
+                          (nonFilterDimension): ([requestFilterNotInDimension] as Set)]
+
     }
 
     @Unroll
@@ -100,29 +115,23 @@ class RoleDimensionApiFilterRequestMapperSpec extends Specification {
 
         where:
         roleNames                | built
-        (["A"] as Set)           | new ApiFilter(filterDimension, dimensionField, operation, (["1", "2"] as Set))
-        (["B"] as Set)           | new ApiFilter(filterDimension, dimensionField, operation, (["3"] as Set))
-        (["A", "B"] as Set)      | new ApiFilter(
-                filterDimension,
-                dimensionField,
-                operation,
-                (["1", "2", "3"] as Set)
-        )
-        (["A", "B", "C"] as Set) | new ApiFilter(
-                filterDimension,
-                dimensionField,
-                operation,
-                (["1", "2", "3"] as Set)
-        )
+        (["A"] as Set)           | new ApiFilter(filterDimension, dimensionField, in_op, (["1", "2"] as Set))
+        (["B"] as Set)           | new ApiFilter(filterDimension, dimensionField, in_op, (["3"] as Set))
+        (["A", "B"] as Set)      | new ApiFilter(filterDimension, dimensionField, in_op, (["1", "2", "3"] as Set))
+        (["A", "B", "C"] as Set) | new ApiFilter(filterDimension, dimensionField, in_op, (["1", "2", "3"] as Set))
     }
 
-    def "Test mergeSecurityFilters merges on matching dimension and not other dimensions"() {
+    def "Test mergeSecurityFilters intersects on matching dimension and not other dimensions"() {
         setup:
-        Map<Dimension, Set<ApiFilter>> expected = [(filterDimension)   : ([mergedAFilter] as Set),
-                                                          (nonFilterDimension): ([requestFilterNotInDimension] as Set)]
+
+        Set<ApiFilter> securityFilter = mapper.unionMergeFilterValues(securitySetRoleA.stream())
+
+        Set<ApiFilter> expectedDimensions = Sets.union(Collections.singleton(requestFilterInDimension), securityFilter)
+        Map<Dimension, Set<ApiFilter>> expected = [(filterDimension)   : expectedDimensions,
+                                                   (nonFilterDimension): ([requestFilterNotInDimension] as Set)]
 
         expect:
-        mapper.mergeSecurityFilters(requestFilters, securitySetRoleA) == expected
+        mapper.mergeSecurityFilters(requestFilters, securityFilter) == expected
     }
 
     def "validateSecurityFilters throws exception on empty security filters"() {
