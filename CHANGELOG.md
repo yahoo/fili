@@ -34,6 +34,9 @@ Current
 
 ### Added:
 
+- [Additional healthcheck logging on healthchck failure on data request](https://github.com/yahoo/fili/pull/809)
+    * Added user, request url, and timestamp to healthcheck error message on data request.
+        
 - [Fili can now route to one of several Druid webservices based on custom routing logic](https://github.com/yahoo/fili/pull/759)
     * This allows customers to put Fili in front of multiple Druid clusters, and
         then use custom logic to decide which cluster to query for each request.
