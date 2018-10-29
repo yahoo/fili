@@ -23,7 +23,7 @@ public interface Availability {
     // 9999-12-31 23:59
     DateTime FAR_FUTURE = new DateTime(9999, 12,31,23,59);
     // 0000-01-01 00:00
-    DateTime DISTANT_PAST = new DateTime(0, 1, 1, 0, 0);
+    DateTime DISTANT_PAST = new DateTime(-9999, 1, 1, 0, 0);
 
     /**
      * The names of the data sources backing this availability.
