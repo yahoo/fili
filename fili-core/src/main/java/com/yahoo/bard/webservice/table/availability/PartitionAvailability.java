@@ -3,13 +3,21 @@
 package com.yahoo.bard.webservice.table.availability;
 
 import com.yahoo.bard.webservice.data.config.names.DataSourceName;
+import com.yahoo.bard.webservice.data.config.names.FieldName;
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.resolver.DataSourceFilter;
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
+import org.joda.time.DateTime;
+import org.joda.time.Interval;
+
+import sun.security.x509.AVA;
+
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -88,9 +96,32 @@ public class PartitionAvailability extends BaseCompositeAvailability implements 
      * @return The intervals which are available for the given constraint
      */
     private SimplifiedIntervalList mergeAvailabilities(PhysicalDataSourceConstraint constraint) {
-        return filteredAvailabilities(constraint)
-                .map(availability -> availability.getAvailableIntervals(constraint))
-                .reduce(SimplifiedIntervalList::intersect).orElse(new SimplifiedIntervalList());
+        SimplifiedIntervalList unionOfAvailableIntervals = new SimplifiedIntervalList();
+        SimplifiedIntervalList unionOfMissingIntervals = new SimplifiedIntervalList();
+        for (Availability availability : filteredAvailabilities(constraint).collect(Collectors.toSet())) {
+            unionOfAvailableIntervals = unionOfAvailableIntervals.union(availability.getAvailableIntervals(constraint));
+            unionOfMissingIntervals = unionOfMissingIntervals.union(
+                    getBoundedMissingIntervalsWithConstraint(availability, constraint)
+            );
+        }
+
+        return unionOfAvailableIntervals.subtract(unionOfMissingIntervals);
+
+//        return filteredAvailabilities(constraint)
+//                .map(availability -> availability.getAvailableIntervals(constraint))
+//                .reduce(SimplifiedIntervalList::intersect).orElse(new SimplifiedIntervalList());
+
+    }
+
+    private SimplifiedIntervalList getBoundedMissingIntervalsWithConstraint(
+            Availability availability,
+            PhysicalDataSourceConstraint constraint
+    ) {
+        SimplifiedIntervalList availableIntervals = availability.getAvailableIntervals(constraint);
+        DateTime expectedStart = availability.getExpectedStartDate(constraint).orElse(Availability.DISTANT_PAST);
+        DateTime expectedEnd = availability.getExpectedEndDate(constraint).orElse(Availability.FAR_FUTURE);
+        return new SimplifiedIntervalList(Collections.singleton(new Interval(expectedStart, expectedEnd)))
+                .subtract(availableIntervals);
     }
 
     @Override
@@ -103,6 +134,22 @@ public class PartitionAvailability extends BaseCompositeAvailability implements 
         return filteredAvailabilities(constraint)
                 .map(availability -> availability.getDataSourceNames(constraint))
                 .flatMap(Set::stream).collect(Collectors.toSet());
+    }
+
+    @Override
+    public Optional<DateTime> getExpectedStartDate(PhysicalDataSourceConstraint constraint) {
+        return getEarliestStart(
+                constraint,
+                filteredAvailabilities(constraint).collect(Collectors.toSet())
+        );
+    }
+
+    @Override
+    public Optional<DateTime> getExpectedEndDate(PhysicalDataSourceConstraint constraint) {
+        return getLatestEnd(
+                constraint,
+                filteredAvailabilities(constraint).collect(Collectors.toSet())
+        );
     }
 
     /**

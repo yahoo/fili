@@ -3,10 +3,16 @@
 package com.yahoo.bard.webservice.table.availability;
 
 import com.yahoo.bard.webservice.data.config.names.DataSourceName;
+import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
+import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.util.StreamUtils;
 
+import org.joda.time.DateTime;
+
+import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -65,5 +71,69 @@ public abstract class BaseCompositeAvailability implements Availability {
                                 (value1, value2) -> SimplifiedIntervalList.simplifyIntervals(value1, value2)
                         )
                 );
+    }
+
+    @Override
+    public Optional<DateTime> getExpectedStartDate(PhysicalDataSourceConstraint constraint) {
+        return getEarliestStart(constraint, sourceAvailabilities);
+    }
+
+    @Override
+    public Optional<DateTime> getExpectedEndDate(PhysicalDataSourceConstraint constraint) {
+        return getLatestEnd(constraint, sourceAvailabilities);
+    }
+
+    @Override
+    public Optional<DateTime> getExpectedStartDate(DataSourceConstraint constraint) {
+        return getEarliestStart(constraint, sourceAvailabilities);
+    }
+
+    @Override
+    public Optional<DateTime> getExpectedEndDate(DataSourceConstraint constraint) {
+        return getLatestEnd(constraint, sourceAvailabilities);
+    }
+
+    protected Optional<DateTime> getEarliestStart(
+            PhysicalDataSourceConstraint constraint,
+            Collection<Availability> availabilities
+    ) {
+        DateTime maxDate = availabilities.stream()
+                .map(availability -> availability.getExpectedStartDate(constraint).orElse(Availability.FAR_FUTURE))
+                .reduce((datetime1, datetime2) -> datetime1.isBefore(datetime2) ? datetime1 : datetime2)
+                .orElse(Availability.FAR_FUTURE);
+        return maxDate.equals(FAR_FUTURE) ? Optional.empty() : Optional.of(maxDate);
+    }
+
+    protected Optional<DateTime> getEarliestStart(
+            DataSourceConstraint constraint,
+            Collection<Availability> availabilities
+    ) {
+        DateTime maxDate = availabilities.stream()
+                .map(availability -> availability.getExpectedStartDate(constraint).orElse(Availability.FAR_FUTURE))
+                .reduce((datetime1, datetime2) -> datetime1.isBefore(datetime2) ? datetime1 : datetime2)
+                .orElse(Availability.FAR_FUTURE);
+        return maxDate.equals(FAR_FUTURE) ? Optional.empty() : Optional.of(maxDate);
+    }
+
+    protected Optional<DateTime> getLatestEnd(
+            PhysicalDataSourceConstraint constraint,
+            Collection<Availability> availabilities
+    ) {
+        DateTime minDate = availabilities.stream()
+                .map(availability -> availability.getExpectedStartDate(constraint).orElse(Availability.DISTANT_PAST))
+                .reduce((datetime1, datetime2) -> datetime1.isAfter(datetime2) ? datetime1 : datetime2)
+                .orElse(Availability.DISTANT_PAST);
+        return minDate.equals(DISTANT_PAST) ? Optional.empty() : Optional.of(minDate);
+    }
+
+    protected Optional<DateTime> getLatestEnd(
+            DataSourceConstraint constraint,
+            Collection<Availability> availabilities
+    ) {
+        DateTime minDate = availabilities.stream()
+                .map(availability -> availability.getExpectedStartDate(constraint).orElse(Availability.DISTANT_PAST))
+                .reduce((datetime1, datetime2) -> datetime1.isAfter(datetime2) ? datetime1 : datetime2)
+                .orElse(Availability.DISTANT_PAST);
+        return minDate.equals(DISTANT_PAST) ? Optional.empty() : Optional.of(minDate);
     }
 }

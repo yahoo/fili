@@ -48,6 +48,11 @@ class PartitionAvailabilitySpec extends Specification{
         availability1.getDataSourceNames() >> ([TableName.of(SOURCE1)] as Set)
         availability2.getDataSourceNames() >> ([TableName.of(SOURCE2)] as Set)
 
+        availability1.getExpectedStartDate(_ as PhysicalDataSourceConstraint) >> Optional.empty()
+        availability2.getExpectedStartDate(_ as PhysicalDataSourceConstraint) >> Optional.empty()
+
+        availability1.getExpectedEndDate(_ as PhysicalDataSourceConstraint) >> Optional.empty()
+        availability2.getExpectedEndDate(_ as PhysicalDataSourceConstraint) >> Optional.empty()
     }
 
     @Unroll
@@ -171,14 +176,20 @@ class PartitionAvailabilitySpec extends Specification{
         Availability early = Mock(Availability)
         early.getAvailableIntervals(_ as PhysicalDataSourceConstraint) >> earlyInterval
         early.getDataSourceNames() >> ([TableName.of('early')] as Set)
+        early.getExpectedStartDate(_ as PhysicalDataSourceConstraint) >> Optional.empty()
+        early.getExpectedEndDate(_ as PhysicalDataSourceConstraint) >> Optional.empty()
 
         Availability mid = Mock(Availability)
         mid.getAvailableIntervals(_ as PhysicalDataSourceConstraint) >> midInterval
         mid.getDataSourceNames() >> ([TableName.of('mid')] as Set)
+        mid.getExpectedStartDate(_ as PhysicalDataSourceConstraint) >> Optional.empty()
+        mid.getExpectedEndDate(_ as PhysicalDataSourceConstraint) >> Optional.empty()
 
         Availability late = Mock(Availability)
         late.getAvailableIntervals(_ as PhysicalDataSourceConstraint) >> lateInterval
         late.getDataSourceNames() >> ([TableName.of('late')] as Set)
+        late.getExpectedStartDate(_ as PhysicalDataSourceConstraint) >> Optional.empty()
+        late.getExpectedEndDate(_ as PhysicalDataSourceConstraint) >> Optional.empty()
 
         Set<Availability> availabilities = [early, mid, late].findAll { partitionsImpacted.containsAll(it.dataSourceNames.collect() {it.asName()}) } as Set
         PhysicalDataSourceConstraint constraint = Mock(PhysicalDataSourceConstraint)
