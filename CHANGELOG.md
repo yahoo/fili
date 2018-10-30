@@ -10,6 +10,9 @@ Current
 
 ### Changed:
 
+- [Create less DruidFilterBuilders](https://github.com/yahoo/fili/pull/815)
+    * Use static factory method to reduce the number of repeated filter builder objects created
+
 - [Removed deprecations in maker classes](https://github.com/yahoo/fili/issues/778)
     * Add `LogicalMetricInfo` conversion method on ApiMetricField class
     * Moved all tests and internal uses onto LMI based construction
