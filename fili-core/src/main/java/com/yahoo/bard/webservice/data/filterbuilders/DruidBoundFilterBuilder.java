@@ -8,7 +8,7 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TOO_MANY_DRUID_FI
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
-import com.yahoo.bard.webservice.data.dimension.DimensionRowNotFoundException;
+import com.yahoo.bard.webservice.data.dimension.FilterBuilderException;
 import com.yahoo.bard.webservice.druid.model.filter.AndFilter;
 import com.yahoo.bard.webservice.druid.model.filter.BoundFilter;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
@@ -65,16 +65,24 @@ public class DruidBoundFilterBuilder implements DruidFilterBuilder {
     );
 
     @Override
-    public Filter buildFilters(final Map<Dimension, Set<ApiFilter>> filterMap) throws DimensionRowNotFoundException {
+    public Filter buildFilters(final Map<Dimension, Set<ApiFilter>> filterMap) throws FilterBuilderException {
         LOG.trace("Building Druid Bound Filters using filter map: {}", filterMap);
 
-        List<Filter> filters =
+        List<Filter> filters;
+        try {
+            filters =
                     filterMap.values()
                             .stream()
                             .flatMap(Set::stream)
                             .map(filter -> buildDruidBoundFilters(filter))
-                            .collect(Collectors.toList())
-        ;
+                            .collect(Collectors.toList());
+        } catch (RuntimeException e) {
+            if (e.getCause() instanceof FilterBuilderException) {
+                throw (FilterBuilderException) e.getCause();
+            } else {
+                throw e;
+            }
+        }
 
         if (filters.size() == 1) {
             return filters.get(0);
@@ -117,7 +125,9 @@ public class DruidBoundFilterBuilder implements DruidFilterBuilder {
                         .withLowerBound(values.get(0));
             default:
                 LOG.error(FILTER_OPERATOR_INVALID.logFormat(filterOperation.getName()));
-                return null;
+                throw new RuntimeException(
+                        new FilterBuilderException(FILTER_OPERATOR_INVALID.format(filterOperation.getName()))
+                );
         }
     }
 }
