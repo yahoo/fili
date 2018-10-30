@@ -79,13 +79,13 @@ public abstract class BaseCompositeAvailability implements Availability {
     }
 
     @Override
-    public Optional<DateTime> getExpectedEndDate(PhysicalDataSourceConstraint constraint) {
-        return getLatestEnd(constraint, sourceAvailabilities);
+    public Optional<DateTime> getExpectedStartDate(DataSourceConstraint constraint) {
+        return getEarliestStart(constraint, sourceAvailabilities);
     }
 
     @Override
-    public Optional<DateTime> getExpectedStartDate(DataSourceConstraint constraint) {
-        return getEarliestStart(constraint, sourceAvailabilities);
+    public Optional<DateTime> getExpectedEndDate(PhysicalDataSourceConstraint constraint) {
+        return getLatestEnd(constraint, sourceAvailabilities);
     }
 
     @Override

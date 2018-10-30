@@ -14,17 +14,23 @@ import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 
 import com.google.common.collect.Sets
 
+import org.joda.time.DateTime
 import org.joda.time.Interval
+import org.joda.time.format.DateTimeFormat
 
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
+
+import java.time.format.DateTimeFormatter
 
 /**
  * Test for partition availability behavior.
  */
 class PartitionAvailabilitySpec extends Specification{
 
+    public static final String DISTANT_PAST_STR = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm").print(Availability.DISTANT_PAST)
+    public static final String FAR_FUTURE_STR = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm").print(Availability.FAR_FUTURE)
     public static final String SOURCE1 = 'source1'
     public static final String SOURCE2 = 'source2'
     PartitionAvailability partitionAvailability
@@ -41,6 +47,13 @@ class PartitionAvailabilitySpec extends Specification{
     Column column1
     Column column2
 
+    DateTime startDate_1
+    DateTime startDate_2
+
+    DateTime endDate_1
+    DateTime endDate_2
+
+
     def setup() {
         availability1 = Mock(Availability)
         availability2 = Mock(Availability)
@@ -48,11 +61,17 @@ class PartitionAvailabilitySpec extends Specification{
         availability1.getDataSourceNames() >> ([TableName.of(SOURCE1)] as Set)
         availability2.getDataSourceNames() >> ([TableName.of(SOURCE2)] as Set)
 
-        availability1.getExpectedStartDate(_ as PhysicalDataSourceConstraint) >> Optional.empty()
-        availability2.getExpectedStartDate(_ as PhysicalDataSourceConstraint) >> Optional.empty()
+        startDate_1 = null
+        startDate_2 = null
 
-        availability1.getExpectedEndDate(_ as PhysicalDataSourceConstraint) >> Optional.empty()
-        availability2.getExpectedEndDate(_ as PhysicalDataSourceConstraint) >> Optional.empty()
+        endDate_1 = null
+        endDate_2 = null
+
+        availability1.getExpectedStartDate(_ as PhysicalDataSourceConstraint) >> { Optional.ofNullable(startDate_1) }
+        availability2.getExpectedStartDate(_ as PhysicalDataSourceConstraint) >> { Optional.ofNullable(startDate_2) }
+
+        availability1.getExpectedEndDate(_ as PhysicalDataSourceConstraint) >> { Optional.ofNullable(endDate_1) }
+        availability2.getExpectedEndDate(_ as PhysicalDataSourceConstraint) >> { Optional.ofNullable(endDate_2) }
     }
 
     @Unroll
@@ -214,5 +233,39 @@ class PartitionAvailabilitySpec extends Specification{
         ['mid', 'late']          | midInterval.intersect(lateInterval)
         ['early', 'late']        | earlyInterval.intersect(lateInterval)
         ['early', 'mid', 'late'] | earlyInterval.intersect(lateInterval).intersect(midInterval)
+    }
+
+    @Unroll
+    def "test missing intervals properly created for #interval interval and #desc"() {
+        given:
+        startDate_1 = start
+        endDate_1 = end
+
+        SimplifiedIntervalList actualAvailability = new SimplifiedIntervalList(availableIntervalsToTest.collect({it -> new Interval(it)}))
+        availability1.getAvailableIntervals(_ as PhysicalDataSourceConstraint) >> { actualAvailability }
+
+        SimplifiedIntervalList expectedMissing = new SimplifiedIntervalList(expectedMissingIntervals.collect({it -> new Interval(it)}))
+
+        partitionAvailability = new PartitionAvailability([(availability1): {true} as DataSourceFilter] as Map)
+
+        expect:
+        SimplifiedIntervalList result = partitionAvailability.getBoundedMissingIntervalsWithConstraint(availability1, Mock(PhysicalDataSourceConstraint))
+        result == expectedMissing
+
+        where:
+        start                           |   end                         |   availableIntervalsToTest                                ||   expectedMissingIntervals                                                                                               |   interval                                        |   desc
+        null                            |   null                        |   ["2017-01-01/2018-01-01"]                               ||   ["${DISTANT_PAST_STR}/2017-01-01".toString(), "2018-01-01/${FAR_FUTURE_STR}".toString()]                               |   "unbroken"                                      |   "no expected start nor end"
+        null                            |   null                        |   ["2014-01-01/2015-01-01", "2016-01-01/2017-01-01"]      ||   ["${DISTANT_PAST_STR}/2014-01-01".toString(), "2015-01-01/2016-01-01", "2017-01-01/${FAR_FUTURE_STR}".toString()]      |   "two separate"                                  |   "no expected start nor end"
+        null                            |   new DateTime(2018,1,1,0,0)  |   ["2017-01-01/2018-01-01"]                               ||   ["${DISTANT_PAST_STR}/2017-01-01".toString()]                                                                          |   "unbroken"                                      |   "concrete end, no expected start"
+        null                            |   new DateTime(2018,1,1,0,0)  |   ["2017-01-01/2020-01-01"]                               ||   ["${DISTANT_PAST_STR}/2017-01-01".toString()]                                                                          |   "unbroken but outside end"                      |   "concrete end, no expected start"
+        null                            |   new DateTime(2018,1,1,0,0)  |   ["2017-01-01/2018-01-01", "2019-01-01/2020-01-01"]      ||   ["${DISTANT_PAST_STR}/2017-01-01".toString()]                                                                          |   "one before end, one after end"                 |   "concrete end, no expected start"
+        null                            |   new DateTime(2018,1,1,0,0)  |   ["2013-01-01/2014-01-01", "2017-01-01/2018-01-01"]      ||   ["${DISTANT_PAST_STR}/2013-01-01".toString(), "2014-01-01/2017-01-01"]                                                 |   "two separate before end"                       |   "concrete end, no expected start"
+        new DateTime(2014,1,1,0,0)      |   null                        |   ["2014-01-01/2015-01-01"]                               ||   ["2015-01-01/${FAR_FUTURE_STR}".toString()]                                                                            |   "unbroken"                                      |   "concrete beginning, no expected end"
+        new DateTime(2014,1,1,0,0)      |   null                        |   ["2012-01-01/2013-01-01", "2014-01-01/2015-01-01"]      ||   ["2015-01-01/${FAR_FUTURE_STR}".toString()]                                                                            |   "two separate, one before start"                |   "concrete beginning, no expected end"
+        new DateTime(2014,1,1,0,0)      |   null                        |   ["2012-01-01/2015-01-01", "2017-01-01/2018-01-01"]      ||   ["2015-01-01/2017-01-01", "2018-01-01/${FAR_FUTURE_STR}".toString()]                                                   |   "two separate, after start"                     |   "concrete beginning, no expected end"
+        new DateTime(2014,1,1,0,0)      |   new DateTime(2018,1,1,0,0)  |   ["2014-01-01/2018-01-01"]                               ||   []                                                                                                                     |   "unbroken"                                      |   "concrete beginning and end"
+        new DateTime(2014,1,1,0,0)      |   new DateTime(2018,1,1,0,0)  |   ["2012-01-01/2014-01-01", "2016-01-01/2020-01-01"]      ||   ["2014-01-01/2016-01-01"]                                                                                              |   "two separate, one end of each outside range"   |   "concrete beginning and end"
+
+        // TODO tests 12+
     }
 }
