@@ -73,7 +73,7 @@ class DruidQueryBuilderSpec extends Specification {
 
     LogicalMetricInfo m1LogicalMetric = new LogicalMetricInfo("lm1")
 
-    static final DruidFilterBuilder FILTER_BUILDER = new DruidOrFilterBuilder()
+    static final DruidFilterBuilder FILTER_BUILDER = DruidOrFilterBuilder.getInstance()
 
     List<Interval> intervals
     static FilterBinders filterBinders = FilterBinders.INSTANCE

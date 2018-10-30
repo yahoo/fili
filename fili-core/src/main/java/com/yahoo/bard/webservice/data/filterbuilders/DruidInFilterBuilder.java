@@ -49,7 +49,19 @@ import java.util.stream.Collectors;
  * {@link DruidOrFilterBuilder} and is the default Druid filter builder in Fili.
  */
 public class DruidInFilterBuilder extends ConjunctionDruidFilterBuilder {
+
     private static final Logger LOG = LoggerFactory.getLogger(DruidInFilterBuilder.class);
+
+    private static final DruidInFilterBuilder INSTANCE = new DruidInFilterBuilder();
+
+    /**
+     * Returns an instance of {@code DruidInFilterBuilder} that could be shared across.
+     *
+     * @return the singleton {@code DruidInFilterBuilder} instance
+     */
+    public static DruidInFilterBuilder getInstance() {
+        return INSTANCE;
+    }
 
     @Override
     protected Filter buildDimensionFilter(Dimension dimension, Set<ApiFilter> filters)

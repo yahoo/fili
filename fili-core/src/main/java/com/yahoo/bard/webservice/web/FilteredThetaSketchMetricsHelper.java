@@ -63,7 +63,7 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
      * Default implementation using the InFilterBuilder
      */
     public FilteredThetaSketchMetricsHelper() {
-        this(new DruidInFilterBuilder());
+        this(DruidInFilterBuilder.getInstance());
     }
 
     /**

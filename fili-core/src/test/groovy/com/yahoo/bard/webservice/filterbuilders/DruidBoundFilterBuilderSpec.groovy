@@ -56,7 +56,7 @@ class DruidBoundFilterBuilderSpec extends Specification {
                 startDateIdBetween   : startDateBetweenBoundFilter
         ]
 
-        filterBuilder = new DruidBoundFilterBuilder()
+        filterBuilder = DruidBoundFilterBuilder.getInstance()
     }
 
     @Unroll
@@ -93,7 +93,7 @@ class DruidBoundFilterBuilderSpec extends Specification {
         List druidExpected = druidList.collect() { druidFilters.get(it) }
 
         when:
-        DruidBoundFilterBuilder boundFilterBuilder = new DruidBoundFilterBuilder();
+        DruidBoundFilterBuilder boundFilterBuilder = DruidBoundFilterBuilder.getInstance()
         Filter outerFilter = boundFilterBuilder.buildDruidBoundFilters(apiFilter)
 
         then:

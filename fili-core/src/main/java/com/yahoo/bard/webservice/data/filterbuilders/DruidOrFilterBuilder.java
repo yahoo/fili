@@ -32,7 +32,19 @@ import java.util.Set;
  * Each filter term is resolved independently of the other filter terms.
  */
 public class DruidOrFilterBuilder extends ConjunctionDruidFilterBuilder {
+
     private static final Logger LOG = LoggerFactory.getLogger(DruidOrFilterBuilder.class);
+
+    private static final DruidOrFilterBuilder INSTANCE = new DruidOrFilterBuilder();
+
+    /**
+     * Returns an instance of {@code DruidOrFilterBuilder} that could be shared across.
+     *
+     * @return the singleton {@code DruidOrFilterBuilder} instance
+     */
+    public static DruidOrFilterBuilder getInstance() {
+        return INSTANCE;
+    }
 
     @Override
     protected Filter buildDimensionFilter(Dimension dimension, Set<ApiFilter> filters)

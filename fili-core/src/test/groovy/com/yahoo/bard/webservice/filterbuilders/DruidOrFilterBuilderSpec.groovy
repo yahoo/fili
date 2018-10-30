@@ -69,7 +69,7 @@ class DruidOrFilterBuilderSpec extends Specification {
                 ageIdNotin56: ageIdNotin56,
                 ageDescNotin1429: ageDescNotin1429
         ]
-        filterBuilder = new DruidOrFilterBuilder()
+        filterBuilder = DruidOrFilterBuilder.getInstance()
     }
 
     def "If there are no filters to build, then the the filter builder returns null"(){

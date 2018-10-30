@@ -90,7 +90,7 @@ class FilteredAggregationSpec extends Specification{
 
         Set<ApiFilter> filterSet = [filterBinders.generateApiFilter("age|id-in[114,125]", dimensionDictionary)] as Set
 
-        DruidFilterBuilder filterBuilder = new DruidOrFilterBuilder()
+        DruidFilterBuilder filterBuilder = DruidOrFilterBuilder.getInstance()
         filter1  = filterBuilder.buildFilters([(ageDimension): filterSet])
 
         filter2 = filterBuilder.buildFilters(

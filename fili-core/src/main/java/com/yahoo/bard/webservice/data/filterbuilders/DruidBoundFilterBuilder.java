@@ -27,31 +27,30 @@ import java.util.stream.Collectors;
 /**
  * A DruidBoundFilterBuilder builds a Druid Bound Filter for supported dimensions, which can be sent directly to Druid.
  * <p>
- *     Druid Bound Filter currently supports the following API filter operations:
- *          <li>{@link DefaultFilterOperation#gt}</li>
- *          <li><{@link DefaultFilterOperation#lt}/li>
- *          <li>{@link DefaultFilterOperation#gte}</li>
- *          <li>{@link DefaultFilterOperation#lte}</li>
- *          <li>{@link DefaultFilterOperation#between}</li>
- * </p>
+ * Druid Bound Filter currently supports the following API filter operations:
+ * <ul>
+ *     <li> {@link DefaultFilterOperation#gt}
+ *     <li> {@link DefaultFilterOperation#lt}
+ *     <li> {@link DefaultFilterOperation#gte}
+ *     <li> {@link DefaultFilterOperation#lte}
+ *     <li> {@link DefaultFilterOperation#between}
+ * </ul>
  * <p>
- *     So the filter:
- *     {@code startDate|id-gt[2018-10-10]}
- *     is translated into
- *     {@code DruidBoundFilterBuilder(startDate,2018-10-10,null)}
- *     which is serialized as following to druid
- *     <pre><code>
- *         {
- *             "type": "bound",
- *             "dimension": "startDate",
- *             "lower": "2018-10-10",
- *             "lowerStrict": false,
- *             "upper": null ,
- *             "upperStrict": false,
- *             "ordering": null }
- *         }
- *     </code></pre>
- * </p>
+ * So the filter {@code startDate|id-gt[2018-10-10]} is translated into
+ * {@code DruidBoundFilterBuilder(startDate,2018-10-10,null)} which is serialized as following to druid
+ * <pre>
+ * {@code
+ * {
+ *     "type": "bound",
+ *     "dimension": "startDate",
+ *     "lower": "2018-10-10",
+ *     "lowerStrict": false,
+ *     "upper": null ,
+ *     "upperStrict": false,
+ *     "ordering": null }
+ * }
+ * }
+ * </pre>
  */
 public class DruidBoundFilterBuilder implements DruidFilterBuilder {
 
@@ -63,6 +62,17 @@ public class DruidBoundFilterBuilder implements DruidFilterBuilder {
             SYSTEM_CONFIG.getPackageVariableName("max_num_druid_filters"),
             DEFAULT_MAX_NUM_DRUID_FILTERS
     );
+
+    private static final DruidBoundFilterBuilder INSTANCE = new DruidBoundFilterBuilder();
+
+    /**
+     * Returns an instance of {@code DruidBoundFilterBuilder} that could be shared across.
+     *
+     * @return the singleton {@code DruidBoundFilterBuilder} instance
+     */
+    public static DruidBoundFilterBuilder getInstance() {
+        return INSTANCE;
+    }
 
     @Override
     public Filter buildFilters(final Map<Dimension, Set<ApiFilter>> filterMap) throws DimensionRowNotFoundException {

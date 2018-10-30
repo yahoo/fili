@@ -35,7 +35,7 @@ class ConsolidatingDruidFilterBuilderSpec extends Specification {
     }
 
     def setup() {
-        filterBuilder = new ConsolidatingDruidFilterBuilder()
+        filterBuilder = ConsolidatingDruidFilterBuilder.getInstance()
 
         Map<String, String> filterSpecs = [
                 ageIdEq1234 : "ageBracket|id-eq[1,2,3,4]",

@@ -50,7 +50,19 @@ import java.util.stream.Collectors;
  * }
  */
 public class ConsolidatingDruidFilterBuilder extends ConjunctionDruidFilterBuilder {
+
     private static final Logger LOG = LoggerFactory.getLogger(ConsolidatingDruidFilterBuilder.class);
+
+    private static final ConsolidatingDruidFilterBuilder INSTANCE = new ConsolidatingDruidFilterBuilder();
+
+    /**
+     * Returns an instance of {@code ConsolidatingDruidFilterBuilder} that could be shared across.
+     *
+     * @return the singleton {@code ConsolidatingDruidFilterBuilder} instance
+     */
+    public static ConsolidatingDruidFilterBuilder getInstance() {
+        return INSTANCE;
+    }
 
     @Override
     protected Filter buildDimensionFilter(Dimension dimension, Set<ApiFilter> filters)

@@ -32,7 +32,7 @@ class TestingDataApiRequestImpl extends DataApiRequestImpl {
                 0,  // topN
                 Long.MAX_VALUE, // asynchAfter
                 (DateTimeZone) null,
-                new DruidOrFilterBuilder(),
+                DruidOrFilterBuilder.getInstance(),
                 null,
                 Optional.empty()
         )

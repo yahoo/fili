@@ -711,15 +711,16 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     /**
      * Creates an object that constructs Druid dimension filters from Bard dimension filters.
      * <p>
-     * Constructs a {@link DruidInFilterBuilder} by default.
+     * If "default_in_filter_enabled" config property is set to {@code true}, this method returns a filter builder that
+     * builds filter using {@link DruidInFilterBuilder}, otherwise, the builder uses {@link DruidOrFilterBuilder}
      *
      * @return An object to build Druid filters from API filters
      */
     protected DruidFilterBuilder buildDruidFilterBuilder() {
         if (BardFeatureFlag.DEFAULT_IN_FILTER.isOn()) {
-            return new DruidInFilterBuilder();
+            return DruidInFilterBuilder.getInstance();
         } else {
-            return new DruidOrFilterBuilder();
+            return DruidOrFilterBuilder.getInstance();
         }
     }
 

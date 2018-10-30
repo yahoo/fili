@@ -79,7 +79,7 @@ class WeightEvaluationQuerySpec extends Specification {
         dataServlet.getMetricDictionary() >> configurationLoader.metricDictionary
         dataServlet.getDimensionDictionary() >> configurationLoader.dimensionDictionary
         dataServlet.getLogicalTableDictionary() >> configurationLoader.logicalTableDictionary
-        dataServlet.getFilterBuilder() >> new DruidOrFilterBuilder()
+        dataServlet.getFilterBuilder() >> DruidOrFilterBuilder.getInstance()
         dataServlet.getHavingApiGenerator() >> new DefaultHavingApiGenerator(configurationLoader)
         dataServlet.getGranularityParser() >> new StandardGranularityParser()
 
