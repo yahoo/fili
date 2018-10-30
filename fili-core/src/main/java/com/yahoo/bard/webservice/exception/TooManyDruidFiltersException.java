@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.exception;
 
+import com.yahoo.bard.webservice.data.dimension.FilterBuilderException;
+
 /**
  * Unchecked exception for situations when too many Druid filters a generated for a Druid query.
  * <p>
@@ -11,7 +13,7 @@ package com.yahoo.bard.webservice.exception;
  * {@link com.yahoo.bard.webservice.data.filterbuilders.DruidOrFilterBuilder}. This giant query shall eventually
  * timeout the Druid query and returns the timeout error to API user.
  */
-public class TooManyDruidFiltersException extends RuntimeException {
+public class TooManyDruidFiltersException extends FilterBuilderException {
 
     /**
      * Constructor.

@@ -10,6 +10,9 @@ Current
 
 ### Changed:
 
+- [Generifying FilterBuilder exceptions](https://github.com/yahoo/fili/issues/816)
+    * Make FilterBuilder exceptions more general and use them for non search provider exceptons.
+
 - [Removed deprecations in maker classes](https://github.com/yahoo/fili/issues/778)
     * Add `LogicalMetricInfo` conversion method on ApiMetricField class
     * Moved all tests and internal uses onto LMI based construction

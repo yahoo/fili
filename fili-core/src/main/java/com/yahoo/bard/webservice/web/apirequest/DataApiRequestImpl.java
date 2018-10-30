@@ -22,7 +22,7 @@ import com.yahoo.bard.webservice.data.DruidHavingBuilder;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
-import com.yahoo.bard.webservice.data.dimension.DimensionRowNotFoundException;
+import com.yahoo.bard.webservice.data.dimension.FilterBuilderException;
 import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
@@ -777,9 +777,12 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                                        table,
                                         this
                                 );
-                            } catch (DimensionRowNotFoundException dimRowException) {
-                                LOG.debug(dimRowException.getMessage());
-                                throw new BadApiRequestException(dimRowException.getMessage(), dimRowException);
+                            } catch (FilterBuilderException filterBuilderException) {
+                                LOG.debug(filterBuilderException.getMessage());
+                                throw new BadApiRequestException(
+                                        filterBuilderException.getMessage(),
+                                        filterBuilderException
+                                );
                             }
 
                             //If metric filter isn't empty or it has anything other then 'AND' then throw an exception
@@ -1096,7 +1099,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     public Filter getDruidFilter() {
         try (TimedPhase timer = RequestLog.startTiming("BuildingDruidFilter")) {
             return filterBuilder.buildFilters(this.apiFilters);
-        } catch (DimensionRowNotFoundException e) {
+        } catch (FilterBuilderException e) {
             LOG.debug(e.getMessage());
             throw new BadApiRequestException(e);
         }

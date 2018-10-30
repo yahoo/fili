@@ -7,7 +7,7 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DUPLICATE_METRICS
 import com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchSetOperationHelper;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
-import com.yahoo.bard.webservice.data.dimension.DimensionRowNotFoundException;
+import com.yahoo.bard.webservice.data.dimension.FilterBuilderException;
 import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.data.filterbuilders.DruidInFilterBuilder;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
@@ -101,7 +101,7 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
             DimensionDictionary dimensionDictionary,
             LogicalTable table,
             DataApiRequest apiRequest
-    ) throws DimensionRowNotFoundException {
+    ) throws FilterBuilderException {
 
         TemplateDruidQuery templateDruidQuery = logicalMetric.getTemplateDruidQuery();
 
@@ -245,7 +245,7 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
             DimensionDictionary dimensionDictionary,
             LogicalTable table,
             DataApiRequest apiRequest
-    ) throws DimensionRowNotFoundException {
+    ) throws FilterBuilderException {
 
         Set<PostAggregation> postAggregations = query.getPostAggregations();
         Set<PostAggregation> updatedPostAggs = new HashSet<>();
@@ -426,7 +426,7 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
             DimensionDictionary dimensionDictionary,
             LogicalTable table,
             DataApiRequest apiRequest
-    ) throws DimensionRowNotFoundException {
+    ) throws FilterBuilderException {
         //Converting json filter string to a plain filter string to prepare the Filter out of it
         String filterString = filter.get("AND").asText().replace("],", "]],");
         String[] filterList = filterString.split("],");
