@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
  * A DruidBoundFilterBuilder builds a Druid Bound Filter for supported dimensions, which can be sent directly to Druid.
  * <p>
  * Druid Bound Filter currently supports the following API filter operations:
+ *
  * <ul>
  *     <li> {@link DefaultFilterOperation#gt}
  *     <li> {@link DefaultFilterOperation#lt}
@@ -35,7 +36,7 @@ import java.util.stream.Collectors;
  *     <li> {@link DefaultFilterOperation#lte}
  *     <li> {@link DefaultFilterOperation#between}
  * </ul>
- * <p>
+ *
  * So the filter {@code startDate|id-gt[2018-10-10]} is translated into
  * {@code DruidBoundFilterBuilder(startDate,2018-10-10,null)} which is serialized as following to druid
  * <pre>
