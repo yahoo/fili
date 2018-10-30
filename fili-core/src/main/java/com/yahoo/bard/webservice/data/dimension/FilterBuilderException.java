@@ -3,7 +3,7 @@
 package com.yahoo.bard.webservice.data.dimension;
 
 /**
- * Exception when a dimension row is not found.
+ * Exception when unable to correctly build query model filters
  */
 public class FilterBuilderException extends Exception {
 
