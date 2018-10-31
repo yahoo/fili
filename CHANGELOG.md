@@ -10,6 +10,10 @@ Current
 
 ### Changed:
 
+- [Truncate csv response file path length](https://github.com/yahoo/fili/issues/825)
+    * Set a max size to file name for a downloaded csv report. 
+        - max length is 218 characters, which is Microsoft Excel's max file length
+    
 - [Generifying FilterBuilder exceptions](https://github.com/yahoo/fili/issues/816)
     * Make FilterBuilder exceptions more general and use them for non search provider exceptons.
 
