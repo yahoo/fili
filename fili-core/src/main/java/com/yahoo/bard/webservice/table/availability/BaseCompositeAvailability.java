@@ -93,6 +93,14 @@ public abstract class BaseCompositeAvailability implements Availability {
         return getLatestEnd(constraint, sourceAvailabilities);
     }
 
+    /**
+     * Finds and returns the earliest expected start date from the provided availabilities. An empty start date
+     * is considered to be no start date, and is returned.
+     *
+     * @param constraint  constraint used to find sub availabilities' expected start dates
+     * @param availabilities  the availabilities to examine
+     * @return the earliest start date or empty if ANY availability has an empty start date
+     */
     protected Optional<DateTime> getEarliestStart(
             PhysicalDataSourceConstraint constraint,
             Collection<Availability> availabilities
@@ -104,6 +112,14 @@ public abstract class BaseCompositeAvailability implements Availability {
         return minDate.equals(DISTANT_PAST) ? Optional.empty() : Optional.of(minDate);
     }
 
+    /**
+     * Finds and returns the earliest expected start date from the provided availabilities. An empty start date
+     * is considered to be no start date, and is returned.
+     *
+     * @param constraint  constraint used to find sub availabilities' expected start dates
+     * @param availabilities  the availabilities to examine
+     * @return the earliest start date or empty if ANY availability has an empty start date
+     */
     protected Optional<DateTime> getEarliestStart(
             DataSourceConstraint constraint,
             Collection<Availability> availabilities
@@ -115,6 +131,14 @@ public abstract class BaseCompositeAvailability implements Availability {
         return minDate.equals(DISTANT_PAST) ? Optional.empty() : Optional.of(minDate);
     }
 
+    /**
+     * Finds and returns the latest expected end date from the provided availabilities. An empty end date
+     * is considered to be no end date, and is returned.
+     *
+     * @param constraint  constraint used to find sub availabilities' expected end dates
+     * @param availabilities  the availabilities to examine
+     * @return the latest end date or empty if ANY availability has an empty end date
+     */
     protected Optional<DateTime> getLatestEnd(
             PhysicalDataSourceConstraint constraint,
             Collection<Availability> availabilities
@@ -126,6 +150,14 @@ public abstract class BaseCompositeAvailability implements Availability {
         return maxDate.equals(FAR_FUTURE) ? Optional.empty() : Optional.of(maxDate);
     }
 
+    /**
+     * Finds and returns the latest expected end date from the provided availabilities. An empty end date
+     * is considered to be no end date, and is returned.
+     *
+     * @param constraint  constraint used to find sub availabilities' expected end dates
+     * @param availabilities  the availabilities to examine
+     * @return the latest end date or empty if ANY availability has an empty end date
+     */
     protected Optional<DateTime> getLatestEnd(
             DataSourceConstraint constraint,
             Collection<Availability> availabilities

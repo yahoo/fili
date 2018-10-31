@@ -3,7 +3,6 @@
 package com.yahoo.bard.webservice.table.availability;
 
 import com.yahoo.bard.webservice.data.config.names.DataSourceName;
-import com.yahoo.bard.webservice.data.config.names.FieldName;
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.resolver.DataSourceFilter;
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
@@ -11,8 +10,6 @@ import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
-
-import sun.security.x509.AVA;
 
 import java.util.Collections;
 import java.util.Map;
@@ -89,7 +86,7 @@ public class PartitionAvailability extends BaseCompositeAvailability implements 
     }
 
     /**
-     * calculate the missing intervals based on the subpartitions availability
+     * Calculate the missing intervals based on the subpartitions availability.
      * formula is:
      * Union(subpart availabilitiy) - Union(subpart missing intervals)
      *
@@ -109,12 +106,15 @@ public class PartitionAvailability extends BaseCompositeAvailability implements 
 
         return unionOfAvailableIntervals.subtract(unionOfMissingIntervals);
 
-//        return filteredAvailabilities(constraint)
-//                .map(availability -> availability.getAvailableIntervals(constraint))
-//                .reduce(SimplifiedIntervalList::intersect).orElse(new SimplifiedIntervalList());
-
     }
 
+    /**
+     * Calculates the MISSING intervals for a given a availability and datasource constraint.
+     *
+     * @param availability  The availability to find the missing intervals for
+     * @param constraint  The constraint for the query
+     * @return the missing intervals
+     */
     private SimplifiedIntervalList getBoundedMissingIntervalsWithConstraint(
             Availability availability,
             PhysicalDataSourceConstraint constraint
