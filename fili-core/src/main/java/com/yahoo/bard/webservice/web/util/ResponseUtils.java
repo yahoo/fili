@@ -12,6 +12,9 @@ import javax.ws.rs.core.UriInfo;
  * A utility class for sharing Response logic between metadata and data endpoints.
  */
 public class ResponseUtils {
+
+    public static final int MAX_EXCEL_FILE_PATH_LENGTH = 218;
+
     /**
      * This method will get the path segments and the interval (if it is part of the request) from the apiRequest and
      * create a content-disposition header value with a proposed filename in the following format.
@@ -40,6 +43,8 @@ public class ResponseUtils {
             interval = "_" + interval.replace("/", "_").replace(",", "__");
         }
 
-        return "attachment; filename=" + uriPath + interval + ".csv";
+        String rawFilePath = uriPath + interval + ".csv";
+        String truncatedFilePath = rawFilePath.substring(0, Math.min(rawFilePath.length(), MAX_EXCEL_FILE_PATH_LENGTH));
+        return "attachment; filename=" + truncatedFilePath;
     }
 }
