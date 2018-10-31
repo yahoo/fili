@@ -62,6 +62,8 @@ Current
     of its composed availabilities.
         -   no expected start or end date supercedes any configured start or end date, so if ANY of the composed availabilities
         has no start or end date, and empty optional is reported.
+    * Add a constructor to `StrictAvailability` that takes start and end dates, which allow for direct configuration 
+    of expected start and end dates.  
 
 - [Additional healthcheck logging on healthchck failure on data request](https://github.com/yahoo/fili/pull/809)
     * Added user, request url, and timestamp to healthcheck error message on data request.
