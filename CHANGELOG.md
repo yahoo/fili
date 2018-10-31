@@ -50,6 +50,14 @@ Current
     * Fixed bad format in error message
     * Moved tests off of serialization of `SimplifiedIntervalList`.  That's turning out to be hard to solve.
 
+- [Bump lucene version to patch vulnerability](https://github.com/yahoo/fili/issues/819)
+    * Bumped dependency version to 7.5.0 
+    * Added error in case of greater than maxint hits from Lucene 
+
+- [Bump spring code to patch vulnerability](https://github.com/yahoo/fili/issues/820)
+    * Bumped dependency version to [5.1.2,) 
+    * Throw validation error if excessive documents are returned from Lucene now that it supports up to long hitcounts 
+
 ### Known Issues:
 
 ### Added:

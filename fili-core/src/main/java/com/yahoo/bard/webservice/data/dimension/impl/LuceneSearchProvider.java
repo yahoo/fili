@@ -88,6 +88,8 @@ public class LuceneSearchProvider implements SearchProvider {
             SYSTEM_CONFIG.getPackageVariableName("lucene_search_timeout_ms"), 600000
     );
 
+    public static String TOO_MANY_DOCUMENTS = "Unexpectedly large response from search provider.  Found %l hits.";
+
     /**
      * The maximum number of results per page.
      */
@@ -700,7 +702,17 @@ public class LuceneSearchProvider implements SearchProvider {
                         perPage
                 );
                 hits = hitDocs.scoreDocs;
-                documentCount = hitDocs.totalHits;
+                // The change to supprt long document sizes is incompletely supported in Lucene
+                // Since we can't request up to long documents we'll only expect to receive up to Integer.MAX_VALUE
+                // responses, and throw an error if we exceed that.
+                if (hitDocs.totalHits > Integer.MAX_VALUE) {
+                    String message = String.format(TOO_MANY_DOCUMENTS, hitDocs.totalHits);
+                    RowLimitReachedException exception = new RowLimitReachedException(message);
+                    LOG.error(exception.getMessage(), exception);
+                    throw exception;
+                }
+                documentCount = (int) hitDocs.totalHits;
+
                 int requestedPageNumber = paginationParameters.getPage(documentCount);
                 if (hits.length == 0) {
                     if (requestedPageNumber == 1) {
