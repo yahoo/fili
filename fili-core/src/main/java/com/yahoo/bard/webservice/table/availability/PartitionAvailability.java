@@ -89,7 +89,9 @@ public class PartitionAvailability extends BaseCompositeAvailability implements 
     }
 
     /**
-     * Intersect the partition availabilities which participate given the constraint.
+     * calculate the missing intervals based on the subpartitions availability
+     * formula is:
+     * Union(subpart availabilitiy) - Union(subpart missing intervals)
      *
      * @param constraint  The filtering constraint
      *

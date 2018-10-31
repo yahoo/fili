@@ -270,4 +270,46 @@ class PartitionAvailabilitySpec extends Specification{
         new DateTime(2014,1,1,0,0)      |   new DateTime(2018,1,1,0,0)  |   ["2015-01-01/2017-01-01"]                               ||   ["2014-01-01/2015-01-01", "2017-01-01/2018-01-01"]                                                                     |   "unbroken, after start before end"              |   "concrete beginning and end"
         new DateTime(2014,1,1,0,0)      |   new DateTime(2018,1,1,0,0)  |   ["2015-01-01/2015-06-01", "2016-01-01/2016-06-01"]      ||   ["2014-01-01/2015-01-01", "2015-06-01/2016-01-01", "2016-06-01/2018-01-01"]                                            |   "two separate, both after start before end"     |   "concrete beginning and end"
     }
+
+    @Unroll
+    def "partition availability calculated correctly when #desc"() {
+        given:
+        startDate_1 = start_1
+        endDate_1 = end_1
+
+        startDate_2 = start_2
+        endDate_2 = end_2
+
+        SimplifiedIntervalList actualAvailability_1 = new SimplifiedIntervalList(actual_1.collect({it -> new Interval(it)}))
+        SimplifiedIntervalList actualAvailability_2 = new SimplifiedIntervalList(actual_2.collect({it -> new Interval(it)}))
+        availability1.getAvailableIntervals(_ as PhysicalDataSourceConstraint) >> { actualAvailability_1 }
+        availability2.getAvailableIntervals(_ as PhysicalDataSourceConstraint) >> { actualAvailability_2 }
+
+        partitionAvailability = new PartitionAvailability([
+                (availability1): {true} as DataSourceFilter,
+                (availability2): {true} as DataSourceFilter
+        ] as Map)
+
+        SimplifiedIntervalList expectedAvailability = new SimplifiedIntervalList(expected.collect({it -> new Interval(it)}))
+
+        expect:
+        SimplifiedIntervalList result = partitionAvailability.getAvailableIntervals(Mock(PhysicalDataSourceConstraint))
+        result == expectedAvailability
+
+        where:
+        start_1                     |   end_1                       |   start_2                     |   end_2                       |   actual_1                    |   actual_2                                            |   expected                                            |   desc
+        null                        |   null                        |   null                        |   null                        |   ["2016-01-01/2017-01-01"]   |   ["2016-01-01/2017-01-01"]                           |   ["2016-01-01/2017-01-01"]                           |   "both subparts no bounds and same availability"
+        null                        |   new DateTime(2017,1,1,0,0)  |   new DateTime(2017,1,1,0,0)  |   null                        |   ["2016-01-01/2017-01-01"]   |   ["2017-01-01/2018-01-01"]                           |   ["2016-01-01/2018-01-01"]                           |   "subparts are abutting, and ends not abutting have no expected start or end respectively"
+        null                        |   new DateTime(2017,6,1,0,0)  |   new DateTime(2016,6,1,0,0)  |   null                        |   ["2016-01-01/2017-06-01"]   |   ["2016-06-01/2018-01-01"]                           |   ["2016-01-01/2018-01-01"]                           |   "subparts are partially overlapping, and ends not overlapping have no expected start or end respectively"
+        null                        |   new DateTime(2018,1,1,0,0)  |   new DateTime(2016,1,1,0,0)  |   null                        |   ["2016-01-01/2017-06-01"]   |   ["2016-06-01/2018-01-01"]                           |   ["2016-06-01/2017-06-01"]                           |   "subparts are partially overlapping, with missing data on non overlapping intervals of each other"
+        null                        |   new DateTime(2018,1,1,0,0)  |   new DateTime(2016,1,1,0,0)  |   null                        |   ["2016-01-01/2017-01-01"]   |   ["2017-01-01/2018-01-01"]                           |   []                                                  |   "subparts are abutting, with missing completely overlapping the other part"
+        null                        |   new DateTime(2016,6,1,0,0)  |   new DateTime(2017,6,1,0,0)  |   null                        |   ["2016-01-01/2016-06-01"]   |   ["2017-06-01/2018-01-01"]                           |   ["2016-01-01/2016-06-01", "2017-06-01/2018-01-01"]  |   "subparts are separate and do not have any missing overlapping with each other's availability (1)"
+        null                        |   new DateTime(2017,6,1,0,0)  |   new DateTime(2017,6,1,0,0)  |   null                        |   ["2016-01-01/2016-06-01"]   |   ["2017-06-01/2018-01-01"]                           |   ["2016-01-01/2016-06-01", "2017-06-01/2018-01-01"]  |   "subparts are separate and do not have any missing overlapping with each other's availability (2)"
+        new DateTime(2016,1,1,0,0)  |   new DateTime(2017,6,1,0,0)  |   new DateTime(2017,6,1,0,0)  |   new DateTime(2018,1,1,0,0)  |   ["2016-01-01/2016-06-01"]   |   ["2017-06-01/2018-01-01"]                           |   ["2016-01-01/2016-06-01", "2017-06-01/2018-01-01"]  |   "subparts are separate and do not have any missing overlapping with each other's availability (3)"
+        new DateTime(2016,1,1,0,0)  |   new DateTime(2018,1,1,0,0)  |   new DateTime(2016,1,1,0,0)  |   new DateTime(2018,1,1,0,0)  |   ["2016-01-01/2018-01-01"]   |   []                                                  |   []                                                  |   "both subparts have expected start and end, but one part is completely missing and is same as availabile part"
+        new DateTime(2016,1,1,0,0)  |   new DateTime(2018,1,1,0,0)  |   new DateTime(2015,1,1,0,0)  |   new DateTime(2020,1,1,0,0)  |   ["2016-01-01/2018-01-01"]   |   []                                                  |   []                                                  |   "both subparts have expected start and end, but one part is completely missing and is larger than available part"
+        new DateTime(2016,1,1,0,0)  |   new DateTime(2018,1,1,0,0)  |   new DateTime(2016,6,1,0,0)  |   new DateTime(2017,6,1,0,0)  |   ["2016-01-01/2018-01-01"]   |   []                                                  |   ["2016-01-01/2016-06-01", "2017-06-01/2018-01-01"]  |   "both subparts have expected start and end, but one part is completely missing and is contained by available part"
+        new DateTime(2016,1,1,0,0)  |   new DateTime(2017,1,1,0,0)  |   new DateTime(2016,1,1,0,0)  |   new DateTime(2017,1,1,0,0)  |   ["2016-01-01/2017-01-01"]   |   ["2016-01-01/2017-01-01"]                           |   ["2016-01-01/2017-01-01"]                           |   "both subparts same availability, availability equivalent to bounds, no missing"
+        new DateTime(2016,1,1,0,0)  |   new DateTime(2018,1,1,0,0)  |   new DateTime(2016,1,1,0,0)  |   new DateTime(2018,1,1,0,0)  |   ["2016-01-01/2018-01-01"]   |   ["2016-06-01/2016-09-01", "2017-06-01/2017-09-01"]  |   ["2016-06-01/2016-09-01", "2017-06-01/2017-09-01"]  |   "both subparts have expected start and end, but one part has fragmented availability and is contained by available part"
+    }
 }
