@@ -10,6 +10,14 @@ Current
 
 ### Changed:
 
+- [The algorithm for PartionAvailability is changed to consider using expected start and end date](https://github.com/yahoo/fili/issues/822)
+    * Currently `PartitonAvailability` reports its availability as the intersection of all participating
+    sub availabilities
+    * `PartitionAvailability` now takes the union of available intervals from all participating availabilities
+    and subtracts from it the union of missing intervals from all participating availabilities.
+        - The current algorithm is equivalent to the new algorithm if ALL participating availabilities have
+        NO expected start AND end dates
+
 - [Generifying FilterBuilder exceptions](https://github.com/yahoo/fili/issues/816)
     * Make FilterBuilder exceptions more general and use them for non search provider exceptons.
 
@@ -43,6 +51,17 @@ Current
 ### Known Issues:
 
 ### Added:
+
+- [Added expected start and end dates to availability](https://github.com/yahoo/fili/issues/822)
+    * Add methods for getting expected start and end dates given a datasource constraint to the `Availability` interface.
+        - start and end dates are optional, with an empty optional indicating no expected start or end date.
+        - the new methods default to returning an empty optional.
+    * The start and end dates are not concrete. If an availability has intervals outside of the expected range those 
+    intervals are NOT suppressed.
+    * `BaseCompositeAvailability` reports its expected start and end dates as the earliest start date and latest end date
+    of its composed availabilities.
+        -   no expected start or end date supercedes any configured start or end date, so if ANY of the composed availabilities
+        has no start or end date, and empty optional is reported.
 
 - [Additional healthcheck logging on healthchck failure on data request](https://github.com/yahoo/fili/pull/809)
     * Added user, request url, and timestamp to healthcheck error message on data request.
