@@ -22,8 +22,6 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import java.time.format.DateTimeFormatter
-
 /**
  * Test for partition availability behavior.
  */
