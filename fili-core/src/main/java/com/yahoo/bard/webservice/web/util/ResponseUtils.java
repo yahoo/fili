@@ -2,6 +2,9 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.util;
 
+import com.yahoo.bard.webservice.config.SystemConfig;
+import com.yahoo.bard.webservice.config.SystemConfigProvider;
+
 import java.util.stream.Collectors;
 
 import javax.ws.rs.container.ContainerRequestContext;
@@ -13,7 +16,10 @@ import javax.ws.rs.core.UriInfo;
  */
 public class ResponseUtils {
 
-    public static final int MAX_EXCEL_FILE_PATH_LENGTH = 218;
+    public static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+    public static final String MAX_NAME_LENGTH = SYSTEM_CONFIG.getPackageVariableName("download_file_max_name_length");
+
+    int maxFileLength = SYSTEM_CONFIG.getIntProperty(MAX_NAME_LENGTH, 0);
 
     /**
      * This method will get the path segments and the interval (if it is part of the request) from the apiRequest and
@@ -43,8 +49,12 @@ public class ResponseUtils {
             interval = "_" + interval.replace("/", "_").replace(",", "__");
         }
 
-        String rawFilePath = uriPath + interval + ".csv";
-        String truncatedFilePath = rawFilePath.substring(0, Math.min(rawFilePath.length(), MAX_EXCEL_FILE_PATH_LENGTH));
-        return "attachment; filename=" + truncatedFilePath;
+        String extension = ".csv";
+        String filePath = uriPath + interval;
+        filePath = (maxFileLength > 0 && filePath.length() > maxFileLength) ?
+                filePath.substring(0, maxFileLength)
+                : filePath;
+
+        return "attachment; filename=" + filePath + extension;
     }
 }
