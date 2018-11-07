@@ -9,7 +9,9 @@ public enum BardFeatureFlag implements FeatureFlag {
 
     CURRENT_MACRO_USES_LATEST("current_macro_uses_latest"),
     PARTIAL_DATA("partial_data_enabled"),
+    /** Use {@link CacheFeatureFlag#TTL} instead. */
     @Deprecated DRUID_CACHE("druid_cache_enabled"),
+    /** Use {@link CacheFeatureFlag#LOCAL_SIGNATURE} instead. */
     @Deprecated DRUID_CACHE_V2("druid_cache_v2_enabled"),
     QUERY_SPLIT("query_split_enabled"),
     CACHE_PARTIAL_DATA("cache_partial_data"),
