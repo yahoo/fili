@@ -247,7 +247,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
 
         LOG.debug("Druid request timeout: {}ms", requestTimeout);
         List<String> cipherSuites = SYSTEM_CONFIG.getListProperty(SSL_ENABLED_CIPHER_KEY, null);
-        String[] enabledCipherSuites = cipherSuites == null ?
+        String[] enabledCipherSuites = cipherSuites == null  || cipherSuites.isEmpty() ?
                 null
                 : cipherSuites.toArray(new String[cipherSuites.size()]);
 
