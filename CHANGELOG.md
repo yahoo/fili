@@ -9,6 +9,7 @@ Current
 -------
 
 ### Changed:
+- [Added config property for SSL cipher suites](https://github.com/yahoo/fili/issues/831)
 
 - [Updated asynch http dependency to resolve security issues](https://github.com/yahoo/fili/issues/821)
     * Moved netty to current 4.1.31.Final
