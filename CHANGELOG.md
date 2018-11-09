@@ -10,6 +10,10 @@ Current
 
 ### Changed:
 
+- [Updated asynch http dependency to resolve security issues](https://github.com/yahoo/fili/issues/821)
+    * Moved netty to current 4.1.31.Final
+    * Moved asynch-http-client to current 2.6.0
+
 - [Truncate csv response file path length](https://github.com/yahoo/fili/issues/825)
     ~~* Set a max size to file name for a downloaded csv report.~~ 
         ~~- max length is 218 characters, which is Microsoft Excel's max file length~~
