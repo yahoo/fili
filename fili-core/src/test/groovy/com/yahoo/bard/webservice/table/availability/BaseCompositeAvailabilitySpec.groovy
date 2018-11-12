@@ -125,8 +125,8 @@ class BaseCompositeAvailabilitySpec extends Specification {
         expectedEnd_2 = Optional.ofNullable((DateTime) testExpectedEnd_2)
         expectedEnd_3 = Optional.ofNullable((DateTime) testExpectedEnd_3)
 
-        Optional<DateTime> result_1  = compositeAvailability.getExpectedStartDate(Mock(PhysicalDataSourceConstraint))
-        Optional<DateTime> result_2  = compositeAvailability.getExpectedStartDate(Mock(DataSourceConstraint))
+        Optional<DateTime> result_1  = compositeAvailability.getExpectedEndDate(Mock(PhysicalDataSourceConstraint))
+        Optional<DateTime> result_2  = compositeAvailability.getExpectedEndDate(Mock(DataSourceConstraint))
 
         expect:
         !result_1.isPresent()
