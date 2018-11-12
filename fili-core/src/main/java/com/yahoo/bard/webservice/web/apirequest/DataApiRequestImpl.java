@@ -378,14 +378,12 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @param intervals  Intervals requested
      * @param apiFilters  Global filters
      * @param havings  Top-level Having caluses for the request
-     * @param having  Single global Druid Having
      * @param sorts  Sorting info for the request
      * @param count  Global limit for the request
      * @param topN  Count of per-bucket limit (TopN) for the request
      * @param asyncAfter  How long in milliseconds the user is willing to wait for a synchronous response
      * @param timeZone  TimeZone for the request
      * @param filterBuilder  A builder to use when building filters for the request
-     * @param havingApiGenerator  A generator to generate havings map for the request
      * @param dateTimeSort  A dateTime sort column with its direction
      */
     protected DataApiRequestImpl(
@@ -399,14 +397,12 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             List<Interval> intervals,
             ApiFilters apiFilters,
             Map<LogicalMetric, Set<ApiHaving>> havings,
-            Having having,
             LinkedHashSet<OrderByColumn> sorts,
             int count,
             int topN,
             long asyncAfter,
             DateTimeZone timeZone,
             DruidFilterBuilder filterBuilder,
-            HavingGenerator havingApiGenerator,
             Optional<OrderByColumn> dateTimeSort
     ) {
         this(
@@ -669,8 +665,11 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * contains a 'startsWith' or 'contains' operation while the BardFeatureFlag.DATA_STARTS_WITH_CONTAINS_ENABLED is
      * off.
      */
-    ApiFilters bindApiFilters(String filterQuery, LogicalTable logicalTable, DimensionDictionary dimensionDictionary)
-            throws BadApiRequestException {
+    protected ApiFilters bindApiFilters(
+            String filterQuery,
+            LogicalTable logicalTable,
+            DimensionDictionary dimensionDictionary
+    ) throws BadApiRequestException {
         return filterGenerator.generate(filterQuery, logicalTable, dimensionDictionary);
     }
 
@@ -751,7 +750,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      *
      * @return The Apihaving instances grouped by metric.
      */
-    Map<LogicalMetric, Set<ApiHaving>> bindApiHavings(
+    protected Map<LogicalMetric, Set<ApiHaving>> bindApiHavings(
             String requestHavings,
             HavingGenerator havingGenerator,
             Set<LogicalMetric> logicalMetrics
