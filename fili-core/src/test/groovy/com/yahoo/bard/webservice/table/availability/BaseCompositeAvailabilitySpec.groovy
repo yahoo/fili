@@ -33,14 +33,14 @@ class BaseCompositeAvailabilitySpec extends Specification {
     Availability availability2
     Availability availability3
 
-    Optional<DateTime> expectedStart_1
-    Optional<DateTime> expectedEnd_1
+    Optional<DateTime> start_1
+    Optional<DateTime> end_1
 
-    Optional<DateTime> expectedStart_2
-    Optional<DateTime> expectedEnd_2
+    Optional<DateTime> start_2
+    Optional<DateTime> end_2
 
-    Optional<DateTime> expectedStart_3
-    Optional<DateTime> expectedEnd_3
+    Optional<DateTime> start_3
+    Optional<DateTime> end_3
 
     @Shared DateTime earliestStart =  new DateTime(1980, 1, 1, 0, 0)
     @Shared DateTime middleStart = new DateTime(1990, 1, 1, 0, 0)
@@ -58,31 +58,31 @@ class BaseCompositeAvailabilitySpec extends Specification {
         availability2 = Mock(Availability)
         availability3 = Mock(Availability)
 
-        expectedStart_1 = Optional.empty()
-        expectedStart_2 = Optional.empty()
-        expectedStart_3 = Optional.empty()
+        start_1 = Optional.empty()
+        start_2 = Optional.empty()
+        start_3 = Optional.empty()
 
-        expectedEnd_1 = Optional.empty()
-        expectedEnd_2 = Optional.empty()
-        expectedEnd_3 = Optional.empty()
+        end_1 = Optional.empty()
+        end_2 = Optional.empty()
+        end_3 = Optional.empty()
 
-        availability1.getExpectedStartDate(_ as PhysicalDataSourceConstraint) >> { expectedStart_1 }
-        availability1.getExpectedEndDate(_ as PhysicalDataSourceConstraint) >> { expectedEnd_1 }
+        availability1.getExpectedStartDate(_ as PhysicalDataSourceConstraint) >> { start_1 }
+        availability1.getExpectedEndDate(_ as PhysicalDataSourceConstraint) >> { end_1 }
 
-        availability2.getExpectedStartDate(_ as PhysicalDataSourceConstraint) >> { expectedStart_2 }
-        availability2.getExpectedEndDate(_ as PhysicalDataSourceConstraint) >> { expectedEnd_2 }
+        availability2.getExpectedStartDate(_ as PhysicalDataSourceConstraint) >> { start_2 }
+        availability2.getExpectedEndDate(_ as PhysicalDataSourceConstraint) >> { end_2 }
 
-        availability3.getExpectedStartDate(_ as PhysicalDataSourceConstraint) >> { expectedStart_3 }
-        availability3.getExpectedEndDate(_ as PhysicalDataSourceConstraint) >> { expectedEnd_3 }
+        availability3.getExpectedStartDate(_ as PhysicalDataSourceConstraint) >> { start_3 }
+        availability3.getExpectedEndDate(_ as PhysicalDataSourceConstraint) >> { end_3 }
 
-        availability1.getExpectedStartDate(_ as DataSourceConstraint) >> { expectedStart_1 }
-        availability1.getExpectedEndDate(_ as DataSourceConstraint) >> { expectedEnd_1 }
+        availability1.getExpectedStartDate(_ as DataSourceConstraint) >> { start_1 }
+        availability1.getExpectedEndDate(_ as DataSourceConstraint) >> { end_1 }
 
-        availability2.getExpectedStartDate(_ as DataSourceConstraint) >> { expectedStart_2 }
-        availability2.getExpectedEndDate(_ as DataSourceConstraint) >> { expectedEnd_2 }
+        availability2.getExpectedStartDate(_ as DataSourceConstraint) >> { start_2 }
+        availability2.getExpectedEndDate(_ as DataSourceConstraint) >> { end_2 }
 
-        availability3.getExpectedStartDate(_ as DataSourceConstraint) >> { expectedStart_3 }
-        availability3.getExpectedEndDate(_ as DataSourceConstraint) >> { expectedEnd_3 }
+        availability3.getExpectedStartDate(_ as DataSourceConstraint) >> { start_3 }
+        availability3.getExpectedEndDate(_ as DataSourceConstraint) >> { end_3 }
 
         availability1.getDataSourceNames() >> ([DataSourceName.of("dsName_1")] as Set<DataSourceName>)
         availability2.getDataSourceNames() >> ([DataSourceName.of("dsName_2")] as Set<DataSourceName>)
@@ -100,9 +100,9 @@ class BaseCompositeAvailabilitySpec extends Specification {
     @Unroll
     def "If #desc availabilities have no start date, the composite has no start date"() {
         given:
-        expectedStart_1 = Optional.ofNullable((DateTime) testExpectedStart_1)
-        expectedStart_2 = Optional.ofNullable((DateTime) testExpectedStart_2)
-        expectedStart_3 = Optional.ofNullable((DateTime) testExpectedStart_3)
+        start_1 = Optional.ofNullable((DateTime) testExpectedStart_1)
+        start_2 = Optional.ofNullable((DateTime) testExpectedStart_2)
+        start_3 = Optional.ofNullable((DateTime) testExpectedStart_3)
 
         Optional<DateTime> result_1 = compositeAvailability.getExpectedStartDate(Mock(PhysicalDataSourceConstraint))
         Optional<DateTime> result_2 = compositeAvailability.getExpectedStartDate(Mock(DataSourceConstraint))
@@ -121,9 +121,9 @@ class BaseCompositeAvailabilitySpec extends Specification {
     @Unroll
     def "If #desc availabilities have no end date, the composite has no end date"() {
         given:
-        expectedEnd_1 = Optional.ofNullable((DateTime) testExpectedEnd_1)
-        expectedEnd_2 = Optional.ofNullable((DateTime) testExpectedEnd_2)
-        expectedEnd_3 = Optional.ofNullable((DateTime) testExpectedEnd_3)
+        end_1 = Optional.ofNullable((DateTime) testExpectedEnd_1)
+        end_2 = Optional.ofNullable((DateTime) testExpectedEnd_2)
+        end_3 = Optional.ofNullable((DateTime) testExpectedEnd_3)
 
         Optional<DateTime> result_1  = compositeAvailability.getExpectedEndDate(Mock(PhysicalDataSourceConstraint))
         Optional<DateTime> result_2  = compositeAvailability.getExpectedEndDate(Mock(DataSourceConstraint))
@@ -142,9 +142,9 @@ class BaseCompositeAvailabilitySpec extends Specification {
     @Unroll
     def "earliest start is at position #pos in the availabilities stream"() {
         given:
-        expectedStart_1 = Optional.ofNullable((DateTime) testExpectedStart_1)
-        expectedStart_2 = Optional.ofNullable((DateTime) testExpectedStart_2)
-        expectedStart_3 = Optional.ofNullable((DateTime) testExpectedStart_3)
+        start_1 = Optional.ofNullable((DateTime) testExpectedStart_1)
+        start_2 = Optional.ofNullable((DateTime) testExpectedStart_2)
+        start_3 = Optional.ofNullable((DateTime) testExpectedStart_3)
 
         Optional<DateTime> result_1 = compositeAvailability.getExpectedStartDate(Mock(PhysicalDataSourceConstraint))
         Optional<DateTime> result_2 = compositeAvailability.getExpectedStartDate(Mock(DataSourceConstraint))
@@ -166,9 +166,9 @@ class BaseCompositeAvailabilitySpec extends Specification {
     @Unroll
     def "latest end is at position #pos in the availabilities stream"() {
         given:
-        expectedEnd_1 = Optional.ofNullable((DateTime) testExpectedEnd_1)
-        expectedEnd_2 = Optional.ofNullable((DateTime) testExpectedEnd_2)
-        expectedEnd_3 = Optional.ofNullable((DateTime) testExpectedEnd_3)
+        end_1 = Optional.ofNullable((DateTime) testExpectedEnd_1)
+        end_2 = Optional.ofNullable((DateTime) testExpectedEnd_2)
+        end_3 = Optional.ofNullable((DateTime) testExpectedEnd_3)
 
         Optional<DateTime> result_1 = compositeAvailability.getExpectedEndDate(Mock(PhysicalDataSourceConstraint))
         Optional<DateTime> result_2 = compositeAvailability.getExpectedEndDate(Mock(DataSourceConstraint))
@@ -226,8 +226,8 @@ class BaseCompositeAvailabilitySpec extends Specification {
         !endResult_2.isPresent()
 
         when:
-        expectedStart_1 = Optional.of(earliestStart)
-        expectedEnd_1 = Optional.of(earliestEnd)
+        start_1 = Optional.of(earliestStart)
+        end_1 = Optional.of(earliestEnd)
 
         startResult_1 = compositeAvailability.getExpectedStartDate(Mock(PhysicalDataSourceConstraint))
         startResult_2 = compositeAvailability.getExpectedStartDate(Mock(DataSourceConstraint))
