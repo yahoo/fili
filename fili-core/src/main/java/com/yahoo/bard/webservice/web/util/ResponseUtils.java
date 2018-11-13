@@ -4,6 +4,8 @@ package com.yahoo.bard.webservice.web.util;
 
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
+import com.yahoo.bard.webservice.web.ResponseFormatType;
+import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
 
 import java.util.stream.Collectors;
 
@@ -34,7 +36,9 @@ public class ResponseUtils {
      * @param containerRequestContext  the state of the container for building response headers
      *
      * @return A content disposition header telling the browser the name of the CSV file to be downloaded
+     * @deprecated TODO: WRITE THIS
      */
+    @Deprecated
     public String getCsvContentDispositionValue(ContainerRequestContext containerRequestContext) {
         UriInfo uriInfo = containerRequestContext.getUriInfo();
         String uriPath = uriInfo.getPathSegments().stream()
@@ -56,5 +60,25 @@ public class ResponseUtils {
                 : filePath;
 
         return "attachment; filename=" + filePath + extension;
+    }
+
+    public String getContentDispositionValue(ContainerRequestContext containerRequestContext, ApiRequest apiRequest) {
+        return null;
+    }
+
+    protected String prepareDefaultFileNameNoExtension(ContainerRequestContext containerRequestContext) {
+        UriInfo uriInfo = containerRequestContext.getUriInfo();
+        String uriPath = uriInfo.getPathSegments().stream()
+                .map(PathSegment::getPath)
+                .collect(Collectors.joining("-"));
+
+        String interval = uriInfo.getQueryParameters().getFirst("dateTime");
+        if (interval == null) {
+            interval = "";
+        } else {
+            // Chrome treats ',' as duplicate header so replace it with '__' to make chrome happy.
+            interval = "_" + interval.replace("/", "_").replace(",", "__");
+        }
+        return uriPath + interval;
     }
 }

@@ -8,6 +8,9 @@ import com.yahoo.bard.webservice.config.SystemConfigProvider
 import org.glassfish.jersey.internal.util.collection.MultivaluedStringMap
 
 import spock.lang.Specification
+import spock.lang.Unroll
+
+import java.nio.file.Path
 
 import javax.ws.rs.container.ContainerRequestContext
 import javax.ws.rs.core.PathSegment
@@ -19,6 +22,7 @@ class ResponseUtilsSpec extends Specification {
     List<PathSegment> pathSegmentList
     UriInfo uriInfo
     SystemConfig systemConfig = SystemConfigProvider.getInstance()
+    MultivaluedStringMap params
 
     def setup() {
         containerRequestContext = Mock(ContainerRequestContext)
@@ -28,14 +32,42 @@ class ResponseUtilsSpec extends Specification {
         pathParam1.getPath() >> "foo"
         pathParam2.getPath() >> "bar"
         pathSegmentList = [pathParam1, pathParam2]
-        uriInfo.getPathSegments() >> pathSegmentList
-        MultivaluedStringMap params = new MultivaluedStringMap()
+        uriInfo.getPathSegments() >> { pathSegmentList }
+        params = new MultivaluedStringMap()
 
         params.put("dateTime", ["2017/2018"])
-        uriInfo.getQueryParameters() >> params
+        uriInfo.getQueryParameters() >> { params }
         containerRequestContext = Mock(ContainerRequestContext)
         containerRequestContext.getUriInfo() >> uriInfo
         println(containerRequestContext)
+    }
+
+
+    @Unroll
+    def "default filename is properly built from container request context"() {
+        given:
+        ResponseUtils responseUtils = new ResponseUtils()
+        pathSegmentList = pathSegments.collect { it -> Mock(PathSegment, { getPath() >> { (String) it }}) }
+        params = new MultivaluedStringMap()
+        paramTuples.each {
+            it -> it = (Tuple) it
+                params.put(
+                        (String) it.get(0),
+                        (List<String>) it.get(1)
+                )
+        }
+
+        expect:
+        responseUtils.prepareDefaultFileNameNoExtension(
+                containerRequestContext
+        ) == expectedResult
+
+        where:
+        expectedResult          |   pathSegments    |   paramTuples
+        ""                      |   []              |   []  // this case should never actually occur
+        "foo-bar"               |   ["foo", "bar"]  |   []
+        "foo-bar_2017_2018"     |   ["foo", "bar"]  |   [new Tuple("dateTime", ["2017/2018"])]
+
     }
 
     def "Simple CSV header translates appropriately"() {
