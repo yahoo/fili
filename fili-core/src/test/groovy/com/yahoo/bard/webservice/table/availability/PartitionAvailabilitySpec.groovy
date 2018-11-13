@@ -65,6 +65,7 @@ class PartitionAvailabilitySpec extends Specification{
         endDate_1 = null
         endDate_2 = null
 
+        // groovy mocks DO NOT inherit default methods, so we MUST mock the getExpectedStart/EndDate methods for this to work
         availability1.getExpectedStartDate(_ as PhysicalDataSourceConstraint) >> { Optional.ofNullable(startDate_1) }
         availability2.getExpectedStartDate(_ as PhysicalDataSourceConstraint) >> { Optional.ofNullable(startDate_2) }
 
