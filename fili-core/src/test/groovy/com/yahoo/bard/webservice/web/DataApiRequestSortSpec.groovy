@@ -32,7 +32,7 @@ class DataApiRequestSortSpec extends Specification {
         String expectedMessage = ErrorMessageFormat.DATE_TIME_SORT_VALUE_INVALID.format()
 
         when:
-        new TestingDataApiRequestImpl().generateDateTimeSortColumn(
+        new TestingDataApiRequestImpl().bindDateTimeSortColumn(
                 ["xyz":SortDirection.DESC, "dateTime":SortDirection.DESC]
         )
 
@@ -44,7 +44,7 @@ class DataApiRequestSortSpec extends Specification {
     @Unroll
     def "Validate the sort column and direction map from #sortString string"() {
         expect:
-        new TestingDataApiRequestImpl().generateSortColumns(sortString) == expected
+        new TestingDataApiRequestImpl().bindToColumnDirectionMap(sortString) == expected
 
         where:
         sortString                        | expected
@@ -64,7 +64,7 @@ class DataApiRequestSortSpec extends Specification {
     @Unroll
     def "Generate dateTime sort column from columnDirection map #columnDirection"() {
         expect:
-        new TestingDataApiRequestImpl().generateDateTimeSortColumn(columnDirection) == expected
+        new TestingDataApiRequestImpl().bindDateTimeSortColumn(columnDirection) == expected
 
         where:
         columnDirection                                                                          | expected

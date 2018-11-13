@@ -12,6 +12,7 @@ import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.web.ApiFilter
 import com.yahoo.bard.webservice.web.BadFilterException
 import com.yahoo.bard.webservice.web.DefaultFilterOperation
+import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders
 
 import org.joda.time.DateTime
 

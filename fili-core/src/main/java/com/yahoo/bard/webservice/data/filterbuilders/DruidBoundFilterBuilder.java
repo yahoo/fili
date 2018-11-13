@@ -9,6 +9,7 @@ import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.FilterBuilderException;
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.druid.model.filter.AndFilter;
 import com.yahoo.bard.webservice.druid.model.filter.BoundFilter;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
@@ -55,7 +56,7 @@ import java.util.stream.Collectors;
  */
 public class DruidBoundFilterBuilder implements DruidFilterBuilder {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ConjunctionDruidFilterBuilder.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DruidBoundFilterBuilder.class);
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     private static final int DEFAULT_MAX_NUM_DRUID_FILTERS = 10000;

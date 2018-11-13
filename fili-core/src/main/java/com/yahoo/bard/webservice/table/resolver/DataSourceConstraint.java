@@ -42,7 +42,7 @@ public class DataSourceConstraint {
      */
     public DataSourceConstraint(DataApiRequest dataApiRequest, DruidAggregationQuery<?> templateDruidQuery) {
         this.requestDimensions = Collections.unmodifiableSet(dataApiRequest.getDimensions());
-        this.filterDimensions = Collections.unmodifiableSet(dataApiRequest.getFilterDimensions());
+        this.filterDimensions = Collections.unmodifiableSet(dataApiRequest.getApiFilters().keySet());
         this.metricDimensions = Collections.unmodifiableSet(templateDruidQuery.getMetricDimensions());
         this.metricNames = Collections.unmodifiableSet(templateDruidQuery.getDependentFieldNames());
         this.apiFilters = new ApiFilters(dataApiRequest.getApiFilters());

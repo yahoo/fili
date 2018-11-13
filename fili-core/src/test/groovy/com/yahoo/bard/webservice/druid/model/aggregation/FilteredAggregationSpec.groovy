@@ -16,8 +16,8 @@ import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
-import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder
-import com.yahoo.bard.webservice.data.filterbuilders.DruidOrFilterBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidOrFilterBuilder
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.druid.model.filter.Filter
@@ -85,8 +85,6 @@ class FilteredAggregationSpec extends Specification{
         genderDependentMetricAgg.getDependentDimensions() >> ([genderDimension] as Set)
         genderDependentMetricAgg.withName(_) >> genderDependentMetricAgg
         genderDependentMetricAgg.withFieldName(_) >> genderDependentMetricAgg
-
-        LogicalMetric logicalMetric = new LogicalMetric(null, null, filtered_metric_name)
 
         Set<ApiFilter> filterSet = [filterBinders.generateApiFilter("age|id-in[114,125]", dimensionDictionary)] as Set
 

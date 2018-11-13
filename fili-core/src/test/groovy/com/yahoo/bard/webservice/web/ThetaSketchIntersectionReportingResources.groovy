@@ -178,7 +178,6 @@ class ThetaSketchIntersectionReportingResources extends Specification {
         JsonNode jsonobject = metricJsonObjArray.get(0)
         filterObj = jsonobject.get("filter")
 
-        InFilter inFilter2 = new InFilter(countryDim, ["US", "IN"])
         filter = new InFilter(countryDim, ["US", "IN"])
 
         fooPostAggregation = foos.make().templateDruidQuery.getPostAggregations().first()

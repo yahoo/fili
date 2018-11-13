@@ -59,7 +59,7 @@ public class DimensionRow extends LinkedHashMap<DimensionField, String> implemen
      *
      * @return map of fieldname,value
      */
-    public Map<String, String> getRowMap() {
+    public LinkedHashMap<String, String> getRowMap() {
         return entrySet().stream()
                 .collect(StreamUtils.toLinkedMap(entry -> entry.getKey().getName(), Map.Entry::getValue));
     }

@@ -8,48 +8,6 @@ pull request if there was one.
 Current
 -------
 
-### Changed:
-
-- [The algorithm for PartionAvailability is changed to consider using expected start and end date](https://github.com/yahoo/fili/issues/822)
-    * Currently `PartitonAvailability` reports its availability as the intersection of all participating
-    sub availabilities
-    * `PartitionAvailability` now takes the union of available intervals from all participating availabilities
-    and subtracts from it the union of missing intervals from all participating availabilities.
-        - The current algorithm is equivalent to the new algorithm if ALL participating availabilities have
-        NO expected start AND end dates
-
-- [Generifying FilterBuilder exceptions](https://github.com/yahoo/fili/issues/816)
-    * Make FilterBuilder exceptions more general and use them for non search provider exceptons.
-
-- [Removed deprecations in maker classes](https://github.com/yahoo/fili/issues/778)
-    * Add `LogicalMetricInfo` conversion method on ApiMetricField class
-    * Moved all tests and internal uses onto LMI based construction
-    * Removed calls to deprecated Sketch utility methods
-    * Removed unused RowNumMapper non-LMI implementation
-    * Undeprecated needed sketch utility method
-
-- [Eliminate String based metric creation](https://github.com/yahoo/fili/issues/778)
-    * Add `LogicalMetricInfo` conversion method on ApiMetricField class
-    * Moved all tests and internal uses onto LMI based construction
-    
-- [ApiFilter allows preserving the insertion order of filter values](https://github.com/yahoo/fili/pull/807)
-    * `Constructor` and `withValues()` method's argument changed from `Set` to `Collection`.
-    * Added `getValueList()` to return the original ordered filter values.
-    
-- [RoleDimensionApiFilterRequestMapper preserves the order of insertion of ApiFilter values](https://github.com/yahoo/fili/pull/807)
-    * Changed `unionMergeFilterValues()` to be order cognizant for `ApiFilter` values.
-
-### Deprecated:
-
-### Removed:
-
-### Fixed:
-
-- [Filter Code now intersects security constraints instead of unioning with requests](https://github.com/yahoo/fili/issues/812)
-    * Switched to ensure security and request filters don't merge but instead intersect
-
-### Known Issues:
-
 ### Added:
 
 - [Added expected start and end dates to availability](https://github.com/yahoo/fili/issues/822)
@@ -84,6 +42,111 @@ Current
 
 - [Add insertion order aware method for Stream Utils](https://github.com/yahoo/fili/pull/807)
     * Added `orderedSetMerge` that merges 2 sets in the order provided.
+
+### Changed:
+- [Added config property for SSL cipher suites](https://github.com/yahoo/fili/issues/831)
+
+- [Updated asynch http dependency to resolve security issues](https://github.com/yahoo/fili/issues/821)
+    * Moved netty to current 4.1.31.Final
+    * Moved asynch-http-client to current 2.6.0
+
+- [Truncate csv response file path length](https://github.com/yahoo/fili/issues/825)
+    ~~* Set a max size to file name for a downloaded csv report.~~ 
+        ~~- max length is 218 characters, which is Microsoft Excel's max file length~~
+
+- [The algorithm for PartionAvailability is changed to consider using expected start and end date](https://github.com/yahoo/fili/issues/822)
+    * Currently `PartitonAvailability` reports its availability as the intersection of all participating
+    sub availabilities
+    * `PartitionAvailability` now takes the union of available intervals from all participating availabilities
+    and subtracts from it the union of missing intervals from all participating availabilities.
+        - The current algorithm is equivalent to the new algorithm if ALL participating availabilities have
+        NO expected start AND end dates
+
+- [Configurable limit to csv filename length](https://github.com/yahoo/fili/issues/825)
+    * Created configuration parameter 'download_file_max_name_length' to truncate filename lengths
+        - Default truncation is no truncation (0)
+        - truncation happens before applying file extension
+    
+- [Generifying FilterBuilder exceptions](https://github.com/yahoo/fili/issues/816)
+    * Make FilterBuilder exceptions more general and use them for non search provider exceptons.
+
+- [Removed deprecations in maker classes](https://github.com/yahoo/fili/issues/778)
+    * Add `LogicalMetricInfo` conversion method on ApiMetricField class
+    * Moved all tests and internal uses onto LMI based construction
+    * Removed calls to deprecated Sketch utility methods
+    * Removed unused RowNumMapper non-LMI implementation
+    * Undeprecated needed sketch utility method
+
+- [Eliminate String based metric creation](https://github.com/yahoo/fili/issues/778)
+    * Add `LogicalMetricInfo` conversion method on ApiMetricField class
+    * Moved all tests and internal uses onto LMI based construction
+    
+- [ApiFilter allows preserving the insertion order of filter values](https://github.com/yahoo/fili/pull/807)
+    * `Constructor` and `withValues()` method's argument changed from `Set` to `Collection`.
+    * Added `getValueList()` to return the original ordered filter values.
+    
+- [RoleDimensionApiFilterRequestMapper preserves the order of insertion of ApiFilter values](https://github.com/yahoo/fili/pull/807)
+    * Changed `unionMergeFilterValues()` to be order cognizant for `ApiFilter` values.
+
+- [Cleanup DataApiRequestImpl and Builders](https://github.com/yahoo/fili/issues/803)
+  * Moved to ordered bind/validate semantics.
+  * Created interface for druid having building and moved existing builder
+  * Moved `DruidQueryBuilder` off of apiRequest.getDruidHavings to use apiRequest.getHavings().isEmpty()
+  * Moved generators into the binders subpackage of web.apirequest
+
+- [Refactored DruidHavingBuilder](https://github.com/yahoo/fili/issues/803)  
+   * Moved DruidHavingBuilder to new package
+   * Made static methods into instance methods, with a default instance
+   * Created a factory interface
+   * Injected DruidHavingBuilder into QueryBuilder
+
+- [Refactored DruidFilterBuilders](https://github.com/yahoo/fili/issues/803)  
+   * Moved DruidFilterBuilder and clients to new package
+
+- [Removed deprecations in maker classes](https://github.com/yahoo/fili/issues/778)
+    * Add `LogicalMetricInfo` conversion method on ApiMetricField class
+    * Moved all tests and internal uses onto LMI based construction
+    * Removed calls to deprecated Sketch utility methods
+    * Removed unused RowNumMapper non-LMI implementation
+    * Undeprecated needed sketch utility method
+
+- [Eliminate String based metric creation](https://github.com/yahoo/fili/issues/778)
+    * Add `LogicalMetricInfo` conversion method on ApiMetricField class
+    * Moved all tests and internal uses onto LMI based construction
+
+### Deprecated:
+
+### Removed:
+
+### Fixed:
+
+- [Filter Code now intersects security constraints instead of unioning with requests](https://github.com/yahoo/fili/issues/812)
+    * Switched to ensure security and request filters don't merge but instead intersect
+
+- [Bump Jackson version to patch vulnerability](https://github.com/yahoo/fili/issues/770)
+    * Bumped dependency version to 2.9.5 
+    * Made serialization order more specific in several classes
+    * Fixed bad format in error message
+    * Moved tests off of serialization of `SimplifiedIntervalList`.  That's turning out to be hard to solve.
+
+- [Bump lucene version to patch vulnerability](https://github.com/yahoo/fili/issues/819)
+    * Bumped dependency version to 7.5.0 
+    * Added error in case of greater than maxint hits from Lucene 
+
+- [Bump spring code to patch vulnerability](https://github.com/yahoo/fili/issues/820)
+    * Bumped dependency version to [5.1.2,) 
+    * Throw validation error if excessive documents are returned from Lucene now that it supports up to long hitcounts 
+
+### Known Issues:
+
+## Contract changes:
+
+- [ApiRequest.getApiDruidFilters() must now not be null]()
+
+- [DataApiRequest property renames](https://github.com/yahoo/fili/issues/803)
+  * `DataApiRequest` getHaving -> getQueryHaving
+  * `DataApiRequest` getDruidFilter -> getQueryFilter
+  * Deprecate old paths
 
 v0.10.48 - 2018/10/04
 =====

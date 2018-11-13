@@ -233,7 +233,7 @@ class ErrorDataServletSpec extends Specification {
             }"""
 
         when:
-        Response r = jtb.getHarness().target("data/shapes/day/color")
+        Response r = jtb.getHarness().target("data/shapes/day/")
                 .queryParam("metrics","limbs")
                 .queryParam("dateTime","2014-09-01%2F2014-09-10")
                 .request().get()
@@ -620,7 +620,7 @@ class ErrorDataServletSpec extends Specification {
 
         when:
         Response r = jtb.getHarness().target("data/shapes/day/color")
-                .queryParam("metrics","color")
+                .queryParam("metrics","height")
                 .queryParam("dateTime","")
                 .request().get()
 
