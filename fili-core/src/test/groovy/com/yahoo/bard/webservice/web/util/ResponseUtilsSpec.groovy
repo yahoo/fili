@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.web.util
 
 import com.yahoo.bard.webservice.config.SystemConfig
 import com.yahoo.bard.webservice.config.SystemConfigProvider
+import com.yahoo.bard.webservice.web.DefaultResponseFormatType
 import com.yahoo.bard.webservice.web.ResponseFormatType
 
 import org.glassfish.jersey.internal.util.collection.MultivaluedStringMap
@@ -11,9 +12,8 @@ import org.glassfish.jersey.internal.util.collection.MultivaluedStringMap
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import java.nio.file.Path
-
 import javax.ws.rs.container.ContainerRequestContext
+import javax.ws.rs.core.HttpHeaders
 import javax.ws.rs.core.PathSegment
 import javax.ws.rs.core.UriInfo
 
@@ -102,6 +102,19 @@ class ResponseUtilsSpec extends Specification {
 
     // tests on non deprecated methods
 
+    def "getting content type header value successfully concatenates the values provided to it by the response format type"() {
+        setup:
+        ResponseFormatType formatType = Mock(ResponseFormatType)
+        formatType.getContentType() >> "hello/world"
+        formatType.getCharset() >> "utf-8"
+
+        when:
+        String result = new ResponseUtils().getContentTypeValue(formatType)
+
+        then:
+        result == "hello/world; charset=utf-8"
+    }
+
     @Unroll
     def "default filename is properly built from container request context"() {
         given:
@@ -122,7 +135,7 @@ class ResponseUtilsSpec extends Specification {
         }
 
         expect:
-        responseUtils.prepareDefaultFileNameNoExtension(
+        responseUtils.generateDefaultFileNameNoExtension(
                 containerRequestContext
         ) == expectedResult
 
@@ -149,7 +162,7 @@ class ResponseUtilsSpec extends Specification {
         ResponseUtils responseUtils = new ResponseUtils()
 
         then:
-        responseUtils.truncateFilePath(longString).length() == expectedLen
+        responseUtils.truncateFilename(longString).length() == expectedLen
 
         cleanup:
         systemConfig.clearProperty(ResponseUtils.MAX_NAME_LENGTH)
@@ -164,12 +177,19 @@ class ResponseUtilsSpec extends Specification {
     @Unroll
     def "properly builds Content-Disposition header when #desc"() {
         setup:
-        String baseString = "1234567890"
-        String longString = ""
-        ((int) filenameMultiplier).times {
-            longString = longString + baseString
+        String filename
+        def expectedFilenameLength
+
+        if (filenameMultiplier >= 0) {
+            String baseString = "1234567890"
+            String longString = ""
+            ((int) filenameMultiplier).times {
+                longString = longString + baseString
+            }
+            filename = longString
+        } else {
+            filename = null
         }
-        Optional<String> fileName = Optional.ofNullable(longString == "" ? null : longString)
 
         ResponseFormatType responseFormatType = Mock(ResponseFormatType)
         responseFormatType.getFileExtension() >> extension
@@ -178,7 +198,7 @@ class ResponseUtilsSpec extends Specification {
         ResponseUtils responseUtils = new ResponseUtils()
 
         when:
-        String result = responseUtils.getContentDispositionValue(containerRequestContext, fileName, responseFormatType)
+        String result = responseUtils.getContentDispositionValue(containerRequestContext, filename, responseFormatType)
 
         then:
         result.startsWith(ResponseUtils.CONTENT_DISPOSITION_HEADER_PREFIX)
@@ -186,7 +206,55 @@ class ResponseUtilsSpec extends Specification {
         when:
         String resultNoPrefix = result.substring(ResponseUtils.CONTENT_DISPOSITION_HEADER_PREFIX.length())
 
-        int expectedFilenameLength
+        if (Integer.parseInt(maxFilenameLength) > 0) {
+            expectedFilenameLength = Math.min(
+                    resultNoPrefix.length() - extension.length(),
+                    Integer.parseInt(maxFilenameLength)
+            )
+        } else {
+            expectedFilenameLength = resultNoPrefix.length() - extension.length()
+        }
+        String resultFileName = resultNoPrefix.substring(0, expectedFilenameLength)
+        String resultExtension = resultNoPrefix.substring(resultFileName.length())
+
+        then:
+        resultFileName == expectedFilename
+        resultExtension == extension
+
+        cleanup:
+        systemConfig.clearProperty(ResponseUtils.MAX_NAME_LENGTH)
+
+        where:
+        filenameMultiplier | extension   | maxFilenameLength                                                         | expectedFilename    | desc
+        5                  | ".txt"      | "0"                                                                       | "1234567890" * 5    | "no max file length"
+        2                  | ".txtttttt" | "50"                                                                      | "1234567890" * 2    | "max filename length greater than provided filename size; filename is NOT truncated"
+        5                  | ".txtttttt" | "20"                                                                      | "1234567890" * 2    | "max filename length less than provided filename size; filename is truncated to max length"
+        5                  | ".txt"      | (ResponseUtils.CONTENT_DISPOSITION_HEADER_PREFIX.length() - 1).toString() | "123456789012345678901234567890".substring(0, ResponseUtils.CONTENT_DISPOSITION_HEADER_PREFIX.length() - 1) | "max filename length less than attachment prefix, but prefix doesn't get truncated"
+        0                  | ".txt"      | "0"                                                                       | "foo-bar_2017_2018" | "filename is empty and no max filename length, default filename is used instead and is not truncated"
+        0                  | ".txt"      | "5"                                                                       | "foo-b"             | "filename is empty, default filename is greater than max filename size, default is truncated"
+        -1                 | ".txt"      | "0"                                                                       | "foo-bar_2017_2018" | "filename is null and no max filename length, default filename is used instead and is not truncated"
+        -1                 | ".txt"      | "5"                                                                       | "foo-b"             | "filename is null, default filename is greater than max filename size, default is truncated"
+    }
+
+    @Unroll
+    def "no filename is specified, so default is used and #desc"() {
+        setup:
+        ResponseFormatType responseFormatType = Mock(ResponseFormatType)
+        responseFormatType.getFileExtension() >> extension
+
+        systemConfig.setProperty(ResponseUtils.MAX_NAME_LENGTH, maxFilenameLength)
+        ResponseUtils responseUtils = new ResponseUtils()
+
+        when:
+        String result = responseUtils.getContentDispositionValue(containerRequestContext, responseFormatType)
+
+        then:
+        result.startsWith(ResponseUtils.CONTENT_DISPOSITION_HEADER_PREFIX)
+
+        when:
+        String resultNoPrefix = result.substring(ResponseUtils.CONTENT_DISPOSITION_HEADER_PREFIX.length())
+
+        def expectedFilenameLength
         if (Integer.parseInt(maxFilenameLength) > 0) {
             expectedFilenameLength = Math.min(resultNoPrefix.length() - extension.length(), Integer.parseInt(maxFilenameLength))
         } else {
@@ -199,13 +267,90 @@ class ResponseUtilsSpec extends Specification {
         resultFileName == expectedFilename
         resultExtension == extension
 
+        cleanup:
+        systemConfig.clearProperty(ResponseUtils.MAX_NAME_LENGTH)
+
         where:
-        filenameMultiplier  |   extension   |   maxFilenameLength                                                           |   expectedFilename                                                                                            |   desc
-        5                   |   ".txt"      |   "0"                                                                         |   "1234567890" * 5                                                                                            |   "no max file length"
-        2                   |   ".txtttttt" |   "50"                                                                        |   "1234567890" * 2                                                                                            |   "max filename length greater than provided filename size; filename is NOT truncated"
-        5                   |   ".txtttttt" |   "20"                                                                        |   "1234567890" * 2                                                                                            |   "max filename length less than provided filename size; filename is truncated to max length"
-        5                   |   ".txt"      |   (ResponseUtils.CONTENT_DISPOSITION_HEADER_PREFIX.length() - 1).toString()   |   "123456789012345678901234567890".substring(0, ResponseUtils.CONTENT_DISPOSITION_HEADER_PREFIX.length() - 1) |   "max filename length less than attachment prefix, but prefix doesn't get truncated"
-        0                   |   ".txt"      |   "0"                                                                         |   "foo-bar_2017_2018"                                                                                         |   "filename is empty and no max filename length, default filename is used instead and is not truncated"
-        0                   |   ".txt"      |   "5"                                                                         |   "foo-b"                                                                                                     |   "filename is empty, default filename is greater than max filename size, default is truncated"
+        extension   |   maxFilenameLength   |   expectedFilename    |   desc
+        ".txt"      |   "0"                 |   "foo-bar_2017_2018" |   "there is no max filename length so default filename is not truncated"
+        ".txt"      |   "5"                 |   "foo-b"             |   "the default filename is greater than max filename size, so default is truncated"
+    }
+
+    def "generating response format headers with null, empty, or no provided filename does not generate content disposition header"() {
+        setup:
+        ResponseFormatType responseFormatType = Mock(ResponseFormatType)
+        responseFormatType.getContentType() >> "hello/world"
+        responseFormatType.getCharset() >> "utf-8"
+
+        ResponseUtils responseUtils = new ResponseUtils()
+
+        String expectedContentTypeValue = "hello/world; charset=utf-8"
+
+        when:
+        Map<String, String> result = responseUtils.getResponseFormatHeaders(Mock(ContainerRequestContext), responseFormatType)
+
+        then:
+        result.keySet().size() == 1
+        result.containsKey(HttpHeaders.CONTENT_TYPE)
+        result.get(HttpHeaders.CONTENT_TYPE) == expectedContentTypeValue
+
+        when:
+        result = responseUtils.getResponseFormatHeaders(Mock(ContainerRequestContext), null, responseFormatType)
+
+        then:
+        result.keySet().size() == 1
+        result.containsKey(HttpHeaders.CONTENT_TYPE)
+        result.get(HttpHeaders.CONTENT_TYPE) == expectedContentTypeValue
+
+        when:
+        result = responseUtils.getResponseFormatHeaders(Mock(ContainerRequestContext), "", responseFormatType)
+
+        then:
+        result.keySet().size() == 1
+        result.containsKey(HttpHeaders.CONTENT_TYPE)
+        result.get(HttpHeaders.CONTENT_TYPE) == expectedContentTypeValue
+    }
+
+    def "when nonempty filename is provided the content disposition header is present"() {
+        setup:
+        ResponseFormatType responseFormatType = Mock(ResponseFormatType)
+        responseFormatType.getContentType() >> "hello/world"
+        responseFormatType.getCharset() >> "utf-8"
+        responseFormatType.getFileExtension() >> ".txt"
+
+        String fileName = "fname"
+
+        ResponseUtils responseUtils = new ResponseUtils()
+
+        String expectedContentTypeValue = "hello/world; charset=utf-8"
+        String expectedContentDispositionValue = "attachment; filename=fname.txt"
+
+        when:
+        Map<String, String> result = responseUtils.getResponseFormatHeaders(Mock(ContainerRequestContext), fileName, responseFormatType)
+
+        then:
+        result.keySet().size() == 2
+        result.containsKey(HttpHeaders.CONTENT_TYPE)
+        result.containsKey(HttpHeaders.CONTENT_DISPOSITION)
+        result.get(HttpHeaders.CONTENT_TYPE) == expectedContentTypeValue
+        result.get(HttpHeaders.CONTENT_DISPOSITION) == expectedContentDispositionValue
+    }
+
+    def "when empty filename is provided BUT response format is in the always download set, the content disposition header is present"() {
+        setup:
+        ResponseUtils responseUtils = new ResponseUtils()
+
+        String expectedContentTypeValue = "text/csv; charset=utf-8"
+        String expectedContentDispositionValue = "attachment; filename=foo-bar_2017_2018.csv"
+
+        when:
+        Map<String, String> result = responseUtils.getResponseFormatHeaders(containerRequestContext, DefaultResponseFormatType.CSV)
+
+        then:
+        result.keySet().size() == 2
+        result.containsKey(HttpHeaders.CONTENT_TYPE)
+        result.containsKey(HttpHeaders.CONTENT_DISPOSITION)
+        result.get(HttpHeaders.CONTENT_TYPE) == expectedContentTypeValue
+        result.get(HttpHeaders.CONTENT_DISPOSITION) == expectedContentDispositionValue
     }
 }

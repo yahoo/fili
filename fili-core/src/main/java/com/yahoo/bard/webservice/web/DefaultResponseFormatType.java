@@ -5,23 +5,38 @@ package com.yahoo.bard.webservice.web;
 import java.util.Locale;
 import java.util.Objects;
 
+import javax.ws.rs.core.MediaType;
+
 /**
  * Standard reponse formats.
  */
 public enum DefaultResponseFormatType implements ResponseFormatType {
-    JSON,
-    CSV,
-    DEBUG(".json"),
-    JSONAPI(".json")
-    ;
+    JSON(MediaType.APPLICATION_JSON),
+    CSV(ResponseFormatType.CSV_CONTENT_TYPE),
+    DEBUG(MediaType.APPLICATION_JSON, ".json"),
+    JSONAPI(MediaType.APPLICATION_JSON, ".json");
 
     private String fileExtension;
+    private String contentType;
 
-    DefaultResponseFormatType() {
+    /**
+     * Constructor.
+     *
+     * @param contentType  content type value used to build a Content-Type header. e.g. text/csv or application/json
+     */
+    DefaultResponseFormatType(String contentType) {
         this.fileExtension = "." + name().toLowerCase(Locale.ENGLISH);
+        this.contentType = contentType;
     }
 
-    DefaultResponseFormatType(String fileExtension) {
+    /**
+     * Constructor.
+     *
+     * @param contentType  content type value used to build a Content-Type header. e.g. text/csv or application/json
+     * @param fileExtension  file extension that a response in this format would be downloaded as. e.g. .csv or .json
+     */
+    DefaultResponseFormatType(String contentType, String fileExtension) {
+        this.contentType = contentType;
         this.fileExtension = fileExtension;
     }
 
@@ -43,5 +58,10 @@ public enum DefaultResponseFormatType implements ResponseFormatType {
     @Override
     public String getFileExtension() {
         return fileExtension;
+    }
+
+    @Override
+    public String getContentType() {
+        return contentType;
     }
 }
