@@ -22,9 +22,6 @@ Current
         has no start or end date, and empty optional is reported.
     * Add a constructor to `StrictAvailability` that takes start and end dates, which allow for direct configuration 
     of expected start and end dates.  
-
-- [Additional healthcheck logging on healthchck failure on data request](https://github.com/yahoo/fili/pull/809)
-    * Added user, request url, and timestamp to healthcheck error message on data request.
         
 - [Fili can now route to one of several Druid webservices based on custom routing logic](https://github.com/yahoo/fili/pull/759)
     * This allows customers to put Fili in front of multiple Druid clusters, and
@@ -147,6 +144,9 @@ Current
   * `DataApiRequest` getHaving -> getQueryHaving
   * `DataApiRequest` getDruidFilter -> getQueryFilter
   * Deprecate old paths
+  
+- [Additional healthcheck logging on healthchck failure on data request](https://github.com/yahoo/fili/pull/809)
+  * Added user, request url, and timestamp to healthcheck error message on data request.
 
 v0.10.48 - 2018/10/04
 =====
