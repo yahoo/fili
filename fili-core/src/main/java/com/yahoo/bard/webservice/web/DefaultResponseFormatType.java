@@ -11,8 +11,19 @@ import java.util.Objects;
 public enum DefaultResponseFormatType implements ResponseFormatType {
     JSON,
     CSV,
-    DEBUG,
-    JSONAPI;
+    DEBUG(".json"),
+    JSONAPI(".json")
+    ;
+
+    private String fileExtension;
+
+    DefaultResponseFormatType() {
+        this.fileExtension = "." + name().toLowerCase(Locale.ENGLISH);
+    }
+
+    DefaultResponseFormatType(String fileExtension) {
+        this.fileExtension = fileExtension;
+    }
 
     @Override
     public String toString() {
@@ -27,5 +38,10 @@ public enum DefaultResponseFormatType implements ResponseFormatType {
     @Override
     public boolean accepts(ResponseFormatType formatType) {
         return formatType.accepts(this.toString());
+    }
+
+    @Override
+    public String getFileExtension() {
+        return fileExtension;
     }
 }

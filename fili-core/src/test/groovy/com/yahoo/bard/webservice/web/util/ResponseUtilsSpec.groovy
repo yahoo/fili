@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.web.util
 
 import com.yahoo.bard.webservice.config.SystemConfig
 import com.yahoo.bard.webservice.config.SystemConfigProvider
+import com.yahoo.bard.webservice.web.ResponseFormatType
 
 import org.glassfish.jersey.internal.util.collection.MultivaluedStringMap
 
@@ -42,33 +43,7 @@ class ResponseUtilsSpec extends Specification {
         println(containerRequestContext)
     }
 
-
-    @Unroll
-    def "default filename is properly built from container request context"() {
-        given:
-        ResponseUtils responseUtils = new ResponseUtils()
-        pathSegmentList = pathSegments.collect { it -> Mock(PathSegment, { getPath() >> { (String) it }}) }
-        params = new MultivaluedStringMap()
-        paramTuples.each {
-            it -> it = (Tuple) it
-                params.put(
-                        (String) it.get(0),
-                        (List<String>) it.get(1)
-                )
-        }
-
-        expect:
-        responseUtils.prepareDefaultFileNameNoExtension(
-                containerRequestContext
-        ) == expectedResult
-
-        where:
-        expectedResult          |   pathSegments    |   paramTuples
-        ""                      |   []              |   []  // this case should never actually occur
-        "foo-bar"               |   ["foo", "bar"]  |   []
-        "foo-bar_2017_2018"     |   ["foo", "bar"]  |   [new Tuple("dateTime", ["2017/2018"])]
-
-    }
+    // tests on deprecated getCsvContentDispositionValue method
 
     def "Simple CSV header translates appropriately"() {
         given:
@@ -123,5 +98,152 @@ class ResponseUtilsSpec extends Specification {
 
         cleanup:
         systemConfig.clearProperty(ResponseUtils.MAX_NAME_LENGTH)
+    }
+
+    // tests on non deprecated methods
+
+    @Unroll
+    def "default filename is properly built from container request context"() {
+        given:
+        ResponseUtils responseUtils = new ResponseUtils()
+        pathSegmentList = pathSegments.collect {
+            it ->
+                PathSegment segment = Mock(PathSegment)
+                segment.getPath() >> it
+                return segment
+        }
+        params = new MultivaluedStringMap()
+        paramTuples.each {
+            it -> it = (Tuple) it
+                params.put(
+                        (String) it.get(0),
+                        (List<String>) it.get(1)
+                )
+        }
+
+        expect:
+        responseUtils.prepareDefaultFileNameNoExtension(
+                containerRequestContext
+        ) == expectedResult
+
+        where:
+        expectedResult                          |   pathSegments            |   paramTuples
+        ""                                      |   []                      |   []  // this case should never actually occur
+        "foo-bar"                               |   ["foo", "bar"]          |   []
+        "foo-bar_2017_2018"                     |   ["foo", "bar"]          |   [new Tuple("dateTime", ["2017/2018"])]
+        "foo-bar_2017-01-01_2018-01-01"         |   ["foo", "bar"]          |   [new Tuple("dateTime", ["2017-01-01/2018-01-01"])]
+        "foo-bar-baz_2017-01-01_2018-01-01"     |   ["foo", "bar", "baz"]   |   [new Tuple("dateTime", ["2017-01-01/2018-01-01"])]
+    }
+
+    @Unroll
+    def "Long filename is properly truncated when #desc"() {
+        setup:
+        String baseString = "1234567890"
+        String longString = ""
+        5.times {
+            longString = longString + baseString
+        }
+
+        when:
+        systemConfig.setProperty(ResponseUtils.MAX_NAME_LENGTH, maxLenProperty)
+        ResponseUtils responseUtils = new ResponseUtils()
+
+        then:
+        responseUtils.truncateFilePath(longString).length() == expectedLen
+
+        cleanup:
+        systemConfig.clearProperty(ResponseUtils.MAX_NAME_LENGTH)
+
+        where:
+        maxLenProperty  |   expectedLen | desc
+        "20"            |   20          | "max length is less than filename length; filename is truncated to max length"
+        "70"            |   50          | "max length is greater than filename length; filename is not truncated"
+        "0"             |   50          | "max length is not set (default to 0); filename is not truncated"
+    }
+
+    @Unroll
+    def "properly builds Content-Disposition header when #desc"() {
+        setup:
+        String baseString = "1234567890"
+        String longString = ""
+        ((int) filenameMultiplier).times {
+            longString = longString + baseString
+        }
+        Optional<String> fileName = Optional.ofNullable(longString == "" ? null : longString)
+
+        ResponseFormatType responseFormatType = Mock(ResponseFormatType)
+        responseFormatType.getFileExtension() >> extension
+
+        systemConfig.setProperty(ResponseUtils.MAX_NAME_LENGTH, maxFilenameLength)
+        ResponseUtils responseUtils = new ResponseUtils()
+
+        when:
+        String result = responseUtils.getContentDispositionValue(containerRequestContext, fileName, responseFormatType)
+
+        then:
+        result.startsWith(ResponseUtils.CONTENT_DISPOSITION_HEADER_PREFIX)
+
+        when:
+        String resultNoPrefix = result.substring(ResponseUtils.CONTENT_DISPOSITION_HEADER_PREFIX.length())
+
+        int expectedFilenameLength
+        if (Integer.parseInt(maxFilenameLength) > 0) {
+            expectedFilenameLength = Math.min(resultNoPrefix.length() - extension.length(), Integer.parseInt(maxFilenameLength))
+        } else {
+            expectedFilenameLength = resultNoPrefix.length() - extension.length()
+        }
+        String resultFileName = resultNoPrefix.substring(0, expectedFilenameLength)
+        String resultExtension = resultNoPrefix.substring(resultFileName.length())
+
+        then:
+        resultFileName == expectedFilename
+        resultExtension == extension
+
+        where:
+        filenameMultiplier  |   extension   |   maxFilenameLength                                                           |   expectedFilename                                                        |   desc
+        5                   |   ".txt"      |   "0"                                                                         |   "1234567890" * 5                                                        |   "no max file length"
+        5                   |   ".txt"      |   "20"                                                                        |   "1234567890" * 2                                                        |   "max filename length less than provided filename size"
+        0                   |   ".txt"      |   "0"                                                                         |   "foo-bar_2017_2018"                                                                  |   "max filename length less than attachment prefix, but prefix doesn't get truncated"
+        5                   |   ".txt"      |   (ResponseUtils.CONTENT_DISPOSITION_HEADER_PREFIX.length() - 1).toString()   |   "123456789012345678901234567890".substring(0,  Integer.parseInt(maxFilenameLength))  |   "max filename length less than attachment prefix, but prefix doesn't get truncated"
+    }
+
+    def "max file length less than prefix does not truncate prefix"() {
+        setup:
+        String baseString = "1234567890"
+        String longString = ""
+        ((int) filenameMultiplier).times {
+            longString = longString + baseString
+        }
+        Optional<String> fileName = Optional.ofNullable(longString == "" ? null : longString)
+
+        ResponseFormatType responseFormatType = Mock(ResponseFormatType)
+        responseFormatType.getFileExtension() >> extension
+
+        systemConfig.setProperty(ResponseUtils.MAX_NAME_LENGTH, maxFilenameLength)
+        ResponseUtils responseUtils = new ResponseUtils()
+
+        when:
+        String result = responseUtils.getContentDispositionValue(containerRequestContext, fileName, responseFormatType)
+
+        then:
+        result.startsWith(ResponseUtils.CONTENT_DISPOSITION_HEADER_PREFIX)
+
+        when:
+        String resultNoPrefix = result.substring(ResponseUtils.CONTENT_DISPOSITION_HEADER_PREFIX.length())
+
+        int expectedFilenameLength
+        if (Integer.parseInt(maxFilenameLength) > 0) {
+            expectedFilenameLength = Math.min(resultNoPrefix.length() - extension.length(), Integer.parseInt(maxFilenameLength))
+        } else {
+            expectedFilenameLength = resultNoPrefix.length() - extension.length()
+        }
+        String resultFileName = resultNoPrefix.substring(0, expectedFilenameLength)
+        String resultExtension = resultNoPrefix.substring(resultFileName.length())
+
+        then:
+        resultFileName == expectedFilename
+        resultExtension == extension
+
+        5                   |   ".txt"      |   (ResponseUtils.CONTENT_DISPOSITION_HEADER_PREFIX.length() - 1).toString()   |   "123456789012345678901234567890".substring(0,  Integer.parseInt(maxFilenameLength))  |   "max filename length less than attachment prefix, but prefix doesn't get truncated"
     }
 }

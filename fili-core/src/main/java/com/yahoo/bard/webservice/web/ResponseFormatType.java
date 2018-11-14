@@ -8,6 +8,8 @@ package com.yahoo.bard.webservice.web;
 
 public interface ResponseFormatType {
 
+    String TEXT_FILE_EXTENSION = ".txt";
+
     /**
      * Does this Response Format accept this api response format string.
      *
@@ -25,6 +27,14 @@ public interface ResponseFormatType {
      *
      * @return  True if this format type is compatible with another..
      */
-
     boolean accepts(ResponseFormatType formatType);
+
+    /**
+     * Provides the file extension for the response format type, if the response is downloaded as a file.
+     *
+     * @return the file extension. includes the '.'
+     */
+    default String getFileExtension() {
+        return TEXT_FILE_EXTENSION;
+    }
 }
