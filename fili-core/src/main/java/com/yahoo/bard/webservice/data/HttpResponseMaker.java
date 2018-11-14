@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -192,7 +193,8 @@ public class HttpResponseMaker {
         return buildAndAddResponseHeaders(
                 rspBuilder,
                 responseFormatType,
-                containerRequestContext
+                containerRequestContext,
+                apiRequest.getDownloadFilename().orElse(null)
         );
     }
 
@@ -267,16 +269,45 @@ public class HttpResponseMaker {
             ResponseFormatType responseFormatType,
             ContainerRequestContext containerRequestContext
     ) {
-        if (CSV.accepts(responseFormatType)) {
-            return rspBuilder
-                    .header(HttpHeaders.CONTENT_TYPE, "text/csv; charset=utf-8")
-                    .header(
-                            HttpHeaders.CONTENT_DISPOSITION,
-                            responseUtils.getCsvContentDispositionValue(containerRequestContext)
-                    );
-        } else {
-            return rspBuilder
-                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON + "; charset=utf-8");
+        return buildAndAddResponseHeaders(rspBuilder, responseFormatType, containerRequestContext, null);
+//        if (CSV.accepts(responseFormatType)) {
+//            return rspBuilder
+//                    .header(HttpHeaders.CONTENT_TYPE, "text/csv; charset=utf-8")
+//                    .header(
+//                            HttpHeaders.CONTENT_DISPOSITION,
+//                            responseUtils.getCsvContentDispositionValue(containerRequestContext)
+//                    );
+//        } else {
+//            return rspBuilder
+//                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON + "; charset=utf-8");
+//        }
+    }
+
+    /**
+     * Builds the headers for the response and gives them to the provided response builder to be added to the response.
+     *
+     * @param rspBuilder  ResponseBuilder that handles adding the headers to the response
+     * @param responseFormatType  The type of the response
+     * @param containerRequestContext  The request context
+     * @param downloadFilename  The filename the response should be downloaded as. Null or empty indicates the response
+     * should not be downloaded and instead rendered by the browser
+     * @return the response builder that has had the headers added
+     */
+    protected ResponseBuilder buildAndAddResponseHeaders(
+            ResponseBuilder rspBuilder,
+            ResponseFormatType responseFormatType,
+            ContainerRequestContext containerRequestContext,
+            String downloadFilename
+    ) {
+        Map<String, String> responseHeaders = responseUtils.buildResponseFormatHeaders(
+                containerRequestContext,
+                downloadFilename,
+                responseFormatType
+        );
+
+        for (Map.Entry<String, String> entry : responseHeaders.entrySet()) {
+            rspBuilder = rspBuilder.header(entry.getKey(), entry.getValue());
         }
+        return rspBuilder;
     }
 }

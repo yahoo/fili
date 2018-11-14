@@ -287,7 +287,7 @@ class ResponseUtilsSpec extends Specification {
         String expectedContentTypeValue = "hello/world; charset=utf-8"
 
         when:
-        Map<String, String> result = responseUtils.getResponseFormatHeaders(Mock(ContainerRequestContext), responseFormatType)
+        Map<String, String> result = responseUtils.buildResponseFormatHeaders(Mock(ContainerRequestContext), responseFormatType)
 
         then:
         result.keySet().size() == 1
@@ -295,7 +295,7 @@ class ResponseUtilsSpec extends Specification {
         result.get(HttpHeaders.CONTENT_TYPE) == expectedContentTypeValue
 
         when:
-        result = responseUtils.getResponseFormatHeaders(Mock(ContainerRequestContext), null, responseFormatType)
+        result = responseUtils.buildResponseFormatHeaders(Mock(ContainerRequestContext), null, responseFormatType)
 
         then:
         result.keySet().size() == 1
@@ -303,7 +303,7 @@ class ResponseUtilsSpec extends Specification {
         result.get(HttpHeaders.CONTENT_TYPE) == expectedContentTypeValue
 
         when:
-        result = responseUtils.getResponseFormatHeaders(Mock(ContainerRequestContext), "", responseFormatType)
+        result = responseUtils.buildResponseFormatHeaders(Mock(ContainerRequestContext), "", responseFormatType)
 
         then:
         result.keySet().size() == 1
@@ -326,7 +326,7 @@ class ResponseUtilsSpec extends Specification {
         String expectedContentDispositionValue = "attachment; filename=fname.txt"
 
         when:
-        Map<String, String> result = responseUtils.getResponseFormatHeaders(Mock(ContainerRequestContext), fileName, responseFormatType)
+        Map<String, String> result = responseUtils.buildResponseFormatHeaders(Mock(ContainerRequestContext), fileName, responseFormatType)
 
         then:
         result.keySet().size() == 2
@@ -344,7 +344,7 @@ class ResponseUtilsSpec extends Specification {
         String expectedContentDispositionValue = "attachment; filename=foo-bar_2017_2018.csv"
 
         when:
-        Map<String, String> result = responseUtils.getResponseFormatHeaders(containerRequestContext, DefaultResponseFormatType.CSV)
+        Map<String, String> result = responseUtils.buildResponseFormatHeaders(containerRequestContext, DefaultResponseFormatType.CSV)
 
         then:
         result.keySet().size() == 2

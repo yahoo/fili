@@ -91,7 +91,7 @@ public class ResponseUtils {
      * @param containerRequestContext  the state of the container for building response headers
      *
      * @return A content disposition header telling the browser the name of the CSV file to be downloaded
-     * @deprecated prefer to use getResponseFormatHeaders() or at least getContentDispositionValue()
+     * @deprecated prefer to use buildResponseFormatHeaders() or at least getContentDispositionValue()
      */
     @Deprecated
     public String getCsvContentDispositionValue(ContainerRequestContext containerRequestContext) {
@@ -105,11 +105,11 @@ public class ResponseUtils {
      * @param responseFormatType  the response format type for that request.
      * @return A map of applicable headers to values.
      */
-    public Map<String, String> getResponseFormatHeaders(
+    public Map<String, String> buildResponseFormatHeaders(
             ContainerRequestContext containerRequestContext,
             ResponseFormatType responseFormatType
     ) {
-        return getResponseFormatHeaders(containerRequestContext, null, responseFormatType);
+        return buildResponseFormatHeaders(containerRequestContext, null, responseFormatType);
     }
 
     /**
@@ -130,7 +130,7 @@ public class ResponseUtils {
      * @param responseFormatType the response format type for that request.
      * @return A map of applicable headers to values.
      */
-    public Map<String, String> getResponseFormatHeaders(
+    public Map<String, String> buildResponseFormatHeaders(
             ContainerRequestContext containerRequestContext,
             String downloadFilename,
             ResponseFormatType responseFormatType
