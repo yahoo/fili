@@ -200,50 +200,12 @@ class ResponseUtilsSpec extends Specification {
         resultExtension == extension
 
         where:
-        filenameMultiplier  |   extension   |   maxFilenameLength                                                           |   expectedFilename                                                        |   desc
-        5                   |   ".txt"      |   "0"                                                                         |   "1234567890" * 5                                                        |   "no max file length"
-        5                   |   ".txt"      |   "20"                                                                        |   "1234567890" * 2                                                        |   "max filename length less than provided filename size"
-        0                   |   ".txt"      |   "0"                                                                         |   "foo-bar_2017_2018"                                                                  |   "max filename length less than attachment prefix, but prefix doesn't get truncated"
-        5                   |   ".txt"      |   (ResponseUtils.CONTENT_DISPOSITION_HEADER_PREFIX.length() - 1).toString()   |   "123456789012345678901234567890".substring(0,  Integer.parseInt(maxFilenameLength))  |   "max filename length less than attachment prefix, but prefix doesn't get truncated"
-    }
-
-    def "max file length less than prefix does not truncate prefix"() {
-        setup:
-        String baseString = "1234567890"
-        String longString = ""
-        ((int) filenameMultiplier).times {
-            longString = longString + baseString
-        }
-        Optional<String> fileName = Optional.ofNullable(longString == "" ? null : longString)
-
-        ResponseFormatType responseFormatType = Mock(ResponseFormatType)
-        responseFormatType.getFileExtension() >> extension
-
-        systemConfig.setProperty(ResponseUtils.MAX_NAME_LENGTH, maxFilenameLength)
-        ResponseUtils responseUtils = new ResponseUtils()
-
-        when:
-        String result = responseUtils.getContentDispositionValue(containerRequestContext, fileName, responseFormatType)
-
-        then:
-        result.startsWith(ResponseUtils.CONTENT_DISPOSITION_HEADER_PREFIX)
-
-        when:
-        String resultNoPrefix = result.substring(ResponseUtils.CONTENT_DISPOSITION_HEADER_PREFIX.length())
-
-        int expectedFilenameLength
-        if (Integer.parseInt(maxFilenameLength) > 0) {
-            expectedFilenameLength = Math.min(resultNoPrefix.length() - extension.length(), Integer.parseInt(maxFilenameLength))
-        } else {
-            expectedFilenameLength = resultNoPrefix.length() - extension.length()
-        }
-        String resultFileName = resultNoPrefix.substring(0, expectedFilenameLength)
-        String resultExtension = resultNoPrefix.substring(resultFileName.length())
-
-        then:
-        resultFileName == expectedFilename
-        resultExtension == extension
-
-        5                   |   ".txt"      |   (ResponseUtils.CONTENT_DISPOSITION_HEADER_PREFIX.length() - 1).toString()   |   "123456789012345678901234567890".substring(0,  Integer.parseInt(maxFilenameLength))  |   "max filename length less than attachment prefix, but prefix doesn't get truncated"
+        filenameMultiplier  |   extension   |   maxFilenameLength                                                           |   expectedFilename                                                                                            |   desc
+        5                   |   ".txt"      |   "0"                                                                         |   "1234567890" * 5                                                                                            |   "no max file length"
+        2                   |   ".txtttttt" |   "50"                                                                        |   "1234567890" * 2                                                                                            |   "max filename length greater than provided filename size; filename is NOT truncated"
+        5                   |   ".txtttttt" |   "20"                                                                        |   "1234567890" * 2                                                                                            |   "max filename length less than provided filename size; filename is truncated to max length"
+        5                   |   ".txt"      |   (ResponseUtils.CONTENT_DISPOSITION_HEADER_PREFIX.length() - 1).toString()   |   "123456789012345678901234567890".substring(0, ResponseUtils.CONTENT_DISPOSITION_HEADER_PREFIX.length() - 1) |   "max filename length less than attachment prefix, but prefix doesn't get truncated"
+        0                   |   ".txt"      |   "0"                                                                         |   "foo-bar_2017_2018"                                                                                         |   "filename is empty and no max filename length, default filename is used instead and is not truncated"
+        0                   |   ".txt"      |   "5"                                                                         |   "foo-b"                                                                                                     |   "filename is empty, default filename is greater than max filename size, default is truncated"
     }
 }
