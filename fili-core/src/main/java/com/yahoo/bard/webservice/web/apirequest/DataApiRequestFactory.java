@@ -40,7 +40,7 @@ public interface DataApiRequestFactory {
      * @param bardConfigResources  The configuration resources used to build this api request
      *
      * @return A DataApiRequestImpl instance
-     * @deprecated in favor of the version that consumes a filename
+     * @deprecated in favor of the version that uses the filename parameter
      */
     @Deprecated
     DataApiRequest buildApiRequest(
