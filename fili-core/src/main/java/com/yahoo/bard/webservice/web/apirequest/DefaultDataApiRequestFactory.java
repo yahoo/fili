@@ -32,6 +32,47 @@ public class DefaultDataApiRequestFactory implements DataApiRequestFactory {
             String page,
             BardConfigResources bardConfigResources
     ) {
+        return buildApiRequest(
+                tableName,
+                granularity,
+                dimensions,
+                logicalMetrics,
+                intervals,
+                apiFilters,
+                havings,
+                sorts,
+                count,
+                topN,
+                format,
+                timeZoneId,
+                asyncAfter,
+                null,
+                perPage,
+                page,
+                bardConfigResources
+        );
+    }
+
+    @Override
+    public DataApiRequest buildApiRequest(
+            String tableName,
+            String granularity,
+            List<PathSegment> dimensions,
+            String logicalMetrics,
+            String intervals,
+            String apiFilters,
+            String havings,
+            String sorts,
+            String count,
+            String topN,
+            String format,
+            String timeZoneId,
+            String asyncAfter,
+            String downloadFilename,
+            String perPage,
+            String page,
+            BardConfigResources bardConfigResources
+    ) {
         return new DataApiRequestImpl(
                 tableName,
                 granularity,

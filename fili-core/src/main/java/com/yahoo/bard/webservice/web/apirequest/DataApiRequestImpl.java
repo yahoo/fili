@@ -201,6 +201,100 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                 bardConfigResources.getHavingApiGenerator()
         );
     }
+
+    /**
+     * Parses the API request URL and generates the Api Request object.
+     *
+     * @param tableName  logical table corresponding to the table name specified in the URL
+     * @param granularity  string time granularity in URL
+     * @param dimensions  single dimension or multiple dimensions separated by '/' in URL
+     * @param logicalMetrics  URL logical metric query string in the format:
+     * <pre>{@code single metric or multiple logical metrics separated by ',' }</pre>
+     * @param intervals  URL intervals query string in the format:
+     * <pre>{@code single interval in ISO 8601 format, multiple values separated by ',' }</pre>
+     * @param apiFilters  URL filter query String in the format:
+     * <pre>{@code
+     * ((field name and operation):((multiple values bounded by [])or(single value))))(followed by , or end of string)
+     * }</pre>
+     * @param havings  URL having query String in the format:<pre>
+     * {@code
+     * ((metric name)-(operation)((values bounded by [])))(followed by , or end of string)
+     * }</pre>
+     * @param sorts  string of sort columns along with sort direction in the format:<pre>
+     * {@code (metricName or dimensionName)|(sortDirection) eg: pageViews|asc }</pre>
+     * @param count  count of number of records to be returned in the response
+     * @param topN  number of first records per time bucket to be returned in the response
+     * @param format  response data format JSON or CSV. Default is JSON.
+     * @param timeZoneId  a joda time zone id
+     * @param asyncAfter  How long the user is willing to wait for a synchronous request in milliseconds
+     * @param downloadFilename  The filename for the response to be downloaded as. If null indicates response should
+     * not be downloaded.
+     * @param perPage  number of rows to display per page of results. If present in the original request,
+     * must be a positive integer. If not present, must be the empty string.
+     * @param page  desired page of results. If present in the original request, must be a positive
+     * integer. If not present, must be the empty string.
+     * @param bardConfigResources  The configuration resources used to build this api request
+     *
+     * @throws BadApiRequestException in the following scenarios:
+     * <ol>
+     *     <li>Null or empty table name in the API request.</li>
+     *     <li>Invalid time grain in the API request.</li>
+     *     <li>Invalid dimension in the API request.</li>
+     *     <li>Invalid logical metric in the API request.</li>
+     *     <li>Invalid interval in the API request.</li>
+     *     <li>Invalid filter syntax in the API request.</li>
+     *     <li>Invalid filter dimensions in the API request.</li>
+     *     <li>Invalid having syntax in the API request.</li>
+     *     <li>Invalid having metrics in the API request.</li>
+     *     <li>Pagination parameters in the API request that are not positive integers.</li>
+     * </ol>
+     */
+    public DataApiRequestImpl(
+            String tableName,
+            String granularity,
+            List<PathSegment> dimensions,
+            String logicalMetrics,
+            String intervals,
+            String apiFilters,
+            String havings,
+            String sorts,
+            String count,
+            String topN,
+            String format,
+            String timeZoneId,
+            String asyncAfter,
+            String downloadFilename,
+            @NotNull String perPage,
+            @NotNull String page,
+            BardConfigResources bardConfigResources
+    ) throws BadApiRequestException {
+        this(
+               tableName,
+                granularity,
+                dimensions,
+                logicalMetrics,
+                intervals,
+                apiFilters,
+                havings,
+                sorts,
+                count,
+                topN,
+                format,
+                timeZoneId,
+                asyncAfter,
+                downloadFilename,
+                perPage,
+                page,
+                bardConfigResources.getDimensionDictionary(),
+                bardConfigResources.getMetricDictionary().getScope(Collections.singletonList(tableName)),
+                bardConfigResources.getLogicalTableDictionary(),
+                bardConfigResources.getSystemTimeZone(),
+                bardConfigResources.getGranularityParser(),
+                bardConfigResources.getFilterBuilder(),
+                bardConfigResources.getHavingApiGenerator()
+        );
+    }
+
     /**
      * Parses the API request URL and generates the Api Request object.
      *
@@ -276,7 +370,112 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             DruidFilterBuilder druidFilterBuilder,
             HavingGenerator havingGenerator
     ) throws BadApiRequestException {
-        super(formatRequest, asyncAfterRequest, perPage, page);
+        this(
+                tableName,
+                granularityRequest,
+                dimensionsRequest,
+                logicalMetricsRequest,
+                intervalsRequest,
+                apiFiltersRequest,
+                havingsRequest,
+                sortsRequest,
+                countRequest,
+                topNRequest,
+                formatRequest,
+                timeZoneId,
+                asyncAfterRequest,
+                null,
+                perPage,
+                page,
+                dimensionDictionary,
+                metricDictionary,
+                logicalTableDictionary,
+                systemTimeZone,
+                granularityParser,
+                druidFilterBuilder,
+                havingGenerator
+        );
+    }
+
+    /**
+     * Parses the API request URL and generates the Api Request object.
+     *
+     * @param tableName  logical table corresponding to the table name specified in the URL
+     * @param granularityRequest  string time granularity in URL
+     * @param dimensionsRequest  single dimension or multiple dimensions separated by '/' in URL
+     * @param logicalMetricsRequest  URL logical metric query string in the format:
+     * <pre>{@code single metric or multiple logical metrics separated by ',' }</pre>
+     * @param intervalsRequest  URL intervals query string in the format:
+     * <pre>{@code single interval in ISO 8601 format, multiple values separated by ',' }</pre>
+     * @param apiFiltersRequest  URL filter query String in the format:
+     * <pre>{@code
+     * ((field name and operation):((multiple values bounded by [])or(single value))))(followed by , or end of string)
+     * }</pre>
+     * @param havingsRequest  URL having query String in the format:<pre>
+     * {@code
+     * ((metric name)-(operation)((values bounded by [])))(followed by , or end of string)
+     * }</pre>
+     * @param sortsRequest  string of sort columns along with sort direction in the format:<pre>
+     * {@code (metricName or dimensionName)|(sortDirection) eg: pageViews|asc }</pre>
+     * @param countRequest  count of number of records to be returned in the response
+     * @param topNRequest  number of first records per time bucket to be returned in the response
+     * @param formatRequest  response data format JSON or CSV. Default is JSON.
+     * @param timeZoneId  a joda time zone id
+     * @param asyncAfterRequest  How long the user is willing to wait for a synchronous request in milliseconds
+     * @param downloadFilename  The filename for the response to be downloaded as. If null indicates response should
+     * not be downloaded.
+     * @param perPage  number of rows to display per page of results. If present in the original request,
+     * must be a positive integer. If not present, must be the empty string.
+     * @param page  desired page of results. If present in the original request, must be a positive
+     * integer. If not present, must be the empty string.
+     * @param dimensionDictionary  The dimension dictionary for binding dimensions
+     * @param metricDictionary The metric dictionary for binding metrics
+     * @param logicalTableDictionary The table dictionary for binding logical tables
+     * @param systemTimeZone The default time zone for the system
+     * @param granularityParser A tool to process granularities
+     * @param druidFilterBuilder A function to build druid filters from Api Filters
+     * @param havingGenerator A function to create havings
+     *
+     * @throws BadApiRequestException in the following scenarios:
+     * <ol>
+     *     <li>Null or empty table name in the API request.</li>
+     *     <li>Invalid time grain in the API request.</li>
+     *     <li>Invalid dimension in the API request.</li>
+     *     <li>Invalid logical metric in the API request.</li>
+     *     <li>Invalid interval in the API request.</li>
+     *     <li>Invalid filter syntax in the API request.</li>
+     *     <li>Invalid filter dimensions in the API request.</li>
+     *     <li>Invalid having syntax in the API request.</li>
+     *     <li>Invalid having metrics in the API request.</li>
+     *     <li>Pagination parameters in the API request that are not positive integers.</li>
+     * </ol>
+     */
+    public DataApiRequestImpl(
+            String tableName,
+            String granularityRequest,
+            List<PathSegment> dimensionsRequest,
+            String logicalMetricsRequest,
+            String intervalsRequest,
+            String apiFiltersRequest,
+            String havingsRequest,
+            String sortsRequest,
+            String countRequest,
+            String topNRequest,
+            String formatRequest,
+            String timeZoneId,
+            String asyncAfterRequest,
+            String downloadFilename,
+            @NotNull String perPage,
+            @NotNull String page,
+            DimensionDictionary dimensionDictionary,
+            MetricDictionary metricDictionary,
+            LogicalTableDictionary logicalTableDictionary,
+            DateTimeZone systemTimeZone,
+            GranularityParser granularityParser,
+            DruidFilterBuilder druidFilterBuilder,
+            HavingGenerator havingGenerator
+    ) throws BadApiRequestException {
+        super(formatRequest, asyncAfterRequest, downloadFilename, perPage, page);
 
         timeZone = generateTimeZone(timeZoneId, systemTimeZone);
 

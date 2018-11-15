@@ -87,6 +87,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
     protected final ResponseFormatType format;
     protected final Optional<PaginationParameters> paginationParameters;
     protected final long asyncAfter;
+    protected final Optional<String> downloadFilename;
 
     /**
      * Parses the API request URL and generates the API request object.
@@ -107,6 +108,31 @@ public abstract class ApiRequestImpl implements ApiRequest {
             @NotNull String perPage,
             @NotNull String page
     ) throws BadApiRequestException {
+        this(format, asyncAfter, null, perPage, page);
+    }
+
+    /**
+     * Parses the API request URL and generates the API request object.
+     *
+     * @param format  response data format JSON or CSV. Default is JSON.
+     * @param asyncAfter  How long the user is willing to wait for a synchronous request in milliseconds, if null
+     * defaults to the system config {@code default_asyncAfter}
+     * @param downloadFilename  The filename for the response to be downloaded as. If null indicates response should
+     * not be downloaded.
+     * @param perPage  number of rows to display per page of results. If present in the original request, must be a
+     * positive integer. If not present, must be the empty string.
+     * @param page  desired page of results. If present in the original request, must be a positive integer. If not
+     * present, must be the empty string.
+     *
+     * @throws BadApiRequestException if pagination parameters in the API request are not positive integers.
+     */
+    public ApiRequestImpl(
+            String format,
+            String asyncAfter,
+            String downloadFilename,
+            @NotNull String perPage,
+            @NotNull String page
+    ) throws BadApiRequestException {
         this.format = generateAcceptFormat(format);
         this.paginationParameters = generatePaginationParameters(perPage, page);
         this.asyncAfter = generateAsyncAfter(
@@ -114,7 +140,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
                         SYSTEM_CONFIG.getStringProperty(SYSTEM_CONFIG.getPackageVariableName("default_asyncAfter")) :
                         asyncAfter
         );
-
+        this.downloadFilename = Optional.ofNullable(downloadFilename);
     }
 
     /**
@@ -151,6 +177,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
         this.format = format;
         this.asyncAfter = asyncAfter;
         this.paginationParameters = paginationParameters;
+        this.downloadFilename = Optional.empty();
     }
 
     /**
@@ -587,6 +614,11 @@ public abstract class ApiRequestImpl implements ApiRequest {
 
         LOG.trace("Generated logical table: {} with granularity {}", generated, granularity);
         return generated;
+    }
+
+    @Override
+    public Optional<String> getDownloadFilename() {
+        return downloadFilename;
     }
 
     @Override
