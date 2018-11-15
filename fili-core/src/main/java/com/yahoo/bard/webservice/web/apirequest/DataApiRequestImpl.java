@@ -157,7 +157,9 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      *     <li>Invalid having metrics in the API request.</li>
      *     <li>Pagination parameters in the API request that are not positive integers.</li>
      * </ol>
+     * @deprecated prefer constructors that use filename parameter instead
      */
+    @Deprecated
     public DataApiRequestImpl(
             String tableName,
             String granularity,
@@ -345,7 +347,9 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      *     <li>Invalid having metrics in the API request.</li>
      *     <li>Pagination parameters in the API request that are not positive integers.</li>
      * </ol>
+     * @deprecated prefer constructors that use filename parameter instead
      */
+    @Deprecated
     public DataApiRequestImpl(
             String tableName,
             String granularityRequest,
