@@ -53,7 +53,6 @@ class ResponseUtilsSpec extends Specification {
         responseUtils.getCsvContentDispositionValue(
                 containerRequestContext
         ) == "attachment; filename=foo-bar_2017_2018.csv"
-
     }
 
 
@@ -113,6 +112,18 @@ class ResponseUtilsSpec extends Specification {
 
         then:
         result == "hello/world; charset=utf-8"
+    }
+
+    def "replaceReservedCharacters replaces '/' with '_' and ',' with '__'"() {
+        setup:
+        String input = "\\h\\e/l/l//o_wor,l,d,"
+        String expectedOutput = "_h_e_l_l__o_wor__l__d__"
+
+        when:
+        String result = new ResponseUtils().replaceReservedCharacters(input)
+
+        then:
+        result == expectedOutput
     }
 
     @Unroll
@@ -318,12 +329,12 @@ class ResponseUtilsSpec extends Specification {
         responseFormatType.getCharset() >> "utf-8"
         responseFormatType.getFileExtension() >> ".txt"
 
-        String fileName = "fname"
+        String fileName = "f,na/me"
 
         ResponseUtils responseUtils = new ResponseUtils()
 
         String expectedContentTypeValue = "hello/world; charset=utf-8"
-        String expectedContentDispositionValue = "attachment; filename=fname.txt"
+        String expectedContentDispositionValue = "attachment; filename=f__na_me.txt"
 
         when:
         Map<String, String> result = responseUtils.buildResponseFormatHeaders(Mock(ContainerRequestContext), fileName, responseFormatType)

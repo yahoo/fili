@@ -2,8 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data;
 
-import static com.yahoo.bard.webservice.web.DefaultResponseFormatType.CSV;
-import static com.yahoo.bard.webservice.web.DefaultResponseFormatType.JSON;
 import static com.yahoo.bard.webservice.web.handlers.PartialDataRequestHandler.getPartialIntervalsWithDefault;
 import static com.yahoo.bard.webservice.web.handlers.VolatileDataRequestHandler.getVolatileIntervalsWithDefault;
 import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys.API_METRIC_COLUMN_NAMES;
@@ -19,6 +17,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
+import com.yahoo.bard.webservice.web.DefaultResponseFormatType;
 import com.yahoo.bard.webservice.web.PreResponse;
 import com.yahoo.bard.webservice.web.ResponseData;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
@@ -33,14 +32,11 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
@@ -154,7 +150,7 @@ public class HttpResponseMaker {
         // Add headers for content type
         // default response format is JSON
         if (responseFormatType == null) {
-            responseFormatType = JSON;
+            responseFormatType = DefaultResponseFormatType.JSON;
         }
 
         LinkedHashMap<String, LinkedHashSet<DimensionField>> dimensionToDimensionFieldMap =
@@ -270,17 +266,6 @@ public class HttpResponseMaker {
             ContainerRequestContext containerRequestContext
     ) {
         return buildAndAddResponseHeaders(rspBuilder, responseFormatType, containerRequestContext, null);
-//        if (CSV.accepts(responseFormatType)) {
-//            return rspBuilder
-//                    .header(HttpHeaders.CONTENT_TYPE, "text/csv; charset=utf-8")
-//                    .header(
-//                            HttpHeaders.CONTENT_DISPOSITION,
-//                            responseUtils.getCsvContentDispositionValue(containerRequestContext)
-//                    );
-//        } else {
-//            return rspBuilder
-//                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON + "; charset=utf-8");
-//        }
     }
 
     /**

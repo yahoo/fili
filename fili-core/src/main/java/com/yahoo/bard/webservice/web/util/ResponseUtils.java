@@ -198,7 +198,7 @@ public class ResponseUtils {
         if (downloadFilename == null || downloadFilename.isEmpty()) {
             downloadFilename = generateDefaultFileNameNoExtension(containerRequestContext);
         }
-
+        downloadFilename = replaceReservedCharacters(downloadFilename);
         String filepath = truncateFilename(downloadFilename);
         String extension = responseFormatType.getFileExtension();
         return CONTENT_DISPOSITION_HEADER_PREFIX + filepath + extension;
@@ -229,8 +229,7 @@ public class ResponseUtils {
         if (interval == null) {
             interval = "";
         } else {
-            // Chrome treats ',' as duplicate header so replace it with '__' to make chrome happy.
-            interval = "_" + interval.replace("/", "_").replace(",", "__");
+            interval = "_" + replaceReservedCharacters(interval);
         }
         return uriPath + interval;
     }
@@ -246,5 +245,18 @@ public class ResponseUtils {
         return (maxFileLength > 0 && filename.length() > maxFileLength)
                 ? filename.substring(0, maxFileLength)
                 : filename;
+    }
+
+    /**
+     * Replaces a small set of illegal characters with underscores.
+     *
+     * '/' and '\' are file path delimiters in unix and windows respectively, so they must be replaced. Chrome treats
+     * ',' as duplicate header so it must also be replaced to make chrome happy.
+     *
+     * @param str  Input to perform replace on
+     * @return the input with reserved characters replaced with underscores
+     */
+    protected String replaceReservedCharacters(String str) {
+        return str.replaceAll("[\\\\/]", "_").replaceAll(",", "__");
     }
 }
