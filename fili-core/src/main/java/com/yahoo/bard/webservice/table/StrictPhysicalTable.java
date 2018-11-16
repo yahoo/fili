@@ -8,6 +8,8 @@ import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.availability.StrictAvailability;
 
+import org.joda.time.DateTime;
+
 import java.util.Map;
 import java.util.Set;
 
@@ -39,7 +41,46 @@ public class StrictPhysicalTable extends SingleDataSourcePhysicalTable {
                 timeGrain,
                 columns,
                 logicalToPhysicalColumnNames,
-                new StrictAvailability(DataSourceName.of(name.asName()), metadataService)
+                metadataService,
+                null,
+                null
+        );
+    }
+
+    /**
+     * Create a strict physical table. Takes expected start and end dates and constructs a StrictAvailability using
+     * them.
+     *
+     * @param name  Name of the physical table as TableName, also used as data source name
+     * @param timeGrain  time grain of the table
+     * @param columns  The columns for this table
+     * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
+     * @param metadataService  Datasource metadata service containing availability data for the table
+     * @param expectedStartDate  The expected start date of the datasource for this availability. Null indicates no
+     * expected start date
+     * @param expectedEndDate  The expected end date of the datasource for this availability. Null indicates no
+     * expected end date
+     */
+    public StrictPhysicalTable(
+            @NotNull TableName name,
+            @NotNull ZonedTimeGrain timeGrain,
+            @NotNull Set<Column> columns,
+            @NotNull Map<String, String> logicalToPhysicalColumnNames,
+            @NotNull DataSourceMetadataService metadataService,
+            DateTime expectedStartDate,
+            DateTime expectedEndDate
+    ) {
+        this(
+                name,
+                timeGrain,
+                columns,
+                logicalToPhysicalColumnNames,
+                new StrictAvailability(
+                        DataSourceName.of(name.asName()),
+                        metadataService,
+                        expectedStartDate,
+                        expectedEndDate
+                )
         );
     }
 
