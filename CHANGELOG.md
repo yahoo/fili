@@ -111,6 +111,8 @@ Current
     * Add `LogicalMetricInfo` conversion method on ApiMetricField class
     * Moved all tests and internal uses onto LMI based construction
 
+- [Update Redison dependencies](https://github.com/yahoo/fili/issues/836)
+
 ### Deprecated:
 
 ### Removed:
