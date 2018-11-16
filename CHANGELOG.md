@@ -10,6 +10,36 @@ Current
 
 ### Added:
 
+- [Added expected start and end dates to availability](https://github.com/yahoo/fili/issues/822)
+    * Add methods for getting expected start and end dates given a datasource constraint to the `Availability` interface.
+        - start and end dates are optional, with an empty optional indicating no expected start or end date.
+        - the new methods default to returning an empty optional.
+    * The start and end dates are not concrete. If an availability has intervals outside of the expected range those 
+    intervals are NOT suppressed.
+    * `BaseCompositeAvailability` reports its expected start and end dates as the earliest start date and latest end date
+    of its composed availabilities.
+        -   no expected start or end date supercedes any configured start or end date, so if ANY of the composed availabilities
+        has no start or end date, and empty optional is reported.
+    * Add a constructor to `StrictAvailability` that takes start and end dates, which allow for direct configuration 
+    of expected start and end dates.  
+        
+- [Fili can now route to one of several Druid webservices based on custom routing logic](https://github.com/yahoo/fili/pull/759)
+    * This allows customers to put Fili in front of multiple Druid clusters, and
+        then use custom logic to decide which cluster to query for each request.
+    * We introduce a new interface `DruidWebServiceSelector` that wraps the 
+        routing logic, and pass an instance to the AsyncWebServiceRequestHandler
+        for it to use.
+        
+- [Add Druid Bound filter support to Fili](https://github.com/yahoo/fili/pull/807)
+    * Added the `DruidBoundFilter` class to support the Bound Filter supported by Druid.
+    
+- [Add static Factory build methods for BoundFilter](https://github.com/yahoo/fili/pull/807)
+    * Added static factory methods for building `lowerBound`, `upperBound`, `strictLowerBound` and `strictUpperBound`
+        Bound filters.
+
+- [Add insertion order aware method for Stream Utils](https://github.com/yahoo/fili/pull/807)
+    * Added `orderedSetMerge` that merges 2 sets in the order provided.
+
 ### Changed:
 - [Added config property for SSL cipher suites](https://github.com/yahoo/fili/issues/831)
 
@@ -20,6 +50,14 @@ Current
 - [Truncate csv response file path length](https://github.com/yahoo/fili/issues/825)
     ~~* Set a max size to file name for a downloaded csv report.~~ 
         ~~- max length is 218 characters, which is Microsoft Excel's max file length~~
+
+- [The algorithm for PartionAvailability is changed to consider using expected start and end date](https://github.com/yahoo/fili/issues/822)
+    * Currently `PartitonAvailability` reports its availability as the intersection of all participating
+    sub availabilities
+    * `PartitionAvailability` now takes the union of available intervals from all participating availabilities
+    and subtracts from it the union of missing intervals from all participating availabilities.
+        - The current algorithm is equivalent to the new algorithm if ALL participating availabilities have
+        NO expected start AND end dates
 
 - [Configurable limit to csv filename length](https://github.com/yahoo/fili/issues/825)
     * Created configuration parameter 'download_file_max_name_length' to truncate filename lengths
@@ -106,26 +144,9 @@ Current
   * `DataApiRequest` getHaving -> getQueryHaving
   * `DataApiRequest` getDruidFilter -> getQueryFilter
   * Deprecate old paths
-
+  
 - [Additional healthcheck logging on healthchck failure on data request](https://github.com/yahoo/fili/pull/809)
-    * Added user, request url, and timestamp to healthcheck error message on data request.
-        
-- [Fili can now route to one of several Druid webservices based on custom routing logic](https://github.com/yahoo/fili/pull/759)
-    * This allows customers to put Fili in front of multiple Druid clusters, and
-        then use custom logic to decide which cluster to query for each request.
-    * We introduce a new interface `DruidWebServiceSelector` that wraps the 
-        routing logic, and pass an instance to the AsyncWebServiceRequestHandler
-        for it to use.
-        
-- [Add Druid Bound filter support to Fili](https://github.com/yahoo/fili/pull/807)
-    * Added the `DruidBoundFilter` class to support the Bound Filter supported by Druid.
-    
-- [Add static Factory build methods for BoundFilter](https://github.com/yahoo/fili/pull/807)
-    * Added static factory methods for building `lowerBound`, `upperBound`, `strictLowerBound` and `strictUpperBound`
-        Bound filters.
-
-- [Add insertion order aware method for Stream Utils](https://github.com/yahoo/fili/pull/807)
-    * Added `orderedSetMerge` that merges 2 sets in the order provided.
+  * Added user, request url, and timestamp to healthcheck error message on data request.
 
 v0.10.48 - 2018/10/04
 =====
