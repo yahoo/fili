@@ -87,7 +87,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
     protected final ResponseFormatType format;
     protected final Optional<PaginationParameters> paginationParameters;
     protected final long asyncAfter;
-    protected final Optional<String> downloadFilename;
+    protected final String downloadFilename;
 
     /**
      * Parses the API request URL and generates the API request object.
@@ -140,7 +140,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
                         SYSTEM_CONFIG.getStringProperty(SYSTEM_CONFIG.getPackageVariableName("default_asyncAfter")) :
                         asyncAfter
         );
-        this.downloadFilename = Optional.ofNullable(downloadFilename);
+        this.downloadFilename = downloadFilename;
     }
 
     /**
@@ -177,7 +177,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
         this.format = format;
         this.asyncAfter = asyncAfter;
         this.paginationParameters = paginationParameters;
-        this.downloadFilename = Optional.empty();
+        this.downloadFilename = null;
     }
 
     /**
@@ -618,7 +618,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
 
     @Override
     public Optional<String> getDownloadFilename() {
-        return downloadFilename;
+        return Optional.ofNullable(downloadFilename);
     }
 
     @Override
