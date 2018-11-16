@@ -141,7 +141,7 @@ public class ResponseUtils {
         // if filename is present and not empty then the druid response should be sent back as an attachment
         if (
                 alwaysDownloadFormats.contains(responseFormatType) ||
-                        (downloadFilename != null && !downloadFilename.isEmpty())
+                        downloadFilename != null && !downloadFilename.isEmpty()
         ) {
             result.put(
                     HttpHeaders.CONTENT_DISPOSITION,
@@ -186,16 +186,17 @@ public class ResponseUtils {
      * generated instead.
      *
      * @param containerRequestContext  container request context of the request currently being handled
-     * @param downloadFilename  the filename for the response to be downloaded as
+     * @param requestedFilename  the filename for the response to be downloaded as
      * @param responseFormatType  data object that contains information necessary to build the response headers
      * @return the value for the Content-Disposition header
      */
     public String getContentDispositionValue(
             ContainerRequestContext containerRequestContext,
-            String downloadFilename,
+            String requestedFilename,
             ResponseFormatType responseFormatType
     ) {
-        if (downloadFilename == null || downloadFilename.isEmpty()) {
+        String downloadFilename = requestedFilename;
+        if (requestedFilename == null || requestedFilename.isEmpty()) {
             downloadFilename = generateDefaultFileNameNoExtension(containerRequestContext);
         }
         downloadFilename = replaceReservedCharacters(downloadFilename);
@@ -242,7 +243,7 @@ public class ResponseUtils {
      * @return  the filename truncated to the configured maximum length if necessary
      */
     protected String truncateFilename(String filename) {
-        return (maxFileLength > 0 && filename.length() > maxFileLength)
+        return maxFileLength > 0 && filename.length() > maxFileLength
                 ? filename.substring(0, maxFileLength)
                 : filename;
     }

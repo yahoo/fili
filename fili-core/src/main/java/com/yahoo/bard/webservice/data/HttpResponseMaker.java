@@ -290,9 +290,10 @@ public class HttpResponseMaker {
                 responseFormatType
         );
 
+        ResponseBuilder responseBuilderWithHeaders = rspBuilder;
         for (Map.Entry<String, String> entry : responseHeaders.entrySet()) {
-            rspBuilder = rspBuilder.header(entry.getKey(), entry.getValue());
+            responseBuilderWithHeaders = responseBuilderWithHeaders.header(entry.getKey(), entry.getValue());
         }
-        return rspBuilder;
+        return responseBuilderWithHeaders;
     }
 }
