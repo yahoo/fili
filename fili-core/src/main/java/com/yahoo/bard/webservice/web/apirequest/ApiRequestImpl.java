@@ -81,8 +81,8 @@ public abstract class ApiRequestImpl implements ApiRequest {
             DEFAULT_PER_PAGE,
             DEFAULT_PAGE
     );
-    private static final String SYNCHRONOUS_REQUEST_FLAG = "never";
-    private static final String ASYNCHRONOUS_REQUEST_FLAG = "always";
+    protected static final String SYNCHRONOUS_REQUEST_FLAG = "never";
+    protected static final String ASYNCHRONOUS_REQUEST_FLAG = "always";
 
     protected final ResponseFormatType format;
     protected final Optional<PaginationParameters> paginationParameters;
@@ -101,7 +101,9 @@ public abstract class ApiRequestImpl implements ApiRequest {
      * present, must be the empty string.
      *
      * @throws BadApiRequestException if pagination parameters in the API request are not positive integers.
+     * @deprecated prefer constructor with downloadFilename
      */
+    @Deprecated
     public ApiRequestImpl(
             String format,
             String asyncAfter,
@@ -117,8 +119,8 @@ public abstract class ApiRequestImpl implements ApiRequest {
      * @param format  response data format JSON or CSV. Default is JSON.
      * @param asyncAfter  How long the user is willing to wait for a synchronous request in milliseconds, if null
      * defaults to the system config {@code default_asyncAfter}
-     * @param downloadFilename  The filename for the response to be downloaded as. If null indicates response should
-     * not be downloaded.
+     * @param downloadFilename  The filename for the response to be downloaded as. If null or empty indicates response
+     * should not be downloaded.
      * @param perPage  number of rows to display per page of results. If present in the original request, must be a
      * positive integer. If not present, must be the empty string.
      * @param page  desired page of results. If present in the original request, must be a positive integer. If not
@@ -159,7 +161,27 @@ public abstract class ApiRequestImpl implements ApiRequest {
             @NotNull String perPage,
             @NotNull String page
     ) throws BadApiRequestException {
-        this(format, SYNCHRONOUS_REQUEST_FLAG, perPage, page);
+        this(format, SYNCHRONOUS_REQUEST_FLAG, null, perPage, page);
+    }
+
+    /**
+     * All argument constructor, meant to be used for rewriting apiRequest.
+     *
+     * @param format  The format of the response
+     * @param asyncAfter  How long the user is willing to wait for a synchronous request, in milliseconds
+     * @param paginationParameters  The parameters used to describe pagination
+     * @deprecated prefer constructor with downloadFilename
+     */
+    @Deprecated
+    protected ApiRequestImpl(
+            ResponseFormatType format,
+            long asyncAfter,
+            Optional<PaginationParameters> paginationParameters
+    ) {
+        this.format = format;
+        this.asyncAfter = asyncAfter;
+        this.paginationParameters = paginationParameters;
+        this.downloadFilename = null;
     }
 
     /**
@@ -171,13 +193,14 @@ public abstract class ApiRequestImpl implements ApiRequest {
      */
     protected ApiRequestImpl(
             ResponseFormatType format,
+            String downloadFilename,
             long asyncAfter,
             Optional<PaginationParameters> paginationParameters
     ) {
         this.format = format;
+        this.downloadFilename = downloadFilename;
         this.asyncAfter = asyncAfter;
         this.paginationParameters = paginationParameters;
-        this.downloadFilename = null;
     }
 
     /**
