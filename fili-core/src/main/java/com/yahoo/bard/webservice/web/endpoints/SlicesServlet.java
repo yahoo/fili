@@ -106,6 +106,7 @@ public class SlicesServlet extends EndpointServlet {
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @QueryParam("format") String format,
+            @QueryParam("filename") String downloadFilename,
             @Context ContainerRequestContext containerRequestContext
     ) {
         SlicesApiRequest apiRequest = null;
@@ -117,6 +118,7 @@ public class SlicesServlet extends EndpointServlet {
             apiRequest = new SlicesApiRequestImpl(
                     null,
                     formatResolver.apply(format, containerRequestContext),
+                    downloadFilename,
                     perPage,
                     page,
                     physicalTableDictionary,

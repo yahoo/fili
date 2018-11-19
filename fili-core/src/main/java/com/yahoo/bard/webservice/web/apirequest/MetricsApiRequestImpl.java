@@ -44,7 +44,9 @@ public class MetricsApiRequestImpl extends ApiRequestImpl implements MetricsApiR
      *     <li>Invalid logical metric in the API request.</li>
      *     <li>Pagination parameters in the API request that are not positive integers.</li>
      * </ol>
+     * @deprecated prefer constructor with downloadFilename
      */
+    @Deprecated
     public MetricsApiRequestImpl(
             String metricName,
             String format,
@@ -52,14 +54,47 @@ public class MetricsApiRequestImpl extends ApiRequestImpl implements MetricsApiR
             @NotNull String page,
             MetricDictionary metricDictionary
     ) throws BadApiRequestException {
-        super(format, perPage, page);
+        this(metricName, format, null, perPage, page, metricDictionary);
+    }
+
+    /**
+     * Parses the API request URL and generates the Api Request object.
+     *
+     * @param metricName  string corresponding to the metric name specified in the URL
+     * <pre>{@code
+     * ((field name and operation):((multiple values bounded by [])or(single value))))(followed by , or end of string)
+     * }</pre>
+     * @param format  response data format JSON or CSV. Default is JSON.
+     * @param perPage  number of rows to display per page of results. If present in the original request,
+     * must be a positive integer. If not present, must be the empty string.
+     * @param page  desired page of results. If present in the original request, must be a positive
+     * integer. If not present, must be the empty string.
+     * @param metricDictionary  cache containing all the valid metric objects.
+     *
+     * @throws BadApiRequestException is thrown in the following scenarios:
+     * <ol>
+     *     <li>Invalid logical metric in the API request.</li>
+     *     <li>Pagination parameters in the API request that are not positive integers.</li>
+     * </ol>
+     */
+    public MetricsApiRequestImpl(
+            String metricName,
+            String format,
+            String downloadFilename,
+            @NotNull String perPage,
+            @NotNull String page,
+            MetricDictionary metricDictionary
+    ) throws BadApiRequestException {
+        super(format, downloadFilename, SYNCHRONOUS_REQUEST_FLAG, perPage, page);
 
         this.metrics = generateMetrics(metricName, metricDictionary);
 
         LOG.debug(
-                "Api request: \nMetrics: {},\nFormat: {}\nPagination: {}",
+                "Api request: \nMetrics: {},\nFormat: {},\nFilename: {},\nPagination: {}",
                 this.metrics,
                 this.format,
+                this.format,
+                this.downloadFilename,
                 this.paginationParameters
         );
     }

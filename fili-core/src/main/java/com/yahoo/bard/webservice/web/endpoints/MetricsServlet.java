@@ -111,6 +111,7 @@ public class MetricsServlet extends EndpointServlet {
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @QueryParam("format") String format,
+            @QueryParam("filename") String downloadFilename,
             @Context final ContainerRequestContext containerRequestContext
     ) {
         UriInfo uriInfo = containerRequestContext.getUriInfo();
@@ -122,6 +123,7 @@ public class MetricsServlet extends EndpointServlet {
             apiRequest = new MetricsApiRequestImpl(
                     null,
                     formatResolver.apply(format, containerRequestContext),
+                    downloadFilename,
                     perPage,
                     page,
                     metricDictionary

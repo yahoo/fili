@@ -62,7 +62,9 @@ public class SlicesApiRequestImpl extends ApiRequestImpl implements SlicesApiReq
      *     <li>Invalid slice in the API request.</li>
      *     <li>Pagination parameters in the API request that are not positive integers.</li>
      * </ol>
+     * @deprecated prefer constructor with
      */
+    @Deprecated
     public SlicesApiRequestImpl(
             String sliceName,
             String format,
@@ -72,7 +74,42 @@ public class SlicesApiRequestImpl extends ApiRequestImpl implements SlicesApiReq
             DataSourceMetadataService dataSourceMetadataService,
             UriInfo uriInfo
     ) throws BadApiRequestException {
-        super(format, perPage, page);
+        this(sliceName, format, null, perPage, page, tableDictionary, dataSourceMetadataService, uriInfo);
+    }
+
+    /**
+     * Parses the API request URL and generates the Api Request object.
+     *
+     * @param sliceName  string corresponding to the slice name specified in the URL
+     * <pre>{@code
+     * ((field name and operation):((multiple values bounded by [])or(single value))))(followed by , or end of string)
+     * }</pre>
+     * @param format  response data format JSON or CSV. Default is JSON.
+     * @param perPage  number of rows to display per page of results. If present in the original request,
+     * must be a positive integer. If not present, must be the empty string.
+     * @param page  desired page of results. If present in the original request, must be a positive
+     * integer. If not present, must be the empty string.
+     * @param tableDictionary  cache containing all the valid physical table objects.
+     * @param dataSourceMetadataService  a resource holding the available datasource metadata
+     * @param uriInfo  The URI of the request object.
+     *
+     * @throws BadApiRequestException is thrown in the following scenarios:
+     * <ol>
+     *     <li>Invalid slice in the API request.</li>
+     *     <li>Pagination parameters in the API request that are not positive integers.</li>
+     * </ol>
+     */
+    public SlicesApiRequestImpl(
+            String sliceName,
+            String format,
+            String downloadFilename,
+            @NotNull String perPage,
+            @NotNull String page,
+            PhysicalTableDictionary tableDictionary,
+            DataSourceMetadataService dataSourceMetadataService,
+            UriInfo uriInfo
+    ) throws BadApiRequestException {
+        super(format, downloadFilename, SYNCHRONOUS_REQUEST_FLAG, perPage, page);
         this.slices = generateSlices(tableDictionary, uriInfo);
 
         this.slice = sliceName != null ? generateSlice(
@@ -83,9 +120,10 @@ public class SlicesApiRequestImpl extends ApiRequestImpl implements SlicesApiReq
         ) : null;
 
         LOG.debug(
-                "Api request: \nSlices: {},\nFormat: {}\nPagination: {}",
+                "Api request: \nSlices: {},\nFormat: {},\nFilename: {},\nPagination: {}",
                 this.slices,
                 this.format,
+                this.downloadFilename,
                 this.paginationParameters
         );
     }

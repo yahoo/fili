@@ -69,9 +69,22 @@ public class FeatureFlagsServlet extends EndpointServlet {
          * @param format  Format of the request
          * @param perPage  How many items to show per page
          * @param page  Which page to show
+         * @deprecated
          */
+        @Deprecated
         FeatureFlagApiRequest(String format, String perPage, String page) {
             super(format, perPage, page);
+        }
+
+        /**
+         * Constructor.
+         *
+         * @param format  Format of the request
+         * @param perPage  How many items to show per page
+         * @param page  Which page to show
+         */
+        FeatureFlagApiRequest(String format, String downloadFilename, String perPage, String page) {
+            super(format, downloadFilename, SYNCHRONOUS_REQUEST_FLAG, perPage, page);
         }
     }
 
@@ -121,6 +134,7 @@ public class FeatureFlagsServlet extends EndpointServlet {
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @QueryParam("format") String format,
+            @QueryParam("filename") String downloadFilename,
             @Context ContainerRequestContext containerRequestContext
     ) {
         Supplier<Response> responseSender;
@@ -130,6 +144,7 @@ public class FeatureFlagsServlet extends EndpointServlet {
 
             FeatureFlagApiRequest apiRequest = new FeatureFlagApiRequest(
                     format,
+                    downloadFilename,
                     perPage,
                     page
             );
@@ -162,7 +177,6 @@ public class FeatureFlagsServlet extends EndpointServlet {
      * Get the status of a specific feature flag.
      *
      * @param flagName The feature flag
-     * @param format  The format to return results in
      *
      * @return Response Format:
      * <pre><code>
@@ -179,8 +193,7 @@ public class FeatureFlagsServlet extends EndpointServlet {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{flagName}")
     public Response getFeatureFlagStatus(
-            @PathParam("flagName") String flagName,
-            @QueryParam("format") String format
+            @PathParam("flagName") String flagName
     ) {
         Supplier<Response> responseSender;
         try {
