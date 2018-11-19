@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -39,7 +40,7 @@ public abstract class PhysicalTableDefinition {
     private final Set<FieldName> metricNames;
     private final Set<? extends DimensionConfig> dimensionConfigs;
     private final Map<String, String> logicalToPhysicalNames;
-    private final DateTime expectedStartDate, expectedEndDate;
+    private final Optional<DateTime> expectedStartDate, expectedEndDate;
 
     /**
      * Constructor for sub-class to call.
@@ -55,7 +56,7 @@ public abstract class PhysicalTableDefinition {
             Set<FieldName> metricNames,
             Set<? extends DimensionConfig> dimensionConfigs
     ) {
-        this(name, timeGrain, metricNames, dimensionConfigs, null, null);
+        this(name, timeGrain, metricNames, dimensionConfigs, Optional.empty(), Optional.empty());
     }
 
     /**
@@ -75,8 +76,8 @@ public abstract class PhysicalTableDefinition {
             ZonedTimeGrain timeGrain,
             Set<FieldName> metricNames,
             Set<? extends DimensionConfig> dimensionConfigs,
-            DateTime expectedStartDate,
-            DateTime expectedEndDate
+            Optional<DateTime> expectedStartDate,
+            Optional<DateTime> expectedEndDate
     ) {
         this.name = name;
         this.timeGrain = timeGrain;
@@ -103,7 +104,15 @@ public abstract class PhysicalTableDefinition {
             Set<? extends DimensionConfig> dimensionConfigs,
             Map<String, String> logicalToPhysicalNames
     ) {
-        this(name, timeGrain, metricNames, dimensionConfigs, logicalToPhysicalNames, null, null);
+        this(
+                name,
+                timeGrain,
+                metricNames,
+                dimensionConfigs,
+                logicalToPhysicalNames,
+                Optional.empty(),
+                Optional.empty()
+        );
     }
 
     /**
@@ -125,8 +134,8 @@ public abstract class PhysicalTableDefinition {
             Set<FieldName> metricNames,
             Set<? extends DimensionConfig> dimensionConfigs,
             Map<String, String> logicalToPhysicalNames,
-            DateTime expectedStartDate,
-            DateTime expectedEndDate
+            Optional<DateTime> expectedStartDate,
+            Optional<DateTime> expectedEndDate
     ) {
         this.name = name;
         this.timeGrain = timeGrain;
@@ -157,11 +166,11 @@ public abstract class PhysicalTableDefinition {
             DataSourceMetadataService metadataService
     );
 
-    public DateTime getExpectedStartDate() {
+    public Optional<DateTime> getExpectedStartDate() {
         return expectedStartDate;
     }
 
-    public DateTime getExpectedEndDate() {
+    public Optional<DateTime> getExpectedEndDate() {
         return expectedEndDate;
     }
 

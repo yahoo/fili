@@ -11,6 +11,7 @@ import com.yahoo.bard.webservice.table.availability.StrictAvailability;
 import org.joda.time.DateTime;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.validation.constraints.NotNull;
@@ -42,8 +43,8 @@ public class StrictPhysicalTable extends SingleDataSourcePhysicalTable {
                 columns,
                 logicalToPhysicalColumnNames,
                 metadataService,
-                null,
-                null
+                Optional.empty(),
+                Optional.empty()
         );
     }
 
@@ -56,9 +57,9 @@ public class StrictPhysicalTable extends SingleDataSourcePhysicalTable {
      * @param columns  The columns for this table
      * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
      * @param metadataService  Datasource metadata service containing availability data for the table
-     * @param expectedStartDate  The expected start date of the datasource for this availability. Null indicates no
+     * @param expectedStartDate  The expected start date of the datasource for this availability. Empty indicates no
      * expected start date
-     * @param expectedEndDate  The expected end date of the datasource for this availability. Null indicates no
+     * @param expectedEndDate  The expected end date of the datasource for this availability. Empty indicates no
      * expected end date
      */
     public StrictPhysicalTable(
@@ -67,8 +68,8 @@ public class StrictPhysicalTable extends SingleDataSourcePhysicalTable {
             @NotNull Set<Column> columns,
             @NotNull Map<String, String> logicalToPhysicalColumnNames,
             @NotNull DataSourceMetadataService metadataService,
-            DateTime expectedStartDate,
-            DateTime expectedEndDate
+            Optional<DateTime> expectedStartDate,
+            Optional<DateTime> expectedEndDate
     ) {
         this(
                 name,
