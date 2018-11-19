@@ -238,7 +238,7 @@ public class DimensionsServlet extends EndpointServlet {
      * @param perPage  The number of rows per page
      * @param format  The format of the response
      * @param downloadFilename If present, indicates the response should be downloaded by the client with the provided
-     * username. Otherwise indicates the response should be rendered in the browser.
+     * filename. Otherwise indicates the response should be rendered in the browser.
      * @param uriInfo The injected UriInfo
      * @param containerRequestContext The injected request context
      *
