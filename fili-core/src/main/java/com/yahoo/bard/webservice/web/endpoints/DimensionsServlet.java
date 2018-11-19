@@ -191,6 +191,7 @@ public class DimensionsServlet extends EndpointServlet {
                     dimensionName,
                     null,
                     null,
+                    null,
                     "",
                     "",
                     dimensionDictionary

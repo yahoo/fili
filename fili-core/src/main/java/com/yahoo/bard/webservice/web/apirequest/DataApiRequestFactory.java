@@ -102,9 +102,9 @@ public interface DataApiRequestFactory {
             String count,
             String topN,
             String format,
+            String downloadFilename,
             String timeZoneId,
             String asyncAfter,
-            String downloadFilename,
             @NotNull String perPage,
             @NotNull String page,
             BardConfigResources bardConfigResources

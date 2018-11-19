@@ -110,7 +110,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
             @NotNull String perPage,
             @NotNull String page
     ) throws BadApiRequestException {
-        this(format, asyncAfter, null, perPage, page);
+        this(format, null, asyncAfter, perPage, page);
     }
 
     /**
@@ -130,8 +130,8 @@ public abstract class ApiRequestImpl implements ApiRequest {
      */
     public ApiRequestImpl(
             String format,
-            String asyncAfter,
             String downloadFilename,
+            String asyncAfter,
             @NotNull String perPage,
             @NotNull String page
     ) throws BadApiRequestException {
@@ -161,7 +161,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
             @NotNull String perPage,
             @NotNull String page
     ) throws BadApiRequestException {
-        this(format, SYNCHRONOUS_REQUEST_FLAG, null, perPage, page);
+        this(format, null, SYNCHRONOUS_REQUEST_FLAG, perPage, page);
     }
 
     /**

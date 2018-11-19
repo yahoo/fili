@@ -107,7 +107,7 @@ public class DimensionsApiRequestImpl extends ApiRequestImpl implements Dimensio
             @NotNull String page,
             DimensionDictionary dimensionDictionary
     ) throws BadApiRequestException {
-        super(format,SYNCHRONOUS_REQUEST_FLAG, downloadFilename, perPage, page);
+        super(format,downloadFilename, SYNCHRONOUS_REQUEST_FLAG, perPage, page);
 
         // Zero or more grouping dimensions may be specified
         this.dimensions = generateDimensions(dimension, dimensionDictionary);

@@ -151,6 +151,7 @@ public class JobsServlet extends EndpointServlet {
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @QueryParam("format") String format,
+            @QueryParam("filename") String downloadFilename,
             @QueryParam("filters") String filters,
             @Context ContainerRequestContext containerRequestContext,
             @Suspended AsyncResponse asyncResponse
@@ -163,6 +164,7 @@ public class JobsServlet extends EndpointServlet {
 
             apiRequest = new JobsApiRequestImpl(
                     formatResolver.apply(format, containerRequestContext),
+                    downloadFilename,
                     null, //asyncAfter is null so it behaves like a synchronous request
                     perPage,
                     page,
@@ -281,6 +283,7 @@ public class JobsServlet extends EndpointServlet {
     public void getJobResultsByTicket(
             @PathParam("ticket") String ticket,
             @QueryParam("format") String format,
+            @QueryParam("filename") String downloadFilename,
             @QueryParam("asyncAfter") String asyncAfter,
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
@@ -296,6 +299,7 @@ public class JobsServlet extends EndpointServlet {
 
             apiRequest = new JobsApiRequestImpl(
                     format,
+                    downloadFilename,
                     asyncAfter,
                     perPage,
                     page,

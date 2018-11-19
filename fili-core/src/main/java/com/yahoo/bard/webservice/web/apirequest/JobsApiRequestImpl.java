@@ -52,7 +52,9 @@ public class JobsApiRequestImpl extends ApiRequestImpl implements JobsApiRequest
      * @param uriInfo  The URI of the request object.
      * @param jobPayloadBuilder  The JobRowMapper to be used to map JobRow to the Job returned by the api
      * @param apiJobStore  The ApiJobStore containing Job metadata
+     * @deprecated prefer constructor with downloadFilename
      */
+    @Deprecated
     public JobsApiRequestImpl(
             String format,
             String asyncAfter,
@@ -64,6 +66,41 @@ public class JobsApiRequestImpl extends ApiRequestImpl implements JobsApiRequest
             ApiJobStore apiJobStore
     ) {
         super(format, asyncAfter, perPage, page);
+        this.uriInfo = uriInfo;
+        this.jobPayloadBuilder = jobPayloadBuilder;
+        this.apiJobStore = apiJobStore;
+        this.filters = filters;
+    }
+
+    /**
+     * Parses the API request URL and generates the Api Request object.
+     *
+     * @param format  response data format JSON or CSV. Default is JSON.
+     * @param asyncAfter  How long the user is willing to wait for a synchronous request in milliseconds
+     * @param perPage  number of rows to display per page of results. If present in the original request,
+     * must be a positive integer. If not present, must be the empty string.
+     * @param page  desired page of results. If present in the original request, must be a positive
+     * integer. If not present, must be the empty string.
+     * @param filters  URL filter query String in the format:
+     * <pre>{@code
+     * ((field name and operation):((multiple values bounded by [])or(single value))))(followed by , or end of string)
+     * }</pre>
+     * @param uriInfo  The URI of the request object.
+     * @param jobPayloadBuilder  The JobRowMapper to be used to map JobRow to the Job returned by the api
+     * @param apiJobStore  The ApiJobStore containing Job metadata
+     */
+    public JobsApiRequestImpl(
+            String format,
+            String downloadFilename,
+            String asyncAfter,
+            @NotNull String perPage,
+            @NotNull String page,
+            String filters,
+            UriInfo uriInfo,
+            JobPayloadBuilder jobPayloadBuilder,
+            ApiJobStore apiJobStore
+    ) {
+        super(format, downloadFilename, asyncAfter, perPage, page);
         this.uriInfo = uriInfo;
         this.jobPayloadBuilder = jobPayloadBuilder;
         this.apiJobStore = apiJobStore;

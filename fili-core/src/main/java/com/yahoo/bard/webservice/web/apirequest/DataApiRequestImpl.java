@@ -263,9 +263,9 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             String count,
             String topN,
             String format,
+            String downloadFilename,
             String timeZoneId,
             String asyncAfter,
-            String downloadFilename,
             @NotNull String perPage,
             @NotNull String page,
             BardConfigResources bardConfigResources
@@ -282,9 +282,9 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                 count,
                 topN,
                 format,
+                downloadFilename,
                 timeZoneId,
                 asyncAfter,
-                downloadFilename,
                 perPage,
                 page,
                 bardConfigResources.getDimensionDictionary(),
@@ -386,9 +386,9 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                 countRequest,
                 topNRequest,
                 formatRequest,
+                null,
                 timeZoneId,
                 asyncAfterRequest,
-                null,
                 perPage,
                 page,
                 dimensionDictionary,
@@ -466,9 +466,9 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             String countRequest,
             String topNRequest,
             String formatRequest,
+            String downloadFilename,
             String timeZoneId,
             String asyncAfterRequest,
-            String downloadFilename,
             @NotNull String perPage,
             @NotNull String page,
             DimensionDictionary dimensionDictionary,
@@ -479,7 +479,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             DruidFilterBuilder druidFilterBuilder,
             HavingGenerator havingGenerator
     ) throws BadApiRequestException {
-        super(formatRequest, asyncAfterRequest, downloadFilename, perPage, page);
+        super(formatRequest, downloadFilename, asyncAfterRequest, perPage, page);
 
         timeZone = generateTimeZone(timeZoneId, systemTimeZone);
 
@@ -588,7 +588,9 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @param timeZone  TimeZone for the request
      * @param filterBuilder  A builder to use when building filters for the request
      * @param dateTimeSort  A dateTime sort column with its direction
+     * @deprecated prefer constructor with downloadFilename
      */
+    @Deprecated
     protected DataApiRequestImpl(
             ResponseFormatType format,
             Optional<PaginationParameters> paginationParameters,
@@ -629,6 +631,134 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         );
     }
 
+    /**
+     * All argument constructor, meant to be used for rewriting apiRequest.
+     *
+     * @param format  Format for the response
+     * @param paginationParameters  Pagination info
+     * @param table  Logical table requested
+     * @param granularity  Granularity of the request
+     * @param dimensions  Grouping dimensions of the request
+     * @param perDimensionFields  Fields for each of the grouped dimensions
+     * @param logicalMetrics  Metrics requested
+     * @param intervals  Intervals requested
+     * @param apiFilters  Global filters
+     * @param havings  Top-level Having caluses for the request
+     * @param sorts  Sorting info for the request
+     * @param count  Global limit for the request
+     * @param topN  Count of per-bucket limit (TopN) for the request
+     * @param asyncAfter  How long in milliseconds the user is willing to wait for a synchronous response
+     * @param timeZone  TimeZone for the request
+     * @param filterBuilder  A builder to use when building filters for the request
+     * @param dateTimeSort  A dateTime sort column with its direction
+     */
+    protected DataApiRequestImpl(
+            ResponseFormatType format,
+            String downloadFilename,
+            Optional<PaginationParameters> paginationParameters,
+            LogicalTable table,
+            Granularity granularity,
+            LinkedHashSet<Dimension> dimensions,
+            LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> perDimensionFields,
+            LinkedHashSet<LogicalMetric> logicalMetrics,
+            List<Interval> intervals,
+            ApiFilters apiFilters,
+            Map<LogicalMetric, Set<ApiHaving>> havings,
+            LinkedHashSet<OrderByColumn> sorts,
+            int count,
+            int topN,
+            long asyncAfter,
+            DateTimeZone timeZone,
+            DruidFilterBuilder filterBuilder,
+            Optional<OrderByColumn> dateTimeSort
+    ) {
+        this(
+                table,
+                granularity,
+                dimensions,
+                perDimensionFields,
+                logicalMetrics,
+                intervals,
+                apiFilters,
+                havings,
+                sorts,
+                dateTimeSort,
+                timeZone,
+                topN,
+                count,
+                paginationParameters,
+                format,
+                downloadFilename,
+                asyncAfter,
+                filterBuilder
+        );
+    }
+
+    /**
+     * All argument constructor, meant to be used for rewriting apiRequest.
+     *
+     * Filter builder in constructor should be removed when some deprecations come out.
+     *
+     * @param format  Format for the response
+     * @param paginationParameters  Pagination info
+     * @param table  Logical table requested
+     * @param granularity  Granularity of the request
+     * @param groupingDimensions  Grouping dimensions of the request
+     * @param perDimensionFields  Fields for each of the grouped dimensions
+     * @param logicalMetrics  Metrics requested
+     * @param intervals  Intervals requested
+     * @param apiFilters  Global filters
+     * @param havings  Top-level Having caluses for the request
+     * @param sorts  Sorting info for the request
+     * @param dateTimeSort Override sort on time
+     * @param count  Global limit for the request
+     * @param topN  Count of per-bucket limit (TopN) for the request
+     * @param asyncAfter  How long in milliseconds the user is willing to wait for a synchronous response
+     * @param timeZone  TimeZone for the request
+     * @param filterBuilder  A builder to use when building filters for the request
+     * @deprecated prefer constructor with downloadFilename
+     */
+    @Deprecated
+    protected DataApiRequestImpl(
+            LogicalTable table,
+            Granularity granularity,
+            LinkedHashSet<Dimension> groupingDimensions,
+            LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> perDimensionFields,
+            LinkedHashSet<LogicalMetric> logicalMetrics,
+            List<Interval> intervals,
+            ApiFilters apiFilters,
+            Map<LogicalMetric, Set<ApiHaving>> havings,
+            LinkedHashSet<OrderByColumn> sorts,
+            Optional<OrderByColumn> dateTimeSort,
+            DateTimeZone timeZone,
+            int topN,
+            int count,
+            Optional<PaginationParameters> paginationParameters,
+            ResponseFormatType format,
+            Long asyncAfter,
+            DruidFilterBuilder filterBuilder
+    ) {
+        this(
+                table,
+                granularity,
+                groupingDimensions,
+                perDimensionFields,
+                logicalMetrics,
+                intervals,
+                apiFilters,
+                havings,
+                sorts,
+                dateTimeSort,
+                timeZone,
+                topN,
+                count,
+                paginationParameters,
+                format,
+                null,
+                asyncAfter,
+                filterBuilder
+        );
+    }
 
     /**
      * All argument constructor, meant to be used for rewriting apiRequest.
@@ -669,10 +799,11 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             int count,
             Optional<PaginationParameters> paginationParameters,
             ResponseFormatType format,
+            String downloadFilename,
             Long asyncAfter,
             DruidFilterBuilder filterBuilder
     ) {
-        super(format, asyncAfter, paginationParameters);
+        super(format, downloadFilename, asyncAfter, paginationParameters);
         this.table = table;
         this.granularity = granularity;
         this.dimensions = groupingDimensions;

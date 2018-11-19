@@ -66,9 +66,9 @@ public class DefaultDataApiRequestFactory implements DataApiRequestFactory {
             String count,
             String topN,
             String format,
+            String downloadFilename,
             String timeZoneId,
             String asyncAfter,
-            String downloadFilename,
             String perPage,
             String page,
             BardConfigResources bardConfigResources
@@ -85,6 +85,7 @@ public class DefaultDataApiRequestFactory implements DataApiRequestFactory {
                 count,
                 topN,
                 format,
+                downloadFilename,
                 timeZoneId,
                 asyncAfter,
                 perPage,
