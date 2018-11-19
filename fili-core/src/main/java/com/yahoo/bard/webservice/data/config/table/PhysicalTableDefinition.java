@@ -17,6 +17,7 @@ import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +39,7 @@ public abstract class PhysicalTableDefinition {
     private final Set<FieldName> metricNames;
     private final Set<? extends DimensionConfig> dimensionConfigs;
     private final Map<String, String> logicalToPhysicalNames;
+    private final DateTime expectedStartDate, expectedEndDate;
 
     /**
      * Constructor for sub-class to call.
@@ -53,11 +55,36 @@ public abstract class PhysicalTableDefinition {
             Set<FieldName> metricNames,
             Set<? extends DimensionConfig> dimensionConfigs
     ) {
+        this(name, timeGrain, metricNames, dimensionConfigs, null, null);
+    }
+
+    /**
+     * Constructor for sub-class to call.
+     *
+     * @param name  Table name of the physical table
+     * @param timeGrain  Zoned time grain of the table
+     * @param metricNames  The Set of metric names on the table
+     * @param dimensionConfigs  Set of dimensions on the table as dimension configs
+     * @param expectedStartDate  The expected start date of the datasource the constructed table will represent. Null
+     * indicates there is NO expected start date
+     * @param expectedEndDate  The expected end date of the datasource the constructed table will represent. Null
+     * indicates there is NO expected end date
+     */
+    protected PhysicalTableDefinition(
+            TableName name,
+            ZonedTimeGrain timeGrain,
+            Set<FieldName> metricNames,
+            Set<? extends DimensionConfig> dimensionConfigs,
+            DateTime expectedStartDate,
+            DateTime expectedEndDate
+    ) {
         this.name = name;
         this.timeGrain = timeGrain;
         this.metricNames = ImmutableSet.copyOf(metricNames);
         this.dimensionConfigs = ImmutableSet.copyOf(dimensionConfigs);
         this.logicalToPhysicalNames = Collections.unmodifiableMap(buildLogicalToPhysicalNames(dimensionConfigs));
+        this.expectedStartDate = expectedStartDate;
+        this.expectedEndDate = expectedEndDate;
     }
 
     /**
@@ -76,11 +103,38 @@ public abstract class PhysicalTableDefinition {
             Set<? extends DimensionConfig> dimensionConfigs,
             Map<String, String> logicalToPhysicalNames
     ) {
+        this(name, timeGrain, metricNames, dimensionConfigs, logicalToPhysicalNames, null, null);
+    }
+
+    /**
+     * Constructor with provided logical to physical name mapping.
+     *
+     * @param name  Table name of the physical table
+     * @param timeGrain  Zoned time grain of the table
+     * @param metricNames  The Set of metric names on the table
+     * @param dimensionConfigs  Set of dimensions on the table as dimension configs
+     * @param logicalToPhysicalNames  A map from logical column names to physical column names
+     * @param expectedStartDate  The expected start date of the datasource the constructed table will represent. Null
+     * indicates there is NO expected start date
+     * @param expectedEndDate  The expected end date of the datasource the constructed table will represent. Null
+     * indicates there is NO expected end date
+     */
+    protected PhysicalTableDefinition(
+            TableName name,
+            ZonedTimeGrain timeGrain,
+            Set<FieldName> metricNames,
+            Set<? extends DimensionConfig> dimensionConfigs,
+            Map<String, String> logicalToPhysicalNames,
+            DateTime expectedStartDate,
+            DateTime expectedEndDate
+    ) {
         this.name = name;
         this.timeGrain = timeGrain;
         this.metricNames = ImmutableSet.copyOf(metricNames);
         this.dimensionConfigs = ImmutableSet.copyOf(dimensionConfigs);
         this.logicalToPhysicalNames = ImmutableMap.copyOf(logicalToPhysicalNames);
+        this.expectedStartDate = expectedStartDate;
+        this.expectedEndDate = expectedEndDate;
     }
 
     /**
@@ -102,6 +156,14 @@ public abstract class PhysicalTableDefinition {
             ResourceDictionaries dictionaries,
             DataSourceMetadataService metadataService
     );
+
+    public DateTime getExpectedStartDate() {
+        return expectedStartDate;
+    }
+
+    public DateTime getExpectedEndDate() {
+        return expectedEndDate;
+    }
 
     public TableName getName() {
         return name;
