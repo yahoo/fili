@@ -125,13 +125,14 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @QueryParam("format") String format,
+            @QueryParam("filename") String downloadFilename,
             @Context UriInfo uriInfo,
             @Context final ContainerRequestContext containerRequestContext
     ) {
         if (format != null && format.toLowerCase(Locale.ENGLISH).equals("fullview")) {
             return getTablesFullView(perPage, page, uriInfo, containerRequestContext);
         } else {
-            return getTable(null, perPage, page, format, containerRequestContext);
+            return getTable(null, perPage, page, format, downloadFilename, containerRequestContext);
         }
     }
 
@@ -162,6 +163,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @QueryParam("format") String format,
+            @QueryParam("filename") String downloadFilename,
             @Context final ContainerRequestContext containerRequestContext
     ) {
         TablesApiRequestImpl tablesApiRequestImpl = null;
@@ -174,6 +176,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                     tableName,
                     null,
                     formatResolver.apply(format, containerRequestContext),
+                    downloadFilename,
                     perPage,
                     page,
                     this
