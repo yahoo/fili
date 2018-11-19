@@ -15,7 +15,6 @@ import org.joda.time.DateTime;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -37,7 +36,7 @@ public class ConcretePhysicalTableDefinition extends PhysicalTableDefinition {
             Set<FieldName> metricNames,
             Set<? extends DimensionConfig> dimensionConfigs
     ) {
-        super(name, timeGrain, metricNames, dimensionConfigs, Optional.empty(), Optional.empty());
+        super(name, timeGrain, metricNames, dimensionConfigs, null, null);
     }
 
     /**
@@ -57,8 +56,8 @@ public class ConcretePhysicalTableDefinition extends PhysicalTableDefinition {
             ZonedTimeGrain timeGrain,
             Set<FieldName> metricNames,
             Set<? extends DimensionConfig> dimensionConfigs,
-            Optional<DateTime> expectedStartDate,
-            Optional<DateTime> expectedEndDate
+            DateTime expectedStartDate,
+            DateTime expectedEndDate
     ) {
         super(name, timeGrain, metricNames, dimensionConfigs, expectedStartDate, expectedEndDate);
     }
@@ -85,8 +84,8 @@ public class ConcretePhysicalTableDefinition extends PhysicalTableDefinition {
                 metricNames,
                 dimensionConfigs,
                 logicalToPhysicalNames,
-                Optional.empty(),
-                Optional.empty()
+                null,
+                null
         );
     }
 
@@ -109,8 +108,8 @@ public class ConcretePhysicalTableDefinition extends PhysicalTableDefinition {
             Set<FieldName> metricNames,
             Set<? extends DimensionConfig> dimensionConfigs,
             Map<String, String> logicalToPhysicalNames,
-            Optional<DateTime> expectedStartDate,
-            Optional<DateTime> expectedEndDate
+            DateTime expectedStartDate,
+            DateTime expectedEndDate
     ) {
         super(
                 name,

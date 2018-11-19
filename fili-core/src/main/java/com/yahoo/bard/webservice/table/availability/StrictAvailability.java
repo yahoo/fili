@@ -33,7 +33,7 @@ public class StrictAvailability extends BaseMetadataAvailability {
             @NotNull DataSourceName dataSourceName,
             @NotNull DataSourceMetadataService metadataService
     ) {
-        this(dataSourceName, metadataService, Optional.empty(), Optional.empty());
+        this(dataSourceName, metadataService, null, null);
     }
 
     /**
@@ -47,12 +47,12 @@ public class StrictAvailability extends BaseMetadataAvailability {
     public StrictAvailability(
             @NotNull DataSourceName dataSourceName,
             @NotNull DataSourceMetadataService metadataService,
-            Optional<DateTime> expectedStartDate,
-            Optional<DateTime> expectedEndDate
+            DateTime expectedStartDate,
+            DateTime expectedEndDate
     ) {
         super(dataSourceName, metadataService);
-        this.expectedStartDate = expectedStartDate;
-        this.expectedEndDate = expectedEndDate;
+        this.expectedStartDate = Optional.ofNullable(expectedStartDate);
+        this.expectedEndDate = Optional.ofNullable(expectedEndDate);
     }
 
     @Override
