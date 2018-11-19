@@ -100,6 +100,8 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
      * ((field name and operation):((multiple values bounded by [])or(single value))))(followed by , or end of string)
      * }</pre>
      * @param format  response data format JSON or CSV. Default is JSON.
+     * @param downloadFilename If not null and not empty, indicates the response should be downloaded by the client with
+     * the provided filename. Otherwise indicates the response should be rendered in the browser.
      * @param perPage  number of rows to display per page of results. If present in the original request,
      * must be a positive integer. If not present, must be the empty string.
      * @param page  desired page of results. If present in the original request, must be a positive
@@ -215,6 +217,8 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
      * @param tableName  Logical table corresponding to the table name specified in the URL
      * @param granularity  Requested time granularity
      * @param format  Response data format JSON or CSV. Default is JSON.
+     * @param downloadFilename If not null and not empty, indicates the response should be downloaded by the client with
+     * the provided filename. Otherwise indicates the response should be rendered in the browser.
      * @param perPage  Number of rows to display per page of results. It must represent a positive integer or an empty
      * string if it's not specified
      * @param page  Desired page of results. It must represent a positive integer or an empty
@@ -355,6 +359,8 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
      * All argument constructor and its used primarily for withers - hence its private.
      *
      * @param format Response data format JSON or CSV. Default is JSON
+     * @param downloadFilename If not null and not empty, indicates the response should be downloaded by the client with
+     * the provided filename. Otherwise indicates the response should be rendered in the browser.
      * @param paginationParameters The parameters used to describe pagination
      * @param tables Set of logical tables
      * @param table Logical table

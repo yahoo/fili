@@ -76,6 +76,8 @@ public class JobsApiRequestImpl extends ApiRequestImpl implements JobsApiRequest
      * Parses the API request URL and generates the Api Request object.
      *
      * @param format  response data format JSON or CSV. Default is JSON.
+     * @param downloadFilename If not null and not empty, indicates the response should be downloaded by the client with
+     * the provided filename. Otherwise indicates the response should be rendered in the browser.
      * @param asyncAfter  How long the user is willing to wait for a synchronous request in milliseconds
      * @param perPage  number of rows to display per page of results. If present in the original request,
      * must be a positive integer. If not present, must be the empty string.

@@ -188,6 +188,8 @@ public abstract class ApiRequestImpl implements ApiRequest {
      * All argument constructor, meant to be used for rewriting apiRequest.
      *
      * @param format  The format of the response
+     * @param downloadFilename If not null and not empty, indicates the response should be downloaded by the client with
+     * the provided filename. Otherwise indicates the response should be rendered in the browser.
      * @param asyncAfter  How long the user is willing to wait for a synchronous request, in milliseconds
      * @param paginationParameters  The parameters used to describe pagination
      */

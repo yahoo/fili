@@ -227,10 +227,10 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @param count  count of number of records to be returned in the response
      * @param topN  number of first records per time bucket to be returned in the response
      * @param format  response data format JSON or CSV. Default is JSON.
-     * @param timeZoneId  a joda time zone id
-     * @param asyncAfter  How long the user is willing to wait for a synchronous request in milliseconds
      * @param downloadFilename  The filename for the response to be downloaded as. If null indicates response should
      * not be downloaded.
+     * @param timeZoneId  a joda time zone id
+     * @param asyncAfter  How long the user is willing to wait for a synchronous request in milliseconds
      * @param perPage  number of rows to display per page of results. If present in the original request,
      * must be a positive integer. If not present, must be the empty string.
      * @param page  desired page of results. If present in the original request, must be a positive
@@ -424,10 +424,10 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @param countRequest  count of number of records to be returned in the response
      * @param topNRequest  number of first records per time bucket to be returned in the response
      * @param formatRequest  response data format JSON or CSV. Default is JSON.
-     * @param timeZoneId  a joda time zone id
-     * @param asyncAfterRequest  How long the user is willing to wait for a synchronous request in milliseconds
      * @param downloadFilename  The filename for the response to be downloaded as. If null indicates response should
      * not be downloaded.
+     * @param timeZoneId  a joda time zone id
+     * @param asyncAfterRequest  How long the user is willing to wait for a synchronous request in milliseconds
      * @param perPage  number of rows to display per page of results. If present in the original request,
      * must be a positive integer. If not present, must be the empty string.
      * @param page  desired page of results. If present in the original request, must be a positive
@@ -635,6 +635,8 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * All argument constructor, meant to be used for rewriting apiRequest.
      *
      * @param format  Format for the response
+     * @param downloadFilename  The filename for the response to be downloaded as. If null indicates response should
+     * not be downloaded.
      * @param paginationParameters  Pagination info
      * @param table  Logical table requested
      * @param granularity  Granularity of the request
@@ -766,6 +768,8 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * Filter builder in constructor should be removed when some deprecations come out.
      *
      * @param format  Format for the response
+     * @param downloadFilename  The filename for the response to be downloaded as. If null indicates response should
+     * not be downloaded.
      * @param paginationParameters  Pagination info
      * @param table  Logical table requested
      * @param granularity  Granularity of the request

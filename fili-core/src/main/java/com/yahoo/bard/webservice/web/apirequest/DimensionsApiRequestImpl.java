@@ -25,7 +25,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
 /**
@@ -84,6 +83,8 @@ public class DimensionsApiRequestImpl extends ApiRequestImpl implements Dimensio
      * ((field name and operation):((multiple values bounded by [])or(single value))))(followed by , or end of string)
      * }</pre>
      * @param format  response data format JSON or CSV. Default is JSON.
+     * @param downloadFilename If not null and not empty, indicates the response should be downloaded by the client with
+     * the provided filename. Otherwise indicates the response should be rendered in the browser.
      * @param perPage  number of rows to display per page of results. If present in the original request,
      * must be a positive integer. If not present, must be the empty string.
      * @param page  desired page of results. If present in the original request, must be a positive
@@ -107,7 +108,7 @@ public class DimensionsApiRequestImpl extends ApiRequestImpl implements Dimensio
             @NotNull String page,
             DimensionDictionary dimensionDictionary
     ) throws BadApiRequestException {
-        super(format,downloadFilename, SYNCHRONOUS_REQUEST_FLAG, perPage, page);
+        super(format, downloadFilename, SYNCHRONOUS_REQUEST_FLAG, perPage, page);
 
         // Zero or more grouping dimensions may be specified
         this.dimensions = generateDimensions(dimension, dimensionDictionary);
@@ -149,6 +150,8 @@ public class DimensionsApiRequestImpl extends ApiRequestImpl implements Dimensio
      * All argument constructor, meant to be used for rewriting apiRequest.
      *
      * @param format  Format of the request
+     * @param downloadFilename If not null and not empty, indicates the response should be downloaded by the client with
+     * the provided filename. Otherwise indicates the response should be rendered in the browser.
      * @param paginationParameters  Pagination info for the request
      * @param dimensions  Desired dimensions of the request
      * @param filters  Filters applied to the request
