@@ -102,6 +102,8 @@ public class DimensionsServlet extends EndpointServlet {
      * @param perPage  number of values to return per page
      * @param page  the page to start from
      * @param format  the format to use for the response
+     * @param downloadFilename If present, indicates the response should be downloaded by the client with the provided
+     * username. Otherwise indicates the response should be rendered in the browser.
      * @param uriInfo  UriInfo of the request
      * @param containerRequestContext  The context of data provided by the Jersey container for this request
      *
@@ -235,6 +237,8 @@ public class DimensionsServlet extends EndpointServlet {
      * @param page  The page number
      * @param perPage  The number of rows per page
      * @param format  The format of the response
+     * @param downloadFilename If present, indicates the response should be downloaded by the client with the provided
+     * username. Otherwise indicates the response should be rendered in the browser.
      * @param uriInfo The injected UriInfo
      * @param containerRequestContext The injected request context
      *

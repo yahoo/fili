@@ -69,7 +69,7 @@ public class FeatureFlagsServlet extends EndpointServlet {
          * @param format  Format of the request
          * @param perPage  How many items to show per page
          * @param page  Which page to show
-         * @deprecated
+         * @deprecated prefer constructor with downloadFilename
          */
         @Deprecated
         FeatureFlagApiRequest(String format, String perPage, String page) {
@@ -80,6 +80,8 @@ public class FeatureFlagsServlet extends EndpointServlet {
          * Constructor.
          *
          * @param format  Format of the request
+         * @param downloadFilename If not null and not empty, indicates the response should be downloaded by the client
+         * with the provided username. Otherwise indicates the response should be rendered in the browser.
          * @param perPage  How many items to show per page
          * @param page  Which page to show
          */
@@ -113,6 +115,8 @@ public class FeatureFlagsServlet extends EndpointServlet {
      * @param perPage the number per page to return
      * @param page the page to start from
      * @param format the format to use
+     * @param downloadFilename If present, indicates the response should be downloaded by the client with the provided
+     * username. Otherwise indicates the response should be rendered in the browser.
      * @param containerRequestContext the request context needed to process responses
      *
      * @return Response Format:
