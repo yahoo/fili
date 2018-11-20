@@ -41,7 +41,7 @@ public class StrictAvailability extends BaseMetadataAvailability {
      *
      * @param dataSourceName  The name of the data source associated with this Availability
      * @param metadataService  A service containing the datasource segment data
-     * @param expectedStartDate  The expected start date of this availability. Null indicates no expected start date
+     * @param expectedStartDate  The expected start date of this availability. Empty indicates no expected start date
      * @param expectedEndDate  The expected end date of this availability. Null indicates no expected end date
      */
     public StrictAvailability(

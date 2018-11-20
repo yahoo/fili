@@ -14,6 +14,10 @@ Current
   * If the filename parameter is present in the request the response is assumed to be downloaded with the provided 
   filename. The download format depends on the format provided to the format parameter. 
   * Filename parameter is currently only available to data queries.
+  
+- [Added expected start and end dates to PhysicalTableDefiniton](https://github.com/yahoo/fili/issues/822)
+    * New constructors on `PhysicalTableDefinition` and `ConcretePhysicalTableDefinition` that take expected start and end date
+    * New public getters on `PhysicalTableDefinition` for expected start and end date
 
 - [Added expected start and end dates to availability](https://github.com/yahoo/fili/issues/822)
     * Add methods for getting expected start and end dates given a datasource constraint to the `Availability` interface.
@@ -125,6 +129,8 @@ Current
 - [Eliminate String based metric creation](https://github.com/yahoo/fili/issues/778)
     * Add `LogicalMetricInfo` conversion method on ApiMetricField class
     * Moved all tests and internal uses onto LMI based construction
+
+- [Update Redison dependencies](https://github.com/yahoo/fili/issues/836)
 
 ### Deprecated:
 
