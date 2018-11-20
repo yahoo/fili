@@ -42,7 +42,7 @@ public abstract class PhysicalTableDefinition {
     private final DateTime expectedStartDate, expectedEndDate;
 
     /**
-     * Constructor for sub-class to call.
+     * Constructor for sub-class to call. Defaults to no expected start nor end dates.
      *
      * @param name  Table name of the physical table
      * @param timeGrain  Zoned time grain of the table
@@ -88,7 +88,7 @@ public abstract class PhysicalTableDefinition {
     }
 
     /**
-     * Constructor with provided logical to physical name mapping.
+     * Constructor with provided logical to physical name mapping. Defaults to no expected start nor end dates.
      *
      * @param name  Table name of the physical table
      * @param timeGrain  Zoned time grain of the table
