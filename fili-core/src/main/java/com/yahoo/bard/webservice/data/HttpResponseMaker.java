@@ -277,7 +277,7 @@ public class HttpResponseMaker {
      * @param containerRequestContext  The request context
      * @param downloadFilename  The filename the response should be downloaded as. Null or empty indicates the response
      * should not be downloaded and instead rendered by the browser
-     * 
+     *
      * @return the response builder that has had the headers added
      */
     protected ResponseBuilder buildAndAddResponseHeaders(
