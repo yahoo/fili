@@ -10,6 +10,10 @@ Current
 
 ### Added:
 
+- [Added expected start and end dates to PhysicalTableDefiniton](https://github.com/yahoo/fili/issues/822)
+    * New constructors on `PhysicalTableDefinition` and `ConcretePhysicalTableDefinition` that take expected start and end date
+    * New public getters on `PhysicalTableDefinition` for expected start and end date
+
 - [Added expected start and end dates to availability](https://github.com/yahoo/fili/issues/822)
     * Add methods for getting expected start and end dates given a datasource constraint to the `Availability` interface.
         - start and end dates are optional, with an empty optional indicating no expected start or end date.

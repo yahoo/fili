@@ -56,9 +56,9 @@ public class StrictPhysicalTable extends SingleDataSourcePhysicalTable {
      * @param columns  The columns for this table
      * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
      * @param metadataService  Datasource metadata service containing availability data for the table
-     * @param expectedStartDate  The expected start date of the datasource for this availability. Null indicates no
+     * @param expectedStartDate  The expected start date of the datasource for this availability. Empty indicates no
      * expected start date
-     * @param expectedEndDate  The expected end date of the datasource for this availability. Null indicates no
+     * @param expectedEndDate  The expected end date of the datasource for this availability. Empty indicates no
      * expected end date
      */
     public StrictPhysicalTable(
