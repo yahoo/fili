@@ -260,27 +260,32 @@ public class DimensionsApiRequestImpl extends ApiRequestImpl implements Dimensio
 
     @Override
     public DimensionsApiRequest withFormat(ResponseFormatType format) {
-        return new DimensionsApiRequestImpl(format, paginationParameters, dimensions, filters);
+        return new DimensionsApiRequestImpl(format, downloadFilename, paginationParameters, dimensions, filters);
     }
 
     @Override
     public DimensionsApiRequest withPaginationParameters(Optional<PaginationParameters> paginationParameters) {
-        return new DimensionsApiRequestImpl(format, paginationParameters, dimensions, filters);
+        return new DimensionsApiRequestImpl(format, downloadFilename, paginationParameters, dimensions, filters);
     }
 
     @Override
     public DimensionsApiRequest withBuilder(Response.ResponseBuilder builder) {
-        return new DimensionsApiRequestImpl(format, paginationParameters, dimensions, filters);
+        return new DimensionsApiRequestImpl(format, downloadFilename, paginationParameters, dimensions, filters);
     }
 
     @Override
     public DimensionsApiRequest withDimensions(LinkedHashSet<Dimension> dimensions) {
-        return new DimensionsApiRequestImpl(format, paginationParameters, dimensions, filters);
+        return new DimensionsApiRequestImpl(format, downloadFilename, paginationParameters, dimensions, filters);
     }
 
     @Override
     public DimensionsApiRequest withFilters(Set<ApiFilter> filters) {
-        return new DimensionsApiRequestImpl(format, paginationParameters, dimensions, filters);
+        return new DimensionsApiRequestImpl(format, downloadFilename, paginationParameters, dimensions, filters);
+    }
+
+    @Override
+    public DimensionsApiRequest withDownloadFilename(String downloadFilename) {
+        return new DimensionsApiRequestImpl(format, downloadFilename, paginationParameters, dimensions, filters);
     }
 
     @Override

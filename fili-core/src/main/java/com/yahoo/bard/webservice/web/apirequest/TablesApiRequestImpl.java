@@ -559,6 +559,11 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
     }
 
     @Override
+    public TablesApiRequest withDownloadFilename(String downloadFilename) {
+        return new TablesApiRequestImpl(format, downloadFilename, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
+    }
+
+    @Override
     public TablesApiRequest withFilters(Map<Dimension, Set<ApiFilter>> filters) {
         return new TablesApiRequestImpl(format, downloadFilename, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
     }
