@@ -33,7 +33,7 @@ import javax.ws.rs.core.UriInfo;
 public abstract class EndpointServlet {
 
     protected final ObjectMappersSuite objectMappers;
-    private final ResponseUtils responseUtils;
+    protected final ResponseUtils responseUtils;
     private final Supplier<Response.ResponseBuilder> responseBuilderSupplier;
 
 
@@ -88,6 +88,7 @@ public abstract class EndpointServlet {
         UriInfo uriInfo = containerRequestContext.getUriInfo();
         StreamingOutput output;
         if (CSV.accepts(apiRequest.getFormat())) {
+            // TODO: use responseUtils to build the headers instead
             builder.header(HttpHeaders.CONTENT_TYPE, "text/csv; charset=utf-8")
                     .header(
                             HttpHeaders.CONTENT_DISPOSITION,
@@ -101,6 +102,7 @@ public abstract class EndpointServlet {
                     objectMappers
             ).getResponseStream();
         } else {
+            // TODO: use responseUtils to build the headers instead
             // JSON is the default
             builder.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON + "; charset=utf-8");
 

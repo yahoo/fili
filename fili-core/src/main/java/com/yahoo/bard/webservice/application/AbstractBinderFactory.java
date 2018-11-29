@@ -125,6 +125,7 @@ import com.yahoo.bard.webservice.web.ratelimit.DefaultRateLimiter;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessorFactory;
 import com.yahoo.bard.webservice.web.responseprocessors.ResultSetResponseProcessorFactory;
 import com.yahoo.bard.webservice.web.util.QueryWeightUtil;
+import com.yahoo.bard.webservice.web.util.ResponseUtils;
 
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Metric;
@@ -341,6 +342,8 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 bind(getClock()).to(Clock.class);
 
                 bind(getHttpResponseMaker()).to(HttpResponseMaker.class);
+
+                bind(buildResponseUtils()).to(ResponseUtils.class);
 
                 bind(buildResponseWriter(getMappers())).to(ResponseWriter.class);
 
@@ -1110,6 +1113,15 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      */
     protected Class<? extends HttpResponseMaker> getHttpResponseMaker() {
         return HttpResponseMaker.class;
+    }
+
+    /**
+     * Builds a response utils object with only CSV as a default always csv format.
+     *
+     * @return the response utils
+     */
+    protected ResponseUtils buildResponseUtils() {
+        return new ResponseUtils();
     }
 
     /**

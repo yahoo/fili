@@ -60,6 +60,7 @@ public class HttpResponseMaker {
      * @param responseWriter  Serializer which takes responseData and apiRequest, outputs formatted data stream.
      * @param responseUtils A class providing utility methods for processing response headers.
      */
+    @Inject
     public HttpResponseMaker(
             ObjectMappersSuite objectMappers,
             DimensionDictionary dimensionDictionary,
@@ -79,7 +80,6 @@ public class HttpResponseMaker {
      * @param dimensionDictionary  The dimension dictionary from which to look up dimensions by name
      * @param responseWriter  Serializer which takes responseData and apiRequest, outputs formatted data stream.
      */
-    @Inject
     public HttpResponseMaker(
             ObjectMappersSuite objectMappers,
             DimensionDictionary dimensionDictionary,
