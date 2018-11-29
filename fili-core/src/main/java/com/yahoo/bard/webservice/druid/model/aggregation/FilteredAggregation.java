@@ -59,6 +59,7 @@ public class FilteredAggregation extends Aggregation {
     }
 
     /**
+     * TODO maybe rewrite to reflect logic change
      * Splits an Aggregation for 2-pass aggregation into an inner filtered aggregation &amp; outer aggregation. The
      * outer aggregation is obtained by unwrapping the inner filtered aggregation and getting just the aggregation.
      * The outer aggregation fieldName will reference the inner aggregation name. The inner aggregation is unmodified.
@@ -67,9 +68,15 @@ public class FilteredAggregation extends Aggregation {
      */
     @Override
     public Pair<Aggregation, Aggregation> nest() {
-        String nestingName = this.getName();
-        Aggregation outer = this.getAggregation().withFieldName(nestingName);
-        return new ImmutablePair<>(outer, this);
+        Pair<Aggregation, Aggregation> wrappedAggNested = this.getAggregation().nest();
+        Aggregation inner = this.withAggregation(wrappedAggNested.getRight());
+        Aggregation outer = wrappedAggNested.getLeft();
+        outer = outer.withFieldName(inner.getName());
+        return new ImmutablePair<>(outer, inner);
+
+//        String nestingName = this.getName();
+//        Aggregation outer = this.getAggregation().withFieldName(nestingName);
+//        return new ImmutablePair<>(outer, this);
     }
 
     @JsonIgnore
