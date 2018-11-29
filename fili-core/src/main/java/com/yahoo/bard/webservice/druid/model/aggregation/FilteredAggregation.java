@@ -73,10 +73,6 @@ public class FilteredAggregation extends Aggregation {
         Aggregation outer = wrappedAggNested.getLeft();
         outer = outer.withFieldName(inner.getName());
         return new ImmutablePair<>(outer, inner);
-
-//        String nestingName = this.getName();
-//        Aggregation outer = this.getAggregation().withFieldName(nestingName);
-//        return new ImmutablePair<>(outer, this);
     }
 
     @JsonIgnore
