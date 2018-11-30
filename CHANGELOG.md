@@ -123,6 +123,13 @@ Current
 
 ### Fixed:
 
+- [Fixed FilteredAggregation nesting behavior](https://github.com/yahoo/fili/issues/839)
+    * Currently, FilteredAggregation effectively makes a second copy of its wrapped aggregation, and the inner copy will
+    be wrapped with the filter and the outer query won't
+    * This behavior is changed to call `nest` on the wrapped query, then wrap produced inner query with the filter. The 
+    filtered inner query is returned as the inner query of `nest` call, and the raw outer query is returned as the outer 
+    query of the `nest` call
+
 - [Filter Code now intersects security constraints instead of unioning with requests](https://github.com/yahoo/fili/issues/812)
     * Switched to ensure security and request filters don't merge but instead intersect
 

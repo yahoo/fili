@@ -31,6 +31,8 @@ import com.yahoo.bard.webservice.web.FilteredThetaSketchMetricsHelper
 import com.yahoo.bard.webservice.web.MetricsFilterSetBuilder
 import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders
 
+import org.apache.commons.lang3.tuple.Pair
+
 import spock.lang.Specification
 
 class FilteredAggregationSpec extends Specification{
@@ -163,6 +165,29 @@ class FilteredAggregationSpec extends Specification{
         expect:
         filteredAgg.getAggregation().getFieldName() == "FOO_NO_BAR_SKETCH"
         filteredAgg.getAggregation().getName() == "FOO_NO_BAR-114_127"
+    }
+
+    def "test nesting pushes filter to bottom"() {
+        setup:
+        Pair<Aggregation, Aggregation> baseExpectedNestedAggs = filteredAgg.getAggregation().nest()
+
+        when:
+        Pair<Aggregation, Aggregation> nestedAggs = filteredAgg.nest()
+        Aggregation inner = nestedAggs.getRight()
+        Aggregation outer = nestedAggs.getLeft()
+
+        then:
+        inner instanceof FilteredAggregation
+        inner.getType() == "filtered"
+        ((FilteredAggregation) inner).getFilter() == filter1
+        inner.getName() == baseExpectedNestedAggs.getRight().getName()
+        inner.getFieldName() == baseExpectedNestedAggs.getRight().getFieldName()
+
+        and:
+        outer instanceof ThetaSketchAggregation
+        outer.getType() == baseExpectedNestedAggs.getLeft().getType()
+        outer.getName() == baseExpectedNestedAggs.getLeft().getName()
+        outer.getFieldName() == baseExpectedNestedAggs.getLeft().getFieldName()
     }
 
     def Dimension buildSimpleDimension(String name) {
