@@ -52,6 +52,6 @@ public class LookupDimensionToDimensionSpec extends JsonSerializer<ExtractionFun
                 }
         );
 
-        gen.writeObject(new ExtractionDimensionSpec(physicalName, apiName, extractionFunction.get()));
+        gen.writeObject(new ExtractionDimensionSpec(physicalName, apiName, extractionFunction.get(), value));
     }
 }
