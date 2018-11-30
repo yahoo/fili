@@ -59,10 +59,10 @@ public class FilteredAggregation extends Aggregation {
     }
 
     /**
-     * TODO maybe rewrite to reflect logic change
-     * Splits an Aggregation for 2-pass aggregation into an inner filtered aggregation &amp; outer aggregation. The
-     * outer aggregation is obtained by unwrapping the inner filtered aggregation and getting just the aggregation.
-     * The outer aggregation fieldName will reference the inner aggregation name. The inner aggregation is unmodified.
+     * Splits an Aggregation for 2-pass aggregation into an inner filtered aggregation &amp; outer aggregation.
+     * Specifically, FilteredAggregation delegates nesting rules to the aggregation being filtered. Then the filter is
+     * applied to the inner aggregation which is both probably efficient on the size of the aggregation performed, and
+     * also means that the filtering dimension doesn't need to be added to the grouping expression of the nested query.
      *
      * @return A pair where pair.left is the outer aggregation and pair.right is the inner.
      */
