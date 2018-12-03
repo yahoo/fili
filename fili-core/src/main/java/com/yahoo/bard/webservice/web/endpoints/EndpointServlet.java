@@ -16,13 +16,12 @@ import com.yahoo.bard.webservice.web.util.ResponseUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
@@ -87,13 +86,18 @@ public abstract class EndpointServlet {
     ) {
         UriInfo uriInfo = containerRequestContext.getUriInfo();
         StreamingOutput output;
+
+        Map<String, String> responseHeaders = responseUtils.buildResponseFormatHeaders(
+                containerRequestContext,
+                apiRequest.getDownloadFilename().orElse(null),
+                apiRequest.getFormat()
+        );
+        Response.ResponseBuilder responseBuilderWithHeaders = builder;
+        for (Map.Entry<String, String> entry : responseHeaders.entrySet()) {
+            responseBuilderWithHeaders = responseBuilderWithHeaders.header(entry.getKey(), entry.getValue());
+        }
+
         if (CSV.accepts(apiRequest.getFormat())) {
-            // TODO: use responseUtils to build the headers instead
-            builder.header(HttpHeaders.CONTENT_TYPE, "text/csv; charset=utf-8")
-                    .header(
-                            HttpHeaders.CONTENT_DISPOSITION,
-                            responseUtils.getCsvContentDispositionValue(containerRequestContext)
-                    );
             output = new CsvResponse<>(
                     rows,
                     pagination,
@@ -102,10 +106,6 @@ public abstract class EndpointServlet {
                     objectMappers
             ).getResponseStream();
         } else {
-            // TODO: use responseUtils to build the headers instead
-            // JSON is the default
-            builder.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON + "; charset=utf-8");
-
             output = new JsonResponse<>(
                     rows,
                     pagination,
@@ -115,7 +115,7 @@ public abstract class EndpointServlet {
             ).getResponseStream();
 
         }
-        return builder.entity(output).build();
+        return responseBuilderWithHeaders.entity(output).build();
     }
 
     /**
