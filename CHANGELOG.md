@@ -10,6 +10,10 @@ Current
 
 ### Added:
 
+- [Ability to add Dimension objects to DimensionSpecs as a nonserialized config object](https://github.com/yahoo/fili/issues/841)
+    * DimensionSpec and relevant subclasses have had a constructor added that takes a Dimension and a getter for
+    the Dimension
+
 - [Added expected start and end dates to PhysicalTableDefiniton](https://github.com/yahoo/fili/issues/822)
     * New constructors on `PhysicalTableDefinition` and `ConcretePhysicalTableDefinition` that take expected start and end date
     * New public getters on `PhysicalTableDefinition` for expected start and end date
