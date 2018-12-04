@@ -15,6 +15,10 @@ Current
   filename. The download format depends on the format provided to the format parameter. 
   * Filename parameter is currently only available to data queries.
   
+- [Ability to add Dimension objects to DimensionSpecs as a nonserialized config object](https://github.com/yahoo/fili/issues/841)
+    * DimensionSpec and relevant subclasses have had a constructor added that takes a Dimension and a getter for
+    the Dimension
+
 - [Added expected start and end dates to PhysicalTableDefiniton](https://github.com/yahoo/fili/issues/822)
     * New constructors on `PhysicalTableDefinition` and `ConcretePhysicalTableDefinition` that take expected start and end date
     * New public getters on `PhysicalTableDefinition` for expected start and end date
@@ -137,6 +141,13 @@ Current
 ### Removed:
 
 ### Fixed:
+
+- [Fixed FilteredAggregation nesting behavior](https://github.com/yahoo/fili/issues/839)
+    * Currently, FilteredAggregation effectively makes a second copy of its wrapped aggregation, and the inner copy will
+    be wrapped with the filter and the outer query won't
+    * This behavior is changed to call `nest` on the wrapped query, then wrap produced inner query with the filter. The 
+    filtered inner query is returned as the inner query of `nest` call, and the raw outer query is returned as the outer 
+    query of the `nest` call
 
 - [Filter Code now intersects security constraints instead of unioning with requests](https://github.com/yahoo/fili/issues/812)
     * Switched to ensure security and request filters don't merge but instead intersect
