@@ -60,7 +60,9 @@ public class DimensionsApiRequestImpl extends ApiRequestImpl implements Dimensio
      *     <li>Invalid filter dimensions in the API request.</li>
      *     <li>Pagination parameters in the API request that are not positive integers.</li>
      * </ol>
+     * @deprecated prefer constructor with download filename
      */
+    @Deprecated
     public DimensionsApiRequestImpl(
             String dimension,
             String filters,
@@ -69,7 +71,44 @@ public class DimensionsApiRequestImpl extends ApiRequestImpl implements Dimensio
             @NotNull String page,
             DimensionDictionary dimensionDictionary
     ) throws BadApiRequestException {
-        super(format, perPage, page);
+        this(dimension, filters, format, null, perPage, page, dimensionDictionary);
+    }
+
+    /**
+     * Parses the API request URL and generates the Api Request object.
+     *
+     * @param dimension  single dimension URL
+     * @param filters  URL filter query String in the format:
+     * <pre>{@code
+     * ((field name and operation):((multiple values bounded by [])or(single value))))(followed by , or end of string)
+     * }</pre>
+     * @param format  response data format JSON or CSV. Default is JSON.
+     * @param downloadFilename If not null and not empty, indicates the response should be downloaded by the client with
+     * the provided filename. Otherwise indicates the response should be rendered in the browser.
+     * @param perPage  number of rows to display per page of results. If present in the original request,
+     * must be a positive integer. If not present, must be the empty string.
+     * @param page  desired page of results. If present in the original request, must be a positive
+     * integer. If not present, must be the empty string.
+     * @param dimensionDictionary  cache containing all the valid dimension objects.
+     *
+     * @throws BadApiRequestException is thrown in the following scenarios:
+     * <ol>
+     *     <li>Invalid dimension in the API request.</li>
+     *     <li>Invalid filter syntax in the API request.</li>
+     *     <li>Invalid filter dimensions in the API request.</li>
+     *     <li>Pagination parameters in the API request that are not positive integers.</li>
+     * </ol>
+     */
+    public DimensionsApiRequestImpl(
+            String dimension,
+            String filters,
+            String format,
+            String downloadFilename,
+            @NotNull String perPage,
+            @NotNull String page,
+            DimensionDictionary dimensionDictionary
+    ) throws BadApiRequestException {
+        super(format, downloadFilename, SYNCHRONOUS_REQUEST_FLAG, perPage, page);
 
         // Zero or more grouping dimensions may be specified
         this.dimensions = generateDimensions(dimension, dimensionDictionary);
@@ -78,10 +117,11 @@ public class DimensionsApiRequestImpl extends ApiRequestImpl implements Dimensio
         this.filters = generateFilters(filters, dimensionDictionary);
 
         LOG.debug(
-                "Api request: \nDimensions: {},\nFilters: {},\nFormat: {}\nPagination: {}",
+                "Api request: \nDimensions: {},\nFilters: {},\nFormat: {},\nFilename: {},\nPagination: {}",
                 this.dimensions,
                 this.filters,
                 this.format,
+                this.downloadFilename,
                 this.paginationParameters
         );
     }
@@ -93,7 +133,9 @@ public class DimensionsApiRequestImpl extends ApiRequestImpl implements Dimensio
      * @param paginationParameters  Pagination info for the request
      * @param dimensions  Desired dimensions of the request
      * @param filters  Filters applied to the request
+     * @deprecated prefer constructor with downloadFilename
      */
+    @Deprecated
     private DimensionsApiRequestImpl(
             ResponseFormatType format,
             Optional<PaginationParameters> paginationParameters,
@@ -101,6 +143,27 @@ public class DimensionsApiRequestImpl extends ApiRequestImpl implements Dimensio
             Iterable<ApiFilter> filters
     ) {
         super(format, SYNCHRONOUS_ASYNC_AFTER_VALUE, paginationParameters);
+        this.dimensions = Sets.newLinkedHashSet(dimensions);
+        this.filters = Sets.newLinkedHashSet(filters);
+    }
+    /**
+     * All argument constructor, meant to be used for rewriting apiRequest.
+     *
+     * @param format  Format of the request
+     * @param downloadFilename If not null and not empty, indicates the response should be downloaded by the client with
+     * the provided filename. Otherwise indicates the response should be rendered in the browser.
+     * @param paginationParameters  Pagination info for the request
+     * @param dimensions  Desired dimensions of the request
+     * @param filters  Filters applied to the request
+     */
+    private DimensionsApiRequestImpl(
+            ResponseFormatType format,
+            String downloadFilename,
+            Optional<PaginationParameters> paginationParameters,
+            Iterable<Dimension> dimensions,
+            Iterable<ApiFilter> filters
+    ) {
+        super(format, downloadFilename, SYNCHRONOUS_ASYNC_AFTER_VALUE, paginationParameters);
         this.dimensions = Sets.newLinkedHashSet(dimensions);
         this.filters = Sets.newLinkedHashSet(filters);
     }
@@ -197,27 +260,32 @@ public class DimensionsApiRequestImpl extends ApiRequestImpl implements Dimensio
 
     @Override
     public DimensionsApiRequest withFormat(ResponseFormatType format) {
-        return new DimensionsApiRequestImpl(format, paginationParameters, dimensions, filters);
+        return new DimensionsApiRequestImpl(format, downloadFilename, paginationParameters, dimensions, filters);
     }
 
     @Override
     public DimensionsApiRequest withPaginationParameters(Optional<PaginationParameters> paginationParameters) {
-        return new DimensionsApiRequestImpl(format, paginationParameters, dimensions, filters);
+        return new DimensionsApiRequestImpl(format, downloadFilename, paginationParameters, dimensions, filters);
     }
 
     @Override
     public DimensionsApiRequest withBuilder(Response.ResponseBuilder builder) {
-        return new DimensionsApiRequestImpl(format, paginationParameters, dimensions, filters);
+        return new DimensionsApiRequestImpl(format, downloadFilename, paginationParameters, dimensions, filters);
     }
 
     @Override
     public DimensionsApiRequest withDimensions(LinkedHashSet<Dimension> dimensions) {
-        return new DimensionsApiRequestImpl(format, paginationParameters, dimensions, filters);
+        return new DimensionsApiRequestImpl(format, downloadFilename, paginationParameters, dimensions, filters);
     }
 
     @Override
     public DimensionsApiRequest withFilters(Set<ApiFilter> filters) {
-        return new DimensionsApiRequestImpl(format, paginationParameters, dimensions, filters);
+        return new DimensionsApiRequestImpl(format, downloadFilename, paginationParameters, dimensions, filters);
+    }
+
+    @Override
+    public DimensionsApiRequest withDownloadFilename(String downloadFilename) {
+        return new DimensionsApiRequestImpl(format, downloadFilename, paginationParameters, dimensions, filters);
     }
 
     @Override

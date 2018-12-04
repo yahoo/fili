@@ -4,10 +4,17 @@ package com.yahoo.bard.webservice.web.util;
 
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
+import com.yahoo.bard.webservice.web.DefaultResponseFormatType;
+import com.yahoo.bard.webservice.web.ResponseFormatType;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.UriInfo;
 
@@ -19,7 +26,57 @@ public class ResponseUtils {
     public static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
     public static final String MAX_NAME_LENGTH = SYSTEM_CONFIG.getPackageVariableName("download_file_max_name_length");
 
-    int maxFileLength = SYSTEM_CONFIG.getIntProperty(MAX_NAME_LENGTH, 0);
+    public static final String CONTENT_DISPOSITION_HEADER_PREFIX = "attachment; filename=";
+
+    protected int maxFileLength = SYSTEM_CONFIG.getIntProperty(MAX_NAME_LENGTH, 0);
+
+    protected Set<ResponseFormatType> alwaysDownloadFormats;
+
+    /**
+     * Constructor. By default the CSV format is a format that is always returned as an attachment instead of rendered
+     * in the browser.
+     */
+    public ResponseUtils() {
+        this.alwaysDownloadFormats = new HashSet<>();
+        this.alwaysDownloadFormats.add(DefaultResponseFormatType.CSV);
+    }
+
+    /**
+     * Set of format that should always be returned as an attachment.
+     *
+     * @param alwaysDownloadFormats the set of formats
+     */
+    public ResponseUtils(Set<ResponseFormatType> alwaysDownloadFormats) {
+        this.alwaysDownloadFormats = alwaysDownloadFormats;
+    }
+
+    /**
+     * Adds a response format to the list of always download formats.
+     *
+     * @param responseFormatType the format to be marked as always download
+     */
+    public void addAlwaysDownloadFormatType(ResponseFormatType responseFormatType) {
+        alwaysDownloadFormats.add(responseFormatType);
+    }
+
+    /**
+     * Removes a format type from the always download format types.
+     *
+     * @param responseFormatType the format type to be removed
+     * @return true if the format type was in the set and removed, false if it was not in the set
+     */
+    public boolean removeAlwaysDownloadFormatType(ResponseFormatType responseFormatType) {
+        return alwaysDownloadFormats.remove(responseFormatType);
+    }
+
+    /**
+     * Overrides the existing set of always download format types.
+     *
+     * @param alwaysDownloadFormats the new set of always download formats to replacing the existing set.
+     */
+    public void overrideAlwaysDownloadFormats(Set<ResponseFormatType> alwaysDownloadFormats) {
+        this.alwaysDownloadFormats = alwaysDownloadFormats;
+    }
 
     /**
      * This method will get the path segments and the interval (if it is part of the request) from the apiRequest and
@@ -34,8 +91,136 @@ public class ResponseUtils {
      * @param containerRequestContext  the state of the container for building response headers
      *
      * @return A content disposition header telling the browser the name of the CSV file to be downloaded
+     * @deprecated prefer to use buildResponseFormatHeaders() or at least getContentDispositionValue()
      */
+    @Deprecated
     public String getCsvContentDispositionValue(ContainerRequestContext containerRequestContext) {
+        return getContentDispositionValue(containerRequestContext, DefaultResponseFormatType.CSV);
+    }
+
+    /**
+     * Gets the response headers. Convenience method for if there is no user provided download filename.
+     *
+     * @param containerRequestContext  the container request context of the request currently being handled
+     * @param responseFormatType  the response format type for that request.
+     * @return A map of applicable headers to values.
+     */
+    public Map<String, String> buildResponseFormatHeaders(
+            ContainerRequestContext containerRequestContext,
+            ResponseFormatType responseFormatType
+    ) {
+        return buildResponseFormatHeaders(containerRequestContext, null, responseFormatType);
+    }
+
+    /**
+     * Returns a map of all response headers having to do with the response format. Currently this includes the
+     * Content-Type header and the Content-Disposition header. The Content-Type header is always returned, but the
+     * Content-Disposition header is only returned if the response is supposed to be downloaded.
+     *
+     * Whether or not the response should be downloaded is based on two pieces of data. First, if a user defined
+     * filename is present then the response will always be downloaded. Intuitively, it would only make sense to
+     * provide a filename if you intend for the results to be downloaded into a file of that name. The second case is
+     * if the provided response format type is considered to be an always download format type. A format type is
+     * considered always download if it is in the alwaysDownloadFormats set. If the response format type is an
+     * always download format type AND no download filename is provide a default filename is generated based on the
+     * path elements and time range provided in the api query.
+     *
+     * @param containerRequestContext the container request context of the request currently being handled
+     * @param downloadFilename  the filename for the response to be downloaded as
+     * @param responseFormatType the response format type for that request.
+     * @return A map of applicable headers to values.
+     */
+    public Map<String, String> buildResponseFormatHeaders(
+            ContainerRequestContext containerRequestContext,
+            String downloadFilename,
+            ResponseFormatType responseFormatType
+    ) {
+        Map<String, String> result = new HashMap<>();
+        result.put(HttpHeaders.CONTENT_TYPE, getContentTypeValue(responseFormatType));
+        // if the response format is CSV we ALWAYS respond with a
+        // if filename is present and not empty then the druid response should be sent back as an attachment
+        if (
+                alwaysDownloadFormats.contains(responseFormatType) ||
+                        downloadFilename != null && !downloadFilename.isEmpty()
+        ) {
+            result.put(
+                    HttpHeaders.CONTENT_DISPOSITION,
+                    getContentDispositionValue(containerRequestContext, downloadFilename, responseFormatType)
+            );
+        }
+        return result;
+    }
+
+    /**
+     * Builds the value for the Content-Type header. The value is constructed out of data provided by the
+     * Response Format Type.
+     *
+     * @param responseFormatType  data object that contains information necessary to build the response headers
+     * @return the value for the Content-Type header
+     */
+    public String getContentTypeValue(ResponseFormatType responseFormatType) {
+        return responseFormatType.getContentType() + "; charset=" + responseFormatType.getCharset();
+    }
+
+    /**
+     * Builds the value for the Content-Disposition header. convenience method for when there is no user provided
+     * download filename. A default filename is generated and used instead.
+     *
+     * @param containerRequestContext  the container request context of the request currently being handled
+     * @param responseFormatType  the response format type for that request.
+     * @return the value for the Content-Disposition header
+     */
+    public String getContentDispositionValue(
+            ContainerRequestContext containerRequestContext,
+            ResponseFormatType responseFormatType
+    ) {
+        return getContentDispositionValue(
+                containerRequestContext,
+                generateDefaultFileNameNoExtension(containerRequestContext),
+                responseFormatType
+        );
+    }
+
+    /**
+     * Builds the value for the Content-Disposition header. If downloadFilename is null or empty a default name is
+     * generated instead.
+     *
+     * @param containerRequestContext  container request context of the request currently being handled
+     * @param requestedFilename  the filename for the response to be downloaded as
+     * @param responseFormatType  data object that contains information necessary to build the response headers
+     * @return the value for the Content-Disposition header
+     */
+    public String getContentDispositionValue(
+            ContainerRequestContext containerRequestContext,
+            String requestedFilename,
+            ResponseFormatType responseFormatType
+    ) {
+        String downloadFilename = requestedFilename;
+        if (requestedFilename == null || requestedFilename.isEmpty()) {
+            downloadFilename = generateDefaultFileNameNoExtension(containerRequestContext);
+        }
+        downloadFilename = replaceReservedCharacters(downloadFilename);
+        String filepath = truncateFilename(downloadFilename);
+        String extension = responseFormatType.getFileExtension();
+        return CONTENT_DISPOSITION_HEADER_PREFIX + filepath + extension;
+
+    }
+
+    /**
+     * This method will get the path segments and the interval (if it is part of the request) from the api request and
+     * generate a default filename to be used with the content-disposition header.
+     * <p>
+     * If the path segments are ["data", "datasource", "granularity", "dim1"] and the query params have interval
+     * {"dateTime": "a/b"}, then the result would be "attachment; filename=data-datasource-granularity-dim1_a_b.csv".
+     * For a dimension query without a "dateTime" query param and path segments
+     * ["dimensions", "datasource", "dim1"], then the result would be
+     * "attachment; filename=dimensions-datasource-dim1.csv".
+     * </p>
+     *
+     * @param containerRequestContext  container request context of the request currently being handled
+     * @return the generated default filename
+     */
+    protected String generateDefaultFileNameNoExtension(ContainerRequestContext containerRequestContext) {
         UriInfo uriInfo = containerRequestContext.getUriInfo();
         String uriPath = uriInfo.getPathSegments().stream()
                 .map(PathSegment::getPath)
@@ -45,16 +230,34 @@ public class ResponseUtils {
         if (interval == null) {
             interval = "";
         } else {
-            // Chrome treats ',' as duplicate header so replace it with '__' to make chrome happy.
-            interval = "_" + interval.replace("/", "_").replace(",", "__");
+            interval = "_" + replaceReservedCharacters(interval);
         }
+        return uriPath + interval;
+    }
 
-        String extension = ".csv";
-        String filePath = uriPath + interval;
-        filePath = (maxFileLength > 0 && filePath.length() > maxFileLength) ?
-                filePath.substring(0, maxFileLength)
-                : filePath;
+    /**
+     * truncates the provided filename if it exceeds the maximum filename length. A maxFileLength of zero indicates
+     * no maximum file length is configured and thus the filename will not be truncated.
+     *
+     * @param filename  the filename to maybe truncate
+     * @return  the filename truncated to the configured maximum length if necessary
+     */
+    protected String truncateFilename(String filename) {
+        return maxFileLength > 0 && filename.length() > maxFileLength
+                ? filename.substring(0, maxFileLength)
+                : filename;
+    }
 
-        return "attachment; filename=" + filePath + extension;
+    /**
+     * Replaces a small set of illegal characters with underscores.
+     *
+     * '/' and '\' are file path delimiters in unix and windows respectively, so they must be replaced. Chrome treats
+     * ',' as duplicate header so it must also be replaced to make chrome happy.
+     *
+     * @param str  Input to perform replace on
+     * @return the input with reserved characters replaced with underscores
+     */
+    protected String replaceReservedCharacters(String str) {
+        return str.replaceAll("[\\\\/]", "_").replaceAll(",", "__");
     }
 }

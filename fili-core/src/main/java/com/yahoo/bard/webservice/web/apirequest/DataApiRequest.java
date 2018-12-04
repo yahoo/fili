@@ -273,6 +273,8 @@ public interface DataApiRequest extends ApiRequest {
 
     DataApiRequest withFormat(ResponseFormatType format);
 
+    DataApiRequest withDownloadFilename(String downloadFilename);
+
     // Processing concerns
 
     DataApiRequest withAsyncAfter(long asyncAfter);

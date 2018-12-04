@@ -31,6 +31,18 @@ public interface ApiRequest {
     }
 
     /**
+     * Get the name of the file for the result to be downloaded as. By default, if the filename is present the response
+     * will be returned as an attachment with the return value of this method as its name. If the filename is not
+     * present the response may or may not be returned as an attachment.
+     * See {@link com.yahoo.bard.webservice.web.util.ResponseUtils} for more details.
+     *
+     * @return an optional containing the filename of the response attachment.
+     */
+    default Optional<String> getDownloadFilename() {
+        return Optional.empty();
+    }
+
+    /**
      * Get the type of the requested response format.
      *
      * @return The format of the response for this API request.

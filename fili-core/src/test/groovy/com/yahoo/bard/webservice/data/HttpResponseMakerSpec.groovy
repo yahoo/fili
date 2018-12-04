@@ -91,6 +91,7 @@ class HttpResponseMakerSpec extends Specification {
         apiRequest.getLogicalMetrics() >> metricSet
         apiRequest.getGranularity() >> DAY
         apiRequest.getFormat() >> DefaultResponseFormatType.JSON
+        apiRequest.getDownloadFilename() >> Optional.empty()
         containerRequestContext.getUriInfo() >> uriInfo
 
         ResultSetSchema schema = new ResultSetSchema(DAY, [new MetricColumn("lm1")] as Set)
@@ -168,5 +169,22 @@ class HttpResponseMakerSpec extends Specification {
         then:
         response instanceof Response
         response.getStatusInfo().statusCode == 400
+    }
+
+    def "If a filename is provided, headers indicate to download an attachment of the expected filetype"() {
+        setup:
+        responseContext.put("headers", resultSetResponseProcessor.getHeaders())
+        PreResponse preResponse = new PreResponse(resultSet, responseContext)
+
+        when: "The Response is built"
+        Response actual = httpResponseMaker.buildResponse(preResponse, apiRequest, containerRequestContext)
+
+        then: "The header is set correctly"
+        actual.getHeaderString(HttpHeaders.CONTENT_TYPE) == "text/csv; charset=utf-8"
+        actual.getHeaderString(HttpHeaders.CONTENT_DISPOSITION) == "attachment; filename=test_filename.csv"
+
+        and: "Mock override: A CSV-formatted request"
+        apiRequest.getFormat() >> DefaultResponseFormatType.CSV
+        apiRequest.getDownloadFilename() >> Optional.of("test_filename")
     }
 }

@@ -107,6 +107,8 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
      * @param perPage  number of values to return per page
      * @param page  the page to start from
      * @param format  The name of the output format type
+     * @param downloadFilename If present, indicates the response should be downloaded by the client with the provided
+     * filename. Otherwise indicates the response should be rendered in the browser.
      * @param uriInfo  UriInfo of the request
      * @param containerRequestContext  The context of data provided by the Jersey container for this request
      *
@@ -125,13 +127,14 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @QueryParam("format") String format,
+            @QueryParam("filename") String downloadFilename,
             @Context UriInfo uriInfo,
             @Context final ContainerRequestContext containerRequestContext
     ) {
         if (format != null && format.toLowerCase(Locale.ENGLISH).equals("fullview")) {
             return getTablesFullView(perPage, page, uriInfo, containerRequestContext);
         } else {
-            return getTable(null, perPage, page, format, containerRequestContext);
+            return getTable(null, perPage, page, format, downloadFilename, containerRequestContext);
         }
     }
 
@@ -143,6 +146,8 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
      * @param perPage  number of values to return per page
      * @param page  the page to start from
      * @param format  The name of the output format type
+     * @param downloadFilename If present, indicates the response should be downloaded by the client with the provided
+     * filename. Otherwise indicates the response should be rendered in the browser.
      * @param containerRequestContext  The context of data provided by the Jersey container for this request
      *
      * @return The list of grain-specific logical tables
@@ -162,6 +167,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @QueryParam("format") String format,
+            @QueryParam("filename") String downloadFilename,
             @Context final ContainerRequestContext containerRequestContext
     ) {
         TablesApiRequestImpl tablesApiRequestImpl = null;
@@ -174,6 +180,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                     tableName,
                     null,
                     formatResolver.apply(format, containerRequestContext),
+                    downloadFilename,
                     perPage,
                     page,
                     this

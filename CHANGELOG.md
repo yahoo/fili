@@ -10,6 +10,11 @@ Current
 
 ### Added:
 
+- [Added filename parameter to api query](https://github.com/yahoo/fili/issues/709)
+  * If the filename parameter is present in the request the response is assumed to be downloaded with the provided 
+  filename. The download format depends on the format provided to the format parameter. 
+  * Filename parameter is currently only available to data queries.
+  
 - [Ability to add Dimension objects to DimensionSpecs as a nonserialized config object](https://github.com/yahoo/fili/issues/841)
     * DimensionSpec and relevant subclasses have had a constructor added that takes a Dimension and a getter for
     the Dimension
@@ -49,6 +54,16 @@ Current
     * Added `orderedSetMerge` that merges 2 sets in the order provided.
 
 ### Changed:
+
+- [ResponseFormatType now contains information relevant to generating response headers associated with response format](https://github.com/yahoo/fili/issues/709)
+  * `ResponseFormatType` interface exposes `getCharset()`, `getFileExtension()`, and `getContentType()` methods which 
+  provide information used to build response headers
+  
+- [ApiRequest interfaces exposes getDownloadFilename method](https://github.com/yahoo/fili/issues/709)
+  * `ApiRequestImpl` and other classes relating to the construction of `DataApiRequest` implementations have had 
+  new constructors added to handle the filename.
+  * Constructors that don't handle filename are now deprecated.
+
 - [Added config property for SSL cipher suites](https://github.com/yahoo/fili/issues/831)
 
 - [Updated asynch http dependency to resolve security issues](https://github.com/yahoo/fili/issues/821)
@@ -154,6 +169,15 @@ Current
 ### Known Issues:
 
 ## Contract changes:
+
+- [ResponseUtils is now responsible for generating response headers](https://github.com/yahoo/fili/issues/709)
+  * `ResponseUtils` now generates the Content-Type header and the Content-Disposition header if relevant.
+  * `ResponseUtils` handles all format types instead of just building the Content-Disposition header value for CSV
+  responses
+
+- [Response is assumed to be rendered in the browser unless a filename is provided](https://github.com/yahoo/fili/issues/709)
+  * `ResponseUtils` takes a list of formats that default to download. This list can be changed or overridden
+  * By default CSV is added to the default to download list. This is to maintain backwards compatibility
 
 - [ApiRequest.getApiDruidFilters() must now not be null]()
 
