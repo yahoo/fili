@@ -186,7 +186,7 @@ public class FilterBinders {
             }
             String operationName = matcher.group(3);
             try {
-                FilterOperation operation = DefaultFilterOperation.valueOf(operationName);
+                FilterOperation operation = DefaultFilterOperation.fromString(operationName);
                 inProgressApiFilter = inProgressApiFilter.withOperation(operation);
             } catch (IllegalArgumentException ignored) {
                 LOG.debug(FILTER_OPERATOR_INVALID.logFormat(operationName));
