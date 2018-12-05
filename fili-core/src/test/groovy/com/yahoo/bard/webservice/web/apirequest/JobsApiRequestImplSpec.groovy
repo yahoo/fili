@@ -157,7 +157,7 @@ class JobsApiRequestImplSpec extends Specification {
         filters.size() == 1
         JobRowFilter filter = filters[0]
         filter.jobField?.name == "userId"
-        filter.operation == DefaultFilterOperation.valueOf("eq")
+        filter.operation == DefaultFilterOperation.fromString("eq")
         filter.values == ["foo"] as Set
     }
 
@@ -173,12 +173,12 @@ class JobsApiRequestImplSpec extends Specification {
 
         JobRowFilter filter1 = filters[0]
         filter1.jobField?.name == "userId"
-        filter1.operation == DefaultFilterOperation.valueOf("eq")
+        filter1.operation == DefaultFilterOperation.fromString("eq")
         filter1.values == ["foo"] as Set
 
         JobRowFilter filter2 = filters[1]
         filter2.jobField?.name == "status"
-        filter2.operation == DefaultFilterOperation.valueOf("eq")
+        filter2.operation == DefaultFilterOperation.fromString("eq")
         filter2.values == ["success"] as Set
     }
 

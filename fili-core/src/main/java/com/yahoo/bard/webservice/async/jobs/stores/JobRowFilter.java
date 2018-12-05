@@ -166,7 +166,7 @@ public class JobRowFilter {
     private FilterOperation extractOperation(Matcher tokenizedQuery) throws BadFilterException {
         String operationName = tokenizedQuery.group(2);
         try {
-            return DefaultFilterOperation.valueOf(operationName);
+            return DefaultFilterOperation.fromString(operationName);
         } catch (IllegalArgumentException ignored) {
             LOG.debug(FILTER_OPERATOR_INVALID.logFormat(operationName));
             throw new BadFilterException(FILTER_OPERATOR_INVALID.format(operationName));
