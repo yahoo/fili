@@ -10,6 +10,9 @@ Current
 
 ### Added:
 
+- [Added aliases to api filter operations](https://github.com/yahoo/fili/issues/843)
+  * Filter ops now have aliases that match the relevant ops and aliases for havings.
+
 - [Added filename parameter to api query](https://github.com/yahoo/fili/issues/709)
   * If the filename parameter is present in the request the response is assumed to be downloaded with the provided 
   filename. The download format depends on the format provided to the format parameter. 
