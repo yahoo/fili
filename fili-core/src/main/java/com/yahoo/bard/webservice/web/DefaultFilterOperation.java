@@ -51,7 +51,7 @@ public enum DefaultFilterOperation implements FilterOperation {
     /**
      * Constructor.
      *
-     * @param aliases  List of legal aliases for the op.
+     * @param aliases  List of aliases for the op.
      */
     DefaultFilterOperation(String... aliases) {
         this.aliases = Arrays.asList(aliases);
@@ -63,12 +63,12 @@ public enum DefaultFilterOperation implements FilterOperation {
     }
 
     /**
-     * Convert from a string to a Having operation.
+     * Convert from a string to a filter operation.
      *
      * @param value  Candidate string
      *
-     * @return  the Having if one was found
-     * @throws IllegalArgumentException if no Having was found
+     * @return  the filter operation if one was found
+     * @throws IllegalArgumentException if no filter operation was found
      */
     static public DefaultFilterOperation fromString(@NotNull String value) throws IllegalArgumentException {
         return Optional.ofNullable(ALIASES.get(value))
