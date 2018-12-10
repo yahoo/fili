@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.validation.constraints.NotNull;
@@ -93,11 +94,13 @@ public abstract class Aggregation implements MetricField {
      *
      * @return A pair where pair.left is the outer aggregation and pair.right is the inner.
      */
-    public Pair<Aggregation, Aggregation> nest() {
+    public Pair<Optional<Aggregation>, Optional<Aggregation>> nest() {
         String nestingName = this.name;
         Aggregation outer = this.withFieldName(nestingName);
         Aggregation inner = this.withName(nestingName);
-        return new ImmutablePair<>(outer, inner);
+        Optional<Aggregation> outerOptional = Optional.of(outer);
+        Optional<Aggregation> innerOptional = Optional.of(inner);
+        return new ImmutablePair<>(outerOptional, innerOptional);
     }
 
     @Override

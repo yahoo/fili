@@ -14,6 +14,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -115,7 +116,7 @@ public class CardinalityAggregation extends Aggregation {
      * @return Always throws an exception
      */
     @Override
-    public Pair<Aggregation, Aggregation> nest() {
+    public Pair<Optional<Aggregation>, Optional<Aggregation>> nest() {
         throw new UnsupportedOperationException("Cardinality aggregators cannot support dynamic nesting.");
     }
 
