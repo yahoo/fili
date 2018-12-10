@@ -14,6 +14,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -67,12 +68,14 @@ public class FilteredAggregation extends Aggregation {
      * @return A pair where pair.left is the outer aggregation and pair.right is the inner.
      */
     @Override
-    public Pair<Aggregation, Aggregation> nest() {
-        Pair<Aggregation, Aggregation> wrappedAggNested = this.getAggregation().nest();
-        Aggregation inner = this.withAggregation(wrappedAggNested.getRight());
-        Aggregation outer = wrappedAggNested.getLeft();
+    public Pair<Optional<Aggregation>, Optional<Aggregation>> nest() {
+        Pair<Optional<Aggregation>, Optional<Aggregation>> wrappedAggNested = this.getAggregation().nest();
+        Aggregation inner = this.withAggregation(wrappedAggNested.getRight().get());
+        Aggregation outer = wrappedAggNested.getLeft().get();
         outer = outer.withFieldName(inner.getName());
-        return new ImmutablePair<>(outer, inner);
+        Optional<Aggregation> outerOptional = Optional.of(outer);
+        Optional<Aggregation> innerOptional = Optional.of(inner);
+        return new ImmutablePair<>(outerOptional, innerOptional);
     }
 
     @JsonIgnore
