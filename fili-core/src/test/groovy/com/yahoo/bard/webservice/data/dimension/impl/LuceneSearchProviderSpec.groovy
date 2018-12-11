@@ -138,6 +138,19 @@ class LuceneSearchProviderSpec extends SearchProviderSpec<LuceneSearchProvider> 
         1 * keyValueStore.put('cardinality_key', '14')
     }
 
+    def "refresh cardinality is called when getting cardinality with refresh"() {
+        given: "a new key value store"
+        KeyValueStore keyValueStore = Mock()
+        keyValueStore.getOrDefault(_, "0") >> "12"
+
+        when: "lucene gets a new key value store with no cardinality key"
+        searchProvider.setKeyValueStore(keyValueStore)
+        searchProvider.getDimensionCardinality(true) == 12
+
+        then: "the cardinality is set to the current lucene document count"
+        2 * keyValueStore.put('cardinality_key', '14')
+    }
+
     def "moveDirEntries moves all entries of a directory to a new directory, while keeping all old empty dirs"() {
         expect:
         Files.exists(sourcePath)
