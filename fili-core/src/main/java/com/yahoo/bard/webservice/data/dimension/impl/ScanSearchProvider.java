@@ -81,6 +81,14 @@ public class ScanSearchProvider implements SearchProvider, FilterDimensionRows {
         return Integer.parseInt(keyValueStore.get(DimensionStoreKeyUtils.getCardinalityKey()));
     }
 
+    @Override
+    public int getDimensionCardinality(boolean refresh) {
+        if (refresh) {
+            refreshCardinality();
+        }
+        return getDimensionCardinality();
+    }
+
     /**
      * Get a dimension row given an id.
      *

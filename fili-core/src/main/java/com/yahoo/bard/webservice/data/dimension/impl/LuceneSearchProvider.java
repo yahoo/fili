@@ -215,6 +215,14 @@ public class LuceneSearchProvider implements SearchProvider {
     }
 
     @Override
+    public int getDimensionCardinality(boolean refresh) {
+        if (refresh) {
+            refreshCardinality();
+        }
+        return getDimensionCardinality();
+    }
+
+    @Override
     public Pagination<DimensionRow> findAllDimensionRowsPaged(PaginationParameters paginationParameters) {
         return getResultsPage(new MatchAllDocsQuery(), paginationParameters);
     }

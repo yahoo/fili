@@ -44,6 +44,18 @@ public interface SearchProvider {
     int getDimensionCardinality();
 
     /**
+     * Gets the number of distinct dimension rows (assuming the key field is unique) in the index.
+     *
+     * @param  refresh If true, clear any cached cardinality and recalculate before returning.
+     *
+     * @return The number of dimension rows for this dimension
+     */
+    default int getDimensionCardinality(boolean refresh) {
+        // If no caching is done, simply delegate
+        return getDimensionCardinality();
+    }
+
+    /**
      * Getter for dimension rows.
      *
      * @return Set of dimension rows the Search Provider has in it's indexes
