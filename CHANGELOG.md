@@ -10,6 +10,11 @@ Current
 
 ### Added:
 
+- [Force update of cardinality to SearchIndexes](https://github.com/yahoo/fili/issues/846)
+  * `SearchProvider` now has method `int getDimensionCardinality(boolean refresh)`, where refresh indicates the cardinality count should be refreshed before being returned.
+    - default implementation just defers to existing method `int getDimensionCardinality()`
+    - `LuceneSearchProvider` overrides the default and refreshes the cardinality count if `refresh` is true
+
 - [Added aliases to api filter operations](https://github.com/yahoo/fili/issues/843)
   * Filter ops now have aliases that match the relevant ops and aliases for havings.
 
