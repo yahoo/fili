@@ -63,6 +63,10 @@ Current
 
 ### Changed:
 
+- [Allow Optional nesting in Aggregation](https://github.com/yahoo/fili/issues/847)
+  * Changed the return type of `nest` method in `Aggreagtion` class.
+  * `nest` method in `Aggregation` now returns a `Pair` of `Optional<Aggregation>`.
+  
 - [ResponseFormatType now contains information relevant to generating response headers associated with response format](https://github.com/yahoo/fili/issues/709)
   * `ResponseFormatType` interface exposes `getCharset()`, `getFileExtension()`, and `getContentType()` methods which 
   provide information used to build response headers
