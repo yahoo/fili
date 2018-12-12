@@ -63,10 +63,6 @@ Current
 
 ### Changed:
 
-- [Allow Optional nesting in Aggregation](https://github.com/yahoo/fili/issues/847)
-  * Changed the return type of `nest` method in `Aggreagtion` class.
-  * `nest` method in `Aggregation` now returns a `Pair` of `Optional<Aggregation>`.
-  
 - [ResponseFormatType now contains information relevant to generating response headers associated with response format](https://github.com/yahoo/fili/issues/709)
   * `ResponseFormatType` interface exposes `getCharset()`, `getFileExtension()`, and `getContentType()` methods which 
   provide information used to build response headers
@@ -182,6 +178,10 @@ Current
 
 ## Contract changes:
 
+- [Allow Optional nesting in Aggregation](https://github.com/yahoo/fili/issues/847)
+  * Changed the return type of `nest` method in `Aggreagtion` class.
+  * `nest` method in `Aggregation` now returns a `Pair` of `Optional<Aggregation>`.
+  
 - [ResponseUtils is now responsible for generating response headers](https://github.com/yahoo/fili/issues/709)
   * `ResponseUtils` now generates the Content-Type header and the Content-Disposition header if relevant.
   * `ResponseUtils` handles all format types instead of just building the Content-Disposition header value for CSV
