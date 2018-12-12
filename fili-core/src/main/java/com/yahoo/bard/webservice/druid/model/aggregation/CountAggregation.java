@@ -54,9 +54,7 @@ public class CountAggregation extends Aggregation {
         String nestingName = getName();
         Aggregation inner = withName(nestingName);
         Aggregation outer = new LongSumAggregation(getName(), nestingName);
-        Optional<Aggregation> outerOptional = Optional.of(outer);
-        Optional<Aggregation> innerOptional = Optional.of(inner);
-        return new ImmutablePair<>(outerOptional, innerOptional);
+        return new ImmutablePair<>(Optional.of(outer), Optional.of(inner));
     }
 
     @JsonIgnore

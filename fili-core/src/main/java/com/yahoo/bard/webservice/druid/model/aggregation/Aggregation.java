@@ -98,9 +98,7 @@ public abstract class Aggregation implements MetricField {
         String nestingName = this.name;
         Aggregation outer = this.withFieldName(nestingName);
         Aggregation inner = this.withName(nestingName);
-        Optional<Aggregation> outerOptional = Optional.of(outer);
-        Optional<Aggregation> innerOptional = Optional.of(inner);
-        return new ImmutablePair<>(outerOptional, innerOptional);
+        return new ImmutablePair<>(Optional.of(outer), Optional.of(inner));
     }
 
     @Override

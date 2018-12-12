@@ -13,7 +13,7 @@ import com.yahoo.bard.webservice.table.TableTestUtils
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 
 import com.fasterxml.jackson.databind.ObjectMapper
-
+import org.apache.commons.lang3.tuple.Pair
 import org.joda.time.DateTimeZone
 
 import spock.lang.Specification
@@ -50,12 +50,16 @@ class CardinalityAggregationSpec extends Specification {
         a1 = new CardinalityAggregation("name", [d1, d2] as LinkedHashSet, true)
     }
 
-    def "verify nest throws exception"() {
+    def "verify cardinality aggregation nests correctly"() {
+        setup:
+        Aggregation a1 = new CardinalityAggregation("name", new LinkedHashSet<Dimension>(), true)
+
         when:
-        a1.nest()
+        Pair<Optional<Aggregation>, Optional<Aggregation>> nested = a1.nest()
 
         then:
-        thrown(UnsupportedOperationException)
+        nested.getLeft().get() == a1
+        nested.getRight() == Optional.empty()
     }
 
     def "Test with field throws exception"() {
