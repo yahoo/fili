@@ -83,6 +83,7 @@ public enum ErrorMessageFormat implements MessageFormatter {
     FILTER_DIMENSION_NOT_IN_TABLE("Filter dimension '%s' is not supported by the table '%s'."),
     FILTER_FIELD_NOT_IN_DIMENSIONS("Filter dimension field '%s' is not supported by the dimension '%s'."),
     FILTER_OPERATOR_INVALID("Filter operator '%s' is invalid."),
+    FILTER_WRONG_NUMBER_OF_VALUES("Filter operator '%s' expects %s argument(s).  Found %d in '%s'."),
     FILTER_SUBSTRING_OPERATIONS_DISABLED(
             "Filter operations 'startswith' and 'contains' are disabled for data requests.",
             "Filter operations 'startswith' and 'contains' are disabled for data requests. Enable by setting feature" +

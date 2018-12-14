@@ -16,6 +16,8 @@ import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.exception.TooManyDruidFiltersException;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.DefaultFilterOperation;
+import com.yahoo.bard.webservice.web.ErrorMessageFormat;
+import com.yahoo.bard.webservice.web.FilterOperation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A DruidBoundFilterBuilder builds a Druid Bound Filter for supported dimensions, which can be sent directly to Druid.
@@ -69,20 +72,32 @@ public class DruidBoundFilterBuilder implements DruidFilterBuilder {
     public Filter buildFilters(final Map<Dimension, Set<ApiFilter>> filterMap) throws FilterBuilderException {
         LOG.trace("Building Druid Bound Filters using filter map: {}", filterMap);
 
+        if (filterMap.isEmpty()) {
+            return null;
+        }
+
         List<Filter> filters;
         try {
             filters =
                     filterMap.values()
                             .stream()
                             .flatMap(Set::stream)
-                            .map(filter -> buildDruidBoundFilters(filter))
+                            // Normalize allows us to expand one filter to many, or prune filters from processing
+                            // without a failure
+                            .flatMap(this::normalize)
+                            .peek(this::validateFilter)
+                            .map(this::buildDruidBoundFilters)
                             .collect(Collectors.toList());
-        } catch (RuntimeException e) {
+        } catch (IllegalArgumentException e) {
             if (e.getCause() instanceof FilterBuilderException) {
                 throw (FilterBuilderException) e.getCause();
             } else {
                 throw e;
             }
+        }
+
+        if (filters.isEmpty()) {
+            return null;
         }
 
         if (filters.size() == 1) {
@@ -121,14 +136,63 @@ public class DruidBoundFilterBuilder implements DruidFilterBuilder {
             case lt:
                 return BoundFilter.buildUpperBoundFilter(dimension, values.get(0), false);
             case between:
-                return BoundFilter
-                        .buildUpperBoundFilter(dimension, values.get(1), false)
-                        .withLowerBound(values.get(0));
+                String lowerBound = values.get(0);
+                String upperBound = values.get(1);
+                return new BoundFilter(dimension, lowerBound, upperBound, false, true, null);
             default:
                 LOG.error(FILTER_OPERATOR_INVALID.logFormat(filterOperation.getName()));
-                throw new RuntimeException(
+                throw new IllegalArgumentException(
                         new FilterBuilderException(FILTER_OPERATOR_INVALID.format(filterOperation.getName()))
                 );
         }
+    }
+
+    /**
+     * Validate the expected values for this Filter.
+     *
+     * This is useful for clean error messaging on filters as well as to clean up Filters before conversion.
+     *
+     * @param filter  the api filter being validated
+     *
+     */
+    public void validateFilter(ApiFilter filter) {
+        FilterOperation op = filter.getOperation();
+        List<String> values = filter.getValuesList();
+
+        // Verify that this is a valid operation for this builder
+        if (! (op instanceof DefaultFilterOperation)) {
+            LOG.error(FILTER_OPERATOR_INVALID.logFormat(op));
+            throw new IllegalArgumentException(
+                    new FilterBuilderException(FILTER_OPERATOR_INVALID.format(op.getName()))
+            );
+        }
+
+        // Verify that this filter uses a correct number of filters
+        if (
+                (op.getMinimumArguments().isPresent() && op.getMinimumArguments().get() < values.size()) ||
+                (op.getMaximumArguments().isPresent() && op.getMaximumArguments().get() > values.size())
+        ) {
+            String error = ErrorMessageFormat.FILTER_WRONG_NUMBER_OF_VALUES.format(
+                    op,
+                    op.expectedRangeDescription(),
+                    filter.getValues().size(),
+                    filter.getValuesList()
+            );
+            LOG.error(error);
+            throw new IllegalArgumentException(new FilterBuilderException(error));
+        }
+
+
+    }
+
+    /**
+     * An extension hook to permit subclasses to transform, remove, or make multiple versions of an apiFilter.
+     *
+     * @param filter  The filter to transform
+     *
+     * @return the transformed filter
+     */
+    public Stream<ApiFilter> normalize(ApiFilter filter) {
+        return Stream.of(filter);
     }
 }
