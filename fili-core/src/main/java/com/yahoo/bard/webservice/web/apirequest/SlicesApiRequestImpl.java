@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -148,16 +149,17 @@ public class SlicesApiRequestImpl extends ApiRequestImpl implements SlicesApiReq
             throw new BadApiRequestException(msg);
         }
 
+        List<String> sliceSchema = getSlicesSchema();
         LinkedHashSet<Map<String, String>> generated = tableDictionary.entrySet().stream()
                 .map(
                         e -> {
                             Map<String, String> res = new LinkedHashMap<>();
-                            res.put("name", e.getKey());
+                            res.put(sliceSchema.get(0), e.getKey());
                             res.put(
-                                    "timeGrain",
+                                    sliceSchema.get(1),
                                     e.getValue().getSchema().getTimeGrain().getName().toLowerCase(Locale.ENGLISH)
                             );
-                            res.put("uri", SlicesServlet.getSliceDetailUrl(e.getKey(), uriInfo));
+                            res.put(sliceSchema.get(2), SlicesServlet.getSliceDetailUrl(e.getKey(), uriInfo));
                             return res;
                         }
                 ).collect(Collectors.toCollection(LinkedHashSet::new));

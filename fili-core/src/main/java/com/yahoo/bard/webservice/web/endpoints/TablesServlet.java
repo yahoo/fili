@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -198,8 +199,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                     containerRequestContext,
                     getLogicalTableListSummaryView(tablesApiRequestImpl.getTables(), uriInfo),
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "tables" : "rows",
-                    Response.status(Response.Status.OK),
-                    null
+                    getLogicalTableListSummaryViewSchema()
             );
             LOG.debug("Tables Endpoint Response: {}", response.getEntity());
             return response;
@@ -411,10 +411,6 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                     "tables",
                     null
             );
-<<<<<<< b07b1ca280a5768b6ff28f1150c6778fd13ea6ab
-=======
-            Response response = formatResponse(tablesApiRequestImpl, paginatedResult, "tables", Response.status(Response.Status.OK),null);
->>>>>>> temp
 
             LOG.debug("Tables Endpoint Response: {}", response.getEntity());
             return response;
@@ -427,6 +423,15 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
         } finally {
             RequestLog.stopTiming(this);
         }
+    }
+
+    /**
+     * Get the summary list view schema of the logical tables.
+     *
+     * @return Summary list view schema of the logical tables
+     */
+    public static List<String> getLogicalTableListSummaryViewSchema() {
+        return getLogicalTableSummaryViewSchema();
     }
 
     /**
@@ -464,6 +469,15 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
     }
 
     /**
+     * Get the summary view schema of the logical table.
+     *
+     * @return Summary view schema of the logical table
+     */
+    public static List<String> getLogicalTableSummaryViewSchema() {
+        return Arrays.asList("category", "name", "longName", "granularity", "uri");
+    }
+
+    /**
      * Get the summary view of the logical table.
      *
      * @param logicalTable  Logical table to get the view of
@@ -472,12 +486,13 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
      * @return Summary view of the logical table
      */
     public static Map<String, String> getLogicalTableSummaryView(LogicalTable logicalTable, UriInfo uriInfo) {
+        List<String> schema = getLogicalTableSummaryViewSchema();
         Map<String, String> resultRow = new LinkedHashMap<>();
-        resultRow.put("category", logicalTable.getCategory());
-        resultRow.put("name", logicalTable.getName());
-        resultRow.put("longName", logicalTable.getLongName());
-        resultRow.put("granularity", logicalTable.getGranularity().getName());
-        resultRow.put("uri", getLogicalTableUrl(logicalTable, uriInfo));
+        resultRow.put(schema.get(0), logicalTable.getCategory());
+        resultRow.put(schema.get(1), logicalTable.getName());
+        resultRow.put(schema.get(2), logicalTable.getLongName());
+        resultRow.put(schema.get(3), logicalTable.getGranularity().getName());
+        resultRow.put(schema.get(4), getLogicalTableUrl(logicalTable, uriInfo));
         return resultRow;
     }
 

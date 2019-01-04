@@ -78,7 +78,9 @@ public abstract class AbstractResponse<T> implements ResponseStream {
      */
     public void writeMetaObject(JsonGenerator generator, UriBuilder uriBuilder)
             throws IOException {
-        Map<String, Object> meta = pages == null ? Collections.emptyMap() : PaginationHelper.addLinks(pages, uriBuilder);
+        Map<String, Object> meta = pages == null ?
+                Collections.emptyMap()
+                : PaginationHelper.addLinks(pages, uriBuilder);
 
         if (meta.isEmpty()) {
             return;

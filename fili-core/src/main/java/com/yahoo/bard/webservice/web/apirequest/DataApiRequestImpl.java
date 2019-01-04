@@ -224,6 +224,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @param systemTimeZone The default time zone for the system
      * @param granularityParser A tool to process granularities
      * @param druidFilterBuilder A function to build druid filters from Api Filters
+     * @param havingsApiParser A generator to parse api havings from request strings
      *
      * @throws BadApiRequestException in the following scenarios:
      * <ol>
@@ -593,6 +594,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @param topN  Count of per-bucket limit (TopN) for the request
      * @param count  Global limit for the request
      * @param format  Format for the response
+     * @param downloadFilename  The name of the file to be downloaded
      * @param paginationParameters  Pagination info
      * @param asyncAfter  How long in milliseconds the user is willing to wait for a synchronous response
      */
@@ -726,7 +728,10 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             LogicalTable logicalTable,
             DimensionDictionary dimensionDictionary
     ) {
-        return DefaultDimensionGenerators.INSTANCE.generateDimensionFields(apiDimensionPathSegments, dimensionDictionary);
+        return DefaultDimensionGenerators.INSTANCE.generateDimensionFields(
+                apiDimensionPathSegments,
+                dimensionDictionary
+        );
     }
 
     /**
@@ -940,7 +945,11 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             Set<LogicalMetric> logicalMetrics,
             MetricDictionary metricDictionary
     ) throws BadApiRequestException {
-        return DefaultSortColumnGenerators.INSTANCE.generateSortColumns(sortDirectionMap, logicalMetrics, metricDictionary);
+        return DefaultSortColumnGenerators.INSTANCE.generateSortColumns(
+                sortDirectionMap,
+                logicalMetrics,
+                metricDictionary
+        );
     }
 
     /**

@@ -159,6 +159,8 @@ public class MetricsServlet extends EndpointServlet {
      * Get the details of a specific logical metric.
      *
      * @param metricName  Logical metric name
+     * @param format The format string for this request
+     * @param filename The filename to download to
      * @param containerRequestContext  The context of data provided by the Jersey container for this request
      *
      * @return The logical metric

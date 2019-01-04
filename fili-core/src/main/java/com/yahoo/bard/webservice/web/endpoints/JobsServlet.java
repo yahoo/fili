@@ -191,7 +191,6 @@ public class JobsServlet extends EndpointServlet {
                             ));
 
             observableResponse = apiRequest.getJobViews().toList()
-<<<<<<< b07b1ca280a5768b6ff28f1150c6778fd13ea6ab
                     .map(jobs -> paginateAndFormatResponse(
                             jobsApiRequest,
                             containerRequestContext,
@@ -199,10 +198,6 @@ public class JobsServlet extends EndpointServlet {
                             "jobs",
                             null
                     ))
-=======
-                    .map(jobs -> jobsApiRequest.getPage(paginationFactory.apply(jobs)))
-                    .map(result -> formatResponse(jobsApiRequest, result, "jobs", Response.status(Response.Status.OK), null))
->>>>>>> temp
                     .defaultIfEmpty(getResponse("{}"))
                     .onErrorReturn(this::getErrorResponse);
         } catch (Throwable t) {

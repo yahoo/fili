@@ -18,6 +18,10 @@ import org.slf4j.LoggerFactory;
 
 import javax.validation.constraints.NotNull;
 
+/**
+ * Utility class to hold generator code for granualrity.
+ */
+
 public class DefaultGranularityBinder {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultGranularityBinder.class);
@@ -66,5 +70,4 @@ public class DefaultGranularityBinder {
             throw new BadApiRequestException(e.getMessage());
         }
     }
-
 }

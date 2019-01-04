@@ -8,10 +8,7 @@ import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.web.ResponseFormatType
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestImpl
 import com.yahoo.bard.webservice.web.filters.ApiFilters
-<<<<<<< 298fce66f1668fcfde4f429ae6eafa21d00ac9ee
 import com.yahoo.bard.webservice.web.util.PaginationParameters
-=======
->>>>>>> temp
 
 import org.joda.time.DateTimeZone
 
@@ -21,7 +18,6 @@ class TestingDataApiRequestImpl extends DataApiRequestImpl {
         super(
                 (LogicalTable) null,
                 DefaultTimeGrain.DAY,
-<<<<<<< 298fce66f1668fcfde4f429ae6eafa21d00ac9ee
                 [] as LinkedHashSet, // Dimensions
                 null, // perDimensionFields
                 [] as LinkedHashSet,  // LogicalMetrics
@@ -37,23 +33,6 @@ class TestingDataApiRequestImpl extends DataApiRequestImpl {
                 (ResponseFormatType) null,
                 Long.MAX_VALUE, // asynchAfter
                 new DruidOrFilterBuilder()
-=======
-                [] as Set,
-                null,
-                [] as Set,
-                [] as Set,
-                [:] as ApiFilters,
-                null,
-                null,
-                null,
-                0,
-                0,
-                Long.MAX_VALUE,
-                null,
-                null,
-                null,
-                new DefaultDruidFilterBuilder()
->>>>>>> temp
         )
     }
 }

@@ -34,14 +34,6 @@ abstract class GroovyTestUtils extends Specification {
      *
      * @see <a href="http://json.org/">JSON.org</a>
      */
-<<<<<<< dc42c05507c7823fbfaef0e0657e55e263debd93
-    static boolean compareJson(String actual, String expected, JsonSortStrategy sortStrategy = SORT_MAPS) {
-        if (actual.equals(expected)) {
-            // Objects match, all is well
-            return true
-        }
-
-=======
     static boolean compareJson(String actual, String expected, List<String> omits) {
         compareJson(actual, expected, SORT_MAPS, omits)
 
@@ -53,11 +45,11 @@ abstract class GroovyTestUtils extends Specification {
      * @param expected expected JSON object
      * @param sortStrategy Strategy to use for sorting the JSON when parsing. Defaults to SORT_MAPS, which complies with
      * the JSON specification's requirement that objects are unordered and arrays are ordered
+     * @param omits josn object to skip when comparing
      *
      * @see <a href="http://json.org/">JSON.org</a>
      */
     static boolean compareJson(String actual, String expected, JsonSortStrategy sortStrategy = SORT_MAPS, List<String> omits = ["context"]) {
->>>>>>> Fixing Pagination
         try {
             // Parse the JSON strings into objects
             //Use two separate slurpers because slurper optimizations mean that the two parsed maps will share
@@ -67,15 +59,8 @@ abstract class GroovyTestUtils extends Specification {
             JsonNode actualRoot = MAPPER.readTree(actual);
             JsonNode expectedRoot = MAPPER.readTree(expected);
 
-<<<<<<< dc42c05507c7823fbfaef0e0657e55e263debd93
             Utils.canonicalize(actualRoot, MAPPER, false);
             Utils.canonicalize(expectedRoot, MAPPER, false);
-=======
-            omits.each {
-                Utils.omitField(actualRoot, it, MAPPER);
-                Utils.omitField(expectedRoot, it, MAPPER);
-            }
->>>>>>> Fixing Pagination
 
             def actualProcessed = MAPPER.writer().withDefaultPrettyPrinter().writeValueAsString(actualRoot);
             def expectedProcessed = MAPPER.writer().withDefaultPrettyPrinter().writeValueAsString(expectedRoot);

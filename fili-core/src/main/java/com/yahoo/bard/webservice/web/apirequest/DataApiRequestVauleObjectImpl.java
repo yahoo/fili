@@ -55,6 +55,7 @@ public class DataApiRequestVauleObjectImpl implements DataApiRequest {
 
     protected static String PAGINATION_PARAMETERS_KEY = "paginationParameters";
     protected static String FORMAT_KEY = "format";
+    protected static String DOWNLOAD_FILENAME_KEY = "downloadFilename";
     protected static String ASYNC_AFTER_KEY = "asyncAfter";
 
 
@@ -185,6 +186,14 @@ public class DataApiRequestVauleObjectImpl implements DataApiRequest {
     }
 
     @Override
+    public Optional<String> getDownloadFilename() {
+        return Optional.ofNullable(
+                (String) values.get(DOWNLOAD_FILENAME_KEY)
+        );
+
+    }
+
+    @Override
     public Optional<PaginationParameters> getPaginationParameters() {
         return Optional.ofNullable(
                 (PaginationParameters) values.get(PAGINATION_PARAMETERS_KEY)
@@ -288,13 +297,18 @@ public class DataApiRequestVauleObjectImpl implements DataApiRequest {
     }
 
     @Override
-    public DataApiRequestVauleObjectImpl withPaginationParameters(Optional<PaginationParameters> paginationParameters) {
+    public DataApiRequestVauleObjectImpl withPaginationParameters(PaginationParameters paginationParameters) {
         return withField(PAGINATION_PARAMETERS_KEY, paginationParameters);
     }
 
     @Override
     public DataApiRequestVauleObjectImpl withFormat(ResponseFormatType format) {
         return withField(FORMAT_KEY, format);
+    }
+
+    @Override
+    public DataApiRequest withDownloadFilename(String downloadFilename) {
+        return withField(DOWNLOAD_FILENAME_KEY, downloadFilename);
     }
 
     @Override

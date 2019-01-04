@@ -13,6 +13,9 @@ import com.yahoo.bard.webservice.web.BadApiRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Utility class to hold generator code for tables.
+ */
 public class DefaultTableBinder {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultTableBinder.class);

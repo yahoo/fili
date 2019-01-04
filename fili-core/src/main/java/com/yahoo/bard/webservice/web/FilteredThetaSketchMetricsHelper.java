@@ -24,12 +24,8 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchEstimate
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchSetOperationPostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.WithFields;
 import com.yahoo.bard.webservice.table.LogicalTable;
-<<<<<<< 8e94077359d90d0ef9825e666dca22fc568ae115:fili-core/src/main/java/com/yahoo/bard/webservice/web/FilteredThetaSketchMetricsHelper.java
 import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders;
 import com.yahoo.bard.webservice.web.apirequest.binders.FilterGenerator;
-=======
-import com.yahoo.bard.webservice.web.apirequest.DefaultFilterGenerator;
->>>>>>> Fixing build:fili-core/src/main/java/com/yahoo/bard/webservice/web/FilteredSketchMetricsHelper.java
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;

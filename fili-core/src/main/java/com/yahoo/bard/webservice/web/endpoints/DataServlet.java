@@ -388,12 +388,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
         DataApiRequest apiRequest = null;
         try {
             try (TimedPhase timer = RequestLog.startTiming("DataApiRequest")) {
-<<<<<<< 298fce66f1668fcfde4f429ae6eafa21d00ac9ee
                 apiRequest = dataApiRequestFactory.buildApiRequest(
-=======
-
-                apiRequest = dataApiRequestFactory.buildDataApiRequest(
->>>>>>> temp
                         tableName,
                         timeGrain,
                         dimensions,
@@ -410,7 +405,6 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
                         asyncAfter,
                         perPage,
                         page,
-                        containerRequestContext,
                         this
                 );
             }

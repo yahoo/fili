@@ -9,19 +9,14 @@ import com.yahoo.bard.webservice.data.dimension.FilterBuilderException;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.time.Granularity;
-<<<<<<< 298fce66f1668fcfde4f429ae6eafa21d00ac9ee
+import com.yahoo.bard.webservice.druid.model.builders.DefaultDruidHavingBuilder;
 import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.having.Having;
 import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.TimedPhase;
-=======
-import com.yahoo.bard.webservice.druid.model.having.Having;
-import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn;
->>>>>>> temp
 import com.yahoo.bard.webservice.table.LogicalTable;
-import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.ApiHaving;
@@ -36,7 +31,6 @@ import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -45,18 +39,14 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 
-import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.Response;
 
 /**
  * Data API Request Implementation binds, validates, and models the parts of a request to the data endpoint.
  */
 public class DataApiRequestPojoImpl implements DataApiRequest {
-    protected static final String COMMA_AFTER_BRACKET_PATTERN = "(?<=]),";
-
-    protected Pagination<?> pagination;
 
     protected final ResponseFormatType format;
-    protected final UriInfo uriInfo;
     protected final long asyncAfter;
     protected final PaginationParameters paginationParameters;
 
@@ -72,7 +62,6 @@ public class DataApiRequestPojoImpl implements DataApiRequest {
     private final List<Interval> intervals;
     private final ApiFilters apiFilters;
     private final Map<LogicalMetric, Set<ApiHaving>> havings;
-    private final Having having;
     private final LinkedHashSet<OrderByColumn> sorts;
     private final int count;
     private final int topN;
@@ -90,7 +79,6 @@ public class DataApiRequestPojoImpl implements DataApiRequest {
      *
      * @param format  Format for the response
      * @param paginationParameters  Pagination info
-     * @param uriInfo  The URI info
      * @param table  Logical table requested
      * @param granularity  Granularity of the request
      * @param dimensions  Grouping dimensions of the request
@@ -99,7 +87,6 @@ public class DataApiRequestPojoImpl implements DataApiRequest {
      * @param intervals  Intervals requested
      * @param apiFilters  Global filters
      * @param havings  Top-level Having caluses for the request
-     * @param having  Single global Druid Having
      * @param sorts  Sorting info for the request
      * @param count  Global limit for the request
      * @param topN  Count of per-bucket limit (TopN) for the request
@@ -111,8 +98,7 @@ public class DataApiRequestPojoImpl implements DataApiRequest {
      */
     public DataApiRequestPojoImpl(
             ResponseFormatType format,
-            Optional<PaginationParameters> paginationParameters,
-            UriInfo uriInfo,
+            PaginationParameters paginationParameters,
             LogicalTable table,
             Granularity granularity,
             Set<Dimension> dimensions,
@@ -121,7 +107,6 @@ public class DataApiRequestPojoImpl implements DataApiRequest {
             List<Interval> intervals,
             ApiFilters apiFilters,
             Map<LogicalMetric, Set<ApiHaving>> havings,
-            Having having,
             LinkedHashSet<OrderByColumn> sorts,
             int count,
             int topN,
@@ -133,16 +118,7 @@ public class DataApiRequestPojoImpl implements DataApiRequest {
     ) {
         this.format = format;
         this.asyncAfter = asyncAfter;
-<<<<<<< 298fce66f1668fcfde4f429ae6eafa21d00ac9ee
         this.paginationParameters = paginationParameters;
-
-=======
-        this.paginationHelper = paginationParameters.map(paginationParameters1 -> new PaginationHelper(
-                uriInfo,
-                paginationParameters1
-        )).orElseGet(() -> new PaginationHelper(uriInfo));
->>>>>>> temp
-        this.uriInfo = uriInfo;
 
         //super(format, asyncAfter, paginationParameters, uriInfo);
         this.table = table;
@@ -153,7 +129,6 @@ public class DataApiRequestPojoImpl implements DataApiRequest {
         this.intervals = intervals;
         this.apiFilters = apiFilters;
         this.havings = havings;
-        this.having = having;
         this.sorts = sorts;
         this.count = count;
         this.topN = topN;
@@ -181,7 +156,7 @@ public class DataApiRequestPojoImpl implements DataApiRequest {
             DimensionDictionary dimensionDictionary,
             LogicalTable table
     ) throws BadApiRequestException {
-        return DefaultLogicalMetricsGenerators.generateLogicalMetrics(
+        return DefaultLogicalMetricsGenerators.INSTANCE.generateLogicalMetrics(
                 apiMetricQuery,
                 metricDictionary,
                 dimensionDictionary,
@@ -248,19 +223,22 @@ public class DataApiRequestPojoImpl implements DataApiRequest {
     }
 
     @Override
-    public Having getQueryHaving() {
-        return this.having;
-    }
-
-    @Override
+    @Deprecated
     public Filter getQueryFilter() {
         try (TimedPhase timer = RequestLog.startTiming("BuildingDruidFilter")) {
-            return filterBuilder.buildFilters(this.apiFilters);
+            return getFilterBuilder().buildFilters(this.apiFilters);
         } catch (FilterBuilderException e) {
             LOG.debug(e.getMessage());
             throw new BadApiRequestException(e);
         }
     }
+
+    @Override
+    @Deprecated
+    public Having getQueryHaving() {
+        return DefaultDruidHavingBuilder.INSTANCE.buildHavings(havings);
+    }
+
 
     @Override
     public LinkedHashSet<OrderByColumn> getSorts() {
@@ -303,174 +281,113 @@ public class DataApiRequestPojoImpl implements DataApiRequest {
     }
 
     @Override
-<<<<<<< 298fce66f1668fcfde4f429ae6eafa21d00ac9ee
     public Optional<PaginationParameters> getPaginationParameters() {
         return Optional.ofNullable(paginationParameters);
-=======
-    public DataApiRequestPojoImpl withFormat(ResponseFormatType format) {
-        return new DataApiRequestPojoImpl(format, Optional.of(getPaginationParameters()), uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
->>>>>>> temp
     }
+
 
     // CHECKSTYLE:OFF
     @Override
-<<<<<<< 298fce66f1668fcfde4f429ae6eafa21d00ac9ee
-    public DataApiRequestPojoImpl withFormat(ResponseFormatType format) {
-        return new DataApiRequestPojoImpl(format, getPaginationParameters().orElse(null), uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
-    }
-
-    @Override
-    public DataApiRequestPojoImpl withPaginationParameters(PaginationParameters paginationParameters) {
-        return new DataApiRequestPojoImpl(format, paginationParameters, uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
-=======
-    public DataApiRequestPojoImpl withPaginationParameters(Optional<PaginationParameters> paginationParameters) {
-        return new DataApiRequestPojoImpl(format, paginationParameters, uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
-    }
-
-    @Override
-    public DataApiRequestPojoImpl withUriInfo(UriInfo uriInfo) {
-        return new DataApiRequestPojoImpl(format, Optional.of(getPaginationParameters()), uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
->>>>>>> temp
-    }
-
-    @Override
     public DataApiRequestPojoImpl withTable(LogicalTable table) {
-<<<<<<< 298fce66f1668fcfde4f429ae6eafa21d00ac9ee
-        return new DataApiRequestPojoImpl(format, getPaginationParameters().orElse(null), uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
-=======
-        return new DataApiRequestPojoImpl(format, Optional.of(getPaginationParameters()), uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
->>>>>>> temp
+        return new DataApiRequestPojoImpl(format, paginationParameters, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
     }
 
     @Override
     public DataApiRequestPojoImpl withGranularity(Granularity granularity) {
-<<<<<<< 298fce66f1668fcfde4f429ae6eafa21d00ac9ee
-        return new DataApiRequestPojoImpl(format, getPaginationParameters().orElse(null), uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
+        return new DataApiRequestPojoImpl(format, paginationParameters, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
     }
 
     @Override
     public DataApiRequestPojoImpl withDimensions(LinkedHashSet<Dimension> dimensions) {
-        return new DataApiRequestPojoImpl(format, getPaginationParameters().orElse(null), uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
-=======
-        return new DataApiRequestPojoImpl(format, Optional.of(getPaginationParameters()), uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
+        return new DataApiRequestPojoImpl(format, paginationParameters, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
     }
 
-    @Override
-    public DataApiRequestPojoImpl withDimensions(Set<Dimension> dimensions) {
-        return new DataApiRequestPojoImpl(format, Optional.of(getPaginationParameters()), uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
->>>>>>> temp
-    }
 
     @Override
     public DataApiRequestPojoImpl withPerDimensionFields(LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> perDimensionFields) {
-<<<<<<< 298fce66f1668fcfde4f429ae6eafa21d00ac9ee
-        return new DataApiRequestPojoImpl(format, getPaginationParameters().orElse(null), uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
+        return new DataApiRequestPojoImpl(format, paginationParameters, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
     }
 
     @Override
     public DataApiRequestPojoImpl withLogicalMetrics(LinkedHashSet<LogicalMetric> logicalMetrics) {
-        return new DataApiRequestPojoImpl(format, getPaginationParameters().orElse(null), uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
-=======
-        return new DataApiRequestPojoImpl(format, Optional.of(getPaginationParameters()), uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
-    }
-
-    @Override
-    public DataApiRequestPojoImpl withLogicalMetrics(Set<LogicalMetric> logicalMetrics) {
-        return new DataApiRequestPojoImpl(format, Optional.of(getPaginationParameters()), uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
->>>>>>> temp
+        return new DataApiRequestPojoImpl(format, paginationParameters, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
     }
 
     @Override
     public DataApiRequestPojoImpl withIntervals(Set<Interval> intervals) {
-<<<<<<< 298fce66f1668fcfde4f429ae6eafa21d00ac9ee
         return withIntervals(new SimplifiedIntervalList(intervals));
     }
 
     @Override
     public DataApiRequestPojoImpl withIntervals(List<Interval> intervals) {
-        return new DataApiRequestPojoImpl(format, getPaginationParameters().orElse(null), uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
+        return new DataApiRequestPojoImpl(format, paginationParameters, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
     }
 
     @Override
     public DataApiRequestPojoImpl withFilters(ApiFilters apiFilters) {
-        return new DataApiRequestPojoImpl(format, getPaginationParameters().orElse(null), uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
+        return new DataApiRequestPojoImpl(format, paginationParameters, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
     }
 
     @Override
-    public DataApiRequestPojoImpl withHavings(Map<LogicalMetric, Set<ApiHaving>> havings) {
-        return new DataApiRequestPojoImpl(format, getPaginationParameters().orElse(null), uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
-=======
-        return new DataApiRequestPojoImpl(format, Optional.of(getPaginationParameters()), uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
+    public DataApiRequest withHavings(Map<LogicalMetric, Set<ApiHaving>> havings) {
+        return new DataApiRequestPojoImpl(format, paginationParameters, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
     }
 
-    @Override
-    public DataApiRequestPojoImpl withFilters(ApiFilters apiFilters) {
-        return new DataApiRequestPojoImpl(format, Optional.of(getPaginationParameters()), uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
-    }
-
-    @Override
-    public DataApiRequestPojoImpl withHavings(Map<LogicalMetric, Set<ApiHaving>> havings) {
-        return new DataApiRequestPojoImpl(format, Optional.of(getPaginationParameters()), uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
-    }
-
-    @Override
-    public DataApiRequestPojoImpl withHaving(Having having) {
-        return new DataApiRequestPojoImpl(format, Optional.of(getPaginationParameters()), uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
->>>>>>> temp
-    }
 
     @Override
     public DataApiRequestPojoImpl withSorts(LinkedHashSet<OrderByColumn> sorts) {
-<<<<<<< 298fce66f1668fcfde4f429ae6eafa21d00ac9ee
-        return new DataApiRequestPojoImpl(format, getPaginationParameters().orElse(null), uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
-=======
-        return new DataApiRequestPojoImpl(format, Optional.of(getPaginationParameters()), uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
->>>>>>> temp
+        return new DataApiRequestPojoImpl(format, paginationParameters, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
     }
 
     @Override
-    public DataApiRequestPojoImpl withCount(int count) {
-<<<<<<< 298fce66f1668fcfde4f429ae6eafa21d00ac9ee
-        return new DataApiRequestPojoImpl(format, getPaginationParameters().orElse(null), uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
-=======
-        return new DataApiRequestPojoImpl(format, Optional.of(getPaginationParameters()), uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
->>>>>>> temp
+    public DataApiRequest withTimeSort(Optional<OrderByColumn> timeSort) {
+        return new DataApiRequestPojoImpl(format, paginationParameters, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, timeSort, druidFilterBuilder);
     }
 
     @Override
-    public DataApiRequestPojoImpl withTopN(int topN) {
-<<<<<<< 298fce66f1668fcfde4f429ae6eafa21d00ac9ee
-        return new DataApiRequestPojoImpl(format, getPaginationParameters().orElse(null), uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
-=======
-        return new DataApiRequestPojoImpl(format, Optional.of(getPaginationParameters()), uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
->>>>>>> temp
+    public DataApiRequest withTimeZone(DateTimeZone timeZone) {
+        return new DataApiRequestPojoImpl(format, paginationParameters, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
     }
 
     @Override
-    public DataApiRequestPojoImpl withAsyncAfter(long asyncAfter) {
-<<<<<<< 298fce66f1668fcfde4f429ae6eafa21d00ac9ee
-        return new DataApiRequestPojoImpl(format, getPaginationParameters().orElse(null), uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
-=======
-        return new DataApiRequestPojoImpl(format, Optional.of(getPaginationParameters()), uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
->>>>>>> temp
+    public DataApiRequest withTopN(int topN) {
+        return new DataApiRequestPojoImpl(format, paginationParameters, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
     }
 
     @Override
-    public DataApiRequestPojoImpl withTimeZone(DateTimeZone timeZone) {
-<<<<<<< 298fce66f1668fcfde4f429ae6eafa21d00ac9ee
-        return new DataApiRequestPojoImpl(format, getPaginationParameters().orElse(null), uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
-=======
-        return new DataApiRequestPojoImpl(format, Optional.of(getPaginationParameters()), uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
->>>>>>> temp
+    public DataApiRequest withCount(int count) {
+        return new DataApiRequestPojoImpl(format, paginationParameters, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
     }
 
     @Override
-    public DataApiRequestPojoImpl withFilterBuilder(DruidFilterBuilder filterBuilder) {
-<<<<<<< 298fce66f1668fcfde4f429ae6eafa21d00ac9ee
-        return new DataApiRequestPojoImpl(format, getPaginationParameters().orElse(null), uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
-=======
-        return new DataApiRequestPojoImpl(format, Optional.of(getPaginationParameters()), uriInfo, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, having, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
->>>>>>> temp
+    public DataApiRequestPojoImpl withPaginationParameters(PaginationParameters paginationParameters) {
+        return new DataApiRequestPojoImpl(format, paginationParameters, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
+    }
+
+    @Override
+    public DataApiRequestPojoImpl withFormat(ResponseFormatType format) {
+        return new DataApiRequestPojoImpl(format, paginationParameters, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
+    }
+
+    @Override
+    public DataApiRequest withDownloadFilename(String downloadFilename) {
+        return new DataApiRequestPojoImpl(format, paginationParameters, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
+    }
+
+    @Override
+    public DataApiRequest withAsyncAfter(final long asyncAfter) {
+        return new DataApiRequestPojoImpl(format, paginationParameters, table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, count, topN, asyncAfter, timeZone, havingApiGenerator, dateTimeSort, druidFilterBuilder);
+    }
+
+    // Super deprecated stuff below
+    @Override
+    public DataApiRequest withBuilder(Response.ResponseBuilder builder) {
+        return this;
+    }
+
+    @Override
+    public DataApiRequest withFilterBuilder(DruidFilterBuilder filterBuilder) {
+        return this;
     }
 
     // CHECKSTYLE:ON

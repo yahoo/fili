@@ -23,7 +23,6 @@ import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
-import com.yahoo.bard.webservice.data.filterbuilders.DefaultDruidFilterBuilder
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.LogicalMetricColumn
 import com.yahoo.bard.webservice.data.metric.MetricColumn
@@ -195,11 +194,7 @@ class ThetaSketchIntersectionReportingResources extends Specification {
                 fooNoBarAggregation,
                 dimensionDict,
                 table,
-<<<<<<< dc42c05507c7823fbfaef0e0657e55e263debd93
                 new DruidInFilterBuilder()
-=======
-                new DefaultDruidFilterBuilder()
->>>>>>> Fixing Pagination
         )
         fooNoBarPostAggregationInterim = ThetaSketchSetOperationHelper.makePostAggFromAgg(
                 SketchSetOperationPostAggFunction.INTERSECT,
@@ -212,11 +207,7 @@ class ThetaSketchIntersectionReportingResources extends Specification {
                 regFoosAggregation,
                 dimensionDict,
                 table,
-<<<<<<< dc42c05507c7823fbfaef0e0657e55e263debd93
                 new DruidInFilterBuilder()
-=======
-                new DefaultDruidFilterBuilder()
->>>>>>> Fixing Pagination
         )
         fooRegFoosPostAggregationInterim = ThetaSketchSetOperationHelper.makePostAggFromAgg(
                 SketchSetOperationPostAggFunction.INTERSECT,

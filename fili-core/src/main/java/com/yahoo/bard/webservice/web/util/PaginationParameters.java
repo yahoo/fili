@@ -78,8 +78,10 @@ public class PaginationParameters {
      *
      * @param perPageRequest  The number of rows to be displayed on each page.
      * @param pageRequest  The page to be displayed
+     *
+     * @return An optional pagination parmeters object
      */
-    public static Optional<PaginationParameters> buildPagination(String perPageRequest, String pageRequest) {
+    public static Optional<PaginationParameters> buildPaginationParameters(String perPageRequest, String pageRequest) {
         if ((perPageRequest == null || "".equals(perPageRequest)) && (pageRequest == null || "".equals(pageRequest))) {
             return Optional.empty();
         }

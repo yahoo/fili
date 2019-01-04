@@ -110,7 +110,7 @@ public class LogicalMetric {
     }
 
     public List<String> getOutputNames() {
-        return Arrays.asList(this.name);
+        return Arrays.asList(getName());
     }
 
     public String getDescription() {

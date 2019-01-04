@@ -7,6 +7,7 @@ import static com.yahoo.bard.webservice.config.BardFeatureFlag.UPDATED_METADATA_
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
+import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 import com.yahoo.bard.webservice.exception.MetadataExceptionHandler;
@@ -29,8 +30,10 @@ import com.google.common.collect.Streams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -144,22 +147,12 @@ public class DimensionsServlet extends EndpointServlet {
                 apiRequest = (DimensionsApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
-<<<<<<< b07b1ca280a5768b6ff28f1150c6778fd13ea6ab
             Response response = paginateAndFormatResponse(
-=======
-            Stream<Map<String, Object>> result = apiRequest.getPage(
-                    getDimensionListSummaryView(apiRequest.getDimensions(), uriInfo)
-            );
-
-
-            Response response = formatResponse(
->>>>>>> temp
                     apiRequest,
                     containerRequestContext,
                     getDimensionListSummaryView(apiRequest.getDimensions(), uriInfo),
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "dimensions" : "rows",
-                    Response.status(Response.Status.OK),
-                    null
+                    getDimensionListSummaryViewSchema()
             );
             LOG.debug("Dimensions Endpoint Response: {}", response.getEntity());
             return response;
@@ -328,13 +321,13 @@ public class DimensionsServlet extends EndpointServlet {
 
             Response response = formatResponse(
                     apiRequest,
-                    builder,
                     pagedRows,
                     containerRequestContext,
                     rows,
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "dimensions" : "rows",
                     Response.status(Response.Status.OK),
-                    null
+                    apiRequest.getDimension().getDimensionFields().stream()
+                            .map(DimensionField::getDescription).collect(Collectors.toList())
             );
 
             LOG.debug("Dimension Value Endpoint Response: {}", response.getEntity());
@@ -378,6 +371,15 @@ public class DimensionsServlet extends EndpointServlet {
     /**
      * Get the summary list view of the dimensions.
      *
+     * @return Summary list view column names for this schema
+     */
+    public static List<String> getDimensionListSummaryViewSchema() {
+        return getDimensionSummaryViewSchema();
+    }
+
+    /**
+     * Get the summary list view of the dimensions.
+     *
      * @param dimensions  Collection of dimensions to get the summary view for
      * @param uriInfo  UriInfo of the request
      *
@@ -393,6 +395,16 @@ public class DimensionsServlet extends EndpointServlet {
     }
 
     /**
+     * Get the summary view schema of the dimension.
+     *
+     * @return Summary view of the dimension
+     */
+    public static List<String> getDimensionSummaryViewSchema() {
+        return Arrays.asList("category", "name", "longName", "uri", "cardinality", "storageStrategy");
+    }
+
+
+    /**
      * Get the summary view of the dimension.
      *
      * @param dimension  Dimension to get the view of
@@ -402,12 +414,13 @@ public class DimensionsServlet extends EndpointServlet {
      */
     public static Map<String, Object> getDimensionSummaryView(Dimension dimension, final UriInfo uriInfo) {
         Map<String, Object> resultRow = new LinkedHashMap<>();
-        resultRow.put("category", dimension.getCategory());
-        resultRow.put("name", dimension.getApiName());
-        resultRow.put("longName", dimension.getLongName());
-        resultRow.put("uri", getDimensionUrl(dimension, uriInfo));
-        resultRow.put("cardinality", dimension.getCardinality());
-        resultRow.put("storageStrategy", dimension.getStorageStrategy());
+        List<String> fieldNames = getDimensionSummaryViewSchema();
+        resultRow.put(fieldNames.get(0), dimension.getCategory());
+        resultRow.put(fieldNames.get(1), dimension.getApiName());
+        resultRow.put(fieldNames.get(2), dimension.getLongName());
+        resultRow.put(fieldNames.get(3), getDimensionUrl(dimension, uriInfo));
+        resultRow.put(fieldNames.get(4), dimension.getCardinality());
+        resultRow.put(fieldNames.get(5), dimension.getStorageStrategy());
         return resultRow;
     }
 

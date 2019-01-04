@@ -399,7 +399,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
             String dateText,
             DateTimeFormatter timeFormatter
     ) throws BadApiRequestException {
-        return DateAndTimeGenerators.getAsDateTime(now, granularity, dateText, timeFormatter);
+        return DateAndTimeGenerators.INSTANCE.getAsDateTime(now, granularity, dateText, timeFormatter);
     }
 
     /**

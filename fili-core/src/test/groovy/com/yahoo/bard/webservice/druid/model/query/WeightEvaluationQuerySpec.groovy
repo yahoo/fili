@@ -91,12 +91,8 @@ class WeightEvaluationQuerySpec extends Specification {
         builder = new DruidQueryBuilder(
                 jtb.configurationLoader.logicalTableDictionary,
                 new DefaultPhysicalTableResolver((PartialDataHandler) null, (VolatileIntervalsService) null),
-<<<<<<< dc42c05507c7823fbfaef0e0657e55e263debd93
                 new DruidInFilterBuilder(),
                 new DefaultDruidHavingBuilder()
-=======
-                new DefaultDruidFilterBuilder()
->>>>>>> Fixing Pagination
         )
 
         Map emptyMap = new MultivaluedHashMap<>()
@@ -135,10 +131,7 @@ class WeightEvaluationQuerySpec extends Specification {
                 null, //asyncAfter
                 "", //perPage
                 "", //page
-<<<<<<< dc42c05507c7823fbfaef0e0657e55e263debd93
-=======
                 containerRequestContext, //containerRequestContext
->>>>>>> Fixing Pagination
                 dataServlet
         )
 
@@ -167,10 +160,7 @@ class WeightEvaluationQuerySpec extends Specification {
                 null, //asyncAfter
                 "", //perPage
                 "", //page
-<<<<<<< dc42c05507c7823fbfaef0e0657e55e263debd93
-=======
                 containerRequestContext, //containerRequestContext
->>>>>>> Fixing Pagination
                 dataServlet
         )
 
@@ -198,10 +188,7 @@ class WeightEvaluationQuerySpec extends Specification {
                 null, //asyncAfter
                 "", //perPage
                 "", //page
-<<<<<<< dc42c05507c7823fbfaef0e0657e55e263debd93
-=======
                 containerRequestContext, //containerRequestContext
->>>>>>> Fixing Pagination
                 dataServlet
         )
 
@@ -229,10 +216,7 @@ class WeightEvaluationQuerySpec extends Specification {
                 null, //asyncAfter
                 "", //perPage
                 "", //page
-<<<<<<< dc42c05507c7823fbfaef0e0657e55e263debd93
-=======
                 containerRequestContext, //containerRequestContext
->>>>>>> Fixing Pagination
                 dataServlet
         )
 

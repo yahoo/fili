@@ -9,11 +9,11 @@ import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.data.DruidQueryBuilder
 import com.yahoo.bard.webservice.data.PartialDataHandler
 import com.yahoo.bard.webservice.data.QueryBuildingTestingResources
-import com.yahoo.bard.webservice.data.filterbuilders.DefaultDruidFilterBuilder
-import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
 import com.yahoo.bard.webservice.data.volatility.DefaultingVolatileIntervalsService
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidInFilterBuilder
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
 import com.yahoo.bard.webservice.table.resolver.DefaultPhysicalTableResolver
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
@@ -25,7 +25,6 @@ import org.joda.time.Hours
 import org.joda.time.Interval
 
 import spock.lang.Specification
-
 /**
  * Testing dimension serialization to default dimension spec.
  */
@@ -41,19 +40,16 @@ class DimensionToDefaultDimensionSpecSpec extends Specification {
     def setup() {
         objectMapper = new ObjectMappersSuite().getMapper()
         resources = new QueryBuildingTestingResources()
-        druidFilterBuilder = new DefaultDruidFilterBuilder()
+        druidFilterBuilder = new DruidInFilterBuilder()
 
         DefaultPhysicalTableResolver resolver = new DefaultPhysicalTableResolver(new PartialDataHandler(), new DefaultingVolatileIntervalsService())
-<<<<<<< dc42c05507c7823fbfaef0e0657e55e263debd93
         builder = new DruidQueryBuilder(
                 resources.logicalDictionary,
                 resolver,
                 resources.druidFilterBuilder,
                 resources.druidHavingBuilder
         )
-=======
         builder = new DruidQueryBuilder(resources.logicalDictionary, resolver, druidFilterBuilder)
->>>>>>> Fixing Pagination
         apiRequest = Mock(DataApiRequest)
         LogicalMetric lm1 = new LogicalMetric(resources.simpleTemplateQuery, new NoOpResultSetMapper(), "lm1", null)
 

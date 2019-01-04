@@ -10,6 +10,9 @@ import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.TimedPhase;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -17,7 +20,12 @@ import java.util.stream.Collectors;
 
 import javax.ws.rs.core.PathSegment;
 
+/**
+ * Utility class to hold generator code for dimensions.
+ */
 public class DefaultDimensionBinder {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultDimensionBinder.class);
 
     /**
      * Extracts the list of dimension names from the url dimension path segments and generates a set of dimension

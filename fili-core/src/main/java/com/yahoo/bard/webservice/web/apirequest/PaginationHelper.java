@@ -208,6 +208,14 @@ public class PaginationHelper {
         return pagination.getPageOfData().stream();
     }
 
+    /**
+     * Return the links to put in the message body of a paginated collection.
+     *
+     * @param pages The Pagination iterator
+     * @param uriBuilder  The UriBuilder used to build the links
+     *
+     * @return  A map of page links
+     */
     public static Map<String, URI> getBodyLinks(Pagination<?> pages, UriBuilder uriBuilder) {
         Map<String, URI> bodyLinks = new LinkedHashMap<>();
 
@@ -344,5 +352,4 @@ public class PaginationHelper {
         );
         bodyLinks.put(link.getBodyName(), pageLink.build());
     }
-
 }

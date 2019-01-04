@@ -5,7 +5,6 @@ package com.yahoo.bard.webservice.web.apirequest;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTEGER_INVALID;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_UNDEFINED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TOP_N_UNSORTED;
-import static com.yahoo.bard.webservice.web.apirequest.DataApiRequest.DATE_TIME_STRING;
 import static com.yahoo.bard.webservice.web.apirequest.DefaultGranularityGenerators.generateGranularity;
 
 import com.yahoo.bard.webservice.config.SystemConfig;
@@ -14,10 +13,7 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
-<<<<<<< 298fce66f1668fcfde4f429ae6eafa21d00ac9ee
-=======
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
->>>>>>> temp
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.data.time.GranularityParser;
 import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
@@ -49,7 +45,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import javax.inject.Inject;
-import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.PathSegment;
 
 /**
@@ -134,7 +129,6 @@ public class PojoDataApiRequestFactory implements DataApiRequestFactory {
 
     @Override
     @SuppressWarnings({"checkstyle:methodlength"})
-<<<<<<< 298fce66f1668fcfde4f429ae6eafa21d00ac9ee
     public DataApiRequest buildApiRequest(
             String tableName,
             String granularityRequest,
@@ -147,20 +141,15 @@ public class PojoDataApiRequestFactory implements DataApiRequestFactory {
             String countRequest,
             String topNRequest,
             String formatRequest,
+            String downloadFilename,
             String timeZoneId,
-=======
-    public DataApiRequest buildDataApiRequest(
-            DataApiRequestModel model,
->>>>>>> temp
             String asyncAfter,
             String perPage,
             String page,
-            ContainerRequestContext requestContext,
             BardConfigResources bardConfigResources
     ) {
 
-        DateTimeZone timeZone =
-                DateAndTimeGenerators.generateTimeZone(timeZoneId, systemTimeZone);
+        DateTimeZone timeZone = DateAndTimeGenerators.INSTANCE.generateTimeZone(timeZoneId, systemTimeZone);
 
         // Time grain must be from allowed interval keywords
         Granularity granularity = generateGranularity(granularityRequest, timeZone, granularityParser);
@@ -176,39 +165,34 @@ public class PojoDataApiRequestFactory implements DataApiRequestFactory {
 
         DateTimeFormatter dateTimeFormatter = DateAndTimeGenerators.generateDateTimeFormatter(timeZone);
 
-        List<Interval> intervals = DateAndTimeGenerators.generateIntervals(
+        List<Interval> intervals = DateAndTimeGenerators.INSTANCE.generateIntervals(
                 intervalsRequest,
                 granularity,
                 dateTimeFormatter
         );
 
-        MetricDictionary localMetricDictionary = metricDictionary.getScope(Collections.singletonList(model
-                .getTableName()));
+        MetricDictionary localMetricDictionary = bardConfigResources.getMetricDictionary()
+                .getScope(Collections.singletonList(tableName));
 
-                // At least one logical metric is required
-        Set<LogicalMetric> logicalMetrics = DefaultLogicalMetricsGenerators.generateLogicalMetrics(
-<<<<<<< dc42c05507c7823fbfaef0e0657e55e263debd93
+        // At least one logical metric is required
+        Set<LogicalMetric> logicalMetrics = DefaultLogicalMetricsGenerators.INSTANCE.generateLogicalMetrics(
                 logicalMetricsRequest,
-                bardConfigResources.getMetricDictionary(),
-=======
-                model.getMetrics(),
                 localMetricDictionary,
->>>>>>> Fixing Pagination
-                dimensionDictionary,
+                bardConfigResources.getDimensionDictionary(),
                 table
         );
-        ApiRequestValidators.validateMetrics(logicalMetrics, table);
+        ApiRequestValidators.INSTANCE.validateMetrics(logicalMetrics, table);
 
         // Zero or more grouping dimensions may be specified
-        Set<Dimension> dimensions = DefaultDimensionGenerators.generateDimensions(
+        Set<Dimension> dimensions = DefaultDimensionGenerators.INSTANCE.generateDimensions(
                 dimensionsRequest,
                 dimensionDictionary
         );
-        ApiRequestValidators.validateRequestDimensions(dimensions, table);
+        ApiRequestValidators.INSTANCE.validateRequestDimensions(dimensions, table);
 
         // Map of dimension to its fields specified using show clause (matrix params)
         LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> perDimensionFields =
-                DefaultDimensionGenerators.generateDimensionFields(dimensionsRequest, dimensionDictionary);
+                DefaultDimensionGenerators.INSTANCE.generateDimensionFields(dimensionsRequest, dimensionDictionary);
 
         // Zero or more filtering dimensions may be referenced
         ApiFilters apiFilters = DefaultFilterGenerator.generateFilters(apiFiltersRequest, table, dimensionDictionary);
@@ -219,14 +203,14 @@ public class PojoDataApiRequestFactory implements DataApiRequestFactory {
 
         //Using the LinkedHashMap to preserve the sort order
         LinkedHashMap<String, SortDirection> sortColumnDirection =
-                DefaultSortColumnGenerators.generateSortColumns(sortsRequest);
+                DefaultSortColumnGenerators.INSTANCE.generateSortColumns(sortsRequest);
 
         //Requested sort on dateTime column
         Optional<OrderByColumn> dateTimeSort =
-                DefaultSortColumnGenerators.generateDateTimeSortColumn(sortColumnDirection);
+                DefaultSortColumnGenerators.INSTANCE.generateDateTimeSortColumn(sortColumnDirection);
 
         // Requested sort on metrics - optional, can be empty Set
-        LinkedHashSet<OrderByColumn> sorts = DefaultSortColumnGenerators.generateSortColumns(
+        LinkedHashSet<OrderByColumn> sorts = DefaultSortColumnGenerators.INSTANCE.generateSortColumns(
                 removeDateTimeSortColumn(sortColumnDirection),
                 logicalMetrics,
                 bardConfigResources.getMetricDictionary()
@@ -253,15 +237,15 @@ public class PojoDataApiRequestFactory implements DataApiRequestFactory {
             throw new BadApiRequestException(TOP_N_UNSORTED.format(topN));
         }
 
-        long asyncAfterValue = DefaultOutputFormatGenerators.generateAsyncAfter(
+        long asyncAfterValue = DefaultOutputFormatGenerators.INSTANCE.generateAsyncAfter(
                 asyncAfter == null ?
                         SYSTEM_CONFIG.getStringProperty(SYSTEM_CONFIG.getPackageVariableName("default_asyncAfter")) :
                         asyncAfter
         );
 
-        ResponseFormatType format = DefaultOutputFormatGenerators.generateAcceptFormat(formatRequest);
+        ResponseFormatType format = DefaultOutputFormatGenerators.INSTANCE.generateAcceptFormat(formatRequest);
 
-        Optional<PaginationParameters> paginationParameters = DefaultOutputFormatGenerators
+        Optional<PaginationParameters> paginationParameters = DefaultOutputFormatGenerators.INSTANCE
                 .generatePaginationParameters(perPage, page);
 
         LOG.debug(
@@ -293,13 +277,12 @@ public class PojoDataApiRequestFactory implements DataApiRequestFactory {
                 paginationParameters
         );
 
-        ApiRequestValidators.validateAggregatability(dimensions, apiFilters);
-        ApiRequestValidators.validateTimeAlignment(granularity, intervals);
+        ApiRequestValidators.INSTANCE.validateAggregatability(dimensions, apiFilters);
+        ApiRequestValidators.INSTANCE.validateTimeAlignment(granularity, intervals);
 
         return new DataApiRequestPojoImpl(
                 format,
                 paginationParameters.orElse(null),
-                requestContext.getUriInfo(),
                 table,
                 granularity,
                 dimensions,
@@ -308,7 +291,6 @@ public class PojoDataApiRequestFactory implements DataApiRequestFactory {
                 intervals,
                 apiFilters,
                 havings,
-                null,
                 sorts,
                 count,
                 topN,

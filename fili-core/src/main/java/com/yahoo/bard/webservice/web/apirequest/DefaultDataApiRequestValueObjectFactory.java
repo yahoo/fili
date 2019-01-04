@@ -34,6 +34,7 @@ public class DefaultDataApiRequestValueObjectFactory implements DataApiRequestFa
             String count,
             String topN,
             String format,
+            String downloadFilename,
             String timeZoneId,
             String asyncAfter,
             String perPage,
@@ -56,27 +57,7 @@ public class DefaultDataApiRequestValueObjectFactory implements DataApiRequestFa
                         granularity,
                         bardConfigResources.getLogicalTableDictionary()
                 ));
-
-
+        //TODO lots of stuff
         return result;
-        /*
-        return new DataApiRequestImpl(
-                tableName,
-                granularityName,
-                dimensions,
-                logicalMetrics,
-                intervals,
-                apiFilters,
-                havings,
-                sorts,
-                count,
-                topN,
-                format,
-                timeZoneId,
-                asyncAfter,
-                perPage,
-                page,
-                bardConfigResources
-        );*/
     }
 }

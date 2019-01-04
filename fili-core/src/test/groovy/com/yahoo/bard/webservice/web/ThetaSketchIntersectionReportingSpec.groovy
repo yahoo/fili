@@ -4,11 +4,6 @@ package com.yahoo.bard.webservice.web
 
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.INTERSECTION_REPORTING
 
-<<<<<<< dc42c05507c7823fbfaef0e0657e55e263debd93
-=======
-import com.yahoo.bard.webservice.data.dimension.Dimension
-import com.yahoo.bard.webservice.data.filterbuilders.DefaultDruidFilterBuilder
->>>>>>> Fixing Pagination
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
@@ -133,11 +128,7 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
                 resources.filterObj,
                 resources.dimensionDict,
                 resources.table,
-<<<<<<< dc42c05507c7823fbfaef0e0657e55e263debd93
                 filterBuilder
-=======
-                new DefaultDruidFilterBuilder()
->>>>>>> Fixing Pagination
         )
 
         expect:
@@ -151,11 +142,7 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
                 resources.filterObj,
                 resources.dimensionDict,
                 resources.table,
-<<<<<<< dc42c05507c7823fbfaef0e0657e55e263debd93
                 filterBuilder
-=======
-                new DefaultDruidFilterBuilder()
->>>>>>> Fixing Pagination
         )
 
         Set<Aggregation> aggregations = templateDruidQuery.aggregations;
