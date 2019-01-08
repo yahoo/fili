@@ -116,7 +116,7 @@ public class JobsServlet extends EndpointServlet {
             JobPayloadBuilder jobPayloadBuilder,
             PreResponseStore preResponseStore,
             BroadcastChannel<String> broadcastChannel,
-            @Named(JobsApiRequest.REQUEST_MAPPER_NAMESPACE) RequestMapper<JobsApiRequest> requestMapper,
+            @Named(JobsApiRequest.REQUEST_MAPPER_NAMESPACE) RequestMapper requestMapper,
             HttpResponseMaker httpResponseMaker,
             ResponseFormatResolver formatResolver,
             @Named(JobsApiRequest.EXCEPTION_HANDLER_NAMESPACE) MetadataExceptionHandler exceptionHandler
@@ -391,8 +391,9 @@ public class JobsServlet extends EndpointServlet {
      *
      * @return An Observable wrapping a PreResponse or an empty Observable in case a timeout occurs.
      */
-    protected Observable<PreResponse> getResults(@NotNull String ticket, long asyncAfter) {
-        if (asyncAfter == JobsApiRequest.ASYNCHRONOUS_ASYNC_AFTER_VALUE) {
+    protected Observable<PreResponse> getResults(@NotNull String ticket, Long asyncAfter) {
+        long asycnAfterDefaulted = asyncAfter != null ? asyncAfter : 0;
+        if (asycnAfterDefaulted == JobsApiRequest.ASYNCHRONOUS_ASYNC_AFTER_VALUE) {
             // If the user specifies that they always want the asynchronous payload, then we need to force the system
             // to behave like the results are not ready in the store, and the asynchronous timeout has expired even
             // if the results are available.
@@ -420,7 +421,10 @@ public class JobsServlet extends EndpointServlet {
              * send back the asynchronous payload.
              */
             return preResponseStore.get(ticket).switchIfEmpty(
-                    applyTimeoutIfNeeded(broadcastChannelNotifications, asyncAfter).flatMap(preResponseStore::get)
+                    applyTimeoutIfNeeded(
+                            broadcastChannelNotifications,
+                            asycnAfterDefaulted
+                    ).flatMap(preResponseStore::get)
             );
         }
     }
@@ -491,7 +495,7 @@ public class JobsServlet extends EndpointServlet {
                 .flatMap(preResponse -> handlePreResponseWithError(
                         preResponse,
                         containerRequestContext.getUriInfo(),
-                        apiRequest.getPaginationParameters().orElse(null)
+                        apiRequest.getPaginationParameters().orElse(PaginationParameters.EVERYTHING_IN_ONE_PAGE)
                 ))
                 .subscribe(
                         new HttpResponseChannel(

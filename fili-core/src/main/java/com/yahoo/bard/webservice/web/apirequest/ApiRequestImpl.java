@@ -3,7 +3,6 @@
 package com.yahoo.bard.webservice.web.apirequest;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_ASYNC_AFTER;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_NOT_IN_TABLE;
 
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
@@ -38,7 +37,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.PathSegment;
@@ -78,7 +76,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
     private static Supplier<Response.ResponseBuilder> DEFAULT_RESPONSE_SOURCE =
             () -> Response.status(Response.Status.OK);
 
-    DefaultGranularityBinder granularityBinder;
+    private DefaultGranularityBinder granularityBinder = new DefaultGranularityBinder();
 
     /**
      * Parses the API request URL and generates the API request object.
@@ -226,7 +224,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
             @NotNull DateTimeZone dateTimeZone,
             @NotNull GranularityParser granularityParser
     ) throws BadApiRequestException {
-        return granularityBinder.bindGranularity(granularity, dateTimeZone, granularityParser);
+        return DefaultGranularityGenerators.generateGranularity(granularity, dateTimeZone, granularityParser);
     }
 
     /**
@@ -286,7 +284,6 @@ public abstract class ApiRequestImpl implements ApiRequest {
     protected LinkedHashSet<LogicalMetric> generateLogicalMetrics(
             String apiMetricQuery,
             MetricDictionary metricDictionary
-
     ) {
         return DefaultLogicalMetricsGenerators.INSTANCE.generateLogicalMetrics(apiMetricQuery, metricDictionary);
     }
@@ -301,24 +298,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
      */
     protected void validateMetrics(Set<LogicalMetric> logicalMetrics, LogicalTable table)
             throws BadApiRequestException {
-        //get metric names from the logical table
-        Set<String> validMetricNames = table.getLogicalMetrics().stream()
-                .map(LogicalMetric::getName)
-                .collect(Collectors.toSet());
-
-        //get metric names from logicalMetrics and remove all the valid metrics
-        Set<String> invalidMetricNames = logicalMetrics.stream()
-                .map(LogicalMetric::getName)
-                .filter(it -> !validMetricNames.contains(it))
-                .collect(Collectors.toSet());
-
-        //requested metrics names are not present in the logical table metric names set
-        if (!invalidMetricNames.isEmpty()) {
-            LOG.debug(METRICS_NOT_IN_TABLE.logFormat(invalidMetricNames, table.getName()));
-            throw new BadApiRequestException(
-                    METRICS_NOT_IN_TABLE.format(invalidMetricNames, table.getName())
-            );
-        }
+        ApiRequestValidators.INSTANCE.validateMetrics(logicalMetrics, table);
     }
 
     /**

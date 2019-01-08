@@ -215,6 +215,15 @@ Current
 - [Additional healthcheck logging on healthchck failure on data request](https://github.com/yahoo/fili/pull/809)
   * Added user, request url, and timestamp to healthcheck error message on data request.
 
+- [Cleaned up ApiRequest contracts](https://github.com/yahoo/fili/issues/775)
+    * `DataApiRequest` default implementation of getting dimension filters
+    * Aync after nullable (to indicate unconfigured as opposed to explicitly zero)
+        * JobsServlet handles null asynchAfter
+    * DefaultPagination removed from ApiRequest interface (ApiRequest should not be a service provider)
+    * Moved filter generation into an explicit class, defaulted implementations in subclasses using extensible methods.
+
+
+
 v0.10.48 - 2018/10/04
 =====
 
@@ -343,12 +352,6 @@ select filters)
 
 - [Corrected generality on with methods](https://github.com/yahoo/fili/issues/773)
    * Changed `DataApiRequest` methods to not refer to the implementation classes.
-
-- [Cleaned up ApiRequest contracts](https://github.com/yahoo/fili/issues/775)
-    * `DataApiRequest` default implementation of getting dimension filters
-    * Aync after nullable (to indicate unconfigured as opposed to explicitly zero)
-    * DefaultPagination removed from ApiRequest interface (ApiRequest should not be a service provider)
-    * Moved filter generation into an explicit class, defaulted implementations in subclasses using extensible methods.    
 
 - [Corrected generality on with methods](https://github.com/yahoo/fili/issues/773)
    * Changed `DataApiRequest` methods to not refer to the implementation classes.

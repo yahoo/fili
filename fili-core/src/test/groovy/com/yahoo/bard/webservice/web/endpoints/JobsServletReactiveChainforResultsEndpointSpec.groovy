@@ -105,7 +105,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
         TestSubscriber<PreResponse> testSubscriber = new TestSubscriber<>()
         JobsApiRequestImpl apiRequest = new JobsApiRequestImpl(
                 null,
-                null,
+                "never",
                 "",
                 "",
                 null,
@@ -130,7 +130,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
         TestSubscriber<PreResponse> testSubscriber = new TestSubscriber<>()
         JobsApiRequestImpl apiRequest = new JobsApiRequestImpl(
                 null,
-                null,
+                "never",
                 "",
                 "",
                 null,
@@ -154,7 +154,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
         TestSubscriber<PreResponse> testSubscriber = new TestSubscriber<>()
         JobsApiRequestImpl apiRequest = new JobsApiRequestImpl(
                 null,
-                null,
+                "never",
                 "",
                 "",
                 null,

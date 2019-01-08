@@ -70,7 +70,7 @@ class ThetaSketchNestedQuerySpec extends Specification {
     }
 
     def "Intersection reporting when Logical Metric has nested query"(){
-        LinkedHashSet<LogicalMetric> logicalMetrics =  DefaultLogicalMetricsGenerators.generateLogicalMetrics(
+        LinkedHashSet<LogicalMetric> logicalMetrics =  DefaultLogicalMetricsGenerators.INSTANCE.generateLogicalMetrics(
                 "dayAvgFoos(AND(country|id-in[US,IN],property|id-in[114,125]))",
                 resources.metricDict,
                 resources.dimensionDict,
@@ -100,7 +100,7 @@ class ThetaSketchNestedQuerySpec extends Specification {
     }
 
     def "metric filter on viz metric and expect children of unRegFoos have right sketch operation function"() {
-        LinkedHashSet<LogicalMetric> logicalMetrics = DefaultLogicalMetricsGenerators.generateLogicalMetrics(
+        LinkedHashSet<LogicalMetric> logicalMetrics = DefaultLogicalMetricsGenerators.INSTANCE.generateLogicalMetrics(
                 "viz(AND(country|id-in[US,IN],property|id-in[14,125]))",
                 resources.metricDict,
                 resources.dimensionDict,
@@ -138,7 +138,7 @@ class ThetaSketchNestedQuerySpec extends Specification {
     }
 
     def "The dimensions returned from the filtered nested logical metric are correct"() {
-        LinkedHashSet<LogicalMetric> logicalMetrics = DefaultLogicalMetricsGenerators.generateLogicalMetrics(
+        LinkedHashSet<LogicalMetric> logicalMetrics = DefaultLogicalMetricsGenerators.INSTANCE.generateLogicalMetrics(
                 "dayAvgFoos(AND(country|id-in[US,IN],property|id-in[114,125]))",
                 resources.metricDict,
                 resources.dimensionDict,

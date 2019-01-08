@@ -37,6 +37,7 @@ import com.yahoo.bard.webservice.web.apirequest.DataApiRequestImpl
 import com.yahoo.bard.webservice.web.apirequest.binders.DefaultHavingApiGenerator
 import com.yahoo.bard.webservice.web.endpoints.DataServlet
 
+import org.joda.time.DateTimeZone
 import org.joda.time.Interval
 
 import spock.lang.Specification
@@ -87,6 +88,7 @@ class WeightEvaluationQuerySpec extends Specification {
         dataServlet.getFilterBuilder() >> new DruidOrFilterBuilder()
         dataServlet.getHavingApiGenerator() >> new DefaultHavingApiGenerator(configurationLoader)
         dataServlet.getGranularityParser() >> new StandardGranularityParser()
+        dataServlet.getSystemTimeZone() >> DateTimeZone.UTC
 
         builder = new DruidQueryBuilder(
                 jtb.configurationLoader.logicalTableDictionary,

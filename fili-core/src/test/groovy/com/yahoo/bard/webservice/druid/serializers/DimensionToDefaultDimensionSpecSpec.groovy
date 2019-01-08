@@ -49,7 +49,6 @@ class DimensionToDefaultDimensionSpecSpec extends Specification {
                 resources.druidFilterBuilder,
                 resources.druidHavingBuilder
         )
-        builder = new DruidQueryBuilder(resources.logicalDictionary, resolver, druidFilterBuilder)
         apiRequest = Mock(DataApiRequest)
         LogicalMetric lm1 = new LogicalMetric(resources.simpleTemplateQuery, new NoOpResultSetMapper(), "lm1", null)
 

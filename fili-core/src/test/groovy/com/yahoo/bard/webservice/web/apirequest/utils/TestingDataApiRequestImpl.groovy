@@ -3,7 +3,6 @@
 package com.yahoo.bard.webservice.web.apirequest.utils
 
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
-import com.yahoo.bard.webservice.druid.model.builders.DruidOrFilterBuilder
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.web.ResponseFormatType
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestImpl
@@ -18,21 +17,22 @@ class TestingDataApiRequestImpl extends DataApiRequestImpl {
         super(
                 (LogicalTable) null,
                 DefaultTimeGrain.DAY,
-                [] as LinkedHashSet, // Dimensions
-                null, // perDimensionFields
-                [] as LinkedHashSet,  // LogicalMetrics
+                new LinkedHashSet<>(), // Dimensions
+                (LinkedHashMap) null, // perDimensionFields
+                new LinkedHashSet<>(),  // LogicalMetrics
                 [], // Intervals
                 (ApiFilters) null,
                 [:], // Havings
-                null, // sorts
+                new LinkedHashSet<>(), // sorts
                 Optional.empty(),
                 (DateTimeZone) null,
-                0, // topN
-                0,  // count
-                (Optional<PaginationParameters>) null,
+                (int) 0, // topN
+                (int) 0,  // count
+                (PaginationParameters) null,
                 (ResponseFormatType) null,
-                Long.MAX_VALUE, // asynchAfter
-                new DruidOrFilterBuilder()
+                (String) null, // filename
+                Long.MAX_VALUE // asynchAfter
         )
     }
 }
+

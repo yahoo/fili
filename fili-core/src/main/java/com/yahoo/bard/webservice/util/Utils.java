@@ -45,6 +45,9 @@ public class Utils {
      */
     private static final Logger LOG = LoggerFactory.getLogger(Utils.class);
 
+    private static final List<String> DEFAULT_OMITS = Arrays.asList("context", "meta");
+    private static final List<String> OMIT_CONTEXT = Arrays.asList("context");
+
     /**
      * A strategy that deletes a directory.
      */
@@ -191,14 +194,29 @@ public class Utils {
      *
      * @param node  The root of the tree of json nodes.
      * @param mapper  The object mapper that creates and empty node.
-     * @param preserveContext  Boolean indicating whether context should be omitted.
      */
-    public static void canonicalize(JsonNode node, ObjectMapper mapper, boolean preserveContext) {
+    public static void canonicalize(JsonNode node, ObjectMapper mapper) {
+        canonicalize(node, mapper, DEFAULT_OMITS);
+    }
+
+        /**
+         * Given a JsonObjectNode, order the fields and recursively and replace context blocks with empty nodes.
+         *
+         * This method is recursive.
+         *
+         * @param node  The root of the tree of json nodes.
+         * @param mapper  The object mapper that creates and empty node.
+         * @param omits  list of object nodes names that should be omitted
+         */
+    public static void canonicalize(JsonNode node, ObjectMapper mapper, List<String> omits) {
         if (node.isObject()) {
             ObjectNode objectNode = ((ObjectNode) node);
 
-            if (objectNode.has("context") && !preserveContext) {
-                objectNode.replace("context", mapper.createObjectNode());
+            for (String omit : omits) {
+                if (objectNode.has(omit)) {
+                    objectNode.remove(omit);
+                }
+
             }
 
             Iterator<Map.Entry<String, JsonNode>> iterator = objectNode.fields();
@@ -208,7 +226,7 @@ public class Utils {
                 Map.Entry<String, JsonNode> entry = iterator.next();
                 fieldMap.put(entry.getKey(), entry.getValue());
                 // canonicalize all child nodes
-                canonicalize(entry.getValue(), mapper, preserveContext);
+                canonicalize(entry.getValue(), mapper, omits);
             }
             // remove the existing entries
             objectNode.removeAll();

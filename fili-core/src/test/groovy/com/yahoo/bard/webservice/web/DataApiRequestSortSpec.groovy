@@ -95,7 +95,7 @@ class DataApiRequestSortSpec extends Specification {
     @Unroll
     def "Check dateTime column is first in the sort column map #columnDirection "() {
         expect:
-        DefaultSortColumnGenerators.isDateTimeFirstSortField(columnDirection) == expected
+        DefaultSortColumnGenerators.INSTANCE.isDateTimeFirstSortField(columnDirection) == expected
 
         where:
         columnDirection                                                                          | expected

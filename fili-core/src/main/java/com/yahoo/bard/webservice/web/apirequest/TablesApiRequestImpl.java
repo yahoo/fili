@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -348,6 +349,46 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
             ApiFilters filters
     ) {
         this(format, null, paginationParameters, tables, table, granularity, dimensions, metrics, intervals, filters);
+    }
+
+    /**
+     * All argument constructor and its used primarily for withers - hence its private.
+     *
+     * @param format Response data format JSON or CSV. Default is JSON
+     * @param paginationParameters The parameters used to describe pagination
+     * @param tables Set of logical tables
+     * @param table Logical table
+     * @param granularity Requested time granularity
+     * @param dimensions Grouping dimensions / Dimension constraint
+     * @param metrics Metrics constraint
+     * @param intervals Data / Time constraint
+     * @param filters Filter constraint
+     * @deprecated prefer constructor with downloadFilename
+     */
+    @Deprecated
+    private TablesApiRequestImpl(
+            ResponseFormatType format,
+            Optional<PaginationParameters> paginationParameters,
+            LinkedHashSet<LogicalTable> tables,
+            LogicalTable table,
+            Granularity granularity,
+            LinkedHashSet<Dimension> dimensions,
+            LinkedHashSet<LogicalMetric> metrics,
+            List<Interval> intervals,
+            ApiFilters filters
+    ) {
+        this(
+                format,
+                null,
+                paginationParameters.orElse(null),
+                tables,
+                table,
+                granularity,
+                dimensions,
+                metrics,
+                intervals,
+                filters
+        );
     }
 
     /**

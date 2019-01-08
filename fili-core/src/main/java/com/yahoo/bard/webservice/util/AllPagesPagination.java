@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.OptionalInt;
 import java.util.stream.Collectors;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * Pagination class that contains all matching results of a query.
  * An instance of AllPagesPagination is responsible for performing pagination, expects
@@ -38,7 +40,7 @@ public class AllPagesPagination<T> implements Pagination<T> {
      *
      * @throws PageNotFoundException if pageToFetch is greater than the number of pages.
      */
-    public AllPagesPagination(Collection<T> entireCollection, PaginationParameters paginationParameters)
+    public AllPagesPagination(Collection<T> entireCollection, @NotNull PaginationParameters paginationParameters)
             throws PageNotFoundException {
         this.collectionSize = entireCollection.size();
         this.pageToFetch = paginationParameters.getPage(entireCollection.size());

@@ -177,7 +177,7 @@ class ApiRequestSpec extends Specification {
         )
 
         expect:
-        ApiRequestValidators.validateTimeAlignment(DAY, intervals)
+        ApiRequestValidators.INSTANCE.validateTimeAlignment(DAY, intervals)
 
         where:
         intervalString          | zone
@@ -194,7 +194,7 @@ class ApiRequestSpec extends Specification {
                 "week",
                 new StandardGranularityParser()
         )
-        Set<Interval> intervals = DateAndTimeGenerators.generateIntervals(
+        Set<Interval> intervals = DateAndTimeGenerators.INSTANCE.generateIntervals(
                 "2015-02-15/2016-02-22",
                 granularity,
                 FULLY_OPTIONAL_DATETIME_FORMATTER

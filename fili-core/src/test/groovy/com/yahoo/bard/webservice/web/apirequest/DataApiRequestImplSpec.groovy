@@ -103,7 +103,7 @@ class DataApiRequestImplSpec extends Specification {
 
     def "check parsing generateLogicalMetrics"() {
         given:
-        Set<LogicalMetric> logicalMetrics = DefaultLogicalMetricsGenerators.generateLogicalMetrics(
+        Set<LogicalMetric> logicalMetrics = DefaultLogicalMetricsGenerators.INSTANCE.generateLogicalMetrics(
                 "met1,met2,met3",
                 metricDict,
                 dimensionDict,
@@ -123,7 +123,7 @@ class DataApiRequestImplSpec extends Specification {
 
     def "generateLogicalMetrics throws BadApiRequestException on non-existing LogicalMetric"() {
         when:
-        Set<LogicalMetric> logicalMetrics = DefaultLogicalMetricsGenerators.generateLogicalMetrics(
+        Set<LogicalMetric> logicalMetrics = DefaultLogicalMetricsGenerators.INSTANCE.generateLogicalMetrics(
                 "met1,met2,nonExistingMetric",
                 metricDict,
                 dimensionDict,

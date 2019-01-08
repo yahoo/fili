@@ -8,13 +8,15 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.FilteredAggregation
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidInFilterBuilder
 import com.yahoo.bard.webservice.druid.model.postaggregation.FuzzySetPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationPostAggFunction
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchEstimatePostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchSetOperationPostAggregation
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
+import com.yahoo.bard.webservice.web.apirequest.ApiRequestValidators
 import com.yahoo.bard.webservice.web.apirequest.DefaultLogicalMetricsGenerators
-import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 
 import spock.lang.Specification
 
@@ -22,6 +24,8 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
 
     ThetaSketchIntersectionReportingResources resources
     boolean intersectionReportingState
+
+    DruidFilterBuilder filterBuilder = new DruidInFilterBuilder()
 
     def setup() {
         intersectionReportingState = INTERSECTION_REPORTING.isOn()
@@ -35,7 +39,7 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
 
     def "When the format of the metric filter is invalid, BadApiRequestException is thrown"(){
         when:
-        DefaultLogicalMetricsGenerators.generateLogicalMetrics(
+        DefaultLogicalMetricsGenerators.INSTANCE.generateLogicalMetrics(
                 "foos(AND(country|id-in[US,IN]property|id-in[14,125]))",
                 resources.metricDict,
                 resources.dimensionDict,
@@ -50,7 +54,7 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
 
     def "When the API query contains duplicate metrics, BadApiRequestException is thrown"(){
         when:
-        DefaultLogicalMetricsGenerators.generateLogicalMetrics(
+        DefaultLogicalMetricsGenerators.INSTANCE.generateLogicalMetrics(
                 "foos,foos(AND(country|id-in[US,IN],property|id-in[14,125]))",
                 resources.metricDict,
                 resources.dimensionDict,
@@ -64,7 +68,7 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
 
     def "When the queried metric is not present in Metric Dictionary, BadApiRequestException is thrown"() {
         when:
-        DefaultLogicalMetricsGenerators.generateLogicalMetrics(
+        DefaultLogicalMetricsGenerators.INSTANCE.generateLogicalMetrics(
                 "dinga",
                 resources.metricDict,
                 resources.dimensionDict,
@@ -78,7 +82,7 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
 
     def "When metric filter contains 'OR' condition, BadApiRequestException is thrown"(){
         when:
-        DefaultLogicalMetricsGenerators.generateLogicalMetrics(
+        DefaultLogicalMetricsGenerators.INSTANCE.generateLogicalMetrics(
                 "foos(OR(country|id-in[US,IN],property|id-in[14,125]))",
                 resources.metricDict,
                 resources.dimensionDict,
@@ -91,7 +95,7 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
     }
 
     def "When the INTERSECTION_REPORTING flag is enabled and the query contains unfiltered metrics, the Logical Metrics returned are equal to the Logical Metrics from the Metric Dictionary"() {
-        Set<LogicalMetric> logicalMetrics = DefaultLogicalMetricsGenerators.generateLogicalMetrics(
+        Set<LogicalMetric> logicalMetrics = DefaultLogicalMetricsGenerators.INSTANCE.generateLogicalMetrics(
                 "pageViews,foos",
                 resources.metricDict,
                 resources.dimensionDict,
@@ -110,7 +114,7 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
 
     def "When metric filter contains invalid dimension, BadApiRequestException is thrown"(){
         when:
-        DefaultLogicalMetricsGenerators.generateLogicalMetrics(
+        DefaultLogicalMetricsGenerators.INSTANCE.generateLogicalMetrics(
                 "foos(AND(country1|id-in[US,IN],property|id-in[14,125]))",
                 resources.metricDict,
                 resources.dimensionDict,
@@ -186,7 +190,7 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
 
     def "When invalid(non-sketch) metric is used for filtering, IllegalArgumentException is thrown "(){
         when:
-        DefaultLogicalMetricsGenerators.generateLogicalMetrics(
+        DefaultLogicalMetricsGenerators.INSTANCE.generateLogicalMetrics(
                 "pageViews(AND(country|id-in[US,IN],property|id-in[news,sports]))",
                 resources.metricDict,
                 resources.dimensionDict,
@@ -199,7 +203,7 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
     }
 
     def "When API request contains filtered metrics, the Logical Metric returned by generateLogicalMetrics is filtered and therefore not equal to the Logical Metric from the Metric dictionary "(){
-        LinkedHashSet<LogicalMetric> logicalMetrics =  DefaultLogicalMetricsGenerators.generateLogicalMetrics(
+        LinkedHashSet<LogicalMetric> logicalMetrics =  DefaultLogicalMetricsGenerators.INSTANCE.generateLogicalMetrics(
                 "foos(AND(country|id-in[US,IN],property|id-in[14,125]))",
                 resources.metricDict,
                 resources.dimensionDict,
@@ -218,7 +222,7 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
     }
 
     def "An exception is thrown when validateMetrics is passed an intersection expression using invalid metrics"(){
-        LinkedHashSet<LogicalMetric> logicalMetrics =  DefaultLogicalMetricsGenerators.generateLogicalMetrics(
+        LinkedHashSet<LogicalMetric> logicalMetrics =  DefaultLogicalMetricsGenerators.INSTANCE.generateLogicalMetrics(
                 "regFoos(AND(country|id-in[US,IN],property|id-in[14,125]))",
                 resources.metricDict,
                 resources.dimensionDict,
@@ -226,7 +230,7 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
         )
 
         when:
-        new TestingDataApiRequestImpl().validateMetrics(logicalMetrics, resources.table)
+        ApiRequestValidators.INSTANCE.validateMetrics(logicalMetrics, resources.table)
 
         then:
         String expectedMessage = "Requested metric(s) '[regFoos]' are not supported by the table 'NETWORK'."
@@ -236,7 +240,7 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
     }
 
     def "No exception is thrown when validateMetrics is passed an intersection expression using valid metrics"(){
-        LinkedHashSet<LogicalMetric> logicalMetrics =  DefaultLogicalMetricsGenerators.generateLogicalMetrics(
+        LinkedHashSet<LogicalMetric> logicalMetrics =  DefaultLogicalMetricsGenerators.INSTANCE.generateLogicalMetrics(
                 "foos(AND(country|id-in[US,IN],property|id-in[14,125]))",
                 resources.metricDict,
                 resources.dimensionDict,
@@ -244,14 +248,14 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
         )
 
         when:
-        new TestingDataApiRequestImpl().validateMetrics(logicalMetrics, resources.table)
+        ApiRequestValidators.INSTANCE.validateMetrics(logicalMetrics, resources.table)
 
         then:
         noExceptionThrown()
     }
 
     def "The dimensions returned from the filtered logical metric are correct"() {
-        LinkedHashSet<LogicalMetric> logicalMetrics =  DefaultLogicalMetricsGenerators.generateLogicalMetrics(
+        LinkedHashSet<LogicalMetric> logicalMetrics =  DefaultLogicalMetricsGenerators.INSTANCE.generateLogicalMetrics(
                 "foos(AND(country|id-in[US,IN],property|id-in[14,125]))",
                 resources.metricDict,
                 resources.dimensionDict,

@@ -19,6 +19,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * NoSearchProvider class
  * <p>
@@ -117,7 +119,7 @@ public class NoOpSearchProvider implements SearchProvider {
     }
 
     @Override
-    public Pagination<DimensionRow> findAllDimensionRowsPaged(PaginationParameters paginationParameters) {
+    public Pagination<DimensionRow> findAllDimensionRowsPaged(@NotNull PaginationParameters paginationParameters) {
         return new AllPagesPagination<>(dimensionRows, paginationParameters);
     }
 

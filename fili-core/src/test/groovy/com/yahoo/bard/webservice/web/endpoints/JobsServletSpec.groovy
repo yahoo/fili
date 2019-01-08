@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.util.JsonSortStrategy
 
 import spock.lang.Specification
+import spock.lang.Timeout
 
 import javax.ws.rs.core.Response
 /**
@@ -23,6 +24,7 @@ class JobsServletSpec extends Specification {
         jerseyTestBinder.tearDown()
     }
 
+    @Timeout(10000)
     def "jobs/ticket endpoint returns the correct response to a get request"() {
         setup:
         String expectedResponse = """{

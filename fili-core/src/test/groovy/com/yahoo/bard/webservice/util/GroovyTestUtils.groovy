@@ -49,7 +49,7 @@ abstract class GroovyTestUtils extends Specification {
      *
      * @see <a href="http://json.org/">JSON.org</a>
      */
-    static boolean compareJson(String actual, String expected, JsonSortStrategy sortStrategy = SORT_MAPS, List<String> omits = ["context"]) {
+    static boolean compareJson(String actual, String expected, JsonSortStrategy sortStrategy = SORT_MAPS, List<String> omits = ["context", "meta"]) {
         try {
             // Parse the JSON strings into objects
             //Use two separate slurpers because slurper optimizations mean that the two parsed maps will share
@@ -59,8 +59,8 @@ abstract class GroovyTestUtils extends Specification {
             JsonNode actualRoot = MAPPER.readTree(actual);
             JsonNode expectedRoot = MAPPER.readTree(expected);
 
-            Utils.canonicalize(actualRoot, MAPPER, false);
-            Utils.canonicalize(expectedRoot, MAPPER, false);
+            Utils.canonicalize(actualRoot, MAPPER);
+            Utils.canonicalize(expectedRoot, MAPPER);
 
             def actualProcessed = MAPPER.writer().withDefaultPrettyPrinter().writeValueAsString(actualRoot);
             def expectedProcessed = MAPPER.writer().withDefaultPrettyPrinter().writeValueAsString(expectedRoot);
