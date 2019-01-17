@@ -63,6 +63,10 @@ Current
 
 ### Changed:
 
+- [Change log level for several servlet](https://github.com/yahoo/fili/issues/852)
+  * `SlicesServlet`, `DimensionsServlet`, `MetricsServlet`, `TablesServlet`, `FeatureFlagsServlet` all has debug level 
+  log for the entire query response. Change log level to trace to avoid log spamming.
+
 - [ResponseFormatType now contains information relevant to generating response headers associated with response format](https://github.com/yahoo/fili/issues/709)
   * `ResponseFormatType` interface exposes `getCharset()`, `getFileExtension()`, and `getContentType()` methods which 
   provide information used to build response headers
