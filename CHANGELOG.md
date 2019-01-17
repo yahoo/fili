@@ -212,6 +212,7 @@ Injectable custom response handling.
 
 ### Changed:
 
+<<<<<<< HEAD
 - [Removed references to yahoo internal authorization system](https://github.com/yahoo/fili/issues/972)
    * Renamed bouncer code to 'status code' and references to 'Bouncer' in class name and fields.
 
@@ -278,6 +279,12 @@ Injectable custom response handling.
 - [Better exposed static method on DimensionsServlet to subclasses](https://github.com/yahoo/fili/issues/863)
   * Changed `DimensionsServlet.getDescriptionKey` to `protected`
 
+=======
+- [Change log level for several servlet](https://github.com/yahoo/fili/issues/852)
+  * `SlicesServlet`, `DimensionsServlet`, `MetricsServlet`, `TablesServlet`, `FeatureFlagsServlet` all has debug level 
+  log for the entire query response. Change log level to trace to avoid log spamming.
+
+>>>>>>> update CHANGELOG.md
 - [ResponseFormatType now contains information relevant to generating response headers associated with response format](https://github.com/yahoo/fili/issues/709)
   * `ResponseFormatType` interface exposes `getCharset()`, `getFileExtension()`, and `getContentType()` methods which
   provide information used to build response headers
@@ -2338,3 +2345,4 @@ Jobs resource. Here are the highlights of what's in this release:
 
 - [`DruidDimensionsLoader` doesn't set the dimension's lastUpdated date](https://github.com/yahoo/fili/pull/24)
   * `DruidDimensionsLoader` now properly sets the `lastUpdated` field after it finished processing the Druid response
+
