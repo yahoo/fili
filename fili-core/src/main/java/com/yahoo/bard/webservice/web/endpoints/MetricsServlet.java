@@ -142,7 +142,7 @@ public class MetricsServlet extends EndpointServlet {
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "metrics" : "rows",
                     null
             );
-            LOG.debug("Metrics Endpoint Response: {}", response.getEntity());
+            LOG.trace("Metrics Endpoint Response: {}", response.getEntity());
             return response;
         } catch (Throwable t) {
             return exceptionHandler.handleThrowable(
@@ -198,7 +198,7 @@ public class MetricsServlet extends EndpointServlet {
             );
 
             String output = objectMappers.getMapper().writeValueAsString(result);
-            LOG.debug("Metric Endpoint Response: {}", output);
+            LOG.trace("Metric Endpoint Response: {}", output);
             responseSender = () -> Response.status(Status.OK).entity(output).build();
         } catch (Throwable t) {
             return exceptionHandler.handleThrowable(
