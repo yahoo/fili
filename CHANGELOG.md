@@ -61,6 +61,10 @@ Current
 - [Add insertion order aware method for Stream Utils](https://github.com/yahoo/fili/pull/807)
     * Added `orderedSetMerge` that merges 2 sets in the order provided.
 
+- [Add DimensionRow transformation support with ResultSetMapper](https://github.com/yahoo/fili/issues/856)
+    * Added helper constructor to `DimensionRow`
+    * Created `MemoizingDimensionMappingResultSetMapper` to support field transform use case
+
 ### Changed:
 
 - [ResponseFormatType now contains information relevant to generating response headers associated with response format](https://github.com/yahoo/fili/issues/709)
