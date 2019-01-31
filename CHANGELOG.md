@@ -178,6 +178,8 @@ Current
     * Bumped dependency version to [5.1.2,) 
     * Throw validation error if excessive documents are returned from Lucene now that it supports up to long hitcounts 
 
+- [Updated copyright style to include Verizon Media Group](https://github.com/yahoo/fili/issues/856)
+
 ### Known Issues:
 
 ## Contract changes:

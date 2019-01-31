@@ -78,6 +78,14 @@ public class DimensionRow extends LinkedHashMap<DimensionField, String> implemen
                 .collect(StreamUtils.toLinkedMap(entry -> entry.getKey().getName(), Map.Entry::getValue));
     }
 
+    /**
+     * Create a copy of a dimension row, and then transform it using a mapping function.
+     *
+     * @param row  The row to be copied.
+     * @param mapper  The transform function.
+     *
+     * @return  A copy of this row with changes.
+     */
     public static DimensionRow copyWithReplace(DimensionRow row,  BiFunction<DimensionField, String, String> mapper) {
         DimensionRow newRow = new DimensionRow(row);
         newRow.replaceAll(mapper);
