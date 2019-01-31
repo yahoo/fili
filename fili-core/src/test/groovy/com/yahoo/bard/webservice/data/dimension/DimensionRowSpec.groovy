@@ -38,7 +38,7 @@ class DimensionRowSpec extends Specification {
         thrown(IllegalArgumentException)
     }
 
-    def "copyWithReplace copies and replaces"() {
+    def "copyWithReplace produces a modified row"() {
         BiFunction replacer = new BiFunction<DimensionField, String, String>() {
             @Override
             String apply(final DimensionField dimensionField, final String s) {
@@ -54,6 +54,7 @@ class DimensionRowSpec extends Specification {
         then:
         // Note, == does the wrong thing here
         result.equals(expectedRow)
+        ! expectedRow.equals(testRow)
     }
 
 }

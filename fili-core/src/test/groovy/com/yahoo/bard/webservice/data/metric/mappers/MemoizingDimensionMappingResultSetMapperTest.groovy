@@ -10,6 +10,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionRow
 import spock.lang.Specification
 
 import java.util.function.BiFunction
+import java.util.function.BiPredicate
 
 class MemoizingDimensionMappingResultSetMapperTest extends Specification {
 
@@ -35,7 +36,7 @@ class MemoizingDimensionMappingResultSetMapperTest extends Specification {
     ResultSetSchema schema = Mock(ResultSetSchema)
     Dimension matchingDimension = Mock(Dimension)
 
-    BiFunction<DimensionColumn, DimensionRow, Boolean> matcher
+    BiPredicate<DimensionColumn, DimensionRow> matcher
     BiFunction<DimensionColumn, DimensionRow, AbstractMap.SimpleEntry<DimensionColumn, DimensionRow>> mapper
 
     def setup() {
@@ -66,7 +67,7 @@ class MemoizingDimensionMappingResultSetMapperTest extends Specification {
     }
 
     def "Matching columns transform, non matching do not"() {
-        matcher = Mock(BiFunction)
+        matcher = Mock(BiPredicate)
         mapper = Mock(BiFunction)
 
         MemoizingDimensionMappingResultSetMapper memoMapper = new MemoizingDimensionMappingResultSetMapper(
@@ -80,7 +81,7 @@ class MemoizingDimensionMappingResultSetMapperTest extends Specification {
         Result actualNonMatch = memoMapper.map(resultNonMatch, schema)
 
         then:
-        4 * matcher.apply(_, _) >> { DimensionColumn dimensionColumn, DimensionRow dimRow ->
+        4 * matcher.test(_, _) >> { DimensionColumn dimensionColumn, DimensionRow dimRow ->
             matchingDimension.equals(dimensionColumn.getDimension())
         }
         1 * mapper.apply(_, _) >> { DimensionColumn dimensionColumn, DimensionRow dimRow ->
@@ -98,7 +99,7 @@ class MemoizingDimensionMappingResultSetMapperTest extends Specification {
     }
 
     def "Test memoization skips previously discovered rows"() {
-        matcher = Mock(BiFunction)
+        matcher = Mock(BiPredicate)
         mapper = Mock(BiFunction)
 
         MemoizingDimensionMappingResultSetMapper memoMapper = new MemoizingDimensionMappingResultSetMapper(
@@ -110,7 +111,7 @@ class MemoizingDimensionMappingResultSetMapperTest extends Specification {
         Result actual = memoMapper.map(resultMatch, schema)
 
         then:
-        2 * matcher.apply(_, _) >> { DimensionColumn dimensionColumn, DimensionRow dimRow ->
+        2 * matcher.test(_, _) >> { DimensionColumn dimensionColumn, DimensionRow dimRow ->
             matchingDimension.equals(dimensionColumn.getDimension())
         }
         1 * mapper.apply(_, _) >> { DimensionColumn dimensionColumn, DimensionRow dimRow ->
@@ -127,7 +128,7 @@ class MemoizingDimensionMappingResultSetMapperTest extends Specification {
         actual = memoMapper.map(resultMatch, schema)
 
         then:
-        0 * matcher.apply(_, _)
+        0 * matcher.test(_, _)
         0 * mapper.apply(_, _)
         actual.getDimensionRow(dimensionColumnMatch) == modifiedTestRow
         actual.getDimensionRow(dimensionColumnNonMatch) == unmodifiedTestRow
@@ -136,7 +137,7 @@ class MemoizingDimensionMappingResultSetMapperTest extends Specification {
         Result actualNonMatch = memoMapper.map(resultNonMatch, schema)
 
         then:
-        1 * matcher.apply(_, _) >> { DimensionColumn dimensionColumn, DimensionRow dimRow ->
+        1 * matcher.test(_, _) >> { DimensionColumn dimensionColumn, DimensionRow dimRow ->
             matchingDimension.equals(dimensionColumn.getDimension())
         }
         actualNonMatch.getDimensionRow(dimensionColumnNonMatch) == unmodifiedTestRow

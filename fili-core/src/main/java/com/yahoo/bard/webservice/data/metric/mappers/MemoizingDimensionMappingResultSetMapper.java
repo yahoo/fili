@@ -13,6 +13,7 @@ import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -26,7 +27,7 @@ import java.util.stream.Collectors;
  */
 public class MemoizingDimensionMappingResultSetMapper extends ResultSetMapper {
 
-    private final BiFunction<DimensionColumn, DimensionRow, Boolean> columnRowMatcher;
+    private final BiPredicate<DimensionColumn, DimensionRow> columnRowMatcher;
     private final BiFunction<DimensionColumn, DimensionRow, Map.Entry<DimensionColumn, DimensionRow>> columnRowMapper;
 
     private Map<Map.Entry<DimensionColumn, DimensionRow>, Map.Entry<DimensionColumn, DimensionRow>> entryMemo;
@@ -42,7 +43,7 @@ public class MemoizingDimensionMappingResultSetMapper extends ResultSetMapper {
      * @param mapper  The function which builds a DimensionEntry from a matched DimensionRow
      */
     public MemoizingDimensionMappingResultSetMapper(
-            BiFunction<DimensionColumn, DimensionRow, Boolean> matcher,
+            BiPredicate<DimensionColumn, DimensionRow> matcher,
             BiFunction<DimensionColumn, DimensionRow, Map.Entry<DimensionColumn, DimensionRow>> mapper
     ) {
         this(matcher, mapper, true);
@@ -56,7 +57,7 @@ public class MemoizingDimensionMappingResultSetMapper extends ResultSetMapper {
      * @param memoize  cache transformed results if appropriate
      */
     public MemoizingDimensionMappingResultSetMapper(
-            BiFunction<DimensionColumn, DimensionRow, Boolean> matcher,
+            BiPredicate<DimensionColumn, DimensionRow> matcher,
             BiFunction<DimensionColumn, DimensionRow, Map.Entry<DimensionColumn, DimensionRow>> mapper,
             boolean memoize
     ) {
@@ -89,7 +90,7 @@ public class MemoizingDimensionMappingResultSetMapper extends ResultSetMapper {
             Dimension dimensionToMap,
             BiFunction<DimensionField, String, String> fieldMapper
     ) {
-        BiFunction<DimensionColumn, DimensionRow, Boolean> entryMatcher =
+        BiPredicate<DimensionColumn, DimensionRow> entryMatcher =
                 (dimensionColumn, dimensionRow) -> dimensionColumn.getDimension().equals(dimensionToMap);
 
         BiFunction<DimensionColumn, DimensionRow, Map.Entry<DimensionColumn, DimensionRow>> entryMapper =
@@ -128,7 +129,7 @@ public class MemoizingDimensionMappingResultSetMapper extends ResultSetMapper {
      * @return  The original column,row entry if the matcher returns false, otherwise the transformed one.
      */
     protected Map.Entry<DimensionColumn, DimensionRow> mapEntry(Map.Entry<DimensionColumn, DimensionRow> columnRow) {
-        if (columnRowMatcher.apply(columnRow.getKey(), columnRow.getValue())) {
+        if (columnRowMatcher.test(columnRow.getKey(), columnRow.getValue())) {
             return columnRowMapper.apply(columnRow.getKey(), columnRow.getValue());
         } else {
             return columnRow;
