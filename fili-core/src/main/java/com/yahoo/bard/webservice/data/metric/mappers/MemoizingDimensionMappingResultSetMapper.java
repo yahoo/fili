@@ -1,3 +1,5 @@
+// Copyright 2019 Verizon Media Group
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric.mappers;
 
 import com.yahoo.bard.webservice.data.Result;
@@ -64,7 +66,7 @@ public class MemoizingDimensionMappingResultSetMapper extends ResultSetMapper {
         if (memoize) {
             entryMemo = new HashMap<>();
             entryMapper = (entry) -> {
-                if (! entryMemo.containsKey(entry) ) {
+                if (!entryMemo.containsKey(entry)) {
                     Map.Entry<DimensionColumn, DimensionRow> value = mapEntry(entry);
                     entryMemo.put(entry, value);
                 }
@@ -80,6 +82,8 @@ public class MemoizingDimensionMappingResultSetMapper extends ResultSetMapper {
      *
      * @param dimensionToMap  A target dimension to transform
      * @param fieldMapper  A value transformer for dimension fields
+     *
+     * @return A result set mapper that replaces certain field values on the dimension.
      */
     public static MemoizingDimensionMappingResultSetMapper buildFromFieldMapper(
             Dimension dimensionToMap,
