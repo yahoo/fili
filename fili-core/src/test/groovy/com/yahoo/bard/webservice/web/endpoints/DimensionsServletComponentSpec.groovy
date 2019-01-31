@@ -321,7 +321,7 @@ class DimensionsServletComponentSpec extends Specification {
         result.head().getHeaderString("Content-Disposition") == "attachment; filename=dimensions-shape-values.csv"
         result.head().getHeaderString("Content-Type") == "text/csv; charset=utf-8"
         Map<String, String> actualLinks = GroovyTestUtils.splitHeaderLinks(result.head().getHeaderString("Link"))
-        actualLinks.every {name, actualLink -> GroovyTestUtils.compareURL(actualLink, expectedLinks [name])}
+        actualLinks.every {name, actualLink -> GroovyTestUtils.compareURL(actualLink, expectedLinks[name])}
         result.get(String.class).replaceAll("\\r?\\n?\\s","") == expectedResponse
     }
 

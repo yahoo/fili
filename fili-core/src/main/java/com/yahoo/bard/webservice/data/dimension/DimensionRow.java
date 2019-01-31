@@ -79,12 +79,12 @@ public class DimensionRow extends LinkedHashMap<DimensionField, String> implemen
     }
 
     /**
-     * Create a copy of a dimension row, and then transform it using a mapping function.
+     * Copies a DimensionRow and transforms its fields using the specified mapper.
      *
-     * @param row  The row to be copied.
-     * @param mapper  The transform function.
+     * @param row The row to be transformed
+     * @param mapper  A function that takes a DimensionField and its current value, and returns the field's new value.
      *
-     * @return  A copy of this row with changes.
+     * @return A copy of the DimensionRow with its fields transformed by the specified function
      */
     public static DimensionRow copyWithReplace(DimensionRow row,  BiFunction<DimensionField, String, String> mapper) {
         DimensionRow newRow = new DimensionRow(row);
