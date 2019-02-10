@@ -302,7 +302,7 @@ public class ClassScanner {
         if (arg != null) {
             putInArgumentValueCache(arg.getClass(), arg);
         }
-        return (T) arg;
+        return arg;
     }
 
     /**
@@ -349,8 +349,7 @@ public class ClassScanner {
                 // find a subclass to construct
                 if (cls.isAssignableFrom(subclass) && !Modifier.isAbstract(subclass.getModifiers())) {
                     try {
-                        @SuppressWarnings("unchecked")
-                        T arg = constructObject((Class<T>) subclass, mode, stack);
+                        T arg = constructObject(subclass.asSubclass(cls), mode, stack);
                         if (arg != null) {
                             return arg;
                         }
