@@ -381,7 +381,7 @@ public class ClassScanner {
                 .filter(cls::isAssignableFrom)
                 .findFirst()
                 .map(argumentValueCache::get)
-                .map(cls::cast)
+                .map(StreamUtils.uncheckedCast(cls))
                 .orElse(null);
     }
 
