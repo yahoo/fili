@@ -297,7 +297,7 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
 
     @Override
     public LookbackQuery withInnermostDataSource(DataSource dataSource) {
-        Optional<DruidFactQuery<?>> innerQuery = this.dataSource.getQuery().map(DruidFactQuery.class::cast);;
+        Optional<DruidFactQuery<?>> innerQuery = this.dataSource.getQuery().map(DruidFactQuery.class::cast);
         return (innerQuery == null) ?
                 withDataSource(dataSource) :
                 withDataSource(new QueryDataSource(innerQuery.get().withInnermostDataSource(dataSource)));
