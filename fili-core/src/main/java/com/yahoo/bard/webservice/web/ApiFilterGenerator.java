@@ -5,11 +5,6 @@ package com.yahoo.bard.webservice.web;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.regex.Pattern;
-
 import javax.validation.constraints.NotNull;
 
 /**
@@ -20,10 +15,6 @@ import javax.validation.constraints.NotNull;
  */
 @Deprecated
 public class ApiFilterGenerator {
-    private static final Logger LOG = LoggerFactory.getLogger(ApiFilterGenerator.class);
-
-    private static Pattern pattern = Pattern.compile("([^\\|]+)\\|([^-]+)-([^\\[]+)\\[([^\\]]+)\\]?");
-
     /**
      * Parses the URL filter Query and generates the ApiFilter object.
      *
@@ -37,6 +28,7 @@ public class ApiFilterGenerator {
      *
      * @deprecated Use {@link FilterBinders#generateApiFilter(String, DimensionDictionary)}
      */
+    @Deprecated
     public static ApiFilter build(
             @NotNull String filterQuery,
             DimensionDictionary dimensionDictionary
