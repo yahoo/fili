@@ -94,10 +94,10 @@ public class MemoizingDimensionMappingResultSetMapper extends ResultSetMapper {
                 (dimensionColumn, dimensionRow) -> dimensionColumn.getDimension().equals(dimensionToMap);
 
         BiFunction<DimensionColumn, DimensionRow, Map.Entry<DimensionColumn, DimensionRow>> entryMapper =
-                ((dimensionColumn, dimensionRow) -> {
+                (dimensionColumn, dimensionRow) -> {
                     DimensionRow newRow = DimensionRow.copyWithReplace(dimensionRow, fieldMapper);
                     return new AbstractMap.SimpleEntry<>(dimensionColumn, newRow);
-                });
+                };
 
         return new MemoizingDimensionMappingResultSetMapper(entryMatcher,  entryMapper, true);
     }
