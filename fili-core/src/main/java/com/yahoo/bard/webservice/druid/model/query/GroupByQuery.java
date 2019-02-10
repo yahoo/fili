@@ -162,7 +162,7 @@ public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
     @Override
     public GroupByQuery withInnermostDataSource(DataSource dataSource) {
         @SuppressWarnings("unchecked")
-        Optional<DruidFactQuery<?>> innerQuery = (Optional<DruidFactQuery<?>>) this.dataSource.getQuery();
+        Optional<DruidFactQuery<?>> innerQuery = this.dataSource.getQuery().map(DruidFactQuery.class::cast);
         return !innerQuery.isPresent() ?
                 withDataSource(dataSource) :
                 withDataSource(new QueryDataSource(innerQuery.get().withInnermostDataSource(dataSource)));
