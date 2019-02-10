@@ -375,7 +375,6 @@ public class ClassScanner {
      *
      * @return a mock if we have one, otherise just null
      */
-    @SuppressWarnings("unchecked")
     private <T> T getCachedValue(Class<T> cls) {
         return argumentValueCache.keySet().stream()
                 .filter(cls::isAssignableFrom)

@@ -137,7 +137,6 @@ public class HttpResponseMaker {
             ApiRequest apiRequest,
             ContainerRequestContext containerRequestContext
     ) {
-        @SuppressWarnings("unchecked")
         ResponseFormatType responseFormatType = apiRequest.getFormat();
         Map<String, URI> bodyLinks = (Map<String, URI>) responseContext.get(
                 PAGINATION_LINKS_CONTEXT_KEY.getName()
