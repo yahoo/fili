@@ -30,8 +30,6 @@ public class WikiDimensions {
 
     private final SystemConfig systemConfig = SystemConfigProvider.getInstance();
 
-    private final String defaultDimensionBackendKey = systemConfig.getPackageVariableName("dimension_backend");
-
     private final Set<DimensionConfig> dimensionConfigs;
     private final LinkedHashMap<String, DimensionConfig> wikiApiDimensionNameToConfig;
 

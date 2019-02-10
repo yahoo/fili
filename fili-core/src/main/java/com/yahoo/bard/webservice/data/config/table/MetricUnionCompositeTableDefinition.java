@@ -117,7 +117,7 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
                                     )))
             );
         } catch (IllegalArgumentException e) {
-            String message = String.format(VALIDATION_ERROR_FORMAT, e.getMessage());
+            String message = String.format(VALIDATION_ERROR_FORMAT, getName(), e.getMessage());
             LOG.error(message);
             throw new IllegalArgumentException(message);
         }
