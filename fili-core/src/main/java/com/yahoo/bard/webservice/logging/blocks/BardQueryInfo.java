@@ -7,9 +7,6 @@ import com.yahoo.bard.webservice.logging.RequestLog;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.AbstractMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -21,7 +18,6 @@ import java.util.stream.Stream;
  */
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.PUBLIC_ONLY)
 public class BardQueryInfo implements LogInfo {
-    private static final Logger LOG = LoggerFactory.getLogger(BardQueryInfo.class);
     public static final String WEIGHT_CHECK = "weightCheckQueries";
     public static final String FACT_QUERIES = "factQueryCount";
     public static final String FACT_QUERY_CACHE_HIT = "factCacheHits";
