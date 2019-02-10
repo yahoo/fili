@@ -13,6 +13,7 @@ import com.yahoo.bard.webservice.table.BaseCompositePhysicalTable;
 import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
+import com.yahoo.bard.webservice.table.Schema;
 import com.yahoo.bard.webservice.table.Table;
 import com.yahoo.bard.webservice.table.availability.MetricUnionAvailability;
 import com.yahoo.bard.webservice.util.Utils;
@@ -143,7 +144,7 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
             throw new IllegalArgumentException(message);
         }
         return tableNames.stream()
-                .map(it -> physicalTableDictionary.get(it))
+                .map(physicalTableDictionary::get)
                 .collect(Collectors.toSet());
     }
 
@@ -172,7 +173,7 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
 
         Set<String> tableColumnNames = tableMetricMap.keySet().stream()
                 .map(Table::getSchema)
-                .map(schema -> schema.getColumns())
+                .map(Schema::getColumns)
                 .flatMap(Set::stream)
                 .map(Column::getName)
                 .collect(Collectors.toSet());

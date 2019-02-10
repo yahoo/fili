@@ -75,8 +75,8 @@ public class Utils {
      */
     public static <T, K extends T> LinkedHashSet<K> getSubsetByType(Collection<T> set, Class<K> type) {
         return set.stream()
-                .filter(member -> type.isAssignableFrom(member.getClass()))
-                .map(StreamUtils.uncheckedCast(type))
+                .filter(type::isInstance)
+                .map(type::cast)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 

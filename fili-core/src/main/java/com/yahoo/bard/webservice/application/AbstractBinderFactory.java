@@ -1244,7 +1244,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
             try {
                 @SuppressWarnings("unchecked")
                 Class<? extends Supplier<Map<String, String>>> c = (Class) Class
-                    .forName(customSupplierClassString).asSubclass(Supplier.class);
+                        .forName(customSupplierClassString).asSubclass(Supplier.class);
                 supplier = c.getConstructor().newInstance();
             } catch (Exception e) {
                 LOG.error(

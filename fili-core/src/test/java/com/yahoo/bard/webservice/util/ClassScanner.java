@@ -215,7 +215,7 @@ public class ClassScanner {
                 boolean notnull = false;
                 Args argMode = mode;
                 for (Annotation annotation : constructor.getParameterAnnotations()[i]) {
-                    if (annotation.annotationType().isAssignableFrom(NotNull.class)) {
+                    if (NotNull.class.isInstance(annotation)) {
                         argMode = Args.VALUES;
                         notnull = true;
                         break;
@@ -377,11 +377,11 @@ public class ClassScanner {
      */
     @SuppressWarnings("unchecked")
     private <T> T getCachedValue(Class<T> cls) {
-        return (T) argumentValueCache.entrySet().stream()
-                .map(Map.Entry::getKey)
+        return argumentValueCache.keySet().stream()
                 .filter(cls::isAssignableFrom)
                 .findFirst()
                 .map(argumentValueCache::get)
+                .map(cls::cast)
                 .orElse(null);
     }
 
