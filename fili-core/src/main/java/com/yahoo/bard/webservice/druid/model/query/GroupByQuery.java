@@ -161,6 +161,7 @@ public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
 
     @Override
     public GroupByQuery withInnermostDataSource(DataSource dataSource) {
+        @SuppressWarnings("unchecked")
         Optional<DruidFactQuery<?>> innerQuery = (Optional<DruidFactQuery<?>>) this.dataSource.getQuery();
         return !innerQuery.isPresent() ?
                 withDataSource(dataSource) :
@@ -206,7 +207,7 @@ public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
 
     @Override
     public GroupByQuery withAllIntervals(Collection<Interval> intervals) {
-        Optional<DruidFactQuery<?>> innerQuery = (Optional<DruidFactQuery<?>>) this.dataSource.getQuery();
+        Optional<DruidFactQuery<?>> innerQuery = this.dataSource.getQuery().map(DruidFactQuery.class::cast);
         return !innerQuery.isPresent() ?
                 withIntervals(intervals) :
                 withDataSource(new QueryDataSource(innerQuery.get().withAllIntervals(intervals))).withIntervals(intervals);

@@ -410,7 +410,8 @@ public class ScanSearchProvider implements SearchProvider, FilterDimensionRows {
      * @return  The index of rows
      */
     private List<String> getDimRowIndexes() {
-        return readValue(new TypeReference<List>() { }, keyValueStore.get(DimensionStoreKeyUtils.getAllValuesKey()));
+        return readValue(new TypeReference<List<String>>() { },
+            keyValueStore.get(DimensionStoreKeyUtils.getAllValuesKey()));
     }
 
     /**

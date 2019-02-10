@@ -94,7 +94,7 @@ public interface DruidAggregationQuery<Q extends DruidAggregationQuery<? super Q
     @Override
     @JsonIgnore
     default Optional<? extends DruidAggregationQuery> getInnerQuery() {
-        return (Optional<? extends DruidAggregationQuery>) DruidFactQuery.super.getInnerQuery();
+        return DruidFactQuery.super.getInnerQuery().map(DruidAggregationQuery.class::cast);
     }
 
     @Override
