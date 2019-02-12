@@ -15,7 +15,9 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 import javax.ws.rs.container.AsyncResponse
+import javax.ws.rs.container.ContainerRequestContext
 import javax.ws.rs.core.Response
+import javax.ws.rs.core.UriInfo
 
 class FiliDataExceptionHandlerSpec extends Specification {
 
@@ -27,8 +29,16 @@ class FiliDataExceptionHandlerSpec extends Specification {
     JsonSlurper json = new JsonSlurper()
 
     AsyncResponse response = Mock(AsyncResponse)
+    ContainerRequestContext containerRequestContext = Mock(ContainerRequestContext)
 
     FiliDataExceptionHandler dataExceptionHandler = new FiliDataExceptionHandler()
+
+    def setup() {
+        UriInfo uriInfo = Mock(UriInfo)
+        URI uri = new URI("http://fakeUri.com")
+        uriInfo.getRequestUri() >> uri
+        containerRequestContext.getUriInfo() >> uriInfo;
+    }
 
     @Unroll
     def "The handler forwards the #status from a RequestValidationException as the status of the request"() {
@@ -41,7 +51,7 @@ class FiliDataExceptionHandlerSpec extends Specification {
         and: "A mock AsyncResponse to resume"
 
         when: "We handle the exception"
-        dataExceptionHandler.handleThrowable(exception, response, Optional.empty(), null,  writer)
+        dataExceptionHandler.handleThrowable(exception, response, Optional.empty(), containerRequestContext,  writer)
 
         then: "The response is resumed"
         1 * response.resume(_) >> {
@@ -58,7 +68,7 @@ class FiliDataExceptionHandlerSpec extends Specification {
         NoMatchFoundException exception = new NoMatchFoundException("NoMatch")
 
         when:
-        dataExceptionHandler.handleThrowable(exception, response, Optional.empty(), null,  writer)
+        dataExceptionHandler.handleThrowable(exception, response, Optional.empty(), containerRequestContext,  writer)
 
         then:
         1 * response.resume(_) >> {
@@ -73,7 +83,7 @@ class FiliDataExceptionHandlerSpec extends Specification {
         TimeoutException exception = new TimeoutException("Timeout")
 
         when:
-        dataExceptionHandler.handleThrowable(exception, response, Optional.empty(), null,  writer)
+        dataExceptionHandler.handleThrowable(exception, response, Optional.empty(), containerRequestContext,  writer)
 
         then:
         1 * response.resume(_) >> {
@@ -88,7 +98,7 @@ class FiliDataExceptionHandlerSpec extends Specification {
         Throwable throwable = new Throwable("Throw")
 
         when:
-        dataExceptionHandler.handleThrowable(throwable, response, Optional.empty(), null,  writer)
+        dataExceptionHandler.handleThrowable(throwable, response, Optional.empty(), containerRequestContext,  writer)
 
         then:
         1 * response.resume(_) >> {
