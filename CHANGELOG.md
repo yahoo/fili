@@ -237,6 +237,10 @@ Current
 
 - [Fixed incorrect key for physicalTableDictionary lookup](https://github.com/yahoo/fili/pull/859)
 
+- [Log exception messages in DataApiExceptionHandler](https://github.com/yahoo/fili/issues/860)
+    * DataApiExceptionHandler clearly intended to log error messages but improperly used the sl4j log syntax.
+    * Added original URI logging to exception handling cases.
+
 ### Known Issues:
 
 ## Contract changes:
