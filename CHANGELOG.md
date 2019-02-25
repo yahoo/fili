@@ -69,8 +69,7 @@ Current
 
 - [Better exposed dimension analyzer fields in LuceneSearchProvider](https://github.com/yahoo/fili/issues/863)
   * Changed LuceneSearchProvider to using an analyzer field instead of a final, statically create `StandardAnalyzer` 
-  * Added protected getter and setter methods on the `analyzer` field
-  * Added public getter on the dimension field.
+  * some previously private fields and methods are now either protected or public.
   
 - [Better exposed static method on DimensionsServlet to subclasses](https://github.com/yahoo/fili/issues/863)
   * Changed `DimensionsServlet.getDescriptionKey` to `protected`
