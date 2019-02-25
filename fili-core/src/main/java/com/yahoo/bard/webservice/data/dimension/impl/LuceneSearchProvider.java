@@ -146,7 +146,7 @@ public class LuceneSearchProvider implements SearchProvider {
      * `Dimension` classes, we cannot provide the dimension and key-value store to the search provider at
      * construction time.
      */
-    private void initializeIndexSearcher() {
+    protected void initializeIndexSearcher() {
         if (luceneIndexSearcher == null) {
             reopenIndexSearcher(true);
         }
