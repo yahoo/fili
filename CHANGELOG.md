@@ -180,6 +180,8 @@ Current
 
 - [Updated copyright style to include Verizon Media Group](https://github.com/yahoo/fili/issues/856)
 
+- [Fixed incorrect key for physicalTableDictionary lookup](https://github.com/yahoo/fili/pull/859)
+
 ### Known Issues:
 
 ## Contract changes:
