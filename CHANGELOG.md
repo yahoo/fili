@@ -67,6 +67,14 @@ Current
 
 ### Changed:
 
+- [Better exposed dimension analyzer fields in LuceneSearchProvider](https://github.com/yahoo/fili/issues/863)
+  * Changed LuceneSearchProvider to using an analyzer field instead of a final, statically create `StandardAnalyzer` 
+  * Added protected getter and setter methods on the `analyzer` field
+  * Added public getter on the dimension field.
+  
+- [Better exposed static method on DimensionsServlet to subclasses](https://github.com/yahoo/fili/issues/863)
+  * Changed `DimensionsServlet.getDescriptionKey` to `protected`
+
 - [ResponseFormatType now contains information relevant to generating response headers associated with response format](https://github.com/yahoo/fili/issues/709)
   * `ResponseFormatType` interface exposes `getCharset()`, `getFileExtension()`, and `getContentType()` methods which 
   provide information used to build response headers
