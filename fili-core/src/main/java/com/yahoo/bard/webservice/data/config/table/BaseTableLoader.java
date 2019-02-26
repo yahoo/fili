@@ -258,7 +258,7 @@ public abstract class BaseTableLoader implements TableLoader {
         currentTableDefinition.getDependentTableNames()
                 .forEach(
                         tableName -> {
-                            if (!physicalTableDictionary.containsKey(tableName)) {
+                            if (!physicalTableDictionary.containsKey(tableName.asName())) {
                                 physicalTableDictionary.put(
                                         tableName.asName(),
                                         buildPhysicalTableWithDependency(

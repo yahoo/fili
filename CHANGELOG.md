@@ -67,6 +67,13 @@ Current
 
 ### Changed:
 
+- [Better exposed dimension analyzer fields in LuceneSearchProvider](https://github.com/yahoo/fili/issues/863)
+  * Changed LuceneSearchProvider to using an analyzer field instead of a final, statically create `StandardAnalyzer` 
+  * some previously private fields and methods are now either protected or public.
+  
+- [Better exposed static method on DimensionsServlet to subclasses](https://github.com/yahoo/fili/issues/863)
+  * Changed `DimensionsServlet.getDescriptionKey` to `protected`
+
 - [ResponseFormatType now contains information relevant to generating response headers associated with response format](https://github.com/yahoo/fili/issues/709)
   * `ResponseFormatType` interface exposes `getCharset()`, `getFileExtension()`, and `getContentType()` methods which 
   provide information used to build response headers
@@ -179,6 +186,8 @@ Current
     * Throw validation error if excessive documents are returned from Lucene now that it supports up to long hitcounts 
 
 - [Updated copyright style to include Verizon Media Group](https://github.com/yahoo/fili/issues/856)
+
+- [Fixed incorrect key for physicalTableDictionary lookup](https://github.com/yahoo/fili/pull/859)
 
 ### Known Issues:
 

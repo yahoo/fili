@@ -77,10 +77,11 @@ import java.util.stream.Stream;
 public class LuceneSearchProvider implements SearchProvider {
     private static final Logger LOG = LoggerFactory.getLogger(LuceneSearchProvider.class);
 
-    private static final Analyzer LUCENE_ANALYZER = new StandardAnalyzer();
+    private static final Analyzer STANDARD_LUCENE_ANALYZER = new StandardAnalyzer();
+    private Analyzer analyzer;
     private static final double BUFFER_SIZE = 48;
 
-    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    protected final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private final String luceneIndexPath;
 
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
@@ -99,7 +100,7 @@ public class LuceneSearchProvider implements SearchProvider {
     private KeyValueStore keyValueStore;
     private Dimension dimension;
     private boolean luceneIndexIsHealthy;
-    private IndexSearcher luceneIndexSearcher;
+    protected IndexSearcher luceneIndexSearcher;
     private int searchTimeout;
 
     /**
@@ -116,6 +117,7 @@ public class LuceneSearchProvider implements SearchProvider {
         this.maxResults = maxResults;
         this.searchTimeout = searchTimeout;
 
+        this.analyzer = STANDARD_LUCENE_ANALYZER;
         try {
             luceneDirectory = new MMapDirectory(Paths.get(this.luceneIndexPath));
             luceneIndexIsHealthy = true;
@@ -144,7 +146,7 @@ public class LuceneSearchProvider implements SearchProvider {
      * `Dimension` classes, we cannot provide the dimension and key-value store to the search provider at
      * construction time.
      */
-    private void initializeIndexSearcher() {
+    protected void initializeIndexSearcher() {
         if (luceneIndexSearcher == null) {
             reopenIndexSearcher(true);
         }
@@ -170,7 +172,7 @@ public class LuceneSearchProvider implements SearchProvider {
         } catch (IOException reopenException) {
             // If there is no index file, this is expected. On the 1st time through, write an empty index and try again
             if (firstTimeThrough) {
-                IndexWriterConfig indexWriterConfig = new IndexWriterConfig(LUCENE_ANALYZER);
+                IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer);
                 try (IndexWriter ignored = new IndexWriter(luceneDirectory, indexWriterConfig)) {
                     // Closed automatically by the try-resource block
                 } catch (IOException emptyIndexWriteException) {
@@ -191,6 +193,23 @@ public class LuceneSearchProvider implements SearchProvider {
         } finally {
             lock.writeLock().unlock();
         }
+    }
+
+    protected Analyzer getAnalyzer() {
+        return analyzer;
+    }
+
+    protected void setAnalyzer(Analyzer analyzer) {
+        this.analyzer = analyzer;
+    }
+
+    /**
+     * Getter for the search provider's dimension.
+     *
+     * @return the dimension
+     */
+    public Dimension getDimension() {
+        return dimension;
     }
 
     @Override
@@ -279,7 +298,7 @@ public class LuceneSearchProvider implements SearchProvider {
         }
 
         // Write the rows to the document
-        IndexWriterConfig indexWriterConfig = new IndexWriterConfig(LUCENE_ANALYZER).setRAMBufferSizeMB(BUFFER_SIZE);
+        IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer).setRAMBufferSizeMB(BUFFER_SIZE);
         lock.writeLock().lock();
         try {
             try (IndexWriter luceneIndexWriter = new IndexWriter(luceneDirectory, indexWriterConfig)) {
@@ -446,7 +465,7 @@ public class LuceneSearchProvider implements SearchProvider {
     @Override
     public void clearDimension() {
         Set<DimensionRow> dimensionRows = findAllDimensionRows();
-        IndexWriterConfig indexWriterConfig = new IndexWriterConfig(LUCENE_ANALYZER).setRAMBufferSizeMB(BUFFER_SIZE);
+        IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer).setRAMBufferSizeMB(BUFFER_SIZE);
         lock.writeLock().lock();
         try {
             try (IndexWriter writer = new IndexWriter(luceneDirectory, indexWriterConfig)) {
@@ -689,7 +708,7 @@ public class LuceneSearchProvider implements SearchProvider {
      *
      * @throws PageNotFoundException if the page requested is past the last page of results
      */
-    private Pagination<DimensionRow> getResultsPage(Query query, PaginationParameters paginationParameters)
+     protected Pagination<DimensionRow> getResultsPage(Query query, PaginationParameters paginationParameters)
             throws PageNotFoundException {
         int perPage = paginationParameters.getPerPage();
         validatePerPage(perPage);
