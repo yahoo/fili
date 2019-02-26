@@ -200,7 +200,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "tables" : "rows",
                     null
             );
-            LOG.debug("Tables Endpoint Response: {}", response.getEntity());
+            LOG.trace("Tables Endpoint Response: {}", response.getEntity());
             return response;
         } catch (Throwable t) {
             return exceptionHandler.handleThrowable(
@@ -262,7 +262,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
 
             Map<String, Object> result = getLogicalTableFullView(tablesApiRequestImpl.getTable(), uriInfo);
             String output = objectMappers.getMapper().writeValueAsString(result);
-            LOG.debug("Tables Endpoint Response: {}", output);
+            LOG.trace("Tables Endpoint Response: {}", output);
             return Response.status(Response.Status.OK).entity(output).build();
         } catch (Throwable t) {
             return exceptionHandler.handleThrowable(
@@ -350,7 +350,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                     containerRequestContext.getUriInfo()
             );
             String output = objectMappers.getMapper().writeValueAsString(result);
-            LOG.debug("Tables Endpoint Response: {}", output);
+            LOG.trace("Tables Endpoint Response: {}", output);
             return Response.status(OK).entity(output).build();
         } catch (Throwable t) {
             return exceptionHandler.handleThrowable(
@@ -411,7 +411,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                     null
             );
 
-            LOG.debug("Tables Endpoint Response: {}", response.getEntity());
+            LOG.trace("Tables Endpoint Response: {}", response.getEntity());
             return response;
         } catch (Throwable t) {
             return exceptionHandler.handleThrowable(

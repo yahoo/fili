@@ -72,6 +72,10 @@ Current
 
 ### Changed:
 
+- [Change log level for several servlet](https://github.com/yahoo/fili/issues/852)
+  * `SlicesServlet`, `DimensionsServlet`, `MetricsServlet`, `TablesServlet`, `FeatureFlagsServlet` all has debug level 
+  log for the entire query response. Change log level to trace to avoid log spamming.
+
 - [Better exposed dimension analyzer fields in LuceneSearchProvider](https://github.com/yahoo/fili/issues/863)
   * Changed LuceneSearchProvider to using an analyzer field instead of a final, statically create `StandardAnalyzer` 
   * some previously private fields and methods are now either protected or public.
@@ -176,7 +180,10 @@ Current
 - [Filter Code now intersects security constraints instead of unioning with requests](https://github.com/yahoo/fili/issues/812)
     * Switched to ensure security and request filters don't merge but instead intersect
 
-- [Bump Jackson version to patch vulnerability](https://github.com/yahoo/fili/issues/770)
+- [Bump Jackson version to patch vulnerability](https://github.com/yahoo/fili/issues/865)
+    * Bumped dependency version to 2.9.8 
+
+- [Bump Jackson version again to patch vulnerability](https://github.com/yahoo/fili/issues/770)
     * Bumped dependency version to 2.9.5 
     * Made serialization order more specific in several classes
     * Fixed bad format in error message
