@@ -164,7 +164,7 @@ public class FeatureFlagsServlet extends EndpointServlet {
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "feature flags" : "rows",
                     Arrays.asList("name", "value")
             );
-            LOG.debug("Feature Flags Endpoint Response: {}", response.getEntity());
+            LOG.trace("Feature Flags Endpoint Response: {}", response.getEntity());
             responseSender = () -> response;
         } catch (Error | Exception e) {
             String msg = ErrorMessageFormat.REQUEST_PROCESSING_EXCEPTION.format(e.getMessage());
@@ -209,7 +209,7 @@ public class FeatureFlagsServlet extends EndpointServlet {
 
             String output = objectMappers.getMapper().writeValueAsString(status);
 
-            LOG.debug("Feature Flags Endpoint Response: {}", output);
+            LOG.trace("Feature Flags Endpoint Response: {}", output);
             responseSender = () -> Response.status(Response.Status.OK).entity(output).build();
         } catch (JsonProcessingException e) {
             String msg = ErrorMessageFormat.INTERNAL_SERVER_ERROR_ON_JSON_PROCESSING.format(e.getMessage());

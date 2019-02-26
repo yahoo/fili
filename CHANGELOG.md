@@ -67,6 +67,10 @@ Current
 
 ### Changed:
 
+- [Change log level for several servlet](https://github.com/yahoo/fili/issues/852)
+  * `SlicesServlet`, `DimensionsServlet`, `MetricsServlet`, `TablesServlet`, `FeatureFlagsServlet` all has debug level 
+  log for the entire query response. Change log level to trace to avoid log spamming.
+
 - [Better exposed dimension analyzer fields in LuceneSearchProvider](https://github.com/yahoo/fili/issues/863)
   * Changed LuceneSearchProvider to using an analyzer field instead of a final, statically create `StandardAnalyzer` 
   * some previously private fields and methods are now either protected or public.

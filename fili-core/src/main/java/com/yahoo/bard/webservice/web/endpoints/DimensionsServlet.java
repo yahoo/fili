@@ -151,7 +151,7 @@ public class DimensionsServlet extends EndpointServlet {
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "dimensions" : "rows",
                     null
             );
-            LOG.debug("Dimensions Endpoint Response: {}", response.getEntity());
+            LOG.trace("Dimensions Endpoint Response: {}", response.getEntity());
             return response;
         } catch (Throwable t) {
             return exceptionHandler.handleThrowable(
@@ -210,7 +210,7 @@ public class DimensionsServlet extends EndpointServlet {
             );
 
             String output = objectMappers.getMapper().writeValueAsString(result);
-            LOG.debug("Dimension Endpoint Response: {}", output);
+            LOG.trace("Dimension Endpoint Response: {}", output);
             responseSender = () -> Response.status(Status.OK).entity(output).build();
         } catch (Throwable t) {
             return exceptionHandler.handleThrowable(
@@ -325,7 +325,7 @@ public class DimensionsServlet extends EndpointServlet {
                     null
             );
 
-            LOG.debug("Dimension Value Endpoint Response: {}", response.getEntity());
+            LOG.trace("Dimension Value Endpoint Response: {}", response.getEntity());
             return response;
         } catch (Throwable t) {
             return exceptionHandler.handleThrowable(
