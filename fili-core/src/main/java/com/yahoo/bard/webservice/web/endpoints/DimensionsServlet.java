@@ -475,7 +475,7 @@ public class DimensionsServlet extends EndpointServlet {
      *
      * @return a description dimension field with name "description"
      */
-    protected static String getDescriptionKey(String fieldName) {
+    public static String getDescriptionKey(String fieldName) {
         return fieldName.contains("description") ? fieldName : fieldName.replace("desc", "description");
     }
 }
