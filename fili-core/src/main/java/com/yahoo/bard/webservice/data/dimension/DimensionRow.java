@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.util.StreamUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 import javax.validation.constraints.NotNull;
 
@@ -14,7 +15,19 @@ import javax.validation.constraints.NotNull;
  */
 public class DimensionRow extends LinkedHashMap<DimensionField, String> implements Comparable<DimensionRow> {
 
+    private final DimensionField key;
     private final String keyValue;
+
+    /**
+     * Build a copy of a dimension row.
+     *
+     * @param row  the dimension row to be copied
+     */
+    private DimensionRow(@NotNull DimensionRow row) {
+        super(row);
+        this.key = row.key;
+        this.keyValue = row.keyValue;
+    }
 
     /**
      * Build a dimension row with a key field value and a map of field values.
@@ -24,6 +37,7 @@ public class DimensionRow extends LinkedHashMap<DimensionField, String> implemen
      */
     public DimensionRow(@NotNull DimensionField key, Map<DimensionField, String> fieldValueMap) {
         super(fieldValueMap);
+        this.key = key;
         this.keyValue = fieldValueMap.get(key);
         if (keyValue == null) {
             throw new IllegalArgumentException("Missing key " + key);
@@ -62,5 +76,19 @@ public class DimensionRow extends LinkedHashMap<DimensionField, String> implemen
     public LinkedHashMap<String, String> getRowMap() {
         return entrySet().stream()
                 .collect(StreamUtils.toLinkedMap(entry -> entry.getKey().getName(), Map.Entry::getValue));
+    }
+
+    /**
+     * Copies a DimensionRow and transforms its fields using the specified mapper.
+     *
+     * @param row The row to be transformed
+     * @param mapper  A function that takes a DimensionField and its current value, and returns the field's new value.
+     *
+     * @return A copy of the DimensionRow with its fields transformed by the specified function
+     */
+    public static DimensionRow copyWithReplace(DimensionRow row,  BiFunction<DimensionField, String, String> mapper) {
+        DimensionRow newRow = new DimensionRow(row);
+        newRow.replaceAll(mapper);
+        return newRow;
     }
 }

@@ -61,6 +61,10 @@ Current
 - [Add insertion order aware method for Stream Utils](https://github.com/yahoo/fili/pull/807)
     * Added `orderedSetMerge` that merges 2 sets in the order provided.
 
+- [Add DimensionRow transformation support with ResultSetMapper](https://github.com/yahoo/fili/issues/856)
+    * Added helper constructor to `DimensionRow`
+    * Created `MemoizingDimensionMappingResultSetMapper` to support field transform use case
+
 ### Changed:
 
 - [Change log level for several servlet](https://github.com/yahoo/fili/issues/852)
@@ -177,6 +181,10 @@ Current
 - [Bump spring code to patch vulnerability](https://github.com/yahoo/fili/issues/820)
     * Bumped dependency version to [5.1.2,) 
     * Throw validation error if excessive documents are returned from Lucene now that it supports up to long hitcounts 
+
+- [Updated copyright style to include Verizon Media Group](https://github.com/yahoo/fili/issues/856)
+
+- [Fixed incorrect key for physicalTableDictionary lookup](https://github.com/yahoo/fili/pull/859)
 
 ### Known Issues:
 
