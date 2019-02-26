@@ -256,7 +256,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                     bind(metadataDruidWebService).named("metadataDruidWebService").to(DruidWebService.class);
                 }
 
-                // Bind the timeGrain provider
+                // Bind the timeGrain
                 bind(getGranularityDictionary()).to(GranularityDictionary.class);
                 bind(getGranularityParser()).to(GranularityParser.class);
 
