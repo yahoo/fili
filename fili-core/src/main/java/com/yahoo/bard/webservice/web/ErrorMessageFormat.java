@@ -142,7 +142,7 @@ public enum ErrorMessageFormat implements MessageFormatter {
     METRIC_VALUE_PARSING_ERROR("Unable to %s metric value and its type"),
     GRANULARITY_PARSING_ERROR("No granularity can be parsed from this name: %s"),
     UNKNOWN_TIMEZONE_ID("Unable to recognize the timeZoneId: %s"),
-    UNABLE_TO_SERIALIZE("Unable to serialize the % object"),
+    UNABLE_TO_SERIALIZE("Unable to serialize the %s object"),
     METRIC_VALUE_CLASS_NOT_FOUND("Metric value type class %s is not found"),
 
     UNAUTHORIZED_WITH_RETRY("Not authorized to access the resource for given id %s. Retrying again %s more times"),

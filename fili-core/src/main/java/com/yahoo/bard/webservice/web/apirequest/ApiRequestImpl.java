@@ -5,7 +5,6 @@ package com.yahoo.bard.webservice.web.apirequest;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.ACCEPT_FORMAT_INVALID;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSIONS_NOT_IN_TABLE;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSIONS_UNDEFINED;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_DIMENSION_NOT_IN_TABLE;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTERVAL_INVALID;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTERVAL_MISSING;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTERVAL_ZERO_LENGTH;
@@ -17,7 +16,6 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_GRANULARITY
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TIME_ALIGNMENT;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.UNKNOWN_GRANULARITY;
 
-import com.yahoo.bard.webservice.config.BardFeatureFlag;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
@@ -35,16 +33,12 @@ import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.table.TableIdentifier;
 import com.yahoo.bard.webservice.util.AllPagesPagination;
 import com.yahoo.bard.webservice.util.GranularityParseException;
-import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
-import com.yahoo.bard.webservice.web.BadFilterException;
 import com.yahoo.bard.webservice.web.BadPaginationException;
 import com.yahoo.bard.webservice.web.DefaultResponseFormatType;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
-import com.yahoo.bard.webservice.web.FilterOperation;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.TimeMacro;
-import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import org.joda.time.DateTime;
@@ -83,16 +77,17 @@ public abstract class ApiRequestImpl implements ApiRequest {
             SYSTEM_CONFIG.getPackageVariableName("default_per_page")
     );
     private static final int DEFAULT_PAGE = 1;
-    private static final PaginationParameters DEFAULT_PAGINATION = new PaginationParameters(
+    public static final PaginationParameters DEFAULT_PAGINATION = new PaginationParameters(
             DEFAULT_PER_PAGE,
             DEFAULT_PAGE
     );
-    private static final String SYNCHRONOUS_REQUEST_FLAG = "never";
-    private static final String ASYNCHRONOUS_REQUEST_FLAG = "always";
+    protected static final String SYNCHRONOUS_REQUEST_FLAG = "never";
+    protected static final String ASYNCHRONOUS_REQUEST_FLAG = "always";
 
     protected final ResponseFormatType format;
     protected final Optional<PaginationParameters> paginationParameters;
     protected final long asyncAfter;
+    protected final String downloadFilename;
 
     /**
      * Parses the API request URL and generates the API request object.
@@ -106,9 +101,36 @@ public abstract class ApiRequestImpl implements ApiRequest {
      * present, must be the empty string.
      *
      * @throws BadApiRequestException if pagination parameters in the API request are not positive integers.
+     * @deprecated prefer constructor with downloadFilename
+     */
+    @Deprecated
+    public ApiRequestImpl(
+            String format,
+            String asyncAfter,
+            @NotNull String perPage,
+            @NotNull String page
+    ) throws BadApiRequestException {
+        this(format, null, asyncAfter, perPage, page);
+    }
+
+    /**
+     * Parses the API request URL and generates the API request object.
+     *
+     * @param format  response data format JSON or CSV. Default is JSON.
+     * @param asyncAfter  How long the user is willing to wait for a synchronous request in milliseconds, if null
+     * defaults to the system config {@code default_asyncAfter}
+     * @param downloadFilename  The filename for the response to be downloaded as. If null or empty indicates response
+     * should not be downloaded.
+     * @param perPage  number of rows to display per page of results. If present in the original request, must be a
+     * positive integer. If not present, must be the empty string.
+     * @param page  desired page of results. If present in the original request, must be a positive integer. If not
+     * present, must be the empty string.
+     *
+     * @throws BadApiRequestException if pagination parameters in the API request are not positive integers.
      */
     public ApiRequestImpl(
             String format,
+            String downloadFilename,
             String asyncAfter,
             @NotNull String perPage,
             @NotNull String page
@@ -120,7 +142,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
                         SYSTEM_CONFIG.getStringProperty(SYSTEM_CONFIG.getPackageVariableName("default_asyncAfter")) :
                         asyncAfter
         );
-
+        this.downloadFilename = downloadFilename;
     }
 
     /**
@@ -139,7 +161,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
             @NotNull String perPage,
             @NotNull String page
     ) throws BadApiRequestException {
-        this(format, SYNCHRONOUS_REQUEST_FLAG, perPage, page);
+        this(format, null, SYNCHRONOUS_REQUEST_FLAG, perPage, page);
     }
 
     /**
@@ -148,13 +170,37 @@ public abstract class ApiRequestImpl implements ApiRequest {
      * @param format  The format of the response
      * @param asyncAfter  How long the user is willing to wait for a synchronous request, in milliseconds
      * @param paginationParameters  The parameters used to describe pagination
+     * @deprecated prefer constructor with downloadFilename
      */
+    @Deprecated
     protected ApiRequestImpl(
             ResponseFormatType format,
             long asyncAfter,
             Optional<PaginationParameters> paginationParameters
     ) {
         this.format = format;
+        this.asyncAfter = asyncAfter;
+        this.paginationParameters = paginationParameters;
+        this.downloadFilename = null;
+    }
+
+    /**
+     * All argument constructor, meant to be used for rewriting apiRequest.
+     *
+     * @param format  The format of the response
+     * @param downloadFilename If not null and not empty, indicates the response should be downloaded by the client with
+     * the provided filename. Otherwise indicates the response should be rendered in the browser.
+     * @param asyncAfter  How long the user is willing to wait for a synchronous request, in milliseconds
+     * @param paginationParameters  The parameters used to describe pagination
+     */
+    protected ApiRequestImpl(
+            ResponseFormatType format,
+            String downloadFilename,
+            long asyncAfter,
+            Optional<PaginationParameters> paginationParameters
+    ) {
+        this.format = format;
+        this.downloadFilename = downloadFilename;
         this.asyncAfter = asyncAfter;
         this.paginationParameters = paginationParameters;
     }
@@ -455,76 +501,6 @@ public abstract class ApiRequestImpl implements ApiRequest {
             return generated;
         }
     }
-    /**
-     * Generates filter objects on the based on the filter query in the api request.
-     *
-     * @param filterQuery  Expects a URL filter query String in the format:
-     * (dimension name).(fieldname)-(operation):[?(value or comma separated values)]?
-     * @param table  The logical table for the data request
-     * @param dimensionDictionary  DimensionDictionary
-     *
-     * @return Set of filter objects.
-     * @throws BadApiRequestException if the filter query string does not match required syntax, or the filter
-     * contains a 'startsWith' or 'contains' operation while the BardFeatureFlag.DATA_STARTS_WITH_CONTAINS_ENABLED is
-     * off.
-     */
-    public ApiFilters generateFilters(
-            String filterQuery,
-            LogicalTable table,
-            DimensionDictionary dimensionDictionary
-    ) throws BadApiRequestException {
-        try (TimedPhase timer = RequestLog.startTiming("GeneratingFilters")) {
-            LOG.trace("Dimension Dictionary: {}", dimensionDictionary);
-            // Set of filter objects
-            ApiFilters generated = new ApiFilters();
-
-            // Filters are optional hence check if filters are requested.
-            if (filterQuery == null || "".equals(filterQuery)) {
-                return generated;
-            }
-
-            // split on '],' to get list of filters
-            List<String> apiFilters = Arrays.asList(filterQuery.split(COMMA_AFTER_BRACKET_PATTERN));
-            for (String apiFilter : apiFilters) {
-                ApiFilter newFilter;
-                try {
-                    newFilter = new ApiFilter(apiFilter, dimensionDictionary);
-
-                    // If there is a logical table and the filter is not part of it, throw exception.
-                    if (! table.getDimensions().contains(newFilter.getDimension())) {
-                        String filterDimensionName = newFilter.getDimension().getApiName();
-                        LOG.debug(FILTER_DIMENSION_NOT_IN_TABLE.logFormat(filterDimensionName, table));
-                        throw new BadFilterException(
-                                FILTER_DIMENSION_NOT_IN_TABLE.format(filterDimensionName, table.getName())
-                        );
-                    }
-
-                } catch (BadFilterException filterException) {
-                    throw new BadApiRequestException(filterException.getMessage(), filterException);
-                }
-
-                if (!BardFeatureFlag.DATA_FILTER_SUBSTRING_OPERATIONS.isOn()) {
-                    FilterOperation filterOperation = newFilter.getOperation();
-                    if (filterOperation.equals(FilterOperation.startswith)
-                            || filterOperation.equals(FilterOperation.contains)
-                            ) {
-                        throw new BadApiRequestException(
-                                ErrorMessageFormat.FILTER_SUBSTRING_OPERATIONS_DISABLED.format()
-                        );
-
-                    }
-                }
-                Dimension dim = newFilter.getDimension();
-                if (!generated.containsKey(dim)) {
-                    generated.put(dim, new LinkedHashSet<>());
-                }
-                generated.get(dim).add(newFilter);
-            }
-            LOG.trace("Generated map of filters: {}", generated);
-
-            return generated;
-        }
-    }
 
     /**
      * Get datetime from the given input text based on granularity.
@@ -590,12 +566,13 @@ public abstract class ApiRequestImpl implements ApiRequest {
             Granularity granularity,
             List<Interval> intervals
     ) throws BadApiRequestException {
-        if (! granularity.accepts(intervals)) {
+        if (!granularity.accepts(intervals)) {
             String alignmentDescription = granularity.getAlignmentDescription();
             LOG.debug(TIME_ALIGNMENT.logFormat(intervals, granularity, alignmentDescription));
             throw new BadApiRequestException(TIME_ALIGNMENT.format(intervals, granularity, alignmentDescription));
         }
     }
+
     /**
      * Generates the format in which the response data is expected.
      *
@@ -665,6 +642,11 @@ public abstract class ApiRequestImpl implements ApiRequest {
     }
 
     @Override
+    public Optional<String> getDownloadFilename() {
+        return Optional.ofNullable(downloadFilename);
+    }
+
+    @Override
     public ResponseFormatType getFormat() {
         return format;
     }
@@ -675,11 +657,11 @@ public abstract class ApiRequestImpl implements ApiRequest {
     }
 
     @Override
-    public long getAsyncAfter() {
+    public Long getAsyncAfter() {
         return asyncAfter;
     }
 
-    @Override
+    @Deprecated
     public PaginationParameters getDefaultPagination() {
         return DEFAULT_PAGINATION;
     }
@@ -717,7 +699,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
                     asyncAfterString.equals(ASYNCHRONOUS_REQUEST_FLAG) ?
                             ASYNCHRONOUS_ASYNC_AFTER_VALUE :
                             Long.parseLong(asyncAfterString);
-        }  catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {
             LOG.debug(INVALID_ASYNC_AFTER.logFormat(asyncAfterString), e);
             throw new BadApiRequestException(INVALID_ASYNC_AFTER.format(asyncAfterString), e);
         }

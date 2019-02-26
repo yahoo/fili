@@ -7,8 +7,8 @@ import com.yahoo.bard.webservice.config.SystemConfig
 import com.yahoo.bard.webservice.config.SystemConfigProvider
 import com.yahoo.bard.webservice.util.MultiThreadedTest
 import com.yahoo.bard.webservice.web.DataApiRequestTypeIdentifier
-import com.yahoo.bard.webservice.web.ratelimit.DefaultRateLimiter
 import com.yahoo.bard.webservice.web.endpoints.TestFilterServlet
+import com.yahoo.bard.webservice.web.ratelimit.DefaultRateLimiter
 
 import spock.lang.IgnoreIf
 import spock.lang.Specification

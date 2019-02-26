@@ -6,14 +6,23 @@ import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
+import com.yahoo.bard.webservice.web.ApiFilter;
+
+import org.joda.time.DateTime;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
  * Availability describes the intervals available by column for a table.
  */
 public interface Availability {
+
+    // 9999-12-31 23:59
+    DateTime FAR_FUTURE = new DateTime(9999, 12, 31, 23, 59);
+    // 0000-01-01 00:00
+    DateTime DISTANT_PAST = new DateTime(-9999, 1, 1, 0, 0);
 
     /**
      * The names of the data sources backing this availability.
@@ -68,7 +77,7 @@ public interface Availability {
      * filtered by the {@link PhysicalDataSourceConstraint}.
      *
      * @param constraint  <tt>PhysicalDataSourceConstraint</tt> containing
-     * {@link com.yahoo.bard.webservice.table.Schema} and {@link com.yahoo.bard.webservice.web.ApiFilter}s
+     * {@link com.yahoo.bard.webservice.table.Schema} and {@link ApiFilter}s
      *
      * @return A <tt>SimplifiedIntervalList</tt> of intervals available
      */
@@ -82,11 +91,55 @@ public interface Availability {
      * filtered by the {@link DataSourceConstraint}.
      *
      * @param constraint  <tt>PhysicalDataSourceConstraint</tt> containing
-     * {@link com.yahoo.bard.webservice.table.Schema} and {@link com.yahoo.bard.webservice.web.ApiFilter}s
+     * {@link com.yahoo.bard.webservice.table.Schema} and {@link ApiFilter}s
      *
      * @return A <tt>SimplifiedIntervalList</tt> of intervals available
      */
     default SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraint) {
         return getAvailableIntervals();
+    }
+
+    /**
+     * Availability can optionally specify a date that is expected (but not enforced) to be the first date the
+     * the datasource on this availability contains data. An empty optional has no defined start date.
+     *
+     * @param constraint the constraint to determine this availability's expected start date from
+     * @return A string representing the start date if present.
+     */
+    default Optional<DateTime> getExpectedStartDate(PhysicalDataSourceConstraint constraint) {
+        return Optional.empty();
+    }
+
+    /**
+     * Availability can optionally specify a date that is expected (but not enforced) to be the last date the
+     * the datasource on this availability contains data. An empty optional has no defined end date.
+     *
+     * @param constraint  The constraint to determine this availability's expected end from
+     * @return A optional string representing the end date if present.
+     */
+    default Optional<DateTime> getExpectedEndDate(PhysicalDataSourceConstraint constraint) {
+        return Optional.empty();
+    }
+
+    /**
+     * Availability can optionally specify a date that is expected (but not enforced) to be the first date the
+     * the datasource on this availability contains data. An empty optional has no defined start date.
+     *
+     * @param constraint the constraint to determine this availability's expected start date against
+     * @return A string representing the start date if present.
+     */
+    default Optional<DateTime> getExpectedStartDate(DataSourceConstraint constraint) {
+        return Optional.empty();
+    }
+
+    /**
+     * Availability can optionally specify a date that is expected (but not enforced) to be the last date the
+     * the datasource on this availability contains data. An empty optional has no defined end date.
+     *
+     * @param constraint  The constraint to determine this availability's expected end from
+     * @return A optional string representing the end date if present.
+     */
+    default Optional<DateTime> getExpectedEndDate(DataSourceConstraint constraint) {
+        return Optional.empty();
     }
 }

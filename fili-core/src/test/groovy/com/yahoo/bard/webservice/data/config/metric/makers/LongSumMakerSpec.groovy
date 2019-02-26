@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.data.config.metric.makers
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
@@ -27,6 +28,6 @@ class LongSumMakerSpec extends Specification{
         LogicalMetric expectedMetric = new LogicalMetric(query, new NoOpResultSetMapper(), METRIC_NAME)
 
         expect:
-        maker.make(METRIC_NAME, [DEPENDENT_METRIC_NAME]) == expectedMetric
+        maker.make(new LogicalMetricInfo(METRIC_NAME), [DEPENDENT_METRIC_NAME]) == expectedMetric
     }
 }

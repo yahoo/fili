@@ -15,7 +15,6 @@ import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
-import com.yahoo.bard.webservice.table.SingleDataSourcePhysicalTable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -110,18 +109,6 @@ public class DataSourceMetadataLoadTask extends LoadTask<Boolean> {
     /**
      * Queries Druid for updated datasource metadata and then updates the datasource metadata service.
      *
-     * @param table  The physical table to be updated.
-     *
-     * @deprecated  Pass the DataSourceName directly, rather than via the PhysicalTable
-     */
-    @Deprecated
-    protected void queryDataSourceMetadata(SingleDataSourcePhysicalTable table) {
-        queryDataSourceMetadata(table.getDataSourceName());
-    }
-
-    /**
-     * Queries Druid for updated datasource metadata and then updates the datasource metadata service.
-     *
      * @param dataSourceName  The data source to be updated.
      */
     protected void queryDataSourceMetadata(DataSourceName dataSourceName) {
@@ -131,69 +118,6 @@ public class DataSourceMetadataLoadTask extends LoadTask<Boolean> {
         SuccessCallback success = buildDataSourceMetadataSuccessCallback(dataSourceName);
         HttpErrorCallback errorCallback = getErrorCallback(dataSourceName);
         druidWebService.getJsonObject(success, errorCallback, failureCallback, resourcePath);
-    }
-
-    /**
-     * Callback to parse druid datasource metadata response.
-     * <p>
-     * Typical druid datasource metadata response:
-     * <pre>
-     *  """
-     *  {
-     *      "name": "tableName",
-     *      "properties": { },
-     *      "segments": [
-     *          {
-     *              "dataSource": "tableName",
-     *              "interval": "2015-01-01T00:00:00.000Z/2015-01-02T00:00:00.000Z",
-     *              "version": "2015-01-15T18:08:20.435Z",
-     *              "loadSpec": {
-     *                  "type": "hdfs",
-     *                  "path": "hdfs:/some_hdfs_URL/tableName/.../index.zip"
-     *              },
-     *              "dimensions": "color", "shape",
-     *              "metrics": "height", "width",
-     *              "shardSpec": {
-     *                  "type":"hashed",
-     *                  "partitionNum": 0,
-     *                  "partitions": 2
-     *              },
-     *              "binaryVersion":9,
-     *              "size":1024,
-     *              "identifier":"tableName_2015-01-01T00:00:00.000Z_2015-01-02T00:00:00.000Z_2015-02-15T18:08:20.435Z"
-     *          },
-     *          {
-     *              "dataSource": "tableName",
-     *              "interval": "2015-01-01T00:00:00.000Z/2015-01-02T00:00:00.000Z",
-     *              "version": "2015-02-01T07:02:05.912Z",
-     *              "loadSpec": {
-     *                  "type": "hdfs",
-     *                  "path": "hdfs:/some_hdfs_URL/tableName/.../index.zip"
-     *              },
-     *              "dimensions": "color", "shape",
-     *              "metrics": "height", "width",
-     *              "shardSpec": {
-     *                  "type":"hashed",
-     *                  "partitionNum": 1,
-     *                  "partitions": 2
-     *              },
-     *              "binaryVersion":9,
-     *              "size":512,
-     *              "identifier":"tableName_2015-01-01T00:00:00.000Z_2015-01-02T00:00:00.000Z_2015-02-01T07:02:05.912Z"
-     *          }
-     *      ]
-     *   }"""
-     * </pre>
-     *
-     * @param table  The table to inject into this callback.
-     *
-     * @return The callback itself.
-     *
-     * @deprecated  Pass the DataSourceName directly, rather than via the PhysicalTable
-     */
-    @Deprecated
-    protected final SuccessCallback buildDataSourceMetadataSuccessCallback(SingleDataSourcePhysicalTable table) {
-        return buildDataSourceMetadataSuccessCallback(table.getDataSourceName());
     }
 
     /**
@@ -275,20 +199,6 @@ public class DataSourceMetadataLoadTask extends LoadTask<Boolean> {
     /**
      * Get a default callback for an http error.
      *
-     * @param table  The PhysicalTable that the error callback will relate to.
-     *
-     * @return A newly created http error callback object.
-     *
-     * @deprecated  Pass the DataSourceName directly, rather than via the PhysicalTable
-     */
-    @Deprecated
-    protected HttpErrorCallback getErrorCallback(SingleDataSourcePhysicalTable table) {
-        return getErrorCallback(table.getDataSourceName());
-    }
-
-    /**
-     * Get a default callback for an http error.
-     *
      * @param dataSourceName  The data source that the error callback will relate to.
      *
      * @return A newly created http error callback object.
@@ -302,18 +212,6 @@ public class DataSourceMetadataLoadTask extends LoadTask<Boolean> {
      */
     private final class TaskHttpErrorCallback extends LoadTask<?>.TaskHttpErrorCallback {
         private final DataSourceName dataSourceName;
-
-        /**
-         * Constructor.
-         *
-         * @param table  PhysicalTable that this error callback is tied to
-         *
-         * @deprecated  Pass the DataSourceName directly, rather than via the PhysicalTable
-         */
-        @Deprecated
-        TaskHttpErrorCallback(SingleDataSourcePhysicalTable table) {
-            this(table.getDataSourceName());
-        }
 
         /**
          * Constructor.

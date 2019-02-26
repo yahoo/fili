@@ -14,17 +14,16 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
-import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
+import com.yahoo.bard.webservice.web.DefaultResponseFormatType
 import com.yahoo.bard.webservice.web.JsonResponseWriter
 import com.yahoo.bard.webservice.web.PreResponse
-import com.yahoo.bard.webservice.web.DefaultResponseFormatType
 import com.yahoo.bard.webservice.web.ResponseWriter
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext
 import com.yahoo.bard.webservice.web.responseprocessors.ResultSetResponseProcessor
 
 import rx.subjects.PublishSubject
 import rx.subjects.Subject
-
 import spock.lang.Specification
 
 import javax.ws.rs.container.AsyncResponse
@@ -92,6 +91,7 @@ class HttpResponseMakerSpec extends Specification {
         apiRequest.getLogicalMetrics() >> metricSet
         apiRequest.getGranularity() >> DAY
         apiRequest.getFormat() >> DefaultResponseFormatType.JSON
+        apiRequest.getDownloadFilename() >> Optional.empty()
         containerRequestContext.getUriInfo() >> uriInfo
 
         ResultSetSchema schema = new ResultSetSchema(DAY, [new MetricColumn("lm1")] as Set)
@@ -169,5 +169,22 @@ class HttpResponseMakerSpec extends Specification {
         then:
         response instanceof Response
         response.getStatusInfo().statusCode == 400
+    }
+
+    def "If a filename is provided, headers indicate to download an attachment of the expected filetype"() {
+        setup:
+        responseContext.put("headers", resultSetResponseProcessor.getHeaders())
+        PreResponse preResponse = new PreResponse(resultSet, responseContext)
+
+        when: "The Response is built"
+        Response actual = httpResponseMaker.buildResponse(preResponse, apiRequest, containerRequestContext)
+
+        then: "The header is set correctly"
+        actual.getHeaderString(HttpHeaders.CONTENT_TYPE) == "text/csv; charset=utf-8"
+        actual.getHeaderString(HttpHeaders.CONTENT_DISPOSITION) == "attachment; filename=test_filename.csv"
+
+        and: "Mock override: A CSV-formatted request"
+        apiRequest.getFormat() >> DefaultResponseFormatType.CSV
+        apiRequest.getDownloadFilename() >> Optional.of("test_filename")
     }
 }

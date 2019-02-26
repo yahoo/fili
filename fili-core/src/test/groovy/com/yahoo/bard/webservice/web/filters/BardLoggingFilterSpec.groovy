@@ -4,9 +4,9 @@ package com.yahoo.bard.webservice.web.filters
 
 import com.yahoo.bard.webservice.logging.RequestLog
 
-import spock.lang.Specification
 import org.slf4j.MDC
 
+import spock.lang.Specification
 import spock.lang.Subject
 import spock.lang.Unroll
 

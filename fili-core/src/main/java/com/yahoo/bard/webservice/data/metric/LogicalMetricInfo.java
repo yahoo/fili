@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric;
 
+import java.util.Objects;
+
 /**
  * Contains information passed to LogicalMetric constructor.
  * The reason for having this class is to allow custom logical metric configurations.
@@ -69,6 +71,18 @@ public class LogicalMetricInfo {
     }
 
     /**
+     * Constructor.
+     * Builds a partially specified Logical Metric Info.
+     *
+     * @param name  Name of the metric
+     * @param longName  Long name of the metric
+     * @param description  Description for the metric
+     */
+    public LogicalMetricInfo(String name, String longName, String description) {
+        this(name, longName, LogicalMetric.DEFAULT_CATEGORY, description, TYPE_DEFAULT);
+    }
+
+    /**
      * Returns the name of the metric.
      *
      * @return the name of the metric
@@ -111,5 +125,22 @@ public class LogicalMetricInfo {
      */
     public String getType() {
         return type;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) { return true; }
+        if (o == null || getClass() != o.getClass()) { return false; }
+        LogicalMetricInfo that = (LogicalMetricInfo) o;
+
+        return Objects.equals(name, that.name) &&
+                Objects.equals(longName, that.longName) &&
+                Objects.equals(category, that.category) &&
+                Objects.equals(description, that.description);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, longName, category, description);
     }
 }

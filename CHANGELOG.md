@@ -5,19 +5,309 @@ All notable changes to Fili will be documented here. Changes are accumulated as 
 major version. Each change has a link to the pull request that makes the change and to the issue that triggered the
 pull request if there was one.
 
+Current
+-------
+
 ### Added:
+
+- [Force update of cardinality to SearchIndexes](https://github.com/yahoo/fili/issues/846)
+  * `SearchProvider` now has method `int getDimensionCardinality(boolean refresh)`, where refresh indicates the cardinality count should be refreshed before being returned.
+    - default implementation just defers to existing method `int getDimensionCardinality()`
+    - `LuceneSearchProvider` overrides the default and refreshes the cardinality count if `refresh` is true
+
+- [Added aliases to api filter operations](https://github.com/yahoo/fili/issues/843)
+  * Filter ops now have aliases that match the relevant ops and aliases for havings.
+
+- [Added filename parameter to api query](https://github.com/yahoo/fili/issues/709)
+  * If the filename parameter is present in the request the response is assumed to be downloaded with the provided 
+  filename. The download format depends on the format provided to the format parameter. 
+  * Filename parameter is currently only available to data queries.
+  
+- [Ability to add Dimension objects to DimensionSpecs as a nonserialized config object](https://github.com/yahoo/fili/issues/841)
+    * DimensionSpec and relevant subclasses have had a constructor added that takes a Dimension and a getter for
+    the Dimension
+
+- [Added expected start and end dates to PhysicalTableDefiniton](https://github.com/yahoo/fili/issues/822)
+    * New constructors on `PhysicalTableDefinition` and `ConcretePhysicalTableDefinition` that take expected start and end date
+    * New public getters on `PhysicalTableDefinition` for expected start and end date
+
+- [Added expected start and end dates to availability](https://github.com/yahoo/fili/issues/822)
+    * Add methods for getting expected start and end dates given a datasource constraint to the `Availability` interface.
+        - start and end dates are optional, with an empty optional indicating no expected start or end date.
+        - the new methods default to returning an empty optional.
+    * The start and end dates are not concrete. If an availability has intervals outside of the expected range those 
+    intervals are NOT suppressed.
+    * `BaseCompositeAvailability` reports its expected start and end dates as the earliest start date and latest end date
+    of its composed availabilities.
+        -   no expected start or end date supercedes any configured start or end date, so if ANY of the composed availabilities
+        has no start or end date, and empty optional is reported.
+    * Add a constructor to `StrictAvailability` that takes start and end dates, which allow for direct configuration 
+    of expected start and end dates.  
+        
+- [Fili can now route to one of several Druid webservices based on custom routing logic](https://github.com/yahoo/fili/pull/759)
+    * This allows customers to put Fili in front of multiple Druid clusters, and
+        then use custom logic to decide which cluster to query for each request.
+    * We introduce a new interface `DruidWebServiceSelector` that wraps the 
+        routing logic, and pass an instance to the AsyncWebServiceRequestHandler
+        for it to use.
+        
+- [Add Druid Bound filter support to Fili](https://github.com/yahoo/fili/pull/807)
+    * Added the `DruidBoundFilter` class to support the Bound Filter supported by Druid.
+    
+- [Add static Factory build methods for BoundFilter](https://github.com/yahoo/fili/pull/807)
+    * Added static factory methods for building `lowerBound`, `upperBound`, `strictLowerBound` and `strictUpperBound`
+        Bound filters.
+
+- [Add insertion order aware method for Stream Utils](https://github.com/yahoo/fili/pull/807)
+    * Added `orderedSetMerge` that merges 2 sets in the order provided.
+
+- [Add DimensionRow transformation support with ResultSetMapper](https://github.com/yahoo/fili/issues/856)
+    * Added helper constructor to `DimensionRow`
+    * Created `MemoizingDimensionMappingResultSetMapper` to support field transform use case
+
+### Changed:
+
+- [Change log level for several servlet](https://github.com/yahoo/fili/issues/852)
+  * `SlicesServlet`, `DimensionsServlet`, `MetricsServlet`, `TablesServlet`, `FeatureFlagsServlet` all has debug level 
+  log for the entire query response. Change log level to trace to avoid log spamming.
+
+- [Better exposed dimension analyzer fields in LuceneSearchProvider](https://github.com/yahoo/fili/issues/863)
+  * Changed LuceneSearchProvider to using an analyzer field instead of a final, statically create `StandardAnalyzer` 
+  * some previously private fields and methods are now either protected or public.
+  
+- [Better exposed static method on DimensionsServlet to subclasses](https://github.com/yahoo/fili/issues/863)
+  * Changed `DimensionsServlet.getDescriptionKey` to `protected`
+
+- [ResponseFormatType now contains information relevant to generating response headers associated with response format](https://github.com/yahoo/fili/issues/709)
+  * `ResponseFormatType` interface exposes `getCharset()`, `getFileExtension()`, and `getContentType()` methods which 
+  provide information used to build response headers
+  
+- [ApiRequest interfaces exposes getDownloadFilename method](https://github.com/yahoo/fili/issues/709)
+  * `ApiRequestImpl` and other classes relating to the construction of `DataApiRequest` implementations have had 
+  new constructors added to handle the filename.
+  * Constructors that don't handle filename are now deprecated.
+
+- [Added config property for SSL cipher suites](https://github.com/yahoo/fili/issues/831)
+
+- [Updated asynch http dependency to resolve security issues](https://github.com/yahoo/fili/issues/821)
+    * Moved netty to current 4.1.31.Final
+    * Moved asynch-http-client to current 2.6.0
+
+- [Truncate csv response file path length](https://github.com/yahoo/fili/issues/825)
+    ~~* Set a max size to file name for a downloaded csv report.~~ 
+        ~~- max length is 218 characters, which is Microsoft Excel's max file length~~
+
+- [The algorithm for PartionAvailability is changed to consider using expected start and end date](https://github.com/yahoo/fili/issues/822)
+    * Currently `PartitonAvailability` reports its availability as the intersection of all participating
+    sub availabilities
+    * `PartitionAvailability` now takes the union of available intervals from all participating availabilities
+    and subtracts from it the union of missing intervals from all participating availabilities.
+        - The current algorithm is equivalent to the new algorithm if ALL participating availabilities have
+        NO expected start AND end dates
+
+- [Configurable limit to csv filename length](https://github.com/yahoo/fili/issues/825)
+    * Created configuration parameter 'download_file_max_name_length' to truncate filename lengths
+        - Default truncation is no truncation (0)
+        - truncation happens before applying file extension
+    
+- [Generifying FilterBuilder exceptions](https://github.com/yahoo/fili/issues/816)
+    * Make FilterBuilder exceptions more general and use them for non search provider exceptons.
+
+- [Removed deprecations in maker classes](https://github.com/yahoo/fili/issues/778)
+    * Add `LogicalMetricInfo` conversion method on ApiMetricField class
+    * Moved all tests and internal uses onto LMI based construction
+    * Removed calls to deprecated Sketch utility methods
+    * Removed unused RowNumMapper non-LMI implementation
+    * Undeprecated needed sketch utility method
+
+- [Eliminate String based metric creation](https://github.com/yahoo/fili/issues/778)
+    * Add `LogicalMetricInfo` conversion method on ApiMetricField class
+    * Moved all tests and internal uses onto LMI based construction
+    
+- [ApiFilter allows preserving the insertion order of filter values](https://github.com/yahoo/fili/pull/807)
+    * `Constructor` and `withValues()` method's argument changed from `Set` to `Collection`.
+    * Added `getValueList()` to return the original ordered filter values.
+    
+- [RoleDimensionApiFilterRequestMapper preserves the order of insertion of ApiFilter values](https://github.com/yahoo/fili/pull/807)
+    * Changed `unionMergeFilterValues()` to be order cognizant for `ApiFilter` values.
+
+- [Cleanup DataApiRequestImpl and Builders](https://github.com/yahoo/fili/issues/803)
+  * Moved to ordered bind/validate semantics.
+  * Created interface for druid having building and moved existing builder
+  * Moved `DruidQueryBuilder` off of apiRequest.getDruidHavings to use apiRequest.getHavings().isEmpty()
+  * Moved generators into the binders subpackage of web.apirequest
+
+- [Refactored DruidHavingBuilder](https://github.com/yahoo/fili/issues/803)  
+   * Moved DruidHavingBuilder to new package
+   * Made static methods into instance methods, with a default instance
+   * Created a factory interface
+   * Injected DruidHavingBuilder into QueryBuilder
+
+- [Refactored DruidFilterBuilders](https://github.com/yahoo/fili/issues/803)  
+   * Moved DruidFilterBuilder and clients to new package
+
+- [Removed deprecations in maker classes](https://github.com/yahoo/fili/issues/778)
+    * Add `LogicalMetricInfo` conversion method on ApiMetricField class
+    * Moved all tests and internal uses onto LMI based construction
+    * Removed calls to deprecated Sketch utility methods
+    * Removed unused RowNumMapper non-LMI implementation
+    * Undeprecated needed sketch utility method
+
+- [Eliminate String based metric creation](https://github.com/yahoo/fili/issues/778)
+    * Add `LogicalMetricInfo` conversion method on ApiMetricField class
+    * Moved all tests and internal uses onto LMI based construction
+
+- [Update Redison dependencies](https://github.com/yahoo/fili/issues/836)
+
+### Deprecated:
+
+### Removed:
+
+### Fixed:
+
+- [Fixed FilteredAggregation nesting behavior](https://github.com/yahoo/fili/issues/839)
+    * Currently, FilteredAggregation effectively makes a second copy of its wrapped aggregation, and the inner copy will
+    be wrapped with the filter and the outer query won't
+    * This behavior is changed to call `nest` on the wrapped query, then wrap produced inner query with the filter. The 
+    filtered inner query is returned as the inner query of `nest` call, and the raw outer query is returned as the outer 
+    query of the `nest` call
+
+- [Filter Code now intersects security constraints instead of unioning with requests](https://github.com/yahoo/fili/issues/812)
+    * Switched to ensure security and request filters don't merge but instead intersect
+
+- [Bump Jackson version to patch vulnerability](https://github.com/yahoo/fili/issues/865)
+    * Bumped dependency version to 2.9.8 
+
+- [Bump Jackson version again to patch vulnerability](https://github.com/yahoo/fili/issues/770)
+    * Bumped dependency version to 2.9.5 
+    * Made serialization order more specific in several classes
+    * Fixed bad format in error message
+    * Moved tests off of serialization of `SimplifiedIntervalList`.  That's turning out to be hard to solve.
+
+- [Bump lucene version to patch vulnerability](https://github.com/yahoo/fili/issues/819)
+    * Bumped dependency version to 7.5.0 
+    * Added error in case of greater than maxint hits from Lucene 
+
+- [Bump spring code to patch vulnerability](https://github.com/yahoo/fili/issues/820)
+    * Bumped dependency version to [5.1.2,) 
+    * Throw validation error if excessive documents are returned from Lucene now that it supports up to long hitcounts 
+
+- [Updated copyright style to include Verizon Media Group](https://github.com/yahoo/fili/issues/856)
+
+- [Fixed incorrect key for physicalTableDictionary lookup](https://github.com/yahoo/fili/pull/859)
+
+### Known Issues:
+
+## Contract changes:
+
+- [Allow Optional nesting in Aggregation](https://github.com/yahoo/fili/issues/847)
+  * Changed the return type of `nest` method in `Aggreagtion` class.
+  * `nest` method in `Aggregation` now returns a `Pair` of `Optional<Aggregation>`.
+  
+- [ResponseUtils is now responsible for generating response headers](https://github.com/yahoo/fili/issues/709)
+  * `ResponseUtils` now generates the Content-Type header and the Content-Disposition header if relevant.
+  * `ResponseUtils` handles all format types instead of just building the Content-Disposition header value for CSV
+  responses
+
+- [Response is assumed to be rendered in the browser unless a filename is provided](https://github.com/yahoo/fili/issues/709)
+  * `ResponseUtils` takes a list of formats that default to download. This list can be changed or overridden
+  * By default CSV is added to the default to download list. This is to maintain backwards compatibility
+
+- [ApiRequest.getApiDruidFilters() must now not be null]()
+
+- [DataApiRequest property renames](https://github.com/yahoo/fili/issues/803)
+  * `DataApiRequest` getHaving -> getQueryHaving
+  * `DataApiRequest` getDruidFilter -> getQueryFilter
+  * Deprecate old paths
+  
+- [Additional healthcheck logging on healthchck failure on data request](https://github.com/yahoo/fili/pull/809)
+  * Added user, request url, and timestamp to healthcheck error message on data request.
+
+v0.10.48 - 2018/10/04
+=====
+
+0.10 Highlights
+-------------
+
+### Extensibility improvements
+
+A number of classes which were either not extensible or very difficult to extend have been restructured.  
+
+Response building, extraction functions, Web logging and Exception handling in DataServlet are now injectable.  
+
+### Extensive deprecation cleanup
+
+A lot of tech debt has been paid down in the form of removing deprecated code and moving code off deprecated methods.
+Old sketch support has been retired in favor of the official community open source version: 
+(https://datasketches.github.io/docs/Theta/ThetaSketchFramework.html) 
+
+Some deprecations have been removed because the migration path off of those deprecated methods seemed less useful
+than simply supporting the older (simpler) contract.
+
+### General cleanup
+
+Some packages have been rationalized together or apart.  Some concrete classes became interfaces and vice-versa.
+
+### Externalizing filter building code
+
+Generating `ApiFilters` and Druid `Filter`s has been externalized to make it easier to reimplement with non-Regular 
+Expression solutions.
+
+### Supporting Druid in-filters
+
+A general performance improvement by implementing the in filter in druid (as opposed to long chains of single value 
+select filters)
+
+### Added:
+
+- [Sorting JSON objects before caching](https://github.com/yahoo/fili/issues/795)
+    * Added `canonicalize` method in `Utils` class which sorts the `JSON` objects of druid query before hashing so that
+      hash values are consistent.
+    * `canonicalize` takes a boolean parameter `preserveContext` which determines if context has to be omitted.
+    * Deprecated `omitField` method in `Utils` class.
+
+- [Enforce role based security for incoming API requests](https://github.com/yahoo/fili/issues/788)
+    * Added `RoleBasedTableValidatorRequestMapper` class which checks if a user's role satisfies the predicates defined
+      for a logical table.
+
+- [HttpResponseMaker header building made extendable](https://github.com/yahoo/fili/issues/783)
+    * Added `buildAndAddResponseHeaders` method in `HttpResponseMaker` which handles building and adding headers to a
+    response builder. This logic was moved from `createResponseBuilder`.
+    * Made `createResponseBuilder` method protected to open up the class to be more extendable.
+
+- [Add factory for build ApiFilter objects](https://github.com/yahoo/fili/issues/771)
+    * `ApiFilter` changed into a simple value object.
+    * `ApiFilter` constructor using filter clause from API request moved to factory as static `build` method.
+    * `ApiFilter` union method moved to factory.
+
+- [Add interface to FilterOperation for easy extension](https://github.com/yahoo/fili/issues/771)
+    * Changed existing version of `FilterOperation` to `DefaulFilterOperation` and made `FilterOperation` into an interface.
+    * Changed code that depended on the enum to be dependent on the new interfaces instead.
+
+- [Wrapping DruidInFilterBuilder as default filter builder under a feature flag ](https://github.com/yahoo/fili/issues/765)
+    * Added `DEFAULT_IN_FILTER` feature flag.
+    * If `DEFAULT_IN_FILTER` feature flag is enabled, then `DruidInFilterBuilder` will be used as the default druid
+      query builder.
+    * If `DEFAULT_IN_FILTER` feature flag is disabled, then `DruidOrFilterBuilder` will be used as the default druid
+      query builder.
+
+- [Enable Druid In-filter in Fili](https://github.com/yahoo/fili/pull/688)
+    * `DefaultDruidFilterBuilder` is renamed to `DruidOrFilterBuilder`
+    * Implement `DruidInFilterBuilder` which turns list of selector filter generated by `DruidOrFilterBuilder` into a
+      single Druid in-filter. The in-filter resolves the [timeout issue](https://github.com/yahoo/fili/issues/687). The
+      in-filter could substantially shorten druid query, making the query more sharable and readable.
+    * Fili now uses the `DruidInFilterBuilder` as the "Default" Druid query filter builder, in stead of the old
+      `DruidOrFilterBuilder`, because the new default filter is terser and packs the query payload tighter, and in
+      proportion to the number of filters being applied.
 
 - [Move off BaseCompositePhysicalTable inheritance usage](https://github.com/yahoo/fili/pull/748)
     * Added builder methods to `MetricUnionAvailability` and `PartitionAvailability` to save on needing to add
       additional table classes.
 
-- [Adding withDoFork to LookBackQuery](https://github.com/yahoo/fili/issues/756)
-    * Added `withDoFork` to `LookBackQuery` class.    
-    
--- [An injection point for customizing the WebLoggingFilter to use during tests](https://github.com/yahoo/fili/pull/749)
+- [An injection point for customizing the WebLoggingFilter to use during tests](https://github.com/yahoo/fili/pull/749)
     * Extend `JerseyTestBinder` and override `getLoggingFilter`.
 
-- [An injection point for customizing Exception handling]https://github.com/yahoo/fili/pull/742)
+- [An injection point for customizing Exception handling](https://github.com/yahoo/fili/pull/742)
     * Customers can provide their own logic for handling top level Exceptions in
       the `DataServlet` by implementing `DataExceptionHandler`, and any other
       servlet by implementing `MetadataExceptionHandler`.
@@ -43,17 +333,47 @@ pull request if there was one.
 - [Add tests to Utils](https://github.com/yahoo/fili/pull/675)
     * Add missing tests to `Utils` class.
 
+- [Enable Druid Bound-filter in Fili](https://github.com/yahoo/fili/pull/797)
+    * Added `BoundFilter` class to support Druid Bound-filter
+
 ### Changed:
+
+- [Made In Filter use sorted Set to support reliable equality](https://github.com/yahoo/fili/issues/780)
+    * In filter tested in unstable ways.  Since order doesn't matter, switched to a canonically ordered set.
+
+- [Make ConjunctionDruidFilterBuilder's protected helper methods instance methods](https://github.com/yahoo/fili/issues/792)
+
+- [Widen access privileges to suppress IDE warnings](https://github.com/yahoo/fili/issues/785)
+
+- [Corrected generality on with methods](https://github.com/yahoo/fili/issues/773)
+   * Changed `DataApiRequest` methods to not refer to the implementation classes.
+
+- [Cleaned up ApiRequest contracts](https://github.com/yahoo/fili/issues/775)
+    * `DataApiRequest` default implementation of getting dimension filters
+    * Aync after nullable (to indicate unconfigured as opposed to explicitly zero)
+    * DefaultPagination removed from ApiRequest interface (ApiRequest should not be a service provider)
+    * Moved filter generation into an explicit class, defaulted implementations in subclasses using extensible methods.    
+
+- [Corrected generality on with methods](https://github.com/yahoo/fili/issues/773)
+   * Changed `DataApiRequest` methods to not refer to the implementation classes.
+   * Added getGeneratorFilter (to replace 'generate') to `DataApiRequest` (yes this contradicts the item above, but this is a transitional change.)
+
+- [Extract logic for getting pagination of dimension rows](https://github.com/yahoo/fili/issues/782)
+    * Extract the logic in `DimensionsServlet` to get pagination of dimension rows into a protected function.
+
+- [Removed deprecations](https://github.com/yahoo/fili/issues/668)
+  * Removed Pagination deprecation
+  * Removed `DataSourceConstraint` deprecation
 
 - [Bumping query id inside withIntervals of LookBackQuery](https://github.com/yahoo/fili/issues/756)
     * Returning a new `LookBackQuery` with `doFork` set to `true` which bumps query id inside `withIntervals` method.
     * Renamed every occurrence of `doFork` to `incrementQueryId`.
     * Removed `withDoFork` from `LookBackQuery` class.
-     
+
 - [Change to ordered data structures for ApiRequestImpls](https://github.com/yahoo/fili/issues/753)
     * Change Set<foo> to LinkedHashSet<foo> in most ApiRequestImpl getters
     * Change Set<Interval> to List<Interval> in ApiRequests
-    
+
 - [Moved ResponseFormatType from Singleton enum to interface with enum impl](https://github.com/yahoo/fili/issues/711)
     * Refactored ResponseFormatType to allow expansion via additional interface implementors
     * Replaced equality based matching with 'accepts' model
@@ -68,14 +388,14 @@ pull request if there was one.
 
 - [Change `BaseCompositePhysicalTable` into a concrete class](https://github.com/yahoo/fili/pull/745)
     * Currently `BaseCompositePhysicalTable` is an abstract class, though it has all of the functionality for a simple composite physical table. Changed to a concrete class to allow for simple composite table behavior with requiring an extension.
-    * Two simple implementations of `BaseCompositePhysicalTable`, `PartitionCompositeTable` and `MetricUnionCompositeTable` are now deprecated. Instead, the availabilities for these tables should be created directly and passed in to `BaseCompositePhysicalTable`.  
+    * Two simple implementations of `BaseCompositePhysicalTable`, `PartitionCompositeTable` and `MetricUnionCompositeTable` are now deprecated. Instead, the availabilities for these tables should be created directly and passed in to `BaseCompositePhysicalTable`.
 
 - [Change availability behavior on BasePhysicalTable](https://github.com/yahoo/fili/pull/743)
-    * Currently `BasePhysicalTable` overrides `getAvailableIntervals(constraint)` and `getAllAvailableIntervals()`, and defers this behavior to its availability. This PR changes `BasePhysicalTable` to also override `getAvailableIntervals()` and defer to its availability.  
+    * Currently `BasePhysicalTable` overrides `getAvailableIntervals(constraint)` and `getAllAvailableIntervals()`, and defers this behavior to its availability. This PR changes `BasePhysicalTable` to also override `getAvailableIntervals()` and defer to its availability.
 
-- [Making Custom Sketch operations possible in PostAggreations](https://github.com/yahoo/fili/issues/740)    
+- [Making Custom Sketch operations possible in PostAggreations](https://github.com/yahoo/fili/issues/740)
     * Added `PostAggregation` and `Aggregation` instance check in `asSketchEstimate(MetricField field)` method of the class `ThetaSketchFieldConverter`.
-    * `FieldAccessorPostAggregation` is called only for `Aggregation` and not for `PostAggregation`. 
+    * `FieldAccessorPostAggregation` is called only for `Aggregation` and not for `PostAggregation`.
 
 - [Let DimensionApiRequestMapper throw RequestValidationException instead of BadApiRequestException](https://github.com/yahoo/fili/pull/715)
     * `DimensionApiRequestMapper.apply()` is made to obey the interface contract by throwing
@@ -88,7 +408,7 @@ pull request if there was one.
 - [Abort request when too many Druid filters are generated](https://github.com/yahoo/fili/pull/690)
     * In order to avoid Druid queries with too much filters on high-cardinality dimension, Fili sets a upper limit
       on the number of filters and aborts requests if the limit is exceeded.
- 
+
 - [Class re-organization](https://github.com/yahoo/fili/pull/694)
     * Put `Granularity` interfaces and its implementations in the same package
     * Put `*ApiRequest` interfaces and their implementations in the same package
@@ -104,31 +424,61 @@ pull request if there was one.
     * Since we seem to be in no hurry to switch to heavier reliance on streams. (also renamed paginate and moved to `PageLinkBuilder`)
 
 - [Deprecate `PartitionCompositeTable` and `MetricUnionCompositeTable`](https://github.com/yahoo/fili/pull/745)
-    * Two simple implementations of `BaseCompositePhysicalTable` (`PartitionCompositeTable` and `MetricUnionCompositeTable`) are now deprecated. Instead, the availabilities for these tables should be created directly and passed in to `BaseCompositePhysicalTable`.  
+    * Two simple implementations of `BaseCompositePhysicalTable` (`PartitionCompositeTable` and `MetricUnionCompositeTable`) are now deprecated. Instead, the availabilities for these tables should be created directly and passed in to `BaseCompositePhysicalTable`.
 
 ### Fixed:
+
+- [ApiFilter constructor from filter query string was removed when it should have been deprecated](https://github.com/yahoo/fili/issues/794)
+    * Constructor using filter query string is restored and calls the `ApiFilterGenerator.build()` to construct itself from the string.
+
+- [Fix equality on Filtered Metrics](https://github.com/yahoo/fili/issues/780)
+    * ThetaSketchIntersection had a bug where it wasn't collecting dependant metrics from InFilters
+
+- [Fix equality on Filtered Metrics](https://github.com/yahoo/fili/issues/780)
+    * Filtered metrics should take filter values into account for equals and hashcode
+
+- [Fix name change in test logical metrics that breaks downstream tests](https://github.com/yahoo/fili/issues/786)
+    * Change test logical metric generation to use `LogicalMetricInfo` constructor which takes both long name and description.
 
 - [Fix GroovyTestUtils json parsing](https://github.com/yahoo/fili/pull/760)
     * Properly handles json parsing failures and non-JSON expected strings.
 
 - [Fix generate intervals logic when availability is empty](https://github.com/yahoo/fili/pull/702)
     * Logic to generate intervals when `CURRENT_MACRO_USES_LATEST` flag is turned on has a bug. The code throws `NoSuchElementException` when the table has no availabilities. This PR fixes the bug by checking if the availability of the underlying table is empty.
+
 - [Correct Druid coordinator URL in Wikipedia example](https://github.com/yahoo/fili/pull/683)
     * Config value for Druid coordinator URL is mis-typed.
-    
+
 - [Upgrade codenarc to recognize unused imports in Groovy](https://github.com/yahoo/fili/pull/685)
     * There are number of unused imports sitting in tests. The cause is an out-dated codenarc version. This PR upgrades
       the version and removes those unused imports with the new version.
 
+- [Adding withDoFork to LookBackQuery](https://github.com/yahoo/fili/issues/756)
+    * Added `withDoFork` to `LookBackQuery` class.
+    * Fixes failure of Lookback query to correctly do context forking under query split    
+
+- [Removed dependency on ApiFilter in ThetaSketchMetricsHelder](https://github.com/yahoo/fili/issues/780)
+    * Instead injecting dependency on creation (with defaulting constructor)
+
+
+- [Removed deprecated code references](https://github.com/yahoo/fili/issues/780)
+    * Renamed keys from `BardLoggingFilter` properties off deprecated refence class (this was an artifact from a bad rename)
+
+- [Removed older deprecated code](https://github.com/yahoo/fili/issues/668)
+    * Removed constructos and getters with clean replacements
+    * Stripped the remaining UI/NonUI code
+    * Cleaned up old schema classes and methods
+    * Removed orphaned metadata response data factory
+    * Removed pre-theta sketch code
+    * Removed deprecated min/max aggregations
+    * Removed loader code for metrics that don't include dimension dictionary
+    * Removed `KeyValueStoreDimension`
 
 ### Known Issues:
 
+- [Improved deletion on non-existing path](https://github.com/yahoo/fili/pull/802)
+    * If path does not exist, do not run deletion on that path
 
-
-### Removed:
-
-Current
--------
 
 v0.9.137 - 2018/04/13 
 =====
@@ -171,7 +521,7 @@ Exposes the `LogInfo` objects stored in the `RequestLog`, via `RequestLog::retri
 
 Added by @archolewa in https://github.com/yahoo/fili/pull/574
 
-### Druid lookup metadata load status check 
+### Druid lookup metadata load status check
 Fili now supports checking Druid lookup status as one of it's health check. It will be very easy to identify any failed lookups.
 
 Added by @QubitPi in https://github.com/yahoo/fili/pull/620
@@ -237,15 +587,17 @@ Thanks to everyone who contributed to this release!
 @kevinhinterlong Kevin Hinterlong
 @mpardesh Monica Pardeshi
 @colemanProjects Neelan Coleman
-@onlinecco 
+@onlinecco
 @dejan2609 Dejan Stojadinović
 
 ### Added:
 
+- [Added with method for timesort to DataApiRequest](https://github.com/yahoo/fili/issues/773)
+
 - [Latest Time Macro](https://github.com/yahoo/fili/pull/697)
     * Added `logicalTableAvailability` to `TableUtils` which returns the union of intervals for the logical table.
     * Added `now` parameter to `generateIntervals` for which time macros will be relatively calculated.
-    * Added `CURRENT_MACRO_USES_LATEST` flag which when turned on uses the first unavailable availability to generate the intervals. 
+    * Added `CURRENT_MACRO_USES_LATEST` flag which when turned on uses the first unavailable availability to generate the intervals.
 
 - [Annotate Functional Interface](https://github.com/yahoo/fili/pull/606)
     * Add `@FunctionalInterface` annotation to all functional interfaces.
@@ -262,7 +614,7 @@ Thanks to everyone who contributed to this release!
 
 - [Complete DateTimeUtils tests](https://github.com/yahoo/fili/pull/595)
     * Add tests for all un-tested methods in `DateTimeUtils`.
-    
+
 - [Enable checkstyle to detect incorrect package header](https://github.com/yahoo/fili/pull/594)
     * Fili was able to pass the build with wrong package headers in some source files. This needs to be fixed, and it's
       fixed in this PR by adding PackageDeclaration checkstyle rule.
@@ -372,10 +724,10 @@ Thanks to everyone who contributed to this release!
     * Some downstream projects generated partial intervals as `ArrayList`, which cannot be cased to
       `SimplifiedIntervalList` in places like `getPartialIntervalsWithDefault`. The result is a casting exception which
       crashes downstream applications. Casting is replaced with a explicit `SimplifiedIntervalList` object creation.
-      
+
 - [ResponseProcessor is now injectable.](https://github.com/yahoo/fili/pull/663)
-    * To add a custom `ResponseProcessor`, implement `ResponseProcessorFactory`, override 
-        `AbstractBinderFactory::buildResponseProcessorFactory` to return your custom `ResponseProcessorFactory.class`. 
+    * To add a custom `ResponseProcessor`, implement `ResponseProcessorFactory`, override
+        `AbstractBinderFactory::buildResponseProcessorFactory` to return your custom `ResponseProcessorFactory.class`.
 
 - [Add config to ignore partial/volatile intervals and cache everything in cache V2](https://github.com/yahoo/fili/pull/645)
     * In cache V2, user should be able to decide whether partial data or volatile data should be cached or not. This PR
@@ -401,7 +753,7 @@ Thanks to everyone who contributed to this release!
     * Re-indent testing strings for better code formatting
 
 - [Moved availabilities to metrics construction to MetricUnionCompositeTableDefinition](https://github.com/yahoo/fili/pull/592)
-    * Currently, the availability to metrics construction is taking place even before the availability is loaded. Hence, 
+    * Currently, the availability to metrics construction is taking place even before the availability is loaded. Hence,
       moving the construction to MetricUnionCompositeTableDefinition so that availability is loaded first.
 
 - [Better programmatic generation of metadata json in tests](https://github.com/yahoo/fili/pull/412)
@@ -514,7 +866,7 @@ Thanks to everyone who contributed to this release!
 
 - [Correct exception message & add missing tests](https://github.com/yahoo/fili/pull/649)
     * Clarified exception message thrown by `StreamUtils.throwingMerger`
-      
+
 - [Fix lookup metadata loader by pulling the RegisteredLookupDimension](https://github.com/yahoo/fili/pull/651)
     * Lookup Metadata Health Check always return true when some Druid registered lookup are absolutely failing to be
       loaded. Instead of checking load status of `RegisteredLookupDimension`, `RegisteredLookupMetadataLoadTask` is
@@ -537,7 +889,7 @@ Thanks to everyone who contributed to this release!
 - [None show clause was not being respected](https://github.com/yahoo/fili/issues/612)
     * Changed `ResponseData` and `JsonApiResponseWriter` to suppress columns that don't have associated dimension fields.
     * Updated tests to reflect none being hidden.
-     
+
 - [Scoped metric dictionaries and the having clause now work together by default](https://github.com/yahoo/fili/pull/580)
     * Add a new ApiHavingGenerator that builds a temporary metric dictionary from the set of requested metrics(not from globally scoped metric dictionary), and then using those to resolve the having clause.
     * Add a table generating functions in BaseTableLoader that effectively allow the customer to provide a different metric dictionary at lower scope(not from the globally scoped metric dictionary) for use when building each table.
@@ -599,6 +951,10 @@ Thanks to everyone who contributed to this release!
 
 
 ### Removed:
+
+- [Removed withHaving that was on DataApiRequest as a Bug](https://github.com/yahoo/fili/issues/775)
+    * withHaving was incorrectly implemented in DataApiRequest.  It should not have been added at all
+    and had no behavioral impact except to rebuild the object without changes.
 
 - [Remove testing constructor of *ApiRequestImpl](https://github.com/yahoo/fili/pull/559)
     * It is a better practice to separate testing code with implementation. All testing constructors of the following

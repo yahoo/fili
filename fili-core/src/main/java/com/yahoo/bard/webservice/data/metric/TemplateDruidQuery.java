@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.data.metric;
 import static com.yahoo.bard.webservice.util.StreamUtils.not;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.data.time.ZonelessTimeGrain;
 import com.yahoo.bard.webservice.druid.model.MetricField;
@@ -15,7 +16,6 @@ import com.yahoo.bard.webservice.druid.model.datasource.DataSource;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
-import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.druid.model.query.QueryContext;
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier;
 
@@ -155,9 +155,9 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
         LinkedHashSet<Aggregation> innerAggregations = new LinkedHashSet<>();
         LinkedHashSet<Aggregation> outerAggregations = new LinkedHashSet<>();
         for (Aggregation agg : aggregations) {
-            Pair<Aggregation, Aggregation> split = agg.nest();
-            innerAggregations.add(split.getRight());
-            outerAggregations.add(split.getLeft());
+            Pair<Optional<Aggregation>, Optional<Aggregation>> split = agg.nest();
+            split.getRight().map(innerAggregations::add);
+            split.getLeft().map(outerAggregations::add);
         }
 
         // Create the inner query.

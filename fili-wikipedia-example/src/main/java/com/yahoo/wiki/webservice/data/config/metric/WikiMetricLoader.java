@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.data.config.metric.MetricInstance;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.metric.makers.CountMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.DoubleSumMaker;
+import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.util.Utils;
@@ -64,7 +65,7 @@ public class WikiMetricLoader implements MetricLoader {
     }
 
     @Override
-    public void loadMetricDictionary(MetricDictionary metricDictionary) {
+    public void loadMetricDictionary(MetricDictionary metricDictionary, DimensionDictionary dimensionDictionary) {
         buildMetricMakers(metricDictionary);
 
         // Metrics that directly aggregate druid fields

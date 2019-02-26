@@ -8,11 +8,11 @@ import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction;
 
-import javax.validation.constraints.NotNull;
-
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * A Default Registered Lookup Dimension holds all of the information needed to construct a Registered Lookup Dimension.

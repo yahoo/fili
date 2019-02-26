@@ -32,9 +32,9 @@ public class ModuleLoader {
      */
     public static final String MODULE_CONFIG_FILE_NAME = "/moduleConfig.properties";
 
-    private static final String MODULE_NAME_IS_TOO_SHORT = "Module name is too short.";
+    public static final String MODULE_NAME_IS_TOO_SHORT = "Module name is too short.";
 
-    private static final String ILLEGAL_CHARACTER_IN_MODULE_NAME = "Illegal characters '%s' in module name.";
+    public static final String ILLEGAL_CHARACTER_IN_MODULE_NAME = "Illegal characters '%s' in module name.";
 
     private final ConfigResourceLoader configResourceLoader;
 

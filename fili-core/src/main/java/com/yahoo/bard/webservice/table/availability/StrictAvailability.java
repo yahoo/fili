@@ -4,9 +4,13 @@ package com.yahoo.bard.webservice.table.availability;
 
 import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
+import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
+import org.joda.time.DateTime;
+
+import java.util.Optional;
 import java.util.Set;
 
 import javax.validation.constraints.NotNull;
@@ -17,6 +21,8 @@ import javax.validation.constraints.NotNull;
  * This availability uses column intersections to determine it's sigular availability.
  */
 public class StrictAvailability extends BaseMetadataAvailability {
+    protected final Optional<DateTime> expectedStartDate, expectedEndDate;
+
     /**
      * Constructor.
      *
@@ -27,7 +33,26 @@ public class StrictAvailability extends BaseMetadataAvailability {
             @NotNull DataSourceName dataSourceName,
             @NotNull DataSourceMetadataService metadataService
     ) {
+        this(dataSourceName, metadataService, null, null);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param dataSourceName  The name of the data source associated with this Availability
+     * @param metadataService  A service containing the datasource segment data
+     * @param expectedStartDate  The expected start date of this availability. Empty indicates no expected start date
+     * @param expectedEndDate  The expected end date of this availability. Null indicates no expected end date
+     */
+    public StrictAvailability(
+            @NotNull DataSourceName dataSourceName,
+            @NotNull DataSourceMetadataService metadataService,
+            DateTime expectedStartDate,
+            DateTime expectedEndDate
+    ) {
         super(dataSourceName, metadataService);
+        this.expectedStartDate = Optional.ofNullable(expectedStartDate);
+        this.expectedEndDate = Optional.ofNullable(expectedEndDate);
     }
 
     @Override
@@ -46,6 +71,26 @@ public class StrictAvailability extends BaseMetadataAvailability {
                 ))
                 .reduce(SimplifiedIntervalList::intersect)
                 .orElse(new SimplifiedIntervalList());
+    }
+
+    @Override
+    public Optional<DateTime> getExpectedStartDate(PhysicalDataSourceConstraint constraint) {
+        return expectedStartDate;
+    }
+
+    @Override
+    public Optional<DateTime> getExpectedEndDate(PhysicalDataSourceConstraint constraint) {
+        return expectedEndDate;
+    }
+
+    @Override
+    public Optional<DateTime> getExpectedStartDate(DataSourceConstraint constraint) {
+        return expectedStartDate;
+    }
+
+    @Override
+    public Optional<DateTime> getExpectedEndDate(DataSourceConstraint constraint) {
+        return expectedEndDate;
     }
 
     @Override

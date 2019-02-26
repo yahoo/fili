@@ -2,17 +2,21 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.dimension;
 
-import com.fasterxml.jackson.annotation.JsonValue;
-
+import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.util.EnumUtils;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Base class model for DimensionSpecs.
  */
 public abstract class DimensionSpec {
     private final DimensionSpecType type;
+    protected final Dimension configDimension;
 
     /**
      * Constructor.
@@ -20,7 +24,19 @@ public abstract class DimensionSpec {
      * @param type  enum type of this DimensionSpec.
      */
     protected DimensionSpec(DimensionSpecType type) {
+        this(type, null);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param type  enum type of this DimensionSpec.
+     * @param configDimension  the Dimension object associated with the dimension name provided in "dimension"
+     * param
+     */
+    protected DimensionSpec(DimensionSpecType type, Dimension configDimension) {
         this.type = type;
+        this.configDimension = configDimension;
     }
 
     public DimensionSpecType getType() {
@@ -51,6 +67,16 @@ public abstract class DimensionSpec {
         public String toJson() {
             return jsonName;
         }
+    }
+
+    /**
+     * Gets the set of dimension names this dimension relies on.
+     *
+     * @return the dimension names
+     */
+    @JsonIgnore
+    public Optional<Dimension> getConfigDimension() {
+        return Optional.ofNullable(configDimension);
     }
 
     @Override

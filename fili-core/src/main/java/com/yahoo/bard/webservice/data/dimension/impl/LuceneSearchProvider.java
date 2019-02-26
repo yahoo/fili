@@ -18,7 +18,9 @@ import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.util.SinglePagePagination;
 import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.bard.webservice.web.ApiFilter;
+import com.yahoo.bard.webservice.web.DefaultFilterOperation;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
+import com.yahoo.bard.webservice.web.FilterOperation;
 import com.yahoo.bard.webservice.web.PageNotFoundException;
 import com.yahoo.bard.webservice.web.RowLimitReachedException;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
@@ -75,16 +77,19 @@ import java.util.stream.Stream;
 public class LuceneSearchProvider implements SearchProvider {
     private static final Logger LOG = LoggerFactory.getLogger(LuceneSearchProvider.class);
 
-    private static final Analyzer LUCENE_ANALYZER = new StandardAnalyzer();
+    private static final Analyzer STANDARD_LUCENE_ANALYZER = new StandardAnalyzer();
+    private Analyzer analyzer;
     private static final double BUFFER_SIZE = 48;
 
-    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    protected final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private final String luceneIndexPath;
 
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
     public static final int LUCENE_SEARCH_TIMEOUT_MS = SYSTEM_CONFIG.getIntProperty(
             SYSTEM_CONFIG.getPackageVariableName("lucene_search_timeout_ms"), 600000
     );
+
+    public static String TOO_MANY_DOCUMENTS = "Unexpectedly large response from search provider.  Found %l hits.";
 
     /**
      * The maximum number of results per page.
@@ -95,7 +100,7 @@ public class LuceneSearchProvider implements SearchProvider {
     private KeyValueStore keyValueStore;
     private Dimension dimension;
     private boolean luceneIndexIsHealthy;
-    private IndexSearcher luceneIndexSearcher;
+    protected IndexSearcher luceneIndexSearcher;
     private int searchTimeout;
 
     /**
@@ -112,6 +117,7 @@ public class LuceneSearchProvider implements SearchProvider {
         this.maxResults = maxResults;
         this.searchTimeout = searchTimeout;
 
+        this.analyzer = STANDARD_LUCENE_ANALYZER;
         try {
             luceneDirectory = new MMapDirectory(Paths.get(this.luceneIndexPath));
             luceneIndexIsHealthy = true;
@@ -140,7 +146,7 @@ public class LuceneSearchProvider implements SearchProvider {
      * `Dimension` classes, we cannot provide the dimension and key-value store to the search provider at
      * construction time.
      */
-    private void initializeIndexSearcher() {
+    protected void initializeIndexSearcher() {
         if (luceneIndexSearcher == null) {
             reopenIndexSearcher(true);
         }
@@ -166,7 +172,7 @@ public class LuceneSearchProvider implements SearchProvider {
         } catch (IOException reopenException) {
             // If there is no index file, this is expected. On the 1st time through, write an empty index and try again
             if (firstTimeThrough) {
-                IndexWriterConfig indexWriterConfig = new IndexWriterConfig(LUCENE_ANALYZER);
+                IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer);
                 try (IndexWriter ignored = new IndexWriter(luceneDirectory, indexWriterConfig)) {
                     // Closed automatically by the try-resource block
                 } catch (IOException emptyIndexWriteException) {
@@ -189,6 +195,23 @@ public class LuceneSearchProvider implements SearchProvider {
         }
     }
 
+    protected Analyzer getAnalyzer() {
+        return analyzer;
+    }
+
+    protected void setAnalyzer(Analyzer analyzer) {
+        this.analyzer = analyzer;
+    }
+
+    /**
+     * Getter for the search provider's dimension.
+     *
+     * @return the dimension
+     */
+    public Dimension getDimension() {
+        return dimension;
+    }
+
     @Override
     public void setDimension(Dimension dimension) {
         this.dimension = dimension;
@@ -208,6 +231,14 @@ public class LuceneSearchProvider implements SearchProvider {
         return Integer.parseInt(
                 keyValueStore.getOrDefault(DimensionStoreKeyUtils.getCardinalityKey(), "0")
         );
+    }
+
+    @Override
+    public int getDimensionCardinality(boolean refresh) {
+        if (refresh) {
+            refreshCardinality();
+        }
+        return getDimensionCardinality();
     }
 
     @Override
@@ -267,7 +298,7 @@ public class LuceneSearchProvider implements SearchProvider {
         }
 
         // Write the rows to the document
-        IndexWriterConfig indexWriterConfig = new IndexWriterConfig(LUCENE_ANALYZER).setRAMBufferSizeMB(BUFFER_SIZE);
+        IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer).setRAMBufferSizeMB(BUFFER_SIZE);
         lock.writeLock().lock();
         try {
             try (IndexWriter luceneIndexWriter = new IndexWriter(luceneDirectory, indexWriterConfig)) {
@@ -434,7 +465,7 @@ public class LuceneSearchProvider implements SearchProvider {
     @Override
     public void clearDimension() {
         Set<DimensionRow> dimensionRows = findAllDimensionRows();
-        IndexWriterConfig indexWriterConfig = new IndexWriterConfig(LUCENE_ANALYZER).setRAMBufferSizeMB(BUFFER_SIZE);
+        IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer).setRAMBufferSizeMB(BUFFER_SIZE);
         lock.writeLock().lock();
         try {
             try (IndexWriter writer = new IndexWriter(luceneDirectory, indexWriterConfig)) {
@@ -616,8 +647,17 @@ public class LuceneSearchProvider implements SearchProvider {
         BooleanQuery.Builder filterQueryBuilder = new BooleanQuery.Builder();
         boolean hasPositive = false;
         for (ApiFilter filter : filters) {
+            FilterOperation op = filter.getOperation();
+            if (!(op instanceof DefaultFilterOperation)) {
+                LOG.error("Illegal Filter operation : {}, only default filter ops supported", filter.getOperation());
+                throw new IllegalArgumentException(
+                        "Only supports default filter operations: in, notin, startswith, contains, eq"
+                );
+            }
+            DefaultFilterOperation defaultFilterOp = (DefaultFilterOperation) op;
+
             String luceneFieldName = DimensionStoreKeyUtils.getColumnKey(filter.getDimensionField().getName());
-            switch (filter.getOperation()) {
+            switch (defaultFilterOp) {
                 case eq:
                     // fall through on purpose since eq and in have the same functionality
                 case in:
@@ -668,7 +708,7 @@ public class LuceneSearchProvider implements SearchProvider {
      *
      * @throws PageNotFoundException if the page requested is past the last page of results
      */
-    private Pagination<DimensionRow> getResultsPage(Query query, PaginationParameters paginationParameters)
+     protected Pagination<DimensionRow> getResultsPage(Query query, PaginationParameters paginationParameters)
             throws PageNotFoundException {
         int perPage = paginationParameters.getPerPage();
         validatePerPage(perPage);
@@ -689,7 +729,17 @@ public class LuceneSearchProvider implements SearchProvider {
                         perPage
                 );
                 hits = hitDocs.scoreDocs;
-                documentCount = hitDocs.totalHits;
+                // The change to supprt long document sizes is incompletely supported in Lucene
+                // Since we can't request up to long documents we'll only expect to receive up to Integer.MAX_VALUE
+                // responses, and throw an error if we exceed that.
+                if (hitDocs.totalHits > Integer.MAX_VALUE) {
+                    String message = String.format(TOO_MANY_DOCUMENTS, hitDocs.totalHits);
+                    RowLimitReachedException exception = new RowLimitReachedException(message);
+                    LOG.error(exception.getMessage(), exception);
+                    throw exception;
+                }
+                documentCount = (int) hitDocs.totalHits;
+
                 int requestedPageNumber = paginationParameters.getPage(documentCount);
                 if (hits.length == 0) {
                     if (requestedPageNumber == 1) {

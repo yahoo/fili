@@ -103,6 +103,8 @@ public interface TablesApiRequest extends ApiRequest {
 
     TablesApiRequest withIntervals(List<Interval> intervals);
 
+    TablesApiRequest withDownloadFilename(String downloadFilename);
+
     @Deprecated
     /**
      * @deprecated Use {@link #withIntervals(List)}

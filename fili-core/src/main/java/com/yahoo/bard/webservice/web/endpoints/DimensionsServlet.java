@@ -7,7 +7,6 @@ import static com.yahoo.bard.webservice.config.BardFeatureFlag.UPDATED_METADATA_
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
-import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 import com.yahoo.bard.webservice.exception.MetadataExceptionHandler;
@@ -18,6 +17,7 @@ import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.util.StreamUtils;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.ResponseFormatResolver;
+import com.yahoo.bard.webservice.web.apirequest.ApiRequestImpl;
 import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequestImpl;
 import com.yahoo.bard.webservice.web.apirequest.ResponsePaginator;
@@ -29,7 +29,6 @@ import com.google.common.collect.Streams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -103,6 +102,8 @@ public class DimensionsServlet extends EndpointServlet {
      * @param perPage  number of values to return per page
      * @param page  the page to start from
      * @param format  the format to use for the response
+     * @param downloadFilename If present, indicates the response should be downloaded by the client with the provided
+     * username. Otherwise indicates the response should be rendered in the browser.
      * @param uriInfo  UriInfo of the request
      * @param containerRequestContext  The context of data provided by the Jersey container for this request
      *
@@ -120,6 +121,7 @@ public class DimensionsServlet extends EndpointServlet {
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @QueryParam("format") String format,
+            @QueryParam("filename") String downloadFilename,
             @Context final UriInfo uriInfo,
             @Context final ContainerRequestContext containerRequestContext
     ) {
@@ -132,6 +134,7 @@ public class DimensionsServlet extends EndpointServlet {
                     null,
                     null,
                     formatResolver.apply(format, containerRequestContext),
+                    downloadFilename,
                     perPage,
                     page,
                     dimensionDictionary
@@ -148,7 +151,7 @@ public class DimensionsServlet extends EndpointServlet {
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "dimensions" : "rows",
                     null
             );
-            LOG.debug("Dimensions Endpoint Response: {}", response.getEntity());
+            LOG.trace("Dimensions Endpoint Response: {}", response.getEntity());
             return response;
         } catch (Throwable t) {
             return exceptionHandler.handleThrowable(
@@ -190,6 +193,7 @@ public class DimensionsServlet extends EndpointServlet {
                     dimensionName,
                     null,
                     null,
+                    null,
                     "",
                     "",
                     dimensionDictionary
@@ -206,7 +210,7 @@ public class DimensionsServlet extends EndpointServlet {
             );
 
             String output = objectMappers.getMapper().writeValueAsString(result);
-            LOG.debug("Dimension Endpoint Response: {}", output);
+            LOG.trace("Dimension Endpoint Response: {}", output);
             responseSender = () -> Response.status(Status.OK).entity(output).build();
         } catch (Throwable t) {
             return exceptionHandler.handleThrowable(
@@ -224,11 +228,17 @@ public class DimensionsServlet extends EndpointServlet {
     /**
      * Endpoint to get values of a dimension.
      *
+     * This implementation calls an overridable method {@link #getPagedRows(DimensionsApiRequest, SearchProvider,
+     * PaginationParameters)}, which fetch pagination of dimension rows.
+     *
+     *
      * @param dimensionName  The dimension
      * @param filterQuery  The filters
      * @param page  The page number
      * @param perPage  The number of rows per page
      * @param format  The format of the response
+     * @param downloadFilename If present, indicates the response should be downloaded by the client with the provided
+     * filename. Otherwise indicates the response should be rendered in the browser.
      * @param uriInfo The injected UriInfo
      * @param containerRequestContext The injected request context
      *
@@ -260,6 +270,7 @@ public class DimensionsServlet extends EndpointServlet {
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @QueryParam("format") String format,
+            @QueryParam("filename") String downloadFilename,
             @Context final UriInfo uriInfo,
             @Context final ContainerRequestContext containerRequestContext
     ) {
@@ -273,6 +284,7 @@ public class DimensionsServlet extends EndpointServlet {
                     dimensionName,
                     filterQuery,
                     formatResolver.apply(format, containerRequestContext),
+                    downloadFilename,
                     perPage,
                     page,
                     dimensionDictionary
@@ -286,15 +298,9 @@ public class DimensionsServlet extends EndpointServlet {
             SearchProvider searchProvider = apiRequest.getDimension().getSearchProvider();
             PaginationParameters paginationParameters = apiRequest
                     .getPaginationParameters()
-                    .orElse(apiRequest.getDefaultPagination());
+                    .orElse(ApiRequestImpl.DEFAULT_PAGINATION);
 
-            Pagination<DimensionRow> pagedRows = apiRequest.getFilters().isEmpty() ?
-                    searchProvider.findAllDimensionRowsPaged(paginationParameters) :
-                    searchProvider.findFilteredDimensionRowsPaged(
-                            apiRequest.getFilters(),
-                            paginationParameters
-                    );
-
+            Pagination<DimensionRow> pagedRows = getPagedRows(apiRequest, searchProvider, paginationParameters);
             Response.ResponseBuilder builder = Response.status(Response.Status.OK);
 
             Stream<Map<String, String>> rows = ResponsePaginator.paginate(builder, pagedRows, uriInfo)
@@ -319,7 +325,7 @@ public class DimensionsServlet extends EndpointServlet {
                     null
             );
 
-            LOG.debug("Dimension Value Endpoint Response: {}", response.getEntity());
+            LOG.trace("Dimension Value Endpoint Response: {}", response.getEntity());
             return response;
         } catch (Throwable t) {
             return exceptionHandler.handleThrowable(
@@ -330,6 +336,31 @@ public class DimensionsServlet extends EndpointServlet {
         } finally {
             RequestLog.stopTiming(this);
         }
+    }
+
+    /***
+     * Get the pagination of dimension rows.
+     * <p>
+     * if there is filter in API request, then apply the filter to the querying dimension rows, otherwise returns all
+     * dimension rows.
+     *
+     * @param apiRequest  The apiRequest
+     * @param searchProvider  The searchProvider
+     * @param paginationParameters  The pagination parameters
+     *
+     * @return Pagination of dimensionRow
+     */
+    protected Pagination<DimensionRow> getPagedRows(
+            DimensionsApiRequest apiRequest,
+            SearchProvider searchProvider,
+            PaginationParameters paginationParameters
+    ) {
+        return apiRequest.getFilters().isEmpty() ?
+                searchProvider.findAllDimensionRowsPaged(paginationParameters) :
+                searchProvider.findFilteredDimensionRowsPaged(
+                        apiRequest.getFilters(),
+                        paginationParameters
+                );
     }
 
     /**
@@ -402,41 +433,6 @@ public class DimensionsServlet extends EndpointServlet {
     }
 
     /**
-     * Get the summary list view of the dimension fields.
-     *
-     * @param dimensionFields  Collection of dimension fields to get the summary view for
-     *
-     * @return Summary list view of the dimension fields
-     *
-     * @deprecated should be private, now the internal usage need is gone, will deprecate in case someone is using it
-     */
-    @Deprecated
-    public static Set<Map<String, String>> getDimensionFieldListSummaryView(
-            Collection<DimensionField> dimensionFields
-    ) {
-        return dimensionFields.stream()
-                .map(DimensionsServlet::getDimensionFieldSummaryView)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-    }
-
-    /**
-     * Get the summary view of the DimensionField.
-     *
-     * @param dimensionField  Dimension Field to get the view of
-     *
-     * @return Summary view of the dimension field
-     *
-     * @deprecated should be private, now the internal usage need is gone, will deprecate in case someone is using it
-     */
-    @Deprecated
-    public static Map<String, String> getDimensionFieldSummaryView(DimensionField dimensionField) {
-        Map<String, String> resultRow = new LinkedHashMap<>();
-        resultRow.put("name", dimensionField.getName());
-        resultRow.put("description", dimensionField.getDescription());
-        return resultRow;
-    }
-
-    /**
      * Get the URL of the dimension.
      *
      * @param dimension  Dimension to get the URL of
@@ -479,7 +475,7 @@ public class DimensionsServlet extends EndpointServlet {
      *
      * @return a description dimension field with name "description"
      */
-    private static String getDescriptionKey(String fieldName) {
+    protected static String getDescriptionKey(String fieldName) {
         return fieldName.contains("description") ? fieldName : fieldName.replace("desc", "description");
     }
 }

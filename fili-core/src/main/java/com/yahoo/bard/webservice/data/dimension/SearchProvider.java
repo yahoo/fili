@@ -13,6 +13,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+
 import javax.validation.constraints.NotNull;
 
 /**
@@ -43,14 +44,23 @@ public interface SearchProvider {
     int getDimensionCardinality();
 
     /**
+     * Gets the number of distinct dimension rows (assuming the key field is unique) in the index.
+     *
+     * @param  refresh If true, clear any cached cardinality and recalculate before returning.
+     *
+     * @return The number of dimension rows for this dimension
+     */
+    default int getDimensionCardinality(boolean refresh) {
+        // If no caching is done, simply delegate
+        return getDimensionCardinality();
+    }
+
+    /**
      * Getter for dimension rows.
      *
      * @return Set of dimension rows the Search Provider has in it's indexes
      *
-     * @deprecated  Searching for dimension rows is moving to a paginated version
-     * ({@link #findAllDimensionRowsPaged}) in order to give greater control to the caller.
      */
-    @Deprecated
     default Set<DimensionRow> findAllDimensionRows() {
         return new LinkedHashSet<>(
                 findAllDimensionRowsPaged(PaginationParameters.EVERYTHING_IN_ONE_PAGE).getPageOfData()
@@ -83,11 +93,7 @@ public interface SearchProvider {
      *
      * @return set of dimension row(s)
      *
-     * @deprecated  Searching for filtered dimension rows is moving to a paginated version
-     * ({@link #findFilteredDimensionRowsPaged})
-     * in order to give greater control to the caller.
      */
-    @Deprecated
     default TreeSet<DimensionRow> findFilteredDimensionRows(Set<ApiFilter> filters) {
         return new TreeSet<>(
                 findFilteredDimensionRowsPaged(filters, PaginationParameters.EVERYTHING_IN_ONE_PAGE).getPageOfData()

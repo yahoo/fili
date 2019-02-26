@@ -4,12 +4,10 @@ package com.yahoo.bard.webservice.table;
 
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
-import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * A TableGroup is a list of schemas.
@@ -37,32 +35,6 @@ public class TableGroup {
         this.tables = tables;
         this.apiMetricNames = apiMetricNames;
         this.dimensions = new LinkedHashSet<>(dimensions);
-    }
-
-    /**
-     * Builds a TableGroup.
-     * A TableGroup contains the dimensions, metrics, and backing physical tables intended to be attached to a
-     * LogicalTable.
-     * <p>
-     * This constructor takes the union of the dimensions on the physical tables as the dimensions of the table
-     * group.
-     *
-     * @param tables  The physical tables for the table group
-     * @param apiMetricNames  The metrics for the table group
-     *
-     * @deprecated TableGroup should not be deriving its dimensions from physical tables, because a logical table may
-     * only surface a subset of the dimensions on its PhysicalTable
-     */
-    @Deprecated
-    public TableGroup(LinkedHashSet<PhysicalTable> tables, Set<ApiMetricName> apiMetricNames) {
-        this(
-                tables,
-                apiMetricNames,
-                tables.stream()
-                        .flatMap(table -> table.getSchema().getColumns(DimensionColumn.class).stream())
-                        .map(DimensionColumn::getDimension)
-                        .collect(Collectors.toCollection(LinkedHashSet::new))
-        );
     }
 
     /**

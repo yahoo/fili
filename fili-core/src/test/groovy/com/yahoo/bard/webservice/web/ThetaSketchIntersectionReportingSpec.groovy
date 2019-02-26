@@ -172,12 +172,16 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
     }
 
     def "getFilteredAggregation returns a set of filteredAggregations for a given aggregation and Filter object"(){
-        expect:
-        resources.fooNoBarFilteredAggregationSet.first() == new FilteredAggregation(
+        setup:
+        FilteredAggregation filteredAggregation = new FilteredAggregation(
                 "fooNoBar-country_id_in_US_IN",
                 resources.fooNoBarAggregation,
                 resources.filter
         )
+        expect:
+        resources.fooNoBarFilteredAggregationSet.any() {
+            it.filter == filteredAggregation.filter
+        }
     }
 
     def "When invalid(non-sketch) metric is used for filtering, IllegalArgumentException is thrown "(){

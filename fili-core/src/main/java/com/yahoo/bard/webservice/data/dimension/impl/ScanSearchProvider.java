@@ -13,6 +13,8 @@ import com.yahoo.bard.webservice.util.DimensionStoreKeyUtils;
 import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.util.SinglePagePagination;
 import com.yahoo.bard.webservice.web.ApiFilter;
+import com.yahoo.bard.webservice.web.DefaultFilterOperation;
+import com.yahoo.bard.webservice.web.FilterOperation;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -77,6 +79,14 @@ public class ScanSearchProvider implements SearchProvider, FilterDimensionRows {
     @Override
     public int getDimensionCardinality() {
         return Integer.parseInt(keyValueStore.get(DimensionStoreKeyUtils.getCardinalityKey()));
+    }
+
+    @Override
+    public int getDimensionCardinality(boolean refresh) {
+        if (refresh) {
+            refreshCardinality();
+        }
+        return getDimensionCardinality();
     }
 
     /**
@@ -266,7 +276,10 @@ public class ScanSearchProvider implements SearchProvider, FilterDimensionRows {
     }
 
     @Override
-    public TreeSet<DimensionRow> startswithFilterOperation(TreeSet<DimensionRow> dimensionRows, ApiFilter filter) {
+    public TreeSet<DimensionRow> startswithFilterOperation(
+            TreeSet<DimensionRow> dimensionRows,
+            ApiFilter filter
+    ) {
         TreeSet<DimensionRow> filteredDimensionRows = new TreeSet<>();
 
         // regex string containing all starts with filter values
@@ -431,7 +444,16 @@ public class ScanSearchProvider implements SearchProvider, FilterDimensionRows {
     private TreeSet<DimensionRow> applyFilters(TreeSet<DimensionRow> dimensionRows, Set<ApiFilter> filters) {
         // filter chain
         for (ApiFilter filter : filters) {
-            switch (filter.getOperation()) {
+            FilterOperation op = filter.getOperation();
+            if (!(op instanceof DefaultFilterOperation)) {
+                LOG.error("Illegal Filter operation : {}, only default filter ops supported", filter.getOperation());
+                throw new IllegalArgumentException(
+                        "Only supports default filter operations: in, notin, startswith, contains, eq"
+                );
+            }
+            DefaultFilterOperation defaultFilterOp = (DefaultFilterOperation) op;
+
+            switch (defaultFilterOp) {
                 case eq:
                     // fall through on purpose since eq and in have the same functionality
                 case in:

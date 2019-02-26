@@ -16,6 +16,7 @@ public class RowNumMaker extends MetricMaker {
 
     private static final RowNumMapper ROW_NUM_MAPPER = new RowNumMapper();
     private static final int DEPENDENT_METRICS_REQUIRED = 0;
+    private static final String DEFAULT_DESCRIPTION = "Generator for Row Numbers";
 
     /**
      * Constructor.
@@ -28,22 +29,11 @@ public class RowNumMaker extends MetricMaker {
     }
 
     @Override
-    protected LogicalMetric makeInner(String metricName, List<String> dependentMetrics) {
-        return new LogicalMetric(
-                null,
-                ROW_NUM_MAPPER,
-                metricName,
-                "Generator for Row Numbers"
-        );
-    }
-
-    @Override
     protected LogicalMetric makeInner(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics) {
         return new LogicalMetric(
                 null,
                 ROW_NUM_MAPPER,
-                logicalMetricInfo.getName(),
-                "Generator for Row Numbers"
+                logicalMetricInfo
         );
     }
 

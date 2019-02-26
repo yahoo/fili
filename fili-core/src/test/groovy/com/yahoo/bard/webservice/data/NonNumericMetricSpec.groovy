@@ -2,10 +2,10 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data
 
-import static com.yahoo.bard.webservice.data.config.names.TestApiMetricName.A_STRING_METRIC
 import static com.yahoo.bard.webservice.data.config.names.TestApiMetricName.A_BOOLEAN_METRIC
 import static com.yahoo.bard.webservice.data.config.names.TestApiMetricName.A_JSON_NODE_METRIC
 import static com.yahoo.bard.webservice.data.config.names.TestApiMetricName.A_NULL_METRIC
+import static com.yahoo.bard.webservice.data.config.names.TestApiMetricName.A_STRING_METRIC
 
 import com.yahoo.bard.webservice.web.endpoints.BaseDataServletComponentSpec
 import com.yahoo.bard.webservice.web.endpoints.DataServlet
@@ -54,22 +54,22 @@ class NonNumericMetricSpec extends BaseDataServletComponentSpec {
                     {
                         "fieldName": "height",
                         "name":"${A_STRING_METRIC.asName()}",
-                        "type": "min"
+                        "type": "longMin"
                     },
                     {
                         "fieldName": "height",
                         "name":"${A_NULL_METRIC.asName()}",
-                        "type": "min"
+                        "type": "longMin"
                     },
                     {
                         "fieldName": "height",
                         "name":"${A_JSON_NODE_METRIC.asName()}",
-                        "type": "min"
+                        "type": "longMin"
                     },
                     {
                         "fieldName": "height",
                         "name":"${A_BOOLEAN_METRIC.asName()}",
-                        "type": "min"
+                        "type": "longMin"
                     }
                 ],
                 "postAggregations": [],

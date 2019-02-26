@@ -44,7 +44,7 @@ public class ThetaSketchEstimatePostAggregation extends FuzzySetPostAggregation 
      *
      * @param fields  List of post aggregation fields
      *
-     * @return New SketchEstimatePostAggregation with provided field and only one aggregator.
+     * @return New ThetaSketchEstimatePostAggregation with provided field and only one aggregator.
      */
     @JsonIgnore
     @Override

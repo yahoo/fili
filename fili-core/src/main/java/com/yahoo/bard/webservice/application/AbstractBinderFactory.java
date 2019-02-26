@@ -53,8 +53,6 @@ import com.yahoo.bard.webservice.data.config.dimension.TypeAwareDimensionLoader;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
-import com.yahoo.bard.webservice.data.filterbuilders.DefaultDruidFilterBuilder;
-import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQueryMerger;
 import com.yahoo.bard.webservice.data.time.GranularityDictionary;
@@ -67,10 +65,15 @@ import com.yahoo.bard.webservice.druid.client.DruidServiceConfig;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.impl.AsyncDruidWebServiceImpl;
 import com.yahoo.bard.webservice.druid.client.impl.HeaderNestingJsonBuilderStrategy;
+import com.yahoo.bard.webservice.druid.model.builders.DefaultDruidHavingBuilder;
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
+import com.yahoo.bard.webservice.druid.model.builders.DruidHavingBuilder;
+import com.yahoo.bard.webservice.druid.model.builders.DruidInFilterBuilder;
+import com.yahoo.bard.webservice.druid.model.builders.DruidOrFilterBuilder;
 import com.yahoo.bard.webservice.druid.model.query.LookbackQuery;
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier;
 import com.yahoo.bard.webservice.druid.util.FieldConverters;
-import com.yahoo.bard.webservice.druid.util.SketchFieldConverter;
+import com.yahoo.bard.webservice.druid.util.ThetaSketchFieldConverter;
 import com.yahoo.bard.webservice.exception.DataExceptionHandler;
 import com.yahoo.bard.webservice.exception.FiliDataExceptionHandler;
 import com.yahoo.bard.webservice.exception.FiliDimensionExceptionHandler;
@@ -96,7 +99,7 @@ import com.yahoo.bard.webservice.web.DefaultResponseFormatResolver;
 import com.yahoo.bard.webservice.web.DimensionApiRequestMapper;
 import com.yahoo.bard.webservice.web.FiliResponseWriter;
 import com.yahoo.bard.webservice.web.FiliResponseWriterSelector;
-import com.yahoo.bard.webservice.web.FilteredSketchMetricsHelper;
+import com.yahoo.bard.webservice.web.FilteredThetaSketchMetricsHelper;
 import com.yahoo.bard.webservice.web.JsonApiResponseWriter;
 import com.yahoo.bard.webservice.web.JsonResponseWriter;
 import com.yahoo.bard.webservice.web.MetricsFilterSetBuilder;
@@ -108,20 +111,21 @@ import com.yahoo.bard.webservice.web.ResponseWriter;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestFactory;
 import com.yahoo.bard.webservice.web.apirequest.DefaultDataApiRequestFactory;
-import com.yahoo.bard.webservice.web.apirequest.DefaultHavingApiGenerator;
 import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequest;
-import com.yahoo.bard.webservice.web.apirequest.HavingGenerator;
 import com.yahoo.bard.webservice.web.apirequest.JobsApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.MetricsApiRequest;
-import com.yahoo.bard.webservice.web.apirequest.PerRequestDictionaryHavingGenerator;
 import com.yahoo.bard.webservice.web.apirequest.SlicesApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.TablesApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.binders.DefaultHavingApiGenerator;
+import com.yahoo.bard.webservice.web.apirequest.binders.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.binders.PerRequestDictionaryHavingGenerator;
 import com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow;
 import com.yahoo.bard.webservice.web.handlers.workflow.RequestWorkflowProvider;
 import com.yahoo.bard.webservice.web.ratelimit.DefaultRateLimiter;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessorFactory;
 import com.yahoo.bard.webservice.web.responseprocessors.ResultSetResponseProcessorFactory;
 import com.yahoo.bard.webservice.web.util.QueryWeightUtil;
+import com.yahoo.bard.webservice.web.util.ResponseUtils;
 
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Metric;
@@ -252,7 +256,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                     bind(metadataDruidWebService).named("metadataDruidWebService").to(DruidWebService.class);
                 }
 
-                // Bind the timeGrain provider
+                // Bind the timeGrain
                 bind(getGranularityDictionary()).to(GranularityDictionary.class);
                 bind(getGranularityParser()).to(GranularityParser.class);
 
@@ -261,6 +265,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 bind(TemplateDruidQueryMerger.class).to(TemplateDruidQueryMerger.class);
                 bind(buildDruidResponseParser()).to(DruidResponseParser.class);
                 bind(buildDruidFilterBuilder()).to(DruidFilterBuilder.class);
+                bind(buildDruidHavingBuilder()).to(DruidHavingBuilder.class);
 
                 bind(buildDataApiRequestFactory()).to(DataApiRequestFactory.class);
 
@@ -276,14 +281,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 // Build the configuration loader and load configuration
                 loader = getConfigurationLoader();
                 loader.load();
-
-                // Bind the configuration dictionaries
-                bind(loader.getDimensionDictionary()).to(DimensionDictionary.class);
-                bind(loader.getMetricDictionary()).to(MetricDictionary.class);
-                bind(loader.getLogicalTableDictionary()).to(LogicalTableDictionary.class);
-                bind(loader.getPhysicalTableDictionary()).to(PhysicalTableDictionary.class);
-                bind(loader.getDictionaries()).to(ResourceDictionaries.class);
-
+                bindDictionaries(this);
                 bind(buildHavingGenerator(loader)).to(HavingGenerator.class);
 
                 // Bind the request mappers
@@ -345,6 +343,8 @@ public abstract class AbstractBinderFactory implements BinderFactory {
 
                 bind(getHttpResponseMaker()).to(HttpResponseMaker.class);
 
+                bind(buildResponseUtils()).to(ResponseUtils.class);
+
                 bind(buildResponseWriter(getMappers())).to(ResponseWriter.class);
 
                 bind(buildResponseFormatResolver()).to(ResponseFormatResolver.class);
@@ -376,6 +376,20 @@ public abstract class AbstractBinderFactory implements BinderFactory {
             }
 
         };
+    }
+
+    /**
+     * Binds all the resource dictionaries.
+     *
+     * @param binder The binder to bind the dictionaries to.
+     */
+    private void bindDictionaries(AbstractBinder binder) {
+        // Bind the configuration dictionaries
+        binder.bind(loader.getDimensionDictionary()).to(DimensionDictionary.class);
+        binder.bind(loader.getMetricDictionary()).to(MetricDictionary.class);
+        binder.bind(loader.getLogicalTableDictionary()).to(LogicalTableDictionary.class);
+        binder.bind(loader.getPhysicalTableDictionary()).to(PhysicalTableDictionary.class);
+        binder.bind(loader.getDictionaries()).to(ResourceDictionaries.class);
     }
 
     /**
@@ -600,16 +614,16 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      * @return An instance of SketchFieldConverter
      */
     protected FieldConverters initializeSketchConverter() {
-        return new SketchFieldConverter();
+        return new ThetaSketchFieldConverter();
     }
 
     /**
-     * Initialize the FilteredMetricsHelper. By default it is FilteredSketchMetricsHelper
+     * Initialize the MetricsFilterSetBuilder. By default it is MetricsFilterSetBuilder
      *
-     * @return An instance of FilteredSketchMetricsHelper
+     * @return An instance of MetricsFilterSetBuilder
      */
     protected MetricsFilterSetBuilder initializeMetricsFilterSetBuilder() {
-        return new FilteredSketchMetricsHelper();
+        return new FilteredThetaSketchMetricsHelper(buildDruidFilterBuilder());
     }
 
     /**
@@ -709,12 +723,28 @@ public abstract class AbstractBinderFactory implements BinderFactory {
 
     /**
      * Creates an object that constructs Druid dimension filters from Bard dimension filters.
-     * Constructs a {@link DefaultDruidFilterBuilder} by default.
+     * <p>
+     * Constructs a {@link DruidInFilterBuilder} by default.
      *
      * @return An object to build Druid filters from API filters
      */
     protected DruidFilterBuilder buildDruidFilterBuilder() {
-        return new DefaultDruidFilterBuilder();
+        if (BardFeatureFlag.DEFAULT_IN_FILTER.isOn()) {
+            return new DruidInFilterBuilder();
+        } else {
+            return new DruidOrFilterBuilder();
+        }
+    }
+
+    /**
+     * Creates an object that constructs Druid dimension filters from Bard dimension filters.
+     * <p>
+     * Constructs a {@link DruidInFilterBuilder} by default.
+     *
+     * @return An object to build Druid filters from API filters
+     */
+    protected DruidHavingBuilder buildDruidHavingBuilder() {
+        return new DefaultDruidHavingBuilder();
     }
 
     /**
@@ -1086,6 +1116,15 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     }
 
     /**
+     * Builds a response utils object with only CSV as a default always csv format.
+     *
+     * @return the response utils
+     */
+    protected ResponseUtils buildResponseUtils() {
+        return new ResponseUtils();
+    }
+
+    /**
      * Builder for ResponseWriter, a serializer allowing customized response from Fili.
      *
      * @param mappers Shared instance of {@link com.fasterxml.jackson.databind.ObjectMapper}
@@ -1230,22 +1269,6 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      */
     protected DruidWebService buildDruidWebService(ObjectMapper mapper) {
         return buildDruidWebService(DruidClientConfigHelper.getServiceConfig(), mapper);
-    }
-
-    /**
-     * Create a DruidWebService for the non-UI connection.
-     * <p>
-     * Provided so subclasses can implement alternative druid web service implementations for the non-UI connection
-     *
-     * @param mapper shared instance of {@link com.fasterxml.jackson.databind.ObjectMapper}
-     *
-     * @return A DruidWebService
-     *
-     * @deprecated removed non-ui webservice, this method is no longer used
-     */
-    @Deprecated
-    protected DruidWebService buildNonUiDruidWebService(ObjectMapper mapper) {
-        return buildDruidWebService(DruidClientConfigHelper.getNonUiServiceConfig(), mapper);
     }
 
     /**

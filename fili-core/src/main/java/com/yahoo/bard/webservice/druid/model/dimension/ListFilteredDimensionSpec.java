@@ -2,9 +2,14 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.dimension;
 
+import com.yahoo.bard.webservice.data.dimension.Dimension;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Filtered DimensionSpec using a List of filter values on Druid multi-dimensional value dimensions.
@@ -49,6 +54,12 @@ public class ListFilteredDimensionSpec extends DimensionSpec {
 
     public Boolean getIsWhitelist() {
         return isWhitelist;
+    }
+
+    @JsonIgnore
+    @Override
+    public Optional<Dimension> getConfigDimension() {
+        return getDelegate().getConfigDimension();
     }
 
     // CHECKSTYLE:OFF

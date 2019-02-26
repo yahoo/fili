@@ -44,7 +44,9 @@ public class ThetaSketchSetOperationMaker extends MetricMaker {
 
         // Get the ThetaSketchSetOperationPostAggregation operands from the dependent metrics
         List<PostAggregation> sketchPostAggregations = dependentMetrics.stream()
-                .map(this::getSketchField)
+                .map(metrics::get)
+                .map(LogicalMetric::getMetricField)
+                .map(MetricMaker::getSketchField)
                 .collect(Collectors.toList());
 
         // Create the ThetaSketchSetOperationPostAggregation

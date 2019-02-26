@@ -2,15 +2,15 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.handlers;
 
+import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
-import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
-import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 import com.yahoo.bard.webservice.web.responseprocessors.WeightCheckResponseProcessor;
 import com.yahoo.bard.webservice.web.util.QueryWeightUtil;

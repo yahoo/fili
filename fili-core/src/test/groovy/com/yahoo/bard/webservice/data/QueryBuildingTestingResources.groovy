@@ -35,18 +35,22 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetricColumn
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
+import com.yahoo.bard.webservice.data.time.AllGranularity
 import com.yahoo.bard.webservice.data.time.TimeGrain
 import com.yahoo.bard.webservice.data.volatility.DefaultingVolatileIntervalsService
 import com.yahoo.bard.webservice.data.volatility.VolatileIntervalsFunction
 import com.yahoo.bard.webservice.data.volatility.VolatileIntervalsService
-import com.yahoo.bard.webservice.data.time.AllGranularity
+import com.yahoo.bard.webservice.druid.model.builders.DefaultDruidHavingBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidHavingBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidInFilterBuilder
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService
 import com.yahoo.bard.webservice.table.Column
-import com.yahoo.bard.webservice.table.StrictPhysicalTable
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.LogicalTableDictionary
 import com.yahoo.bard.webservice.table.PhysicalTable
+import com.yahoo.bard.webservice.table.StrictPhysicalTable
 import com.yahoo.bard.webservice.table.TableGroup
 import com.yahoo.bard.webservice.table.TableIdentifier
 import com.yahoo.bard.webservice.table.availability.StrictAvailability
@@ -55,7 +59,7 @@ import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 import org.joda.time.DateTimeZone
 import org.joda.time.Interval
 
-public class QueryBuildingTestingResources {
+class QueryBuildingTestingResources {
 
     // Aggregatable dimensions, numbered for identification
     public Dimension d1, d2, d3, d4, d5
@@ -101,11 +105,15 @@ public class QueryBuildingTestingResources {
 
     public DataSourceMetadataService metadataService
 
-    public QueryBuildingTestingResources() {
+    public DruidFilterBuilder druidFilterBuilder = new DruidInFilterBuilder()
+
+    public DruidHavingBuilder druidHavingBuilder = new DefaultDruidHavingBuilder()
+
+    QueryBuildingTestingResources() {
         init()
     }
 
-    public QueryBuildingTestingResources init() {
+    QueryBuildingTestingResources init() {
 
         DateTimeZone.setDefault(UTC)
         def ages = ["1": "0-10", "2": "11-14", "3": "14-29", "4": "30-40", "5": "41-59", "6": "60+"]

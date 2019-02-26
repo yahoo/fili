@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.web.endpoints
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.util.JsonSortStrategy
+
 import spock.lang.Specification
 
 import javax.ws.rs.core.Response

@@ -18,8 +18,8 @@ import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable
-import com.yahoo.bard.webservice.table.StrictPhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTableSchema
+import com.yahoo.bard.webservice.table.StrictPhysicalTable
 import com.yahoo.bard.webservice.table.TableGroup
 
 import org.joda.time.DateTimeZone

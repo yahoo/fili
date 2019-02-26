@@ -2,8 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data;
 
-import static com.yahoo.bard.webservice.web.DefaultResponseFormatType.CSV;
-import static com.yahoo.bard.webservice.web.DefaultResponseFormatType.JSON;
 import static com.yahoo.bard.webservice.web.handlers.PartialDataRequestHandler.getPartialIntervalsWithDefault;
 import static com.yahoo.bard.webservice.web.handlers.VolatileDataRequestHandler.getVolatileIntervalsWithDefault;
 import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys.API_METRIC_COLUMN_NAMES;
@@ -19,6 +17,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
+import com.yahoo.bard.webservice.web.DefaultResponseFormatType;
 import com.yahoo.bard.webservice.web.PreResponse;
 import com.yahoo.bard.webservice.web.ResponseData;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
@@ -38,8 +37,6 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
@@ -63,6 +60,7 @@ public class HttpResponseMaker {
      * @param responseWriter  Serializer which takes responseData and apiRequest, outputs formatted data stream.
      * @param responseUtils A class providing utility methods for processing response headers.
      */
+    @Inject
     public HttpResponseMaker(
             ObjectMappersSuite objectMappers,
             DimensionDictionary dimensionDictionary,
@@ -82,7 +80,6 @@ public class HttpResponseMaker {
      * @param dimensionDictionary  The dimension dictionary from which to look up dimensions by name
      * @param responseWriter  Serializer which takes responseData and apiRequest, outputs formatted data stream.
      */
-    @Inject
     public HttpResponseMaker(
             ObjectMappersSuite objectMappers,
             DimensionDictionary dimensionDictionary,
@@ -134,7 +131,7 @@ public class HttpResponseMaker {
      *
      * @return Build response with requested format and associated meta data info.
      */
-    private ResponseBuilder createResponseBuilder(
+    protected ResponseBuilder createResponseBuilder(
             ResultSet resultSet,
             ResponseContext responseContext,
             ApiRequest apiRequest,
@@ -153,7 +150,7 @@ public class HttpResponseMaker {
         // Add headers for content type
         // default response format is JSON
         if (responseFormatType == null) {
-            responseFormatType = JSON;
+            responseFormatType = DefaultResponseFormatType.JSON;
         }
 
         LinkedHashMap<String, LinkedHashSet<DimensionField>> dimensionToDimensionFieldMap =
@@ -187,20 +184,14 @@ public class HttpResponseMaker {
             responseWriter.write(apiRequest, responseData, outputStream);
         };
 
-        // pass stream handler as response
+//      pass stream handler as response
         ResponseBuilder rspBuilder = javax.ws.rs.core.Response.ok(stream);
-
-        if (CSV.accepts(responseFormatType)) {
-            return rspBuilder
-                    .header(HttpHeaders.CONTENT_TYPE, "text/csv; charset=utf-8")
-                    .header(
-                            HttpHeaders.CONTENT_DISPOSITION,
-                            responseUtils.getCsvContentDispositionValue(containerRequestContext)
-                    );
-        } else {
-            return rspBuilder
-                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON + "; charset=utf-8");
-        }
+        return buildAndAddResponseHeaders(
+                rspBuilder,
+                responseFormatType,
+                containerRequestContext,
+                apiRequest.getDownloadFilename().orElse(null)
+        );
     }
 
     /**
@@ -259,5 +250,52 @@ public class HttpResponseMaker {
                 pagination,
                 paginationLinks
         );
+    }
+
+    /**
+     * Builds the headers for the response and gives them to the provided response builder to be added to the response.
+     *
+     * @param rspBuilder  ResponseBuilder that handles adding the headers to the response
+     * @param responseFormatType  The type of the response
+     * @param containerRequestContext  The request context
+     *
+     * @return the response builder that has had the headers added
+     */
+    protected ResponseBuilder buildAndAddResponseHeaders(
+            ResponseBuilder rspBuilder,
+            ResponseFormatType responseFormatType,
+            ContainerRequestContext containerRequestContext
+    ) {
+        return buildAndAddResponseHeaders(rspBuilder, responseFormatType, containerRequestContext, null);
+    }
+
+    /**
+     * Builds the headers for the response and gives them to the provided response builder to be added to the response.
+     *
+     * @param rspBuilder  ResponseBuilder that handles adding the headers to the response
+     * @param responseFormatType  The type of the response
+     * @param containerRequestContext  The request context
+     * @param downloadFilename  The filename the response should be downloaded as. Null or empty indicates the response
+     * should not be downloaded and instead rendered by the browser
+     *
+     * @return the response builder that has had the headers added
+     */
+    protected ResponseBuilder buildAndAddResponseHeaders(
+            ResponseBuilder rspBuilder,
+            ResponseFormatType responseFormatType,
+            ContainerRequestContext containerRequestContext,
+            String downloadFilename
+    ) {
+        Map<String, String> responseHeaders = responseUtils.buildResponseFormatHeaders(
+                containerRequestContext,
+                downloadFilename,
+                responseFormatType
+        );
+
+        ResponseBuilder responseBuilderWithHeaders = rspBuilder;
+        for (Map.Entry<String, String> entry : responseHeaders.entrySet()) {
+            responseBuilderWithHeaders = responseBuilderWithHeaders.header(entry.getKey(), entry.getValue());
+        }
+        return responseBuilderWithHeaders;
     }
 }

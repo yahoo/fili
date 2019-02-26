@@ -9,7 +9,9 @@ public enum BardFeatureFlag implements FeatureFlag {
 
     CURRENT_MACRO_USES_LATEST("current_macro_uses_latest"),
     PARTIAL_DATA("partial_data_enabled"),
+    /** Use {@link CacheFeatureFlag#TTL} instead. */
     @Deprecated DRUID_CACHE("druid_cache_enabled"),
+    /** Use {@link CacheFeatureFlag#LOCAL_SIGNATURE} instead. */
     @Deprecated DRUID_CACHE_V2("druid_cache_v2_enabled"),
     QUERY_SPLIT("query_split_enabled"),
     CACHE_PARTIAL_DATA("cache_partial_data"),
@@ -20,7 +22,8 @@ public enum BardFeatureFlag implements FeatureFlag {
     DRUID_COORDINATOR_METADATA("druid_coordinator_metadata_enabled"),
     DRUID_LOOKUP_METADATA("druid_lookup_metadata_enabled"),
     DRUID_DIMENSIONS_LOADER("druid_dimensions_loader_enabled"),
-    CASE_SENSITIVE_KEYS("case_sensitive_keys_enabled");
+    CASE_SENSITIVE_KEYS("case_sensitive_keys_enabled"),
+    DEFAULT_IN_FILTER("default_in_filter_enabled");
 
     static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 

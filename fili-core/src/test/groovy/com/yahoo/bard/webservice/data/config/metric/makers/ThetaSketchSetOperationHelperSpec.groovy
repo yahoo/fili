@@ -40,7 +40,7 @@ class ThetaSketchSetOperationHelperSpec extends Specification {
         List<FieldAccessorPostAggregation> resultAggsList = new ArrayList<>()
         for (PostAggregation pa : resultPostAgg.getFields()) {
             FieldAccessorPostAggregation fa = (FieldAccessorPostAggregation) pa;
-            resultAggsList.add(fa.getAggregation())
+            resultAggsList.add(fa.getMetricField())
         }
         resultAggsList == filteredAggregationList
     }

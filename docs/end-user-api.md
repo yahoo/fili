@@ -24,6 +24,7 @@ Table of Contents
 - [Query Options](#query-options)
     - [Pagination / Limit](#pagination--limit)
     - [Response Format](#response-format)
+    - [Filename](#filename)
     - [Filtering](#filtering)
     - [Having](#having)
     - [Sorting](#sorting)
@@ -292,6 +293,7 @@ supported, and how the use the options:
 
 - [Pagination / Limit](#pagination--limit)
 - [Response Format](#response-format)
+- [Filename](#filename)
 - [Filtering](#filtering)
 - [Having](#having)
 - [Dimension Field Selection](#dimension-field-selection)
@@ -465,6 +467,19 @@ dateTime,gender|id,gender|desc,pageViews
     ]
 }
 ```
+
+### Filename ###
+
+The default naming formula can produce attachments with long, hard to parse names. Fili provides the `filename` query
+string parameter, which specifies a filename for the result attachment to be downloaded as. The format of the attachment
+is determined by the `format` parameter defined above. As such, do not provide a file extension to the `filename` query.
+
+For example, the [query](https://sampleapp.fili.io/v1/data/network/day/gender?metrics=pageViews&dateTime=2014-09-01/2014-09-02&format=json&filename=data): `GET https://sampleapp.fili.io/v1/data/network/day/gender?metrics=pageViews&dateTime=2014-09-01/2014-09-02&format=json&filename=data`
+
+downloads an attachment `data.json`
+
+The presence of the `filename` parameter indicates that the response should be downloaded as an attachment. Otherwise 
+the response is rendered by the browser. The exception to this is the CSV format, which is always downloaded.
 
 ### Filtering ###
 
@@ -743,13 +758,16 @@ If the ticket is not available in the system, we get a 404 error with the messag
 The user may access the results of a query by sending a `GET` request to `jobs/TICKET/results`. This
 resource takes the following parameters:
 
- 1. **`format`** - Allows the user to specify a response format, i.e. csv, or JSON. This behaves
+1. **`format`** - Allows the user to specify a response format, i.e. csv, or JSON. This behaves
 just like the [`format`](#response-format) parameter on queries sent to the `data` endpoint.
 
-2. **`page`, `perPage`** - The [pagination](#pagination--limit) parameters. Their behavior is the same as when sending
+2. **`filename`** - Allows the user to specify a filename for the result to be downloaded as. This behaves
+just like the [`filename`](#filename) parameter on queries sent to the `data` endpoint.
+
+3. **`page`, `perPage`** - The [pagination](#pagination--limit) parameters. Their behavior is the same as when sending
 a query to the `data` endpoint, and allow the user to get pages of the results.
 
-3. **`asyncAfter`** - Allows the user to specify how long they are willing to wait for results from the
+4. **`asyncAfter`** - Allows the user to specify how long they are willing to wait for results from the
 result store. Behaves like the [`asyncAfter`](async) parameter on the `data` endpoint.
 
 If the results for the given ticket are ready, we get the results in the format specified. Otherwise, we get the

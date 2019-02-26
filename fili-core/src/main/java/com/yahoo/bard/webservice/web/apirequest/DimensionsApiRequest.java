@@ -32,6 +32,8 @@ public interface DimensionsApiRequest extends ApiRequest {
 
     DimensionsApiRequest withFilters(Set<ApiFilter> filters);
 
+    DimensionsApiRequest withDownloadFilename(String downloadFilename);
+
     LinkedHashSet<Dimension> getDimensions();
 
     Dimension getDimension();

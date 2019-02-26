@@ -4,7 +4,6 @@ import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService
 import com.yahoo.bard.webservice.table.availability.AvailabilityTestingUtils
-import com.yahoo.bard.webservice.web.endpoints.BaseDataServletComponentSpec
 import com.yahoo.bard.webservice.web.endpoints.DataServlet
 import com.yahoo.bard.webservice.web.endpoints.JobsServlet
 

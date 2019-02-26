@@ -58,7 +58,7 @@ class AlternateTimezoneDailyAvgWeekSpec extends BaseDataServletComponentSpec {
                                 "fieldName": "users",
                                 "name": "users",
                                 "size": 16384,
-                                "type": "sketchMerge"
+                                "type": "thetaSketch"
                             }
                     ],
                     "dataSource": {
@@ -80,7 +80,7 @@ class AlternateTimezoneDailyAvgWeekSpec extends BaseDataServletComponentSpec {
                                 "type": "fieldAccess"
                             },
                                 "name": "users_estimate",
-                                "type": "sketchEstimate"
+                                "type": "thetaSketchEstimate"
                             },
                             {
                                 "name": "one",

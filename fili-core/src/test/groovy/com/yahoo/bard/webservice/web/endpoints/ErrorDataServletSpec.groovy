@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.web.endpoints
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.TOP_N
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.ACCEPT_FORMAT_INVALID
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DATE_TIME_SORT_VALUE_INVALID
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSIONS_NOT_IN_TABLE
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSIONS_UNDEFINED
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_INVALID
@@ -22,7 +23,6 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_METRICS_UNDE
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_SCHEMA_UNDEFINED
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_UNDEFINED
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.UNKNOWN_GRANULARITY
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DATE_TIME_SORT_VALUE_INVALID
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.config.SystemConfig
@@ -233,7 +233,7 @@ class ErrorDataServletSpec extends Specification {
             }"""
 
         when:
-        Response r = jtb.getHarness().target("data/shapes/day/color")
+        Response r = jtb.getHarness().target("data/shapes/day/")
                 .queryParam("metrics","limbs")
                 .queryParam("dateTime","2014-09-01%2F2014-09-10")
                 .request().get()
@@ -620,7 +620,7 @@ class ErrorDataServletSpec extends Specification {
 
         when:
         Response r = jtb.getHarness().target("data/shapes/day/color")
-                .queryParam("metrics","color")
+                .queryParam("metrics","height")
                 .queryParam("dateTime","")
                 .request().get()
 

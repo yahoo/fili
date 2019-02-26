@@ -2,9 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table;
 
-import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.config.names.DataSourceName;
-import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
+import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
@@ -117,19 +116,6 @@ public interface PhysicalTable extends Table {
      * table's time grain.
      */
     DateTime getTableAlignment();
-
-    /**
-     * Get the time grain from granularity.
-     * Physical tables must have time zone associated time grains.
-     *
-     * @return The time grain of this physical table
-     *
-     * @deprecated use getSchema().getTimeGrain()
-     */
-    @Deprecated
-    default ZonedTimeGrain getTimeGrain() {
-        return getSchema().getTimeGrain();
-    }
 
     /**
      * Create a constrained copy of this table.

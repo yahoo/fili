@@ -30,13 +30,12 @@ public interface FieldConverters {
     SketchAggregation asInnerSketch(SketchAggregation candidate);
 
     /**
-     * Get the candidate SketchAggregation as a SketchEstimatePostAggregation.
+     * Get the candidate SketchAggregation as a ThetaSketchEstimatePostAggregation.
      *
      * @param candidate  SketchAggregation to "convert"
      *
-     * @return The SketchAggregation as a SketchEstimatePostAggregation
+     * @return The SketchAggregation as a ThetaSketchEstimatePostAggregation
      */
-    @Deprecated
     FuzzySetPostAggregation asSketchEstimate(SketchAggregation candidate);
 
     /**

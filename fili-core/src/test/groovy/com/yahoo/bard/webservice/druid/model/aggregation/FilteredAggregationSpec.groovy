@@ -8,6 +8,7 @@ import static org.joda.time.DateTimeZone.UTC
 import com.yahoo.bard.webservice.data.config.metric.MetricInstance
 import com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName
+import com.yahoo.bard.webservice.data.config.names.TableName
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
@@ -15,19 +16,22 @@ import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
-import com.yahoo.bard.webservice.data.filterbuilders.DefaultDruidFilterBuilder
-import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidOrFilterBuilder
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.Column
-import com.yahoo.bard.webservice.table.StrictPhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTable
+import com.yahoo.bard.webservice.table.StrictPhysicalTable
 import com.yahoo.bard.webservice.web.ApiFilter
 import com.yahoo.bard.webservice.web.FilteredThetaSketchMetricsHelper
 import com.yahoo.bard.webservice.web.MetricsFilterSetBuilder
+import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders
+
+import org.apache.commons.lang3.tuple.Pair
 
 import spock.lang.Specification
 
@@ -42,6 +46,8 @@ class FilteredAggregationSpec extends Specification{
     KeyValueStoreDimension ageDimension
     KeyValueStoreDimension genderDimension
     static MetricsFilterSetBuilder oldBuilder = FieldConverterSupplier.metricsFilterSetBuilder
+
+    FilterBinders filterBinders = FilterBinders.INSTANCE
 
     def setupSpec() {
         FieldConverterSupplier.metricsFilterSetBuilder = new FilteredThetaSketchMetricsHelper()
@@ -64,7 +70,7 @@ class FilteredAggregationSpec extends Specification{
         Set<Column> columns = [new DimensionColumn(ageDimension)] as Set
 
         PhysicalTable physicalTable = new StrictPhysicalTable(
-                "NETWORK",
+                TableName.of("NETWORK"),
                 DAY.buildZonedTimeGrain(UTC),
                 columns,
                 [:],
@@ -82,15 +88,13 @@ class FilteredAggregationSpec extends Specification{
         genderDependentMetricAgg.withName(_) >> genderDependentMetricAgg
         genderDependentMetricAgg.withFieldName(_) >> genderDependentMetricAgg
 
-        LogicalMetric logicalMetric = new LogicalMetric(null, null, filtered_metric_name)
+        Set<ApiFilter> filterSet = [filterBinders.generateApiFilter("age|id-in[114,125]", dimensionDictionary)] as Set
 
-        Set<ApiFilter> filterSet = [new ApiFilter("age|id-in[114,125]", dimensionDictionary)] as Set
-
-        DruidFilterBuilder filterBuilder = new DefaultDruidFilterBuilder()
+        DruidFilterBuilder filterBuilder = new DruidOrFilterBuilder()
         filter1  = filterBuilder.buildFilters([(ageDimension): filterSet])
 
         filter2 = filterBuilder.buildFilters(
-                [(ageDimension): [new ApiFilter("age|id-in[114]", dimensionDictionary)] as Set]
+                [(ageDimension): [filterBinders.generateApiFilter("age|id-in[114]", dimensionDictionary)] as Set]
         )
 
         filteredAgg = new FilteredAggregation("FOO_NO_BAR-114_127", metricAgg, filter1)
@@ -161,6 +165,29 @@ class FilteredAggregationSpec extends Specification{
         expect:
         filteredAgg.getAggregation().getFieldName() == "FOO_NO_BAR_SKETCH"
         filteredAgg.getAggregation().getName() == "FOO_NO_BAR-114_127"
+    }
+
+    def "test nesting pushes filter to bottom"() {
+        setup:
+        Pair<Optional<Aggregation>, Optional<Aggregation>> baseExpectedNestedAggs = filteredAgg.getAggregation().nest()
+
+        when:
+        Pair<Optional<Aggregation>, Optional<Aggregation>> nestedAggs = filteredAgg.nest()
+        Aggregation inner = nestedAggs.getRight().get()
+        Aggregation outer = nestedAggs.getLeft().get()
+
+        then:
+        inner instanceof FilteredAggregation
+        inner.getType() == "filtered"
+        ((FilteredAggregation) inner).getFilter() == filter1
+        inner.getName() == baseExpectedNestedAggs.getRight().get().getName()
+        inner.getFieldName() == baseExpectedNestedAggs.getRight().get().getFieldName()
+
+        and:
+        outer instanceof ThetaSketchAggregation
+        outer.getType() == baseExpectedNestedAggs.getLeft().get().getType()
+        outer.getName() == baseExpectedNestedAggs.getLeft().get().getName()
+        outer.getFieldName() == baseExpectedNestedAggs.getLeft().get().getFieldName()
     }
 
     def Dimension buildSimpleDimension(String name) {

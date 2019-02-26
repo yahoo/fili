@@ -2,22 +2,22 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest
 
-import com.yahoo.bard.webservice.async.jobs.JobTestUtils
-import com.yahoo.bard.webservice.async.jobs.stores.JobRowFilter
-import com.yahoo.bard.webservice.async.jobs.stores.ApiJobStore
 import com.yahoo.bard.webservice.async.broadcastchannels.BroadcastChannel
+import com.yahoo.bard.webservice.async.broadcastchannels.SimpleBroadcastChannel
+import com.yahoo.bard.webservice.async.jobs.JobTestUtils
 import com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField
-import com.yahoo.bard.webservice.async.jobs.payloads.DefaultJobPayloadBuilder
-import com.yahoo.bard.webservice.async.jobs.stores.HashJobStore
-import com.yahoo.bard.webservice.async.preresponses.stores.HashPreResponseStore
 import com.yahoo.bard.webservice.async.jobs.jobrows.JobField
 import com.yahoo.bard.webservice.async.jobs.jobrows.JobRow
+import com.yahoo.bard.webservice.async.jobs.payloads.DefaultJobPayloadBuilder
 import com.yahoo.bard.webservice.async.jobs.payloads.JobPayloadBuilder
+import com.yahoo.bard.webservice.async.jobs.stores.ApiJobStore
+import com.yahoo.bard.webservice.async.jobs.stores.HashJobStore
+import com.yahoo.bard.webservice.async.jobs.stores.JobRowFilter
+import com.yahoo.bard.webservice.async.preresponses.stores.HashPreResponseStore
 import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore
 import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseTestingUtils
-import com.yahoo.bard.webservice.async.broadcastchannels.SimpleBroadcastChannel
 import com.yahoo.bard.webservice.web.BadApiRequestException
-import com.yahoo.bard.webservice.web.FilterOperation
+import com.yahoo.bard.webservice.web.DefaultFilterOperation
 import com.yahoo.bard.webservice.web.JobNotFoundException
 import com.yahoo.bard.webservice.web.JobRequestFailedException
 import com.yahoo.bard.webservice.web.PreResponse
@@ -157,7 +157,7 @@ class JobsApiRequestImplSpec extends Specification {
         filters.size() == 1
         JobRowFilter filter = filters[0]
         filter.jobField?.name == "userId"
-        filter.operation == FilterOperation.valueOf("eq")
+        filter.operation == DefaultFilterOperation.fromString("eq")
         filter.values == ["foo"] as Set
     }
 
@@ -173,12 +173,12 @@ class JobsApiRequestImplSpec extends Specification {
 
         JobRowFilter filter1 = filters[0]
         filter1.jobField?.name == "userId"
-        filter1.operation == FilterOperation.valueOf("eq")
+        filter1.operation == DefaultFilterOperation.fromString("eq")
         filter1.values == ["foo"] as Set
 
         JobRowFilter filter2 = filters[1]
         filter2.jobField?.name == "status"
-        filter2.operation == FilterOperation.valueOf("eq")
+        filter2.operation == DefaultFilterOperation.fromString("eq")
         filter2.values == ["success"] as Set
     }
 
