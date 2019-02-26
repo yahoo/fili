@@ -140,7 +140,7 @@ public class SlicesServlet extends EndpointServlet {
                     null
             );
 
-            LOG.debug("Slice Endpoint Response: {}", response.getEntity());
+            LOG.trace("Slice Endpoint Response: {}", response.getEntity());
             return response;
         } catch (Throwable t) {
             return exceptionHandler.handleThrowable(
@@ -205,7 +205,7 @@ public class SlicesServlet extends EndpointServlet {
             }
 
             String output = objectMappers.getMapper().writeValueAsString(apiRequest.getSlice());
-            LOG.debug("Slice Endpoint Response: {}", output);
+            LOG.trace("Slice Endpoint Response: {}", output);
             return Response.status(Response.Status.OK).entity(output).build();
         } catch (Throwable t) {
             return exceptionHandler.handleThrowable(
