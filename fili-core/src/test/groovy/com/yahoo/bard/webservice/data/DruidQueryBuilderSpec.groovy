@@ -9,6 +9,7 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.WEEK
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.YEAR
 import static org.joda.time.DateTimeZone.UTC
 
+import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder
 import com.yahoo.bard.webservice.druid.model.builders.DruidOrFilterBuilder
@@ -149,7 +150,7 @@ public class DruidQueryBuilderSpec extends Specification {
                 DAY.buildZonedTimeGrain(UTC),
                 [] as Set,
                 [:],
-                Mock(DataSourceMetadataService)
+                Mock(DataSourceMetadataService) { getAvailableIntervalsByDataSource(_ as DataSourceName) >> [:]}
         )
         Filter druidFilter = DRUID_FILTER_BUILDER.buildFilters([(resources.d3): apiSet])
         ZonedTimeGrain granularity = WEEK.buildZonedTimeGrain(UTC)
@@ -250,7 +251,7 @@ public class DruidQueryBuilderSpec extends Specification {
                 DAY.buildZonedTimeGrain(UTC),
                 [] as Set,
                 [:],
-                Mock(DataSourceMetadataService)
+                Mock(DataSourceMetadataService) { getAvailableIntervalsByDataSource(_ as DataSourceName) >> [:]}
         )
         Filter filter = DRUID_FILTER_BUILDER.buildFilters([(resources.d3): apiSet])
         ZonedTimeGrain granularity = YEAR.buildZonedTimeGrain(UTC)

@@ -72,6 +72,13 @@ Current
 
 ### Changed:
 
+- [Strict Availability no longer returns no availability when queried with constraint with no columns](https://github.com/yahoo/fili/issues/862)
+  * Currently, `StrictAvailability.getAvailableIntervals(Constraint)` returns an empty interval list when called with
+  a constraint with an empty column list. This behavior is now changed to defer the call to 
+  `StrictAvailability.getAvailableIntervals()`
+  * This behavior change is only relevant to StrictAvailability, all other default availability implementations are 
+  composite availabilities and defer this call to their underlying availabilities. 
+
 - [Change log level for several servlet](https://github.com/yahoo/fili/issues/852)
   * `SlicesServlet`, `DimensionsServlet`, `MetricsServlet`, `TablesServlet`, `FeatureFlagsServlet` all has debug level 
   log for the entire query response. Change log level to trace to avoid log spamming.
