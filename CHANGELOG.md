@@ -170,6 +170,9 @@ Current
 
 ### Fixed:
 
+- [Fixed many compile warnings and other issues](https://github.com/yahoo/fili/pull/858)
+    * Many minor syntax and structual issues resolved.
+
 - [Fixed FilteredAggregation nesting behavior](https://github.com/yahoo/fili/issues/839)
     * Currently, FilteredAggregation effectively makes a second copy of its wrapped aggregation, and the inner copy will
     be wrapped with the filter and the outer query won't
