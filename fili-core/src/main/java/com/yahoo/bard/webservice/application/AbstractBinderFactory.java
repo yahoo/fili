@@ -145,7 +145,6 @@ import rx.subjects.PublishSubject;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.lang.reflect.Constructor;
 import java.time.Clock;
 import java.time.ZoneId;
 import java.util.Arrays;
@@ -1243,9 +1242,10 @@ public abstract class AbstractBinderFactory implements BinderFactory {
         String customSupplierClassString = SYSTEM_CONFIG.getStringProperty(DRUID_HEADER_SUPPLIER_CLASS, null);
         if (customSupplierClassString != null && !customSupplierClassString.equals("")) {
             try {
-                Class<?> c = Class.forName(customSupplierClassString);
-                Constructor<?> constructor = c.getConstructor();
-                supplier = (Supplier<Map<String, String>>) constructor.newInstance();
+                @SuppressWarnings("unchecked")
+                Class<? extends Supplier<Map<String, String>>> c = (Class) Class
+                        .forName(customSupplierClassString).asSubclass(Supplier.class);
+                supplier = c.getConstructor().newInstance();
             } catch (Exception e) {
                 LOG.error(
                         "Unable to load the Druid query header supplier, className: {}, exception: {}",

@@ -91,8 +91,6 @@ public abstract class BaseTableLoader implements TableLoader {
                 tableDefinitions
         );
 
-        PhysicalTableDictionary physicalTableDictionary = dictionaries.getPhysicalDictionary();
-
         // Get the physical table from physical table dictionary, if not exist, build it and put it in dictionary
         LinkedHashSet<PhysicalTable> physicalTables = currentTableGroupTableNames.stream()
                 .map(TableName::asName)

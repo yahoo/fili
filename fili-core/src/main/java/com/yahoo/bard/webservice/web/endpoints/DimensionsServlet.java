@@ -274,7 +274,6 @@ public class DimensionsServlet extends EndpointServlet {
             @Context final UriInfo uriInfo,
             @Context final ContainerRequestContext containerRequestContext
     ) {
-        Supplier<Response> responseSender;
         DimensionsApiRequest apiRequest = null;
         try {
             RequestLog.startTiming(this);
