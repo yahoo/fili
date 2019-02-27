@@ -4,7 +4,6 @@ package com.yahoo.bard.webservice.web.endpoints
 
 class NoDimensionTrailingSlashFilterDataServletSpec extends BaseDataServletComponentSpec {
 
-    @SuppressWarnings("rawtypes")
     @Override
     Class<?>[] getResourceClasses() {
         [DataServlet.class]

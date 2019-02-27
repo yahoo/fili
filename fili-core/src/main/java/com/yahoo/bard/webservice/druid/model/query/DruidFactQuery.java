@@ -82,7 +82,7 @@ public interface DruidFactQuery<Q extends DruidFactQuery<? super Q>> extends Dru
     @Override
     @JsonIgnore
     default Optional<? extends DruidFactQuery> getInnerQuery() {
-        return (Optional<? extends DruidFactQuery>) DruidQuery.super.getInnerQuery();
+        return DruidQuery.super.getInnerQuery().map(DruidFactQuery.class::cast);
     }
 
     @Override

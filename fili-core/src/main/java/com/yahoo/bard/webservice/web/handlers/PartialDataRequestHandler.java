@@ -98,6 +98,7 @@ public class PartialDataRequestHandler implements DataRequestHandler {
      *
      * @return the missing intervals from the request or an empty list
      */
+    @SuppressWarnings("unchecked")
     public static SimplifiedIntervalList getPartialIntervalsWithDefault(Map<String, Serializable> context) {
         return new SimplifiedIntervalList(
                 (Collection<Interval>) context.computeIfAbsent(

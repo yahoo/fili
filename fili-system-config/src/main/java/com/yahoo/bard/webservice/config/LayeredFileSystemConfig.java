@@ -67,7 +67,6 @@ public class LayeredFileSystemConfig implements SystemConfig {
      * Build a Layered File System Configuration, using first the environment and an application configuration source,
      * then drill down into available modules and load each of them in package dependency order.
      */
-    @SuppressWarnings(value = "unchecked")
     public LayeredFileSystemConfig() {
         masterConfiguration = new CompositeConfiguration();
         masterConfiguration.setThrowExceptionOnMissing(true);

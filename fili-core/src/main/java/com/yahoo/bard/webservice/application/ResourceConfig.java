@@ -39,8 +39,8 @@ public class ResourceConfig extends org.glassfish.jersey.server.ResourceConfig {
      */
     public ResourceConfig() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         // Build the binder using the configured factory
-        Class<?> binderClass = Class.forName(bindingFactory);
-        BinderFactory binderFactory = (BinderFactory) binderClass.newInstance();
+        Class<? extends BinderFactory> binderClass = Class.forName(bindingFactory).asSubclass(BinderFactory.class);
+        BinderFactory binderFactory = binderClass.newInstance();
         Binder binder = binderFactory.buildBinder();
 
         // Register Instrumentation

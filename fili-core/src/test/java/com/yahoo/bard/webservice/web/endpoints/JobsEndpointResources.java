@@ -104,9 +104,9 @@ public class JobsEndpointResources {
         apiMetricColumnNames.add("pageViews");
 
         ResponseContext responseContext = new ResponseContext();
-        responseContext.put("headers", new MultivaluedHashMap<>());
-        responseContext.put("apiMetricColumnNames", apiMetricColumnNames);
-        responseContext.put("requestedApiDimensionFields", new LinkedHashMap<>());
+        responseContext.put(ResponseContextKeys.HEADERS.getName(), new MultivaluedHashMap<>());
+        responseContext.put(ResponseContextKeys.API_METRIC_COLUMN_NAMES.getName(), apiMetricColumnNames);
+        responseContext.put(ResponseContextKeys.REQUESTED_API_DIMENSION_FIELDS.getName(), new LinkedHashMap<>());
 
         PreResponse preResponse = new PreResponse(resultSet, responseContext);
         preResponseStore.save("ticket1", preResponse);
@@ -114,11 +114,11 @@ public class JobsEndpointResources {
         preResponseStore.save("IExistOnlyInPreResponseStore", preResponse);
 
         ResponseContext errorResponseContext = new ResponseContext();
-        errorResponseContext.put("headers", new MultivaluedHashMap<>());
+        errorResponseContext.put(ResponseContextKeys.HEADERS.getName(), new MultivaluedHashMap<>());
         errorResponseContext.put(ResponseContextKeys.STATUS.getName(), 500);
         errorResponseContext.put(ResponseContextKeys.ERROR_MESSAGE.getName(), "Error");
-        errorResponseContext.put("apiMetricColumnNames", apiMetricColumnNames);
-        errorResponseContext.put("requestedApiDimensionFields", new HashMap<>());
+        errorResponseContext.put(ResponseContextKeys.API_METRIC_COLUMN_NAMES.getName(), apiMetricColumnNames);
+        errorResponseContext.put(ResponseContextKeys.REQUESTED_API_DIMENSION_FIELDS.getName(), new LinkedHashMap<>());
         PreResponse errorPresResponse = new PreResponse(resultSet, errorResponseContext);
         preResponseStore.save("errorPreResponse", errorPresResponse);
 
