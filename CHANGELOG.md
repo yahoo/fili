@@ -10,6 +10,11 @@ Current
 
 ### Added:
 
+- [Add more BoundFilterBuilding validation and hooks](https://github.com/yahoo/fili/issues/850)
+  * Added minimum and maximum arguments to FilterOperation
+  * Added validation on number of arguments to the bound filter builder
+  * Added hook for normalizing BoundFilterBuilder arguments
+
 - [Force update of cardinality to SearchIndexes](https://github.com/yahoo/fili/issues/846)
   * `SearchProvider` now has method `int getDimensionCardinality(boolean refresh)`, where refresh indicates the cardinality count should be refreshed before being returned.
     - default implementation just defers to existing method `int getDimensionCardinality()`
