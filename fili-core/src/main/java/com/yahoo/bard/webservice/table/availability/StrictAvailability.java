@@ -60,7 +60,7 @@ public class StrictAvailability extends BaseMetadataAvailability {
 
         Set<String> requestColumns = constraint.getAllColumnPhysicalNames();
         if (requestColumns.isEmpty()) {
-            return new SimplifiedIntervalList();
+            return getAvailableIntervals();
         }
 
         // Need to ensure requestColumns is not empty in order to prevent returning null by reduce operation
@@ -70,7 +70,7 @@ public class StrictAvailability extends BaseMetadataAvailability {
                         new SimplifiedIntervalList()
                 ))
                 .reduce(SimplifiedIntervalList::intersect)
-                .orElse(new SimplifiedIntervalList());
+                .orElse(getAvailableIntervals());
     }
 
     @Override

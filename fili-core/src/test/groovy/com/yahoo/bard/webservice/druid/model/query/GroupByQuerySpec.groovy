@@ -6,6 +6,7 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.table.TableTestUtils.buildTable
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
+import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
@@ -107,7 +108,7 @@ class GroupByQuerySpec extends Specification {
                 day,
                 [] as Set,
                 ["apiLocale": "locale", "apiPlatform": "platform", "apiProduct": "product"],
-                Mock(DataSourceMetadataService)
+                Mock(DataSourceMetadataService) { getAvailableIntervalsByDataSource(_ as DataSourceName) >> [:]}
         )
 
         vars.dataSource = vars.dataSource ?: new TableDataSource(constrainedTable)
@@ -194,7 +195,7 @@ class GroupByQuerySpec extends Specification {
 
     def "check dataSource serialization"() {
         //non nested query
-        DataSource ds1 = new TableDataSource(buildTable("table_name", day, [] as Set, [:], Mock(DataSourceMetadataService)))
+        DataSource ds1 = new TableDataSource(buildTable("table_name", day, [] as Set, [:], Mock(DataSourceMetadataService) { getAvailableIntervalsByDataSource(_ as DataSourceName) >> [:]} ))
         GroupByQuery dq1 = defaultQuery(dataSource: ds1)
 
         //nested query
@@ -481,10 +482,10 @@ class GroupByQuerySpec extends Specification {
     def "Check innermost query injection"() {
         setup:
         TableDataSource inner1 = new TableDataSource(
-                buildTable("inner1", day, [] as Set, [:], Mock(DataSourceMetadataService))
+                buildTable("inner1", day, [] as Set, [:], Mock(DataSourceMetadataService) { getAvailableIntervalsByDataSource(_ as DataSourceName) >> [:]})
         )
         TableDataSource inner2 = new TableDataSource(
-                buildTable("inner2", day, [] as Set, [:], Mock(DataSourceMetadataService))
+                buildTable("inner2", day, [] as Set, [:], Mock(DataSourceMetadataService) { getAvailableIntervalsByDataSource(_ as DataSourceName) >> [:]})
         )
         GroupByQuery dq1 = defaultQuery(dataSource: inner1)
         DataSource outer1 = new QueryDataSource(dq1)
@@ -506,7 +507,7 @@ class GroupByQuerySpec extends Specification {
         List<Interval> endingIntervals = [Interval.parse("2016/2017")]
 
         and: "A nested query"
-        TableDataSource table = new TableDataSource(buildTable("inner1", day, [] as Set, [:], Mock(DataSourceMetadataService)))
+        TableDataSource table = new TableDataSource(buildTable("inner1", day, [] as Set, [:], Mock(DataSourceMetadataService) { getAvailableIntervalsByDataSource(_ as DataSourceName) >> [:]}))
         GroupByQuery inner = defaultQuery(dataSource: table, intervals: startingIntervals)
         GroupByQuery middle = defaultQuery(dataSource: new QueryDataSource<>(inner), intervals: startingIntervals)
         GroupByQuery outer = defaultQuery(dataSource: new QueryDataSource<>(middle), intervals: startingIntervals)
