@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric
 
+import com.yahoo.bard.webservice.config.SystemConfigProvider
 import com.yahoo.bard.webservice.data.time.ZonelessTimeGrain
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleSumAggregation
@@ -9,13 +10,16 @@ import com.yahoo.bard.webservice.druid.model.aggregation.LongMaxAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.LongSumAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.ThetaSketchAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation
+import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation.ArithmeticPostAggregationFunction
 import com.yahoo.bard.webservice.druid.model.postaggregation.ConstantPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
-import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation.ArithmeticPostAggregationFunction
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 
 import spock.lang.Specification
+import spock.util.environment.RestoreSystemProperties
+
+import java.util.stream.Collectors
 
 class TemplateDruidQueryMergerSpec extends Specification {
     def "Verify merger.merge"() {
@@ -65,17 +69,54 @@ class TemplateDruidQueryMergerSpec extends Specification {
             merged.depth() == 2
     }
 
-
-    def "Verify merger.merge throws exception for empty list of metric"() {
+    def "If no-metric queries are turned on, a merge with no metrics will return an empty TDQ"() {
         setup:
-            DataApiRequest request = Mock(DataApiRequest)
-            TemplateDruidQueryMerger merger = new TemplateDruidQueryMerger()
+        Boolean backup = SystemConfigProvider.getInstance().getBooleanProperty(TemplateDruidQueryMerger.REQUIRE_METRICS_IN_QUERY_KEY)
+        SystemConfigProvider.getInstance().setProperty(TemplateDruidQueryMerger.REQUIRE_METRICS_IN_QUERY_KEY, "false")
+
+        DataApiRequest request = Mock(DataApiRequest)
+        TemplateDruidQueryMerger merger = new TemplateDruidQueryMerger()
 
         when:
-            TemplateDruidQuery merged = merger.merge(request)
+        TemplateDruidQuery merged = merger.merge(request)
 
         then:
-            (1 .. _) * request.getLogicalMetrics() >> [].toSet()
-            thrown(IllegalStateException)
+        (1 .. _) * request.getLogicalMetrics() >> [].toSet()
+        with(merged) {
+            getAggregations().isEmpty()
+            getPostAggregations().isEmpty()
+            timeGrain == null
+            !isNested()
+        }
+
+        cleanup:
+        if (backup == null) {
+            SystemConfigProvider.getInstance().clearProperty(TemplateDruidQueryMerger.REQUIRE_METRICS_IN_QUERY_KEY)
+        } else {
+            SystemConfigProvider.getInstance().setProperty(TemplateDruidQueryMerger.REQUIRE_METRICS_IN_QUERY_KEY, backup.toString())
+        }
+    }
+
+    def "if no metric queries are turned off, merger.merge throws exception for empty list of metric"() {
+        setup:
+        Boolean backup = SystemConfigProvider.getInstance().getBooleanProperty(TemplateDruidQueryMerger.REQUIRE_METRICS_IN_QUERY_KEY)
+        SystemConfigProvider.getInstance().setProperty(TemplateDruidQueryMerger.REQUIRE_METRICS_IN_QUERY_KEY, "true")
+
+        DataApiRequest request = Mock(DataApiRequest)
+        TemplateDruidQueryMerger merger = new TemplateDruidQueryMerger()
+
+        when:
+        merger.merge(request)
+
+        then:
+        (1 .. _) * request.getLogicalMetrics() >> [].toSet()
+        thrown(IllegalStateException)
+
+        cleanup:
+        if (backup == null) {
+            SystemConfigProvider.getInstance().clearProperty(TemplateDruidQueryMerger.REQUIRE_METRICS_IN_QUERY_KEY)
+        } else {
+            SystemConfigProvider.getInstance().setProperty(TemplateDruidQueryMerger.REQUIRE_METRICS_IN_QUERY_KEY, backup.toString())
+        }
     }
 }
