@@ -2,15 +2,22 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric;
 
+import com.yahoo.bard.webservice.config.SystemConfig;
+import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 
+import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
 import javax.inject.Singleton;
+import javax.validation.constraints.NotNull;
 
 /**
  * Merges TemplateDruidQueries together.
@@ -19,6 +26,23 @@ import javax.inject.Singleton;
 public class TemplateDruidQueryMerger {
 
     private static final Logger LOG = LoggerFactory.getLogger(TemplateDruidQuery.class);
+
+    private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+
+    public static final @NotNull String REQUIRE_METRICS_IN_QUERY_KEY = SYSTEM_CONFIG
+            .getPackageVariableName("require_metrics_in_query");
+
+    public static final boolean REQUIRE_METRICS_IN_QUERY_DEFAULT = true;
+
+    private final boolean requireMetricsInQueries;
+
+
+    public TemplateDruidQueryMerger() {
+        requireMetricsInQueries = SYSTEM_CONFIG.getBooleanProperty(
+                REQUIRE_METRICS_IN_QUERY_KEY,
+                REQUIRE_METRICS_IN_QUERY_DEFAULT
+        );
+    }
 
     /**
      * Merge all of the TemplateDruidQueries from all of the Metrics in an DataApiRequest together.
@@ -39,20 +63,22 @@ public class TemplateDruidQueryMerger {
             }
         }
 
-        if (allQueries.isEmpty()) {
+        if (requireMetricsInQueries && allQueries.isEmpty()) {
             LOG.debug("No template queries selected by API request.");
             throw new IllegalStateException("No template queries selected by API request.");
         }
 
         // TODO: Simplify when merge can handle nulls
-        TemplateDruidQuery merged = null;
-        for (TemplateDruidQuery query : allQueries) {
-            if (merged == null) {
-                merged = query;
-            } else {
-                LOG.trace("Merging TDQs: Left: {} | right: {}", merged, query);
-                merged = merged.merge(query);
-            }
+        Iterator<TemplateDruidQuery> queries = allQueries.iterator();
+        if (!queries.hasNext()) {
+            return new TemplateDruidQuery(new ArrayList<>(0), new ArrayList<>(0));
+        }
+
+        TemplateDruidQuery merged = queries.next();
+        while (queries.hasNext()) {
+            TemplateDruidQuery query = queries.next();
+            LOG.trace("Merging TDQs: Left: {} | right: {}", merged, query);
+            merged = merged.merge(query);
         }
 
         LOG.trace("Merged template druid query: {}", merged);
