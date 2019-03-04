@@ -11,11 +11,13 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTERVAL_ZERO_LEN
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_ASYNC_AFTER;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_INTERVAL_GRANULARITY;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_TIME_ZONE;
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_MISSING;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_NOT_IN_TABLE;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_GRANULARITY_MISMATCH;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TIME_ALIGNMENT;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.UNKNOWN_GRANULARITY;
 
+import com.yahoo.bard.webservice.application.AbstractBinderFactory;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
@@ -348,7 +350,14 @@ public abstract class ApiRequestImpl implements ApiRequest {
     ) {
         LinkedHashSet<LogicalMetric> metrics = new LinkedHashSet<>();
         List<String> invalidMetricNames = new ArrayList<>();
-        for (String metricName : apiMetricQuery.split(",")) {
+
+        String[] parsedMetrics = apiMetricQuery.split(",");
+        if (parsedMetrics.length == 1 && parsedMetrics[0].isEmpty()) {
+            parsedMetrics = new String[0];
+        }
+
+        // TODO extract into checkInvalidMetricNames method
+        for (String metricName : parsedMetrics) {
             LogicalMetric logicalMetric = metricDictionary.get(metricName);
             if (logicalMetric == null) {
                 invalidMetricNames.add(metricName);

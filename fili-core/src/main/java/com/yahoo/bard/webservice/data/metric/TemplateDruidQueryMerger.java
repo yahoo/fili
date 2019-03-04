@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric;
 
+import com.yahoo.bard.webservice.application.AbstractBinderFactory;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
@@ -29,18 +30,13 @@ public class TemplateDruidQueryMerger {
 
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
-    public static final @NotNull String REQUIRE_METRICS_IN_QUERY_KEY = SYSTEM_CONFIG
-            .getPackageVariableName("require_metrics_in_query");
-
-    public static final boolean REQUIRE_METRICS_IN_QUERY_DEFAULT = true;
-
     private final boolean requireMetricsInQueries;
 
 
     public TemplateDruidQueryMerger() {
         requireMetricsInQueries = SYSTEM_CONFIG.getBooleanProperty(
-                REQUIRE_METRICS_IN_QUERY_KEY,
-                REQUIRE_METRICS_IN_QUERY_DEFAULT
+                AbstractBinderFactory.REQUIRE_METRICS_IN_QUERY_KEY,
+                AbstractBinderFactory.REQUIRE_METRICS_IN_QUERY_DEFAULT
         );
     }
 

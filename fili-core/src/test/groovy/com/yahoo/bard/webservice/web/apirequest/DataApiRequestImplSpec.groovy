@@ -4,6 +4,9 @@ package com.yahoo.bard.webservice.web.apirequest
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
+import com.yahoo.bard.webservice.application.AbstractBinderFactory
+import com.yahoo.bard.webservice.config.BardFeatureFlag
+import com.yahoo.bard.webservice.config.SystemConfigProvider
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
@@ -17,12 +20,16 @@ import com.yahoo.bard.webservice.data.time.AllGranularity
 import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.data.time.GranularityParser
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser
+import com.yahoo.bard.webservice.druid.model.builders.DruidInFilterBuilder
+import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.TableGroup
 import com.yahoo.bard.webservice.util.IntervalUtils
 import com.yahoo.bard.webservice.web.BadApiRequestException
 import com.yahoo.bard.webservice.web.DefaultResponseFormatType
 import com.yahoo.bard.webservice.web.ErrorMessageFormat
+import com.yahoo.bard.webservice.web.FilteredThetaSketchMetricsHelper
+import com.yahoo.bard.webservice.web.MetricsFilterSetBuilder
 import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 
 import org.joda.time.DateTime
@@ -160,15 +167,70 @@ class DataApiRequestImplSpec extends Specification {
         e.getMessage() == expectedMessage
     }
 
-    def "check weekly granularity has the expected alignment description"() {
+    def "if metrics are required an exception is thrown on request with no metrics"() {
         setup:
-        String expectedMessage = " Week must start on a Monday and end on a Monday."
-        Granularity<?> granularity = new TestingDataApiRequestImpl().generateGranularity(
-                "week",
-                new StandardGranularityParser()
+        // backup static system config
+        Boolean noMetricsQueryBackupBoolean = SystemConfigProvider.getInstance().getBooleanProperty(AbstractBinderFactory.REQUIRE_METRICS_IN_QUERY_KEY)
+        String noMetricsQueryBackup = noMetricsQueryBackupBoolean == null ? null : noMetricsQueryBackupBoolean.toString()
+
+        // static system config
+        SystemConfigProvider.getInstance().setProperty(AbstractBinderFactory.REQUIRE_METRICS_IN_QUERY_KEY, "true")
+
+        // set class to handle static provider method
+        MetricsFilterSetBuilder backupFilterSetBuilder = FieldConverterSupplier.metricsFilterSetBuilder
+        FieldConverterSupplier.metricsFilterSetBuilder = new FilteredThetaSketchMetricsHelper(new DruidInFilterBuilder())
+
+        when:
+        new TestingDataApiRequestImpl().generateLogicalMetrics(
+                "",
+                metricDict,
+                dimensionDict,
+                table
         )
 
-        expect:
-        granularity.getAlignmentDescription() == expectedMessage
+        then:
+        thrown(BadApiRequestException)
+
+        cleanup:
+        SystemConfigProvider.getInstance().resetProperty(AbstractBinderFactory.REQUIRE_METRICS_IN_QUERY_KEY, noMetricsQueryBackup)
+        FieldConverterSupplier.metricsFilterSetBuilder = backupFilterSetBuilder
+    }
+
+    @Unroll
+    def "If metrics are NOT required and intersection reporting is #interreport then no error is thrown on request with no metrics"() {
+        setup:
+        // backup static system config
+        Boolean noMetricsQueryBackupBoolean = SystemConfigProvider.getInstance().getBooleanProperty(AbstractBinderFactory.REQUIRE_METRICS_IN_QUERY_KEY)
+        String noMetricsQueryBackup = noMetricsQueryBackupBoolean == null ? null : noMetricsQueryBackupBoolean.toString()
+        Boolean intersectionReportingBackup = BardFeatureFlag.INTERSECTION_REPORTING.on
+
+        // static system config
+        SystemConfigProvider.getInstance().setProperty(AbstractBinderFactory.REQUIRE_METRICS_IN_QUERY_KEY, "false")
+        BardFeatureFlag.INTERSECTION_REPORTING.setOn(intersectionReportingOn)
+
+        // set class to handle static provider method
+        MetricsFilterSetBuilder backupFilterSetBuilder = FieldConverterSupplier.metricsFilterSetBuilder
+        FieldConverterSupplier.metricsFilterSetBuilder = new FilteredThetaSketchMetricsHelper(new DruidInFilterBuilder())
+
+        when:
+        new TestingDataApiRequestImpl().generateLogicalMetrics(
+                "",
+                metricDict,
+                dimensionDict,
+                table
+        )
+
+        then:
+        noExceptionThrown()
+
+        cleanup:
+        SystemConfigProvider.getInstance().resetProperty(AbstractBinderFactory.REQUIRE_METRICS_IN_QUERY_KEY, noMetricsQueryBackup)
+        BardFeatureFlag.INTERSECTION_REPORTING.setOn(intersectionReportingBackup)
+        FieldConverterSupplier.metricsFilterSetBuilder = backupFilterSetBuilder
+
+        where:
+        intersectionReportingOn | interreport
+        false                   | "disabled"
+        true                    | "enabled"
     }
 }

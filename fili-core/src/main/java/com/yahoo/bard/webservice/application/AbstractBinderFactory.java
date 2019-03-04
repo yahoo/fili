@@ -216,6 +216,11 @@ public abstract class AbstractBinderFactory implements BinderFactory {
 
     public static final String SYSTEM_CONFIG_TIMEZONE_KEY = "timezone";
 
+    public static final @NotNull String REQUIRE_METRICS_IN_QUERY_KEY = SYSTEM_CONFIG
+            .getPackageVariableName("require_metrics_in_query");
+
+    public static final boolean REQUIRE_METRICS_IN_QUERY_DEFAULT = true;
+
     private ObjectMappersSuite objectMappers;
 
     private DataSourceMetadataService dataSourceMetadataService;

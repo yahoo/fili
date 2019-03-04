@@ -17,7 +17,10 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_UNDEFINED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TOP_N_UNSORTED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.UNSUPPORTED_FILTERED_METRIC_CATEGORY;
 
+import com.yahoo.bard.webservice.application.AbstractBinderFactory;
 import com.yahoo.bard.webservice.config.BardFeatureFlag;
+import com.yahoo.bard.webservice.config.SystemConfig;
+import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
@@ -90,6 +93,9 @@ import javax.ws.rs.core.Response;
  */
 public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest {
     private static final Logger LOG = LoggerFactory.getLogger(DataApiRequestImpl.class);
+
+    private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+
     private final LogicalTable table;
 
     private final Granularity granularity;
@@ -1503,7 +1509,12 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         try (TimedPhase timer = RequestLog.startTiming("GeneratingLogicalMetrics")) {
             LOG.trace("Metric dictionary: {}", metricDictionary);
 
-            if (apiMetricQuery == null || "".equals(apiMetricQuery)) {
+            boolean requireMetricsInQueries = SYSTEM_CONFIG.getBooleanProperty(
+                    AbstractBinderFactory.REQUIRE_METRICS_IN_QUERY_KEY,
+                    AbstractBinderFactory.REQUIRE_METRICS_IN_QUERY_DEFAULT
+            );
+
+            if (requireMetricsInQueries && (apiMetricQuery == null || apiMetricQuery.isEmpty())) {
                 LOG.debug(METRICS_MISSING.logFormat());
                 throw new BadApiRequestException(METRICS_MISSING.format());
             }
