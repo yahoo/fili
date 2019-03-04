@@ -531,7 +531,8 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         // Requested sort on metrics - optional, can be empty Set
         this.sorts = bindToColumnDirectionMap(
                 removeDateTimeSortColumn(sortColumnDirection),
-                logicalMetrics, metricDictionary
+                logicalMetrics,
+                metricDictionary
         );
         validateSortColumns(sorts, dateTimeSort, sortsRequest, logicalMetrics, metricDictionary);
 
