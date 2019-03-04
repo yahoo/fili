@@ -64,7 +64,6 @@ public class TemplateDruidQueryMerger {
             throw new IllegalStateException("No template queries selected by API request.");
         }
 
-        // TODO: Simplify when merge can handle nulls
         Iterator<TemplateDruidQuery> queries = allQueries.iterator();
         if (!queries.hasNext()) {
             return new TemplateDruidQuery(new ArrayList<>(0), new ArrayList<>(0));
