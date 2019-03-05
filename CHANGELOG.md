@@ -10,6 +10,11 @@ Current
 
 ### Added:
 
+- [Add system config to disable requiring metrics in Api queries](https://github.com/yahoo/fili/issues/862)
+  * Added the system config `require_metrics_in_query` which toggles whether or not metrics should be required in
+  queries
+    - this setting is turned ON by default
+
 - [Add more BoundFilterBuilding validation and hooks](https://github.com/yahoo/fili/issues/850)
   * Added minimum and maximum arguments to FilterOperation
   * Added validation on number of arguments to the bound filter builder
