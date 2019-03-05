@@ -1515,10 +1515,15 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                     AbstractBinderFactory.REQUIRE_METRICS_IN_QUERY_DEFAULT
             );
 
-            if (requireMetricsInQueries && (apiMetricQuery == null || apiMetricQuery.isEmpty())) {
+            if (apiMetricQuery == null) {
+                apiMetricQuery = "";
+            }
+
+            if (requireMetricsInQueries && apiMetricQuery.isEmpty()) {
                 LOG.debug(METRICS_MISSING.logFormat());
                 throw new BadApiRequestException(METRICS_MISSING.format());
             }
+
             // set of logical metric objects
             LinkedHashSet<LogicalMetric> generated = new LinkedHashSet<>();
             List<String> invalidMetricNames = new ArrayList<>();

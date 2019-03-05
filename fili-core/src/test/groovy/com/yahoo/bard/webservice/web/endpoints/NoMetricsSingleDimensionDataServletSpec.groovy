@@ -5,13 +5,15 @@ import com.yahoo.bard.webservice.config.SystemConfigProvider
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 
-class SimpleNoMetricsDataServletSpec extends BaseDataServletComponentSpec {
+class NoMetricsSingleDimensionDataServletSpec extends BaseDataServletComponentSpec {
     String noMetricsQueryBackup
 
     @Override
     def setup() {
         Boolean noMetricsQueryBackupBoolean = SystemConfigProvider.getInstance().getBooleanProperty(AbstractBinderFactory.REQUIRE_METRICS_IN_QUERY_KEY)
         noMetricsQueryBackup = noMetricsQueryBackupBoolean == null ? null : noMetricsQueryBackupBoolean.toString()
+
+        SystemConfigProvider.getInstance().setProperty(AbstractBinderFactory.REQUIRE_METRICS_IN_QUERY_KEY, "false")
 
         DimensionDictionary dimensionStore = jtb.configurationLoader.dimensionDictionary
         dimensionStore.findByApiName("model").with {
