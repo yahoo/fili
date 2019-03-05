@@ -7,18 +7,15 @@ import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 
-import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
 import javax.inject.Singleton;
-import javax.validation.constraints.NotNull;
 
 /**
  * Merges TemplateDruidQueries together.
@@ -32,7 +29,9 @@ public class TemplateDruidQueryMerger {
 
     private final boolean requireMetricsInQueries;
 
-
+    /**
+     * Constructor.
+     */
     public TemplateDruidQueryMerger() {
         requireMetricsInQueries = SYSTEM_CONFIG.getBooleanProperty(
                 AbstractBinderFactory.REQUIRE_METRICS_IN_QUERY_KEY,

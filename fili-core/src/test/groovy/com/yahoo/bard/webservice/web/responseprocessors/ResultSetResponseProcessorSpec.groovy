@@ -33,7 +33,6 @@ import com.yahoo.bard.webservice.logging.RequestLog
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.Schema
 import com.yahoo.bard.webservice.table.TableTestUtils
-import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 import com.yahoo.bard.webservice.web.DefaultResponseFormatType
 import com.yahoo.bard.webservice.web.JsonResponseWriter
 import com.yahoo.bard.webservice.web.ResponseWriter
