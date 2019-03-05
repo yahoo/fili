@@ -3,7 +3,6 @@
 package com.yahoo.bard.webservice.web;
 
 import com.yahoo.bard.webservice.application.AbstractBinderFactory;
-import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
