@@ -137,15 +137,15 @@ public class HttpResponseMaker {
             ApiRequest apiRequest,
             ContainerRequestContext containerRequestContext
     ) {
-        @SuppressWarnings("unchecked")
         ResponseFormatType responseFormatType = apiRequest.getFormat();
+        @SuppressWarnings("unchecked")
         Map<String, URI> bodyLinks = (Map<String, URI>) responseContext.get(
                 PAGINATION_LINKS_CONTEXT_KEY.getName()
         );
         if (bodyLinks == null) {
             bodyLinks = Collections.emptyMap();
         }
-        Pagination pagination = (Pagination) responseContext.get(PAGINATION_CONTEXT_KEY.getName());
+        Pagination<?> pagination = (Pagination<?>) responseContext.get(PAGINATION_CONTEXT_KEY.getName());
 
         // Add headers for content type
         // default response format is JSON
@@ -153,6 +153,7 @@ public class HttpResponseMaker {
             responseFormatType = DefaultResponseFormatType.JSON;
         }
 
+        @SuppressWarnings("unchecked")
         LinkedHashMap<String, LinkedHashSet<DimensionField>> dimensionToDimensionFieldMap =
                 (LinkedHashMap<String, LinkedHashSet<DimensionField>>) responseContext.get(
                         REQUESTED_API_DIMENSION_FIELDS.getName());
@@ -170,6 +171,7 @@ public class HttpResponseMaker {
                                 LinkedHashMap::new
                         ));
 
+        @SuppressWarnings("unchecked")
         ResponseData responseData = buildResponseData(
                 resultSet,
                 (LinkedHashSet<String>) responseContext.get(API_METRIC_COLUMN_NAMES.getName()),
@@ -238,7 +240,7 @@ public class HttpResponseMaker {
             LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> requestedApiDimensionFields,
             SimplifiedIntervalList partialIntervals,
             SimplifiedIntervalList volatileIntervals,
-            Pagination pagination,
+            Pagination<?> pagination,
             Map<String, URI> paginationLinks
     ) {
         return new ResponseData(
