@@ -40,7 +40,7 @@ class FeatureFlagRegistrySpec extends Specification {
                    "data_filter_substring_operations_enabled", "intersection_reporting_enabled",
                    "updated_metadata_collection_names_enabled", "druid_coordinator_metadata_enabled",
                    "druid_lookup_metadata_enabled", "druid_dimensions_loader_enabled",
-                   "case_sensitive_keys_enabled", "default_in_filter_enabled"] as Set
+                   "case_sensitive_keys_enabled", "default_in_filter_enabled", "require_metrics_in_query"] as Set
     }
 
     @Unroll

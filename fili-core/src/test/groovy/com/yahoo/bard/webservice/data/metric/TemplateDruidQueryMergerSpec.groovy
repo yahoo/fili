@@ -2,8 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric
 
-import com.yahoo.bard.webservice.application.AbstractBinderFactory
-import com.yahoo.bard.webservice.config.SystemConfigProvider
+import com.yahoo.bard.webservice.config.BardFeatureFlag
 import com.yahoo.bard.webservice.data.time.ZonelessTimeGrain
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleSumAggregation
@@ -25,16 +24,8 @@ class TemplateDruidQueryMergerSpec extends Specification {
 
     String backup
 
-    def setup() {
-        Boolean backupBoolean = SystemConfigProvider.getInstance().getBooleanProperty(AbstractBinderFactory.REQUIRE_METRICS_IN_QUERY_KEY)
-        if (backupBoolean != null) {
-            backup = backupBoolean.toString()
-        }
-    }
-
     def cleanup() {
-        SystemConfigProvider.getInstance().resetProperty(AbstractBinderFactory.REQUIRE_METRICS_IN_QUERY_KEY, backup == null ? null : backup.toString())
-        println System.getProperty(AbstractBinderFactory.REQUIRE_METRICS_IN_QUERY_KEY)
+        BardFeatureFlag.REQUIRE_METRICS_QUERY.reset()
     }
 
     def "Verify merger.merge"() {
@@ -86,7 +77,7 @@ class TemplateDruidQueryMergerSpec extends Specification {
 
     def "if require metrics in queries is turned ON, merger.merge throws exception for empty list of metric"() {
         setup:
-        SystemConfigProvider.getInstance().setProperty(AbstractBinderFactory.REQUIRE_METRICS_IN_QUERY_KEY, "true")
+        BardFeatureFlag.REQUIRE_METRICS_QUERY.setOn(true)
 
         DataApiRequest request = Mock(DataApiRequest)
         TemplateDruidQueryMerger merger = new TemplateDruidQueryMerger()
@@ -102,7 +93,7 @@ class TemplateDruidQueryMergerSpec extends Specification {
 
     def "If require metrics in queries is turned OFF, a merge with no metrics will return an empty TDQ"() {
         setup:
-        SystemConfigProvider.getInstance().setProperty(AbstractBinderFactory.REQUIRE_METRICS_IN_QUERY_KEY, "false")
+        BardFeatureFlag.REQUIRE_METRICS_QUERY.setOn(false)
 
         DataApiRequest request = Mock(DataApiRequest)
         TemplateDruidQueryMerger merger = new TemplateDruidQueryMerger()
