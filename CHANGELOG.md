@@ -14,6 +14,7 @@ Current
   * Added the system config `require_metrics_in_query` which toggles whether or not metrics should be required in
   queries
     - this setting is turned ON by default
+  * This property is controlled through the feature flag BardFeatureFlag.REQUIRE_METRICS_QUERY
 
 - [Add more BoundFilterBuilding validation and hooks](https://github.com/yahoo/fili/issues/850)
   * Added minimum and maximum arguments to FilterOperation

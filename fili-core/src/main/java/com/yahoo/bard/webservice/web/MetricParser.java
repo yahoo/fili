@@ -2,8 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web;
 
-import com.yahoo.bard.webservice.application.AbstractBinderFactory;
-import com.yahoo.bard.webservice.config.SystemConfigProvider;
+import com.yahoo.bard.webservice.config.BardFeatureFlag;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -36,11 +35,11 @@ public class MetricParser {
      * @throws IllegalArgumentException if metricString is empty or the metricString has unbalanced brackets
      */
     public static ArrayNode generateMetricFilterJsonArray(String metricString) {
-        Boolean requireMetrics = SystemConfigProvider.getInstance().getBooleanProperty(
-                AbstractBinderFactory.REQUIRE_METRICS_IN_QUERY_KEY,
-                AbstractBinderFactory.REQUIRE_METRICS_IN_QUERY_DEFAULT
-        );
-        if ((requireMetrics && metricString.isEmpty()) || !(isBracketsBalanced(metricString))) {
+
+        if (
+                (BardFeatureFlag.REQUIRE_METRICS_QUERY.isOn() && metricString.isEmpty())
+                || !isBracketsBalanced(metricString)
+        ) {
             LOG.error("Metrics parameter values are invalid. The string is: " + metricString);
             throw new IllegalArgumentException("Metrics parameter values are invalid. The string is: " + metricString);
         }

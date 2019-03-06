@@ -2,9 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric;
 
-import com.yahoo.bard.webservice.application.AbstractBinderFactory;
-import com.yahoo.bard.webservice.config.SystemConfig;
-import com.yahoo.bard.webservice.config.SystemConfigProvider;
+import com.yahoo.bard.webservice.config.BardFeatureFlag;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 
 import org.slf4j.Logger;
@@ -25,20 +23,6 @@ public class TemplateDruidQueryMerger {
 
     private static final Logger LOG = LoggerFactory.getLogger(TemplateDruidQuery.class);
 
-    private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
-
-    private final boolean requireMetricsInQueries;
-
-    /**
-     * Constructor.
-     */
-    public TemplateDruidQueryMerger() {
-        requireMetricsInQueries = SYSTEM_CONFIG.getBooleanProperty(
-                AbstractBinderFactory.REQUIRE_METRICS_IN_QUERY_KEY,
-                AbstractBinderFactory.REQUIRE_METRICS_IN_QUERY_DEFAULT
-        );
-    }
-
     /**
      * Merge all of the TemplateDruidQueries from all of the Metrics in an DataApiRequest together.
      *
@@ -58,7 +42,7 @@ public class TemplateDruidQueryMerger {
             }
         }
 
-        if (requireMetricsInQueries && allQueries.isEmpty()) {
+        if (BardFeatureFlag.REQUIRE_METRICS_QUERY.isOn() && allQueries.isEmpty()) {
             LOG.debug("No template queries selected by API request.");
             throw new IllegalStateException("No template queries selected by API request.");
         }

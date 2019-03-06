@@ -1,19 +1,14 @@
 package com.yahoo.bard.webservice.web.endpoints
 
-import com.yahoo.bard.webservice.application.AbstractBinderFactory
-import com.yahoo.bard.webservice.config.SystemConfigProvider
+import com.yahoo.bard.webservice.config.BardFeatureFlag
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 
 class NoMetricsSingleDimensionDataServletSpec extends BaseDataServletComponentSpec {
-    String noMetricsQueryBackup
 
     @Override
     def setup() {
-        Boolean noMetricsQueryBackupBoolean = SystemConfigProvider.getInstance().getBooleanProperty(AbstractBinderFactory.REQUIRE_METRICS_IN_QUERY_KEY)
-        noMetricsQueryBackup = noMetricsQueryBackupBoolean == null ? null : noMetricsQueryBackupBoolean.toString()
-
-        SystemConfigProvider.getInstance().setProperty(AbstractBinderFactory.REQUIRE_METRICS_IN_QUERY_KEY, "false")
+        BardFeatureFlag.REQUIRE_METRICS_QUERY.setOn(false)
 
         DimensionDictionary dimensionStore = jtb.configurationLoader.dimensionDictionary
         dimensionStore.findByApiName("model").with {
@@ -25,7 +20,7 @@ class NoMetricsSingleDimensionDataServletSpec extends BaseDataServletComponentSp
 
     @Override
     def cleanup() {
-        SystemConfigProvider.getInstance().resetProperty(AbstractBinderFactory.REQUIRE_METRICS_IN_QUERY_KEY, noMetricsQueryBackup)
+        BardFeatureFlag.REQUIRE_METRICS_QUERY.reset()
     }
 
     @Override

@@ -17,7 +17,6 @@ import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.time.AllGranularity
-import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.data.time.GranularityParser
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser
 import com.yahoo.bard.webservice.druid.model.builders.DruidInFilterBuilder
@@ -169,12 +168,7 @@ class DataApiRequestImplSpec extends Specification {
 
     def "if metrics are required an exception is thrown on request with no metrics"() {
         setup:
-        // backup static system config
-        Boolean noMetricsQueryBackupBoolean = SystemConfigProvider.getInstance().getBooleanProperty(AbstractBinderFactory.REQUIRE_METRICS_IN_QUERY_KEY)
-        String noMetricsQueryBackup = noMetricsQueryBackupBoolean == null ? null : noMetricsQueryBackupBoolean.toString()
-
-        // static system config
-        SystemConfigProvider.getInstance().setProperty(AbstractBinderFactory.REQUIRE_METRICS_IN_QUERY_KEY, "true")
+        BardFeatureFlag.REQUIRE_METRICS_QUERY.setOn(true)
 
         // set class to handle static provider method
         MetricsFilterSetBuilder backupFilterSetBuilder = FieldConverterSupplier.metricsFilterSetBuilder
@@ -192,7 +186,7 @@ class DataApiRequestImplSpec extends Specification {
         thrown(BadApiRequestException)
 
         cleanup:
-        SystemConfigProvider.getInstance().resetProperty(AbstractBinderFactory.REQUIRE_METRICS_IN_QUERY_KEY, noMetricsQueryBackup)
+        BardFeatureFlag.REQUIRE_METRICS_QUERY.reset()
         FieldConverterSupplier.metricsFilterSetBuilder = backupFilterSetBuilder
     }
 
@@ -200,13 +194,8 @@ class DataApiRequestImplSpec extends Specification {
     def "If metrics are NOT required and intersection reporting is #interreport then no error is thrown on request with no metrics"() {
         setup:
         // backup static system config
-        Boolean noMetricsQueryBackupBoolean = SystemConfigProvider.getInstance().getBooleanProperty(AbstractBinderFactory.REQUIRE_METRICS_IN_QUERY_KEY)
-        String noMetricsQueryBackup = noMetricsQueryBackupBoolean == null ? null : noMetricsQueryBackupBoolean.toString()
-        Boolean intersectionReportingBackup = BardFeatureFlag.INTERSECTION_REPORTING.on
-
-        // static system config
-        SystemConfigProvider.getInstance().setProperty(AbstractBinderFactory.REQUIRE_METRICS_IN_QUERY_KEY, "false")
         BardFeatureFlag.INTERSECTION_REPORTING.setOn(intersectionReportingOn)
+        BardFeatureFlag.REQUIRE_METRICS_QUERY.setOn(false)
 
         // set class to handle static provider method
         MetricsFilterSetBuilder backupFilterSetBuilder = FieldConverterSupplier.metricsFilterSetBuilder
@@ -224,8 +213,8 @@ class DataApiRequestImplSpec extends Specification {
         noExceptionThrown()
 
         cleanup:
-        SystemConfigProvider.getInstance().resetProperty(AbstractBinderFactory.REQUIRE_METRICS_IN_QUERY_KEY, noMetricsQueryBackup)
-        BardFeatureFlag.INTERSECTION_REPORTING.setOn(intersectionReportingBackup)
+        BardFeatureFlag.INTERSECTION_REPORTING.reset()
+        BardFeatureFlag.REQUIRE_METRICS_QUERY.reset()
         FieldConverterSupplier.metricsFilterSetBuilder = backupFilterSetBuilder
 
         where:

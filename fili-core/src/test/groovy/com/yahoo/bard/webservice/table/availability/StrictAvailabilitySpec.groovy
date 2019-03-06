@@ -95,6 +95,6 @@ class StrictAvailabilitySpec extends Specification{
         constraint.allColumnPhysicalNames >> []
 
         expect:
-        strictAvailability.getAvailableIntervals(constraint) == new SimplifiedIntervalList([interval1]).union(new SimplifiedIntervalList([interval2]))
+        strictAvailability.getAvailableIntervals(constraint) == new SimplifiedIntervalList([interval1, interval2])
     }
 }
