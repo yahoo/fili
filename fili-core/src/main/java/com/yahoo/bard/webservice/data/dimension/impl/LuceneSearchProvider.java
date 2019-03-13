@@ -65,6 +65,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -126,6 +127,46 @@ public class LuceneSearchProvider implements SearchProvider {
             String message = ErrorMessageFormat.UNABLE_TO_CREATE_DIR.format(this.luceneIndexPath);
             LOG.error(message, e);
         }
+    }
+
+    protected void readLock() {
+        try {
+            if (!lock.readLock().tryLock(LUCENE_SEARCH_TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
+                String msg = String.format(
+                        "Attempting to acquire readlock timed out for dimension %s",
+                        getDimension()
+                );
+
+                LOG.error(msg);
+                throw new IllegalStateException(msg);
+            }
+        } catch (InterruptedException e) {
+            String msg = String.format(
+                    "Attempting to acquire readlock was interupted for dimension %s",
+                    getDimension()
+            );
+            throw new IllegalStateException(e);
+        }
+    }
+
+    public void readUnlock() {
+        lock.readLock().unlock();
+    }
+
+    protected void writeLock() {
+        try {
+            // write lock can wait for 1.2 query timeout length before replace occurs, to let current queries drain.
+            if (!lock.writeLock().tryLock((int) (LUCENE_SEARCH_TIMEOUT_MS * 1.2), TimeUnit.MILLISECONDS)) {
+                LOG.error("");
+                throw new IllegalStateException();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void writeUnlock() {
+        lock.writeLock().unlock();
     }
 
     /**

@@ -273,6 +273,9 @@ public enum ErrorMessageFormat implements MessageFormatter {
     REQUEST_PROCESSING_EXCEPTION("Exception processing request: %s"),
 
     TWO_VALUES_OF_THE_SAME_KEY("Values %s and %s are associated with the same key"),
+
+    LUCENE_LOCK_TIMEOUT(""),
+    LUCENE_LOCK_INTERUPTED("")
     ;
 
     private final String messageFormat;
