@@ -181,7 +181,8 @@ public class LuceneSearchProvider implements SearchProvider {
 
     /**
      * Attempts to acquire the write lock. If waiting for the write lock times out or is interrupted an exception is
-     * thrown and the query is failed. Timeout is equivalent to the timeout on a search.
+     * thrown and the query is failed. Timeout is equivalent to the timeout on a search multiplied by a constant
+     * write timeout multiplier. 
      */
     protected void writeLock() {
         try {
