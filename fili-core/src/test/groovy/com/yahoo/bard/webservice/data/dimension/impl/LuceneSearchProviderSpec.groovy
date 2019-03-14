@@ -14,9 +14,11 @@ import org.apache.commons.io.FileUtils
 import org.apache.lucene.store.FSDirectory
 
 import spock.lang.Ignore
+import spock.lang.Timeout
 
 import java.nio.file.Files
 import java.nio.file.Path
+
 /**
  * Specification for behavior specific to the LuceneSearchProvider
  */
@@ -204,6 +206,34 @@ class LuceneSearchProviderSpec extends SearchProviderSpec<LuceneSearchProvider> 
         !Files.exists(file3)
         !Files.exists(subDir)
         !Files.exists(file4)
+    }
+
+    @Timeout(5)
+    def "If time waiting for write lock exceeds timeout fail query"() {
+        setup:
+        searchProvider.@searchTimeout = 2000
+
+        when:
+        // thread that just gets read lock and holds it
+        new Thread({searchProvider.readLock()}).start()
+        searchProvider.writeLock()
+
+        then:
+        Exception e = thrown(IllegalStateException)
+    }
+
+    @Timeout(5)
+    def "If time waiting for read lock exceeds timeout fail query"() {
+        setup:
+        searchProvider.@searchTimeout = 2000
+
+        when:
+        // thread that just gets write lock and holds it
+        new Thread({searchProvider.writeLock()}).start()
+        searchProvider.readLock()
+
+        then:
+        Exception e = thrown(IllegalStateException)
     }
 
     @Ignore("This test is currently not valid because the replacement index is invalid.")

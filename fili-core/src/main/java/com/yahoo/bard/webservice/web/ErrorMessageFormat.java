@@ -274,8 +274,8 @@ public enum ErrorMessageFormat implements MessageFormatter {
 
     TWO_VALUES_OF_THE_SAME_KEY("Values %s and %s are associated with the same key"),
 
-    LUCENE_LOCK_TIMEOUT(""),
-    LUCENE_LOCK_INTERUPTED("")
+    LUCENE_LOCK_TIMEOUT("Waiting for lock timed out in LuceneSearchProvider for dimension %s"),
+    LUCENE_LOCK_INTERRUPTED("Waiting for lock was interrupted in LuceneSearchProvider for dimension %s")
     ;
 
     private final String messageFormat;

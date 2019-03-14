@@ -77,6 +77,10 @@ Current
     * Created `MemoizingDimensionMappingResultSetMapper` to support field transform use case
 
 ### Changed:
+- [LuceneSearchProvider will throw an exception if a thread spends too much time waiting on acquiring a lock](https://github.com/yahoo/fili/issues/870)
+  * Currently, if LuceneSearchProvider tries to acquire a lock it will wait forever until the lock is released. If the 
+  lock is erroneously never leaked the requesting thread will hang forever.
+  * The new behavior is to timeout after some amount of time, throw an error, and fail the query.
 
 - [Strict Availability no longer returns no availability when queried with constraint with no columns](https://github.com/yahoo/fili/issues/862)
   * Currently, `StrictAvailability.getAvailableIntervals(Constraint)` returns an empty interval list when called with
