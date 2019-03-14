@@ -216,8 +216,9 @@ class LuceneSearchProviderSpec extends SearchProviderSpec<LuceneSearchProvider> 
 
         when:
         // thread that just gets read lock and holds it
-        new Thread({searchProvider.readLock()}).start()
-        sleep(1000)
+        Thread t = new Thread({searchProvider.readLock()})
+        t.start()
+        t.join()
         searchProvider.writeLock()
 
         then:
@@ -235,8 +236,9 @@ class LuceneSearchProviderSpec extends SearchProviderSpec<LuceneSearchProvider> 
 
         when:
         // thread that just gets write lock and holds it
-        new Thread({searchProvider.writeLock()}).start()
-        sleep(1000)
+        Thread t = new Thread({searchProvider.writeLock()})
+        t.start()
+        t.join()
         searchProvider.readLock()
 
         then:
