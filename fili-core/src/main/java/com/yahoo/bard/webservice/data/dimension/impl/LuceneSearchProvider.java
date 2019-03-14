@@ -66,7 +66,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -84,7 +83,14 @@ public class LuceneSearchProvider implements SearchProvider {
     private static final double BUFFER_SIZE = 48;
 
     public static final int LUCENE_SEARCH_TIMEOUT_MS = SYSTEM_CONFIG.getIntProperty(
-            SYSTEM_CONFIG.getPackageVariableName("lucene_search_timeout_ms"), 600000
+            SYSTEM_CONFIG.getPackageVariableName("lucene_search_timeout_ms"),
+            600000
+    );
+
+    // Default is 1.2 * modifier, just long enough for a single read query to timeout.
+    public static final float WRITE_LOCK_TIMEOUT_MULTIPLIER = SYSTEM_CONFIG.getFloatProperty(
+            SYSTEM_CONFIG.getPackageVariableName("lucene_search_write_lock_timeout_multiplier"),
+            1.2f
     );
 
     private Analyzer analyzer;
@@ -142,9 +148,8 @@ public class LuceneSearchProvider implements SearchProvider {
     }
 
     /**
-     * Attempts to acquire the read lock. If waiting for the read lock times out or waiting for the lock
-     * an exception is thrown and the query is failed. Timeout is equivalent to the timeout on a search. If a
-     * read lock waits that long then the query is likely going to timeout anyways.
+     * Attempts to acquire the read lock. If waiting for the read lock times out or is interrupted an exception is
+     * thrown and the query is failed. Timeout is equivalent to the timeout on a search.
      */
     protected void readLock() {
         try {
@@ -175,14 +180,15 @@ public class LuceneSearchProvider implements SearchProvider {
     }
 
     /**
-     * Attempts to acquire the write lock. If waiting for the read lock times out or waiting for the lock
-     * an exception is thrown and the query is failed. Timeout is equivalent to the timeout on a search. If a
-     * write lock waits that long then the query is likely going to timeout anyways.
+     * Attempts to acquire the write lock. If waiting for the write lock times out or is interrupted an exception is
+     * thrown and the query is failed. Timeout is equivalent to the timeout on a search.
      */
     protected void writeLock() {
         try {
-            // write lock can wait for 1.2 query timeout length before replace occurs, to let current queries drain.
-            if (!lock.writeLock().tryLock((int) (searchTimeout * 1.2), TimeUnit.MILLISECONDS)) {
+            if (!lock.writeLock().tryLock(
+                    (int) (searchTimeout * WRITE_LOCK_TIMEOUT_MULTIPLIER),
+                    TimeUnit.MILLISECONDS)
+            ) {
                 String msg = String.format(
                         ErrorMessageFormat.LUCENE_LOCK_TIMEOUT.getMessageFormat(),
                         getDimension().getApiName()
@@ -193,12 +199,12 @@ public class LuceneSearchProvider implements SearchProvider {
             }
         } catch (InterruptedException e) {
             String msg = String.format(
-                    ErrorMessageFormat.LUCENE_LOCK_TIMEOUT.getMessageFormat(),
+                    ErrorMessageFormat.LUCENE_LOCK_INTERRUPTED.getMessageFormat(),
                     getDimension().getApiName()
             );
 
             LOG.error(msg);
-            throw new IllegalStateException(msg);
+            throw new IllegalStateException(msg, e);
         }
     }
 
@@ -231,7 +237,6 @@ public class LuceneSearchProvider implements SearchProvider {
      * @param firstTimeThrough  If true, will write an empty index and will then re-open the searcher
      */
     private void reopenIndexSearcher(boolean firstTimeThrough) {
-//        lock.writeLock().lock();
         writeLock();
         try {
             // Close the current reader if open
@@ -263,7 +268,6 @@ public class LuceneSearchProvider implements SearchProvider {
                 throw new RuntimeException(reopenException);
             }
         } finally {
-//            lock.writeLock().unlock();
             writeUnlock();
         }
     }
@@ -372,7 +376,6 @@ public class LuceneSearchProvider implements SearchProvider {
 
         // Write the rows to the document
         IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer).setRAMBufferSizeMB(BUFFER_SIZE);
-//        lock.writeLock().lock();
         writeLock();
         try {
             try (IndexWriter luceneIndexWriter = new IndexWriter(luceneDirectory, indexWriterConfig)) {
@@ -396,7 +399,6 @@ public class LuceneSearchProvider implements SearchProvider {
             reopenIndexSearcher(true);
             refreshCardinality();
         } finally {
-//            lock.writeLock().unlock();
             writeUnlock();
         }
     }
@@ -442,7 +444,6 @@ public class LuceneSearchProvider implements SearchProvider {
                 newLuceneIndexPathString
         );
 
-//        lock.writeLock().lock();
         writeLock();
         try {
             Path oldLuceneIndexPath = Paths.get(luceneIndexPath);
@@ -465,7 +466,6 @@ public class LuceneSearchProvider implements SearchProvider {
 
             reopenIndexSearcher(false);
         } finally {
-//            lock.writeLock().unlock();
             writeUnlock();
         }
     }
@@ -543,7 +543,6 @@ public class LuceneSearchProvider implements SearchProvider {
     public void clearDimension() {
         Set<DimensionRow> dimensionRows = findAllDimensionRows();
         IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer).setRAMBufferSizeMB(BUFFER_SIZE);
-//        lock.writeLock().lock();
         writeLock();
         try {
             try (IndexWriter writer = new IndexWriter(luceneDirectory, indexWriterConfig)) {
@@ -576,7 +575,6 @@ public class LuceneSearchProvider implements SearchProvider {
             reopenIndexSearcher(true);
             refreshCardinality();
         } finally {
-//            lock.writeLock().unlock();
             writeUnlock();
         }
     }
@@ -589,12 +587,10 @@ public class LuceneSearchProvider implements SearchProvider {
     private void refreshCardinality() {
         int numDocs;
         initializeIndexSearcher();
-//        lock.readLock().lock();
         readLock();
         try {
             numDocs = luceneIndexSearcher.getIndexReader().numDocs();
         } finally {
-//            lock.readLock().unlock();
             readUnlock();
         }
         keyValueStore.put(
@@ -799,7 +795,6 @@ public class LuceneSearchProvider implements SearchProvider {
         initializeIndexSearcher();
         LOG.trace("Lucene Query {}", query);
 
-//        lock.readLock().lock();
         readLock();
         try {
             ScoreDoc[] hits;
@@ -858,7 +853,6 @@ public class LuceneSearchProvider implements SearchProvider {
                         .collect(Collectors.toCollection(TreeSet::new));
             }
         } finally {
-//            lock.readLock().unlock();
             readUnlock();
         }
         return new SinglePagePagination<>(
@@ -903,7 +897,6 @@ public class LuceneSearchProvider implements SearchProvider {
             int perPage
     ) {
         TimeLimitingCollectorManager manager = new TimeLimitingCollectorManager(searchTimeout, lastEntry, perPage);
-//        lock.readLock().lock();
         readLock();
         try {
             return indexSearcher.search(query, manager);
@@ -915,7 +908,6 @@ public class LuceneSearchProvider implements SearchProvider {
             LOG.warn("Lucene query timeout: {}. {}", query, e.getMessage());
             throw new TimeoutException(e.getMessage(), e);
         } finally {
-//            lock.readLock().unlock();
             readUnlock();
         }
     }

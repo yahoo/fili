@@ -7,6 +7,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionRow
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore
 import com.yahoo.bard.webservice.data.dimension.TimeoutException
 import com.yahoo.bard.webservice.util.DimensionStoreKeyUtils
+import com.yahoo.bard.webservice.web.ErrorMessageFormat
 import com.yahoo.bard.webservice.web.RowLimitReachedException
 import com.yahoo.bard.webservice.web.util.PaginationParameters
 
@@ -216,10 +217,15 @@ class LuceneSearchProviderSpec extends SearchProviderSpec<LuceneSearchProvider> 
         when:
         // thread that just gets read lock and holds it
         new Thread({searchProvider.readLock()}).start()
+        sleep(1000)
         searchProvider.writeLock()
 
         then:
         Exception e = thrown(IllegalStateException)
+        e.getMessage() == String.format(
+                ErrorMessageFormat.LUCENE_LOCK_TIMEOUT.getMessageFormat(),
+                searchProvider.getDimension().getApiName()
+        )
     }
 
     @Timeout(5)
@@ -230,10 +236,15 @@ class LuceneSearchProviderSpec extends SearchProviderSpec<LuceneSearchProvider> 
         when:
         // thread that just gets write lock and holds it
         new Thread({searchProvider.writeLock()}).start()
+        sleep(1000)
         searchProvider.readLock()
 
         then:
         Exception e = thrown(IllegalStateException)
+        e.getMessage() == String.format(
+                ErrorMessageFormat.LUCENE_LOCK_TIMEOUT.getMessageFormat(),
+                searchProvider.getDimension().getApiName()
+        )
     }
 
     @Ignore("This test is currently not valid because the replacement index is invalid.")
