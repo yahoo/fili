@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table;
 
+import com.yahoo.bard.webservice.data.config.names.LogicalTableName;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricColumn;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
@@ -58,6 +59,34 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
     /**
      * Constructor.
      *
+     * Uses the LogicalTableName interface to package metadata.
+     *
+     * @param name  The logical table name
+     * @param granularity  The logical table time grain
+     * @param tableGroup  The tablegroup for the logical table
+     * @param metricDictionary The metric dictionary to bind tableGroup's metrics
+     */
+    public LogicalTable(
+            @NotNull LogicalTableName name,
+            @NotNull Granularity granularity,
+            TableGroup tableGroup,
+            MetricDictionary metricDictionary
+    ) {
+        this(
+                name.asName(),
+                name.getCategory(),
+                name.getLongName(),
+                granularity,
+                name.getRetention(),
+                name.getDescription(),
+                tableGroup,
+                metricDictionary
+        );
+    }
+
+    /**
+     * Constructor.
+     *
      * @param name  The logical table name
      * @param category  The category of the logical table
      * @param longName  The long name of the logical table
@@ -77,6 +106,40 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
             TableGroup tableGroup,
             MetricDictionary metricDictionary
     ) {
+        this(
+                name,
+                category,
+                longName,
+                granularity,
+                retention,
+                description,
+                tableGroup,
+                new LogicalTableSchema(tableGroup, granularity, metricDictionary)
+        );
+    }
+
+    /**
+     * Copy Constructor.
+     *
+     * @param name  The logical table name
+     * @param category  The category of the logical table
+     * @param longName  The long name of the logical table
+     * @param granularity  The logical table time grain
+     * @param retention  The period the data in the logical table is retained for
+     * @param description  The description for this logical table
+     * @param tableGroup  The tablegroup for the logical table
+     * @param schema The LogicalTableSchema backing this LogicalTable
+     */
+    protected LogicalTable(
+            @NotNull String name,
+            String category,
+            String longName,
+            @NotNull Granularity granularity,
+            ReadablePeriod retention,
+            String description,
+            TableGroup tableGroup,
+            LogicalTableSchema schema
+    ) {
         this.name = name;
         this.tableGroup = tableGroup;
         this.category = category;
@@ -84,9 +147,7 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
         this.retention = retention;
         this.description = description;
         this.comparableParam = name + granularity.toString();
-
-        schema = new LogicalTableSchema(tableGroup, granularity, metricDictionary);
-
+        this.schema = schema;
     }
 
     public TableGroup getTableGroup() {

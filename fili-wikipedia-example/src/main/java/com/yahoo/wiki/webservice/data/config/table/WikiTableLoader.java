@@ -9,6 +9,7 @@ import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.config.names.FieldName;
+import com.yahoo.bard.webservice.data.config.names.LogicalTableName;
 import com.yahoo.bard.webservice.data.config.table.BaseTableLoader;
 import com.yahoo.bard.webservice.data.config.table.ConcretePhysicalTableDefinition;
 import com.yahoo.bard.webservice.data.config.table.PhysicalTableDefinition;
@@ -108,7 +109,7 @@ public class WikiTableLoader extends BaseTableLoader {
                     dictionaries
             );
             Set<Granularity> validGranularities = validGrains.get(table);
-            loadLogicalTableWithGranularities(table.asName(), tableGroup, validGranularities, dictionaries);
+            loadLogicalTableWithGranularities(LogicalTableName.forName(table), tableGroup, validGranularities, dictionaries);
         }
     }
 }

@@ -76,6 +76,10 @@ Current
     * Added helper constructor to `DimensionRow`
     * Created `MemoizingDimensionMappingResultSetMapper` to support field transform use case
 
+- [Added LogicalTable name metdata interface and BaseTableLoader methods to accept it](https://github.com/yahoo/fili/issues/872)
+    * `LogicalTable` accepts LogicalTableName as a constructor parameter
+    * `BaseTableLoader.loadLogicalTablesWithGranularities` accepts LogicalTableNames to pass to new LogicalTable constructor
+
 ### Changed:
 - [LuceneSearchProvider will throw an exception if a thread spends too much time waiting on acquiring a lock](https://github.com/yahoo/fili/issues/870)
   * Currently, if LuceneSearchProvider tries to acquire a lock it will wait forever until the lock is released. If the 
