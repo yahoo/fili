@@ -18,28 +18,36 @@ public interface LogicalTableName extends TableName {
      *
      * @return a name
      */
-    String getLongName();
+    default String getLongName() {
+        return asName();
+    }
 
     /**
      * A category for grouping logical tables in the system.
      *
      * @return a category
      */
-    String getCategory();
+    default String getCategory() {
+        return LogicalTable.DEFAULT_CATEGORY;
+    }
 
     /**
      * The period that this logical table retains facts for.
      *
      * @return a Joda ReadablePeriod
      */
-    ReadablePeriod getRetention();
+    default ReadablePeriod getRetention() {
+        return null;
+    }
 
     /**
      * A description of the meaning and function of this table.
      *
      * @return a textual description for the meaning of the table.
      */
-    String getDescription();
+    default String getDescription() {
+        return asName();
+    }
 
     /**
      * Build a default LogicalTableName from a string name.
@@ -62,26 +70,6 @@ public interface LogicalTableName extends TableName {
     static LogicalTableName forName(String name) {
 
         return new LogicalTableName() {
-            @Override
-            public String getLongName() {
-                return name;
-            }
-
-            @Override
-            public String getCategory() {
-                return LogicalTable.DEFAULT_CATEGORY;
-            }
-
-            @Override
-            public ReadablePeriod getRetention() {
-                return LogicalTable.DEFAULT_RETENTION;
-            }
-
-            @Override
-            public String getDescription() {
-                return name;
-            }
-
             @Override
             public String asName() {
                 return name;
