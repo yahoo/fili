@@ -21,7 +21,6 @@ import org.joda.time.format.DateTimeFormat
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
-
 /**
  * Test for partition availability behavior.
  */
@@ -50,7 +49,6 @@ class PartitionAvailabilitySpec extends Specification{
 
     DateTime endDate_1
     DateTime endDate_2
-
 
     def setup() {
         availability1 = Mock(Availability)

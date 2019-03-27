@@ -87,7 +87,7 @@ class TableFullViewProcessorSpec extends Specification {
                 "metrics:[[category:General, name:rowNum, longName:rowNum, type:number, uri:http://localhost:9998/v1/rowNum], " +
                 "[category:General, name:limbs, longName:limbs, type:number, uri:http://localhost:9998/v1/limbs], " +
                 "[category:General, name:dayAvgLimbs, longName:dayAvgLimbs, type:number, " +
-                "uri:http://localhost:9998/v1/dayAvgLimbs]], name:all, retention:P1Y]"
+                "uri:http://localhost:9998/v1/dayAvgLimbs]], name:all, retention:]"
         
         LogicalTable petsTable = petsShapesTables.find {it.getName() == "pets"}
 
@@ -128,7 +128,7 @@ class TableFullViewProcessorSpec extends Specification {
             resultRow.put("name", lt.granularity.getName())
             resultRow.put("longName", StringUtils.capitalize(lt.granularity.getName()))
             resultRow.put("description", "The " + lt.getName() + " " + lt.granularity.getName() + " grain")
-            resultRow.put("retention", lt.getRetention().toString())
+            resultRow.put("retention", lt.getRetention() != null ? lt.getRetention().toString() : "")
             resultRow.put(
                     "dimensions",
                     new TableFullViewProcessor().getDimensionListFullView(lt.dimensions, uriInfo)

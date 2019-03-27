@@ -79,6 +79,7 @@ Current
 - [Added LogicalTable name metdata interface and BaseTableLoader methods to accept it](https://github.com/yahoo/fili/issues/872)
     * `LogicalTable` accepts LogicalTableName as a constructor parameter
     * `BaseTableLoader.loadLogicalTablesWithGranularities` accepts LogicalTableNames to pass to new LogicalTable constructor
+    * Changed default retention for `LogicalTable` to null rather that P1Y
 
 ### Changed:
 - [LuceneSearchProvider will throw an exception if a thread spends too much time waiting on acquiring a lock](https://github.com/yahoo/fili/issues/870)

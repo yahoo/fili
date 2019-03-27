@@ -77,7 +77,7 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
                 name.getCategory(),
                 name.getLongName(),
                 granularity,
-                name.getRetention(),
+                name.getRetention().orElse(null),
                 name.getDescription(),
                 tableGroup,
                 metricDictionary

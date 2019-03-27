@@ -109,7 +109,12 @@ public class WikiTableLoader extends BaseTableLoader {
                     dictionaries
             );
             Set<Granularity> validGranularities = validGrains.get(table);
-            loadLogicalTableWithGranularities(LogicalTableName.forName(table), tableGroup, validGranularities, dictionaries);
+            loadLogicalTableWithGranularities(
+                    LogicalTableName.forName(table),
+                    tableGroup,
+                    validGranularities,
+                    dictionaries
+            );
         }
     }
 }

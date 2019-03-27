@@ -29,7 +29,7 @@ class ExpectedTableColumnsEndpointSpec extends BaseTableServletComponentSpec {
               "name": "shapes",
               "longName": "shapes",
               "timeGrain": "day",
-              "retention": "P1Y",
+              "retention": "",
               "description": "shapes",
               "dimensions": [
                 {

@@ -1,4 +1,4 @@
-// Copyright 2016 Verizon Media Group
+// Copyright 2019 Verizon Media Group
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.names;
 
@@ -7,6 +7,7 @@ import com.yahoo.bard.webservice.table.LogicalTable;
 import org.joda.time.ReadablePeriod;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * An interface for describing a Logical Tables core metadata.
@@ -36,8 +37,8 @@ public interface LogicalTableName extends TableName {
      *
      * @return a Joda ReadablePeriod
      */
-    default ReadablePeriod getRetention() {
-        return null;
+    default Optional<ReadablePeriod> getRetention() {
+        return Optional.empty();
     }
 
     /**
