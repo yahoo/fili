@@ -77,6 +77,12 @@ Current
     * Created `MemoizingDimensionMappingResultSetMapper` to support field transform use case
 
 ### Changed:
+- [Better expose lucene analyzer LuceneSearchProvider](https://github.com/yahoo/fili/issues/863)
+  * Continue to make LuceneSearchProvider internals protected over private so extending classes have an easier time
+  extending behavior.
+  * removed protected getter and setter on `LuceneSearchProvider.analyzer` field in favor of just making the field 
+  protected
+
 - [LuceneSearchProvider will throw an exception if a thread spends too much time waiting on acquiring a lock](https://github.com/yahoo/fili/issues/870)
   * Currently, if LuceneSearchProvider tries to acquire a lock it will wait forever until the lock is released. If the 
   lock is erroneously never released the requesting thread will hang forever.

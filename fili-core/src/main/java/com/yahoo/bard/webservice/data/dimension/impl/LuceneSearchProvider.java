@@ -78,8 +78,8 @@ import java.util.stream.Stream;
 public class LuceneSearchProvider implements SearchProvider {
     private static final Logger LOG = LoggerFactory.getLogger(LuceneSearchProvider.class);
 
-    private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
-    private static final Analyzer STANDARD_LUCENE_ANALYZER = new StandardAnalyzer();
+    protected static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+    protected static final Analyzer STANDARD_LUCENE_ANALYZER = new StandardAnalyzer();
     private static final double BUFFER_SIZE = 48;
 
     public static final int LUCENE_SEARCH_TIMEOUT_MS = SYSTEM_CONFIG.getIntProperty(
@@ -93,7 +93,7 @@ public class LuceneSearchProvider implements SearchProvider {
             1.2f
     );
 
-    private Analyzer analyzer;
+    protected Analyzer analyzer;
 
     protected final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private final String luceneIndexPath;
@@ -271,14 +271,6 @@ public class LuceneSearchProvider implements SearchProvider {
         } finally {
             writeUnlock();
         }
-    }
-
-    protected Analyzer getAnalyzer() {
-        return analyzer;
-    }
-
-    protected void setAnalyzer(Analyzer analyzer) {
-        this.analyzer = analyzer;
     }
 
     /**
