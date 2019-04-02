@@ -24,7 +24,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.security.Principal;
+import java.util.AbstractMap;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -176,12 +178,26 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
                 ));
 
         return filterMap.entrySet().stream()
+                .sorted(Comparator.comparing(
+                        (Map.Entry<Triple<Dimension, DimensionField, FilterOperation>, Set<String>> entry) ->
+                            String.join(
+                                    ",",
+                                    entry.getKey().getLeft().getApiName(),
+                                    entry.getKey().getMiddle().getName(),
+                                    entry.getKey().getRight().getName()
+                            )
+                        )
+                )
+                .map(entry -> new AbstractMap.SimpleImmutableEntry<>(
+                        entry.getKey(),
+                        entry.getValue().stream().sorted().collect(Collectors.toList()))
+                )
                 .map(it -> new ApiFilter(
                         it.getKey().getLeft(),
                         it.getKey().getMiddle(),
                         it.getKey().getRight(),
                         it.getValue()
                 ))
-                .collect(Collectors.toSet());
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 }
