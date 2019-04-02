@@ -181,11 +181,10 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
                                 Collectors.reducing(Collections.emptySet(), StreamUtils::setMerge)
                         )
                 ));
-
-
+        
         return filterMap.entrySet().stream()
-                .sorted(Comparator.comparing((
-                        Map.Entry<Triple<Dimension, DimensionField, FilterOperation>, Set<String>> entry) ->
+                .sorted(Comparator.comparing(
+                        (Map.Entry<Triple<Dimension, DimensionField, FilterOperation>, Set<String>> entry) ->
                             String.join(
                                     ",",
                                     entry.getKey().getLeft().getApiName(),
