@@ -28,6 +28,7 @@ import java.security.Principal;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
@@ -181,17 +182,21 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
                         )
                 ));
 
-        Function<Set<String>,List<String>> sortValues = set -> {
-            List<String> values = new ArrayList<>(set);
-            Collections.sort(values);
-            return values;
-        };
 
         return filterMap.entrySet().stream()
-                .sorted(Comparator.comparing(entry -> entry.getKey().getLeft().getApiName()))
+                .sorted(Comparator.comparing((
+                        Map.Entry<Triple<Dimension, DimensionField, FilterOperation>, Set<String>> entry) ->
+                            String.join(
+                                    ",",
+                                    entry.getKey().getLeft().getApiName(),
+                                    entry.getKey().getMiddle().getName(),
+                                    entry.getKey().getRight().getName()
+                            )
+                        )
+                )
                 .map(entry -> new AbstractMap.SimpleImmutableEntry<>(
                         entry.getKey(),
-                        sortValues.apply(entry.getValue()))
+                        entry.getValue().stream().sorted().collect(Collectors.toList()))
                 )
                 .map(it -> new ApiFilter(
                         it.getKey().getLeft(),

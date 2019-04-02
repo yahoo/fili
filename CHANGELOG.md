@@ -77,6 +77,11 @@ Current
     * Created `MemoizingDimensionMappingResultSetMapper` to support field transform use case
 
 ### Changed:
+- [RoleDimensionApiFilterRequestMapper builds api filters with a defined, consistent ordering](https://github.com/yahoo/fili/issues/875)
+    * The resulting set of `ApiFilter`s is backed by a linked hash set, which is ordered by the names of the dimension,
+    dimension field, and filter operation.
+    * The values in each constructed `ApiFilter` are sorted. 
+
 - [Better expose lucene analyzer LuceneSearchProvider](https://github.com/yahoo/fili/issues/863)
   * Continue to make LuceneSearchProvider internals protected over private so extending classes have an easier time
   extending behavior.

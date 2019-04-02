@@ -147,7 +147,7 @@ class RoleDimensionApiFilterRequestMapperSpec extends Specification {
     }
 
     @Unroll
-    def "Filters #filterOne and #filterTwo  merge to #mergedFilters"() {
+    def "Filters #filterOne and #filterTwo  merge to #mergedFilters with expected canonical ordering"() {
         setup:
         ApiFilter one = new ApiFilter(*filterOne)
         ApiFilter two = new ApiFilter(*filterTwo)
@@ -162,7 +162,7 @@ class RoleDimensionApiFilterRequestMapperSpec extends Specification {
         filterOne | filterTwo | mergedFilters
         [filterDimension, dimensionField, notin, ["b", "a"] as Set] | [filterDimension, dimensionField, notin, ["c", "a"] as Set] |
                 [[filterDimension, dimensionField, notin, ["a", "b", "c"] as Set]]
-        [filterDimension, dimensionField, notin, ["b", "a"] as Set] | [nonFilterDimension, dimensionField, notin, ["c", "a"] as Set] |
+        [nonFilterDimension, dimensionField, notin, ["c", "a"] as Set] | [filterDimension, dimensionField, notin, ["b", "a"] as Set] |
                 [
                         [filterDimension, dimensionField, notin, ["a", "b"] as List],
                         [nonFilterDimension, dimensionField, notin, ["a", "c"] as List],
