@@ -10,7 +10,6 @@ import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
-import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.util.StreamUtils;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.FilterOperation;
@@ -26,13 +25,9 @@ import org.slf4j.LoggerFactory;
 
 import java.security.Principal;
 import java.util.AbstractMap;
-import java.util.AbstractSet;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -181,7 +176,7 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
                                 Collectors.reducing(Collections.emptySet(), StreamUtils::setMerge)
                         )
                 ));
-        
+
         return filterMap.entrySet().stream()
                 .sorted(Comparator.comparing(
                         (Map.Entry<Triple<Dimension, DimensionField, FilterOperation>, Set<String>> entry) ->
