@@ -7,6 +7,7 @@ import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.data.config.names.FieldName;
+import com.yahoo.bard.webservice.data.config.names.LogicalTableName;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.config.table.BaseTableLoader;
 import com.yahoo.bard.webservice.data.config.table.ConcretePhysicalTableDefinition;
@@ -185,7 +186,7 @@ public class GenericTableLoader extends BaseTableLoader {
                     );
 
                     loadLogicalTableWithGranularities(
-                            table.getTableName().asName(),
+                            LogicalTableName.forName(table.getTableName()),
                             tableGroup,
                             dataSourceToValidGrains.get(table.getName()),
                             dictionaries
