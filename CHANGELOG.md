@@ -10,6 +10,12 @@ Current
 
 ### Added:
 
+- [Add Partial Data Feature Flags to separate query planning and data protection](https://github.com/yahoo/fili/issues/879)
+  * BardFeatureFlag.PARTIAL_DATA_PROTECTION activates removal of time buckets based on availability
+  * BardFeatureFlag.PARTIAL_DATA_QUERY_OPTIMIZATION activates the use of PartialData when query planning.
+  * BardFeatureFlag.PARTIAL_DATA still activates both capabilities.
+  * If any of these flags are active partial data answers are included in responses. 
+
 - [Add system config to disable requiring metrics in Api queries](https://github.com/yahoo/fili/issues/862)
   * Added the system config `require_metrics_in_query` which toggles whether or not metrics should be required in
   queries

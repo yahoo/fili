@@ -8,7 +8,16 @@ package com.yahoo.bard.webservice.config;
 public enum BardFeatureFlag implements FeatureFlag {
 
     CURRENT_MACRO_USES_LATEST("current_macro_uses_latest"),
+
+    /** Partial Data is the old form global flag.  It will only govern behavior is the new flags are off.*/
     PARTIAL_DATA("partial_data_enabled"),
+
+    /** If true, use the PartialDataResultSetMapper to prune partial from responses. */
+    PARTIAL_DATA_PROTECTION("partial_data_protection"),
+    /** If true, use the partial and volatile data info to prefer tables in query planning. */
+    PARTIAL_DATA_QUERY_OPTIMIZATION("partial_data_query_optimization"),
+
+
     /** Use {@link CacheFeatureFlag#TTL} instead. */
     @Deprecated DRUID_CACHE("druid_cache_enabled"),
     /** Use {@link CacheFeatureFlag#LOCAL_SIGNATURE} instead. */
