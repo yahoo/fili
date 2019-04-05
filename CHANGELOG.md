@@ -203,6 +203,9 @@ Current
 
 ### Fixed:
 
+- [Handle null lastLoadDate in DruidDimensionLoader](https://github.com/yahoo/fili/issues/878)
+    * Protected `DruidDimensionsLoader` from null pointer exceptions on no LastRunDate
+
 - [Fixed many compile warnings and other issues](https://github.com/yahoo/fili/pull/858)
     * Many minor syntax and structual issues resolved.
 
