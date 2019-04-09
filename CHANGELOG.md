@@ -88,6 +88,12 @@ Current
     * Changed default retention for `LogicalTable` to null rather that P1Y
 
 ### Changed:
+
+- [Fix security alerts & Dependency version bump](https://github.com/yahoo/fili/pull/882)
+    * Checkstyle prior to 8.18 loads external DTDs by default, which can potentially lead to denial of service attacks
+      or the leaking of confidential information.
+    * This PR upgrades `com.puppycrawl.tools` to the safe-version.
+
 - [RoleDimensionApiFilterRequestMapper builds api filters with a defined, consistent ordering](https://github.com/yahoo/fili/issues/875)
     * The resulting set of `ApiFilter`s is backed by a linked hash set, which is ordered by the names of the dimension,
     dimension field, and filter operation.
