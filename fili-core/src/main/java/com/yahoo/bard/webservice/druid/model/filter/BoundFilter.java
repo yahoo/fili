@@ -179,4 +179,15 @@ public class BoundFilter extends DimensionalFilter<BoundFilter> {
                 Objects.equals(ordering, other.ordering)
         ;
     }
+
+    @Override
+    public String toString() {
+        return String.format("Lower: [%s] strict %s, Upper: [%s] strict %s, ordering: %s",
+                lower == null ? "" : lower,
+                lowerStrict == null ? "?" : lowerStrict.toString(),
+                upper == null ? "" : upper,
+                upperStrict == null ? "?" : upperStrict.toString(),
+                ordering == null ? "" : ordering.toString()
+        );
+    }
 }

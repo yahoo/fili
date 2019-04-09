@@ -112,8 +112,7 @@ public class RequestLog {
         getLoginfoOrder().stream().filter(entry -> !Objects.equals(entry, "Epilogue")).forEachOrdered(
                 entry -> {
                     try {
-                        @SuppressWarnings("unchecked")
-                        Class<LogInfo> cls = (Class<LogInfo>) Class.forName(entry);
+                        Class<? extends LogInfo> cls = Class.forName(entry).asSubclass(LogInfo.class);
                         info.add(cls);
                     } catch (ClassNotFoundException | ClassCastException e) {
                         String msg = ErrorMessageFormat.LOGINFO_CLASS_INVALID.logFormat(entry);

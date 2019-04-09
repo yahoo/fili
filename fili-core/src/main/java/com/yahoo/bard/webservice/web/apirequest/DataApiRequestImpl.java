@@ -90,6 +90,7 @@ import javax.ws.rs.core.Response;
  */
 public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest {
     private static final Logger LOG = LoggerFactory.getLogger(DataApiRequestImpl.class);
+
     private final LogicalTable table;
 
     private final Granularity granularity;
@@ -525,7 +526,8 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         // Requested sort on metrics - optional, can be empty Set
         this.sorts = bindToColumnDirectionMap(
                 removeDateTimeSortColumn(sortColumnDirection),
-                logicalMetrics, metricDictionary
+                logicalMetrics,
+                metricDictionary
         );
         validateSortColumns(sorts, dateTimeSort, sortsRequest, logicalMetrics, metricDictionary);
 
@@ -1503,10 +1505,15 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         try (TimedPhase timer = RequestLog.startTiming("GeneratingLogicalMetrics")) {
             LOG.trace("Metric dictionary: {}", metricDictionary);
 
-            if (apiMetricQuery == null || "".equals(apiMetricQuery)) {
+            if (apiMetricQuery == null) {
+                apiMetricQuery = "";
+            }
+
+            if (BardFeatureFlag.REQUIRE_METRICS_QUERY.isOn() && apiMetricQuery.isEmpty()) {
                 LOG.debug(METRICS_MISSING.logFormat());
                 throw new BadApiRequestException(METRICS_MISSING.format());
             }
+
             // set of logical metric objects
             LinkedHashSet<LogicalMetric> generated = new LinkedHashSet<>();
             List<String> invalidMetricNames = new ArrayList<>();

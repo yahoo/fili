@@ -147,7 +147,7 @@ class RoleDimensionApiFilterRequestMapperSpec extends Specification {
     }
 
     @Unroll
-    def "Filters #filterOne and #filterTwo  merge to #mergedFilters"() {
+    def "Filters #filterOne and #filterTwo  merge to #mergedFilters with expected canonical ordering"() {
         setup:
         ApiFilter one = new ApiFilter(*filterOne)
         ApiFilter two = new ApiFilter(*filterTwo)
@@ -156,17 +156,17 @@ class RoleDimensionApiFilterRequestMapperSpec extends Specification {
         }
 
         expect:
-        RoleDimensionApiFilterRequestMapper.unionMergeFilterValues(Stream.of(one, two)) == expected
+        new ArrayList<>(RoleDimensionApiFilterRequestMapper.unionMergeFilterValues(Stream.of(one, two))) == new ArrayList<>(expected)
 
         where:
         filterOne | filterTwo | mergedFilters
-        [filterDimension, dimensionField, notin, ["a", "b"] as Set] | [filterDimension, dimensionField, notin, ["a", "c"] as Set] |
+        [filterDimension, dimensionField, notin, ["b", "a"] as Set] | [filterDimension, dimensionField, notin, ["c", "a"] as Set] |
                 [[filterDimension, dimensionField, notin, ["a", "b", "c"] as Set]]
-        [filterDimension, dimensionField, notin, ["a", "b"] as Set] | [nonFilterDimension, dimensionField, notin, ["a", "c"] as Set] |
+        [nonFilterDimension, dimensionField, notin, ["c", "a"] as Set] | [filterDimension, dimensionField, notin, ["b", "a"] as Set] |
                 [
-                        [filterDimension, dimensionField, notin, ["a", "b"] as Set],
-                        [nonFilterDimension, dimensionField, notin, ["a", "c"] as Set]
-                ]
+                        [filterDimension, dimensionField, notin, ["a", "b"] as List],
+                        [nonFilterDimension, dimensionField, notin, ["a", "c"] as List],
+                ] as LinkedHashSet
     }
     
 }

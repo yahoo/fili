@@ -79,7 +79,6 @@ public class ConfigurationGraph {
      * @param configName  The resource name for that configuration
      * @param nameValidator  A function which throws exceptions on module names which are not valid.
      */
-    @SuppressWarnings("unchecked")
     private void addVertex(Configuration configuration, String configName, Consumer<String> nameValidator) {
         if (!configuration.containsKey(MODULE_NAME_KEY)) {
             // This may be the result of another library using one of our configuration names

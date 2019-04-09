@@ -130,7 +130,6 @@ class ErrorDataServletSpec extends Specification {
         jtb.tearDown()
     }
 
-
     def "Valid druid request passes"() {
         setup:
         DruidServiceConfig oldConfig = testWebService.serviceConfig

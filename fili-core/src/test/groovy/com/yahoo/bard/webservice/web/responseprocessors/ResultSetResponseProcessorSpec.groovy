@@ -11,6 +11,7 @@ import com.yahoo.bard.webservice.data.HttpResponseChannel
 import com.yahoo.bard.webservice.data.HttpResponseMaker
 import com.yahoo.bard.webservice.data.ResultSet
 import com.yahoo.bard.webservice.data.ResultSetSchema
+import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
@@ -163,7 +164,7 @@ class ResultSetResponseProcessorSpec extends Specification {
                         DAY.buildZonedTimeGrain(DateTimeZone.UTC),
                         [] as Set,
                         ["dimension1": "dimension1"],
-                        Mock(DataSourceMetadataService)
+                        Mock(DataSourceMetadataService) { getAvailableIntervalsByDataSource(_ as DataSourceName) >> [:]}
                 )
         )
 

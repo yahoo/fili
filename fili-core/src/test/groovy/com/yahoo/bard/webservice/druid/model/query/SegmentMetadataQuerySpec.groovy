@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.druid.model.query
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
+import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
@@ -38,7 +39,7 @@ class SegmentMetadataQuerySpec extends Specification {
                 DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC),
                 [] as Set,
                 [:],
-                Mock(DataSourceMetadataService)
+                Mock(DataSourceMetadataService) { getAvailableIntervalsByDataSource(_ as DataSourceName) >> [:]}
         ))
         Collection<Interval> intervals = [new Interval("2014-07-01/2014-07-15")]
 
@@ -67,7 +68,7 @@ class SegmentMetadataQuerySpec extends Specification {
                 DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC),
                 [] as Set,
                 [:],
-                Mock(DataSourceMetadataService)
+                Mock(DataSourceMetadataService) { getAvailableIntervalsByDataSource(_ as DataSourceName) >> [:]}
         ))
         Collection<Interval> intervals = [new Interval("2014-07-01/2014-07-15"), new Interval("2014-08-01/2014-08-15")]
 

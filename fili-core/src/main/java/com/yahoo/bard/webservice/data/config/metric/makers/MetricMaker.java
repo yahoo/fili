@@ -254,7 +254,7 @@ public abstract class MetricMaker {
         return field.isSketch() ?
                 FieldConverterSupplier.sketchConverter.asSketchEstimate(field) :
                 field instanceof Aggregation ?
-                        new FieldAccessorPostAggregation((Aggregation) field) :
+                        new FieldAccessorPostAggregation(field) :
                         (PostAggregation) field;
     }
 
@@ -319,7 +319,7 @@ public abstract class MetricMaker {
         // Handle it if it's an Aggregation (ie. wrap it in a fieldAccessorPostAggregation)
         // If it's already a post-agg, we're good, and if it was an agg, we've already wrapped it
         return field instanceof Aggregation ?
-                new FieldAccessorPostAggregation((Aggregation) field) :
+                new FieldAccessorPostAggregation(field) :
                 (PostAggregation) field;
     }
 }

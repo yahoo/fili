@@ -10,8 +10,6 @@ import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import org.joda.time.Interval;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -20,8 +18,6 @@ import java.util.function.Supplier;
  * A mapper that removes results which overlap a missing interval set.
  */
 public class PartialDataResultSetMapper extends ResultSetMapper {
-    private static final Logger LOG = LoggerFactory.getLogger(PartialDataResultSetMapper.class);
-
     final SimplifiedIntervalList missingIntervals;
     final Supplier<SimplifiedIntervalList> volatileIntervalSupply;
 

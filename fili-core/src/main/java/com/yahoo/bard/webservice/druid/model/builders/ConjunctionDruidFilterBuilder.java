@@ -230,7 +230,7 @@ public abstract class ConjunctionDruidFilterBuilder implements DruidFilterBuilde
         final Function<DimensionRow, Filter> finalFilterBuilder = filterBuilder;
 
         return rows.stream()
-                .map(row -> finalFilterBuilder.apply(row))
+                .map(finalFilterBuilder::apply)
                 .collect(Collectors.toList());
     }
 }

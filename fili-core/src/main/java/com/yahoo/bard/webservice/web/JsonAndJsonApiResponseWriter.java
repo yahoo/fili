@@ -56,7 +56,13 @@ public abstract class JsonAndJsonApiResponseWriter implements ResponseWriter {
     ) throws IOException {
         Pagination pagination = responseData.getPagination();
         boolean paginating = pagination != null;
-        boolean haveMissingIntervals = BardFeatureFlag.PARTIAL_DATA.isOn() && !missingIntervals.isEmpty();
+
+        // If partial data is being used at all, send the missing interval data
+        boolean haveMissingIntervals =
+                (BardFeatureFlag.PARTIAL_DATA.isOn() ||
+                        BardFeatureFlag.PARTIAL_DATA_PROTECTION.isOn() ||
+                        BardFeatureFlag.PARTIAL_DATA_QUERY_OPTIMIZATION.isOn()) &&
+                !missingIntervals.isEmpty();
         boolean haveVolatileIntervals = volatileIntervals != null && ! volatileIntervals.isEmpty();
 
         if (!paginating && !haveMissingIntervals && !haveVolatileIntervals) {
