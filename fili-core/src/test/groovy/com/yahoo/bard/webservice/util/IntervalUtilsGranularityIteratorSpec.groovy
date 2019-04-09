@@ -32,7 +32,7 @@ class IntervalUtilsGranularityIteratorSpec extends Specification {
         List<Interval> intervals = buildListOfIntervalsFromStrings(intervalList)
         List<Interval> expectedIntervals = buildListOfIntervalsFromStrings(expected)
 
-        Granularity<String> grain = new AllGranularity();
+        Granularity grain = new AllGranularity();
         Iterator iterator = grain.intervalsIterator(intervals)
         expect:
         expectedIntervals.equals( iterator.collect() )
@@ -52,7 +52,7 @@ class IntervalUtilsGranularityIteratorSpec extends Specification {
         setup:
         List<Interval> intervals = buildListOfIntervalsFromStrings(intervalList)
         List<Interval> expectedIntervals = buildListOfIntervalsFromStrings(expected)
-        Granularity<TimeGrain> grain = timeGrain
+        Granularity grain = timeGrain
 
         Iterator iterator = grain.intervalsIterator(intervals)
         expect:
