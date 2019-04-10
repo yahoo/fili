@@ -7,6 +7,7 @@ import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
+import com.yahoo.bard.webservice.web.ApiFilter;
 
 import org.joda.time.DateTime;
 
@@ -21,7 +22,7 @@ import javax.validation.constraints.NotNull;
  * This availability uses column intersections to determine it's sigular availability.
  */
 public class StrictAvailability extends BaseMetadataAvailability {
-    protected final Optional<DateTime> expectedStartDate, expectedEndDate;
+    protected final DateTime expectedStartDate, expectedEndDate;
 
     /**
      * Constructor.
@@ -51,11 +52,20 @@ public class StrictAvailability extends BaseMetadataAvailability {
             DateTime expectedEndDate
     ) {
         super(dataSourceName, metadataService);
-        this.expectedStartDate = Optional.ofNullable(expectedStartDate);
-        this.expectedEndDate = Optional.ofNullable(expectedEndDate);
+        this.expectedStartDate = expectedStartDate;
+        this.expectedEndDate = expectedEndDate;
     }
 
-    @Override
+    /**
+     *
+     * Fetch a {@link SimplifiedIntervalList} representing the coalesced available intervals on this availability as
+     * filtered by the {@link DataSourceConstraint}.
+     *
+     * @param constraint  <tt>PhysicalDataSourceConstraint</tt> containing
+     * {@link com.yahoo.bard.webservice.table.Schema} and {@link ApiFilter}s
+     *
+     * @return A <tt>SimplifiedIntervalList</tt> of intervals available
+     */
     public SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint constraint) {
 
         Set<String> requestColumns = constraint.getAllColumnPhysicalNames();
@@ -74,23 +84,22 @@ public class StrictAvailability extends BaseMetadataAvailability {
     }
 
     @Override
-    public Optional<DateTime> getExpectedStartDate(PhysicalDataSourceConstraint constraint) {
-        return expectedStartDate;
-    }
-
-    @Override
-    public Optional<DateTime> getExpectedEndDate(PhysicalDataSourceConstraint constraint) {
-        return expectedEndDate;
+    public SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraint) {
+        if (constraint instanceof PhysicalDataSourceConstraint) {
+            return getAvailableIntervals((PhysicalDataSourceConstraint) constraint);
+        }
+        // Strict availability cannot check columns without a PhysicalDataSourceConstraint to bind columns
+        return getAvailableIntervals();
     }
 
     @Override
     public Optional<DateTime> getExpectedStartDate(DataSourceConstraint constraint) {
-        return expectedStartDate;
+        return Optional.ofNullable(expectedStartDate);
     }
 
     @Override
     public Optional<DateTime> getExpectedEndDate(DataSourceConstraint constraint) {
-        return expectedEndDate;
+        return Optional.ofNullable(expectedEndDate);
     }
 
     @Override
