@@ -4,7 +4,7 @@ package com.yahoo.bard.webservice.table.availability;
 
 import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
-import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
+import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import java.util.Collections;
@@ -47,6 +47,11 @@ public abstract class BaseMetadataAvailability implements Availability {
         return dataSourceNames;
     }
 
+    @Override
+    public Set<DataSourceName> getDataSourceNames(DataSourceConstraint constraint) {
+        return dataSourceNames;
+    }
+
     public DataSourceMetadataService getDataSourceMetadataService() {
         return metadataService;
     }
@@ -56,8 +61,8 @@ public abstract class BaseMetadataAvailability implements Availability {
         return getDataSourceMetadataService().getAvailableIntervalsByDataSource(getDataSourceName());
     }
 
-    @Override
-    public abstract SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint constraint);
+    //@Override
+    //public abstract SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint constraint);
 
     @Override
     public String toString() {
