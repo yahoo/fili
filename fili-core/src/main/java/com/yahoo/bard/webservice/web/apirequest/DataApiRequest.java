@@ -246,6 +246,10 @@ public interface DataApiRequest extends ApiRequest {
     DataApiRequest withIntervals(List<Interval> intervals);
 
     /**
+     * @param intervals  The intervals being applied.
+     *
+     * @return a new DataApiRequest
+     *
      * @deprecated Use @see{{@link #withIntervals(List)}}
      */
     @Deprecated

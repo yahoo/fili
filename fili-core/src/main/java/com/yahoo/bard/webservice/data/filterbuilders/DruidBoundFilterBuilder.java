@@ -32,12 +32,14 @@ import java.util.stream.Stream;
  * A DruidBoundFilterBuilder builds a Druid Bound Filter for supported dimensions, which can be sent directly to Druid.
  * <p>
  *     Druid Bound Filter currently supports the following API filter operations:
+ *     <ul>
  *          <li>{@link DefaultFilterOperation#gt}</li>
- *          <li><{@link DefaultFilterOperation#lt}/li>
+ *          <li>{@link DefaultFilterOperation#lt}</li>
  *          <li>{@link DefaultFilterOperation#gte}</li>
  *          <li>{@link DefaultFilterOperation#lte}</li>
  *          <li>{@link DefaultFilterOperation#between}</li>
- * </p>
+ *     </ul>
+ *
  * <p>
  *     So the filter:
  *     {@code startDate|id-gt[2018-10-10]}
@@ -55,7 +57,7 @@ import java.util.stream.Stream;
  *             "ordering": null }
  *         }
  *     </code></pre>
- * </p>
+ *
  */
 public class DruidBoundFilterBuilder implements DruidFilterBuilder {
 
