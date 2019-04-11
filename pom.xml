@@ -699,7 +699,7 @@
                     <artifactId>codenarc-maven-plugin</artifactId>
                     <version>0.22-1</version>
                     <configuration>
-                        <sourceDirectory>${project.basedir}</sourceDirectory>
+                        <groovyVersion>${version.groovy}</groovyVersion>
                         <maxPriority1Violations>0</maxPriority1Violations>
                         <maxPriority2Violations>0</maxPriority2Violations>
                         <maxPriority3Violations>0</maxPriority3Violations>
@@ -846,19 +846,6 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>codenarc-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>codenarc</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
     
@@ -962,6 +949,10 @@
                         </reports>
                     </reportSet>
                 </reportSets>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>codenarc-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </reporting>
