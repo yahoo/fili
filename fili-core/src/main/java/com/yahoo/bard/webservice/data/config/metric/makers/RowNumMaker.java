@@ -16,7 +16,6 @@ public class RowNumMaker extends MetricMaker {
 
     private static final RowNumMapper ROW_NUM_MAPPER = new RowNumMapper();
     private static final int DEPENDENT_METRICS_REQUIRED = 0;
-    private static final String DEFAULT_DESCRIPTION = "Generator for Row Numbers";
 
     /**
      * Constructor.

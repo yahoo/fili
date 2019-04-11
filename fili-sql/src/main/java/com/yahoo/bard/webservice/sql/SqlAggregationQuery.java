@@ -90,7 +90,7 @@ public class SqlAggregationQuery extends AbstractDruidAggregationQuery<SqlAggreg
 
     @Override
     public SqlAggregationQuery withInnermostDataSource(DataSource dataSource) {
-        Optional<DruidFactQuery<?>> innerQuery = (Optional<DruidFactQuery<?>>) this.dataSource.getQuery();
+        Optional<DruidFactQuery<?>> innerQuery = this.dataSource.getQuery().map(DruidFactQuery.class::cast);
         return !innerQuery.isPresent() ?
                 withDataSource(dataSource) :
                 withDataSource(new QueryDataSource(innerQuery.get().withInnermostDataSource(dataSource)));
@@ -135,7 +135,7 @@ public class SqlAggregationQuery extends AbstractDruidAggregationQuery<SqlAggreg
 
     @Override
     public SqlAggregationQuery withAllIntervals(Collection<Interval> intervals) {
-        Optional<DruidFactQuery<?>> innerQuery = (Optional<DruidFactQuery<?>>) this.dataSource.getQuery();
+        Optional<DruidFactQuery<?>> innerQuery = this.dataSource.getQuery().map(DruidFactQuery.class::cast);
         return !innerQuery.isPresent() ?
                 withIntervals(intervals) :
                 withDataSource(new QueryDataSource(innerQuery.get().withAllIntervals(intervals))).withIntervals(intervals);

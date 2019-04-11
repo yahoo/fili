@@ -274,7 +274,6 @@ public class DimensionsServlet extends EndpointServlet {
             @Context final UriInfo uriInfo,
             @Context final ContainerRequestContext containerRequestContext
     ) {
-        Supplier<Response> responseSender;
         DimensionsApiRequest apiRequest = null;
         try {
             RequestLog.startTiming(this);
@@ -475,7 +474,7 @@ public class DimensionsServlet extends EndpointServlet {
      *
      * @return a description dimension field with name "description"
      */
-    protected static String getDescriptionKey(String fieldName) {
+    public static String getDescriptionKey(String fieldName) {
         return fieldName.contains("description") ? fieldName : fieldName.replace("desc", "description");
     }
 }

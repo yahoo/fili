@@ -190,7 +190,7 @@ public class QueryParameterNormalizationFilter implements ApplicationEventListen
     private static Stream<QueryParam> extractQueryParameters(Method method) {
         return Stream.of(method.getParameterAnnotations())
                 .flatMap(Stream::of)
-                .filter(annotation -> annotation.annotationType().isAssignableFrom(QueryParam.class))
+                .filter(QueryParam.class::isInstance)
                 .map(QueryParam.class::cast);
     }
 

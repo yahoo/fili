@@ -106,7 +106,7 @@
         <checkstyle.skip>false</checkstyle.skip>
         <checkstyle.config.location>checkstyle-style.xml</checkstyle.config.location>
         <checkstyle.suppressions.location>checkstyle-suppressions.xml</checkstyle.suppressions.location>
-        <checkstyle.version>8.5</checkstyle.version>
+        <checkstyle.version>8.18</checkstyle.version>
         <checkstyle.resourceIncludes>**/*.properties*</checkstyle.resourceIncludes>
 
         <dependency.locations.enabled>false</dependency.locations.enabled>

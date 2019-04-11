@@ -7,6 +7,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionRow
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore
 import com.yahoo.bard.webservice.data.dimension.TimeoutException
 import com.yahoo.bard.webservice.util.DimensionStoreKeyUtils
+import com.yahoo.bard.webservice.web.ErrorMessageFormat
 import com.yahoo.bard.webservice.web.RowLimitReachedException
 import com.yahoo.bard.webservice.web.util.PaginationParameters
 
@@ -14,9 +15,11 @@ import org.apache.commons.io.FileUtils
 import org.apache.lucene.store.FSDirectory
 
 import spock.lang.Ignore
+import spock.lang.Timeout
 
 import java.nio.file.Files
 import java.nio.file.Path
+
 /**
  * Specification for behavior specific to the LuceneSearchProvider
  */
@@ -204,6 +207,46 @@ class LuceneSearchProviderSpec extends SearchProviderSpec<LuceneSearchProvider> 
         !Files.exists(file3)
         !Files.exists(subDir)
         !Files.exists(file4)
+    }
+
+    @Timeout(5)
+    def "If time waiting for write lock exceeds timeout fail query"() {
+        setup:
+        searchProvider.@searchTimeout = 2000
+
+        when:
+        // thread that just gets read lock and holds it
+        Thread t = new Thread({searchProvider.readLock()})
+        t.start()
+        t.join()
+        searchProvider.writeLock()
+
+        then:
+        Exception e = thrown(IllegalStateException)
+        e.getMessage() == String.format(
+                ErrorMessageFormat.LUCENE_LOCK_TIMEOUT.getMessageFormat(),
+                searchProvider.getDimension().getApiName()
+        )
+    }
+
+    @Timeout(5)
+    def "If time waiting for read lock exceeds timeout fail query"() {
+        setup:
+        searchProvider.@searchTimeout = 2000
+
+        when:
+        // thread that just gets write lock and holds it
+        Thread t = new Thread({searchProvider.writeLock()})
+        t.start()
+        t.join()
+        searchProvider.readLock()
+
+        then:
+        Exception e = thrown(IllegalStateException)
+        e.getMessage() == String.format(
+                ErrorMessageFormat.LUCENE_LOCK_TIMEOUT.getMessageFormat(),
+                searchProvider.getDimension().getApiName()
+        )
     }
 
     @Ignore("This test is currently not valid because the replacement index is invalid.")

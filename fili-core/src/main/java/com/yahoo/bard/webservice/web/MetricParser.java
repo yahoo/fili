@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web;
 
+import com.yahoo.bard.webservice.config.BardFeatureFlag;
+
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -33,7 +35,11 @@ public class MetricParser {
      * @throws IllegalArgumentException if metricString is empty or the metricString has unbalanced brackets
      */
     public static ArrayNode generateMetricFilterJsonArray(String metricString) {
-        if (metricString.length() == 0 || !(isBracketsBalanced(metricString))) {
+
+        if (
+                (BardFeatureFlag.REQUIRE_METRICS_QUERY.isOn() && metricString.isEmpty())
+                || !isBracketsBalanced(metricString)
+        ) {
             LOG.error("Metrics parameter values are invalid. The string is: " + metricString);
             throw new IllegalArgumentException("Metrics parameter values are invalid. The string is: " + metricString);
         }
@@ -42,6 +48,9 @@ public class MetricParser {
         //modifiedString contains only metric name and '-' separated filter encoded key. Since there is no brackets
         //and filter details, it easy to split by comma. ex: modifiedString=metric1-123,metric2-234
         String[] metrics = encodeMetricFilters(metricString, mapper).split(",");
+        if (metrics.length == 1 && metrics[0].isEmpty()) {
+            metrics = new String[0];
+        }
 
         //looping each metric in a metrics array
         ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();

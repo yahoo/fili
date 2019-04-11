@@ -99,7 +99,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                     }
                   ],
                   "name": "all",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The hourly day grain",
@@ -133,7 +133,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                     }
                   ],
                   "name": "day",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The hourly hour grain",
@@ -167,7 +167,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                     }
                   ],
                   "name": "hour",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The hourly month grain",
@@ -201,7 +201,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                     }
                   ],
                   "name": "month",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The hourly week grain",
@@ -235,7 +235,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                     }
                   ],
                   "name": "week",
-                  "retention": "P1Y"
+                  "retention": ""
                 }
               ]
             },
@@ -284,7 +284,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                     }
                   ],
                   "name": "all",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The hourly_monthly day grain",
@@ -325,7 +325,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                     }
                   ],
                   "name": "day",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The hourly_monthly hour grain",
@@ -359,7 +359,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                     }
                   ],
                   "name": "hour",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The hourly_monthly month grain",
@@ -400,7 +400,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                     }
                   ],
                   "name": "month",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The hourly_monthly week grain",
@@ -441,7 +441,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                     }
                   ],
                   "name": "week",
-                  "retention": "P1Y"
+                  "retention": ""
                 }
               ]
             },
@@ -490,7 +490,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                     }
                   ],
                   "name": "all",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The monthly day grain",
@@ -531,7 +531,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                     }
                   ],
                   "name": "day",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The monthly month grain",
@@ -572,7 +572,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                     }
                   ],
                   "name": "month",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The monthly week grain",
@@ -613,7 +613,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                     }
                   ],
                   "name": "week",
-                  "retention": "P1Y"
+                  "retention": ""
                 }
               ]
             },
@@ -703,7 +703,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                     }
                   ],
                   "name": "all",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The pets day grain",
@@ -785,7 +785,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                     }
                   ],
                   "name": "day",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The pets month grain",
@@ -867,7 +867,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                     }
                   ],
                   "name": "month",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The pets week grain",
@@ -949,7 +949,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                     }
                   ],
                   "name": "week",
-                  "retention": "P1Y"
+                  "retention": ""
                 }
               ]
             },
@@ -1166,7 +1166,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                     }
                   ],
                   "name": "all",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The shapes day grain",
@@ -1361,7 +1361,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                     }
                   ],
                   "name": "day",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The shapes month grain",
@@ -1570,7 +1570,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                     }
                   ],
                   "name": "month",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The shapes week grain",
@@ -1779,7 +1779,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                     }
                   ],
                   "name": "week",
-                  "retention": "P1Y"
+                  "retention": ""
                 }
               ]
             }

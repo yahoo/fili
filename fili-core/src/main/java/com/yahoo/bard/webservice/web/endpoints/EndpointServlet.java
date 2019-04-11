@@ -185,6 +185,7 @@ public abstract class EndpointServlet {
 
         Response.ResponseBuilder builder = responseBuilderSupplier.get();
 
+        @SuppressWarnings("unchecked")
         Stream<T> stream = ResponsePaginator.paginate(builder, pagination, uriInfo);
         Response.ResponseBuilder responseBuilder = Response.status(Response.Status.OK);
 

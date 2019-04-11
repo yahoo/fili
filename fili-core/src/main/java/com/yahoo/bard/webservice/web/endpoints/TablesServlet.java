@@ -494,7 +494,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
         resultRow.put("category", logicalTable.getCategory());
         resultRow.put("name", logicalTable.getName());
         resultRow.put("longName", logicalTable.getLongName());
-        resultRow.put("retention", logicalTable.getRetention().toString());
+        resultRow.put("retention", logicalTable.getRetention() != null ? logicalTable.getRetention().toString() : "");
         resultRow.put("granularity", logicalTable.getGranularity().getName());
         resultRow.put("description", logicalTable.getDescription());
         resultRow.put(
@@ -531,7 +531,10 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                 new SimpleImmutableEntry<>("category", logicalTable.getCategory()),
                 new SimpleImmutableEntry<>("name", logicalTable.getName()),
                 new SimpleImmutableEntry<>("longName", logicalTable.getLongName()),
-                new SimpleImmutableEntry<>("retention", logicalTable.getRetention().toString()),
+                new SimpleImmutableEntry<>(
+                        "retention",
+                        logicalTable.getRetention() != null ? logicalTable.getRetention().toString() : ""
+                ),
                 new SimpleImmutableEntry<>("granularity", logicalTable.getGranularity().getName()),
                 new SimpleImmutableEntry<>("description", logicalTable.getDescription()),
                 new SimpleImmutableEntry<>(

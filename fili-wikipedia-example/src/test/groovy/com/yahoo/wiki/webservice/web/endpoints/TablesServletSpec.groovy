@@ -119,7 +119,7 @@ class TablesServletSpec extends Specification {
                                         "longName":"$tableName",
                                         "granularity":"hour",
                                         "category": "General",
-                                        "retention": "P1Y",
+                                        "retention": "",
                                         "description": "$tableName",
                                         "dimensions": [
                                             ${
