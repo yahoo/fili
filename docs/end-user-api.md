@@ -220,6 +220,71 @@ so that we can pull it into Excel and play around with it! No worries, the Fili 
 
 For additional information about response format, take a look at the [Format](#response-format) section!
 
+Table Queries
+------------
+
+### Table Availability ###
+Availability for a table(logical table) is defined as the maximal set of intervals that the table may be able to respond
+to. Or put another way, the table can certainly not respond to any intervals beyond the range marked available. 
+
+### Constrained Queries ###
+Constrained availability will be defined as the availability for a table given a set of query constraints. 
+
+Currently the tables/table/timeGrain response lacks an indication of the time range(s) for which the table has data
+(ie. can answer questions), but implementation is going on to expand the table resource so that it can take pretty much
+the same inputs that the data resource takes, and would use those inputs to constrain / restrict the available time
+ranges (and even available schema, etc.) of the logical table.
+
+The constraints are:
+
+* Grouping dimensions
+* Metrics
+* Filters
+* Date/Time
+
+For example:
+
+    GET https://sampleapp.fili.io/v1/tables/myTable/week/dim1/dim2?metrics=myMetric&filters=dim3|id-in[foo,bar]&dateTime=2014-09-01/2018-09-08
+
+Which would result in a table response with the metrics, dimensions, and available intervals restricted down to the set
+of items that are still "reachable" given the constraints in the query. So, if the table normally indicates that `dim7`
+is one of it's dimensions, but there isn't a backing physical table for `myTable` that has `dim1`, `dim2`, `dim3`, and
+`myMetric` along with `dim7`, then `dim7` would not be in the dimension list returned in the response. 
+
+In the example above, query accepts an optional list of path separated grouping dimensions, an optional list of metrics,
+an optional filter clause, and an interval parameter. An example response could be
+
+```json
+{
+      "category": "General",
+      "name": "shapes",
+      "longName": "shapes",
+      "timeGrain": "day",
+      "retention": "P1Y",
+      "description": "shapes",
+      "availableIntervals": ["2016-05-01 00:00:00.000/2017-05-27 00:00:00.000"],
+      "dimensions": [
+        {
+          "cardinality": "0",
+          "category": "General",
+          "name": "color",
+          "longName": "color",
+          "uri": "http://localhost:9998/dimensions/color"
+        }
+      ],
+      "metrics": [
+        {
+          "category": "General",
+          "name":"rowNum",
+          "longName": "rowNum",
+          "uri": "http://localhost:9998/metrics/rowNum"
+        }
+      ]
+    }
+```
+
+Note the line`"availableIntervals": ["2016-05-01 00:00:00.000/2017-05-27 00:00:00.000"]`.
+
 Query Options
 -------------
 
