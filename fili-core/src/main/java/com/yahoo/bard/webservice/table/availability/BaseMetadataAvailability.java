@@ -61,9 +61,6 @@ public abstract class BaseMetadataAvailability implements Availability {
         return getDataSourceMetadataService().getAvailableIntervalsByDataSource(getDataSourceName());
     }
 
-    //@Override
-    //public abstract SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint constraint);
-
     @Override
     public String toString() {
         return String.format("BaseMetadataAvailability for data source = %s", getDataSourceName().asName());

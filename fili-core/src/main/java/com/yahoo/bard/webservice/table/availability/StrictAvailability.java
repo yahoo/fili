@@ -59,7 +59,7 @@ public class StrictAvailability extends BaseMetadataAvailability {
     /**
      *
      * Fetch a {@link SimplifiedIntervalList} representing the coalesced available intervals on this availability as
-     * filtered by the {@link DataSourceConstraint}.
+     * filtered by the {@link PhysicalDataSourceConstraint}.
      *
      * @param constraint  <tt>PhysicalDataSourceConstraint</tt> containing
      * {@link com.yahoo.bard.webservice.table.Schema} and {@link ApiFilter}s
