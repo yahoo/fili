@@ -40,7 +40,7 @@ fi
 export FILI_TEST_LIST=a,2,bc,234
 
 # We're not on a release tag, so build and test the code
-mvn verify -Pclover
+mvn install -Pclover
 MAVEN_RETURN_CODE=$?
 mvn post-site sonar:sonar -Pclover,sonar
 if [[ ${MAVEN_RETURN_CODE} -ne 0 ]]; then

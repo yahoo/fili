@@ -32,6 +32,9 @@ script:
 - travis/deploy.bash
 - ssh-agent -k || true
 
+before_cache:
+- rm -rf ~/.m2/repository/com/com/yahoo/fili
+
 after_success:
 - echo "Success."
 
