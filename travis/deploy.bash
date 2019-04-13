@@ -40,9 +40,9 @@ fi
 export FILI_TEST_LIST=a,2,bc,234
 
 # We're not on a release tag, so build and test the code
-mvn install -Pclover
+mvn install -Pcoverage.build
 MAVEN_RETURN_CODE=$?
-mvn post-site sonar:sonar -Pclover,sonar
+mvn post-site sonar:sonar -Pcoverage.report,sonar
 if [[ ${MAVEN_RETURN_CODE} -ne 0 ]]; then
     echo "ERROR Maven verify did not succeed."
     exit ${MAVEN_RETURN_CODE}

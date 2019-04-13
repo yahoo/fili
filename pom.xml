@@ -145,6 +145,9 @@
         <maven-checkstyle-plugin-version>3.0.0</maven-checkstyle-plugin-version>
         <maven-project-info-reports-plugin-version>3.0.0</maven-project-info-reports-plugin-version>
         <maven-surefire-report-plugin-version>${maven-surefire-plugin-version}</maven-surefire-report-plugin-version>
+        
+        <!-- empty property used as placeholder for args injected by jacoco coverage plugin -->
+        <jacoco.args></jacoco.args>
     </properties>
 
     <dependencyManagement>
@@ -643,7 +646,7 @@
                     <configuration>
                         <forkCount>1</forkCount>
                         <reuseForks>true</reuseForks>
-                        <argLine>-Xmx3G</argLine>
+                        <argLine>@{jacoco.args} -Xmx3G</argLine>
                         <redirectTestOutputToFile>true</redirectTestOutputToFile>
                         <includes>
                             <include>%regex[.*Spec.*]</include>
@@ -734,6 +737,11 @@
                         <effort>Max</effort>
                         <xmlOutput>true</xmlOutput>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>0.8.3</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -959,59 +967,52 @@
     
     <profiles>
         <profile>
-            <id>clover</id>
+            <id>coverage.build</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
             <build>
-                <pluginManagement>
-                    <plugins>
-                        <plugin>
-                            <groupId>org.openclover</groupId>
-                            <artifactId>clover-maven-plugin</artifactId>
-                            <version>4.2.1</version>
-                            <configuration>
-                                <includesAllSourceRoots>false</includesAllSourceRoots>
-                                <jdk>${maven.compiler.target}</jdk>
-                                <instrumentLambda>block</instrumentLambda>
-                                <targetPercentage>1%</targetPercentage>
-                            </configuration>
-                        </plugin>
-                    </plugins>
-                </pluginManagement>
                 <plugins>
                     <plugin>
-                        <groupId>org.openclover</groupId>
-                        <artifactId>clover-maven-plugin</artifactId>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>clover</id>
-                                <phase>test</phase>
+                                <id>prepare-coverage</id>
                                 <goals>
-                                    <goal>instrument-test</goal>
+                                    <goal>prepare-agent</goal>
                                 </goals>
-                            </execution>
-                            <execution>
-                                <id>aggregate-clover</id>
-                                <phase>pre-site</phase>
-                                <goals>
-                                    <goal>aggregate</goal>
-                                </goals>
+                                <configuration>
+                                    <propertyName>jacoco.args</propertyName>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>coverage.report</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
             <reporting>
                 <plugins>
                     <plugin>
-                        <groupId>org.openclover</groupId>
-                        <artifactId>clover-maven-plugin</artifactId>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
                         <reportSets>
                             <reportSet>
-                                <id>clover</id>
+                                <id>coverage</id>
                                 <reports>
-                                    <report>clover</report>
+                                    <report>report</report>
+                                </reports>
+                            </reportSet>
+                            <reportSet>
+                                <id>aggregate-coverage</id>
+                                <inherited>false</inherited>
+                                <reports>
+                                    <report>report-aggregate</report>
                                 </reports>
                             </reportSet>
                         </reportSets>
