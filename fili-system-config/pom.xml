@@ -11,6 +11,7 @@
 
     <artifactId>fili-system-config</artifactId>
     <packaging>jar</packaging>
+
     <name>Fili: system configuration library</name>
     <description>Fili system config implements the core system configuration classes used for logging, dependency
         management, and configuration
@@ -101,10 +102,6 @@
                         <additionalClasspathElement>target/moduleJars/jars/fili-system-config-test2.jar</additionalClasspathElement>
                     </additionalClasspathElements>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

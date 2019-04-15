@@ -7,9 +7,10 @@
     <artifactId>fili-parent-pom</artifactId>
     <version>0.11-SNAPSHOT</version>
     <packaging>pom</packaging>
+    
     <name>Fili: parent pom</name>
     <description>Shared dependencies for the Fili libraries</description>
-    <url>https://github.com/yahoo/fili</url>
+    <url>http://fili.io/</url>
 
     <modules>
         <module>fili-system-config</module>
@@ -31,6 +32,10 @@
         <system>GitHub Issues</system>
         <url>https://github.com/yahoo/fili/issues</url>
     </issueManagement>
+    <ciManagement>
+        <system>travis</system>
+        <url>https://travis-ci.org/yahoo/fili</url>
+    </ciManagement>
 
     <inceptionYear>2016</inceptionYear>
 
@@ -48,11 +53,28 @@
             <url>https://github.com/yahoo</url>
         </developer>
     </developers>
+    
+    <mailingLists>
+        <mailingList>
+            <name>fili-users</name>
+            <subscribe>https://groups.google.com/forum/#!forum/fili-users</subscribe>
+            <unsubscribe>https://groups.google.com/forum/#!forum/fili-users</unsubscribe>
+            <archive>https://groups.google.com/forum/#!forum/fili-users</archive>
+            <post>mailto:fili-users@googlegroups.com</post>
+        </mailingList>
+        <mailingList>
+            <name>fili-users</name>
+            <subscribe>https://groups.google.com/forum/#!forum/fili-developers</subscribe>
+            <unsubscribe>https://groups.google.com/forum/#!forum/fili-developers</unsubscribe>
+            <archive>https://groups.google.com/forum/#!forum/fili-developers</archive>
+            <post>mailto:fili-developers@googlegroups.com</post>
+        </mailingList>
+    </mailingLists>
 
     <distributionManagement>
         <site>
             <id>git</id>
-            <url>scm:git:git@github.com:yahoo/fili.git</url>
+            <url>scm:git:ssh://git@github.com:yahoo/fili.git</url>
         </site>
         <repository>
             <id>bintray-fili-repo</id>
@@ -62,7 +84,8 @@
 
     <scm>
         <developerConnection>scm:git:ssh://git@github.com/yahoo/fili.git</developerConnection>
-        <url>https://github.com/yahoo/fili.git</url>
+        <connection>scm:git:ssh://git@github.com/yahoo/fili.git</connection>
+        <url>https://github.com/yahoo/fili</url>
         <tag>HEAD</tag>
     </scm>
 
@@ -85,23 +108,24 @@
         <version.groovy>2.4.15</version.groovy>
         <version.jackson>2.9.8</version.jackson>
 
-        <version.gmavenplus.plugin>1.6</version.gmavenplus.plugin>
+        <version.gmavenplus.plugin>1.6.3</version.gmavenplus.plugin>
         <version.guava>21.0</version.guava>
         <version.druid.api>0.3.8</version.druid.api>
         <profiles.active>test</profiles.active>
 
-        <javadoc_options>${disableDocLint}</javadoc_options>
-        <min_jdk_version>1.8</min_jdk_version>
-        <max_jdk_version>1.9</max_jdk_version>
-        <source_jdk_version>1.8</source_jdk_version>
-        <target_jdk_version>1.8</target_jdk_version>
-
         <disableDocLint>-Xdoclint:none</disableDocLint>
 
-        <min_maven_version>3.3.9</min_maven_version>
+        <javadoc_options>${disableDocLint}</javadoc_options>
+
+        <min_maven_version>3.5</min_maven_version>
+
         <!-- TODO: Review these -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>${project.build.sourceEncoding}</project.reporting.outputEncoding>
         <maven.deploy.skip>${env.DO_NOT_PUBLISH}</maven.deploy.skip>
         <enforcer.skip>false</enforcer.skip>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
 
         <checkstyle.skip>false</checkstyle.skip>
         <checkstyle.config.location>checkstyle-style.xml</checkstyle.config.location>
@@ -110,19 +134,20 @@
         <checkstyle.resourceIncludes>**/*.properties*</checkstyle.resourceIncludes>
 
         <dependency.locations.enabled>false</dependency.locations.enabled>
-        <maven-javadoc-plugin-version>2.10.4</maven-javadoc-plugin-version>
-        <maven-jar-plugin-version>3.0.2</maven-jar-plugin-version>
-        <maven-compiler-plugin-version>3.6.0</maven-compiler-plugin-version>
-        <maven-pmd-plugin-version>3.6</maven-pmd-plugin-version>
+        <maven-javadoc-plugin-version>3.1.0</maven-javadoc-plugin-version>
+        <maven-jar-plugin-version>3.1.1</maven-jar-plugin-version>
+        <maven-war-plugin-version>3.2.2</maven-war-plugin-version>
+        <maven-compiler-plugin-version>3.8.0</maven-compiler-plugin-version>
+        <maven-pmd-plugin-version>3.11.0</maven-pmd-plugin-version>
         <maven-source-plugin-version>3.0.1</maven-source-plugin-version>
-        <maven-surefire-plugin.version>2.19.1</maven-surefire-plugin.version>
-        <maven-site-plugin-version>3.6</maven-site-plugin-version>
-        <maven-checkstyle-plugin-version>2.17</maven-checkstyle-plugin-version>
-        <maven-project-info-reports-plugin-version>2.9</maven-project-info-reports-plugin-version>
-        <maven-surefire-report-plugin.version>${maven-surefire-plugin.version}</maven-surefire-report-plugin.version>
-
-        <testngUseDefaultListeners>false</testngUseDefaultListeners>
-        <testngReporter>org.testng.reporters.FailedReporter,org.testng.reporters.XMLReporter,org.testng.reporters.JUnitXMLReporter</testngReporter>
+        <maven-surefire-plugin-version>3.0.0-M3</maven-surefire-plugin-version>
+        <maven-site-plugin-version>3.7.1</maven-site-plugin-version>
+        <maven-checkstyle-plugin-version>3.0.0</maven-checkstyle-plugin-version>
+        <maven-project-info-reports-plugin-version>3.0.0</maven-project-info-reports-plugin-version>
+        <maven-surefire-report-plugin-version>${maven-surefire-plugin-version}</maven-surefire-report-plugin-version>
+        
+        <!-- empty property used as placeholder for args injected by jacoco coverage plugin -->
+        <jacoco.args></jacoco.args>
     </properties>
 
     <dependencyManagement>
@@ -538,25 +563,18 @@
                 <version>1.0-beta-6</version>
             </extension>
         </extensions>
-        <finalName>${project.artifactId}-${project.version}</finalName>
+
         <pluginManagement>
             <plugins>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
                     <version>${maven-source-plugin-version}</version>
-                    <executions>
-                        <execution>
-                            <id>attach-sources</id>
-                            <goals>
-                                <goal>jar-no-fork</goal>
-                            </goals>
-                        </execution>
-                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
+                    <version>${maven-checkstyle-plugin-version}</version>
                     <dependencies>
                         <!-- override default checkstyle version -->
                         <dependency>
@@ -565,21 +583,9 @@
                             <version>${checkstyle.version}</version>
                         </dependency>
                     </dependencies>
-                    <executions>
-                        <execution>
-                            <id>validate</id>
-                            <phase>validate</phase>
-                            <configuration>
-                                <suppressionsLocation>${checkstyle.suppressions.location}</suppressionsLocation>
-                                <suppressionsFileExpression>checkstyle.suppressions.file</suppressionsFileExpression>
-                            </configuration>
-                            <goals>
-                                <goal>check</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <version>${maven-checkstyle-plugin-version}</version>
                     <configuration>
+                        <suppressionsLocation>${checkstyle.suppressions.location}</suppressionsLocation>
+                        <suppressionsFileExpression>checkstyle.suppressions.file</suppressionsFileExpression>
                         <configLocation>${checkstyle.config.location}</configLocation>
                         <includes>**\/*.java</includes>
                         <resourceIncludes>**/*.properties,**/*.sample</resourceIncludes>
@@ -590,6 +596,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-war-plugin</artifactId>
+                    <version>${maven-war-plugin-version}</version>
                     <configuration>
                         <failOnMissingWebXml>false</failOnMissingWebXml>
                     </configuration>
@@ -600,35 +607,30 @@
                     <version>${maven-site-plugin-version}</version>
                     <configuration>
                         <skipDeploy>true</skipDeploy>
-                        <topSiteURL>scm:git:git@github.com:yahoo/fili.git</topSiteURL>
                     </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>buildnumber-maven-plugin</artifactId>
                     <version>1.4</version>
-                    <executions>
-                        <execution>
-                            <phase>validate</phase>
-                            <goals>
-                                <goal>create</goal>
-                            </goals>
-                        </execution>
-                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>${maven-javadoc-plugin-version}</version>
-                    <executions>
-                        <execution>
-                            <id>attach-javadocs</id>
-                            <goals>
-                                <goal>javadoc-no-fork</goal>
-                                <goal>jar</goal>
-                            </goals>
-                        </execution>
-                    </executions>
+                    <configuration>
+                        <quiet>true</quiet>
+                        <excludePackageNames>${javadocs.package.exclude}</excludePackageNames>
+                        <additionalJOptions>
+                            <additionalJOption>-XDiag</additionalJOption>
+                            <additionalJOption>-J-XX:-UseG1GC</additionalJOption>
+                            <additionalJOption>-J-Xms20m</additionalJOption>
+                            <additionalJOption>-J-XX:-UseLargePages</additionalJOption>
+                            <additionalJOption>${javadoc_options}</additionalJOption>
+                        </additionalJOptions>
+                        <!-- lint breaks JDK8 builds, disable -->
+                        <additionalparam>${disableDocLint}</additionalparam>
+                    </configuration>
                 </plugin>
 
                 <!-- Mandatory plugins for using Spock -->
@@ -636,35 +638,20 @@
                     <groupId>org.codehaus.gmavenplus</groupId>
                     <artifactId>gmavenplus-plugin</artifactId>
                     <version>${version.gmavenplus.plugin}</version>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>addSources</goal>
-                                <goal>addTestSources</goal>
-                                <goal>compile</goal>
-                                <goal>compileTests</goal>
-                            </goals>
-                        </execution>
-                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.16</version>
+                    <version>${maven-surefire-plugin-version}</version>
                     <configuration>
                         <forkCount>1</forkCount>
                         <reuseForks>true</reuseForks>
-                        <argLine>-Xmx3G</argLine>
+                        <argLine>@{jacoco.args} -Xmx3G</argLine>
                         <redirectTestOutputToFile>true</redirectTestOutputToFile>
                         <includes>
                             <include>%regex[.*Spec.*]</include>
                         </includes>
                     </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>cobertura-maven-plugin</artifactId>
-                    <version>2.7</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -676,12 +663,9 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${maven-compiler-plugin-version}</version>
                     <configuration>
-                        <source>${source_jdk_version}</source>
-                        <target>${target_jdk_version}</target>
                         <showDeprecation>true</showDeprecation>
                         <showWarnings>true</showWarnings>
                         <optimize>true</optimize>
-                        <encoding>${project.build.sourceEncoding}</encoding>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -689,80 +673,172 @@
                     <artifactId>maven-antrun-plugin</artifactId>
                     <version>1.8</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>3.0.0-M2</version>
+                    <configuration>
+                        <rules>
+                            <requireJavaVersion>
+                                <version>[1.8,1.9]</version>
+                            </requireJavaVersion>
+                            <requireMavenVersion>
+                                <version>[${min_maven_version},)</version>
+                            </requireMavenVersion>
+                        </rules>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>2.5.3</version>
+                    <configuration>
+                        <goals>install</goals>
+                        <useReleaseProfile>false</useReleaseProfile>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>codenarc-maven-plugin</artifactId>
+                    <version>0.22-1</version>
+                    <configuration>
+                        <groovyVersion>${version.groovy}</groovyVersion>
+                        <maxPriority1Violations>0</maxPriority1Violations>
+                        <maxPriority2Violations>0</maxPriority2Violations>
+                        <maxPriority3Violations>0</maxPriority3Violations>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-surefire-report-plugin</artifactId>
+                    <version>${maven-surefire-report-plugin-version}</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-pmd-plugin</artifactId>
+                    <version>${maven-pmd-plugin-version}</version>
+                    <configuration>
+                        <targetJdk>${maven.compiler.target}</targetJdk>
+                        <sourceEncoding>${project.build.sourceEncoding}</sourceEncoding>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-project-info-reports-plugin</artifactId>
+                    <version>${maven-project-info-reports-plugin-version}</version>
+                    <configuration>
+                        <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>com.github.spotbugs</groupId>
+                    <artifactId>spotbugs-maven-plugin</artifactId>
+                    <version>3.1.11</version>
+                    <configuration>
+                        <threshold>Normal</threshold>
+                        <effort>Max</effort>
+                        <xmlOutput>true</xmlOutput>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>0.8.3</version>
+                </plugin>
             </plugins>
         </pluginManagement>
+        
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>1.4.1</version>
                 <executions>
                     <execution>
                         <id>enforce-maven-version</id>
                         <goals>
                             <goal>enforce</goal>
                         </goals>
-                        <configuration>
-                            <rules>
-                                <requireMavenVersion>
-                                    <version>[${min_maven_version},)</version>
-                                </requireMavenVersion>
-                            </rules>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>cobertura-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-                <version>2.5.3</version>
-                <configuration>
-                    <goals>install</goals>
-                    <useReleaseProfile>false</useReleaseProfile>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>buildnumber-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>create</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>validate</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <!-- Mandatory plugins for using Spock -->
             <plugin>
                 <groupId>org.codehaus.gmavenplus</groupId>
                 <artifactId>gmavenplus-plugin</artifactId>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <reportsDirectory>${session.executionRootDirectory}/target/surefire-reports</reportsDirectory>
-                </configuration>
+                <executions>
+                    <execution>
+                        <id>add-groovy-sources</id>
+                        <goals>
+                            <goal>addSources</goal>
+                            <goal>addTestSources</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>compile-groovy</id>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>test-compile-groovy</id>
+                        <goals>
+                            <goal>compileTests</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
@@ -771,58 +847,34 @@
                 <executions>
                     <execution>
                         <id>attach-site-descriptor</id>
+                        <inherited>false</inherited>
                         <goals>
                             <goal>attach-descriptor</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>stage-for-scm-publish</id>
-                        <phase>post-site</phase>
-                        <goals>
-                            <goal>stage</goal>
-                        </goals>
-                        <configuration>
-                            <skipDeploy>false</skipDeploy>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>codenarc-maven-plugin</artifactId>
-                <version>0.22-1</version>
-                <configuration>
-                    <sourceDirectory>${project.basedir}</sourceDirectory>
-                    <maxPriority1Violations>0</maxPriority1Violations>
-                    <maxPriority2Violations>0</maxPriority2Violations>
-                    <maxPriority3Violations>0</maxPriority3Violations>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>codenarc</goal>
                         </goals>
                     </execution>
                 </executions>
             </plugin>
         </plugins>
     </build>
+    
     <reporting>
         <plugins>
             <plugin>
                 <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>${maven-surefire-report-plugin.version}</version>
-                <configuration>
-                    <argLine>-Djava.library.path=${nativeDir}:${libDir} -XX:-UseLargePages
-                        -XX:-UseLargePages
-                        -Dlog4j.properties=file:src/test/resources/log4j.properties
-                    </argLine>
-                    <properties combine.self="override"/>
-                </configuration>
                 <reportSets>
                     <reportSet>
+                        <id>aggregate-tests</id>
+                        <inherited>false</inherited>
+                        <configuration>
+                            <aggregate>true</aggregate>
+                            <alwaysGenerateSurefireReport>true</alwaysGenerateSurefireReport>
+                        </configuration>
+                        <reports>
+                            <report>report-only</report>
+                        </reports>
+                    </reportSet>
+                    <reportSet>
+                        <id>tests</id>
                         <reports>
                             <report>report-only</report>
                         </reports>
@@ -831,71 +883,162 @@
             </plugin>
             <plugin>
                 <artifactId>maven-pmd-plugin</artifactId>
-                <version>${maven-pmd-plugin-version}</version>
                 <reportSets>
                     <reportSet>
+                        <id>aggregate-pmd</id>
+                        <inherited>false</inherited>
+                        <reports>
+                            <report>pmd</report>
+                            <report>cpd</report>
+                        </reports>
+                        <configuration>
+                            <aggregate>true</aggregate>
+                        </configuration>
+                    </reportSet>
+                    <reportSet>
+                        <id>pmd</id>
                         <reports>
                             <report>pmd</report>
                             <report>cpd</report>
                         </reports>
                     </reportSet>
                 </reportSets>
-                <configuration>
-                    <targetJdk>${target_jdk_version}</targetJdk>
-                    <aggregate>true</aggregate>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
-                <version>${maven-project-info-reports-plugin-version}</version>
-                <configuration>
-                    <dependencyLocationsEnabled>${dependency.locations.enabled}</dependencyLocationsEnabled>
-                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>${maven-checkstyle-plugin-version}</version>
                 <reportSets>
                     <reportSet>
+                        <id>aggregate-checkstyle</id>
+                        <inherited>false</inherited>
                         <reports>
                             <report>checkstyle-aggregate</report>
+                        </reports>
+                    </reportSet>
+                    <reportSet>
+                        <id>checkstyle</id>
+                        <reports>
+                            <report>checkstyle</report>
                         </reports>
                     </reportSet>
                 </reportSets>
             </plugin>
             <plugin>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>${maven-javadoc-plugin-version}</version>
                 <reportSets>
                     <reportSet>
+                        <id>aggregate-javadoc</id>
+                        <inherited>false</inherited>
+                        <reports>
+                            <report>aggregate-no-fork</report>
+                            <report>test-aggregate-no-fork</report>
+                        </reports>
+                    </reportSet>
+                    <reportSet>
+                        <id>javadoc</id>
                         <reports>
                             <report>javadoc-no-fork</report>
                             <report>test-javadoc-no-fork</report>
                         </reports>
-                        <configuration>
-                            <aggregate>true</aggregate>
-                            <quiet>true</quiet>
-                            <excludePackageNames>${javadocs.package.exclude}</excludePackageNames>
-                            <additionalJOptions>
-                                <additionalJOption>-XDiag</additionalJOption>
-                                <!-- SR 3-7600023701 -->
-                                <additionalJOption>-J-XX:-UseG1GC</additionalJOption>
-                                <additionalJOption>-J-Xms20m</additionalJOption>
-                                <additionalJOption>-J-XX:-UseLargePages</additionalJOption>
-                                <additionalJOption>${javadoc_options}</additionalJOption>
-                            </additionalJOptions>
-                            <!-- lint breaks JDK8 builds, disable -->
-                            <additionalparam>${disableDocLint}</additionalparam>
-                        </configuration>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <reportSets>
+                    <reportSet>
+                        <id>spotbugs</id>
+                        <reports>
+                            <report>spotbugs</report>
+                        </reports>
                     </reportSet>
                 </reportSets>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
-                <artifactId>findbugs-maven-plugin</artifactId>
-                <version>3.0.3</version>
+                <artifactId>codenarc-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </reporting>
+    
+    <profiles>
+        <profile>
+            <id>coverage.build</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>prepare-coverage</id>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                                <configuration>
+                                    <propertyName>jacoco.args</propertyName>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>coverage.report</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <reporting>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <reportSets>
+                            <reportSet>
+                                <id>coverage</id>
+                                <reports>
+                                    <report>report</report>
+                                </reports>
+                            </reportSet>
+                            <reportSet>
+                                <id>aggregate-coverage</id>
+                                <inherited>false</inherited>
+                                <reports>
+                                    <report>report-aggregate</report>
+                                </reports>
+                            </reportSet>
+                        </reportSets>
+                    </plugin>
+                </plugins>
+            </reporting>
+        </profile>
+        <profile>
+            <id>sonar</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>env.SONAR_TOKEN</name>
+                </property>
+            </activation>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.sonarsource.scanner.maven</groupId>
+                            <artifactId>sonar-maven-plugin</artifactId>
+                            <version>3.6.0.1398</version>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
+    </profiles>
 </project>
