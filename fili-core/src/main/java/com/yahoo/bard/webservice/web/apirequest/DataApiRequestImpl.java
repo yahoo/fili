@@ -18,6 +18,8 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TOP_N_UNSORTED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.UNSUPPORTED_FILTERED_METRIC_CATEGORY;
 
 import com.yahoo.bard.webservice.config.BardFeatureFlag;
+import com.yahoo.bard.webservice.config.SystemConfig;
+import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
@@ -112,6 +114,8 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
 
     @Deprecated
     private final DruidFilterBuilder filterBuilder;
+
+    protected static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
 
     /**
@@ -1026,9 +1030,20 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         DateTimeFormatter dateTimeFormatter = generateDateTimeFormatter(timeZone);
         List<Interval> result;
 
-        if (BardFeatureFlag.CURRENT_MACRO_USES_LATEST.isOn()) {
-            SimplifiedIntervalList availability = TableUtils.logicalTableAvailability(getTable());
-            DateTime adjustedNow = new DateTime();
+        SimplifiedIntervalList availability = TableUtils.logicalTableAvailability(getTable());
+        DateTime adjustedNow = new DateTime();
+
+        if (BardFeatureFlag.CURRENT_TIME_ZONE_ADJUSTMENT.isOn()) {
+            String adjustedTimezone = SYSTEM_CONFIG.getStringProperty(
+                    BardFeatureFlag.ADJUSTED_TIME_ZONE.getName(),
+                    "UTC"
+                    );
+            if (!adjustedTimezone.toUpperCase().equals("UTC")) {
+                adjustedNow = adjustedNow.withZone(DateTimeZone.forID(adjustedTimezone))
+                                         .withZoneRetainFields(DateTimeZone.UTC);
+            }
+            result = generateIntervals(adjustedNow, intervalsName, granularity, dateTimeFormatter);
+        } else if (BardFeatureFlag.CURRENT_MACRO_USES_LATEST.isOn()) {
             if (! availability.isEmpty()) {
                 DateTime firstUnavailable =  availability.getLast().getEnd();
                 if (firstUnavailable.isBeforeNow()) {
