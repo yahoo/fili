@@ -1028,6 +1028,9 @@
                     <name>env.SONAR_TOKEN</name>
                 </property>
             </activation>
+            <properties>
+                <sonar.login>${env.SONAR_TOKEN}</sonar.login>
+            </properties>
             <build>
                 <pluginManagement>
                     <plugins>
