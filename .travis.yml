@@ -9,6 +9,10 @@ cache:
   directories:
   - ~/.m2
 
+addons:
+  sonarcloud:
+    organization: "yahoo"
+
 env:
   global:
   - secure: elEBSzU7KHyY+tYconN7ISI1OaRq/C3NSviIc62KdeatVdKiRfjFsfJA0sfbDcsQCcW5nNUN8P2Gaatw/ph8WlqnZSb35YhMgQnYu7ssIm1Mpz2qs9lcffOG1RTUG1L6bOvwXxbxjFsCOBmxML9QiFaUNoQZfw6hbMQkkRQxfvPLlt9gL2e1A6y8UnqZCmB7nbJFy/RaBNhpIZqFgh0Z7JqGL2jjMr+OkBqVJlSI6u3VnMr9WYDlg69MUmaWQovHCpe2UuT1wU6YnQAMD2FJCpuTgigyW876ZUsI2T2Z9OMuZm+GANS5zA9C13piNeOvz6Rm1C4ZtNu95CPB0x4GXxmnoT+L6xMCZ5Ba24PrV5lezG5n6+ZEnUjold5pn45wgDS/+3XQPjR4kxxxCnVuD2QdX3TjeYqPe8Fo0rsp7Ad8JfirqiXwHwZOTFiQARsCA2tb0XSWElAuKkw6N3xnejsbD2bbCNTwmgW82pnIXEMADW0uPgf7qGCaAIM/X7sWB1YPmPjjv6qKHRZKbBeX6B/+qNyEjdOhsOHyoh6Ww83xpJrq4dDr2jP8WMQNEUe1j4GMj0CVtWezQr3nHluLe86AcaUjDVUJ4infHAew14djDE9BWxs610sT3wwDoKo+o5sH67jZO8SeRD7Z+g0z7aUChxkMVh9tQBdrfhw6qpc=
@@ -27,6 +31,9 @@ before_script:
 script:
 - travis/deploy.bash
 - ssh-agent -k || true
+
+before_cache:
+- rm -rf ~/.m2/repository/com/com/yahoo/fili
 
 after_success:
 - echo "Success."

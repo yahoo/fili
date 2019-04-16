@@ -11,6 +11,7 @@
 
     <artifactId>fili-core</artifactId>
     <packaging>jar</packaging>
+    
     <name>Fili: Core Libraries</name>
     <description>
         Fili web service library provides core capabilities for RESTful aggregation navigation, query planning and
@@ -305,13 +306,10 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
                 <executions>
                     <execution>
+                        <id>test-source</id>
                         <goals>
                             <goal>test-jar-no-fork</goal>
                         </goals>
@@ -325,7 +323,6 @@
                     <execution>
                         <id>attach-test-javadocs</id>
                         <goals>
-                            <goal>test-javadoc-no-fork</goal>
                             <goal>test-jar</goal>
                         </goals>
                     </execution>
@@ -349,6 +346,7 @@
                 </configuration>
                 <executions>
                     <execution>
+                        <id>test-jar</id>
                         <goals>
                             <goal>test-jar</goal>
                         </goals>
