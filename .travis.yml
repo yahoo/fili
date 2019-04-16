@@ -33,7 +33,7 @@ script:
 - ssh-agent -k || true
 
 before_cache:
-- rm -rf ~/.m2/repository/com/com/yahoo/fili
+- rm -rf ~/.m2/repository/com/yahoo/fili
 
 after_success:
 - echo "Success."
