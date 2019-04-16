@@ -1038,7 +1038,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                     BardFeatureFlag.ADJUSTED_TIME_ZONE.getName(),
                     "UTC"
                     );
-            if (!adjustedTimezone.toUpperCase().equals("UTC")) {
+            if (!adjustedTimezone.equalsIgnoreCase("UTC")) {
                 adjustedNow = adjustedNow.withZone(DateTimeZone.forID(adjustedTimezone))
                                          .withZoneRetainFields(DateTimeZone.UTC);
             }
